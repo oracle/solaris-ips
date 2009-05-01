@@ -132,7 +132,7 @@
       <applyto>/apps/packagemanager/preferences/startpage_url</applyto>
       <owner>packagemanager</owner>
       <type>string</type>
-      <default>"http://opensolaris.org/os/project/indiana/resources/packagemanager/startpagebase"</default>
+      <default>http://opensolaris.org/os/project/indiana/resources/packagemanager/startpagebase</default>
       <locale name="C">
          <short>Start Page Update URL</short>
          <long>

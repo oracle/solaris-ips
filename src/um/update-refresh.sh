@@ -91,9 +91,11 @@ trap "cd $TMP_SYS_DIR; rm -rf $TMP_BASE_DIR" 0 2 15
 # Setup in setlocale_dep_variables()
 BASEURL=""
 LOCALE=""
+LOCALE_ROOT=""
 FILE=""
 UNPACKED_DIR=""
 URL=""
+UPTODATE=""
 
 #Fetch the compressed file if modified
 download() {
@@ -104,8 +106,8 @@ download() {
 	  	return 1
 	fi
 
-	uptodate=`echo "$ret" | $GREP "not retrieving"`
-	if [ "$uptodate" != "" ]; then
+	UPTODATE=`echo "$ret" | $GREP "not retrieving"`
+	if [ "$UPTODATE" != "" ]; then
 	  	debug "Uptodate: no need to get $URL"
 	  	return 1
 	fi
@@ -174,12 +176,10 @@ getbaseurl() {
 getlocale() {
 	def_locale=`awk -F"=" '$1=="LANG" {print $2}' $LOCALE_FILE`
 	locale_prefix=${def_locale%.*}
-	locale_prefix=${locale_prefix%_*}
-	if [ "$locale_prefix" = "en" ];	then
-		LOCALE=$DEFAULT_LOCALE
-	else 
-		LOCALE=$locale_prefix
-	fi
+	locale_root_prefix=${locale_prefix%_*}
+
+	LOCALE=$locale_prefix
+	LOCALE_ROOT=$locale_root_prefix
 }
 
 #Set variables that have a locale component
@@ -188,6 +188,17 @@ setlocale_dep_variables() {
 	UNPACKED_DIR=$LOCALE
 	URL=$BASEURL/$FILE
 	debug "Locale: $LOCALE Download File: $FILE"
+}
+
+#Download updates for the default locale
+download_for_default_locale() {
+        LOCALE=$DEFAULT_LOCALE
+        setlocale_dep_variables
+        if download; then
+                debug "Got: $URL"
+                return 0
+        fi
+        return 1
 }
 
 # Main Body
@@ -201,20 +212,33 @@ fi
 getlocale
 setlocale_dep_variables
 
+# Example: 
+#  locale de_DE (root de), try de_DE -> de -> C
+#  locale de (root de), try de -> C
 if download; then
 	debug "Got: $URL"
 else
-	#Failed to get default locale, see if there is a C locale update
-	if [ "$LOCALE" != "$DEFAULT_LOCALE" ]; then
-		LOCALE=$DEFAULT_LOCALE
+        if [ "$UPTODATE" != "" ] || [ "$LOCALE" = "$DEFAULT_LOCALE" ]; then
+                exit 0
+        fi
+	if [ "$LOCALE" != "$LOCALE_ROOT" ]; then
+		LOCALE=$LOCALE_ROOT
 		setlocale_dep_variables
 		if download; then
 			debug "Got: $URL"
 		else
-			exit 0 #Ignoring failure
-		fi
-	fi			
-	exit 0 #Ignoring failure
+                        if [ "$UPTODATE" != "" ]; then
+                                exit 0
+                        fi
+                        if ! download_for_default_locale; then
+                                exit 0
+                        fi
+                fi
+        else
+                if ! download_for_default_locale; then
+                        exit 0
+                fi
+        fi
 fi
 
 if unpack; then

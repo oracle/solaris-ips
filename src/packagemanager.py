@@ -246,7 +246,7 @@ class PackageManager:
                 self.to_remove = {}
                 self.in_startpage_startup = self.show_startpage
                 self.lang = None
-                self.start_page_url = None
+                self.lang_root = None
                 self.visible_status_id = 0
                 self.categories_status_id = 0
                 self.search_options = [
@@ -434,7 +434,7 @@ class PackageManager:
                 self.view = None
                 self.current_url = None
                 self.opener = None
-                self.__setup_startpage()
+                self.__setup_startpage(self.show_startpage)
 
                 try:
                         dic_mainwindow = \
@@ -683,7 +683,7 @@ class PackageManager:
                         i += 1
                         self.pylintstub = label
 
-        def __setup_startpage(self):
+        def __setup_startpage(self, show_startpage):
                 self.opener = urllib.FancyURLopener()
                 self.document = gtkhtml2.Document()
                 self.document.connect('request_url', self.__request_url)
@@ -703,7 +703,9 @@ class PackageManager:
                         self.lang = "C"
                 if self.lang == None or self.lang == "":
                         self.lang = "C"
-                self.__load_startpage()
+                self.lang_root = self.lang.split('_')[0]
+                if show_startpage:
+                        self.__load_startpage()
                 self.w_startpage_frame.add(self.view)
 
         # Stub handler required by GtkHtml widget
@@ -711,32 +713,39 @@ class PackageManager:
                 pass
 
         def __load_startpage(self):
-                self.cache_start_page_url = self.application_dir + \
-                    START_PAGE_CACHE_LANG_BASE % (self.lang, START_PAGE_HOME)
-                self.start_page_url = self.application_dir + \
-                    START_PAGE_LANG_BASE % (self.lang, START_PAGE_HOME)
-                # Load from Cache
-                if not self.__load_uri(self.document, self.cache_start_page_url):
-                        self.cache_start_page_url = self.application_dir + \
-                            START_PAGE_CACHE_LANG_BASE % ("C", START_PAGE_HOME)
-                        if not self.__load_uri(self.document, self.cache_start_page_url):
-                                # Load from Install
-                                if not self.__load_uri(self.document,
-                                    self.start_page_url):
-                                        self.start_page_url = self.application_dir + \
-                                            START_PAGE_LANG_BASE % ("C", START_PAGE_HOME)
-                                        if not self.__load_uri(self.document,
-                                            self.start_page_url):
-                                                self.__handle_startpage_load_error()
+                if self.__load_startpage_locale(START_PAGE_CACHE_LANG_BASE):
+                        return
+                if self.__load_startpage_locale(START_PAGE_LANG_BASE):
+                        return                        
+                self.__handle_startpage_load_error(start_page_url)
 
-        def __handle_startpage_load_error(self):
+
+        def __load_startpage_locale(self, start_page_lang_base):
+                start_page_url = self.application_dir + \
+                        start_page_lang_base % (self.lang, START_PAGE_HOME)
+                if self.__load_uri(self.document, start_page_url):
+                        return True
+                        
+                if self.lang_root != None and self.lang_root != self.lang:
+                        start_page_url = self.application_dir + \
+                                start_page_lang_base % (self.lang_root, START_PAGE_HOME)
+                        if self.__load_uri(self.document, start_page_url):
+                                return True
+
+                start_page_url = self.application_dir + \
+                        start_page_lang_base % ("C", START_PAGE_HOME)                        
+                if self.__load_uri(self.document, start_page_url):
+                        return True
+                return False
+
+        def __handle_startpage_load_error(self, start_page_url):
                 self.document.open_stream('text/html')
                 self.document.write_stream(_(
                     "<html><head></head><body><H2>Welcome to"
                     "PackageManager!</H2><br>"
                     "<font color='#0000FF'>Warning: Unable to "
                     "load Start Page:<br>%s</font></body></html>"
-                    % (self.start_page_url)))
+                    % (start_page_url)))
                 self.document.close_stream()
 
         def __parse_remote_search_error(self, error):
