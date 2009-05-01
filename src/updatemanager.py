@@ -126,6 +126,18 @@ class GUIProgressTracker(progress.ProgressTracker):
         def cat_output_done(self):
                 gobject.idle_add(self.parent.output_done, _("Fetching catalog"))
 
+        def cache_cats_output_start(self):
+                return
+
+        def cache_cats_output_done(self):
+                return
+
+        def load_cat_cache_output_start(self):
+                return
+
+        def load_cat_cache_output_done(self):
+                return
+
         def eval_output_start(self):
                 s = _("Creating Plan ... ")
                 gobject.idle_add(self.parent.output, "%s" % s)
