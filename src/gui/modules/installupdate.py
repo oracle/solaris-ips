@@ -492,7 +492,7 @@ class InstallUpdate(progress.ProgressTracker):
                         self.__g_error_stage(msg)
                         return
                 except api_errors.CanceledException:
-                        self.w_dialog.hide()
+                        gobject.idle_add(self.w_dialog.hide)
                         self.stop_bouncing_progress = True
                         return
                 except api_errors.BENamingNotSupported:
