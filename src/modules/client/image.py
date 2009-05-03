@@ -1039,7 +1039,7 @@ class Image(object):
 
                         try:
                                 f = file(filepath, "w")
-                                f.writelines(["VERSION_1\n", newpub, "\n"])
+                                f.writelines(["VERSION_1\n", newpub])
                                 f.close()
                         except IOError, e:
                                 if e.errno not in (errno.EACCES, errno.EROFS):
@@ -1086,7 +1086,7 @@ class Image(object):
 
                         f = file(self._install_file(fmri), "w")
 
-                f.writelines(["VERSION_1\n", fmri.get_publisher_str(), "\n"])
+                f.writelines(["VERSION_1\n", fmri.get_publisher_str()])
                 f.close()
 
                 fi = file("%s/state/installed/%s" % (self.imgdir,
