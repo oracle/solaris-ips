@@ -36,6 +36,7 @@ import tarfile
 import tempfile
 import urllib
 import py_compile
+import sha
 
 from distutils.errors import DistutilsError
 from distutils.core import setup, Extension
@@ -58,6 +59,7 @@ CPVER = '3.1.1'
 CPARC = '%s-%s.tar.gz' % (CP, CPVER)
 CPDIR = '%s-%s' % (CP, CPVER)
 CPURL = 'http://download.cherrypy.org/cherrypy/%s/%s' % (CPVER, CPARC)
+CPHASH = '0a8aace00ea28adc05edd41e20dd910042e6d265'
 
 PO = 'pyOpenSSL'
 POIDIR = 'OpenSSL'
@@ -65,6 +67,7 @@ POVER = '0.7'
 POARC = '%s-%s.tar.gz' % (PO, POVER)
 PODIR = '%s-%s' % (PO, POVER)
 POURL = 'http://downloads.sourceforge.net/pyopenssl/%s' % (POARC)
+POHASH = 'bd072fef8eb36241852d25a9161282a051f0a63e'
 
 FL = 'figleaf'
 FLIDIR = 'figleaf'
@@ -72,6 +75,8 @@ FLVER = 'latest'
 FLARC = '%s-%s.tar.gz' % (FL, FLVER)
 FLDIR = '%s-%s' % (FL, FLVER)
 FLURL = 'http://darcs.idyll.org/~t/projects/%s' % FLARC
+# No hash, since we always fetch the latest
+FLHASH = None
 
 MAKO = 'Mako'
 MAKOIDIR = 'mako'
@@ -79,6 +84,7 @@ MAKOVER = '0.2.2'
 MAKOARC = '%s-%s.tar.gz' % (MAKO, MAKOVER)
 MAKODIR = '%s-%s' % (MAKO, MAKOVER)
 MAKOURL = 'http://www.makotemplates.org/downloads/%s' % (MAKOARC)
+MAKOHASH = '85c04ab3a6a26a1cab47067449712d15a8b29790'
 
 PLY = 'ply'
 PLYIDIR = 'ply'
@@ -86,6 +92,7 @@ PLYVER = '3.1'
 PLYARC = '%s-%s.tar.gz' % (PLY, PLYVER)
 PLYDIR = '%s-%s' % (PLY, PLYVER)
 PLYURL = 'http://www.dabeaz.com/ply/%s' % (PLYARC)
+PLYHASH = '38efe9e03bc39d40ee73fa566eb9c1975f1a8003'
 
 osname = platform.uname()[0].lower()
 ostype = arch = 'unknown'
@@ -118,6 +125,7 @@ if "ROOT" in os.environ and os.environ["ROOT"] != "":
 else:
         root_dir = os.path.normpath(os.path.join(pwd, os.pardir, "proto", "root_" + arch))
 pkgs_dir = os.path.normpath(os.path.join(pwd, os.pardir, "packages", arch))
+extern_dir = os.path.normpath(os.path.join(pwd, "extern"))
 
 py_install_dir = 'usr/lib/python2.4/vendor-packages'
 
@@ -146,7 +154,7 @@ scripts_sunos = {
                 ['updatemanagernotifier.py', 'updatemanagernotifier'],
                 ],
         svc_method_dir: [
-                ['svc-pkg-depot', 'svc-pkg-depot'],
+                ['svc/svc-pkg-depot', 'svc-pkg-depot'],
                 ],
         }
 
@@ -239,8 +247,8 @@ brand_files = [
         'brand/common.ksh',
         ]
 smf_files = [
-        'pkg-server.xml',
-        'pkg-update.xml',
+        'svc/pkg-server.xml',
+        'svc/pkg-update.xml',
         ]
 pspawn_srcs = [
         'modules/pspawn.c'
@@ -271,7 +279,8 @@ class cov_func(Command):
                 pass
         def run(self):
                 if not os.path.isdir(FLDIR):
-                        install_sw(FL, FLVER, FLARC, FLDIR, FLURL, FLIDIR)
+                        install_sw(FL, FLVER, FLARC, FLDIR, FLURL, FLIDIR,
+                            FLHASH)
                 # Run the test suite with coverage enabled
                 os.putenv('PYEXE', sys.executable)
                 os.chdir(os.path.join(pwd, "tests"))
@@ -399,7 +408,7 @@ class install_func(_install):
                                     os.stat(dst_path).st_mode
                                     | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
-                install_sw(CP, CPVER, CPARC, CPDIR, CPURL, CPIDIR)
+                install_sw(CP, CPVER, CPARC, CPDIR, CPURL, CPIDIR, CPHASH)
 		if "BUILD_PYOPENSSL" in os.environ and \
                     os.environ["BUILD_PYOPENSSL"] != "":
                         #
@@ -414,10 +423,13 @@ class install_func(_install):
                                 os.environ["LDFLAGS"] = \
                                     "-L/usr/sfw/lib -R/usr/sfw/lib " + \
                                     os.environ.get("LDFLAGS", "")
-                        install_sw(PO, POVER, POARC, PODIR, POURL, POIDIR)
+                        install_sw(PO, POVER, POARC, PODIR, POURL, POIDIR,
+                            POHASH)
                         os.environ = saveenv
-                install_sw(MAKO, MAKOVER, MAKOARC, MAKODIR, MAKOURL, MAKOIDIR)
-                install_sw(PLY, PLYVER, PLYARC, PLYDIR, PLYURL, PLYIDIR)
+                install_sw(MAKO, MAKOVER, MAKOARC, MAKODIR, MAKOURL, MAKOIDIR,
+                    MAKOHASH)
+                install_sw(PLY, PLYVER, PLYARC, PLYDIR, PLYURL, PLYIDIR,
+                    PLYHASH)
 
                 # Remove some bits that we're not going to package, but be sure
                 # not to complain if we try to remove them twice.
@@ -435,7 +447,33 @@ class install_func(_install):
                         if e.errno != errno.ENOENT:
                                 raise
 
-def install_sw(swname, swver, swarc, swdir, swurl, swidir):
+def hash_sw(swname, swarc, swhash):
+        if swhash == None:
+                return True
+
+        print "checksumming %s" % swname
+        hash = sha.new()
+        f = open(swarc, 'r')
+        while True:
+                data = f.read(65536)
+                if data == "":
+                        break
+                hash.update(data)
+        f.close()
+
+        if hash.hexdigest() == swhash:
+                return True
+        else:
+                print "bad checksum! %s != %s" % (swhash, hash.hexdigest())
+                return False
+
+
+def install_sw(swname, swver, swarc, swdir, swurl, swidir, swhash):
+        swarc = os.path.join(extern_dir, swarc)
+        swdir = os.path.join(extern_dir, swdir)
+        if not os.path.exists(extern_dir):
+                os.mkdir(extern_dir)
+
         if not os.path.exists(swarc):
                 print "downloading %s" % swname
                 try:
@@ -451,11 +489,14 @@ def install_sw(swname, swver, swarc, swdir, swurl, swidir):
                         remove_sw(swname)
                         sys.exit(1)
         if not os.path.exists(swdir):
+                if not hash_sw(swname, swarc, swhash):
+                        sys.exit(1)
+
                 print "unpacking %s" % swname
                 tar = tarfile.open(swarc)
                 # extractall doesn't exist until python 2.5
                 for m in tar.getmembers():
-                        tar.extract(m)
+                        tar.extract(m, extern_dir)
                 tar.close()
         swinst_dir = os.path.join(root_dir, py_install_dir, swidir)
         if not os.path.exists(swinst_dir):
@@ -473,12 +514,13 @@ def install_sw(swname, swver, swarc, swdir, swurl, swidir):
 
 def remove_sw(swname):
         print("deleting %s" % swname)
-        for file in os.listdir("."):
+        for file in os.listdir(extern_dir):
                 if fnmatch.fnmatch(file, "%s*" % swname):
-                        if os.path.isfile(file):
-                                os.unlink(file)
+                        fpath = os.path.join(extern_dir, file)
+                        if os.path.isfile(fpath):
+                                os.unlink(fpath)
                         else:
-                                shutil.rmtree(file, True)
+                                shutil.rmtree(fpath, True)
 
 class build_func(_build):
         def initialize_options(self):
@@ -565,10 +607,8 @@ class clobber_func(Command):
                 shutil.rmtree(root_dir, True)
                 print("deleting " + pkgs_dir)
                 shutil.rmtree(pkgs_dir, True)
-                remove_sw(CP)
-                remove_sw(PO)
-                remove_sw(MAKO)
-                remove_sw(PLY)
+                print("deleting " + extern_dir)
+                shutil.rmtree(extern_dir, True)
 
 class test_func(Command):
         # NOTE: these options need to be in sync with tests/run.py

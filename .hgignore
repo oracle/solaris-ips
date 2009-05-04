@@ -12,9 +12,7 @@
 ^proto
 ^packages
 # Specific build products
-^src/*.tar.gz$
-^src/CherryPy-.*$
-^src/Mako-.*$
+^src/extern/.*
 ^src/brand/fmri_compare$
 ^src/gui/data/addmoresoftware.desktop$
 ^src/gui/data/packagemanager-preferences.schemas$
@@ -35,8 +33,6 @@
 ^src/pkgdefs/protoproto$
 ^src/pkgrecv$
 ^src/pkgsend$
-^src/ply-.*$
-^src/pyOpenSSL-.*$
 ^src/um/data/updatemanager-preferences.schemas$
 ^src/um/data/updatemanager.desktop$
 ^src/um/data/updatemanager.png$
@@ -49,4 +45,5 @@
 ^src/util/distro-import/redist_cluster$
 ^src/util/distro-import/slim_cluster$
 ^src/util/misc/extract_hostid$
+^src/tests/.figleaf$
 ^webrev
