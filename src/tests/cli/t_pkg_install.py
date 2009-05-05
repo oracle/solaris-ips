@@ -1915,7 +1915,7 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
         def tearDown(self):
                 testutils.ManyDepotTestCase.tearDown(self)
 
-        def test_basics_1(self):
+        def test_01_basics(self):
                 self.pkg("list -a")
 
                 # Install and uninstall moo (which is unique to depot 1)
@@ -1940,21 +1940,21 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
 
                 self.pkg("uninstall foo")
 
-        def test_basics_2(self):
+        def test_02_basics(self):
                 """ Test install from an explicit preferred publisher """
                 self.pkg("install pkg://test1/foo")
                 self.pkg("list foo")
                 self.pkg("list pkg://test1/foo")
                 self.pkg("uninstall foo")
 
-        def test_basics_3(self):
+        def test_03_basics(self):
                 """ Test install from an explicit non-preferred publisher """
                 self.pkg("install pkg://test2/foo")
                 self.pkg("list foo")
                 self.pkg("list pkg://test2/foo")
                 self.pkg("uninstall foo")
 
-        def test_upgrade_preferred_to_non_preferred(self):
+        def test_04_upgrade_preferred_to_non_preferred(self):
                 """Install a package from the preferred publisher, and then
                 upgrade it, implicitly switching to a non-preferred
                 publisher."""
@@ -1963,7 +1963,7 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
                 self.pkg("install upgrade-p@1.1")
                 self.pkg("uninstall upgrade-p")
 
-        def test_upgrade_non_preferred_to_preferred(self):
+        def test_05_upgrade_non_preferred_to_preferred(self):
                 """Install a package from a non-preferred publisher, and then
                 upgrade it, implicitly switching to the preferred publisher."""
                 self.pkg("list -a upgrade-np")
@@ -1971,7 +1971,7 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
                 self.pkg("install upgrade-np@1.1")
                 self.pkg("uninstall upgrade-np")
 
-        def test_upgrade_preferred_to_non_preferred_incorporated(self):
+        def test_06_upgrade_preferred_to_non_preferred_incorporated(self):
                 """Install a package from the preferred publisher, and then
                 upgrade it, implicitly switching to a non-preferred
                 publisher, when the package is constrained by an
@@ -1983,7 +1983,7 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
                 self.pkg("list upgrade-p@1.1")
                 self.pkg("uninstall upgrade-p")
 
-        def test_upgrade_non_preferred_to_preferred_incorporated(self):
+        def test_07_upgrade_non_preferred_to_preferred_incorporated(self):
                 """Install a package from the preferred publisher, and then
                 upgrade it, implicitly switching to a non-preferred
                 publisher, when the package is constrained by an
@@ -1993,9 +1993,59 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
                 self.pkg("install upgrade-np")
                 self.pkg("install incorp-np@1.1")
                 self.pkg("list upgrade-np@1.1")
-                self.pkg("uninstall upgrade-np")
+                self.pkg("uninstall upgrade-np incorp-np incorp-p")
 
-        def test_uninstall_from_wrong_publisher(self):
+        def test_08_install_repository_access(self):
+                """Verify that packages can still be installed from a repository
+                even when any of the other repositories are not reachable."""
+
+                # Change the second publisher to point to an unreachable URI.
+                self.pkg("set-publisher --no-refresh -O http://test.invalid7 test2")
+
+                # Verify that no packages are installed.
+                self.pkg("list", exit=1)
+
+                # Verify moo can be installed (as only depot1 has it) even though
+                # test2 cannot be reached (and needs a refresh) thanks to the
+                # existing catalog cache.
+                self.pkg("install moo")
+                self.pkg("uninstall moo")
+
+                # Verify moo can be installed (as only depot1 has it) even though
+                # test2 cannot be reached (and needs a refresh) and the catalog
+                # cache is missing.
+                cat_file = os.path.join(self.img_path, "var", "pkg", "catalog",
+                    "catalog_cache")
+                os.unlink(cat_file)
+                self.pkg("install moo")
+                self.pkg("uninstall moo")
+
+                # Reset the test2 publisher.
+                durl2 = self.dcs[2].get_depot_url()
+                self.pkg("set-publisher -O %s test2" % durl2)
+
+                # Install v1.0 of upgrade-np from test2 to prepare for
+                # image-update.
+                self.pkg("install upgrade-np@1.0")
+
+                # Set test1 to point to an unreachable URI.
+                self.pkg("set-publisher --no-refresh -O http://test.invalid7 test1")
+
+                # Set test2 to point to test1's repository so that the
+                # image-update can happen (see bug 8613).
+                durl1 = self.dcs[1].get_depot_url()
+                self.pkg("set-publisher -O %s test2" % durl1)
+
+                # Verify image-update works even though test1 is unreachable
+                # since upgrade-np@1.1 is available from test2.
+                self.pkg("image-update")
+
+                # Now reset everything for the next test.
+                self.pkg("uninstall upgrade-np")
+                self.pkg("set-publisher --no-refresh -O %s test1" % durl1)
+                self.pkg("set-publisher -O %s test2" % durl2)
+
+        def test_09_uninstall_from_wrong_publisher(self):
                 """Install a package from a publisher and try to remove it
                 using a different publisher name; this should fail."""
                 self.pkg("install foo")
@@ -2004,7 +2054,7 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
                 # publisher works
                 self.pkg("uninstall pkg://test1/foo")
 
-        def test_yyy_install_after_publisher_removal(self):
+        def test_10_install_after_publisher_removal(self):
                 """Install a package from a publisher that has an optional
                 dependency; then change the preferred publisher and remove the
                 original publisher and then verify that installing the package
@@ -2059,7 +2109,10 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
                 self.pkg("set-publisher -O %s -P test1" % \
                     self.dcs[1].get_depot_url())
 
-        def test_zzz_uninstall_after_preferred_publisher_change(self):
+                # Remove the installed packages.
+                self.pkg("uninstall quux")
+
+        def test_11_uninstall_after_preferred_publisher_change(self):
                 """Install a package from the preferred publisher, change the
                 preferred publisher, and attempt to remove the package."""
                 self.pkg("install foo@1.0")
@@ -2069,7 +2122,7 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
                 # for the next test.
                 self.pkg("set-publisher -P test1")
 
-        def test_zzz_uninstall_after_publisher_removal(self):
+        def test_12_uninstall_after_publisher_removal(self):
                 """Install a package from the preferred publisher, remove the
                 preferred publisher, and then evaluate whether an uninstall
                 would succeed regardless of whether its publisher still exists

@@ -62,7 +62,6 @@ import pkg.actions as actions
 import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 import pkg.client.bootenv as bootenv
-import pkg.client.filelist as filelist
 import pkg.client.history as history
 import pkg.client.image as image
 import pkg.client.imagetypes as imgtypes
@@ -240,16 +239,12 @@ def list_inventory(img, args):
                         tracker = get_tracker(quiet=not display_headers)
                         try:
                                 img.refresh_publishers(progtrack=tracker)
-                        except api_errors.PermissionsException, e:
+                        except KeyboardInterrupt:
+                                raise
+                        except:
                                 # Ignore the above error and just use what
                                 # already exists.
                                 pass
-                        except api_errors.CatalogRefreshException, e:
-                                # Ensure messages are displayed after the
-                                # spinner.
-                                emsg("\n")
-                                display_catalog_failures(e)
-                                return 1
 
                 res = misc.get_inventory_list(img, pargs,
                     all_known, all_versions)

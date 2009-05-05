@@ -1312,7 +1312,7 @@ close
                     self.res_remote_path, servers=[{"origin": durl}])
                 lfh = file(self.dc.get_logpath(), "rb")
                 found = 0
-                num_expected = 2
+                num_expected = 4
                 for line in lfh:
                         if "X-IPKG-UUID:" in line:
                                 tmp = line.split()
@@ -1403,7 +1403,7 @@ class TestApiSearchMulti(testutils.ManyDepotTestCase):
                     set(), servers=[{"origin": self.durl1}])
                 self._search_op(api_obj, True, "example_path",
                     set(), servers=[{"origin": self.durl3}])
-                num_expected = { 1: 2, 2: 3, 3:0 }
+                num_expected = { 1: 4, 2: 3, 3: 0 }
                 for d in range(1,(len(self.dcs) + 1)):
                         try:
                                 pub = api_obj.img.get_publisher(

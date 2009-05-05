@@ -112,7 +112,6 @@ class TestPkgHistory(testutils.ManyDepotTestCase):
 
                 for cmd in commands:
                         self.pkg(cmd)
-                        time.sleep(1)
 
                 self.pkg("history -H")
                 o = self.output
@@ -163,7 +162,7 @@ class TestPkgHistory(testutils.ManyDepotTestCase):
                                 self.assert_(res == "Failed (Bad Request)")
                         else:
                                 self.assert_(tmp[1] in ("purge-history",
-                                    "refresh-publisher"))
+                                    "refresh-publishers"))
 
         def test_5_bug_5024(self):
                 """Test that install and uninstall of non-existent packages
@@ -187,7 +186,7 @@ class TestPkgHistory(testutils.ManyDepotTestCase):
                                 self.assert_(res == "Failed (Constrained)")
                         else:
                                 self.assert_(tmp[1] in ("purge-history",
-                                    "refresh-publisher"))
+                                    "refresh-publishers"))
 
         def test_6_bug_3540(self):
                 """Verify that corrupt history entries won't cause the client to
@@ -220,6 +219,66 @@ class TestPkgHistory(testutils.ManyDepotTestCase):
                 hist_path = os.path.join(pkg_path, "history")
                 shutil.rmtree(hist_path)
                 self.pkg("history")
+
+        def test_8_failed_record(self):
+                """Verify that all failed image operations that change an image
+                are recorded as expected.
+                """
+
+                durl2 = self.dcs[2].get_depot_url()
+                commands = [
+                    "install nosuchpackage",
+                    "uninstall nosuchpackage",
+                    "set-publisher -O http://test.invalid2 test2",
+                    "set-publisher -O http://test.invalid1 test1",
+                    "unset-publisher test3",
+                ]
+
+                operations = [
+                    "install",
+                    "uninstall",
+                    "add-publisher",
+                    "update-publisher",
+                    "remove-publisher",
+                ]
+
+                self.pkg("purge-history")
+                for cmd in commands:
+                        self.pkg(cmd, exit=1)
+
+                self.pkg("history -H")
+                o = self.output
+                self.assert_(
+                    re.search("TIME\s+", o.splitlines()[0]) == None)
+
+                # Only the operation is listed in short format.
+                for op in operations:
+                        # Verify that each operation was recorded as failing.
+                        found_op = False
+                        for line in o.splitlines():
+                                if line.find(op) == -1:
+                                        continue
+
+                                found_op = True
+                                if line.find("Failed") == -1:
+                                        raise RuntimeError("Operation: %s "
+                                            "wasn't recorded as failing, "
+                                            "o:%s" % (op, l))
+                                break
+
+                        if not found_op:
+                                raise RuntimeError("Operation: %s "
+                                    "wasn't recorded, o:%s" % (op, o))
+
+                # The actual commands are only found in long format.
+                self.pkg("history -l")
+                o = self.output
+                for cmd in commands:
+                        # Verify that each of the commands was recorded.
+                        if o.find(" %s" % cmd) == -1:
+                                raise RuntimeError("Command: %s wasn't recorded,"
+                                    " o:%s" % (cmd, o))
+
 
 if __name__ == "__main__":
         unittest.main()

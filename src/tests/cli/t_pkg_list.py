@@ -463,6 +463,22 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 test_for_expected(pkg_list)
                 self.assertEqual(get_file_data(cache_file), cache_data)
 
+        def test_list_11_all_known_failed_refresh(self):
+                """Verify that a failed implicit refresh will not prevent pkg
+                list from working properly."""
+
+                # Set test2's origin to an unreachable URI.
+                self.pkg("set-publisher --no-refresh -O http://test.invalid2 test2")
+
+                # Verify pkg list -a works as expected for both an unprivileged
+                # user and a privileged one when a publisher needs a refresh.
+                self.pkg("list -a", su_wrap=True)
+                self.pkg("list -a")
+
+                # Reset test2's origin.
+                durl2 = self.dcs[2].get_depot_url()
+                self.pkg("set-publisher -O %s test2" % durl2)
+
         def test_list_matching(self):
                 """List all versions of package foo, regardless of publisher."""
                 self.pkg("list -aHf foo*")

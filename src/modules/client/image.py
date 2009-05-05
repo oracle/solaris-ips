@@ -346,6 +346,9 @@ class Image(object):
                     meta_root=self._get_publisher_meta_root(prefix),
                     repositories=[repo])
 
+                # Initialize and store the configuration object.
+                self.cfg_cache = imageconfig.ImageConfig()
+
                 # ...so that if creation of the Publisher object fails, an
                 # empty, useless image won't be left behind.
                 if not os.path.exists(os.path.join(self.imgdir,
@@ -354,10 +357,7 @@ class Image(object):
                 else:
                         self.history.log_operation_start("image-set-attributes")
 
-                # Now create the image directories.
-                self.mkdirs()
-                self.cfg_cache = imageconfig.ImageConfig()
-
+                # Determine and add the default variants for the image.
                 if is_zone:
                         self.cfg_cache.filters["opensolaris.zone"] = "nonglobal"
                         self.cfg_cache.variants[
@@ -366,21 +366,29 @@ class Image(object):
                         self.cfg_cache.variants[
                             "variant.opensolaris.zone"] = "global"
 
-                # Retrieve metadata for new repository, if allowed.
-                if refresh_allowed:
-                        self.__retrieve_catalogs(full_refresh=True,
-                            pubs=[newpub], progtrack=progtrack)
-
-                # If we reached this point, the refresh succeeded; add the
-                # publisher to the cfg_cache and save the config.
-                self.cfg_cache.publishers[prefix] = newpub
-                self.cfg_cache.preferred_publisher = prefix
-
                 self.cfg_cache.variants["variant.arch"] = \
                     variants.get("variant.arch", platform.processor())
+
+                # After setting up the default variants, add any overrides or
+                # additional variants specified.
                 self.cfg_cache.variants.update(variants)
 
+                # Now everything is ready for publisher configuration.
+                self.cfg_cache.preferred_publisher = newpub.prefix
+                self.add_publisher(newpub, refresh_allowed=refresh_allowed,
+                    progtrack=progtrack)
+
+                # Next, create the image directories if they haven't been
+                # (add_publisher will normally do this if it needs to write
+                # something to disk).  Waiting until after add_publisher is
+                # called avoids leaving an empty, useless set of directories
+                # for the image if the add fails.
+                self.mkdirs()
+
+                # Finally, since all operations were successful, save the image
+                # configuration.
                 self.save_config()
+
                 self.history.log_operation_end()
 
         def is_liveroot(self):
@@ -665,13 +673,29 @@ class Image(object):
                 """Returns the prefix of the preferred publisher."""
                 return self.cfg_cache.preferred_publisher
 
-        def set_preferred_publisher(self, prefix=None, alias=None):
+        def set_preferred_publisher(self, prefix=None, alias=None, pub=None):
+                """Sets the preferred publisher for packaging operations.
+
+                'prefix' is an optional string value specifying the name of
+                a publisher; ignored if 'pub' is provided.
+
+                'alias' is an optional string value specifying the alias of
+                a publisher; ignored if 'pub' is provided.
+
+                'pub' is an optional Publisher object identifying the
+                publisher to set as the preferred publisher.
+
+                One of the above parameters must be provided."""
+
                 self.history.log_operation_start("set-preferred-publisher")
-                try:
-                        pub = self.get_publisher(prefix=prefix, alias=alias)
-                except api_errors.UnknownPublisher, e:
-                        self.history.log_operation_end(error=e)
-                        raise e
+
+                if not pub:
+                        try:
+                                pub = self.get_publisher(prefix=prefix,
+                                    alias=alias)
+                        except api_errors.UnknownPublisher, e:
+                                self.history.log_operation_end(error=e)
+                                raise e
 
                 if pub.disabled:
                         e = api_errors.SetPreferredPublisherDisabled(pub)
@@ -703,7 +727,13 @@ class Image(object):
 
         def add_publisher(self, pub, refresh_allowed=True, progtrack=None):
                 """Adds the provided publisher object to the image
-                configuration."""
+                configuration.
+
+                'refresh_allowed' is an optional, boolean value indicating
+                whether the publisher's metadata should be retrieved when adding
+                it to the image's configuration.
+
+                'progtrack' is an optional ProgressTracker object."""
                 self.history.log_operation_start("add-publisher")
                 for p in self.cfg_cache.publishers.values():
                         if pub == p or (pub.alias and pub.alias == p.alias):
@@ -722,6 +752,10 @@ class Image(object):
 
                 if refresh_allowed:
                         try:
+                                # First, verify that the publisher has a valid
+                                # pkg(5) repository.
+                                self.valid_publisher_test(pub)
+
                                 self.__retrieve_catalogs(full_refresh=True,
                                     pubs=[pub], progtrack=progtrack)
                         except Exception, e:
@@ -1376,16 +1410,20 @@ class Image(object):
                         raise InvalidDepotResponseException(pub["origin"],
                             "Invalid or unparseable version information.")
 
-                return True
+        def captive_portal_test(self, pubs=None):
+                """A captive portal forces a HTTP client on a network to see a
+                special web page, usually for pubentication purposes
+                (http://en.wikipedia.org/wiki/Captive_portal).
 
-        def captive_portal_test(self):
-                """A captive portal forces a HTTP client on a network
-                to see a special web page, usually for pubentication
-                purposes.  (http://en.wikipedia.org/wiki/Captive_portal)."""
+                'pubs' is an optional list of publisher objects to be used for
+                the check.  If not provided, any publishers available for
+                packaging operations will be used for the test instead."""
+
+                if not pubs:
+                        pubs = list(self.gen_publishers())
 
                 vd = None
-
-                for pub in self.gen_publishers():
+                for pub in pubs:
                         try:
                                 vd = self.__do_get_versions(pub)
                         except (retrieve.VersionRetrievalError,
@@ -1468,7 +1506,7 @@ class Image(object):
                                         raise failures
 
         def refresh_publishers(self, full_refresh=False, immediate=False,
-            pubs=None, progtrack=None):
+            pubs=None, progtrack=None, validate=True):
                 """Refreshes the metadata (e.g. catalog) for one or more
                 publishers.
 
@@ -1485,7 +1523,11 @@ class Image(object):
 
                 'pubs' is a list of publisher prefixes or publisher objects
                 to refresh.  Passing an empty list or using the default value
-                implies all publishers."""
+                implies all publishers.
+
+                'validate' is an optional, boolean value indicating whether a
+                connectivity test should be performed before attempting to
+                retrieve publisher metadata."""
 
                 if full_refresh:
                         immediate = True
@@ -1493,7 +1535,7 @@ class Image(object):
                 if not progtrack:
                         progtrack = progress.QuietProgressTracker()
 
-                self.history.log_operation_start("refresh-publisher")
+                self.history.log_operation_start("refresh-publishers")
 
                 # Verify validity of certificates before attempting network
                 # operations.
@@ -1527,6 +1569,13 @@ class Image(object):
                         return
 
                 try:
+                        if validate:
+                                # Before an attempt is made to retrieve catalogs
+                                # from the publisher repositories, a check needs
+                                # to be done to ensure that the client isn't
+                                # stuck behind a captive portal.
+                                self.captive_portal_test()
+
                         self.__retrieve_catalogs(full_refresh=full_refresh,
                             pubs=pubs_to_refresh, progtrack=progtrack)
                 except (api_errors.ApiException, catalog.CatalogException), e:
@@ -1558,27 +1607,8 @@ class Image(object):
                 failed = []
                 total = 0
 
-                # XXX The publisher validation checks depend upon the
-                # assumption that callers who pass a list of publishers
-                # have newly created the publishers in question and want
-                # to specifically refresh their catalogs and verify that they
-                # are indeed reachable.
                 if not pubs:
-                        # If no pubs were passed into this routine, we're
-                        # performing a refresh of all catalogs.  In that case,
-                        # it's best to simply check that we're not connected
-                        # to a captive portal.
-                        self.captive_portal_test()
-                        publist = list(self.gen_publishers())
-                else:
-                        # The code that's calling us has likely instantiated new
-                        # publishers.  Verify that each publisher is valid and
-                        # reachable.  This is a more strict check than the
-                        # captive_portal_test().
-                        publist = [
-                            pub for pub in pubs
-                            if self.valid_publisher_test(pub)
-                        ]
+                        pubs = list(self.gen_publishers())
 
                 try:
                         # Ensure Image directory structure is valid.
@@ -1591,7 +1621,7 @@ class Image(object):
                         self.history.log_operation_end(error=e)
                         raise
 
-                progtrack.refresh_start(len(publist))
+                progtrack.refresh_start(len(pubs))
 
                 def catalog_changed(prefix, old_ts, old_size):
                         if not old_ts or not old_size:
@@ -1599,7 +1629,7 @@ class Image(object):
                                 return True
 
                         croot = "%s/catalog/%s" % (self.imgdir, prefix)
-                        c = catalog.Catalog(croot, publisher=pub.prefix)
+                        c = catalog.Catalog(croot, publisher=prefix)
                         if c.last_modified() != old_ts:
                                 return True
                         if c.size() != old_size:
@@ -1608,7 +1638,7 @@ class Image(object):
 
                 updated = 0
                 succeeded = 0
-                for pub in publist:
+                for pub in pubs:
                         if pub.disabled:
                                 continue
 

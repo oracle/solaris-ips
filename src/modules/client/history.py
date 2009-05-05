@@ -88,6 +88,7 @@ error_results = {
     api_errors.SearchException: RESULT_FAILED_SEARCH,
     api_errors.NonLeafPackageException: RESULT_FAILED_CONSTRAINED,
     api_errors.IpkgOutOfDateException: RESULT_FAILED_CONSTRAINED,
+    api_errors.InvalidDepotResponseException: RESULT_FAILED_TRANSPORT,
     fmri.IllegalFmri: RESULT_FAILED_BAD_REQUEST,
     KeyboardInterrupt: RESULT_CANCELED,
     MemoryError: RESULT_FAILED_OUTOFMEMORY,
@@ -541,16 +542,18 @@ class History(object):
 
                 if not os.path.exists(self.path):
                         try:
-                                os.makedirs(self.path, mode=0755)
+                                # Only the right-most directory should be
+                                # created.  Assume that if the parent structure
+                                # does not exist, it shouldn't be created.
+                                os.mkdir(self.path, 0755)
                         except EnvironmentError, e:
-                                if e.errno not in (errno.EROFS,
-                                    errno.EACCES):
+                                if e.errno not in (errno.EROFS, errno.EACCES,
+                                    errno.ENOENT):
                                         # Ignore read-only file system and
                                         # access errors as it isn't critical
                                         # to the image that this data is
                                         # written.
-                                        raise HistoryStoreException(
-                                            e)
+                                        raise HistoryStoreException(e)
                                 # Return, since without the directory, the rest
                                 # of this will fail.
                                 return

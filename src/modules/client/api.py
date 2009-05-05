@@ -164,10 +164,13 @@ class ImageInterface(object):
                                         try:
                                                 self.img.refresh_publishers(
                                                     progtrack=self.progresstracker)
-                                        except api_errors.CatalogRefreshException, e:
-                                                if not e.succeeded:
-                                                        raise
-                                                exception_caught = e
+                                        except KeyboardInterrupt:
+                                                raise
+                                        except:
+                                                # Since this is not a refresh
+                                                # that was explicitly requested,
+                                                # it doesn't matter if it fails.
+                                                pass
 
                                 self.img.make_install_plan(pkg_list,
                                     self.progresstracker,
@@ -315,10 +318,13 @@ class ImageInterface(object):
                                         try:
                                                 self.img.refresh_publishers(
                                                     progtrack=self.progresstracker)
-                                        except api_errors.CatalogRefreshException, e:
-                                                if not e.succeeded:
-                                                        raise
-                                                exception_caught = e
+                                        except KeyboardInterrupt:
+                                                raise
+                                        except:
+                                                # Since this is not a refresh
+                                                # that was explicitly requested,
+                                                # it doesn't matter if it fails.
+                                                pass
                                 else:
                                         # If refresh wasn't called, the catalogs
                                         # have to be manually loaded.
@@ -497,13 +503,14 @@ class ImageInterface(object):
 
                         if self.plan_type is self.__IMAGE_UPDATE:
                                 try:
-                                        be.init_image_recovery(self.img, self.be_name)
+                                        be.init_image_recovery(self.img,
+                                            self.be_name)
                                 except Exception, e:
                                         self.log_operation_end(error=e)
                                         raise
                                 except:
-                                        # Handle exceptions that are not subclasses of
-                                        # Exception.
+                                        # Handle exceptions that are not
+                                        # subclasses of Exception.
                                         exc_type, exc_value, exc_traceback = \
                                             sys.exc_info()
                                         self.log_operation_end(error=exc_type)
@@ -602,6 +609,21 @@ class ImageInterface(object):
                 finally:
                         self.__activity_lock.release()
 
+        def __refresh(self, full_refresh=False, pubs=None, immediate=False,
+            validate=True):
+                """Private refresh method that exposes functionality not
+                suitable for external consumers."""
+
+                self.__activity_lock.acquire()
+                self.__set_can_be_canceled(False)
+                try:
+                        self.img.refresh_publishers(full_refresh=full_refresh,
+                            immediate=immediate, pubs=pubs,
+                            progtrack=self.progresstracker, validate=validate)
+                        return self.img
+                finally:
+                        self.__activity_lock.release()
+
         def refresh(self, full_refresh=False, pubs=None, immediate=False):
                 """Refreshes the metadata (e.g. catalog) for one or more
                 publishers.
@@ -624,15 +646,8 @@ class ImageInterface(object):
                 Currently returns an image object, allowing existing code to
                 work while the rest of the API is put into place."""
 
-                self.__activity_lock.acquire()
-                self.__set_can_be_canceled(False)
-                try:
-                        self.img.refresh_publishers(full_refresh=full_refresh,
-                            immediate=immediate, pubs=pubs,
-                            progtrack=self.progresstracker)
-                        return self.img
-                finally:
-                        self.__activity_lock.release()
+                return self.__refresh(full_refresh=full_refresh, pubs=pubs,
+                    immediate=immediate)
 
         def __licenses(self, mfst, local):
                 """Private function. Returns the license info from the
@@ -1271,9 +1286,9 @@ class ImageInterface(object):
 
                         if matched != len(newo.repositories):
                                 # If not all of the repositories match up, then
-                                # one has been removed or added, or an origin
-                                # URI has changed.
+                                # one has been added or removed.
                                 return True
+
                         return False
 
                 refresh_catalog = False
@@ -1311,13 +1326,21 @@ class ImageInterface(object):
                         self.log_operation_end(e)
                         raise e
 
+                def cleanup():
+                        new_id, old_pub = orig_pub
+                        for new_pfx, new_pub in publishers.iteritems():
+                                if id(new_pub) == new_id:
+                                        del publishers[new_pfx]
+                                        publishers[old_pub.prefix] = old_pub
+                                        break
+
                 try:
                         if disable:
                                 # Remove the publisher's metadata (such as
                                 # catalogs, etc.).  This only needs to be done
                                 # in the event that a publisher is disabled; in
                                 # any other case (the origin changing, etc.),
-                                # self.refresh() will do the right thing.
+                                # refresh() will do the right thing.
                                 self.img.remove_publisher_metadata(pub)
 
                                 # Now reload the catalogs so that in-memory and
@@ -1329,7 +1352,18 @@ class ImageInterface(object):
 
                         if refresh_catalog:
                                 if refresh_allowed:
-                                        self.refresh(pubs=[pub], immediate=True)
+                                        # One of the publisher's repository
+                                        # origins may have changed, so the
+                                        # publisher needs to be revalidated.
+                                        self.img.valid_publisher_test(pub)
+
+                                        # Because the more strict test above
+                                        # was performed, there is no point in
+                                        # having refresh perform additional
+                                        # validation before attempting metadata
+                                        # retrieval.
+                                        self.__refresh(pubs=[pub],
+                                            immediate=True, validate=False)
                                 else:
                                         # Something has changed (such as a
                                         # repository origin) for the publisher,
@@ -1340,17 +1374,21 @@ class ImageInterface(object):
                                         # refresh is needed and is allowed, one
                                         # will be performed.
                                         pub.last_refreshed = None
+                except Exception, e:
+                        # If any of the above fails, the original publisher
+                        # information needs to be restored so that state is
+                        # consistent.
+                        cleanup()
+                        self.log_operation_end(error=e)
+                        raise
                 except:
                         # If any of the above fails, the original publisher
                         # information needs to be restored so that state is
                         # consistent.
-                        publishers = self.img.get_publishers()
-                        new_id, old_pub = orig_pub
-                        for new_pfx, new_pub in publishers.iteritems():
-                                if id(new_pub) == new_id:
-                                        del publishers[new_pfx]
-                                        publishers[old_pub.prefix] = old_pub
-                                        break
+                        cleanup()
+                        exc_type, exc_value, exc_traceback = \
+                            sys.exc_info()
+                        self.log_operation_end(error=exc_type)
                         raise
 
                 # Successful; so save configuration.
