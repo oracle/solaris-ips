@@ -31,21 +31,24 @@
 # message.
 
 class IndexingException(Exception):
-        """ The base class for all exceptions that can occur while indexing. """
+        """The base class for all exceptions that can occur while indexing."""
+
         def __init__(self, cause):
                 self.cause = cause
 
 class InconsistentIndexException(IndexingException):
-        """ This is used when the existing index is found to have inconsistent
+        """This is used when the existing index is found to have inconsistent
         versions."""
+
         def __str__(self):
                 return "Index corrupted, remove all files and " \
                     "rebuild from scratch by clearing out %s " \
                     " and restarting the depot." % self.cause
 
 class PartialIndexingException(IndexingException):
-        """ This is used when the directory the temporary files the indexer
-        should write to already exists. """
+        """This is used when the directory the temporary files the indexer
+        should write to already exists."""
+
         def __str__(self):
                 return "Unable to build or update search indices. Result of " \
                     "partial indexing found:%s. Please remove this directory "\
@@ -53,8 +56,9 @@ class PartialIndexingException(IndexingException):
                     self.cause
 
 class ProblematicPermissionsIndexException(IndexingException):
-        """ This is used when the indexer is unable to create, move, or remove
-        files or directories it should be able to. """
+        """This is used when the indexer is unable to create, move, or remove
+        files or directories it should be able to."""
+
         def __str__(self):
                 return "Could not remove or create " \
                     "%s because of\nincorrect " \
@@ -62,7 +66,8 @@ class ProblematicPermissionsIndexException(IndexingException):
                     "rebuild the index." % self.cause
 
 class NoIndexException(Exception):
-        """ This is used when a search is executed while no index exists. """
+        """This is used when a search is executed while no index exists."""
+
         def __init__(self, index_dir):
                 self.index_dir = index_dir
         def __str__(self):
@@ -72,6 +77,7 @@ class NoIndexException(Exception):
 class IncorrectIndexFileHash(Exception):
         """This is used when the index hash value doesn't match the hash of the
         packages installed in the image."""
+
         def __init__(self, existing_val, incoming_val):
                 Exception.__init__(self)
                 self.ev = existing_val
@@ -82,6 +88,9 @@ class IncorrectIndexFileHash(Exception):
                     (self.ev, self.iv)
 
 class MainDictParsingException(Exception):
+        """This is used when an error occurred while parsing the main search
+        dictionary file."""
+
         def __init__(self, split_chars, unquote_list, line, file_pos):
                 self.split_chars = split_chars
                 self.unquote_list = unquote_list
@@ -90,6 +99,9 @@ class MainDictParsingException(Exception):
                 
         
 class EmptyUnquoteList(MainDictParsingException):
+        """This is used when the function to parse the main dictionary file
+        wasn't given enough values in its unquote_list argument."""
+
         def __init__(self, split_chars, line):
                 Exception.__init__(self, split_chars, None, line)
 
@@ -99,6 +111,9 @@ class EmptyUnquoteList(MainDictParsingException):
                     { "sc": self.split_chars, "l": self.line })
 
 class EmptyMainDictLine(MainDictParsingException):
+        """This is used when a blank line in the main dictionary file was
+        encountered."""
+
         def __init__(self, split_chars, unquote_list):
                 Exception.__init__(self, split_chars, unquote_list, None)
 

@@ -109,5 +109,8 @@ class GroupAction(generic.Action):
                     gr.writefile()
 
         def generate_indices(self):
+                """Generates the indices needed by the search dictionary.  See
+                generic.py for a more detailed explanation."""
+
                 return [("group", "name", self.attrs["groupname"], None)]
 

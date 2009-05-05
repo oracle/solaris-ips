@@ -39,6 +39,12 @@ class QueryLexer(qp.QueryLexer):
         pass
 
 class QueryParser(qp.QueryParser):
+        """This class exists so that the classes the parent class query parser
+        uses to build the AST are the ones defined in this module and not the
+        parent class's module.  This is done so that a single query parser can
+        be shared between the client and server modules but will construct an
+        AST using the appropriate classes."""
+        
         def __init__(self, lexer):
                 qp.QueryParser.__init__(self, lexer)
                 mod = sys.modules[QueryParser.__module__]
@@ -48,7 +54,8 @@ class QueryParser(qp.QueryParser):
                         tmp[class_name] = getattr(mod, class_name)
                 self.query_objs = tmp
 
-
+# Because many classes do not have client specific modifications, they
+# simply subclass the parent module's classes.
 class Query(qp.Query):
         pass
 
@@ -68,6 +75,10 @@ class FieldQuery(qp.FieldQuery):
         pass
 
 class TopQuery(qp.TopQuery):
+        """This class handles raising the exception if the search was conducted
+        without using indexes.  It yields all results, then raises the
+        exception."""
+
         use_slow = False
         def search(self, *args):
                 for i in qp.TopQuery.search(self, *args):
@@ -76,9 +87,15 @@ class TopQuery(qp.TopQuery):
                         raise api_errors.SlowSearchUsed()
 
 class TermQuery(qp.TermQuery):
+        """This class handles the client specific search logic for searching
+        for a base query term."""
 
+        # This lock is used so that only one instance of a term query object
+        # is ever modifying the class wide variable, _global_data_dict.
         client_dict_lock = threading.Lock()
 
+        # Client search needs to account for the packages which have been
+        # installed or removed since the last time the indexes were rebuilt.
         qp.TermQuery._global_data_dict["fast_add"] = \
             ss.IndexStoreSet(ss.FAST_ADD)
         qp.TermQuery._global_data_dict["fast_remove"] = \
@@ -94,14 +111,38 @@ class TermQuery(qp.TermQuery):
 
         def set_info(self, dir_path, fmri_to_manifest_path_func,
             expected_fmri_names_func, case_sensitive):
+                """This function provides the necessary information to the AST
+                so that a search can be performed.
+
+                The "dir_path" parameter is the path to the indexes stored on
+                disk.
+
+                The "fmri_to_manifest_path_func" parameter is a function which
+                takes a fmri and returns a path to the manifest for that fmri.
+
+                The "expected_fmri_names_func" parameter is a function which
+                returns a generator function which iterates over the names of
+                the installed packages in the image.
+
+                The "case_sensitive" parameter determines whether the search
+                should be case-sensitive."""
+
                 self._efn = expected_fmri_names_func()
                 TermQuery.client_dict_lock.acquire()
                 try:
                         try:
+                                # Temporarily add the fmri_hash storage object
+                                # to the shared dictionary structure so that its
+                                # file will be opened at the same time as the
+                                # other storage objects.
                                 qp.TermQuery._global_data_dict["fmri_hash"] = \
                                     ss.IndexStoreSetHash(ss.FULL_FMRI_HASH_FILE)
                                 qp.TermQuery.set_info(self, dir_path,
                                     fmri_to_manifest_path_func, case_sensitive)
+                                # Take local copies of the client-only
+                                # dictionaries so that if another thread
+                                # changes the shared data structure, this
+                                # instance's objects won't be affected.
                                 self._data_fast_add = \
                                     TermQuery._global_data_dict["fast_add"]
                                 self._data_fast_remove = \
@@ -110,12 +151,33 @@ class TermQuery(qp.TermQuery):
                                     self._global_data_dict["fmri_hash"]
                                 TopQuery.use_slow = False
                         except se.NoIndexException:
+                                # If no index was found, the slower version of
+                                # search will be used.
                                 TopQuery.use_slow = True
                 finally:
+                        # Remove the fmri_hash object from the shared data
+                        # structure since it does not work when shared.
                         del qp.TermQuery._global_data_dict["fmri_hash"]
                         TermQuery.client_dict_lock.release()
                 
         def search(self, restriction, fmris, manifest_func, excludes):
+                """This function performs performs local client side search.
+                
+                The "restriction" paramter is a generator over the results that
+                another branch of the AST has already found.  If it exists,
+                those results are treated as the domain for search.  If it does
+                not exist, search uses the set of actions from installed
+                packages as the domain.
+
+                The "fmris" parameter is a function which produces an object
+                which iterates over the names of installed fmris.
+
+                The "manifest_func" parameter is a function which takes a fmri
+                and returns a path to the manifest for that fmri.
+
+                The "excludes" parameter is a list of the variants defined for
+                this image."""
+
                 if restriction:
                         return self._restricted_search_internal(restriction)
                 elif not TopQuery.use_slow:
@@ -138,6 +200,11 @@ class TermQuery(qp.TermQuery):
                         return self.slow_search(fmris, manifest_func, excludes)
 
         def _check_fast_remove(self, res):
+                """This function removes any results from the generator "res"
+                (the search results) that are actions from packages known to
+                have been removed from the image since the last time the index
+                was built."""
+
                 return (
                     (p_str, o, a, s, f)
                     for p_str, o, a, s, f
@@ -146,6 +213,15 @@ class TermQuery(qp.TermQuery):
                 )
 
         def _search_fast_update(self, manifest_func, excludes):
+                """This function searches the packages which have been
+                installed since the last time the index was rebuilt.
+
+                The "manifest_func" parameter is a function which maps fmris to
+                the path to their manifests.
+
+                The "excludes" paramter is a list of variants defined in the
+                image."""
+
                 assert self._data_main_dict.get_file_handle() is not None
 
                 glob = self._glob
@@ -159,6 +235,8 @@ class TermQuery(qp.TermQuery):
 
                 fast_update_res = []
 
+                # self._data_fast_add holds the names of the fmris added
+                # since the last time the index was rebuilt.
                 for fmri_str in self._data_fast_add._set:
                         if not (self.pkg_name_wildcard or
                             self.pkg_name_match(fmri_str)):
@@ -190,18 +268,45 @@ class TermQuery(qp.TermQuery):
                 return fast_update_res
 
         def _get_fast_results(self, fast_update_res):
+                """This function transforms the output of _search_fast_update
+                to match that of _search_internal."""
+
                 for sub_list in fast_update_res:
                         for at, st, fv, fmri_str, line_list in sub_list:
                                 for l in line_list:
                                         yield at, st, fmri_str, fv, l
 
         def slow_search(self, fmris, manifest_func, excludes):
+                """This function performs search when no prebuilt index is
+                available.
+
+                The "fmris" parameter is a generator function which iterates
+                over the packages to be searched.
+
+                The "manifest_func" parameter is a function which maps fmris to
+                the path to their manifests.
+
+                The "excludes" parameter is a list of variants defined in the
+                image."""
+
+                # If the list of fmris to be searched isn't set in the class
+                # set it once and then share that work among all TermQuery
+                # instances.
                 if TermQuery.fmris is None:
                         TermQuery.fmris = list(fmris())
                 it  = self._slow_search_internal(manifest_func, excludes)
                 return it
 
         def _slow_search_internal(self, manifest_func, excludes):
+                """This function performs search when no prebuilt index is
+                available.
+
+                The "manifest_func" parameter is a function which maps fmris
+                to the path to their manifests.
+
+                The "excludes" parameter is a list of variants defined in the
+                image."""
+
                 for pfmri in TermQuery.fmris:
                         fmri_str = pfmri.get_fmri(anarchy=True,
                             include_scheme=False)

@@ -339,6 +339,9 @@ class ServerCatalog(catalog.Catalog):
                 return m
 
         def search(self, q):
+                """Searches the index using the information given by "q", a
+                Query object."""
+
                 assert self.index_root
                 l = query_p.QueryLexer()
                 l.build()

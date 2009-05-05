@@ -378,6 +378,9 @@ class FileAction(generic.Action):
                 return False
 
         def generate_indices(self):
+                """Generates the indices needed by the search dictionary.  See
+                generic.py for a more detailed explanation."""
+
                 return [
                     ("file", "content", self.hash, self.hash),
                     ("file", "basename", os.path.basename(self.attrs["path"]),

@@ -514,6 +514,9 @@ class UnrecognizedOptionsToInfo(ApiException):
 
 
 class ProblematicSearchServers(SearchException):
+        """This class wraps exceptions which could appear while trying to
+        do a search request."""
+
         def __init__(self, failed, invalid):
                 self.failed_servers = failed
                 self.invalid_servers  = invalid
@@ -546,6 +549,8 @@ class ProblematicSearchServers(SearchException):
                             (httplib.IncompleteRead, ValueError)):
                                 s += _("    %s: Incomplete read from "
                                        "host") % pub["origin"]
+                        # RunetimeErrors arise when no supported version
+                        # of the operation request is found.
                         elif isinstance(err, RuntimeError):
                                 s += _("    %(o)s: %(msg)s\n") % \
                                     { "o": pub["origin"], "msg": err}
@@ -581,18 +586,26 @@ class InconsistentIndexException(IndexingException):
 
 
 class SlowSearchUsed(SearchException):
+        """This exception is thrown when a local search is performed without
+        an index.  It's raised after all results have been yielded."""
+
         def __str__(self):
                 return _("Search capabilities and performance are degraded.\n"
                     "To improve, run 'pkg rebuild-index'.")
 
 
 class BooleanQueryException(ApiException):
+        """This exception is used when the children of a boolean operation
+        have different return types.  The command 'pkg search foo AND <bar>'
+        is the simplest example of this."""
+
         def __init__(self, e):
                 ApiException.__init__(self)
                 self.e = e
 
         def __str__(self):
                 return str(self.e)
+
 
 class ParseError(ApiException):
         def __init__(self, e):
@@ -963,6 +976,9 @@ class NotYetValidCertificate(CertificateError):
 
 
 class ServerReturnError(ApiException):
+        """This exception is used when the server reutrns a line which the
+        client cannot parse correctly."""
+
         def __init__(self, line):
                 ApiException.__init__(self)
                 self.line = line

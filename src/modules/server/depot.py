@@ -227,6 +227,8 @@ class DepotHTTP(object):
                         cherrypy.log("Request failed: %s" % str(e))
                         raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
 
+                # Translate the results from v1 format into what a v0
+                # searcher expects as results.
                 def output():
                         for i, res in enumerate(res_list):
                                 for v, return_type, vals in res:
@@ -252,11 +254,13 @@ class DepotHTTP(object):
                 match the specified criteria."""
                 query_str_lst = []
 
+                # Check for the GET method of doing a search request.
                 try:
                         query_str_lst = [args[0]]
                 except IndexError:
                         pass
 
+                # Check for the POST method of doing a search request.
                 if not query_str_lst:
                         query_str_lst = params.values()
                 elif params.values():
@@ -288,6 +292,13 @@ class DepotHTTP(object):
 
                 response.headers["Content-type"] = "text/plain"
 
+                # In order to be able to have a return code distinguish between
+                # no results and search unavailable, we need to use a different
+                # http code.  Check and see if there's at least one item in
+                # the results.  If not, set the result code to be NO_CONTENT
+                # and return.  If there is at least one result, put the result
+                # examined back at the front of the results and stream them
+                # to the user.
                 if len(res_list) == 1:
                         try:
                                 tmp = res_list[0].next()
@@ -297,6 +308,8 @@ class DepotHTTP(object):
                                 return
                 
                 def output():
+                        # Yield the string used to let the client know it's
+                        # talking to a valid search server.
                         yield str(Query.VALIDATION_STRING[1])
                         for i, res in enumerate(res_list):
                                 for v, return_type, vals in res:

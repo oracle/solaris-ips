@@ -146,6 +146,9 @@ class LicenseAction(generic.Action):
                 return opener
 
         def generate_indices(self):
+                """Generates the indices needed by the search dictionary.  See
+                generic.py for a more detailed explanation."""
+
                 indices = [("license", idx, self.attrs[idx], None)
                            for idx in self.reverse_indices]
                 if hasattr(self, "hash"):

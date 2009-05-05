@@ -149,4 +149,7 @@ class LegacyAction(generic.Action):
                                 os.unlink(pkginfo)
 
         def generate_indices(self):
+                """Generates the indices needed by the search dictionary.  See
+                generic.py for a more detailed explanation."""
+
                 return [("legacy", "legacy_pkg", self.attrs["pkg"], None)]

@@ -22,10 +22,6 @@
 # Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
-
-# Indexer is a class designed to index a set of manifests or pkg plans
-# and provide a compact representation on disk which is quickly searchable.
-
 import errno
 import os
 import shutil
@@ -56,7 +52,10 @@ SORT_FILE_PREFIX = "sort."
 SORT_FILE_MAX_SIZE = 128 * 1024 * 1024
 
 class Indexer(object):
-        """ See block comment at top for documentation """
+        """Indexer is a class designed to index a set of manifests or pkg plans
+        and provide a compact representation on disk, which is quickly
+        searchable."""
+
         file_version_string = "VERSION: "
 
         def __init__(self, index_dir, get_manifest_func, get_manifest_path_func,
@@ -119,6 +118,10 @@ class Indexer(object):
                 self._sort_file_num = 0
                 self._sort_file_bytes = 0
 
+                # The action type and key indexes, which are necessary for
+                # efficient searches by type or key, store their file handles in
+                # dictionaries.  File handles for actions are in at_fh, while
+                # filehandles for keys are kept in st_fh.
                 self.at_fh = {}
                 self.st_fh = {}
 
@@ -136,18 +139,18 @@ class Indexer(object):
                 """Build fmris while reading the fmri offset information."""
 
                 return fmri.PkgFmri(s)
-                
+
         @staticmethod
         def _build_version(vers):
                 """ Private method for building versions from a string. """
+
                 return pkg.version.Version(urllib.unquote(vers), None)
 
         def _read_input_indexes(self, directory):
                 """ Opens all index files using consistent_open and reads all
                 of them into memory except the main dictionary file to avoid
-                inefficient memory usage.
+                inefficient memory usage."""
 
-                """
                 res = ss.consistent_open(self._data_dict.values(), directory,
                     self._file_timeout_secs)
                 if self._progtrack is not None:
@@ -202,9 +205,13 @@ class Indexer(object):
                 tmp_fh.close()
 
         def _add_terms(self, pfmri, new_dict):
-                """Adds tokens and the actions generating them to the current
-                temporary sort file.  pfmri is the fmri the information is
-                coming from.  new_dict maps tokens to the information about
+                """Adds tokens, and the actions generating them, to the current
+                temporary sort file.
+
+                The "pfmri" parameter is the fmri the information is coming
+                from.
+
+                The "new_dict" parameter maps tokens to the information about
                 the action."""
 
                 p_id = self._data_manf.get_id_and_add(pfmri)
@@ -228,6 +235,32 @@ class Indexer(object):
                 return
 
         def _fast_update(self, filters_pkgplan_list):
+                """Updates the log of packages which have been installed or
+                removed since the last time the index has been rebuilt.
+
+                There are two axes to consider: whether the package is being
+                added or removed; whether this version of the package is
+                already present in an update log.
+
+                Case 1: The package is being installed and is not in the
+                    update log.  In this case, the new package is simply added
+                    to the install update log.
+                Case 2: The package is being installed and is in the removal
+                    update log. In this case, the package is removed from the
+                    remove update log.  This has the effect of exposing the
+                    entries in the existing index to the user.
+                Case 3: The package is being removed and is not in the
+                    update log.  In this case, the new package is simply added
+                    to the removed update log.
+                Case 4: The package is being removed and is in the installed
+                    update log.  In this case, the package is removed from the
+                    install update log.
+
+                The "filters_pkgplan_list" parameter is a tuple of a list of
+                filters, which are currently ignored, and a list of pkgplans
+                that indicated which versions of a package are being added or
+                removed."""
+
                 filters, pkgplan_list = filters_pkgplan_list
                 for p in pkgplan_list:
                         d_fmri, o_fmri = p
@@ -260,9 +293,9 @@ class Indexer(object):
                 return
 
         def _process_fmris(self, fmris):
-                """ Takes a list of fmris and updates the
-                internal storage to reflect the new packages.
-                """
+                """Takes a list of fmris and updates the internal storage to
+                reflect the new packages."""
+
                 removed_paths = []
 
                 for added_fmri in fmris:
@@ -324,9 +357,18 @@ class Indexer(object):
                 self._data_main_dict.write_main_dict_line(file_handle,
                     token, fv_fmri_pos_list_list)
 
-
         @staticmethod
         def __splice(ret_list, source_list):
+                """Takes two arguments. Each of the arguments must be a list
+                with the type signature list of ('a, list of 'b). Where
+                the lists share a value (A) for 'a, it splices the lists of 'b
+                paired with A from each list into a single list and makes that
+                the new list paired with A in the result.
+
+                Note: This modifies the ret_list rather than building a new one
+                because of the large performance difference between the two
+                approaches."""
+
                 tmp_res = []
                 for val, sublist in source_list:
                         found = False
@@ -346,6 +388,9 @@ class Indexer(object):
                 merge sort being done on the tokens to be indexed."""
 
                 def get_line(fh):
+                        """Helper function to make the initialization of the
+                        fh_dict easier to understand."""
+
                         try:
                                 return \
                                         ss.IndexStoreMainDict.parse_main_dict_line(
@@ -353,6 +398,8 @@ class Indexer(object):
                         except StopIteration:
                                 return None
 
+                # Build a mapping from numbers to the file handle for the
+                # temporary sort file with that number.
                 fh_dict = dict([
                     (i, open(os.path.join(self._tmp_dir,
                     SORT_FILE_PREFIX + str(i)), "rb", 
@@ -361,6 +408,9 @@ class Indexer(object):
                 ])
 
                 cur_toks = {}
+                # Seed cur_toks with the first token from each temporary file.
+                # The line may not exist since, for a empty repo, an empty file
+                # is created.
                 for i in fh_dict.keys():
                         line = get_line(fh_dict[i])
                         if line is None:
@@ -369,9 +419,14 @@ class Indexer(object):
                                 cur_toks[i] = line
 
                 old_min_token = None
+                # cur_toks will have items deleted from it as files no longer
+                # have tokens to provide. When no files have tokens, the merge
+                # is done.
                 while cur_toks:
                         min_token = None
                         matches = []
+                        # Find smallest available token and the temporary files
+                        # which contain that token.
                         for i in fh_dict.keys():
                                 cur_tok, info = cur_toks[i]
                                 if cur_tok is None:
@@ -388,6 +443,9 @@ class Indexer(object):
                                 new_tok, new_info = cur_toks[i]
                                 assert new_tok == min_token
                                 try:
+                                        # Continue pulling the next tokens from
+                                        # and adding them to the result list as
+                                        # long as the token matches min_token.
                                         while new_tok == min_token:
                                                 if res is None:
                                                         res = new_info
@@ -398,6 +456,11 @@ class Indexer(object):
                                                     ss.IndexStoreMainDict.parse_main_dict_line(fh_dict[i].next())
                                         cur_toks[i] = new_tok, new_info
                                 except StopIteration:
+                                        # When a StopIteration happens, the
+                                        # last line in the file has been read
+                                        # and processed. Delete all the
+                                        # information associated with that file
+                                        # so that we no longer check that file.
                                         fh_dict[i].close()
                                         del fh_dict[i]
                                         del cur_toks[i]
@@ -412,9 +475,15 @@ class Indexer(object):
                 return
                 
         def _update_index(self, dicts, out_dir):
-                """ Processes the main dictionary file and writes out a new
+                """Processes the main dictionary file and writes out a new
                 main dictionary file reflecting the changes in the packages.
-                """
+
+                The "dicts" parameter is the list of fmris which have been
+                removed during update.
+
+                The "out_dir" parameter is the temporary directory in which to
+                build the indexes."""
+
                 removed_paths = dicts
 
                 if self.empty_index:
@@ -534,9 +603,13 @@ class Indexer(object):
                 removed_paths = []
 
         def _write_assistant_dicts(self, out_dir):
-                """ Write out the companion dictionaries needed for
+                """Write out the companion dictionaries needed for
                 translating the internal representation of the main
-                dictionary into human readable information. """
+                dictionary into human readable information.
+
+                The "out_dir" parameter is the temporary directory to write
+                the indexes into."""
+
                 for d in self._data_dict.values():
                         if d == self._data_main_dict or \
                             d == self._data_token_offset:
@@ -545,7 +618,21 @@ class Indexer(object):
                         
         def _generic_update_index(self, inputs, input_type,
             tmp_index_dir=None, image=None):
-                """ Performs all the steps needed to update the indexes."""
+                """Performs all the steps needed to update the indexes.
+
+                The "inputs" parameter iterates over the fmris which have been
+                added or the pkgplans for the change in the image.
+
+                The "input_type" paramter is a value specifying whether the
+                input is fmris or pkgplans.
+
+                The "tmp_index_dir" parameter allows this function to use a
+                different temporary directory than the default.
+
+                The "image" parameter must be set if "input_type" is pkgplans.
+                It allows the index to automatically be rebuilt if the number
+                of packages added since last index rebuild is greater than
+                MAX_ADDED_NUMBER_PACKAGES."""
                 
                 # Allow the use of a directory other than the default
                 # directory to store the intermediate results in.
@@ -624,13 +711,14 @@ class Indexer(object):
                         self._data_main_dict.close_file_handle()
                 
         def client_update_index(self, pkgplan_list, image, tmp_index_dir = None):
-                """ This version of update index is designed to work with the
-                client side of things. Specifically, it expects a pkg plan
-                list with added and removed FMRIs/manifests. Note: if
+                """This version of update index is designed to work with the
+                client side of things.  Specifically, it expects a pkg plan
+                list with added and removed FMRIs/manifests.  Note: if
                 tmp_index_dir is specified, it must NOT exist in the current
-                directory structure. This prevents the indexer from
-                accidentally removing files.
-                """
+                directory structure.  This prevents the indexer from
+                accidentally removing files.  Image the image object. This is
+                needed to allow correct reindexing from scratch to occur."""
+
                 assert self._progtrack is not None
 
                 self._generic_update_index(pkgplan_list, IDX_INPUT_TYPE_PKG,
@@ -640,12 +728,12 @@ class Indexer(object):
                 """ This version of update index is designed to work with the
                 server side of things. Specifically, since we don't currently
                 support removal of a package from a repo, this function simply
-                takes a list of FMRIs to be added to the repot. Currently, the
+                takes a list of FMRIs to be added to the repot.  Currently, the
                 only way to remove a package from the index is to remove it
-                from the depot and reindex. Note: if tmp_index_dir is
+                from the depot and reindex.  Note: if tmp_index_dir is
                 specified, it must NOT exist in the current directory structure.
-                This prevents the indexer from accidentally removing files.
-                """
+                This prevents the indexer from accidentally removing files."""
+
                 self._generic_update_index(fmris,
                     IDX_INPUT_TYPE_FMRI, tmp_index_dir)
 
@@ -673,10 +761,13 @@ class Indexer(object):
 
         def rebuild_index_from_scratch(self, fmris,
             tmp_index_dir = None):
-                """ Removes any existing index directory and rebuilds the
+                """Removes any existing index directory and rebuilds the
                 index based on the fmris and manifests provided as an
                 argument.
-                """
+
+                The "tmp_index_dir" parameter allows for a different directory
+                than the default to be used."""
+
                 self.file_version_number = INITIAL_VERSION_NUMBER
                 self.empty_index = True
                 
@@ -692,9 +783,9 @@ class Indexer(object):
                 self.empty_index = False
 
         def setup(self):
-                """ Seeds the index directory with empty stubs if the directory
-                is consistently empty. Does not overwrite existing indexes.
-                """
+                """Seeds the index directory with empty stubs if the directory
+                is consistently empty.  Does not overwrite existing indexes."""
+
                 absent = False
                 present = False
 
@@ -726,7 +817,10 @@ class Indexer(object):
         def check_for_updates(index_root, fmri_set):
                 """ Checks fmri_set to see which members have not been indexed.
                 It modifies fmri_set.
-                """
+
+                The "index_root" parameter is the directory which contains the
+                index."""
+
                 data =  ss.IndexStoreSet("full_fmri_list")
                 try:
                         data.open(index_root)
@@ -742,9 +836,20 @@ class Indexer(object):
                         data.close_file_handle()
 
         def _migrate(self, source_dir=None, dest_dir=None, fast_update=False):
-                """ Moves the indexes from a temporary directory to the
+                """Moves the indexes from a temporary directory to the
                 permanent one.
-                """
+
+                The "source_dir" parameter is the directory containing the
+                new information.
+
+                The "dest_dir" parameter is the directory containing the
+                old information.
+
+                The "fast_update" parameter determines whether the main
+                dictionary and the token byte offset files are moved.  This is
+                used so that when only the update logs are touched, the large
+                files don't need to be moved."""
+
                 if not source_dir:
                         source_dir = self._tmp_dir
                 if not dest_dir:

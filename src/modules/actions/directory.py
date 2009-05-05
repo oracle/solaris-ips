@@ -165,6 +165,9 @@ class DirectoryAction(generic.Action):
                                 raise
 
         def generate_indices(self):
+                """Generates the indices needed by the search dictionary.  See
+                generic.py for a more detailed explanation."""
+
                 return [
                     ("directory", "basename",
                     os.path.basename(self.attrs["path"].rstrip(os.path.sep)),

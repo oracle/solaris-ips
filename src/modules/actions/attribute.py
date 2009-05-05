@@ -60,7 +60,9 @@ class AttributeAction(generic.Action):
                 return []
 
         def generate_indices(self):
-                """Generates the indices needed by the search dictionary."""
+                """Generates the indices needed by the search dictionary.  See
+                generic.py for a more detailed explanation."""
+
                 if self.has_category_info():
                         try:
 

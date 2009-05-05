@@ -926,6 +926,16 @@ def unfreeze(img, args):
         return 0
 
 def process_v_0_search(tup, first):
+        """Transforms the tuples returned by search v1 into the four column
+        output format.
+
+        The "tup" parameter is a four tuple with the each entry corresponding
+        to a column of the output.
+        
+        The "first" parameter is a boolean stating whether this is the first
+        time this function has been called.  This controls the printing of the
+        header information."""
+
         try:
                 index, mfmri, action, value = tup
         except ValueError:
@@ -940,12 +950,43 @@ def process_v_0_search(tup, first):
         return True
 
 def __convert_output(a_str, match):
+        """Converts a string to a three tuple with the information to fill
+        the INDEX, ACTION, and VALUE columns.
+
+        The "a_str" parameter is the string representation of an action.
+        
+        The "match" parameter is a string whose precise interpretation is given
+        below.
+
+        For most action types, match defines which attribute the query matched
+        with.  For example, it states whether the basename or path attribute of
+        a file action matched the query.  Attribute (set) actions are treated
+        differently because they only have one attribute, and many values
+        associated with that attribute.  For those actions, the match parameter
+        states which value matched the query."""
+        
         a = actions.fromstr(a_str.rstrip())
         if isinstance(a, actions.attribute.AttributeAction):
                 return a.attrs.get(a.key_attr), a.name, match
         return match, a.name, a.attrs.get(a.key_attr)
 
 def process_v_1_search(tup, first, return_type, pub):
+        """Transforms the tuples returned by search v1 into the four column
+        output format.
+
+        The "first" parameter is a boolean stating whether this is the first
+        time this function has been called.  This controls the printing of the
+        header information.
+
+        The "return_type" parameter is an enumeration that describes the type
+        of the information that will be converted.
+
+        The type of the "tup" parameter depends on the value of "return_type".
+        If "return_type" is action information, "tup" is a three-tuple of the fmri
+        name, the match, and a string representation of the action.  In the case
+        where "return_type" is package information, "tup" is a one-tuple containing
+        the fmri name."""
+
         if return_type == api.Query.RETURN_ACTIONS:
                 try:
                         pfmri, match, action = tup
@@ -978,7 +1019,7 @@ def process_v_1_search(tup, first, return_type, pub):
         return True
 
 def search(img_dir, args):
-        """Search for the given token."""
+        """Search for the given query."""
 
         opts, pargs = getopt.getopt(args, "alprs:I")
 

@@ -907,6 +907,9 @@ class ImageInterface(object):
                         self.log_operation_end(error=e)
 
         def local_search(self, query_lst):
+                """local_search takes a list of Query objects and performs
+                each query against the installed packages of the image."""
+
                 for i, q in enumerate(query_lst):
                         l = query_p.QueryLexer()
                         l.build()
@@ -932,16 +935,33 @@ class ImageInterface(object):
                                     self.img.get_manifest_path, excludes)
                         except search_errors.InconsistentIndexException, e:
                                 raise api_errors.InconsistentIndexException(e)
+                        # i is being inserted to track which query the results
+                        # are for.  None is being inserted since there is no
+                        # publisher being searched against.
                         return ((i, None, r) for r in res)
 
         @staticmethod
         def __parse_v_0(line, pub, v):
+                """This function parses the string returned by a version 0
+                search server and puts it into the expected format of
+                (query_number, publisher, (version, return_type, (results))).
+                
+                "query_number" in the return value is fixed at 0 since search
+                v0 servers cannot accept multiple queries in a single HTTP
+                request."""
+
                 line = line.strip()
                 fields = line.split(None, 3)
                 return (0, pub, (v, Query.RETURN_ACTIONS, (fields[:4])))
 
         @staticmethod
         def __parse_v_1(line, pub, v):
+                """This function parses the string returned by a version 1
+                search server and puts it into the expected format of
+                (query_number, publisher, (version, return_type, (results)))
+                If it receives a line it can't parse, it raises a
+                ServerReturnError."""
+
                 fields = line.split(None, 2)
                 if len(fields) != 3:
                         raise api_errors.ServerReturnError(line)
@@ -960,6 +980,12 @@ class ImageInterface(object):
                         raise api_errors.ServerReturnError(line)
 
         def remote_search(self, query_str_and_args_lst, servers=None):
+                """This function takes a list of Query objects, and optionally
+                a list of servers to search against.  It performs each query
+                against each server and yields the results in turn.  If no
+                servers are provided, the search is conducted against all
+                active servers known by the image."""
+
                 failed = []
                 invalid = []
 
@@ -983,6 +1009,8 @@ class ImageInterface(object):
                         l = query_p.QueryLexer()
                         l.build()
                         qp = query_p.QueryParser(l)
+                        # Parse the query to determine whether it can be
+                        # represented in search/0 syntax.
                         try:
                                 query = qp.parse(q.encoded_text())
                         except query_p.BooleanQueryException, e:
@@ -1109,6 +1137,10 @@ class ImageInterface(object):
 
         @staticmethod
         def validate_response(res, v):
+                """This function is used to determine whether the first
+                line returned from a server is expected.  This ensures that
+                search is really communicating with a search-enabled server."""
+
                 try:
                         s = res.next()
                         return s == Query.VALIDATION_STRING[v]
@@ -1545,6 +1577,10 @@ class ImageInterface(object):
 
 
 class Query(query_p.Query):
+        """This class is the object used to pass queries into the api functions.
+        It encapsulates the possible options available for a query as well as
+        the text of the query itself."""
+
         def __init__(self, text, case_sensitive, return_actions=True,
             num_to_return=None, start_point=None):
                 if return_actions:

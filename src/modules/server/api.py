@@ -134,7 +134,26 @@ class CatalogInterface(_Interface):
                 return self.__catalog.npkgs()
 
         def search(self, tokens, case_sensitive=False,
-            return_type=qp.Query.RETURN_PACKAGES, start_point=None, num_to_return=None):
+            return_type=qp.Query.RETURN_PACKAGES, start_point=None,
+            num_to_return=None):
+                """Searches the index for the query represented by the
+                arguments.
+
+                The "tokens" parameter is a string containing a query.
+
+                The "case_sensitive" parameter is a boolean which determines
+                whether the search is case sensitive or not.
+
+                The "return_type" parameter specifies whether actions or
+                packages should be returned.
+
+                The "start_point" parameter is an integer which states what
+                number result to start on. None is interpreted to mean 0.
+
+                The "num_to_return" parameter tells the maximum number of
+                results to return.  None means return all results.
+                """
+
                 tokens = tokens.split()
                 if not self.search_available:
                         return []

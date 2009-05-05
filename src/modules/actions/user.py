@@ -195,4 +195,7 @@ class UserAction(generic.Action):
                         pw.unlockfile()
 
         def generate_indices(self):
+                """Generates the indices needed by the search dictionary.  See
+                generic.py for a more detailed explanation."""
+
                 return [("user", "name", self.attrs["username"], None)]

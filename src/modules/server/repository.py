@@ -325,6 +325,9 @@ class Repository(object):
                 self.scfg.catalog.refresh_index()
 
         def search(self, query_str_lst):
+                """Searches the index for each query in the list of query
+                strings.  Each string should be the output of str(Query)."""
+
                 query_lst = [query_p.Query.fromstr(s) for s in query_str_lst]
                 
                 res_list = [

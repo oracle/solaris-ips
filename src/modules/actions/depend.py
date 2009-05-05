@@ -239,6 +239,9 @@ class DependencyAction(generic.Action):
                 return []
 
         def generate_indices(self):
+                """Generates the indices needed by the search dictionary.  See
+                generic.py for a more detailed explanation."""
+
                 ctype = self.attrs["type"]
                 pfmri = self.attrs["fmri"]
 

@@ -52,8 +52,8 @@ def consistent_open(data_list, directory, timeout = 1):
         migration and open is encountered.
         Note: Do not set timeout to be 0. It will cause an exception to be
         immediately raised.
-
         """
+
         missing = None
         cur_version = None
 
@@ -205,22 +205,17 @@ class IndexStoreMainDict(IndexStoreBase):
         """
         # Here is an example of a line from the main dictionary, it is
         # explained below:
-        # %gconf.xml (5,3,65689 => 249,202) (5,3,65690 => 249,202)
-        # (5,3,65691 => 249,202) (5,3,65692 => 249,202)
+        # %25gconf.xml file!basename@basename#579,13249,13692,77391,77628
         #
-        # The main dictionary has a more complicated format. Each line begins
-        # with a search token (%gconf.xml) followed by a list of mappings. Each
-        # mapping takes a token_type, action, and keyvalue tuple ((5,3,65689),
-        # (5,3,65690), (5,3,65691), (5,3,65692)) to a list of pkg-stem, version
-        # pairs (249,202) in which the token is found in an action with
-        # token_type, action, and keyvalues matching the tuple. Further
-        # compaction is gained by storing everything but the token as an id
-        # which the other dictionaries can turn into human-readable content.
-        #
-        # In short, the definition of a main dictionary entry is:
-        # Note: "(", ")", and "=>" actually appear in the file
-        #       "[", "]", and "+" are used to specify pattern
-        # token [(token_type_id, action_id, keyval_id => [pkg_stem_id,version_id ]+)]+
+        # Each line begins with a urllib quoted search token. It's followed by
+        # a set of space separated lists.  Each of these lists begin with an
+        # action type.  It's separated from its sublist by a '!'.  Next is the
+        # key type, which is separated from its sublist by a '@'.  Next is the
+        # full value, which is used in set actions to hold the full value which
+        # matched the token.  It's separated from its sublist by a '#'.  The
+        # next token (579) is the fmri id.  The subsequent comma separated
+        # values are the byte offsets into that manifest of the lines containing
+        # that token.
 
         def __init__(self, file_name):
                 IndexStoreBase.__init__(self, file_name)
@@ -245,6 +240,17 @@ class IndexStoreMainDict(IndexStoreBase):
 
         @staticmethod
         def __parse_main_dict_line_help(split_chars, unquote_list, line):
+                """Helper function for parse_main_dict_line.
+
+                The "split_chars" parameter is a list of characters to use to
+                split the line by.
+
+                The "unquote_list" parameter is a list of booleans which tells
+                whether to unquote each level of value.
+
+                The "line" parameter is the line to parse.
+                """
+
                 if not split_chars:
                         if not line:
                                 raise search_errors.EmptyMainDictLine(
@@ -296,6 +302,22 @@ class IndexStoreMainDict(IndexStoreBase):
 
         @staticmethod
         def __write_main_dict_line_help(file_handle, sep_chars, quote, entries):
+                """Helper function for write_main_dict_line.
+
+                The "file_handle" parameter is the file handle to write lines
+                to.
+
+                The "sep_chars" parameter is the list of characters to use to
+                separate each level of the entries.
+
+                The "quote" parameter is a list of boolean values which
+                determine whether the value being written is quoted or not.
+
+                The "entries" parameter is a list of lists of lists and so on.
+                The depth of all lists at each level must be consistent, and
+                must match the length of "sep_chars" and "quote".
+                """
+
                 assert sep_chars
                 if not isinstance(entries, tuple):
                         assert len(sep_chars) == 1
@@ -327,6 +349,22 @@ class IndexStoreMainDict(IndexStoreBase):
 
         @staticmethod
         def __transform_main_dict_line_help(sep_chars, quote, entries):
+                """Helper function for transform_main_dict_line.
+
+                The "file_handle" parameter is the file handle to write lines
+                to.
+
+                The "sep_chars" parameter is the list of characters to use to
+                separate each level of the entries.
+
+                The "quote" parameter is a list of boolean values which
+                determine whether the value being written is quoted or not.
+
+                The "entries" parameter is a list of lists of lists and so on.
+                The depth of all lists at each level must be consistent, and
+                must match the length of sep_chars and quote.
+                """
+
                 assert sep_chars
                 ret = [sep_chars[0]]
                 if not isinstance(entries, tuple):
@@ -351,9 +389,11 @@ class IndexStoreMainDict(IndexStoreBase):
         
         @staticmethod
         def transform_main_dict_line(token, lst):
-                """Paired with parse_main_dict_line above. Writes
-                a line in a main dictionary file in the appropriate format.
+                """Paired with parse_main_dict_line above.  Transforms a token
+                and its data into the string which would be written to the main
+                dictionary.
                 """
+
                 tmp = IndexStoreMainDict.__transform_main_dict_line_help(
                     ["", " ", "!", "@", "#", ","],
                     [True, False, False, True, False, False], (token, lst))
@@ -553,11 +593,15 @@ class IndexStoreDict(IndexStoreBase):
 
         def matching_read_dict_file(self, in_set, update=False):
                 """If it's necessary to reread the file, it rereads the
-                file. It matches the line it reads against the contents of
-                in_set. If a match is found, the entry on the line is stored
-                for later use, otherwise the line is skipped. When all items
+                file.  It matches the line it reads against the contents of
+                "in_set".  If a match is found, the entry on the line is stored
+                for later use, otherwise the line is skipped.  When all items
                 in in_set have been matched, the method is done and returns.
+                By default, any existing information is cleared before the
+                dictionary is reread.  With "update", the original dictionary
+                is left in place and any new information is added to it.
                 """
+
                 if update or self.should_reread():
                         if not update:
                                 self._dict.clear()

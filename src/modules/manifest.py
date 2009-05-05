@@ -371,12 +371,22 @@ class Manifest(object):
 
                 if log is None:
                         log = lambda x: None
-                
+
                 file_handle = file(file_path)
                 cur_pos = 0
                 line = file_handle.readline()
                 action_dict = {}
                 def __handle_list(lst, cp):
+                        """Translates what actions.generate_indices produces
+                        into a dictionary mapping token, action_name, key, and
+                        the value that should be displayed for matching that
+                        token to byte offsets into the manifest file.
+
+                        The "lst" parameter is the data to be converted.
+
+                        The "cp" parameter is the byte offset into the file
+                        for the action which produced lst."""
+
                         for action_name, subtype, tok, full_value in lst:
                                 if action_name == "set":
                                         if full_value is None:

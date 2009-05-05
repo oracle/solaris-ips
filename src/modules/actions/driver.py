@@ -792,6 +792,9 @@ class DriverAction(generic.Action):
                                         e[0], e[1])
 
         def generate_indices(self):
+                """Generates the indices needed by the search dictionary.  See
+                generic.py for a more detailed explanation."""
+
                 ret = []
                 if "name" in self.attrs:
                         ret.append(("driver", "driver_name", self.attrs["name"],

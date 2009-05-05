@@ -47,34 +47,58 @@ from pkg.misc import EmptyI
 FILE_OPEN_TIMEOUT_SECS = 1
 
 class QueryLexer(object):
+        """This class defines the lexer used to separate parse queries into
+        its constituents.  It's written for Ply, a python implementation for
+        lex and yacc."""
 
+        # These are the types of tokens that the lexer can produce.
         tokens = ("FTERM", "TERM", "LPAREN", "RPAREN", "AND", "OR", "QUOTE1",
             "QUOTE2", "LBRACE", "RBRACE")
+
+        # These statements define the lexing rules or (, ),', and ". These are
+        # all checked after all lexing defined in functions below.
         t_LPAREN = r"\("
         t_RPAREN = r"\)"
         t_QUOTE1 = r"[\']"
         t_QUOTE2 = r'[\"]'
+
+        # This rule causes spaces to break tokens, but the space itself is not
+        # reported as a token.
         t_ignore = r" "
 
         def __init__(self):
                 object.__init__(self)
+                # Set up a dictionary of strings which have special meaning and
+                # are otherwise indistinguishable from normal terms. The
+                # mapping is from the string seen in the query to the lexer
+                # tokens.
                 self.reserved = {
                     "AND" : "AND",
                     "OR" : "OR"
                 }
 
+        # Note: Functions are documented using comments instead of docstrings
+        # below because Ply uses the docstrings for specific purposes.
+                
         def t_LBRACE(self, t):
+                # This rule is for lexing the left side of the pkgs<>
+                # construction.
                 r"([pP]([kK]([gG][sS]?)?)?)?<"
                 t.type = "LBRACE"
                 return t
 
         def t_RBRACE(self, t):
+                # This rule is for lexing the right side of the pkgs<>
+                # construction.
                 r">"
                 t.type = "RBRACE"
                 return t
 
         def t_FTERM(self, t):
-                # pkg_name:action_type:key:value
+                # This rule breaks up the structured search term
+                # pkg_name:action_type:key: into its constituents and builds
+                # a FTERM token whose value is a three tuple of the
+                # constituents.
                 r"([^\(\s][^\s]*)?\:"
                 t.type = "FTERM"
                 bar = t.value.split(":", 4)
@@ -91,6 +115,8 @@ class QueryLexer(object):
                 return t
                 
         def t_TERM(self, t):
+                # This rule handles the general search terms as well as
+                # checking for any reserved words such as AND or OR.
                 r'[^\s\(\'\"][^\s]*[^\s\)\'\"\>] | [^\s\(\)\'\"]'
                 t.type = self.reserved.get(t.value, "TERM")
                 return t
@@ -114,6 +140,10 @@ class QueryLexer(object):
                 return self.lexer.lexdata
                 
         def test(self, data):
+                """This is a function useful for testing and debugging as it
+                shows the user exactly which tokens are produced from the input
+                data."""
+
                 self.lexer.input(data)
                 while 1:
                         tok = self.lexer.token()
@@ -123,9 +153,15 @@ class QueryLexer(object):
 
 
 class QueryParser(object):
+        """This class defines the parser which converts a stream of tokens into
+        an abstract syntax tree representation of the query.  The AST is able
+        to perform the search."""
 
+        # Use the same set of tokens as the lexer.
         tokens = QueryLexer.tokens
 
+        # Define the precendence and associativity of certain tokens to
+        # eliminate shift/reduce conflicts in the grammar.
         precedence = (
             ("right", "FTERM"),
             ("left", "TERM"),
@@ -133,17 +169,26 @@ class QueryParser(object):
             ("right", "QUOTE1", "QUOTE2"),
         )
 
+        # Note: Like the lexer, Ply uses the doctrings of the functions to
+        # determine the rules.
+
         def p_top_level(self, p):
+                # This is the top or start node of the AST.
                 '''start : xterm'''
                 p[0] = self.query_objs["TopQuery"](p[1])
 
         def p_xterm(self, p):
+                # This rule parses xterms.  xterms are terms which can connect
+                # smaller terms together.
                 ''' xterm : basetermlist
                           | andterm
                           | orterm'''
                 p[0] = p[1]
 
         def p_basetermlist(self, p):
+                # basetermlist handles performing the implicit AND operator
+                # which is placed between a list of terms.  For example the
+                # query 'foo bar' is treated the same as 'foo AND bar'.
                 ''' basetermlist : baseterm
                                  | baseterm basetermlist '''
                 if len(p) == 3:
@@ -152,6 +197,8 @@ class QueryParser(object):
                         p[0] = p[1]
 
         def p_baseterm(self, p):
+                # baseterms are the minimal units of meaning for the parser.
+                # Any baseterm is a valid query unto itself.
                 ''' baseterm : term
                              | fterm
                              | phraseterm
@@ -160,25 +207,42 @@ class QueryParser(object):
                 p[0] = p[1]
 
         def p_term(self, p):
+                # terms are the parser's representation of the lexer's TERMs.
+                # The TermQuery object performs most of the work of actually
+                # performing the search.
                 'term : TERM'
                 p[0] = self.query_objs["TermQuery"](p[1])
                 
         def p_fterm(self, p):
+                # fterms are the parser's representation of the lexer's FTERMS
+                # (which are field/structured query terms).  In the query
+                # 'foo:bar:baz:zap', foo, bar, and baz are part of the FTERM,
+                # zap is split into a separate lexer TERM token.  zap flows
+                # up from parsing the ftermarg.  A query like 'foo:bar:baz' has
+                # no ftermarg though.  In that case, an implict wildcard is
+                # explicitly created.
                 '''fterm : FTERM ftermarg
                          | FTERM fterm
                          | FTERM'''
+                # If the len of p is 3, then one of the first two cases
+                # was used.
                 if len(p) == 3:
                         p[0] = self.query_objs["FieldQuery"](p[1], p[2])
+                # If the length of p isn't 3, then a bare FTERM was found.  It's
+                # necessary to make the implicit wildcard explicit in this case.
                 else:
                         p[0] = self.query_objs["FieldQuery"](p[1],
                             self.query_objs["TermQuery"]('*'))
 
         def p_ftermarg(self, p):
+                # ftermargs are the terms which are valid after the final
+                # colon of a field term.
                 '''ftermarg : term
                             | phraseterm'''
                 p[0] = p[1]
 
         def p_phraseterm(self, p):
+                # phraseterms are lists of terms enclosed by quotes.
                 ''' phraseterm : QUOTE1 term_list QUOTE1
                                | QUOTE2 term_list QUOTE2'''
                 p[2].reverse()
@@ -186,6 +250,7 @@ class QueryParser(object):
                     self.query_objs["TermQuery"])
 
         def p_term_list(self, p):
+                # term_lists consist of one or more space separated TERMs.
                 ''' term_list : TERM term_list
                               | TERM '''
                 if len(p) == 3:
@@ -195,19 +260,28 @@ class QueryParser(object):
                         p[0] = [p[1]]
 
         def p_parenterm(self, p):
+                # parenterms contain a single xterm surrounded by parens.
+                # The p[2] argument is simply passed on because the only
+                # role of parens is to perform grouping, which is enforced
+                # by the structure of the AST.
                 ''' parenterm : LPAREN xterm RPAREN '''
                 p[0] = p[2]
 
         def p_packages(self, p):
+                # pkgconv represents the pkgs<> term.
                 'pkgconv : LBRACE xterm RBRACE'
                 p[0] = self.query_objs["PkgConversion"](p[2])
 
         def p_andterm(self, p):
+                # andterms perform an intersection of the results of its
+                # two children.
                 ''' andterm : xterm AND xterm'''
                 p[0] = self.query_objs["AndQuery"](p[1], p[3])
 
         def p_orterm(self, p):
                 ''' orterm : xterm OR xterm'''
+                # orterms returns the union of the results of its
+                # two children.
                 p[0] = self.query_objs["OrQuery"](p[1], p[3])
 
         def p_error(self, p):
@@ -215,8 +289,11 @@ class QueryParser(object):
                     self.lexer.get_string())
                         
         def __init__(self, lexer):
+                """Build a parser using the lexer given as an argument."""
                 self.lexer = lexer
                 self.parser = yacc.yacc(module=self, debug=0, write_tables=0)
+                # Store the classes used to build the AST so that child classes
+                # can replace them where needed with alternate classes.
                 self.query_objs = {
                     "AndQuery" : AndQuery,
                     "FieldQuery" : FieldQuery,
@@ -228,8 +305,12 @@ class QueryParser(object):
                 }
 
         def parse(self, input):
+                """Parse the string, input, into an AST using the rules defined
+                in this class."""
+
                 self.lexer.set_input(input)
                 return self.parser.parse(lexer=self.lexer)
+
 
 class QueryException(Exception):
         pass
@@ -256,8 +337,12 @@ class ParseError(QueryException):
 
         def html(self):
                 return self.__str__(html=True)
-        
+
+
 class Query(object):
+        """General Query object.  It defines various constants and provides for
+        marshalling a Query into and out of a string format."""
+
         RETURN_EITHER = 0
         RETURN_PACKAGES = 1
         RETURN_ACTIONS = 2
@@ -265,6 +350,23 @@ class Query(object):
 
         def __init__(self, text, case_sensitive, return_type, num_to_return,
             start_point):
+                """Construct a query object.
+
+                The "text" parameter is the tokens and syntax of the query.
+
+                The "case_sensitive" parameter is a boolean which determines
+                whether the query is case sensitive or not.
+
+                The "return_type" parameter must be either RETURN_PACKAGES or
+                RETURN_ACTIONS and determines whether the query is expected to
+                return packages or actions to the querier.
+
+                The "num_to_return" paramter is the maximum number of results to
+                return.
+
+                The "start_point" parameter is the number of results to skip
+                before returning results to the querier."""
+
                 self.__text = text
                 self.case_sensitive = case_sensitive
                 self.return_type = return_type
@@ -274,11 +376,15 @@ class Query(object):
                 self.start_point = start_point
 
         def __str__(self):
+                """Return the v1 string representation of this query."""
+
                 return "%s_%s_%s_%s_%s" % (self.case_sensitive,
                     self.return_type, self.num_to_return, self.start_point,
                     self.__text)
 
         def ver_0(self):
+                """Return the v0 string representation of this query."""
+
                 return self.__text
 
         def encoded_text(self):
@@ -289,6 +395,9 @@ class Query(object):
         
         @staticmethod
         def fromstr(s):
+                """Take the output of the __str__ method of this class and
+                return a Query object from that string."""
+
                 case_sensitive, return_type, num_to_return, start_point, \
                     text = tuple(s.split("_", 4))
                 if case_sensitive == 'True':
@@ -311,17 +420,26 @@ class Query(object):
 
         @staticmethod
         def return_action_to_key(k):
+                """Method which produces the sort key for an action."""
+
                 at, st, pfmri, fv, l = k
                 return pfmri
+
 
 class UnknownFieldTypeException(Exception):
         def __init__(self, field_kind, field_value):
                 Exception.__init__(self)
                 self.field_kind = field_kind
                 self.field_value = field_value
-        
+
+
 class BooleanQueryException(QueryException):
+        """This exception is used when the two children of a boolean query
+        don't agree on whether to return actions or packages."""
+
         def __init__(self, ac, pc):
+                """The parameter "ac" is the child which returned actions
+                while "pc" is the child which returned pacakges."""
                 QueryException.__init__(self)
                 self.ac = ac
                 self.pc = pc
@@ -344,9 +462,17 @@ class BooleanQueryException(QueryException):
 
         def html(self):
                 return self.__str__(html=True)
-        
+
+
 class BooleanQuery(object):
+        """Superclass for all boolean operations in the AST."""
+
         def __init__(self, left_query, right_query):
+                """The parameters "left_query" and "right_query" are objects
+                which implement the query interface.  Specifically, they're
+                expected to implement search, allow_version, set_info, and to
+                have a public member called return_type."""
+
                 self.lc = left_query
                 self.rc = right_query
                 self.return_type = self.lc.return_type
@@ -357,30 +483,62 @@ class BooleanQuery(object):
                                 raise BooleanQueryException(self.rc, self.lc)
 
         def set_info(self, *args):
+                """This function passes information to the terms prior to
+                search being executed.  For a boolean query, it only needs to
+                pass whatever information exists onto its children."""
+
                 self.lc.set_info(*args)
                 self.rc.set_info(*args)
                 
         def search(self, *args):
+                """Distributes the search to the two children and returns a
+                tuple of the results."""
+
                 return set(self.lc.search(None, *args)), \
                     set(self.rc.search(None, *args))
 
         def sorted(self, res):
+                """Sort the results.  If the results are actions, sort by the
+                fmris of the packages from which they came."""
+
                 key = None
                 if self.return_type == Query.RETURN_ACTIONS:
                         key = Query.return_action_to_key
                 return sorted(res, key=key)
 
         def allow_version(self, v):
+                """Returns whether the query supports version v."""
+
                 return v > 0 and self.lc.allow_version(v) and \
                     self.rc.allow_version(v)
 
 class AndQuery(BooleanQuery):
+        """Class representing AND queries in the AST."""
 
         def search(self, restriction, *args):
+                """Performs a search over the two children and combines
+                the results.
+
+                The "restriction" parameter is a generator of actions, over
+                which the search shall be performed.  Only boolean queries will
+                set restriction.  Nodes that return packages have, by
+                definition, parents that must return packages.  This means that
+                only queries contained within a boolean query higher up in the
+                AST tree will have restriction set."""
+
                 if self.return_type == Query.RETURN_ACTIONS:
+                        # If actions are being returned, the answers from
+                        # previous terms must be used as the domain of search.
+                        # To do this, restriction is passed to the left
+                        # child and the result from that child is passed to
+                        # the right child as its domain.
                         lc_it = self.lc.search(restriction, *args)
                         return self.rc.search(lc_it, *args)
                 else:
+                        # If packages are being returned, holding the names
+                        # of all known packages in memory is feasible. By
+                        # using sets, and their intersection, duplicates are
+                        # also removed from the results.
                         lc_set, rc_set = BooleanQuery.search(self, *args)
                         return self.sorted(lc_set & rc_set)
                 
@@ -389,17 +547,45 @@ class AndQuery(BooleanQuery):
                 return "( " + str(self.lc) + " AND " + str(self.rc) + " )"
         
 class OrQuery(BooleanQuery):
+        """Class representing OR queries in the AST."""
 
         def search(self, restriction, *args):
+                """Performs a search over the two children and combines
+                the results.
+
+                The "restriction" parameter is a generator function that returns
+                actions within the search domain.  If it's not None,
+                then this query is under a higher boolean query which also
+                returns actions."""
+
                 if self.return_type == Query.RETURN_PACKAGES:
+                        # If packages are being returned, it's feasible to
+                        # hold them all in memory.  This allows the use of
+                        # sets, and their union, to remove duplicates and
+                        # produce a sorted list.
                         lc_set, rc_set = BooleanQuery.search(self, *args)
                         for i in self.sorted(lc_set | rc_set):
                                 yield i
                 elif not restriction:
+                        # If restriction doesn't exist, then chain together
+                        # the results from both children.
                         for i in itertools.chain(self.lc.search(restriction,
                             *args), self.rc.search(restriction, *args)):
                                 yield i
                 else:
+                        # If restriction exists, then it must serve as the
+                        # domain for the children.  It is a generator so
+                        # only one pass may be made over it.  Also, it is not
+                        # possible, in general, to hold a list of all items
+                        # that the generator will produce in memory.  These
+                        # reasons lead to the construction below, which iterates
+                        # over the results in restriction and uses each as the
+                        # restriction to the child search.  If this turns out
+                        # to be a performance bottleneck, it would be possible
+                        # to gather N of the results in restriction into a list
+                        # and dispatch them to the children results in one shot.
+                        # The tradeoff is the memory to hold O(N) results in
+                        # memory at each level of ORs in the AST.
                         for i in restriction:
                                 for j in itertools.chain(self.lc.search([i],
                                     *args), self.rc.search([i], *args)):
@@ -409,6 +595,9 @@ class OrQuery(BooleanQuery):
                 return "( " + str(self.lc) + " OR " + str(self.rc) + " )"
 
 class PkgConversion(object):
+        """Class representing a change from returning actions to returning
+        packages in the AST."""
+        
         def __init__(self, query):
                 self.query = query
                 self.return_type = Query.RETURN_PACKAGES
@@ -417,10 +606,19 @@ class PkgConversion(object):
                 return "p<%s>" % str(self.query)
 
         def set_info(self, *args):
+                """This function passes information to the terms prior to
+                search being executed.  It only needs to pass whatever
+                information exists to its child."""
+
                 self.query.set_info(*args)
 
         @staticmethod
         def optional_action_to_package(it, return_type, current_type):
+                """Based on the return_type and current type, it converts the
+                iterator over results, it, to a sorted list of packages.
+                return_type is what the caller wants to return and current_type
+                is what it is iterating over."""
+
                 if current_type == return_type or return_type == \
                     Query.RETURN_EITHER:
                         return it
@@ -432,16 +630,33 @@ class PkgConversion(object):
                         assert 0
                 
         def search(self, restriction, *args):
+                """Takes the results of its child's search and converts the
+                results to be a sorted list of packages.
+
+                The "restriction" parameter is a generator of actions which
+                the domain over which search should be performed. It should
+                always be None."""
+
                 return self.optional_action_to_package(
                     self.query.search(restriction, *args),
                     Query.RETURN_PACKAGES, self.query.return_type)
 
         def allow_version(self, v):
+                """Returns whether the query supports a query of version v."""
+
                 return v > 0 and self.query.allow_version(v)
 
 
 class PhraseQuery(object):
+        """Class representing a phrase search in the AST"""
+
         def __init__(self, str_list, term_query_class):
+                """The "str_list" parameter is the list of strings which make
+                up the phrase to be searched.
+
+                The "term_query_class" parameter is a TermQuery object which
+                handles searching for the initial word in the phrase."""
+
                 assert str_list
                 self.query = term_query_class(str_list[0])
                 self.full_str = " ".join(str_list)
@@ -453,19 +668,36 @@ class PhraseQuery(object):
                 return "Phrase Query:'" + self.full_str + "'"
 
         def set_info(self, *args):
+                """This function passes information to the terms prior to
+                search being executed.  It only needs to pass whatever
+                information exists to its child."""
+
                 self.query.set_info(*args)
 
         def filter_res(self, l):
+                """Check to see if the phrase is contained in l, the string of
+                the original action."""
+
                 return self.full_str in l
 
         @staticmethod
         def combine(fs, fv):
+                """Checks to see if the phrase being searched for is a subtring
+                of the value which matched the token.  If it is, use the value
+                returned, otherwise use the search phrase."""
+
                 if fs in fv:
                         return fv
                 else:
                         return fs
                 
         def search(self, restriction, *args):
+                """Perform a search for the given phrase.  The child is used to
+                find instances of the first word of the phrase.  Those results
+                are then filtered by searching for the longer phrase within
+                the original line of the action.  restriction is a generator
+                function that returns actions within the search domain."""
+
                 it = (
                     (at, st, pfmri, self.combine(self.full_str, fv), l)
                     for at, st, pfmri, fv, l
@@ -475,10 +707,26 @@ class PhraseQuery(object):
                 return it
 
         def allow_version(self, v):
+                """Returns whether the query supports a query of version v."""
+
                 return v > 0 and self.query.allow_version(v)
                 
 class FieldQuery(object):
+        """Class representing a structured query in the AST."""
+
         def __init__(self, params, query):
+                """Builds a FieldQuery object.
+
+                The "params" parameter are the three parts of the structured
+                search term pulled apart during parsing.
+
+                The "query" parameter is the Query object which contains the
+                fourth field (the token) of the structured search."""
+
+                # For efficiency, especially on queries which search over
+                # '*', instead of filtering the results, this class makes
+                # modifications to its child class so that it will do the
+                # needed filtering as it does the search.
                 self.query = query
                 self.return_type = Query.RETURN_ACTIONS
                 self.query.pkg_name, self.query.action_type, self.query.key = \
@@ -489,6 +737,11 @@ class FieldQuery(object):
                 self.query.pkg_name_wildcard = \
                     self.__is_wildcard(self.query.pkg_name)
                 self.query.pkg_name_match = None
+                # Because users will rarely want to search on package names
+                # by fully specifying them out to their time stamps, package
+                # name search is treated as a prefix match.  To accomplish
+                # this, a star is appended to the package name if it doesn't
+                # already end in one.
                 if not self.query.pkg_name_wildcard:
                         if not self.query.pkg_name.endswith("*"):
                                 self.query.pkg_name += "*"
@@ -501,6 +754,10 @@ class FieldQuery(object):
                     self.query.action_type, self.query.key, self.query)
 
         def set_info(self, *args):
+                """This function passes information to the terms prior to
+                search being executed.  It only needs to pass whatever
+                information exists to its child."""
+
                 self.query.set_info(*args)
 
         @staticmethod
@@ -508,13 +765,24 @@ class FieldQuery(object):
                 return s is None or s == '*' or s == ''
                 
         def search(self, restriction, *args):
+                """Perform a search for the structured query.  The child has
+                been modified so that it is able to do the structured query
+                directly."""
+
                 assert self.query.return_type == Query.RETURN_ACTIONS
                 return self.query.search(restriction, *args)
 
         def allow_version(self, v):
+                """Returns whether the query supports a query of version v."""
+
                 return v > 0 and self.query.allow_version(v)
 
 class TopQuery(object):
+        """Class which must be at the top of all valid ASTs, and may only be
+        at the top of an AST.  It handles starting N results in, or only
+        showing M items.  It also transforms the internal representations of
+        results into the format expected by the callers of search."""
+
         def __init__(self, query):
                 self.query = query
                 self.start_point = 0
@@ -524,11 +792,17 @@ class TopQuery(object):
                 return "TopQuery(" + str(self.query) +  " )"
 
         def __keep(self, x):
+                """Determines whether the x'th result should be returned."""
+
                 return x >= self.start_point and \
                     (self.num_to_return is None or
                     x < self.num_to_return + self.start_point)
         
         def finalize_results(self, it):
+                """Converts the internal result representation to the format
+                which is expected by the callers of search.  It also handles
+                returning only those results requested by the user."""
+
                 # Need to replace "1" with current search version, or something
                 # similar
 
@@ -548,6 +822,11 @@ class TopQuery(object):
                         )
 
         def set_info(self, num_to_return, start_point, *args):
+                """This function passes information to the terms prior to
+                search being executed.  This is also where the starting point
+                and number of results to return is set.  Both "num_to_return"
+                and "start_point" are expected to be integers."""
+
                 if start_point:
                         self.start_point = start_point
                 self.num_to_return = num_to_return
@@ -555,12 +834,20 @@ class TopQuery(object):
                 
                         
         def search(self, *args):
+                """Perform search by taking the result of the child's search
+                and transforming and subselecting the results.  None is passed
+                to the child since initially there is no set of results to
+                restrict subsequent searches to."""
+
                 return self.finalize_results(self.query.search(None, *args))
 
         def allow_version(self, v):
+                """Returns whether the query supports a query of version v."""
+
                 return self.query.allow_version(v)
 
 class TermQuery(object):
+        """Class representing the a single query term in the AST."""
 
         # This structure was used to gather all index files into one
         # location. If a new index structure is needed, the files can
@@ -582,8 +869,10 @@ class TermQuery(object):
             "fmri_offsets":
                     ss.InvertedDict(ss.FMRI_OFFSETS_FILE, None)
         }
-        
+
         def __init__(self, term):
+                """term is a the string for the token to be searched for."""
+
                 term = term.strip()
                 self._glob = False
                 if '*' in term or '?' in term or '[' in term:
@@ -593,6 +882,8 @@ class TermQuery(object):
                 self.return_type = Query.RETURN_ACTIONS
                 self._file_timeout_secs = FILE_OPEN_TIMEOUT_SECS
 
+                # This block of options is used by FieldQuery to limit the
+                # domain of search.
                 self.pkg_name = None
                 self.action_type = None
                 self.key = None
@@ -603,6 +894,9 @@ class TermQuery(object):
                 self._case_sensitive = None
                 self._dir_path = None
 
+                # These variables are set by set_info and are used to hold
+                # information specific to the particular search index that this
+                # AST is being built for.
                 self._manifest_path_func = None
                 self._data_manf = None
                 self._data_token_offset = None
@@ -612,16 +906,29 @@ class TermQuery(object):
                 return "( TermQuery: " + self._term + " )"
 
         def add_trailing_wildcard(self):
+                """Ensures that the search is a prefix match.  Primarily used
+                by the PhraseQuery class."""
+
                 if not self._term.endswith('*'):
                         self._term += "*"
         
         def set_info(self, dir_path, fmri_to_manifest_path_func,
             case_sensitive):
+                """Sets the information needed to search which is specific to
+                the particular index used to back the search.  dir_path is a
+                path to the base directory of the index.
+                fmri_to_manifest_path_func is a function which when given a
+                fully specified fmri returns the path to the manifest file
+                for that fmri.  case_sensitive is a boolean which determines
+                whether search is case sensitive or not."""
+
                 self._dir_path = dir_path
                 assert dir_path
                 self._manifest_path_func = fmri_to_manifest_path_func
                 self._case_sensitive = case_sensitive
 
+                # Take the staic class lock because it's possible we'll
+                # modify the shared dictionaries for the class.
                 TermQuery.dict_lock.acquire()
                 try:
                         self._data_main_dict = \
@@ -629,6 +936,8 @@ class TermQuery(object):
                         if "fmri_offsets" not in TermQuery._global_data_dict:
                                 TermQuery._global_data_dict["fmri_offsets"] = \
                                     ss.InvertedDict(ss.FMRI_OFFSETS_FILE, None)
+                        # Create a temporary list of dictionaries we need to
+                        # open consistently.
                         tmp = TermQuery._global_data_dict.values()
                         tmp.append(self._data_main_dict)
                         try:
@@ -647,16 +956,25 @@ class TermQuery(object):
                                 tmp.append(self._data_main_dict)
                                 ret = ss.consistent_open(tmp, self._dir_path,
                                     self._file_timeout_secs)
-
                         if ret == None:
                                 raise search_errors.NoIndexException(
                                     self._dir_path)
                         should_reread = False
+                        # Check to see if any of the in-memory stores of the
+                        # dictionaries are out of date compared to the ones
+                        # on disc.
                         for k, d in self._global_data_dict.items():
                                 if d.should_reread():
                                         should_reread = True
                                         break
                         try:
+                                # If any of the in-memory dictionaries are out
+                                # of date, create new copies of the shared
+                                # dictionaries and make the shared structure
+                                # point at them.  This is to prevent changing
+                                # the data structures in any other threads
+                                # which may be part way through executing a
+                                # search.
                                 if should_reread:
                                         for i in tmp:
                                                 i.close_file_handle()
@@ -675,6 +993,9 @@ class TermQuery(object):
                                         try:
                                                 if ret == None:
                                                         raise search_errors.NoIndexException(self._dir_path)
+                                                # Reread the dictionaries and
+                                                # store the new information in
+                                                # the shared data structure.
                                                 for d in TermQuery._global_data_dict.values():
                                                         d.read_dict_file()
                                         except:
@@ -682,6 +1003,8 @@ class TermQuery(object):
                                                 raise
 
                         finally:
+                                # Ensure that the files are closed no matter
+                                # what happens.
                                 for d in TermQuery._global_data_dict.values():
                                         d.close_file_handle()
                         self._data_manf = TermQuery._global_data_dict["manf"]
@@ -698,13 +1021,22 @@ class TermQuery(object):
                         TermQuery.dict_lock.release()
 
         def allow_version(self, v):
+                """Returns whether the query supports a query of version v."""
                 return True
                 
         def _close_dicts(self):
+                """Closes the main dictionary file handle, which is handled
+                separately from the other dictionaries since it's not read
+                entirely into memory in one shot."""
+
                 self._data_main_dict.close_file_handle()
 
         @staticmethod
         def flatten(lst):
+                """Takes a list which may contain one or more sublists and
+                returns a list which contains all the items contained in the
+                original list and its sublists, but without any sublists."""
+
                 res = []
                 for l in lst:
                         if isinstance(l, list):
@@ -714,6 +1046,10 @@ class TermQuery(object):
                 return res
                 
         def _restricted_search_internal(self, restriction):
+                """Searches for the given term within a restricted domain of
+                search results.  restriction is a generator function that
+                returns actions within the search domain."""
+
                 glob = self._glob
                 term = self._term
                 case_sensitive = self._case_sensitive
@@ -721,6 +1057,8 @@ class TermQuery(object):
                 if not case_sensitive:
                         glob = True
                 for at, st, fmri_str, fv, l in restriction:
+                        # Check if the current action doesn't match any field
+                        # query specifications.
                         if not (self.pkg_name_wildcard or
                             self.pkg_name_match(fmri_str)) or \
                             not (self.action_type_wildcard or
@@ -728,6 +1066,7 @@ class TermQuery(object):
                             not (self.key_wildcard or st == self.key):
                                 continue
                         l = l.strip()
+                        # Find the possible tokens for this action.
                         act = actions.fromstr(l)
                         toks = [t[2] for t in act.generate_indices()]
                         toks = self.flatten(toks)
@@ -736,10 +1075,16 @@ class TermQuery(object):
                                 matches = choose(toks, term, case_sensitive)
                         elif term in toks:
                                 matches = True
+                        # If this search term matches any of the tokens the
+                        # action could generate, yield it.  If not, continue
+                        # on to the next action.
                         if matches:
                                 yield at, st, fmri_str, fv, l
 
         def __offset_line_read(self, offsets):
+                """Takes a group of byte offsets into the main dictionary and
+                reads the lines starting at those byte offsets."""
+
                 md_fh = self._data_main_dict.get_file_handle()
                 for o in sorted(offsets):
                         md_fh.seek(o)
@@ -778,9 +1123,12 @@ class TermQuery(object):
 
         def _search_internal(self, fmris):
                 """Searches the indexes in dir_path for any matches of query
-                and the results in self.res. The method assumes the dictionaries
-                have already been loaded and read appropriately.
-                """
+                and the results in self.res.  The method assumes the
+                dictionaries have already been loaded and read appropriately.
+
+                The "fmris" parameter is a generator of fmris of installed
+                packages."""
+
                 assert self._data_main_dict.get_file_handle() is not None
 
                 glob = self._glob
@@ -789,9 +1137,13 @@ class TermQuery(object):
 
                 if not case_sensitive:
                         glob = True
+                # If offsets is equal to None, match all possible results.  A
+                # match with no results is represented by an empty set.
                 offsets = None
 
                 if glob:
+                        # If the term has at least one non-wildcard character
+                        # in it, do the glob search.
                         if TermQuery.has_non_wildcard_character.match(term):
                                 keys = self._data_token_offset.get_keys()
                                 matches = choose(keys, term, case_sensitive)
@@ -802,6 +1154,7 @@ class TermQuery(object):
                 elif self._data_token_offset.has_entity(term):
                         offsets = set([
                             self._data_token_offset.get_id(term)])
+                # Restrict results by package name.
                 if not self.pkg_name_wildcard:
                         try:
                                 pkg_offsets = \
@@ -813,6 +1166,7 @@ class TermQuery(object):
                                 offsets = pkg_offsets
                         else:
                                 offsets &= pkg_offsets
+                # Restrict results by action type.
                 if not self.action_type_wildcard:
                         tmp_set = set()
                         try:
@@ -827,8 +1181,10 @@ class TermQuery(object):
                         except EnvironmentError, e:
                                 if e.errno != errno.ENOENT:
                                         raise
+                                # If the file doesn't exist, then no actions
+                                # with that action type were indexed.
                                 offsets = set()
-
+                # Restrict results by key.
                 if not self.key_wildcard:
                         tmp_set = set()
                         try:
@@ -843,10 +1199,16 @@ class TermQuery(object):
                         except EnvironmentError, e:
                                 if e.errno != errno.ENOENT:
                                         raise
+                                # If the file doesn't exist, then no actions
+                                # with that key were indexed.
                                 offsets = set()
                 line_iter = EmptyI
+                # If offsets isn't None, then the set of results has been
+                # restricted so iterate through those offsets.
                 if offsets is not None:
                         line_iter = self.__offset_line_read(offsets)
+                # If offsets is None and the term was only wildcard search
+                # tokens, return results for every known token.
                 elif glob and \
                     not TermQuery.has_non_wildcard_character.match(term):
                         line_iter = self._data_main_dict.get_file_handle()
@@ -855,24 +1217,38 @@ class TermQuery(object):
                         assert not line == '\n'
                         tok, at_lst = \
                             self._data_main_dict.parse_main_dict_line(line)
+                        # Check that the token was what was expected.
                         assert ((term == tok) or 
                             (not case_sensitive and
                             term.lower() == tok.lower()) or
                             (glob and fnmatch.fnmatch(tok, term)) or
                             (not case_sensitive and
                             fnmatch.fnmatch(tok.lower(), term.lower())))
+                        # Check the various action types this token was
+                        # associated with.
                         for at, st_list in at_lst:
                                 if not self.action_type_wildcard and \
                                     at != self.action_type:
                                         continue
+                                # Check the key types this token and action type
+                                # were associated with.
                                 for st, fv_list in st_list:
                                         if not self.key_wildcard and \
                                             st != self.key:
                                                 continue
+                                        # Get the values which matched this
+                                        # token.
                                         for fv, p_list in fv_list:
+                                                # Get the fmri id and list of
+                                                # offsets into the manifest for
+                                                # that fmri id.
                                                 for p_id, m_off_set in p_list:
                                                         p_id = int(p_id)
                                                         p_str = self._data_manf.get_entity(p_id)
+                                                        # Check that the pkg
+                                                        # name matches the
+                                                        # restrictions, if any
+                                                        # exist.
                                                         if not self.pkg_name_wildcard and not self.pkg_name_match(p_str):
                                                                 continue
                                                         int_os = [
@@ -882,6 +1258,8 @@ class TermQuery(object):
                                                         ]
                                                         yield (p_str, int_os,
                                                             at, st, fv)
+                # Close the dictionaries since there are no more results to
+                # yield.
                 self._close_dicts()
                 return
 
@@ -891,7 +1269,9 @@ class TermQuery(object):
                 return p_str
         
         def _get_results(self, res):
-                # Construct the answer for the search_1 format
+                """Takes the results from search_internal ("res") and reads the
+                lines from the manifest files at the provided offsets."""
+
                 for fmri_str, offsets, at, st, fv in res:
                         send_res = []
                         f = fmri.PkgFmri(fmri_str)
