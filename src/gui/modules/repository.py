@@ -80,6 +80,7 @@ class Repository:
                         gtk.glade.XML(parent.gladefile, "sslkeyandcertdialog")
                 w_tree_progress = gtk.glade.XML(parent.gladefile, "progressdialog")
                 self.w_progress_dialog = w_tree_progress.get_widget("progressdialog")
+                self.w_progress_dialog.connect('delete-event', lambda stub1, stub2: True)
                 self.w_progressinfo_label = w_tree_progress.get_widget("progressinfo")
                 progress_button = w_tree_progress.get_widget("progresscancel")
                 self.w_progressbar = w_tree_progress.get_widget("progressbar")

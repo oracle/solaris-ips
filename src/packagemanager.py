@@ -365,6 +365,7 @@ class PackageManager:
                     w_tree_main.get_widget("edit_select_updates")
                 self.w_deselect_menuitem = w_tree_main.get_widget("edit_deselect")
                 self.w_progress_dialog = w_tree_progress.get_widget("progressdialog")
+                self.w_progress_dialog.connect('delete-event', lambda stub1, stub2: True)
                 self.w_progress_dialog.set_title(_("Update All"))
                 self.w_progressinfo_label = w_tree_progress.get_widget("progressinfo")
                 self.w_progressinfo_label.set_text(_(

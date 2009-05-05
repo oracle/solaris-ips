@@ -277,6 +277,7 @@ class Updatemanager:
                     "/usr/share/update-manager/updatemanager.glade"
                 w_xmltree_progress = gtk.glade.XML(self.gladefile, "progressdialog")
                 self.w_progress_dialog = w_xmltree_progress.get_widget("progressdialog")
+                self.w_progress_dialog.connect('delete-event', lambda stub1, stub2: True)
                 
                 self.w_progressinfo_label = w_xmltree_progress.get_widget("progressinfo")
                 self.w_progressinfo_separator = w_xmltree_progress.get_widget(
