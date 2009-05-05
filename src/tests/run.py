@@ -129,11 +129,12 @@ def find_tests(testdir, testpat):
         return suite
 
 def usage():
-        print >> sys.stderr, "Usage: %s [-ghpv] [-b filename] [-o regexp]" % \
+        print >> sys.stderr, "Usage: %s [-ghptv] [-b filename] [-o regexp]" % \
             sys.argv[0]
         print >> sys.stderr, "   -g             Generate result baseline"
         print >> sys.stderr, "   -h             This help message"
         print >> sys.stderr, "   -p             Parseable output format"
+        print >> sys.stderr, "   -t             Generate timing info file"
         print >> sys.stderr, "   -v             Verbose output"
         print >> sys.stderr, "   -b <filename>  Baseline filename"
         print >> sys.stderr, "   -o <regexp>    Run only tests that match regexp"
@@ -142,9 +143,9 @@ def usage():
 
 if __name__ == "__main__":
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "ghpvb:o:",
-                    ["generate-baseline", "parseable", "verbose",
-                        "baseline-file", "only"])
+                opts, pargs = getopt.getopt(sys.argv[1:], "ghptvb:o:",
+                    ["generate-baseline", "parseable", "timing", "verbose",
+                    "baseline-file", "only"])
         except getopt.GetoptError, e:
                 print >> sys.stderr, "Illegal option -- %s" % e.opt
                 sys.exit(1)
@@ -153,6 +154,7 @@ if __name__ == "__main__":
         generate = False
         onlyval = ""
         output = pkg5unittest.OUTPUT_DOTS
+        timing_file = False
         for opt, arg in opts:
                 if opt == "-v":
                         output = pkg5unittest.OUTPUT_VERBOSE
@@ -164,6 +166,8 @@ if __name__ == "__main__":
                         bfile = arg
                 if opt == "-o":
                         onlyval = arg
+                if opt == "-t":
+                        timing_file = True
                 if opt == "-h":
 			usage()
 
@@ -198,8 +202,14 @@ if __name__ == "__main__":
         print "logging to %s" % testlogpath
         sys.stdout = testlogfp
 
+        if timing_file:
+                timing_file = os.path.join(os.getcwd(), "timing_info.txt")
+                if os.path.exists(timing_file):
+                        os.remove(timing_file)
+        
         # Run the python test suites
-        runner = pkg5unittest.Pkg5TestRunner(baseline, output=output)
+        runner = pkg5unittest.Pkg5TestRunner(baseline, output=output,
+            timing_file=timing_file)
         exitval = 0
         for x in suites:
                 res = runner.run(x)

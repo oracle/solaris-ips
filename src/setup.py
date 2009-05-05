@@ -611,10 +611,13 @@ class clobber_func(Command):
                 shutil.rmtree(extern_dir, True)
 
 class test_func(Command):
-        # NOTE: these options need to be in sync with tests/run.py
+        # NOTE: these options need to be in sync with tests/run.py and the
+        # list of options stored in initialize_options below. The first entry
+        # in each tuple must be the exact name of a member variable.
         user_options = [("verbosemode", 'v', "run tests in verbose mode"),
             ("genbaseline", 'g', "generate test baseline"),
             ("parseable", 'p', "parseable output"),
+            ("timing", "t", "timing file <file>"),
             ("baselinefile=", 'b', "baseline file <file>"),
             ("only=", "o", "only <regex>")]
         description = "Runs unit and functional tests"
@@ -625,9 +628,13 @@ class test_func(Command):
                 self.verbosemode = 0
                 self.parseable = 0
                 self.genbaseline = 0
+                self.timing = 0
+
         def finalize_options(self):
                 pass
+
         def run(self):
+
                 os.putenv('PYEXE', sys.executable)
                 os.chdir(os.path.join(pwd, "tests"))
 

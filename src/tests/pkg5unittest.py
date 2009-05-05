@@ -30,6 +30,7 @@ import sys
 import time
 import unittest
 import gettext
+import os
 
 gettext.install("pkg", "/usr/lib/locale")
 
@@ -197,7 +198,8 @@ class Pkg5TestRunner(unittest.TextTestRunner):
         sep1 = '=' * 70
         sep2 = '-' * 70
 
-        def __init__(self, baseline, stream=sys.stderr, output=OUTPUT_DOTS):
+        def __init__(self, baseline, stream=sys.stderr, output=OUTPUT_DOTS,
+            timing_file=None):
                 """Set up the runner, creating a baseline object that has
                 a name of 'suite'_baseline.pkl, where suite is 'cli', 'api',
                 etc."""
@@ -205,6 +207,7 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                 super(Pkg5TestRunner, self).__init__(stream)
                 self.baseline = baseline
                 self.output = output
+                self.timing_file = timing_file
 
         def _makeResult(self):
                 return _Pkg5TestResult(self.stream, self.output, self.baseline)
@@ -216,6 +219,17 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                 test(result)
                 stopTime = time.time()
                 timeTaken = stopTime - startTime
+                timing = {}
+                lst = []
+                for t in test._tests:
+                        for (cname, mname), secs in t.timing.items():
+                                lst.append((secs, cname, mname))
+                                if cname not in timing:
+                                        timing[cname] = 0
+                                timing[cname] += secs
+                lst.sort()
+                clst = sorted((secs, cname) for cname, secs in timing.items())
+                                        
                 if self.output != OUTPUT_VERBOSE:
                         result.printErrors()
                         self.stream.writeln(result.separator2)
@@ -235,7 +249,36 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                         self.stream.writeln(")")
                 else:
                         self.stream.writeln("OK")
+
+                if self.timing_file:
+                        try:
+                                fh = open(self.timing_file, "ab+")
+                                opened = True
+                        except KeyboardInterrupt:
+                                raise
+                        except Exception:
+                                fh = sys.stderr
+                                opened = False
+                        self.__write_timing_info(fh, clst, lst)
+                        if opened:
+                                fh.close()
+
                 return result
+
+        @staticmethod
+        def __write_timing_info(stream, class_list, method_list):
+                if not class_list and not method_list:
+                        return
+                tot = 0
+                for secs, cname in class_list:
+                        print >> stream, "%6.2f %s" % (secs, cname)
+                        tot += secs
+                print >> stream, "%6.2f Total time" % tot
+                print >> stream, "=" * 60
+                for secs, cname, mname in method_list:
+                        print >> stream, "%6.2f %s %s" % (secs, cname, mname)
+                print >> stream, "=" * 60
+                print >> stream, "=" * 60 + "\n" * 4
 
 class Pkg5TestSuite(unittest.TestSuite):
         """Test suite that handles persistent depot tests.  Persistent depot
@@ -250,6 +293,7 @@ class Pkg5TestSuite(unittest.TestSuite):
         """
 
         def run(self, result):
+                self.timing = {}
                 inst = None
                 tdf = None
                 try:
@@ -272,6 +316,8 @@ class Pkg5TestSuite(unittest.TestSuite):
                 for test in self._tests:
                         if result.shouldStop:
                                 break
+                        real_test_name = test._Pkg5TestCase__testMethodName
+                        cname = test.__class__.__name__
                         # Populate test with the data from the instance
                         # already constructed, but update the method name.
                         # We need to do this so that we have all the state
@@ -286,7 +332,11 @@ class Pkg5TestSuite(unittest.TestSuite):
                                 # since we are calling them here.
                                 test.setUp = donothing
                                 test.tearDown = donothing
+                        test_start = time.time()
                         test(result)
+                        test_end = time.time()
+                        self.timing[cname, real_test_name] = \
+                            test_end - test_start
                 if persistent_depot:
                         try:
                                 tdf()
