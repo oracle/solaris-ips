@@ -456,6 +456,7 @@ include common/loc/SUNWfirefoxl10n-zh-CN
 include common/loc/SUNWfirefoxl10n-zh-TW
 include common/loc/SUNWgetting-started-l10n-de
 include common/loc/SUNWgetting-started-l10n-es
+include common/loc/SUNWgetting-started-l10n-extra
 include common/loc/SUNWgetting-started-l10n-fr
 include common/loc/SUNWgetting-started-l10n-it
 include common/loc/SUNWgetting-started-l10n-ja
@@ -808,6 +809,7 @@ $(sparc_ONLY)depend SUNWged
 depend SUNWgetting-started-guide
 depend SUNWgetting-started-l10n-de
 depend SUNWgetting-started-l10n-es
+depend SUNWgetting-started-l10n-extra
 depend SUNWgetting-started-l10n-fr
 depend SUNWgetting-started-l10n-it
 depend SUNWgetting-started-l10n-ja

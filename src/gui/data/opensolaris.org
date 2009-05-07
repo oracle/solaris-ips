@@ -934,6 +934,9 @@ category = Localizations (System)
 [SUNWgetting-started-l10n-es]
 category = Localizations (System)
 
+[SUNWgetting-started-l10n-extra]
+category = Localizations (System)
+
 [SUNWgetting-started-l10n-fr]
 category = Localizations (System)
 

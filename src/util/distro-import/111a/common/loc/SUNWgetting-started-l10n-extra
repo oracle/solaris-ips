@@ -1,0 +1,4 @@
+package SUNWgetting-started-l10n-extra
+classification "System/Localizations"
+import SUNWgetting-started-l10n-extra
+end package
