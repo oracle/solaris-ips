@@ -96,8 +96,10 @@ MIMETYPE = \
 # the list of help file names.
 #
 C_ONLY_HELP_LOCALES = C
-HELP_LOCALES = C de es fr it ja ko pt_BR ru sv zh_CN zh_HK zh_TW
-SP_LOCALES = C
+HELP_LOCALES = C ar cs de es fr it ja ko pt_BR ru sv zh_CN zh_HK zh_TW
+C_ONLY_SP_LOCALES = C
+SP_LOCALES = C de es fr it ja ko pt_BR ru sv zh_CN zh_HK zh_TW
+
 
 #
 # package-manager.xml is constructed from package-manager.xml.in and
@@ -132,22 +134,19 @@ PYMODS = \
 PYCMODS = $(PYMODS:%.py=%.pyc)
 
 STATICHELPFILES = \
-	$(HELP_LOCALES:%=help/%/legal.xml) \
-	$(HELP_LOCALES:%=help/%/other-trademarks.xml) \
-	$(HELP_LOCALES:%=help/%/sun-trademarks.xml) \
 	$(C_ONLY_HELP_LOCALES:%=help/%/figures/update_all.png) \
 	$(C_ONLY_HELP_LOCALES:%=help/%/figures/pm_pkglist.png) \
 	$(C_ONLY_HELP_LOCALES:%=help/%/figures/pm_store.png) \
 	$(C_ONLY_HELP_LOCALES:%=help/%/figures/wi_start.png)
 
 STATICSPFILES = \
-	$(SP_LOCALES:%=data/startpagebase/%/startpage_star.png) \
-	$(SP_LOCALES:%=data/startpagebase/%/opensolaris.png) \
 	$(SP_LOCALES:%=data/startpagebase/%/startpage.html) \
-	$(SP_LOCALES:%=data/startpagebase/%/startpage_learn.png) \
-	$(SP_LOCALES:%=data/startpagebase/%/startpage_use.png) \
-	$(SP_LOCALES:%=data/startpagebase/%/startpage_share.png) \
-	$(SP_LOCALES:%=data/startpagebase/%/stub_test.html)
+	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/opensolaris.png) \
+	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/startpage_learn.png) \
+	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/startpage_share.png) \
+	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/startpage_star.png) \
+	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/startpage_use.png) \
+	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/stub_test.html)
 
 #
 # Define the paths to all of the stuff we'll install.

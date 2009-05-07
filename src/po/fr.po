@@ -21,11 +21,13 @@
 # Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
+#
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: VERSION DU PACKAGE\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-03-27 13:28+0900\n"
+"POT-Creation-Date: 2009-04-17 16:15+0900\n"
 "PO-Revision-Date: ANNÉE-MOIS-JOUR HH:MI+ZONE\n"
 "Last-Translator: NOM COMPLET <ADRESSE@EMAIL>\n"
 "Language-Team: LANGUE <LL@li.org>\n"
@@ -33,7 +35,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../client.py:118
+#: ../client.py:117
 msgid ""
 "Usage:\n"
 "        pkg [options] command [cmd_options] [operands]\n"
@@ -41,7 +43,7 @@ msgid ""
 "Basic subcommands:\n"
 "        pkg install [-nvq] [--no-refresh] [--no-index] package...\n"
 "        pkg uninstall [-nrvq] [--no-index] package...\n"
-"        pkg list [-aHsuvf] [package...]\n"
+"        pkg list [-Hafsuv] [--no-refresh] [package...]\n"
 "        pkg image-update [-fnvq] [--be-name name] [--no-refresh] [--no-"
 "index]\n"
 "        pkg refresh [--full] [publisher ...]\n"
@@ -49,7 +51,7 @@ msgid ""
 "\n"
 "Advanced subcommands:\n"
 "        pkg info [-lr] [--license] [pkg_fmri_pattern ...]\n"
-"        pkg search [-lrI] [-s server] query\n"
+"        pkg search [-alprI] [-s server] query\n"
 "        pkg verify [-Hqv] [pkg_fmri_pattern ...]\n"
 "        pkg fix [pkg_fmri_pattern ...]\n"
 "        pkg contents [-Hmr] [-o attribute ...] [-s sort_key]\n"
@@ -87,7 +89,7 @@ msgstr ""
 "Sous-commandes de base :\n"
 "        pkg install [-nvq] [--no-refresh] [--no-index] package...\n"
 "        pkg uninstall [-nrvq] [--no-index] package...\n"
-"        pkg list [-aHsuvf] [package...]\n"
+"        pkg list [-Hafsuv] [--no-refresh] [package...]\n"
 "        pkg image-update [-fnvq] [--be-name name] [--no-refresh] [--no-"
 "index]\n"
 "        pkg refresh [--full] [publisher ...]\n"
@@ -95,7 +97,7 @@ msgstr ""
 "\n"
 "Sous-commandes avancées :\n"
 "        pkg info [-lr] [--license] [pkg_fmri_pattern ...]\n"
-"        pkg search [-lrI] [-s server] query\n"
+"        pkg search [-alprl] [-s server] query\n"
 "        pkg verify [-Hqv] [pkg_fmri_pattern ...]\n"
 "        pkg fix [pkg_fmri_pattern ...]\n"
 "        pkg contents [-Hmr] [-o attribute ...] [-s sort_key]\n"
@@ -127,37 +129,37 @@ msgstr ""
 "Environnement :\n"
 "        PKG_IMAGE"
 
-#: ../client.py:216
+#: ../client.py:220
 msgid "-s and -v may not be combined"
 msgstr "il est impossible de combiner -s et -v"
 
-#: ../client.py:292 ../client.py:1089 ../client.py:1366
+#: ../client.py:316 ../client.py:1148 ../client.py:1425
 msgid "no packages installed"
 msgstr "aucun package n'est installé"
 
-#: ../client.py:299
+#: ../client.py:323
 msgid "No specified packages have available updates"
 msgstr "Aucune mise à jour n'est disponible pour les packages spécifiés"
 
-#: ../client.py:302
+#: ../client.py:326
 msgid "No installed packages have available updates"
 msgstr "Aucune mise à jour n'est disponible pour les packages installés"
 
-#: ../client.py:328
+#: ../client.py:352
 #, python-format
 msgid "no packages matching '%s' %s"
 msgstr "aucun package correspondant à '%s' %s"
 
-#: ../client.py:371
+#: ../client.py:395
 #, python-format
 msgid "Created ZFS snapshot: %s"
 msgstr "Nouvel instantané ZFS : %s"
 
-#: ../client.py:401
+#: ../client.py:425
 msgid "verify: -v and -q may not be combined"
 msgstr "verify : il est impossible de combiner -v et -q"
 
-#: ../client.py:456
+#: ../client.py:480
 msgid ""
 "pkg: no packages matching the following patterns you specified are\n"
 "installed on the system.\n"
@@ -165,7 +167,7 @@ msgstr ""
 "pkg : aucun package correspondant aux modèles spécifiés indiqués ci-dessous\n"
 "n'est installé sur le système.\n"
 
-#: ../client.py:466
+#: ../client.py:490
 #, python-format
 msgid ""
 "\n"
@@ -174,25 +176,25 @@ msgstr ""
 "\n"
 "Tous les autres modèles correspondent à des packages installés. %s"
 
-#: ../client.py:507
+#: ../client.py:531
 msgid "image-update: -v and -q may not be combined"
 msgstr "image-update : il est impossible de combiner -v et -q"
 
-#: ../client.py:510
+#: ../client.py:534
 #, python-format
 msgid "image-update: command does not take operands ('%s')"
 msgstr "image-update : la commande n'utilise pas d'opérande ('%s')"
 
-#: ../client.py:520 ../client.py:563
+#: ../client.py:544 ../client.py:587
 #, python-format
 msgid "No image rooted at '%s'"
 msgstr "Aucune image ne se trouve à l'emplacement '%s'"
 
-#: ../client.py:534 ../client.py:703
+#: ../client.py:558 ../client.py:726
 msgid "No updates available for this image."
 msgstr "Aucune mise à jour n'est disponible pour cette image."
 
-#: ../client.py:537
+#: ../client.py:561
 #, python-format
 msgid ""
 "image-update failed (inventory exception):\n"
@@ -201,7 +203,7 @@ msgstr ""
 "échec de la commande image-update (exception d'inventaire) :\n"
 "%s"
 
-#: ../client.py:557
+#: ../client.py:581
 msgid ""
 "WARNING: pkg(5) appears to be out of date, and should be updated before\n"
 "running image-update.\n"
@@ -209,7 +211,7 @@ msgstr ""
 "AVERTISSEMENT : pkg(5) est obsolète, vous devez le mettre à jour avant\n"
 "d'exécuter image-update.\n"
 
-#: ../client.py:559
+#: ../client.py:583
 msgid ""
 "Please update pkg(5) using 'pfexec pkg install SUNWipkg' and then retry\n"
 "the image-update."
@@ -217,7 +219,7 @@ msgstr ""
 "Mettez à jour pkg(5) à l'aide de la commande 'pfexec pkg install SUNWipkg', puis réessayez d'exécuter\n"
 "image-update."
 
-#: ../client.py:587
+#: ../client.py:611
 msgid ""
 "\n"
 "An unexpected error happened while preparing for image-update:"
@@ -225,16 +227,16 @@ msgstr ""
 "\n"
 "Une erreur inattendue s'est produite lors de la préparation de la commande image-update :"
 
-#: ../client.py:594
+#: ../client.py:618
 #, python-format
 msgid "image-update failed: %s"
 msgstr "échec de la commande image-update : %s"
 
-#: ../client.py:597
+#: ../client.py:621
 msgid "image-update cannot be done on live image"
 msgstr "impossible d'exécuter image-update sur une image Live"
 
-#: ../client.py:619
+#: ../client.py:643
 #, python-format
 msgid ""
 "\n"
@@ -243,29 +245,25 @@ msgstr ""
 "\n"
 "Une erreur inattendue s'est produite lors de l'exécution de la commande image-update : %s"
 
-#: ../client.py:625
-msgid ""
-"NOTE: Please review release notes posted at:\n"
-"   http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
-msgstr ""
-"REMARQUE : consultez les notes de version disponibles à la page :\n"
-"   http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
+#: ../client.py:649
+msgid "NOTE: Please review release notes posted at:\n"
+msgstr "REMARQUE : consultez les notes de version disponibles à la page :\n"
 
-#: ../client.py:672
+#: ../client.py:695
 msgid "install: at least one package name required"
 msgstr "install : au moins un nom de package est requis"
 
-#: ../client.py:675
+#: ../client.py:698
 msgid "install: -v and -q may not be combined"
 msgstr "install : il est impossible de combiner -v et -q"
 
-#: ../client.py:690 ../client.py:824 ../client.py:987 ../client.py:1547
-#: ../client.py:1629 ../client.py:1753 ../client.py:1807 ../client.py:2183
+#: ../client.py:713 ../client.py:849 ../client.py:1030 ../client.py:1612
+#: ../client.py:1697 ../client.py:1821 ../client.py:1875 ../client.py:2261
 #, python-format
 msgid "'%s' is not an install image"
 msgstr "'%s' ne correspond pas à une image d'installation"
 
-#: ../client.py:722
+#: ../client.py:745
 #, python-format
 msgid ""
 "install failed (inventory exception):\n"
@@ -274,7 +272,7 @@ msgstr ""
 "échec de la commande install (exception d'inventaire) :\n"
 "%s"
 
-#: ../client.py:748 ../client.py:865
+#: ../client.py:771 ../client.py:890
 msgid ""
 "\n"
 "An unexpected error happened while preparing for install:"
@@ -282,25 +280,25 @@ msgstr ""
 "\n"
 "une erreur inattendue s'est produite lors de la préparation de la commande install :"
 
-#: ../client.py:757
+#: ../client.py:780
 #, python-format
 msgid "installation failed: %s"
 msgstr "échec de l'installation : %s"
 
-#: ../client.py:776
+#: ../client.py:801
 #, python-format
 msgid "An unexpected error happened during installation: %s"
 msgstr "Une erreur inattendue s'est produite lors de l'installation : %s"
 
-#: ../client.py:806
+#: ../client.py:831
 msgid "uninstall: at least one package name required"
 msgstr "uninstall : au moins un nom de package est requis"
 
-#: ../client.py:809
+#: ../client.py:834
 msgid "uninstall: -v and -q may not be combined"
 msgstr "uninstall : il est impossible de combiner -v et -q"
 
-#: ../client.py:832
+#: ../client.py:857
 #, python-format
 msgid ""
 "uninstall failed (inventory exception):\n"
@@ -309,84 +307,124 @@ msgstr ""
 "échec de la commande uninstall (exception d'inventaire) :\n"
 "%s"
 
-#: ../client.py:874
+#: ../client.py:899
 #, python-format
 msgid "uninstallation failed: %s"
 msgstr "échec de la désinstallation : %s"
 
-#: ../client.py:893
+#: ../client.py:918
 #, python-format
 msgid "An unexpected error happened during uninstallation: %s"
 msgstr "Une erreur inattendue s'est produite lors de la désinstallation : %s"
 
-#: ../client.py:965
+#: ../client.py:938
+#, python-format
+msgid ""
+"The server returned a malformed result.\n"
+"The problematic structure: %r"
+msgstr ""
+"Le serveur a renvoyé un résultat non conforme.\n"
+"Structure problématique : %r"
+
+#: ../client.py:959
+#, python-format
+msgid ""
+"The server returned a malformed result.\n"
+"The problematic structure:%r"
+msgstr ""
+"Le serveur a renvoyé un résultat non conforme.\n"
+"Structure problématique : %r"
+
+#: ../client.py:969
+#, python-format
+msgid ""
+"The server returned a malformed action.\n"
+"%s"
+msgstr ""
+"Le serveur a renvoyé une action non conforme.\n"
+"%s"
+
+#: ../client.py:1008
 #, python-format
 msgid "%s is not a valid server URL."
 msgstr "%s n'est pas une URL de serveur valide."
 
-#: ../client.py:1057
+#: ../client.py:1058
+#, python-format
+msgid "The server returned a malformed result:%r"
+msgstr "Le serveur a renvoyé un résultat non conforme :%r"
+
+#: ../client.py:1072 ../client.py:1082
+msgid ""
+"The search index appears corrupted.  Please rebuild the index with 'pkg "
+"rebuild-index'."
+msgstr ""
+"L'index de recherche semble corrompu. Reconstruisez l'index à l'aide de la commande 'pkg "
+"rebuild-index'."
+
+#: ../client.py:1116
 msgid "info: -l and -r may not be combined"
 msgstr "info : il est impossible de combiner -l et -r"
 
-#: ../client.py:1060
+#: ../client.py:1119
 msgid "info: must request remote info for specific packages"
 msgstr "info : doit envoyer des requêtes d'informations distantes pour des packages spécifiques"
 
-#: ../client.py:1106 ../gui/data/packagemanager.glade.h:49
-#: ../packagemanager.py:1167
+#: ../client.py:1165 ../gui/data/packagemanager.glade.h:50
+#: ../packagemanager.py:1250
 msgid "Installed"
 msgstr "Installé"
 
-#: ../client.py:1108
+#: ../client.py:1167
 msgid "Not installed"
 msgstr "Non installé"
 
-#: ../client.py:1112
+#: ../client.py:1171
 msgid "          Name:"
 msgstr "                                 Nom :"
 
-#: ../client.py:1114
+#: ../client.py:1173
 msgid "       Summary:"
 msgstr "                           Résumé :"
 
-#: ../client.py:1117
+#: ../client.py:1176
 msgid "      Category:"
 msgstr "                        Catégorie :"
 
-#: ../client.py:1124
+#: ../client.py:1183
 msgid "         State:"
 msgstr "                                 État :"
 
 #. XXX even more info on the publisher would be nice?
-#: ../client.py:1127
+#: ../client.py:1186
 msgid "     Publisher:"
 msgstr "     Éditeur :"
 
-#: ../client.py:1128
+#: ../client.py:1187
 msgid "       Version:"
 msgstr "                            Version :"
 
-#: ../client.py:1129
+#: ../client.py:1188
 msgid " Build Release:"
 msgstr "    Version de compilation :"
 
-#: ../client.py:1130
+#: ../client.py:1189
 msgid "        Branch:"
 msgstr "                           Branche :"
 
-#: ../client.py:1131
+#: ../client.py:1190
 msgid "Packaging Date:"
 msgstr "Date de conditionnement :"
 
-#: ../client.py:1132
+#: ../client.py:1191
 msgid "          Size:"
 msgstr "                                Taille :"
 
-#: ../client.py:1133
+#: ../client.py:1192
 msgid "          FMRI:"
 msgstr "                                FMRI :"
 
-#: ../client.py:1141 ../client.py:1471
+#: ../client.py:1200 ../client.py:1530
 msgid ""
 "pkg: no packages matching the following patterns you specified are\n"
 "installed on the system.  Try specifying -r to query remotely:"
@@ -394,7 +432,7 @@ msgstr ""
 "pkg : aucun package correspondant aux modèles spécifiés indiqués ci-dessous n'est\n"
 "installé sur le système. Essayez de spécifier -r pour envoyer une requête à distance :"
 
-#: ../client.py:1145 ../client.py:1475
+#: ../client.py:1204 ../client.py:1534
 msgid ""
 "pkg: no packages matching the following patterns you specified were\n"
 "found in the catalog.  Try relaxing the patterns, refreshing, and/or\n"
@@ -404,82 +442,82 @@ msgstr ""
 "se trouve dans le catalogue. Essayez d'assouplir les modèles, d'actualiser et/ou\n"
 "d'examiner les catalogues :"
 
-#: ../client.py:1161
+#: ../client.py:1220 ../modules/client/api_errors.py:154
 #, python-format
 msgid "'%s' matches multiple packages"
 msgstr "'%s' correspond à plusieurs packages"
 
-#: ../client.py:1167
+#: ../client.py:1226
 msgid "no license information could be found for the following packages:"
 msgstr "Aucune information de licence n'a pu être trouvée pour les packages suivants :"
 
-#: ../client.py:1322
+#: ../client.py:1381
 msgid "contents: -l and -r may not be combined"
 msgstr "contents : il est impossible de combiner -l et -r"
 
-#: ../client.py:1325
+#: ../client.py:1384
 msgid "contents: must request remote contents for specific packages"
 msgstr "contents : doit envoyer des requêtes de contenu distant pour des packages spécifiques"
 
-#: ../client.py:1339
+#: ../client.py:1398
 #, python-format
 msgid "contents: -m and %s may not be specified at the same time"
 msgstr "contents : il est impossible de spécifier à la fois -m et %s"
 
-#: ../client.py:1344 ../client.py:1347
+#: ../client.py:1403 ../client.py:1406
 #, python-format
 msgid "Invalid attribute '%s'"
 msgstr "Attribut non valide '%s'"
 
-#: ../client.py:1407 ../client.py:1413 ../modules/client/api_errors.py:144
+#: ../client.py:1466 ../client.py:1472
 #, python-format
 msgid "pkg: '%s' matches multiple packages"
 msgstr "pkg : '%s' correspond à plusieurs packages"
 
-#: ../client.py:1490
+#: ../client.py:1550
 #, python-format
 msgid "pkg: %s/%s catalogs successfully updated:"
 msgstr "pkg : les catalogues %s/%s ont été mis à jour :"
 
-#: ../client.py:1513
+#: ../client.py:1578
 #, python-format
 msgid "Could not update catalog for '%s' due to insufficient permissions."
 msgstr "Impossible de mettre à jour le catalogue pour %s : droits insuffisants"
 
-#: ../client.py:1517
+#: ../client.py:1582
 msgid "Could not update a catalog due to insufficient permissions."
 msgstr "Impossible de mettre à jour le catalogue : droits insuffisants"
 
-#: ../client.py:1520
+#: ../client.py:1585
 msgid ""
 "Please try the command again using pfexec, or otherwise increase \n"
 "    your permissions."
 msgstr ""
 "Essayez de nouveau la commande en utilisant pfexec ou augmentez vos droits."
 
-#: ../client.py:1554
+#: ../client.py:1622
 msgid "'pkg publisher' will show a list of publishers."
 msgstr "'pkg publisher' affiche la liste des éditeurs."
 
-#: ../client.py:1612
+#: ../client.py:1680
 msgid "requires a publisher name"
 msgstr "Un nom d'éditeur est requis."
 
-#: ../client.py:1614
+#: ../client.py:1682
 msgid "only one publisher name may be specified"
 msgstr "Vous ne pouvez spécifier qu'un seul nom d'éditeur."
 
-#: ../client.py:1620
+#: ../client.py:1688
 msgid "the -p and -d options may not be combined"
 msgstr "Il est impossible de combiner -p et -d."
 
-#: ../client.py:1644
+#: ../client.py:1712
 msgid ""
 "publisher does not exist. Use -O to define origin URI for new publisher."
 msgstr ""
 "L'éditeur n'existe pas. Utilisez l'option -o pour définir l'URI d'origine du nouvel éditeur."
 
-#: ../client.py:1726
+#: ../client.py:1794
 #, python-format
 msgid ""
 "The origin URIs for '%s' do not appear to point to a valid pkg server.\n"
@@ -494,190 +532,190 @@ msgstr ""
 "\n"
 "%s"
 
-#: ../client.py:1779
+#: ../client.py:1847
 #, python-format
 msgid "Removal failed for '%(pub)s': %(msg)s"
 msgstr "Échec de la suppression pour %(pub)s : %(msg)s"
 
-#: ../client.py:1851
+#: ../client.py:1919
 msgid "PUBLISHER"
 msgstr "ÉDITEUR"
 
-#: ../client.py:1851
+#: ../client.py:1919
 msgid "TYPE"
 msgstr "TYPE"
 
-#: ../client.py:1851
+#: ../client.py:1919
 msgid "STATUS"
 msgstr "STATUT"
 
-#: ../client.py:1852
+#: ../client.py:1920
 msgid "URI"
 msgstr "URI"
 
-#: ../client.py:1867
+#: ../client.py:1935
 msgid "(preferred)"
 msgstr "(préféré)"
 
-#: ../client.py:1869
+#: ../client.py:1937
 msgid "(disabled)"
 msgstr "(désactivé)"
 
 #. XXX get the real origin status
-#: ../client.py:1876
+#: ../client.py:1944
 msgid "origin"
 msgstr "origine"
 
 #. XXX get the real mirror status
-#: ../client.py:1880
+#: ../client.py:1948
 msgid "mirror"
 msgstr "miroir"
 
-#: ../client.py:1886
+#: ../client.py:1954
 msgid "              SSL Key:"
 msgstr "              Clé SSL :"
 
-#: ../client.py:1887
+#: ../client.py:1955
 msgid "             SSL Cert:"
 msgstr "             Certificat SSL :"
 
-#: ../client.py:1899
+#: ../client.py:1967
 msgid " Cert. Effective Date:"
 msgstr " Date de début de validité du certificat :"
 
-#: ../client.py:1901
+#: ../client.py:1969
 msgid "Cert. Expiration Date:"
 msgstr "Date d'expiration du certificat :"
 
-#: ../client.py:1908
+#: ../client.py:1976
 msgid "           Origin URI:"
 msgstr "           URI d'origine :"
 
-#: ../client.py:1914
+#: ../client.py:1982
 msgid "           Mirror URI:"
 msgstr "           URI miroir :"
 
-#: ../client.py:1928
+#: ../client.py:1996
 msgid "            Publisher:"
 msgstr "            Éditeur :"
 
-#: ../client.py:1929
+#: ../client.py:1997
 msgid "                Alias:"
 msgstr "                Alias :"
 
-#: ../client.py:1939
+#: ../client.py:2007
 msgid "          Client UUID:"
 msgstr "          UUID client :"
 
-#: ../client.py:1940
+#: ../client.py:2008
 msgid "      Catalog Updated:"
 msgstr "      Mise à jour du catalogue :"
 
-#: ../client.py:1942 ../client.py:1944
+#: ../client.py:2010 ../client.py:2012
 msgid "              Enabled:"
 msgstr "              Activation :"
 
-#: ../client.py:1942
+#: ../client.py:2010
 msgid "No"
 msgstr "Non"
 
-#: ../client.py:1944
+#: ../client.py:2012
 msgid "Yes"
 msgstr "Oui"
 
-#: ../client.py:1955
+#: ../client.py:2023
 msgid "set-property: requires a property name and value"
 msgstr "set-property : requiert un nom et une valeur de propriété"
 
-#: ../client.py:1958
+#: ../client.py:2026
 msgid ""
 "set-property: set-publisher must be used to change the preferred publisher"
 msgstr ""
 "set-property : set-publisher doit être utilisé pour modifier l'éditeur préféré"
 
-#: ../client.py:1982
+#: ../client.py:2050
 msgid "unset-property: requires at least one property name"
 msgstr "unset-property : requiert au moins un nom de propriété"
 
-#: ../client.py:1986
+#: ../client.py:2054
 msgid ""
 "unset-property: set-publisher must be used to change the preferred publisher"
 msgstr ""
 "unset-property : set-publisher doit être utilisé pour modifier l'éditeur préféré"
 
-#: ../client.py:1993
+#: ../client.py:2061
 #, python-format
 msgid "unset-property: no such property: %s"
 msgstr "unset-property : cette propriété n'existe pas : %s"
 
-#: ../client.py:2014
+#: ../client.py:2082
 #, python-format
 msgid "property: no such property: %s"
 msgstr "property : cette propriété n'existe pas : %s"
 
-#: ../client.py:2077 ../client.py:2112
+#: ../client.py:2145 ../client.py:2180
 msgid ""
 "image-create requires publisher argument to be of the form '<prefix>=<url>'."
 msgstr ""
 "image-create requiert que l'argument de l'éditeur soit de la forme '<préfixe>=<url>'."
 
-#: ../client.py:2086
+#: ../client.py:2154
 msgid ""
 "image-create requires variant arguments to be of the form '<name>=<value>'."
 msgstr ""
 "image-create requiert que les arguments de variante soient de la forme '<nom>=<valeur>'."
 
-#: ../client.py:2092
+#: ../client.py:2160
 msgid "image-create requires a single image directory path"
 msgstr "image-create requiert un chemin de répertoire image unique"
 
-#: ../client.py:2097
+#: ../client.py:2165
 #, python-format
 msgid "pkg: set-publisher: SSL key file '%s' does not exist"
 msgstr "pkg : set-publisher : le fichier %s de la clé SSL n'existe pas."
 
-#: ../client.py:2104
+#: ../client.py:2172
 #, python-format
 msgid "pkg: set-publisher: SSL key cert '%s' does not exist"
 msgstr "pkg : set-publisher : le certificat %s de la clé SSL n'existe pas."
 
-#: ../client.py:2109
+#: ../client.py:2177
 msgid "image-create requires a publisher argument"
 msgstr "image-create requiert un éditeur en argument."
 
-#: ../client.py:2116
+#: ../client.py:2184
 #, python-format
 msgid "image-create requires that a prefix not match: %s"
 msgstr "image-create requiert qu'un préfixe ne corresponde pas à : %s"
 
-#: ../client.py:2121
+#: ../client.py:2189
 msgid "image-create: publisher prefix has invalid characters"
 msgstr "image-create: le préfixe de l'éditeur contient des caractères non valides."
 
-#: ../client.py:2126
+#: ../client.py:2194
 msgid "image-create: publisher URI is invalid"
 msgstr "image-create : l'URI de l'éditeur est non valide."
 
-#: ../client.py:2133
+#: ../client.py:2201
 #, python-format
 msgid "there is already an image at: %s"
 msgstr "Il existe déjà une image à l'emplacement suivant : %s"
 
-#: ../client.py:2134 ../client.py:2141
+#: ../client.py:2202 ../client.py:2209
 msgid "To override, use the -f (force) option."
 msgstr "Pour procéder au remplacement, utilisez l'option -f (force)."
 
-#: ../client.py:2140
+#: ../client.py:2208
 #, python-format
 msgid "Non-empty directory: %s"
 msgstr "Le répertoire %s n'est pas vide."
 
-#: ../client.py:2149
+#: ../client.py:2221
 #, python-format
 msgid "cannot create image at %s: %s"
 msgstr "impossible de créer une image à %s : %s"
 
-#: ../client.py:2156
+#: ../client.py:2232
 #, python-format
 msgid ""
 "The URI '%s' does not appear to point to a valid pkg server.\n"
@@ -692,57 +730,57 @@ msgstr ""
 "\n"
 "%s"
 
-#: ../client.py:2177
+#: ../client.py:2255
 #, python-format
 msgid "rebuild-index: command does not take operands ('%s')"
 msgstr "rebuild-index : la commande n'utilise pas d'opérande ('%s')"
 
-#: ../client.py:2215
+#: ../client.py:2293
 msgid "history: -H and -l may not be combined"
 msgstr "history: il est impossible de combiner -H et -l"
 
-#: ../client.py:2219
+#: ../client.py:2297
 msgid "TIME"
 msgstr "HEURE"
 
-#: ../client.py:2220
+#: ../client.py:2298
 msgid "OPERATION"
 msgstr "OPÉRATION"
 
-#: ../client.py:2220
+#: ../client.py:2298
 msgid "CLIENT"
 msgstr "CLIENT"
 
-#: ../client.py:2220
+#: ../client.py:2298
 msgid "OUTCOME"
 msgstr "RÉSULTAT"
 
-#: ../client.py:2313
+#: ../client.py:2391
 #, python-format
 msgid "illegal global option -- %s"
 msgstr "option générale non admise -- %s"
 
-#: ../client.py:2321
+#: ../client.py:2399
 #, python-format
 msgid "%(opt)s takes argument of form name=value, not %(arg)s"
 msgstr "%(opt)s attend des arguments de la forme nom=valeur, et non de la forme %(arg)s"
 
-#: ../client.py:2355 ../client.py:2365
+#: ../client.py:2433 ../client.py:2443
 #, python-format
 msgid "-R not allowed for %s subcommand"
 msgstr "-R n'est pas autorisé pour la sous-commande %s."
 
-#: ../client.py:2360 ../client.py:2466 ../publish.py:358
+#: ../client.py:2438 ../client.py:2544 ../publish.py:355
 #, python-format
 msgid "illegal %s option -- %s"
 msgstr "option %s non admise -- %s"
 
-#: ../client.py:2368
+#: ../client.py:2446
 #, python-format
 msgid "version: command does not take operands ('%s')"
 msgstr "version : la commande n'utilise pas d'opérande ('%s')"
 
-#: ../client.py:2393
+#: ../client.py:2471
 msgid ""
 "Could not find image.  Use the -R option or set $PKG_IMAGE to point\n"
 "to an image, or change the working directory to one inside the image."
@@ -750,25 +788,25 @@ msgstr ""
 "Image introuvable. Utilisez l'option -R ou définissez $PKG_IMAGE pour pointer\n"
 "vers une image ou remplacez le répertoire de travail par un répertoire se trouvant dans l'image."
 
-#: ../client.py:2407
+#: ../client.py:2485
 msgid "No image found."
 msgstr "Image introuvable."
 
-#: ../client.py:2413
+#: ../client.py:2491
 #, python-format
 msgid "client configuration error: %s"
 msgstr "Erreur de configuration du client : %s"
 
-#: ../client.py:2458
+#: ../client.py:2536
 msgid "History purged."
 msgstr "Historique purgé."
 
-#: ../client.py:2463 ../publish.py:356
+#: ../client.py:2541 ../publish.py:353
 #, python-format
 msgid "unknown subcommand '%s'"
 msgstr "sous-commande inconnue '%s'"
 
-#: ../client.py:2499
+#: ../client.py:2590
 #, python-format
 msgid ""
 "\n"
@@ -779,7 +817,7 @@ msgstr ""
 "Le nombre maximal de tentatives réseau a été dépassé pendant le téléchargement. Informations détaillées :\n"
 "%s"
 
-#: ../client.py:2506
+#: ../client.py:2597
 msgid ""
 "An error was encountered while attempting to retrieve package or file data "
 "for the requested operation."
@@ -787,7 +825,7 @@ msgstr ""
 "Une erreur a été détectée lors de la tentative de récupération des données du package ou du fichier "
 "pour l'opération requise."
 
-#: ../client.py:2513
+#: ../client.py:2604
 msgid ""
 "\n"
 "Unable to contact a valid package depot. This may be due to a problem with "
@@ -798,7 +836,7 @@ msgstr ""
 "\n"
 "Impossible de contacter un dépôt de packages valide. Cela peut être dû à un problème de serveur ou à une mauvaise configuration du réseau ou du client de package. Vérifiez vos paramètres réseau et tentez de contacter le serveur à l'aide d'un navigateur Web."
 
-#: ../client.py:2518
+#: ../client.py:2609
 #, python-format
 msgid ""
 "\n"
@@ -811,7 +849,7 @@ msgstr ""
 "\n"
 "%s"
 
-#: ../client.py:2525
+#: ../client.py:2616
 msgid ""
 "An error was encountered while attempting to load history information\n"
 "about past client operations."
@@ -819,7 +857,7 @@ msgstr ""
 "Une erreur s'est produite lors de la tentative de chargement des informations d'historique\n"
 "sur les opérations client effectuées précédemment."
 
-#: ../client.py:2534
+#: ../client.py:2625
 msgid ""
 "An error was encountered while attempting to store information about the\n"
 "current operation in client history."
@@ -827,11 +865,11 @@ msgstr ""
 "Une erreur s'est produite lors de la tentative d'enregistrement des informations sur \n"
 "l'opération actuelle dans l'historique client."
 
-#: ../client.py:2544
+#: ../client.py:2635
 msgid "An error was encountered while attempting to purge client history."
 msgstr "Une erreur s'est produite lors de la tentative de purge de l'historique client."
 
-#: ../client.py:2551
+#: ../client.py:2642
 #, python-format
 msgid ""
 "The pkg command appears out of sync with the libraries provided \n"
@@ -842,7 +880,7 @@ msgstr ""
 "par SUNWipkg. La version client est %(client)s, tandis que la version de l'API de la bibliothèque est "
 "%(api)s."
 
-#: ../client.py:2563 ../publish.py:382
+#: ../client.py:2654 ../publish.py:379
 #, python-format
 msgid ""
 "\n"
@@ -857,267 +895,291 @@ msgstr ""
 "aux développeurs en envoyant un rapport de bogue à l'adresse http://defect.opensolaris.org et en incluant le\n"
 "suivi ci-dessus et ce message. La version de pkg(5) est '%s'."
 
-#. self.__add_package_to_category(_("All"),None,None,None);
-#. Category names until xdg is imported.
-#. from xdg.DesktopEntry import *
-#. entry = DesktopEntry ()
-#. directory = '/usr/share/desktop-directories'
-#. for root, dirs, files in os.walk (directory):
-#. for name in files:
-#. entry.parse (os.path.join (root, name))
-#. self.__add_category_to_section (entry.getName (),
-#. _('Applications Desktop'))
-#: ../gui/data/l10n.py:31 ../packagemanager.py:3524 ../packagemanager.py:3526
-#: ../packagemanager.py:3551
+#: ../gui/data/l10n.py:31
+msgid "AMP Stack"
+msgstr "Pile AMP"
+
+#: ../gui/data/l10n.py:32
 msgid "Accessories"
 msgstr "Accessoires"
 
-#: ../gui/data/l10n.py:32
+#: ../gui/data/l10n.py:33
 msgid "Administration and Configuration"
 msgstr "Administration et configuration"
-
-#: ../gui/data/l10n.py:33
-msgid "Applets"
-msgstr "Applets"
 
 #: ../gui/data/l10n.py:34
 msgid "Application and Web Servers"
 msgstr "Serveurs d'applications et serveurs Web"
 
 #: ../gui/data/l10n.py:35
+msgid "Builds"
+msgstr "Versions"
+
+#: ../gui/data/l10n.py:36
 msgid "C"
 msgstr "C"
 
-#: ../gui/data/l10n.py:36
+#: ../gui/data/l10n.py:37
 msgid "C++"
 msgstr "C++"
 
-#: ../gui/data/l10n.py:37
+#: ../gui/data/l10n.py:38
+msgid "Communications"
+msgstr "Communications"
+
+#: ../gui/data/l10n.py:39
 msgid "Configuration and Preferences"
 msgstr "Configuration et préférences"
 
-#: ../gui/data/l10n.py:38 ../packagemanager.py:3569
+#: ../gui/data/l10n.py:40
 msgid "Core"
 msgstr "Noyau"
 
-#: ../gui/data/l10n.py:39
+#: ../gui/data/l10n.py:41
 msgid "Databases"
 msgstr "Bases de données"
 
-#: ../gui/data/l10n.py:40
+#: ../gui/data/l10n.py:42
 msgid "Databases (System)"
 msgstr "Bases de données (système)"
 
-#: ../gui/data/l10n.py:41
-msgid "Desktop"
-msgstr "Bureau"
+#: ../gui/data/l10n.py:43
+msgid "Developer Tools"
+msgstr "Outils de développeur"
 
-#: ../gui/data/l10n.py:42
+#: ../gui/data/l10n.py:44
 msgid "Display"
 msgstr "Affichage"
 
-#: ../gui/data/l10n.py:43
+#: ../gui/data/l10n.py:45
 msgid "Distribution Tools"
 msgstr "Outils de distribution"
 
-#: ../gui/data/l10n.py:44
+#: ../gui/data/l10n.py:46
 msgid "Documentation"
 msgstr "Documentation"
 
-#: ../gui/data/l10n.py:45
+#: ../gui/data/l10n.py:47
+msgid "Editors"
+msgstr "Editeurs"
+
+#: ../gui/data/l10n.py:48
 msgid "Enterprise Management"
 msgstr "Gestion d'entreprise"
 
-#: ../gui/data/l10n.py:46
+#: ../gui/data/l10n.py:49
 msgid "File Managers"
 msgstr "Gestionnaires de fichiers"
 
-#: ../gui/data/l10n.py:47
+#: ../gui/data/l10n.py:50
 msgid "File System"
 msgstr "Système de fichiers"
 
-#: ../gui/data/l10n.py:48
+#: ../gui/data/l10n.py:51
 msgid "Fonts"
 msgstr "Polices"
 
-#: ../gui/data/l10n.py:49
+#: ../gui/data/l10n.py:52
 msgid "GNOME and GTK+"
 msgstr "GNOME et GTK+"
 
-#: ../gui/data/l10n.py:50
+#: ../gui/data/l10n.py:53
 msgid "GNU"
 msgstr "GNU"
 
-#: ../gui/data/l10n.py:51 ../packagemanager.py:3528 ../packagemanager.py:3532
-#: ../packagemanager.py:3536 ../packagemanager.py:3553
+#: ../gui/data/l10n.py:54
 msgid "Games"
 msgstr "Jeux"
 
-#: ../gui/data/l10n.py:52
+#: ../gui/data/l10n.py:55
 msgid "Graphics and Imaging"
 msgstr "Graphiques et traitement d'image"
 
-#: ../gui/data/l10n.py:53
+#: ../gui/data/l10n.py:56
 msgid "Hardware"
 msgstr "Matériel"
 
-#: ../gui/data/l10n.py:54
+#: ../gui/data/l10n.py:57
 msgid "High Performance Computing"
 msgstr "Informatique hautes performances"
 
-#: ../gui/data/l10n.py:55
+#: ../gui/data/l10n.py:58
 msgid "Integrated Development Environments"
 msgstr "Environnements de développement intégrés"
 
-#: ../gui/data/l10n.py:56
+#: ../gui/data/l10n.py:59
 msgid "Internationalization"
 msgstr "Internationalisation"
 
-#: ../gui/data/l10n.py:57 ../packagemanager.py:3557
+#: ../gui/data/l10n.py:60
 msgid "Internet"
 msgstr "Internet"
 
-#: ../gui/data/l10n.py:58
+#: ../gui/data/l10n.py:61
 msgid "Java"
 msgstr "Java"
 
-#: ../gui/data/l10n.py:59
+#: ../gui/data/l10n.py:62
 msgid "Libraries"
 msgstr "Bibliothèques"
 
-#: ../gui/data/l10n.py:60
+#: ../gui/data/l10n.py:63
 msgid "Libraries (System)"
 msgstr "Bibliothèques (système)"
 
-#: ../gui/data/l10n.py:61
+#: ../gui/data/l10n.py:64
 msgid "Localizations (Desktop)"
 msgstr "Localisations (bureau)"
 
-#: ../gui/data/l10n.py:62
+#: ../gui/data/l10n.py:65
 msgid "Localizations (System)"
 msgstr "Localisations (système)"
 
-#: ../gui/data/l10n.py:63 ../packagemanager.py:3573
+#: ../gui/data/l10n.py:66
 msgid "Media"
 msgstr "Média"
 
-#: ../gui/data/l10n.py:64
+#: ../gui/data/l10n.py:67
+msgid "Multimedia Libraries"
+msgstr "Bibliothèques multimédia"
+
+#: ../gui/data/l10n.py:68
 msgid "Networking"
 msgstr "Gestion de réseaux"
 
-#: ../gui/data/l10n.py:65 ../packagemanager.py:3559 ../packagemanager.py:3578
+#: ../gui/data/l10n.py:69
 msgid "Office"
 msgstr "Office"
 
-#: ../gui/data/l10n.py:66
+#: ../gui/data/l10n.py:70
+msgid "Office Tools"
+msgstr "Outils de bureau"
+
+#: ../gui/data/l10n.py:71
 msgid "Other Languages"
 msgstr "Autres langues"
 
-#: ../gui/data/l10n.py:67
+#: ../gui/data/l10n.py:72
 msgid "Other Peripherals"
 msgstr "Autres périphériques"
 
-#: ../gui/data/l10n.py:68
+#: ../gui/data/l10n.py:73
 msgid "PHP"
 msgstr "PHP"
 
-#: ../gui/data/l10n.py:69
+#: ../gui/data/l10n.py:74
 msgid "Packaging"
 msgstr "Conditionnement"
 
-#: ../gui/data/l10n.py:70
+#: ../gui/data/l10n.py:75
+msgid "Panels and Applets"
+msgstr "Panneaux et applets"
+
+#: ../gui/data/l10n.py:76
 msgid "Perl"
 msgstr "Perl"
 
-#: ../gui/data/l10n.py:71
+#: ../gui/data/l10n.py:77
 msgid "Plug-ins and Run-times"
 msgstr "Plug-ins et temps d'exécution"
 
-#: ../gui/data/l10n.py:72
+#: ../gui/data/l10n.py:78
 msgid "Ports"
 msgstr "Ports"
 
-#: ../gui/data/l10n.py:73
+#: ../gui/data/l10n.py:79
 msgid "Printing"
 msgstr "Impression"
 
-#: ../gui/data/l10n.py:74
+#: ../gui/data/l10n.py:80
 msgid "Python"
 msgstr "Python"
 
-#: ../gui/data/l10n.py:75
+#: ../gui/data/l10n.py:81
+msgid "Releases"
+msgstr "Versions"
+
+#: ../gui/data/l10n.py:82
 msgid "Ruby"
 msgstr "Ruby"
 
-#: ../gui/data/l10n.py:76
+#: ../gui/data/l10n.py:83
 msgid "Scripts"
 msgstr "Scripts"
 
-#: ../gui/data/l10n.py:77
+#: ../gui/data/l10n.py:84
 msgid "Security"
 msgstr "Sécurité"
 
-#: ../gui/data/l10n.py:78
+#: ../gui/data/l10n.py:85
 msgid "Services"
 msgstr "Services"
 
-#: ../gui/data/l10n.py:79
+#: ../gui/data/l10n.py:86
 msgid "Sessions"
 msgstr "Sessions"
 
-#: ../gui/data/l10n.py:80
+#: ../gui/data/l10n.py:87
 msgid "Shells"
 msgstr "Shells"
 
-#: ../gui/data/l10n.py:81
+#: ../gui/data/l10n.py:88
 msgid "Software Management"
 msgstr "Gestion des logiciels"
 
-#: ../gui/data/l10n.py:82
+#: ../gui/data/l10n.py:89
 msgid "Sound and Video"
 msgstr "Son et vidéo"
 
-#: ../gui/data/l10n.py:83
+#: ../gui/data/l10n.py:90
 msgid "Source Code Management"
 msgstr "Gestion du code source"
 
-#: ../gui/data/l10n.py:84
+#: ../gui/data/l10n.py:91
 msgid "Storage"
 msgstr "Stockage"
 
-#: ../gui/data/l10n.py:85 ../packagemanager.py:1269
+#: ../gui/data/l10n.py:92 ../packagemanager.py:1352
 msgid "System"
 msgstr "Système"
 
-#: ../gui/data/l10n.py:86
+#: ../gui/data/l10n.py:93
 msgid "System Utilities"
 msgstr "Utilitaires système"
 
-#: ../gui/data/l10n.py:87
+#: ../gui/data/l10n.py:94
 msgid "Text Tools"
 msgstr "Outils texte"
 
-#: ../gui/data/l10n.py:88
+#: ../gui/data/l10n.py:95
+msgid "Theming"
+msgstr "Thème"
+
+#: ../gui/data/l10n.py:96
 msgid "Trusted"
 msgstr "De confiance"
 
-#: ../gui/data/l10n.py:89 ../packagemanager.py:3565
+#: ../gui/data/l10n.py:97
+msgid "Trusted Extensions"
+msgstr "Trusted Extensions"
+
+#: ../gui/data/l10n.py:98
 msgid "Universal Access"
 msgstr "Accès universel"
 
-#: ../gui/data/l10n.py:90
+#: ../gui/data/l10n.py:99
 msgid "Virtualization"
 msgstr "Virtualisation"
 
-#: ../gui/data/l10n.py:91
+#: ../gui/data/l10n.py:100
 msgid "Window Managers"
 msgstr "Gestionnaires Windows"
 
-#: ../gui/data/l10n.py:92
+#: ../gui/data/l10n.py:101
 msgid "X11"
 msgstr "X11"
 
-#: ../gui/data/l10n.py:93
+#: ../gui/data/l10n.py:102
 msgid "X11 (System)"
 msgstr "X11 (système)"
 
@@ -1132,9 +1194,9 @@ msgstr "Installe, met à jour et supprime les packages logiciels."
 
 #. XXX Remove and use _() where self._ and self.parent._ are being used
 #: ../gui/data/packagemanager.desktop.in.h:2
-#: ../gui/data/packagemanager.glade.h:59 ../gui/modules/webinstall.py:304
-#: ../packagemanager.py:177 ../packagemanager.py:2076
-#: ../packagemanager.py:3159
+#: ../gui/data/packagemanager.glade.h:58 ../gui/modules/webinstall.py:315
+#: ../packagemanager.py:218 ../packagemanager.py:2208
+#: ../packagemanager.py:2218 ../packagemanager.py:3357
 msgid "Package Manager"
 msgstr "Gestionnaire de packages"
 
@@ -1156,7 +1218,7 @@ msgid ""
 msgstr ""
 "<b>Création d'un nouvel environnement d'initialisation</b>\n"
 "\n"
-"La fonction Tout mettre à jour crée un nouvel environnement d'initialisation afin d'archiver l'environnement d'initialisation actuel. Le nouvel environnement contient les packages mis à jour et est l'environnement d'initialisation par défaut en cas de redémarrage du système."
+"La fonction Tout mettre à jour crée un nouvel environnement d'initialisation afin d'archiver l'environnement d'initialisation actuel. Le nouvel environnement contient les packages mis à jour et est l'environnement d'initialisation par défaut en cas de redémarrage du système.\n"
 
 #: ../gui/data/packagemanager.glade.h:9
 msgid "<b>Delete, rename and activate boot environments.</b>"
@@ -1292,10 +1354,10 @@ msgstr "Détails"
 msgid "Do not notify me about these repositories again."
 msgstr "Ne plus me notifier à propos de ces référentiels"
 
-#: ../gui/data/packagemanager.glade.h:43 ../gui/modules/installupdate.py:100
-#: ../um/data/updatemanager.glade.h:6 ../updatemanager.py:174
-#: ../updatemanager.py:397 ../updatemanager.py:404 ../updatemanager.py:411
-#: ../updatemanager.py:418 ../updatemanager.py:425
+#: ../gui/data/packagemanager.glade.h:43 ../gui/modules/installupdate.py:101
+#: ../um/data/updatemanager.glade.h:6 ../updatemanager.py:175
+#: ../updatemanager.py:427 ../updatemanager.py:434 ../updatemanager.py:441
+#: ../updatemanager.py:448 ../updatemanager.py:455
 msgid "Download"
 msgstr "Télécharger"
 
@@ -1303,253 +1365,255 @@ msgstr "Télécharger"
 msgid "Files"
 msgstr "Fichiers"
 
-#: ../gui/data/packagemanager.glade.h:45 ../gui/modules/installupdate.py:101
-#: ../updatemanager.py:190 ../updatemanager.py:398 ../updatemanager.py:405
-#: ../updatemanager.py:412 ../updatemanager.py:419 ../updatemanager.py:426
+#: ../gui/data/packagemanager.glade.h:45
+msgid "Help"
+msgstr "Aide"
+
+#: ../gui/data/packagemanager.glade.h:46 ../gui/modules/installupdate.py:102
+#: ../updatemanager.py:191 ../updatemanager.py:428 ../updatemanager.py:435
+#: ../updatemanager.py:442 ../updatemanager.py:449 ../updatemanager.py:456
 msgid "Install"
 msgstr "Installer"
 
-#: ../gui/data/packagemanager.glade.h:46
+#: ../gui/data/packagemanager.glade.h:47
 msgid "Install or Update selected packages"
 msgstr "Installer ou mettre à jour les packages sélectionnés"
 
-#: ../gui/data/packagemanager.glade.h:47 ../gui/modules/installupdate.py:237
+#: ../gui/data/packagemanager.glade.h:48 ../gui/modules/installupdate.py:238
 msgid "Install/Update"
 msgstr "Installer/Mettre à jour"
 
-#: ../gui/data/packagemanager.glade.h:48
+#: ../gui/data/packagemanager.glade.h:49
 msgid "Install/Upgrade Check"
 msgstr "Vérification de l'installation ou de la mise à niveau"
 
-#: ../gui/data/packagemanager.glade.h:50
+#: ../gui/data/packagemanager.glade.h:51
 msgid "Legend:"
 msgstr "Légende :"
 
-#: ../gui/data/packagemanager.glade.h:51
+#: ../gui/data/packagemanager.glade.h:52
 msgid "License"
 msgstr "Licence"
 
-#: ../gui/data/packagemanager.glade.h:52
+#: ../gui/data/packagemanager.glade.h:53
 msgid "M_irror:"
 msgstr "M_iroir :"
 
-#: ../gui/data/packagemanager.glade.h:53
+#: ../gui/data/packagemanager.glade.h:54
 msgid "Manage Boot Environments"
 msgstr "Gestion des environnements d'initialisation"
 
-#: ../gui/data/packagemanager.glade.h:54
+#: ../gui/data/packagemanager.glade.h:55
 msgid "Manage Repositories"
 msgstr "Gestion des référentiels"
 
-#: ../gui/data/packagemanager.glade.h:55
+#: ../gui/data/packagemanager.glade.h:56
 msgid "Manage _Boot Environments..."
 msgstr "Gérer les _environnements d'initialisation..."
 
-#: ../gui/data/packagemanager.glade.h:56
+#: ../gui/data/packagemanager.glade.h:57
 msgid "Modify Repository"
 msgstr "Modifier le référentiel"
 
-#: ../gui/data/packagemanager.glade.h:57
-msgid "Online Help"
-msgstr "Aide en ligne"
-
-#: ../gui/data/packagemanager.glade.h:58
-msgid "Online _Help"
-msgstr "Aide en _ligne"
-
-#: ../gui/data/packagemanager.glade.h:60
+#: ../gui/data/packagemanager.glade.h:59
 msgid "Package Manager Preferences"
 msgstr "Préférences du gestionnaire de packages"
 
-#: ../gui/data/packagemanager.glade.h:61
+#: ../gui/data/packagemanager.glade.h:60
 msgid "Paste"
 msgstr "Coller"
 
-#: ../gui/data/packagemanager.glade.h:62
+#: ../gui/data/packagemanager.glade.h:61
 msgid "Pre_ferences"
 msgstr "Pré_férences"
 
-#: ../gui/data/packagemanager.glade.h:63
+#: ../gui/data/packagemanager.glade.h:62
 msgid "Preferences"
 msgstr "Préférences"
 
-#: ../gui/data/packagemanager.glade.h:64 ../gui/modules/installupdate.py:99
+#: ../gui/data/packagemanager.glade.h:63 ../gui/modules/installupdate.py:100
 msgid "Preparation"
 msgstr "Préparation"
 
-#: ../gui/data/packagemanager.glade.h:65 ../gui/modules/webinstall.py:198
+#: ../gui/data/packagemanager.glade.h:64 ../gui/modules/webinstall.py:206
 msgid "Proceed only if you trust this new repository "
 msgstr "Continuez uniquement si vous faites confirance à ce nouveau référentiel. "
 
-#: ../gui/data/packagemanager.glade.h:66 ../um/data/updatemanager.glade.h:9
+#: ../gui/data/packagemanager.glade.h:65 ../um/data/updatemanager.glade.h:9
 msgid "Processing"
 msgstr "Traitement"
 
-#: ../gui/data/packagemanager.glade.h:67
+#: ../gui/data/packagemanager.glade.h:66
 msgid "Quit application"
 msgstr "Quitter l'application"
 
-#: ../gui/data/packagemanager.glade.h:68
+#: ../gui/data/packagemanager.glade.h:67
 msgid "Reload"
 msgstr "Recharger"
 
-#: ../gui/data/packagemanager.glade.h:69
+#: ../gui/data/packagemanager.glade.h:68
 msgid "Remote search error"
 msgstr "Erreur de recherche distante"
 
-#: ../gui/data/packagemanager.glade.h:70 ../gui/modules/installupdate.py:202
-#: ../gui/modules/installupdate.py:205
+#: ../gui/data/packagemanager.glade.h:69 ../gui/modules/installupdate.py:203
+#: ../gui/modules/installupdate.py:206
 msgid "Remove"
 msgstr "Supprimer"
 
-#: ../gui/data/packagemanager.glade.h:71
+#: ../gui/data/packagemanager.glade.h:70
 msgid "Remove Confirmation"
 msgstr "Confirmation de la suppression"
 
-#: ../gui/data/packagemanager.glade.h:72
+#: ../gui/data/packagemanager.glade.h:71
 msgid "Remove selected packages"
 msgstr "Supprimer les packages sélectionnés"
 
-#: ../gui/data/packagemanager.glade.h:73
+#: ../gui/data/packagemanager.glade.h:72
 msgid "SSL C_ertificate: "
 msgstr "C_ertificat SSL : "
 
-#: ../gui/data/packagemanager.glade.h:74
+#: ../gui/data/packagemanager.glade.h:73
 msgid "SSL Key and Certificate"
 msgstr "Clé et certificat SSL"
 
-#: ../gui/data/packagemanager.glade.h:75
+#: ../gui/data/packagemanager.glade.h:74
 msgid "SSL _Certificate:"
 msgstr "_Certificat SSL :"
 
-#: ../gui/data/packagemanager.glade.h:76
+#: ../gui/data/packagemanager.glade.h:75
 msgid "SSL _Key:"
 msgstr "_Clé SSL :"
 
-#: ../gui/data/packagemanager.glade.h:77
+#: ../gui/data/packagemanager.glade.h:76
 msgid "SSL _Key: "
 msgstr "_Clé SSL : "
 
-#: ../gui/data/packagemanager.glade.h:78
+#: ../gui/data/packagemanager.glade.h:77
 msgid "Se_arch:"
 msgstr "Recher_che :"
 
-#: ../gui/data/packagemanager.glade.h:79
+#: ../gui/data/packagemanager.glade.h:78
 msgid "Search"
 msgstr "Rechercher"
 
-#: ../gui/data/packagemanager.glade.h:80
+#: ../gui/data/packagemanager.glade.h:79
 msgid "Search All Repositories Error"
 msgstr "Erreur lors de la recherche dans tous les référentiels"
 
-#: ../gui/data/packagemanager.glade.h:81
+#: ../gui/data/packagemanager.glade.h:80
 msgid ""
 "Search All Repositories cannot be performed on the following\n"
 "repositories:"
 msgstr ""
 "La recherche dans tous les référentiels ne peut pas être effectuée dans les référentiels suivants :\n"
 
-#: ../gui/data/packagemanager.glade.h:83
+#: ../gui/data/packagemanager.glade.h:82
 msgid "Select All Items"
 msgstr "Sélectionner tous les éléments"
 
-#: ../gui/data/packagemanager.glade.h:84
+#: ../gui/data/packagemanager.glade.h:83
 msgid "Select Updates"
 msgstr "Sélectionner les mises à jour"
 
-#: ../gui/data/packagemanager.glade.h:85
+#: ../gui/data/packagemanager.glade.h:84
 msgid "Select _All"
 msgstr "Tout _sélectionner"
 
-#: ../gui/data/packagemanager.glade.h:86
+#: ../gui/data/packagemanager.glade.h:85
 msgid "Select _Updates"
 msgstr "Sélectionner les _mises à jour"
 
-#: ../gui/data/packagemanager.glade.h:87
+#: ../gui/data/packagemanager.glade.h:86
 msgid "Select from the list to modify or remove existing repositories."
 msgstr "Dans la liste, sélectionnez le ou les référentiels existants que vous souhaitez modifier ou supprimer."
 
-#: ../gui/data/packagemanager.glade.h:88
+#: ../gui/data/packagemanager.glade.h:87
 msgid "Select packages by marking the checkbox and click to Install/Update."
 msgstr "Sélectionnez les packages puis cliquez sur Installer/Mettre à jour."
 
-#: ../gui/data/packagemanager.glade.h:89
+#: ../gui/data/packagemanager.glade.h:88
 msgid "Select packages by marking the checkbox and click to Remove selected."
 msgstr "Sélectionnez les packages puis cliquez sur Supprimer les éléments sélectionnés."
 
-#: ../gui/data/packagemanager.glade.h:90
+#: ../gui/data/packagemanager.glade.h:89
 msgid "Sho_w:"
 msgstr "Affic_her :"
 
-#: ../gui/data/packagemanager.glade.h:91
+#: ../gui/data/packagemanager.glade.h:90
 msgid "Short description"
 msgstr "Description courte"
 
-#: ../gui/data/packagemanager.glade.h:92
+#: ../gui/data/packagemanager.glade.h:91
 msgid "Start Page"
 msgstr "Page d'ouverture"
 
-#: ../gui/data/packagemanager.glade.h:93
+#: ../gui/data/packagemanager.glade.h:92
 msgid "Start _Page"
 msgstr "_Page d'ouverture"
 
-#: ../gui/data/packagemanager.glade.h:94
+#: ../gui/data/packagemanager.glade.h:93
 msgid "The folllowing will be added to your system"
 msgstr "Les éléments suivants vont être ajoutés à votre système."
 
-#: ../gui/data/packagemanager.glade.h:95
+#: ../gui/data/packagemanager.glade.h:94
 msgid "This is a secure repository. Refer to the posted"
 msgstr "Il s'agit d'un référentiel sécurisé. Reportez-vous aux données postées."
 
-#: ../gui/data/packagemanager.glade.h:96
+#: ../gui/data/packagemanager.glade.h:95
 msgid ""
 "This repository requires a SSL Key and certificate.\n"
 "Enter the location of these files in the spaces provided, or use the "
 "Browse \n"
 "buttons to provide their location."
 msgstr ""
-"Ce référentiel requiert une clé et un certificat SSL. Indiquez l'emplacement de ces fichiers dans les champs correspondants ou cliquez sur le bouton Parcourir."
+"Ce référentiel requiert une clé et un certificat SSL.\n"
+"Indiquez l'emplacement de ces fichiers dans les champs correspondants \n"
+"ou cliquez sur le bouton Parcourir."
 
-#: ../gui/data/packagemanager.glade.h:99
+#: ../gui/data/packagemanager.glade.h:98
 msgid "Type text to search name and description of the package."
 msgstr "Pour trouver le nom ou la description d'un package, saisissez un critère de recherche."
 
-#: ../gui/data/packagemanager.glade.h:100 ../gui/modules/installupdate.py:221
-#: ../packagemanager.py:321 ../packagemanager.py:3475
+#: ../gui/data/packagemanager.glade.h:99 ../gui/modules/installupdate.py:222
+#: ../packagemanager.py:368 ../packagemanager.py:3705
 msgid "Update All"
 msgstr "Tout mettre à jour"
 
-#: ../gui/data/packagemanager.glade.h:101
+#: ../gui/data/packagemanager.glade.h:100
 msgid "Update all packages"
 msgstr "Mettre à jour tous les packages"
 
-#: ../gui/data/packagemanager.glade.h:102 ../packagemanager.py:1277
+#: ../gui/data/packagemanager.glade.h:101 ../packagemanager.py:1360
 msgid "Updates"
 msgstr "Mises à jour"
 
-#: ../gui/data/packagemanager.glade.h:103
+#: ../gui/data/packagemanager.glade.h:102
 msgid "_About"
 msgstr "À _propos"
 
-#: ../gui/data/packagemanager.glade.h:104
+#: ../gui/data/packagemanager.glade.h:103
 msgid "_Add"
 msgstr "_Ajouter"
 
-#: ../gui/data/packagemanager.glade.h:105
+#: ../gui/data/packagemanager.glade.h:104
 msgid "_Browse"
 msgstr "_Parcourir"
 
-#: ../gui/data/packagemanager.glade.h:106
+#: ../gui/data/packagemanager.glade.h:105
 msgid "_Clear"
 msgstr "Effa_cer"
+
+#: ../gui/data/packagemanager.glade.h:106
+msgid "_Contents"
+msgstr "_Sommaire"
 
 #: ../gui/data/packagemanager.glade.h:107
 msgid "_Copy"
 msgstr "_Copier"
 
 #: ../gui/data/packagemanager.glade.h:108
-msgid "_Deselect"
-msgstr "_Désélectionner"
+msgid "_Deselect All"
+msgstr "_Désélectionner tout"
 
 #: ../gui/data/packagemanager.glade.h:109
 msgid "_Edit"
@@ -1608,34 +1672,42 @@ msgid "_Remove"
 msgstr "Supp_rimer"
 
 #: ../gui/data/packagemanager.glade.h:123
+msgid "_Search"
+msgstr "_Rechercher"
+
+#: ../gui/data/packagemanager.glade.h:124
 msgid "_Show Start Page on startup     "
 msgstr "_Afficher la page d'ouverture au démarrage     "
 
-#: ../gui/data/packagemanager.glade.h:124
+#: ../gui/data/packagemanager.glade.h:125
 msgid "_URL: "
 msgstr "_URL : "
 
-#: ../gui/data/packagemanager.glade.h:125 ../um/data/updatemanager.glade.h:17
+#: ../gui/data/packagemanager.glade.h:126 ../um/data/updatemanager.glade.h:17
 msgid "_Update All"
 msgstr "To_ut mettre à jour"
 
-#: ../gui/data/packagemanager.glade.h:126
+#: ../gui/data/packagemanager.glade.h:127
+msgid "_View"
+msgstr "_Vue"
+
+#: ../gui/data/packagemanager.glade.h:128 ../um/data/updatemanager.glade.h:18
 msgid "gtk-cancel"
 msgstr "gtk-cancel"
 
-#: ../gui/data/packagemanager.glade.h:127
+#: ../gui/data/packagemanager.glade.h:129 ../um/data/updatemanager.glade.h:19
 msgid "gtk-close"
 msgstr "gtk-close"
 
-#: ../gui/data/packagemanager.glade.h:128
+#: ../gui/data/packagemanager.glade.h:130 ../um/data/updatemanager.glade.h:20
 msgid "gtk-help"
 msgstr "gtk-help"
 
-#: ../gui/data/packagemanager.glade.h:129
+#: ../gui/data/packagemanager.glade.h:131
 msgid "gtk-ok"
 msgstr "gtk-ok"
 
-#: ../gui/data/packagemanager.glade.h:130
+#: ../gui/data/packagemanager.glade.h:132
 msgid ""
 "lf the repository requires a SSL key and certificate, or if it has mirrors, "
 "add the new\n"
@@ -1680,43 +1752,91 @@ msgstr ""
 
 #: ../gui/data/packagemanager-preferences.schemas.in.h:6
 msgid ""
+"An integer which specifies the initial height of the application main "
+"window, overridden if there is not enough screen available."
+msgstr ""
+"Nombre entier spécifiant la hauteur initiale de la fenêtre principale "
+"de l'application, ignoré en cas d'insuffisance de l'écran."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:7
+msgid ""
+"An integer which specifies the initial horizonatal divider position of the "
+"application, which separates the category panel from the list panel."
+msgstr ""
+"Nombre entier spécifiant la position initiale du séparateur horizontal de l'application"
+"qui divise le panneau des catégories et le panneau de la liste."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:8
+msgid ""
+"An integer which specifies the initial vertical divider position of the "
+"application, which separates the details panel from the list panel."
+msgstr ""
+"Nombre entier spécifiant la position initiale du séparateur vertical de l'application"
+"qui divise le panneau des détails et le panneau de la liste."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:9
+msgid ""
+"An integer which specifies the initial width of the application main window, "
+"overridden if there is not enough screen available."
+msgstr ""
+"Nombre entier spécifiant la largeur initiale de la fenêtre principale "
+"de l'application, ignoré en cas d'insuffisance de l'écran."
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:10
+msgid ""
 "Comma separated list of repositories which we do show if they doesn't "
 "support remote search"
 msgstr ""
 "Liste des référentiels séparés par des virgules ne permettant pas les recherches distantes"
 
-#: ../gui/data/packagemanager-preferences.schemas.in.h:7
+#: ../gui/data/packagemanager-preferences.schemas.in.h:11
 msgid "Enable type ahead search"
 msgstr "Activer la recherche incrémentale"
 
-#: ../gui/data/packagemanager-preferences.schemas.in.h:8
+#: ../gui/data/packagemanager-preferences.schemas.in.h:12
+msgid "Initial application height"
+msgstr "Hauteur initiale de l'application"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:13
+msgid "Initial application horizonatal divider position"
+msgstr "Position initiale du séparateur horizontal de l'application"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:14
+msgid "Initial application vertical divider position"
+msgstr "Position initiale du séparateur vertical de l'application"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:15
+msgid "Initial application width"
+msgstr "Largeur initiale de l'application"
+
+#: ../gui/data/packagemanager-preferences.schemas.in.h:16
 msgid "Initial section value"
 msgstr "Valeur initiale de la section"
 
-#: ../gui/data/packagemanager-preferences.schemas.in.h:9
+#: ../gui/data/packagemanager-preferences.schemas.in.h:17
 msgid "Initial show filter value"
 msgstr "Valeur initiale du filtre d'affichage"
 
-#: ../gui/data/packagemanager-preferences.schemas.in.h:10
+#: ../gui/data/packagemanager-preferences.schemas.in.h:18
 msgid "Show Start Page on startup"
 msgstr "Afficher la page d'ouverture au démarrage"
 
-#: ../gui/data/packagemanager-preferences.schemas.in.h:11
+#: ../gui/data/packagemanager-preferences.schemas.in.h:19
 msgid "Start Page Update URL"
 msgstr "URL de mise à jour de la page d'ouverture"
 
-#: ../gui/data/packagemanager-preferences.schemas.in.h:12
+#: ../gui/data/packagemanager-preferences.schemas.in.h:20
 msgid ""
 "The location from which to fetch updates to the Package Manager Start Page."
 msgstr ""
 "Adresse à laquelle sont recherchées les mises à jour pour la page d'ouverture du gestionnaire de packages"
 
-#: ../gui/modules/webinstall.py:109
+#: ../gui/modules/webinstall.py:113
 #, python-format
 msgid "GUI will not respond to any event! %s. Check webinstall.py signals"
 msgstr "L'interface utilisateur ne répond à aucune commande. %s. Vérifiez les signaux webinstall.py."
 
-#: ../gui/modules/webinstall.py:122
+#: ../gui/modules/webinstall.py:126
 msgid ""
 "\n"
 " Add New Repository\n"
@@ -1724,7 +1844,7 @@ msgstr ""
 "\n"
 "Ajouter un nouveau référentiel\n"
 
-#: ../gui/modules/webinstall.py:125
+#: ../gui/modules/webinstall.py:129
 msgid ""
 "\n"
 " Add New Repositories\n"
@@ -1732,7 +1852,7 @@ msgstr ""
 "\n"
 "Ajouter de nouveaux référentiels\n"
 
-#: ../gui/modules/webinstall.py:130
+#: ../gui/modules/webinstall.py:138
 msgid ""
 "\n"
 " All specified repositories and packages are already on the system.\n"
@@ -1740,17 +1860,17 @@ msgstr ""
 "\n"
 "Tous les référentiels et packages spécifiés sont déjà sur le système.\n"
 
-#: ../gui/modules/webinstall.py:139
+#: ../gui/modules/webinstall.py:147
 #, python-format
 msgid "\t%s "
 msgstr "\t%s "
 
-#: ../gui/modules/webinstall.py:143 ../packagemanager.py:686
+#: ../gui/modules/webinstall.py:151 ../packagemanager.py:769
 #, python-format
 msgid " (%s)\n"
 msgstr " (%s)\n"
 
-#: ../gui/modules/webinstall.py:148
+#: ../gui/modules/webinstall.py:156
 msgid ""
 "\n"
 " Install Packages\n"
@@ -1758,35 +1878,35 @@ msgstr ""
 "\n"
 "Installer les packages\n"
 
-#: ../gui/modules/webinstall.py:156
+#: ../gui/modules/webinstall.py:164
 #, python-format
 msgid "\t%s: "
 msgstr "\t%s : "
 
-#: ../gui/modules/webinstall.py:159 ../gui/modules/installupdate.py:807
-#: ../gui/modules/installupdate.py:857 ../updatemanager.py:992
+#: ../gui/modules/webinstall.py:167 ../gui/modules/installupdate.py:857
+#: ../gui/modules/installupdate.py:907 ../updatemanager.py:1031
 #, python-format
 msgid "%s\n"
 msgstr "%s\n"
 
-#: ../gui/modules/webinstall.py:201
+#: ../gui/modules/webinstall.py:209
 msgid "Proceed only if you trust these new repositories"
 msgstr "Continuez uniquement si vous faites confiance à ces nouveaux référentiels."
 
-#: ../gui/modules/webinstall.py:247 ../gui/modules/webinstall.py:374
-#: ../gui/modules/webinstall.py:383
+#: ../gui/modules/webinstall.py:258 ../gui/modules/webinstall.py:386
+#: ../gui/modules/webinstall.py:396
 msgid "Repository Error"
 msgstr "Erreur de référentiel"
 
-#: ../gui/modules/webinstall.py:335
+#: ../gui/modules/webinstall.py:346
 msgid "API Error"
 msgstr "Erreur d'API"
 
-#: ../gui/modules/webinstall.py:352
+#: ../gui/modules/webinstall.py:363
 msgid "Error"
 msgstr "Erreur"
 
-#: ../gui/modules/webinstall.py:380
+#: ../gui/modules/webinstall.py:393
 msgid "Error reading the p5i file."
 msgstr "Erreur lors de la lecture du fichier p5i"
 
@@ -1892,60 +2012,50 @@ msgstr ""
 "La bibliothèque <b>libbe</b> n'a pas pu préparer la liste des environnements d'initialisation.\n"
 "Toutes les fonctions de gestion des environnements d'initialisation sont désactivées."
 
-#: ../gui/modules/beadmin.py:522 ../gui/modules/beadmin.py:541
+#: ../gui/modules/beadmin.py:522 ../gui/modules/beadmin.py:538
 msgid "%m/%d/%y %H:%M"
 msgstr "%m/%d/%y %H:%M"
 
-#: ../gui/modules/beadmin.py:527 ../gui/modules/beadmin.py:546
-#, python-format
-msgid "Error conversion from UTF-8 to %s."
-msgstr "Erreur de conversion du format UTF-8 à %s."
-
-#: ../gui/modules/beadmin.py:563
-#, python-format
-msgid "Error conversion from %s to UTF-8."
-msgstr "Erreur de conversion du format %s à UTF-8."
-
-#: ../gui/modules/installupdate.py:99
+#: ../gui/modules/installupdate.py:100
 msgid "Preparing..."
 msgstr "Préparation en cours..."
 
-#: ../gui/modules/installupdate.py:100 ../gui/modules/installupdate.py:495
+#: ../gui/modules/installupdate.py:101 ../gui/modules/installupdate.py:544
 msgid "Downloading..."
 msgstr "Téléchargement en cours..."
 
-#: ../gui/modules/installupdate.py:101
+#: ../gui/modules/installupdate.py:102
 msgid "Installing..."
 msgstr "Installation en cours..."
 
-#: ../gui/modules/installupdate.py:190
+#: ../gui/modules/installupdate.py:191
 #, python-format
 msgid "GUI will not respond to any event! %s. Check installupdate.py signals"
 msgstr "L'interface utilisateur ne répond à aucune commande. %s. Vérifiez les signaux beadmin.py."
 
 #. We are not showing the download stage in the main stage list
-#: ../gui/modules/installupdate.py:202
+#: ../gui/modules/installupdate.py:203
 msgid "Removing..."
 msgstr "Suppression en cours..."
 
-#: ../gui/modules/installupdate.py:251
+#: ../gui/modules/installupdate.py:252
 msgid "Canceling..."
 msgstr "Annulation..."
 
-#: ../gui/modules/installupdate.py:319
+#: ../gui/modules/installupdate.py:356
 msgid "BE name is in use"
 msgstr "Ce nom d'environnement d'initialisation est déjà utilisé."
 
-#: ../gui/modules/installupdate.py:321
+#: ../gui/modules/installupdate.py:358
 msgid "BE name is invalid"
 msgstr "Le nom de l'environnement d'initialisation est non valide."
 
-#: ../gui/modules/installupdate.py:355
+#: ../gui/modules/installupdate.py:392
 #, python-format
 msgid "Ensuring %s is up to date..."
 msgstr "Vérification de l'utilisation de la dernière version de %s..."
 
-#: ../gui/modules/installupdate.py:376
+#: ../gui/modules/installupdate.py:413
 msgid ""
 "Accessing this restricted repository failed.\n"
 "You either need to register to access this repository,\n"
@@ -1957,11 +2067,11 @@ msgstr ""
 "le certificat a expiré ou le certificat du référentiel\n"
 "doit être accepté."
 
-#: ../gui/modules/installupdate.py:386
+#: ../gui/modules/installupdate.py:423
 msgid "Inventory exception:\n"
 msgstr "Exception relative à l'inventaire :\n"
 
-#: ../gui/modules/installupdate.py:393
+#: ../gui/modules/installupdate.py:430
 msgid ""
 "Please check the network connection.\n"
 "Is the repository accessible?"
@@ -1969,7 +2079,7 @@ msgstr ""
 "Vérifiez la connexion au réseau.\n"
 "Le référentiel est-il accessible ?"
 
-#: ../gui/modules/installupdate.py:403
+#: ../gui/modules/installupdate.py:440
 #, python-format
 msgid ""
 "Please check the network connection.\n"
@@ -1982,7 +2092,7 @@ msgstr ""
 "\n"
 "%s"
 
-#: ../gui/modules/installupdate.py:409
+#: ../gui/modules/installupdate.py:446
 msgid ""
 "pkg(5) appears to be out of date and should be\n"
 "updated before running Update All.\n"
@@ -1992,7 +2102,7 @@ msgstr ""
 "mis à jour avant d'exécuter Tout mettre à jour.\n"
 "Mettez à jour le package SUNWipkg."
 
-#: ../gui/modules/installupdate.py:415
+#: ../gui/modules/installupdate.py:452
 #, python-format
 msgid ""
 "Cannot remove:\n"
@@ -2003,7 +2113,7 @@ msgstr ""
 "\t%s\n"
 "Il existe des packages dépendants :\n"
 
-#: ../gui/modules/installupdate.py:424
+#: ../gui/modules/installupdate.py:461
 #, python-format
 msgid ""
 "\n"
@@ -2011,9 +2121,10 @@ msgid ""
 "%s is often a source of this problem."
 msgstr ""
 "\n"
-"Une utilisation incohérente de pfexec ou gksu lors de l'exécution de %s est souvent la cause de ce problème."
+"Une utilisation incohérente de pfexec ou gksu lors de l'exécution\n"
+"de %s est souvent la cause de ce problème."
 
-#: ../gui/modules/installupdate.py:427
+#: ../gui/modules/installupdate.py:464
 msgid ""
 "\n"
 "To rebuild index, please use the terminal command:"
@@ -2021,7 +2132,7 @@ msgstr ""
 "\n"
 "Pour recréer l'index, utilisez la commande de terminal :"
 
-#: ../gui/modules/installupdate.py:428
+#: ../gui/modules/installupdate.py:465
 msgid ""
 "\n"
 "\tpfexec pkg rebuild-index"
@@ -2029,17 +2140,19 @@ msgstr ""
 "\n"
 "\tpfexec pkg rebuild-index"
 
-#: ../gui/modules/installupdate.py:432
+#: ../gui/modules/installupdate.py:469
 msgid ""
 "There was an error during installation. The search\n"
 "index is corrupted. You might want try to fix this\n"
 "problem by running command:\n"
 "\tpfexec pkg rebuild-index"
 msgstr ""
-"Une erreur s'est produite lors de l'installation. L'index de recherche est corrompu. Vous pouvez tenter de résoudre ce problème en utilisant la commande suivante :\n"
+"Une erreur s'est produite lors de l'installation.\n"
+"L'index de recherche est corrompu. Vous pouvez tenter de résoudre\n"
+"ce problème en utilisant la commande suivante :\n"
 "\tpfexec pkg rebuild-index"
 
-#: ../gui/modules/installupdate.py:439
+#: ../gui/modules/installupdate.py:476
 msgid ""
 "This is an Live Image. The install\n"
 "operation can't be performed."
@@ -2047,7 +2160,7 @@ msgstr ""
 "Il s'agit d'une image Live. L'installation\n"
 "ne peut pas être effectuée."
 
-#: ../gui/modules/installupdate.py:444
+#: ../gui/modules/installupdate.py:481
 #, python-format
 msgid ""
 "There was an error during installation.\n"
@@ -2056,9 +2169,11 @@ msgid ""
 "problem by restarting %s\n"
 msgstr ""
 "Une erreur s'est produite lors de l'installation.\n"
-"Le Plan de l'opération est manquant et l'opération ne peut pas se terminer correctement. Vous pouvez tenter de résoudre ce problème en redémarrant %s.\n"
+"Le Plan de l'opération est manquant et l'opération ne peut\n"
+"pas se terminer correctement. Vous pouvez tenter de résoudre\n"
+"ce problème en redémarrant %s.\n"
 
-#: ../gui/modules/installupdate.py:451
+#: ../gui/modules/installupdate.py:488
 #, python-format
 msgid ""
 "There was an error during installation.\n"
@@ -2067,35 +2182,37 @@ msgid ""
 "problem by restarting %s\n"
 msgstr ""
 "Une erreur s'est produite lors de l'installation.\n"
-"L'État de l'image n'est pas correct et l'opération ne peut pas se terminer correctement. Vous pouvez tenter de résoudre ce problème en redémarrant %s.\n"
+"L'État de l'image n'est pas correct et l'opération ne peut\n"
+"pas se terminer correctement. Vous pouvez tenter de résoudre\n"
+"ce problème en redémarrant %s.\n"
 
-#: ../gui/modules/installupdate.py:462
+#: ../gui/modules/installupdate.py:499
 msgid "Specifying BE Name not supported.\n"
 msgstr "Il est impossible de spécifier un nom pour l'environnement d'initialisation.\n"
 
-#: ../gui/modules/installupdate.py:466
+#: ../gui/modules/installupdate.py:503
 #, python-format
 msgid "Invalid BE Name: %s.\n"
 msgstr "Nom de l'environnement d'initialisation non valide : %s.\n"
 
-#: ../gui/modules/installupdate.py:491
+#: ../gui/modules/installupdate.py:540
 #, python-format
 msgid "Updating %s"
 msgstr "Mise à jour de %s"
 
-#: ../gui/modules/installupdate.py:497
+#: ../gui/modules/installupdate.py:546
 msgid "Executing..."
 msgstr "Exécution en cours..."
 
-#: ../gui/modules/installupdate.py:504
+#: ../gui/modules/installupdate.py:553
 msgid "Gathering packages information, please wait..."
 msgstr "Recherche des informations de package. Veuillez patienter..."
 
-#: ../gui/modules/installupdate.py:526
+#: ../gui/modules/installupdate.py:575
 msgid "All packages already installed."
 msgstr "Tous les packages sont déjà installés."
 
-#: ../gui/modules/installupdate.py:531
+#: ../gui/modules/installupdate.py:580
 msgid ""
 "Selected package(s) cannot be updated on their own.\n"
 "Click Update All to update all packages."
@@ -2103,15 +2220,15 @@ msgstr ""
 "Le ou les packages sélectionnés ne peuvent pas être mis à jour seuls.\n"
 "Cliquez sur Tout mettre à jour pour mettre à jour tous les packages."
 
-#: ../gui/modules/installupdate.py:534
-msgid "Your system have been already updated."
-msgstr "Votre système a déjà été mis à jour."
+#: ../gui/modules/installupdate.py:583
+msgid "Your system has already been updated."
+msgstr "Le système a déjà été mis à jour."
 
-#: ../gui/modules/installupdate.py:572 ../gui/modules/installupdate.py:607
+#: ../gui/modules/installupdate.py:621 ../gui/modules/installupdate.py:656
 msgid "No futher information available"
 msgstr "Aucune autre information n'est disponible."
 
-#: ../gui/modules/installupdate.py:575 ../gui/modules/installupdate.py:598
+#: ../gui/modules/installupdate.py:624 ../gui/modules/installupdate.py:647
 msgid ""
 "\n"
 "Error:\n"
@@ -2119,11 +2236,11 @@ msgstr ""
 "\n"
 "Erreur :\n"
 
-#: ../gui/modules/installupdate.py:578 ../gui/modules/installupdate.py:588
+#: ../gui/modules/installupdate.py:627 ../gui/modules/installupdate.py:637
 msgid " - Failed </b>"
 msgstr " - Échec </b>"
 
-#: ../gui/modules/installupdate.py:592
+#: ../gui/modules/installupdate.py:641
 #, python-format
 msgid ""
 "An unknown error occured in the %s stage.\n"
@@ -2131,9 +2248,10 @@ msgid ""
 "by filing a bug together with exception value at:\n"
 msgstr ""
 "Une erreur inconnue s'est produite lors de l'étape %s.\n"
-"Communiquez ce problème aux développeurs en remplissant un formulaire de bogue et en indiquant le numéro d'exception à l'adresse :\n"
+"Communiquez ce problème aux développeurs en remplissant un formulaire\n"
+"de bogue et en indiquant le numéro d'exception à l'adresse :\n"
 
-#: ../gui/modules/installupdate.py:596
+#: ../gui/modules/installupdate.py:645
 msgid ""
 "http://defect.opensolaris.org\n"
 "\n"
@@ -2141,65 +2259,73 @@ msgstr ""
 "http://defect.opensolaris.org\n"
 "\n"
 
-#: ../gui/modules/installupdate.py:597
+#: ../gui/modules/installupdate.py:646
 msgid "Exception value:\n"
 msgstr "Numéro d'exception :\n"
 
-#: ../gui/modules/installupdate.py:602
+#: ../gui/modules/installupdate.py:651
 msgid "Exception traceback:\n"
 msgstr "Suivi d'exception :\n"
 
-#: ../gui/modules/installupdate.py:659
+#: ../gui/modules/installupdate.py:708
 #, python-format
 msgid "Downloaded %(current)s of %(total)s"
 msgstr "Téléchargement : %(current)s sur %(total)s"
 
-#: ../gui/modules/installupdate.py:679
+#: ../gui/modules/installupdate.py:728
 msgid "Catalog refresh failed during install."
 msgstr "Échec de l'actualisation du catalogue au cours de l'installation"
 
-#: ../gui/modules/installupdate.py:694
+#: ../gui/modules/installupdate.py:743
 msgid "Catalog refresh failed during Update All."
 msgstr "Échec de l'actualisation du catalogue au cours de l'opération Tout mettre à jour."
 
-#: ../gui/modules/installupdate.py:698
+#: ../gui/modules/installupdate.py:747
 msgid "Installation completed successfully."
 msgstr "Installation terminée."
 
-#: ../gui/modules/installupdate.py:700
+#: ../gui/modules/installupdate.py:749
 msgid "Packages removed successfully."
 msgstr "Packages supprimés."
 
-#: ../gui/modules/installupdate.py:702
+#: ../gui/modules/installupdate.py:751
 msgid "Packages updated successfully."
 msgstr "Packages mis à jour."
 
-#: ../gui/modules/installupdate.py:733
-msgid "Not enough disk space, the selected action cannot "
-msgstr "Espace disque insuffisant. L'action sélectionnée ne peut pas être effectuée. "
+#: ../gui/modules/installupdate.py:782
+msgid ""
+"Not enough disk space, the selected action cannot be performed.\n"
+"\n"
+"Click OK to manage your existing BEs and free up disk space or Cancel to "
+"cancel the action."
+msgstr ""
+"Espace disque insuffisant, l'opération sélectionnée ne peut pas être effectuée.\n"
+"\n"
+"Cliquez sur OK pour gérer les environnements d'initialisation existants et libérer de l'espace disque ou cliquez sur Annuler "
+"pour annuler l'opération."
 
-#: ../gui/modules/installupdate.py:737
+#: ../gui/modules/installupdate.py:786
 msgid "Not Enough Disk Space"
 msgstr "Espace disque insuffisant"
 
-#: ../gui/modules/installupdate.py:755
+#: ../gui/modules/installupdate.py:804
 msgid "Packages To Be Updated:\n"
 msgstr "Packages à mettre à jour :\n"
 
-#: ../gui/modules/installupdate.py:762
+#: ../gui/modules/installupdate.py:811
 msgid "Packages To Be Installed:\n"
 msgstr "Packages à installer :\n"
 
-#: ../gui/modules/installupdate.py:769
+#: ../gui/modules/installupdate.py:818
 msgid "Packages To Be Removed:\n"
 msgstr "Packages à supprimer :\n"
 
-#: ../gui/modules/installupdate.py:827
+#: ../gui/modules/installupdate.py:877
 #, python-format
 msgid "Package %d of %d: %s\n"
 msgstr "Package %d sur %d : %s\n"
 
-#: ../gui/modules/installupdate.py:846
+#: ../gui/modules/installupdate.py:896
 #, python-format
 msgid "Evaluating: %s"
 msgstr "Évaluation : %s"
@@ -2298,7 +2424,8 @@ msgstr "Nom déjà utilisé"
 msgid "URL is not valid"
 msgstr "URL non valide"
 
-#: ../gui/modules/repository.py:855
+#: ../gui/modules/repository.py:855 ../packagemanager.py:2217
+#: ../updatemanager.py:926
 #, python-format
 msgid ""
 "Unable to navigate to:\n"
@@ -2415,7 +2542,7 @@ msgstr "L'attribut requis %s n'a pas été fourni."
 msgid "required attribute, '%s', was not provided."
 msgstr "L'attribut requis %s n'a pas été fourni."
 
-#: ../modules/client/api_errors.py:102
+#: ../modules/client/api_errors.py:112
 #, python-format
 msgid ""
 "Could not operate on %s\n"
@@ -2423,12 +2550,12 @@ msgid ""
 "pfexec\n"
 "or otherwise increase your privileges."
 msgstr ""
-"Impossible d'effectuer l'opération sur %sn"
+"Impossible d'effectuer l'opération sur %s\n"
 "car les droits sont insuffisants. Essayez de nouveau la commande en utilisant "
 "pfexec\n"
 " ou augmentez vos droits."
 
-#: ../modules/client/api_errors.py:107
+#: ../modules/client/api_errors.py:117
 msgid ""
 "\n"
 "Could not complete the operation because of insufficient permissions. "
@@ -2436,57 +2563,60 @@ msgid ""
 "try the command again using pfexec or otherwise increase your privileges.\n"
 msgstr ""
 "\n"
-"Impossible de terminer l'opération : droits insuffisants. Essayez de nouveau la commande en utilisant pfexec, ou élargissez vos droits."
+"Impossible de terminer l'opération : droits insuffisants.\n"
+"Essayez de nouveau la commande en utilisant pfexec, ou élargissez vos droits.\n"
 
-#: ../modules/client/api_errors.py:118
+#: ../modules/client/api_errors.py:128
 #, python-format
 msgid ""
 "Could not operate on %s\n"
 "because the file is in use. Please stop using the file and try the\n"
 "operation again."
 msgstr ""
-"Impossible d'effectuer l'opération sur %s car le fichier est en cours d'utilisation. Fermez le fichier et tentez de nouveau l'opération."
+"Impossible d'effectuer l'opération sur %s\n"
+"car le fichier est en cours d'utilisation.\n"
+"Fermez le fichier et tentez de nouveau l'opération."
 
-#: ../modules/client/api_errors.py:137
+#: ../modules/client/api_errors.py:147
 msgid ""
-"pkg: The following pattern(s) did not match any packages in the current\n"
-"catalog. Try relaxing the pattern, refreshing and/or examining the catalogs"
+"The following pattern(s) did not match any packages in the current catalog.\n"
+"Try relaxing the pattern, refreshing and/or examining the catalogs:"
 msgstr ""
-"pkg : le ou les modèles suivants ne correspondent à aucun package dans le catalogue\n"
-"actuel. Essayez d'assouplir le modèle, et d'actualiser et/ou d'examiner les catalogues."
+"Le ou les modèles suivants ne correspondent à aucun package dans le catalogue actuel.\n"
+"Essayez d'assouplir le modèle, et d'actualiser et/ou d'examiner les catalogues :"
 
-#: ../modules/client/api_errors.py:150
+#: ../modules/client/api_errors.py:160
 #, python-format
-msgid "pkg: '%s' matches no installed packages"
-msgstr "pkg : '%s' ne correspond à aucun package installé."
-
-#: ../modules/client/api_errors.py:153
-#, python-format
-msgid "pkg: '%s' is an illegal fmri"
-msgstr "pkg : '%s' est un FMRI non autorisé."
-
-#: ../modules/client/api_errors.py:157
-msgid "pkg: the following package(s) violated constraints:"
-msgstr "pkg : le ou les packages suivants ne respectent pas les contraintes :"
+msgid "'%s' matches no installed packages"
+msgstr "'%s' ne correspond à aucun package installé."
 
 #: ../modules/client/api_errors.py:163
+#, python-format
+msgid "'%s' is an illegal fmri"
+msgstr "'%s' est un FMRI non autorisé."
+
+#: ../modules/client/api_errors.py:167
+msgid "The following package(s) violated constraints:"
+msgstr "Le ou les packages suivants ne respectent pas les contraintes :"
+
+#: ../modules/client/api_errors.py:172
 #, python-format
 msgid "'%s' supports the following architectures: %s"
 msgstr "'%s' prend en charge les architectures suivantes : %s"
 
-#: ../modules/client/api_errors.py:164
+#: ../modules/client/api_errors.py:173
 #, python-format
 msgid "Image architecture is defined as: %s"
 msgstr "L'architecture d'image est définie en tant que : %s"
 
-#: ../modules/client/api_errors.py:193
+#: ../modules/client/api_errors.py:239
 msgid ""
 "No matching package could be found for the following FMRIs in any of the "
 "catalogs for the current publishers:\n"
 msgstr ""
 "Aucun package correspondant n'a été trouvé dans l'un des catalogues des éditeurs actuels pour les FMRI suivants :\n"
 
-#: ../modules/client/api_errors.py:282
+#: ../modules/client/api_errors.py:337
 #, python-format
 msgid ""
 "The specified file is in an unrecognized format or does not contain valid "
@@ -2494,18 +2624,18 @@ msgid ""
 msgstr ""
 "Le format du fichier spécifié n'est pas reconnu ou ne contient pas d'informations d'éditeur valides : %s"
 
-#: ../modules/client/api_errors.py:285
+#: ../modules/client/api_errors.py:340
 msgid ""
 "The specified file is in an unrecognized format or does not contain valid "
 "publisher information."
 msgstr ""
 "Le format du fichier spécifié n'est pas reconnu ou ne contient pas d'informations d'éditeur valides."
 
-#: ../modules/client/api_errors.py:294
+#: ../modules/client/api_errors.py:349
 msgid "Unsupported pkg(5) publisher information data format."
 msgstr "Le format des données d'information de l'éditeur pkg(5) n'est pas pris en charge."
 
-#: ../modules/client/api_errors.py:320
+#: ../modules/client/api_errors.py:375
 #, python-format
 msgid ""
 "Error encountered while retrieving data from '%s':\n"
@@ -2514,159 +2644,179 @@ msgstr ""
 "Une erreur s'est produite lors de la récupération des données à partir de '%s' :\n"
 "%s"
 
-#: ../modules/client/api_errors.py:322
+#: ../modules/client/api_errors.py:377
 #, python-format
 msgid "Error encountered while retrieving data from: %s"
 msgstr "Une erreur s'est produite lors de la récupération des données à partir de %s."
 
-#: ../modules/client/api_errors.py:330
+#: ../modules/client/api_errors.py:385
 #, python-format
 msgid "'%s' is not a valid location."
 msgstr "'%s' n'est pas un emplacement valide."
 
-#: ../modules/client/api_errors.py:342
+#: ../modules/client/api_errors.py:397
 #, python-format
 msgid "'%s' is not a valid boot envirnment name."
 msgstr "'%s' n'est pas un nom d'environnement d'initialisation valide."
 
-#: ../modules/client/api_errors.py:351
+#: ../modules/client/api_errors.py:406
 msgid ""
 "Boot environment naming during package install is not supported on this\n"
 "version of OpenSolaris. Please image-update without the --be-name option."
 msgstr ""
 "L'attribution d'un nom à l'environnement d'initialisation lors de l'installation du package n'est pas une opération prise en charge dans cette version d'OpenSolaris. Utilisez la commande image-update sans l'option --be-name."
 
-#: ../modules/client/api_errors.py:357
+#: ../modules/client/api_errors.py:412
 msgid "Unable to clone the current boot environment."
 msgstr "Impossible de cloner l'environnement d'initialisation actuel."
 
-#: ../modules/client/api_errors.py:370
+#: ../modules/client/api_errors.py:425
 #, python-format
 msgid ""
 "A problem occurred while attempting to rename the boot environment\n"
 "currently named %(orig)s to %(dest)s."
 msgstr ""
-"Un problème est survenu lors de la tentative de renommage de l'environnement d'initialisation actuellement nommé %(orig)s en %(dest)s."
+"Un problème est survenu lors de la tentative de renommage de l'environnement\n"
+"d'initialisation actuellement nommé %(orig)s en %(dest)s."
 
-#: ../modules/client/api_errors.py:381
+#: ../modules/client/api_errors.py:436
 #, python-format
 msgid "Unable to mount %(name)s at %(mt)s"
 msgstr "Impossible de monter %(name)s sur %(mt)s"
 
-#: ../modules/client/api_errors.py:390
+#: ../modules/client/api_errors.py:445
 msgid ""
 "Naming a boot environment when operating on a non-live image is\n"
 "not allowed."
 msgstr ""
-"L'attribution d'un nom à un environnement d'initialisation lorsqu'une opération est effectuée sur une image non Live n'est pas autorisée."
+"L'attribution d'un nom à un environnement d'initialisation lorsqu'une opération\n"
+"est effectuée sur une image non Live n'est pas autorisée."
 
-#: ../modules/client/api_errors.py:401
+#: ../modules/client/api_errors.py:456
 msgid "Info does not recognize the following options:"
 msgstr "Info ne reconnaît pas les options suivantes :"
 
-#: ../modules/client/api_errors.py:403
+#: ../modules/client/api_errors.py:458
 msgid " '"
 msgstr " '"
 
-#: ../modules/client/api_errors.py:403
+#: ../modules/client/api_errors.py:458
 msgid "'"
 msgstr "'"
 
-#: ../modules/client/api_errors.py:413
+#: ../modules/client/api_errors.py:468
 msgid "Some servers failed to respond appropriately:\n"
 msgstr "Certains serveurs n'ont pas répondu correctement :\n"
 
-#: ../modules/client/api_errors.py:416
+#: ../modules/client/api_errors.py:473
 #, python-format
 msgid "    %(o)s: %(msg)s (%(code)d)\n"
 msgstr "    %(o)s : %(msg)s (%(code)d)\n"
 
-#: ../modules/client/api_errors.py:421
+#: ../modules/client/api_errors.py:478
 #, python-format
-msgid "    %(o)s: %(to)s\n"
-msgstr "    %(o)s : %(to)s\n"
+msgid "    %s: timeout\n"
+msgstr "  %s : délai d'attente\n"
 
-#: ../modules/client/api_errors.py:425
+#: ../modules/client/api_errors.py:481
 #, python-format
 msgid "    %(o)s: %(other)s\n"
 msgstr "    %(o)s : %(other)s\n"
 
-#: ../modules/client/api_errors.py:429
+#: ../modules/client/api_errors.py:485
+#, python-format
+msgid ""
+"    %(o)s: Unable to read status of HTTP response:%(l)s\n"
+"        This is most likely not a pkg(5) depot.  Please check the URL and "
+"the \n"
+"        port number."
+msgstr ""
+"    %(o)s : Impossible de lire l'état de la réponse HTTP :%(l)s\n"
+"        Il ne s'agit certainement pas d'un dépôt pkg(5). Vérifiez l'URL et "
+"le \n"
+"        numéro du port."
+
+#: ../modules/client/api_errors.py:493
+#, python-format
+msgid "    %s: Incomplete read from host"
+msgstr "    %s : lecture incomplète à partir de l'hôte"
+
+#: ../modules/client/api_errors.py:496
 #, python-format
 msgid "    %(o)s: %(msg)s\n"
 msgstr "    %(o)s : %(msg)s\n"
 
-#: ../modules/client/api_errors.py:434
+#: ../modules/client/api_errors.py:499
+#, python-format
+msgid "    %s: Socket timeout"
+msgstr "   %s : délai d'attente du socket"
+
+#: ../modules/client/api_errors.py:501
+#, python-format
+msgid "    %(o)s: Socket error, reason: %(msg)s"
+msgstr "    %(o)s : erreur de socket, raison : %(msg)s"
+
+#: ../modules/client/api_errors.py:505
+#, python-format
+msgid "    %(o)s: %(msg)s"
+msgstr "    %(o)s : %(msg)s"
+
+#: ../modules/client/api_errors.py:508
 #, python-format
 msgid "%s appears not to be a valid package depot.\n"
 msgstr "%s n'est pas un dépôt de packages valide.\n"
 
-#: ../modules/client/api_errors.py:457
+#: ../modules/client/api_errors.py:531
 msgid ""
 "Search capabilities and performance are degraded.\n"
 "To improve, run 'pkg rebuild-index'."
 msgstr ""
-"Les capacités et les performances de recherche se sont dégradées. Pour les améliorer, exécutez 'pkg rebuild-index'."
+"Les capacités et les performances de recherche se sont dégradées.\n"
+"Pour les améliorer, exécutez 'pkg rebuild-index'."
 
-#: ../modules/client/api_errors.py:468
-msgid "This expression produces action results:\n"
-msgstr "Cette expression produit des résultats d'action :\n"
-
-#: ../modules/client/api_errors.py:470
-msgid "This expression produces package results:\n"
-msgstr "Cette expression produit des résultats de package :\n"
-
-#: ../modules/client/api_errors.py:472
-#, python-format
-msgid ""
-"%(ac_s)s%(ac_q)s%(pc_s)s%(pc_q)s'AND' and 'OR' require those expressions to "
-"produce the same type of results."
-msgstr ""
-"%(ac_s)s%(ac_q)s%(pc_s)s%(pc_q)s'AND' et 'OR' requièrent que ces expressions produisent le même type de résultats."
-
-#: ../modules/client/api_errors.py:498
+#: ../modules/client/api_errors.py:571
 #, python-format
 msgid "'%s' is not a valid publisher name."
 msgstr "'%s' n'est pas un nom d'éditeur valide."
 
-#: ../modules/client/api_errors.py:506
+#: ../modules/client/api_errors.py:579
 #, python-format
 msgid ""
 "'%(value)s' is not a valid value for repository attribute '%(attribute)s'."
 msgstr ""
 "'%(value)s' n'est pas une valeur valide pour l'attribut de référentiel '%(attribute)s'."
 
-#: ../modules/client/api_errors.py:519
+#: ../modules/client/api_errors.py:592
 #, python-format
 msgid "'%s' is not a valid repository collection type."
 msgstr "'%s' n'est pas un type de collection de référentiel valide."
 
-#: ../modules/client/api_errors.py:527
+#: ../modules/client/api_errors.py:600
 #, python-format
 msgid "'%s' is not a valid URI."
 msgstr "'%s' n'est pas un URI valide."
 
-#: ../modules/client/api_errors.py:535
+#: ../modules/client/api_errors.py:608
 #, python-format
 msgid "'%s' is not a valid URI priority; integer value expected."
 msgstr "'%s' n'est pas une priorité d'URI valide. La valeur attendue est de type entier."
 
-#: ../modules/client/api_errors.py:547
+#: ../modules/client/api_errors.py:620
 #, python-format
 msgid "'%s' is not a valid repository URI sort policy."
 msgstr "'%s' n'est pas une règle de tri d'URI de référentiel valide."
 
-#: ../modules/client/api_errors.py:556
+#: ../modules/client/api_errors.py:629
 #, python-format
 msgid "Publisher '%s' is disabled and cannot be used for packaging operations."
 msgstr "L'éditeur %s a été désactivé et ne peut pas être utilisé pour les opérations d'empaquetage."
 
-#: ../modules/client/api_errors.py:565
+#: ../modules/client/api_errors.py:638
 #, python-format
 msgid "A publisher with the same name or alias as '%s' already exists."
 msgstr "Un éditeur ayant le même nom ou alias que %s existe déjà."
 
-#: ../modules/client/api_errors.py:574
+#: ../modules/client/api_errors.py:647
 #, python-format
 msgid ""
 "A repository with the same name or origin URIs already exists for publisher "
@@ -2674,76 +2824,76 @@ msgid ""
 msgstr ""
 "Un référentiel ayant le même nom ou les mêmes URI d'origine existe déjà pour l'éditeur %s."
 
-#: ../modules/client/api_errors.py:583
+#: ../modules/client/api_errors.py:656
 #, python-format
 msgid "Mirror '%s' already exists for the specified repository."
 msgstr "Une copie miroir '%s' existe déjà pour le référentiel spécifié."
 
-#: ../modules/client/api_errors.py:592
+#: ../modules/client/api_errors.py:665
 #, python-format
 msgid "Origin '%s' already exists for the specified repository."
 msgstr "Une copie d'origine '%s' existe déjà pour le référentiel spécifié."
 
-#: ../modules/client/api_errors.py:601
+#: ../modules/client/api_errors.py:674
 msgid "The preferred publisher cannot be removed."
 msgstr "L'éditeur préféré ne peut pas être supprimé."
 
-#: ../modules/client/api_errors.py:609
+#: ../modules/client/api_errors.py:682
 msgid "Cannot remove the selected repository for a publisher."
 msgstr "Impossible de supprimer le référentiel sélectionné pour l'éditeur."
 
-#: ../modules/client/api_errors.py:618
+#: ../modules/client/api_errors.py:691
 #, python-format
 msgid ""
-"Publisher '%(pub)s' is disabled and cannot be set as the preferred publisher."
+"Publisher '%s' is disabled and cannot be set as the preferred publisher."
 msgstr ""
-"L'éditeur '%(pub)s' a été désactivé et ne peut pas être défini comme éditeur préféré."
+"L'éditeur '%s' a été désactivé et ne peut pas être défini comme éditeur préféré."
 
-#: ../modules/client/api_errors.py:627
+#: ../modules/client/api_errors.py:700
 #, python-format
 msgid "Unknown legal URI '%s'."
 msgstr "URI admis inconnu '%s'"
 
-#: ../modules/client/api_errors.py:635
+#: ../modules/client/api_errors.py:708
 #, python-format
 msgid "Unknown publisher '%s'."
 msgstr "Éditeur inconnu '%s'"
 
-#: ../modules/client/api_errors.py:643
+#: ../modules/client/api_errors.py:716
 #, python-format
 msgid "Unknown related URI '%s'."
 msgstr "URI connexe inconnu '%s'"
 
-#: ../modules/client/api_errors.py:651
+#: ../modules/client/api_errors.py:724
 #, python-format
 msgid "Unknown repository '%s'."
 msgstr "Référentiel inconnu '%s'"
 
-#: ../modules/client/api_errors.py:659
+#: ../modules/client/api_errors.py:732
 #, python-format
 msgid "Unknown repository mirror '%s'."
 msgstr "Référentiel miroir inconnu : %s"
 
-#: ../modules/client/api_errors.py:667
+#: ../modules/client/api_errors.py:740
 #, python-format
 msgid "Unknown repository origin '%s'"
 msgstr "Référentiel d'origine inconnu : %s"
 
-#: ../modules/client/api_errors.py:678
+#: ../modules/client/api_errors.py:751
 #, python-format
 msgid "The URI '%(uri)s' contains an unsupported scheme '%(scheme)s'."
 msgstr "L'URI '%(uri)s' contient un schéma non pris en charge : '%(scheme)s'."
 
-#: ../modules/client/api_errors.py:681
+#: ../modules/client/api_errors.py:754
 msgid "The specified URI contains an unsupported scheme."
 msgstr "L'URI spécifié contient un schéma non pris en charge."
 
-#: ../modules/client/api_errors.py:689
+#: ../modules/client/api_errors.py:762
 #, python-format
 msgid "'%(attr)s' is not supported for '%(scheme)s'."
 msgstr "'%(attr)s' n 'est pas pris en charge pour '%(scheme)s'."
 
-#: ../modules/client/api_errors.py:716
+#: ../modules/client/api_errors.py:789
 #, python-format
 msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s' needed to access '%(uri)s', "
@@ -2751,7 +2901,7 @@ msgid ""
 msgstr ""
 "Le certificat '%(cert)s' pour l'éditeur '%(pub)s' nécessaire pour accéder à '%(uri)s' a expiré. Installez un certificat valide."
 
-#: ../modules/client/api_errors.py:721
+#: ../modules/client/api_errors.py:794
 #, python-format
 msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s', has expired.  Please install "
@@ -2759,7 +2909,7 @@ msgid ""
 msgstr ""
 "Le certificat '%(cert)s' pour l'éditeur '%(pub)s' a expiré. Installez un certificat valide."
 
-#: ../modules/client/api_errors.py:726
+#: ../modules/client/api_errors.py:799
 #, python-format
 msgid ""
 "Certificate '%(cert)s', needed to access '%(uri)s', has expired.  Please "
@@ -2767,12 +2917,12 @@ msgid ""
 msgstr ""
 "Le certificat '%(cert)s' nécessaire pour accéder à '%(uri)s' a expiré. Installez un certificat valide."
 
-#: ../modules/client/api_errors.py:729
+#: ../modules/client/api_errors.py:802
 #, python-format
 msgid "Certificate '%s' has expired.  Please install a valid certificate."
 msgstr "Le certificat '%s' a expiré. Installez un certificat valide."
 
-#: ../modules/client/api_errors.py:742
+#: ../modules/client/api_errors.py:815
 #, python-format
 msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s', needed to access '%(uri)s', "
@@ -2780,7 +2930,7 @@ msgid ""
 msgstr ""
 "Le certificat '%(cert)s' pour l'éditeur '%(pub)s', nécessaire pour accéder à '%(uri)s', expire dans '%(days)s' jours."
 
-#: ../modules/client/api_errors.py:747
+#: ../modules/client/api_errors.py:820
 #, python-format
 msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s' will expire in '%(days)s' "
@@ -2788,7 +2938,7 @@ msgid ""
 msgstr ""
 "Le certificat '%(cert)s' pour l'éditeur '%(pub)s' expire dans '%(days)s' jours."
 
-#: ../modules/client/api_errors.py:751
+#: ../modules/client/api_errors.py:824
 #, python-format
 msgid ""
 "Certificate '%(cert)s', needed to access '%(uri)s', will expire in '%(days)"
@@ -2796,12 +2946,12 @@ msgid ""
 msgstr ""
 "Le certificat '%(cert)s', nécessaire pour accéder à '%(uri)s', expire dans '%(days)' jours."
 
-#: ../modules/client/api_errors.py:754
+#: ../modules/client/api_errors.py:827
 #, python-format
 msgid "Certificate '%(cert)s' will expire in '%(days)s' days."
 msgstr "Le certificat '%(cert)s' va expirer dans '%(days)s' jours."
 
-#: ../modules/client/api_errors.py:766
+#: ../modules/client/api_errors.py:839
 #, python-format
 msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s', needed to access '%(uri)s', "
@@ -2809,22 +2959,22 @@ msgid ""
 msgstr ""
 "Le certificat '%(cert)s' pour l'éditeur '%(pub)s', nécessaire pour accéder à '%(uri)s', n'est pas valide."
 
-#: ../modules/client/api_errors.py:770
+#: ../modules/client/api_errors.py:843
 #, python-format
 msgid "Certificate '%(cert)s' for publisher '%(pub)s' is invalid."
 msgstr "Le certificat '%(cert)s' pour l'éditeur '%(pub)s' n'est pas valide."
 
-#: ../modules/client/api_errors.py:774
+#: ../modules/client/api_errors.py:847
 #, python-format
 msgid "Certificate '%(cert)s' needed to access '%(uri)s' is invalid."
 msgstr "Le certificat '%(cert)s' nécessaire pour accéder à '%(uri)s' n'est pas valide."
 
-#: ../modules/client/api_errors.py:777
+#: ../modules/client/api_errors.py:850
 #, python-format
 msgid "Invalid certificate '%s'."
 msgstr "Certificat non valide : '%s'."
 
-#: ../modules/client/api_errors.py:788
+#: ../modules/client/api_errors.py:861
 #, python-format
 msgid ""
 "Unable to locate certificate '%(cert)s' for publisher '%(pub)s' needed to "
@@ -2832,22 +2982,22 @@ msgid ""
 msgstr ""
 "Le certificat '%(cert)s' pour l'éditeur '%(pub)s' nécessaire pour accéder à '%(uri)s' est introuvable."
 
-#: ../modules/client/api_errors.py:793
+#: ../modules/client/api_errors.py:866
 #, python-format
 msgid "Unable to locate certificate '%(cert)s' for publisher '%(pub)s'."
 msgstr "Le certificat '%(cert)s' pour l'éditeur '%(pub)s' est introuvable."
 
-#: ../modules/client/api_errors.py:797
+#: ../modules/client/api_errors.py:870
 #, python-format
 msgid "Unable to locate certificate '%(cert)s' needed to access '%(uri)s'."
 msgstr "Le certificat '%(cert)s' nécessaire pour accéder à '%(uri)s' est introuvable."
 
-#: ../modules/client/api_errors.py:800
+#: ../modules/client/api_errors.py:873
 #, python-format
 msgid "Unable to locate certificate '%s'."
 msgstr "Le certificat '%s' est introuvable."
 
-#: ../modules/client/api_errors.py:812
+#: ../modules/client/api_errors.py:885
 #, python-format
 msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s', needed to access '%(uri)s', "
@@ -2855,14 +3005,14 @@ msgid ""
 msgstr ""
 "Le certificat '%(cert)s' pour l'éditeur '%(pub)s', nécessaire pour accéder à '%(uri)s', n'est pas encore valide."
 
-#: ../modules/client/api_errors.py:817
+#: ../modules/client/api_errors.py:890
 #, python-format
 msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s' has a future effective date."
 msgstr ""
 "Le certificat '%(cert)s' pour l'éditeur '%(pub)s' n'est pas encore valide."
 
-#: ../modules/client/api_errors.py:821
+#: ../modules/client/api_errors.py:894
 #, python-format
 msgid ""
 "Certificate '%(cert)s' needed to access '%(uri)s' has a future effective "
@@ -2870,12 +3020,12 @@ msgid ""
 msgstr ""
 "Le certificat '%(cert)s' nécessaire pour accéder à '%(uri)s' n'est pas encore valide."
 
-#: ../modules/client/api_errors.py:824
+#: ../modules/client/api_errors.py:897
 #, python-format
 msgid "Certificate '%s' has a future effective date."
 msgstr "Le certificat '%s' n'est pas encore valide."
 
-#: ../modules/client/api_errors.py:834
+#: ../modules/client/api_errors.py:907
 #, python-format
 msgid "Gave a bad response:%s"
 msgstr "Mauvaise réponse obtenue : %s"
@@ -2884,12 +3034,12 @@ msgstr "Mauvaise réponse obtenue : %s"
 msgid "pkg: unable to create an auto snapshot. pkg recovery is disabled."
 msgstr "pkg : impossible de créer un instantané automatique. La récupération de package est désactivée."
 
-#: ../modules/client/bootenv.py:211
+#: ../modules/client/bootenv.py:249
 #, python-format
 msgid "pkg: A system error %s was caught executing %s"
 msgstr "pkg : une erreur système %s a été détectée lors de l'exécution de %s"
 
-#: ../modules/client/bootenv.py:215
+#: ../modules/client/bootenv.py:253
 #, python-format
 msgid ""
 "pkg: '%s' failed. \n"
@@ -2898,17 +3048,17 @@ msgstr ""
 "pkg : échec de '%s'. \n"
 "avec un code de retour de %d."
 
-#: ../modules/client/bootenv.py:220
+#: ../modules/client/bootenv.py:264
 #, python-format
 msgid "pkg: unable to activate %s"
 msgstr "pkg : impossible d'activer %s"
 
-#: ../modules/client/bootenv.py:225
+#: ../modules/client/bootenv.py:274
 #, python-format
 msgid "pkg: unable to unmount %s"
 msgstr "pkg: impossible de démonter %s"
 
-#: ../modules/client/bootenv.py:231
+#: ../modules/client/bootenv.py:280
 #, python-format
 msgid ""
 "\n"
@@ -2921,26 +3071,12 @@ msgstr ""
 "À la prochaine initialisation, l'environnement d'initialisation %s sera monté sur '/'.\n"
 "Réinitialisez dès que vous êtes prêt à passer à cet environnement d'initialisation.\n"
 
-#: ../modules/client/bootenv.py:248
-#, python-format
-msgid "pkg: The system error %s was caught executing %s"
-msgstr "pkg : l'erreur système %s a été détectée lors de l'exécution de %s"
-
-#: ../modules/client/bootenv.py:252
-#, python-format
-msgid ""
-"pkg: '%s' failed \n"
-"with a return code of %d."
-msgstr ""
-"pkg : échec de '%s' \n"
-"avec un code de retour de %d."
-
-#: ../modules/client/bootenv.py:256
+#: ../modules/client/bootenv.py:294
 #, python-format
 msgid "%s has been updated successfully"
 msgstr "%s a été mis à jour"
 
-#: ../modules/client/bootenv.py:269
+#: ../modules/client/bootenv.py:326
 #, python-format
 msgid ""
 " The running system has not been modified. Modifications were only made to a "
@@ -2951,32 +3087,32 @@ msgstr ""
 "clone du système en cours d'exécution. Ce clone est monté sur %s, si vous souhaitez "
 "l'examiner."
 
-#: ../modules/client/bootenv.py:277
+#: ../modules/client/bootenv.py:336
 #, python-format
 msgid "pkg: unable to rollback BE %s and restore image"
 msgstr "pkg : impossible de restaurer l'environnement d'initialisation %s et l'image"
 
-#: ../modules/client/bootenv.py:283
+#: ../modules/client/bootenv.py:345
 #, python-format
 msgid "%s failed to be updated. No changes have been made to %s."
 msgstr "Échec de la mise à jour de %s. Aucune modification n'a été apportée à %s."
 
-#: ../modules/client/bootenv.py:295
+#: ../modules/client/bootenv.py:357
 #, python-format
 msgid "pkg: unable to destroy snapshot %s"
 msgstr "pkg : impossible de détruire l'instantané %s"
 
-#: ../modules/client/bootenv.py:324
+#: ../modules/client/bootenv.py:386
 #, python-format
 msgid "pkg: unable to create BE %s"
 msgstr "pkg : impossible de créer l'environnement d'initialisation %s"
 
-#: ../modules/client/bootenv.py:329
+#: ../modules/client/bootenv.py:391
 #, python-format
 msgid "pkg: unable to mount BE %s on %s"
 msgstr "pkg : impossible de monter l'environnement d'initialisation %s sur %s"
 
-#: ../modules/client/bootenv.py:333
+#: ../modules/client/bootenv.py:395
 #, python-format
 msgid ""
 "The Boot Environment %s failed to be updated. A snapshot was taken before "
@@ -2987,7 +3123,7 @@ msgstr ""
 "la tentative infructueuse et est monté ici %s. Pour effectuer une initialisation sur cet environnement d'initialisation, "
 "utilisez les commandes 'beadm unmount %s', puis 'beadm activate %s'."
 
-#: ../modules/client/bootenv.py:346
+#: ../modules/client/bootenv.py:408
 #, python-format
 msgid ""
 "The Boot Environment %s failed to be updated. A snapshot was taken before "
@@ -2996,75 +3132,84 @@ msgstr ""
 "Échec de la mise à jour de l'environnement d'initialisation %s. Un instantané a été pris avant "
 "la tentative infructueuse et a été restauré. Ainsi, aucune modification n'a été apportée à %s."
 
-#: ../modules/client/image.py:1370
+#: ../modules/client/image.py:1382
 msgid "This server is not a valid package depot."
 msgstr "Ce serveur n'est pas un dépôt de packages valide."
 
-#: ../modules/client/image.py:2298 ../modules/client/image.py:2371
+#: ../modules/client/image.py:2545 ../modules/client/image.py:2620
 msgid "Before evaluation:"
 msgstr "Avant l'évaluation :"
 
-#: ../modules/client/image.py:2319 ../modules/client/image.py:2380
+#: ../modules/client/image.py:2566 ../modules/client/image.py:2629
 msgid "After evaluation:"
 msgstr "Après l'évaluation :"
 
-#: ../modules/client/image.py:2434
+#: ../modules/client/image.py:2685
 msgid "SUNWipkg update check failed."
 msgstr "Échec de la vérification des mises à jour de SUNWipkg."
 
-#: ../modules/misc.py:424
+#: ../modules/misc.py:442
 msgid "B"
 msgstr "octets"
 
-#: ../modules/misc.py:425
+#: ../modules/misc.py:443
 msgid "kB"
 msgstr "Ko"
 
-#: ../modules/misc.py:426
+#: ../modules/misc.py:444
 msgid "MB"
 msgstr "Mo"
 
-#: ../modules/misc.py:427
+#: ../modules/misc.py:445
 msgid "GB"
 msgstr "Go"
 
-#: ../modules/misc.py:428
+#: ../modules/misc.py:446
 msgid "TB"
 msgstr "To"
 
-#: ../modules/misc.py:429
+#: ../modules/misc.py:447
 msgid "PB"
 msgstr "Po"
 
-#: ../modules/misc.py:430 ../modules/misc.py:434
+#: ../modules/misc.py:448 ../modules/misc.py:452
 msgid "EB"
 msgstr "Eo"
 
 #: ../modules/server/catalog.py:106
+#, python-format
+msgid ""
+"Index corrupted or out of date. Removing old index directory (%s)  and "
+"rebuilding search indexes."
+msgstr ""
+"Index corrompu ou obsolète. Suppression de l'ancien répertoire d'index (%s) et "
+"reconstruction des index de recherche."
+
+#: ../modules/server/catalog.py:122
 msgid "writable root not writable by current user id or group."
 msgstr "L'ID utilisateur ou le groupe actuel ne dispose pas de droits d'écriture pour la racine."
 
-#: ../modules/server/catalog.py:111
+#: ../modules/server/catalog.py:127
 msgid "unable to write to index directory."
 msgstr "Écriture impossible dans le répertoire d'index"
 
-#: ../packagemanager.py:212
-msgid "_Current Repository"
-msgstr "Référentiel a_ctuel"
+#: ../packagemanager.py:253
+msgid "_Current Repository (Name and Description)"
+msgstr "_Référentiel actuel (nom et description)"
 
-#: ../packagemanager.py:213
-msgid "Search Current Repository"
-msgstr "Rechercher dans le référentiel actuel"
+#: ../packagemanager.py:254
+msgid "Search Current Repository (Name and Description)"
+msgstr "Rechercher dans le référentiel actuel (nom et description)"
 
-#: ../packagemanager.py:216
-msgid "_All Repositories"
-msgstr "T_ous les référentiels"
+#: ../packagemanager.py:257
+msgid "_All Repositories (Exact Match)"
+msgstr "T_ous les référentiels (correspondance exacte)"
 
-#: ../packagemanager.py:217
-msgid "Search All Repositories"
-msgstr "Rechercher dans tous les référentiels"
+#: ../packagemanager.py:258
+msgid "Search All Repositories (Exact Match)"
+msgstr "Rechercher dans tous les référentiels (correspondance exacte)"
 
-#: ../packagemanager.py:324
+#: ../packagemanager.py:371
 msgid ""
 "Checking SUNWipkg and SUNWipkg-gui versions\n"
 "\n"
@@ -3074,26 +3219,25 @@ msgstr ""
 "\n"
 "Veuillez patienter..."
 
-#: ../packagemanager.py:461
+#: ../packagemanager.py:533
 #, python-format
 msgid "GUI will not respond to any event! %s.Check declare_signals()"
 msgstr "L'IG ne répondra à aucun événement. %s. Vérifier declare_signals()"
 
-#: ../packagemanager.py:520
+#: ../packagemanager.py:603
 msgid "All Repositories Search Results"
 msgstr "Résultats de la recherche dans tous les référentiels"
 
-#: ../packagemanager.py:549 ../packagemanager.py:1892
-#: ../packagemanager.py:2026 ../packagemanager.py:3059
-#: ../packagemanager.py:3501
+#: ../packagemanager.py:632 ../packagemanager.py:2006
+#: ../packagemanager.py:2141 ../packagemanager.py:3257
 msgid "All"
 msgstr "Tout"
 
-#: ../packagemanager.py:577
+#: ../packagemanager.py:660
 msgid "<html><head></head><body></body></html>"
 msgstr "<html><head></head><body></body></html>"
 
-#: ../packagemanager.py:641
+#: ../packagemanager.py:724
 #, python-format
 msgid ""
 "<html><head></head><body><H2>Welcome toPackageManager!</H2><br><font "
@@ -3104,24 +3248,24 @@ msgstr ""
 "color='#0000FF'>Avertissement : impossible de charger la page d'ouverture :<br>%s</font></body></"
 "html>"
 
-#: ../packagemanager.py:685
+#: ../packagemanager.py:768
 #, python-format
 msgid "%s"
 msgstr "%s"
 
-#: ../packagemanager.py:737
+#: ../packagemanager.py:820
 msgid "Loading... "
 msgstr "Chargement en cours... "
 
-#: ../packagemanager.py:743
+#: ../packagemanager.py:826
 msgid "Stopped"
 msgstr "Arrêt"
 
-#: ../packagemanager.py:757
+#: ../packagemanager.py:840
 msgid "Done"
 msgstr "Terminé"
 
-#: ../packagemanager.py:764
+#: ../packagemanager.py:847
 #, python-format
 msgid ""
 "<html><head></head><body><font color='#000000'>                    <a "
@@ -3138,95 +3282,95 @@ msgstr ""
 "color='#0000FF'>Avertissement : impossible de charger l'URL</font></"
 "h2><br>%s</body></html>"
 
-#: ../packagemanager.py:793 ../packagemanager.py:805
+#: ../packagemanager.py:876 ../packagemanager.py:888
 msgid "No URI specified"
 msgstr "Aucun URI spécifié"
 
-#: ../packagemanager.py:827
+#: ../packagemanager.py:910
 msgid "Empty Action not supported"
 msgstr "Action vide non prise en charge"
 
-#: ../packagemanager.py:831
+#: ../packagemanager.py:914
 #, python-format
 msgid "Action not supported: %s"
 msgstr "Action non prise en charge : %s"
 
-#: ../packagemanager.py:916 ../packagemanager.py:1014 ../updatemanager.py:584
+#: ../packagemanager.py:999 ../packagemanager.py:1097 ../updatemanager.py:614
 msgid "Name"
 msgstr "Nom"
 
-#: ../packagemanager.py:926
+#: ../packagemanager.py:1009
 msgid "Status"
 msgstr "Statut"
 
-#: ../packagemanager.py:935
+#: ../packagemanager.py:1018
 msgid "Repository"
 msgstr "Référentiel"
 
-#: ../packagemanager.py:940
+#: ../packagemanager.py:1023
 msgid "Description"
 msgstr "Description"
 
-#: ../packagemanager.py:1101 ../packagemanager.py:1171
+#: ../packagemanager.py:1184 ../packagemanager.py:1254
 msgid "Updates Available"
 msgstr "Mises à jour disponibles"
 
-#: ../packagemanager.py:1169
+#: ../packagemanager.py:1252
 msgid "Not Installed"
 msgstr "Non installé"
 
 #. We enable only first section and later we might enable the rest,
 #. depending if there are some packages connected with them
-#: ../packagemanager.py:1260
+#: ../packagemanager.py:1343
 msgid "All Categories"
 msgstr "Toutes les catégories"
 
-#: ../packagemanager.py:1263
+#: ../packagemanager.py:1346
 msgid "Meta Packages"
 msgstr "Métapackages"
 
-#: ../packagemanager.py:1264
+#: ../packagemanager.py:1347
 msgid "Applications"
 msgstr "Applications"
 
-#: ../packagemanager.py:1265
+#: ../packagemanager.py:1348
 msgid "Desktop (GNOME)"
 msgstr "Bureau (GNOME)"
 
-#: ../packagemanager.py:1266
+#: ../packagemanager.py:1349
 msgid "Development"
 msgstr "Développement"
 
-#: ../packagemanager.py:1267
+#: ../packagemanager.py:1350
 msgid "Distributions"
 msgstr "Distributions"
 
-#: ../packagemanager.py:1268
+#: ../packagemanager.py:1351
 msgid "Drivers"
 msgstr "Pilotes"
 
-#: ../packagemanager.py:1270
+#: ../packagemanager.py:1353
 msgid "Web Services"
 msgstr "Services Web"
 
-#: ../packagemanager.py:1273
+#: ../packagemanager.py:1356
 msgid "All Packages"
 msgstr "Tous les packages"
 
-#: ../packagemanager.py:1275
+#: ../packagemanager.py:1358
 msgid "Installed Packages"
 msgstr "Packages installés"
 
-#: ../packagemanager.py:1279
+#: ../packagemanager.py:1362
 msgid "Non-installed Packages"
 msgstr "Packages non installés"
 
-#: ../packagemanager.py:1282
+#: ../packagemanager.py:1365
 msgid "Selected Packages"
 msgstr "Packages sélectionnés"
 
 #. This can happen if load_catalogs has not been run
-#: ../packagemanager.py:1472
+#: ../packagemanager.py:1560
 msgid ""
 "Unable to get status for search results.\n"
 "The catalogs have not been loaded.\n"
@@ -3236,50 +3380,50 @@ msgstr ""
 "Les catalogues n'ont pas été chargés.\n"
 "Réessayez dans quelques secondes.\n"
 
-#: ../packagemanager.py:1571
+#: ../packagemanager.py:1667
 msgid "Fetching legal information..."
 msgstr "Récupérations des informations juridiques..."
 
 #. Checking for Add... is fine enough, as the repository
 #. name cannot contain "..." in the name.
-#: ../packagemanager.py:1939 ../packagemanager.py:1959
-#: ../packagemanager.py:2197
+#: ../packagemanager.py:2053 ../packagemanager.py:2073
+#: ../packagemanager.py:2173 ../packagemanager.py:2355
 msgid "Add..."
 msgstr "Ajouter..."
 
-#: ../packagemanager.py:2120
+#: ../packagemanager.py:2266
 msgid "Refreshing catalogs"
 msgstr "Actualisation des catalogues"
 
-#: ../packagemanager.py:2121
+#: ../packagemanager.py:2267
 msgid "Refreshing catalogs..."
 msgstr "Actualisation des catalogues..."
 
-#: ../packagemanager.py:2265
+#: ../packagemanager.py:2423
 msgid "Selected for Removal:"
 msgstr "Éléments sélectionnés pour suppression :"
 
-#: ../packagemanager.py:2273
+#: ../packagemanager.py:2431
 msgid "Selected for Install/Update:"
 msgstr "Éléments sélectionnés pour installation/mise à jour :"
 
-#: ../packagemanager.py:2277 ../packagemanager.py:2282
+#: ../packagemanager.py:2435 ../packagemanager.py:2440
 msgid "Select packages by marking checkbox\n"
 msgstr "Sélectionner les packages en cochant les cases correspondantes\n"
 
-#: ../packagemanager.py:2329
+#: ../packagemanager.py:2488
 msgid "Package Name"
 msgstr "Nom du package"
 
-#: ../packagemanager.py:2348
+#: ../packagemanager.py:2507
 msgid "Fetching description..."
 msgstr "Récupération de la description..."
 
-#: ../packagemanager.py:2352
+#: ../packagemanager.py:2511
 msgid "Fetching information..."
 msgstr "Récupération des informations..."
 
-#: ../packagemanager.py:2391
+#: ../packagemanager.py:2553
 msgid ""
 "\n"
 "This might be caused by network problem while accessing the repository."
@@ -3287,69 +3431,73 @@ msgstr ""
 "\n"
 "Cela peut être dû à un problème réseau lors de l'accès au référentiel."
 
-#: ../packagemanager.py:2394
+#: ../packagemanager.py:2556
 msgid "Description not available for this package..."
 msgstr "Aucune description disponible pour ce package..."
 
-#: ../packagemanager.py:2397
+#: ../packagemanager.py:2559
 msgid "Files Details not available for this package..."
 msgstr "Aucun détail de fichier disponible pour ce package..."
 
-#: ../packagemanager.py:2400
+#: ../packagemanager.py:2562
 msgid "Dependencies info not available for this package..."
 msgstr "Aucune information disponible sur les dépendances de ce package..."
 
-#: ../packagemanager.py:2403
+#: ../packagemanager.py:2565
 msgid "Information not available for this package..."
 msgstr "Aucune information disponible pour ce package..."
 
-#: ../packagemanager.py:2421
+#: ../packagemanager.py:2583
 #, python-format
 msgid "Root: %s\n"
 msgstr "Racine : %s\n"
 
-#: ../packagemanager.py:2422
+#: ../packagemanager.py:2584
 msgid "Dependencies:\n"
 msgstr "Dépendances :\n"
 
-#: ../packagemanager.py:2437
+#: ../packagemanager.py:2599
 msgid "Summary:\t\t"
 msgstr "Résumé :\t\t"
 
-#: ../packagemanager.py:2438
+#: ../packagemanager.py:2600
 msgid "Size:\t\t\t"
 msgstr "Taille :\t\t\t"
 
-#: ../packagemanager.py:2439
+#: ../packagemanager.py:2601
 msgid "Category:\t\t"
 msgstr "Catégorie :\t\t"
 
-#: ../packagemanager.py:2440
+#: ../packagemanager.py:2602
 msgid "Installed Version:\t"
 msgstr "Version installée :\t"
 
-#: ../packagemanager.py:2442
+#: ../packagemanager.py:2603
+msgid "Latest Version:\t"
+msgstr "Dernière version :\t"
+
+#: ../packagemanager.py:2604
 msgid "Packaging Date:\t"
 msgstr "Date d'empaquetage :\t"
 
-#: ../packagemanager.py:2443
+#: ../packagemanager.py:2605
 msgid "FMRI:\t\t\t"
 msgstr "FMRI :\t\t\t"
 
-#: ../packagemanager.py:2444
+#: ../packagemanager.py:2606
 msgid "Repository:\t\t"
 msgstr "Référentiel :\t\t"
 
-#: ../packagemanager.py:2449 ../packagemanager.py:2457 ../updatemanager.py:769
-#: ../updatemanager.py:784
+#: ../packagemanager.py:2611 ../packagemanager.py:2619 ../updatemanager.py:798
+#: ../updatemanager.py:812
 msgid "None"
 msgstr "Aucun"
 
-#: ../packagemanager.py:2482
+#: ../packagemanager.py:2647
 msgid "Not available"
 msgstr "Non disponible"
 
-#: ../packagemanager.py:2834
+#: ../packagemanager.py:3031
 msgid ""
 "Network problem.\n"
 "\n"
@@ -3357,21 +3505,21 @@ msgstr ""
 "Problème de réseau\n"
 "\n"
 
-#: ../packagemanager.py:2835
+#: ../packagemanager.py:3032
 msgid "Details:\n"
 msgstr "Détails :\n"
 
-#: ../packagemanager.py:2837
+#: ../packagemanager.py:3034
 msgid " catalogs successfully updated:\n"
 msgstr " Catalogues mis à jour :\n"
 
-#: ../packagemanager.py:2860
+#: ../packagemanager.py:3057
 msgid "Unknown error"
 msgstr "Erreur inconnue"
 
 #. Can't happen when all_known is true and no args,
 #. but here for completeness.
-#: ../packagemanager.py:2903
+#: ../packagemanager.py:3100
 msgid ""
 "Selected repository does not contain any packages.\n"
 "Please reload the list of package."
@@ -3379,110 +3527,80 @@ msgstr ""
 "Le référentiel sélectionné ne contient aucun package.\n"
 "Rechargez la liste des packages."
 
-#: ../packagemanager.py:3144
+#: ../packagemanager.py:3342
 #, python-format
 msgid "Processing package entries: %d of %d"
 msgstr "Traitement des entrées de package : %d sur %d"
 
-#: ../packagemanager.py:3247
+#: ../packagemanager.py:3445
 msgid "Loading Repository Information"
 msgstr "Chargement des informations de référentiel"
 
-#: ../packagemanager.py:3249
+#: ../packagemanager.py:3447
 msgid "Fetching package entries ..."
 msgstr "Récupération des entrées de package..."
 
-#: ../packagemanager.py:3363
+#: ../packagemanager.py:3562
 msgid "Searching..."
 msgstr "Recherche en cours..."
 
-#: ../packagemanager.py:3374
+#: ../packagemanager.py:3573
 #, python-format
 msgid "%s: first %d found"
 msgstr "%s : premier %d trouvé"
 
-#: ../packagemanager.py:3376
+#: ../packagemanager.py:3575
 #, python-format
 msgid "%s: %d found"
 msgstr "%s : %d trouvé"
 
-#: ../packagemanager.py:3395
+#: ../packagemanager.py:3596
 #, python-format
 msgid "%d listed"
 msgstr "%d répertorié"
 
-#: ../packagemanager.py:3396
+#: ../packagemanager.py:3597
 #, python-format
 msgid "%d selected"
 msgstr "%d sélectionné(s)"
 
-#: ../packagemanager.py:3397
+#: ../packagemanager.py:3598
 #, python-format
 msgid "%d installed"
 msgstr "%d installé(s)"
 
-#: ../packagemanager.py:3398
+#: ../packagemanager.py:3599
 #, python-format
 msgid "%s: %s , %s, %s."
 msgstr "%s : %s , %s, %s."
 
-#: ../packagemanager.py:3470
+#: ../packagemanager.py:3694
 msgid ""
 "The Update All action is now complete and Package Manager will close.\n"
 "\n"
 "Review the posted release notes before rebooting your system:\n"
 "\n"
-"http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
 msgstr ""
-"L'opération Tout mettre à jour est maintenant terminée. Le gestionnaire de package va se fermer.\n"
+"L'opération Tout mettre à jour est maintenant terminée. Le Gestionnaire de packages va se fermer.\n"
 "\n"
 "Consultez les notes de version avant de réinitialiser votre système.\n"
 "\n"
-"http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
 
-#: ../packagemanager.py:3486
+#: ../packagemanager.py:3724
 msgid "Save selected..."
 msgstr "Enregistrer les éléments sélectionnés..."
 
-#: ../packagemanager.py:3487
+#: ../packagemanager.py:3725
 msgid "Save selected packages..."
 msgstr "Enregistrer les packages sélectionnés..."
 
-#: ../packagemanager.py:3530 ../packagemanager.py:3534
-#: ../packagemanager.py:3538 ../packagemanager.py:3555
-#: ../packagemanager.py:3571
-msgid "Graphics"
-msgstr "Graphiques"
-
-#: ../packagemanager.py:3552 ../packagemanager.py:3554
-#: ../packagemanager.py:3556 ../packagemanager.py:3558
-#: ../packagemanager.py:3560 ../packagemanager.py:3562
-#: ../packagemanager.py:3564 ../packagemanager.py:3566
-#: ../packagemanager.py:3568
-msgid "Applications Desktop"
-msgstr "Applications de bureau"
-
-#: ../packagemanager.py:3561
-msgid "Sound & Video"
-msgstr "Son et vidéo"
-
-#: ../packagemanager.py:3563
-msgid "System Tools"
-msgstr "Outils système"
-
-#. Can be twice :)
-#: ../packagemanager.py:3567 ../packagemanager.py:3576
-msgid "Developer Tools"
-msgstr "Outils de développeur"
-
-#: ../packagemanager.py:3570 ../packagemanager.py:3572
-#: ../packagemanager.py:3574 ../packagemanager.py:3577
-msgid "Operating System"
-msgstr "Système d'exploitation"
-
-#: ../packagemanager.py:3580
-msgid "Office2"
-msgstr "Office2"
+#: ../packagemanager.py:3726
+msgid ""
+"The installed package(s) require a reboot before installation can be "
+"completed."
+msgstr ""
+"Pour terminer l'installation, "
+"vous devez réinitialiser le ou les packages installés."
 
 #: ../publish.py:78
 msgid ""
@@ -3542,19 +3660,19 @@ msgstr "La commande open nécessite un nom de package."
 msgid "No transaction ID specified using -t or in $PKG_TRANS_ID."
 msgstr "Aucun ID de transaction spécifié avec -t ou dans $PKG_TRANS_ID."
 
-#: ../publish.py:171 ../publish.py:222 ../publish.py:274
+#: ../publish.py:171 ../publish.py:219 ../publish.py:271
 msgid "No transaction ID specified in $PKG_TRANS_ID"
 msgstr "Aucun ID de transaction spécifié dans $PKG_TRANS_ID"
 
-#: ../publish.py:175 ../publish.py:204 ../publish.py:226 ../publish.py:286
+#: ../publish.py:175 ../publish.py:201 ../publish.py:223 ../publish.py:283
 msgid "No arguments specified for subcommand."
 msgstr "Aucun argument spécifié pour la sous-commande."
 
-#: ../publish.py:178
+#: ../publish.py:181
 msgid "A filename must be provided for this action."
 msgstr "Un nom de fichier doit être fourni pour cette action."
 
-#: ../publish.py:326
+#: ../publish.py:323
 #, python-format
 msgid "pkgsend: illegal global option -- %s"
 msgstr "pkgsend : option générale non admise -- %s"
@@ -3705,7 +3823,8 @@ msgid "Install available updates"
 msgstr "Installer les mises à jour disponibles"
 
 #: ../um/data/updatemanager.desktop.in.h:2 ../um/data/updatemanager.glade.h:10
-#: ../updatemanager.py:953 ../updatemanagernotifier.py:350
+#: ../updatemanager.py:927 ../updatemanager.py:992
+#: ../updatemanagernotifier.py:351
 msgid "Update Manager"
 msgstr "Gestionnaire de mises à jour"
 
@@ -3725,9 +3844,9 @@ msgstr "<b>_Détails</b>"
 msgid "Close dialog when _finished"
 msgstr "Fermer la boîte de dialogue une _fois terminé"
 
-#: ../um/data/updatemanager.glade.h:7 ../updatemanager.py:206
-#: ../updatemanager.py:399 ../updatemanager.py:406 ../updatemanager.py:413
-#: ../updatemanager.py:420 ../updatemanager.py:427
+#: ../um/data/updatemanager.glade.h:7 ../updatemanager.py:207
+#: ../updatemanager.py:429 ../updatemanager.py:436 ../updatemanager.py:443
+#: ../updatemanager.py:450 ../updatemanager.py:457
 msgid "Index"
 msgstr "Index"
 
@@ -3735,7 +3854,7 @@ msgstr "Index"
 msgid "Install Update"
 msgstr "Installer la mise à jour"
 
-#: ../um/data/updatemanager.glade.h:11 ../updatemanager.py:564
+#: ../um/data/updatemanager.glade.h:11 ../updatemanager.py:594
 msgid ""
 "Updates are available for the following packages.\n"
 "Select the packages you want to update and click Install."
@@ -3767,71 +3886,71 @@ msgstr "Avertir l'utilisateur lorsque des mises à jour sont disponibles"
 msgid "Update Manager Notifier"
 msgstr "Avertisseur du gestionnaire de mises à jour"
 
-#: ../updatemanager.py:122
+#: ../updatemanager.py:123
 #, python-format
 msgid "Fetching catalog: '%s' ..."
 msgstr "Récupération du catalogue : '%s' ..."
 
-#: ../updatemanager.py:126
+#: ../updatemanager.py:127
 msgid "Fetching catalog"
 msgstr "Récupération du catalogue"
 
-#: ../updatemanager.py:129
+#: ../updatemanager.py:130
 msgid "Creating Plan ... "
 msgstr "Création du plan... "
 
-#: ../updatemanager.py:140
+#: ../updatemanager.py:141
 msgid "Creating Plan"
 msgstr "Création du plan"
 
-#: ../updatemanager.py:151
+#: ../updatemanager.py:152
 #, python-format
 msgid "Verifying: %s ..."
 msgstr "Vérification : %s..."
 
-#: ../updatemanager.py:158
+#: ../updatemanager.py:159
 msgid "Verifying"
 msgstr "Vérification"
 
-#: ../updatemanager.py:172
+#: ../updatemanager.py:173
 msgid "Completed"
 msgstr "Terminé"
 
-#: ../updatemanager.py:357
+#: ../updatemanager.py:387
 #, python-format
 msgid "GUI will not respond to any event! %s. Check updatemanager.py signals"
 msgstr "L'interface utilisateur ne répond à aucune commande. %s. Vérifiez les signaux updatemanager.py."
 
-#: ../updatemanager.py:396 ../updatemanager.py:403 ../updatemanager.py:410
-#: ../updatemanager.py:417 ../updatemanager.py:424
+#: ../updatemanager.py:426 ../updatemanager.py:433 ../updatemanager.py:440
+#: ../updatemanager.py:447 ../updatemanager.py:454
 msgid "Evaluate"
 msgstr "Évaluer"
 
-#: ../updatemanager.py:432
+#: ../updatemanager.py:462
 msgid "Evaluate - canceling..."
 msgstr "Évaluer - annulation..."
 
-#: ../updatemanager.py:436
+#: ../updatemanager.py:466
 msgid "Download - canceling..."
 msgstr "Télécharger - annulation..."
 
-#: ../updatemanager.py:441
+#: ../updatemanager.py:471
 msgid "Evaluate - failed"
 msgstr "Évaluer - échec"
 
-#: ../updatemanager.py:445
+#: ../updatemanager.py:475
 msgid "Download - failed"
 msgstr "Télécharger - échec"
 
-#: ../updatemanager.py:449
+#: ../updatemanager.py:479
 msgid "Install - failed"
 msgstr "Installer - échec"
 
-#: ../updatemanager.py:453
+#: ../updatemanager.py:483
 msgid "Index - failed"
 msgstr "Index - échec"
 
-#: ../updatemanager.py:571
+#: ../updatemanager.py:601
 msgid ""
 "Updates are available for the following packages.\n"
 "Click Update All to create a new boot environment and install all packages "
@@ -3841,38 +3960,38 @@ msgstr ""
 "Cliquez sur Tout mettre à jour pour créer un nouvel environnement d'initialisation et y installer tous "
 "les packages."
 
-#: ../updatemanager.py:599
+#: ../updatemanager.py:629
 msgid "Latest Version"
 msgstr "Dernière version"
 
-#: ../updatemanager.py:608
+#: ../updatemanager.py:638
 msgid "Size (Meg)"
 msgstr "Taille (Mo)"
 
-#: ../updatemanager.py:690
+#: ../updatemanager.py:717
 #, python-format
 msgid "count: %d"
 msgstr "nombre : %d"
 
-#: ../updatemanager.py:715 ../updatemanager.py:725
+#: ../updatemanager.py:742 ../updatemanager.py:752
 msgid "Error\n"
 msgstr "Erreur\n"
 
-#: ../updatemanager.py:718
+#: ../updatemanager.py:745
 #, python-format
 msgid "'%s' is not an install image\n"
 msgstr "'%s' ne correspond pas à une image d'installation\n"
 
-#: ../updatemanager.py:728
+#: ../updatemanager.py:755
 #, python-format
 msgid "Version mismatch: expected %s received %s\n"
 msgstr "Version incohérente : %s attendue, %s reçue\n"
 
-#: ../updatemanager.py:733
+#: ../updatemanager.py:760
 msgid "<b>No Updates available.</b>"
 msgstr "<b>Aucune mise à jour disponible.</b>"
 
-#: ../updatemanager.py:789
+#: ../updatemanager.py:817
 #, python-format
 msgid ""
 "\n"
@@ -3895,17 +4014,17 @@ msgstr ""
 "FMRI :       \t\t\t%s\n"
 "Référentiel :       \t\t%s\n"
 
-#: ../updatemanager.py:819 ../updatemanagernotifier.py:309
+#: ../updatemanager.py:847 ../updatemanagernotifier.py:310
 #, python-format
 msgid "%s is not valid image, trying root image"
 msgstr "%s n'est pas une image valide ; essai de l'image root"
 
-#: ../updatemanager.py:829 ../updatemanagernotifier.py:319
+#: ../updatemanager.py:857 ../updatemanagernotifier.py:320
 #, python-format
 msgid "%s is not valid root image, return None"
 msgstr "%s n'est pas une image root valide ; renvoie Aucun"
 
-#: ../updatemanager.py:867
+#: ../updatemanager.py:896
 #, python-format
 msgid ""
 "\n"
@@ -3914,7 +4033,7 @@ msgstr ""
 "\n"
 "Récupération des détails pour %s ..."
 
-#: ../updatemanager.py:891
+#: ../updatemanager.py:920
 msgid ""
 "\n"
 "No details available"
@@ -3922,7 +4041,7 @@ msgstr ""
 "\n"
 "Aucun détail n'est disponible"
 
-#: ../updatemanager.py:932
+#: ../updatemanager.py:971
 msgid ""
 "\n"
 "Canceling update, please wait ..."
@@ -3930,7 +4049,7 @@ msgstr ""
 "\n"
 "Annulation de la mise à jour, veuillez patienter..."
 
-#: ../updatemanager.py:937
+#: ../updatemanager.py:976
 msgid ""
 "\n"
 "Unable to cancel at this time."
@@ -3938,23 +4057,23 @@ msgstr ""
 "\n"
 "Annulation impossible à ce stade."
 
-#: ../updatemanager.py:940
+#: ../updatemanager.py:979
 msgid "Installing Updates"
 msgstr "Installation des mises à jour"
 
-#: ../updatemanager.py:963
+#: ../updatemanager.py:1002
 msgid "ERROR"
 msgstr "ERREUR"
 
-#: ../updatemanager.py:965
+#: ../updatemanager.py:1004
 msgid "Following Incorporated package(s) cannot be updated:"
 msgstr "Impossible de mettre à jour le ou les packages incorporés suivants :"
 
-#: ../updatemanager.py:969
+#: ../updatemanager.py:1008
 msgid "Update using: Update All\n"
 msgstr "Mettre à jour à l'aide de : Tout mettre à jour\n"
 
-#: ../updatemanager.py:986 ../updatemanager.py:1116 ../updatemanager.py:1151
+#: ../updatemanager.py:1025 ../updatemanager.py:1155 ../updatemanager.py:1190
 msgid ""
 "\n"
 "ERROR"
@@ -3962,7 +4081,7 @@ msgstr ""
 "\n"
 "ERREUR"
 
-#: ../updatemanager.py:989
+#: ../updatemanager.py:1028
 #, python-format
 msgid ""
 "%s\n"
@@ -3971,7 +4090,7 @@ msgstr ""
 "%s\n"
 "%s"
 
-#: ../updatemanager.py:1001
+#: ../updatemanager.py:1040
 #, python-format
 msgid ""
 "\n"
@@ -3982,7 +4101,7 @@ msgstr ""
 "L'opération Tout mettre à jour s'est effectuée sans incident en %1.f mn\n"
 "\n"
 
-#: ../updatemanager.py:1006
+#: ../updatemanager.py:1045
 msgid ""
 "\n"
 "Update All finished successfully in < 1 min\n"
@@ -3992,29 +4111,27 @@ msgstr ""
 "L'opération Tout mettre à jour s'est effectuée sans incident en < 1 mn\n"
 "\n"
 
-#: ../updatemanager.py:1009
+#: ../updatemanager.py:1049
 msgid ""
 "Review the posted release notes before rebooting your system:\n"
 "\n"
-"http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
 msgstr ""
 "Consultez les notes de version avant de réinitialiser votre système :\n"
 "\n"
-"http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/"
 
-#: ../updatemanager.py:1018
+#: ../updatemanager.py:1059
 msgid "Update All Completed"
 msgstr "L'opération Tout mettre à jour est terminée."
 
-#: ../updatemanager.py:1035
+#: ../updatemanager.py:1074
 msgid "Nothing selected to update."
 msgstr "Aucun élément à mettre à jour n'est sélectionné."
 
-#: ../updatemanager.py:1042
+#: ../updatemanager.py:1081
 msgid "Updating ..."
 msgstr "Mise à jour..."
 
-#: ../updatemanager.py:1048
+#: ../updatemanager.py:1087
 msgid ""
 "\n"
 "Evaluate\n"
@@ -4022,31 +4139,31 @@ msgstr ""
 "\n"
 "Évaluer\n"
 
-#: ../updatemanager.py:1054
+#: ../updatemanager.py:1093
 msgid "Update error in plan install:"
 msgstr "Erreur de mise à jour lors de l'installation du plan :"
 
-#: ../updatemanager.py:1064
+#: ../updatemanager.py:1103
 msgid "Update unexpected API error:"
 msgstr "Erreur d'API inattendue lors de la mise à jour :"
 
-#: ../updatemanager.py:1069
+#: ../updatemanager.py:1108
 msgid "Update unexpected error:"
 msgstr "Erreur inattendue lors de la mise à jour :"
 
-#: ../updatemanager.py:1092
+#: ../updatemanager.py:1131
 msgid "Packages to be installed:"
 msgstr "Packages à installer :"
 
-#: ../updatemanager.py:1096
+#: ../updatemanager.py:1135
 msgid "Update"
 msgstr "Mettre à jour"
 
-#: ../updatemanager.py:1097
+#: ../updatemanager.py:1136
 msgid "Update finished successfully."
 msgstr "Mise à jour terminée."
 
-#: ../updatemanager.py:1118
+#: ../updatemanager.py:1157
 #, python-format
 msgid ""
 "%s Download failed:\n"
@@ -4055,18 +4172,18 @@ msgstr ""
 "Échec du téléchargement de %s :\n"
 "%s"
 
-#: ../updatemanager.py:1125 ../updatemanager.py:1160
+#: ../updatemanager.py:1164 ../updatemanager.py:1199
 #, python-format
 msgid "%s exceded available disc space"
 msgstr "%s dépasse l'espace disque disponible."
 
-#: ../updatemanager.py:1130 ../updatemanager.py:1135 ../updatemanager.py:1165
-#: ../updatemanager.py:1170
+#: ../updatemanager.py:1169 ../updatemanager.py:1174 ../updatemanager.py:1204
+#: ../updatemanager.py:1209
 #, python-format
 msgid "%s unexpected error:"
 msgstr "Erreur inattendue de %s :"
 
-#: ../updatemanager.py:1153
+#: ../updatemanager.py:1192
 #, python-format
 msgid ""
 "%s Execute plan failed:\n"
@@ -4075,7 +4192,7 @@ msgstr ""
 "Échec de l'exécution du plan %s :\n"
 "%s"
 
-#: ../updatemanager.py:1187
+#: ../updatemanager.py:1226
 msgid ""
 "Not enough disc space, the Update All action cannot be performed.\n"
 "\n"
@@ -4086,11 +4203,11 @@ msgstr ""
 "\n"
 "Cliquez sur OK pour gérer les environnements d'initialisation existants et libérer de l'espace disque ou cliquez sur Annuler pour annuler l'opération."
 
-#: ../updatemanager.py:1191
+#: ../updatemanager.py:1230
 msgid "Not Enough Disc Space"
 msgstr "Espace disque insuffisant"
 
-#: ../updatemanager.py:1359
+#: ../updatemanager.py:1398
 msgid ""
 "\n"
 "Download\n"
@@ -4098,12 +4215,12 @@ msgstr ""
 "\n"
 "Télécharger\n"
 
-#: ../updatemanager.py:1366
+#: ../updatemanager.py:1405
 #, python-format
 msgid "\tpkg %d/%d: \tfiles %d/%d \txfer %.2f/%.2f(meg)"
 msgstr "\tpkg %d/%d: \tfichiers %d/%d \ttransfert %.2f/%.2f (Mo)"
 
-#: ../updatemanager.py:1383
+#: ../updatemanager.py:1422
 msgid ""
 "\n"
 "Install\n"
@@ -4111,29 +4228,29 @@ msgstr ""
 "\n"
 "Installer\n"
 
-#: ../updatemanager.py:1385 ../updatemanager.py:1389
+#: ../updatemanager.py:1424 ../updatemanager.py:1428
 #, python-format
 msgid "\t%s\t%d/%d actions"
 msgstr "\t%s\t%d/%d actions"
 
-#: ../updatemanager.py:1407
+#: ../updatemanager.py:1446
 msgid "Index\n"
 msgstr "Index\n"
 
-#: ../updatemanager.py:1408 ../updatemanager.py:1412
+#: ../updatemanager.py:1447 ../updatemanager.py:1451
 #, python-format
 msgid "\t%-25s\t%d/%d actions"
 msgstr "\t%-25s\t%d/%d actions"
 
-#: ../updatemanager.py:1494
+#: ../updatemanager.py:1533
 msgid "Checking for new software"
 msgstr "Recherche de nouveaux logiciels"
 
-#: ../updatemanagernotifier.py:329
+#: ../updatemanagernotifier.py:330
 msgid "Updates are available"
 msgstr "Des mises à jour sont disponibles"
 
-#: ../updatemanagernotifier.py:351
+#: ../updatemanagernotifier.py:352
 msgid ""
 "Updates available\n"
 "Please click on icon to update."
@@ -4141,6 +4258,10 @@ msgstr ""
 "Mises à jour disponibles\n"
 "Cliquez sur l'icône pour effectuer la mise à jour."
 
-#: ../updatemanagernotifier.py:426
+#: ../updatemanagernotifier.py:427
 msgid "Another instance of UpdateManagerNotify is running"
-msgstr "Une autre instance de UpdateManagerNotify est en cours d'exécution"
+msgstr "Une autre instance de UpdateManagerNotify exécute"
+
+# ../gui/data/packagemanager-info.xml.in:31
+msgid "pkg(5) info file"
+msgstr "le fichier info pkg(5)"

@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 
 <!--
  CDDL HEADER START
@@ -29,6 +29,18 @@
 <mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>
 <mime-type type="application/vnd.pkg5.info">
 <comment>pkg(5) info file</comment>
+<comment xml:lang="de">pkg(5)-Infodatei</comment>
+<comment xml:lang="es">archivo de información pkg(5)</comment>
+<comment xml:lang="fr">le fichier info pkg(5)</comment>
+<comment xml:lang="it">file di informazioni su pkg(5)</comment>
+<comment xml:lang="ja">pkg(5) 情報ファイル</comment>
+<comment xml:lang="ko">pkg(5) 정보 파일</comment>
+<comment xml:lang="pt_BR">Arquivo de informação pkg(5)</comment>
+<comment xml:lang="ru">Файл info для pkg(5)</comment>
+<comment xml:lang="sv">pkg(5) info-fil</comment>
+<comment xml:lang="zh_CN">pkg(5) 信息文件</comment>
+<comment xml:lang="zh_HK">pkg(5) 資訊檔</comment>
+<comment xml:lang="zh_TW">pkg(5) 資訊檔</comment>
 <glob pattern="*.p5i"/>
 </mime-type>
 </mime-info>

@@ -1,86 +1,91 @@
-# Copyright (C) 2008 Sun Microsystems, Inc
-# This file is distributed under the same license as the pkg help package.
 #
-# Desktop Discuss <desktop-discuss@opensolaris.org>
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").  
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+#
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Use is subject to license terms.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: pkg help HEAD\n"
-"POT-Creation-Date: 2008-10-10 23:30+0900\n"
-"PO-Revision-Date: 2008-10-10 23:30+0900\n"
-"Last-Translator: desktop-discuss@opensolaris.org\n"
-"Language-Team: desktop-discuss@opensolaris.org\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2009-04-14 18:29+0900\n"
+"PO-Revision-Date: ANNÉE-MOIS-JOUR HH:MI+ZONE\n"
+"Last-Translator: NOM COMPLET <ADRESSE@EMAIL>\n"
+"Language-Team: LANGUE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #. When image changes, this message will be marked fuzzy or untranslated for you.
 #. It doesn't matter what you translate it to: it's not used at all.
-#: package-manager.xml:77 (None)
-msgid ""
-"@@image: 'figures/package_manager.png'; md5=47f19c63c45c2d5d14a07732879a8c6c"
-msgstr ""
-"@@image: 'figures/package_manager.png'; md5=47f19c63c45c2d5d14a07732879a8c6c"
+#: package-manager.xml:66(None)
+msgid "@@image: 'figures/pm_store.png'; md5=89037626f84480186677a61680dccc2c"
+msgstr "@@image: 'figures/pm_store.png'; md5=89037626f84480186677a61680dccc2c"
 
 #. When image changes, this message will be marked fuzzy or untranslated for you.
 #. It doesn't matter what you translate it to: it's not used at all.
-#: package-manager.xml:302 (None)
-msgid "@@image: 'figures/update_all.png'; md5=bfc40396ac45fc30b994d306307ead96"
-msgstr "@@image: 'figures/update_all.png'; md5=bfc40396ac45fc30b994d306307ead96"
+#: package-manager.xml:86(None)
+msgid "@@image: 'figures/pm_pkglist.png'; md5=b9a51d97ff1069102eb7ede47adb6a37"
+msgstr "@@image: 'figures/pm_pkglist.png'; md5=b9a51d97ff1069102eb7ede47adb6a37"
 
-#: package-manager.xml:3 (title)
-msgid "Getting Started With OpenSolaris 2008.11 Package Manager"
-msgstr "Démarrage du Gestionnaire de packages OpenSolaris 2008.11"
+#. When image changes, this message will be marked fuzzy or untranslated for you.
+#. It doesn't matter what you translate it to: it's not used at all.
+#: package-manager.xml:427(None)
+msgid "@@image: 'figures/wi_start.png'; md5=3b2ad7761ad183fdfea6081f29893798"
+msgstr "@@image: 'figures/wi_start.png'; md5=3b2ad7761ad183fdfea6081f29893798"
 
-#: package-manager.xml:4 (firstname)
-msgid "IPS"
-msgstr "IPS"
+#. When image changes, this message will be marked fuzzy or untranslated for you.
+#. It doesn't matter what you translate it to: it's not used at all.
+#: package-manager.xml:457(None)
+msgid "@@image: 'figures/update_all.png'; md5=af873a11d59466bf46c49bd3d3a227af"
+msgstr "@@image: 'figures/update_all.png'; md5=af873a11d59466bf46c49bd3d3a227af"
 
-#: package-manager.xml:5 (surname)
-msgid "Documentation Team"
-msgstr "Équipe de documentation"
+#: package-manager.xml:3(title)
+msgid "OpenSolaris 2009.06 Package Manager Online Help"
+msgstr "Aide en ligne du Gestionnaire de packages OpenSolaris 2009.06"
 
-#: package-manager.xml:8 (pubsnumber)
-msgid "820-6570"
-msgstr "820-6570"
+#: package-manager.xml:4(firstname)
+msgid "OpenSolaris"
+msgstr "OpenSolaris"
 
-#: package-manager.xml:9 (releaseinfo)
-msgid "v 0.1"
-msgstr "v 0.1"
+#: package-manager.xml:5(surname)
+msgid "Publications"
+msgstr "Publications"
 
-#: package-manager.xml:10 (pubdate)
-msgid "Nov 2008"
-msgstr "Novembre 2008"
+#: package-manager.xml:8(pubsnumber)
+msgid "822-7173"
+msgstr "822-7173"
 
-#: package-manager.xml:11 (publishername) package-manager.xml:20 (holder)
-msgid "Sun Microsystems, Inc."
-msgstr "Sun Microsystems, Inc."
+#: package-manager.xml:10(pubdate)
+msgid "June 2009"
+msgstr "Juin 2009"
 
-#: package-manager.xml:12 (street)
-msgid "4150 Network Circle"
-msgstr "4150 Network Circle"
+#: package-manager.xml:11(publishername)
+msgid "Sun Microsystems"
+msgstr "Sun Microsystems"
 
-#: package-manager.xml:13 (city)
-msgid "Santa Clara"
-msgstr "Santa Clara"
+#: package-manager.xml:13(year)
+msgid "2009"
+msgstr "2009"
 
-#: package-manager.xml:14 (state)
-msgid "CA"
-msgstr "CA"
-
-#: package-manager.xml:15 (postcode)
-msgid "95054"
-msgstr "95054"
-
-#: package-manager.xml:16 (country)
-msgid "U.S.A."
-msgstr "États-Unis"
-
-#: package-manager.xml:19 (year)
-msgid "2008"
-msgstr "2008"
-
-#: package-manager.xml:24 (para)
+#: package-manager.xml:15(para)
 msgid ""
 "Sun Microsystems, Inc. has intellectual property rights relating to "
 "technology embodied in the product that is described in this document. In "
@@ -90,7 +95,7 @@ msgid ""
 msgstr ""
 "Sun Microsystems, Inc. possède les droits de propriété intellectuelle relatifs à la technologie incorporée dans le produit décrit dans le présent document. En particulier, et sans limitation, ces droits de propriété intellectuelle peuvent inclure des brevets américains ou dépôts de brevets en cours d'homologation aux États-Unis et dans d'autres pays."
 
-#: package-manager.xml:25 (para)
+#: package-manager.xml:16(para)
 msgid ""
 "U.S. Government Rights – Commercial software. Government users are subject "
 "to the Sun Microsystems, Inc. standard license agreement and applicable "
@@ -98,11 +103,11 @@ msgid ""
 msgstr ""
 "Droits du gouvernement américain – logiciel commercial. Les utilisateurs gouvernementaux sont soumis au contrat de licence standard de Sun Microsystems, Inc. et aux dispositions du Federal Acquisition Regulation (FAR, règlements des marchés publics fédéraux) et de leurs suppléments."
 
-#: package-manager.xml:26 (para)
+#: package-manager.xml:17(para)
 msgid "This distribution may include materials developed by third parties."
 msgstr "Cette distribution peut contenir des éléments développés par des tiers."
 
-#: package-manager.xml:27 (para)
+#: package-manager.xml:18(para)
 msgid ""
 "Parts of the product may be derived from Berkeley BSD systems, licensed from "
 "the University of California. UNIX is a registered trademark in the U.S. and "
@@ -110,7 +115,7 @@ msgid ""
 msgstr ""
 "Des parties du produit peuvent être dérivées de systèmes Berkeley-BSD, sous licence de l'Université de Californie. UNIX est une marque déposée aux États-Unis et dans d'autres pays, exclusivement concédée en licence par X/Open Company, Ltd."
 
-#: package-manager.xml:28 (para)
+#: package-manager.xml:19(para)
 msgid ""
 "Sun, Sun Microsystems, the Sun logo, the Solaris logo, the Java Coffee Cup "
 "logo, docs.sun.com, Java, and Solaris are trademarks or registered "
@@ -122,7 +127,7 @@ msgid ""
 msgstr ""
 "Sun, Sun Microsystems, le logo Sun, le logo Solaris, le logo Java Coffee Cup, docs.sun.com, Java et Solaris sont des marques de fabrique ou des marques déposées de Sun Microsystems, Inc. aux États-Unis et dans d'autres pays. Toutes les marques SPARC sont utilisées sous licence et sont des marques de fabrique ou des marques déposées de SPARC International, Inc. aux États-Unis et dans d'autres pays. Les produits portant les marques SPARC utilisent une architecture développée par Sun Microsystems, Inc."
 
-#: package-manager.xml:29 (para)
+#: package-manager.xml:20(para)
 msgid ""
 "The OPEN LOOK and <trademark>Sun</trademark> Graphical User Interface was "
 "developed by Sun Microsystems, Inc. for its users and licensees. Sun "
@@ -135,7 +140,7 @@ msgid ""
 msgstr ""
 "L'interface graphique OPEN LOOK et <trademark>Sun</trademark> a été développée par Sun Microsystems, Inc. pour ses utilisateurs et détenteurs de licences. Sun reconnaît le travail précurseur de Xerox en matière de recherche et de développement du concept d'interfaces utilisateur visuelles ou graphiques pour le secteur de l'informatique. Sun détient une licence Xerox non exclusive sur l'interface graphique Xerox. Cette licence englobe également les détenteurs de licences Sun qui implémentent l’interface graphique OPEN LOOK et qui, en outre, se conforment aux accords de licence écrits de Sun."
 
-#: package-manager.xml:30 (para)
+#: package-manager.xml:21(para)
 msgid ""
 "Products covered by and information contained in this publication are "
 "controlled by U.S. Export Control laws and may be subject to the export or "
@@ -148,7 +153,7 @@ msgid ""
 msgstr ""
 "Les produits cités dans la présente publication et les informations qu'elle contient sont soumis à la législation américaine relative au contrôle sur les exportations et, le cas échéant, aux lois sur les importations ou exportations dans d'autres pays. Il est strictement interdit d'employer ce produit conjointement à des missiles ou armes biologiques, chimiques, nucléaires ou de marine nucléaire, directement ou indirectement. Il est strictement interdit d'effectuer des exportations et réexportations vers des pays soumis à l'embargo américain ou vers des entités identifiées sur les listes noires des exportations américaines, notamment les individus non autorisées et les listes nationales désignées."
 
-#: package-manager.xml:31 (para)
+#: package-manager.xml:22(para)
 msgid ""
 "DOCUMENTATION IS PROVIDED “AS IS” AND ALL EXPRESS OR IMPLIED CONDITIONS, "
 "REPRESENTATIONS AND WARRANTIES, INCLUDING ANY IMPLIED WARRANTY OF "
@@ -158,7 +163,7 @@ msgid ""
 msgstr ""
 "LA DOCUMENTATION EST FOURNIE “EN L'ÉTAT“ ET TOUTES AUTRES CONDITIONS, REPRÉSENTATIONS ET GARANTIES EXPRESSES OU TACITES, Y COMPRIS TOUTE GARANTIE IMPLICITE RELATIVE À LA COMMERCIALISATION, L'ADÉQUATION À UN USAGE PARTICULIER OU LA NON-VIOLATION DE DROIT, SONT FORMELLEMENT EXCLUES. CETTE EXCLUSION DE GARANTIE NE S'APPLIQUERAIT PAS DANS LA MESURE OÙ ELLE SERAIT TENUE JURIDIQUEMENT NULLE ET NON AVENUE."
 
-#: package-manager.xml:33 (para)
+#: package-manager.xml:24(para)
 msgid ""
 "Sun Microsystems, Inc. détient les droits de propriété intellectuelle "
 "relatifs à la technologie incorporée dans le produit qui est décrit dans ce "
@@ -167,13 +172,13 @@ msgid ""
 "applications de brevet en attente aux Etats-Unis et dans d'autres pays."
 msgstr " "
 
-#: package-manager.xml:34 (para)
+#: package-manager.xml:25(para)
 msgid ""
 "Cette distribution peut comprendre des composants développés par des tierces "
 "personnes."
 msgstr " "
 
-#: package-manager.xml:35 (para)
+#: package-manager.xml:26(para)
 msgid ""
 "Certaines composants de ce produit peuvent être dérivées du logiciel "
 "Berkeley BSD, licenciés par l'Université de Californie. UNIX est une marque "
@@ -181,7 +186,7 @@ msgid ""
 "exclusivement par X/Open Company, Ltd."
 msgstr " "
 
-#: package-manager.xml:36 (para)
+#: package-manager.xml:27(para)
 msgid ""
 "Sun, Sun Microsystems, le logo Sun, le logo Solaris, le logo Java Coffee "
 "Cup, docs.sun.com, Java et Solaris sont des marques de fabrique ou des "
@@ -193,7 +198,7 @@ msgid ""
 "Microsystems, Inc."
 msgstr " "
 
-#: package-manager.xml:37 (para)
+#: package-manager.xml:28(para)
 msgid ""
 "L'interface d'utilisation graphique OPEN LOOK et Sun a été développée par "
 "Sun Microsystems, Inc. pour ses utilisateurs et licenciés. Sun reconnaît les "
@@ -206,7 +211,7 @@ msgid ""
 "Sun."
 msgstr " "
 
-#: package-manager.xml:38 (para)
+#: package-manager.xml:29(para)
 msgid ""
 "Les produits qui font l'objet de cette publication et les informations qu'il "
 "contient sont régis par la legislation américaine en matière de contrôle des "
@@ -224,7 +229,7 @@ msgid ""
 "designés, sont rigoureusement interdites."
 msgstr " "
 
-#: package-manager.xml:39 (para)
+#: package-manager.xml:30(para)
 msgid ""
 "LA DOCUMENTATION EST FOURNIE \"EN L'ETAT\" ET TOUTES AUTRES CONDITIONS, "
 "DECLARATIONS ET GARANTIES EXPRESSES OU TACITES SONT FORMELLEMENT EXCLUES, "
@@ -233,186 +238,322 @@ msgid ""
 "UTILISATION PARTICULIERE OU A L'ABSENCE DE CONTREFACON."
 msgstr " "
 
-#: package-manager.xml:42 (title)
-msgid "Introduction"
-msgstr "Introduction"
+#: package-manager.xml:33(title)
+msgid "About the Package Manager"
+msgstr "À propos du Gestionnaire de packages"
 
-#: package-manager.xml:43 (para)
+#: package-manager.xml:34(para)
 msgid ""
-"Welcome to the <trademark>OpenSolaris 2008.11</trademark> Package Manager "
-"Online Help!"
+"Welcome to the <trademark>OpenSolaris</trademark> 2009.06 Package Manager "
+"online help!"
 msgstr ""
-"Bienvenue dans l'aide en ligne du Gestionnaire de packages <trademark>OpenSolaris 2008.11</trademark>"
+"Bienvenue dans l'aide en ligne "
+"du Gestionnaire de packages <trademark>OpenSolaris</trademark> 2009.06."
 
-#: package-manager.xml:44 (para)
+#: package-manager.xml:35(para)
 msgid ""
 "Use this help contents to learn how to use the Package Manager. Navigate "
-"through this help by clicking on the topics displayed in the side bar."
+"through this help by clicking the topics displayed in the sidebar."
 msgstr ""
-"Cette aide en ligne vous explique comment utiliser le Gestionnaire de packages. Pour naviguer dans l'aide, cliquez sur la rubrique de votre choix dans la barre latérale."
+"Cette aide en ligne vous explique comment utiliser le Gestionnaire de packages."
+"Pour naviguer dans l'aide, cliquez sur la rubrique de votre choix dans la barre latérale."
 
-#: package-manager.xml:45 (para)
+#: package-manager.xml:36(para)
 msgid ""
-"The OpenSolaris 2008.11 <application>Package Manager</application> "
-"application is a graphical user interface for the Image Packaging System "
-"(IPS) software. IPS is a network-centric packaging system that enables users "
-"to download and install packages, create and manage repositories, mirror "
-"repositories, and create and publish their own packages to a repository."
+"The OpenSolaris 2009.06 Package Manager application is a graphical user "
+"interface for the Image Packaging System (IPS) software."
 msgstr ""
-"Le <application>Gestionnaire de packages</application>OpenSolaris 2008.11 est une interface graphique dédiée au logiciel IPS (Image Packaging System, système de conditionnement d'image). Il s'agit d'un système de conditionnement centré sur le réseau qui permet aux utilisateurs de télécharger et d'installer des packages, de créer, gérer et mettre en miroir des référentiels, et de créer et publier leurs propres packages vers un référentiel."
+"Le Gestionnaire de packages OpenSolaris 2009.06 constitue "
+"l'interface graphique du logiciel IPS (Image Packaging System)."
 
-#: package-manager.xml:46 (para)
+#: package-manager.xml:37(para)
+msgid "The Package Manager enables you to perform the following tasks:"
+msgstr "Le Gestionnaire de packages vous permet d'effectuer les opérations suivantes :"
+
+#: package-manager.xml:38(para)
+msgid "Search, install, and remove packages"
+msgstr "Rechercher, installer et supprimer les packages ;"
+
+#: package-manager.xml:40(para)
+msgid "Update your system"
+msgstr "Mettre à jour le système ;"
+
+#: package-manager.xml:42(para)
+msgid "Add and modify repositories"
+msgstr "Ajouter et modifier des référentiels ;"
+
+#: package-manager.xml:44(para)
+msgid "Create, remove, and manage boot environments"
+msgstr "Créer, supprimer et gérer des environnements d'initialisation."
+
+#: package-manager.xml:47(para)
 msgid ""
-"See the <ulink url=\"http://dlc.sun.com/osol/docs/content/2008.11/"
-"IMGPACKAGESYS/\"><citetitle>Image Packaging System Guide</citetitle></ulink> "
-"for information on IPS."
-msgstr ""
-"Pour plus d'informations sur IPS, reportez-vous au <ulink url=\"http://dlc.sun.com/osol/docs/content/2008.11/IMGPACKAGESYS/\"><citetitle>Guide du système d'empaquetage d'images</citetitle></ulink>."
-
-#: package-manager.xml:47 (para)
-msgid ""
-"The <application>Package Manager</application> enables you to perform the "
-"following tasks:"
-msgstr ""
-"Le <application>Gestionnaire de packages</application> vous permet d'effectuer les opérations suivantes :"
-
-#: package-manager.xml:48 (para)
-msgid "Search, install, update, and remove packages."
-msgstr "Rechercher, installer, mettre à jour et supprimer les packages."
-
-#: package-manager.xml:50 (para)
-msgid "Add and modify repositories."
-msgstr "Ajouter et modifier les référentiels."
-
-#: package-manager.xml:52 (para)
-msgid "Create, remove and manage boot environments."
-msgstr "Créer, supprimer et gérer les environnements d'initialisation."
-
-#: package-manager.xml:55 (para)
-msgid ""
-"See the <xref linkend=\"glossary-1\"/> for definitions of the terms used in "
+"See the <xref linkend=\"glossary\"/> for a definition of the terms used in "
 "this document."
 msgstr ""
-"Vous trouverez dans le <xref linkend=\"glossary-1\"/> les définitions des termes utilisés dans ce document."
+"Vous trouverez dans le <xref linkend=\"glossary\"/> la définition des termes utilisés dans ce document."
 
-#: package-manager.xml:58 (title)
-msgid "Package Manager Screencast"
-msgstr "Capture vidéo du Gestionnaire de packages"
+#: package-manager.xml:49(title)
+msgid "About Image Packaging System"
+msgstr "À propos d'Image Packaging System"
 
-#: package-manager.xml:59 (para)
+#: package-manager.xml:50(para)
 msgid ""
-"Learn how to use the OpenSolaris 2008.11 Package Manager through a "
-"screencast. Click <ulink url=\"http://webcast-west.sun.com/"
-"interactive/09B01790/index.html\">here</ulink> to go the Package Manager "
-"screencast."
+"Image Packaging System (IPS) is a software delivery system that interacts "
+"with a network repository. The IPS software is a framework which provides "
+"for software lifecycle management including installation, upgrade, and "
+"removal."
 msgstr ""
-"Vous pouvez vous familiariser à l'utilisation du Gestionnaire de packages OpenSolaris 2008.11 à l'aide de la capture vidéo accessible en cliquant <ulink url=\"http://webcast-west.sun.com/interactive/09B01790/index.html\">ici</ulink>."
+"Image Packaging System (IPS) est un système de distribution de logiciels, qui interagit "
+"avec un référentiel réseau. Le logiciel IPS est une structure de "
+"gestion du cycle de vie des logiciels (installation, mise à niveau et "
+"suppression)."
 
-#: package-manager.xml:61 (title)
-msgid "Starting Package Manager"
-msgstr "Démarrage du Gestionnaire de packages"
+#: package-manager.xml:51(para)
+msgid "The OpenSolaris 2009.06 release uses IPS as its packaging system."
+msgstr "La version OpenSolaris 2009.06 se sert d'IPS comme système d'empaquetage.  "
 
-#: package-manager.xml:62 (para)
+#: package-manager.xml:52(para)
 msgid ""
-"You can start the <application>Package Manager</application> in the "
-"following ways:"
+"After an initial installation of OpenSolaris 2009.06 operating system, you "
+"will find that many of the software applications that you use on a regular "
+"basis are not immediately available to you. These software applications are "
+"available as packages in a repository for downloading and installing over "
+"the Internet. A repository is a source for packages."
 msgstr ""
-"Pour démarrer le <application>Gestionnaire de packages</application>, vous avez le choix entre les méthodes suivantes :"
+"Après l'installation initiale du système d'exploitation OpenSolaris 2009.06, "
+"de nombreuses applications logicielles que vous utilisez régulièrement "
+"ne sont pas immédiatement disponibles. Vous devez "
+"les télécharger et les installer sous forme de packages à partir d'un référentiel"
+"résidant sur Internet. Un référentiel correspond à une source de packages."
 
-#: package-manager.xml:63 (emphasis)
-msgid "Desktop Menu"
-msgstr "Menu du Bureau"
-
-#: package-manager.xml:64 (para)
+#: package-manager.xml:53(para)
 msgid ""
-"Click <menuchoice><guimenu>System</guimenu><guisubmenu>Administration</"
-"guisubmenu><guimenuitem>Package Manager</guimenuitem></menuchoice>."
+"Users can use IPS to install packages from a repository, create and publish "
+"their own IPS packages, mirror an existing repository, and publish existing "
+"packages to a repository."
 msgstr ""
-"Cliquez sur <menuchoice><guimenu>Système</guimenu><guisubmenu>Administration</guisubmenu><guimenuitem>Gestionnaire de packages</guimenuitem></menuchoice>."
+"IPS permet d'installer des packages à partir d'un référentiel, de créer et de publier "
+"des packages IPS personnalisés, de mettre en miroir un référentiel existant et de publier "
+"des packages existants dans un référentiel."
 
-#: package-manager.xml:67 (emphasis)
-msgid "Command line"
-msgstr "Ligne de commande"
+#: package-manager.xml:54(para)
+msgid ""
+"Once you have installed packages, IPS enables you to search, update, and "
+"manage packages on your system."
+msgstr ""
+"Une fois les packages installés sur votre système, IPS vous permet de les rechercher, de les mettre à jour et de "
+"les gérer."
 
-#: package-manager.xml:68 (para)
-msgid "Run the following command :"
-msgstr "Exécutez la commande suivante :"
+#: package-manager.xml:55(para)
+msgid ""
+"With IPS , you can upgrade your system to a newer build of OpenSolaris, "
+"install and update your software to the latest available versions in a "
+"repository, and retrieve packages from mirror repositories."
+msgstr ""
+"Grâce à IPS, vous pouvez installer la dernière version de OpenSolaris pour mettre à niveau votre système, "
+"mettre à jour vos logiciels à partir des dernières versions disponibles dans "
+"un référentiel et récupérer des packages à partir de référentiels mis en miroir."
 
-#: package-manager.xml:69 (userinput)
-#, no-wrap
-msgid "$ gksu packagemanager &amp;"
-msgstr "$ gksu packagemanager &amp;"
+#: package-manager.xml:56(emphasis)
+msgid ""
+"The Package Manager provides a subset of the tasks that can be performed "
+"from the command-line."
+msgstr ""
+"Le Gestionnaire de packages fournit un sous-ensemble des tâches exécutables "
+"à partir de la ligne de commande."
 
-#: package-manager.xml:74 (title)
-msgid "Package Manager Window"
+#: package-manager.xml:58(para)
+msgid ""
+"If the system on which IPS is installed is on the network, IPS can "
+"automatically access the OpenSolaris repository. For the OpenSolaris 2009.06 "
+"release, your IPS client can access the packages from <ulink url=\"http://"
+"pkg.opensolaris.org\"/>."
+msgstr ""
+"Si IPS est installé sur un système en réseau, il peut "
+"automatiquement accéder au référentiel OpenSolaris. Dans le cas de la version OpenSolaris 2009.06, "
+"votre client IPS peut accéder aux packages à partir du site Web <ulink url=\"http://"
+"pkg.opensolaris.org\"/>."
+
+#: package-manager.xml:59(para)
+msgid ""
+"For more information about IPS, see the <ulink url=\"http://dlc.sun.com/osol/"
+"docs/content/2009.06/IMGPACKAGESYS/\">Image Packaging System Guide</ulink> "
+"and the IPS <ulink url=\"http://opensolaris.org/sc/src/pkg/gate/src/man/"
+"\">man pages</ulink>."
+msgstr "Pour de plus amples informations sur IPS, reportez-vous au <ulink url=\"http://dlc.sun.com/osol/"
+"docs/content/2009.06/IMGPACKAGESYS/\">Image Packaging System Guide</ulink> "
+"et aux pages de manuel IPS <ulink url=\"http://opensolaris.org/sc/src/pkg/gate/src/man/"
+"\"></ulink>."
+
+#: package-manager.xml:60(para)
+msgid ""
+"Visit the <ulink url=\"http://opensolaris.org/os/project/pkg\">project page</"
+"ulink> on opensolaris.org and subscribe to pkg-discuss@sun.com to get "
+"involved with the IPS project."
+msgstr ""
+"Accédez à la <ulink url=\"http://opensolaris.org/os/project/pkg\">page du projet</"
+"ulink> sur opensolaris.org et abonnez-vous à pkg-discuss@sun.com pour "
+"participer au projet IPS."
+
+#: package-manager.xml:62(title)
+msgid "The Package Manager Window"
 msgstr "Fenêtre du Gestionnaire de packages"
 
-#: package-manager.xml:75 (para)
+#: package-manager.xml:63(title)
+msgid "About the Package Manager Window"
+msgstr "À propos du Gestionnaire de packages"
+
+#: package-manager.xml:64(para)
+msgid "When you start the Package Manager, the following window is displayed."
+msgstr "Lorsque vous démarrez le Gestionnaire de packages, la fenêtre suivante s'affiche."
+
+#: package-manager.xml:65(title)
+msgid "Package Manager Start Up Window"
+msgstr "Fenêtre de démarrage du Gestionnaire de packages"
+
+#: package-manager.xml:69(para)
 msgid ""
-"When you start the <application>Package Manager</application>, the following "
-"window is displayed:"
+"The Start Page provides links to <ulink url=\"http://opensolaris.com"
+"\">opensolaris.com</ulink> page where you can get more information about "
+"OpenSolaris, subscribe to newsletters and join the OpenSolaris community."
 msgstr ""
-"Lorsque vous démarrez le <application>Gestionnaire de packages</application>, la fenêtre suivante s'affiche :"
+"La page d'ouverture contient un lien vers la page <ulink url=\"http://opensolaris.com"
+"\">opensolaris.com</ulink> où vous pouvez trouver de plus amples renseignements sur "
+"OpenSolaris, vous inscrire à des newsletters et rejoindre la communauté OpenSolaris."
 
-#: package-manager.xml:76 (title)
-msgid "Package Manager Main Window"
-msgstr "Fenêtre principale du Gestionnaire de packages"
-
-#: package-manager.xml:80 (para)
+#: package-manager.xml:70(para)
 msgid ""
-"The main window of the <application>Package Manager</application> consists "
-"of the following elements :"
+"To close the Start Page and see the list of packages , perform any of the "
+"following actions in the main window of the Package Manager:"
 msgstr ""
-"La fenêtre principale du <application>Gestionnaire de packages</application> se compose des éléments suivants :"
+"Pour fermer la page d'ouverture et afficher la liste des packages, effectuez l'une des opérations suivantes "
+"dans la fenêtre principale du Gestionnaire de packages :"
 
-#: package-manager.xml:81 (emphasis)
+#: package-manager.xml:71(para)
+msgid "Select a package category"
+msgstr "Sélection d'une catégorie de package ;"
+
+#: package-manager.xml:73(para)
+msgid "Switch the top level category"
+msgstr "Modification de la catégorie de niveau supérieur ;"
+
+#: package-manager.xml:75(para)
+msgid "Switch the <literal>Show</literal> filter"
+msgstr "Modification du filtre <literal>Afficher</literal> ;"
+
+#: package-manager.xml:77(para)
+msgid "Perform a search"
+msgstr "Lancement d'une recherche ;"
+
+#: package-manager.xml:79(para)
+msgid "Change the repository"
+msgstr "Modification du référentiel."
+
+#: package-manager.xml:82(para)
+msgid ""
+"Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</"
+"guimenuitem></menuchoice> to return to the Start Page at anytime."
+msgstr ""
+"Sélectionnez <menuchoice><guimenu>Affichage</guimenu><guimenuitem>Page d'ouverture</"
+"guimenuitem></menuchoice> pour retourner à tout moment à la page d'ouverture."
+
+#: package-manager.xml:83(para)
+msgid ""
+"See the <xref linkend=\"edit_prefs\"/> section to turn off the <emphasis "
+"role=\"strong\">initial display</emphasis> of the Start Page when the "
+"Package Manager starts."
+msgstr ""
+"Reportez-vous à la section <xref linkend=\"edit_prefs\"/> pour désactiver l'<emphasis "
+"role=\"strong\">affichage initial</emphasis> de la page d'ouverture au "
+"démarrage du Gestionnaire de packages."
+
+#: package-manager.xml:85(title)
+msgid "List of Packages in the Package Manager Window"
+msgstr "Liste de packages dans la fenêtre du Gestionnaire de packages"
+
+#: package-manager.xml:89(para)
+msgid ""
+"The main window of the Package Manager consists of the following elements :"
+msgstr ""
+"La fenêtre principale du Gestionnaire de packages se compose des éléments suivants :"
+
+#: package-manager.xml:90(emphasis)
+msgid "Menubar"
+msgstr "Barre de menu"
+
+#: package-manager.xml:91(para)
+msgid ""
+"You can access the menus on the menubar to perform all of the commands "
+"related to the Package Manager."
+msgstr ""
+"Vous pouvez exécuter toutes les commandes liées au Gestionnaire de packages à l'aide de la barre de menu."
+
+#: package-manager.xml:95(emphasis)
+msgid "Toolbar"
+msgstr "Barre d'outils"
+
+#: package-manager.xml:96(para)
+msgid ""
+"The toolbar contains the icons for a subset of the commands that can be "
+"performed by using the menus on the menubar. A<literal>Search</literal> box "
+"is also located on the toolbar."
+msgstr ""
+"Les icônes de la barre d'outils correspondent à un sous-ensemble des commandes "
+"exécutables à l'aide de la barre de menu. Un onglet <literal>Recherche</literal> "
+"figure également dans la barre d'outils."
+
+#: package-manager.xml:99(emphasis)
 msgid "List of Packages by Category"
 msgstr "Liste des packages par catégorie"
 
-#: package-manager.xml:82 (para)
+#: package-manager.xml:100(para)
 msgid ""
 "You can browse the available packages by category in the left hand side drop-"
 "down menu. The drop-down menu shows the list of categories available such as "
 "<emphasis role=\"strong\">Applications-Desktop</emphasis>, <emphasis role="
-"\"strong\">Applications Web based</emphasis>, and <emphasis role=\"strong"
+"\"strong\">Applications –Web—based</emphasis>, and <emphasis role=\"strong"
 "\">Operating System</emphasis>."
 msgstr ""
-"Dans le menu déroulant gauche, vous pouvez parcourir les packages disponibles par catégorie. Ce menu "
-"affiche les catégories disponibles, telles que <emphasis role=\"strong\">Applications de bureau</emphasis>, <emphasis role=\"strong\">Applications Web</emphasis> et <emphasis role=\"strong\">Système d'exploitation</emphasis>."
+"Dans le menu déroulant gauche, vous pouvez parcourir les packages disponibles par catégorie. Ce menu affiche les catégories disponibles, telles que "
+"<emphasis role=\"strong\">Applications de bureau </emphasis>, <emphasis role="
+"\"strong\">Applications Web</emphasis> et <emphasis role=\"strong"
+"\">Système d'exploitation</emphasis>."
 
-#: package-manager.xml:85 (emphasis)
+#: package-manager.xml:103(emphasis)
 msgid "List of Packages by Status"
 msgstr "Liste des packages par statut"
 
-#: package-manager.xml:86 (para)
+#: package-manager.xml:104(para)
 msgid ""
-"The <guilabel>Show</guilabel> drop-down menu enables you to filter the list "
-"of packages by the following options:"
+"The <literal>Show</literal> drop-down menu enables you to filter the list of "
+"packages by the following options :"
 msgstr ""
-"Le menu déroulant <guilabel>Afficher</guilabel> permet de filtrer la liste des packages selon les options suivantes :"
+"Le menu déroulant <literal>Afficher</literal> permet de filtrer la liste des "
+"packages selon les options suivantes :"
 
-#: package-manager.xml:87 (para)
+#: package-manager.xml:105(para)
 msgid ""
-"<emphasis role=\"strong\">All Packages</emphasis>– Shows the list of all "
+"<emphasis role=\"strong\">All Packages</emphasis> – Shows the list of all "
 "packages available in the current repository."
 msgstr ""
 "<emphasis role=\"strong\">Tous les packages</emphasis> : affiche la liste de tous les packages disponibles dans le référentiel actuel."
 
-#: package-manager.xml:89 (para)
+#: package-manager.xml:107(para)
 msgid ""
 "<emphasis role=\"strong\">Installed Packages</emphasis> – Shows the list of "
 "packages installed on your system."
 msgstr ""
 "<emphasis role=\"strong\">Packages installés</emphasis> : affiche la liste des packages installés sur le système."
 
-#: package-manager.xml:91 (para)
+#: package-manager.xml:109(para)
 msgid ""
 "<emphasis role=\"strong\">Updates Available</emphasis> — Shows the list of "
 "packages that have newer versions available in the current repository."
 msgstr ""
 "<emphasis role=\"strong\">Mises à jour disponibles</emphasis> : affiche la liste des packages pour lesquels il existe des versions plus récentes dans le référentiel actuel."
 
-#: package-manager.xml:93 (para)
+#: package-manager.xml:111(para)
 msgid ""
 "<emphasis role=\"strong\">Non-installed Packages</emphasis> – Shows the list "
 "of packages that are not installed, but are available in the currently "
@@ -420,121 +561,143 @@ msgid ""
 msgstr ""
 "<emphasis role=\"strong\">Packages non installés</emphasis> : affiche la liste des packages qui ne sont pas installés mais qui sont disponibles dans le référentiel actuellement sélectionné."
 
-#: package-manager.xml:95 (para)
+#: package-manager.xml:113(para)
 msgid ""
 "<emphasis role=\"strong\">Selected Packages</emphasis> – Shows the list of "
 "packages that you have selected."
 msgstr ""
 "<emphasis role=\"strong\">Packages sélectionnés</emphasis>: affiche la liste des packages que vous avez sélectionnés."
 
-#: package-manager.xml:100 (emphasis)
-msgid "Toolbar"
-msgstr "Barre d'outils"
-
-#: package-manager.xml:101 (para)
-msgid ""
-"The toolbar contains the icons for a subset of the commands that can be "
-"performed by using the menus on the menubar."
-msgstr ""
-"Les icônes de la barre d'outils correspondent à un sous-ensemble des commandes exécutables à l'aide de la barre de menu."
-
-#: package-manager.xml:102 (para)
-msgid ""
-"The <guilabel>Repositories</guilabel> drop-down menu is also located on the "
-"toolbar."
-msgstr ""
-"Vous pouvez également accéder au menu déroulant <guilabel>Référentiels</guilabel> à partir de la barre d'outils."
-
-#: package-manager.xml:105 (emphasis)
-msgid "Menubar"
-msgstr "Barre de menu"
-
-#: package-manager.xml:106 (para)
-msgid ""
-"You can access the menus on the menubar to perform all of the commands "
-"related to the Package Manager."
-msgstr ""
-"Vous pouvez exécuter toutes les commandes liées au Gestionnaire de packages à l'aide de la barre de menu."
-
-#: package-manager.xml:110 (emphasis)
+#: package-manager.xml:118(emphasis)
 msgid "Package Name and Description"
 msgstr "Nom et description des packages"
 
-#: package-manager.xml:111 (para)
+#: package-manager.xml:119(para)
 msgid ""
 "The list of packages in the selected category, a brief description, and "
 "their status are displayed here."
 msgstr ""
-"Les packages de la catégorie sélectionnée sont répertoriés ici, avec une brève description et leur statut."
+"Les packages de la catégorie sélectionnée sont répertoriés ici, avec une brève description "
+"et leur statut."
 
-#: package-manager.xml:114 (emphasis)
+#: package-manager.xml:122(emphasis)
 msgid "Package Details"
 msgstr "Détails du package"
 
-#: package-manager.xml:115 (para)
+#: package-manager.xml:123(para)
 msgid ""
-"Click a package to select it. Details of the selected package such as name, "
-"version, file dependencies, and license are displayed in this window."
+"Click a package name to select it. Details of the selected package, such as "
+"name, version, file dependencies, and license are displayed in this window."
 msgstr ""
-"Cliquez sur un package pour le sélectionner. Les détails relatifs au package sélectionné, tels que le nom, la version, les dépendances de fichier et la licence, s'affichent dans cette fenêtre."
+"Cliquez sur le nom d'un package pour le sélectionner. Des informations qui le concernent (nom, version, dépendances de fichier et licence) s'affichent dans cette fenêtre."
 
-#: package-manager.xml:118 (emphasis)
+#: package-manager.xml:126(emphasis)
 msgid "Repository Drop-down Menu"
 msgstr "Menu déroulant des référentiels"
 
-#: package-manager.xml:119 (para)
+#: package-manager.xml:127(para)
 msgid ""
-"The list of available repositories is shown in the repository drop-down "
-"menu. Click a repository name to select it."
+"The list of available repositories is shown in the <literal>Repository</"
+"literal> drop-down menu. Click a repository name to select it."
 msgstr ""
-"La liste des référentiels disponibles s'affiche dans le menu déroulant des référentiels. Pour sélectionner un référentiel, cliquez sur son nom."
+"La liste des référentiels disponibles s'affiche dans le menu déroulant <literal>Référentiel</"
+"literal>. Pour sélectionner un référentiel, cliquez tout simplement sur son nom."
 
-#: package-manager.xml:120 (para)
+#: package-manager.xml:130(emphasis)
+msgid "Search Box"
+msgstr "Onglet Recherche"
+
+#: package-manager.xml:131(para)
+msgid "Search for a package is provided in the following contexts :"
+msgstr "Cet onglet permet d'effectuer les recherches suivantes :"
+
+#: package-manager.xml:132(para)
+msgid "Search within the current repository"
+msgstr "Recherche dans le référentiel actuel ;"
+
+#: package-manager.xml:134(para)
+msgid "Search across all configured repositories"
+msgstr "Recherche dans tous les référentiels configurés."
+
+#: package-manager.xml:141(title)
+msgid "Start Page Preferences"
+msgstr "Préférences de la page d'ouverture"
+
+#: package-manager.xml:142(para)
 msgid ""
-"Click the <guilabel>Reload</guilabel> button to reload the Package Manager "
-"and view the list of packages from the newly selected repository."
+"A Start Page is displayed in the main window of the Package Manager when the "
+"application is started. The Start Page provides links to <ulink url=\"http://"
+"opensolaris.com\">opensolaris.com</ulink> page where you can get more "
+"information about OpenSolaris, subscribe to newsletters and join the "
+"OpenSolaris community."
 msgstr ""
-"Pour recharger le Gestionnaire de packages et afficher la liste des packages du référentiel que vous venez de sélectionner, cliquez sur <guilabel>Recharger</guilabel>."
+"La page d'ouverture s'affiche dans la fenêtre principale du Gestionnaire de packages "
+"au démarrage de l'application. Elle contient un lien vers la page <ulink url=\"http://"
+"opensolaris.com\">opensolaris.com</ulink> où vous pouvez trouver de plus amples "
+"renseignements sur OpenSolaris, vous inscrire à des newsletters et rejoindre la "
+"communauté OpenSolaris."
 
-#: package-manager.xml:127 (title)
-msgid "Working With the Package Manager"
-msgstr "Utilisation du Gestionnaire de packages"
-
-#: package-manager.xml:128 (para)
+#: package-manager.xml:143(para)
 msgid ""
-"The following sections document the tasks that can be performed with the "
-"<application>Package Manager</application>."
+"You can choose to turn off this setting so this page is not displayed when "
+"Package Manager starts."
 msgstr ""
-"Les sections suivantes décrivent les opérations pouvant être effectuées par le biais du <application>Gestionnaire de packages</application>."
+"Si vous le souhaitez, vous pouvez désactiver ce paramètre pour ne pas afficher cette page "
+"au démarrage du Gestionnaire de packages."
 
-#: package-manager.xml:130 (title)
+#: package-manager.xml:144(para)
+msgid ""
+"Select <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</"
+"guimenuitem></menuchoice> from the menu and uncheck the <emphasis role="
+"\"strong\">Show Start Page on startup</emphasis> box to disable the Start "
+"Page."
+msgstr ""
+"Cliquez sur <menuchoice><guimenu>Edition</guimenu><guimenuitem>Préférences</"
+"guimenuitem></menuchoice> et désélectionnez l'option <emphasis role="
+"\"strong\">Afficher la page d'ouverture au démarrage</emphasis> pour désactiver "
+"la page d'ouverture."
+
+#: package-manager.xml:145(para)
+msgid ""
+"Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</"
+"guimenuitem></menuchoice> to go to the Start Page at anytime."
+msgstr ""
+"Pour accéder à tout moment à la page d'ouverture, sélectionnez <menuchoice><guimenu>Affichage</guimenu><guimenuitem>Page d'ouverture</"
+"guimenuitem></menuchoice>."
+
+#: package-manager.xml:148(title)
+msgid "Working With Packages"
+msgstr "Utilisation de packages"
+
+#: package-manager.xml:149(title)
 msgid "Install a Package"
 msgstr "Installation d'un package"
 
-#: package-manager.xml:131 (para)
-msgid "Perform the following steps to install a package:"
-msgstr "Pour installer un package, suivez la procédure ci-dessous :"
-
-#: package-manager.xml:132 (para)
+#: package-manager.xml:150(para)
 msgid ""
-"In the main window of the <application>Package Manager</application>, click "
-"the <guibutton>Reload</guibutton> button to view the latest list of packages "
-"available to you."
+"The list of packages is displayed in the main windows of the Package "
+"Manager. Perform the following steps to install a package:"
 msgstr ""
-"Dans la fenêtre principale du <application>Gestionnaire de packages</application>, cliquez sur <guibutton>Recharger</guibutton> afin d'afficher la liste actualisée des packages disponibles."
+"La liste des packages s'affiche dans les fenêtres principales du Gestionnaire "
+"de packages. Procédez comme suit pour installer un package :"
 
-#: package-manager.xml:134 (para)
-msgid "Check the box next to the package to select it."
-msgstr "Cochez la case en regard du package pour le sélectionner."
-
-#: package-manager.xml:136 (para)
+#: package-manager.xml:151(para)
 msgid ""
-"Click <guibutton>Install/Update</guibutton> in the toolbar to start the "
-"package installation process."
+"To install a single package, click on a package to select it. To install "
+"many packages, check the box next to the packages you want to install."
 msgstr ""
-"Dans la barre d'outils, cliquez sur <guibutton>Installer/Mettre à jour</guibutton> afin de lancer l'installation du package."
+"Pour installer un seul package, cliquez dessus pour le sélectionner. Pour installer "
+"plusieurs packages, sélectionnez la case à cocher en regard de leur nom."
 
-#: package-manager.xml:137 (para)
+#: package-manager.xml:153(para)
+msgid ""
+"Click the <guibutton>Install/Update</guibutton> icon in the toolbar to start "
+"the package installation process."
+msgstr ""
+"Cliquez sur l'icône <guibutton>Installer/Mettre à jour</guibutton> dans la barre d'outils afin de lancer "
+"l'installation du package."
+
+#: package-manager.xml:154(para)
 msgid ""
 "You can also choose <menuchoice><guimenu>Package</"
 "guimenu><guimenuitem>Install/Update</guimenuitem></menuchoice> to start the "
@@ -542,601 +705,1089 @@ msgid ""
 msgstr ""
 "Vous pouvez également lancer l'installation du package en cliquant sur <menuchoice><guimenu>Package</guimenu><guimenuitem>Installer/Mettre à jour</guimenuitem><menuchoice>."
 
-#: package-manager.xml:139 (para)
-msgid ""
-"The <application>Package Manager</application> checks for dependencies. "
-"Click <guilabel>Show Details</guilabel> to see more information about the "
-"package and its dependencies ."
-msgstr ""
-"Le <application>Gestionnaire de packages</application> vérifie les dépendances. Pour afficher les informations sur le package et ses dépendances, cliquez sur <guilabel>Afficher les détails</guilabel>."
+#: package-manager.xml:156(para)
+msgid "View the details or cancel the package installation ."
+msgstr "Affichez les détails ou annulez l'installation du package."
 
-#: package-manager.xml:141 (para)
-msgid ""
-"Review the package installation information and the package dependencies "
-"details in the <guilabel>Install Confirmation</guilabel> dialog."
-msgstr ""
-"La boîte de dialogue <guilabel>Confirmation de l'installation</guilabel> contient les informations d'installation et le détail des dépendances du package."
+#: package-manager.xml:157(para)
+msgid "Click <guilabel>Show Details</guilabel> to view the details."
+msgstr "Cliquez sur <guilabel>Afficher les détails</guilabel> pour consulter les informations relatives au package."
 
-#: package-manager.xml:142 (para)
-msgid ""
-"Click <guibutton>Next</guibutton> to proceed with the package installation."
-msgstr "Pour continuer l'installation du package, cliquez sur <guibutton>OK</guibutton>."
-
-#: package-manager.xml:143 (para)
+#: package-manager.xml:159(para)
 msgid ""
 "Click <guibutton>Cancel</guibutton> to cancel the package installation. No "
 "changes are made and you are returned to the main window."
 msgstr ""
-"Pour annuler l'installation du package, cliquez sur <guibutton>Annuler</guibutton>. Aucune modification n'est effectuée et vous êtes renvoyé à la fenêtre principale."
+"Pour annuler l'installation du package, cliquez sur <guibutton>Annuler</guibutton>. "
+"Aucune modification n'est effectuée et vous retournez à la fenêtre principale."
 
-#: package-manager.xml:145 (para)
+#: package-manager.xml:163(para)
 msgid ""
-"The <guilabel>Downloading Packages</guilabel> dialog is displayed. Click "
-"<guibutton>Cancel</guibutton> if you want to cancel the package "
-"installation. No changes are made and you are returned to the main window."
+"After the installation has completed, click <guibutton>Close</guibutton> on "
+"the <literal>Installation Completed</literal> dialog box to return to the "
+"main window."
 msgstr ""
-"La boîte de dialogue <guilabel>Téléchargement des packages</guilabel> s'ouvre. Pour annuler l'installation du package, cliquez sur <guibutton>Annuler</guibutton>. Aucune modification n'est effectuée et vous êtes renvoyé à la fenêtre principale."
+"Une fois l'installation terminée, cliquez sur <guibutton>Fermer</guibutton> dans la boîte de dialogue "
+"<literal>Installation terminée</literal> pour retourner à la fenêtre principale."
 
-#: package-manager.xml:148 (para)
+#: package-manager.xml:166(title)
+msgid "Installation Error"
+msgstr "Erreur d'installation"
+
+#: package-manager.xml:167(para)
 msgid ""
-"The packages are installed. The updated list of packages are displayed in "
-"the main window."
+"If an error occurs during package installation, an error dialog box is "
+"displayed. An <guilabel>Installation Failed</guilabel> message and the "
+"reason for the failure is displayed. Click <guibutton>Close</guibutton> to "
+"close the error dialog box and return to the main window of the Package "
+"Manager."
 msgstr ""
-"Les packages sont installés. La liste actualisée des packages s'affiche dans la fenêtre principale."
+"Lorsqu'une erreur survient au cours de l'installation d'un package, une boîte de dialogue "
+"s'affiche. Elle contient le message <guilabel>Échec de l'installation</guilabel> et "
+"les raisons de l'échec. Cliquez sur <guibutton>Fermer</guibutton> pour "
+"fermer la boîte de dialogue et retourner à la fenêtre principale du Gestionnaire "
+"de packages."
 
-#: package-manager.xml:150 (title)
+#: package-manager.xml:170(title)
 msgid "Remove a Package"
 msgstr "Suppression d'un package"
 
-#: package-manager.xml:151 (para)
+#: package-manager.xml:171(para)
 msgid "Perform the following steps to remove a package:"
 msgstr "Pour supprimer un package, suivez la procédure ci-dessous :"
 
-#: package-manager.xml:152 (para)
-msgid "Check the box next to the package or packages that you want to remove."
-msgstr "Cochez la case en regard du ou des packages à supprimer."
+#: package-manager.xml:172(para)
+msgid ""
+"To remove a single package, click on a package to select it. To remove many "
+"packages, check the box next to the packages you want to remove."
+msgstr ""
+"Pour supprimer un seul package, cliquez dessus pour le sélectionner. Pour supprimer "
+"plusieurs packages, sélectionnez la case à cocher en regard de leur nom."
 
-#: package-manager.xml:154 (para)
+#: package-manager.xml:174(para)
 msgid ""
 "Click the <guibutton>Remove</guibutton> button in the toolbar to start the "
-"process."
+"package uninstallation process."
 msgstr ""
-"Cliquez sur <guibutton>Supprimer</guibutton> dans la barre d'outils afin de lancer le processus."
+"Cliquez sur <guibutton>Supprimer</guibutton> dans la barre d'outils afin de lancer le "
+" processus de désinstallation."
 
-#: package-manager.xml:155 (para)
+#: package-manager.xml:175(para)
 msgid ""
 "You can also choose <menuchoice><guimenu>Package</"
 "guimenu><guimenuitem>Remove</guimenuitem></menuchoice> to remove a package."
 msgstr ""
 "Vous pouvez également supprimer un package en cliquant sur <menuchoice><guimenu>Package</guimenu><guimenuitem>Supprimer</guimenuitem></menuchoice>."
 
-#: package-manager.xml:157 (para)
+#: package-manager.xml:177(para)
 msgid ""
 "Review the packages to be removed and the package dependencies details in "
-"the <guilabel>Remove Confirmation</guilabel> dialog."
+"the <literal>Remove Confirmation</literal> dialog box."
 msgstr ""
-"Vérifiez les packages à supprimer et les détails de dépendance dans la boîte de dialogue <guilabel>Confirmation de la suppression</guilabel>."
+"Vérifiez les packages à supprimer et les informations de dépendance dans "
+"la boîte de dialogue <literal>Confirmation de la suppression</literal>."
 
-#: package-manager.xml:159 (para)
+#: package-manager.xml:179(para)
+msgid "Uninstall the package or cancel the uninstallation process."
+msgstr "Désinstallez le package ou annulez le processus de désinstallation."
+
+#: package-manager.xml:180(para)
 msgid ""
-"Click <guibutton>Proceed</guibutton> to confirm. After you click the "
-"<guibutton>OK</guibutton> button, you cannot undo the package removal."
+"Click <guibutton>Proceed</guibutton> to start uninstalling the packages."
 msgstr ""
-"Pour confirmer, cliquez sur <guibutton>Continuer</guibutton>. Après avoir cliqué sur <guibutton>OK</guibutton>, vous ne pouvez plus annuler la suppression du package."
+"Cliquez sur <guibutton>Continuer</guibutton> pour lancer la désinstallation des packages."
 
-#: package-manager.xml:160 (para)
+#: package-manager.xml:182(para)
 msgid ""
 "Click <guibutton>Cancel</guibutton> to cancel the process. No changes are "
 "made and you are returned to the main window."
 msgstr ""
-"Pour annuler le processus, cliquez sur <guibutton>Annuler</guibutton>. Aucune modification n'est effectuée et vous êtes renvoyé à la fenêtre principale."
+"Pour annuler le processus, cliquez sur <guibutton>Annuler</guibutton>. Aucune "
+"modification n'est effectuée et vous retournez à la fenêtre principale."
 
-#: package-manager.xml:164 (title)
+#: package-manager.xml:183(para)
+msgid ""
+"After you click the <guibutton>Proceed</guibutton> button, you cannot undo "
+"the package removal action. However, you can reinstall the package at any "
+"time."
+msgstr ""
+"Après avoir cliqué sur le bouton<guibutton>Continuer</guibutton> vous ne pouvez pas annuler "
+"la suppression du package. Toutefois, vous pouvez réinstaller le package "
+"à tout moment."
+
+#: package-manager.xml:190(title)
 msgid "Search for a Package"
 msgstr "Recherche d'un package"
 
-#: package-manager.xml:165 (para)
-msgid ""
-"Type the name of the package that you want to search for in the "
-"<guilabel>Search</guilabel> box. Enter the complete name, description, or a "
-"partial name to search for the package. For example, you might enter one of "
-"the following search terms to search for <filename>SUNWgnome-games</"
-"filename> :"
-msgstr ""
-"Dans le champ <guilabel>Recherche</guilabel>, saisissez le nom du package que vous recherchez. Entrez le nom complet, une description ou le nom partiel du package à rechercher. Par exemple, pour trouver <filename>SUNWgnome-games</filename>, vous pouvez saisir l'un des termes de recherche suivants :"
+#: package-manager.xml:191(para)
+msgid "You can search for a package in the following ways :"
+msgstr "Pour rechercher un package, vous disposez des options suivantes :"
 
-#: package-manager.xml:166 (para)
+#: package-manager.xml:192(para)
+msgid ""
+"<emphasis role=\"strong\">Search the current repository</emphasis> – Search "
+"for a package in the repository currently selected in the "
+"<literal>Repository</literal> drop-down menu. The category selection or the "
+"<literal>Show</literal> filter does not affect the search and the search is "
+"performed on all packages in the currently selected repository."
+msgstr ""
+"<emphasis role=\"strong\">Rechercher dans le référentiel actuel</emphasis> : permet de rechercher "
+"un package dans le référentiel sélectionné dans le menu déroulant "
+"<literal>Référentiel</literal>. Ni la sélection de la catégorie ni le filtre "
+"<literal>Afficher</literal> n'ont d'incidence sur la recherche, laquelle "
+"s'effectue sur tous les packages résidant dans le référentiel sélectionné."
+
+#: package-manager.xml:193(para)
+msgid ""
+"Enter a description, or a partial name in the <literal>Search</literal> box "
+"located on the toolbar. For example, you might type one of the following "
+"search terms to search for <filename>SUNWgnome-games</filename> :"
+msgstr ""
+"Saisissez une description ou un nom partiel dans l'onglet <literal>Recherche</literal> "
+"situé dans la barre d'outils. Vous pouvez, par exemple, taper l'un des termes de recherche suivants pour rechercher "
+" <filename>SUNWgnome-games</filename> :"
+
+#: package-manager.xml:194(para)
 msgid "SUNWgames"
 msgstr "SUNWgames"
 
-#: package-manager.xml:168 (para)
+#: package-manager.xml:196(para)
 msgid "games"
 msgstr "games"
 
-#: package-manager.xml:170 (para)
+#: package-manager.xml:198(para)
 msgid "GNOME-games"
 msgstr "GNOME-games"
 
-#: package-manager.xml:173 (para)
+#: package-manager.xml:201(para)
+msgid ""
+"To search for SunStudio compilers, you might type one of the following terms:"
+msgstr ""
+"Pour rechercher des compilateurs SunStudio, tapez l'un des termes suivants :"
+
+#: package-manager.xml:202(para)
+msgid "compiler"
+msgstr "compilateur"
+
+#: package-manager.xml:204(para)
+msgid "tools"
+msgstr "outils"
+
+#: package-manager.xml:208(para)
+msgid ""
+"<emphasis role=\"strong\">Search all repositories</emphasis> – Select the "
+"multi-repository icon in the <literal>Search</literal> box to search for the "
+"package across all configured or registered repositories."
+msgstr ""
+"<emphasis role=\"strong\">Rechercher dans tous les référentiels</emphasis> : "
+"sélectionnez l'icône représentant plusieurs référentiels dans l'onglet <literal>Recherche</literal> pour rechercher le package "
+"dans tous les référentiels enregistrés ou configurés."
+
+#: package-manager.xml:209(para)
+msgid ""
+"The multi-repository search currently supports search based on the package "
+"description only."
+msgstr ""
+"Pour l'instant, la recherche multiréférentiel se base uniquement sur la "
+"description du package."
+
+#: package-manager.xml:211(para)
+msgid ""
+"Type a description of the package in the box. For example, the "
+"<filename>SUNWdiveintopython</filename> package is a book on Python "
+"programming. The description of the package contains <emphasis>book</"
+"emphasis>. To search for this package, you might then type one of the "
+"following terms:"
+msgstr ""
+"Saisissez une description du package dans l'onglet Recherche. Par exemple, le package "
+"<filename>SUNWdiveintopython</filename> est un livre traitant de la programmation "
+"Python. Sa description contient le terme <emphasis>book</"
+"emphasis>. Pour le rechercher, tapez l'un des "
+"termes suivants :"
+
+#: package-manager.xml:212(para)
+msgid "python"
+msgstr "python"
+
+#: package-manager.xml:214(para)
+msgid "book"
+msgstr "book"
+
+#: package-manager.xml:217(para)
+msgid ""
+"If you searched for the term <emphasis>dive</emphasis> in the multi-"
+"repository search, the <filename>SUNWdiveintopython</filename> package will "
+"not be displayed as the term is not present in the package description."
+msgstr ""
+"Si vous tapez <emphasis>dive</emphasis> en recherche "
+"multiréférentiel, le package <filename>SUNWdiveintopython</filename> ne s'affichera pas, "
+"car sa description ne contient pas ce terme."
+
+#: package-manager.xml:221(para)
 msgid ""
 "Use the submenus under the <menuchoice><guimenu>Edit</guimenu></menuchoice> "
-"menu to cut, copy, paste, or clear text in the <guilabel>Search</guilabel> "
-"tab."
+"menu to cut, copy, paste, or clear text in the <literal>Search</literal> box."
 msgstr ""
-"Pour couper, copier, coller ou supprimer du texte dans l'onglet <guilabel>Recherche</guilabel>, utilisez les sous-menus du menu <menuchoice><guimenu>Édition</guimenu></menuchoice>."
+"Pour couper, copier, coller ou supprimer du texte dans l'onglet <literal>Recherche</literal>,  "
+"utilisez les sous-menus du menu <menuchoice><guimenu>Édition</guimenu></menuchoice>."
 
-#: package-manager.xml:175 (para)
+#: package-manager.xml:223(para)
 msgid ""
-"Use the icon on the right hand side of the <guilabel>Search</guilabel> tab "
-"to clear the search results."
+"Use the icon on the right side of the <literal>Search</literal> box to clear "
+"the search results."
 msgstr ""
-"Pour effacer les résultats de recherche, cliquez sur l'icône située à droite de l'onglet <guilabel>Recherche</guilabel>."
+"Pour effacer les résultats de recherche, cliquez sur l'icône située à droite de l'onglet "
+"<literal>Recherche</literal>."
 
-#: package-manager.xml:180 (title)
+#: package-manager.xml:228(title)
 msgid "Update a Package"
 msgstr "Mise à jour d'un package"
 
-#: package-manager.xml:181 (para)
+#: package-manager.xml:229(para)
 msgid ""
 "Look for the green icon next to the installed package name. This icon "
 "indicates that updates are available for the package in the currently "
 "selected repository. Select the package and click the <guibutton>Install/"
 "Update</guibutton> button to install the latest version of the package."
 msgstr ""
-"Recherchez l'icône verte en regard des noms des packages installés. Cette icône indique que des mises à jour sont disponibles pour le package dans le référentiel actuellement sélectionné. Pour installer la dernière version du package, sélectionnez le package et cliquez sur <guibutton>Installer/Mettre à jour</guibutton>."
+"Recherchez l'icône verte en regard des noms des packages installés."
+"Cette icône indique que des mises à jour sont disponibles pour le package dans le "
+"référentiel actuellement sélectionné. Pour installer la dernière version du package,"
+" sélectionnez le package et cliquez sur <guibutton>Installer/Mettre à jour</guibutton>."
 
-#: package-manager.xml:183 (title)
-msgid "Switch Between Configured Repositories"
-msgstr "Basculement entre les référentiels configurés"
-
-#: package-manager.xml:184 (para)
-msgid ""
-"Use the <guilabel>Repositories</guilabel> drop-down menu on the toolbar to "
-"view a list of configured repositories. Click a repository name to switch to "
-"a different repository."
-msgstr ""
-"Affichez la liste de référentiels configurés à l'aide du menu déroulant <guilabel>Référentiels</guilabel> de la barre d'outils. Pour basculer vers un autre référentiel, cliquez sur son nom."
-
-#: package-manager.xml:186 (title)
+#: package-manager.xml:232(title)
 msgid "Introduction to Boot Environments"
 msgstr "Introduction aux environnements d'initialisation"
 
-#: package-manager.xml:187 (para)
-msgid "The OpenSolaris 2008.11 release is a boot environment."
-msgstr "OpenSolaris 2008.11 est un environnement d'initialisation."
-
-#: package-manager.xml:188 (para)
+#: package-manager.xml:233(para)
 msgid ""
-"A boot environment is an image that is bootable. The boot environment "
-"consists of a root file system and, optionally, other file systems, such as "
-"<filename>/usr</filename>, <filename>/var</filename>, or <filename>/export</"
-"filename>. These other file systems are mounted below the root file system. "
-"The root file system and all other file systems of the boot environment that "
-"contain system software are required to be zfs datasets."
+"A boot environment is an image that is bootable. Upon an initial OpenSolaris "
+"installation, a boot environment is created."
 msgstr ""
-"Un environnement d'initialisation est une image amorçable. L'environnement d'initialisation se compose d'un système de fichiers racine et, éventuellement, d'autres systèmes de fichiers, tels que <filename>/usr</filename>, <filename>/var</filename> ou <filename>/export</filename>. Ces autres systèmes de fichiers sont montés sous le système de fichiers racine. Ce dernier et tous les autres systèmes de fichiers de l'environnement d'initialisation contenant un logiciel système doivent constituer des jeux de données ZFS."
+"Un environnement d'initialisation est une image amorçable. Suite à une installation initiale de OpenSolaris "
+"un environnement d'initialisation est créé."
 
-#: package-manager.xml:189 (para)
+#: package-manager.xml:234(para)
 msgid ""
-"You can maintain multiple boot environments on your system. The primary "
-"reason to have more than one boot environment on your system is to create "
-"backups of your existing boot environments before you modify them. Then, you "
-"have the option of booting a backup boot environment when needed. Use the "
-"<command>beadm(1)</command> utility to create, and manage your boot "
+"You can maintain multiple boot environments on your OpenSolaris 2009.06 "
+"system. Use the <command>beadm(1)</command> command from the command—line "
+"interface (CLI) to create, rename, mount or unmount, or destroy these boot "
 "environments."
 msgstr ""
-"Vous pouvez installer plusieurs environnements d'initialisation sur votre système. Cela vous permet notamment de créer des sauvegardes de vos environnements d'initialisation existants avant de les modifier. Vous avez alors la possibilité d'amorcer un environnement d'initialisation de sauvegarde si besoin est. La commande <command>beadm(1)</command> vous permet de créer et de gérer vos environnements d'initialisation."
+"Vous pouvez conserver plusieurs environnements sur votre système OpenSolaris 2009.06. "
+"Utilisez la commande <command>beadm(1)</command> dans l'interface de ligne de commande "
+"(CLI) pour créer, renommer, monter ou démonter ou encore détruire ces environnements "
+"d'initialisation."
 
-#: package-manager.xml:190 (para)
+#: package-manager.xml:235(para)
 msgid ""
-"For detailed instructions about the <command>beadm</command> utility, see "
-"the <literal>beadm</literal>(1M) man page."
+"The Package Manager enables you to manage the boot environments created "
+"during the process of updating your image. For more information, see <xref "
+"linkend=\"manage_be\"/> section."
 msgstr ""
-"Pour des instructions détaillées sur l'utilitaire <command>beadm</command>, reportez-vous à la page de manuel <literal>beadm</literal>(1M)."
+"Le Gestionnaire de packages permet de gérer les environnements d'initialisation créés "
+"au cours de la mise à jour de l'image. Pour plus d'informations, reportez-vous à la section <xref "
+"linkend=\"manage_be\"/>."
 
-#: package-manager.xml:191 (para)
+#: package-manager.xml:236(para)
 msgid ""
-"See the <ulink url=\"http://dlc.sun.com/osol/docs/content/2008.11/"
-"snapupgrade/snap3.html\"><citetitle>Upgrading and Managing Boot "
-"Environments</citetitle></ulink> document for more information on boot "
-"environments."
+"System administrators can maintain multiple boot environments on their "
+"systems, and each boot environment can have different software versions "
+"installed."
 msgstr ""
-"Pour plus d'informations sur les environnements d'initialisation, reportez-vous au chapitre <ulink url=\"http://dlc.sun.com/osol/docs/content/2008.11/snapupgrade/snap3.html\"><citetitle>Upgrading and Managing Boot Environments</citetitle>(Mise à niveau et gestion des environnements d'initialisation)</ulink>."
+"Les administrateurs système peuvent gérer plusieurs environnements d'initialisation sur leur "
+"système, chacun pouvant avoir différentes versions"
+" de logiciels installées."
 
-#: package-manager.xml:192 (para)
+#: package-manager.xml:237(para)
 msgid ""
-"The <application>Package Manager</application> creates a clone of the active "
-"boot environment when an image is updated."
+"When you use either the Package Manager or the <command>pkg image-update</"
+"command> command to update all the packages in your active OpenSolaris boot "
+"environment, a clone of that boot environment is automatically created. The "
+"packages are updated in the clone rather than in the original boot "
+"environment. After successfully completing the updates, the new clone is "
+"activated. Then, the clone will become the new default boot environment on "
+"system reboot. The original boot environment is also available as an "
+"alternate selection."
 msgstr ""
-"Le <application>Gestionnaire de packages</application> crée un clone de l'environnement d'initialisation actif lorsqu'une image est mise à jour."
+"Lorsque vous mettez à jour tous les packages de l'environnement d'initialisation OpenSolaris à l'aide du Gestionnaire de packages ou de la commande <command>pkg image-update</"
+"command>, un clone de cet environnement est créé automatiquement. Les "
+"packages sont mis à jour dans le clone plutôt que dans "
+"l'environnement d'origine. Une fois les mises à jour terminées, le clone est "
+"activé et devient le nouvel environnement d'initialisation par défaut "
+"au redémarrage du système. Vous avez néanmoins la possibilité de sélectionner l'environnement d'initialisation "
+"d'origine."
 
-#: package-manager.xml:194 (title)
-msgid "Update the Current Image (Update All Packages)"
-msgstr "Mise à jour de l'image actuelle (Mettre à jour tous les packages)"
+#: package-manager.xml:238(para)
+msgid ""
+"See the beadm(1) man pages and the <ulink url=\"http://dlc.sun.com/osol/docs/"
+"content/dev/snapupgrade/snap3.html\"><citetitle>Upgrading and Managing Boot "
+"Environments</citetitle></ulink> document to learn more about boot "
+"environments and the <command>beadm(1)</command> command."
+msgstr ""
+"Pour en savoir plus sur les environnements d'initialisation et sur la commande <command>beadm(1)</command>, reportez-vous aux pages de manuel beadm(1) et au document<ulink url=\"http://dlc.sun.com/osol/docs/"
+"content/dev/snapupgrade/snap3.html\"><citetitle>Upgrading and Managing Boot "
+"Environments</citetitle></ulink>."
 
-#: package-manager.xml:195 (para)
+#: package-manager.xml:239(title)
+msgid "Update All Packages (Update Your Image)"
+msgstr "Mise à jour de tous les packages (mise à jour de l'image)"
+
+#: package-manager.xml:240(para)
 msgid "Perform the following steps to update all the packages in your image."
 msgstr "Pour mettre à jour tous les packages d'une image, suivez la procédure ci-dessous :"
 
-#: package-manager.xml:196 (para)
+#: package-manager.xml:241(para)
 msgid ""
-"Click the <guilabel>Update All</guilabel> button to start the process of "
-"updating <emphasis role=\"strong\">all</emphasis> the packages in your image."
+"Click the <guibutton>Update All</guibutton> icon located on the toolbar to "
+"start the process of updating <emphasis role=\"strong\">all</emphasis> the "
+"packages installed in your image."
 msgstr ""
-"Cliquez sur le bouton <guilabel>Tout mettre à jour</guilabel> pour lancer le processus de mise à jour de <emphasis role=\"strong\">tous</emphasis> les packages de l'image."
+"Cliquez sur l'icône <guibutton>Tout mettre à jour</guibutton> de la barre d'outils pour "
+"lancer la mise à jour de <emphasis role=\"strong\">tous</emphasis> les "
+"packages installés dans l'image."
 
-#: package-manager.xml:197 (para)
+#: package-manager.xml:242(para)
 msgid ""
-"You can also choose <menuchoice><guimenu>File</guimenu><guimenuitem>Update "
-"All</guimenuitem></menuchoice> to start the process."
+"You can also choose <menuchoice><guimenu>Package</guimenu><guisubmenu>Update "
+"All</guisubmenu></menuchoice> to start the process."
 msgstr ""
-"Vous pouvez également lancer le processus en cliquant sur <menuchoice><guimenu>Fichier</guimenu><guimenuitem>Tout mettre à jour</guimenuitem><menuchoice>."
+"Vous pouvez également lancer le processus en cliquant sur <menuchoice><guimenu>Package</guimenu><guisubmenu>Tout "
+"mettre à jour</guisubmenu></menuchoice>."
 
-#: package-manager.xml:198 (para)
+#: package-manager.xml:243(para)
 msgid ""
-"The <guilabel>Update All</guilabel> button is enabled when updates are "
+"The <guilabel>Update All</guilabel> icon is enabled when updates are "
 "available to the installed packages."
 msgstr ""
-"Le bouton <guilabel>Tout mettre à jour</guilabel> est activé lorsque des mises à jour sont disponibles pour les packages installés."
+"L'icône <guilabel>Tout mettre à jour</guilabel> est activée lorsque des mises à jour sont disponibles pour les packages installés."
 
-#: package-manager.xml:201 (para)
+#: package-manager.xml:246(para)
 msgid ""
-"The <guilabel>Update All</guilabel> window is displayed. Click "
-"<guibutton>Proceed</guibutton> to create a new boot environment and proceed "
-"with the Update All process."
+"A <literal>Create New Boot Environment</literal> window is displayed. A name "
+"for the new boot environment is automatically generated."
 msgstr ""
-"La fenêtre <guilabel>Tout mettre à jour</guilabel>s'ouvre. Cliquez sur <guibutton>Continuer</guibutton> pour créer un nouvel environnement d'initialisation et continuer le processus Tout mettre à jour."
+"La fenêtre <literal>Création d'un nouvel environnement d'initialisation</literal> s'affiche. Un nom "
+"pour le nouvel environnement d'initialisation est généré automatiquement."
 
-#: package-manager.xml:202 (para)
+#: package-manager.xml:248(para)
+msgid ""
+"(optional) You can change the name of the new boot environment if you want."
+msgstr ""
+"Si vous le souhaitez, vous pouvez modifier le nom du nouvel environnement d'initialisation."
+
+#: package-manager.xml:250(para)
+msgid "Confirm or Cancel the new boot environment."
+msgstr "Confirmez ou annulez le nouvel environnement d'initialisation."
+
+#: package-manager.xml:251(para)
+msgid ""
+"Click <guibutton>Proceed</guibutton> to create a new boot environment and "
+"proceed with the Update All process."
+msgstr ""
+"Cliquez sur <guibutton>Continuer</guibutton> pour créer un nouvel environnement "
+"et poursuivre le processus Tout mettre à jour."
+
+#: package-manager.xml:253(para) package-manager.xml:481(para)
+msgid "Click <guibutton>Cancel</guibutton> to cancel the process."
+msgstr "Pour annuler le processus, cliquez sur <guibutton>Annuler</guibutton>."
+
+#: package-manager.xml:256(para)
 msgid ""
 "During the Update All process, a clone of the active boot environment is "
 "created. This clone enables the user to boot into the boot environment state "
 "that existed before the Update All process was started. If the Package "
 "Manager is unable to create a new boot environment, an error message will be "
-"displayed. See the <xref linkend=\"ghmyd\"/> section on how to rectify the "
+"displayed. See the <xref linkend=\"gilfh\"/> section on how to rectify the "
 "error and continue with updating your image."
 msgstr ""
-"Lors du processus Tout mettre à jour, un clone de l'environnement d'initialisation actif est créé. Ce clone permet à l'utilisateur d'amorcer l'environnement d'initialisation dans l'état précédant le processus Tout mettre à jour. S'il est impossible de créer un nouvel environnement d'initialisation à l'aide du Gestionnaire de packages, un message d'erreur s'affiche. Pour résoudre le problème et continuer la mise à jour de l'image, reportez-vous à la section <xref linkend=\"ghmyd\"/>."
+"Lors du processus Tout mettre à jour, un clone de l'environnement d'initialisation actif est créé."
+"Ce clone permet à l'utilisateur d'amorcer l'environnement d'initialisation dans l'état précédant le processus Tout mettre à jour."
+"S'il est impossible de créer un nouvel environnement d'initialisation à l'aide du Gestionnaire de packages, un message d'erreur s'affiche."
+"Pour résoudre le problème et continuer la mise à jour de l'image, reportez-vous à la section <xref linkend=\"gilfh\"/>."
 
-#: package-manager.xml:203 (para) package-manager.xml:318
-msgid "A name for the new boot environment is automatically generated."
-msgstr "Un nom a été automatiquement généré pour le nouvel environnement d'initialisation."
-
-#: package-manager.xml:205 (para) package-manager.xml:209
-#: package-manager.xml:316
-msgid "Click <guibutton>Cancel</guibutton> to cancel the process."
-msgstr "Pour annuler le processus, cliquez sur <guibutton>Annuler</guibutton>."
-
-#: package-manager.xml:207 (para)
+#: package-manager.xml:258(para)
 msgid ""
-"If you chose to proceed, the Package Manager checks for dependencies and the "
-"<guilabel>Install/Update Confirmation</guilabel> dialog is displayed."
+"If you chose to proceed with the Update All process, the packages are "
+"downloaded and installed."
 msgstr ""
-"Si vous choisissez de continuer, le Gestionnaire de packages vérifie les dépendances et la boîte de dialogue <guilabel>Confirmation de l'installation/de la mise à jour</guilabel> s'ouvre."
+"Si vous décidez de poursuivre le processus Tout mettre à jour, les packages sont "
+"téléchargés et installés."
 
-#: package-manager.xml:208 (para)
+#: package-manager.xml:259(para)
 msgid ""
-"Review the packages to be installed and click <guibutton>Next</guibutton> to "
-"proceed."
+"After a successful completion, the <literal>Update All Complete</literal> "
+"dialog box is shown. A link to the Release Notes is provided in the dialog "
+"box. Read the <xref linkend=\"release_notes\"/> before rebooting your system."
 msgstr ""
-"Vérifiez les packages à installer et cliquez sur <guibutton>Suivant</guibutton> pour continuer."
+"Une fois le processus terminé, la boîte de dialogue <literal>L'opération Tout mettre à jour est terminée</literal> "
+"s'affiche. Elle contient un lien vers les notes de version. Consultez les <xref linkend=\"release_notes\"/> avant de redémarrer le système."
 
-#: package-manager.xml:211 (para)
-msgid "The packages are downloaded and installed."
-msgstr "Les packages sont téléchargés et installés."
+#: package-manager.xml:261(para)
+msgid "Click <guibutton>Close</guibutton>."
+msgstr "Cliquez sur <guibutton>Fermer</guibutton>."
 
-#: package-manager.xml:213 (para) package-manager.xml:337
-msgid ""
-"Read the <ulink url=\"http://opensolaris.org/os/project/indiana/resources/"
-"relnotes/200811/x86/\">Release Notes</ulink> before rebooting your system."
-msgstr ""
-"Avant de réinitialiser votre système, consultez les <ulink url=\"http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/\">Notes de version</ulink>."
-
-#: package-manager.xml:214 (para) package-manager.xml:338
+#: package-manager.xml:262(emphasis) package-manager.xml:500(para)
 msgid "You must reboot your system for the changes to take effect."
 msgstr "Pour appliquer les modifications, réinitialisez votre système."
 
-#: package-manager.xml:218 (title)
+#: package-manager.xml:267(title) package-manager.xml:505(title)
 msgid "Update All Errors"
 msgstr "Erreurs du processus Tout mettre à jour"
 
-#: package-manager.xml:219 (para) package-manager.xml:343
+#: package-manager.xml:268(para)
 msgid ""
-"A new boot environment clone <emphasis role=\"strong\">must</emphasis> be "
-"created for the Update All process to be completed. An error message is "
-"displayed if a boot environment clone cannot be created. You might see an "
-"error message such as :"
+"A new boot environment clone must be created by the Package Manager for the "
+"Update All process to be completed. An error message is displayed if a boot "
+"environment clone cannot be created. You might see an error message such as "
+"the following :"
 msgstr ""
-"Pour que le processus Tout mettre à jour s'effectue correctement, la création d'un clone du nouvel environnement d'installation est <emphasis role=\"strong\">indispensable</emphasis>. Un message d'erreur s'affiche s'il s'avère impossible de créer un clone de l'environnement d'initialisation. Il est possible qu'un message similaire au message d'erreur suivant s'affiche :"
+"Pour que le processus Tout mettre à jour s'effectue correctement, le Gestionnaire de packages <\">doit</> créer un clone du nouvel environnement d'initialisation. Un message d'erreur s'affiche s'il s'avère impossible de réaliser l'opération."
+"Il est possible qu'un message similaire au message d'erreur suivant s'affiche :"
 
-#: package-manager.xml:220 (para)
+#: package-manager.xml:269(para) package-manager.xml:507(para)
 msgid ""
-"<literal>Not enough disk space: the selected action cannot be performed. You "
-"may choose to return to BE Management to manage your boot environments and "
-"free up disk space</literal>."
+"<literal>Not enough disk space, the selected action cannot be performed. "
+"Click OK to manage your existing BEs and free up disk space or Cancel to "
+"cancel the action</literal>."
 msgstr ""
-"<literal>Espace disque insuffisant : l'action sélectionnée ne peut pas s'effectuer. "
-"Vous pouvez revenir à la gestion de l'environnement d'initialisation afin de gérer les environnements d'initialisation et libérer de l'espace disque</literal>."
+"<literal>Espace disque insuffisant, l'opération sélectionnée ne peut pas être effectuée. "
+"Cliquez sur OK pour gérer les environnements d'initialisation existants et libérer de l'espace disque "
+"ou cliquez sur Annuler pour annuler l'opération</literal>."
 
-#: package-manager.xml:221 (para)
+#: package-manager.xml:270(para)
 msgid ""
 "Click <guibutton>Cancel</guibutton> to cancel the Update All process and "
 "return to the main window."
 msgstr ""
 "Pour annuler le processus Tout mettre à jour et revenir à la fenêtre principale, cliquez sur <guibutton>Annuler</guibutton>."
 
-#: package-manager.xml:222 (para) package-manager.xml:346
+#: package-manager.xml:271(para) package-manager.xml:509(para)
 msgid ""
 "Perform the following steps if you want to rectify the error and continue "
 "with the Update All process:"
 msgstr ""
 "Si vous souhaitez rectifier l'erreur et poursuivre le processus Tout mettre à jour, suivez la procédure ci-dessous :"
 
-#: package-manager.xml:223 (para)
+#: package-manager.xml:272(para)
 msgid ""
-"Click <guibutton>BE Management</guibutton> to go to the <guilabel>Boot "
-"Environment Management</guilabel> dialog."
+"Click <guibutton>OK</guibutton> to display the <literal>Boot Environment "
+"Management</literal> dialog box."
 msgstr ""
-"Cliquez sur <guibutton>Gestion de l'environnement d'initialisation</guibutton> pour accéder à la boîte de dialogue <guilabel>Gestion de l'environnement d'initialisation</guilabel>."
+"Pour afficher la boîte de dialogue <literal>Gestion de l'environnement d'initialisation</literal>, "
+"cliquez sur <guibutton>Oui</guibutton>."
 
-#: package-manager.xml:224 (para) package-manager.xml:348
-msgid ""
-"Click <guibutton>Close</guibutton> to cancel the process and return to the "
-"main window."
-msgstr ""
-"Pour annuler le processus et revenir à la fenêtre principale, cliquez sur <guibutton>Annuler</guibutton>."
-
-#: package-manager.xml:226 (para) package-manager.xml:350
-msgid ""
-"If you chose to rectify the error, go to step 2 in the <xref linkend=\"ghmya"
-"\"/> section. Follow instructions to delete old or unused boot environments "
-"and free up disk space."
-msgstr ""
-"Pour supprimer des environnements d'initialisation anciens ou inutilisés et libérer de l'espace disque, suivez la procédure décrite à l'étape 2 de la section <xref linkend=\"ghmya\"/>."
-
-#: package-manager.xml:228 (para)
-msgid ""
-"Click the <guibutton>Update All</guibutton> icon to restart the process of "
-"updating all packages."
-msgstr ""
-"Pour relancer le processus de mise à jour de tous les packages, cliquez sur l'icône <guilabel>Tout mettre à jour</guilabel>."
-
-#: package-manager.xml:233 (title)
-msgid "Manage Boot Environments"
-msgstr "Gestion des environnements d'initialisation"
-
-#: package-manager.xml:234 (para)
-msgid "Perform the following steps to manage your boot environments :"
-msgstr "Pour gérer vos environnements d'initialisation, suivez la procédure ci-dessous :"
-
-#: package-manager.xml:235 (para)
-msgid ""
-"Click <menuchoice><guimenu>File</guimenu><guimenuitem>Boot Environment "
-"Management</guimenuitem></menuchoice> to open the <guilabel>Boot Environment "
-"Management</guilabel> dialog."
-msgstr ""
-"Pour accéder à la boîte de dialogue <guilabel>Gestion de l'environnement d'initialisation</guilabel>, cliquez sur <menuchoice><guimenu>Fichier</guimenu><guimenuitem>Gestion de l'environnement d'initialisation</guimenuitem></menuchoice>."
-
-#: package-manager.xml:237 (para)
-msgid "In this dialog, you can perform the following actions:"
-msgstr "Dans cette boîte de dialogue, vous pouvez effectuer les actions suivantes :"
-
-#: package-manager.xml:238 (emphasis)
-msgid "Change the default boot environment."
-msgstr "Modifier l'environnement d'initialisation par défaut."
-
-#: package-manager.xml:239 (para)
-msgid ""
-"Select the boot environment that you want to be active on system reboot. "
-"This is the default boot environment."
-msgstr ""
-"Sélectionnez l'environnement d'initialisation à activer lors de la réinitialisation du système. Il s'agit de l'environnement d'initialisation par défaut."
-
-#: package-manager.xml:242 (emphasis)
-msgid "Remove old or unused boot environments to free up disk space."
-msgstr "Supprimer les environnements d'initialisation anciens ou inutilisés afin de libérer de l'espace disque."
-
-#: package-manager.xml:243 (para)
+#: package-manager.xml:274(para)
 msgid "Select the boot environments that you want to delete."
 msgstr "Sélectionnez les environnements d'initialisation que vous souhaitez supprimer."
 
-#: package-manager.xml:244 (para)
+#: package-manager.xml:275(para)
+msgid "You cannot delete the currently active boot environment."
+msgstr "Il est impossible de supprimer l'environnement d'initialisation actif."
+
+#: package-manager.xml:277(para)
 msgid ""
 "You do not need to reboot your system if you are only deleting some of your "
 "boot environments."
 msgstr ""
 "Si vous supprimez uniquement certains de vos environnements d'initialisation, il est inutile de réinitialiser le système."
 
-#: package-manager.xml:250 (para)
+#: package-manager.xml:282(para)
+msgid "Click <guibutton>OK</guibutton>."
+msgstr "Cliquez sur <guibutton>OK</guibutton>."
+
+#: package-manager.xml:284(para)
+msgid ""
+"The <literal>Boot Environment Confirmation</literal> dialog is shown. Review "
+"your changes and click OK to proceed."
+msgstr ""
+"La boîte de dialogue <literal>Confirmation de l'environnement d'initialisation</literal> s'affiche. Vérifiez "
+"les modifications que vous avez apportées et cliquez sur OK pour continuer."
+
+#: package-manager.xml:286(para)
+msgid ""
+"Click the <guibutton>Update All</guibutton> icon to restart the process of "
+"updating all packages."
+msgstr ""
+"Pour relancer le processus de mise à jour de tous les packages, cliquez sur l'icône <guibutton>Tout mettre à jour</guibutton>."
+
+#: package-manager.xml:290(title)
+msgid "Manage Boot Environments"
+msgstr "Gestion des environnements d'initialisation"
+
+#: package-manager.xml:291(para)
+msgid "Perform the following steps to manage your boot environments:"
+msgstr "Pour gérer vos environnements d'initialisation, suivez la procédure ci-dessous :"
+
+#: package-manager.xml:292(para)
+msgid ""
+"Click <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot "
+"Environments</guimenuitem></menuchoice> to open the <literal>Manage Boot "
+"Environments</literal> dialog."
+msgstr ""
+"Pour ouvrir la boîte de dialogue <literal>Gestion des environnements d'initialisation</literal>, cliquez sur <menuchoice><guimenu>Fichier</guimenu><guimenuitem>Gestion "
+"des environnements d'initialisation</guimenuitem></menuchoice>."
+
+#: package-manager.xml:294(para)
+msgid "In this dialog box , you can perform the following actions:"
+msgstr "Dans cette boîte de dialogue, vous pouvez effectuer les opérations suivantes :"
+
+#: package-manager.xml:295(para)
+msgid ""
+"<emphasis role=\"strong\">Activate a boot environment</emphasis> – Select "
+"the boot environment that you want to be active on system reboot. This will "
+"be the default boot environment <emphasis role=\"strong\">after</emphasis> "
+"you have rebooted your system."
+msgstr ""
+"<emphasis role=\"strong\">Activer un environnement d'initialisation</emphasis> : sélectionnez "
+"l'environnement d'initialisation à activer au démarrage du système. Il s'agira "
+"de l'environnement d'initialisation par défaut <emphasis role=\"strong\">après</emphasis> "
+"réinitialisation du système."
+
+#: package-manager.xml:297(para)
+msgid ""
+"<emphasis role=\"strong\">Remove old or unused boot environments to free up "
+"disk space</emphasis> – Select the boot environments that you want to delete."
+msgstr ""
+"<emphasis role=\"strong\">Supprimer les environnements d'initialisation anciens ou inutilisés afin de libérer'"
+"l'espace disque</emphasis> : sélectionnez les environnements d'initialisation que vous souhaitez supprimer."
+
+#: package-manager.xml:298(para)
+msgid "You cannot the delete the currently active boot environment."
+msgstr "Il est impossible de supprimer l'environnement d'initialisation actif."
+
+#: package-manager.xml:300(para)
+msgid ""
+"If you have selected a boot environment to be renamed, it cannot be deleted."
+msgstr ""
+"Il est impossible de supprimer un environnement d'initialisation sélectionné pour être renommé."
+
+#: package-manager.xml:305(para)
+msgid ""
+"<emphasis role=\"strong\">Rename a boot environment</emphasis> – Double-"
+"click the boot environment name that you want to change. Enter the new name "
+"of the boot environment and click <guibutton>OK</guibutton>."
+msgstr ""
+"<emphasis role=\"strong\">Renommer un environnement d'initialisation</emphasis> : double-cliquez"
+"sur le nom de l'environnement d'initialisation à modifier. Saisissez le nouveau nom "
+"de l'environnement d'initialisation et cliquez sur <guibutton>OK</guibutton>."
+
+#: package-manager.xml:306(para)
+msgid ""
+"If you have selected a boot environment to be deleted, it cannot be renamed."
+msgstr ""
+"Il est impossible de renommer un environnement d'initialisation sélectionné pour être supprimé."
+
+#: package-manager.xml:308(para)
+msgid "The currently active boot environment cannot be renamed."
+msgstr "L'environnement d'initialisation actif ne peut pas être renommé."
+
+#: package-manager.xml:315(para)
+msgid "Accept or decline the changes:"
+msgstr "Acceptez ou refusez les modifications :"
+
+#: package-manager.xml:316(para) package-manager.xml:442(para)
 msgid "Click <guibutton>OK</guibutton> to proceed."
 msgstr "Pour continuer, cliquez sur <guibutton>OK</guibutton>."
 
-#: package-manager.xml:251 (para)
-msgid ""
-"Click <guibutton>Reset</guibutton> to reset the changes and show the initial "
-"state of the boot environments."
-msgstr ""
-"Pour annuler les modifications et rétablir l'état initial des environnements d'initialisation par défaut, cliquez sur <guibutton>Réinitialiser</guibutton>."
-
-#: package-manager.xml:252 (para)
+#: package-manager.xml:318(para)
 msgid ""
 "Click <guibutton>Cancel</guibutton> to cancel all changes and return to the "
 "main window."
 msgstr ""
-"Pour annuler toutes les modifications et revenir à la fenêtre principale, cliquez sur <guibutton>Annuler</guibutton>."
+"Pour annuler toutes les modifications et retourner à la fenêtre principale, cliquez sur <guibutton>Annuler</guibutton>."
 
-#: package-manager.xml:254 (para)
+#: package-manager.xml:322(para)
 msgid ""
-"If you chose to proceed, the <guilabel>BE Management Confirmation</guilabel> "
-"dialog is displayed. Review the boot environment changes and click "
-"<guibutton>OK</guibutton> to proceed."
+"The <literal>Boot Environment Confirmation</literal> dialog is displayed. "
+"Review your changes and click OK to proceed."
 msgstr ""
-"Si vous avez cliqué sur OK, la boîte de dialogue <guilabel>Confirmation de la gestion de l'environnement d'initialisation</guilabel> s'affiche. Vérifiez les modifications apportées à l'environnement et cliquez sur <guibutton>OK</guibutton> pour continuer."
+"La boîte de dialogue <literal>Confirmation de l'environnement d'initialisation</literal> s'affiche. Vérifiez "
+"les modifications que vous avez apportées et cliquez sur OK pour continuer."
 
-#: package-manager.xml:255 (para)
+#: package-manager.xml:323(para)
 msgid ""
-"After you click <guibutton>OK</guibutton>, you cannot undo any changes you "
-"made to the boot environments."
-msgstr "Une fois que vous aurez cliqué sur le bouton <guibutton>OK</guibutton>; vous ne pourrez plus annuler les modifications apportées aux environnements d'initialisation."
+"After you click <guibutton>OK</guibutton>, you cannot undo any changes that "
+"you made to the boot environments."
+msgstr "Après avoir cliqué sur <guibutton>OK</guibutton>, vous ne pourrez plus annuler les modifications "
+"apportées aux environnements d'initialisation."
 
-#: package-manager.xml:257 (para)
+#: package-manager.xml:325(para)
 msgid ""
 "The changes that you made to the <emphasis role=\"strong\">default boot "
-"environment</emphasis> setting is effective only after system reboot."
+"environment</emphasis> setting are effective only after system reboot."
 msgstr ""
-"Les modifications apportées au paramètre <emphasis role=\"strong\">default boot environment</emphasis> seront appliquées uniquement après la réinitialisation du système."
+"Les modifications apportées au paramètre <emphasis role=\"strong\">default boot "
+"environment</emphasis> seront appliquées uniquement après réinitialisation du système."
 
-#: package-manager.xml:259 (para)
+#: package-manager.xml:327(para)
 msgid ""
 "Click <guibutton>Cancel</guibutton> to cancel the changes and return to the "
 "<literal>BE Management</literal> dialog box."
 msgstr ""
 "Pour annuler les modifications et revenir à la boîte de dialogue <literal>Gestion de l'environnement d'initialisation</literal>, cliquez sur <guibutton>Annuler</guibutton>."
 
-#: package-manager.xml:261 (para)
-msgid "Reboot your system to boot into the new default boot environment."
-msgstr "Redémarrez votre système afin de lancer le nouvel environnement d'initialisation par défaut."
+#: package-manager.xml:329(para)
+msgid "Reboot your system to boot into the newly activated boot environment."
+msgstr "Redémarrez le système afin de lancer l'environnement d'initialisation que vous venez d'activer."
 
-#: package-manager.xml:265 (title)
-msgid "Edit Repositories"
-msgstr "Édition des référentiels"
+#: package-manager.xml:330(para)
+msgid "Reboot your system only if you changed the active boot environment."
+msgstr "Redémarrez le système seulement si vous avez changé l'environnement d'initialisation actif."
 
-#: package-manager.xml:266 (para)
-msgid "Perform the following steps to add, remove, or configure repositories:"
-msgstr "Pour ajouter, supprimer ou configurer des référentiels, procédez comme suit :"
+#: package-manager.xml:336(title)
+msgid "Managing Repositories"
+msgstr "Gestion des référentiels"
 
-#: package-manager.xml:267 (para)
+#: package-manager.xml:337(title)
+msgid "Add a Repository"
+msgstr "Ajout d'un référentiel"
+
+#: package-manager.xml:338(para)
+msgid "Perform the following steps to add a repository:"
+msgstr "Pour ajouter un référentiel, suivez la procédure ci-dessous :"
+
+#: package-manager.xml:339(para)
 msgid ""
-"Choose <menuchoice><guimenu>Settings</guimenu><guimenuitem>Edit "
-"Repositories</guimenuitem></menuchoice> to open the <guilabel>Manage "
-"Repositories</guilabel> dialog."
+"Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Repositories</"
+"guimenuitem></menuchoice>."
 msgstr ""
-"Pour accéder à la boîte de dialogue <guilabel>Gérer les référentiels</guilabel>, cliquez sur <menuchoice><guimenu>Paramètres</guimenu><guimenuitem>Modifier les référentiels</guimenuitem></menuchoice>."
+"Cliquez sur <menuchoice><guimenu>Fichier</guimenu><guimenuitem>Gérer les référentiels</"
+"guimenuitem></menuchoice>."
 
-#: package-manager.xml:269 (para)
-msgid "In this dialog box, you can perform the following actions :"
-msgstr "Dans cette boîte de dialogue, vous pouvez effectuer les actions suivantes :"
-
-#: package-manager.xml:270 (para)
+#: package-manager.xml:340(para)
 msgid ""
-"<emphasis role=\"strong\">Add a Repository</emphasis> – To add a new "
-"repository, type the name and the address (URL) of the repository. Click "
+"You can also choose <guilabel>Add...</guilabel> from the "
+"<literal>Repository</literal> drop-down menu in the main window of the "
+"Package Manager."
+msgstr ""
+"Vous pouvez également sélectionner <guilabel>Ajouter</guilabel> dans le menu déroulant "
+"<literal>Référentiel</literal> de la fenêtre principale du "
+"Gestionnaire de packages."
+
+#: package-manager.xml:342(para)
+msgid ""
+"The <literal>Manage Repositories</literal> dialog box is displayed. Type the "
+"name and the address (URL) of the repository you want to add. Click "
 "<guibutton>Add</guibutton>."
 msgstr ""
-"<emphasis role=\"strong\">Ajout d'un référentiel</emphasis> : pour ajouter un nouveau référentiel, entrez le nom et l'adresse (URL) du référentiel. Cliquez sur <guibutton>Ajouter</guibutton>."
+"La boîte de dialogue <literal>Gérer les référentiels</literal> s'affiche. Saisissez "
+"le nom et l'adresse (URL) du référentiel à ajouter. Cliquez sur "
+"<guibutton>Ajouter</guibutton>."
 
-#: package-manager.xml:272 (para)
+#: package-manager.xml:346(title)
+msgid "Add a Secure Repository"
+msgstr "Ajout d'un référentiel sécurisé"
+
+#: package-manager.xml:347(para)
 msgid ""
-"<emphasis role=\"strong\">Remove a Repository</emphasis> – To remove a "
-"repository, click a repository name from the list to select it. Click "
-"<guibutton>Remove</guibutton>."
+"A secure repository requires a SSL key and certificate for access. Perform "
+"the following steps to add a secure repository:"
 msgstr ""
-"<emphasis role=\"strong\">Suppression d'un référentiel</emphasis> : pour supprimer un référentiel, sélectionnez-le en cliquant sur son nom dans la liste, puis cliquez sur <guibutton>Supprimer</guibutton>."
+"Pour accéder à un référentiel sécurisé, il est nécessaire de posséder une clé et un certificat SSL. Procédez "
+"comme suit pour ajouter un référentiel sécurisé :"
 
-#: package-manager.xml:273 (para)
+#: package-manager.xml:348(para)
 msgid ""
-"A repository that has been set as the preferred repository cannot be "
-"removed. To remove a preferred repository, set a nonpreferred repository as "
-"preferred, and then remove the repository."
+"Follow the steps in <xref linkend=\"add_repo\"/> section to add a repository."
 msgstr ""
-"Il est impossible de supprimer un référentiel défini en tant que référentiel préféré. Pour supprimer un référentiel préféré, définissez un référentiel non préféré en tant que référentiel préféré, puis supprimez le référentiel."
+"Suivez les étapes décrites dans la section <xref linkend=\"add_repo\"/> pour ajouter un référentiel."
 
-#: package-manager.xml:276 (para)
+#: package-manager.xml:350(para)
 msgid ""
-"<emphasis role=\"strong\">Set a Preferred Repository</emphasis> – To set a "
-"repository as a preferred repository, click the radio button next to the "
-"repository that you would like to set as the preferred repository. Click "
-"<guibutton>Close</guibutton> if you are not making any other changes to the "
-"repository information."
+"Follow the steps in the <xref linkend=\"modify_repo\"/> section to add a SSL "
+"key and certificate."
 msgstr ""
-"<emphasis role=\"strong\">Définition d'un référentiel en tant que référentiel préféré</emphasis> : pour définir un référentiel en tant que référentiel préféré, cliquez sur le bouton radio en regard du référentiel. Si vous ne souhaitez pas apporter d'autres modifications aux informations relatives au référentiel, cliquez sur <guibutton>Fermer</guibutton>."
+"Suivez les étapes décrites dans la section <xref linkend=\"modify_repo\"/> pour ajouter "
+"une clé et un certificat SSL."
 
-#: package-manager.xml:278 (para)
+#: package-manager.xml:351(para)
+msgid "."
+msgstr "."
+
+#: package-manager.xml:355(title)
+msgid "Remove a Repository"
+msgstr "Suppression d'un référentiel"
+
+#: package-manager.xml:356(para)
+msgid "Perform the following steps to remove a repository:"
+msgstr "Pour supprimer un référentiel, suivez la procédure ci-dessous :"
+
+#: package-manager.xml:357(para) package-manager.xml:367(para)
+#: package-manager.xml:377(para)
 msgid ""
-"<emphasis role=\"strong\">Modify a Repository</emphasis> – Perform the "
-"following steps to modify a repository :"
+"Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Repositories</"
+"guimenuitem></menuchoice> to open the <literal>Manage Repositories</literal> "
+"dialog."
 msgstr ""
-"<emphasis role=\"strong\">Modification d'un référentiel</emphasis> : pour modifier un référentiel, suivez la procédure ci-dessous :"
+"Cliquez sur <menuchoice><guimenu>Fichier</guimenu><guimenuitem>Gérer les référentiels</"
+"guimenuitem></menuchoice> pour ouvrir "
+"la boîte de dialogue <literal>Gérer les référentiels</literal>."
 
-#: package-manager.xml:279 (para)
+#: package-manager.xml:359(para)
+msgid "Select a repository from the list. Click <guibutton>Remove</guibutton>."
+msgstr "Sélectionnez un référentiel dans la liste. Cliquez sur <guibutton>Supprimer</guibutton>."
+
+#: package-manager.xml:360(para)
+msgid ""
+"A repository that has been set as preferred repository cannot be removed. To "
+"remove a preferred repository, set a nonpreferred repository as preferred, "
+"and then remove the repository."
+msgstr ""
+"Il est impossible de supprimer un référentiel défini en tant que référentiel préféré."
+"Pour supprimer un référentiel préféré, définissez un référentiel non préféré en tant que référentiel préféré, "
+"puis supprimez le référentiel."
+
+#: package-manager.xml:365(title)
+msgid "Set a Preferred Repository"
+msgstr "Définition d'un référentiel en tant que référentiel préféré"
+
+#: package-manager.xml:366(para)
+msgid "Perform the following steps to set a preferred repository:"
+msgstr "Pour définir un référentiel préféré, suivez la procédure ci-dessous :"
+
+#: package-manager.xml:369(para)
+msgid ""
+"Click the radio button next to the repository that you would like to set as "
+"the preferred repository."
+msgstr ""
+"Cliquez sur le bouton radio en regard du référentiel à définir en tant que "
+"référentiel préféré."
+
+#: package-manager.xml:371(para)
+msgid ""
+"Click <guibutton>Close</guibutton> if you are not making any other changes "
+"to the repository information."
+msgstr ""
+"Cliquez sur <guibutton>Fermer</guibutton> si vous n'apportez aucune modification "
+"aux informations du référentiel."
+
+#: package-manager.xml:375(title)
+msgid "Modify a Repository"
+msgstr "Modification d'un référentiel"
+
+#: package-manager.xml:376(para)
+msgid "Perform the following steps to modify a repository:"
+msgstr "Pour modifier un référentiel, suivez la procédure ci-dessous :"
+
+#: package-manager.xml:379(para)
 msgid "Select the repository that you want to modify."
 msgstr "Sélectionnez le référentiel à modifier."
 
-#: package-manager.xml:281 (para)
+#: package-manager.xml:381(para)
 msgid "Click the <guibutton>Modify</guibutton> button."
 msgstr "Cliquez sur le bouton <guibutton>Modifier</guibutton>."
 
-#: package-manager.xml:282 (para)
-msgid "The <guilabel>Modify Repository</guilabel> dialog box is displayed."
-msgstr "La boîte de dialogue <guilabel>Modifier le référentiel</guilabel> s'affiche."
-
-#: package-manager.xml:284 (para)
-msgid "Type a valid name and URL for the repository."
-msgstr "Saisissez un nom et une URL valides pour le référentiel."
-
-#: package-manager.xml:285 (para)
+#: package-manager.xml:382(para)
 msgid ""
-"A repository name is considered valid if it does not exist in the current "
-"list of repositories."
+"The <literal>Modify Repository</literal> dialog box is displayed. You can "
+"perform the following actions in the <literal>Modify Repository</literal> "
+"dialog box:"
 msgstr ""
-"Un nom de référentiel est considéré comme valide s'il n'existe pas dans la liste actuelle des référentiels."
+"La boîte de dialogue <literal>Modifier le référentiel</literal> qui s'affiche permet d'exécuter les opérations suivantes :"
 
-#: package-manager.xml:287 (para)
+#: package-manager.xml:383(para)
+msgid ""
+"<emphasis role=\"strong\">Change the URL of the repository</emphasis> – Type "
+"a valid URL for the repository."
+msgstr ""
+"<emphasis role=\"strong\">Modifier l'URL du référentiel</emphasis> : saisissez "
+"un URL valide pour le référentiel."
+
+#: package-manager.xml:384(para)
+msgid ""
+"You cannot change a repository name after you have added a repository. To "
+"change the repository name, delete the existing repository with the old name "
+"and add a repository with the new name. See the <xref linkend=\"remove_repo"
+"\"/> section for steps on how to remove a repository."
+msgstr ""
+"La modification d'un nom de référentiel suite à l'ajout d'un référentiel est impossible. Pour "
+"modifier le nom de référentiel, supprimez le référentiel existant portant l'ancien nom "
+"et ajoutez un référentiel portant le nouveau nom. Pour obtenir les instructions relatives à la suppression d'un référentiel, reportez-vous à la section <xref linkend=\"remove_repo"
+"\"/>."
+
+#: package-manager.xml:386(para)
+msgid ""
+"<emphasis role=\"strong\">Add a SSL Key and Certificate</emphasis> – A "
+"secure repository requires a SSL key and certificate for access."
+msgstr ""
+"<emphasis role=\"strong\">Ajouter une clé et un certificat SSL</emphasis> : pour accéder à un référentiel sécurisé "
+"une clé et un certificat SSL sont indispensables."
+
+#: package-manager.xml:387(para)
+msgid ""
+"The <emphasis role=\"strong\">Instructions</emphasis> link in the "
+"<literal>Modify Repository</literal> dialog box links to a registration site "
+"which provides instructions for downloading the SSL key and certificate"
+msgstr ""
+"Le lien <emphasis role=\"strong\">Instructions</emphasis> dans la boîte de dialogue "
+"<literal>Modifier le référentiel</literal> renvoie à un site d'abonnement "
+"où vous trouverez les instructions relatives au téléchargement de la clé et du certificat SSL."
+
+#: package-manager.xml:388(para)
+msgid ""
+"In the <literal>Modify Repository</literal> dialog box, click the <emphasis "
+"role=\"strong\">Instructions</emphasis> link to download the key and "
+"certificate. Save them on your system."
+msgstr ""
+"Dans la boîte de dialogue <literal>Modifier le référentiel</literal>, cliquez sur le lien<emphasis "
+"role=\"strong\">Instructions</emphasis> pour télécharger la clé et le certificat que vous enregistrerez sur le système."
+
+#: package-manager.xml:390(para) package-manager.xml:438(para)
+msgid ""
+"Click the <guibutton>Browse</guibutton> button to locate the SSL key on your "
+"system."
+msgstr ""
+"Cliquez sur le bouton <guibutton>Parcourir</guibutton> pour rechercher la clé SSL "
+"sur votre système."
+
+#: package-manager.xml:392(para) package-manager.xml:440(para)
+msgid ""
+"Click the <guibutton>Browse</guibutton> button to locate the SSL certificate "
+"on your system."
+msgstr ""
+"Cliquez sur le bouton <guibutton>Parcourir</guibutton> pour rechercher le certificat SSL "
+"sur votre système."
+
+#: package-manager.xml:396(para)
+msgid ""
+"<emphasis role=\"strong\">Add a Mirror</emphasis> – If a repository has a "
+"mirror, add the repository name and URL, and then click the "
+"<guibutton>Modify</guibutton> button to add the mirror information."
+msgstr ""
+"<emphasis role=\"strong\">Ajouter une mise en miroir</emphasis> : si un référentiel présente une mise en miroir, "
+"ajoutez le nom et l'URL du référentiel, puis cliquez sur le bouton "
+"<guibutton>Modifier</guibutton> pour ajouter les informations de mise en miroir."
+
+#: package-manager.xml:400(para)
+msgid "Confirm or decline the changes."
+msgstr "Confirmez ou annulez les modifications."
+
+#: package-manager.xml:401(para)
 msgid ""
 "Click <guibutton>OK</guibutton> to save the changes and return to the "
-"<guilabel>Manage Repositories</guilabel> dialog box."
+"<literal>Manage Repositories</literal> dialog box."
 msgstr ""
-"Pour enregistrer les modifications et revenir à la boîte de dialogue <guilabel>Gérer les référentiels</guilabel>, cliquez sur <guibutton>OK</guibutton>."
+"Cliquez sur <guibutton>OK</guibutton> pour enregistrer les modifications et revenir à la boîte de dialogue <literal>Gérer les référentiels</literal>."
 
-#: package-manager.xml:288 (para)
+#: package-manager.xml:403(para)
+msgid "Click <guibutton>Cancel</guibutton> to cancel your changes."
+msgstr "Pour annuler les modifications, cliquez sur <guibutton>Annuler</guibutton>."
+
+#: package-manager.xml:410(title)
+msgid "Working With WebInstall"
+msgstr "Utilisation de WebInstall"
+
+#: package-manager.xml:411(para)
 msgid ""
-"Click <guibutton>Cancel</guibutton> to cancel your changes. You are returned "
-"to the <guilabel>Manage Repositories</guilabel> dialog box."
+"The OpenSolaris 2009.06 Package Manager provides support for users to add "
+"new repositories and optionally, install packages from these repositories "
+"using a simple one-click WebInstall process. A <filename>.p5i</filename> "
+"file which contains the repositories to be added and optionally, the package "
+"or packages that can be installed from these repositories, is required for "
+"the WebInstall process. The information contained in the <filename>.p5i</"
+"filename> file is read and used by the WebInstall process."
 msgstr ""
-"Pour annuler les modifications, cliquez sur <guibutton>Annuler</guibutton>. Vous êtes alors renvoyé à la boîte de dialogue <guilabel>Gérer les référentiels</guilabel>."
+"Le Gestionnaire de packages OpenSolaris 2009.06 permet d'ajouter "
+"de nouveaux référentiels et, éventuellement, d'installer des packages issus de ces référentiels, "
+"et ce à l'aide de WebInstall, un processus simple à clic unique. WebInstall requiert le fichier <filename>.p5i</filename> "
+"contenant les référentiels à ajouter et, éventuellement le ou les packages à installer "
+"à partir de ces référentiels, dont il lit et utilise les informations."
 
-#: package-manager.xml:297 (title)
-msgid "Update Manager"
-msgstr "Gestionnaire de mise à jour"
+#: package-manager.xml:412(title)
+msgid "How to Use WebInstall to Add Repositories and Install Packages"
+msgstr "Utilisation de WebInstall pour ajouter des référentiels et installer des packages"
 
-#: package-manager.xml:298 (para)
+#: package-manager.xml:413(bridgehead)
+msgid "Before You Begin"
+msgstr "Avant de commencer"
+
+#: package-manager.xml:413(para)
 msgid ""
-"The <application>Update Manager</application> is a separate application that "
-"launches from the desktop when updates to the installed packages are "
-"available in the repository."
-msgstr "Le <application>Gestionnaire de mise à jour</application> est une application séparée qui se lance depuis le Bureau lorsque des mises à jour sont disponibles dans le référentiel pour les packages installés."
+"Locate the <filename>.p5i</filename> file which may be present on your "
+"desktop, the Start page in the Package Manager, or on a website."
+msgstr ""
+"Recherchez le fichier <filename>.p5i</filename> sur votre "
+"bureau, la page d'ouverture du Gestionnaire de packages ou un site Web."
 
-#: package-manager.xml:300 (title)
-msgid "Working With Update Manager"
+#: package-manager.xml:414(para)
+msgid ""
+"Start the Package manager in WebInstall mode in one of the following ways:"
+msgstr ""
+"Démarrez le Gestionnaire de packages en mode WebInstall de l'une des manières suivantes :"
+
+#: package-manager.xml:415(para)
+msgid ""
+"Click on a <filename>.p5i</filename> file on your desktop, and the "
+"associated application, Package Manager in WebInstall mode, will be launched."
+msgstr ""
+"Cliquez sur le fichier <filename>.p5i</filename> sur le bureau et l'application associée, "
+"le Gestionnaire de packages en mode WebInstall, démarre."
+
+#: package-manager.xml:417(para)
+msgid ""
+"Start the Package Manager from the command-line along with a path to the "
+"<filename>.p5i</filename> file. For example, type the following command at "
+"the command-line:"
+msgstr ""
+"Démarrez le Gestionnaire de packages à partir de la ligne de commande dans laquelle vous saisissez le chemin d'accès au fichier "
+"<filename>.p5i</filename>. Par exemple, tapez la commande suivante sur la ligne "
+"de commande :"
+
+#: package-manager.xml:418(replaceable)
+msgid "path_to_pi5_file/file.p5i"
+msgstr "path_to_pi5_file/file.p5i"
+
+#: package-manager.xml:418(command)
+msgid "$ pfexec packagemanager/<placeholder-1/>"
+msgstr "$ pfexec packagemanager/<placeholder-1/>"
+
+#: package-manager.xml:420(para)
+msgid ""
+"Click on a URL location that contains a link to <filename>.p5i</filename> "
+"file. If you are using this method to start the WebInstall, the <filename>."
+"p5i</filename> file <emphasis role=\"strong\">must</emphasis> be located on "
+"a web server that has registered the new mime type. Only then, the web "
+"server can manage the <filename>.p5i</filename> automatically and start "
+"Package Manager in WebInstall mode."
+msgstr ""
+"Cliquez sur un URL contenant le fichier <filename>.p5i</filename>. "
+"Si vous démarrez WebInstall de cette manière, il est <emphasis role=\"strong\">impératif</emphasis> que le fichier <filename>."
+"p5i</filename> réside sur "
+"un serveur Web dans lequel le nouveau type MIME est enregistré. Ce n'est qu'à cette condition que le serveur Web "
+"pourra gérer le fichier <filename>.p5i</filename> automatiquement et lancer le "
+"Gestionnaire de packages en mode WebInstall."
+
+#: package-manager.xml:421(para)
+msgid ""
+"If the <filename>.p5i</filename> is located on a web server that does not "
+"have the new mime type registered, save the <filename>.p5i</filename> file "
+"to your desktop and then click on it to launch Web Install."
+msgstr ""
+"Si le fichier <filename>.p5i</filename> réside sur un serveur Web "
+"où le nouveau type MIME n'est pas enregistré, enregistrez le fichier <filename>.p5i</filename> "
+"sur le bureau, puis cliquez dessus pour lancer WebInstall."
+
+#: package-manager.xml:425(para)
+msgid ""
+"The following example window that shows a list of repositories that will be "
+"added and the packages that will be installed. Review the information."
+msgstr ""
+"L'exemple de fenêtre ci-dessous contient la liste des référentiels qui "
+"seront ajoutés et les packages qui seront installés. Passez en revue ces informations."
+
+#: package-manager.xml:426(title)
+msgid "Package Manager WebInstaller"
+msgstr "Gestionnaire de packages en mode WebInstaller"
+
+#: package-manager.xml:431(para)
+msgid "Confirm or cancel the WebInstall process."
+msgstr "Confirmez ou annulez le processus WebInstaller."
+
+#: package-manager.xml:432(para)
+msgid ""
+"Click <guibutton>Proceed</guibutton> to add the new repositories and install "
+"the packages."
+msgstr ""
+"Cliquez sur <guibutton>Continuer</guibutton> pour ajouter les nouveaux référentiels et installer "
+"les packages."
+
+#: package-manager.xml:433(para)
+msgid ""
+"Click <guibutton>Cancel</guibutton> to cancel the process. The Package "
+"Manager application exits."
+msgstr "Pour annuler le processus, cliquez sur <guibutton>Annuler</guibutton>. Le Gestionnaire de packages se ferme."
+
+#: package-manager.xml:435(para)
+msgid ""
+"(Optional) If the repositories that are to be added are secure repositories, "
+"an SSL key and certificate is required. An <literal>Add New Repositories</"
+"literal> dialog box is displayed."
+msgstr ""
+"(Facultatif) Lorsque les référentiels à ajouter sont sécurisés, "
+"une clé et un certificat SSL sont nécessaires. La boîte de dialogue <literal>Ajouter de nouveaux référentiels</"
+"literal> s'affiche."
+
+#: package-manager.xml:436(para)
+msgid ""
+"Click the <emphasis role=\"strong\">Instructions</emphasis> link in the "
+"<literal>Add New Repositories</literal> dialog box to download the SSL key "
+"and certificate."
+msgstr ""
+"Cliquez sur le lien <emphasis role=\"strong\">Instructions</emphasis> dans la boîte de dialogue "
+"<literal>Ajouter de nouveaux référentiels</literal> pour télécharger la clé et "
+"le certificat SSL."
+
+#: package-manager.xml:445(para)
+msgid "The <literal>Adding New Repositories</literal> status bar is displayed."
+msgstr "La barre d'état <literal>Ajout d'un nouveau référentiel</literal> s'affiche."
+
+#: package-manager.xml:447(para)
+msgid ""
+"(Optional) If packages are being installed, the <literal>Install/Update</"
+"literal> dialog box is displayed. Click <guibutton>Cancel</guibutton> to "
+"cancel the package installation."
+msgstr ""
+"(Facultatif) Lors de l'installation des packages, la boîte de dialogue <literal>Installer/Mettre à jour</"
+"literal> s'affiche. Cliquez sur <guibutton>Annuler</guibutton> pour "
+"annuler l'installation des packages."
+
+#: package-manager.xml:448(para)
+msgid "The application will close when all packages are installed."
+msgstr "L'application se ferme lorsque tous les packages sont installés."
+
+#: package-manager.xml:453(title)
+msgid "Working With the Update Manager"
 msgstr "Utilisation du Gestionnaire de mise à jour"
 
-#: package-manager.xml:301 (title)
+#: package-manager.xml:454(title)
+msgid "About The Update Manager"
+msgstr "A propos du Gestionnaire de mise à jour"
+
+#: package-manager.xml:455(para)
+msgid ""
+"The Update Manager is a separate application that starts from the desktop "
+"when updates to the installed packages are available in the repository."
+msgstr ""
+"Le Gestionnaire de mise à jour est une application distincte qui démarre à partir du Bureau "
+"lorsque des mises à jour pour les packages installés sont disponibles dans le référentiel."
+
+#: package-manager.xml:456(title)
 msgid "Update Manager Main Window"
 msgstr "Fenêtre principale du Gestionnaire de mise à jour "
 
-#: package-manager.xml:305 (para)
+#: package-manager.xml:460(para)
 msgid ""
-"You can use the <application>Update Manager</application> application to "
-"update the installed packages in your image."
-msgstr "Le <application>Gestionnaire de mise à jour</application> vous permet de mettre à jour les packages installés sur l'image."
-
-#: package-manager.xml:306 (para)
-msgid ""
-"For the OpenSolaris 2008.11 release, the <application>Update Manager</"
-"application> updates <emphasis role=\"strong\">all</emphasis> installed "
-"packages in the image. This is equivalent to updating the image."
+"You can use the Update Manager application to update the installed packages "
+"in your image."
 msgstr ""
-"Pour OpenSolaris 2008.11, le <application>Gestionnaire de mise à jour</application> actualise <emphasis role=\"strong\">tous</emphasis> les packages installés sur l'image. Cela équivaut à mettre à jour l'image."
+"Le Gestionnaire de mise à jour permet de mettre à jour les packages installés "
+"sur l'image."
 
-#: package-manager.xml:308 (para)
+#: package-manager.xml:461(para)
+msgid ""
+"For the OpenSolaris 2009.06 release, the Update Manager updates <emphasis "
+"role=\"strong\">all</emphasis> installed packages in the image. This action "
+"is equivalent to running the <command>pkg image-update</command> command "
+"from the command-line."
+msgstr ""
+"Dans OpenSolaris 2009.06, le Gestionnaire de mise à jour actualise <emphasis role=\"strong\">tous</emphasis> les packages installés sur l'image."
+"Cela équivaut à exécuter la commande <command>pkg image-update</command> "
+"à partir de la ligne de commande."
+
+#: package-manager.xml:464(title)
+msgid "Using the Update Manager"
+msgstr "Utilisation du Gestionnaire de mise à jour"
+
+#: package-manager.xml:465(para)
 msgid ""
 "When updates are available to the installed packages, a notification icon is "
-"displayed in the notification panel on the OpenSolaris desktop and the "
-"<guilabel>Update Manager</guilabel> window is displayed."
+"displayed in the notification panel on the OpenSolaris desktop."
 msgstr ""
-"Lorsque des mises à jour sont disponibles pour les packages installés, une icône de notification s'affiche dans le panneau de notification sur le Bureau d'OpenSolaris et la fenêtre <guilabel>Gestionnaire de mise à jour</guilabel> s'ouvre."
+"Lorsque des mises à jour sont disponibles pour les packages installés, une icône de notification "
+"s'affiche dans le panneau de notification sur le bureau d'OpenSolaris."
 
-#: package-manager.xml:309 (para)
+#: package-manager.xml:466(para)
 msgid ""
 "You can also click <menuchoice><guimenu>System</"
 "guimenu><guisubmenu>Administration</guisubmenu><guimenuitem>Update Manager</"
@@ -1144,28 +1795,53 @@ msgid ""
 msgstr ""
 "Vous pouvez également lancer le Gestionnaire de mise à jour manuellement en cliquant sur <menuchoice><guimenu>Système</guimenu><guisubmenu>Administration</guisubmenu><guimenuitem>Gestionnaire de mise à jour</guimenuitem></menuchoice>."
 
-#: package-manager.xml:311 (para)
+#: package-manager.xml:467(para)
 msgid ""
-"Click the <guibutton>Update All</guibutton> button in the <guilabel>Update "
-"All</guilabel> window to begin the process of updating your image."
+"When you are notified of a software update, perform the following steps to "
+"begin the process of updating your system:"
 msgstr ""
-"Pour lancer le processus de mise à jour de l'image, cliquez sur le bouton <guibutton>Tout mettre à jour</guibutton> dans la fenêtre <guilabel>Tout mettre à jour</guilabel>"
+"Lorsque vous recevez une notification de mise à jour logicielle, procédez comme suit "
+"pour lancer le processus de mise à jour du système :"
 
-#: package-manager.xml:312 (para)
+#: package-manager.xml:468(para)
+msgid ""
+"Click the notification icon on the desktop to display the <literal>Update "
+"Manager</literal> window."
+msgstr ""
+"Cliquez sur l'icône de notification sur le bureau pour afficher la fenêtre<literal>Gestionnaire "
+"de mise à jour</literal>."
+
+#: package-manager.xml:470(para)
+msgid ""
+"Click the <guibutton>Update All</guibutton> button in the <literal>Update "
+"Manager</literal> window."
+msgstr ""
+"Cliquez sur le bouton <guibutton>Tout mettre à jour</guibutton> dans la fenêtre "
+"<guilabel>Gestionnaire de mise à jour</guilabel>."
+
+#: package-manager.xml:471(para)
 msgid ""
 "Select a package and click the <guilabel>Details</guilabel> panel if you "
 "want to view more information about the package."
 msgstr "Pour afficher les informations sur le package, sélectionnez un package et cliquez sur le panneau <guilabel>Détails</guilabel>."
 
-#: package-manager.xml:314 (para)
+#: package-manager.xml:474(para)
 msgid ""
-"The <guilabel>Update All</guilabel> window is displayed. Click "
-"<guibutton>Proceed</guibutton> to create a new boot environment and update "
-"all packages in the current image."
+"The <literal>Update All</literal> dialog box is displayed. Proceed with the "
+"Update All process or cancel the action."
 msgstr ""
-"La fenêtre <guilabel>Tout mettre à jour</guilabel>s'ouvre. Pour créer un nouvel environnement d'initialisation et mettre à jour tous les packages de l'image actuelle, cliquez sur <guibutton>Continuer</guibutton>."
+"La boîte de dialogue <literal>Tout mettre à jour</literal> s'affiche. Poursuivez le processus Tout mettre à jour "
+"ou annulez l'opération."
 
-#: package-manager.xml:315 (para)
+#: package-manager.xml:475(para)
+msgid ""
+"Click <guibutton>Proceed</guibutton> to create a new boot environment and "
+"update all packages in the current image."
+msgstr ""
+"Pour créer un nouvel environnement d'initialisation et mettre à jour tous les packages de l'image actuelle "
+", cliquez sur <guibutton>Continuer</guibutton>."
+
+#: package-manager.xml:476(para)
 msgid ""
 "During the Update All process, a clone of the active boot environment is "
 "created. This clone enables the user to boot into the boot environment state "
@@ -1173,46 +1849,55 @@ msgid ""
 msgstr ""
 "Lors du processus Tout mettre à jour, un clone de l'environnement d'initialisation actif est créé. Ce clone permet à l'utilisateur d'amorcer l'environnement d'initialisation dans l'état précédant le processus Tout mettre à jour."
 
-#: package-manager.xml:317 (para)
+#: package-manager.xml:477(para)
 msgid ""
 "If the Package Manager is unable to create a new boot environment, an error "
-"message will be displayed. See the <xref linkend=\"ghquj\"/> section on how "
+"message will be displayed. See the <xref linkend=\"gileh\"/> section on how "
 "to rectify the error and continue with updating your image."
 msgstr ""
-"S'il est impossible de créer un nouvel environnement d'initialisation à l'aide du Gestionnaire de packages, un message d'erreur s'affiche. Pour résoudre le problème et continuer la mise à jour de l'image, reportez-vous à la section <xref linkend=\"ghquj\"/>."
+"S'il est impossible de créer un nouvel environnement d'initialisation à l'aide du Gestionnaire de packages, un message d'erreur s'affiche. Pour résoudre le problème et continuer la mise à jour de l'image, reportez-vous à la section <xref linkend=\"gileh\"/>."
 
-#: package-manager.xml:321 (para)
+#: package-manager.xml:478(para)
 msgid ""
-"If you chose to proceed, the <guilabel>Installing Updates</guilabel> windows "
-"are displayed. There are four stages to the package installation process:"
-msgstr "Si vous choisissez de continuer, la fenêtre <guilabel>Installation des mises à jour</guilabel> s'ouvre. Le processus d'installation du package se compose de quatre étapes :"
+"A name for the new boot environment is automatically generated. You can "
+"accept the name generated by the system, or provide your own name for the "
+"boot environment."
+msgstr ""
+"Le nom du nouvel environnement d'initialisation est généré automatiquement. Vous pouvez "
+"l'accepter ou indiquer un nom personnalisé."
 
-#: package-manager.xml:322 (para)
-msgid "Evaluate."
-msgstr "Évaluation"
+#: package-manager.xml:485(para)
+msgid ""
+"If you chose to proceed, the <literal>Installing Updates</literal> windows "
+"are displayed. The package installation process consists of four stages:"
+msgstr "Si vous choisissez de continuer, la fenêtre <literal>Installation des mises à jour</literal> s'ouvre."
+"Le processus d'installation de package se déroule en quatre étapes :"
 
-#: package-manager.xml:324 (para)
+#: package-manager.xml:486(para)
+msgid "Prepare"
+msgstr "Préparation"
+
+#: package-manager.xml:488(para)
 msgid "Download."
 msgstr "Téléchargement"
 
-#: package-manager.xml:326 (para)
+#: package-manager.xml:490(para)
 msgid "Install."
 msgstr "Installation"
 
-#: package-manager.xml:328 (para)
-msgid "Index."
-msgstr "Index"
-
-#: package-manager.xml:331 (para)
+#: package-manager.xml:493(para)
 msgid ""
-"You can choose to cancel the process only during the Evaluate and Download "
+"You can choose to cancel the process only during the <emphasis role=\"strong"
+"\">Prepare</emphasis> and <emphasis role=\"strong\">Download</emphasis> "
 "stages. Click the <guibutton>Cancel</guibutton> button to cancel the "
 "installation process. No changes are made and you are returned to the main "
 "window of the Update Manager."
 msgstr ""
-"Vous pouvez annuler le processus uniquement lors des étapes d'évaluation et de téléchargement. Pour annuler le processus d'installation, cliquez sur <guibutton>Annuler</guibutton>. Aucune modification n'est apportée à l'environnement d'initialisation et vous êtes renvoyé à la fenêtre principale du Gestionnaire de mise à jour."
+"Vous pouvez annuler le processus uniquement lors des étapes <emphasis role=\"strong"
+"\">Préparation</emphasis> et <emphasis role=\"strong\">Téléchargement</emphasis>."
+"Pour annuler le processus d'installation, cliquez sur <guibutton>Annuler</guibutton>. Aucune modification n'est apportée à l'environnement d'initialisation et vous retournez à la fenêtre principale du Gestionnaire de mise à jour."
 
-#: package-manager.xml:332 (para)
+#: package-manager.xml:494(para)
 msgid ""
 "If an error occurs during any of the stages, the <guilabel>Details</"
 "guilabel> panel is expanded and the details of the error are displayed. An "
@@ -1220,178 +1905,317 @@ msgid ""
 msgstr ""
 "Si une erreur se produit au cours de l'une des ces étapes, le panneau <guilabel>Détails</guilabel> contenant les informations sur l'erreur se déploie. Un indicateur de l'état d'erreur s'affiche en regard de l'étape ayant échoué."
 
-#: package-manager.xml:335 (para)
+#: package-manager.xml:497(para)
 msgid ""
-"Click the <guilabel>Details</guilabel> panel to view more information on "
+"Click the <guilabel>Details</guilabel> panel to view more information about "
 "each of the installation processes."
-msgstr "Pour afficher les informations sur chacun des processus d'installation, cliquez sur le panneau <guilabel>Détails</guilabel>."
+msgstr "Pour afficher les informations sur chacun des processus d'installation,"
+"cliquez sur le panneau <guilabel>Détails</guilabel>."
 
-#: package-manager.xml:342 (title)
-msgid "Update All Errors (Update Manager)"
-msgstr "Erreurs du processus Tout mettre à jour (Gestionnaire de mise à jour)"
-
-#: package-manager.xml:344 (para)
+#: package-manager.xml:499(para)
 msgid ""
-"<literal>Not enough disk space: the Update All action cannot be performed. "
-"Click OK to launch BE Management to manage your existing BEs and free up "
-"disk space.</literal>."
+"Read the <xref linkend=\"release_notes\"/> before rebooting your system."
 msgstr ""
-"<literal>Espace disque insuffisant : l'action Tout mettre à jour ne peut pas s'effectuer. "
-"Pour gérer les environnements d'initialisation existants et libérer de l'espace disque, cliquez sur OK</literal>."
+"Avant de réinitialiser votre système, consultez les <xref linkend=\"release_notes\"/>."
 
-#: package-manager.xml:345 (para)
+#: package-manager.xml:506(para)
+msgid ""
+"A new boot environment clone <emphasis role=\"strong\">must</emphasis> be "
+"created for the Update All process to be completed. The following error "
+"message is displayed if a boot environment clone cannot be created due to "
+"space restrictions :"
+msgstr ""
+"Pour que le processus Tout mettre à jour s'effectue correctement, la création d'un clone du nouvel environnement d'installation est <emphasis role=\"strong\">indispensable</emphasis>."
+"Le message d'erreur suivant s'affiche si des restrictions d'espace rendent impossible "
+"la création d'un clone de l'environnement d'initialisation :"
+
+#: package-manager.xml:508(para)
 msgid ""
 "Click <guibutton>No</guibutton> to cancel the Update All process and return "
 "to the Update Manager main window."
 msgstr ""
-"Pour annuler le processus Tout mettre à jour et revenir à la fenêtre principale du Gestionnaire de mise à jour, cliquez sur <guibutton>Non</guibutton>."
+"Pour annuler le processus Tout mettre à jour et retourner à la fenêtre principale du Gestionnaire de mise à jour, cliquez sur <guibutton>Non</guibutton>."
 
-#: package-manager.xml:347 (para)
+#: package-manager.xml:510(para)
 msgid ""
-"Click <guibutton>Yes</guibutton> in the error dialog to go to the "
+"Click <guibutton>Yes</guibutton> in the error dialog box to go to the "
 "<literal>Boot Environment Management</literal> dialog."
 msgstr ""
 "Pour accéder à la boîte de dialogue <literal>Gestion de l'environnement d'initialisation</literal>, cliquez sur <guibutton>Oui</guibutton> dans la fenêtre d'erreur."
 
-#: package-manager.xml:352 (para)
+#: package-manager.xml:512(para)
+msgid ""
+"Go to step 2 in the <xref linkend=\"gilfh\"/> section. Follow the "
+"instructions to delete old or unused boot environments and free up disk "
+"space."
+msgstr ""
+"Pour supprimer des environnements d'initialisation anciens ou inutilisés et libérer de l'espace disque,"
+"suivez la procédure décrite à l'étape 2 de la section <xref linkend=\"gilfh\"/>."
+
+#: package-manager.xml:514(para)
 msgid ""
 "Click the <guibutton>Update All</guibutton> button in the <literal>Update "
 "Manager</literal> window to restart the process of updating all packages."
 msgstr ""
-"Pour relancer le processus de mise à jour de tous les packages, cliquez sur le bouton <guibutton>Tout mettre à jour</guibutton> dans la fenêtre <guilabel>Gestionnaire de mise à jour</guilabel>."
+"Pour relancer le processus de mise à jour de tous les packages, cliquez sur le bouton <guibutton>Tout mettre à jour</guibutton> dans la fenêtre <literal>Gestionnaire de mise à jour</literal>."
 
-#: package-manager.xml:358 (title)
+#: package-manager.xml:519(title) package-manager.xml:523(ulink)
+msgid "Release Notes"
+msgstr "Notes de version"
+
+#: package-manager.xml:520(para)
+msgid ""
+"The OpenSolaris 2009.06 Release Notes are available at the following "
+"locations:"
+msgstr ""
+"Les notes de version de OpenSolaris 2009.06 sont disponibles aux emplacements "
+"suivants :"
+
+#: package-manager.xml:521(para)
+msgid ""
+"x86 <ulink url=\"http://opensolaris.org/os/project/indiana/resources/"
+"relnotes/200811/x86/\">Release Notes</ulink>"
+msgstr ""
+"x86 <ulink url=\"http://opensolaris.org/os/project/indiana/resources/"
+"relnotes/200811/x86/\">Notes de version</ulink>"
+
+#: package-manager.xml:523(trademark)
+msgid "SPARC"
+msgstr "SPARC"
+
+#: package-manager.xml:527(title)
+msgid "Package Manager Screencast"
+msgstr "Capture vidéo du Gestionnaire de packages"
+
+#: package-manager.xml:528(para)
+msgid ""
+"A screencast that shows Package Manager usage for beginners is available. "
+"Click the link below to go to the screencast."
+msgstr ""
+"Une capture vidéo illustrant l'utilisation du Gestionnaire de packages est disponible pour les débutants. "
+"Cliquez sur le lien ci-dessous pour y accéder."
+
+#: package-manager.xml:529(ulink)
+msgid "OpenSolaris 2009.06 Package Manager Screencast"
+msgstr "Capture vidéo du Gestionnaire de packages OpenSolaris 2009.06"
+
+#: package-manager.xml:532(title)
 msgid "Image Packaging System Glossary"
 msgstr "Glossaire du système de conditionnement d'image"
 
-#: package-manager.xml:359 (glossterm)
-msgid "authority"
-msgstr "Autorité"
+#: package-manager.xml:533(glossterm)
+msgid "publisher"
+msgstr "Editeur"
 
-#: package-manager.xml:360 (para)
+#: package-manager.xml:534(para)
 msgid ""
 "A person, group, or corporation that designs, creates, and publishes a "
-"package to a repository."
-msgstr "Désigne une personne, un groupe ou une entreprise qui conçoit, crée et publie un package dans un référentiel."
-
-#: package-manager.xml:362 (para)
-msgid ""
-"A location that is configured to point to a repository and might contain "
-"additional information about the package, such as the publisher of the "
-"package. The repository, in turn, serves the packages from the (default) "
-"authority, for downloading purposes. The developer-quality packages managed "
-"by Sun and made available through http://pkg.opensolaris.com is an example "
-"of an authority."
+"package to a repository. The repository in turn serves the packages from the "
+"(default) publisher, for downloading purposes. The developer-quality "
+"packages managed by Sun and made available through <ulink url=\"http://pkg."
+"opensolaris.com/dev\">http://pkg.opensolaris.com/dev</ulink> is an example "
+"of a publisher."
 msgstr ""
-"Emplacement configuré pour pointer vers un référentiel et pouvant contenir des informations supplémentaires sur le package, tel que l'éditeur du package. Le référentiel fournit les packages à partir de l'autorité (par défaut) à des fins de téléchargement. Les packages de qualité développeur gérés par Sun et disponibles sur le site http://pkg.opensolaris.com sont un exemple d'autorité."
+"Toute personne, tout groupe ou toute société qui conçoit un package et "
+"le publie dans un référentiel. A son tour, le référentiel rend les packages de l'éditeur "
+"(par défaut) disponibles à des fins de téléchargement. A titre d'exemple, "
+"Sun gère des packages de qualité développeur, disponibles sur <ulink url=\"http://pkg."
+"opensolaris.com/dev\">http://pkg.opensolaris.com/dev</ulink>."
 
-#: package-manager.xml:367 (glossterm)
+#: package-manager.xml:535(para)
+msgid ""
+"The term <emphasis role=\"strong\">authority</emphasis> has been replaced "
+"with the term <emphasis role=\"strong\">publisher</emphasis> from the "
+"OpenSolaris 2009.06 release onwards."
+msgstr ""
+"Le terme <emphasis role=\"strong\">autorité</emphasis> a été remplacé par le terme "
+"<emphasis role=\"strong\">éditeur</emphasis> à partir de "
+"OpenSolaris 2009.06."
+
+#: package-manager.xml:538(glossterm)
 msgid "boot environment"
 msgstr "Environnement d'initialisation"
 
-#: package-manager.xml:368 (para)
+#: package-manager.xml:539(para)
 msgid ""
 "For an OpenSolaris release, a boot environment is an instance of a bootable "
-"OpenSolaris environment. The boot environment consists of a root file system "
-"and, optionally, other file systems, such as <filename>/usr</filename>, "
-"<filename>/var</filename>, or <filename>/export</filename>. These other file "
-"systems are mounted below the root file system. The root file system and all "
-"other file systems of the boot environment that contain system software are "
-"required to be zfs datasets."
+"OpenSolaris environment. The root file system and all other file systems of "
+"the boot environment that contain system software are required to be ZFS "
+"datasets."
 msgstr ""
-"Pour une version d'OpenSolaris, un environnement d'initialisation est une instance d'environnement OpenSolaris amorçable. L'environnement d'initialisation se constitue d'un système de fichiers racine et, éventuellement, d'autres systèmes de fichiers, tels que <filename>/usr</filename>, <filename>/var</filename> ou <filename>/export</filename>. Ces autres systèmes de fichiers sont montés sous le système de fichiers racine. Ce dernier et tous les autres systèmes de fichiers de l'environnement d'initialisation contenant un logiciel système doivent constituer des jeux de données ZFS."
+"Dans le cadre de la version OpenSolaris, un environnement d'initialisation est une instance d'un "
+"environnement OpenSolaris d'amorçage. Le système de fichiers racine "
+"et tous les autres systèmes de fichiers de l'environnement d'initialisation contenant le logiciel système "
+"doivent être des jeux de données ZFS."
 
-#: package-manager.xml:369 (para)
+#: package-manager.xml:540(para)
 msgid ""
-"The active boot environment is the one that is currently booted. Exactly one "
-"active boot environment can be booted. An inactive boot environment is not "
-"currently booted, but can be in a state of waiting for activation on the "
-"next reboot."
+"The active boot environment is the one that is currently booted. Many boot "
+"environments can present on an OpenSolaris system and an inactive boot "
+"environment can be in a state of waiting for activation upon system reboot."
 msgstr ""
-"Un environnement d'initialisation est dit actif lorsqu'il est initialisé. Seul un environnement d'initialisation peut être initialisé. Un environnement d'initialisation est dit inactif lorsqu'il n'est pas initialisé. Il peut cependant être en attente d'activation et être activé à la prochaine réinitialisation."
+"Un environnement d'initialisation est dit actif lorsqu'il est initialisé."
+"Un système OpenSolaris peut présenter plusieurs environnements d'initialisation "
+"et un environnement d'initialisation inactif peut être en attente d'activation "
+"jusqu'à la prochaine réinitialisation."
 
-#: package-manager.xml:372 (glossterm)
+#: package-manager.xml:543(glossterm)
 msgid "clone"
 msgstr "Clone"
 
-#: package-manager.xml:373 (para)
+#: package-manager.xml:544(para)
 msgid "An exact copy."
 msgstr "Désigne une copie exacte."
 
-#: package-manager.xml:374 (para)
+#: package-manager.xml:545(para)
 msgid ""
-"For installation, a clone could be an exact copy of an operating system, a "
-"file system, or a volume. This copy has 100% compatibility with the original."
-msgstr "Pour l'installation, un clone peut être une copie exacte d'un système d'exploitation, d'un système de fichiers ou d'un volume. Cette copie est 100 % compatible avec l'original."
+"A clone could be an exact copy of an operating system, a file system, or a "
+"volume. This copy has 100% compatibility with the original."
+msgstr ""
+"Un clone peut être une copie exacte d'un système d'exploitation, d'un système de fichiers ou d'un volume."
+"Cette copie est 100 % compatible avec l'original."
 
-#: package-manager.xml:377 (glossterm)
+#: package-manager.xml:548(glossterm)
 msgid "dataset"
 msgstr "Jeux de données"
 
-#: package-manager.xml:378 (para)
+#: package-manager.xml:549(para)
 msgid ""
 "A generic name for the following ZFS entities: clones, file systems, "
 "snapshots, or volumes. Each dataset is identified by a unique name in the "
 "ZFS namespace."
 msgstr ""
-"Il s'agit d'un nom générique pour les entités ZFS suivantes : clones, systèmes de fichiers, instantanés ou volumes. Chaque jeu de données est identifié par un nom unique dans l'espace de noms ZFS."
+"Nom générique des entités ZFS suivantes : clones, systèmes de fichiers, instantanés ou volumes. Chaque jeu de données est identifié par un nom unique dans l'espace de noms ZFS."
 
-#: package-manager.xml:381 (glossterm)
+#: package-manager.xml:552(glossterm)
 msgid "image"
 msgstr "Image"
 
-#: package-manager.xml:382 (para)
+#: package-manager.xml:553(para)
 msgid ""
-"A collection of software in a package that comprises an entire operating "
-"system. The package is suitable for installation."
+"A collection of software in a package that comprises an entire or partial "
+"operating system. The package is suitable for installation."
 msgstr ""
-"Ensemble de logiciels dans un package contenant un système d'exploitation complet. Le package peut être installé."
+"Ensemble de logiciels dans un package contenant un système d'exploitation "
+"partiel ou complet. Le package peut être installé."
 
-#: package-manager.xml:385 (glossterm)
+#: package-manager.xml:554(para)
+msgid ""
+"An image is a location on your system where packages and their associated "
+"files, directories, links, and dependencies can be installed."
+msgstr ""
+"Une image est un emplacement sur le système dans lequel les packages et les fichiers, répertoires, liens et dépendances"
+"qui leur sont associés peuvent être installés."
+
+#: package-manager.xml:557(glossterm)
 msgid "package"
 msgstr "Package"
 
-#: package-manager.xml:386 (para)
+#: package-manager.xml:558(para)
 msgid ""
 "A collection of files, directories, links, drivers, and dependencies in a "
 "defined format."
 msgstr ""
 "Collection de fichiers, de répertoires, de liens, de pilotes et de dépendances dans un format défini."
 
-#: package-manager.xml:389 (glossterm)
+#: package-manager.xml:561(glossterm)
 msgid "preferred repository"
 msgstr "Référentiel préféré"
 
-#: package-manager.xml:390 (para)
+#: package-manager.xml:562(para)
 msgid ""
 "A default repository that is the source for packages. If a user does not "
 "explicitly specify a repository when installing and updating packages, the "
-"preferred authority is chosen as the source for packages."
+"preferred repository is chosen as the source for packages."
 msgstr ""
-"Référentiel par défaut représentant la source des packages. Si un utilisateur ne spécifie pas explicitement un référentiel lorsqu'il installe et met à jour les packages, l'autorité préférée est sélectionnée comme source des packages."
+"Référentiel par défaut représentant la source des packages."
+"Si un utilisateur ne spécifie pas explicitement un référentiel lorsqu'il installe et met à jour les packages,"
+"le référentiel préféré est sélectionné comme source des packages."
 
-#: package-manager.xml:391 (para)
-msgid ""
-"During the creation of an image, the initially specified authority is marked "
-"as the preferred authority. Any one of the authorities associated with an "
-"image can be set as the preferred authority by using the <command>set-"
-"authority</command> command with the <option>P</option> option."
-msgstr ""
-"Au cours de la création d'une image, l'autorité initialement spécifiée est marquée comme autorité préférée. Chaque autorité associée à une image peut être définie comme autorité préférée en utilisant la commande <command>set-authority</command> avec l'option <option>P</option>."
-
-#: package-manager.xml:394 (glossterm)
+#: package-manager.xml:565(glossterm)
 msgid "repository"
 msgstr "Référentiel"
 
-#: package-manager.xml:395 (para)
+#: package-manager.xml:566(para)
 msgid ""
-"A location where packages are available for download. A repository can "
-"contain packages from many authorities. Conversely, many repositories can "
-"contain packages from a single authority. Also called the depot server."
+"A location where packages are available for downloading. A publisher can "
+"publish packages to many repositories."
 msgstr ""
-"Emplacement des packages disponibles pour téléchargement. Un référentiel peut contenir des packages provenant de plusieurs autorités. Inversement, de nombreux référentiels peuvent contenir des packages provenant d'une autorité unique. Un référentiel peut être également appelé serveur de dépôt."
+"Emplacement à partir duquel les packages peuvent être téléchargés. Un éditeur peut "
+"publier des packages dans plusieurs référentiels."
 
 #. Put one translator per line, in the form of NAME <EMAIL>, YEAR1, YEAR2.
-#: package-manager.xml:0 (None)
+#: package-manager.xml:0(None)
 msgid "translator-credits"
 msgstr "translator-credits"
+
+#: package-manager.xml:209(para)
+msgid ""
+"Note the following important considerations when using the multi-repository "
+"search."
+msgstr ""
+"Prenez en compte les points suivants lorsque vous utilisez la recherche multiréférentiel."
+
+#: package-manager.xml:210(para)
+msgid ""
+"The multi-repository search currently supports a search based on the package "
+"contents including its description, classification, and the files contained "
+"within the package. However, the correct results are displayed only if the "
+"term used for searching is an <emphasis role=\"strong\">exact</emphasis> "
+"match."
+msgstr ""
+"La recherche multiréférentiel prend en charge une recherche sur le contenu "
+"des packages, notamment leur description, leur classement et leurs fichiers."
+"Toutefois, les résultats ne s'affichent que si le "
+"terme de la recherche est une "
+"correspondance <emphasis role=\"strong\">exacte</emphasis>."
+
+#: package-manager.xml:212(para)
+msgid ""
+"<emphasis role=\"strong\">The multi-repository search does not search the "
+"package name</emphasis>."
+msgstr ""
+"<emphasis role=\"strong\">La recherche multiréférentiel ne porte pas sur le "
+"nom du package</emphasis>."
+
+#: package-manager.xml:214(para)
+msgid ""
+"Wild card searching is supported by using the asterisk wild card, "
+"<literal>*</literal>, in the search term. Search using the wild card can be "
+"slower than an exact match search."
+msgstr ""
+"La recherche à l'aide de caractères génériques est prise en charge. Vous pouvez, en effet, utiliser l'astérisque, "
+"<literal>(*)</literal>, dans le terme de recherche. Cependant, la recherche à l'aide de caractères génériques "
+"est moins rapide que la recherche exacte."
+
+#: package-manager.xml:218(para)
+msgid ""
+"Type a description of the package in the box. For example, the "
+"<filename>SUNWdiveintopython</filename> package is a book on Python "
+"programming. The description of the package contains the string "
+"<emphasis>book</emphasis>. To search for this package, you might then type "
+"one of the following terms:"
+msgstr ""
+"Entrez une description du package dans l'onglet. Par exemple, le package "
+"<filename>SUNWdiveintopython</filename> est un ouvrage sur le programme "
+"Python. La description du package contient la chaîne "
+"<emphasis>book</emphasis>. Pour rechercher ce package, vous devez taper "
+"un des termes suivants :"
+
+#: package-manager.xml:224(para)
+msgid ""
+"If you searched for the term <emphasis>diveinto</emphasis> in the multi-"
+"repository search, the <filename>SUNWdiveintopython</filename> package will "
+"not be displayed as the term <emphasis>diveinto</emphasis> is not present as "
+"an independent, complete word in the package contents. However you will find "
+"the package using the <literal>*</literal> wild card. Hence, searching for "
+"the term <literal>diveinto*</literal> will display the "
+"<filename>SUNWdiveintopython</filename> package."
+msgstr ""
+"Si vous recherchez le terme <emphasis>diveinto</emphasis> dans la recherche"
+"multiréférentiel, le package <filename>SUNWdiveintopython</filename> ne s'affichera pas, "
+"car le terme <emphasis>diveinto</emphasis> n'est pas présent "
+"en tant que mot complet et indépendant dans le contenu du package. Cependant, vous trouverez le "
+"package à l'aide du caractère générique <literal>*</literal>. Ainsi, si vous recherchez le terme "
+"<literal>diveinto*</literal>, le package "
+"<filename>SUNWdiveintopython</filename> s'affichera."

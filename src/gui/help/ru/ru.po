@@ -1,86 +1,91 @@
-# Copyright (C) 2008 Sun Microsystems, Inc
-# This file is distributed under the same license as the pkg help package.
 #
-# Desktop Discuss <desktop-discuss@opensolaris.org>
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").  
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+#
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Use is subject to license terms.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: pkg help HEAD\n"
-"POT-Creation-Date: 2008-10-10 23:30+0900\n"
-"PO-Revision-Date: 2008-10-10 23:30+0900\n"
-"Last-Translator: desktop-discuss@opensolaris.org\n"
-"Language-Team: desktop-discuss@opensolaris.org\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2009-04-14 18:29+0900\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #. When image changes, this message will be marked fuzzy or untranslated for you.
 #. It doesn't matter what you translate it to: it's not used at all.
-#: package-manager.xml:77 (None)
-msgid ""
-"@@image: 'figures/package_manager.png'; md5=47f19c63c45c2d5d14a07732879a8c6c"
-msgstr ""
-"@@image: 'figures/package_manager.png'; md5=47f19c63c45c2d5d14a07732879a8c6c"
+#: package-manager.xml:66(None)
+msgid "@@image: 'figures/pm_store.png'; md5=89037626f84480186677a61680dccc2c"
+msgstr "@@image: 'figures/pm_store.png'; md5=89037626f84480186677a61680dccc2c"
 
 #. When image changes, this message will be marked fuzzy or untranslated for you.
 #. It doesn't matter what you translate it to: it's not used at all.
-#: package-manager.xml:302 (None)
-msgid "@@image: 'figures/update_all.png'; md5=bfc40396ac45fc30b994d306307ead96"
-msgstr "@@image: 'figures/update_all.png'; md5=bfc40396ac45fc30b994d306307ead96"
+#: package-manager.xml:86(None)
+msgid "@@image: 'figures/pm_pkglist.png'; md5=b9a51d97ff1069102eb7ede47adb6a37"
+msgstr "@@image: 'figures/pm_pkglist.png'; md5=b9a51d97ff1069102eb7ede47adb6a37"
 
-#: package-manager.xml:3 (title)
-msgid "Getting Started With OpenSolaris 2008.11 Package Manager"
-msgstr "Начало работы с Диспетчером пакетов ОС OpenSolaris 2008.11"
+#. When image changes, this message will be marked fuzzy or untranslated for you.
+#. It doesn't matter what you translate it to: it's not used at all.
+#: package-manager.xml:427(None)
+msgid "@@image: 'figures/wi_start.png'; md5=3b2ad7761ad183fdfea6081f29893798"
+msgstr "@@image: 'figures/wi_start.png'; md5=3b2ad7761ad183fdfea6081f29893798"
 
-#: package-manager.xml:4 (firstname)
-msgid "IPS"
-msgstr "IPS"
+#. When image changes, this message will be marked fuzzy or untranslated for you.
+#. It doesn't matter what you translate it to: it's not used at all.
+#: package-manager.xml:457(None)
+msgid "@@image: 'figures/update_all.png'; md5=af873a11d59466bf46c49bd3d3a227af"
+msgstr "@@image: 'figures/update_all.png'; md5=af873a11d59466bf46c49bd3d3a227af"
 
-#: package-manager.xml:5 (surname)
-msgid "Documentation Team"
-msgstr "Команда разработчиков документации"
+#: package-manager.xml:3(title)
+msgid "OpenSolaris 2009.06 Package Manager Online Help"
+msgstr "Интерактивная справка по диспетчеру пакетов OpenSolaris 2009.06."
 
-#: package-manager.xml:8 (pubsnumber)
-msgid "820-6570"
-msgstr "820-6570"
+#: package-manager.xml:4(firstname)
+msgid "OpenSolaris"
+msgstr "ОС OpenSolaris"
 
-#: package-manager.xml:9 (releaseinfo)
-msgid "v 0.1"
-msgstr "v 0.1"
+#: package-manager.xml:5(surname)
+msgid "Publications"
+msgstr "Публикации"
 
-#: package-manager.xml:10 (pubdate)
-msgid "Nov 2008"
-msgstr "Ноябрь 2008 г."
+#: package-manager.xml:8(pubsnumber)
+msgid "822-7173"
+msgstr "822-7173"
 
-#: package-manager.xml:11 (publishername) package-manager.xml:20 (holder)
-msgid "Sun Microsystems, Inc."
-msgstr "Sun Microsystems, Inc."
+#: package-manager.xml:10(pubdate)
+msgid "June 2009"
+msgstr "Июнь 2009 г."
 
-#: package-manager.xml:12 (street)
-msgid "4150 Network Circle"
-msgstr "4150 Network Circle"
+#: package-manager.xml:11(publishername)
+msgid "Sun Microsystems"
+msgstr "Sun Microsystems"
 
-#: package-manager.xml:13 (city)
-msgid "Santa Clara"
-msgstr "Santa Clara"
+#: package-manager.xml:13(year)
+msgid "2009"
+msgstr "2009"
 
-#: package-manager.xml:14 (state)
-msgid "CA"
-msgstr "CA"
-
-#: package-manager.xml:15 (postcode)
-msgid "95054"
-msgstr "95054"
-
-#: package-manager.xml:16 (country)
-msgid "U.S.A."
-msgstr "U.S.A."
-
-#: package-manager.xml:19 (year)
-msgid "2008"
-msgstr "2008"
-
-#: package-manager.xml:24 (para)
+#: package-manager.xml:15(para)
 msgid ""
 "Sun Microsystems, Inc. has intellectual property rights relating to "
 "technology embodied in the product that is described in this document. In "
@@ -94,7 +99,7 @@ msgstr ""
 "включать один или более патентов США либо заявки на патенты в США "
 "и других странах."
 
-#: package-manager.xml:25 (para)
+#: package-manager.xml:16(para)
 msgid ""
 "U.S. Government Rights – Commercial software. Government users are subject "
 "to the Sun Microsystems, Inc. standard license agreement and applicable "
@@ -104,11 +109,11 @@ msgstr ""
 "из государственных организаций подчинены стандартному лицензионному соглашению Sun Microsystems, Inc.,"
 "положениям документа FAR и его дополнений."
 
-#: package-manager.xml:26 (para)
+#: package-manager.xml:17(para)
 msgid "This distribution may include materials developed by third parties."
 msgstr "Данный выпуск может включать в себя материалы, разработанные третьими сторонами."
 
-#: package-manager.xml:27 (para)
+#: package-manager.xml:18(para)
 msgid ""
 "Parts of the product may be derived from Berkeley BSD systems, licensed from "
 "the University of California. UNIX is a registered trademark in the U.S. and "
@@ -118,7 +123,7 @@ msgstr ""
 "в Калифорнийском университете. UNIX является зарегистрированной торговой маркой в США и "
 "других странах, лицензируемой исключительно через компанию X/Open Company, Ltd."
 
-#: package-manager.xml:28 (para)
+#: package-manager.xml:19(para)
 msgid ""
 "Sun, Sun Microsystems, the Sun logo, the Solaris logo, the Java Coffee Cup "
 "logo, docs.sun.com, Java, and Solaris are trademarks or registered "
@@ -136,7 +141,7 @@ msgstr ""
 "и других странах. Изделия с торговыми марками SPARC основаны на "
 "архитектуре, разработанной Sun Microsystems, Inc."
 
-#: package-manager.xml:29 (para)
+#: package-manager.xml:20(para)
 msgid ""
 "The OPEN LOOK and <trademark>Sun</trademark> Graphical User Interface was "
 "developed by Sun Microsystems, Inc. for its users and licensees. Sun "
@@ -156,7 +161,7 @@ msgstr ""
 "внедряющих интерфейсы OPEN LOOK и выполняющих все прочие письменные лицензионные соглашения, "
 "заключенные ими с компанией Sun."
 
-#: package-manager.xml:30 (para)
+#: package-manager.xml:21(para)
 msgid ""
 "Products covered by and information contained in this publication are "
 "controlled by U.S. Export Control laws and may be subject to the export or "
@@ -176,7 +181,7 @@ msgstr ""
 "эмбарго США или находящиеся в списке исключения экспорта из США, "
 "включая, без ограничений, списки запрещенных лиц и специальные списки лиц из данных стран."
 
-#: package-manager.xml:31 (para)
+#: package-manager.xml:22(para)
 msgid ""
 "DOCUMENTATION IS PROVIDED “AS IS” AND ALL EXPRESS OR IMPLIED CONDITIONS, "
 "REPRESENTATIONS AND WARRANTIES, INCLUDING ANY IMPLIED WARRANTY OF "
@@ -190,7 +195,7 @@ msgstr ""
 "КРОМЕ СЛУЧАЕВ, КОГДА ПОДОБНЫЕ ОТКАЗЫ ПРИЗНАЮТСЯ "
 "НЕ ИМЕЮЩИМИ ЮРИДИЧЕСКОЙ СИЛЫ."
 
-#: package-manager.xml:33 (para)
+#: package-manager.xml:24(para)
 msgid ""
 "Sun Microsystems, Inc. détient les droits de propriété intellectuelle "
 "relatifs à la technologie incorporée dans le produit qui est décrit dans ce "
@@ -204,7 +209,7 @@ msgstr ""
 "intellectuelle peuvent inclure un ou plusieurs brevets américains ou des "
 "applications de brevet en attente aux Etats-Unis et dans d'autres pays."
 
-#: package-manager.xml:34 (para)
+#: package-manager.xml:25(para)
 msgid ""
 "Cette distribution peut comprendre des composants développés par des tierces "
 "personnes."
@@ -212,7 +217,7 @@ msgstr ""
 "Cette distribution peut comprendre des composants développés par des tierces "
 "personnes."
 
-#: package-manager.xml:35 (para)
+#: package-manager.xml:26(para)
 msgid ""
 "Certaines composants de ce produit peuvent être dérivées du logiciel "
 "Berkeley BSD, licenciés par l'Université de Californie. UNIX est une marque "
@@ -224,7 +229,7 @@ msgstr ""
 "déposée aux Etats-Unis et dans d'autres pays; elle est licenciée "
 "exclusivement par X/Open Company, Ltd."
 
-#: package-manager.xml:36 (para)
+#: package-manager.xml:27(para)
 msgid ""
 "Sun, Sun Microsystems, le logo Sun, le logo Solaris, le logo Java Coffee "
 "Cup, docs.sun.com, Java et Solaris sont des marques de fabrique ou des "
@@ -244,7 +249,7 @@ msgstr ""
 "portant les marques SPARC sont basés sur une architecture développée par Sun "
 "Microsystems, Inc."
 
-#: package-manager.xml:37 (para)
+#: package-manager.xml:28(para)
 msgid ""
 "L'interface d'utilisation graphique OPEN LOOK et Sun a été développée par "
 "Sun Microsystems, Inc. pour ses utilisateurs et licenciés. Sun reconnaît les "
@@ -266,7 +271,7 @@ msgstr ""
 "graphique OPEN LOOK et qui, en outre, se conforment aux licences écrites de "
 "Sun."
 
-#: package-manager.xml:38 (para)
+#: package-manager.xml:29(para)
 msgid ""
 "Les produits qui font l'objet de cette publication et les informations qu'il "
 "contient sont régis par la legislation américaine en matière de contrôle des "
@@ -298,7 +303,7 @@ msgstr ""
 "contrôle des exportations et la liste de ressortissants spécifiquement "
 "designés, sont rigoureusement interdites."
 
-#: package-manager.xml:39 (para)
+#: package-manager.xml:30(para)
 msgid ""
 "LA DOCUMENTATION EST FOURNIE \"EN L'ETAT\" ET TOUTES AUTRES CONDITIONS, "
 "DECLARATIONS ET GARANTIES EXPRESSES OU TACITES SONT FORMELLEMENT EXCLUES, "
@@ -312,193 +317,314 @@ msgstr ""
 "GARANTIE IMPLICITE RELATIVE A LA QUALITE MARCHANDE, A L'APTITUDE A UNE "
 "UTILISATION PARTICULIERE OU A L'ABSENCE DE CONTREFACON."
 
-#: package-manager.xml:42 (title)
-msgid "Introduction"
-msgstr "Введение"
+#: package-manager.xml:33(title)
+msgid "About the Package Manager"
+msgstr "О диспетчере пакетов"
 
-#: package-manager.xml:43 (para)
+#: package-manager.xml:34(para)
 msgid ""
-"Welcome to the <trademark>OpenSolaris 2008.11</trademark> Package Manager "
-"Online Help!"
+"Welcome to the <trademark>OpenSolaris</trademark> 2009.06 Package Manager "
+"online help!"
 msgstr ""
 "Добро пожаловать в интерактивную справку диспетчера пакетов "
-"<trademark>OpenSolaris 2008.11</trademark> "
+"ОС <trademark>OpenSolaris </trademark> 2009.06"
 
-#: package-manager.xml:44 (para)
+#: package-manager.xml:35(para)
 msgid ""
 "Use this help contents to learn how to use the Package Manager. Navigate "
-"through this help by clicking on the topics displayed in the side bar."
+"through this help by clicking the topics displayed in the sidebar."
 msgstr ""
-"Используйте содержание справки, чтобы научиться работать с Диспетчером пакетов. Переходите по разделам справки, "
-"выбирая темы, отображенные на боковой панели."
+"Начните обучение использованию диспетчера пакетов с содержание справки. Для перехода по разделам справки "
+"выберите соответствующую тему на боковой панели."
 
-#: package-manager.xml:45 (para)
+#: package-manager.xml:36(para)
 msgid ""
-"The OpenSolaris 2008.11 <application>Package Manager</application> "
-"application is a graphical user interface for the Image Packaging System "
-"(IPS) software. IPS is a network-centric packaging system that enables users "
-"to download and install packages, create and manage repositories, mirror "
-"repositories, and create and publish their own packages to a repository."
+"The OpenSolaris 2009.06 Package Manager application is a graphical user "
+"interface for the Image Packaging System (IPS) software."
 msgstr ""
-"Приложение <application>Диспетчер пакетов</application> "
-"ОС OpenSolaris 2008.11 является графическим интерфейсом пользователя для "
-"системы упаковки образов (IPS). IPS ориентирована на сетевое использование и дает пользователям возможность "
-"загружать и устанавливать пакеты, создавать хранилища и управлять ими, делать зеркальные копии "
-"хранилищ, а также создавать собственные пакеты и публиковать их в хранилище."
+"Приложение \"диспетчер пакетов\" ОС OpenSolaris 2009.06 представляет собой графический интерфейс пользователя "
+"для ПО системы управления пакетами (IPS)."
 
-#: package-manager.xml:46 (para)
+#: package-manager.xml:37(para)
+msgid "The Package Manager enables you to perform the following tasks:"
+msgstr "Диспетчер пакетов дает возможность решать следующие задачи:"
+
+#: package-manager.xml:38(para)
+msgid "Search, install, and remove packages"
+msgstr "Поиск, установка, обновление или удаление пакетов программ"
+
+#: package-manager.xml:40(para)
+msgid "Update your system"
+msgstr "Обновление системы"
+
+#: package-manager.xml:42(para)
+msgid "Add and modify repositories"
+msgstr "Добавление и изменение хранилищ"
+
+#: package-manager.xml:44(para)
+msgid "Create, remove, and manage boot environments"
+msgstr "Создание и удаление загрузочных сред, а также управление ими"
+
+#: package-manager.xml:47(para)
 msgid ""
-"See the <ulink url=\"http://dlc.sun.com/osol/docs/content/2008.11/"
-"IMGPACKAGESYS/\"><citetitle>Image Packaging System Guide</citetitle></ulink> "
-"for information on IPS."
-msgstr ""
-"Для получения информации об IPS см. <ulink url=\"http://dlc.sun.com/osol/docs/content/2008.11/"
-"IMGPACKAGESYS/\"><citetitle>Руководство по Системе упаковки образов</citetitle></ulink>."
-
-#: package-manager.xml:47 (para)
-msgid ""
-"The <application>Package Manager</application> enables you to perform the "
-"following tasks:"
-msgstr ""
-"<application>Диспетчер пакетов</application> дает возможность выполнять "
-"следующие задачи:"
-
-#: package-manager.xml:48 (para)
-msgid "Search, install, update, and remove packages."
-msgstr "Находить, устанавливать, обновлять или удалять пакеты программ."
-
-#: package-manager.xml:50 (para)
-msgid "Add and modify repositories."
-msgstr "Добавлять и изменять хранилища."
-
-#: package-manager.xml:52 (para)
-msgid "Create, remove and manage boot environments."
-msgstr "Создавать, удалять загрузочные среды и управлять ими."
-
-#: package-manager.xml:55 (para)
-msgid ""
-"See the <xref linkend=\"glossary-1\"/> for definitions of the terms used in "
+"See the <xref linkend=\"glossary\"/> for a definition of the terms used in "
 "this document."
 msgstr ""
-"В <xref linkend=\"glossary-1\"/> приведены определения терминов, используемых "
+"В <xref linkend=\"glossary-\"/> приведены определения терминов, используемых "
 "в данном документе."
 
-#: package-manager.xml:58 (title)
-msgid "Package Manager Screencast"
-msgstr "Ролик о Диспетчере пакетов"
+#: package-manager.xml:49(title)
+msgid "About Image Packaging System"
+msgstr "О системе управления пакетами (IPS)"
 
-#: package-manager.xml:59 (para)
+#: package-manager.xml:50(para)
 msgid ""
-"Learn how to use the OpenSolaris 2008.11 Package Manager through a "
-"screencast. Click <ulink url=\"http://webcast-west.sun.com/"
-"interactive/09B01790/index.html\">here</ulink> to go the Package Manager "
-"screencast."
+"Image Packaging System (IPS) is a software delivery system that interacts "
+"with a network repository. The IPS software is a framework which provides "
+"for software lifecycle management including installation, upgrade, and "
+"removal."
 msgstr ""
-"Узнайте об использовании Диспетчера пакетов ОС OpenSolaris 2008.11 в следующем "
-"ролике. Нажмите ссылку <ulink url=\"http://webcast-west.sun.com/"
-"interactive/09B01790/index.html\">here</ulink>для перехода к ролику о "
-"Диспетчере пакетов."
+"Система управления пакетами (IPS) представляет собой систему поставки ПО, которая взаимодействует "
+"с сетевым хранилищем. Программное обеспечение IPS представляет собой инфраструктуру "
+"управления жизненным циклом ПО, в т.ч. установкой, обновлением и "
+"удалением."
 
-#: package-manager.xml:61 (title)
-msgid "Starting Package Manager"
-msgstr "Запуск Диспетчера пакетов"
+#: package-manager.xml:51(para)
+msgid "The OpenSolaris 2009.06 release uses IPS as its packaging system."
+msgstr "В выпуске ОС OpenSolaris 2009.06 в качестве системы управления пакетами используется IPS."
 
-#: package-manager.xml:62 (para)
+#: package-manager.xml:52(para)
 msgid ""
-"You can start the <application>Package Manager</application> in the "
-"following ways:"
+"After an initial installation of OpenSolaris 2009.06 operating system, you "
+"will find that many of the software applications that you use on a regular "
+"basis are not immediately available to you. These software applications are "
+"available as packages in a repository for downloading and installing over "
+"the Internet. A repository is a source for packages."
 msgstr ""
-"<application>Диспетчер пакетов</application> можно запустить"
-"следующими способами:"
+"После первоначальной установки операционной системы OpenSolaris 2009.06 нередко выясняется,"
+"что многие часто используемые приложения"
+"не становятся доступными немедленно. Это прикладное ПО "
+"распространяется в виде пакетов в хранилище, доступных для загрузки и установки"
+"из Интернета. Хранилище представляет собой источник пакетов."
 
-#: package-manager.xml:63 (emphasis)
-msgid "Desktop Menu"
-msgstr "Меню рабочего стола"
-
-#: package-manager.xml:64 (para)
+#: package-manager.xml:53(para)
 msgid ""
-"Click <menuchoice><guimenu>System</guimenu><guisubmenu>Administration</"
-"guisubmenu><guimenuitem>Package Manager</guimenuitem></menuchoice>."
+"Users can use IPS to install packages from a repository, create and publish "
+"their own IPS packages, mirror an existing repository, and publish existing "
+"packages to a repository."
 msgstr ""
-"Выберите в меню <menuchoice><guimenu>Система</guimenu><guisubmenu>Администрирование</"
-"guisubmenu><guimenuitem>Диспетчер пакетов</guimenuitem></menuchoice>."
+"Система IPS позволяет пользователям устанавливать пакеты из хранилища, создавать и публиковать "
+"собственные пакеты IPS, создавать зеркальные копии имеющихся хранилищ, а также публиковать"
+"в хранилище существующие пакеты."
 
-#: package-manager.xml:67 (emphasis)
-msgid "Command line"
-msgstr "Командная строка"
-
-#: package-manager.xml:68 (para)
-msgid "Run the following command :"
-msgstr "Выполните следующую команду:"
-
-#: package-manager.xml:69 (userinput)
-#, no-wrap
-msgid "$ gksu packagemanager &amp;"
-msgstr "$ gksu packagemanager &amp;"
-
-#: package-manager.xml:74 (title)
-msgid "Package Manager Window"
-msgstr "Окно Диспетчера пакетов"
-
-#: package-manager.xml:75 (para)
+#: package-manager.xml:54(para)
 msgid ""
-"When you start the <application>Package Manager</application>, the following "
-"window is displayed:"
+"Once you have installed packages, IPS enables you to search, update, and "
+"manage packages on your system."
 msgstr ""
-"При запуске <application>Диспетчера пакетов</application>, отображается "
-"следующее окно:"
+"После установки пакетов система IPS позволяет выполнять в системе поиск, обновление пакетов и"
+"управление ими."
 
-#: package-manager.xml:76 (title)
-msgid "Package Manager Main Window"
-msgstr "Главное окно Диспетчера пакетов"
-
-#: package-manager.xml:80 (para)
+#: package-manager.xml:55(para)
 msgid ""
-"The main window of the <application>Package Manager</application> consists "
-"of the following elements :"
+"With IPS , you can upgrade your system to a newer build of OpenSolaris, "
+"install and update your software to the latest available versions in a "
+"repository, and retrieve packages from mirror repositories."
 msgstr ""
-"Главное окно <application>Диспетчера пакетов</application> состоит из "
-"следующих элементов :"
+"Система IPS обеспечивает возможность обновления операционной системы до более свежей версии OpenSolaris, "
+"устанавливать программное обеспечение и обновлять его до самых свежих версий, доступных в хранилище,"
+"а также получать пакеты из зеркальных хранилищ."
 
-#: package-manager.xml:81 (emphasis)
+#: package-manager.xml:56(emphasis)
+msgid ""
+"The Package Manager provides a subset of the tasks that can be performed "
+"from the command-line."
+msgstr ""
+"Диспетчер пакетов обеспечивает выполнение подмножества задач, которые могут выполняться"
+"из командной строки."
+
+#: package-manager.xml:58(para)
+msgid ""
+"If the system on which IPS is installed is on the network, IPS can "
+"automatically access the OpenSolaris repository. For the OpenSolaris 2009.06 "
+"release, your IPS client can access the packages from <ulink url=\"http://"
+"pkg.opensolaris.org\"/>."
+msgstr ""
+"Если компьютер, на котором установлена система IPS, подключен к сети, доступ IPS к хранилищу OpenSolaris  "
+"может выполняться в автоматическом режиме. В случае выпуска ОС OpenSolaris 2009.06 "
+"клиент IPS может получать пакеты с <ulink url=\"http://"
+"pkg.opensolaris.org\"/>."
+
+#: package-manager.xml:59(para)
+msgid ""
+"For more information about IPS, see the <ulink url=\"http://dlc.sun.com/osol/"
+"docs/content/2009.06/IMGPACKAGESYS/\">Image Packaging System Guide</ulink> "
+"and the IPS <ulink url=\"http://opensolaris.org/sc/src/pkg/gate/src/man/"
+"\">man pages</ulink>."
+msgstr ""
+"Для получения дополнительных сведений о системе IPS см. документ <ulink url=\"http://dlc.sun.com/osol/"
+"docs/content/2009.06/IMGPACKAGESYS/\">Руководство по системе управления пакетами</ulink> "
+"и <ulink url=\"http://opensolaris.org/sc/src/pkg/gate/src/man/"
+"\">справочные страницы</ulink> IPS."
+
+#: package-manager.xml:60(para)
+msgid ""
+"Visit the <ulink url=\"http://opensolaris.org/os/project/pkg\">project page</"
+"ulink> on opensolaris.org and subscribe to pkg-discuss@sun.com to get "
+"involved with the IPS project."
+msgstr ""
+"Для принятия участия в проекте IPS посетите <ulink url=\"http://opensolaris.org/os/project/pkg\">страницу проекта</"
+"ulink> на сайте opensolaris.org и подпишитесь на список "
+"рассылки pkg-discuss@sun.com."
+
+#: package-manager.xml:62(title)
+msgid "The Package Manager Window"
+msgstr "Окно диспетчера пакетов"
+
+#: package-manager.xml:63(title)
+msgid "About the Package Manager Window"
+msgstr "Об окне диспетчера пакетов"
+
+#: package-manager.xml:64(para)
+msgid "When you start the Package Manager, the following window is displayed."
+msgstr "При запуске диспетчера пакетов отображается следующее окно."
+
+#: package-manager.xml:65(title)
+msgid "Package Manager Start Up Window"
+msgstr "Окно запуска диспетчера пакетов"
+
+#: package-manager.xml:69(para)
+msgid ""
+"The Start Page provides links to <ulink url=\"http://opensolaris.com"
+"\">opensolaris.com</ulink> page where you can get more information about "
+"OpenSolaris, subscribe to newsletters and join the OpenSolaris community."
+msgstr ""
+"На начальной странице имеются ссылки на страницу <ulink url=\"http://opensolaris.com"
+"\">opensolaris.com</ulink>, где приведена дополнительная информация об "
+"ОС OpenSolaris, и можно подписаться на списки рассылки или присоединиться к сообществу OpenSolaris."
+
+#: package-manager.xml:70(para)
+msgid ""
+"To close the Start Page and see the list of packages , perform any of the "
+"following actions in the main window of the Package Manager:"
+msgstr ""
+"Для закрытия начальной страницы и перехода к списку пакетов можно выполнить одно из "
+"следующих действий в главном окне диспетчера пакетов:"
+
+#: package-manager.xml:71(para)
+msgid "Select a package category"
+msgstr "Выберите категорию пакетов"
+
+#: package-manager.xml:73(para)
+msgid "Switch the top level category"
+msgstr "Перейдите к категории верхнего уровня"
+
+#: package-manager.xml:75(para)
+msgid "Switch the <literal>Show</literal> filter"
+msgstr "Переключите фильтр <literal>Показать</literal>"
+
+#: package-manager.xml:77(para)
+msgid "Perform a search"
+msgstr "Выполните поиск"
+
+#: package-manager.xml:79(para)
+msgid "Change the repository"
+msgstr "Измените хранилище"
+
+#: package-manager.xml:82(para)
+msgid ""
+"Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</"
+"guimenuitem></menuchoice> to return to the Start Page at anytime."
+msgstr ""
+"На начальную страницу всегда можно вернуться путем выбора пункта меню <menuchoice><guimenu>Просмотр</guimenu><guimenuitem>Начальная страница</"
+"guimenuitem></menuchoice>."
+
+#: package-manager.xml:83(para)
+msgid ""
+"See the <xref linkend=\"edit_prefs\"/> section to turn off the <emphasis "
+"role=\"strong\">initial display</emphasis> of the Start Page when the "
+"Package Manager starts."
+msgstr ""
+"Процедура отключения <emphasis "
+"role=\"strong\">изначального отображения</emphasis> начальной страницы при запуске диспетчера пакетов"
+"приведена в разделе <xref linkend=\"edit_prefs\"/>."
+
+#: package-manager.xml:85(title)
+msgid "List of Packages in the Package Manager Window"
+msgstr "Список пакетов в окне диспетчера пакетов"
+
+#: package-manager.xml:89(para)
+msgid ""
+"The main window of the Package Manager consists of the following elements :"
+msgstr ""
+"Главное окно диспетчера пакетов состоит из "
+"следующих элементов:"
+
+#: package-manager.xml:90(emphasis)
+msgid "Menubar"
+msgstr "Строка меню"
+
+#: package-manager.xml:91(para)
+msgid ""
+"You can access the menus on the menubar to perform all of the commands "
+"related to the Package Manager."
+msgstr ""
+"Все команды, относящихся к диспетчеру пакетов, "
+"можно выполнить с помощью пунктов главного меню."
+
+#: package-manager.xml:95(emphasis)
+msgid "Toolbar"
+msgstr "Панель инструментов"
+
+#: package-manager.xml:96(para)
+msgid ""
+"The toolbar contains the icons for a subset of the commands that can be "
+"performed by using the menus on the menubar. A<literal>Search</literal> box "
+"is also located on the toolbar."
+msgstr ""
+"Панель инструментов содержит значки для отдельной группы команд, которые вызываются"
+"с помощью пунктов главного меню. Поле <literal>Поиск</literal>"
+"также располагается на этой панели инструментов."
+
+#: package-manager.xml:99(emphasis)
 msgid "List of Packages by Category"
 msgstr "Список пакетов по категориям"
 
-#: package-manager.xml:82 (para)
+#: package-manager.xml:100(para)
 msgid ""
 "You can browse the available packages by category in the left hand side drop-"
 "down menu. The drop-down menu shows the list of categories available such as "
 "<emphasis role=\"strong\">Applications-Desktop</emphasis>, <emphasis role="
-"\"strong\">Applications Web based</emphasis>, and <emphasis role=\"strong"
+"\"strong\">Applications –Web—based</emphasis>, and <emphasis role=\"strong"
 "\">Operating System</emphasis>."
 msgstr ""
-"Можно просмотреть доступные пакеты по категориям в раскрывающемся меню "
-"с левой стороны. В раскрывающемся меню отображен список доступных категорий, например,"
-"<emphasis role=\"strong\">Локальные приложения</emphasis>, <emphasis role="
+"Доступные пакеты можно просмотреть по категориям в выпадающем меню "
+"с левой стороны. В выпадающем меню выводится список доступных категорий, например,"
+"<emphasis role=\"strong\">Настольные приложения</emphasis>, <emphasis role="
 "\"strong\">Веб-приложения</emphasis> и <emphasis role=\"strong"
 "\">Операционная система</emphasis>."
 
-#: package-manager.xml:85 (emphasis)
+#: package-manager.xml:103(emphasis)
 msgid "List of Packages by Status"
 msgstr "Список пакетов по статусу"
 
-#: package-manager.xml:86 (para)
+#: package-manager.xml:104(para)
 msgid ""
-"The <guilabel>Show</guilabel> drop-down menu enables you to filter the list "
-"of packages by the following options:"
+"The <literal>Show</literal> drop-down menu enables you to filter the list of "
+"packages by the following options :"
 msgstr ""
-"Раскрывающееся меню<guilabel>Отображение</guilabel> позволяет отфильтровать список пакетов "
+"Раскрывающееся меню <literal>Показать</literal> позволяет отфильтровать список пакетов "
 "по параметрам, указанным ниже:"
 
-#: package-manager.xml:87 (para)
+#: package-manager.xml:105(para)
 msgid ""
-"<emphasis role=\"strong\">All Packages</emphasis>– Shows the list of all "
+"<emphasis role=\"strong\">All Packages</emphasis> – Shows the list of all "
 "packages available in the current repository."
 msgstr ""
 "<emphasis role=\"strong\">Все пакеты</emphasis>– отображается список всех пакетов,"
 "доступных в текущем хранилище."
 
-#: package-manager.xml:89 (para)
+#: package-manager.xml:107(para)
 msgid ""
 "<emphasis role=\"strong\">Installed Packages</emphasis> – Shows the list of "
 "packages installed on your system."
@@ -506,7 +632,7 @@ msgstr ""
 "<emphasis role=\"strong\">Установленные пакеты</emphasis> – отображается "
 "список установленных в системе пакетов."
 
-#: package-manager.xml:91 (para)
+#: package-manager.xml:109(para)
 msgid ""
 "<emphasis role=\"strong\">Updates Available</emphasis> — Shows the list of "
 "packages that have newer versions available in the current repository."
@@ -514,7 +640,7 @@ msgstr ""
 "<emphasis role=\"strong\">Доступные обновления</emphasis> — отображается список пакетов, "
 "для которых в текущем хранилище доступны более новые версии."
 
-#: package-manager.xml:93 (para)
+#: package-manager.xml:111(para)
 msgid ""
 "<emphasis role=\"strong\">Non-installed Packages</emphasis> – Shows the list "
 "of packages that are not installed, but are available in the currently "
@@ -524,7 +650,7 @@ msgstr ""
 "которые не установлены, но доступны в текущем "
 "выбранном хранилище."
 
-#: package-manager.xml:95 (para)
+#: package-manager.xml:113(para)
 msgid ""
 "<emphasis role=\"strong\">Selected Packages</emphasis> – Shows the list of "
 "packages that you have selected."
@@ -532,43 +658,11 @@ msgstr ""
 "<emphasis role=\"strong\">Выбранные пакеты</emphasis> – отображается список  "
 "выбранных пакетов."
 
-#: package-manager.xml:100 (emphasis)
-msgid "Toolbar"
-msgstr "Панель инструментов"
-
-#: package-manager.xml:101 (para)
-msgid ""
-"The toolbar contains the icons for a subset of the commands that can be "
-"performed by using the menus on the menubar."
-msgstr ""
-"Панель инструментов содержит значки для отдельной группы команд, которые можно выполнить,"
-"используя пункты главного меню."
-
-#: package-manager.xml:102 (para)
-msgid ""
-"The <guilabel>Repositories</guilabel> drop-down menu is also located on the "
-"toolbar."
-msgstr ""
-"Раскрывающееся меню <guilabel>Хранилища</guilabel> расположено "
-"в панели инструментов."
-
-#: package-manager.xml:105 (emphasis)
-msgid "Menubar"
-msgstr "Строка меню"
-
-#: package-manager.xml:106 (para)
-msgid ""
-"You can access the menus on the menubar to perform all of the commands "
-"related to the Package Manager."
-msgstr ""
-"Все команды, относящихся к диспетчеру пакетов, "
-"можно выполнить с помощью пунктов главного меню."
-
-#: package-manager.xml:110 (emphasis)
+#: package-manager.xml:118(emphasis)
 msgid "Package Name and Description"
 msgstr "Название пакета и его описание"
 
-#: package-manager.xml:111 (para)
+#: package-manager.xml:119(para)
 msgid ""
 "The list of packages in the selected category, a brief description, and "
 "their status are displayed here."
@@ -576,81 +670,125 @@ msgstr ""
 "Здесь отображен список пакетов из выбранной категории, их краткое описание и "
 "статус."
 
-#: package-manager.xml:114 (emphasis)
+#: package-manager.xml:122(emphasis)
 msgid "Package Details"
 msgstr "Подробные сведения о пакете"
 
-#: package-manager.xml:115 (para)
+#: package-manager.xml:123(para)
 msgid ""
-"Click a package to select it. Details of the selected package such as name, "
-"version, file dependencies, and license are displayed in this window."
+"Click a package name to select it. Details of the selected package, such as "
+"name, version, file dependencies, and license are displayed in this window."
 msgstr ""
-"Для выбора пакета щелкните его мышью. В данном окне отображаются подробные сведения об этом пакете, "
+"Для выбора пакета щелкните мышью его название. В данном окне отображаются подробные сведения об этом пакете, "
 "например, название, версия, зависимости файлов и лицензия."
 
-#: package-manager.xml:118 (emphasis)
+#: package-manager.xml:126(emphasis)
 msgid "Repository Drop-down Menu"
 msgstr "Раскрывающееся меню хранилища"
 
-#: package-manager.xml:119 (para)
+#: package-manager.xml:127(para)
 msgid ""
-"The list of available repositories is shown in the repository drop-down "
-"menu. Click a repository name to select it."
+"The list of available repositories is shown in the <literal>Repository</"
+"literal> drop-down menu. Click a repository name to select it."
 msgstr ""
-"Список доступных хранилищ отображен в раскрывающемся меню хранилища. "
-"Для выбора хранилища щелкните мышью его название."
+"Список доступных хранилищ отображен в раскрывающемся меню<literal>Хранилище</"
+"literal>. Для выбора хранилища щелкните мышью его название."
 
-#: package-manager.xml:120 (para)
+#: package-manager.xml:130(emphasis)
+msgid "Search Box"
+msgstr "Поле поиска"
+
+#: package-manager.xml:131(para)
+msgid "Search for a package is provided in the following contexts :"
+msgstr "Поиск пакетов предоставляется в следующих контекстах:"
+
+#: package-manager.xml:132(para)
+msgid "Search within the current repository"
+msgstr "Поиск в текущем хранилище"
+
+#: package-manager.xml:134(para)
+msgid "Search across all configured repositories"
+msgstr "Поиск по всем настроенным хранилищам"
+
+#: package-manager.xml:141(title)
+msgid "Start Page Preferences"
+msgstr "Параметры начальной страницы"
+
+#: package-manager.xml:142(para)
 msgid ""
-"Click the <guilabel>Reload</guilabel> button to reload the Package Manager "
-"and view the list of packages from the newly selected repository."
+"A Start Page is displayed in the main window of the Package Manager when the "
+"application is started. The Start Page provides links to <ulink url=\"http://"
+"opensolaris.com\">opensolaris.com</ulink> page where you can get more "
+"information about OpenSolaris, subscribe to newsletters and join the "
+"OpenSolaris community."
 msgstr ""
-"Нажмите кнопку <guilabel>Перезагрузить</guilabel> для перезагрузки Диспетчера пакетов "
-"и просмотра списка пакетов из только что выбранного хранилища."
+"При запуске приложения в главном меню диспетчера пакетов выводится начальная страница "
+"На начальной странице содержатся ссылки на страницу <ulink url=\"http://"
+"opensolaris.com\">opensolaris.com</ulink>, где приведена дополнительная "
+"информация об ОС OpenSolaris, можно подписаться на списки рассылки или вступить "
+"в сообщество OpenSolaris."
 
-#: package-manager.xml:127 (title)
-msgid "Working With the Package Manager"
-msgstr "Работа с Диспетчером пакетов"
-
-#: package-manager.xml:128 (para)
+#: package-manager.xml:143(para)
 msgid ""
-"The following sections document the tasks that can be performed with the "
-"<application>Package Manager</application>."
+"You can choose to turn off this setting so this page is not displayed when "
+"Package Manager starts."
 msgstr ""
-"В следующих разделах описаны задачи, которые можно выполнить с помощью "
-"<application>Диспетчера пакетов</application>."
+"Этот параметр настройки можно отключить; в результате эта страница не будет выводиться при запуске "
+"диспетчера пакетов."
 
-#: package-manager.xml:130 (title)
+#: package-manager.xml:144(para)
+msgid ""
+"Select <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</"
+"guimenuitem></menuchoice> from the menu and uncheck the <emphasis role="
+"\"strong\">Show Start Page on startup</emphasis> box to disable the Start "
+"Page."
+msgstr ""
+"Выберите в меню пункт <menuchoice><guimenu>Правка</guimenu><guimenuitem>Параметры</"
+"guimenuitem></menuchoice> и снимите флажок <emphasis role="
+"\"strong\">Показывать начальную страницу при запуске</emphasis> для отключения начальной"
+"страницы."
+
+#: package-manager.xml:145(para)
+msgid ""
+"Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</"
+"guimenuitem></menuchoice> to go to the Start Page at anytime."
+msgstr ""
+"На начальную страницу всегда можно перейти путем выбора пункта меню <menuchoice><guimenu>Просмотреть</guimenu><guimenuitem>Начальная страница</"
+"guimenuitem></menuchoice>."
+
+#: package-manager.xml:148(title)
+msgid "Working With Packages"
+msgstr "Работа с пакетами"
+
+#: package-manager.xml:149(title)
 msgid "Install a Package"
 msgstr "Установка пакета"
 
-#: package-manager.xml:131 (para)
-msgid "Perform the following steps to install a package:"
-msgstr "Для установки пакета выполните следующие действия:"
-
-#: package-manager.xml:132 (para)
+#: package-manager.xml:150(para)
 msgid ""
-"In the main window of the <application>Package Manager</application>, click "
-"the <guibutton>Reload</guibutton> button to view the latest list of packages "
-"available to you."
+"The list of packages is displayed in the main windows of the Package "
+"Manager. Perform the following steps to install a package:"
 msgstr ""
-"В главном окне программы <application>Диспетчер пакетов</application> нажмите "
-"кнопку <guibutton>Перезагрузить</guibutton> для просмотра новейшего списка "
-"доступных пакетов."
+"Список пакетов выводится в главном окне диспетчера"
+"пакетов. Для установки пакета необходимо выполнить следующие действия:"
 
-#: package-manager.xml:134 (para)
-msgid "Check the box next to the package to select it."
-msgstr "Для выбора пакета установите возле него флажок. "
-
-#: package-manager.xml:136 (para)
+#: package-manager.xml:151(para)
 msgid ""
-"Click <guibutton>Install/Update</guibutton> in the toolbar to start the "
-"package installation process."
+"To install a single package, click on a package to select it. To install "
+"many packages, check the box next to the packages you want to install."
 msgstr ""
-"Нажмите кнопку <guibutton>Установка/Обновление</guibutton>на панели инструментов "
-"для начала процесса установки пакета."
+"Для установки отдельного пакета его необходимо выбрать щелчком. Для установки"
+"нескольких пакетов можно установить флажки рядом с требуемыми пакетами."
 
-#: package-manager.xml:137 (para)
+#: package-manager.xml:153(para)
+msgid ""
+"Click the <guibutton>Install/Update</guibutton> icon in the toolbar to start "
+"the package installation process."
+msgstr ""
+"Для запуска процесса установки пакета "
+"щелкните значок <guibutton>Установка/обновление</guibutton> на панели инструментов."
+
+#: package-manager.xml:154(para)
 msgid ""
 "You can also choose <menuchoice><guimenu>Package</"
 "guimenu><guimenuitem>Install/Update</guimenuitem></menuchoice> to start the "
@@ -658,33 +796,17 @@ msgid ""
 msgstr ""
 "Для начала процесса установки пакета можно также выбрать"
 " в меню пункты <menuchoice><guimenu>Пакет</"
-"guimenu><guimenuitem>Установка/Обновление</guimenuitem></menuchoice>."
+"guimenu><guimenuitem>Установка/обновление</guimenuitem></menuchoice>."
 
-#: package-manager.xml:139 (para)
-msgid ""
-"The <application>Package Manager</application> checks for dependencies. "
-"Click <guilabel>Show Details</guilabel> to see more information about the "
-"package and its dependencies ."
-msgstr ""
-"<application>Диспетчер пакетов</application> проверяет зависимости. "
-"Нажмите кнопку <guilabel>Показать подробные сведения</guilabel> для просмотра дополнительной информации "
-"о пакете и его зависимостях ."
+#: package-manager.xml:156(para)
+msgid "View the details or cancel the package installation ."
+msgstr "Просмотр подробных сведений или отмена установки пакетов."
 
-#: package-manager.xml:141 (para)
-msgid ""
-"Review the package installation information and the package dependencies "
-"details in the <guilabel>Install Confirmation</guilabel> dialog."
-msgstr ""
-"Просмотрите информацию об установке пакета и подробные сведения о "
-"зависимостях пакета в диалоговом окне <guilabel>Подтверждение установки</guilabel>."
+#: package-manager.xml:157(para)
+msgid "Click <guilabel>Show Details</guilabel> to view the details."
+msgstr "Нажмите кнопку <guilabel>Показать подробные сведения</guilabel> для просмотра подробных данных."
 
-#: package-manager.xml:142 (para)
-msgid ""
-"Click <guibutton>Next</guibutton> to proceed with the package installation."
-msgstr ""
-"Для продолжения установки пакета нажмите кнопку <guibutton>Далее</guibutton>."
-
-#: package-manager.xml:143 (para)
+#: package-manager.xml:159(para)
 msgid ""
 "Click <guibutton>Cancel</guibutton> to cancel the package installation. No "
 "changes are made and you are returned to the main window."
@@ -692,45 +814,59 @@ msgstr ""
 "Для отмены установки пакета нажмите кнопку <guibutton>Отмена</guibutton>. "
 "Никаких изменений не внесено, отображается главное окно."
 
-#: package-manager.xml:145 (para)
+#: package-manager.xml:163(para)
 msgid ""
-"The <guilabel>Downloading Packages</guilabel> dialog is displayed. Click "
-"<guibutton>Cancel</guibutton> if you want to cancel the package "
-"installation. No changes are made and you are returned to the main window."
+"After the installation has completed, click <guibutton>Close</guibutton> on "
+"the <literal>Installation Completed</literal> dialog box to return to the "
+"main window."
 msgstr ""
-"Отобразится диалоговое окно <guilabel>Загрузка пакетов</guilabel>. Для отмены установки пакета нажмите кнопку "
-"<guibutton>Отмена</guibutton> ."
-" Никаких изменений не внесено, отображается главное окно."
+"После завершения установки нажмите кнопку <guibutton>Закрыть</guibutton> в диалоговом окне"
+" <literal>Установка завершена</literal> для возврата к "
+"главному окну."
 
-#: package-manager.xml:148 (para)
+#: package-manager.xml:166(title)
+msgid "Installation Error"
+msgstr "Ошибка установки"
+
+#: package-manager.xml:167(para)
 msgid ""
-"The packages are installed. The updated list of packages are displayed in "
-"the main window."
+"If an error occurs during package installation, an error dialog box is "
+"displayed. An <guilabel>Installation Failed</guilabel> message and the "
+"reason for the failure is displayed. Click <guibutton>Close</guibutton> to "
+"close the error dialog box and return to the main window of the Package "
+"Manager."
 msgstr ""
-"Пакеты установлены. В главном окне отображается обновленный "
-"список пакетов."
+"Если в течение установки пакета возникает ошибка, выводится диалоговое окно ошибки "
+"Выводится сообщение <guilabel>Сбой установки</guilabel> и "
+"причина отказа. Закройте диалоговое окно ошибки кнопкой<guibutton>Закрыть</guibutton> "
+"и перейдите обратно к главному окну диспетчера "
+"пакетов."
 
-#: package-manager.xml:150 (title)
+#: package-manager.xml:170(title)
 msgid "Remove a Package"
 msgstr "Удаление пакета"
 
-#: package-manager.xml:151 (para)
+#: package-manager.xml:171(para)
 msgid "Perform the following steps to remove a package:"
 msgstr "Для удаления пакета выполните следующие действия:"
 
-#: package-manager.xml:152 (para)
-msgid "Check the box next to the package or packages that you want to remove."
-msgstr "Установите флажок рядом с пакетами, которые необходимо удалить."
+#: package-manager.xml:172(para)
+msgid ""
+"To remove a single package, click on a package to select it. To remove many "
+"packages, check the box next to the packages you want to remove."
+msgstr ""
+"Для удаления отдельного пакета его необходимо выбрать щелчком. Для удаления"
+"нескольких пакетов можно установить флажки рядом с требуемыми пакетами."
 
-#: package-manager.xml:154 (para)
+#: package-manager.xml:174(para)
 msgid ""
 "Click the <guibutton>Remove</guibutton> button in the toolbar to start the "
-"process."
+"package uninstallation process."
 msgstr ""
-"Для начала процесса нажмите кнопку <guibutton>Удалить</guibutton> "
+"Для запуска процесса удаления нажмите кнопку <guibutton>Удалить</guibutton> "
 "на панели инструментов."
 
-#: package-manager.xml:155 (para)
+#: package-manager.xml:175(para)
 msgid ""
 "You can also choose <menuchoice><guimenu>Package</"
 "guimenu><guimenuitem>Remove</guimenuitem></menuchoice> to remove a package."
@@ -738,23 +874,25 @@ msgstr ""
 "Для удаления пакета можно также выбрать в меню <menuchoice><guimenu>Пакет</"
 "guimenu><guimenuitem>Удалить</guimenuitem></menuchoice>."
 
-#: package-manager.xml:157 (para)
+#: package-manager.xml:177(para)
 msgid ""
 "Review the packages to be removed and the package dependencies details in "
-"the <guilabel>Remove Confirmation</guilabel> dialog."
+"the <literal>Remove Confirmation</literal> dialog box."
 msgstr ""
-"Просмотрите пакеты, которые необходимо удалить, и подробные сведения о зависимостях пакетов "
-"в диалоговом окне <guilabel>Подтверждение удаления</guilabel>."
+"Просмотрите пакеты, которые необходимо удалить, а также подробные сведения о зависимостях пакетов "
+"в диалоговом окне <literal>Подтверждение удаления</literal>."
 
-#: package-manager.xml:159 (para)
+#: package-manager.xml:179(para)
+msgid "Uninstall the package or cancel the uninstallation process."
+msgstr "Выполните удаление пакета или отмените процесс удаления."
+
+#: package-manager.xml:180(para)
 msgid ""
-"Click <guibutton>Proceed</guibutton> to confirm. After you click the "
-"<guibutton>OK</guibutton> button, you cannot undo the package removal."
+"Click <guibutton>Proceed</guibutton> to start uninstalling the packages."
 msgstr ""
-"Для подтверждения нажмите кнопку <guibutton>Продолжить</guibutton>. После нажатия кнопки "
-"<guibutton>OK</guibutton>  удаление пакета отменить невозможно."
+"Нажмите на кнопку <guibutton>Продолжить</guibutton> для запуска удаления пакетов."
 
-#: package-manager.xml:160 (para)
+#: package-manager.xml:182(para)
 msgid ""
 "Click <guibutton>Cancel</guibutton> to cancel the process. No changes are "
 "made and you are returned to the main window."
@@ -762,58 +900,145 @@ msgstr ""
 "Нажмите кнопку <guibutton>Отмена</guibutton> для отмены процесса. Никаких изменений не внесено, "
 "отображается главное окно."
 
-#: package-manager.xml:164 (title)
+#: package-manager.xml:183(para)
+msgid ""
+"After you click the <guibutton>Proceed</guibutton> button, you cannot undo "
+"the package removal action. However, you can reinstall the package at any "
+"time."
+msgstr ""
+"После нажатия кнопки <guibutton>Продолжить</guibutton> "
+"удаление пакета отменить невозможно. Повторную установку, однако, можно выполнить в любое"
+"время."
+
+#: package-manager.xml:190(title)
 msgid "Search for a Package"
 msgstr "Поиск пакетов"
 
-#: package-manager.xml:165 (para)
-msgid ""
-"Type the name of the package that you want to search for in the "
-"<guilabel>Search</guilabel> box. Enter the complete name, description, or a "
-"partial name to search for the package. For example, you might enter one of "
-"the following search terms to search for <filename>SUNWgnome-games</"
-"filename> :"
-msgstr ""
-"Введите название пакета, который необходимо найти в окне"
-"<guilabel>Поиск</guilabel>. Для поиска пакета введите полное название, описание или "
-"часть названия. Например, можно ввести следующие"
-"поисковые термины для поиска <filename>SUNWgnome-games</"
-"filename>:"
+#: package-manager.xml:191(para)
+msgid "You can search for a package in the following ways :"
+msgstr "Поиск пакета можно выполнять одним из следующих способов:"
 
-#: package-manager.xml:166 (para)
+#: package-manager.xml:192(para)
+msgid ""
+"<emphasis role=\"strong\">Search the current repository</emphasis> – Search "
+"for a package in the repository currently selected in the "
+"<literal>Repository</literal> drop-down menu. The category selection or the "
+"<literal>Show</literal> filter does not affect the search and the search is "
+"performed on all packages in the currently selected repository."
+msgstr ""
+"<emphasis role=\"strong\">Поиск в текущем хранилище</emphasis> – Поиск"
+"пакета в хранилище, которое в текущий момент выбрано в выпадающем меню "
+"<literal>Хранилище</literal>. Выбор категории или "
+"фильтр <literal>Показать</literal> не оказывает влияния на поиск; поиск выполняется "
+"по всем пакетам в хранилище, которое выбрано в текущий момент."
+
+#: package-manager.xml:193(para)
+msgid ""
+"Enter a description, or a partial name in the <literal>Search</literal> box "
+"located on the toolbar. For example, you might type one of the following "
+"search terms to search for <filename>SUNWgnome-games</filename> :"
+msgstr ""
+"Введите описание или частичное имя в поле <literal>поиск</literal>"
+"на панели инструментов. Например, для поиска пакета <filename>SUNWgnome-games</filename> можно ввести "
+"один из следующих критериев поиска:"
+
+#: package-manager.xml:194(para)
 msgid "SUNWgames"
 msgstr "SUNWgames"
 
-#: package-manager.xml:168 (para)
+#: package-manager.xml:196(para)
 msgid "games"
 msgstr "games"
 
-#: package-manager.xml:170 (para)
+#: package-manager.xml:198(para)
 msgid "GNOME-games"
 msgstr "GNOME-games"
 
-#: package-manager.xml:173 (para)
+#: package-manager.xml:201(para)
+msgid ""
+"To search for SunStudio compilers, you might type one of the following terms:"
+msgstr ""
+"Для поиска компиляторов SunStudio можно ввести один из следующих критериев поиска:"
+
+#: package-manager.xml:202(para)
+msgid "compiler"
+msgstr "compiler"
+
+#: package-manager.xml:204(para)
+msgid "tools"
+msgstr "tools"
+
+#: package-manager.xml:208(para)
+msgid ""
+"<emphasis role=\"strong\">Search all repositories</emphasis> – Select the "
+"multi-repository icon in the <literal>Search</literal> box to search for the "
+"package across all configured or registered repositories."
+msgstr ""
+"<emphasis role=\"strong\">Поиск во всех хранилищах</emphasis> – выберите"
+"значок поиска в нескольких хранилищах в поле <literal>Поиск</literal> для поиска пакета "
+"в всех настроенных или зарегистрированных хранилищах."
+
+#: package-manager.xml:209(para)
+msgid ""
+"The multi-repository search currently supports search based on the package "
+"description only."
+msgstr ""
+"Поиск в нескольких хранилищах в настоящее время поддерживается только для поиска по "
+"описанию пакета."
+
+#: package-manager.xml:211(para)
+msgid ""
+"Type a description of the package in the box. For example, the "
+"<filename>SUNWdiveintopython</filename> package is a book on Python "
+"programming. The description of the package contains <emphasis>book</"
+"emphasis>. To search for this package, you might then type one of the "
+"following terms:"
+msgstr ""
+"Введите описание пакета в соответствующее поле. Например, пакет "
+"<filename>SUNWdiveintopython</filename> представляет собой "
+"книгу о программировании на языке Python. Описание пакета содержит слово<emphasis>book</"
+"emphasis>. Для поиска этого пакета необходимо ввести один из "
+"следующих терминов:"
+
+#: package-manager.xml:212(para)
+msgid "python"
+msgstr "python"
+
+#: package-manager.xml:214(para)
+msgid "book"
+msgstr "book"
+
+#: package-manager.xml:217(para)
+msgid ""
+"If you searched for the term <emphasis>dive</emphasis> in the multi-"
+"repository search, the <filename>SUNWdiveintopython</filename> package will "
+"not be displayed as the term is not present in the package description."
+msgstr ""
+"Если поиск выполнялся по критерию <emphasis>dive</emphasis> и был включен поиск в нескольких хранилищах,"
+"пакет <filename>SUNWdiveintopython</filename> не "
+"выводится, поскольку в описании этого пакета отсутствует соответствующее ключевое слово."
+
+#: package-manager.xml:221(para)
 msgid ""
 "Use the submenus under the <menuchoice><guimenu>Edit</guimenu></menuchoice> "
-"menu to cut, copy, paste, or clear text in the <guilabel>Search</guilabel> "
-"tab."
+"menu to cut, copy, paste, or clear text in the <literal>Search</literal> box."
 msgstr ""
-"Используйте в меню <menuchoice><guimenu>Правка</guimenu></menuchoice> "
-" различные подменю, чтобы вырезать, копировать, вставить или очистить текст во вкладке <guilabel>Поиск</guilabel>."
+"Подменю меню <menuchoice><guimenu>Правка</guimenu></menuchoice> "
+"используются для вырезания, копирования, вставки или сброса текст в поле <literal>Поиск</literal>."
 
-#: package-manager.xml:175 (para)
+#: package-manager.xml:223(para)
 msgid ""
-"Use the icon on the right hand side of the <guilabel>Search</guilabel> tab "
-"to clear the search results."
+"Use the icon on the right side of the <literal>Search</literal> box to clear "
+"the search results."
 msgstr ""
-"Используйте значок  с правой стороны вкладки <guilabel>Поиск</guilabel>"
-"для очистки результатов поиска."
+"Значок справа от поля <guilabel>Поиск</guilabel>"
+"позволяет сбросить результаты поиска."
 
-#: package-manager.xml:180 (title)
+#: package-manager.xml:228(title)
 msgid "Update a Package"
 msgstr "Обновление пакета"
 
-#: package-manager.xml:181 (para)
+#: package-manager.xml:229(para)
 msgid ""
 "Look for the green icon next to the installed package name. This icon "
 "indicates that updates are available for the package in the currently "
@@ -825,215 +1050,215 @@ msgstr ""
 "хранилище имеются доступные обновления. Выберите пакет и нажмите кнопку <guibutton>Установить/"
 "Обновить</guibutton> для установки новейшей версии пакета."
 
-#: package-manager.xml:183 (title)
-msgid "Switch Between Configured Repositories"
-msgstr "Переключение между настроенными хранилищами"
-
-#: package-manager.xml:184 (para)
-msgid ""
-"Use the <guilabel>Repositories</guilabel> drop-down menu on the toolbar to "
-"view a list of configured repositories. Click a repository name to switch to "
-"a different repository."
-msgstr ""
-"Используйте раскрывающееся меню <guilabel>Хранилища</guilabel> на панели инструментов "
-"для просмотра списка настроенных хранилищ. Щелкните мышью название хранилища для переключения"
-"на другое хранилище."
-
-#: package-manager.xml:186 (title)
+#: package-manager.xml:232(title)
 msgid "Introduction to Boot Environments"
 msgstr "Введение в загрузочные среды"
 
-#: package-manager.xml:187 (para)
-msgid "The OpenSolaris 2008.11 release is a boot environment."
-msgstr "Версия OpenSolaris 2008.11 является загрузочной средой."
-
-#: package-manager.xml:188 (para)
+#: package-manager.xml:233(para)
 msgid ""
-"A boot environment is an image that is bootable. The boot environment "
-"consists of a root file system and, optionally, other file systems, such as "
-"<filename>/usr</filename>, <filename>/var</filename>, or <filename>/export</"
-"filename>. These other file systems are mounted below the root file system. "
-"The root file system and all other file systems of the boot environment that "
-"contain system software are required to be zfs datasets."
+"A boot environment is an image that is bootable. Upon an initial OpenSolaris "
+"installation, a boot environment is created."
 msgstr ""
-"Загрузочная среда является загружаемым образом. Загрузочная среда состоит из "
-"корневой файловой системы и прочих дополнительных файловых систем, например, "
-"<filename>/usr</filename>, <filename>/var</filename> или <filename>/export</"
-"filename>. Эти прочие файловые системы "
-"устанавливаются в корневой файловой системе. "
-"Корневая файловая система и все прочие файловые системы загрузочной среды, "
-"содержащие системное программное обеспечение, должны являться наборами данных zfs."
+"Среда загрузки представляет собой загружаемый образ. Среда загрузки создается после первоначальной"
+"установки ОС Solaris."
 
-#: package-manager.xml:189 (para)
+#: package-manager.xml:234(para)
 msgid ""
-"You can maintain multiple boot environments on your system. The primary "
-"reason to have more than one boot environment on your system is to create "
-"backups of your existing boot environments before you modify them. Then, you "
-"have the option of booting a backup boot environment when needed. Use the "
-"<command>beadm(1)</command> utility to create, and manage your boot "
+"You can maintain multiple boot environments on your OpenSolaris 2009.06 "
+"system. Use the <command>beadm(1)</command> command from the command—line "
+"interface (CLI) to create, rename, mount or unmount, or destroy these boot "
 "environments."
 msgstr ""
-"В системе можно поддерживать несколько загрузочных сред. Первой причиной для поддержки нескольких "
-"загрузочных сред в системе является создание "
-"резервной копии существующих загрузочных сред до их изменения. После этого появится возможность "
-"загрузки резервной загрузочной среды при необходимости. Используйте служебную программу "
-"<command>beadm(1)</command> для создания загрузочных сред и "
-"управления ими."
+"В системе OpenSolaris 2009.06 можно организовать несколько сред загрузки."
+"Для создания, переименования, монтирования и размонтирования, а также уничтожения"
+"этих сред загрузки используется команда <command>beadm(1)</command>, которая вводится"
+"в командной строке."
 
-#: package-manager.xml:190 (para)
+#: package-manager.xml:235(para)
 msgid ""
-"For detailed instructions about the <command>beadm</command> utility, see "
-"the <literal>beadm</literal>(1M) man page."
+"The Package Manager enables you to manage the boot environments created "
+"during the process of updating your image. For more information, see <xref "
+"linkend=\"manage_be\"/> section."
 msgstr ""
-"Подробные инструкции о служебной программе <command>beadm</command> см. "
-"справочную страницу <literal>beadm</literal>(1M)."
+"Диспетчер пакетов позволяет управлять средами загрузки, созданными "
+"в ходе обновления образа. Для получения дополнительной информации см. раздел <xref "
+"linkend=\"manage_be\"/>."
 
-#: package-manager.xml:191 (para)
+#: package-manager.xml:236(para)
 msgid ""
-"See the <ulink url=\"http://dlc.sun.com/osol/docs/content/2008.11/"
-"snapupgrade/snap3.html\"><citetitle>Upgrading and Managing Boot "
-"Environments</citetitle></ulink> document for more information on boot "
-"environments."
+"System administrators can maintain multiple boot environments on their "
+"systems, and each boot environment can have different software versions "
+"installed."
 msgstr ""
-"См. документ<ulink url=\"http://dlc.sun.com/osol/docs/content/2008.11/"
-"snapupgrade/snap3.html\"><citetitle>Обновление загрузочных сред "
-"и управление ими</citetitle></ulink> для получения дополнительной информации "
-"о загрузочных средах."
+"На одном компьютере можно организовать несколько сред загрузки,"
+"и в каждой среде загрузки могут быть установлены разные версии программного "
+"обеспечения."
 
-#: package-manager.xml:192 (para)
+#: package-manager.xml:237(para)
 msgid ""
-"The <application>Package Manager</application> creates a clone of the active "
-"boot environment when an image is updated."
+"When you use either the Package Manager or the <command>pkg image-update</"
+"command> command to update all the packages in your active OpenSolaris boot "
+"environment, a clone of that boot environment is automatically created. The "
+"packages are updated in the clone rather than in the original boot "
+"environment. After successfully completing the updates, the new clone is "
+"activated. Then, the clone will become the new default boot environment on "
+"system reboot. The original boot environment is also available as an "
+"alternate selection."
 msgstr ""
-"<application>Диспетчер пакетов</application> создает клон активной загрузочной среды "
-"после обновления образа."
+"При обновлении всех пакетов в активной среде загрузки OpenSolaris с помощью либо "
+"диспетчера пакетов, либо команды <command>pkg image-update</command>, "
+"автоматически создается клон этой среды загрузки. "
+"При этом пакеты обновляются не в исходной среде загрузки, а в клоне. "
+"После успешного выполнения обновления созданный клон активируется. "
+"После перезагрузки системы клон становится новой средой загрузки по умолчанию. "
+"Исходная среда загрузки остается доступной в качестве "
+"альтернативы."
 
-#: package-manager.xml:194 (title)
-msgid "Update the Current Image (Update All Packages)"
-msgstr "Обновление текущего образа (Обновление всех пакетов)"
+#: package-manager.xml:238(para)
+msgid ""
+"See the beadm(1) man pages and the <ulink url=\"http://dlc.sun.com/osol/docs/"
+"content/dev/snapupgrade/snap3.html\"><citetitle>Upgrading and Managing Boot "
+"Environments</citetitle></ulink> document to learn more about boot "
+"environments and the <command>beadm(1)</command> command."
+msgstr ""
+"Для получения дополнительных сведений о средах загрузки и команде <command>beadm(1)</command> "
+"см. справочные страницы beadm(1) и документ <ulink url=\"http://dlc.sun.com/osol/docs/content/dev/snapupgrade/snap3.html\"> "
+"<citetitle>Обновление сред загрузки "
+"и управление ими</citetitle></ulink>."
 
-#: package-manager.xml:195 (para)
+#: package-manager.xml:239(title)
+msgid "Update All Packages (Update Your Image)"
+msgstr "Обновление всех пакетов (обновление образа)"
+
+#: package-manager.xml:240(para)
 msgid "Perform the following steps to update all the packages in your image."
 msgstr "Для обновления всех пакетов в своей системе выполните следующие действия."
 
-#: package-manager.xml:196 (para)
+#: package-manager.xml:241(para)
 msgid ""
-"Click the <guilabel>Update All</guilabel> button to start the process of "
-"updating <emphasis role=\"strong\">all</emphasis> the packages in your image."
+"Click the <guibutton>Update All</guibutton> icon located on the toolbar to "
+"start the process of updating <emphasis role=\"strong\">all</emphasis> the "
+"packages installed in your image."
 msgstr ""
-"Нажмите кнопку <guilabel>Обновить все</guilabel> для начала обновления"
-"<emphasis role=\"strong\">всех</emphasis> пакетов в образе."
+"Щелкните значок <guibutton>Обновить все</guibutton> на панели инструментов "
+"для запуска процесса обновления <emphasis role=\"strong\">всех</emphasis> "
+"пакетов, установленных в образе."
 
-#: package-manager.xml:197 (para)
+#: package-manager.xml:242(para)
 msgid ""
-"You can also choose <menuchoice><guimenu>File</guimenu><guimenuitem>Update "
-"All</guimenuitem></menuchoice> to start the process."
+"You can also choose <menuchoice><guimenu>Package</guimenu><guisubmenu>Update "
+"All</guisubmenu></menuchoice> to start the process."
 msgstr ""
-"Для начала обновления можно также выбрать в меню пункты <menuchoice><guimenu>Файл</guimenu><guimenuitem>Обновить "
+"Для начала обновления можно также выбрать в меню пункты <menuchoice><guimenu>Пакет</guimenu><guimenuitem>Обновить "
 "все</guimenuitem></menuchoice>."
 
-#: package-manager.xml:198 (para)
+#: package-manager.xml:243(para)
 msgid ""
-"The <guilabel>Update All</guilabel> button is enabled when updates are "
+"The <guilabel>Update All</guilabel> icon is enabled when updates are "
 "available to the installed packages."
 msgstr ""
-"Кнопка <guilabel>Обновить все</guilabel> доступна, если для установленных "
-"пакетов доступны обновления."
+"Значок <guilabel>Обновить все</guilabel> доступен, если для установленных "
+"пакетов имеются обновления."
 
-#: package-manager.xml:201 (para)
+#: package-manager.xml:246(para)
 msgid ""
-"The <guilabel>Update All</guilabel> window is displayed. Click "
-"<guibutton>Proceed</guibutton> to create a new boot environment and proceed "
-"with the Update All process."
+"A <literal>Create New Boot Environment</literal> window is displayed. A name "
+"for the new boot environment is automatically generated."
 msgstr ""
-"Отобразится окно <guilabel>Обновить все</guilabel>. Нажмите "
-"<guibutton>Продолжить</guibutton> для создания новой загрузочной среды и продолжения выполнения команды "
-"\"Обновить все\"."
+"Выводится окно <literal>Создать новую среду загрузки</literal>. Автоматически "
+"генерируется имя для новой среды загрузки."
 
-#: package-manager.xml:202 (para)
+#: package-manager.xml:248(para)
+msgid ""
+"(optional) You can change the name of the new boot environment if you want."
+msgstr ""
+"(Необязательно) При необходимости имя новой среды загрузки можно изменить."
+
+#: package-manager.xml:250(para)
+msgid "Confirm or Cancel the new boot environment."
+msgstr "Подтвердите или отмените новую среду загрузки."
+
+#: package-manager.xml:251(para)
+msgid ""
+"Click <guibutton>Proceed</guibutton> to create a new boot environment and "
+"proceed with the Update All process."
+msgstr ""
+"Нажмите кнопку <guibutton>Продолжить</guibutton> для создания новой среды загрузки и "
+"продолжения процесса обновления всех пакетов."
+
+#: package-manager.xml:253(para) package-manager.xml:481(para)
+msgid "Click <guibutton>Cancel</guibutton> to cancel the process."
+msgstr "Нажмите кнопку <guibutton>Отмена</guibutton> для отмены процесса."
+
+#: package-manager.xml:256(para)
 msgid ""
 "During the Update All process, a clone of the active boot environment is "
 "created. This clone enables the user to boot into the boot environment state "
 "that existed before the Update All process was started. If the Package "
 "Manager is unable to create a new boot environment, an error message will be "
-"displayed. See the <xref linkend=\"ghmyd\"/> section on how to rectify the "
+"displayed. See the <xref linkend=\"gilfh\"/> section on how to rectify the "
 "error and continue with updating your image."
 msgstr ""
 "Во время выполнения команды \"Обновить все\" создается клон активной "
 "загрузочной среды. Данный клон дает пользователю возможность загрузиться в состояние загрузочной среды, "
-"которая существовала до начала выполнения команды \"Обновить все\". Если Диспетчер пакетов "
+"которая существовала до начала выполнения команды \"Обновить все\". Если диспетчер пакетов "
 "не может создать  новую загрузочную среду, отобразится сообщение "
-"об ошибке. См. раздел <xref linkend=\"ghmyd\"/> об исправлении ошибок "
+"об ошибке. См. раздел <xref linkend=\"gilfh\"/> об исправлении ошибок "
 "и продолжении обновления образа."
 
-#: package-manager.xml:203 (para) package-manager.xml:318
-msgid "A name for the new boot environment is automatically generated."
-msgstr "Название для новой загрузочной среды создается автоматически."
-
-#: package-manager.xml:205 (para) package-manager.xml:209
-#: package-manager.xml:316
-msgid "Click <guibutton>Cancel</guibutton> to cancel the process."
-msgstr "Нажмите кнопку <guibutton>Отмена</guibutton> для отмены процесса."
-
-#: package-manager.xml:207 (para)
+#: package-manager.xml:258(para)
 msgid ""
-"If you chose to proceed, the Package Manager checks for dependencies and the "
-"<guilabel>Install/Update Confirmation</guilabel> dialog is displayed."
+"If you chose to proceed with the Update All process, the packages are "
+"downloaded and installed."
 msgstr ""
-"Если необходимо продолжить, Диспетчер пакетов проверяет зависимости, отображается диалоговое окно "
-"<guilabel>Подтверждение установки/обновления</guilabel>."
+"В случае выбора продолжения процесса обновления всех пакетов выполняется"
+"загрузка и установка всех пакетов."
 
-#: package-manager.xml:208 (para)
+#: package-manager.xml:259(para)
 msgid ""
-"Review the packages to be installed and click <guibutton>Next</guibutton> to "
-"proceed."
+"After a successful completion, the <literal>Update All Complete</literal> "
+"dialog box is shown. A link to the Release Notes is provided in the dialog "
+"box. Read the <xref linkend=\"release_notes\"/> before rebooting your system."
 msgstr ""
-"Просмотрите пакеты, которые необходимо установить, и нажмите <guibutton>Далее</guibutton> "
-"для продолжения процесса."
+"После успешного завершения выводится диалоговое окно <literal>Команда \"Обновить все\" выполнена</literal>. "
+"В диалоговом окне выводится ссылка на заметки о выпуске. "
+"Рекомендуется прочесть <xref linkend=\"release_notes\"/> перед перезагрузкой системы."
 
-#: package-manager.xml:211 (para)
-msgid "The packages are downloaded and installed."
-msgstr "Пакеты загружены и установлены."
+#: package-manager.xml:261(para)
+msgid "Click <guibutton>Close</guibutton>."
+msgstr "Нажмите кнопку <guibutton>Закрыть</guibutton>."
 
-#: package-manager.xml:213 (para) package-manager.xml:337
-msgid ""
-"Read the <ulink url=\"http://opensolaris.org/os/project/indiana/resources/"
-"relnotes/200811/x86/\">Release Notes</ulink> before rebooting your system."
-msgstr ""
-"До перезагрузки системы прочитайте <ulink url=\"http://opensolaris.org/os/project/indiana/resources/"
-"relnotes/200811/x86/\">Заметки о выпуске</ulink>."
-
-#: package-manager.xml:214 (para) package-manager.xml:338
+#: package-manager.xml:262(emphasis) package-manager.xml:500(para)
 msgid "You must reboot your system for the changes to take effect."
 msgstr "Для вступления изменений в силу необходимо перезагрузить систему."
 
-#: package-manager.xml:218 (title)
+#: package-manager.xml:267(title) package-manager.xml:505(title)
 msgid "Update All Errors"
 msgstr "Ошибки при выполнении команды \"Обновить все\""
 
-#: package-manager.xml:219 (para) package-manager.xml:343
+#: package-manager.xml:268(para)
 msgid ""
-"A new boot environment clone <emphasis role=\"strong\">must</emphasis> be "
-"created for the Update All process to be completed. An error message is "
-"displayed if a boot environment clone cannot be created. You might see an "
-"error message such as :"
+"A new boot environment clone must be created by the Package Manager for the "
+"Update All process to be completed. An error message is displayed if a boot "
+"environment clone cannot be created. You might see an error message such as "
+"the following :"
 msgstr ""
-"Для завершения процесса \"Обновить все\" <emphasis role=\"strong\">необходимо </emphasis> создать"
-"новую копию загрузочной среды. Если копию загрузочной среды "
-"создать невозможно, отображается сообщение об ошибке. Пример "
+"Для завершения процесса \"Обновить все\" необходимо создать"
+"новый клон загрузочной среды с помощью диспетчера пакетов. Если клон загрузочной среды "
+"создать невозможно, выводится сообщение об ошибке. Пример "
 "сообщения об ошибке :"
 
-#: package-manager.xml:220 (para)
+#: package-manager.xml:269(para) package-manager.xml:507(para)
 msgid ""
-"<literal>Not enough disk space: the selected action cannot be performed. You "
-"may choose to return to BE Management to manage your boot environments and "
-"free up disk space</literal>."
+"<literal>Not enough disk space, the selected action cannot be performed. "
+"Click OK to manage your existing BEs and free up disk space or Cancel to "
+"cancel the action</literal>."
 msgstr ""
-"<literal>Недостаточно места на диске: невозможно выполнить выбранное действие. "
-"Можно вернуться к окну \"Управление загрузочной средой\" для управления загрузочной средой "
-"и освобождения места на диске</literal>."
+"<literal>Недостаточно места на диске, выполнение выбранного действия невозможно."
+"Нажмите кнопку \"OK\" для управления имеющимися средами загрузки в целях освобождения дискового пространства либо нажмите кнопку \"Отмена\" для отмены"
+"обновления действия</literal>."
 
-#: package-manager.xml:221 (para)
+#: package-manager.xml:270(para)
 msgid ""
 "Click <guibutton>Cancel</guibutton> to cancel the Update All process and "
 "return to the main window."
@@ -1041,7 +1266,7 @@ msgstr ""
 "Нажмите кнопку<guibutton>Отмена</guibutton> для отмены процесса \"Обновить все\" и"
 "возврата в главное окно."
 
-#: package-manager.xml:222 (para) package-manager.xml:346
+#: package-manager.xml:271(para) package-manager.xml:509(para)
 msgid ""
 "Perform the following steps if you want to rectify the error and continue "
 "with the Update All process:"
@@ -1049,83 +1274,23 @@ msgstr ""
 "Для исправления ошибки и продолжения процесса \"Обновить все\""
 "выполните следующие действия:"
 
-#: package-manager.xml:223 (para)
+#: package-manager.xml:272(para)
 msgid ""
-"Click <guibutton>BE Management</guibutton> to go to the <guilabel>Boot "
-"Environment Management</guilabel> dialog."
+"Click <guibutton>OK</guibutton> to display the <literal>Boot Environment "
+"Management</literal> dialog box."
 msgstr ""
-"Нажмите кнопку <guibutton>Управление загрузочной средой</guibutton> для перехода в диалоговое окно <guilabel>"
-"Управление загрузочной средой</guilabel>."
+"Нажмите кнопку <guibutton>OK</guibutton> для открытия диалогового окна <literal>Управление "
+"средами загрузки</literal>."
 
-#: package-manager.xml:224 (para) package-manager.xml:348
-msgid ""
-"Click <guibutton>Close</guibutton> to cancel the process and return to the "
-"main window."
-msgstr ""
-"Нажмите кнопку <guibutton>Закрыть</guibutton> для отмены процесса и "
-"возврата в главное окно."
-
-#: package-manager.xml:226 (para) package-manager.xml:350
-msgid ""
-"If you chose to rectify the error, go to step 2 in the <xref linkend=\"ghmya"
-"\"/> section. Follow instructions to delete old or unused boot environments "
-"and free up disk space."
-msgstr ""
-"Для исправления ошибки перейдите к этапу 2, описанному в разделе <xref linkend=\"ghmya"
-"\"/>. Выполните инструкции для удаления старых или неиспользуемых загрузочных сред "
-"и освобождения места на диске."
-
-#: package-manager.xml:228 (para)
-msgid ""
-"Click the <guibutton>Update All</guibutton> icon to restart the process of "
-"updating all packages."
-msgstr ""
-"Нажмите значок <guibutton>Обновить все</guibutton> для перезапуска процесса обновления "
-"всех пакетов."
-
-#: package-manager.xml:233 (title)
-msgid "Manage Boot Environments"
-msgstr "Управление загрузочными средами"
-
-#: package-manager.xml:234 (para)
-msgid "Perform the following steps to manage your boot environments :"
-msgstr "Для управления загрузочными средами выполните следующие действия:"
-
-#: package-manager.xml:235 (para)
-msgid ""
-"Click <menuchoice><guimenu>File</guimenu><guimenuitem>Boot Environment "
-"Management</guimenuitem></menuchoice> to open the <guilabel>Boot Environment "
-"Management</guilabel> dialog."
-msgstr ""
-"Выберите в меню пункты <menuchoice><guimenu>Файл</guimenu><guimenuitem>Управление "
-"загрузочной средой</guimenuitem></menuchoice>, чтобы открыть диалоговое окно <guilabel>Управление "
-"загрузочной средой</guilabel>."
-
-#: package-manager.xml:237 (para)
-msgid "In this dialog, you can perform the following actions:"
-msgstr "В данном диалоговом окне можно выполнить следующие действия:"
-
-#: package-manager.xml:238 (emphasis)
-msgid "Change the default boot environment."
-msgstr "Изменить загрузочную среду по умолчанию."
-
-#: package-manager.xml:239 (para)
-msgid ""
-"Select the boot environment that you want to be active on system reboot. "
-"This is the default boot environment."
-msgstr ""
-"Выберите загрузочную среду, которая должна быть активной при перезагрузке системы. "
-"Эта загрузочная среда будет назначена средой по умолчанию."
-
-#: package-manager.xml:242 (emphasis)
-msgid "Remove old or unused boot environments to free up disk space."
-msgstr "Удалить старую или неиспользуемую загрузочную среду для освобождения места на диске."
-
-#: package-manager.xml:243 (para)
+#: package-manager.xml:274(para)
 msgid "Select the boot environments that you want to delete."
 msgstr "Выберите загрузочные среды, которые необходимо удалить."
 
-#: package-manager.xml:244 (para)
+#: package-manager.xml:275(para)
+msgid "You cannot delete the currently active boot environment."
+msgstr "Активную в настоящий момент среду загрузки удалить невозможно."
+
+#: package-manager.xml:277(para)
 msgid ""
 "You do not need to reboot your system if you are only deleting some of your "
 "boot environments."
@@ -1133,19 +1298,107 @@ msgstr ""
 "Если необходимо удалить только некоторые загрузочные среды, "
 "перезагружать систему нет необходимости."
 
-#: package-manager.xml:250 (para)
+#: package-manager.xml:282(para)
+msgid "Click <guibutton>OK</guibutton>."
+msgstr "Нажмите кнопку <guibutton>OK</guibutton>."
+
+#: package-manager.xml:284(para)
+msgid ""
+"The <literal>Boot Environment Confirmation</literal> dialog is shown. Review "
+"your changes and click OK to proceed."
+msgstr ""
+"Откроется диалоговое окно <literal>Подтверждение среды загрузки</literal>. Проверьте правильность "
+"изменений и нажмите кнопку \"OK\" для продолжения."
+
+#: package-manager.xml:286(para)
+msgid ""
+"Click the <guibutton>Update All</guibutton> icon to restart the process of "
+"updating all packages."
+msgstr ""
+"Щелкните значок <guibutton>Обновить все</guibutton> для перезапуска процесса обновления "
+"всех пакетов."
+
+#: package-manager.xml:290(title)
+msgid "Manage Boot Environments"
+msgstr "Управление загрузочными средами"
+
+#: package-manager.xml:291(para)
+msgid "Perform the following steps to manage your boot environments:"
+msgstr "Для управления загрузочными средами выполните следующие действия:"
+
+#: package-manager.xml:292(para)
+msgid ""
+"Click <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot "
+"Environments</guimenuitem></menuchoice> to open the <literal>Manage Boot "
+"Environments</literal> dialog."
+msgstr ""
+"Выберите в меню <menuchoice><guimenu>Файл</guimenu><guimenuitem>Управление средами "
+"загрузки</guimenuitem></menuchoice> для открытия диалогового окна <literal>Управление средами "
+"загрузки</literal>."
+
+#: package-manager.xml:294(para)
+msgid "In this dialog box , you can perform the following actions:"
+msgstr "В данном диалоговом окне можно выполнить следующие действия: "
+
+#: package-manager.xml:295(para)
+msgid ""
+"<emphasis role=\"strong\">Activate a boot environment</emphasis> – Select "
+"the boot environment that you want to be active on system reboot. This will "
+"be the default boot environment <emphasis role=\"strong\">after</emphasis> "
+"you have rebooted your system."
+msgstr ""
+"<emphasis role=\"strong\">Активация среды загрузки</emphasis>: выберите "
+"среду загрузки, которую требуется активировать после перезагрузки системы. Эта среда загрузки будет "
+"использоваться по умолчанию <emphasis role=\"strong\">после</emphasis> "
+"перезагрузки системы."
+
+#: package-manager.xml:297(para)
+msgid ""
+"<emphasis role=\"strong\">Remove old or unused boot environments to free up "
+"disk space</emphasis> – Select the boot environments that you want to delete."
+msgstr ""
+"<emphasis role=\"strong\">Удаление устаревших или неиспользуемых сред загрузки для "
+"освобождения дискового пространства</emphasis>: выберите среды загрузки, которые требуется удалить."
+
+#: package-manager.xml:298(para)
+msgid "You cannot the delete the currently active boot environment."
+msgstr "Активную в настоящий момент среду загрузки удалить невозможно."
+
+#: package-manager.xml:300(para)
+msgid ""
+"If you have selected a boot environment to be renamed, it cannot be deleted."
+msgstr ""
+"Если среда загрузки выбрана для переименования, ее нельзя удалить."
+
+#: package-manager.xml:305(para)
+msgid ""
+"<emphasis role=\"strong\">Rename a boot environment</emphasis> – Double-"
+"click the boot environment name that you want to change. Enter the new name "
+"of the boot environment and click <guibutton>OK</guibutton>."
+msgstr ""
+"<emphasis role=\"strong\">Переименование среды загрузки</emphasis>: дважды щелкните"
+"имя среды загрузки, которое требуется изменить. Введите новое имя "
+"среды загрузки и нажмите кнопку <guibutton>OK</guibutton>."
+
+#: package-manager.xml:306(para)
+msgid ""
+"If you have selected a boot environment to be deleted, it cannot be renamed."
+msgstr ""
+"Если среда загрузки выбрана для обновления, ее нельзя переименовать."
+
+#: package-manager.xml:308(para)
+msgid "The currently active boot environment cannot be renamed."
+msgstr "Активная загрузочная среда не может быть переименована."
+
+#: package-manager.xml:315(para)
+msgid "Accept or decline the changes:"
+msgstr "Примите или отклоните изменения:"
+
+#: package-manager.xml:316(para) package-manager.xml:442(para)
 msgid "Click <guibutton>OK</guibutton> to proceed."
 msgstr "Для продолжения нажмите кнопку<guibutton>OK</guibutton>."
 
-#: package-manager.xml:251 (para)
-msgid ""
-"Click <guibutton>Reset</guibutton> to reset the changes and show the initial "
-"state of the boot environments."
-msgstr ""
-"Нажмите <guibutton>Сброс</guibutton>для сброса изменений и отображения "
-"исходного состояния загрузочных сред."
-
-#: package-manager.xml:252 (para)
+#: package-manager.xml:318(para)
 msgid ""
 "Click <guibutton>Cancel</guibutton> to cancel all changes and return to the "
 "main window."
@@ -1153,33 +1406,31 @@ msgstr ""
 "Нажмите кнопку <guibutton>Отмена</guibutton> для отмены всех изменений "
 "и возврата в главное окно."
 
-#: package-manager.xml:254 (para)
+#: package-manager.xml:322(para)
 msgid ""
-"If you chose to proceed, the <guilabel>BE Management Confirmation</guilabel> "
-"dialog is displayed. Review the boot environment changes and click "
-"<guibutton>OK</guibutton> to proceed."
+"The <literal>Boot Environment Confirmation</literal> dialog is displayed. "
+"Review your changes and click OK to proceed."
 msgstr ""
-"При необходимости продолжить отображается диалоговое окно <guilabel>Подтверждение управления загрузочной средой</guilabel> "
-" Просмотрите изменения, внесенные в загрузочную среду, и нажмите кнопку "
-"<guibutton>OK</guibutton> для продолжения."
+"Откроется диалоговое окно <literal>Подтверждение среды загрузки</literal>. Проверьте правильность "
+"изменений и нажмите кнопку \"OK\" для продолжения."
 
-#: package-manager.xml:255 (para)
+#: package-manager.xml:323(para)
 msgid ""
-"After you click <guibutton>OK</guibutton>, you cannot undo any changes you "
-"made to the boot environments."
+"After you click <guibutton>OK</guibutton>, you cannot undo any changes that "
+"you made to the boot environments."
 msgstr ""
 "После нажатия кнопки <guibutton>OK</guibutton> невозможно отменить изменения, "
 "внесенные в загрузочные среды."
 
-#: package-manager.xml:257 (para)
+#: package-manager.xml:325(para)
 msgid ""
 "The changes that you made to the <emphasis role=\"strong\">default boot "
-"environment</emphasis> setting is effective only after system reboot."
+"environment</emphasis> setting are effective only after system reboot."
 msgstr ""
 "Изменения, внесенные в <emphasis role=\"strong\"> настройки загрузочной среды "
 "по умолчанию</emphasis>, вступают в силу только  после перезагрузки системы."
 
-#: package-manager.xml:259 (para)
+#: package-manager.xml:327(para)
 msgid ""
 "Click <guibutton>Cancel</guibutton> to cancel the changes and return to the "
 "<literal>BE Management</literal> dialog box."
@@ -1187,175 +1438,476 @@ msgstr ""
 "Нажмите кнопку <guibutton>Отмена</guibutton> для отмены изменений и возврата в диалоговое окно "
 "<literal>Управление загрузочной средой</literal>."
 
-#: package-manager.xml:261 (para)
-msgid "Reboot your system to boot into the new default boot environment."
-msgstr "Для загрузки в новую загрузочную среду по умолчанию перезагрузите систему."
+#: package-manager.xml:329(para)
+msgid "Reboot your system to boot into the newly activated boot environment."
+msgstr "Для загрузки новой активной загрузочный среды по умолчанию перезагрузите систему."
 
-#: package-manager.xml:265 (title)
-msgid "Edit Repositories"
-msgstr "Изменение хранилищ"
+#: package-manager.xml:330(para)
+msgid "Reboot your system only if you changed the active boot environment."
+msgstr "Перезагружать систему следует только в случае изменения активной среды загрузки."
 
-#: package-manager.xml:266 (para)
-msgid "Perform the following steps to add, remove, or configure repositories:"
-msgstr "Для добавления, удаления или настройки хранилища выполните следующие действия:"
+#: package-manager.xml:336(title)
+msgid "Managing Repositories"
+msgstr "Управление хранилищами"
 
-#: package-manager.xml:267 (para)
+#: package-manager.xml:337(title)
+msgid "Add a Repository"
+msgstr "Добавление хранилища"
+
+#: package-manager.xml:338(para)
+msgid "Perform the following steps to add a repository:"
+msgstr "Для добавления хранилища выполните следующие действия:"
+
+#: package-manager.xml:339(para)
 msgid ""
-"Choose <menuchoice><guimenu>Settings</guimenu><guimenuitem>Edit "
-"Repositories</guimenuitem></menuchoice> to open the <guilabel>Manage "
-"Repositories</guilabel> dialog."
+"Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Repositories</"
+"guimenuitem></menuchoice>."
 msgstr ""
-"Выберите <menuchoice><guimenu>Настройки</guimenu><guimenuitem>Изменение "
-"хранилища</guimenuitem></menuchoice>, чтобы открыть диалоговое окно <guilabel>Управление "
-"хранилищами</guilabel>."
+"Выберите в меню <menuchoice><guimenu>Файл</guimenu><guimenuitem>Управление хранилищами</"
+"guimenuitem></menuchoice>."
 
-#: package-manager.xml:269 (para)
-msgid "In this dialog box, you can perform the following actions :"
-msgstr "В данном диалоговом окне можно выполнить следующие действия: "
-
-#: package-manager.xml:270 (para)
+#: package-manager.xml:340(para)
 msgid ""
-"<emphasis role=\"strong\">Add a Repository</emphasis> – To add a new "
-"repository, type the name and the address (URL) of the repository. Click "
+"You can also choose <guilabel>Add...</guilabel> from the "
+"<literal>Repository</literal> drop-down menu in the main window of the "
+"Package Manager."
+msgstr ""
+"Также можно выбрать пункт <guilabel>Добавить...</guilabel> в "
+"выпадающем меню <literal>Хранилище</literal> в главном окне "
+"диспетчера пакетов."
+
+#: package-manager.xml:342(para)
+msgid ""
+"The <literal>Manage Repositories</literal> dialog box is displayed. Type the "
+"name and the address (URL) of the repository you want to add. Click "
 "<guibutton>Add</guibutton>."
 msgstr ""
-"<emphasis role=\"strong\">Добавить хранилище</emphasis> – для добавления нового "
-"хранилища введите его название и адрес (URL). Нажмите кнопку "
+"Выводится диалоговое окно <literal>Управление хранилищами</literal>. Введите "
+"имя и адрес (URL) хранилища, которое требуется добавить. Нажмите кнопку"
 "<guibutton>Добавить</guibutton>."
 
-#: package-manager.xml:272 (para)
-msgid ""
-"<emphasis role=\"strong\">Remove a Repository</emphasis> – To remove a "
-"repository, click a repository name from the list to select it. Click "
-"<guibutton>Remove</guibutton>."
-msgstr ""
-"<emphasis role=\"strong\">Удалить хранилище</emphasis> – Для удаления "
-"хранилища щелкните мышью название хранилища, чтобы выбрать его из списка. Нажмите кнопку "
-"<guibutton>Удалить</guibutton>."
+#: package-manager.xml:346(title)
+msgid "Add a Secure Repository"
+msgstr "Добавление защищенного хранилища"
 
-#: package-manager.xml:273 (para)
+#: package-manager.xml:347(para)
 msgid ""
-"A repository that has been set as the preferred repository cannot be "
-"removed. To remove a preferred repository, set a nonpreferred repository as "
-"preferred, and then remove the repository."
+"A secure repository requires a SSL key and certificate for access. Perform "
+"the following steps to add a secure repository:"
+msgstr ""
+"Для доступа к защищенному хранилищу требуется ключ и сертификат SSL. Для добавления "
+"защищенного хранилища необходимо выполнить следующие действия:"
+
+#: package-manager.xml:348(para)
+msgid ""
+"Follow the steps in <xref linkend=\"add_repo\"/> section to add a repository."
+msgstr ""
+"Для добавления хранилища необходимо выполнить действия, перечисленные в разделе <xref linkend=\"add_repo\"/>."
+
+#: package-manager.xml:350(para)
+msgid ""
+"Follow the steps in the <xref linkend=\"modify_repo\"/> section to add a SSL "
+"key and certificate."
+msgstr ""
+"Для добавления ключа и сертификата SSL выполните действия, перечисленные "
+"в разделе <xref linkend=\"modify_repo\"/>."
+
+#: package-manager.xml:351(para)
+msgid "."
+msgstr "."
+
+#: package-manager.xml:355(title)
+msgid "Remove a Repository"
+msgstr "Удаление хранилища"
+
+#: package-manager.xml:356(para)
+msgid "Perform the following steps to remove a repository:"
+msgstr "Для удаления хранилища выполните следующие действия:"
+
+#: package-manager.xml:357(para) package-manager.xml:367(para)
+#: package-manager.xml:377(para)
+msgid ""
+"Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Repositories</"
+"guimenuitem></menuchoice> to open the <literal>Manage Repositories</literal> "
+"dialog."
+msgstr ""
+"Выберите <menuchoice><guimenu>Файл</guimenu><guimenuitem>Управление хранилищами"
+"</guimenuitem></menuchoice> для открытия диалогового окна <guilabel>Управление "
+"хранилищами</guilabel>."
+
+#: package-manager.xml:359(para)
+msgid "Select a repository from the list. Click <guibutton>Remove</guibutton>."
+msgstr "Выберите хранилище из списка. Нажмите кнопку <guibutton>Удалить</guibutton>."
+
+#: package-manager.xml:360(para)
+msgid ""
+"A repository that has been set as preferred repository cannot be removed. To "
+"remove a preferred repository, set a nonpreferred repository as preferred, "
+"and then remove the repository."
 msgstr ""
 "Хранилище, установленное в качестве предпочитаемого хранилища, "
-"удалить невозможно. Для удаления предпочитаемого хранилища выберите другое хранилище в качестве предпочитаемого  "
-"и после этого удалите исходное хранилище."
+"удалить невозможно. Для удаления предпочитаемого хранилища "
+"выберите другое хранилище в качестве предпочитаемого и после этого удалите данное хранилище."
 
-#: package-manager.xml:276 (para)
+#: package-manager.xml:365(title)
+msgid "Set a Preferred Repository"
+msgstr "Выбор предпочитаемого хранилища"
+
+#: package-manager.xml:366(para)
+msgid "Perform the following steps to set a preferred repository:"
+msgstr "Для настройки предпочитаемого хранилища выполните следующие действия:"
+
+#: package-manager.xml:369(para)
 msgid ""
-"<emphasis role=\"strong\">Set a Preferred Repository</emphasis> – To set a "
-"repository as a preferred repository, click the radio button next to the "
-"repository that you would like to set as the preferred repository. Click "
-"<guibutton>Close</guibutton> if you are not making any other changes to the "
-"repository information."
+"Click the radio button next to the repository that you would like to set as "
+"the preferred repository."
 msgstr ""
-"<emphasis role=\"strong\">Установка предпочитаемого хранилища</emphasis> – для установки хранилища в "
-"качестве предпочитаемого отметьте переключатель рядом с хранилищем, "
-"которое должно быть установлено в качестве предпочитаемого. Нажмите кнопку "
-"<guibutton>Закрыть</guibutton> если изменения в данных хранилища  "
-"больше не будут вноситься."
+"Выберите переключатель рядом с хранилищем, которое требуется настроить "
+"в качестве предпочитаемого."
 
-#: package-manager.xml:278 (para)
+#: package-manager.xml:371(para)
 msgid ""
-"<emphasis role=\"strong\">Modify a Repository</emphasis> – Perform the "
-"following steps to modify a repository :"
+"Click <guibutton>Close</guibutton> if you are not making any other changes "
+"to the repository information."
 msgstr ""
-"<emphasis role=\"strong\">Изменить хранилище</emphasis> – для "
-"изменения хранилища выполните следующие действия:"
+"Нажмите кнопку <guibutton>Закрыть</guibutton>, если другие изменения информации "
+"о хранилище не требуются."
 
-#: package-manager.xml:279 (para)
+#: package-manager.xml:375(title)
+msgid "Modify a Repository"
+msgstr "Изменение хранилища"
+
+#: package-manager.xml:376(para)
+msgid "Perform the following steps to modify a repository:"
+msgstr "Для изменения хранилища выполните следующие действия:"
+
+#: package-manager.xml:379(para)
 msgid "Select the repository that you want to modify."
 msgstr "Выберите хранилище для изменения."
 
-#: package-manager.xml:281 (para)
+#: package-manager.xml:381(para)
 msgid "Click the <guibutton>Modify</guibutton> button."
 msgstr "Нажмите кнопку <guibutton>Изменить</guibutton>."
 
-#: package-manager.xml:282 (para)
-msgid "The <guilabel>Modify Repository</guilabel> dialog box is displayed."
-msgstr "Отображается диалоговое окно<guilabel>Изменить хранилище</guilabel>."
-
-#: package-manager.xml:284 (para)
-msgid "Type a valid name and URL for the repository."
-msgstr "Введите допустимое название и URL  для хранилища."
-
-#: package-manager.xml:285 (para)
+#: package-manager.xml:382(para)
 msgid ""
-"A repository name is considered valid if it does not exist in the current "
-"list of repositories."
+"The <literal>Modify Repository</literal> dialog box is displayed. You can "
+"perform the following actions in the <literal>Modify Repository</literal> "
+"dialog box:"
 msgstr ""
-"Название хранилища считается допустимым, если оно не существует в текущем "
-"списке хранилищ."
+"Выводится диалоговое окно <literal>Изменение хранилища</literal>. В диалоговом окне "
+"<literal>Изменение хранилища</literal> доступны следующие "
+"действия:"
 
-#: package-manager.xml:287 (para)
+#: package-manager.xml:383(para)
+msgid ""
+"<emphasis role=\"strong\">Change the URL of the repository</emphasis> – Type "
+"a valid URL for the repository."
+msgstr ""
+"<emphasis role=\"strong\">Изменение адреса URL хранилища</emphasis>: введите "
+"действительный адрес URL хранилища."
+
+#: package-manager.xml:384(para)
+msgid ""
+"You cannot change a repository name after you have added a repository. To "
+"change the repository name, delete the existing repository with the old name "
+"and add a repository with the new name. See the <xref linkend=\"remove_repo"
+"\"/> section for steps on how to remove a repository."
+msgstr ""
+"После добавления хранилища его имя изменить невозможно. "
+"Для изменения имени хранилища необходимо удалить существующее хранилище со старым именем и "
+"добавить хранилище с новым именем. С пошаговой процедурой удаления хранилищ можно ознакомиться в "
+"разделе <xref linkend=\"remove_repo\"/>."
+
+#: package-manager.xml:386(para)
+msgid ""
+"<emphasis role=\"strong\">Add a SSL Key and Certificate</emphasis> – A "
+"secure repository requires a SSL key and certificate for access."
+msgstr ""
+"<emphasis role=\"strong\">Добавление ключа и сертификата SSL</emphasis>: для доступа к "
+"защищенному хранилищу требуется ключ и сертификат SSL."
+
+#: package-manager.xml:387(para)
+msgid ""
+"The <emphasis role=\"strong\">Instructions</emphasis> link in the "
+"<literal>Modify Repository</literal> dialog box links to a registration site "
+"which provides instructions for downloading the SSL key and certificate"
+msgstr ""
+"Ссылка <emphasis role=\"strong\">Инструкции</emphasis> в диалоговом окне "
+"<literal>Изменение хранилища</literal> ведет на сайт регистрации, "
+"на котором приведены инструкции по загрузке ключа и сертификата SSL"
+
+#: package-manager.xml:388(para)
+msgid ""
+"In the <literal>Modify Repository</literal> dialog box, click the <emphasis "
+"role=\"strong\">Instructions</emphasis> link to download the key and "
+"certificate. Save them on your system."
+msgstr ""
+"В диалоговом окне <literal>Изменение хранилища</literal> перейдите по ссылке <emphasis "
+"role=\"strong\">Инструкции</emphasis> для загрузки ключа и "
+"сертификата. Сохраните их в системе."
+
+#: package-manager.xml:390(para) package-manager.xml:438(para)
+msgid ""
+"Click the <guibutton>Browse</guibutton> button to locate the SSL key on your "
+"system."
+msgstr ""
+"Нажмите кнопку <guibutton>Обзор</guibutton> для указания местоположения ключа SSL в "
+"системе."
+
+#: package-manager.xml:392(para) package-manager.xml:440(para)
+msgid ""
+"Click the <guibutton>Browse</guibutton> button to locate the SSL certificate "
+"on your system."
+msgstr ""
+"Нажмите кнопку <guibutton>Обзор</guibutton> для указания местоположения сертификата SSL в "
+"системе."
+
+#: package-manager.xml:396(para)
+msgid ""
+"<emphasis role=\"strong\">Add a Mirror</emphasis> – If a repository has a "
+"mirror, add the repository name and URL, and then click the "
+"<guibutton>Modify</guibutton> button to add the mirror information."
+msgstr ""
+"<emphasis role=\"strong\">Добавление зеркала</emphasis>: если для хранилища настроено "
+"зеркало, добавьте имя и адрес URL хранилища, а затем нажмите кнопку "
+"<guibutton>Изменить</guibutton> для добавления информации о зеркале."
+
+#: package-manager.xml:400(para)
+msgid "Confirm or decline the changes."
+msgstr "Подтвердите или отклоните изменения:"
+
+#: package-manager.xml:401(para)
 msgid ""
 "Click <guibutton>OK</guibutton> to save the changes and return to the "
-"<guilabel>Manage Repositories</guilabel> dialog box."
+"<literal>Manage Repositories</literal> dialog box."
 msgstr ""
-"Нажмите кнопку <guibutton>OK</guibutton>для сохранения изменений и возврата в диалоговое окно "
-"<guilabel>Управление хранилищами</guilabel>."
+"Нажмите кнопку <guibutton>OK</guibutton> для сохранения изменений и возврата в диалоговое окно "
+"<literal>Управление хранилищами</literal>."
 
-#: package-manager.xml:288 (para)
+#: package-manager.xml:403(para)
+msgid "Click <guibutton>Cancel</guibutton> to cancel your changes."
+msgstr "Нажмите кнопку <guibutton>Отмена</guibutton> для отмены изменений."
+
+#: package-manager.xml:410(title)
+msgid "Working With WebInstall"
+msgstr "Работа с веб-установкой"
+
+#: package-manager.xml:411(para)
 msgid ""
-"Click <guibutton>Cancel</guibutton> to cancel your changes. You are returned "
-"to the <guilabel>Manage Repositories</guilabel> dialog box."
+"The OpenSolaris 2009.06 Package Manager provides support for users to add "
+"new repositories and optionally, install packages from these repositories "
+"using a simple one-click WebInstall process. A <filename>.p5i</filename> "
+"file which contains the repositories to be added and optionally, the package "
+"or packages that can be installed from these repositories, is required for "
+"the WebInstall process. The information contained in the <filename>.p5i</"
+"filename> file is read and used by the WebInstall process."
 msgstr ""
-"Нажмите кнопку <guibutton>Отмена</guibutton> для отмены изменений. Отображается диалоговое окно "
-"<guilabel>Управление хранилищами</guilabel>."
+"Диспетчер пакетов OpenSolaris 2009.06 обеспечивает возможность "
+"добавления новых хранилищ, а также установки пакетов из этих хранилищ "
+"с помощью простого процесса веб-установки одним щелчком. Для веб-установки требуется файл <filename>.p5i</filename>, "
+"содержащий добавляемые хранилища и, возможно, пакет или пакеты, "
+"которые можно установить из этих хранилищ."
+"Данные, содержащиеся в файле <filename>.p5i</"
+"filename>, считываются и используются процессом веб-установки."
 
-#: package-manager.xml:297 (title)
-msgid "Update Manager"
-msgstr "Диспетчер обновлений"
+#: package-manager.xml:412(title)
+msgid "How to Use WebInstall to Add Repositories and Install Packages"
+msgstr "Использование веб-установки для добавления хранилищ и установки пакетов"
 
-#: package-manager.xml:298 (para)
+#: package-manager.xml:413(bridgehead)
+msgid "Before You Begin"
+msgstr "Подготовка"
+
+#: package-manager.xml:413(para)
 msgid ""
-"The <application>Update Manager</application> is a separate application that "
-"launches from the desktop when updates to the installed packages are "
-"available in the repository."
+"Locate the <filename>.p5i</filename> file which may be present on your "
+"desktop, the Start page in the Package Manager, or on a website."
 msgstr ""
-"<application>Диспетчер обновлений</application> является отдельным приложением, "
-"которое запускается с рабочего стола, когда в хранилище доступны обновления для "
-"установленных пакетов."
+"Найдите файл <filename>.p5i</filename>, который может располагаться на рабочем столе, на "
+"начальной странице диспетчера пакетов или на веб-сайте."
 
-#: package-manager.xml:300 (title)
-msgid "Working With Update Manager"
-msgstr "Работа с Диспетчером обновлений"
+#: package-manager.xml:414(para)
+msgid ""
+"Start the Package manager in WebInstall mode in one of the following ways:"
+msgstr ""
+"Запустите диспетчер пакетов в режиме веб-установки одним из следующих способов:"
 
-#: package-manager.xml:301 (title)
+#: package-manager.xml:415(para)
+msgid ""
+"Click on a <filename>.p5i</filename> file on your desktop, and the "
+"associated application, Package Manager in WebInstall mode, will be launched."
+msgstr ""
+"Щелкните файл <filename>.p5i</filename> на рабочем столе, после чего запустится "
+"связанное с ним приложение, т.е. диспетчер пакетов в режиме веб-установки."
+
+#: package-manager.xml:417(para)
+msgid ""
+"Start the Package Manager from the command-line along with a path to the "
+"<filename>.p5i</filename> file. For example, type the following command at "
+"the command-line:"
+msgstr ""
+"Запустите диспетчер пакетов из командной строки вместе с путем к файлу "
+"<filename>.p5i</filename>. Например, введите в командной строке следующую "
+"команду:"
+
+#: package-manager.xml:418(replaceable)
+msgid "path_to_pi5_file/file.p5i"
+msgstr "path_to_pi5_file/file.p5i"
+
+#: package-manager.xml:418(command)
+msgid "$ pfexec packagemanager/<placeholder-1/>"
+msgstr "$ pfexec packagemanager/<placeholder-1/>"
+
+#: package-manager.xml:420(para)
+msgid ""
+"Click on a URL location that contains a link to <filename>.p5i</filename> "
+"file. If you are using this method to start the WebInstall, the <filename>."
+"p5i</filename> file <emphasis role=\"strong\">must</emphasis> be located on "
+"a web server that has registered the new mime type. Only then, the web "
+"server can manage the <filename>.p5i</filename> automatically and start "
+"Package Manager in WebInstall mode."
+msgstr ""
+"Щелкните адрес URL, содержащий ссылку на файл <filename>.p5i</filename>. "
+"Если для запуска веб-установки используется этот способ, файл <filename>."
+"p5i</filename> <emphasis role=\"strong\">непременно</emphasis> должен быть расположен на "
+"веб-сервере, на котором зарегистрирован новый тип MIME. Только в этом случае возможна "
+"автоматическая обработка файла <filename>.p5i</filename> на стороне сервера "
+"и запуск диспетчера пакетов в режиме веб-установки."
+
+#: package-manager.xml:421(para)
+msgid ""
+"If the <filename>.p5i</filename> is located on a web server that does not "
+"have the new mime type registered, save the <filename>.p5i</filename> file "
+"to your desktop and then click on it to launch Web Install."
+msgstr ""
+"Если файл <filename>.p5i</filename> расположен на веб-сервере, на котором не "
+"зарегистрирован новый тип MIME, файл <filename>.p5i</filename> следует сохранить "
+"на рабочем столе, а затем щелкнуть его для запуска веб-установки."
+
+#: package-manager.xml:425(para)
+msgid ""
+"The following example window that shows a list of repositories that will be "
+"added and the packages that will be installed. Review the information."
+msgstr ""
+"В следующем примере окна показан список добавляемых хранилищ "
+"и устанавливаемых пакетов. Ознакомьтесь с этой информацией."
+
+#: package-manager.xml:426(title)
+msgid "Package Manager WebInstaller"
+msgstr "Диспетчер пакетов в режиме веб-установки"
+
+#: package-manager.xml:431(para)
+msgid "Confirm or cancel the WebInstall process."
+msgstr "Подтверждение или отмена процесса веб-установки."
+
+#: package-manager.xml:432(para)
+msgid ""
+"Click <guibutton>Proceed</guibutton> to add the new repositories and install "
+"the packages."
+msgstr ""
+"Нажмите кнопку <guibutton>Продолжить</guibutton> для добавления новых хранилищ и установки "
+"пакетов."
+
+#: package-manager.xml:433(para)
+msgid ""
+"Click <guibutton>Cancel</guibutton> to cancel the process. The Package "
+"Manager application exits."
+msgstr ""
+"Нажмите кнопку <guibutton>Отмена</guibutton> для отмены процесса. Работа диспетчера"
+"пакетов завершается. "
+
+#: package-manager.xml:435(para)
+msgid ""
+"(Optional) If the repositories that are to be added are secure repositories, "
+"an SSL key and certificate is required. An <literal>Add New Repositories</"
+"literal> dialog box is displayed."
+msgstr ""
+"(Необязательно) Если добавляемые хранилища являются защищенными, "
+"для доступа требуется ключ и сертификат SSL. Выводится диалоговое окно <literal>Добавление "
+"новых хранилищ</literal> ."
+
+#: package-manager.xml:436(para)
+msgid ""
+"Click the <emphasis role=\"strong\">Instructions</emphasis> link in the "
+"<literal>Add New Repositories</literal> dialog box to download the SSL key "
+"and certificate."
+msgstr ""
+"Перейдите по ссылке <emphasis role=\"strong\">Инструкции</emphasis> в диалоговом окне "
+"<literal>Добавить новые хранилища</literal> для загрузки ключа SSL "
+"и сертификата."
+
+#: package-manager.xml:445(para)
+msgid "The <literal>Adding New Repositories</literal> status bar is displayed."
+msgstr "Выводится статусная строка <literal>Добавление новых хранилищ</literal>."
+
+#: package-manager.xml:447(para)
+msgid ""
+"(Optional) If packages are being installed, the <literal>Install/Update</"
+"literal> dialog box is displayed. Click <guibutton>Cancel</guibutton> to "
+"cancel the package installation."
+msgstr ""
+"(Необязательно) Если выполняется установка пакетов, выводится диалоговое окно "
+"<literal>Установка/обновление</literal>. Нажмите кнопку<guibutton>Отмена</guibutton> для "
+"отмены установки пакетов."
+
+#: package-manager.xml:448(para)
+msgid "The application will close when all packages are installed."
+msgstr "После установки всех пакетов приложение закрывается."
+
+#: package-manager.xml:453(title)
+msgid "Working With the Update Manager"
+msgstr "Работа с диспетчером обновлений"
+
+#: package-manager.xml:454(title)
+msgid "About The Update Manager"
+msgstr "О диспетчере обновлений"
+
+#: package-manager.xml:455(para)
+msgid ""
+"The Update Manager is a separate application that starts from the desktop "
+"when updates to the installed packages are available in the repository."
+msgstr ""
+"Диспетчер обновлений является отдельным приложением, "
+"которое запускается с рабочего стола, когда в хранилище доступны обновления для установленных пакетов."
+
+#: package-manager.xml:456(title)
 msgid "Update Manager Main Window"
-msgstr "Главное окно Диспетчера обновлений"
+msgstr "Главное окно диспетчера обновлений"
 
-#: package-manager.xml:305 (para)
+#: package-manager.xml:460(para)
 msgid ""
-"You can use the <application>Update Manager</application> application to "
-"update the installed packages in your image."
+"You can use the Update Manager application to update the installed packages "
+"in your image."
 msgstr ""
-"Приложение <application>Диспетчер обновлений</application> можно использовать для "
+"Приложение \"Диспетчер обновлений\" можно использовать для "
 "обновления установленных в образе пакетов."
 
-#: package-manager.xml:306 (para)
+#: package-manager.xml:461(para)
 msgid ""
-"For the OpenSolaris 2008.11 release, the <application>Update Manager</"
-"application> updates <emphasis role=\"strong\">all</emphasis> installed "
-"packages in the image. This is equivalent to updating the image."
+"For the OpenSolaris 2009.06 release, the Update Manager updates <emphasis "
+"role=\"strong\">all</emphasis> installed packages in the image. This action "
+"is equivalent to running the <command>pkg image-update</command> command "
+"from the command-line."
 msgstr ""
-"Для версии OpenSolaris 2008.11 приложение <application>Диспетчер обновлений</"
-"application> обновляет <emphasis role=\"strong\">все</emphasis> установленные "
-"пакеты в образе. Это равноценно обновлению образа."
+"В выпуске ОС OpenSolaris 2009.06 диспетчер обновлений используется для обновления <emphasis "
+"role=\"strong\">всех</emphasis> пакетов, установленных в образе. Это действие "
+"эквивалентно запуску команды <command>pkg image-update</command> "
+"в командной строке."
 
-#: package-manager.xml:308 (para)
+#: package-manager.xml:464(title)
+msgid "Using the Update Manager"
+msgstr "Использование диспетчера обновлений"
+
+#: package-manager.xml:465(para)
 msgid ""
 "When updates are available to the installed packages, a notification icon is "
-"displayed in the notification panel on the OpenSolaris desktop and the "
-"<guilabel>Update Manager</guilabel> window is displayed."
+"displayed in the notification panel on the OpenSolaris desktop."
 msgstr ""
-"При наличии доступных обновлений для установленных пакетов на панели уведомления на рабочем столе OpenSolaris "
-"отображается значок об уведомлении и окно "
-"<guilabel>Диспетчер обновлений</guilabel>."
+"Когда для установленных пакетов появляются обновления, в панели уведомлений"
+"на рабочем столе OpenSolaris выводится значок уведомления."
 
-#: package-manager.xml:309 (para)
+#: package-manager.xml:466(para)
 msgid ""
 "You can also click <menuchoice><guimenu>System</"
 "guimenu><guisubmenu>Administration</guisubmenu><guimenuitem>Update Manager</"
@@ -1363,17 +1915,33 @@ msgid ""
 msgstr ""
 "Можно также выбрать в меню пункты <menuchoice><guimenu>Система</"
 "guimenu><guisubmenu>Администрирование</guisubmenu><guimenuitem>Диспетчер обновлений</"
-"guimenuitem></menuchoice> для запуска Диспетчера обновлений вручную."
+"guimenuitem></menuchoice> для запуска диспетчера обновлений вручную."
 
-#: package-manager.xml:311 (para)
+#: package-manager.xml:467(para)
 msgid ""
-"Click the <guibutton>Update All</guibutton> button in the <guilabel>Update "
-"All</guilabel> window to begin the process of updating your image."
+"When you are notified of a software update, perform the following steps to "
+"begin the process of updating your system:"
 msgstr ""
-"Нажмите кнопку <guibutton>Обновить все</guibutton> в окне <guilabel>Обновить "
-"все</guilabel>для начала процесса обновления образа."
+"В случае получения уведомления об обновлении программного обеспечения необходимо "
+"предпринять следующие действия для запуска процесса обновления системы:"
 
-#: package-manager.xml:312 (para)
+#: package-manager.xml:468(para)
+msgid ""
+"Click the notification icon on the desktop to display the <literal>Update "
+"Manager</literal> window."
+msgstr ""
+"Щелкните значок уведомления на рабочем столе для открытия окна <literal>Диспетчер"
+"обновлений</literal>."
+
+#: package-manager.xml:470(para)
+msgid ""
+"Click the <guibutton>Update All</guibutton> button in the <literal>Update "
+"Manager</literal> window."
+msgstr ""
+"Нажмите кнопку <guibutton>Обновить все</guibutton> в окне <literal>Диспетчер "
+"обновлений</literal>."
+
+#: package-manager.xml:471(para)
 msgid ""
 "Select a package and click the <guilabel>Details</guilabel> panel if you "
 "want to view more information about the package."
@@ -1381,17 +1949,23 @@ msgstr ""
 "Выберите пакет и нажмите панель <guilabel>Подробные данные</guilabel> "
 "для получения дополнительной информации о пакете."
 
-#: package-manager.xml:314 (para)
+#: package-manager.xml:474(para)
 msgid ""
-"The <guilabel>Update All</guilabel> window is displayed. Click "
-"<guibutton>Proceed</guibutton> to create a new boot environment and update "
-"all packages in the current image."
+"The <literal>Update All</literal> dialog box is displayed. Proceed with the "
+"Update All process or cancel the action."
 msgstr ""
-"Отобразится окно <guilabel>Обновить все</guilabel>. Нажмите "
-"<guibutton>Продолжить</guibutton> для создания новой загрузочной среды и обновления "
-"всех пакетов в текущем образе."
+"Откроется диалоговое окно <literal>Обновить все</literal>. Можно либо продолжить процесс "
+"обновления всех пакетов, либо отменить это действие."
 
-#: package-manager.xml:315 (para)
+#: package-manager.xml:475(para)
+msgid ""
+"Click <guibutton>Proceed</guibutton> to create a new boot environment and "
+"update all packages in the current image."
+msgstr ""
+"Нажмите кнопку <guibutton>Продолжить</guibutton> для создания новой среды загрузки и "
+"обновления всех пакетов в текущем образе."
+
+#: package-manager.xml:476(para)
 msgid ""
 "During the Update All process, a clone of the active boot environment is "
 "created. This clone enables the user to boot into the boot environment state "
@@ -1401,53 +1975,61 @@ msgstr ""
 "загрузочной среды. Данный клон позволяет пользователю загрузится в состояние загрузочной среды, "
 "которая существовала до начала процесса \"Обновить все\"."
 
-#: package-manager.xml:317 (para)
+#: package-manager.xml:477(para)
 msgid ""
 "If the Package Manager is unable to create a new boot environment, an error "
-"message will be displayed. See the <xref linkend=\"ghquj\"/> section on how "
+"message will be displayed. See the <xref linkend=\"gileh\"/> section on how "
 "to rectify the error and continue with updating your image."
 msgstr ""
-"Если Диспетчер пакетов не может создать новую загрузочную среду, отображается "
-"сообщение об ошибке. См. раздел <xref linkend=\"ghquj\"/> об "
+"Если диспетчер пакетов не может создать новую загрузочную среду, выводится "
+"сообщение об ошибке. См. раздел <xref linkend=\"gileh\"/> об "
 "исправлении ошибки и продолжении обновления образа."
 
-#: package-manager.xml:321 (para)
+#: package-manager.xml:478(para)
 msgid ""
-"If you chose to proceed, the <guilabel>Installing Updates</guilabel> windows "
-"are displayed. There are four stages to the package installation process:"
+"A name for the new boot environment is automatically generated. You can "
+"accept the name generated by the system, or provide your own name for the "
+"boot environment."
 msgstr ""
-"Если необходимо продолжить, отображаются окна <guilabel>Установка обновлений</guilabel>. "
-"Процесс установки пакета состоит из четырех этапов:"
+"Название для новой загрузочной среды создается автоматически. Можно либо принять"
+"автоматически сгенерированное название, либо указать собственное название для "
+"среды загрузки."
 
-#: package-manager.xml:322 (para)
-msgid "Evaluate."
-msgstr "Оценка"
+#: package-manager.xml:485(para)
+msgid ""
+"If you chose to proceed, the <literal>Installing Updates</literal> windows "
+"are displayed. The package installation process consists of four stages:"
+msgstr ""
+"В случае выбора продолжения работы открываются окна<literal>Установка обновлений</literal>. "
+"В процессе установки пакетов можно выделить четыре этапа:"
 
-#: package-manager.xml:324 (para)
+#: package-manager.xml:486(para)
+msgid "Prepare"
+msgstr "Подготовка"
+
+#: package-manager.xml:488(para)
 msgid "Download."
 msgstr "Загрузка"
 
-#: package-manager.xml:326 (para)
+#: package-manager.xml:490(para)
 msgid "Install."
 msgstr "Установка"
 
-#: package-manager.xml:328 (para)
-msgid "Index."
-msgstr "Индексирование"
-
-#: package-manager.xml:331 (para)
+#: package-manager.xml:493(para)
 msgid ""
-"You can choose to cancel the process only during the Evaluate and Download "
+"You can choose to cancel the process only during the <emphasis role=\"strong"
+"\">Prepare</emphasis> and <emphasis role=\"strong\">Download</emphasis> "
 "stages. Click the <guibutton>Cancel</guibutton> button to cancel the "
 "installation process. No changes are made and you are returned to the main "
 "window of the Update Manager."
 msgstr ""
-"Процесс можно отменить только во время оценки и  "
-"загрузки. Нажмите кнопку <guibutton>Отмена</guibutton> для отмены "
-"процесса установки. Изменения не вносятся,  отображается "
-"главное окно Диспетчера обновлений."
+"Процесс можно отменить только на этапах<emphasis role=\"strong"
+"\">Подготовка</emphasis> и <emphasis role=\"strong\">Загрузка</emphasis>. "
+"Для отмены процесса установки нажмите кнопку <guibutton>Отмена</guibutton>  "
+"Изменения не вносятся, и выполняется возврат к главному "
+"окну диспетчера обновлений."
 
-#: package-manager.xml:332 (para)
+#: package-manager.xml:494(para)
 msgid ""
 "If an error occurs during any of the stages, the <guilabel>Details</"
 "guilabel> panel is expanded and the details of the error are displayed. An "
@@ -1457,45 +2039,59 @@ msgstr ""
 "guilabel> и отображается подробная информация об ошибке. Индикатор "
 "статуса ошибки отображается рядом с неудачным этапом."
 
-#: package-manager.xml:335 (para)
+#: package-manager.xml:497(para)
 msgid ""
-"Click the <guilabel>Details</guilabel> panel to view more information on "
+"Click the <guilabel>Details</guilabel> panel to view more information about "
 "each of the installation processes."
 msgstr ""
-"Нажмите панель <guilabel>Подробные сведения</guilabel> для просмотра дополнительной информации "
+"Щелкните панель <guilabel>Подробные сведения</guilabel> для просмотра дополнительной информации "
 "о каждом из процессов установки."
 
-#: package-manager.xml:342 (title)
-msgid "Update All Errors (Update Manager)"
-msgstr "Ошибки при выполнении команды \"Обновить все\" (Диспетчер обновлений)"
-
-#: package-manager.xml:344 (para)
+#: package-manager.xml:499(para)
 msgid ""
-"<literal>Not enough disk space: the Update All action cannot be performed. "
-"Click OK to launch BE Management to manage your existing BEs and free up "
-"disk space.</literal>."
+"Read the <xref linkend=\"release_notes\"/> before rebooting your system."
 msgstr ""
-"<literal>Недостаточно места на диске: невозможно выполнить действие \"Обновить все\". "
-"Нажмите \"OK\", чтобы открыть окно \"Управление загрузочными средами\" для управления существующими загрузочными средами "
-"и освобождения места на диске.</literal>."
+"До перезагрузки системы прочитайте документ <xref linkend=\"release_notes\"/>."
 
-#: package-manager.xml:345 (para)
+#: package-manager.xml:506(para)
+msgid ""
+"A new boot environment clone <emphasis role=\"strong\">must</emphasis> be "
+"created for the Update All process to be completed. The following error "
+"message is displayed if a boot environment clone cannot be created due to "
+"space restrictions :"
+msgstr ""
+"Для завершения процесса \"Обновить все\" <emphasis role=\"strong\">необходимо </emphasis> создать"
+"новый клон загрузочной среды. Если клон загрузочной среды "
+"создать невозможно из-за недостатка дискового пространства, отображается следующее "
+"сообщение об ошибке:"
+
+#: package-manager.xml:508(para)
 msgid ""
 "Click <guibutton>No</guibutton> to cancel the Update All process and return "
 "to the Update Manager main window."
 msgstr ""
 "Нажмите <guibutton>Нет</guibutton> для отмены процесса \"Обновить все\" и возврата в главное окно "
-"Диспетчера обновлений."
+"диспетчера обновлений."
 
-#: package-manager.xml:347 (para)
+#: package-manager.xml:510(para)
 msgid ""
-"Click <guibutton>Yes</guibutton> in the error dialog to go to the "
+"Click <guibutton>Yes</guibutton> in the error dialog box to go to the "
 "<literal>Boot Environment Management</literal> dialog."
 msgstr ""
-"Нажмите <guibutton>Да</guibutton> в диалоговом окне ошибок для перехода в диалоговое окно "
-"<literal>Управление загрузочными средами</literal>."
+"Нажмите кнопку <guibutton>Да</guibutton> в диалоговом окне с сообщением об ошибке для перехода в диалоговое окно "
+"<literal>Управление средами загрузки</literal>."
 
-#: package-manager.xml:352 (para)
+#: package-manager.xml:512(para)
+msgid ""
+"Go to step 2 in the <xref linkend=\"gilfh\"/> section. Follow the "
+"instructions to delete old or unused boot environments and free up disk "
+"space."
+msgstr ""
+"Перейдите к этапу 2 в разделе <xref linkend=\"gilfh\"/> . Удалите "
+"устаревшие или неиспользуемые среды загрузки в соответствии с инструкциями для освобождения дискового"
+"пространства."
+
+#: package-manager.xml:514(para)
 msgid ""
 "Click the <guibutton>Update All</guibutton> button in the <literal>Update "
 "Manager</literal> window to restart the process of updating all packages."
@@ -1503,93 +2099,127 @@ msgstr ""
 "Нажмите кнопку <guibutton>Обновить все</guibutton> в окне <literal>Диспетчер "
 "обновлений</literal> для перезапуска процесса обновления всех пакетов."
 
-#: package-manager.xml:358 (title)
+#: package-manager.xml:519(title) package-manager.xml:523(ulink)
+msgid "Release Notes"
+msgstr "Заметки о выпуске"
+
+#: package-manager.xml:520(para)
+msgid ""
+"The OpenSolaris 2009.06 Release Notes are available at the following "
+"locations:"
+msgstr ""
+"Заметки о выпуске OpenSolaris 2009.06 публикуются в следующих "
+"источниках:"
+
+#: package-manager.xml:521(para)
+msgid ""
+"x86 <ulink url=\"http://opensolaris.org/os/project/indiana/resources/"
+"relnotes/200811/x86/\">Release Notes</ulink>"
+msgstr ""
+"x86 <ulink url=\"http://opensolaris.org/os/project/indiana/resources/"
+"relnotes/200811/x86/\">Заметки о выпуске</ulink>"
+
+#: package-manager.xml:523(trademark)
+msgid "SPARC"
+msgstr "SPARC"
+
+#: package-manager.xml:527(title)
+msgid "Package Manager Screencast"
+msgstr "Ролик о диспетчере пакетов"
+
+#: package-manager.xml:528(para)
+msgid ""
+"A screencast that shows Package Manager usage for beginners is available. "
+"Click the link below to go to the screencast."
+msgstr ""
+"Начинающим пользователям рекомендуется ознакомиться с обучающим видеороликом, в котором показаны приемы работы с диспетчером пакетов. "
+"Перейдите по ссылке для просмотра видеоролика."
+
+#: package-manager.xml:529(ulink)
+msgid "OpenSolaris 2009.06 Package Manager Screencast"
+msgstr "Ролик по диспетчеру пакетов OpenSolaris 2009.06."
+
+#: package-manager.xml:532(title)
 msgid "Image Packaging System Glossary"
-msgstr "Глоссарий системы упаковки образов"
+msgstr "Глоссарий системы управления пакетами"
 
-#: package-manager.xml:359 (glossterm)
-msgid "authority"
-msgstr "Источник"
+#: package-manager.xml:533(glossterm)
+msgid "publisher"
+msgstr "издатель"
 
-#: package-manager.xml:360 (para)
+#: package-manager.xml:534(para)
 msgid ""
 "A person, group, or corporation that designs, creates, and publishes a "
-"package to a repository."
+"package to a repository. The repository in turn serves the packages from the "
+"(default) publisher, for downloading purposes. The developer-quality "
+"packages managed by Sun and made available through <ulink url=\"http://pkg."
+"opensolaris.com/dev\">http://pkg.opensolaris.com/dev</ulink> is an example "
+"of a publisher."
 msgstr ""
-"Человек, группа или корпорация, которая разрабатывает, создает "
-"пакет и публикует его в хранилище."
+"Лицо, группа лиц либо корпорация, разрабатывающая, создающая и публикующая"
+"пакет в хранилище. Хранилище в свою очередь выдает пакеты от издателя "
+"(по умолчанию), для загрузки. Пакеты с качеством, "
+"достаточным для разработчиков, поддерживаемые компанией Sun Microsystems и доступные через сайт <ulink url=\"http://pkg."
+"opensolaris.com/dev\">http://pkg.opensolaris.com/dev</ulink> являют собой пример "
+"деятельности издателя."
 
-#: package-manager.xml:362 (para)
+#: package-manager.xml:535(para)
 msgid ""
-"A location that is configured to point to a repository and might contain "
-"additional information about the package, such as the publisher of the "
-"package. The repository, in turn, serves the packages from the (default) "
-"authority, for downloading purposes. The developer-quality packages managed "
-"by Sun and made available through http://pkg.opensolaris.com is an example "
-"of an authority."
+"The term <emphasis role=\"strong\">authority</emphasis> has been replaced "
+"with the term <emphasis role=\"strong\">publisher</emphasis> from the "
+"OpenSolaris 2009.06 release onwards."
 msgstr ""
-"Ячейка, которая указывает на хранилище и может содержать "
-"дополнительную информацию о пакете, например, сервер публикаций "
-"пакета. Хранилище, в свою очередь, для загрузки берет пакеты из "
-"источника (по умолчанию). Пакеты разработчиков,  которыми управляет "
-"Sun, доступные по адресу http://pkg.opensolaris.com, являются примером "
-"источника."
+"Термин <emphasis role=\"strong\">источник</emphasis> заменен на "
+"термин <emphasis role=\"strong\">издатель</emphasis> начиная с версии"
+"OpenSolaris 2009.06."
 
-#: package-manager.xml:367 (glossterm)
+#: package-manager.xml:538(glossterm)
 msgid "boot environment"
 msgstr "Загрузочная среда"
 
-#: package-manager.xml:368 (para)
+#: package-manager.xml:539(para)
 msgid ""
 "For an OpenSolaris release, a boot environment is an instance of a bootable "
-"OpenSolaris environment. The boot environment consists of a root file system "
-"and, optionally, other file systems, such as <filename>/usr</filename>, "
-"<filename>/var</filename>, or <filename>/export</filename>. These other file "
-"systems are mounted below the root file system. The root file system and all "
-"other file systems of the boot environment that contain system software are "
-"required to be zfs datasets."
+"OpenSolaris environment. The root file system and all other file systems of "
+"the boot environment that contain system software are required to be ZFS "
+"datasets."
 msgstr ""
-"Для данной версии OpenSolaris загрузочная среда является экземпляром загрузочной среды "
-"OpenSolaris. Загрузочная среда состоит из корневой файловой системы "
-"и прочих дополнительных файловых систем, таких как<filename>/usr</filename>, "
-"<filename>/var</filename> или <filename>/export</filename>. Данные прочие файловые системы "
-"устанавливаются в корневой файловой системе. Корневая файловая система и все прочие "
-"файловые системы загрузочной среды, содержащие системное программное обеспечение, "
-"должны являться наборами данных zfs."
+"В случае выпуска OpenSolaris среда загрузки представляет собой экземпляр загружаемой среды"
+"ОС OpenSolaris. Корневая файловая система и все остальные файловые системы "
+"среды загрузки, содержащие системное программное обеспечение, должны являться наборами данных "
+"ZFS."
 
-#: package-manager.xml:369 (para)
+#: package-manager.xml:540(para)
 msgid ""
-"The active boot environment is the one that is currently booted. Exactly one "
-"active boot environment can be booted. An inactive boot environment is not "
-"currently booted, but can be in a state of waiting for activation on the "
-"next reboot."
+"The active boot environment is the one that is currently booted. Many boot "
+"environments can present on an OpenSolaris system and an inactive boot "
+"environment can be in a state of waiting for activation upon system reboot."
 msgstr ""
-"Загруженная в данный момент загрузочная среда является активной. Только одна "
-"активная загрузочная среда может быть загружена. Неактивная загрузочная среда не загружена "
-"в данный момент, но может находиться в режиме ожидания активации "
-"во время следующей перезагрузки."
+"Активной называется среда загрузки, загруженная в данный момент. В системе "
+"OpenSolaris может быть несколько сред загрузки, и неактивные среды "
+"загрузки могут находиться в состоянии ожидания активации после перезагрузки системы."
 
-#: package-manager.xml:372 (glossterm)
+#: package-manager.xml:543(glossterm)
 msgid "clone"
 msgstr "клон"
 
-#: package-manager.xml:373 (para)
+#: package-manager.xml:544(para)
 msgid "An exact copy."
 msgstr "Точная копия."
 
-#: package-manager.xml:374 (para)
+#: package-manager.xml:545(para)
 msgid ""
-"For installation, a clone could be an exact copy of an operating system, a "
-"file system, or a volume. This copy has 100% compatibility with the original."
+"A clone could be an exact copy of an operating system, a file system, or a "
+"volume. This copy has 100% compatibility with the original."
 msgstr ""
-"В целях установки клон может быть точной копией операционной системы, "
-"файловой системы или тома. Данная копия имеет 100% совместимость с оригиналом."
+"Клон может быть точной копией операционной системы, "
+"файловой системы или тома. Такая копия имеет 100% совместимость с оригиналом."
 
-#: package-manager.xml:377 (glossterm)
+#: package-manager.xml:548(glossterm)
 msgid "dataset"
 msgstr "набор данных"
 
-#: package-manager.xml:378 (para)
+#: package-manager.xml:549(para)
 msgid ""
 "A generic name for the following ZFS entities: clones, file systems, "
 "snapshots, or volumes. Each dataset is identified by a unique name in the "
@@ -1599,23 +2229,31 @@ msgstr ""
 "снимки или тома. Каждый набор данных определен уникальным названием в "
 "пространстве имен ZFS."
 
-#: package-manager.xml:381 (glossterm)
+#: package-manager.xml:552(glossterm)
 msgid "image"
 msgstr "образ"
 
-#: package-manager.xml:382 (para)
+#: package-manager.xml:553(para)
 msgid ""
-"A collection of software in a package that comprises an entire operating "
-"system. The package is suitable for installation."
+"A collection of software in a package that comprises an entire or partial "
+"operating system. The package is suitable for installation."
 msgstr ""
 "Набор программного обеспечения в пакете, который содержит всю "
-"операционную систему. Данный пакет может быть использован для установки."
+"операционную систему или ее часть. Такой пакет может быть использован для установки."
 
-#: package-manager.xml:385 (glossterm)
+#: package-manager.xml:554(para)
+msgid ""
+"An image is a location on your system where packages and their associated "
+"files, directories, links, and dependencies can be installed."
+msgstr ""
+"Образ представляет собой местоположение в системе, куда могут устанавливаться пакеты и связанные "
+"с ними файлы, каталоги, ссылки и зависимости."
+
+#: package-manager.xml:557(glossterm)
 msgid "package"
 msgstr "пакет"
 
-#: package-manager.xml:386 (para)
+#: package-manager.xml:558(para)
 msgid ""
 "A collection of files, directories, links, drivers, and dependencies in a "
 "defined format."
@@ -1623,47 +2261,105 @@ msgstr ""
 "Набор файлов, каталогов, ссылок, драйверов и зависимостей в "
 "определенном формате."
 
-#: package-manager.xml:389 (glossterm)
+#: package-manager.xml:561(glossterm)
 msgid "preferred repository"
 msgstr "предпочитаемое хранилище"
 
-#: package-manager.xml:390 (para)
+#: package-manager.xml:562(para)
 msgid ""
 "A default repository that is the source for packages. If a user does not "
 "explicitly specify a repository when installing and updating packages, the "
-"preferred authority is chosen as the source for packages."
+"preferred repository is chosen as the source for packages."
 msgstr ""
 "Хранилище по умолчанию является источником для пакетов. Если "
 "пользователь не указал хранилище явным образом во время установки "
-"и обновления пакетов, предпочитаемый источник выбирается в качестве источника пакетов."
+"и обновления пакетов, в качестве источника пакетов выбирается предпочитаемое хранилище."
 
-#: package-manager.xml:391 (para)
-msgid ""
-"During the creation of an image, the initially specified authority is marked "
-"as the preferred authority. Any one of the authorities associated with an "
-"image can be set as the preferred authority by using the <command>set-"
-"authority</command> command with the <option>P</option> option."
-msgstr ""
-"Во время создания образа первоначально указанный источник отмечается как "
-"предпочитаемый. Любой из источников, относящихся к образу, "
-"может быть установлен в качестве предпочитаемого источника с помощью команды <command>set-"
-"authority</command> с параметром <option>P</option>."
-
-#: package-manager.xml:394 (glossterm)
+#: package-manager.xml:565(glossterm)
 msgid "repository"
 msgstr "хранилище"
 
-#: package-manager.xml:395 (para)
+#: package-manager.xml:566(para)
 msgid ""
-"A location where packages are available for download. A repository can "
-"contain packages from many authorities. Conversely, many repositories can "
-"contain packages from a single authority. Also called the depot server."
+"A location where packages are available for downloading. A publisher can "
+"publish packages to many repositories."
 msgstr ""
-"Место, в котором пакеты доступны для обновления. Хранилище может содержать "
-"пакеты из многих источников. И наоборот, многие хранилища могут содержать пакеты "
-"из одного источника. Также, сервер хранилищ."
+"Местоположение, где пакеты публикуются для загрузки. Издатель может размещать"
+"пакеты в нескольких хранилищах."
 
 #. Put one translator per line, in the form of NAME <EMAIL>, YEAR1, YEAR2.
-#: package-manager.xml:0 (None)
+#: package-manager.xml:0(None)
 msgid "translator-credits"
 msgstr "переводчик - сведения об авторах"
+
+#: package-manager.xml:209(para)
+msgid ""
+"Note the following important considerations when using the multi-repository "
+"search."
+msgstr ""
+"При пользовании поиском по нескольким хранилищам следует учитывать следующие важные "
+"соображения."
+
+#: package-manager.xml:210(para)
+msgid ""
+"The multi-repository search currently supports a search based on the package "
+"contents including its description, classification, and the files contained "
+"within the package. However, the correct results are displayed only if the "
+"term used for searching is an <emphasis role=\"strong\">exact</emphasis> "
+"match."
+msgstr ""
+"При поиске по нескольким хранилищам в настоящее время поддерживается поиск по содержимому "
+"пакета, в т.ч. по описанию, классификации, а также по файлам, содержащимся "
+"внутри пакета. Однако правильные результаты выводятся только в том случае, если "
+"критерий поиска представляет собой <emphasis role=\"strong\">точное</emphasis> "
+"совпадение."
+
+#: package-manager.xml:212(para)
+msgid ""
+"<emphasis role=\"strong\">The multi-repository search does not search the "
+"package name</emphasis>."
+msgstr ""
+"<emphasis role=\"strong\">При поиске по нескольким хранилищам не выполняется поиск по "
+"имени пакета</emphasis>."
+
+#: package-manager.xml:214(para)
+msgid ""
+"Wild card searching is supported by using the asterisk wild card, "
+"<literal>*</literal>, in the search term. Search using the wild card can be "
+"slower than an exact match search."
+msgstr ""
+"Для поиска с подстановочными символами в критерии поиска следует использовать "
+"символ звездочки <literal>*</literal>. Поиск с помощью подстановочного символа может занимать "
+"больше времени по сравнению с поиском по точному совпадению."
+
+#: package-manager.xml:218(para)
+msgid ""
+"Type a description of the package in the box. For example, the "
+"<filename>SUNWdiveintopython</filename> package is a book on Python "
+"programming. The description of the package contains the string "
+"<emphasis>book</emphasis>. To search for this package, you might then type "
+"one of the following terms:"
+msgstr ""
+"Введите в поле описание пакета. Например, "
+"пакет <filename>SUNWdiveintopython</filename> представляет собой руководство по программированию "
+"на языке Python. В описании пакета содержится строка "
+"<emphasis>book</emphasis>. Для поиска этого пакета можно ввести один из "
+"следующих критериев поиска:"
+
+#: package-manager.xml:224(para)
+msgid ""
+"If you searched for the term <emphasis>diveinto</emphasis> in the multi-"
+"repository search, the <filename>SUNWdiveintopython</filename> package will "
+"not be displayed as the term <emphasis>diveinto</emphasis> is not present as "
+"an independent, complete word in the package contents. However you will find "
+"the package using the <literal>*</literal> wild card. Hence, searching for "
+"the term <literal>diveinto*</literal> will display the "
+"<filename>SUNWdiveintopython</filename> package."
+msgstr ""
+"Если выполняется поиск по критерию <emphasis>diveinto</emphasis> в режиме поиска по нескольким "
+"хранилищам, пакет <filename>SUNWdiveintopython</filename> не выводится, "
+"поскольку критерий <emphasis>diveinto</emphasis> отсутствует в содержимом пакета "
+"в качестве отдельно стоящего полноценного слова. Однако пакет можно найти "
+"с помощью подстановочного символа <literal>*</literal>. Следовательно, при поиске "
+"по критерию <literal>diveinto*</literal> будет выведен "
+"пакет <filename>SUNWdiveintopython</filename>."

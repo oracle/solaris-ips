@@ -2447,12 +2447,12 @@ class PackageManager:
                                 to_install += "\n   %s: %d" % (publisher, packages)
                                 no_iter += 1
                 if not to_install:
-                        to_install = _("Select packages by marking checkbox\n"+
+                        to_install = _("Select packages by marking the checkbox "
                             "and click to Install/Update.")
                 self.w_installupdate_button.set_tooltip(self.install_button_tooltip,
                     to_install)
                 if not to_remove:
-                        to_remove = _("Select packages by marking checkbox\n"+
+                        to_remove = _("Select packages by marking the checkbox "
                             "and click to Remove selected.")
                 self.w_remove_button.set_tooltip(self.remove_button_tooltip, to_remove)
 
