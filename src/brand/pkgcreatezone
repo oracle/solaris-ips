@@ -53,6 +53,13 @@ m_usage=$(gettext    "$0: [-h] [-P publisher=uri] [-e extrapkg [...]]")
 
 m_done=$(gettext      " done.")
 
+is_system_labeled() {
+	sys_labeled=0
+	[ ! -x /bin/plabel ] && return
+	/bin/plabel > /dev/null 2>&1
+	[[ $? -eq 0 ]] && sys_labeled=1
+}
+
 trap_cleanup() {
 	print "$f_interrupted"
 	exit $int_code
@@ -95,6 +102,8 @@ if [[ -z $zonepath || -z $zonename ]]; then
 	print -u2 "Brand error: No zone path or name"
 	exit $ZONE_SUBPROC_USAGE
 fi
+
+is_system_labeled
 
 zoneroot=$zonepath/root
 
@@ -277,6 +286,19 @@ pkglist="$pkglist SUNWnis SUNWlldap"
 #
 pkglist="$pkglist SUNWnfsc SUNWatfs"
 
+#
+# Get packages for TX zones if appropriate.
+#
+if [ $sys_labeled -ne 0 ]; then
+	#
+	# Get opengl initialization
+	#
+	pkglist="$pkglist SUNWxwplr"
+	#
+	# Get D-Bus
+	#
+	pkglist="$pkglist SUNWdbus"
+fi
 
 #
 # Get man(1) but not the man pages
@@ -328,20 +350,24 @@ if grep "^root::::type=role;" $zoneroot/etc/user_attr >/dev/null 2>&1; then
 	    ed -s $zoneroot/etc/user_attr
 fi
 
-#
-# Make sure sysidtools run; we manually poke in the SSH action
-# so that we get an SSH key.  Yes, this is seriously borken.
-# See http://defect.opensolaris.org/bz/show_bug.cgi?id=741
-#
-printf "$m_more_brokenness\n"
-/usr/sbin/sysidconfig -b $zoneroot -a /lib/svc/method/sshd
-touch $zoneroot/etc/.UNCONFIGURED
+if [ $sys_labeled -eq 0 ]; then
+	#
+	# Make sure sysidtools run; we manually poke in the SSH action
+	# so that we get an SSH key.  Yes, this is seriously borken.
+	# See http://defect.opensolaris.org/bz/show_bug.cgi?id=741
+	#
+	printf "$m_more_brokenness\n"
+	/usr/sbin/sysidconfig -b $zoneroot -a /lib/svc/method/sshd
+	touch $zoneroot/etc/.UNCONFIGURED
+fi
 
 # Umount the dataset on the root.
 /usr/sbin/umount $zoneroot
 
 printf "$m_complete\n\n" ${SECONDS}
-printf "$m_postnote\n"
-printf "$m_postnote2\n"
+if [ $sys_labeled -eq 0 ]; then
+	printf "$m_postnote\n"
+	printf "$m_postnote2\n"
+fi
 
 exit $ZONE_SUBPROC_OK

@@ -1,0 +1,8 @@
+package SUNWtsg
+classification "System/Trusted"
+import SUNWtsg
+drop etc/zones/SUNWtsoldef.xml
+from SUNWfixes import
+etc/zones/SUNWtsoldef.xml
+end import
+end package

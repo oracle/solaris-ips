@@ -25,15 +25,13 @@ e none etc/skel/.profile 0644 root other
 e none etc/user_attr 0644 root sys
 f none etc/zones/SUNWblank.xml 0444 root bin
 f none etc/zones/SUNWdefault.xml 0444 root bin
-f none kernel/drv/nvidia.conf 0644 root sys
+f none etc/zones/SUNWtsoldef.xml 0444 root bin
 f none lib/svc/method/sshd 0555 root bin
-f none lib/svc/method/svc-coreadm 0555 root bin
 f none lib/svc/method/svc-ipagent 0555 root bin
 f none lib/svc/method/xvm-vnc-config 0555 root bin
 d none root 0700 root root
 e none root/.bashrc 0644 root root
 e none root/.profile 0644 root root
-f none usr/X11/lib/xscreensaver/config/opensolaris-logo.png 0444 root bin
 f none usr/bin/ksh 0755 root bin
 l none usr/has/bin/ex=vi
 f none usr/has/bin/sh 0755 root root
@@ -43,7 +41,11 @@ f none usr/jdk/instances/jdk1.6.0/LICENSE 0644 root bin
 f none usr/jdk/instances/jdk1.6.0/README.html 0644 root bin
 f none usr/jdk/instances/jdk1.6.0/jre/LICENSE 0644 root bin
 f none usr/jdk/instances/jdk1.6.0/jre/README 0644 root bin
-f none usr/jdk/instances/jdk1.6.0/jre/lib/fontconfig.properties 0644 root bin
+f none usr/jdk/instances/jdk1.6.0/jre/lib/fontconfig.OpenSolaris.bfc 0644 root bin
+f none usr/jdk/instances/jdk1.6.0/jre/lib/fontconfig.OpenSolaris.properties.src 0644 root bin
+d none usr/lib/brand/labeled 0755 root sys
+f none usr/lib/brand/labeled/config.xml 0444 root bin
+f none usr/lib/brand/labeled/platform.xml 0444 root bin
 f none usr/lib/vp-services 0555 root bin
 f none usr/lib/vp-shares 0555 root bin
 f none usr/lib/xen/bin/ipagent 0755 root bin
@@ -51,7 +53,6 @@ f none usr/share/applications/services.desktop 0644 root bin
 f none usr/share/applications/shares.desktop 0644 root bin
 f none var/svc/manifest/application/graphical-login/gdm.xml 444 root sys
 f none var/svc/manifest/application/x11/x11-server.xml 0444 root sys
-f none var/svc/manifest/system/coreadm.xml 444 root sys
 f none var/svc/manifest/system/ipagent.xml 444 root sys
 f none var/svc/manifest/system/xvm/vnc-config.xml 444 root sys
 f none var/svc/profile/generic_limited_net.xml 0444 root sys

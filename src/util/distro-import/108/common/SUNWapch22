@@ -3,4 +3,5 @@ classification "Web Services/Application and Web Servers"
 import SUNWapch22u
 import SUNWapch22r
 version 2.2.11
+depend SUNWapu13-ldap
 end package

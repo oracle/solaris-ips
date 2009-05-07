@@ -1,0 +1,10 @@
+package SUNWts
+classification "System/Trusted"
+import SUNWtsu
+import SUNWtsr
+from SUNWfixes import
+usr/lib/brand/labeled
+usr/lib/brand/labeled/config.xml
+usr/lib/brand/labeled/platform.xml
+end import
+end package

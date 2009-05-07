@@ -203,7 +203,13 @@ CACHED_FILES_108 = $(CACHED_FILES_107)
 CACHED_FILES_109 = $(CACHED_FILES_107)
 CACHED_FILES_110 = $(CACHED_FILES_107)
 CACHED_FILES_111 = $(CACHED_FILES_107)
-CACHED_FILES_111a = $(CACHED_FILES_107)
+CACHED_FILES_111a = $(CACHED_FILES_107)					\
+	etc/zones/SUNWtsoldef.xml					\
+	usr/jdk/instances/jdk1.6.0/jre/lib/fontconfig.OpenSolaris.bfc	\
+	usr/jdk/instances/jdk1.6.0/jre/lib/fontconfig.OpenSolaris.properties.src \
+	usr/lib/brand/labeled/config.xml				\
+	usr/lib/brand/labeled/platform.xml
+
 CACHED_FILES = $(CACHED_FILES_$(BUILDID))
 
 FIX_FILES_BASE =				\
@@ -473,6 +479,7 @@ proto:	Makefile
 	mkdir -p proto/usr/bin
 	mkdir -p proto/usr/has/bin
 	mkdir -p proto/usr/jdk/instances/jdk1.6.0/jre/lib
+	mkdir -p proto/usr/lib/brand/labeled
 	mkdir -p proto/usr/lib/xen/bin
 	mkdir -p proto/usr/sbin
 	mkdir -p proto/usr/share/applications

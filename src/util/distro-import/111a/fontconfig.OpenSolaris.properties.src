@@ -1,0 +1,498 @@
+#
+# Updated 09/05/01 for OpenSolaris 2009.06
+#
+# Copyright 2008-9 Sun Microsystems, Inc. All rights reserved.
+#
+
+# Version
+
+version=1
+
+# Component Font Mappings
+
+allfonts.chinese-gb2312=-arphic-ar pl shanheisun uni-medium-r-normal--*-%d-*-*-m-*-gb2312.1980-0
+allfonts.chinese-gbk=-arphic-ar pl shanheisun uni-medium-r-normal--*-%d-*-*-c-*-gbk-0
+allfonts.chinese-gb18030-0=-arphic-ar pl shanheisun uni-medium-r-normal--*-%d-*-*-m-*-gb18030.2000-0
+allfonts.chinese-gb18030-1=-arphic-ar pl shanheisun uni-medium-r-normal--*-%d-*-*-m-*-gb18030.2000-1
+allfonts.chinese-cns11643-1=-arphic-ar pl shanheisun uni-Medium-r-normal--*-%d-*-*-m-*-cns11643-1
+allfonts.chinese-cns11643-2=-arphic-ar pl shanheisun uni-Medium-r-normal--*-%d-*-*-m-*-cns11643-2
+allfonts.chinese-cns11643-3=-arphic-ar pl shanheisun uni-Medium-r-normal--*-%d-*-*-m-*-cns11643-3
+allfonts.chinese-big5=-arphic-ar pl shanheisun uni-medium-r-normal--*-%d-*-*-m-*-big5-1
+allfonts.chinese-hkscs=-arphic-ar pl shanheisun uni-medium-r-normal--*-%d-*-*-m-*-hkscs-1
+allfonts.japanese-x0212=-misc-ipamincho-medium-r-normal--*-%d-*-*-m-*-jisx0212.1990-0
+allfonts.korean=-hanyang-kodig-medium-r-normal--*-%d-*-*-m-*-ksc5601.1987-0
+allfonts.korean-johab=-hanyang-kodig-medium-r-normal--*-%d-*-*-m-*-ksc5601.1992-3
+allfonts.lucida=-b&h-lucidasans-medium-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+
+serif.plain.arabic=-b&h-lucidabright-medium-r-normal--*-%d-*-*-p-*-iso8859-1
+serif.plain.cyrillic-iso8859-5=-b&h-lucidabright-medium-r-normal--*-%d-*-*-p-*-iso8859-1
+serif.plain.cyrillic-cp1251=-b&h-lucidabright-medium-r-normal--*-%d-*-*-p-*-iso8859-1
+serif.plain.cyrillic-koi8-r=-b&h-lucidabright-medium-r-normal--*-%d-*-*-p-*-iso8859-1
+serif.plain.greek=-b&h-lucidabright-medium-r-normal--*-%d-*-*-p-*-iso8859-1
+serif.plain.hebrew=-misc-freeserif-medium-r-normal--*-%d-*-*-p-*-iso8859-8
+serif.plain.japanese-x0201=-misc-ipamincho-medium-r-normal--*-%d-*-*-m-*-jisx0201.1976-0
+serif.plain.japanese-x0208=-misc-ipamincho-medium-r-normal--*-%d-*-*-m-*-jisx0208.1983-0
+serif.plain.latin-1=-b&h-lucidabright-medium-r-normal--*-%d-*-*-p-*-iso8859-1
+serif.plain.latin-2=-b&h-lucidabright-medium-r-normal--*-%d-*-*-p-*-iso8859-1
+serif.plain.latin-5=-b&h-lucidabright-medium-r-normal--*-%d-*-*-p-*-iso8859-1
+serif.plain.latin-7=-b&h-lucidabright-medium-r-normal--*-%d-*-*-p-*-iso8859-1
+serif.plain.latin-9=-b&h-lucidabright-medium-r-normal--*-%d-*-*-p-*-iso8859-1
+serif.plain.thai=-misc-freeserif-medium-r-normal--*-%d-*-*-m-*-tis620.2533-0
+
+serif.bold.arabic=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+serif.bold.cyrillic-iso8859-5=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+serif.bold.cyrillic-cp1251=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+serif.bold.cyrillic-koi8-r=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+serif.bold.greek=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+serif.bold.hebrew=-misc-freeserif-bold-r-normal--*-%d-*-*-p-*-iso8859-8
+serif.bold.japanese-x0201=-misc-ipamincho-medium-r-normal--*-%d-*-*-m-*-jisx0201.1976-0
+serif.bold.japanese-x0208=-misc-ipamincho-medium-r-normal--*-%d-*-*-m-*-jisx0208.1983-0
+serif.bold.latin-1=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+serif.bold.latin-2=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+serif.bold.latin-5=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+serif.bold.latin-7=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+serif.bold.latin-9=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+serif.bold.thai=-misc-freeserif-bold-r-normal--*-%d-*-*-m-*-tis620.2533-0
+
+serif.italic.arabic=-b&h-lucidabright-medium-i-normal--*-%d-*-*-p-*-iso8859-1
+serif.italic.cyrillic-iso8859-5=-b&h-lucidabright-medium-i-normal--*-%d-*-*-p-*-iso8859-1
+serif.italic.cyrillic-cp1251=-b&h-lucidabright-medium-i-normal--*-%d-*-*-p-*-iso8859-1
+serif.italic.cyrillic-koi8-r=-b&h-lucidabright-medium-i-normal--*-%d-*-*-p-*-iso8859-1
+serif.italic.greek=-b&h-lucidabright-medium-i-normal--*-%d-*-*-p-*-iso8859-1
+serif.italic.hebrew=-misc-freeserif-medium-i-normal--*-%d-*-*-p-*-iso8859-8
+serif.italic.japanese-x0201=-misc-ipamincho-medium-r-normal--*-%d-*-*-m-*-jisx0201.1976-0
+serif.italic.japanese-x0208=-misc-ipamincho-medium-r-normal--*-%d-*-*-m-*-jisx0208.1983-0
+serif.italic.latin-1=-b&h-lucidabright-medium-i-normal--*-%d-*-*-p-*-iso8859-1
+serif.italic.latin-2=-b&h-lucidabright-medium-i-normal--*-%d-*-*-p-*-iso8859-1
+serif.italic.latin-5=-b&h-lucidabright-medium-i-normal--*-%d-*-*-p-*-iso8859-1
+serif.italic.latin-7=-b&h-lucidabright-medium-i-normal--*-%d-*-*-p-*-iso8859-1
+serif.italic.latin-9=-b&h-lucidabright-medium-i-normal--*-%d-*-*-p-*-iso8859-1
+serif.italic.thai=-misc-freeserif-medium-i-normal--*-%d-*-*-m-*-tis620.2533-0
+
+serif.bolditalic.arabic=-b&h-lucidabright-demibold-i-normal--*-%d-*-*-p-*-iso8859-1
+serif.bolditalic.cyrillic-iso8859-5=-b&h-lucidabright-demibold-i-normal--*-%d-*-*-p-*-iso8859-1
+serif.bolditalic.cyrillic-cp1251=-b&h-lucidabright-demibold-i-normal--*-%d-*-*-p-*-iso8859-1
+serif.bolditalic.cyrillic-koi8-r=-b&h-lucidabright-demibold-i-normal--*-%d-*-*-p-*-iso8859-1
+serif.bolditalic.greek=-b&h-lucidabright-demibold-i-normal--*-%d-*-*-p-*-iso8859-1
+serif.bolditalic.hebrew=-misc-freeserif-bold-i-normal--*-%d-*-*-p-*-iso8859-8
+serif.bolditalic.japanese-x0201=-misc-ipamincho-medium-r-normal--*-%d-*-*-m-*-jisx0201.1976-0
+serif.bolditalic.japanese-x0208=-misc-ipamincho-medium-r-normal--*-%d-*-*-m-*-jisx0208.1983-0
+serif.bolditalic.latin-1=-b&h-lucidabright-demibold-i-normal--*-%d-*-*-p-*-iso8859-1
+serif.bolditalic.latin-2=-b&h-lucidabright-demibold-i-normal--*-%d-*-*-p-*-iso8859-1
+serif.bolditalic.latin-5=-b&h-lucidabright-demibold-i-normal--*-%d-*-*-p-*-iso8859-1
+serif.bolditalic.latin-7=-b&h-lucidabright-demibold-i-normal--*-%d-*-*-p-*-iso8859-1
+serif.bolditalic.latin-9=-b&h-lucidabright-demibold-i-normal--*-%d-*-*-p-*-iso8859-1
+serif.bolditalic.thai=-misc-freeserif-bold-i-normal--*-%d-*-*-m-*-tis620.2533-0
+
+sansserif.plain.arabic=-b&h-lucidasans-medium-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.plain.cyrillic-iso8859-5=-b&h-lucidasans-medium-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.plain.cyrillic-cp1251=-b&h-lucidasans-medium-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.plain.cyrillic-koi8-r=-b&h-lucidasans-medium-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.plain.greek=-b&h-lucidasans-medium-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.plain.hebrew=-b&h-lucidasans-medium-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.plain.japanese-x0201=-misc-ipagothic-medium-r-normal--*-%d-*-*-m-*-jisx0201.1976-0
+sansserif.plain.japanese-x0208=-misc-ipagothic-medium-r-normal-*-*-%d-*-*-m-*-jisx0208.1983-0
+sansserif.plain.latin-1=-b&h-lucidasans-medium-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.plain.latin-2=-b&h-lucidasans-medium-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.plain.latin-5=-b&h-lucidasans-medium-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.plain.latin-7=-b&h-lucidasans-medium-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.plain.latin-9=-b&h-lucidasans-medium-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.plain.thai=-b&h-lucidasans-medium-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+
+sansserif.bold.arabic=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.bold.cyrillic-iso8859-5=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.bold.cyrillic-cp1251=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.bold.cyrillic-koi8-r=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.bold.greek=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.bold.hebrew=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.bold.japanese-x0201=-misc-ipagothic-medium-r-normal--*-%d-*-*-m-*-jisx0201.1976-0
+sansserif.bold.japanese-x0208=-misc-ipagothic-medium-r-normal-*-*-%d-*-*-m-*-jisx0208.1983-0
+sansserif.bold.latin-1=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.bold.latin-2=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.bold.latin-5=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.bold.latin-7=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.bold.latin-9=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.bold.thai=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+
+sansserif.italic.arabic=-b&h-lucidasans-medium-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.italic.cyrillic-iso8859-5=-b&h-lucidasans-medium-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.italic.cyrillic-cp1251=-b&h-lucidasans-medium-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.italic.cyrillic-koi8-r=-b&h-lucidasans-medium-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.italic.greek=-b&h-lucidasans-medium-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.italic.hebrew=-b&h-lucidasans-medium-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.italic.japanese-x0201=-misc-ipagothic-medium-r-normal--*-%d-*-*-m-*-jisx0201.1976-0
+sansserif.italic.japanese-x0208=-misc-ipagothic-medium-r-normal-*-*-%d-*-*-m-*-jisx0208.1983-0
+sansserif.italic.latin-1=-b&h-lucidasans-medium-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.italic.latin-2=-b&h-lucidasans-medium-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.italic.latin-5=-b&h-lucidasans-medium-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.italic.latin-7=-b&h-lucidasans-medium-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.italic.latin-9=-b&h-lucidasans-medium-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.italic.thai=-b&h-lucidasans-medium-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+
+sansserif.bolditalic.arabic=-b&h-lucidasans-bold-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.bolditalic.cyrillic-iso8859-5=-b&h-lucidasans-bold-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.bolditalic.cyrillic-cp1251=-b&h-lucidasans-bold-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.bolditalic.cyrillic-koi8-r=-b&h-lucidasans-bold-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.bolditalic.greek=-b&h-lucidasans-bold-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.bolditalic.hebrew=-b&h-lucidasans-bold-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.bolditalic.japanese-x0201=-misc-ipagothic-medium-r-normal--*-%d-*-*-m-*-jisx0201.1976-0
+sansserif.bolditalic.japanese-x0208=-misc-ipagothic-medium-r-normal-*-*-%d-*-*-m-*-jisx0208.1983-0
+sansserif.bolditalic.latin-1=-b&h-lucidasans-bold-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.bolditalic.latin-2=-b&h-lucidasans-bold-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.bolditalic.latin-5=-b&h-lucidasans-bold-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.bolditalic.latin-7=-b&h-lucidasans-bold-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.bolditalic.latin-9=-b&h-lucidasans-bold-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+sansserif.bolditalic.thai=-b&h-lucidasans-bold-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+
+monospaced.plain.arabic=-b&h-lucidatypewriter-medium-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.plain.cyrillic-iso8859-5=-b&h-lucidatypewriter-medium-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.plain.cyrillic-cp1251=-b&h-lucidatypewriter-medium-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.plain.cyrillic-koi8-r=-b&h-lucidatypewriter-medium-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.plain.greek=-b&h-lucidatypewriter-medium-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.plain.hebrew=-b&h-lucidatypewriter-medium-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.plain.japanese-x0201=-misc-ipamincho-medium-r-normal--*-%d-*-*-m-*-jisx0201.1976-0
+monospaced.plain.japanese-x0208=-misc-ipamincho-medium-r-normal--*-%d-*-*-m-*-jisx0208.1983-0
+monospaced.plain.latin-1=-b&h-lucidatypewriter-medium-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.plain.latin-2=-b&h-lucidatypewriter-medium-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.plain.latin-5=-b&h-lucidatypewriter-medium-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.plain.latin-7=-b&h-lucidatypewriter-medium-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.plain.latin-9=-b&h-lucidatypewriter-medium-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.plain.thai=-b&h-lucidatypewriter-medium-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+
+monospaced.bold.arabic=-b&h-lucidatypewriter-bold-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.bold.cyrillic-iso8859-5=-b&h-lucidatypewriter-bold-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.bold.cyrillic-cp1251=-b&h-lucidatypewriter-bold-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.bold.cyrillic-koi8-r=-b&h-lucidatypewriter-bold-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.bold.greek=-b&h-lucidatypewriter-bold-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.bold.hebrew=-b&h-lucidatypewriter-bold-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.bold.japanese-x0201=-misc-ipamincho-medium-r-normal--*-%d-*-*-m-*-jisx0201.1976-0
+monospaced.bold.japanese-x0208=-misc-ipamincho-medium-r-normal--*-%d-*-*-m-*-jisx0208.1983-0
+monospaced.bold.latin-1=-b&h-lucidatypewriter-bold-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.bold.latin-2=-b&h-lucidatypewriter-bold-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.bold.latin-5=-b&h-lucidatypewriter-bold-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.bold.latin-7=-b&h-lucidatypewriter-bold-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.bold.latin-9=-b&h-lucidatypewriter-bold-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.bold.thai=-b&h-lucidatypewriter-bold-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+
+monospaced.italic.arabic=-b&h-lucidatypewriter-medium-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.italic.cyrillic-iso8859-5=-b&h-lucidatypewriter-medium-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.italic.cyrillic-cp1251=-b&h-lucidatypewriter-medium-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.italic.cyrillic-koi8-r=-b&h-lucidatypewriter-medium-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.italic.greek=-b&h-lucidatypewriter-medium-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.italic.hebrew=-b&h-lucidatypewriter-medium-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.italic.japanese-x0201=-misc-ipamincho-medium-r-normal--*-%d-*-*-m-*-jisx0201.1976-0
+monospaced.italic.japanese-x0208=-misc-ipamincho-medium-r-normal--*-%d-*-*-m-*-jisx0208.1983-0
+monospaced.italic.latin-1=-b&h-lucidatypewriter-medium-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.italic.latin-2=-b&h-lucidatypewriter-medium-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.italic.latin-5=-b&h-lucidatypewriter-medium-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.italic.latin-7=-b&h-lucidatypewriter-medium-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.italic.latin-9=-b&h-lucidatypewriter-medium-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.italic.thai=-b&h-lucidatypewriter-medium-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+
+monospaced.bolditalic.arabic=-b&h-lucidatypewriter-bold-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.bolditalic.cyrillic-iso8859-5=-b&h-lucidatypewriter-bold-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.bolditalic.cyrillic-cp1251=-b&h-lucidatypewriter-bold-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.bolditalic.cyrillic-koi8-r=-b&h-lucidatypewriter-bold-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.bolditalic.greek=-b&h-lucidatypewriter-bold-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.bolditalic.hebrew=-b&h-lucidatypewriter-bold-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.bolditalic.japanese-x0201=-misc-ipamincho-medium-r-normal--*-%d-*-*-m-*-jisx0201.1976-0
+monospaced.bolditalic.japanese-x0208=-misc-ipamincho-medium-r-normal--*-%d-*-*-m-*-jisx0208.1983-0
+monospaced.bolditalic.latin-1=-b&h-lucidatypewriter-bold-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.bolditalic.latin-2=-b&h-lucidatypewriter-bold-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.bolditalic.latin-5=-b&h-lucidatypewriter-bold-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.bolditalic.latin-7=-b&h-lucidatypewriter-bold-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.bolditalic.latin-9=-b&h-lucidatypewriter-bold-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+monospaced.bolditalic.thai=-b&h-lucidatypewriter-bold-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+
+dialog.plain.arabic=-b&h-lucidasans-medium-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.plain.cyrillic-iso8859-5=-b&h-lucidasans-medium-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.plain.cyrillic-cp1251=-b&h-lucidasans-medium-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.plain.cyrillic-koi8-r=-b&h-lucidasans-medium-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.plain.greek=-b&h-lucidasans-medium-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.plain.hebrew=-b&h-lucidasans-medium-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.plain.japanese-x0201=-misc-ipagothic-medium-r-normal--*-%d-*-*-m-*-jisx0201.1976-0
+dialog.plain.japanese-x0208=-misc-ipagothic-medium-r-normal-*-*-%d-*-*-m-*-jisx0208.1983-0
+dialog.plain.latin-1=-b&h-lucidasans-medium-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.plain.latin-2=-b&h-lucidasans-medium-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.plain.latin-5=-b&h-lucidasans-medium-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.plain.latin-7=-b&h-lucidasans-medium-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.plain.latin-9=-b&h-lucidasans-medium-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.plain.thai=-b&h-lucidasans-medium-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+
+dialog.bold.arabic=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.bold.cyrillic-iso8859-5=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.bold.cyrillic-cp1251=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.bold.cyrillic-koi8-r=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.bold.greek=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.bold.hebrew=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.bold.japanese-x0201=-misc-ipagothic-medium-r-normal--*-%d-*-*-m-*-jisx0201.1976-0
+dialog.bold.japanese-x0208=-misc-ipagothic-medium-r-normal-*-*-%d-*-*-m-*-jisx0208.1983-0
+dialog.bold.latin-1=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.bold.latin-2=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.bold.latin-5=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.bold.latin-7=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.bold.latin-9=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.bold.thai=-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1
+
+dialog.italic.arabic=-b&h-lucidasans-medium-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.italic.cyrillic-iso8859-5=-b&h-lucidasans-medium-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.italic.cyrillic-cp1251=-b&h-lucidasans-medium-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.italic.cyrillic-koi8-r=-b&h-lucidasans-medium-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.italic.greek=-b&h-lucidasans-medium-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.italic.hebrew=-b&h-lucidasans-medium-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.italic.japanese-x0201=-misc-ipagothic-medium-r-normal--*-%d-*-*-m-*-jisx0201.1976-0
+dialog.italic.japanese-x0208=-misc-ipagothic-medium-r-normal-*-*-%d-*-*-m-*-jisx0208.1983-0
+dialog.italic.latin-1=-b&h-lucidasans-medium-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.italic.latin-2=-b&h-lucidasans-medium-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.italic.latin-5=-b&h-lucidasans-medium-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.italic.latin-7=-b&h-lucidasans-medium-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.italic.latin-9=-b&h-lucidasans-medium-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.italic.thai=-b&h-lucidasans-medium-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+
+dialog.bolditalic.arabic=-b&h-lucidasans-bold-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.bolditalic.cyrillic-iso8859-5=-b&h-lucidasans-bold-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.bolditalic.cyrillic-cp1251=-b&h-lucidasans-bold-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.bolditalic.cyrillic-koi8-r=-b&h-lucidasans-bold-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.bolditalic.greek=-b&h-lucidasans-bold-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.bolditalic.hebrew=-b&h-lucidasans-bold-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.bolditalic.japanese-x0201=-misc-ipagothic-medium-r-normal--*-%d-*-*-m-*-jisx0201.1976-0
+dialog.bolditalic.japanese-x0208=-misc-ipagothic-medium-r-normal-*-*-%d-*-*-m-*-jisx0208.1983-0
+dialog.bolditalic.latin-1=-b&h-lucidasans-bold-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.bolditalic.latin-2=-b&h-lucidasans-bold-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.bolditalic.latin-5=-b&h-lucidasans-bold-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.bolditalic.latin-7=-b&h-lucidasans-bold-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.bolditalic.latin-9=-b&h-lucidasans-bold-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+dialog.bolditalic.thai=-b&h-lucidasans-bold-i-normal-sans-*-%d-*-*-p-*-iso8859-1
+
+dialoginput.plain.arabic=-b&h-lucidatypewriter-medium-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.plain.cyrillic-iso8859-5=-b&h-lucidatypewriter-medium-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.plain.cyrillic-cp1251=-b&h-lucidatypewriter-medium-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.plain.cyrillic-koi8-r=-b&h-lucidatypewriter-medium-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.plain.greek=-b&h-lucidatypewriter-medium-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.plain.hebrew=-b&h-lucidatypewriter-medium-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.plain.japanese-x0201=-misc-ipamincho-medium-r-normal--*-%d-*-*-m-*-jisx0201.1976-0
+dialoginput.plain.japanese-x0208=-misc-ipamincho-medium-r-normal--*-%d-*-*-m-*-jisx0208.1983-0
+dialoginput.plain.latin-1=-b&h-lucidatypewriter-medium-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.plain.latin-2=-b&h-lucidatypewriter-medium-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.plain.latin-5=-b&h-lucidatypewriter-medium-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.plain.latin-7=-b&h-lucidatypewriter-medium-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.plain.latin-9=-b&h-lucidatypewriter-medium-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.plain.thai=-b&h-lucidatypewriter-medium-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+
+dialoginput.bold.arabic=-b&h-lucidatypewriter-bold-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.bold.cyrillic-iso8859-5=-b&h-lucidatypewriter-bold-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.bold.cyrillic-cp1251=-b&h-lucidatypewriter-bold-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.bold.cyrillic-koi8-r=-b&h-lucidatypewriter-bold-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.bold.greek=-b&h-lucidatypewriter-bold-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.bold.hebrew=-b&h-lucidatypewriter-bold-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.bold.japanese-x0201=-misc-ipamincho-medium-r-normal--*-%d-*-*-m-*-jisx0201.1976-0
+dialoginput.bold.japanese-x0208=-misc-ipamincho-medium-r-normal--*-%d-*-*-m-*-jisx0208.1983-0
+dialoginput.bold.latin-1=-b&h-lucidatypewriter-bold-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.bold.latin-2=-b&h-lucidatypewriter-bold-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.bold.latin-5=-b&h-lucidatypewriter-bold-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.bold.latin-7=-b&h-lucidatypewriter-bold-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.bold.latin-9=-b&h-lucidatypewriter-bold-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.bold.thai=-b&h-lucidatypewriter-bold-r-normal-sans-*-%d-*-*-m-*-iso8859-1
+
+dialoginput.italic.arabic=-b&h-lucidatypewriter-medium-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.italic.cyrillic-iso8859-5=-b&h-lucidatypewriter-medium-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.italic.cyrillic-cp1251=-b&h-lucidatypewriter-medium-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.italic.cyrillic-koi8-r=-b&h-lucidatypewriter-medium-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.italic.greek=-b&h-lucidatypewriter-medium-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.italic.hebrew=-b&h-lucidatypewriter-medium-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.italic.japanese-x0201=-misc-ipamincho-medium-r-normal--*-%d-*-*-m-*-jisx0201.1976-0
+dialoginput.italic.japanese-x0208=-misc-ipamincho-medium-r-normal--*-%d-*-*-m-*-jisx0208.1983-0
+dialoginput.italic.latin-1=-b&h-lucidatypewriter-medium-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.italic.latin-2=-b&h-lucidatypewriter-medium-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.italic.latin-5=-b&h-lucidatypewriter-medium-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.italic.latin-7=-b&h-lucidatypewriter-medium-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.italic.latin-9=-b&h-lucidatypewriter-medium-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.italic.thai=-b&h-lucidatypewriter-medium-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+
+dialoginput.bolditalic.arabic=-b&h-lucidatypewriter-bold-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.bolditalic.cyrillic-iso8859-5=-b&h-lucidatypewriter-bold-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.bolditalic.cyrillic-cp1251=-b&h-lucidatypewriter-bold-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.bolditalic.cyrillic-koi8-r=-b&h-lucidatypewriter-bold-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.bolditalic.greek=-b&h-lucidatypewriter-bold-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.bolditalic.hebrew=-b&h-lucidatypewriter-bold-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.bolditalic.japanese-x0201=-misc-ipamincho-medium-r-normal--*-%d-*-*-m-*-jisx0201.1976-0
+dialoginput.bolditalic.japanese-x0208=-misc-ipamincho-medium-r-normal--*-%d-*-*-m-*-jisx0208.1983-0
+dialoginput.bolditalic.latin-1=-b&h-lucidatypewriter-bold-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.bolditalic.latin-2=-b&h-lucidatypewriter-bold-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.bolditalic.latin-5=-b&h-lucidatypewriter-bold-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.bolditalic.latin-7=-b&h-lucidatypewriter-bold-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.bolditalic.latin-9=-b&h-lucidatypewriter-bold-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+dialoginput.bolditalic.thai=-b&h-lucidatypewriter-bold-i-normal-sans-*-%d-*-*-m-*-iso8859-1
+
+# Search Sequences
+
+sequence.allfonts=latin-1
+
+sequence.allfonts.Big5=latin-1,chinese-big5
+
+sequence.allfonts.Big5-HKSCS=latin-1,chinese-big5,chinese-hkscs
+
+sequence.allfonts.windows-1251=cyrillic-cp1251,latin-1
+
+sequence.allfonts.GB2312=latin-1,chinese-gbk,chinese-gb2312
+
+sequence.allfonts.x-eucJP-Open=latin-1,japanese-x0201,japanese-x0208,japanese-x0212
+
+sequence.allfonts.EUC-KR=latin-1,korean
+
+sequence.allfonts.x-EUC-TW=latin-1,chinese-cns11643-1,chinese-cns11643-2,chinese-cns11643-3,
+
+sequence.allfonts.GBK=latin-1,chinese-gbk
+
+sequence.allfonts.GB18030=latin-1,chinese-gb18030-0,chinese-gb18030-1
+
+sequence.allfonts.ISO-8859-2=latin-2,latin-1
+
+sequence.allfonts.ISO-8859-5=cyrillic-iso8859-5,latin-1
+
+sequence.allfonts.ISO-8859-6=arabic,latin-1
+
+sequence.allfonts.ISO-8859-7=latin-1,greek
+
+sequence.allfonts.ISO-8859-8=latin-1,hebrew
+
+sequence.allfonts.ISO-8859-9=latin-5,latin-1
+
+sequence.allfonts.ISO-8859-13=latin-7,latin-1
+
+sequence.allfonts.ISO-8859-15=latin-9
+
+sequence.allfonts.KOI8-R=cyrillic-koi8-r,latin-1
+
+sequence.allfonts.x-PCK=latin-1,japanese-x0201,japanese-x0208,japanese-x0212
+
+sequence.allfonts.TIS-620=latin-1,thai
+
+sequence.allfonts.UTF-8=latin-1,latin-2,latin-7,cyrillic-iso8859-5,greek,latin-5,latin-9,\
+        japanese-x0201,japanese-x0208,japanese-x0212,korean-johab,\
+        chinese-gb2312,chinese-big5
+
+sequence.allfonts.UTF-8.hi=latin-1,latin-2,latin-7,cyrillic-iso8859-5,greek,latin-5,latin-9,\
+        japanese-x0201,japanese-x0208,japanese-x0212,korean-johab,\
+        chinese-gb2312,chinese-big5,thai
+
+sequence.allfonts.UTF-8.ko=latin-1,latin-2,latin-7,cyrillic-iso8859-5,greek,latin-5,latin-9,\
+        korean-johab,japanese-x0201,japanese-x0208,japanese-x0212,\
+        chinese-gb2312,chinese-big5
+
+sequence.allfonts.UTF-8.th=latin-1,latin-2,latin-7,cyrillic-iso8859-5,greek,latin-5,latin-9,\
+        thai,chinese-gb2312,chinese-big5,japanese-x0201,japanese-x0208,japanese-x0212,\
+        korean-johab
+
+sequence.allfonts.UTF-8.zh.CN=latin-1,latin-2,latin-7,cyrillic-iso8859-5,greek,latin-5,latin-9,\
+        chinese-gb18030-0,chinese-gb18030-1,chinese-big5,chinese-hkscs,\
+        japanese-x0201,japanese-x0208,japanese-x0212,korean-johab,thai
+
+sequence.allfonts.UTF-8.zh.HK=latin-1,latin-2,latin-7,cyrillic-iso8859-5,greek,latin-5,latin-9,\
+        chinese-big5,chinese-hkscs,chinese-gb18030-0,chinese-gb18030-1,\
+        japanese-x0201,japanese-x0208,japanese-x0212,korean-johab,thai
+
+sequence.allfonts.UTF-8.zh.TW=latin-1,latin-2,latin-7,cyrillic-iso8859-5,greek,latin-5,latin-9,\
+        chinese-big5,chinese-hkscs,chinese-gb18030-0,chinese-gb18030-1,\
+        japanese-x0201,japanese-x0208,japanese-x0212,korean-johab,thai
+
+# the fallback sequence omits the following character subsets:
+# - latin-1, latin-2, latin-5, latin-7, latin-9: characters covered by lucida
+# - cyrillic-cp1251, cyrillic-iso8859-5, cyrillic-koi8-r: characters covered by lucida
+# - arabic, devanagari, greek, hebrew, thai: characters covered by lucida
+# - chinese-cns11643-1, chinese-cns11643-2, chinese-cns11643-3, chinese-hkscs: same file as chinese-big5
+# - chinese-gbk, chinese-gb18030-1: same file as chinese-gb18030-0
+# - japanese-x0208: same files as japanese-x0201
+# - japanese-x0212: same files as japanese-x0201
+# - korean: same file as korean-johab
+sequence.fallback=lucida,\
+        chinese-big5,chinese-gb2312,chinese-gb18030-0,\
+        japanese-x0201,korean-johab
+
+# Exclusion Ranges
+
+# Font File Names
+
+# Japanese
+filename.-misc-ipamincho-medium-r-normal--*-%d-*-*-m-*-jisx0212.1990-0=/usr/X11/lib/X11/fonts/TrueType/ipafont/ipam.ttf
+filename.-misc-ipagothic-medium-r-normal-*-*-%d-*-*-m-*-jisx0208.1983-0=/usr/X11/lib/X11/fonts/TrueType/ipafont/ipag.ttf
+filename.-misc-ipagothic-medium-r-normal--*-%d-*-*-m-*-jisx0201.1976-0=/usr/X11/lib/X11/fonts/TrueType/ipafont/ipag.ttf
+filename.-misc-ipamincho-medium-r-normal--*-%d-*-*-m-*-jisx0201.1976-0=/usr/X11/lib/X11/fonts/TrueType/ipafont/ipam.ttf
+filename.-misc-ipamincho-medium-r-normal--*-%d-*-*-m-*-jisx0208.1983-0=/usr/X11/lib/X11/fonts/TrueType/ipafont/ipam.ttf
+
+# Chinese
+filename.-arphic-ar_pl_shanheisun_uni-medium-r-normal--*-%d-*-*-m-*-gb18030.2000-0=/usr/X11/lib/X11/fonts/TrueType/arphic/uming.ttf
+filename.-arphic-ar_pl_shanheisun_uni-medium-r-normal--*-%d-*-*-m-*-gb18030.2000-1=/usr/X11/lib/X11/fonts/TrueType/arphic/uming.ttf
+filename.-arphic-ar_pl_shanheisun_uni-medium-r-normal--*-%d-*-*-m-*-big5-1=/usr/X11/lib/X11/fonts/TrueType/arphic/uming.ttf
+filename.-arphic-ar_pl_shanheisun_uni-Medium-r-normal--*-%d-*-*-m-*-cns11643-1=/usr/X11/lib/X11/fonts/TrueType/arphic/uming.ttf
+filename.-arphic-ar_pl_shanheisun_uni-Medium-r-normal--*-%d-*-*-m-*-cns11643-2=/usr/X11/lib/X11/fonts/TrueType/arphic/uming.ttf
+filename.-arphic-ar_pl_shanheisun_uni-Medium-r-normal--*-%d-*-*-m-*-cns11643-3=/usr/X11/lib/X11/fonts/TrueType/arphic/uming.ttf
+filename.-arphic-ar_pl_shanheisun_uni-medium-r-normal--*-%d-*-*-m-*-hkscs-1=/usr/X11/lib/X11/fonts/TrueType/arphic/uming.ttf
+filename.-arphic-ar_pl_shanheisun_uni-medium-r-normal--*-%d-*-*-m-*-gb2312.1980-0=/usr/X11/lib/X11/fonts/TrueType/arphic/uming.ttf
+filename.-arphic-ar_pl_shanheisun_uni-medium-r-normal--*-%d-*-*-c-*-gbk-0=/usr/X11/lib/X11/fonts/TrueType/arphic/uming.ttf
+
+# Korean
+filename.-hanyang-kodig-medium-r-normal--*-%d-*-*-m-*-ksc5601.1987-0=/usr/X11/lib/X11/fonts/TrueType/hangyang/h2gtrm.ttf
+filename.-hanyang-kodig-medium-r-normal--*-%d-*-*-m-*-ksc5601.1992-3=/usr/X11/lib/X11/fonts/TrueType/hangyang/h2gtrm.ttf
+
+# Hebrew. The JDK's Serif font, Lucida Bright doesn't have Hebrew.
+filename.-misc-freeserif-medium-r-normal--*-%d-*-*-p-*-iso8859-8=/usr/X11/lib/X11/fonts/TrueType/FreeSerif.ttf
+filename.-misc-freeserif-medium-i-normal--*-%d-*-*-p-*-iso8859-8=/usr/X11/lib/X11/fonts/TrueType/FreeSerif.ttf
+filename.-misc-freeserif-bold-r-normal--*-%d-*-*-p-*-iso8859-8=/usr/X11/lib/X11/fonts/TrueType/FreeSerif.ttf
+filename.-misc-freeserif-bold-i-normal--*-%d-*-*-p-*-iso8859-8=/usr/X11/lib/X11/fonts/TrueType/FreeSerif.ttf
+
+# Thai. The JDK's Serif font, Lucida Bright doesn't have Thai.
+filename.-misc-freeserif-medium-r-normal--*-%d-*-*-m-*-tis620.2533-0=/usr/X11/lib/X11/fonts/TrueType/FreeSerif.ttf
+filename.-misc-freeserif-medium-i-normal--*-%d-*-*-m-*-tis620.2533-0=/usr/X11/lib/X11/fonts/TrueType/FreeSerif.ttf
+filename.-misc-freeserif-bold-r-normal--*-%d-*-*-m-*-tis620.2533-0=/usr/X11/lib/X11/fonts/TrueType/FreeSerif.ttf
+filename.-misc-freeserif-bold-i-normal--*-%d-*-*-m-*-tis620.2533-0=/usr/X11/lib/X11/fonts/TrueType/FreeSerif.ttf
+
+# JDK Lucida fonts.
+# Only the 8859-1 encoding is referenced which makes this file somewhat shorter.
+# JDK6 on OpenSolaris doesn't need the XLFD except in Latin-1 printing (as in to a printer).
+filename.-b&h-lucidasans-medium-r-normal-sans-*-%d-*-*-p-*-iso8859-1=$JRE_LIB_FONTS/LucidaSansRegular.ttf
+filename.-b&h-lucidasans-medium-r-normal-sans-*-%d-*-*-p-*-iso8859-1=$JRE_LIB_FONTS/LucidaSansRegular.ttf
+filename.-b&h-lucidabright-medium-r-normal--*-%d-*-*-p-*-iso8859-1=$JRE_LIB_FONTS/LucidaBrightRegular.ttf
+filename.-b&h-lucidabright-demibold-r-normal--*-%d-*-*-p-*-iso8859-1=$JRE_LIB_FONTS/LucidaBrightDemiBold.ttf
+filename.-b&h-lucidabright-medium-i-normal--*-%d-*-*-p-*-iso8859-1=$JRE_LIB_FONTS/LucidaBrightItalic.ttf
+filename.-b&h-lucidabright-demibold-i-normal--*-%d-*-*-p-*-iso8859-1=$JRE_LIB_FONTS/LucidaBrightDemiItalic.ttf
+filename.-b&h-lucidasans-bold-r-normal-sans-*-%d-*-*-p-*-iso8859-1=$JRE_LIB_FONTS/LucidaSansDemiBold.ttf
+filename.-b&h-lucidasans-medium-i-normal-sans-*-%d-*-*-p-*-iso8859-1=$JRE_LIB_FONTS/LucidaSansRegular.ttf
+filename.-b&h-lucidasans-bold-i-normal-sans-*-%d-*-*-p-*-iso8859-1=$JRE_LIB_FONTS/LucidaSansDemiBold.ttf
+filename.-b&h-lucidatypewriter-medium-r-normal-sans-*-%d-*-*-m-*-iso8859-1=$JRE_LIB_FONTS/LucidaTypewriterRegular.ttf
+filename.-b&h-lucidatypewriter-bold-r-normal-sans-*-%d-*-*-m-*-iso8859-1=$JRE_LIB_FONTS/LucidaTypewriterBold.ttf
+filename.-b&h-lucidatypewriter-medium-i-normal-sans-*-%d-*-*-m-*-iso8859-1=$JRE_LIB_FONTS/LucidaTypewriterRegular.ttf
+filename.-b&h-lucidatypewriter-bold-i-normal-sans-*-%d-*-*-m-*-iso8859-1=$JRE_LIB_FONTS/LucidaTypewriterBold.ttf
+
+# AWT X11 font paths
+awtfontpath.latin-1=$JRE_LIB_FONTS
+awtfontpath.latin-2=$JRE_LIB_FONTS
+awtfontpath.latin-5=$JRE_LIB_FONTS
+awtfontpath.latin-7=$JRE_LIB_FONTS
+awtfontpath.latin-9=$JRE_LIB_FONTS
+awtfontpath.arabic=$JRE_LIB_FONTS
+awtfontpath.hebrew=$JRE_LIB_FONTS
+awtfontpath.cyrillic-cp1251=$JRE_LIB_FONTS
+awtfontpath.cyrillic-koi8-r=$JRE_LIB_FONTS
+awtfontpath.cyrillic-iso8859-5=$JRE_LIB_FONTS
+awtfontpath.greek=$JRE_LIB_FONTS
+awtfontpath.thai=$JRE_LIB_FONTS
+awtfontpath.korean=/usr/X11/lib/X11/fonts/TrueType/hangyang
+awtfontpath.korean-johab=/usr/X11/lib/X11/fonts/TrueType/hangyang
+awtfontpath.japanese-x0201=/usr/X11/lib/X11/fonts/TrueType/ipafont
+awtfontpath.japanese-x0208=/usr/X11/lib/X11/fonts/TrueType/ipafont
+awtfontpath.japanese-x0212=/usr/X11/lib/X11/fonts/TrueType/ipafont
+awtfontpath.chinese-gbk=/usr/X11/lib/X11/fonts/TrueType/arphic
+awtfontpath.chinese-cns11643-1=/usr/X11/lib/X11/fonts/TrueType/arphic
+awtfontpath.chinese-cns11643-2=/usr/X11/lib/X11/fonts/TrueType/arphic
+awtfontpath.chinese-cns11643-3=/usr/X11/lib/X11/fonts/TrueType/arphic
+awtfontpath.chinese-big5=/usr/X11/lib/X11/fonts/TrueType/arphic
+awtfontpath.chinese-gb2312=/usr/X11/lib/X11/fonts/TrueType/arphic
+awtfontpath.chinese-gb18030-0=/usr/X11/lib/X11/fonts/TrueType/arphic
+awtfontpath.chinese-gb18030-1=/usr/X11/lib/X11/fonts/TrueType/arphic
+awtfontpath.chinese-hkscs=/usr/X11/lib/X11/fonts/TrueType/arphic
+
+# Appended Font Path
+
+
+

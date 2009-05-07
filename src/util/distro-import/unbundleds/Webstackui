@@ -2,33 +2,19 @@ package web/webstack-ui
 classification "Web Services/Application and Web Servers"
 description "Web Stack Options and Desktop Menus"
 import SUNWwebstackui
-depend SUNWapch22
-depend SUNWapch22d
-depend SUNWapch22m-php52
 depend SUNWj6rt
-depend SUNWmysql51
-depend SUNWphp52
-depend SUNWphp52-mysql
-depend SUNWphp52d
+depend amp
 end package
 
 package amp-dev
 classification "Development/Integrated Development Environments"
 description "AMP Development cluster"
 depend SUNWPython
-depend SUNWapch22
 depend SUNWapch22d
-depend SUNWapch22m-dtrace
-depend SUNWapch22m-fcgid
 depend SUNWapch22m-jk
-depend SUNWapch22m-php52
-depend SUNWapch22m-security
 depend SUNWcvs
 depend SUNWmemcached
 depend SUNWmercurial
-depend SUNWmysql51
-depend SUNWphp52
-depend SUNWphp52-mysql
 depend SUNWphp52-pear
 depend SUNWphp52-pgsql
 depend SUNWphp52d

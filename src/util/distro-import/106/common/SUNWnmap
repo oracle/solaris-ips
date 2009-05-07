@@ -2,4 +2,5 @@ package SUNWnmap
 classification "System/Administration and Configuration"
 import SUNWnmap
 version 4.75
+depend SUNWpysqlite
 end package
