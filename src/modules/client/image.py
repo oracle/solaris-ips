@@ -265,34 +265,44 @@ class Image(object):
                 if self.root == None:
                         raise RuntimeError, "self.root must be set"
 
-                ic = imageconfig.ImageConfig()
+                ic = imageconfig.ImageConfig(self.root)
                 ic.read(self.imgdir)
-
-                self.cfg_cache = ic
 
                 # make sure we define architecture variant; upgrade config
                 # file if possible.
-                if "variant.arch" not in self.cfg_cache.variants:
-                        self.cfg_cache.variants["variant.arch"] = \
-                            platform.processor()
+                changed = False
+                if "variant.arch" not in ic.variants:
+                        ic.variants["variant.arch"] = platform.processor()
                         try:
-                                self.save_config()
+                                ic.write(self.imgdir)
+                                changed = True
                         except api_errors.PermissionsException:
                                 pass
                 # make sure we define zone variant; upgrade config if possible
-                if "variant.opensolaris.zone" not in self.cfg_cache.variants:
-                        zone = self.cfg_cache.filters.get("opensolaris.zone",
-                            "")
+                if "variant.opensolaris.zone" not in ic.variants:
+                        zone = ic.filters.get("opensolaris.zone", "")
                         if zone == "nonglobal":
-                                self.cfg_cache.variants[
+                                ic.variants[
                                     "variant.opensolaris.zone"] = "nonglobal"
                         else:
-                                self.cfg_cache.variants[
+                                ic.variants[
                                     "variant.opensolaris.zone"] = "global"
                         try:
-                                self.save_config()
+                                ic.write(self.imgdir)
+                                changed = True
                         except api_errors.PermissionsException:
                                 pass
+
+                #
+                # If we made changes to the configuration, reload it;
+                # this lets any processing which is a side-effect of
+                # these changes take place.
+                #
+                if changed:
+                        ic = imageconfig.ImageConfig(self.root)
+                        ic.read(self.imgdir)
+
+                self.cfg_cache = ic
 
         def save_config(self):
                 self.cfg_cache.write(self.imgdir)
@@ -347,7 +357,7 @@ class Image(object):
                     repositories=[repo])
 
                 # Initialize and store the configuration object.
-                self.cfg_cache = imageconfig.ImageConfig()
+                self.cfg_cache = imageconfig.ImageConfig(self.root)
 
                 # ...so that if creation of the Publisher object fails, an
                 # empty, useless image won't be left behind.

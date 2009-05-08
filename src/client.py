@@ -1662,7 +1662,7 @@ def publisher_refresh(img_dir, args):
         else:
                 return 0
 
-def publisher_set(img_dir, args):
+def publisher_set(img, img_dir, args):
         """pkg set-publisher [-Ped] [-k ssl_key] [-c ssl_cert] [--reset-uuid]
             [-O origin_url] [-m mirror to add] [-M mirror to remove]
             [--enable] [--disable] [--no-refresh] publisher"""
@@ -1786,6 +1786,18 @@ def publisher_set(img_dir, args):
         # None is checked for here so that a client can unset a ssl_cert or
         # ssl_key by using -k "" or -c "".
         if ssl_cert is not None or ssl_key is not None:
+                #
+                # In the case of zones, the ssl cert given is assumed to
+                # be relative to the root of the image, not truly absolute.
+                #
+                if img.is_zone():
+                        if ssl_cert is not None:
+                                ssl_cert = os.path.abspath(
+                                    img.get_root() + os.sep + ssl_cert)
+                        if ssl_key is not None:
+                                ssl_key = os.path.abspath(
+                                    img.get_root() + os.sep + ssl_key)
+
                 # Assume the user wanted to update the ssl_cert or ssl_key
                 # information for *all* of the currently selected
                 # repository's origins and mirrors.
@@ -2184,16 +2196,27 @@ def image_create(img, args):
 
         if len(pargs) != 1:
                 usage(_("image-create requires a single image directory path"))
+        image_dir = pargs[0]
 
         if ssl_key:
-                ssl_key = os.path.abspath(ssl_key)
+                # When creating zones, the path is image-root-relative.
+                if is_zone:
+                        ssl_key = os.path.normpath(image_dir + os.sep + \
+                            ssl_key)
+                else:
+                        ssl_key = os.path.abspath(ssl_key)
                 if not os.path.exists(ssl_key):
                         msg(_("pkg: set-publisher: SSL key file '%s' does " \
                             "not exist") % ssl_key)
                         return 1
 
         if ssl_cert:
-                ssl_cert = os.path.abspath(ssl_cert)
+                # When creating zones, the path is image-root-relative.
+                if is_zone:
+                        ssl_cert = os.path.normpath(image_dir + os.sep + \
+                            ssl_cert)
+                else:
+                        ssl_cert = os.path.abspath(ssl_cert)
                 if not os.path.exists(ssl_cert):
                         msg(_("pkg: set-publisher: SSL key cert '%s' does " \
                             "not exist") % ssl_cert)
@@ -2215,8 +2238,6 @@ def image_create(img, args):
                 error(_("image-create: publisher prefix has invalid " \
                     "characters"))
                 return 1
-
-        image_dir = pargs[0]
 
         # Bail if there is already an image there
         if img.image_type(image_dir) != None and not force:
@@ -2535,7 +2556,7 @@ def main_func():
                 elif subcommand == "verify":
                         return verify_image(img, pargs)
                 elif subcommand in ("set-authority", "set-publisher"):
-                        return publisher_set(mydir, pargs)
+                        return publisher_set(img, mydir, pargs)
                 elif subcommand in ("unset-authority", "unset-publisher"):
                         return publisher_unset(mydir, pargs)
                 elif subcommand in ("authority", "publisher"):

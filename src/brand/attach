@@ -58,6 +58,9 @@ f_fmri_compare=$(gettext "Failed to compare 'entire' FMRIs")
 f_reset_pub=$(gettext "Failed to reset publisher to %s %s")
 f_no_pref_publisher=$(gettext "Unable to get preferred publisher information for zone '%s'.")
 f_pkg_list=$(gettext "Unable to get zone package list.")
+f_get_secinfo=$(gettext "Failed to get key/cert information for publisher %s")
+f_nosuch_key=$(gettext "Failed to find key %s for global zone publisher")
+f_nosuch_cert=$(gettext "Failed to find cert %s for global zone publisher")
 
 
 #set -o xtrace
@@ -68,7 +71,17 @@ f_pkg_list=$(gettext "Unable to get zone package list.")
 TEXTDOMAIN="SUNW_OST_OSCMD"
 export TEXTDOMAIN
 
-PKG="LC_ALL=C /usr/bin/pkg"
+PKG="/usr/bin/pkg"
+KEYDIR=/var/pkg/ssl
+
+#
+# Resetting GZ_IMAGE to something besides slash allows for simplified
+# debugging of various global zone image configurations-- simply make
+# an image somewhere with the appropriate interesting parameters.
+#
+GZ_IMAGE=${GZ_IMAGE:-/}
+PKG_IMAGE=$GZ_IMAGE
+export PKG_IMAGE
 
 aarg=0
 darg=0
@@ -412,6 +425,7 @@ fi
 #
 trap "/usr/sbin/umount $zoneroot > /dev/null 2>&1" EXIT
 
+
 #
 # Look for the 'entire' incorporation's FMRI in the current image; due to users
 # doing weird machinations with their publishers, we strip off the publisher
@@ -428,8 +442,21 @@ get_preferred_publisher | IFS=" " read gz_publisher gz_publisher_url
 [[ -z $gz_publisher ]] && fail_usage "$f_no_pref_publisher" "global"
 [[ -z $gz_publisher_url ]] && fail_usage "$f_no_pref_publisher" "global"
 
+get_pub_secinfo $gz_publisher | read gzkeyfile gzcertfile
+if [[ $? -ne 0 ]]; then
+	fail_usage "$f_get_secinfo" $gz_publisher
+fi
+[[ $gzkeyfile != "None" && ! -f $gzkeyfile ]] && \
+    fail_usage "$f_nosuch_key" $gzkeyfile
+[[ $gzcertfile != "None" && ! -f $gzcertfile ]] && \
+    fail_usage "$f_nosuch_cert" $gzcertfile
+
+
+#
+# We're done with the global zone: switch images to the non-global
+# zone.
+#
 PKG_IMAGE="$zoneroot"
-export PKG_IMAGE
 
 #
 # Get publisher information for non global zone.
@@ -477,7 +504,7 @@ fi
 # See if the zone knows about the gz entire fmri in question.  If yes,
 # we'll try using that.
 #
-$PKG list --no-refresh -a $gz_entire_fmri > /dev/null 2>&1
+LC_ALL=C $PKG list --no-refresh -a $gz_entire_fmri > /dev/null 2>&1
 
 #
 # If this doesn't exist, then we reset the preferred pub for
@@ -488,9 +515,37 @@ if [[ $? -ne 0 ]]; then
 	printf "$m_resetpub2\n" $gz_entire_fmri
 	printf "$m_resetpub3\n"
 
+	safe_dir $zoneroot/var
+	safe_dir $zoneroot/var/pkg
+
+	# Copy credentials from global zone.
+	secinfo=""
+	if [[ $gzkeyfile != "None" || $gzcertfile != "None" ]]; then
+		if [[ -e $zoneroot/$KEYDIR ]]; then
+			safe_dir $zoneroot/$KEYDIR
+		else
+			mkdir -m 755 $zoneroot/$KEYDIR
+		fi
+	fi
+
+	if [[ $gzkeyfile != None ]]; then
+		newlocation="$KEYDIR/attach_$(basename $gzkeyfile)"
+		safe_copy $gzkeyfile $zoneroot/$newlocation
+		chmod 644 $zoneroot/$newkeylocation
+		chown -h root:root $zoneroot/$newkeylocation
+		secinfo="$secinfo -k $newlocation"
+	fi
+	if [[ $gzcertfile != None ]]; then
+		newlocation="$KEYDIR/attach_$(basename $gzcertfile)"
+		safe_copy $gzcertfile $zoneroot/$newlocation
+		chmod 644 $zoneroot/$newkeylocation
+		chown -h root:root $zoneroot/$newkeylocation
+		secinfo="$secinfo -c $newlocation"
+	fi
+
 	# Note that we do cause a refresh here-- at some point we need the
 	# catalog to be updated.
-	pkg -R $zoneroot set-publisher -P -O $gz_publisher_url $gz_publisher
+	$PKG set-publisher -P -O $gz_publisher_url $secinfo $gz_publisher
 	if [[ $? -ne 0 ]]; then
 		fail_fatal "$f_reset_pub"
 	fi
@@ -527,7 +582,7 @@ printf "$m_updating2\n"
 # First, list all the packages for the preferred publisher, then
 # do an 'install' on those.
 #
-zone_pkgs=$($PKG list --no-refresh -H "pkg://$zone_publisher/*" | \
+zone_pkgs=$(LC_ALL=C $PKG list --no-refresh -H "pkg://$zone_publisher/*" | \
     awk '{print $1}' | egrep -v '^entire$')
 if [[ $? -ne 0 ]]; then
 	fail_fatal "$f_pkg_list"

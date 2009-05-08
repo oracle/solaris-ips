@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import unittest
@@ -66,7 +66,7 @@ repo.related_uris:
 sort_policy: priority
 """)
                 f.close()
-                self.ic = imageconfig.ImageConfig()
+                self.ic = imageconfig.ImageConfig(self.sample_dir)
 
         def tearDown(self):
                 try:
@@ -104,7 +104,7 @@ sort_policy: priority
                 self.ic.properties['name'] = ustr
                 newdir = tempfile.mkdtemp()
                 self.ic.write(newdir)
-                ic2 = imageconfig.ImageConfig()
+                ic2 = imageconfig.ImageConfig(newdir)
                 ic2.read(newdir)
                 ustr2 = ic2.properties['name']
                 shutil.rmtree(newdir)

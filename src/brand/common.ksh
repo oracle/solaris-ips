@@ -40,6 +40,10 @@ f_multiple_ds=$(gettext "Error: multiple active datasets.")
 f_no_active_ds=$(gettext "Error: no active dataset.")
 f_zfs_mount=$(gettext "Unable to mount the zone's ZFS dataset.")
 
+f_safedir=$(gettext "Expected %s to be a directory.")
+f_cp=$(gettext "Failed to cp %s %s.")
+f_cp_unsafe=$(gettext "Failed to safely copy %s to %s.")
+
 fail_incomplete() {
 	printf "ERROR: " 1>&2
 	printf "$@" 1>&2
@@ -151,6 +155,43 @@ get_entire_incorp() {
 # Emits to stdout the preferred publisher and its URL.
 #
 get_preferred_publisher() {
-	$PKG publisher -PH | nawk '$2 == "origin" && $3 == "online" \
+	LC_ALL=C $PKG publisher -PH | nawk '$2 == "origin" && $3 == "online" \
 	    {printf "%s %s\n", $1, $4; exit 0;}'
+}
+
+#
+# Emit to stdout the key and cert associated with the publisher
+# name provided.  Returns 'None' if no information is present.
+#
+get_pub_secinfo() {
+	key=$( LC_ALL=C $PKG publisher $1 | egrep '^ *SSL Key:' |
+	    awk '{print $3}' )
+	[[ $? -ne 0 ]] && return 1
+	cert=$( LC_ALL=C $PKG publisher $1 | egrep '^ *SSL Cert:' |
+	    awk '{print $3}' )
+	[[ $? -ne 0 ]] && return 1
+	print $key $cert
+}
+
+# Validate that the directory is safe.
+# n.b.: this is diverged from the shared/common.ksh version.
+safe_dir()
+{
+	typeset dir="$1"
+
+	[[ -h $dir || ! -d $dir ]] && fail_fatal "$f_safedir"
+}
+
+# Make a copy even if the destination already exists.
+# n.b.: this is diverged from the shared/common.ksh version.
+safe_copy()
+{
+	typeset src="$1"
+	typeset dst="$2"
+
+	if [[ ! -h $src && ! -h $dst && ! -d $dst ]]; then
+		/usr/bin/cp -p $src $dst || fail_fatal "$f_cp" "$src" "$dst"
+	else
+		fail_fatal "$f_cp_unsafe" "$src" "$dst"
+	fi
 }

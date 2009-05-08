@@ -107,7 +107,8 @@ class ImageConfig(object):
         # XXX Use of ConfigParser is convenient and at most speculative--and
         # definitely not interface.
 
-        def __init__(self):
+        def __init__(self, imgroot):
+                self.__imgroot = imgroot
                 self.publishers = {}
                 self.publisher_status = {}
                 self.mirror_status = {}
@@ -151,6 +152,14 @@ class ImageConfig(object):
                 # The root directory for publisher metadata.
                 pmroot = os.path.join(path, PUB_META_DIR)
 
+                #
+                # Must load variants first, since in the case of zones,
+                # the variant can impact the processing of publishers.
+                #
+                if cp.has_section("variant"):
+                        for o in cp.options("variant"):
+                                self.variants[o] = cp.get("variant", o)
+
                 for s in cp.sections():
                         if re.match("authority_.*", s):
                                 k, a = self.read_publisher(pmroot, cp, s)
@@ -182,10 +191,6 @@ class ImageConfig(object):
                 if cp.has_section("filter"):
                         for o in cp.options("filter"):
                                 self.filters[o] = cp.get("filter", o)
-
-                if cp.has_section("variant"):
-                        for o in cp.options("variant"):
-                                self.variants[o] = cp.get("variant", o)
 
                 try:
                         self.preferred_publisher = \
@@ -265,9 +270,27 @@ class ImageConfig(object):
                         c.set(section, "mirrors",
                             str([u.uri for u in repo.mirrors]))
 
+                        #
+                        # For zones, where the reachability of an absolute path
+                        # changes depending on whether you're in the zone or
+                        # not.  So we have a different policy: ssl_key and
+                        # ssl_cert are treated as zone root relative.
+                        #
+                        ngz = self.variants.get("variant.opensolaris.zone",
+                            "global") == "nonglobal"
+                        p = str(pub["ssl_key"])
+                        if ngz and self.__imgroot != os.sep and p != "None":
+                                # Trim the imageroot from the path.
+                                if p.startswith(self.__imgroot):
+                                        p = p[len(self.__imgroot):]
                         # XXX this should be per origin or mirror
-                        c.set(section, "ssl_key", str(pub["ssl_key"]))
-                        c.set(section, "ssl_cert", str(pub["ssl_cert"]))
+                        c.set(section, "ssl_key", p)
+                        p = str(pub["ssl_cert"])
+                        if ngz and self.__imgroot != os.sep and p != "None":
+                                if p.startswith(self.__imgroot):
+                                        p = p[len(self.__imgroot):]
+                        # XXX this should be per origin or mirror
+                        c.set(section, "ssl_cert", p)
 
                         # XXX this should really be client_uuid, but is being
                         # left with this name for compatibility with older
@@ -434,8 +457,21 @@ class ImageConfig(object):
                         ssl_key = None
                         ssl_cert = None
 
+                #
+                # For zones, where the reachability of an absolute path
+                # changes depending on whether you're in the zone or not.  So
+                # we have a different policy: ssl_key and ssl_cert are treated
+                # as zone root relative.
+                #
+                ngz = self.variants.get("variant.opensolaris.zone",
+                    "global") == "nonglobal"
+
                 if ssl_key:
-                        ssl_key = os.path.abspath(ssl_key)
+                        if ngz:
+                                ssl_key = os.path.normpath(self.__imgroot +
+                                    os.sep + ssl_key)
+                        else:
+                                ssl_key = os.path.abspath(ssl_key)
                         if not os.path.exists(ssl_key):
                                 # XXX need client messaging framework
                                 emsg(api_errors.NoSuchCertificate(ssl_key,
@@ -443,7 +479,11 @@ class ImageConfig(object):
                                 ssl_key = None
 
                 if ssl_cert:
-                        ssl_cert = os.path.abspath(ssl_cert)
+                        if ngz:
+                                ssl_cert = os.path.normpath(self.__imgroot +
+                                    os.sep + ssl_cert)
+                        else:
+                                ssl_cert = os.path.abspath(ssl_cert)
                         if not os.path.exists(ssl_cert):
                                 # XXX need client messaging framework
                                 emsg(api_errors.NoSuchCertificate(ssl_cert,

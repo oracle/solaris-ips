@@ -24,6 +24,15 @@
 # Use is subject to license terms.
 #
 
+#
+# Resetting GZ_IMAGE to something besides slash allows for simplified
+# debugging of various global zone image configurations-- simply make
+# an image somewhere with the appropriate interesting parameters.
+#
+GZ_IMAGE=${GZ_IMAGE:-/}
+PKG_IMAGE=$GZ_IMAGE
+export PKG_IMAGE
+
 . /usr/lib/brand/ipkg/common.ksh
 
 f_pkg5_missing=$(gettext "pkg(5) does not seem to be present on this system.\n")
@@ -34,12 +43,18 @@ f_interrupted=$(gettext "Installation cancelled due to interrupt.\n")
 f_bad_publisher=$(gettext "Syntax error in publisher information.\n")
 f_no_entire=$(gettext "Unable to find 'entire' incorporation in the global zone image.\n")
 f_no_entire_in_pref=$(gettext "Unable to locate the incorporation '%s' in the preferred publisher '%s'.\nUse -P to supply a publisher which contains this package.\n")
-
+f_key_prop=$(gettext "Unable to propagate key %s to %s")
+f_cert_prop=$(gettext "Unable to propagate cert %s to %s")
+f_get_secinfo=$(gettext "Failed to get key/cert information for publisher %s")
+f_nosuch_key=$(gettext "Failed to find key %s")
+f_nosuch_cert=$(gettext "Failed to find cert %s")
 
 m_publisher=$(gettext   "   Publisher: Using %s (%s).")
 m_cache=$(gettext       "       Cache: Using %s.")
 m_image=$(gettext       "       Image: Preparing at %s.")
 m_incorp=$(gettext      "Sanity Check: Looking for 'entire' incorporation.\n")
+m_key_prop=$(gettext    " Credentials: Propagating %s\n")
+m_cert_prop=$(gettext   " Credentials: Propagating %s\n")
 m_core=$(gettext        "  Installing: Core System (output follows)\n")
 m_more=$(gettext        "  Installing: Additional Packages (output follows)\n")
 m_smf=$(gettext	        " Postinstall: Copying SMF seed repository ...")
@@ -77,13 +92,17 @@ pub_and_url=""
 TEXTDOMAIN="SUNW_OST_OSCMD"
 export TEXTDOMAIN
 
+KEYDIR=/var/pkg/ssl
 PKG=/usr/bin/pkg
+
 #
 # Just in case.  This should probably be removed later.
 #
 [[ ! -x $PKG ]] && fail_incomplete "$f_pkg5_missing"
 
-while getopts "a:P:z:R:h:e:" opt; do
+certfile="None"
+keyfile="None"
+while getopts "a:P:z:R:h:e:c:k:" opt; do
 	case $opt in
 		h)	fail_usage "$m_usage";;
 		R)	zonepath="$OPTARG" ;;
@@ -92,6 +111,8 @@ while getopts "a:P:z:R:h:e:" opt; do
 			print -u2 \
 			    "WARNING: -a is deprecated.  Use -P instead." ;;
 		P)	pub_and_url="$OPTARG" ;;
+		c)	certfile="$OPTARG" ;;
+		k)	keyfile="$OPTARG" ;;
 		e)	extra_packages="$extra_packages $OPTARG" ;;
 		*)	fail_usage "$m_usage";;
 	esac
@@ -106,20 +127,31 @@ fi
 is_system_labeled
 
 zoneroot=$zonepath/root
+secinfo=""
 
 #
 # If the user didn't give us a publisher, and there's a preferred publisher set
 # for the system, set that as the default.
 #
+propagate_secinfo=
 if [[ -z $pub_and_url ]]; then
+	if [[ $keyfile != "None" ]]; then
+		fail_usage "Key file not allowed without -P"
+	fi
+	if [[ $certfile != "None" ]]; then
+		fail_usage "Cert file not allowed without -P"
+	fi
 	#
 	# We look for a preferred online origin.
 	#
-	tpub_and_url=`LC_ALL=C $PKG -R / publisher -PH | \
+	tpub_and_url=`LC_ALL=C $PKG publisher -PH | \
 	    awk '$2 == "origin" && $3 == "online" \
 	    {printf "%s=%s\n", $1, $4; exit 0;}'`
 
 	[[ $? -eq 0 && -n $tpub_and_url ]] && pub_and_url="$tpub_and_url"
+
+	# Note that later we need to propagate key & cert.
+	propagate_secinfo=1
 fi
 
 #
@@ -136,6 +168,24 @@ echo $pub_and_url | IFS== read publisher publisherurl
 if [[ -z $publisher || -z $publisherurl ]]; then
 	fail_usage "$f_bad_publisher"
 fi
+
+if [[ -n $propagate_secinfo ]]; then
+	#
+	# Get the global zone's cert and key (if any) so that we can propagate
+	# them into the new image.
+	#
+	get_pub_secinfo $publisher | read keyfile certfile
+	if [[ $? -ne 0 ]]; then
+		fail_usage "$f_get_secinfo" $publisher
+	fi
+fi
+#
+# Do some sanity checks on key and cert.
+#
+[[ $keyfile != "None" && ! -f $keyfile ]] && \
+    fail_usage "$f_nosuch_key" $keyfile
+[[ $certfile != "None" && ! -f $certfile ]] && \
+    fail_usage "$f_nosuch_cert" $certfile
 
 #
 # Look for the 'entire' incorporation's FMRI in the current image; due to users
@@ -210,9 +260,40 @@ fi
 #
 printf "$m_publisher" $publisher $publisherurl
 printf "\n$m_image\n" $zoneroot
-$PKG image-create --zone --full -p "$pub_and_url" $zoneroot || \
-	fail_incomplete "$f_img"
 
+#
+# We copy the credentials from the global zone into the new image
+# we're about to create.
+#
+if [[ $keyfile != "None" ]]; then
+	newkeylocation="$KEYDIR/$(basename $keyfile)"
+	secinfo="$secinfo -k $newkeylocation"
+	printf "$m_key_prop\n" $(basename $keyfile)
+	mkdir -p -m 755 $zoneroot/$KEYDIR || fail_fatal "$f_key_prop"
+	cp $keyfile $zoneroot/$newkeylocation || fail_fatal "$f_key_prop"
+	chmod 644 $zoneroot/$newkeylocation
+	chown -h root:root $zoneroot/$newkeylocation
+fi
+if [[ $certfile != "None" ]]; then
+	newcertlocation="$KEYDIR/$(basename $certfile)"
+	secinfo="$secinfo -c $newcertlocation"
+	printf "$m_cert_prop\n" $(basename $certfile)
+	mkdir -p -m 755 $zoneroot/$KEYDIR || fail_fatal "$f_cert_prop"
+	cp $certfile $zoneroot/$newcertlocation || fail_fatal "$f_cert_prop"
+	chmod 644 $zoneroot/$newkeylocation
+	chown -h root:root $zoneroot/$newkeylocation
+fi
+
+#
+# Regrettably, since we already copied the key information into place,
+# we must pass the -f (force) option to image-create, since it thinks that
+# something must be wrong, as the image exists.
+#
+# XXX in the future, we can create the image --no-refresh, then
+# set the publisher.  But image-create --no-refresh is broken right now.
+#
+$PKG image-create -f --zone --full -p "$pub_and_url" $secinfo $zoneroot || \
+    fail_incomplete "$f_img"
 
 PKG_IMAGE="$zoneroot"
 export PKG_IMAGE
