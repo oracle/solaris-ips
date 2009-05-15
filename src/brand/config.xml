@@ -70,6 +70,7 @@
 	<privilege set="default" name="net_bindmlp" />
 	<privilege set="default" name="net_icmpaccess" />
 	<privilege set="default" name="net_mac_aware" />
+	<privilege set="default" name="net_observability" />
 	<privilege set="default" name="net_privaddr" />
 	<privilege set="default" name="net_rawaccess" ip-type="exclusive" />
 	<privilege set="default" name="proc_chroot" />
@@ -95,6 +96,8 @@
 	<privilege set="prohibited" name="sys_net_config" />
 	<privilege set="prohibited" name="sys_res_config" />
 	<privilege set="prohibited" name="sys_suser_compat" />
+	<privilege set="prohibited" name="xvm_control" />
+	<privilege set="prohibited" name="virt_manage" />
 
 	<privilege set="required" name="proc_exec" />
 	<privilege set="required" name="proc_fork" />
