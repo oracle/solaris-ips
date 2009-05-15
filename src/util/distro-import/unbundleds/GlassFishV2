@@ -1,6 +1,7 @@
 package web/glassfish-2
 classification "Web Services/Application and Web Servers"
 description "GlassFish Java EE 5 Application Server"
+version 2.1
 import SUNWasac
 import SUNWascmn
 import SUNWasman
