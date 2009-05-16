@@ -96,12 +96,12 @@ class TestApiSearchBasics(testutils.SingleDepotTestCase):
 
         cat_pkg10 = """
             open cat@1.0,5.11-0
-            add set name=info.classification value=org.opensolaris.category.2008:System/Security
+            add set name=info.classification value=org.opensolaris.category.2008:System/Security value=org.random:Other/Category
             close """
 
         cat2_pkg10 = """
             open cat2@1.0,5.11-0
-            add set name=info.classification value="org.opensolaris.category.2008:Applications/Sound and Video"
+            add set name=info.classification value="org.opensolaris.category.2008:Applications/Sound and Video" value=Developer/C
             close """
 
         cat3_pkg10 = """
@@ -234,11 +234,19 @@ class TestApiSearchBasics(testutils.SingleDepotTestCase):
         ])
 
         res_cat_pkg10 = set([
-            ('pkg:/cat@1.0-0', 'System/Security', 'set name=info.classification value=org.opensolaris.category.2008:System/Security')
+            ('pkg:/cat@1.0-0', 'System/Security', 'set name=info.classification value=org.opensolaris.category.2008:System/Security value=org.random:Other/Category')
+        ])
+
+        res_cat_pkg10_2 = set([
+            ('pkg:/cat@1.0-0', 'Other/Category', 'set name=info.classification value=org.opensolaris.category.2008:System/Security value=org.random:Other/Category')
         ])
 
         res_cat2_pkg10 = set([
-            ('pkg:/cat2@1.0-0', 'Applications/Sound and Video', 'set name=info.classification value="org.opensolaris.category.2008:Applications/Sound and Video"')
+            ('pkg:/cat2@1.0-0', 'Applications/Sound and Video', 'set name=info.classification value="org.opensolaris.category.2008:Applications/Sound and Video" value=Developer/C')
+        ])
+
+        res_cat2_pkg10_2 = set([
+            ('pkg:/cat2@1.0-0', 'Developer/C', 'set name=info.classification value="org.opensolaris.category.2008:Applications/Sound and Video" value=Developer/C')
         ])
 
         res_cat3_pkg10 = set([
@@ -1141,6 +1149,12 @@ close
                             self.res_cat_pkg10, case_sensitive=False)
                         self._search_op(api_obj, remote, "System/Security",
                             self.res_cat_pkg10, case_sensitive=False)
+                        self._search_op(api_obj, remote, "Other/Category",
+                            self.res_cat_pkg10_2, case_sensitive=False)
+                        self._search_op(api_obj, remote, "Other",
+                            self.res_cat_pkg10_2, case_sensitive=False)
+                        self._search_op(api_obj, remote, "Category",
+                            self.res_cat_pkg10_2, case_sensitive=False)
 
                 def _run_cat2_tests(self, remote):
                         self._search_op(api_obj, remote, "Applications",
@@ -1156,6 +1170,13 @@ close
                         self._search_op(api_obj, remote,
                             "'Applications/Sound and Video'",
                             self.res_cat2_pkg10, case_sensitive=False)
+                        self._search_op(api_obj, remote, "Developer/C",
+                            self.res_cat2_pkg10_2, case_sensitive=False)
+                        self._search_op(api_obj, remote, "Developer",
+                            self.res_cat2_pkg10_2, case_sensitive=False)
+                        self._search_op(api_obj, remote, "C",
+                            self.res_cat2_pkg10_2, case_sensitive=False)
+
                 def _run_cat3_tests(self, remote):
                         self._search_op(api_obj, remote, "foo",
                             self.res_cat3_pkg10,case_sensitive=False)

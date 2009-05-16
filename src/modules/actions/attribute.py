@@ -119,13 +119,22 @@ class AttributeAction(generic.Action):
 
         def has_category_info(self):
                 return self.attrs["name"] == "info.classification"
-
+        
         def parse_category_info(self):
+
+                def parse_category_info_helper(val):
+                        if ":" in val:
+                                scheme, cats = val.split(":", 1)
+                        else:
+                                scheme = ""
+                                cats = val
+                        return (scheme, cats)
+
+                
                 if not self.has_category_info():
                         return []
                 else:
-                        try:
-                                scheme, cats = self.attrs["value"].split(":", 1)
-                                return [ (scheme, cats) ]
-                        except ValueError:
-                                return []
+                        return [
+                            parse_category_info_helper(val)
+                            for val in self.attrlist("value")
+                        ]
