@@ -375,15 +375,22 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
 
                 return retcode
 
-        def pkgrecv(self, server_url, command, exit = 0, out = False,
-            comment = ""):
+        def pkgrecv(self, server_url=None, command=None, exit=0, out=False,
+            comment=""):
 
                 wrapper = ""
                 if os.environ.has_key("PKGCOVERAGE"):
                         wrapper = "figleaf"
 
-                cmdline = "%s %s/usr/bin/pkgrecv -s %s %s" % (wrapper,
-                    g_proto_area, server_url, command)
+                args = []
+                if server_url:
+                        args.append("-s %s" % server_url)
+
+                if command:
+                        args.append(command)
+
+                cmdline = "%s %s/usr/bin/pkgrecv %s" % (wrapper,
+                    g_proto_area, " ".join(args))
                 self.debugcmd(cmdline)
 
                 p = subprocess.Popen(cmdline, shell = True,

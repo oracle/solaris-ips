@@ -248,7 +248,7 @@ class Repository(object):
                         pfmri, pstate = t.close(refresh_index=refresh_index)
                         del self.scfg.in_flight_trans[trans_id]
                         return pfmri, pstate
-                except trans.TransactionError, e:
+                except (catalog.CatalogException, trans.TransactionError), e:
                         raise RepositoryError(e)
 
         def file(self, fhash):

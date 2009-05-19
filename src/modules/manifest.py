@@ -598,12 +598,15 @@ class CachedManifest(Manifest):
                 to multiple code paths"""
                 self.loaded = True
                 # this needs to change; we should not modify on-disk manifest
-                if "publisher" not in self.attributes:
+                if self.fmri and "publisher" not in self.attributes:
                         if not self.fmri.has_publisher():
                                 pub = self.__pub
                         else:
                                 pub = self.fmri.get_publisher()
-                        Manifest.__setitem__(self, "publisher", pub)
+
+                        # This shouldn't be set unless available.
+                        if pub:
+                                Manifest.__setitem__(self, "publisher", pub)
 
         def __storeback(self):
                 """ store the current action set; also create per-type

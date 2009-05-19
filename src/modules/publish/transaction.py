@@ -370,6 +370,11 @@ class HTTPTransaction(object):
                         msg = str(e)
                 except (urllib2.HTTPError, urllib2.URLError), e:
                         status, msg = self.__get_urllib_error(e)
+                except RuntimeError, e:
+                        # Assume the server didn't find the transaction or
+                        # can't perform the operation.
+                        status = httplib.NOT_FOUND
+                        msg = str(e)
                 else:
                         msg = None
                         status = c.code

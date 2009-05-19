@@ -677,15 +677,20 @@ class FancyUNIXProgressTracker(ProgressTracker):
                         # The first time, emit header.
                         if not self.dl_started:
                                 self.dl_started = True
-                                print "%-40s %7s %11s %13s" % ("DOWNLOAD", \
+                                print "%-38s %7s %11s %12s" % ("DOWNLOAD", \
                                     "PKGS", "FILES", "XFER (MB)")
                         else:
                                 print self.cr,
-                        print "%-40s %7s %11s %13s" % \
-                            (self.dl_cur_pkg,
+
+                        pkg_name = self.dl_cur_pkg
+                        if len(pkg_name) > 38:
+                                pkg_name = pkg_name[:34] + "..."
+
+                        print "%-38.38s %7s %11s %12s" % \
+                            (pkg_name,
                             "%d/%d" % (self.dl_cur_npkgs, self.dl_goal_npkgs),
                             "%d/%d" % (self.dl_cur_nfiles, self.dl_goal_nfiles),
-                            "%.2f/%.2f" % \
+                            "%.1f/%.1f" % \
                                 ((self.dl_cur_nbytes / 1024.0 / 1024.0),
                                 (self.dl_goal_nbytes / 1024.0 / 1024.0))),
                         sys.stdout.flush()

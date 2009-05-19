@@ -91,6 +91,14 @@ class TransactionOperationError(TransactionError):
                             self.args["pfmri"]
                 return str(self.data)
 
+
+class TransactionAlreadyOpenError(TransactionError):
+        """Used to indicate that a Transaction is already open for use."""
+
+        def __str__(self):
+                return _("Transaction ID '%s' is already open.") % self.data
+
+
 class Transaction(object):
         """A Transaction is a server-side object used to represent the set of
         incoming changes to a package.  Manipulation of Transaction objects in
@@ -130,9 +138,6 @@ class Transaction(object):
                 self.pkg_name = pfmri
                 self.esc_pkg_name = urllib.quote(pfmri, "")
 
-                # record transaction metadata: opening_time, package, user
-                self.open_time = datetime.datetime.utcnow()
-
                 # attempt to construct an FMRI object
                 try:
                         self.fmri = fmri.PkgFmri(self.pkg_name,
@@ -145,7 +150,19 @@ class Transaction(object):
                         raise TransactionOperationError(fmri_version=None,
                             pfmri=pfmri)
 
-                self.fmri.set_timestamp(self.open_time)
+                # record transaction metadata: opening_time, package, user
+                # XXX publishing with a custom timestamp may require
+                # authorization above the basic "can open transactions".
+                self.open_time = self.fmri.get_timestamp()
+                if self.open_time:
+                        # Strip the timestamp information for consistency with
+                        # the case where it was not specified.
+                        self.pkg_name = pfmri.split(":", 1)[0]
+                        self.esc_pkg_name = urllib.quote(self.pkg_name, "")
+                else:
+                        # A timestamp was not provided.
+                        self.open_time = datetime.datetime.utcnow()
+                        self.fmri.set_timestamp(self.open_time)
 
                 # Check that the new FMRI's version is valid.  In other words,
                 # the package has not been renamed or frozen for the new
@@ -156,7 +173,14 @@ class Transaction(object):
 
                 trans_basename = self.get_basename()
                 self.dir = "%s/%s" % (cfg.trans_root, trans_basename)
-                os.makedirs(self.dir)
+
+                try:
+                        os.makedirs(self.dir)
+                except EnvironmentError, e:
+                        if e.errno == errno.EEXIST:
+                                raise TransactionAlreadyOpenError(
+                                    trans_basename)
+                        raise TransactionOperationError(e)
 
                 #
                 # always create a minimal manifest

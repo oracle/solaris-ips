@@ -527,15 +527,12 @@ class DepotHTTP(object):
 
                 try:
                         self.__repo.rename(src_fmri, dest_fmri)
-                except (repo.RepositoryInvalidFMRIError,
-                    repo.RepositoryRenameFailureError), e:
-                        raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
                 except repo.RepositoryError, e:
-                        # Treat any remaining repository error as a 404, but
-                        # log the error and include the real failure
-                        # information.
-                        cherrypy.log("Request failed: %s" % str(e))
-                        raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
+                        # Assume a bad request was made.  A 404 can't be
+                        # returned here as misc.versioned_urlopen will interpret
+                        # that to mean that the server doesn't support this
+                        # operation.
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
 
         def file_0(self, *tokens):
                 """Outputs the contents of the file, named by the SHA-1 hash
@@ -582,11 +579,11 @@ class DepotHTTP(object):
                         response.headers["Content-type"] = "text/plain"
                         response.headers["Transaction-ID"] = trans_id
                 except repo.RepositoryError, e:
-                        # Treat any remaining repository error as a 404, but
-                        # log the error and include the real failure
-                        # information.
-                        cherrypy.log("Request failed: %s" % str(e))
-                        raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
+                        # Assume a bad request was made.  A 404 can't be
+                        # returned here as misc.versioned_urlopen will interpret
+                        # that to mean that the server doesn't support this
+                        # operation.
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
 
         def close_0(self, *tokens):
                 """Ends an in-flight transaction for the Transaction ID
@@ -621,14 +618,12 @@ class DepotHTTP(object):
                 try:
                         pfmri, pstate = self.__repo.close(trans_id,
                             refresh_index=refresh_index)
-                except repo.RepositoryInvalidTransactionIDError, e:
-                        raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
                 except repo.RepositoryError, e:
-                        # Treat any remaining repository error as a 404, but
-                        # log the error and include the real failure
-                        # information.
-                        cherrypy.log("Request failed: %s" % str(e))
-                        raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
+                        # Assume a bad request was made.  A 404 can't be
+                        # returned here as misc.versioned_urlopen will interpret
+                        # that to mean that the server doesn't support this
+                        # operation.
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
 
                 response = cherrypy.response
                 response.headers["Package-FMRI"] = pfmri
@@ -646,14 +641,12 @@ class DepotHTTP(object):
 
                 try:
                         self.__repo.abandon(trans_id)
-                except repo.RepositoryInvalidTransactionIDError, e:
-                        raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
                 except repo.RepositoryError, e:
-                        # Treat any remaining repository error as a 404, but
-                        # log the error and include the real failure
-                        # information.
-                        cherrypy.log("Request failed: %s" % str(e))
-                        raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
+                        # Assume a bad request was made.  A 404 can't be
+                        # returned here as misc.versioned_urlopen will interpret
+                        # that to mean that the server doesn't support this
+                        # operation.
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
 
         def add_0(self, *tokens):
                 """Adds an action and its content to an in-flight transaction
@@ -705,14 +698,12 @@ class DepotHTTP(object):
 
                 try:
                         self.__repo.add(trans_id, action)
-                except repo.RepositoryInvalidTransactionIDError, e:
-                        raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
                 except repo.RepositoryError, e:
-                        # Treat any remaining repository error as a 404, but
-                        # log the error and include the real failure
-                        # information.
-                        cherrypy.log("Request failed: %s" % str(e))
-                        raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
+                        # Assume a bad request was made.  A 404 can't be
+                        # returned here as misc.versioned_urlopen will interpret
+                        # that to mean that the server doesn't support this
+                        # operation.
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
 
         # We need to prevent cherrypy from processing the request body so that
         # add can parse the request body itself.  In addition, we also need to

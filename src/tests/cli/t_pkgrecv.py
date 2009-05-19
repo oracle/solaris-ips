@@ -25,19 +25,48 @@
 # Use is subject to license terms.
 #
 
-import sys
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 
+import difflib
 import os
+import pkg.catalog as catalog
+import pkg.fmri as fmri
+import pkg.manifest as manifest
+import pkg.misc as misc
+import pkg.server.config as config
+import pkg.server.repository as repo
+import pkg.server.repositoryconfig as rc
+import re
 import shutil
 import tempfile
+import time
+import urllib
+import urlparse
 import unittest
+import zlib
 
 class TestPkgrecvMulti(testutils.ManyDepotTestCase):
-        # Only start/stop the depot once (instead of for every test)
-        persistent_depot = True
+        # Cleanup after every test.
+        persistent_depot = False
+
+        tree10 = """
+            open tree@1.0,5.11-0
+            close 
+        """
+
+        amber10 = """
+            open amber@1.0,5.11-0
+            add depend fmri=pkg:/tree@1.0 type=require
+            close 
+        """
+
+        amber20 = """
+            open amber@2.0,5.11-0
+            add depend fmri=pkg:/tree@1.0 type=require
+            close 
+        """
 
         bronze10 = """
             open bronze@1.0,5.11-0
@@ -75,7 +104,7 @@ class TestPkgrecvMulti(testutils.ManyDepotTestCase):
                     "/tmp/copyright2", "/tmp/copyright3",
                     "/tmp/libc.so.1", "/tmp/sh"]
 
-        def setUp(self):
+        def setUp(self, ndepots=2, debug_features=None):
                 """ Start two depots.
                     depot 1 gets foo and moo, depot 2 gets foo and bar
                     depot1 is mapped to publisher test1 (preferred)
@@ -91,13 +120,21 @@ class TestPkgrecvMulti(testutils.ManyDepotTestCase):
                         f.close()
                         self.debug("wrote %s" % p)
 
+                self.dpath1 = self.dcs[1].get_repodir()
                 self.durl1 = self.dcs[1].get_depot_url()
-                self.pkgsend_bulk(self.durl1, self.bronze10)
-                self.pkgsend_bulk(self.durl1, self.bronze20)
+                self.published = self.pkgsend_bulk(self.durl1, self.amber10 + \
+                    self.amber20 + self.bronze10 + self.bronze20)
 
+                # Purposefully republish bronze20 a second later so a version
+                # exists that only differs in timestamp.  Also publish tree
+                # after that.
+                time.sleep(1)
+                self.published.extend(self.pkgsend_bulk(self.durl1,
+                    self.bronze20 + self.tree10))
+
+                self.dpath2 = self.dcs[2].get_repodir()
                 self.durl2 = self.dcs[2].get_depot_url()
-                self.tempdir = tempfile.mkdtemp()
-
+                self.tempdir = tempfile.mkdtemp(dir=self.get_test_prefix())
 
         def tearDown(self):
                 testutils.ManyDepotTestCase.tearDown(self)
@@ -105,34 +142,338 @@ class TestPkgrecvMulti(testutils.ManyDepotTestCase):
                         os.remove(p)
                 shutil.rmtree(self.tempdir)
 
-        def test_recv_send(self):
-                rc, output = self.pkgrecv(self.durl1,
-                    "-n | grep bronze@2.0", out = True)
+        @staticmethod
+        def get_repo(uri):
+                parts = urlparse.urlparse(uri, "file", allow_fragments=0)
+                path = urllib.url2pathname(parts[2])
 
-                # Pull the pkg name out of the output from the last cmd
-                outwords = output.split()
+                scfg = config.SvrConfig(path, None, None)
+                try:
+                        scfg.init_dirs()
+                except (config.SvrConfigError, EnvironmentError), e:
+                        raise repo.RepositoryError(_("An error occurred while "
+                            "trying to initialize the repository directory "
+                            "structures:\n%s") % e)
 
-                # recv the pkg
-                recvcmd = "-d %s %s" % (self.tempdir, outwords[0])
-                self.pkgrecv(self.durl1, recvcmd)
+                scfg.acquire_in_flight()
 
-                # now send it to another depot
+                try:
+                        scfg.acquire_catalog()
+                except catalog.CatalogPermissionsException, e:
+                        raise repo.RepositoryError(str(e))
+
+                try:
+                        return repo.Repository(scfg)
+                except rc.InvalidAttributeValueError, e:
+                        raise repo.RepositoryError(_("The specified repository's "
+                            "configuration data is not valid:\n%s") % e)
+
+        @staticmethod
+        def reduceSpaces(string):
+                """Reduce runs of spaces down to a single space."""
+                return re.sub(" +", " ", string)
+
+        def assertEqualDiff(self, expected, actual):
+                self.assertEqual(expected, actual,
+                    "Actual output differed from expected output.\n" +
+                    "\n".join(difflib.unified_diff(
+                        expected.splitlines(), actual.splitlines(),
+                        "Expected output", "Actual output", lineterm="")))
+
+        def test_0_opts(self):
+                """Verify that various basic options work as expected and that
+                invalid options or option values return expected exit code."""
+
+                # Test that bad options return expected exit code.
+                self.pkgrecv(command="-n", exit=2)
+                self.pkgrecv(self.durl1, "-!", exit=2)
+                self.pkgrecv(self.durl1, "-p foo", exit=2)
+                self.pkgrecv(self.durl1, "-d %s gold@1.0-1" % self.tempdir,
+                    exit=1)
+                self.pkgrecv(self.durl1, "invalid.fmri@1.0.a", exit=1)
+
+                # Test help.
+                self.pkgrecv(command="-h", exit=0)
+
+                # Test list newest.
+                self.pkgrecv(self.durl1, "-n")
+                output = self.reduceSpaces(self.output)
+
+                # The latest version of amber and bronze should be listed.
+                amber = "pkg:/" + self.published[1]
+                bronze = "pkg:/" + self.published[4]
+                tree = "pkg:/" + self.published[5]
+                expected = "\n".join((amber, tree, bronze)) + "\n"
+                self.assertEqualDiff(expected, output)
+
+        def test_1_recv_pkgsend(self):
+                """Verify that a received package can be used by pkgsend."""
+
+                f = fmri.PkgFmri(self.published[3], None)
+
+                # First, retrieve the package.
+                self.pkgrecv(self.durl1, "-d %s %s" % (self.tempdir, f))
+
+                # Next, load the manifest.
+                basedir = os.path.join(self.tempdir, f.get_dir_path())
+                mpath = os.path.join(basedir, "manifest")
+
+                m = manifest.Manifest()
+                raw = open(mpath, "rb").read()
+                m.set_content(raw)
+
+                # Verify that the files aren't compressed since -k wasn't used.
+                # This is also the format pkgsend will expect for correct
+                # republishing.
+                ofile = file(os.devnull, "rb")
+                for atype in ("file", "license"):
+                        for a in m.gen_actions_by_type(atype):
+                                if not hasattr(a, "hash"):
+                                        continue
+
+                                ifile = file(os.path.join(basedir, a.hash),
+                                    "rb")
+
+                                # Since the file shouldn't be compressed, this
+                                # should return a zlib.error.
+                                self.assertRaises(zlib.error,
+                                    misc.gunzip_from_stream, ifile, ofile)
+
+                # Next, send it to another depot
                 self.pkgsend(self.durl2, "open foo@1.0-1")
-
-                basedir = os.path.join(self.tempdir, "bronze")
-                manifest = os.path.join(basedir, "manifest")
-
-                cmd = "include -d %s %s" % (basedir, manifest)
-
-                self.pkgsend(self.durl2, cmd)
+                self.pkgsend(self.durl2,
+                    "include -d %s %s" % (basedir, mpath))
                 self.pkgsend(self.durl2, "close")
 
-        def test_bad_opts(self):
-                self.pkgrecv("", "-n", exit = 2)
-                self.pkgrecv(self.durl1, "-!", exit = 2)
-                self.pkgrecv(self.durl1, "-p foo", exit = 2)
-                self.pkgrecv(self.durl1, "-d %s gold@1.0-1" % self.tempdir,
-                    exit = 1)
+        def test_2_recv_compare(self):
+                """Verify that a received package is identical to the
+                original source."""
+
+                f = fmri.PkgFmri(self.published[4], None)
+
+                # First, pkgrecv the pkg to a directory.  The files are
+                # kept compressed so they can be compared directly to the
+                # repository's internal copy.
+                self.pkgrecv(self.durl1, "-k -d %s %s" % (self.tempdir, f))
+
+                # Next, compare the manifests.
+                orepo = self.get_repo(self.dpath1)
+                old = orepo.manifest(f)
+                new = os.path.join(self.tempdir, f.get_dir_path(), "manifest")
+
+                self.assertEqual(misc.get_data_digest(old),
+                    misc.get_data_digest(new))
+
+                # Next, load the manifest.
+                m = manifest.Manifest()
+                raw = open(new, "rb").read()
+                m.set_content(raw)
+
+                # Next, compare the package actions that have data.
+                for atype in ("file", "license"):
+                        for a in m.gen_actions_by_type(atype):
+                                if not hasattr(a, "hash"):
+                                        continue
+
+                                old = orepo.file(a.hash)
+                                new = os.path.join(self.tempdir,
+                                    f.get_dir_path(), a.hash)
+                                self.assertNotEqual(old, new)
+                                self.assertEqual(misc.get_data_digest(old),
+                                    misc.get_data_digest(new))
+
+                # Second, pkgrecv to the pkg to a file repository.
+                npath = tempfile.mkdtemp(dir=self.get_test_prefix())
+                self.pkgrecv(self.durl1, "-d file://%s %s" % (npath, f))
+
+                # Next, compare the manifests (this will also only succeed if
+                # the fmris are exactly the same including timestamp).
+                nrepo = self.get_repo(npath)
+                old = orepo.manifest(f)
+                new = nrepo.manifest(f)
+
+                self.assertEqual(misc.get_data_digest(old),
+                    misc.get_data_digest(new))
+
+                # Next, load the manifest.
+                m = manifest.Manifest()
+                raw = open(new, "rb").read()
+                m.set_content(raw)
+
+                # Next, compare the package actions that have data.
+                for atype in ("file", "license"):
+                        for a in m.gen_actions_by_type(atype):
+                                if not hasattr(a, "hash"):
+                                        continue
+
+                                old = orepo.file(a.hash)
+                                new = nrepo.file(a.hash)
+                                self.assertNotEqual(old, new)
+                                self.assertEqual(misc.get_data_digest(old),
+                                    misc.get_data_digest(new))
+
+                # Third, pkgrecv to the pkg to a http repository from the
+                # file repository from the last test.
+                self.pkgrecv("file://%s" % npath, "-d %s %s" % (self.durl2, f))
+                orepo = nrepo
+
+                # Next, compare the manifests (this will also only succeed if
+                # the fmris are exactly the same including timestamp).
+                nrepo = self.get_repo(self.dpath2)
+                old = orepo.manifest(f)
+                new = nrepo.manifest(f)
+
+                self.assertEqual(misc.get_data_digest(old),
+                    misc.get_data_digest(new))
+
+                # Next, load the manifest.
+                m = manifest.Manifest()
+                raw = open(new, "rb").read()
+                m.set_content(raw)
+
+                # Next, compare the package actions that have data.
+                for atype in ("file", "license"):
+                        for a in m.gen_actions_by_type(atype):
+                                if not hasattr(a, "hash"):
+                                        continue
+
+                                old = orepo.file(a.hash)
+                                new = nrepo.file(a.hash)
+                                self.assertNotEqual(old, new)
+                                self.assertEqual(misc.get_data_digest(old),
+                                    misc.get_data_digest(new))
+
+                # Finally, create an image and verify that the sent package is
+                # seen by the client.
+                self.image_create(self.durl2)
+                self.pkg("info -r bronze@2.0")
+
+        def test_3_recursive(self):
+                """Verify that retrieving a package recursively will retrieve
+                its dependencies as well."""
+
+                bronze = fmri.PkgFmri(self.published[4], None)
+
+                # Retrieve bronze recursively to a directory, this should
+                # also retrieve its dependency: amber, and amber's dependency:
+                # tree.
+                self.pkgrecv(self.durl1, "-r -k -d %s %s" % (self.tempdir,
+                    bronze))
+
+                amber = fmri.PkgFmri(self.published[1], None)
+                tree = fmri.PkgFmri(self.published[5], None)
+
+                # Verify that the manifests for each package was retrieved.
+                for f in (amber, bronze, tree):
+                        mpath = os.path.join(self.tempdir, f.get_dir_path(),
+                            "manifest")
+                        self.assertTrue(os.path.isfile(mpath))
+
+        def test_4_timever(self):
+                """Verify that receiving with -m options work as expected."""
+
+                bronze10 = fmri.PkgFmri(self.published[2], None)
+                bronze20_1 = fmri.PkgFmri(self.published[3], None)
+                bronze20_2 = fmri.PkgFmri(self.published[4], None)
+
+                # Retrieve bronze using -m all-timestamps and a version pattern.
+                # This should only retrieve bronze20_1 and bronze20_2.
+                self.pkgrecv(self.durl1, "-m all-timestamps -r -k -d %s %s" % (
+                    self.tempdir, "bronze@2.0"))
+
+                # Verify that only expected packages were retrieved.
+                expected = [
+                    bronze20_1.get_dir_path(),
+                    bronze20_2.get_dir_path(),
+                ]
+
+                for d in os.listdir(os.path.join(self.tempdir, "bronze")):
+                        self.assertTrue(os.path.join("bronze", d) in expected)
+
+                        mpath = os.path.join(self.tempdir, "bronze", d,
+                            "manifest")
+                        self.assertTrue(os.path.isfile(mpath))
+
+                # Cleanup for next test.
+                shutil.rmtree(os.path.join(self.tempdir, "bronze"))
+
+                # Retrieve bronze using -m all-timestamps and a package stem.
+                # This should retrieve bronze10, bronze20_1, and bronze20_2.
+                self.pkgrecv(self.durl1, "-m all-timestamps -r -k -d %s %s" % (
+                    self.tempdir, "bronze"))
+
+                # Verify that only expected packages were retrieved.
+                expected = [
+                    bronze10.get_dir_path(),
+                    bronze20_1.get_dir_path(),
+                    bronze20_2.get_dir_path(),
+                ]
+
+                for d in os.listdir(os.path.join(self.tempdir, "bronze")):
+                        self.assertTrue(os.path.join("bronze", d) in expected)
+
+                        mpath = os.path.join(self.tempdir, "bronze", d,
+                            "manifest")
+                        self.assertTrue(os.path.isfile(mpath))
+
+                # Cleanup for next test.
+                shutil.rmtree(os.path.join(self.tempdir, "bronze"))
+
+                # Retrieve bronze using -m all-versions, this should only
+                # retrieve bronze10 and bronze20_2.
+                self.pkgrecv(self.durl1, "-m all-versions -r -k -d %s %s" % (
+                    self.tempdir, "bronze"))
+
+                # Verify that only expected packages were retrieved.
+                expected = [
+                    bronze10.get_dir_path(),
+                    bronze20_2.get_dir_path(),
+                ]
+
+                for d in os.listdir(os.path.join(self.tempdir, "bronze")):
+                        self.assertTrue(os.path.join("bronze", d) in expected)
+
+                        mpath = os.path.join(self.tempdir, "bronze", d,
+                            "manifest")
+                        self.assertTrue(os.path.isfile(mpath))
+
+        def test_5_recv_env(self):
+                """Verify that pkgrecv environment vars work as expected."""
+
+                f = fmri.PkgFmri(self.published[3], None)
+
+                os.putenv("PKG_SRC", self.durl1)
+                os.putenv("PKG_DEST", self.tempdir)
+
+                # First, retrieve the package.
+                self.pkgrecv(command="%s" % f)
+
+                # Next, load the manifest.
+                basedir = os.path.join(self.tempdir, f.get_dir_path())
+                mpath = os.path.join(basedir, "manifest")
+
+                m = manifest.Manifest()
+                raw = open(mpath, "rb").read()
+                m.set_content(raw)
+
+                # This is also the format pkgsend will expect for correct
+                # republishing.
+                ofile = file(os.devnull, "rb")
+                for atype in ("file", "license"):
+                        for a in m.gen_actions_by_type(atype):
+                                if not hasattr(a, "hash"):
+                                        continue
+
+                                ifile = file(os.path.join(basedir, a.hash),
+                                    "rb")
+
+                                # Since the file shouldn't be compressed, this
+                                # should return a zlib.error.
+                                self.assertRaises(zlib.error,
+                                    misc.gunzip_from_stream, ifile, ofile)
+
+                for var in ("PKG_SRC", "PKG_DEST"):
+                        os.unsetenv(var)
 
 
 if __name__ == "__main__":

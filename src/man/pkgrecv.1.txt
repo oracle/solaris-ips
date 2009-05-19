@@ -5,12 +5,13 @@ NAME
      pkgrecv - image packaging system content retrieval utility
 
 SYNOPSIS
-     /usr/bin/pkgrecv [-k] [-d directory] -s repo_uri pkg...
+     /usr/bin/pkgrecv [-s src_uri] [-d (path|dest_uri)] [-k] [-m] [-n] [-r]
+         (fmri|pattern) ...
 
-     /usr/bin/pkgrecv -s repo_uri -n
+     /usr/bin/pkgrecv [-s src_uri] -n
 
 DESCRIPTION
-     pkgrecv allows the user to download the contents of a package
+     pkgrecv allows the user to retrieve the contents of a package
      from a pkg(5) repository.  With the default options, the contents
      are retrieved in a format that can easily be input to pkgsend(1)
      when used with the 'include' subcommand.  As a result, pkgrecv(1)
@@ -21,17 +22,37 @@ DESCRIPTION
 OPTIONS
      The following options are supported:
 
-     -s repo_uri    The location of the pkg(5) repository.
+     -d path_or_uri  The path of a directory to save the retrieved package
+                     to, or the URI of a repository to republish it to.  If
+                     not provided, the default value is the current working
+                     directory.  If a directory path is provided, then
+                     package content will only be retrieved if it does not
+                     already exist in the target directory.  If a repository
+                     URI is provided, a temporary directory will be created
+                     and all of the package data retrieved before attempting
+                     to republish it.
 
-     -k             Keep the individual package contents compressed.
+     -h              Display usage message.
 
-     -d directory   The directory where package content should be
-                    placed.  The default location is the current working
-                    directory.
+     -k              Keep the retrieved package content compressed, ignored
+                     when republishing.  Should not be used with pkgsend.
 
-     -n             Instead of downloading package contents, list the
-                    most recent versions of the packages available from
-                    the specified repository.
+     -m match        Controls matching behaviour using the following values:
+                         all-timestamps
+                             includes all matching timestamps, not just
+                             latest (implies all-versions)
+                         all-versions
+                             includes all matching versions, not just latest
+
+     -n              List the most recent versions of the packages available
+                     from the specified repository and exit (all other
+                     options except -s will be ignored).
+
+     -r              Recursively retrieves all dependencies for the provided
+                     list of packages.
+
+     -s src_repo_uri A URI representing the location of a pkg(5) repository
+                     from which to receive package data.
 
 EXAMPLES
      Example 1:  List newest packages available from the repository on
@@ -51,6 +72,43 @@ EXAMPLES
      SUNWlibm@0.5.11,5.11-0.79:20080221T125728Z
      $ ls -d SUNW*
      SUNWfreetype2  SUNWlibC       SUNWlibm
+
+     Example 3: Receive the package "SUNWvim" and all of its dependencies
+     from the system named 'test'.
+
+     $ pkgrecv -s http://test -r SUNWvim
+
+     Example 4: Receive all versions of the package "SUNWvim" from the
+     system named 'test'.
+
+     $ pkgrecv -s http://test -m all-versions SUNWvim
+
+     Example 5: Receive all versions of the package "SUNWvim" from the
+     system named 'test' and republish it to a local repository.
+
+     $ pkgrecv -s http://test -d file:///local/repo SUNWvim
+
+     Example 6: Receive all versions of the package "SUNWzlib" from the
+     system named 'test' and republish it to a remote repository on the
+     system named 'remote'.
+
+     $ pkgrecv -s http://test -d http://remote:10000 SUNWzlib
+
+     Example 7: Receive the package "SUNWemacs" and all of its dependencies
+     from the repository located at '/var/pkg/repo'.
+
+     $ pkgrecv -s file:///var/pkg/repo -r SUNWemacs
+
+ENVIRONMENT VARIABLES
+     The following environment variables are supported:
+
+     PKG_DEST           The path of a directory to save the retrieved
+                        package to, or the URI of a repository to
+                        republish it to.  If not provided, the default
+                        value is the current working directory.
+
+     PKG_SRC            A URI representing the location of a pkg(5)
+                        repository to retrieve package data from.
 
 EXIT STATUS
      The following exit values are returned:

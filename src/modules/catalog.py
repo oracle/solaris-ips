@@ -281,7 +281,7 @@ class Catalog(object):
                                 if entry == pkgstr:
                                         raise CatalogException(
                                             "Package %s is already in " 
-                                            "the catalog" % pfmri)
+                                            "the catalog" % pkgstr)
                                 else:
                                         tfile.write(entry)
                         tfile.write(pkgstr)
