@@ -25,12 +25,15 @@
 #
 
 import cherrypy
+import itertools
 import pkg.catalog
+import pkg.fmri
 import pkg.version
 import pkg.server.api_errors as api_errors
 import pkg.server.query_parser as qp
+import pkg.version as version
 
-CURRENT_API_VERSION = 3
+CURRENT_API_VERSION = 4
 
 class BaseInterface(object):
         """This class represents a base API object that is provided by the
@@ -56,7 +59,7 @@ class _Interface(object):
         """Private base class used for api interface objects.
         """
         def __init__(self, version_id, base):
-                compatible_versions = set([3])
+                compatible_versions = set([3, 4])
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
                             version_id)
@@ -135,30 +138,123 @@ class CatalogInterface(_Interface):
 
         def search(self, tokens, case_sensitive=False,
             return_type=qp.Query.RETURN_PACKAGES, start_point=None,
-            num_to_return=None):
-                """Searches the index for the query represented by the
-                arguments.
+            num_to_return=None, matching_version=None, return_latest=False):
+                """Searches the catalog for actions or packages (as determined
+                by 'return_type') matching the specified 'tokens'.
 
-                The "tokens" parameter is a string containing a query.
+                'tokens' is a string using pkg(5) query syntax.
 
-                The "case_sensitive" parameter is a boolean which determines
-                whether the search is case sensitive or not.
+                'case_sensitive' is an optional, boolean value indicating
+                whether matching entries must have the same case as that of
+                the provided tokens.
 
-                The "return_type" parameter specifies whether actions or
-                packages should be returned.
+                'return_type' is an optional, constant value indicating the
+                type of results to be returned.  This constant value should be
+                one provided by the pkg.server.query_parser.Query class.
 
-                The "start_point" parameter is an integer which states what
-                number result to start on. None is interpreted to mean 0.
+                'start_point' is an optional, integer value indicating how many
+                search results should be discarded before returning any results.
+                None is interpreted to mean 0.
 
-                The "num_to_return" parameter tells the maximum number of
-                results to return.  None means return all results.
+                'num_to_return' is an optional, integer value indicating how
+                many search results should be returned.  None means return all
+                results.
+
+                'matching_version' is a string in the format expected by the
+                pkg.version.MatchingVersion class that will be used to further
+                filter the search results as they are retrieved.
+
+                'return_latest' is an optional, boolean value that will cause
+                only the latest versions of packages to be returned.  Ignored
+                if 'return_type' is not qp.Query.RETURN_PACKAGES.
                 """
+
+                if not tokens:
+                        return []
 
                 tokens = tokens.split()
                 if not self.search_available:
                         return []
+
+                if start_point is None:
+                        start_point = 0
+
+                def filter_results(results, mver):
+                        found = 0
+                        last_stem = None
+                        for result in results:
+                                if found and \
+                                    ((found - start_point) >= num_to_return):
+                                        break
+
+                                if result[1] == qp.Query.RETURN_PACKAGES:
+                                        pfmri = result[2]
+                                elif result[1] == qp.Query.RETURN_ACTIONS:
+                                        pfmri = result[2][0]
+
+                                if mver is not None:
+                                        if mver != version.Version(pfmri.split(
+                                            "@", 1)[1], None):
+                                                continue
+
+                                if return_latest and \
+                                    result[1] == qp.Query.RETURN_PACKAGES:
+                                        # Latest version filtering can only be
+                                        # done for packages as only they are
+                                        # guaranteed to be in version order.
+                                        stem = result[2].split("@", 1)[0]
+                                        if last_stem == stem:
+                                                continue
+                                        else:
+                                                last_stem = stem
+
+                                found += 1
+                                if found > start_point:
+                                        yield result
+
+                def filtered_search(results, mver):
+                        try:
+                                result = results.next()
+                        except StopIteration:
+                                return
+
+                        return_type = result[1]
+                        results = itertools.chain([result], results)
+
+                        if return_latest and \
+                            return_type == qp.Query.RETURN_PACKAGES:
+                                def cmp_fmris(resa, resb):
+                                        a = pkg.fmri.PkgFmri(resa[2])
+                                        b = pkg.fmri.PkgFmri(resb[2])
+
+                                        if a.pkg_name == b.pkg_name:
+                                                # Version in descending order.
+                                                return cmp(a.version,
+                                                    b.version) * -1
+                                        return cmp(a, b)
+                                return filter_results(sorted(results,
+                                    cmp=cmp_fmris), mver)
+
+                        return filter_results(results, mver)
+
+                if matching_version or return_latest:
+                        # Additional filtering needs to be performed and
+                        # the results yielded one by one.
+                        mver = None
+                        if matching_version:
+                                mver = version.MatchingVersion(matching_version,
+                                    None)
+
+                        # Results should be retrieved here so that an exception
+                        # can be immediately raised.
+                        query = qp.Query(" ".join(tokens), case_sensitive,
+                            return_type, None, None)
+                        results = self.__catalog.search(query)
+
+                        return filtered_search(results, mver)
+
                 query = qp.Query(" ".join(tokens), case_sensitive,
-                    return_type, start_point, num_to_return)
+                    return_type, num_to_return, start_point)
                 return self.__catalog.search(query)
 
         @property
@@ -372,7 +468,14 @@ class RequestInterface(_Interface):
                 """
                 return self.__request.path_info
 
-        def url(self, path='', qs='', script_name=None, relative=None):
+        @property
+        def query_string(self):
+                """A string containing the "query_string" portion of the
+                requested URL.
+                """
+                return cherrypy.request.query_string
+
+        def url(self, path="", qs="", script_name=None, relative=None):
                 """Create an absolute URL for the given path.
 
                 If 'path' starts with a slash ('/'), this will return (base +
@@ -385,9 +488,8 @@ class RequestInterface(_Interface):
 
                 If no parameters are specified, an absolute URL for the current
                 request path (minus the querystring) by passing no args.  If
-                url(qs=cherrypy.request.query_string), is called, the original
-                client URL (assuming no internal redirections) should be
-                returned.
+                url(qs=request.query_string), is called, the original client URL
+                (assuming no internal redirections) should be returned.
 
                 If relative is None or not provided, an appropriate value will
                 be automatically determined.  If False, the output will be an

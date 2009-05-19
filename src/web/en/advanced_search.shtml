@@ -1,0 +1,202 @@
+## -*- coding: utf-8 -*-
+##
+## CDDL HEADER START
+##
+## The contents of this file are subject to the terms of the
+## Common Development and Distribution License (the "License").
+## You may not use this file except in compliance with the License.
+##
+## You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+## or http://www.opensolaris.org/os/licensing.
+## See the License for the specific language governing permissions
+## and limitations under the License.
+##
+## When distributing Covered Code, include this CDDL HEADER in each
+## file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+## If applicable, add the following below this CDDL HEADER, with the
+## fields enclosed by brackets "[]" replaced with your own identifying
+## information: Portions Copyright [yyyy] [name of copyright owner]
+##
+## CDDL HEADER END
+##
+## Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+## Use is subject to license terms.
+##
+<%!
+        import pkg.query_parser as qp
+        import urllib
+%>\
+<%inherit file="search.shtml"/>\
+<%page args="g_vars"/>\
+<%
+        catalog = g_vars["catalog"]
+        request = g_vars["request"]
+%>\
+<%def name="page_title(g_vars)"><%
+        return "Advanced Package Search"
+%></%def>\
+<%def name="get_search_criteria(request)"><%
+        # Based on the request parameters, return a dict representing the
+        # search criteria.
+        criteria = parent.get_search_criteria(request)
+
+        versions = self.shared.get_releases(g_vars)
+        if versions:
+                # Add an "All" selection to be used as the default.
+                versions.insert(0, ("", "", "All"))
+
+        # The string value representing the user's selection.
+        selected_val = urllib.unquote(request.params.get("v", ""))
+
+        # The version object matching the string value of the user's selection.
+        selected_ver = None
+
+        if selected_val:
+                for v in versions:
+                        ver, val, label = v
+                        if selected_val == val:
+                                selected_ver = ver
+                                break
+
+        if versions and selected_val and not selected_ver:
+                # The version provided didn't match a valid one, so default to
+                # the first one in the list.
+                selected_ver = versions[0][0]
+                selected_val = versions[0][1]
+
+        criteria["versions"] = versions
+        criteria["selected_ver"] = selected_ver
+        criteria["selected_val"] = selected_val
+
+        return criteria
+%></%def>\
+<%def name="display_search_form(criteria, request)"><%
+        return_types = [
+            ("a", "Actions"),
+            ("p", "Packages")
+        ]
+
+        rpp_values = (10, 20, 30, 50, 100, 250, 500)
+
+        token_val = criteria["token"]
+        if criteria["return_type"] == qp.Query.RETURN_PACKAGES:
+                show = "p"
+        elif criteria["return_type"] == qp.Query.RETURN_ACTIONS:
+                show = "a"
+
+        rpp_val = criteria["rpp"]
+%>\
+<form class="search advanced-search" action="advanced_search.shtml">
+        <table summary="Additional criteria to alter how search results are
+ obtained and presented.">
+                <tr>
+                        <td colspan="3">
+                                <input id="search-field" type="text" size="80"
+                                    maxlength="512" name="token"
+                                    value="${token_val | h}"/>
+                        </td>
+                </tr>
+                <tr>
+                        <td class="label">Show results as:</td>
+                        <td>
+%       for val, label in return_types:
+                                <input id="show-${val}" type="radio"
+%               if val == show:
+                                    checked="checked"
+%               endif
+                                    name="show" value="${val}"/>
+                                <label for="show-${val}">${label}</label>
+%       endfor
+                                <span class="tip" title="You can return packages
+ in standard search by enclosing your entire query within '&lt;&gt;'.">tip</span>
+                        </td>
+                        <td></td>
+                </tr>
+                <tr>
+                        <td class="label">
+                                <label for="show-all-versions">Show all
+versions:</label>
+                        </td>
+                        <td>
+                                <input id="show-all-versions" type="checkbox"
+%                       if criteria["sav"]:
+                                    checked="checked"
+%                       endif
+                                    name="sav" value="1"/>
+                                <span class="tip" title="By default, only the
+ latest versions of packages are shown.  To show all versions, check this
+ checkbox.  This option is ignored when results are shown as Actions.">
+tip</span>
+                        </td>
+                </tr>
+                <tr>
+                        <td class="label">
+                                <label for="case-sensitive">Perform case-sensitive search:</label>
+                        </td>
+                        <td>
+                                <input id="case-sensitive" type="checkbox"
+%                       if criteria["cs"]:
+                                    checked="checked"
+%                       endif
+                                    name="cs" value="1"/>
+                                <span class="tip" title="By default, searches
+ are not case-sensitive.  To perform a case-sensitive search, check this
+ checkbox.">
+tip</span>
+                        </td>
+                </tr>
+                <tr>
+                        <td class="label">
+                                <label for="rpp">Results per page:</label>
+                        </td>
+                        <td>
+                                <select id="rpp" name="rpp">
+
+%       for val in rpp_values:
+                                        <option 
+%               if val == rpp_val:
+                                                selected="selected"
+%               endif
+                                                value="${val}">${val}</option>
+%       endfor
+                                </select>
+                        </td>
+                        <td></td>
+                </tr>
+<%
+        versions = criteria["versions"]
+        selected_val = criteria["selected_val"]
+        selected_ver = criteria["selected_ver"]
+%>\
+%       if versions:
+                <tr>
+                        <td class="label">
+                                <label for="version">Release and Branch:</label>
+                        </td>
+                        <td>
+                                <select id="version" name="v">
+<%
+                for v in versions:
+                        ver, val, label = v
+                        attrs = ""
+                        if val == selected_val:
+                                attrs = 'selected="selected" '
+
+                        context.write("""<option %svalue="%s">%s</option>""" % (
+                            attrs, urllib.quote(val, ""), label))
+%>\
+                                </select>
+                        </td>
+                </tr>
+%       endif
+                <tr>
+                        <td></td>
+                        <td></td>
+                        <td class="submit">
+                                <input id="submit-search" type="submit"
+                                    name="action" value="Advanced Search"/>
+                        </td>
+                </tr>
+        </table>
+</form>
+</%def>\

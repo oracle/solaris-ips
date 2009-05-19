@@ -327,7 +327,7 @@ class ParseError(QueryException):
                 pre_tab = ""
                 end_pre_tab = ""
                 if html:
-                        line_break = "<br>"
+                        line_break = "<br/>"
                         pre_tab = "<pre>"
                         end_pre_tab = "</pre>"
                 return line_break.join([_("Could not parse query."),
@@ -449,7 +449,7 @@ class BooleanQueryException(QueryException):
                 pre_tab = ""
                 end_pre_tab = ""
                 if html:
-                        line_break = "<br>"
+                        line_break = "<br/>"
                         pre_tab = "<pre>"
                         end_pre_tab = "</pre>"
                 ac_s = _("This expression produces action results:")

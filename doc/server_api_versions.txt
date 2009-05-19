@@ -1,5 +1,43 @@
+Version 4:
+Compatible with clients using Version 3.
+
+Changes:
+    CatalogInterface.search() has changed as follows:
+        * A docstring has been added; see pydoc pkg.server.api for details.
+
+        * Added optional keyword 'matching_version' that allows consumers to
+          filter search results based on version.
+
+        * Added optional, boolean keyword 'return_latest' that causes only the
+          the newest versions of packages to be returned when 'return_type'
+          is Query.RETURN_PACKAGES.
+
+Version 3:
+Incompatible with clients using Versions 0-2.
+
+Changes:
+    CatalogInterface.search() has changed as follows:
+        * Added optional, boolean keyword 'case_sensitive'.  This indicates
+          whether a case-sensitive search should be performed.
+
+        * Added optional keyword argument 'return_type'.  This determines
+          whether results should be returned as Query.RETURN_ACTIONS or
+          Query.RETURN_PACKAGES.
+
+        * Added optional, integer keyword argument 'start_point'.  This
+          specifies how many matching results should be skipped before
+          returning anything.
+
+        * Added optional, integer keyword argument 'num_to_return'.  This
+          indicates how many results should be returned before the search
+          is aborted.
+
+        * search_done() was removed.  Previously, after calling search(), api
+          consumers would have to call search_done().  This is no longer
+          necessary.
+
 Version 2:
-Incompatible with clients using Versions 0, 1
+Incompatible with clients using Versions 0-1.
 Changes:
 CatalogInterface.get_matching_version_fmris() no longer accepts the constraint
 parameter.  However, as before, it expects a list of version strings for the
@@ -7,7 +45,7 @@ parameter.  However, as before, it expects a list of version strings for the
 characters '*' and '?'.
 
 Version 1:
-Incompatible with clients using Version 0
+Incompatible with clients using Version 0.
 Changes:
 CatalogInterface.search_done() was added to perform cleanup after all results
 have been retrieved from search().

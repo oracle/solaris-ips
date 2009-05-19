@@ -49,27 +49,15 @@
                 <p>${repo_desc}</p>
 % endif
 % if catalog.search_available:
-                <form action="search.shtml">
+                <form class="search" action="search.shtml">
                         <h2 class="section-title">Search Packages</h2>
                         <p>
-                                <input id="search-field" type="text" size="30"
+                                <input id="search-field" type="text" size="40"
                                     maxlength="512" name="token"/>
                                 <input id="submit-search" type="submit"
                                     name="action" value="Search"/>
+                                <a href="advanced_search.shtml">Advanced Search</a>
                         </p>
-                        <p>Search Tips:</p>
-                        <ul class="tips">
-                                <li>All searches are case-insensitive.</li>
-                                <li>To find packages that contain a specific
-file by path, include the leading '/':<br/>
-<kbd>/usr/bin/vim</kbd></li>
-                                <li>To find packages based on a partial match,
-use the wildcard characters '*' or '?':<br/>
-<kbd>*.xhtm?</kbd></li>
-                                <li>To find packages based on specific
-matching characters use '[' and ']':<br/>
-<kbd>/usr/bin/[ca]t</kbd></li>
-                        </ul>
                 </form>
 % endif
 % if not config.mirror:

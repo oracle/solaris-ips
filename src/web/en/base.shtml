@@ -28,7 +28,7 @@
 <%namespace name="shared" file="../shared.shtml" inheritable="True"/>\
 <%page args="g_vars"/>\
 <%
-        CLIENT_API_VERSION = 3
+        CLIENT_API_VERSION = 4
         base = g_vars["base"]
         catalog = api.CatalogInterface(CLIENT_API_VERSION, base)
         config = api.ConfigInterface(CLIENT_API_VERSION, base)

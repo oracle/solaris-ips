@@ -19,14 +19,14 @@
 ##
 ## CDDL HEADER END
 ##
-## Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+## Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 ## Use is subject to license terms.
 ##
 <%page args="g_vars"/>\
 <div class="page-container">
         <div class="footer-line"></div>
         <a class="logo" href="http://www.sun.com/"></a>
-        <span class="notice">Copyright &copy; 2008 Sun Microsystems, Inc.</span>
+        <span class="notice">Copyright &copy; 2009 Sun Microsystems, Inc.</span>
         <div class="footer-nav">
                 <a href="http://www.sun.com/contact/">Contact Sun</a> |
                 <a href="http://www.sun.com/share/text/termsofuse.html">Terms of Use</a> |

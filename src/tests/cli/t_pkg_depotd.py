@@ -551,6 +551,7 @@ class TestDepotOutput(testutils.CliTestCase):
                     "index.shtml",
                     "en/catalog.shtml",
                     "en/index.shtml",
+                    "en/advanced_search.shtml",
                     "en/search.shtml",
                     "en/stats.shtml",
                 ]

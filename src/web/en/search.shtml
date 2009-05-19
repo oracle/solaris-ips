@@ -23,12 +23,13 @@
 ## Use is subject to license terms.
 ##
 <%!
+        import itertools
+        import pkg.actions as actions
+        import pkg.query_parser as qp
+        import pkg.server.api_errors as api_errors
+        import pkg.version as version
         import urllib
-        import pkg.query_parser as query_p
-        fmri_ops = {
-            'info': "Info",
-            'manifest': "Manifest"
-        }
+        import urlparse
 %>\
 <%inherit file="layout.shtml"/>\
 <%page args="g_vars"/>\
@@ -39,6 +40,198 @@
 <%def name="page_title(g_vars)"><%
         return "Package Search"
 %></%def>\
+<%def name="get_search_criteria(request)"><%
+        # Based on the request parameters, return a dict representing the
+        # search criteria.
+        criteria = {
+            "token": request.params.get("token", ""),
+            "query_error": request.params.get("qe", ""),
+        }
+
+        criteria["searched"] = len(criteria["token"])
+
+        show = request.params.get("show", "p")
+        if show == "p" or show not in ("a", "p"):
+                criteria["return_type"] = qp.Query.RETURN_PACKAGES
+        elif show == "a":
+                criteria["return_type"] = qp.Query.RETURN_ACTIONS
+
+        for name, default in (("rpp", 50), ("start", 0), ("failed", 0),
+            ("sav", 0), ("cs", 0)):
+                val = request.params.get(name, default)
+                try:
+                        val = int(val)
+                except ValueError:
+                        val = default
+
+                criteria[name] = val
+
+        return criteria
+%></%def>\
+<%def name="search(catalog, request, criteria)"><%
+        # Gets the search results for the specified catalog based on the
+        # provided search criteria.
+        query_error = None
+        token = criteria["token"]
+        cs = criteria["cs"]
+        rpp = criteria["rpp"]
+        return_type = criteria["return_type"]
+        start_val = criteria["start"]
+
+        # This criteria is optional, so use get to retrieve it.
+        mver = criteria.get("selected_ver", None)
+
+        if mver:
+                # Replace leading version components with wildcard so that
+                # matching is only performed using build_release and branch.
+                mver = "*,%s-%s" % (mver.build_release, mver.branch)
+
+        # Determines whether all versions or only the latest vresion of a
+        # package is shown.  This is ignored when the return_type is not
+        # qp.Query.RETURN_PACKAGES.
+        sav = criteria["sav"]
+
+        try:
+                # Search results are limited to just one more than the
+                # results per page so that a query that exceeds it can be
+                # detected.
+                results = catalog.search(token,
+                    case_sensitive=cs,
+                    return_type=return_type,
+                    start_point=start_val,
+                    num_to_return=(rpp + 1),
+                    matching_version=mver,
+                    return_latest=not sav)
+        except qp.QueryException, e:
+                results = None
+                query_error = e.html()
+
+        # Before showing the results, the type of results being shown has to be
+        # determined since the user might have overriden the return_type
+        # selection above using query syntax.  To do that, the first result will
+        # have to be checked for the real return type.
+        if results:
+                try:
+                        result = results.next()
+                except StopIteration:
+                        result = None
+                        results = None
+                        pass
+
+                if result and result[1] == qp.Query.RETURN_PACKAGES:
+                        return_type = result[1]
+                        results = itertools.chain([result], results)
+                elif result and result[1] == qp.Query.RETURN_ACTIONS:
+                        return_type = result[1]
+                        results = itertools.chain([result], results)
+                elif result:
+                        return_type = qp.Query.RETURN_PACKAGES
+                        query_error = "Only the display of packages or " \
+                            "actions for search results is supported."
+
+                        request.log("Unsupported return_type '%s' "
+                            "requested for search query: '%s'." % (return_type,
+                            token))
+
+        return return_type, results, query_error
+%></%def>\
+<%def name="display_search_form(criteria, request)"><%
+        # Returns an HTML form with all of the elements needed to perform a
+        # search using the specified search criteria and request.
+        token = criteria["token"]
+
+        search_uri = "advanced_search.shtml"
+        if criteria["searched"]:
+                search_uri = request.url(qs=request.query_string, relative=True)
+                search_uri = search_uri.replace("search.shtml",
+                    "advanced_search.shtml")
+%>\
+<form class="search" action="search.shtml">
+        <p>
+                <input id="search-field" type="text" size="40"
+                    maxlength="512" name="token"
+                    value="${token | h}"/>
+                <input id="submit-search" type="submit"
+                    name="action" value="Search"/>
+                <a href="${search_uri | h}">Advanced Search</a>
+        </p>
+</form>
+</%def>\
+<%def name="get_prev_page_uri(criteria, request)"><%
+        # Returns a URL relative to the current request path with the
+        # starting range of the previous page of search results set.
+
+        uri = request.url(qs=request.query_string, relative=True)
+        scheme, netloc, path, params, query, fragment = urlparse.urlparse(uri)
+
+        nparams = []
+        for name, val in request.params.iteritems():
+                if name == "start":
+                        continue
+                nparams.append((name, val))
+
+        start = criteria["start"]
+        start = start - criteria["rpp"]
+        if start < 0:
+                start = 0
+        nparams.append(("start", start))
+
+        qs = urllib.urlencode(nparams)
+        uri = urlparse.urlunparse((scheme, netloc, path, params, qs, fragment))
+
+        return uri
+%></%def>\
+<%def name="get_next_page_uri(criteria, request, result_count)"><%
+        # Returns a URL relative to the current request path with the
+        # starting range of the next page of search results set.
+
+        uri = request.url(qs=request.query_string, relative=True)
+        scheme, netloc, path, params, query, fragment = urlparse.urlparse(uri)
+
+        nparams = []
+        for name, val in request.params.iteritems():
+                if name == "start":
+                        continue
+                nparams.append((name, val))
+
+        start = criteria["start"]
+        nparams.append(("start", (start + result_count - 1)))
+
+        qs = urllib.urlencode(nparams)
+        uri = urlparse.urlunparse((scheme, netloc, path, params, qs, fragment))
+
+        return uri
+%></%def>\
+<%def name="display_pagination(criteria, result_count, colspan=1)"><%
+        # Returns a table row with the appropriate pagination controls
+        # based on the provided search criteria.
+
+        show_prev = criteria["start"] > 0
+        show_next = result_count > criteria["rpp"]
+        if not (show_prev or show_next):
+                # Nothing to display.
+                return ""
+%>\
+<tr class="last">
+% if show_prev:
+        <td colspan="${colspan}">
+                <a href="${self.get_prev_page_uri(criteria, request) | h}">
+Previous</a>
+        </td>
+% else:
+        <td colspan="${colspan}">&nbsp;</td>
+% endif
+% if show_next:
+        <td class="last" colspan="${colspan}">
+                <a href="${self.get_next_page_uri(criteria, request,
+                    result_count) | h}">
+Next</a>
+        </td>
+% else:
+        <td class="last" colspan="${colspan}">&nbsp;</td>
+% endif
+</tr>
+</%def>\
 <div id="yui-main">
 % if not catalog.search_available:
         <div class="yui-b">
@@ -46,109 +239,162 @@
         </div>
 % else:
 <%
-        token_val = request.params.get("token", "")
-        searched = False
-        if len(token_val):
-                searched = True
+        results = None
+        return_type = None
+
+        criteria = self.get_search_criteria(request)
+        searched = criteria["searched"]
+        failed = criteria["failed"]
+        query_error = criteria["query_error"]
+
+        if not failed and searched:
+                return_type, results, query_error = self.search(
+                    catalog, request, criteria)
+
+                if query_error or not results:
+                        # Reload the page with a few extra query parameters set
+                        # so that failed searches can be detected in the server
+                        # logs (including that of any proxies in front of the
+                        # depot server).
+                        uri = request.url(qs=request.query_string,
+                            relative=True)
+                        scheme, netloc, path, params, query, \
+                            fragment = urlparse.urlparse(uri)
+
+                        nparams = []
+                        for name, val in request.params.iteritems():
+                                if name in ("failed", "query_error"):
+                                        continue
+                                nparams.append((name, val))
+
+                        nparams.append(("failed", 1))
+                        if query_error:
+                                nparams.append(("qe", query_error))
+
+                        qs = urllib.urlencode(nparams)
+                        uri = urlparse.urlunparse((scheme, netloc, path, params,
+                            qs, fragment))
+
+                        raise api_errors.RedirectException(uri)
+
+        rpp = criteria["rpp"]
+        result_count = 0
 %>\
         <div class="yui-b">
-                <form action="search.shtml">
-                        <p>
-                                <input id="search-field" type="text" size="30"
-                                    maxlength="512" name="token"
-                                    value="${token_val | h}"/>
-                                <input id="submit-search" type="submit"
-                                    name="action" value="Search"/>
-                        </p>
+        ${self.display_search_form(criteria, request)}
 %       if not searched:
-                        <p>Search Tips:</p>
-                        <ul class="tips">
-                                <li>All searches are case-insensitive.</li>
-                                <li>To find packages that contain a specific
+                <p>Search Tips:</p>
+                <ul class="tips">
+                        <li>All searches are case-insensitive.</li>
+                        <li>To find packages that contain a specific
 file, start your search criteria with a '/':<br/>
 <kbd>/usr/bin/vim</kbd></li>
-                                <li>To find packages based on a partial match,
+                        <li>To find packages based on a partial match,
 use the wildcard characters '*' or '?':<br/>
 <kbd>*.xhtm?</kbd></li>
-                                <li>To find packages based on specific
+                        <li>To find packages based on specific
 matching characters use '[' and ']':<br/>
 <kbd>/usr/bin/[ca]t</kbd></li>
-                        </ul>
+                </ul>
 %       endif
-                </form>
         </div>
         <div class="yui-b results">
-<%
-        rclass = None
-        results = None
-        result_count = 0
-        max_results = 100
-        query_error = None
-        if searched:
-                try:
-                        results = catalog.search(token_val)
-                except query_p.QueryException, e:
-                        results = None
-                        query_error = e.html()
-%>\
-%       if searched and results:
-%               for v, return_type, vals in results:
-<%
-                                pfmri = vals
-%>
-			        ## Only print row for first result.  Can't do this
-			        ## before now since results is a generator.
-%                               if rclass is None:
+%       if searched and return_type == qp.Query.RETURN_PACKAGES:
+                ## Showing packages.
                 <table summary="A list of packages from the repository catalog
  that matched the specified search criteria.">
                         <tr class="first">
                                 <th>Package</th>
+                                <th>Manifest</th>
                         </tr>
-%                               endif
+%               for v, return_type, vals in results:
 <%
-                                result_count += 1
-                                if rclass is None or rclass == ' class="odd"':
-                                        rclass = ""
-                                else:
-                                        rclass = ' class="odd"'
+                        pfmri = vals
+                        if result_count % 2:
+                                rclass = ' class="odd"'
+                        else:
+                                rclass = ""
+                        result_count += 1
 
-                                phref = self.shared.rpath(g_vars, "info/0/%s" % (
-                                    urllib.quote(pfmri, ""))) 
+                        if result_count > rpp:
+                                break
+
+                        phref = self.shared.rpath(g_vars, "info/0/%s" % (
+                            urllib.quote(pfmri, ""))) 
+                        mhref = self.shared.rpath(g_vars, "manifest/0/%s" % (
+                            urllib.quote(pfmri, ""))) 
 %>\
-                        <tr${rclass} >
+                        <tr${rclass}>
+                                <td><a href="${phref}">${pfmri}</a></td>
+                                <td><a href="${mhref}">Manifest</a></td>
+                        </tr>
+%               endfor
+${display_pagination(criteria, result_count)}
+                </table>
+%       elif searched and return_type == qp.Query.RETURN_ACTIONS:
+                <table summary="A list of actions from the repository that
+ matched the specified search criteria.">
+                        <tr class="first">
+                                <th>Index</th>
+                                <th>Action</th>
+                                <th>Value</th>
+                                <th>Package</th>
+                        </tr>
+%               for v, return_type, vals in results:
+<%
+                        pfmri, match, action = vals
+
+                        a = actions.fromstr(action.rstrip())
+                        action = a.name
+                        if isinstance(a, actions.attribute.AttributeAction):
+                                index = a.attrs.get(a.key_attr)
+                                value = match
+                        else:
+                                index = match
+                                value = a.attrs.get(a.key_attr)
+%>
+<%
+                        if result_count % 2:
+                                rclass = ' class="odd"'
+                        else:
+                                rclass = ""
+                        result_count += 1
+
+                        if result_count > rpp:
+                                break
+
+                        phref = self.shared.rpath(g_vars, "info/0/%s" % (
+                            urllib.quote(pfmri, ""))) 
+%>\
+                        <tr${rclass}>
+                                <td>${index | h}</td>
+                                <td>${action | h}</td>
+                                <td>${value | h}</td>
                                 <td><a href="${phref}">${pfmri}</a></td>
                         </tr>
-%                               if result_count > max_results:
-                        <tr class="last">
-                                <td>More than ${max_results}
-record(s) matched your query; the rest will not be shown.  Please refine your
-query and try again.</td>
-<%
-                                        break
-%>
-                        </tr>
-%                               endif
-%               else:
-%                       if result_count > 0:
-                                <tr class="last">
-                                        <td>${result_count} record(s) found</td>
-                                </tr>
-%                               endif
-                </table>
 %               endfor
-%       endif
-%       if searched and query_error:
-                <p>Your search - <b>${token_val | h}</b> - is not a valid query.</p>
+${display_pagination(criteria, result_count, colspan=2)}
+                </table>
+%       elif query_error:
+<%
+                token = criteria["token"]
+%>
+                <p>Your search - <b>${token | h}</b> - is not a valid query.</p>
                 <p>Suggestions:</p>
                 <ul>
-                        <li>Remove special characters ('(', ')', '&lt;', '&gt;') from your tokens. Replace them with '*' or '?'.</li>
-                        <li>Ensure that each branch of your boolean query is returning the same kind of information. 'foo AND &lt; bar &gt;' will not work.</li>
+                        <li>Remove special characters ('(', ')', '&lt;', '&gt;')
+from your tokens. Replace them with '*' or '?'.</li>
+                        <li>Ensure that each branch of your boolean query is
+returning the same kind of information. 'foo AND &lt; bar &gt;' will not work.</li>
                 </ul>
                 <p>Details:</p>
-		${query_error}
-%       endif
-%       if searched and rclass is None and not query_error:
-                <p>Your search - <b>${token_val | h}</b> - did not match any packages.</p>
+                ${query_error}
+%       elif failed:
+<%
+                token = criteria["token"]
+%>
+                <p>Your search - <b>${token | h}</b> - did not match any
+packages.</p>
                 <p>Suggestions:</p>
                 <ul>
                         <li>Ensure that all words are spelled correctly.</li>
