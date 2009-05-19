@@ -126,6 +126,8 @@ f none usr/lib/python2.4/vendor-packages/pkg/manifest.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/manifest.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/misc.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/misc.pyc 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/p5i.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/p5i.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/pkggzip.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/pkggzip.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/pkgsubprocess.py 444 root bin
@@ -225,6 +227,7 @@ f none usr/share/lib/pkg/web/_themes/opensolaris.org/en/footer.shtml 444 root bi
 f none usr/share/lib/pkg/web/_themes/opensolaris.org/en/head_end.shtml 444 root bin
 f none usr/share/lib/pkg/web/_themes/opensolaris.org/en/header.shtml 444 root bin
 f none usr/share/lib/pkg/web/_themes/opensolaris.org/feed-icon-14x14.png 444 root bin
+f none usr/share/lib/pkg/web/_themes/p5i-link.png 444 root bin
 f none usr/share/lib/pkg/web/_themes/pkg-block-icon.png 444 root bin
 f none usr/share/lib/pkg/web/_themes/pkg-block-logo.png 444 root bin
 f none usr/share/lib/pkg/web/_themes/pkg-block-logo.svg 444 root bin
@@ -238,6 +241,7 @@ f none usr/share/lib/pkg/web/_themes/sun.com/en/header.shtml 444 root bin
 f none usr/share/lib/pkg/web/_themes/yui-reset-font-grids_base-min.css 444 root bin
 f none usr/share/lib/pkg/web/config.shtml 444 root bin
 d none usr/share/lib/pkg/web/en 755 root bin
+f none usr/share/lib/pkg/web/en/advanced_search.shtml 444 root bin
 f none usr/share/lib/pkg/web/en/base.shtml 444 root bin
 f none usr/share/lib/pkg/web/en/catalog.shtml 444 root bin
 f none usr/share/lib/pkg/web/en/index.shtml 444 root bin
