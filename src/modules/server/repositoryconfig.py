@@ -24,6 +24,7 @@
 # Use is subject to license terms.
 
 import ConfigParser
+import pkg.misc as misc
 import pkg.Uuid25 as uuid
 
 ATTR_TYPE_STR = 0
@@ -31,6 +32,11 @@ ATTR_TYPE_INT = 1
 ATTR_TYPE_FLOAT = 2
 ATTR_TYPE_BOOL = 3
 ATTR_TYPE_UUID = 4
+ATTR_TYPE_URI = 5
+ATTR_TYPE_URI_LIST = 6
+ATTR_TYPE_PUB_ALIAS = 7
+ATTR_TYPE_PUB_PREFIX = 8
+ATTR_TYPE_REPO_COLL_TYPE = 9
 
 class InvalidAttributeError(Exception):
         """Exception class used to indicate an invalid attribute.
@@ -62,20 +68,53 @@ class RepositoryConfig(object):
         # This data structure defines the list of possible attributes for a
         # repository along with two optional attributes: default and readonly.
         _attrs = {
+            "publisher": {
+                "alias": {
+                    "type": ATTR_TYPE_PUB_ALIAS,
+                },
+                "prefix": {
+                    "type": ATTR_TYPE_PUB_PREFIX,
+                },
+            },
             "repository": {
-                "name": {
-                    "default": "pkg - image packaging system"
+                "collection_type": {
+                    "type": ATTR_TYPE_REPO_COLL_TYPE,
+                    "default": "core",
                 },
                 "description": {},
+                "detailed_url": {
+                    "type": ATTR_TYPE_URI,
+                    "default": "http://www.opensolaris.com"
+                },
+                "legal_uris": {
+                    "type": ATTR_TYPE_URI_LIST
+                },
                 "maintainer": {
                     "default":
                         "Project Indiana <indiana-discuss@opensolaris.org>"
                 },
                 "maintainer_url": {
+                    "type": ATTR_TYPE_URI,
                     "default": "http://www.opensolaris.org/os/project/indiana/"
                 },
-                "detailed_url": {
-                    "default": "http://www.opensolaris.com"
+                "mirrors": {
+                    "type": ATTR_TYPE_URI_LIST
+                },
+                "name": {
+                    "default": "package repository"
+                },
+                "origins": {
+                    "type": ATTR_TYPE_URI_LIST
+                },
+                "refresh_seconds": {
+                    "type": ATTR_TYPE_INT,
+                    "default": 4 * 60 * 60, # default is 4 hours
+                },
+                "registration_uri": {
+                    "type": ATTR_TYPE_URI,
+                },
+                "related_uris": {
+                    "type": ATTR_TYPE_URI_LIST
                 },
             },
             "feed": {
@@ -93,14 +132,11 @@ class RepositoryConfig(object):
                 "logo": {
                     "default": "web/_themes/pkg-block-logo.png"
                 },
-                "authority": {
-                    "default": "opensolaris.org"
-                },
                 "window": {
                     "type": ATTR_TYPE_INT,
                     "default": 24
                 },
-            }
+            },
         }
 
         def __init__(self, pathname=None):
@@ -132,6 +168,11 @@ class RepositoryConfig(object):
                         for attr in sattrs:
                                 info = sattrs[attr]
                                 default = info.get("default", None)
+
+                                atype = self.get_attribute_type(section, attr)
+                                if default is None and \
+                                    atype == ATTR_TYPE_URI_LIST:
+                                        default = []
 
                                 if section not in self.cfg_cache:
                                         self.cfg_cache[section] = {}
@@ -169,11 +210,16 @@ class RepositoryConfig(object):
 
                 The return value corresponds to one of the following module
                 constants which matches a Python data type:
-                    ATTR_TYPE_STR       str
-                    ATTR_TYPE_INT       int
-                    ATTR_TYPE_FLOAT     float
-                    ATTR_TYPE_BOOL      boolean
-                    ATTR_TYPE_UUID      str
+                    ATTR_TYPE_STR               str
+                    ATTR_TYPE_INT               int
+                    ATTR_TYPE_FLOAT             float
+                    ATTR_TYPE_BOOL              boolean
+                    ATTR_TYPE_UUID              str
+                    ATTR_TYPE_URI               str
+                    ATTR_TYPE_URI_LIST          list of str
+                    ATTR_TYPE_PUB_ALIAS         str
+                    ATTR_TYPE_PUB_PREFIX        str
+                    ATTR_TYPE_REPO_COLL_TYPE    str
                 """
                 if cls.is_valid_attribute(section, attr, raise_error=True):
                         info = cls._attrs[section][attr]
@@ -190,6 +236,18 @@ class RepositoryConfig(object):
                 This function will raise an exception instead of returning a
                 boolean is raise_error=True is specified.
                 """
+
+                def validate_uri(uri):
+                        try:
+                                valid = misc.valid_pub_url(uri)
+                        except KeyboardInterrupt:
+                                raise
+                        except:
+                                valid = False
+
+                        if not valid:
+                                raise ValueError()
+
                 if cls.is_valid_attribute(section, attr,
                     raise_error=raise_error):
                         atype = cls.get_attribute_type(section, attr)
@@ -213,6 +271,30 @@ class RepositoryConfig(object):
                                         # fail.
                                         if value is not None:
                                                 uuid.UUID(hex=str(value))
+                                elif atype == ATTR_TYPE_URI:
+                                        if value in (None, ""):
+                                                return True
+                                        validate_uri(value)
+                                elif atype == ATTR_TYPE_URI_LIST:
+                                        if not isinstance(value, list):
+                                                return False
+                                        for u in value:
+                                                validate_uri(u)
+                                elif atype in (ATTR_TYPE_PUB_ALIAS,
+                                    ATTR_TYPE_PUB_PREFIX):
+                                        # For now, values are not required.
+                                        if value in (None, ""):
+                                                return True
+
+                                        # The same rules that apply to publisher
+                                        # prefixes also apply to aliases (for
+                                        # now).
+                                        if not misc.valid_pub_prefix(value):
+                                                raise ValueError()
+                                elif atype == ATTR_TYPE_REPO_COLL_TYPE:
+                                        if str(value) not in ("core",
+                                            "supplemental"):
+                                                raise TypeError
                                 else:
                                         raise RuntimeError(
                                             "Unknown attribute type: %s" % \
@@ -265,9 +347,7 @@ class RepositoryConfig(object):
                     raise_error=True)
 
                 atype = self.get_attribute_type(section, attr)
-                if atype == ATTR_TYPE_STR or atype == ATTR_TYPE_UUID:
-                        self.cfg_cache[section][attr] = value
-                elif atype == ATTR_TYPE_INT:
+                if atype == ATTR_TYPE_INT:
                         self.cfg_cache[section][attr] = int(value)
                 elif atype == ATTR_TYPE_FLOAT:
                         self.cfg_cache[section][attr] = float(value)
@@ -276,6 +356,9 @@ class RepositoryConfig(object):
                                 self.cfg_cache[section][attr] = True
                         else:
                                 self.cfg_cache[section][attr] = False
+                else:
+                        # Treat all remaining types as a simple value.
+                        self.cfg_cache[section][attr] = value
 
         def set_attribute(self, section, attr, value):
                 """Sets a given configuration attribute to the specified
@@ -332,6 +415,12 @@ class RepositoryConfig(object):
                                         elif atype == ATTR_TYPE_BOOL:
                                                 value = cp.getboolean(section,
                                                     attr)
+                                        elif atype == ATTR_TYPE_URI_LIST:
+                                                uris = []
+                                                for u in value.split(","):
+                                                        if u:
+                                                                uris.append(u)
+                                                value = uris
 
                                         self.cfg_cache[section][attr] = value
 
@@ -350,6 +439,11 @@ class RepositoryConfig(object):
                         cp.add_section(section)
                         for attr in self._attrs[section]:
                                 value = self.cfg_cache[section][attr]
+
+                                atype = self.get_attribute_type(section, attr)
+                                if atype == ATTR_TYPE_URI_LIST:
+                                        value = ",".join(value)
+
                                 if value is not None:
                                         cp.set(section, attr, str(value))
                                 else:

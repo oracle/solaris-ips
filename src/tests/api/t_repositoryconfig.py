@@ -40,23 +40,77 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
         """Class to test the functionality of RepositoryConfig.
         """
         __attrs = {
+            "publisher": {
+                "alias": {
+                    "type": rcfg.ATTR_TYPE_PUB_ALIAS,
+                    "default": "pending"
+                },
+                "prefix": {
+                    "type": rcfg.ATTR_TYPE_PUB_PREFIX,
+                    "default": "org.opensolaris.pending"
+                }
+            },
             "repository": {
-                "name": {
-                    "default": "opensolaris.org main repository"
+                "collection_type": {
+                    "type": rcfg.ATTR_TYPE_REPO_COLL_TYPE,
+                    "default": "supplemental"
                 },
                 "description": {
-                    "default": "The base opensolaris.org repository."
+                    "default": """This repository serves the currently in-""" \
+                        """development packages for the contrib repository. """ \
+                        """For tested bits, see <a """ \
+                        """href="http://pkg.opensolaris.org/contrib">the """ \
+                        """contrib repository</a>."""
+                },
+                "detailed_url": {
+                    "type": rcfg.ATTR_TYPE_URI,
+                    "default":
+                        "http://opensolaris.org/os/community/sw-porters/contributing/",
+                },
+                "legal_uris": {
+                    "type": rcfg.ATTR_TYPE_URI_LIST,
+                    "default": [
+                        "http://www.opensolaris.org/os/copyrights/",
+                        "http://www.opensolaris.org/os/tou/",
+                        "http://www.opensolaris.org/os/trademark/"
+                    ]
                 },
                 "maintainer": {
                     "default":
-                        "Project Indiana <indiana-discuss@opensolaris.org>"
+                        "Software Porters <sw-porters-discuss@opensolaris.org>"
                 },
                 "maintainer_url": {
-                    "default": "http://www.opensolaris.org/os/project/indiana/"
+                    "type": rcfg.ATTR_TYPE_URI,
+                    "default":
+                        "http://www.opensolaris.org/os/community/sw-porters/"
                 },
-                "detailed_url": {
-                    "default": "http://www.opensolaris.com"
-                }
+                "mirrors": {
+                    "type": rcfg.ATTR_TYPE_URI_LIST,
+                    "default": []
+                },
+                "name": {
+                    "default": """"Pending" Repository"""
+                },
+                "origins": {
+                    "type": rcfg.ATTR_TYPE_URI_LIST,
+                    "default": ["http://pkg.opensolaris.org/pending"]
+                },
+                "refresh_seconds": {
+                    "type": rcfg.ATTR_TYPE_INT,
+                    "default": 86400,
+                },
+                "registration_uri": {
+                    "type": rcfg.ATTR_TYPE_URI,
+                    "default": "",
+                },
+                "related_uris": {
+                    "type": rcfg.ATTR_TYPE_URI_LIST,
+                    "default": [
+                        "http://pkg.opensolaris.org/contrib",
+                        "http://jucr.opensolaris.org/pending",
+                        "http://jucr.opensolaris.org/contrib"
+                    ]
+                },
             },
             "feed": {
                 "id": {
@@ -65,7 +119,7 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                     "default": "16fd2706-8baf-433b-82eb-8c7fada847da"
                 },
                 "name": {
-                    "default": "opensolaris.org image packaging feed"
+                    "default": "pending repository image packaging feed"
                 },
                 "description": {
                     "default": "An RSS/Atom feed that contains a summary of "
@@ -76,9 +130,6 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                 },
                 "logo": {
                     "default": "pkg-block-logo.png"
-                },
-                "authority": {
-                    "default": "opensolaris.org"
                 },
                 "window": {
                     "type": rcfg.ATTR_TYPE_INT,
@@ -114,12 +165,16 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                                             attrs[section][attr])
 
                 # Write out a sample configuration in ConfigParser format.
+                rc = rcfg.RepositoryConfig()
                 attrs = self.__attrs
                 for section in attrs:
                         f.write("[%s]\n" % section)
                         for attr in attrs[section]:
-                                f.write("%s = %s\n" % (attr,
-                                    attrs[section][attr]["default"]))
+                                atype = rc.get_attribute_type(section, attr)
+                                val = attrs[section][attr]["default"]
+                                if atype == rcfg.ATTR_TYPE_URI_LIST:
+                                        val = ",".join(val)
+                                f.write("%s = %s\n" % (attr, val))
                         f.write("\n")
                 f.close()
 
@@ -167,7 +222,7 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                 for section in attrs:
                         for attr in attrs[section]:
                                 returned = rc.get_attribute(section, attr)
-                                self.assert_(returned == \
+                                self.assertEqual(returned,
                                     attrs[section][attr]["default"])
 
         def test_get_invalid_attribute(self):
@@ -189,7 +244,12 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                                 returned = rc.get_attribute_type(section, attr)
                                 expected = attrs[section][attr].get("type",
                                     rcfg.ATTR_TYPE_STR)
-                                self.assert_(returned == expected)
+                                try:
+                                        self.assertEqual(returned, expected)
+                                except Exception, e:
+                                        raise RuntimeError("An unexpected "
+                                            "attribute type was returned for "
+                                            "attribute '%s': '%s'")
 
         def test_get_attributes(self):
                 """Verify that all expected attributes were returned by
@@ -198,9 +258,9 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                 """
                 rc = rcfg.RepositoryConfig()
                 attrs = rc.get_attributes()
-                self.assert_(len(attrs) == len(self.__attrs))
+                self.assertEqual(len(attrs), len(self.__attrs))
                 for section in attrs:
-                        self.assert_(len(attrs[section]) == \
+                        self.assertEqual(len(attrs[section]),
                             len(self.__attrs[section]))
                         for attr in attrs[section]:
                                 rc.get_attribute(section, attr)
@@ -229,7 +289,7 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                                         rc.set_attribute(section, attr, value)
 
                                 returned = rc.get_attribute(section, attr)
-                                self.assert_(returned == value)
+                                self.assertEqual(returned, value)
 
                 rc.write(sample_conf)
 
@@ -238,7 +298,7 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                         for attr in attrs[section]:
                                 value = attrs[section][attr]["default"]
                                 returned = rc.get_attribute(section, attr)
-                                self.assert_(returned == value)
+                                self.assertEqual(returned, value)
 
         def test_set_invalid_attribute(self):
                 """Verify that attempting to set an invalid attribute will
@@ -355,6 +415,83 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                     "enabled", "False"))
                 self.assertTrue(rc.is_valid_attribute_value("feed",
                     "enabled", False))
+
+        def test_is_valid_attribute_value_uri(self):
+                """Verify that is_valid_attribute_value returns the expected
+                boolean value indicating the validity of uri attribute values.
+                """
+
+                rc = rcfg.RepositoryConfig()
+                # Verify that False is returned for an invalid attribute value.
+                self.assertFalse(rc.is_valid_attribute_value("repository",
+                    "registration_uri", "abc.123^@#$&)(*&#$)"))
+
+                # Verify that True is returned for a valid attribute value.
+                self.assertTrue(rc.is_valid_attribute_value("repository",
+                    "registration_uri", "https://pkg.sun.com/register"))
+
+        def test_is_valid_attribute_value_uri_list(self):
+                """Verify that is_valid_attribute_value returns the expected
+                boolean value indicating the validity of uri_list attribute
+                values.
+                """
+
+                rc = rcfg.RepositoryConfig()
+                # Verify that False is returned for an invalid attribute value.
+                self.assertFalse(rc.is_valid_attribute_value("repository",
+                    "mirrors", "http://example.com/mirror, abc.123^@#$&)(*&#$)"))
+                self.assertFalse(rc.is_valid_attribute_value("repository",
+                    "mirrors", ","))
+
+                # Verify that True is returned for a valid attribute value.
+                self.assertTrue(rc.is_valid_attribute_value("repository",
+                    "mirrors", ["http://example.com/mirror1",
+                    "http://example.net/mirror2"]))
+
+        def test_is_valid_attribute_value_pub_alias(self):
+                """Verify that is_valid_attribute_value returns the expected
+                boolean value indicating the validity of publisher alias
+                attribute values.
+                """
+
+                rc = rcfg.RepositoryConfig()
+                # Verify that False is returned for an invalid attribute value.
+                self.assertFalse(rc.is_valid_attribute_value("publisher",
+                    "alias", "abc.123^@#$&)(*&#$)"))
+
+                # Verify that True is returned for a valid attribute value.
+                self.assertTrue(rc.is_valid_attribute_value("publisher",
+                    "alias", "bobcat"))
+
+        def test_is_valid_attribute_value_pub_prefix(self):
+                """Verify that is_valid_attribute_value returns the expected
+                boolean value indicating the validity of publisher prefix
+                attribute values.
+                """
+
+                rc = rcfg.RepositoryConfig()
+                # Verify that False is returned for an invalid attribute value.
+                self.assertFalse(rc.is_valid_attribute_value("publisher",
+                    "prefix", "abc.123^@#$&)(*&#$)"))
+
+                # Verify that True is returned for a valid attribute value.
+                self.assertTrue(rc.is_valid_attribute_value("publisher",
+                    "prefix", "xkcd.net"))
+
+        def test_is_valid_attribute_value_repo_coll_type(self):
+                """Verify that is_valid_attribute_value returns the expected
+                boolean value indicating the validity of repository collection
+                type attribute values.
+                """
+
+                rc = rcfg.RepositoryConfig()
+                # Verify that False is returned for an invalid attribute value.
+                self.assertFalse(rc.is_valid_attribute_value("repository",
+                    "collection_type", "donotwant"))
+
+                # Verify that True is returned for a valid attribute value.
+                self.assertTrue(rc.is_valid_attribute_value("repository",
+                    "collection_type", "supplemental"))
 
         def test_missing_conffile(self):
                 """Verify that read() will raise an exception if a non-existent

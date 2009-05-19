@@ -33,7 +33,7 @@ import pkg.server.api_errors as api_errors
 import pkg.server.query_parser as qp
 import pkg.version as version
 
-CURRENT_API_VERSION = 4
+CURRENT_API_VERSION = 5
 
 class BaseInterface(object):
         """This class represents a base API object that is provided by the
@@ -59,7 +59,7 @@ class _Interface(object):
         """Private base class used for api interface objects.
         """
         def __init__(self, version_id, base):
-                compatible_versions = set([3, 4])
+                compatible_versions = set([3, 4, 5])
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
                             version_id)
@@ -100,7 +100,7 @@ class CatalogInterface(_Interface):
                 first, for packages matching those found in the 'versions' list.
 
                 'versions' should be a list of strings of the format:
-                    release,build_release-branch:datetime 
+                    release,build_release-branch:datetime
 
                 ...with a value of '*' provided for any component to be ignored.
                 '*' or '?' may be used within each component value and will act
@@ -361,54 +361,96 @@ class ConfigInterface(_Interface):
 
                 Available attributes are as follows:
 
-                Section         Attribute       Description
-                ==========      ==========      ===============
-                repository      name            A short, descriptive name for
+                Section     Attribute           Description
+                ==========  ==========          ===============
+                publisher   alias               An alternative name for the
+                                                publisher of the packages in
                                                 the repository.
 
-                                description     A descriptive paragraph for the
+                            prefix              The name of the publisher of
+                                                the packages in the repository.
+
+                repository  collection_type     A constant value indicating the
+                                                type of packages in the
+                                                repository.  See the pydoc for
+                                                pkg.client.publisher.Repository
+                                                for details.
+
+                            description         A string value containing a
+                                                descriptive paragraph for the
                                                 repository.
 
-                                maintainer      A human readable string
+                            detailed_url        A comma-separated list of URIs
+                                                where more information about the
+                                                repository can be found.
+
+                            legal_uris          A comma-separated list of URIs
+                                                where licensing, legal, and
+                                                terms of service information
+                                                for the repository can be found.
+
+                            maintainer          A human readable string
                                                 describing the entity
                                                 maintaining the repository.  For
                                                 an individual, this string is
                                                 expected to be their name or
                                                 name and email.
 
-                                maintainer_url  A URL associated with the entity
+                            maintainer_url      A URI associated with the entity
                                                 maintaining the repository.
 
-                                detailed_url    One or more URLs to pages or
-                                                sites with further information
-                                                about the repository.
+                            mirrors             A comma-separated list of URIs
+                                                where package content can be
+                                                retrieved.
 
-                feed            id              A Universally Unique Identifier
+                            name                A short, descriptive name for
+                                                the repository.
+
+                            origins             A comma-separated list of URIs
+                                                where package metadata can be
+                                                retrieved.
+
+                            refresh_seconds     An integer value indicating the
+                                                number of seconds clients should
+                                                wait before refreshing cached
+                                                repository catalog or repository
+                                                metadata information.
+
+                            registration_uri    A URI indicating a location
+                                                clients can use to register or
+                                                obtain credentials needed to
+                                                access the repository.
+
+                            related_uris        A comma-separated list of URIs
+                                                of related repositories that a
+                                                client may be interested in.
+
+                feed        id                  A Universally Unique Identifier
                                                 (UUID) used to permanently,
                                                 uniquely identify the feed.
 
-                                name            A short, descriptive name for
+                            name                A short, descriptive name for
                                                 RSS/Atom feeds generated by the
                                                 depot serving the repository.
 
-                                description     A descriptive paragraph for the
+                            description         A descriptive paragraph for the
                                                 feed.
 
-                                publisher       A fully-qualified domain name or
+                            publisher           A fully-qualified domain name or
                                                 email address that is used to
                                                 generate a unique identifier for
                                                 each entry in the feed.
 
-                                icon            A filename of a small image that
+                            icon                A filename of a small image that
                                                 is used to visually represent
                                                 the feed.
 
-                                logo            A filename of a large image that
+                            logo                A filename of a large image that
                                                 is used by user agents to
                                                 visually brand or identify the
                                                 feed.
 
-                                window          A numeric value representing the
+                            window              A numeric value representing the
                                                 number of hours, before the feed
                                                 for the repository was last
                                                 generated, to include when

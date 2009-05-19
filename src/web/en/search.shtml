@@ -305,7 +305,8 @@ matching characters use '[' and ']':<br/>
  that matched the specified search criteria.">
                         <tr class="first">
                                 <th>Package</th>
-                                <th>Manifest</th>
+                                <th>Install</th>
+                                <th colspan="2">Manifest</th>
                         </tr>
 %               for v, return_type, vals in results:
 <%
@@ -319,17 +320,33 @@ matching characters use '[' and ']':<br/>
                         if result_count > rpp:
                                 break
 
+                        stem = pfmri.split("@", 1)[0]
                         phref = self.shared.rpath(g_vars, "info/0/%s" % (
                             urllib.quote(pfmri, ""))) 
+                        # XXX the .p5i extension is a bogus hack because
+                        # packagemanager requires it and shouldn't.
+                        p5ihref = self.shared.rpath(g_vars, "p5i/0/%s.p5i" % (
+                            urllib.quote(stem, ""))) 
                         mhref = self.shared.rpath(g_vars, "manifest/0/%s" % (
                             urllib.quote(pfmri, ""))) 
 %>\
                         <tr${rclass}>
-                                <td><a href="${phref}">${pfmri}</a></td>
-                                <td><a href="${mhref}">Manifest</a></td>
+                                <td>
+                                        <a title="Package Information Summary"
+                                            href="${phref}">${pfmri}</a>
+                                </td>
+                                <td>
+                                        <a class="p5i"
+                                            title="Launch the Package Manager and install this package"
+                                            href="${p5ihref}">Install</a>
+                                </td>
+                                <td colspan="2">
+                                        <a title="Package Manifest"
+                                            href="${mhref}">Manifest</a>
+                                </td>
                         </tr>
 %               endfor
-${display_pagination(criteria, result_count)}
+${display_pagination(criteria, result_count, colspan=2)}
                 </table>
 %       elif searched and return_type == qp.Query.RETURN_ACTIONS:
                 <table summary="A list of actions from the repository that

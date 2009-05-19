@@ -1,3 +1,16 @@
+Version 5:
+Compatible with clients using Versions 3-4.
+    ConfigInterface.get_repo_attr_value() has changed as follows:
+        * Section 'feed' attribute 'authority' has been removed.  It has been
+          replaced by section 'publisher' attribute 'prefix'.
+
+        * Section 'publisher' with attributes 'alias' and 'prefix' was added.
+
+        * New attributes were added for section 'repository': 'collection_type',
+          'legal_uris', 'mirrors', 'origins', 'refresh_seconds',
+          'registration_uri', and 'related_uris'.  See the pydoc for
+          pkg.server.api.ConfigInterface for details.
+
 Version 4:
 Compatible with clients using Version 3.
 

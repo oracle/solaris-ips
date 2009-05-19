@@ -305,6 +305,52 @@ DEPOT
             Returns:
                 The contents of the package's manifest file.
 
+    - p5i
+        Version 0:
+                A GET operation that retrieves an application/vnd.pkg5.info
+                datastream representing publisher and package information.
+                This is intended for consumption by clients for the purposes
+                of auto-configuration, metadata management policy determination,
+                and triggering packaging operations such as installation.
+
+            Example:
+                URL:
+                http://pkg.opensolaris.org/release/p5i/0/SUNWcs
+
+            Expects:
+                A full or partial URL-encoded pkg(5) FMRI, excluding the
+                publisher prefix.  If the partial or full FMRI is valid, it will
+                be added to the datastream as is.  If it includes the wildcard
+                character '*', a search of the repository's catalog for matching
+                entries will be performed and the unique set of resulting
+                package stems will be added to the datastream.  If no match is
+                found, a 404 error will be raised.
+
+            Returns:
+                Returns a pkg(5) information datastream based on the repository
+                configuration's publisher information and the provided full or
+                partial FMRI or matching entries.  The Content-Type of the
+                response is 'application/vnd.pkg5.info'.
+
+    - publisher
+        Version 0:
+                A GET operation that retrieves an application/vnd.pkg5.info
+                datastream representing publisher information.  This is intended
+                for consumption by clients for auto-configuration and metadata
+                management policy determination.
+
+            Example:
+                URL:
+                http://pkg.opensolaris.org/release/publisher/0
+
+            Expects:
+                Nothing
+
+            Returns:
+                Returns a pkg(5) information datastream based on the repository
+                configuration's publisher information.  The Content-Type of the
+                response is 'application/vnd.pkg5.info'.
+
     - search
         Version 0:
             A GET operation that retrieves a text/plain list of packages with

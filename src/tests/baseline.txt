@@ -125,6 +125,7 @@ api.t_manifest.py TestManifest.test_errors|pass
 api.t_manifest.py TestManifest.test_set_content1|pass
 api.t_misc.py TestMisc.testMakedirs|pass
 api.t_misc.py TestMisc.test_hash_file_name|pass
+api.t_p5i.py TestP5I.test_parse_write|pass
 api.t_pkgtarfile.py TestPkgTarFile.testerrorlevelIsCorrect|pass
 api.t_plat.py TestPlat.testAdmin|pass
 api.t_plat.py TestPlat.testForcibleRename|pass
@@ -142,6 +143,11 @@ api.t_repositoryconfig.py TestRepositoryConfig.test_init|pass
 api.t_repositoryconfig.py TestRepositoryConfig.test_is_valid_attribute|pass
 api.t_repositoryconfig.py TestRepositoryConfig.test_is_valid_attribute_value|pass
 api.t_repositoryconfig.py TestRepositoryConfig.test_is_valid_attribute_value_bool|pass
+api.t_repositoryconfig.py TestRepositoryConfig.test_is_valid_attribute_value_pub_alias|pass
+api.t_repositoryconfig.py TestRepositoryConfig.test_is_valid_attribute_value_pub_prefix|pass
+api.t_repositoryconfig.py TestRepositoryConfig.test_is_valid_attribute_value_repo_coll_type|pass
+api.t_repositoryconfig.py TestRepositoryConfig.test_is_valid_attribute_value_uri|pass
+api.t_repositoryconfig.py TestRepositoryConfig.test_is_valid_attribute_value_uri_list|pass
 api.t_repositoryconfig.py TestRepositoryConfig.test_is_valid_attribute_value_uuid|pass
 api.t_repositoryconfig.py TestRepositoryConfig.test_missing_conffile|pass
 api.t_repositoryconfig.py TestRepositoryConfig.test_multi_read_write|pass
@@ -266,6 +272,8 @@ cli.t_pkg_depotd.py TestDepotController.testStartStop|pass
 cli.t_pkg_depotd.py TestDepotController.test_cfg_file|pass
 cli.t_pkg_depotd.py TestDepotController.test_writable_root|pass
 cli.t_pkg_depotd.py TestDepotOutput.test_0_depot_bui_output|pass
+cli.t_pkg_depotd.py TestDepotOutput.test_1_depot_publisher|pass
+cli.t_pkg_depotd.py TestDepotOutput.test_2_depot_p5i|pass
 cli.t_pkg_depotd.py TestPkgDepot.testStartStop|pass
 cli.t_pkg_depotd.py TestPkgDepot.test_bad_fmris|pass
 cli.t_pkg_depotd.py TestPkgDepot.test_bug_1876|pass

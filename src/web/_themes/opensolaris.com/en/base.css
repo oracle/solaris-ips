@@ -34,6 +34,10 @@ a:hover { text-decoration: underline; }
 body {
         color: #747474;
 }
+a.p5i {
+        background: transparent url(../../p5i-link.png) scroll no-repeat right center;
+        padding: 2px 16px 2px 0px;
+}
 div.page-container {
         margin: auto;
         width: 730px;

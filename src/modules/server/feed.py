@@ -88,8 +88,10 @@ def fmri_to_taguri(rcfg, f):
         """Generates a 'tag' uri compliant with RFC 4151.  Visit
         http://www.taguri.org/ for more information.
         """
-        return "tag:%s,%s:%s" % (rcfg.get_attribute("feed",
-            "authority"), f.get_timestamp().strftime("%Y-%m-%d"),
+        pfx = rcfg.get_attribute("publisher", "prefix")
+        if not pfx:
+                pfx = "unknown"
+        return "tag:%s,%s:%s" % (pfx, f.get_timestamp().strftime("%Y-%m-%d"),
             urllib.unquote(f.get_url_path()))
 
 def init(scfg, rcfg):

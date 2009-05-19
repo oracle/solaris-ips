@@ -365,7 +365,7 @@ class TestPkgApi(testutils.SingleDepotTestCase):
 
                 # Dump the p5i data.
                 fobj = cStringIO.StringIO()
-                api_obj.write_p5i(fileobj=fobj, pkg_names=pnames, pubs=[pub])
+                api_obj.write_p5i(fobj, pkg_names=pnames, pubs=[pub])
 
                 # Verify that output matches expected output.
                 fobj.seek(0)

@@ -28,16 +28,19 @@ if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 
 import httplib
-import unittest
 import os
+import pkg.depotcontroller as dc
 import pkg.misc as misc
+import pkg.p5i as p5i
+import pkg.server.repositoryconfig as rcfg
 import shutil
 import tempfile
 import time
+import unittest
 import urllib
 import urllib2
+import urlparse
 
-import pkg.depotcontroller as dc
 
 class TestPkgDepot(testutils.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -486,7 +489,10 @@ class TestDepotController(testutils.CliTestCase):
                 self.assert_(self.__dc.start_expected_fail())
 
 
-class TestDepotOutput(testutils.CliTestCase):
+class TestDepotOutput(testutils.SingleDepotTestCase):
+        # Since these tests are output sensitive, the depots should be purged
+        # after each one is run.
+        persistent_depot = False
 
         quux10 = """
             open quux@1.0,5.11-0
@@ -504,35 +510,51 @@ class TestDepotOutput(testutils.CliTestCase):
             add depend type=require fmri=pkg:/SUNWcsl
             close """
 
+        zfsextras10 = """
+            open zfs-extras@1.0,5.11-0
+            close """
+
+        zfsutils10 = """
+            open zfs/utils@1.0,5.11-0
+            close """
+
+        repo_cfg = {
+            "publisher": {
+                "alias": "pending",
+                "prefix": "org.opensolaris.pending"
+            },
+            "repository": {
+                "collection_type": "supplemental",
+                "description":
+                    "Development packages for the contrib repository.",
+                "legal_uris": [
+                    "http://www.opensolaris.org/os/copyrights/",
+                    "http://www.opensolaris.org/os/tou/",
+                    "http://www.opensolaris.org/os/trademark/"
+                ],
+                "mirrors": [],
+                "name": """"Pending" Repository""",
+                "origins": ["http://pkg.opensolaris.org/pending/"],
+                "refresh_seconds": 86400,
+                "registration_uri": "",
+                "related_uris": [
+                    "http://jucr.opensolaris.org/contrib/",
+                    "http://jucr.opensolaris.org/pending/",
+                    "http://pkg.opensolaris.org/contrib/",
+                ]
+            }
+        }
+
         def setUp(self):
-                testutils.CliTestCase.setUp(self)
+                testutils.SingleDepotTestCase.setUp(self)
 
-                self.__dc = dc.DepotController()
-                self.__pid = os.getpid()
-                self.__dc.set_depotd_path(testutils.g_proto_area + \
-                    "/usr/lib/pkg.depotd")
-                self.__dc.set_depotd_content_root(testutils.g_proto_area + \
-                    "/usr/share/lib/pkg")
+                # All of the tests will start depot if needed.
+                self.dc.stop()
 
-                depotpath = os.path.join(self.get_test_prefix(), "depot")
-                logpath = os.path.join(self.get_test_prefix(), self.id())
-
-                try:
-                        os.makedirs(depotpath, 0755)
-                except OSError, e:
-                        if e.errno != errno.EEXIST:
-                                raise e
-
-                self.__dc.set_repodir(depotpath)
-                self.__dc.set_logpath(logpath)
                 self.tpath = tempfile.mkdtemp()
 
         def tearDown(self):
-                testutils.CliTestCase.tearDown(self)
-
-                self.__dc.kill()
-                shutil.rmtree(self.__dc.get_repodir())
-                os.remove(self.__dc.get_logpath())
+                testutils.SingleDepotTestCase.tearDown(self)
                 shutil.rmtree(self.tpath)
 
         def test_0_depot_bui_output(self):
@@ -557,25 +579,25 @@ class TestDepotOutput(testutils.CliTestCase):
                 ]
 
                 for with_packages in (False, True):
-                        shutil.rmtree(self.__dc.get_repodir(),
+                        shutil.rmtree(self.dc.get_repodir(),
                             ignore_errors=True)
 
                         if with_packages:
-                                self.__dc.set_readwrite()
-                                self.__dc.set_port(12000)
-                                self.__dc.start()
-                                durl = self.__dc.get_depot_url()
+                                self.dc.set_readwrite()
+                                self.dc.set_port(12000)
+                                self.dc.start()
+                                durl = self.dc.get_depot_url()
                                 self.pkgsend_bulk(durl, self.info10 +
                                     self.quux10 + self.system10)
-                                self.__dc.stop()
+                                self.dc.stop()
 
                         for set_method, unset_method in mode_methods:
                                 if set_method:
-                                        getattr(self.__dc, set_method)()
+                                        getattr(self.dc, set_method)()
 
-                                self.__dc.set_port(12000)
-                                self.__dc.start()
-                                durl = self.__dc.get_depot_url()
+                                self.dc.set_port(12000)
+                                self.dc.start()
+                                durl = self.dc.get_depot_url()
 
                                 for path in pages:
                                         # Any error responses will cause an
@@ -591,9 +613,109 @@ class TestDepotOutput(testutils.CliTestCase):
 
                                         self.validate_html_file(fpath)
 
-                                self.__dc.stop()
+                                self.dc.stop()
                                 if unset_method:
-                                        getattr(self.__dc, unset_method)()
+                                        getattr(self.dc, unset_method)()
+
+        def __update_repo_config(self):
+                """Helper function to generate test repository configuration."""
+                # Find and load the repository configuration.
+                rpath = self.dc.get_repodir()
+                rcpath = os.path.join(rpath, "cfg_cache")
+
+                if not os.path.exists(rcpath):
+                        # If the configuration doesn't exist yet, create a
+                        # default one and write it out.
+                        rc = rcfg.RepositoryConfig()
+                else:
+                        rc = rcfg.RepositoryConfig(pathname=rcpath)
+
+                # Update the configuration with our sample data.
+                cfg = self.repo_cfg
+                for section in cfg:
+                        for attr in cfg[section]:
+                                rc.set_attribute(section, attr,
+                                    cfg[section][attr])
+
+                # Save it.
+                rc.write(rcpath)
+
+        def test_1_depot_publisher(self):
+                """Verify the output of the depot /publisher operation."""
+
+                # Now update the repository configuration while the depot is
+                # stopped so changes won't be overwritten on exit.
+                self.__update_repo_config()
+
+                # Start the depot.
+                self.dc.start()
+
+                durl = self.dc.get_depot_url()
+                purl = urlparse.urljoin(durl, "publisher/0")
+                pub, pkglist = p5i.parse(location=purl)[0]
+
+                # Now verify that the parsed response has the expected data.
+                cfg = self.repo_cfg
+                for attr in cfg["publisher"]:
+                        self.assertEqual(getattr(pub, attr),
+                            cfg["publisher"][attr])
+
+                repo = pub.selected_repository
+                for attr in cfg["repository"]:
+                        returned = getattr(repo, attr)
+                        expected = cfg["repository"][attr]
+                        if attr.endswith("uris") or attr == "origins":
+                                uris = []
+                                for u in returned:
+                                        uris.append(u.uri)
+                                returned = uris
+                        self.assertEqual(returned, expected)
+
+        def test_2_depot_p5i(self):
+                """Verify the output of the depot /publisher operation."""
+
+                # Now update the repository configuration while the depot is
+                # stopped so changes won't be overwritten on exit.
+                self.__update_repo_config()
+
+                # Start the depot.
+                self.dc.start()
+
+                # Then, publish some packages we can abuse for testing.
+                durl = self.dc.get_depot_url()
+                plist = self.pkgsend_bulk(durl, self.info10 + self.quux10 + \
+                    self.system10 + self.zfsextras10 + self.zfsutils10)
+
+                # Now, for each published package, attempt to get a p5i file
+                # and then verify that the parsed response has the expected
+                # package information under the expected publisher.
+                for p in plist:
+                        purl = urlparse.urljoin(durl, "p5i/0/%s" % p)
+                        pub, pkglist = p5i.parse(location=purl)[0]
+                        self.assertEqual(pkglist, [p])
+
+                # Try again, but only using package stems.
+                for p in plist:
+                        stem = p.split("@", 1)[0]
+                        purl = urlparse.urljoin(durl, "p5i/0/%s" % stem)
+                        pub, pkglist = p5i.parse(location=purl)[0]
+                        self.assertEqual(pkglist, [stem])
+
+                # Try again, but using wildcards (which will return a list of
+                # matching package stems).
+                purl = urlparse.urljoin(durl, "p5i/0/zfs*")
+                pub, pkglist = p5i.parse(location=purl)[0]
+                self.assertEqual(pkglist, ["zfs-extras", "zfs/utils"])
+
+                # Finally, verify that a non-existent package will error out
+                # with a httplib.NOT_FOUND.
+                try:
+                        urllib2.urlopen(urlparse.urljoin(durl,
+                            "p5i/0/nosuchpackage"))
+                except urllib2.HTTPError, e:
+                        if e.code != httplib.NOT_FOUND:
+                                raise
+
 
 if __name__ == "__main__":
         unittest.main()

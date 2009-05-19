@@ -50,12 +50,14 @@ import urllib
 import pkg
 import pkg.actions as actions
 import pkg.catalog as catalog
+import pkg.client.publisher as publisher
 import pkg.fmri as fmri
 import pkg.manifest as manifest
 import pkg.misc as misc
-
+import pkg.p5i as p5i
 import pkg.server.face as face
 import pkg.server.repository as repo
+import pkg.version as version
 
 from pkg.server.query_parser import Query, ParseError, BooleanQueryException
 
@@ -80,7 +82,9 @@ class DepotHTTP(object):
             "open",
             "close",
             "abandon",
-            "add"
+            "add",
+            "p5i",
+            "publisher"
         ]
 
         REPO_OPS_READONLY = [
@@ -90,13 +94,16 @@ class DepotHTTP(object):
             "info",
             "manifest",
             "filelist",
-            "file"
+            "file",
+            "p5i",
+            "publisher"
         ]
 
         REPO_OPS_MIRROR = [
             "versions",
             "filelist",
-            "file"
+            "file",
+            "publisher"
         ]
 
         def __init__(self, scfg, cfgpathname=None):
@@ -759,10 +766,12 @@ class DepotHTTP(object):
                 m.set_content(file(mpath).read())
 
                 publisher, name, ver = f.tuple()
-                if publisher:
-                        publisher = fmri.strip_pub_pfx(publisher)
-                else:
-                        publisher = "Unknown"
+                if not publisher:
+                        publisher = self.rcfg.get_attribute("publisher",
+                            "prefix")
+                        if not publisher:
+                                publisher = ""
+
                 summary = m.get("description", "")
 
                 lsummary = cStringIO.StringIO()
@@ -794,3 +803,127 @@ License:
 """ % (name, summary, publisher, ver.release, ver.build_release,
     ver.branch, ver.get_timestamp().ctime(), misc.bytes_to_str(m.get_size()),
     f, lsummary.read())
+
+        def __get_publisher(self):
+                rargs = {}
+                for attr in ("collection_type", "description", "legal_uris",
+                    "mirrors", "name", "origins", "refresh_seconds",
+                    "registration_uri", "related_uris"):
+                        rargs[attr] = self.rcfg.get_attribute("repository",
+                            attr)
+
+                repo = publisher.Repository(**rargs)
+                alias = self.rcfg.get_attribute("publisher", "alias")
+                pfx = self.rcfg.get_attribute("publisher", "prefix")
+                return publisher.Publisher(pfx, alias=alias, repositories=[repo])
+
+        @cherrypy.tools.response_headers(headers=[(
+            "Content-Type", p5i.MIME_TYPE)])
+        def publisher_0(self, *tokens):
+                """Returns a pkg(5) information datastream based on the
+                repository configuration's publisher information."""
+
+                try:
+                        pub = self.__get_publisher()
+                except Exception, e:
+                        # If the Publisher object creation fails, return a not
+                        # found error to the client so it will treat it as an
+                        # an unsupported operation.
+                        cherrypy.log("Request failed: %s" % str(e))
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
+
+                buf = cStringIO.StringIO()
+                try:
+                        p5i.write(buf, [pub])
+                except Exception, e:
+                        # Treat any remaining error as a 404, but log it and
+                        # include the real failure information.
+                        cherrypy.log("Request failed: %s" % str(e))
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
+                buf.seek(0)
+                return buf.getvalue()
+
+        @cherrypy.tools.response_headers(headers=[(
+            "Content-Type", p5i.MIME_TYPE)])
+        def p5i_0(self, *tokens):
+                """Returns a pkg(5) information datastream for the provided full
+                or partial FMRI using the repository configuration's publisher
+                information.  If a partial FMRI is specified, an attempt to
+                validate it will be made, and it will be put into the p5i
+                datastream as provided."""
+
+                try:
+                        # If more than one token (request path component) was
+                        # specified, assume that the extra components are part
+                        # of an FMRI and have been split out because of bad
+                        # proxy behaviour.
+                        pfmri = "/".join(tokens)
+                except IndexError:
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST)
+
+                # XXX This is a hack to deal with the fact that packagemanager
+                # brokenly expects all p5i URIs or files to have a .p5i
+                # extension instead of just relying on the api to parse it.
+                # This hack allows callers to append a .p5i extension to the
+                # URI without affecting the operation.
+                if pfmri.endswith(".p5i"):
+                        end = len(pfmri) - len(".p5i")
+                        pfmri = pfmri[:end]
+
+                matcher = None
+                if "*" not in pfmri and "@" not in pfmri:
+                        matcher = fmri.exact_name_match
+                elif "*" in pfmri:
+                        matcher = fmri.glob_match
+                        try:
+                                # XXX 5.11 needs to be saner
+                                pfmri = fmri.MatchingPkgFmri(pfmri, "5.11")
+                        except Exception, e:
+                                raise cherrypy.HTTPError(httplib.BAD_REQUEST,
+                                    str(e))
+
+                # Attempt to find matching entries in the catalog.
+                try:
+                        cat = self.scfg.catalog
+                        matches = catalog.extract_matching_fmris(cat.fmris(),
+                            patterns=[pfmri], constraint=version.CONSTRAINT_AUTO,
+                            matcher=matcher)
+                except Exception, e:
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
+
+                if not matches:
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND, _("No "
+                            "matching FMRI found in repository catalog."))
+                elif matcher in (fmri.exact_name_match, fmri.glob_match):
+                        # When using wildcards or exact name match, trim the
+                        # results to only the unique package stems.
+                        matches = sorted(set([m.pkg_name for m in matches]))
+                else:
+                        # Ensure all fmris are output without publisher prefix
+                        # and without scheme.
+                        matches = [
+                            m.get_fmri(anarchy=True, include_scheme=False)
+                            for m in matches
+                        ]
+
+                try:
+                        pub = self.__get_publisher() 
+                except Exception, e:
+                        # If the Publisher object creation fails, return a not
+                        # found error to the client so it will treat it as an
+                        # unsupported operation.
+                        cherrypy.log("Request failed: %s" % str(e))
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND,
+                            str(e))
+
+                buf = cStringIO.StringIO()
+                try:
+                        pkg_names = { pub.prefix: matches }
+                        p5i.write(buf, [pub], pkg_names=pkg_names)
+                except Exception, e:
+                        # Treat any remaining error as a 404, but log it and
+                        # include the real failure information.
+                        cherrypy.log("Request failed: %s" % str(e))
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
+                buf.seek(0)
+                return buf.getvalue()

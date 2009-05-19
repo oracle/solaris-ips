@@ -25,10 +25,6 @@
 <%!
         import pkg.fmri
         import urllib
-
-        fmri_ops = {
-            'manifest': "Manifest"
-        }
 %>\
 <%inherit file="layout.shtml"/>\
 <%page args="g_vars"/>\
@@ -100,9 +96,8 @@
                         <tr class="first">
                                 <th>Name</th>
                                 <th>Version</th>
-%       for op in fmri_ops:
-                                <th>${fmri_ops[op]}</th>
-%       endfor
+                                <th>Install</th>
+                                <th>Manifest</th>
                         </tr>
 <%
         # Output each FMRI that we have in the catalog.
@@ -126,7 +121,9 @@
         flist.sort()
 
         rclass = None
-        for pfmri in flist:
+%>
+%       for pfmri in flist:
+<%
                 if rclass is None or rclass == ' class="odd"':
                         rclass = ""
                 else:
@@ -135,24 +132,31 @@
                 # Start FMRI entry
                 phref = self.shared.rpath(g_vars, "info/0/%s" % (
                     urllib.quote(str(pfmri)[len("pkg:/"):], "")))
-                context.write(unicode("""\
-                        <tr%s>
-                                <td><a href="%s">%s</a></td>
-                                <td>%s</td>
-""" % (rclass, phref, pfmri.pkg_name, pfmri.version)))
-
-                # Output all available operations for an FMRI.
-                for op in fmri_ops:
-                        context.write(unicode("""\
-                                <td><a href="%s">%s</a></td>
-""" % (self.shared.rpath(g_vars, "%s/0/%s" % (op,
-    urllib.quote(str(pfmri)[len("pkg:/"):], ""))), fmri_ops[op])))
-
-                # End FMRI entry
-                context.write("""\
+                # XXX the .p5i extension is a bogus hack because
+                # packagemanager requires it and shouldn't.
+                p5ihref = self.shared.rpath(g_vars, "p5i/0/%s.p5i" % (
+                    urllib.quote(pfmri.pkg_name, ""))) 
+                mhref = self.shared.rpath(g_vars, "manifest/0/%s" % (
+                    urllib.quote(pfmri.get_fmri(include_scheme=False,
+                    anarchy=True), "")))
+%>
+                        <tr${rclass}>
+                                <td>
+                                        <a title="Package Information Summary"
+                                            href="${phref}">${pfmri.pkg_name}</a>
+                                </td>
+                                <td>${pfmri.version}</td>
+                                <td>
+                                        <a class="p5i"
+                                            title="Launch the Package Manager and install this package"
+                                            href="${p5ihref}">Install</a>
+                                </td>
+                                <td>
+                                        <a title="Package Manifest"
+                                            href="${mhref}">Manifest</a>
+                                </td>
                         </tr>
-""")
-%>\
+%       endfor
                         <tr class="last">
                                 <td colspan="4">${len(flist)} package(s)</td>
                         </tr>
