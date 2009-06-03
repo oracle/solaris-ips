@@ -1869,7 +1869,8 @@ class PackageManager:
 
         def __on_category_row_activated(self, view, path, col, user):
                 '''This function is for handling category double click activations'''
-                self.w_filter_combobox.set_active(self.saved_filter_combobox_active)
+                if self.w_filter_combobox.get_model():
+                        self.w_filter_combobox.set_active(self.saved_filter_combobox_active)
                 self.w_searchentry_dialog.delete_text(0, -1)
                 if self.is_remote_search:
                         self.__unset_remote_search(True)
