@@ -638,7 +638,7 @@ class InstallUpdate(progress.ProgressTracker):
                 gobject.idle_add(self.current_stage_label.set_markup, txt)
                 gobject.idle_add(self.current_stage_icon.set_from_stock, 
                     gtk.STOCK_DIALOG_ERROR, gtk.ICON_SIZE_MENU)
-                msg_1 = _("An unknown error occured in the %s stage.\n"
+                msg_1 = _("An unknown error occurred in the %s stage.\n"
                     "Please let the developers know about this problem\n"
                     "by filing a bug together with exception value at:\n"
                     ) % self.current_stage_name

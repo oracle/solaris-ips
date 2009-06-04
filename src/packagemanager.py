@@ -3730,7 +3730,7 @@ class PackageManager:
                 self.w_ua_completed_linkbutton.set_label(info_str)
                 self.release_notes_url = info_str
                 
-                self.w_ua_completed_dialog.set_title(_("Update All"))
+                self.w_ua_completed_dialog.set_title(_("Update All Complete"))
                 self.w_ua_completed_dialog.show()
 
 ###############################################################################
