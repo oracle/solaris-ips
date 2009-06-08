@@ -1003,7 +1003,7 @@ class Updatemanager:
                     action = enumerations.IMAGE_UPDATE,
                     be_name = self.ua_be_name,
                     parent_name = _("Update Manager"),
-                    pkg_list = ["SUNWipkg", "SUNWipkg-um"],
+                    pkg_list = ["SUNWipkg", "SUNWipkg-gui", "SUNWipkg-um"],
                     main_window = self.w_um_dialog,
                     icon_confirm_dialog = self.__get_app_pixbuf("PM_package_36x"))
                 return
