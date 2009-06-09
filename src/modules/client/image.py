@@ -2341,10 +2341,10 @@ class Image(object):
                 if os.path.isdir(installed_state_dir):
                         for pl in sorted(os.listdir(installed_state_dir)):
                                 fmristr = urllib.unquote(pl)
-                                tmpf = pkg.fmri.PkgFmri(fmristr)
-                                path = self._install_file(tmpf)
+                                f = pkg.fmri.PkgFmri(fmristr)
+                                path = self._install_file(f)
                                 pub = self.installed_file_publisher(path)
-                                f = pkg.fmri.PkgFmri(fmristr, publisher = pub)
+                                f.set_publisher(pub)
 
                                 self.__pkg_states[fmristr] = \
                                     (PKG_STATE_INSTALLED, f)
