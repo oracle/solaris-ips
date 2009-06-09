@@ -259,7 +259,10 @@ class package(object):
                         print "File %s in pkg %s of group '?': mapping to %s" \
                             % (manifest.pathname, self.name, manifest.group)
                 if manifest.mode == "?":
-                        manifest.mode = "0444"
+                        if manifest.type in "dx":
+                                manifest.mode = "0755"
+                        else:
+                                manifest.mode = "0444"
                         print "File %s in pkg %s mode '?': mapping to %s" % \
                             (manifest.pathname, self.name, manifest.mode)
 
