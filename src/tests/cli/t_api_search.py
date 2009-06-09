@@ -84,8 +84,7 @@ class TestApiSearchBasics(testutils.SingleDepotTestCase):
 
         bad_pkg10 = """
             open bad_pkg@1.0,5.11-0
-            add dir path=foo/ mode=0755 owner=root group=bin
-            add dir path=/ mode=0755 owner=root group=bin
+            add dir path=badfoo/ mode=0755 owner=root group=bin
             close """
 
         space_pkg10 = """
@@ -119,6 +118,22 @@ class TestApiSearchBasics(testutils.SingleDepotTestCase):
             add set name=info.classification value="org.opensolaris.category.2008:TestBad1:TestBad2"
             close """
 
+        fat_pkg10 = """
+open fat@1.0,5.11-0
+add set name=variant.arch value=sparc value=i386
+add set name=description value="i386 variant" variant.arch=i386
+add set name=description value="sparc variant" variant.arch=sparc
+close """
+
+        bogus_pkg10 = """
+set name=fmri value=pkg:/bogus_pkg@1.0,5.11-0:20090326T233451Z
+set name=description value=""validation with simple chains of constraints ""
+set name=pkg.description value="pseudo-hashes as arrays tied to a "type" (list of fields)"
+depend fmri=XML-Atom-Entry
+set name=com.sun.service.incorporated_changes value="6556919 6627937"
+"""
+        bogus_fmri = fmri.PkgFmri("bogus_pkg@1.0,5.11-0:20090326T233451Z")
+
         res_remote_path = set([
             ("pkg:/example_pkg@1.0-0", "basename","file 820157a2043e3135f342b238129b556aade20347 chash=bfa46fc98d1ca97f1260090797d35a35e76096a3 group=bin mode=0555 owner=root path=bin/example_path pkg.csize=38 pkg.size=18")
         ])
@@ -135,25 +150,35 @@ class TestApiSearchBasics(testutils.SingleDepotTestCase):
             ("pkg:/example_pkg@1.0-0", "4851433", 'set name=com.sun.service.bug_ids value="4641790 4725245 4817791 4851433 4897491 4913776 6178339 6556919 6627937"')
         ])
 
+        res_remote_bug_id_4725245 = set([
+            ("pkg:/example_pkg@1.0-0", "4725245", 'set name=com.sun.service.bug_ids value="4641790 4725245 4817791 4851433 4897491 4913776 6178339 6556919 6627937"')
+        ])
+
+
         res_remote_inc_changes = set([
             ("pkg:/example_pkg@1.0-0", "6556919", 'set name=com.sun.service.incorporated_changes value="6556919 6627937"'),
             ("pkg:/example_pkg@1.0-0", "6556919", 'set name=com.sun.service.bug_ids value="4641790 4725245 4817791 4851433 4897491 4913776 6178339 6556919 6627937"')
-              
         ])
 
         res_remote_random_test = set([
             ("pkg:/example_pkg@1.0-0", "42", "set name=com.sun.service.random_test value=42 value=79")
         ])
 
+        res_remote_random_test_79 = set([
+            ("pkg:/example_pkg@1.0-0", "79", "set name=com.sun.service.random_test value=42 value=79")
+        ])
+
         res_remote_keywords = set([
             ("pkg:/example_pkg@1.0-0", "separator", 'set name=com.sun.service.keywords value="sort null -n -m -t sort 0x86 separator"')
+        ])
+
+        res_remote_keywords_sort_phrase = set([
+            ("pkg:/example_pkg@1.0-0", "sort 0x86", 'set name=com.sun.service.keywords value="sort null -n -m -t sort 0x86 separator"')
         ])
 
         res_remote_wildcard = res_remote_path.union(set([
             ('pkg:/example_pkg@1.0-0', 'basename', 'dir group=bin mode=0755 owner=root path=bin/example_dir')
         ]))
-
-        headers = ""
 
         res_remote_glob = set([
             ('pkg:/example_pkg@1.0-0', 'path', 'dir group=bin mode=0755 owner=root path=bin/example_dir'),
@@ -253,6 +278,32 @@ class TestApiSearchBasics(testutils.SingleDepotTestCase):
             ('pkg:/cat3@1.0-0', 'foo/bar/baz/bill/beam/asda', 'set name=info.classification value=org.opensolaris.category.2008:foo/bar/baz/bill/beam/asda')
         ])
 
+        res_fat10_i386 = set([
+            ('pkg:/fat@1.0-0', 'i386', 'set name=description value="i386 variant" variant.arch=i386'),
+            ('pkg:/fat@1.0-0', 'variant', 'set name=description value="i386 variant" variant.arch=i386'),
+            ('pkg:/fat@1.0-0', 'i386', 'set name=variant.arch value=sparc value=i386'),
+        ])
+
+        res_fat10_sparc = set([
+            ('pkg:/fat@1.0-0', 'sparc', 'set name=description value="sparc variant" variant.arch=sparc'),
+            ('pkg:/fat@1.0-0', 'sparc', 'set name=variant.arch value=sparc value=i386'),
+            ('pkg:/fat@1.0-0', 'variant', 'set name=description value="sparc variant" variant.arch=sparc')
+        ])
+
+        res_remote_fat10_star = res_fat10_sparc | res_fat10_i386
+
+        res_local_fat10_i386_star = res_fat10_i386.union(set([
+            ('pkg:/fat@1.0-0', 'test', 'set name=publisher value=test'),
+            ('pkg:/fat@1.0-0', 'fat', ''),
+            ('pkg:/fat@1.0-0', 'sparc', 'set name=variant.arch value=sparc value=i386')
+        ]))
+
+        res_local_fat10_sparc_star = res_fat10_sparc.union(set([
+            ('pkg:/fat@1.0-0', 'test', 'set name=publisher value=test'),
+            ('pkg:/fat@1.0-0', 'fat', ''),
+            ('pkg:/fat@1.0-0', 'i386', 'set name=variant.arch value=sparc value=i386')
+        ]))
+        
         res_space_with_star = set([
             ('pkg:/space_pkg@1.0-0', 'basename', 'file 820157a2043e3135f342b238129b556aade20347 chash=bfa46fc98d1ca97f1260090797d35a35e76096a3 group=sys mode=0444 owner=nobody path="unique/with a space" pkg.csize=38 pkg.size=18')
         ])
@@ -310,6 +361,47 @@ close
             ('pkg:/SUNWgmake@3.81-0.89', 'gmake', 'set name=description value="gmake - GNU make"')
         ])
 
+        res_local_pkg_ret_pkg = set([
+            "pkg:/example_pkg@1.0-0"
+        ])
+
+        res_remote_pkg_ret_pkg = set([
+            "pkg:/example_pkg@1.0-0"
+        ])
+
+        res_remote_file = set([
+            ('pkg:/example_pkg@1.0-0',
+             'path',
+             'file 820157a2043e3135f342b238129b556aade20347 chash=bfa46fc98d1ca97f1260090797d35a35e76096a3 group=bin mode=0555 owner=root path=bin/example_path pkg.csize=38 pkg.size=18'),
+            ('pkg:/example_pkg@1.0-0',
+             '820157a2043e3135f342b238129b556aade20347',
+             'file 820157a2043e3135f342b238129b556aade20347 chash=bfa46fc98d1ca97f1260090797d35a35e76096a3 group=bin mode=0555 owner=root path=bin/example_path pkg.csize=38 pkg.size=18')
+        ]) | res_remote_path
+        
+        res_remote_url = set([
+            ('pkg:/example_pkg@1.0-0',
+            'http://service.opensolaris.com/xml/pkg/SUNWcsu@0.5.11,5.11-1:20080514I120000Z',
+            'set name=com.sun.service.info_url value=http://service.opensolaris.com/xml/pkg/SUNWcsu@0.5.11,5.11-1:20080514I120000Z')
+        ])
+
+        res_remote_path_extra = set([
+            ('pkg:/example_pkg@1.0-0',
+             'basename',
+             'file 820157a2043e3135f342b238129b556aade20347 chash=bfa46fc98d1ca97f1260090797d35a35e76096a3 group=bin mode=0555 owner=root path=bin/example_path pkg.csize=38 pkg.size=18'),
+            ('pkg:/example_pkg@1.0-0',
+             'path',
+             'file 820157a2043e3135f342b238129b556aade20347 chash=bfa46fc98d1ca97f1260090797d35a35e76096a3 group=bin mode=0555 owner=root path=bin/example_path pkg.csize=38 pkg.size=18'),
+            ('pkg:/example_pkg@1.0-0',
+             '820157a2043e3135f342b238129b556aade20347',
+             'file 820157a2043e3135f342b238129b556aade20347 chash=bfa46fc98d1ca97f1260090797d35a35e76096a3 group=bin mode=0555 owner=root path=bin/example_path pkg.csize=38 pkg.size=18')
+        ])
+
+        res_bad_pkg = set([
+            ('pkg:/bad_pkg@1.0-0', 'basename',
+             'dir group=bin mode=0755 owner=root path=badfoo/')
+        ])
+        
+        debug_features = None
 
         def setUp(self):
                 for p in self.misc_files:
@@ -319,7 +411,7 @@ close
                         f.write(p + "\n")
                         f.close()
                 testutils.SingleDepotTestCase.setUp(self,
-                    debug_features=["headers"])
+                    debug_features=self.debug_features)
                 tp = self.get_test_prefix()
                 self.testdata_dir = os.path.join(tp, "search_results")
                 os.mkdir(self.testdata_dir)
@@ -362,7 +454,15 @@ close
                     (pkg_name, piece, act))
                     in it
                 )
-                        
+
+        @staticmethod
+        def _extract_package_from_res(it):
+                return (
+                    (fmri.PkgFmri(str(pkg_name)).get_short_fmri())
+                    for query_num, auth, (version, return_type, pkg_name)
+                    in it
+                )
+
         def _search_op(self, api_obj, remote, token, test_value,
             case_sensitive=False, return_actions=True, num_to_return=None,
             start_point=None, servers=None):
@@ -372,7 +472,12 @@ close
                             servers=servers)
                 query = api.Query(token, case_sensitive, return_actions,
                     num_to_return, start_point)
-                res = set(self._extract_action_from_res(search_func([query])))
+                res = search_func([query])
+                if return_actions:
+                        res = self._extract_action_from_res(res)
+                else:
+                        res = self._extract_package_from_res(res)
+                res = set(res)
                 self._check(set(res), test_value)
 
         def _search_op_slow(self, api_obj, remote, token, test_value,
@@ -385,17 +490,21 @@ close
                     num_to_return, start_point)
                 tmp = search_func([query])
                 res = []
+                ssu = False
                 try:
                         for i in tmp:
                                 res.append(i)
                 except api_errors.SlowSearchUsed:
-                        pass
-                res = self._extract_action_from_res(res)
+                        ssu = True
+                self.assert_(ssu)
+                if return_actions:
+                        res = self._extract_action_from_res(res)
+                else:
+                        res = self._extract_package_from_res(res)
+                res = set(res)
                 self._check(set(res), test_value)
 
-
-                
-        def _run_remote_tests(self, api_obj):
+        def _run_full_remote_tests(self, api_obj):
                 # Set to 1 since searches can't currently be performed
                 # package name unless it's set inside the
                 # manifest which happens at install time on
@@ -403,19 +512,62 @@ close
                 self._search_op(api_obj, True, "example_pkg", set())
                 self._search_op(api_obj, True, "example_path",
                     self.res_remote_path)
+                self._search_op(api_obj, True, "(example_path)",
+                    self.res_remote_path)
+                self._search_op(api_obj, True, "<exam*:::>",
+                    self.res_remote_pkg_ret_pkg, return_actions=False)
+                self._search_op(api_obj, True, "::com.sun.service.info_url:",
+                    self.res_remote_url)
+                self._search_op(api_obj, True, ":::e* AND *path",
+                    self.res_remote_path)
+                self._search_op(api_obj, True, "e* AND *path",
+                    self.res_remote_path)
+                self._search_op(api_obj, True, "<e*>",
+                    self.res_remote_pkg_ret_pkg, return_actions=False)
+                self._search_op(api_obj, True, "<e*> AND <e*>",
+                    self.res_remote_pkg_ret_pkg, return_actions=False)
+                self._search_op(api_obj, True, "<e*> OR <e*>",
+                    self.res_remote_pkg_ret_pkg, return_actions=False)
+                self._search_op(api_obj, True, "<exam:::>",
+                    self.res_remote_pkg_ret_pkg, return_actions=False)
+                self._search_op(api_obj, True, "exam:::e*path",
+                    self.res_remote_path)
+                self._search_op(api_obj, True, "exam:::e*path AND e*:::",
+                    self.res_remote_path)
+                self._search_op(api_obj, True, "e*::: AND exam:::*path",
+                    self.res_remote_path_extra)
                 self._search_op(api_obj, True, "example*",
                     self.res_remote_wildcard)
                 self._search_op(api_obj, True, "/bin", self.res_remote_bin)
                 self._search_op(api_obj, True, "4851433",
                     self.res_remote_bug_id)
+                self._search_op(api_obj, True, "<4851433> AND <4725245>",
+                    self.res_remote_pkg_ret_pkg, return_actions=False)
+                self._search_op(api_obj, True, "4851433 AND 4725245",
+                    self.res_remote_bug_id)
+                self._search_op(api_obj, True,
+                    "4851433 AND 4725245 OR example_path",
+                    self.res_remote_bug_id)
+                self._search_op(api_obj, True,
+                    "4851433 AND (4725245 OR example_path)",
+                    self.res_remote_bug_id)
+                self._search_op(api_obj, True,
+                    "(4851433 AND 4725245) OR example_path",
+                    self.res_remote_bug_id | self.res_remote_path)
+                self._search_op(api_obj, True, "4851433 OR 4725245",
+                    self.res_remote_bug_id | self.res_remote_bug_id_4725245)
                 self._search_op(api_obj, True, "6556919",
                     self.res_remote_inc_changes)
                 self._search_op(api_obj, True, "6556?19",
                     self.res_remote_inc_changes)
                 self._search_op(api_obj, True, "42",
-                    self.res_remote_random_test) 
+                    self.res_remote_random_test)
+                self._search_op(api_obj, True, "79",
+                    self.res_remote_random_test_79)
                 self._search_op(api_obj, True, "separator",
                     self.res_remote_keywords)
+                self._search_op(api_obj, True, "\"sort 0x86\"",
+                    self.res_remote_keywords_sort_phrase)
                 self._search_op(api_obj, True, "*example*",
                     self.res_remote_glob)
                 self._search_op(api_obj, True, "fooo", self.res_remote_foo)
@@ -435,8 +587,63 @@ close
                 # to that bug. Exit status of 1 is expected because the
                 # token isn't in the packages.
                 self._search_op(api_obj, True, "a_non_existent_token", set())
-                
-        def _run_local_tests(self, api_obj):
+
+                self._search_op(api_obj, True, "42 AND 4641790", set())
+                self.assertRaises(api_errors.BooleanQueryException,
+                    self._search_op, api_obj, True, "<e*> AND e*", set())
+                self.assertRaises(api_errors.BooleanQueryException,
+                    self._search_op, api_obj, True, "e* AND <e*>", set())
+                self.assertRaises(api_errors.BooleanQueryException,
+                    self._search_op, api_obj, True, "<e*> OR e*", set())
+                self.assertRaises(api_errors.BooleanQueryException,
+                    self._search_op, api_obj, True, "e* OR <e*>", set())
+
+        def _run_remote_tests(self, api_obj):
+                # Set to 1 since searches can't currently be performed
+                # package name unless it's set inside the
+                # manifest which happens at install time on
+                # the client side.
+                self._search_op(api_obj, True, "example_pkg", set())
+                self._search_op(api_obj, True, "example_path",
+                    self.res_remote_path)
+                self._search_op(api_obj, True, "::com.sun.service.info_url:",
+                    self.res_remote_url)
+                self._search_op(api_obj, True, "<e*>",
+                    self.res_remote_pkg_ret_pkg, return_actions=False)
+                self._search_op(api_obj, True, "<exam:::>",
+                    self.res_remote_pkg_ret_pkg, return_actions=False)
+                self._search_op(api_obj, True, "exam:::e*path",
+                    self.res_remote_path)
+                self._search_op(api_obj, True, "example*",
+                    self.res_remote_wildcard)
+                self._search_op(api_obj, True, "/bin", self.res_remote_bin)
+                self._search_op(api_obj, True, "4851433",
+                    self.res_remote_bug_id)
+                self._search_op(api_obj, True, "4725245",
+                    self.res_remote_bug_id_4725245)
+                self._search_op(api_obj, True, "6556919",
+                    self.res_remote_inc_changes)
+                self._search_op(api_obj, True, "42",
+                    self.res_remote_random_test)
+                self._search_op(api_obj, True, "79",
+                    self.res_remote_random_test_79)
+                self._search_op(api_obj, True, "separator",
+                    self.res_remote_keywords)
+                self._search_op(api_obj, True, "\"sort 0x86\"",
+                    self.res_remote_keywords_sort_phrase)
+                self._search_op(api_obj, True, "*example*",
+                    self.res_remote_glob)
+                self._search_op(api_obj, True, "fooo", self.res_remote_foo)
+                self._search_op(api_obj, True, "bar", self.res_remote_bar)
+                self._search_op(api_obj, True, "OpEnSsL",
+                    self.res_remote_openssl)
+
+                # These tests are included because a specific bug
+                # was found during development. This prevents regression back
+                # to that bug.
+                self._search_op(api_obj, True, "a_non_existent_token", set())
+
+        def _run_full_local_tests(self, api_obj):
                 outfile = os.path.join(self.testdata_dir, "res")
 
                 # This finds something because the client side
@@ -447,19 +654,62 @@ close
                     self.res_local_pkg)
                 self._search_op(api_obj, False, "example_path",
                     self.res_local_path)
+                self._search_op(api_obj, False, "(example_path)",
+                    self.res_local_path)
+                self._search_op(api_obj, False, "<exam*:::>",
+                    self.res_local_pkg_ret_pkg, return_actions=False)
+                self._search_op(api_obj, False, "::com.sun.service.info_url:",
+                    self.res_remote_url)
+                self._search_op(api_obj, False, ":::e* AND *path",
+                    self.res_local_path)
+                self._search_op(api_obj, False, "e* AND *path",
+                    self.res_local_path)
+                self._search_op(api_obj, False, "<e*>",
+                    self.res_local_pkg_ret_pkg, return_actions=False)
+                self._search_op(api_obj, False, "<e*> AND <e*>",
+                    self.res_local_pkg_ret_pkg, return_actions=False)
+                self._search_op(api_obj, False, "<e*> OR <e*>",
+                    self.res_local_pkg_ret_pkg, return_actions=False)
+                self._search_op(api_obj, False, "<exam:::>",
+                    self.res_local_pkg_ret_pkg, return_actions=False)
+                self._search_op(api_obj, False, "exam:::e*path",
+                    self.res_local_path)
+                self._search_op(api_obj, False, "exam:::e*path AND e*:::",
+                    self.res_local_path)
+                self._search_op(api_obj, False, "e*::: AND exam:::*path",
+                    self.res_remote_path_extra)
                 self._search_op(api_obj, False, "example*",
                     self.res_local_wildcard)
                 self._search_op(api_obj, False, "/bin", self.res_local_bin)
                 self._search_op(api_obj, False, "4851433",
                     self.res_local_bug_id)
+                self._search_op(api_obj, False, "<4851433> AND <4725245>",
+                    self.res_local_pkg_ret_pkg, return_actions=False)
+                self._search_op(api_obj, False, "4851433 AND 4725245",
+                    self.res_local_bug_id)
+                self._search_op(api_obj, False,
+                    "4851433 AND 4725245 OR example_path",
+                    self.res_local_bug_id)
+                self._search_op(api_obj, False,
+                    "4851433 AND (4725245 OR example_path)",
+                    self.res_local_bug_id)
+                self._search_op(api_obj, False,
+                    "(4851433 AND 4725245) OR example_path",
+                    self.res_local_bug_id | self.res_local_path)
+                self._search_op(api_obj, False, "4851433 OR 4725245",
+                    self.res_local_bug_id | self.res_remote_bug_id_4725245)
                 self._search_op(api_obj, False, "6556919",
                     self.res_local_inc_changes)
                 self._search_op(api_obj, False, "65569??",
                     self.res_local_inc_changes)
                 self._search_op(api_obj, False, "42",
                     self.res_local_random_test)
+                self._search_op(api_obj, False, "79",
+                    self.res_remote_random_test_79)
                 self._search_op(api_obj, False, "separator",
                     self.res_local_keywords)
+                self._search_op(api_obj, False, "\"sort 0x86\"",
+                    self.res_remote_keywords_sort_phrase)
                 self._search_op(api_obj, False, "*example*",
                     self.res_local_glob)
                 self._search_op(api_obj, False, "fooo", self.res_local_foo)
@@ -473,11 +723,66 @@ close
                     self.res_local_openssl)
                 self._search_op(api_obj, False, "OpEnS*",
                     self.res_local_openssl)
-
                 # These tests are included because a specific bug
                 # was found during development. These tests prevent regression
                 # back to that bug. Exit status of 1 is expected because the
                 # token isn't in the packages.
+                self._search_op(api_obj, False, "a_non_existent_token", set())
+                self._search_op(api_obj, False, "42 AND 4641790", set())
+                self.assertRaises(api_errors.BooleanQueryException,
+                    self._search_op, api_obj, False, "<e*> AND e*", set())
+                self.assertRaises(api_errors.BooleanQueryException,
+                    self._search_op, api_obj, False, "e* AND <e*>", set())
+                self.assertRaises(api_errors.BooleanQueryException,
+                    self._search_op, api_obj, False, "<e*> OR e*", set())
+                self.assertRaises(api_errors.BooleanQueryException,
+                    self._search_op, api_obj, False, "e* OR <e*>", set())
+
+        def _run_local_tests(self, api_obj):
+                outfile = os.path.join(self.testdata_dir, "res")
+
+                # This finds something because the client side
+                # manifest has had the name of the package inserted
+                # into it.
+
+                self._search_op(api_obj, False, "example_pkg",
+                    self.res_local_pkg)
+                self._search_op(api_obj, False, "example_path",
+                    self.res_local_path)
+                self._search_op(api_obj, False, "::com.sun.service.info_url:",
+                    self.res_remote_url)
+                self._search_op(api_obj, False, "<e*>",
+                    self.res_local_pkg_ret_pkg, return_actions=False)
+                self._search_op(api_obj, False, "<exam:::>",
+                    self.res_local_pkg_ret_pkg, return_actions=False)
+                self._search_op(api_obj, False, "exam:::e*path",
+                    self.res_local_path)
+                self._search_op(api_obj, False, "example*",
+                    self.res_local_wildcard)
+                self._search_op(api_obj, False, "/bin", self.res_local_bin)
+                self._search_op(api_obj, False, "4851433",
+                    self.res_local_bug_id)
+                self._search_op(api_obj, False, "4725245",
+                    self.res_remote_bug_id_4725245)
+                self._search_op(api_obj, False, "6556919",
+                    self.res_local_inc_changes)
+                self._search_op(api_obj, False, "42",
+                    self.res_local_random_test)
+                self._search_op(api_obj, False, "79",
+                    self.res_remote_random_test_79)
+                self._search_op(api_obj, False, "separator",
+                    self.res_local_keywords)
+                self._search_op(api_obj, False, "\"sort 0x86\"",
+                    self.res_remote_keywords_sort_phrase)
+                self._search_op(api_obj, False, "*example*",
+                    self.res_local_glob)
+                self._search_op(api_obj, False, "fooo", self.res_local_foo)
+                self._search_op(api_obj, False, "bar", self.res_local_bar)
+                self._search_op(api_obj, False, "OpEnSsL",
+                    self.res_local_openssl)
+                # These tests are included because a specific bug
+                # was found during development. These tests prevent regression
+                # back to that bug.
                 self._search_op(api_obj, False, "a_non_existent_token", set())
 
         def _run_degraded_local_tests(self, api_obj):
@@ -491,19 +796,63 @@ close
                     self.res_local_pkg)
                 self._search_op_slow(api_obj, False, "example_path",
                     self.res_local_path)
+                self._search_op_slow(api_obj, False, "(example_path)",
+                    self.res_local_path)
+                self._search_op_slow(api_obj, False, "<exam*:::>",
+                    self.res_local_pkg_ret_pkg, return_actions=False)
+                self._search_op_slow(api_obj, False,
+                    "::com.sun.service.info_url:",
+                    self.res_remote_url)
+                self._search_op_slow(api_obj, False, ":::e* AND *path",
+                    self.res_local_path)
+                self._search_op_slow(api_obj, False, "e* AND *path",
+                    self.res_local_path)
+                self._search_op_slow(api_obj, False, "<e*>",
+                    self.res_local_pkg_ret_pkg, return_actions=False)
+                self._search_op_slow(api_obj, False, "<e*> AND <e*>",
+                    self.res_local_pkg_ret_pkg, return_actions=False)
+                self._search_op_slow(api_obj, False, "<e*> OR <e*>",
+                    self.res_local_pkg_ret_pkg, return_actions=False)
+                self._search_op_slow(api_obj, False, "<exam:::>",
+                    self.res_local_pkg_ret_pkg, return_actions=False)
+                self._search_op_slow(api_obj, False, "exam:::e*path",
+                    self.res_local_path)
+                self._search_op_slow(api_obj, False, "exam:::e*path AND e*:::",
+                    self.res_local_path)
+                self._search_op_slow(api_obj, False, "e*::: AND exam:::*path",
+                    self.res_remote_path_extra)
                 self._search_op_slow(api_obj, False, "example*",
                     self.res_local_wildcard)
                 self._search_op_slow(api_obj, False, "/bin", self.res_local_bin)
                 self._search_op_slow(api_obj, False, "4851433",
                     self.res_local_bug_id)
+                self._search_op_slow(api_obj, False, "<4851433> AND <4725245>",
+                    self.res_local_pkg_ret_pkg, return_actions=False)
+                self._search_op_slow(api_obj, False, "4851433 AND 4725245",
+                    self.res_local_bug_id)
+                self._search_op_slow(api_obj, False,
+                    "4851433 AND 4725245 OR example_path",
+                    self.res_local_bug_id)
+                self._search_op_slow(api_obj, False,
+                    "4851433 AND (4725245 OR example_path)",
+                    self.res_local_bug_id)
+                self._search_op_slow(api_obj, False,
+                    "(4851433 AND 4725245) OR example_path",
+                    self.res_local_bug_id | self.res_local_path)
+                self._search_op_slow(api_obj, False, "4851433 OR 4725245",
+                    self.res_local_bug_id | self.res_remote_bug_id_4725245)
                 self._search_op_slow(api_obj, False, "6556919",
                     self.res_local_inc_changes)
                 self._search_op_slow(api_obj, False, "65569??",
                     self.res_local_inc_changes)
                 self._search_op_slow(api_obj, False, "42",
                     self.res_local_random_test)
+                self._search_op_slow(api_obj, False, "79",
+                    self.res_remote_random_test_79)
                 self._search_op_slow(api_obj, False, "separator",
                     self.res_local_keywords)
+                self._search_op_slow(api_obj, False, "\"sort 0x86\"",
+                    self.res_remote_keywords_sort_phrase)
                 self._search_op_slow(api_obj, False, "*example*",
                     self.res_local_glob)
                 self._search_op_slow(api_obj, False, "fooo", self.res_local_foo)
@@ -517,7 +866,6 @@ close
                     self.res_local_openssl)
                 self._search_op_slow(api_obj, False, "OpEnS*",
                     self.res_local_openssl)
-
                 # These tests are included because a specific bug
                 # was found during development. These tests prevent regression
                 # back to that bug. Exit status of 1 is expected because the
@@ -525,7 +873,6 @@ close
                 self._search_op_slow(api_obj, False, "a_non_existent_token",
                     set())
 
-                
         def _run_local_tests_example11_installed(self, api_obj):
                 outfile = os.path.join(self.testdata_dir, "res")
 
@@ -664,7 +1011,21 @@ close
                 api_obj.execute_plan()
                 api_obj.reset()
 
-        def test_remote(self):
+
+class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
+        # Only start/stop the depot once (instead of for every test)
+        persistent_depot = True
+
+        def __init__(self, *args, **kwargs):
+                TestApiSearchBasics.__init__(self, *args, **kwargs)
+                self.sent_pkgs = set()
+        
+        def pkgsend_bulk(self, durl, pkg, optional=True):
+                if pkg not in self.sent_pkgs or optional == False:
+                        self.sent_pkgs.add(pkg)
+                        TestApiSearchBasics.pkgsend_bulk(self, durl, pkg)
+        
+        def test_010_remote(self):
                 """Test remote search."""
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.example_pkg10)
@@ -672,10 +1033,12 @@ close
                 progresstracker = progress.NullProgressTracker()
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
                     progresstracker, lambda x: False, PKG_CLIENT_NAME)
-                
-                self._run_remote_tests(api_obj)
-                
-        def test_local_0(self):
+                time.sleep(1)
+                # This should be a full test to test all functionality.
+                self._run_full_remote_tests(api_obj)
+                self._search_op(api_obj, True, ":file::", self.res_remote_file)
+
+        def test_020_local_0(self):
                 """Install one package, and run the search suite."""
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.example_pkg10)
@@ -686,12 +1049,12 @@ close
 
                 self._do_install(api_obj, ["example_pkg"])
 
-                self._run_local_tests(api_obj)
+                self._run_full_local_tests(api_obj)
 
-        def test_degraded_local(self):
+        def test_030_degraded_local(self):
                 """Install one package, and run the search suite."""
                 durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.example_pkg10)
+                fmris = self.pkgsend_bulk(durl, self.example_pkg10)
                 self.image_create(durl)
                 progresstracker = progress.NullProgressTracker()
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
@@ -704,8 +1067,7 @@ close
 
                 self._run_degraded_local_tests(api_obj)
 
-                
-        def test_repeated_install_uninstall(self):
+        def test_040_repeated_install_uninstall(self):
                 """Install and uninstall a package. Checking search both
                 after each change to the image."""
                 # During development, the index could become corrupted by
@@ -730,11 +1092,8 @@ close
                         api_obj.reset()
                         self._run_local_empty_tests(api_obj)
 
-        def test_local_image_update(self):
-                """Test that the index gets updated by image-update and
-                that rebuilding the index works after updating the
-                image. Specifically, this tests that rebuilding indexes with
-                gaps in them works correctly."""
+        def test_050_local_case_sensitive(self):
+                """Test local case sensitive search"""
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.example_pkg10)
                 self.image_create(durl)
@@ -743,47 +1102,14 @@ close
                     progresstracker, lambda x: False, PKG_CLIENT_NAME)
 
                 self._do_install(api_obj, ["example_pkg"])
+                self._search_op(api_obj, False, "fooo", set(), True)
+                self._search_op(api_obj, False, "fo*", set(), True)
+                self._search_op(api_obj, False, "bar", set(), True)
+                self._search_op(api_obj, False, "FOOO", self.res_local_foo,
+                    True)
+                self._search_op(api_obj, False, "bAr", self.res_local_bar, True)
 
-                self.pkgsend_bulk(durl, self.example_pkg11)
-                api_obj.refresh(immediate=True)
-
-                self._do_image_update(api_obj)
-
-                self._run_local_tests_example11_installed(api_obj)
-
-                api_obj.rebuild_search_index()
-
-                self._run_local_tests_example11_installed(api_obj)
-
-        def test_bug_983(self):
-                """Test for known bug 983."""
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.bug_983_manifest)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
-
-                self._search_op(api_obj, True, "gmake", self.res_bug_983)
-
-        def test_low_mem(self):
-                """Test to check codepath used in low memory situations."""
-                os.environ["PKG_INDEX_MAX_RAM"] = "0"
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.example_pkg10)
-                self.pkgsend_bulk(durl, self.bug_983_manifest)
-                self.pkgsend_bulk(durl, self.bug_983_manifest)
-
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
-
-                self._run_remote_tests(api_obj)
-                self._search_op(api_obj, True, "gmake", self.res_bug_983)
-
-        def test_missing_files(self):
-                # working on this test case
+        def test_060_missing_files(self):
                 """Test to check for stack trace when files missing.
                 Bug 2753"""
                 durl = self.dc.get_depot_url()
@@ -797,6 +1123,8 @@ close
                 
                 index_dir = os.path.join(self.img_path, "var","pkg","index")
 
+                first = True
+                
                 for d in query_parser.TermQuery._global_data_dict.values():
                         orig_fn = d.get_file_name()
                         orig_path = os.path.join(index_dir, orig_fn)
@@ -806,11 +1134,17 @@ close
                         self.assertRaises(api_errors.InconsistentIndexException,
                             self._search_op, api_obj, False,
                             "exam:::example_pkg", [])
+                        if first:
+                                # Run the shell version once to check that no
+                                # stack trace happens.
+                                self.pkg("search -l 'exam:::example_pkg'",
+                                    exit=1)
+                                first = False
                         portable.rename(dest_path, orig_path)
-                        self._search_op(api_obj, False, "example_pkg",
+                        self._search_op(api_obj, False, "exam:::example_pkg",
                             self.res_local_pkg)
-                        
-        def test_mismatched_versions(self):
+
+        def test_070_mismatched_versions(self):
                 """Test to check for stack trace when files missing.
                 Bug 2753"""
                 durl = self.dc.get_depot_url()
@@ -822,6 +1156,8 @@ close
                 self._do_install(api_obj, ["example_pkg"])
                 
                 index_dir = os.path.join(self.img_path, "var","pkg","index")
+
+                first = True
 
                 for d in query_parser.TermQuery._global_data_dict.values():
                         orig_fn = d.get_file_name()
@@ -834,6 +1170,12 @@ close
                         self.assertRaises(api_errors.InconsistentIndexException,
                             self._search_op, api_obj, False,
                             "exam:::example_pkg", [])
+                        if first:
+                                # Run the shell version once to check that no
+                                # stack trace happens.
+                                self.pkg("search -l 'exam:::example_pkg'",
+                                    exit=1)
+                                first = False
                         portable.rename(dest_path, orig_path)
                         self._search_op(api_obj, False, "example_pkg",
                             self.res_local_pkg)
@@ -853,13 +1195,193 @@ close
                 self._overwrite_hash(ffh_path)
                 self.assertRaises(api_errors.IncorrectIndexFileHash,
                     self._search_op, api_obj, False, "example_pkg", set())
+                # Run the shell version of the test to check for a stack trace.
+                self.pkg("search -l 'exam:::example_pkg'", exit=1)
                 portable.rename(dest_path, ffh_path)
                 self._search_op(api_obj, False, "example_pkg",
                     self.res_local_pkg)
                 self._overwrite_hash(ffh_path)
                 self._do_uninstall(api_obj, ["example_pkg"])
                 self._search_op(api_obj, False, "example_pkg", set())
+
+        def test_080_weird_patterns(self):
+                """Test strange patterns to ensure they're handled correctly"""
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.example_pkg10)
+                self.image_create(durl)
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+
+                self._search_op(api_obj, True, "[*]", self.res_remote_star)
+                self._search_op(api_obj, True, "[?]", self.res_remote_mark)
+                self._search_op(api_obj, True, "[[]",
+                    self.res_remote_left_brace)
+                self._search_op(api_obj, True, "[]]",
+                    self.res_remote_right_brace)
+                self._search_op(api_obj, True, "FO[O]O", self.res_remote_foo)
+                self._search_op(api_obj, True, "FO[?O]O", self.res_remote_foo)
+                self._search_op(api_obj, True, "FO[*O]O", self.res_remote_foo)
+                self._search_op(api_obj, True, "FO[]O]O", self.res_remote_foo)
+
+        def test_090_bug_7660(self):
+                """Test that installing a package doesn't prevent searching on
+                package names from working on previously installed packages."""
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.example_pkg10)
+                self.pkgsend_bulk(durl, self.fat_pkg10)
+                self.image_create(durl)
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+
+                tmp_dir = os.path.join(self.img_path, "var", "pkg", "index",
+                    "TMP")
+                self._do_install(api_obj, ["example_pkg"])
+                api_obj.rebuild_search_index()
+                self._do_install(api_obj, ["fat"])
+                self.assert_(not os.path.exists(tmp_dir))
+                self._run_local_tests(api_obj)
+
+        def test_100_bug_6712_i386(self):
+                """Install one package, and run the search suite."""
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.fat_pkg10)
+
+                self.image_create(durl,
+                    additional_args="--variant variant.arch=i386")
+
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+
+                remote = True
+
+                self._search_op(api_obj, remote, "fat:::*",
+                    self.res_remote_fat10_star)
+                self._do_install(api_obj, ["fat"])
+                remote = False
+                self._search_op(api_obj, remote, "fat:::*",
+                    self.res_local_fat10_i386_star)
+
+        def test_110_bug_6712_sparc(self):
+                """Install one package, and run the search suite."""
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.fat_pkg10)
                 
+                self.image_create(durl,
+                    additional_args="--variant variant.arch=sparc")
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+
+                remote = True
+
+                self._search_op(api_obj, remote, "fat:::*",
+                    self.res_remote_fat10_star)
+                self._do_install(api_obj, ["fat"])
+                remote = False
+                self._search_op(api_obj, remote, "fat:::*",
+                    self.res_local_fat10_sparc_star)
+
+        def test_120_bug_3046(self):
+                """Checks if directories ending in / break the indexer."""
+                # Need to move to t_api_search
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.bad_pkg10)
+                self.image_create(durl)
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+
+                self._search_op(api_obj, True, "foo", set())
+                self._search_op(api_obj, True, "/", set())
+
+        def test_bug_2849(self):
+                """Checks if things with spaces break the indexer."""
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.space_pkg10)
+                self.image_create(durl)
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+
+                self._do_install(api_obj, ["space_pkg"])
+                time.sleep(1)
+
+                self.pkgsend_bulk(durl, self.space_pkg10, optional=False)
+                api_obj.refresh(immediate=True)
+
+                self._do_install(api_obj, ["space_pkg"])
+
+                remote = False
+                self._search_op(api_obj, remote, 'with', set())
+                self._search_op(api_obj, remote, 'with*',
+                    self.res_space_with_star)
+                self._search_op(api_obj, remote, '*space',
+                    self.res_space_space_star)
+                self._search_op(api_obj, remote, 'space', set())
+                self._search_op(api_obj, remote, 'unique_dir',
+                    self.res_space_unique)
+                remote = True
+                self._search_op(api_obj, remote, 'with', set())
+                self._search_op(api_obj, remote, 'with*',
+                    self.res_space_with_star)
+                self._search_op(api_obj, remote, '*space',
+                    self.res_space_space_star)
+                self._search_op(api_obj, remote, 'space', set())
+                self.pkgsend_bulk(durl, self.space_pkg10, optional=False)
+                # Need to add install of subsequent package and
+                # local side search as well as remote
+                self._search_op(api_obj, remote, 'with', set())
+                self._search_op(api_obj, remote, 'with*',
+                    self.res_space_with_star)
+                self._search_op(api_obj, remote, '*space',
+                    self.res_space_space_star)
+                self._search_op(api_obj, remote, 'space', set())
+                self._search_op(api_obj, remote, 'unique_dir',
+                    self.res_space_unique)
+
+        def test_bug_2863(self):
+                """Check that disabling indexing works as expected"""
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.example_pkg10)
+                self.image_create(durl)
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+
+                self._check_no_index()
+                self._do_install(api_obj, ["example_pkg"], update_index=False)
+                self._check_no_index()
+                api_obj.rebuild_search_index()
+                self._run_local_tests(api_obj)
+                self._do_uninstall(api_obj, ["example_pkg"], update_index=False)
+                # Running empty test because search will notice the index
+                # does not match the installed packages and complain.
+                self.assertRaises(api_errors.IncorrectIndexFileHash,
+                    self._search_op, api_obj, False, "example_pkg", set())
+                api_obj.rebuild_search_index()
+                self._run_local_empty_tests(api_obj)
+                self._do_install(api_obj, ["example_pkg"])
+                self._run_local_tests(api_obj)
+                self.pkgsend_bulk(durl, self.example_pkg11)
+                api_obj.refresh(immediate=True)
+                self._do_image_update(api_obj, update_index=False)
+                # Running empty test because search will notice the index
+                # does not match the installed packages and complain.
+                self.assertRaises(api_errors.IncorrectIndexFileHash,
+                    self._search_op, api_obj, False, "example_pkg", set())
+                api_obj.rebuild_search_index()
+                self._run_local_tests_example11_installed(api_obj)
+                self._do_uninstall(api_obj, ["example_pkg"], update_index=False)
+                # Running empty test because search will notice the index
+                # does not match the installed packages and complain.
+                self.assertRaises(api_errors.IncorrectIndexFileHash,
+                    self._search_op, api_obj, False, "example_pkg", set())
+                api_obj.rebuild_search_index()
+                self._run_local_empty_tests(api_obj)
+
         def test_bug_2989_1(self):
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.example_pkg10)
@@ -931,7 +1453,7 @@ close
                         self._do_install(api_obj, ["example_pkg"])
 
                         f(index_dir, index_dir_tmp)
-                        
+
                         self._do_uninstall(api_obj, ["example_pkg"])
 
                         self.image_destroy()
@@ -963,184 +1485,10 @@ close
 
                         self.image_destroy()
 
-        def test_local_case_sensitive(self):
-                """Test local case sensitive search"""
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.example_pkg10)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
-
-                self._do_install(api_obj, ["example_pkg"])
-                self._search_op(api_obj, False, "fooo", set(), True)
-                self._search_op(api_obj, False, "fo*", set(), True)
-                self._search_op(api_obj, False, "bar", set(), True)
-                self._search_op(api_obj, False, "FOOO", self.res_local_foo,
-                    True)
-                self._search_op(api_obj, False, "bAr", self.res_local_bar, True)
-
-        def test_weird_patterns(self):
-                """Test strange patterns to ensure they're handled correctly"""
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.example_pkg10)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
-
-                self._search_op(api_obj, True, "[*]", self.res_remote_star)
-                self._search_op(api_obj, True, "[?]", self.res_remote_mark)
-                self._search_op(api_obj, True, "[[]",
-                    self.res_remote_left_brace)
-                self._search_op(api_obj, True, "[]]",
-                    self.res_remote_right_brace)
-                self._search_op(api_obj, True, "FO[O]O", self.res_remote_foo)
-                self._search_op(api_obj, True, "FO[?O]O", self.res_remote_foo)
-                self._search_op(api_obj, True, "FO[*O]O", self.res_remote_foo)
-                self._search_op(api_obj, True, "FO[]O]O", self.res_remote_foo)
-
-        def test_bug_2849(self):
-                """Checks if things with spaces break the indexer."""
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.space_pkg10)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
-
-                self._do_install(api_obj, ["space_pkg"])
-                time.sleep(1)
-                
-                self.pkgsend_bulk(durl, self.space_pkg10)
-                api_obj.refresh(immediate=True)
-
-                self.pkg("refresh")
-                self._do_install(api_obj, ["space_pkg"])
-                
-                remote = False
-                self._search_op(api_obj, remote, 'with', set())
-                self._search_op(api_obj, remote, 'with*',
-                    self.res_space_with_star)
-                self._search_op(api_obj, remote, '*space',
-                    self.res_space_space_star)
-                self._search_op(api_obj, remote, 'space', set())
-                self._search_op(api_obj, remote, 'unique_dir',
-                    self.res_space_unique)
-                remote = True
-                self._search_op(api_obj, remote, 'with', set())
-                self._search_op(api_obj, remote, 'with*',
-                    self.res_space_with_star)
-                self._search_op(api_obj, remote, '*space',
-                    self.res_space_space_star)
-                self._search_op(api_obj, remote, 'space', set())
-                self.pkgsend_bulk(durl, self.space_pkg10)
-                self._search_op(api_obj, remote, 'with', set())
-                self._search_op(api_obj, remote, 'with*',
-                    self.res_space_with_star)
-                self._search_op(api_obj, remote, '*space',
-                    self.res_space_space_star)
-                self._search_op(api_obj, remote, 'space', set())
-                self._search_op(api_obj, remote, 'unique_dir',
-                    self.res_space_unique)
-
-        def test_bug_2863(self):
-                """Test local case sensitive search"""
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.example_pkg10)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
-
-                self._check_no_index()
-                self._do_install(api_obj, ["example_pkg"], update_index=False)
-                self._check_no_index()
-                api_obj.rebuild_search_index()
-                self._run_local_tests(api_obj)
-                self._do_uninstall(api_obj, ["example_pkg"], update_index=False)
-                # Running empty test because search will notice the index
-                # does not match the installed packages and complain.
-                self.assertRaises(api_errors.IncorrectIndexFileHash,
-                    self._search_op, api_obj, False, "example_pkg", set())
-                api_obj.rebuild_search_index()
-                self._run_local_empty_tests(api_obj)
-                self._do_install(api_obj, ["example_pkg"])
-                self._run_local_tests(api_obj)
-                self.pkgsend_bulk(durl, self.example_pkg11)
-                api_obj.refresh(immediate=True)
-                self._do_image_update(api_obj, update_index=False)
-                # Running empty test because search will notice the index
-                # does not match the installed packages and complain.
-                self.assertRaises(api_errors.IncorrectIndexFileHash,
-                    self._search_op, api_obj, False, "example_pkg", set())
-                api_obj.rebuild_search_index()
-                self._run_local_tests_example11_installed(api_obj)
-                self._do_uninstall(api_obj, ["example_pkg"], update_index=False)
-                # Running empty test because search will notice the index
-                # does not match the installed packages and complain.
-                self.assertRaises(api_errors.IncorrectIndexFileHash,
-                    self._search_op, api_obj, False, "example_pkg", set())
-                api_obj.rebuild_search_index()
-                self._run_local_empty_tests(api_obj)
-
-        def test_bug_4048_1(self):
-                """Checks whether the server deals with partial indexing."""
-                durl = self.dc.get_depot_url()
-                depotpath = self.dc.get_repodir()
-                tmp_dir = os.path.join(depotpath, "index", "TMP")
-                os.mkdir(tmp_dir)
-                self.pkgsend_bulk(durl, self.example_pkg10)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
-                self._run_remote_empty_tests(api_obj)
-                os.rmdir(tmp_dir)
-                offset = 2
-                depot_logfile = os.path.join(self.get_test_prefix(),
-                    self.id(), "depot_logfile%d" % offset)
-                tmp_dc = self.start_depot(12000 + offset, depotpath,
-                    depot_logfile, refresh_index=True)
-                time.sleep(1)
-                self._run_remote_tests(api_obj)
-                tmp_dc.kill()
-
-        def test_bug_4048_2(self):
-                """Checks whether the server deals with partial indexing."""
-                durl = self.dc.get_depot_url()
-                depotpath = self.dc.get_repodir()
-                tmp_dir = os.path.join(depotpath, "index", "TMP")
-                os.mkdir(tmp_dir)
-                self.pkgsend_bulk(durl, self.space_pkg10)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
-                self._run_remote_empty_tests(api_obj)
-                os.rmdir(tmp_dir)
-                self.pkgsend_bulk(durl, self.example_pkg10)
-                time.sleep(1)
-                self._run_remote_tests(api_obj)
-                self._search_op(api_obj, True, "unique_dir",
-                    self.res_space_unique)
-                self._search_op(api_obj, True, "with*",
-                    self.res_space_with_star)
 
         def test_bug_4239(self):
                 """Tests whether categories are indexed and searched for
                 correctly."""
-
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.cat_pkg10)
-                self.pkgsend_bulk(durl, self.cat2_pkg10)
-                self.pkgsend_bulk(durl, self.cat3_pkg10)
-                self.pkgsend_bulk(durl, self.bad_cat_pkg10)
-                self.pkgsend_bulk(durl, self.bad_cat2_pkg10)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
 
                 def _run_cat_tests(self, remote):
                         self._search_op(api_obj, remote, "System",
@@ -1161,7 +1509,7 @@ close
                             self.res_cat2_pkg10, case_sensitive=False)
                         self._search_op(api_obj, True, "Sound",
                             self.res_cat2_pkg10, case_sensitive=False)
-                        self._search_op(api_obj, remote, "'Sound and Video'",
+                        self._search_op(api_obj, remote, "Sound and Video",
                             self.res_cat2_pkg10, case_sensitive=False)
                         self._search_op(api_obj, remote, "Sound*",
                             self.res_cat2_pkg10, case_sensitive=False)
@@ -1188,6 +1536,17 @@ close
                             "foo/bar/baz/bill/beam/asda", self.res_cat3_pkg10,
                             case_sensitive=False)
 
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.cat_pkg10)
+                self.pkgsend_bulk(durl, self.cat2_pkg10)
+                self.pkgsend_bulk(durl, self.cat3_pkg10)
+                self.pkgsend_bulk(durl, self.bad_cat_pkg10)
+                self.pkgsend_bulk(durl, self.bad_cat2_pkg10)
+                self.image_create(durl)
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+
                 remote = True
                 _run_cat_tests(self, remote)
                 _run_cat2_tests(self, remote)
@@ -1199,15 +1558,130 @@ close
 
                 self._do_install(api_obj, ["cat2"])
                 _run_cat2_tests(self, remote)
-                
+
                 self._do_install(api_obj, ["cat3"])
                 _run_cat3_tests(self, remote)
-                
+
                 self._do_install(api_obj, ["badcat"])
                 self._do_install(api_obj, ["badcat2"])
                 _run_cat_tests(self, remote)
                 _run_cat2_tests(self, remote)
                 _run_cat3_tests(self, remote)
+
+        def test_bug_7628(self):
+                """Checks whether incremental update generates wrong
+                additional lines."""
+                durl = self.dc.get_depot_url()
+                depotpath = self.dc.get_repodir()
+                ind_dir = os.path.join(depotpath, "index")
+                tok_file = os.path.join(ind_dir, ss.BYTE_OFFSET_FILE)
+                main_file = os.path.join(ind_dir, ss.MAIN_FILE)
+                self.pkgsend_bulk(durl, self.example_pkg10)
+                time.sleep(1)
+                fh = open(tok_file)
+                tok_1 = fh.readlines()
+                tok_len = len(tok_1)
+                fh.close()
+                fh = open(main_file)
+                main_1 = fh.readlines()
+                main_len = len(main_1)
+                self.pkgsend_bulk(durl, self.example_pkg10, optional=False)
+                time.sleep(1)
+                fh = open(tok_file)
+                tok_2 = fh.readlines()
+                new_tok_len = len(tok_2)
+                fh.close()
+                fh = open(main_file)
+                main_2 = fh.readlines()
+                new_main_len = len(main_2)
+                fh.close()
+                self.assert_(new_tok_len == tok_len)
+                self.assert_(new_main_len == main_len)
+
+        def test_bug_983(self):
+                """Test for known bug 983."""
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.bug_983_manifest)
+                self.image_create(durl)
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+
+                self._search_op(api_obj, True, "gmake", self.res_bug_983)
+                
+class TestApiSearchBasicsRestartingDepot(TestApiSearchBasics):        
+        def setUp(self):
+                self.debug_features = ["headers"]
+                TestApiSearchBasics.setUp(self)
+
+        def test_local_image_update(self):
+                """Test that the index gets updated by image-update and
+                that rebuilding the index works after updating the
+                image. Specifically, this tests that rebuilding indexes with
+                gaps in them works correctly."""
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.example_pkg10)
+                self.image_create(durl)
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+
+                self._do_install(api_obj, ["example_pkg"])
+
+                self.pkgsend_bulk(durl, self.example_pkg11)
+                api_obj.refresh(immediate=True)
+
+                self._do_image_update(api_obj)
+
+                self._run_local_tests_example11_installed(api_obj)
+
+                api_obj.rebuild_search_index()
+
+                self._run_local_tests_example11_installed(api_obj)
+
+        def test_bug_4048_1(self):
+                """Checks whether the server deals with partial indexing."""
+                durl = self.dc.get_depot_url()
+                depotpath = self.dc.get_repodir()
+                tmp_dir = os.path.join(depotpath, "index", "TMP")
+                os.mkdir(tmp_dir)
+                self.pkgsend_bulk(durl, self.example_pkg10)
+                self.image_create(durl)
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                self._run_remote_empty_tests(api_obj)
+                os.rmdir(tmp_dir)
+                offset = 2
+                depot_logfile = os.path.join(self.get_test_prefix(),
+                    self.id(), "depot_logfile%d" % offset)
+                tmp_dc = self.start_depot(12000 + offset, depotpath,
+                    depot_logfile, refresh_index=True)
+                time.sleep(1)
+                # This should do something other than sleep for 1 sec
+                self._run_remote_tests(api_obj)
+                tmp_dc.kill()
+
+        def test_bug_4048_2(self):
+                """Checks whether the server deals with partial indexing."""
+                durl = self.dc.get_depot_url()
+                depotpath = self.dc.get_repodir()
+                tmp_dir = os.path.join(depotpath, "index", "TMP")
+                os.mkdir(tmp_dir)
+                self.pkgsend_bulk(durl, self.space_pkg10)
+                self.image_create(durl)
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                self._run_remote_empty_tests(api_obj)
+                os.rmdir(tmp_dir)
+                self.pkgsend_bulk(durl, self.example_pkg10)
+                time.sleep(1)
+                self._run_remote_tests(api_obj)
+                self._search_op(api_obj, True, "unique_dir",
+                    self.res_space_unique)
+                self._search_op(api_obj, True, "with*",
+                    self.res_space_with_star)
 
         def __corrupt_depot(self, ind_dir):
                 self.dc.stop()
@@ -1285,36 +1759,6 @@ close
                 self.__wait_for_indexing(os.path.join(writ_dir, "TMP"))
                 self.assert_(not os.path.isdir(ind_dir))
                 self._run_remote_tests(api_obj)
-
-        def test_bug_7628(self):
-                """Checks whether incremental update generates wrong
-                additional lines."""
-                durl = self.dc.get_depot_url()
-                depotpath = self.dc.get_repodir()
-                ind_dir = os.path.join(depotpath, "index")
-                tok_file = os.path.join(ind_dir, ss.BYTE_OFFSET_FILE)
-                main_file = os.path.join(ind_dir, ss.MAIN_FILE)
-                self.pkgsend_bulk(durl, self.example_pkg10)
-                time.sleep(1)
-                fh = open(tok_file)
-                tok_1 = fh.readlines()
-                tok_len = len(tok_1)
-                fh.close()
-                fh = open(main_file)
-                main_1 = fh.readlines()
-                main_len = len(main_1)
-                self.pkgsend_bulk(durl, self.example_pkg10)
-                time.sleep(1)
-                fh = open(tok_file)
-                tok_2 = fh.readlines()
-                new_tok_len = len(tok_2)
-                fh.close()
-                fh = open(main_file)
-                main_2 = fh.readlines()
-                new_main_len = len(main_2)
-                fh.close()
-                self.assert_(new_tok_len == tok_len)
-                self.assert_(new_main_len == main_len)
                 
         def test_bug_8318(self):
                 durl = self.dc.get_depot_url()
@@ -1347,7 +1791,7 @@ close
                         raise RuntimeError(("Found %s instances of a "
                             "client uuid, expected to find %s.") %
                             (found, num_expected))
-                   
+
 
 class TestApiSearchMulti(testutils.ManyDepotTestCase):
 

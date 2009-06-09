@@ -61,60 +61,6 @@ class TestPkgSearchBasics(testutils.SingleDepotTestCase):
             add set name='weirdness' value='] [ * ?'
             close """
 
-        example_pkg11 = """
-            open example_pkg@1.1,5.11-0
-            add dir mode=0755 owner=root group=bin path=/bin
-            add file /tmp/example_file mode=0555 owner=root group=bin path=/bin/example_path11
-            close """
-
-        another_pkg10 = """
-            open another_pkg@1.0,5.11-0
-            add dir mode=0755 owner=root group=bin path=/bin
-            add dir mode=0755 owner=root group=bin path=/bin/another_dir
-            add file /tmp/example_file mode=0555 owner=root group=bin path=/bin/another_path
-            add set name=com.sun.service.incorporated_changes value="6556919 6627937"
-            add set name=com.sun.service.random_test value=42 value=79
-            add set name=com.sun.service.bug_ids value="4641790 4725245 4817791 4851433 4897491 4913776 6178339 6556919 6627937"
-            add set name=com.sun.service.keywords value="sort null -n -m -t sort 0x86 separator"
-            add set name=com.sun.service.info_url value=http://service.opensolaris.com/xml/pkg/SUNWcsu@0.5.11,5.11-1:20080514I120000Z
-            close """
-
-        bad_pkg10 = """
-            open bad_pkg@1.0,5.11-0
-            add dir path=foo/ mode=0755 owner=root group=bin
-            close """
-
-        space_pkg10 = """
-            open space_pkg@1.0,5.11-0
-            add file /tmp/example_file mode=0444 owner=nobody group=sys path='unique/with a space'
-            add dir mode=0755 owner=root group=bin path=unique_dir
-            close """
-
-        cat_pkg10 = """
-            open cat@1.0,5.11-0
-            add set name=info.classification value=org.opensolaris.category.2008:System/Security
-            close """
-
-        cat2_pkg10 = """
-            open cat2@1.0,5.11-0
-            add set name=info.classification value="org.opensolaris.category.2008:Applications/Sound and Video"
-            close """
-
-        cat3_pkg10 = """
-            open cat3@1.0,5.11-0
-            add set name=info.classification value="org.opensolaris.category.2008:foo/bar/baz/bill/beam/asda"
-            close """
-
-        bad_cat_pkg10 = """
-            open badcat@1.0,5.11-0
-            add set name=info.classification value="TestBad1/TestBad2"
-            close """
-
-        bad_cat2_pkg10 = """
-            open badcat2@1.0,5.11-0
-            add set name=info.classification value="org.opensolaris.category.2008:TestBad1:TestBad2"
-            close """
-
         fat_pkg10 = """
 open fat@1.0,5.11-0
 add set name=variant.arch value=sparc value=i386
@@ -212,26 +158,6 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
             "description set       bAr                       pkg:/example_pkg@1.0-0\n"
         ])
 
-        res_remote_star = set([
-            headers,
-            "weirdness  set       *                         pkg:/example_pkg@1.0-0\n"
-        ])
-
-        res_remote_mark = set([
-            headers,
-            "weirdness  set       ?                         pkg:/example_pkg@1.0-0\n"
-        ])
-
-        res_remote_left_brace = set([
-            headers,
-            "weirdness  set       [                         pkg:/example_pkg@1.0-0\n"
-        ])
-
-        res_remote_right_brace = set([
-            headers,
-            "weirdness  set       ]                         pkg:/example_pkg@1.0-0\n"
-        ])
-        
         local_fmri_string = \
             "fmri       set       example_pkg               pkg:/example_pkg@1.0-0\n"
 
@@ -285,72 +211,6 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
 
         res_local_degraded_openssl = res_local_openssl.union(degraded_warning)
 
-        res_local_path_example11 = set([
-            headers,
-            "basename   file      bin/example_path11        pkg:/example_pkg@1.1-0\n"
-        ])
-
-        res_local_bin_example11 = set([
-            headers,
-            "path       dir       bin                       pkg:/example_pkg@1.1-0\n"
-        ])
-
-        res_local_wildcard_example11 = set([
-            headers,
-            "basename   file      bin/example_path11        pkg:/example_pkg@1.1-0\n",
-            "fmri       set       example_pkg               pkg:/example_pkg@1.1-0\n"
-       ])
-
-        res_local_pkg_example11 = set([
-            headers,
-            "fmri       set       example_pkg               pkg:/example_pkg@1.1-0\n"
-        ])
-
-        res_cat_pkg10 = set([
-            headers,
-            "info.classification set       System/Security           pkg:/cat@1.0-0\n"
-        ])
-
-        res_cat2_pkg10 = set([
-            headers,
-            "info.classification set       Applications/Sound and Video pkg:/cat2@1.0-0\n"
-        ])
-
-        res_cat3_pkg10 = set([
-            headers,
-            "info.classification set       foo/bar/baz/bill/beam/asda pkg:/cat3@1.0-0\n"
-        ])
-
-        res_fat10_i386 = set([
-            headers,
-            "description set       i386                      pkg:/fat@1.0-0\n",
-            "variant.arch set       i386                      pkg:/fat@1.0-0\n",
-            "description set       variant                   pkg:/fat@1.0-0\n"
-
-        ])
-
-        res_fat10_sparc = set([
-            headers,
-            "description set       sparc                     pkg:/fat@1.0-0\n",
-            "variant.arch set       sparc                     pkg:/fat@1.0-0\n",
-            "description set       variant                   pkg:/fat@1.0-0\n"
-
-        ])
-
-        res_remote_fat10_star = res_fat10_sparc | res_fat10_i386
-
-        res_local_fat10_i386_star = res_fat10_i386.union(set([
-            "variant.arch set       sparc                     pkg:/fat@1.0-0\n",
-            "publisher  set       test                      pkg:/fat@1.0-0\n",
-            "fmri       set       fat                       pkg:/fat@1.0-0\n"
-        ]))
-
-        res_local_fat10_sparc_star = res_fat10_sparc.union(set([
-            "variant.arch set       i386                      pkg:/fat@1.0-0\n",
-            "publisher  set       test                      pkg:/fat@1.0-0\n",
-            "fmri       set       fat                       pkg:/fat@1.0-0\n"
-        ]))
-
         res_bogus_name_result = set([
             headers,
             'fmri       set       bogus_pkg                 pkg:/bogus_pkg@1.0-0\n'
@@ -362,51 +222,6 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
         ])
 
         misc_files = ['/tmp/example_file']
-
-        # This is a copy of the 3.81%2C5.11-0.89%3A20080527T163123Z version of
-        # SUNWgmake from ipkg with the file and liscense actions changed so
-        # that they all take /tmp/example file when sending.
-        bug_983_manifest = """
-open SUNWgmake@3.81,5.11-0.89
-add dir group=sys mode=0755 owner=root path=usr
-add dir group=bin mode=0755 owner=root path=usr/bin
-add dir group=bin mode=0755 owner=root path=usr/gnu
-add dir group=bin mode=0755 owner=root path=usr/gnu/bin
-add link path=usr/gnu/bin/make target=../../bin/gmake
-add dir group=sys mode=0755 owner=root path=usr/gnu/share
-add dir group=bin mode=0755 owner=root path=usr/gnu/share/man
-add dir group=bin mode=0755 owner=root path=usr/gnu/share/man/man1
-add link path=usr/gnu/share/man/man1/make.1 target=../../../../share/man/man1/gmake.1
-add dir group=bin mode=0755 owner=root path=usr/sfw
-add dir group=bin mode=0755 owner=root path=usr/sfw/bin
-add link path=usr/sfw/bin/gmake target=../../bin/gmake
-add dir group=bin mode=0755 owner=root path=usr/sfw/share
-add dir group=bin mode=0755 owner=root path=usr/sfw/share/man
-add dir group=bin mode=0755 owner=root path=usr/sfw/share/man/man1
-add link path=usr/sfw/share/man/man1/gmake.1 target=../../../../share/man/man1/gmake.1
-add dir group=sys mode=0755 owner=root path=usr/share
-add dir group=bin mode=0755 owner=root path=usr/share/info
-add dir group=bin mode=0755 owner=root path=usr/share/man
-add dir group=bin mode=0755 owner=root path=usr/share/man/man1
-add file /tmp/example_file elfarch=i386 elfbits=32 elfhash=68cca393e816e6adcbac1e8ffe9c618de70413e0 group=bin mode=0555 owner=root path=usr/bin/gmake pkg.size=18
-add file /tmp/example_file group=bin mode=0444 owner=root path=usr/share/info/make.info pkg.size=18
-add file /tmp/example_file group=bin mode=0444 owner=root path=usr/share/info/make.info-1 pkg.size=18
-add file /tmp/example_file group=bin mode=0444 owner=root path=usr/share/info/make.info-2 pkg.size=18
-add file /tmp/example_file group=bin mode=0444 owner=root path=usr/share/man/man1/gmake.1 pkg.size=18
-add license /tmp/example_file license=SUNWgmake.copyright pkg.size=18 transaction_id=1211931083_pkg%3A%2FSUNWgmake%403.81%2C5.11-0.89%3A20080527T163123Z
-add depend fmri=pkg:/SUNWcsl@0.5.11-0.89 type=require
-add set name=description value="gmake - GNU make"
-add legacy arch=i386 category=system desc="GNU make - A utility used to build software (gmake) 3.81" hotline="Please contact your local service provider" name="gmake - GNU make" pkg=SUNWgmake vendor="Sun Microsystems, Inc." version=11.11.0,REV=2008.04.29.02.08
-close
-"""
-
-        res_bug_983 = set([
-            headers,
-            "basename   link      usr/sfw/bin/gmake         pkg:/SUNWgmake@3.81-0.89\n",
-            "basename   file      usr/bin/gmake             pkg:/SUNWgmake@3.81-0.89\n",
-            "description set       gmake                     pkg:/SUNWgmake@3.81-0.89\n"
-
-        ])
 
         res_local_pkg_ret_pkg = set([
             pkg_headers,
@@ -449,8 +264,6 @@ close
                 tp = self.get_test_prefix()
                 self.testdata_dir = os.path.join(tp, "search_results")
                 os.mkdir(self.testdata_dir)
-                self._dir_restore_functions = [self._restore_dir,
-                    self._restore_dir_preserve_hash]
                 self.init_mem_setting = None
 
         def tearDown(self):
@@ -458,17 +271,6 @@ close
                 for p in self.misc_files:
                         os.remove(p)
                 shutil.rmtree(self.testdata_dir)
-
-        def _set_low_mem(self):
-                self.init_mem_setting = \
-                    os.environ.get("PKG_INDEX_MAX_RAM", None)
-                os.environ["PKG_INDEX_MAX_RAM"] = "0"
-
-        def _unset_low_mem(self):
-                if self.init_mem_setting is not None:
-                        os.environ["PKG_INDEX_MAX_RAM"] = self.init_mem_setting
-                else:
-                        del os.environ["PKG_INDEX_MAX_RAM"]
 
         def _check(self, proposed_answer, correct_answer):
                 if correct_answer == proposed_answer:
@@ -536,7 +338,8 @@ close
                     self.res_remote_bug_id)
                 self._search_op(True, "'(4851433 AND 4725245) OR example_path'",
                     self.res_remote_bug_id | self.res_remote_path)
-                self._search_op(True, "4851433 OR 4725245", self.res_remote_bug_id | self.res_remote_bug_id_4725245)
+                self._search_op(True, "4851433 OR 4725245",
+                    self.res_remote_bug_id | self.res_remote_bug_id_4725245)
                 self._search_op(True, "6556919", self.res_remote_inc_changes)
                 self._search_op(True, "6556?19", self.res_remote_inc_changes)
                 self._search_op(True, "42", self.res_remote_random_test)
@@ -639,22 +442,6 @@ close
                 self.pkg("search -a -l '<e*> OR e*'", exit=1)
                 self.pkg("search -a -l 'e* OR <e*>'", exit=1)
 
-        def _run_local_tests_example11_installed(self):
-                outfile = os.path.join(self.testdata_dir, "res")
-
-                # This finds something because the client side
-                # manifest has had the name of the package inserted
-                # into it.
-
-                self._search_op(False, "example_pkg",
-                    self.res_local_pkg_example11)
-                self.pkg("search -a -l example_path", exit=1)
-                self._search_op(False, "example_path11",
-                    self.res_local_path_example11)
-                self._search_op(False, "example*",
-                    self.res_local_wildcard_example11)
-                self._search_op(False, "/bin", self.res_local_bin_example11)
-
         def _run_local_empty_tests(self):
                 self.pkg("search -a -l example_pkg", exit=1)
                 self.pkg("search -a -l example_path", exit=1)
@@ -668,92 +455,10 @@ close
                 self.pkg("search -a -r /bin", exit=1)
                 self.pkg("search -a -r *unique*", exit=1)
 
-        @staticmethod
-        def _restore_dir(index_dir, index_dir_tmp):
-                shutil.rmtree(index_dir)
-                shutil.move(index_dir_tmp, index_dir)
-
-        @staticmethod
-        def _restore_dir_preserve_hash(index_dir, index_dir_tmp):
-                tmp_file = "full_fmri_list.hash"
-                portable.remove(os.path.join(index_dir_tmp, tmp_file))
-                shutil.move(os.path.join(index_dir, tmp_file),
-                            index_dir_tmp)
-                fh = open(os.path.join(index_dir_tmp, ss.MAIN_FILE), "r")
-                fh.seek(0)
-                fh.seek(9)
-                ver = fh.read(1)
-                fh.close()
-                fh = open(os.path.join(index_dir_tmp, tmp_file), "r+")
-                fh.seek(0)
-                fh.seek(9)
-                # Overwrite the existing version number.
-                # By definition, the version 0 is never used.
-                fh.write("%s" % ver)
-                shutil.rmtree(index_dir)
-                shutil.move(index_dir_tmp, index_dir)
-
         def _get_index_dirs(self):
                 index_dir = os.path.join(self.img_path, "var","pkg","index")
                 index_dir_tmp = index_dir + "TMP"
                 return index_dir, index_dir_tmp
-
-        @staticmethod
-        def _overwrite_version_number(file_path):
-                fh = open(file_path, "r+")
-                fh.seek(0)
-                fh.seek(9)
-                # Overwrite the existing version number.
-                # By definition, the version 0 is never used.
-                fh.write("0")
-                fh.close()
-
-        @staticmethod
-        def _overwrite_on_disk_format_version_number(file_path):
-                fh = open(file_path, "r+")
-                fh.seek(0)
-                fh.seek(16)
-                # Overwrite the existing version number.
-                # By definition, the version 0 is never used.
-                fh.write("9")
-                fh.close()
-
-        @staticmethod
-        def _overwrite_on_disk_format_version_number_with_letter(file_path):
-                fh = open(file_path, "r+")
-                fh.seek(0)
-                fh.seek(16)
-                # Overwrite the existing version number.
-                # By definition, the version 0 is never used.
-                fh.write("a")
-                fh.close()
-
-        @staticmethod
-        def _replace_on_disk_format_version(dir):
-                file_path = os.path.join(dir, ss.BYTE_OFFSET_FILE)
-                fh = open(file_path, "r")
-                lst = fh.readlines()
-                fh.close()
-                fh = open(file_path, "w")
-                fh.write(lst[0])
-                for l in lst[2:]:
-                        fh.write(l)
-                fh.close()
-
-        @staticmethod
-        def _overwrite_hash(ffh_path):
-                fh = open(ffh_path, "r+")
-                fh.seek(0)
-                fh.seek(20)
-                fh.write("*")
-                fh.close()
-
-        def _check_no_index(self):
-                ind_dir, ind_dir_tmp = self._get_index_dirs()
-                if os.listdir(ind_dir):
-                        self.assert_(0)
-                if os.path.exists(ind_dir_tmp):
-                        self.assert_(0)
 
 	def test_pkg_search_cli(self):
 		"""Test search cli options."""
@@ -769,6 +474,8 @@ close
 
         def test_remote(self):
                 """Test remote search."""
+                # Need to retain to check that default search does remote, not
+                # local search, and that -r and -s work as expected
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.example_pkg10)
 
@@ -776,9 +483,13 @@ close
                 self._run_remote_tests()
                 self._search_op(True, "':file::'", self.res_remote_file)
                 self.pkg("search '*'")
+                self.pkg("search -r '*'")
+                self.pkg("search -s %s '*'" % durl)
+                self.pkg("search -l '*'", exit=1)
                 
         def test_local_0(self):
                 """Install one package, and run the search suite."""
+                # Need to retain that -l works as expected
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.example_pkg10)
                 
@@ -786,150 +497,13 @@ close
 
                 self.pkg("install example_pkg")
 
-                self._run_local_tests()
-
-        def test_repeated_install_uninstall(self):
-                """Install and uninstall a package. Checking search both
-                after each change to the image."""
-                # During development, the index could become corrupted by
-                # repeated installing and uninstalling a package. This
-                # tests if that has been fixed.
-                repeat = 3
-
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.example_pkg10)
-                self.image_create(durl)
-
-                self.pkg("install example_pkg")
-                self.pkg("uninstall example_pkg")
-
-                for i in range(1, repeat):
-                        self.pkg("install example_pkg")
-                        self._run_local_tests()
-                        self.pkg("uninstall example_pkg")
-                        self._run_local_empty_tests()
-
-        def test_local_image_update(self):
-                """Test that the index gets updated by image-update and
-                that rebuilding the index works after updating the
-                image. Specifically, this tests that rebuilding indexes with
-                gaps in them works correctly."""
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.example_pkg10)
-                self.image_create(durl)
-
-                self.pkg("install example_pkg")
-
-                self.pkgsend_bulk(durl, self.example_pkg11)
-
-                self.pkg("refresh")
-                self.pkg("image-update")
-
-                self._run_local_tests_example11_installed()
-
-                self.pkg("rebuild-index")
-
-                self._run_local_tests_example11_installed()
-
-        def test_bug_983(self):
-                """Test for known bug 983."""
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.bug_983_manifest)
-                self.image_create(durl)
-
-                self._search_op(True, "gmake", self.res_bug_983)
-
-        def test_low_mem(self):
-                """Test to check codepath used in low memory situations."""
-                self._set_low_mem()
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.example_pkg10)
-                self.pkgsend_bulk(durl, self.bug_983_manifest)
-                self.pkgsend_bulk(durl, self.bug_983_manifest)
-
-                self.image_create(durl)
-
-                self._run_remote_tests()
-                self._search_op(True, "gmake", self.res_bug_983)
-                self._unset_low_mem()
-
-        def test_missing_files(self):
-                """Test to check for stack trace when files missing.
-                Bug 2753"""
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.example_pkg10)
-
-                self.image_create(durl)
-                self.pkg("install example_pkg")
-                
-                index_dir = os.path.join(self.img_path, "var","pkg","index")
-
-                for d in query_parser.TermQuery._global_data_dict.values():
-                        orig_fn = d.get_file_name()
-                        orig_path = os.path.join(index_dir, orig_fn)
-                        dest_fn = orig_fn + "TMP"
-                        dest_path = os.path.join(index_dir, dest_fn)
-                        portable.rename(orig_path, dest_path)
-                        self.pkg("search -l 'exam:::example_pkg'", exit=1)
-                        portable.rename(dest_path, orig_path)
-                        self.pkg("search -l example_pkg")
-                        
-        def test_mismatched_versions(self):
-                """Test to check for stack trace when files missing.
-                Bug 2753"""
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.example_pkg10)
-
-                self.image_create(durl)
-                self.pkg("install example_pkg")
-                
-                index_dir = os.path.join(self.img_path, "var","pkg","index")
-
-                for d in query_parser.TermQuery._global_data_dict.values():
-                        orig_fn = d.get_file_name()
-                        orig_path = os.path.join(index_dir, orig_fn)
-                        dest_fn = orig_fn + "TMP"
-                        dest_path = os.path.join(index_dir, dest_fn)
-                        shutil.copy(orig_path, dest_path)
-                        self._overwrite_version_number(orig_path)
-                        self.pkg("search -l 'exam:::example_pkg'", exit=1)
-                        portable.rename(dest_path, orig_path)
-                        self.pkg("search -l example_pkg")
-                        self._overwrite_version_number(orig_path)
-                        self.pkg("uninstall example_pkg")
-                        self.pkg("search -l example_pkg", exit=1)
-                        self._overwrite_version_number(orig_path)
-                        self.pkg("install example_pkg")
-                        self.pkg("search -l example_pkg")
-                        
-                ffh = ss.IndexStoreSetHash(ss.FULL_FMRI_HASH_FILE)
-                ffh_path = os.path.join(index_dir, ffh.get_file_name())
-                dest_path = ffh_path + "TMP"
-                shutil.copy(ffh_path, dest_path)
-                self._overwrite_hash(ffh_path)
-                self.pkg("search -l example_pkg", exit=1)
-                portable.rename(dest_path, ffh_path)
-                self.pkg("search -l example_pkg")
-                self._overwrite_hash(ffh_path)
-                self.pkg("uninstall example_pkg")
-                self.pkg("search -l example_pkg", exit=1)
-                
-        def test_degraded_search(self):
-                """Test to check for stack trace when files missing.
-                Bug 2753"""
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.example_pkg10)
-
-                self.image_create(durl)
-                self.pkg("install example_pkg")
-                
-                index_dir = os.path.join(self.img_path, "var","pkg","index")
-                shutil.rmtree(index_dir)
                 self._run_local_tests()
 
         def test_bug_1873(self):
                 """Test to see if malformed actions cause tracebacks during
                 indexing for client or server."""
+                # Can't be moved to api search since this is to test for
+                # tracebacks
                 durl = self.dc.get_depot_url()
                 depotpath = self.dc.get_repodir()
                 server_manifest_path = os.path.join(depotpath, "pkg",
@@ -977,345 +551,11 @@ close
                 self._search_op(False, "6627937",
                     set(self.res_bogus_number_result))
 
-        def test_bug_2989_1(self):
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.example_pkg10)
-
-                for f in self._dir_restore_functions:
-                        self.image_create(durl)
-
-                        self.pkg("rebuild-index")
-
-                        index_dir, index_dir_tmp = self._get_index_dirs()
-
-                        shutil.copytree(index_dir, index_dir_tmp)
-                
-                        self.pkg("install example_pkg")
-
-                        f(index_dir, index_dir_tmp)
-
-                        self.pkg("uninstall example_pkg")
-
-                        self.image_destroy()
-
-        def test_bug_2989_2(self):
-                # The low mem setting is to test for bug 6949
-                self._set_low_mem()
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.example_pkg10)
-                self.pkgsend_bulk(durl, self.another_pkg10)
-
-                for f in self._dir_restore_functions:
-
-                        self.image_create(durl)
-                        self.pkg("install example_pkg")
-
-                        index_dir, index_dir_tmp = self._get_index_dirs()
-                
-                        shutil.copytree(index_dir, index_dir_tmp)
-
-                        self.pkg("install another_pkg")
-
-                        f(index_dir, index_dir_tmp)
-
-                        self.pkg("uninstall another_pkg")
-
-                        self.image_destroy()
-                self._unset_low_mem()
-                
-        def test_bug_2989_3(self):
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.example_pkg10)
-                self.pkgsend_bulk(durl, self.example_pkg11)
-
-                for f in self._dir_restore_functions:
-                
-                        self.image_create(durl)
-                        self.pkg("install example_pkg@1.0,5.11-0")
-
-                        index_dir, index_dir_tmp = self._get_index_dirs()
-
-                        shutil.copytree(index_dir, index_dir_tmp)
-
-                        self.pkg("install example_pkg")
-
-                        f(index_dir, index_dir_tmp)
-                        
-                        self.pkg("uninstall example_pkg")
-
-                        self.image_destroy()
-
-        def test_bug_2989_4(self):
-                # The low mem setting is to test for bug 6949
-                self._set_low_mem()
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.another_pkg10)
-                self.pkgsend_bulk(durl, self.example_pkg10)
-                self.pkgsend_bulk(durl, self.example_pkg11)
-
-                for f in self._dir_restore_functions:
-                
-                        self.image_create(durl)
-                        self.pkg("install another_pkg")
-                
-                        index_dir, index_dir_tmp = self._get_index_dirs()
-                        
-                        shutil.copytree(index_dir, index_dir_tmp)
-
-                        self.pkg("install example_pkg@1.0,5.11-0")
-
-                        f(index_dir, index_dir_tmp)
-
-                        self.pkg("image-update")
-
-                        self.image_destroy()
-                self._unset_low_mem()
-
-        def test_local_case_sensitive(self):
-                """Test local case sensitive search"""
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.example_pkg10)
-
-                self.image_create(durl)
-                self.pkg("install example_pkg")
-                self.pkg("search -l -I fooo", exit=1)
-                self.pkg("search -l -I fo*", exit=1)
-                self.pkg("search -l -I bar", exit=1)
-                self._search_op(False, "FOOO", self.res_local_foo, True)
-                self._search_op(False, "bAr", self.res_local_bar, True)
-
-        def test_weird_patterns(self):
-                """Test strange patterns to ensure they're handled correctly"""
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.example_pkg10)
-
-                self.image_create(durl)
-                self._search_op(True, "[*]", self.res_remote_star)
-                self._search_op(True, "[?]", self.res_remote_mark)
-                self._search_op(True, "[[]", self.res_remote_left_brace)
-                self._search_op(True, "[]]", self.res_remote_right_brace)
-                self._search_op(True, "FO[O]O", self.res_remote_foo)
-                self._search_op(True, "FO[?O]O", self.res_remote_foo)
-                self._search_op(True, "FO[*O]O", self.res_remote_foo)
-                self._search_op(True, "FO[]O]O", self.res_remote_foo)
-
-        def test_bug_3046(self):
-                """Checks if directories ending in / break the indexer."""
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.bad_pkg10)
-                self.image_create(durl)
-                self.pkg("search -r foo")
-                self.pkg("search -r /", exit=1)
-
-        def test_bug_2849(self):
-                """Checks if things with spaces break the indexer."""
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.space_pkg10)
-                self.image_create(durl)
-
-                self.pkg("install space_pkg")
-                time.sleep(1)
-                
-                self.pkgsend_bulk(durl, self.space_pkg10)
-
-                self.pkg("refresh")
-                self.pkg("install space_pkg")
-
-                self.pkg("search -l with", exit=1)
-                self.pkg("search -l with*")
-                self.pkg("search -l *space")
-                self.pkg("search -l unique_dir")
-                self.pkg("search -r with", exit=1)
-                self.pkg("search -r with*")
-                self.pkg("search -r *space")
-                self.pkgsend_bulk(durl, self.space_pkg10)
-                self.pkg("install space_pkg")
-                self.pkg("search -l with", exit=1)
-                self.pkg("search -l with*")
-                self.pkg("search -l *space")
-                self.pkg("search -l unique_dir")
-
-        def test_bug_2863(self):
-                """Test local case sensitive search"""
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.example_pkg10)
-
-                self.image_create(durl)
-                self._check_no_index()
-                self.pkg("install --no-index example_pkg")
-                self._check_no_index()
-                self.pkg("rebuild-index")
-                self._run_local_tests()
-                self.pkg("uninstall --no-index example_pkg")
-                # Running empty test because search will notice the index
-                # does not match the installed packages and complain.
-                self._run_local_empty_tests()
-                self.pkg("rebuild-index") 
-                self._run_local_empty_tests()
-                self.pkg("install example_pkg")
-                self._run_local_tests()
-                self.pkgsend_bulk(durl, self.example_pkg11)
-                self.pkg("refresh")
-                self.pkg("image-update --no-index")
-                # Running empty test because search will notice the index
-                # does not match the installed packages and complain.
-                self._run_local_empty_tests()
-                self.pkg("rebuild-index")
-                self._run_local_tests_example11_installed()
-                self.pkg("uninstall --no-index example_pkg")
-                # Running empty test because search will notice the index
-                # does not match the installed packages and complain.
-                self._run_local_empty_tests()
-                self.pkg("rebuild-index")
-                self._run_local_empty_tests()
-
-        def test_bug_4048_1(self):
-                """Checks whether the server deals with partial indexing."""
-                durl = self.dc.get_depot_url()
-                depotpath = self.dc.get_repodir()
-                tmp_dir = os.path.join(depotpath, "index", "TMP")
-                os.mkdir(tmp_dir)
-                self.pkgsend_bulk(durl, self.example_pkg10)
-                self.image_create(durl)
-                self._run_remote_empty_tests()
-                os.rmdir(tmp_dir)
-                offset = 2
-                depot_logfile = os.path.join(self.get_test_prefix(),
-                    self.id(), "depot_logfile%d" % offset)
-                tmp_dc = self.start_depot(12000 + offset, depotpath,
-                    depot_logfile, refresh_index=True)
-                self._run_remote_tests()
-                tmp_dc.kill()
-
-        def test_bug_4048_2(self):
-                """Checks whether the server deals with partial indexing."""
-                durl = self.dc.get_depot_url()
-                depotpath = self.dc.get_repodir()
-                tmp_dir = os.path.join(depotpath, "index", "TMP")
-                os.mkdir(tmp_dir)
-                self.pkgsend_bulk(durl, self.space_pkg10)
-                self.image_create(durl)
-                self._run_remote_empty_tests()
-                os.rmdir(tmp_dir)
-                self.pkgsend_bulk(durl, self.example_pkg10)
-                self._run_remote_tests()
-                self.pkg("search -r unique_dir")
-                self.pkg("search -r with*")
-
-        def test_bug_4239(self):
-                """Tests whether categories are indexed and searched for
-                correctly."""
-
-                def _run_cat_tests(self, remote):
-                        self._search_op(remote, "System",
-                            self.res_cat_pkg10, case_sensitive=False)
-                        self._search_op(remote, "Security",
-                            self.res_cat_pkg10, case_sensitive=False)
-                        self._search_op(remote, "System/Security",
-                            self.res_cat_pkg10, case_sensitive=False)
-
-                def _run_cat2_tests(self, remote):
-                        self._search_op(remote, "Applications",
-                            self.res_cat2_pkg10, case_sensitive=False)
-                        self.pkg("search -r Sound")
-                        self._search_op(remote, "'\"Sound and Video\"'",
-                            self.res_cat2_pkg10, case_sensitive=False)
-                        self._search_op(remote, "Sound*",
-                            self.res_cat2_pkg10, case_sensitive=False)
-                        self._search_op(remote, "*Video",
-                            self.res_cat2_pkg10, case_sensitive=False)
-                        self._search_op(remote,
-                            "'\"Applications/Sound and Video\"'",
-                            self.res_cat2_pkg10, case_sensitive=False)
-                def _run_cat3_tests(self, remote):
-                        self._search_op(remote, "foo",
-                            self.res_cat3_pkg10,case_sensitive=False)
-                        self._search_op(remote, "baz",
-                            self.res_cat3_pkg10, case_sensitive=False)
-                        self._search_op(remote, "asda",
-                            self.res_cat3_pkg10, case_sensitive=False)
-                        self._search_op(remote, "foo/bar/baz/bill/beam/asda",
-                            self.res_cat3_pkg10, case_sensitive=False)
-
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.cat_pkg10)
-                self.pkgsend_bulk(durl, self.cat2_pkg10)
-                self.pkgsend_bulk(durl, self.cat3_pkg10)
-                self.pkgsend_bulk(durl, self.bad_cat_pkg10)
-                self.pkgsend_bulk(durl, self.bad_cat2_pkg10)
-                self.image_create(durl)
-
-                remote = True
-                _run_cat_tests(self, remote)
-                _run_cat2_tests(self, remote)
-                _run_cat3_tests(self, remote)
-
-                remote = False
-                self.pkg("install cat")
-                _run_cat_tests(self, remote)
-
-                self.pkg("install cat2")
-                _run_cat2_tests(self, remote)
-                
-                self.pkg("install cat3")
-                _run_cat3_tests(self, remote)
-                
-                self.pkg("install badcat")
-                self.pkg("install badcat2")
-                _run_cat_tests(self, remote)
-                _run_cat2_tests(self, remote)
-                _run_cat3_tests(self, remote)
-
-        def test_bug_6712_i386(self):
-                """Install one package, and run the search suite."""
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.fat_pkg10)
-                
-                self.image_create(durl,
-                    additional_args="--variant variant.arch=i386")
-
-                remote = True
-                
-                self._search_op(remote, "'*'", self.res_remote_fat10_star)
-
-                self.pkg("install fat")
-                remote = False
-                self._search_op(remote, "'*'", self.res_local_fat10_i386_star)
-
-        def test_bug_6712_sparc(self):
-                """Install one package, and run the search suite."""
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.fat_pkg10)
-                
-                self.image_create(durl,
-                    additional_args="--variant variant.arch=sparc")
-
-                remote = True
-                
-                self._search_op(remote, "'*'", self.res_remote_fat10_star)
-
-                self.pkg("install fat")
-                remote = False
-                self._search_op(remote, "'*'", self.res_local_fat10_sparc_star)
-
-        def test_bug_7660(self):
-                """Test that installing a package doesn't prevent searching on
-                package names from working on previously installed packages."""
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.example_pkg10)
-                self.pkgsend_bulk(durl, self.fat_pkg10)
-                self.image_create(durl)
-                tmp_dir = os.path.join(self.img_path, "var", "pkg", "index",
-                    "TMP")
-                self.pkg("install example_pkg")
-                self.pkg("rebuild-index")
-                self.pkg("install fat")
-                self.assert_(not os.path.exists(tmp_dir))
-                self._run_local_tests()
-
         def test_bug_7835(self):
                 """Check that installing a package without in a non-empty
                 image without an index doesn't build an index."""
+                # This test can't be moved to t_api_search until bug 8497 has
+                # been resolved.
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.fat_pkg10)
                 self.pkgsend_bulk(durl, self.example_pkg10)
@@ -1366,28 +606,6 @@ close
                     lambda x: x.code == 400, urllib2.urlopen,
                     "%s/search/1/False_2_None_None_foo%%20%%3Cbar%%3E" % durl)
 
-
-class TestPkgSearchMulti(testutils.ManyDepotTestCase):
-
-        example_pkg10 = """
-            open example_pkg@1.0,5.11-0
-            close """
-
-        def setUp(self):
-                testutils.ManyDepotTestCase.setUp(self, 2)
-
-                durl1 = self.dcs[1].get_depot_url()
-                durl2 = self.dcs[2].get_depot_url()
-                self.pkgsend_bulk(durl2, self.example_pkg10)
-
-                self.image_create(durl1, prefix = "test1")
-                self.pkg("set-publisher -O " + durl2 + " test2")
-
-        def test_bug_2955(self):
-                """See http://defect.opensolaris.org/bz/show_bug.cgi?id=2955"""
-                self.pkg("install example_pkg")
-                self.pkg("rebuild-index")
-                self.pkg("uninstall example_pkg")
 
 if __name__ == "__main__":
         unittest.main()
