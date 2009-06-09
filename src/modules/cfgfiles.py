@@ -270,7 +270,8 @@ class PasswordFile(CfgFile):
         """returns next free system (<=99) uid""" 
         uids=[]
         for t in self.password_file.index.itervalues():
-            uids.append(t[1]["uid"])
+            if t[1]:
+                uids.append(t[1]["uid"])
         for i in range(100):
             if str(i) not in uids:
                 return i
@@ -327,7 +328,8 @@ class GroupFile(CfgFile):
         """returns next free system (<=99) gid""" 
         gids=[]
         for t in self.index.itervalues():
-            gids.append(t[1]["gid"])
+            if t[1]:
+                gids.append(t[1]["gid"])
         for i in range(100):
             if str(i) not in gids:
                 return i

@@ -116,6 +116,31 @@ tty::7:root,adm
                 self.assertRaises(KeyError, portable.get_group_by_name,
                     570, self.tempdir, True)
 
+        def testGroup4(self):
+                """ Test with a group name line in the group file that
+                starts with a "+". (See bug #4470 for more details). """
+                if not os.path.exists("/etc/group"):
+                        return
+
+                grpfile = file(os.path.join(self.tempdir, "etc", "group"), "w")
+                grpfile.write( \
+"""root::0:
+bin::2:root,daemon
++plusgrp
+adm::4:root,daemon
+uucp::5:root
+mail::6:root
+tty::7:root,adm
++""")
+                grpfile.close()
+                self.assert_(0 == \
+                    portable.get_group_by_name("root", self.tempdir, True))
+                self.assert_(7 == \
+                    portable.get_group_by_name("tty", self.tempdir, True))
+
+                self.assertRaises(KeyError, portable.get_group_by_name,
+                    "plusgrp", self.tempdir, True)
+
 
         def testUser1(self):
                 if not os.path.exists("/etc/passwd"):
@@ -195,7 +220,31 @@ uucp:x:5:5:uucp Admin:/usr/lib/uucp:
                 self.assertRaises(KeyError, portable.get_user_by_name,
                     999, self.tempdir, True)
 
+        def testUser4(self):
+                """ Test with a user name line in the passwd file that
+                starts with a "+". (See bug #4470 for more details). """
+                if not os.path.exists("/etc/passwd"):
+                        return
 
+                passwd = file(os.path.join(self.tempdir, "etc", "passwd"), "w")
+                passwd.write( \
+"""root:x:0:0::/root:/usr/bin/bash
+daemon:x:1:1::/:
+bin:x:2:2::/usr/bin:
+sys:x:3:3::/:
++plususer
+adm:x:4:4:Admin:/var/adm:
+lp:x:71:8:Line Printer Admin:/usr/spool/lp:
+uucp:x:5:5:uucp Admin:/usr/lib/uucp:
++""")
+                passwd.close()
+                self.assert_(0 == \
+                    portable.get_user_by_name("root", self.tempdir, True))
+                self.assert_("uucp" == \
+                    portable.get_name_by_uid(5, self.tempdir, True))
+
+                self.assertRaises(KeyError, portable.get_user_by_name,
+                    "plususer", self.tempdir, True)
 
 if __name__ == "__main__":
         unittest.main()

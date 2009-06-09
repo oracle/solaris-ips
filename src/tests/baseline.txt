@@ -162,9 +162,11 @@ api.t_smf.py TestSMF.test_is_smf_manifest3|pass
 api.t_unix_usergrp.py TestUserGroup.testGroup1|pass
 api.t_unix_usergrp.py TestUserGroup.testGroup2|pass
 api.t_unix_usergrp.py TestUserGroup.testGroup3|pass
+api.t_unix_usergrp.py TestUserGroup.testGroup4|pass
 api.t_unix_usergrp.py TestUserGroup.testUser1|pass
 api.t_unix_usergrp.py TestUserGroup.testUser2|pass
 api.t_unix_usergrp.py TestUserGroup.testUser3|pass
+api.t_unix_usergrp.py TestUserGroup.testUser4|pass
 api.t_version.py TestVersion.testbogusdotsequence|pass
 api.t_version.py TestVersion.testbogusversion1|pass
 api.t_version.py TestVersion.testbogusversion2|pass
