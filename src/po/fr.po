@@ -1001,7 +1001,7 @@ msgstr "Matériel"
 
 #: ../gui/data/l10n.py:57
 msgid "High Performance Computing"
-msgstr "Informatique hautes performances"
+msgstr "Calcul Haute Performance (HPC)"
 
 #: ../gui/data/l10n.py:58
 msgid "Integrated Development Environments"
@@ -1057,7 +1057,7 @@ msgstr "Outils de bureau"
 
 #: ../gui/data/l10n.py:71
 msgid "Other Languages"
-msgstr "Autres langues"
+msgstr "Autres langages"
 
 #: ../gui/data/l10n.py:72
 msgid "Other Peripherals"
@@ -1081,7 +1081,7 @@ msgstr "Perl"
 
 #: ../gui/data/l10n.py:77
 msgid "Plug-ins and Run-times"
-msgstr "Plug-ins et temps d'exécution"
+msgstr "Plug-ins et run-times"
 
 #: ../gui/data/l10n.py:78
 msgid "Ports"
@@ -1157,7 +1157,7 @@ msgstr "Thème"
 
 #: ../gui/data/l10n.py:96
 msgid "Trusted"
-msgstr "De confiance"
+msgstr "Trusted"
 
 #: ../gui/data/l10n.py:97
 msgid "Trusted Extensions"
@@ -1173,7 +1173,7 @@ msgstr "Virtualisation"
 
 #: ../gui/data/l10n.py:100
 msgid "Window Managers"
-msgstr "Gestionnaires Windows"
+msgstr "Gestionnaires de fenêtres"
 
 #: ../gui/data/l10n.py:101
 msgid "X11"
