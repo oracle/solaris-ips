@@ -85,7 +85,7 @@ class TestPkgImageCreateBasics(testutils.SingleDepotTestCase):
                          (durl, self.get_img_path()))
 
         def test_3588_2(self):
-                """Bug 3588: Make sure we can't create an image where a  
+                """Bug 3588: Make sure we can't create an image where a
                 non-empty directory exists"""
                 durl = self.dc.get_depot_url()
                 p = os.path.join(self.get_img_path(), "3588_2_image")
@@ -113,6 +113,33 @@ class TestPkgImageCreateBasics(testutils.SingleDepotTestCase):
                 p = os.path.join(self.get_img_path(), "test_5_image")
                 self.pkg("image-create -p test=InvalidURI %s" % p, exit=1)
                 self.assertFalse(os.path.exists(p))
+
+        def test_6_relative_root_create(self):
+                """Verify that an image with a relative path for the root is
+                created correctly."""
+
+                pwd = os.getcwd()
+                durl = self.dc.get_depot_url()
+                img_path = "test_6_image"
+                abs_img_path = os.path.join(self.get_test_prefix(), img_path)
+
+                # Now verify that the image root isn't duplicated within the
+                # specified image root if the specified root doesn't already
+                # exist.
+                os.chdir(self.get_test_prefix())
+                self.pkg("image-create -p mydepot=%s %s" % (durl, img_path))
+                os.chdir(pwd)
+                self.assertFalse(os.path.exists(os.path.join(abs_img_path, img_path)))
+                shutil.rmtree(abs_img_path)
+
+                # Now verify that the image root isn't duplicated within the
+                # specified image root if the specified root already exists.
+                os.chdir(self.get_test_prefix())
+                os.mkdir(img_path)
+                self.pkg("image-create -p mydepot=%s %s" % (durl, img_path))
+                os.chdir(pwd)
+                self.assertFalse(os.path.exists(os.path.join(abs_img_path, img_path)))
+                shutil.rmtree(abs_img_path)
 
 
 class TestImageCreateNoDepot(testutils.CliTestCase):

@@ -329,6 +329,9 @@ class Image(object):
                 if not self.imgdir and os.path.isdir(root):
                         os.chdir(root)
 
+                        # The specified root may have been a relative path.
+                        self.root = os.getcwd()
+
                 self.imgdir = os.path.join(self.root, self.img_prefix)
                 self.pkgdir = os.path.join(self.imgdir, "pkg")
                 self.history.root_dir = self.imgdir
