@@ -444,8 +444,8 @@ class PackageManager:
                                 "on_searchentry_focus_out_event": \
                                     self.__on_searchentry_focus_out,
                                 "on_searchentry_event":self.__on_searchentry_event,
-                                "on_searchentry_key_press_event": \
-                                    self.__on_searchentry_key_press_event,
+                                "on_searchentry_activate": \
+                                    self.__on_searchentry_activate,
                                 "on_sectionscombobox_changed": \
                                     self.__on_sectionscombobox_changed,
                                 "on_filtercombobox_changed": \
@@ -1834,16 +1834,8 @@ class PackageManager:
         def __on_searchentry_focus_out(self, widget, event):
                 self.w_paste_menuitem.set_sensitive(False)
 
-        def __on_searchentry_key_press_event(self, widget, event):
-                if self.typeahead_search and not self.is_remote_search:
-                        return False
-                from gtk.gdk import keyval_name
-                if debug:
-                        print "Pressed %s" % keyval_name(event.keyval)
-                if event.keyval == gtk.keysyms.Return:
-                        self.__do_search()
-                        return True
-                return False
+        def __on_searchentry_activate(self, widget):
+                self.__do_search()
 
         def __on_searchentry_event(self, widget, event):
                 if widget.get_selection_bounds():

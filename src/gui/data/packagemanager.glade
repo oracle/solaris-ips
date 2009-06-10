@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Tue Apr 21 15:42:02 2009 -->
+<!--Generated with glade3 3.4.5 on Thu May 21 09:30:50 2009 -->
 <glade-interface>
   <widget class="GtkWindow" id="mainwindow">
     <property name="width_request">750</property>
@@ -467,7 +467,7 @@
                             <signal name="focus_out_event" handler="on_searchentry_focus_out_event"/>
                             <signal name="focus_in_event" handler="on_searchentry_focus_in_event"/>
                             <signal name="event" handler="on_searchentry_event"/>
-                            <signal name="key_press_event" handler="on_searchentry_key_press_event"/>
+                            <signal name="activate" handler="on_searchentry_activate"/>
                           </widget>
                           <packing>
                             <property name="position">2</property>
