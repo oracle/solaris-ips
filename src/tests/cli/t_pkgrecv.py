@@ -51,6 +51,11 @@ class TestPkgrecvMulti(testutils.ManyDepotTestCase):
         # Cleanup after every test.
         persistent_depot = False
 
+        scheme10 = """
+            open pkg:/scheme@1.0,5.11-0
+            close 
+        """
+
         tree10 = """
             open tree@1.0,5.11-0
             close 
@@ -127,10 +132,10 @@ class TestPkgrecvMulti(testutils.ManyDepotTestCase):
 
                 # Purposefully republish bronze20 a second later so a version
                 # exists that only differs in timestamp.  Also publish tree
-                # after that.
+                # and scheme after that.
                 time.sleep(1)
                 self.published.extend(self.pkgsend_bulk(self.durl1,
-                    self.bronze20 + self.tree10))
+                    self.bronze20 + self.tree10 + self.scheme10))
 
                 self.dpath2 = self.dcs[2].get_repodir()
                 self.durl2 = self.dcs[2].get_depot_url()
@@ -201,9 +206,10 @@ class TestPkgrecvMulti(testutils.ManyDepotTestCase):
 
                 # The latest version of amber and bronze should be listed.
                 amber = "pkg:/" + self.published[1]
+                scheme = "pkg:/" + self.published[6]
                 bronze = "pkg:/" + self.published[4]
                 tree = "pkg:/" + self.published[5]
-                expected = "\n".join((amber, tree, bronze)) + "\n"
+                expected = "\n".join((amber, scheme, tree, bronze)) + "\n"
                 self.assertEqualDiff(expected, output)
 
         def test_1_recv_pkgsend(self):
@@ -343,10 +349,26 @@ class TestPkgrecvMulti(testutils.ManyDepotTestCase):
                                 self.assertEqual(misc.get_data_digest(old),
                                     misc.get_data_digest(new))
 
-                # Finally, create an image and verify that the sent package is
+                # Fourth, create an image and verify that the sent package is
                 # seen by the client.
                 self.image_create(self.durl2)
                 self.pkg("info -r bronze@2.0")
+
+                # Fifth, pkgrecv the pkg to a file repository and compare the
+                # manifest of a package published with the scheme (pkg:/) given.
+                f = fmri.PkgFmri(self.published[6], None)
+                npath = tempfile.mkdtemp(dir=self.get_test_prefix())
+                self.pkgrecv(self.durl1, "-d file://%s %s" % (npath, f))
+
+                # Next, compare the manifests (this will also only succeed if
+                # the fmris are exactly the same including timestamp).
+                orepo = self.get_repo(self.dpath1)
+                nrepo = self.get_repo(npath)
+                old = orepo.manifest(f)
+                new = nrepo.manifest(f)
+
+                self.assertEqual(misc.get_data_digest(old),
+                    misc.get_data_digest(new))
 
         def test_3_recursive(self):
                 """Verify that retrieving a package recursively will retrieve

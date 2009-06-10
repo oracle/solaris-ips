@@ -146,7 +146,7 @@ def get_tracker(quiet=False):
                         progresstracker = progress.CommandLineProgressTracker()
         return progresstracker
 
-def get_manifest(src_uri, pfmri, basedir):
+def get_manifest(src_uri, pfmri, basedir, contents=False):
 
         m = None
         pkgdir = os.path.join(basedir, pfmri.get_dir_path())
@@ -163,6 +163,9 @@ def get_manifest(src_uri, pfmri, basedir):
                 except:
                         abort(err=_("Unable to load manifest '%s' for package "
                             " '%s'.") % (mpath, pfmri))
+
+        if contents:
+                return raw
 
         try:
                 m = manifest.CachedManifest(pfmri, basedir, None,
@@ -702,10 +705,16 @@ def main_func():
                 msg(_("Republishing %s ...") % f)
 
                 m = get_manifest(src_uri, f, basedir)
-                pkgdir = os.path.join(basedir, f.get_dir_path())
 
-                # Ensure pkg:/ prefix is not included.
-                pkg_name = f.get_fmri(include_scheme=False)
+                # Get first line of original manifest so that inclusion of the
+                # scheme can be determined.
+                use_scheme = True
+                contents = get_manifest(src_uri, f, basedir, contents=True)
+                if contents.splitlines()[0].find("pkg:/") == -1:
+                        use_scheme = False
+
+                pkg_name = f.get_fmri(include_scheme=use_scheme)
+                pkgdir = os.path.join(basedir, f.get_dir_path())
 
                 # This is needed so any previous failures for a package
                 # can be aborted.

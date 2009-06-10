@@ -157,7 +157,7 @@ class Transaction(object):
                 if self.open_time:
                         # Strip the timestamp information for consistency with
                         # the case where it was not specified.
-                        self.pkg_name = pfmri.split(":", 1)[0]
+                        self.pkg_name = ":".join(pfmri.split(":")[:-1])
                         self.esc_pkg_name = urllib.quote(self.pkg_name, "")
                 else:
                         # A timestamp was not provided.
