@@ -1045,23 +1045,23 @@ class Updatemanager:
                 self.__cleanup()
 
         def __display_update_image_success(self):
-                elapsed = (time.time() - self.ua_start)/ 60.0 
+                elapsed_sec = int(time.time() - self.ua_start)
+                elapsed_min = elapsed_sec / 60
                 info_str = ""
-                if elapsed >= 1.0:
-                        info_str = \
-                            _(
-                            "\nUpdate All finished successfully in %1.f mins\n\n" %
-                            elapsed)
+                if elapsed_sec >= 120:
+                        info_str = _(
+                           "Update All finished successfully in %d minutes.") \
+                           % elapsed_min
                 else:
-                        info_str = \
-                            _(
-                            "\nUpdate All finished successfully in < 1 min\n\n")
-                self.w_um_completed_time_label.set_text(info_str.strip('\n'))
+                        info_str = _(
+                            "Update All finished successfully in %d seconds.") \
+                             % elapsed_sec
+                self.w_um_completed_time_label.set_text(info_str)
 
                 info_str = _(
-                    "Review the posted release notes before rebooting your system:\n\n"
+                    "Review the posted release notes before rebooting your system:"
                     )
-                self.w_um_completed_release_label.set_text(info_str.strip('\n'))
+                self.w_um_completed_release_label.set_text(info_str)
 
                 info_str = misc.get_release_notes_url()
                 self.w_um_completed_linkbutton.set_uri(info_str)

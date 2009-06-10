@@ -550,7 +550,7 @@ class InstallUpdate(progress.ProgressTracker):
 
         def __proceed_with_stages_thread(self):
                 self.__start_substage(
-                    _("Gathering packages information, please wait..."))
+                    _("Gathering package information, please wait..."))
                 stuff_todo = self.__plan_stage()
                 if stuff_todo:
                         self.__afterplan_information()
