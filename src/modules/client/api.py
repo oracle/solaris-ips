@@ -155,9 +155,6 @@ class ImageInterface(object):
                                         self.img.check_cert_validity()
                                 except api_errors.ExpiringCertificate, e:
                                         misc.emsg(e)
-                                except api_errors.CertificateError, e:
-                                        self.log_operation_end(error=e)
-                                        raise
 
                                 exception_caught = None
                                 if refresh_catalogs:
@@ -310,9 +307,6 @@ class ImageInterface(object):
                                         self.img.check_cert_validity()
                                 except api_errors.ExpiringCertificate, e:
                                         misc.emsg(e)
-                                except api_errors.CertificateError, e:
-                                        self.log_operation_end(error=e)
-                                        raise
 
                                 if refresh_catalogs:
                                         try:

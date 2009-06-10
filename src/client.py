@@ -561,7 +561,8 @@ def image_update(img_dir, args):
         except api_errors.BEException, e:
                 error(_(e))
                 return 1
-        except (api_errors.PlanCreationException,
+        except (api_errors.CertificateError,
+            api_errors.PlanCreationException,
             api_errors.NetworkUnavailableException,
             api_errors.PermissionsException), e:
                 # Prepend a newline because otherwise the exception will
@@ -719,22 +720,23 @@ def install(img_dir, args):
                         if not noexecute:
                                 return 1
                 else:
-                        raise RuntimeError("Catalog refresh failed during"
-                            " install.")
-        except api_errors.CertificateError:
-                return 1
-        except (api_errors.PlanCreationException,
+                        error(_("Catalog refresh failed during install."),
+                            cmd="install")
+                        return 1
+        except (api_errors.CertificateError,
+            api_errors.PlanCreationException,
             api_errors.NetworkUnavailableException,
             api_errors.PermissionsException), e:
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
-                error("\n" + str(e))
+                error("\n" + str(e), cmd="install")
                 return 1
         except api_errors.InventoryException, e:
-                error(_("install failed (inventory exception):\n%s") % e)
+                error(_("install failed (inventory exception):\n%s") % e,
+                    cmd="install")
                 return 1
         except fmri.IllegalFmri, e:
-                error(e)
+                error(e, cmd="install")
                 return 1
 
         if noexecute:

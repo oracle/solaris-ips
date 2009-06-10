@@ -867,7 +867,7 @@ class ExpiredCertificate(CertificateError):
                                     "'%(pub)s' needed to access '%(uri)s', "
                                     "has expired.  Please install a valid "
                                     "certificate.") % { "cert": self.data,
-                                    "uri": uri }
+                                    "pub": publisher, "uri": uri }
                         return _("Certificate '%(cert)s' for publisher "
                             "'%(pub)s', has expired.  Please install a valid "
                             "certificate.") % { "cert": self.data,
