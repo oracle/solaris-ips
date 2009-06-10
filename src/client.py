@@ -1634,7 +1634,7 @@ def publisher_refresh(img_dir, args):
 
         try:
                 api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
-                    get_tracker(quiet=True), None, PKG_CLIENT_NAME)
+                    get_tracker(), None, PKG_CLIENT_NAME)
         except api_errors.ImageNotFoundException, e:
                 error(_("'%s' is not an install image") % e.user_dir)
                 return 1
