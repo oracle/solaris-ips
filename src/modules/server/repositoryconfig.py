@@ -277,7 +277,7 @@ class RepositoryConfig(object):
                                         validate_uri(value)
                                 elif atype == ATTR_TYPE_URI_LIST:
                                         if not isinstance(value, list):
-                                                return False
+                                                raise TypeError
                                         for u in value:
                                                 validate_uri(u)
                                 elif atype in (ATTR_TYPE_PUB_ALIAS,
@@ -402,6 +402,16 @@ class RepositoryConfig(object):
                                         # an exception.
                                         value = cp.get(section, attr)
 
+                                        # The list types are special in that
+                                        # they must be converted first before
+                                        # validation.
+                                        if atype == ATTR_TYPE_URI_LIST:
+                                                uris = []
+                                                for u in value.split(","):
+                                                        if u:
+                                                                uris.append(u)
+                                                value = uris
+
                                         self.is_valid_attribute_value(
                                             section, attr, value,
                                             raise_error=True)
@@ -415,12 +425,6 @@ class RepositoryConfig(object):
                                         elif atype == ATTR_TYPE_BOOL:
                                                 value = cp.getboolean(section,
                                                     attr)
-                                        elif atype == ATTR_TYPE_URI_LIST:
-                                                uris = []
-                                                for u in value.split(","):
-                                                        if u:
-                                                                uris.append(u)
-                                                value = uris
 
                                         self.cfg_cache[section][attr] = value
 

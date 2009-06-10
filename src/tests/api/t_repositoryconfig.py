@@ -383,6 +383,12 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                 self.assertFalse(rc.is_valid_attribute_value("feed", "id",
                     "8baf-433b-82eb-8c7fada847da"))
 
+                # Verify that an exception is raised when raise_error=True for
+                # an invalid attribute value.
+                self.assertRaises(rcfg.InvalidAttributeValueError,
+                    rc.is_valid_attribute_value, "feed", "id",
+                    "8baf-433b-82eb-8c7fada847da", raise_error=True)
+
                 # Verify that True is returned for a valid attribute value.
                 self.assertTrue(rc.is_valid_attribute_value("feed", "id",
                     "16fd2706-8baf-433b-82eb-8c7fada847da"))
@@ -406,6 +412,12 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                 self.assertFalse(rc.is_valid_attribute_value("feed",
                     "enabled", ""))
 
+                # Verify that an exception is raised when raise_error=True for
+                # an invalid attribute value.
+                self.assertRaises(rcfg.InvalidAttributeValueError,
+                    rc.is_valid_attribute_value, "feed", "enabled", "",
+                    raise_error=True)
+
                 # Verify that True is returned for valid attribute values.
                 self.assertTrue(rc.is_valid_attribute_value("feed",
                     "enabled", "True"))
@@ -426,6 +438,13 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                 self.assertFalse(rc.is_valid_attribute_value("repository",
                     "registration_uri", "abc.123^@#$&)(*&#$)"))
 
+                # Verify that an exception is raised when raise_error=True for
+                # an invalid attribute value.
+                self.assertRaises(rcfg.InvalidAttributeValueError,
+                    rc.is_valid_attribute_value, "repository",
+                    "registration_uri",
+                    "abc.123^@#$&)(*&#$)", raise_error=True)
+
                 # Verify that True is returned for a valid attribute value.
                 self.assertTrue(rc.is_valid_attribute_value("repository",
                     "registration_uri", "https://pkg.sun.com/register"))
@@ -443,6 +462,12 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                 self.assertFalse(rc.is_valid_attribute_value("repository",
                     "mirrors", ","))
 
+                # Verify that an exception is raised when raise_error=True for
+                # an invalid attribute value.
+                self.assertRaises(rcfg.InvalidAttributeValueError,
+                    rc.is_valid_attribute_value, "repository", "mirrors",
+                    "example.com,example.net", raise_error=True)
+
                 # Verify that True is returned for a valid attribute value.
                 self.assertTrue(rc.is_valid_attribute_value("repository",
                     "mirrors", ["http://example.com/mirror1",
@@ -459,6 +484,12 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                 self.assertFalse(rc.is_valid_attribute_value("publisher",
                     "alias", "abc.123^@#$&)(*&#$)"))
 
+                # Verify that an exception is raised when raise_error=True for
+                # an invalid attribute value.
+                self.assertRaises(rcfg.InvalidAttributeValueError,
+                    rc.is_valid_attribute_value, "publisher", "alias",
+                    "abc.123^@#$&)(*&#$)", raise_error=True)
+
                 # Verify that True is returned for a valid attribute value.
                 self.assertTrue(rc.is_valid_attribute_value("publisher",
                     "alias", "bobcat"))
@@ -474,6 +505,12 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                 self.assertFalse(rc.is_valid_attribute_value("publisher",
                     "prefix", "abc.123^@#$&)(*&#$)"))
 
+                # Verify that an exception is raised when raise_error=True for
+                # an invalid attribute value.
+                self.assertRaises(rcfg.InvalidAttributeValueError,
+                    rc.is_valid_attribute_value, "publisher", "prefix",
+                    "abc.123^@#$&)(*&#$)", raise_error=True)
+
                 # Verify that True is returned for a valid attribute value.
                 self.assertTrue(rc.is_valid_attribute_value("publisher",
                     "prefix", "xkcd.net"))
@@ -488,6 +525,12 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                 # Verify that False is returned for an invalid attribute value.
                 self.assertFalse(rc.is_valid_attribute_value("repository",
                     "collection_type", "donotwant"))
+
+                # Verify that an exception is raised when raise_error=True for
+                # an invalid attribute value.
+                self.assertRaises(rcfg.InvalidAttributeValueError,
+                    rc.is_valid_attribute_value, "repository",
+                    "collection_type", "donotwant", raise_error=True)
 
                 # Verify that True is returned for a valid attribute value.
                 self.assertTrue(rc.is_valid_attribute_value("repository",
