@@ -28,6 +28,7 @@
 import gettext
 import getopt
 import os
+import simplejson
 import sys
 
 # Alias gettext.gettext to _
@@ -73,11 +74,13 @@ class CheckClassifications(object):
     def __init__(self):
         """Creates a new instance of the CheckClassifications class."""
 
+        # Location of the classifications file (override with -c option).
+        self.class_file = "./classifications.txt"
+
         self.verbose = True     # Whether to output verbose messages
 
         # Dictionary of valid categories / sub-categories.
         self.categories = {}
-        self.init_categories()
 
         # This script currently requires a version of pkg > OpenSolaris
         # 2008.11 RC1 in order to get the Category information when doing
@@ -98,94 +101,12 @@ class CheckClassifications(object):
         of valid sub-categories for that category).
         """
 
-        self.categories["Applications"] = [
-            "Accessories",
-            "Panels and Applets",
-            "Configuration and Preferences",
-            "Games",
-            "Graphics and Imaging",
-            "Internet",
-            "Office",
-            "Plug-ins and Run-times",
-            "Sound and Video",
-            "System Utilities",
-            "Universal Access"
-        ]
-
-        self.categories["Desktop (GNOME)"] = [
-            "Documentation",
-            "File Managers",
-            "Libraries",
-            "Localizations",
-            "Scripts",
-            "Sessions",
-            "Theming",
-            "Trusted Extensions",
-            "Window Managers"
-        ]
-
-        self.categories["Development"] = [
-            "C",
-            "C++",
-            "Databases",
-            "Distribution Tools",
-            "GNOME and GTK+",
-            "GNU",
-            "Integrated Development Environments",
-            "Java",
-            "Other Languages",
-            "PHP",
-            "Perl",
-            "Python",
-            "Ruby",
-            "Source Code Management",
-            "System",
-            "X11"
-        ]
-
-        self.categories["Distributions"] = [
-            "Desktop"
-        ]
-
-        self.categories["Drivers"] = [
-            "Display",
-            "Media",
-            "Networking",
-            "Other Peripherals",
-            "Ports",
-            "Storage"
-        ]
-
-        self.categories["System"] = [
-            "Administration and Configuration",
-            "Core",
-            "Databases",
-            "Enterprise Management",
-            "File System",
-            "Fonts",
-            "Hardware",
-            "High Performance Computing",
-            "Internationalization",
-            "Libraries",
-            "Localizations",
-            "Media",
-            "Multimedia Libraries",
-            "Packaging",
-            "Printing",
-            "Security",
-            "Services",
-            "Shells",
-            "Software Management",
-            "Text Tools",
-            "Trusted",
-            "Virtualization",
-            "X11"
-        ]
-
-        self.categories["Web Services"] = [
-            "Application and Web Servers"
-        ]
-
+        try:
+            fileobj = open(self.class_file, 'r')
+            self.categories = simplejson.load(fileobj)
+        except IOError, e:
+            print >> sys.stderr, "Unable to get package classifications.", e
+            sys.exit(3)
 
     def usage(self, usage_error=None):
         """Emit a usage message and optionally prefix it with a more
@@ -203,6 +124,9 @@ class CheckClassifications(object):
 Usage: 
       check_classifications [OPTION...]
 
+-c, --class_file=classifications
+      Specify an alternation location for the package classifications file.
+
 -h, --help
       Show this help message
 
@@ -217,12 +141,14 @@ Usage:
 
     def main(self):
         try:
-            opts, args = getopt.getopt(sys.argv[1:], "hp:v",
-                      ["help", "proto_dir=", "verbose"])
+            opts, args = getopt.getopt(sys.argv[1:], "c:hp:v",
+                      ["class_file=", "help", "proto_dir=", "verbose"])
         except getopt.GetoptError, e:
             self.usage(_("Illegal option -- %s") % e.opt)
 
         for opt, val in opts:
+            if opt in ("-c", "--class_file"):
+                self.class_file = val.strip()
             if opt in ("-h", "--help"):
                 self.usage()
             if opt in ("-p", "--proto_dir"):
@@ -232,6 +158,8 @@ Usage:
                 self.pkg_cmd = self.proto_dir + "/usr/bin/pkg"
             if opt in ("-v", "--verbose"):
                 self.verbose = True
+
+        self.init_categories()
 
         if self.proto_dir:
             os.putenv('PYTHONPATH', self.pkg_dir)
