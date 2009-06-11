@@ -1,6 +1,6 @@
 package storage-nas
 classification "Drivers/Storage"
-description "Network Attached Storage cluster"
+summary "Network Attached Storage cluster"
 version 0.1
 depend SUNWiscsi
 depend SUNWiscsitgt

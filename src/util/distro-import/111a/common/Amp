@@ -1,6 +1,6 @@
 package amp
 classification "Web Services/Application and Web Servers"
-description "Cluster containing an AMP (Apache, MySQL, PHP) deployment kit"
+summary "Cluster containing an AMP (Apache, MySQL, PHP) deployment kit"
 depend SUNWapch22
 depend SUNWapch22m-dtrace
 depend SUNWapch22m-fcgid

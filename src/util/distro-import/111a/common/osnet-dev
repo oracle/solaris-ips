@@ -1,6 +1,6 @@
 package developer/opensolaris/osnet
 classification "Development/Distribution Tools"
-description "Dependencies required to build the OS/Net Consolidation."
+summary "Dependencies required to build the OS/Net Consolidation."
 depend SUNWadmj
 depend SUNWapch
 depend SUNWapch22

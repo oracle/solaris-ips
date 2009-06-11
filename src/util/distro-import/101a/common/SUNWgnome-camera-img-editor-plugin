@@ -1,6 +1,6 @@
 package SUNWgnome-camera-img-editor-plugin
 classification "Applications/Graphics and Imaging"
-description "GNOME digital camera tool plugin for Gimp image editor"
+summary "GNOME digital camera tool plugin for Gimp image editor"
 from SUNWgnome-camera import
 usr/lib/gimp/2.0/plug-ins
 usr/lib/gimp/2.0/plug-ins/gtkam-gimp

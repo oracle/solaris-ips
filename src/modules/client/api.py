@@ -783,7 +783,8 @@ class ImageInterface(object):
                                 if PackageInfo.LICENSES in info_needed:
                                         licenses = self.__licenses(mfst, local)
                                 if PackageInfo.SUMMARY in info_needed:
-                                        summary = mfst.get("description", "")
+                                        summary = mfst.get("pkg.summary",
+                                            mfst.get("description", ""))
 
                                 if PackageInfo.ACTION_OPTIONS & info_needed:
                                         if PackageInfo.LINKS in info_needed:

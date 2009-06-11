@@ -1,6 +1,6 @@
 package SUNWlibsmbclient
 classification "System/Libraries"
-description "A library that permits applications to manipulate CIFS/SMB network resources"
+summary "A library that permits applications to manipulate CIFS/SMB network resources"
 version 3.0.33
 add dir path=usr/sfw mode=0755 owner=root group=bin
 add dir path=usr/sfw/include mode=0755 owner=root group=bin

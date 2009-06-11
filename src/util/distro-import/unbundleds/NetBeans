@@ -1,6 +1,6 @@
 package netbeans
 classification "Development/Integrated Development Environments"
-description "Open-source Integrated Development Environment for enterprise, web and mobile applications in Java, C/C++, and Ruby"
+summary "Open-source Integrated Development Environment for enterprise, web and mobile applications in Java, C/C++, and Ruby"
 version 6.5.1
 import netbeans-full
 depend SUNWj6rt
@@ -118,7 +118,7 @@ end package
 
 package netbeans-incorporation
 version 6.5.1
-description "netbeans incorporation to insure all components are upgraded at once"
+summary "netbeans incorporation to insure all components are upgraded at once"
 add depend type=incorporate fmri=SUNWlibnb-apisupport1@6.5.1
 add depend type=incorporate fmri=SUNWlibnb-cnd1@6.5.1
 add depend type=incorporate fmri=SUNWlibnb-enterprise4@6.5.1

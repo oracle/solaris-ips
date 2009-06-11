@@ -1,6 +1,6 @@
 package SUNWcups-libs
 classification "System/Printing"
-description "CUPS (Runtime Libraries)"
+summary "CUPS (Runtime Libraries)"
 version 1.3.7
 from SUNWcupsu import
 usr/lib/amd64/libcups.so

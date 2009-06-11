@@ -100,11 +100,28 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                     add set name=info.classification value=org.opensolaris.category.2008:System/Security/Foo/bar/Baz
                     close """
 
+                pkg5 = """
+                    open example_pkg5@1.0,5.11-0
+                    add dir mode=0755 owner=root group=bin path=/bin
+                    add set pkg.summary='SUMMARY: Example Package 5'
+                    close
+                """
+
+                pkg6 = """
+                    open example_pkg6@1.0,5.11-0
+                    add dir mode=0755 owner=root group=bin path=/bin
+                    add set description='DESCRIPTION: Example Package 6'
+                    add set pkg.summary='SUMMARY: Example Package 6'
+                    close
+                """
+
                 durl = self.dc.get_depot_url()
 
                 self.pkgsend_bulk(durl, pkg1)
                 self.pkgsend_bulk(durl, pkg2)
                 self.pkgsend_bulk(durl, pkg4)
+                self.pkgsend_bulk(durl, pkg5)
+                self.pkgsend_bulk(durl, pkg6)
 
                 self.image_create(durl)
 
@@ -299,7 +316,26 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                 self.assertRaises(api_errors.UnrecognizedOptionsToInfo,
                     api_obj.info, ["foo"], local, set('a'))
 
+                # Test if the package summary has been correctly set if just
+                # a pkg.summary had been set in the package.
+                # See bug #4395 and bug #8829 for more details.
+                ret = api_obj.info(["example_pkg5"], local,
+                    api.PackageInfo.ALL_OPTIONS)
+                pis = ret[api.ImageInterface.INFO_FOUND]
+                self.assert_(len(pis) == 1)
+                res = pis[0]
+                self.assert_(res.summary == "SUMMARY: Example Package 5")
+
+                # Test if the package summary has been correctly set if both
+                # a pkg.summary and a description had been set in the package.
+                # See bug #4395 and bug #8829 for more details.
+                ret = api_obj.info(["example_pkg6"], local,
+                    api.PackageInfo.ALL_OPTIONS)
+                pis = ret[api.ImageInterface.INFO_FOUND]
+                self.assert_(len(pis) == 1)
+                res = pis[0]
+                self.assert_(res.summary == "SUMMARY: Example Package 6")
+
 
 if __name__ == "__main__":
         unittest.main()
-

@@ -1,6 +1,6 @@
 package storage-server
 classification "Drivers/Storage"
-description "Multi Protocol Storage Server cluster"
+summary "Multi Protocol Storage Server cluster"
 version 0.1
 depend SUNWaac
 $(i386_ONLY)depend SUNWadpu320

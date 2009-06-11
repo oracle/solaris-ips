@@ -1,6 +1,6 @@
 package eclipse
 classification "Development/Integrated Development Environments"
-description "Eclipse IDE"
+summary "Eclipse IDE"
 version 3.4.2
 import eclipse
 depend SUNWj6dev

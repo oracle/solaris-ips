@@ -1,7 +1,7 @@
 package lang-support-common
 cluster lang-support-common
 classification "System/Localizations"
-description "Language Support cluster - common"
+summary "Language Support cluster - common"
 version 0.1
 depend SUNWctpls
 depend SUNWiconv-unicode
@@ -18,7 +18,7 @@ end package
 package lang-support-arabic
 cluster lang-support-arabic
 classification "System/Localizations"
-description "Language Support cluster - Arabic"
+summary "Language Support cluster - Arabic"
 version 0.1
 depend SUNWdesktop-other-l10n-rtl
 depend SUNWfirefoxl10n-extra
@@ -33,7 +33,7 @@ end package
 package lang-support-belarusian
 cluster lang-support-belarusian
 classification "System/Localizations"
-description "Language Support cluster - Belarusian"
+summary "Language Support cluster - Belarusian"
 version 0.1
 depend SUNWlang-be
 depend lang-support-common
@@ -42,7 +42,7 @@ end package
 package lang-support-bulgarian
 cluster lang-support-bulgarian
 classification "System/Localizations"
-description "Language Support cluster - Bulgarian"
+summary "Language Support cluster - Bulgarian"
 version 0.1
 depend SUNWdesktop-other-l10n-extra
 depend SUNWfirefoxl10n-extra
@@ -57,7 +57,7 @@ end package
 package lang-support-catalan
 cluster lang-support-catalan
 classification "System/Localizations"
-description "Language Support cluster - Catalan"
+summary "Language Support cluster - Catalan"
 version 0.1
 depend SUNWdesktop-other-l10n-extra
 depend SUNWfirefoxl10n-extra
@@ -73,7 +73,7 @@ end package
 package lang-support-czech
 cluster lang-support-czech
 classification "System/Localizations"
-description "Language Support cluster - Czech"
+summary "Language Support cluster - Czech"
 version 0.1
 depend SUNWcsdhcm
 depend SUNWcsos
@@ -91,7 +91,7 @@ end package
 package lang-support-danish
 cluster lang-support-danish
 classification "System/Localizations"
-description "Language Support cluster - Danish"
+summary "Language Support cluster - Danish"
 version 0.1
 depend SUNWdesktop-other-l10n-extra
 depend SUNWfirefoxl10n-extra
@@ -107,7 +107,7 @@ end package
 package lang-support-german
 cluster lang-support-german
 classification "System/Localizations"
-description "Language Support cluster - German"
+summary "Language Support cluster - German"
 version 0.1
 depend SUNWddhcm
 $(i386_ONLY)depend SUNWddu-l10n
@@ -131,7 +131,7 @@ end package
 package lang-support-greek
 cluster lang-support-greek
 classification "System/Localizations"
-description "Language Support cluster - Greek"
+summary "Language Support cluster - Greek"
 version 0.1
 depend SUNWdesktop-other-l10n-extra
 depend SUNWfirefoxl10n-extra
@@ -147,7 +147,7 @@ end package
 package lang-support-english
 cluster lang-support-english
 classification "System/Localizations"
-description "Language Support cluster - English"
+summary "Language Support cluster - English"
 version 0.1
 depend SUNWiconv-extra
 depend SUNWlang-en
@@ -159,7 +159,7 @@ end package
 package lang-support-spanish
 cluster lang-support-spanish
 classification "System/Localizations"
-description "Language Support cluster - Spanish"
+summary "Language Support cluster - Spanish"
 version 0.1
 $(i386_ONLY)depend SUNWddu-l10n
 depend SUNWdesktop-other-l10n-es
@@ -184,7 +184,7 @@ end package
 package lang-support-estonian
 cluster lang-support-estonian
 classification "System/Localizations"
-description "Language Support cluster - Estonian"
+summary "Language Support cluster - Estonian"
 version 0.1
 depend SUNWdesktop-other-l10n-extra
 depend SUNWgnome-l10ndocument-extra
@@ -197,7 +197,7 @@ end package
 package lang-support-finnish
 cluster lang-support-finnish
 classification "System/Localizations"
-description "Language Support cluster - Finnish"
+summary "Language Support cluster - Finnish"
 version 0.1
 depend SUNWdesktop-other-l10n-extra
 depend SUNWfirefoxl10n-extra
@@ -212,7 +212,7 @@ end package
 package lang-support-french
 cluster lang-support-french
 classification "System/Localizations"
-description "Language Support cluster - French"
+summary "Language Support cluster - French"
 version 0.1
 $(i386_ONLY)depend SUNWddu-l10n
 depend SUNWdesktop-other-l10n-fr
@@ -236,7 +236,7 @@ end package
 package lang-support-hebrew
 cluster lang-support-hebrew
 classification "System/Localizations"
-description "Language Support cluster - Hebrew"
+summary "Language Support cluster - Hebrew"
 version 0.1
 depend SUNWdesktop-other-l10n-rtl
 depend SUNWgnome-l10ndocument-rtl
@@ -250,7 +250,7 @@ end package
 package lang-support-indic
 cluster lang-support-indic
 classification "System/Localizations"
-description "Language Support cluster - Indic"
+summary "Language Support cluster - Indic"
 version 0.1
 depend SUNWdesktop-other-l10n-extra
 depend SUNWgnome-l10nmessages-extra
@@ -263,7 +263,7 @@ end package
 package lang-support-croatian
 cluster lang-support-croatian
 classification "System/Localizations"
-description "Language Support cluster - Croatian"
+summary "Language Support cluster - Croatian"
 version 0.1
 depend SUNWdesktop-other-l10n-extra
 depend SUNWgnome-img-editor-help-extra
@@ -277,7 +277,7 @@ end package
 package lang-support-hungarian
 cluster lang-support-hungarian
 classification "System/Localizations"
-description "Language Support cluster - Hungarian"
+summary "Language Support cluster - Hungarian"
 version 0.1
 depend SUNWdesktop-other-l10n-hu
 depend SUNWfirefoxl10n-extra
@@ -292,7 +292,7 @@ end package
 package lang-support-indonesian
 cluster lang-support-indonesian
 classification "System/Localizations"
-description "Language Support cluster - Indonesian"
+summary "Language Support cluster - Indonesian"
 version 0.1
 depend SUNWdesktop-other-l10n-extra
 depend SUNWgnome-l10nmessages-extra
@@ -303,7 +303,7 @@ end package
 package lang-support-icelandic
 cluster lang-support-icelandic
 classification "System/Localizations"
-description "Language Support cluster - Icelandic"
+summary "Language Support cluster - Icelandic"
 version 0.1
 depend SUNWdesktop-other-l10n-extra
 depend SUNWgnome-l10ndocument-extra
@@ -316,7 +316,7 @@ end package
 package lang-support-italian
 cluster lang-support-italian
 classification "System/Localizations"
-description "Language Support cluster - Italian"
+summary "Language Support cluster - Italian"
 version 0.1
 $(i386_ONLY)depend SUNWddu-l10n
 depend SUNWdesktop-other-l10n-it
@@ -339,7 +339,7 @@ end package
 package lang-support-japanese
 cluster lang-support-japanese
 classification "System/Localizations"
-description "Language Support cluster - Japanese"
+summary "Language Support cluster - Japanese"
 version 0.1
 $(i386_ONLY)depend SUNWddu-l10n
 depend SUNWdesktop-other-l10n-ja
@@ -368,7 +368,7 @@ end package
 package lang-support-georgian
 cluster lang-support-georgian
 classification "System/Localizations"
-description "Language Support cluster - Georgian"
+summary "Language Support cluster - Georgian"
 version 0.1
 depend lang-support-common
 depend SUNWgnome-l10nmessages-extra
@@ -378,7 +378,7 @@ end package
 package lang-support-kazakh
 cluster lang-support-kazakh
 classification "System/Localizations"
-description "Language Support cluster - Kazakh"
+summary "Language Support cluster - Kazakh"
 version 0.1
 depend SUNWgnome-l10nmessages-extra
 depend SUNWlang-kk
@@ -388,7 +388,7 @@ end package
 package lang-support-korean
 cluster lang-support-korean
 classification "System/Localizations"
-description "Language Support cluster - Korean"
+summary "Language Support cluster - Korean"
 version 0.1
 $(i386_ONLY)depend SUNWddu-l10n
 depend SUNWdesktop-other-l10n-ko
@@ -417,7 +417,7 @@ end package
 package lang-support-lithuanian
 cluster lang-support-lithuanian
 classification "System/Localizations"
-description "Language Support cluster - Lithuanian"
+summary "Language Support cluster - Lithuanian"
 version 0.1
 depend SUNWdesktop-other-l10n-extra
 depend SUNWfirefoxl10n-extra
@@ -431,7 +431,7 @@ end package
 package lang-support-latvian
 cluster lang-support-latvian
 classification "System/Localizations"
-description "Language Support cluster - Latvian"
+summary "Language Support cluster - Latvian"
 version 0.1
 depend SUNWdesktop-other-l10n-extra
 depend SUNWgnome-l10ndocument-extra
@@ -444,7 +444,7 @@ end package
 package lang-support-macedonian
 cluster lang-support-macedonian
 classification "System/Localizations"
-description "Language Support cluster - Macedonian"
+summary "Language Support cluster - Macedonian"
 version 0.1
 depend SUNWdesktop-other-l10n-extra
 depend SUNWfirefoxl10n-extra
@@ -459,7 +459,7 @@ end package
 package lang-support-malay
 cluster lang-support-malay
 classification "System/Localizations"
-description "Language Support cluster - Malay"
+summary "Language Support cluster - Malay"
 version 0.1
 depend SUNWdesktop-other-l10n-extra
 depend SUNWgnome-l10nmessages-extra
@@ -470,7 +470,7 @@ end package
 package lang-support-maltese
 cluster lang-support-maltese
 classification "System/Localizations"
-description "Language Support cluster - Maltese"
+summary "Language Support cluster - Maltese"
 version 0.1
 depend SUNWdesktop-other-l10n-extra
 depend SUNWgnome-l10nmessages-extra
@@ -481,7 +481,7 @@ end package
 package lang-support-norwegian-bokmal
 cluster lang-support-norwegian-bokmal
 classification "System/Localizations"
-description "Language Support cluster - Norwegian Bokmal"
+summary "Language Support cluster - Norwegian Bokmal"
 version 0.1
 depend SUNWdesktop-other-l10n-extra
 depend SUNWfirefoxl10n-extra
@@ -495,7 +495,7 @@ end package
 package lang-support-dutch
 cluster lang-support-dutch
 classification "System/Localizations"
-description "Language Support cluster - Dutch"
+summary "Language Support cluster - Dutch"
 version 0.1
 depend SUNWdesktop-other-l10n-extra
 depend SUNWfirefoxl10n-extra
@@ -512,7 +512,7 @@ end package
 package lang-support-norwegian-nynorsk
 cluster lang-support-norwegian-nynorsk
 classification "System/Localizations"
-description "Language Support cluster - Norwegian Nynorsk"
+summary "Language Support cluster - Norwegian Nynorsk"
 version 0.1
 depend SUNWdesktop-other-l10n-extra
 depend SUNWfirefoxl10n-extra
@@ -524,7 +524,7 @@ end package
 package lang-support-norwegian
 cluster lang-support-norwegian
 classification "System/Localizations"
-description "Language Support cluster - Norwegian"
+summary "Language Support cluster - Norwegian"
 version 0.1
 depend SUNWdesktop-other-l10n-extra
 depend SUNWgnome-img-editor-help-extra
@@ -537,7 +537,7 @@ end package
 package lang-support-polish
 cluster lang-support-polish
 classification "System/Localizations"
-description "Language Support cluster - Polish"
+summary "Language Support cluster - Polish"
 version 0.1
 depend SUNWdesktop-other-l10n-pl
 depend SUNWfirefoxl10n-pl-PL
@@ -553,7 +553,7 @@ end package
 package lang-support-portuguese
 cluster lang-support-portuguese
 classification "System/Localizations"
-description "Language Support cluster - Portugese"
+summary "Language Support cluster - Portugese"
 version 0.1
 depend SUNWdesktop-other-l10n-extra
 depend SUNWfirefoxl10n-extra
@@ -568,7 +568,7 @@ end package
 package lang-support-portuguese-BR
 cluster lang-support-portuguese-BR
 classification "System/Localizations"
-description "Language Support cluster - Portugese (Brazil)"
+summary "Language Support cluster - Portugese (Brazil)"
 version 0.1
 $(i386_ONLY)depend SUNWddu-l10n
 depend SUNWdesktop-other-l10n-ptBR
@@ -588,7 +588,7 @@ end package
 package lang-support-romanian
 cluster lang-support-romanian
 classification "System/Localizations"
-description "Language Support cluster - Romanian"
+summary "Language Support cluster - Romanian"
 version 0.1
 depend SUNWdesktop-other-l10n-extra
 depend SUNWfirefoxl10n-extra
@@ -602,7 +602,7 @@ end package
 package lang-support-russian
 cluster lang-support-russian
 classification "System/Localizations"
-description "Language Support cluster - Russian"
+summary "Language Support cluster - Russian"
 version 0.1
 $(i386_ONLY)depend SUNWddu-l10n
 depend SUNWdesktop-other-l10n-ru
@@ -622,7 +622,7 @@ end package
 package lang-support-serbo-croatian
 cluster lang-support-serbo-croatian
 classification "System/Localizations"
-description "Language Support cluster - Serbo-Croatian"
+summary "Language Support cluster - Serbo-Croatian"
 version 0.1
 depend SUNWgnome-l10ndocument-extra
 depend SUNWgnome-l10nmessages-extra
@@ -634,7 +634,7 @@ end package
 package lang-support-slovak
 cluster lang-support-slovak
 classification "System/Localizations"
-description "Language Support cluster - Slovak"
+summary "Language Support cluster - Slovak"
 version 0.1
 depend SUNWdesktop-other-l10n-extra
 depend SUNWfirefoxl10n-extra
@@ -650,7 +650,7 @@ end package
 package lang-support-slovenian
 cluster lang-support-slovenian
 classification "System/Localizations"
-description "Language Support cluster - Slovenian"
+summary "Language Support cluster - Slovenian"
 version 0.1
 depend SUNWdesktop-other-l10n-extra
 depend SUNWfirefoxl10n-extra
@@ -666,7 +666,7 @@ end package
 package lang-support-albanian
 cluster lang-support-albanian
 classification "System/Localizations"
-description "Language Support cluster - Albanian"
+summary "Language Support cluster - Albanian"
 version 0.1
 depend SUNWgnome-l10ndocument-extra
 depend SUNWgnome-l10nmessages-extra
@@ -678,7 +678,7 @@ end package
 package lang-support-serbian
 cluster lang-support-serbian
 classification "System/Localizations"
-description "Language Support cluster - Serbian"
+summary "Language Support cluster - Serbian"
 version 0.1
 depend SUNWdesktop-other-l10n-extra
 depend SUNWgnome-l10ndocument-extra
@@ -691,7 +691,7 @@ end package
 package lang-support-swedish
 cluster lang-support-swedish
 classification "System/Localizations"
-description "Language Support cluster - Swedish"
+summary "Language Support cluster - Swedish"
 version 0.1
 depend SUNWdesktop-other-l10n-sv
 depend SUNWfirefoxl10n-sv-SE
@@ -713,7 +713,7 @@ end package
 package lang-support-thai
 cluster lang-support-thai
 classification "System/Localizations"
-description "Language Support cluster - Thai"
+summary "Language Support cluster - Thai"
 version 0.1
 depend SUNWgnome-l10ndocument-extra
 depend SUNWgnome-l10nmessages-extra
@@ -727,7 +727,7 @@ end package
 package lang-support-turkish
 cluster lang-support-turkish
 classification "System/Localizations"
-description "Language Support cluster - Turkish"
+summary "Language Support cluster - Turkish"
 version 0.1
 depend SUNWdesktop-other-l10n-extra
 depend SUNWfirefoxl10n-extra
@@ -742,7 +742,7 @@ end package
 package lang-support-ukrainian
 cluster lang-support-ukrainian
 classification "System/Localizations"
-description "Language Support cluster - Ukrainian"
+summary "Language Support cluster - Ukrainian"
 version 0.1
 depend SUNWdesktop-other-l10n-extra
 depend SUNWgnome-l10ndocument-extra
@@ -754,7 +754,7 @@ end package
 package lang-support-vietnamese
 cluster lang-support-vietnamese
 classification "System/Localizations"
-description "Language Support cluster - Vietnamese"
+summary "Language Support cluster - Vietnamese"
 version 0.1
 depend SUNWdesktop-other-l10n-extra
 depend SUNWgnome-l10ndocument-extra
@@ -767,7 +767,7 @@ end package
 package lang-support-chinese-CN
 cluster lang-support-chinese-CN
 classification "System/Localizations"
-description "Language Support cluster - Chinese (Simplified)"
+summary "Language Support cluster - Chinese (Simplified)"
 version 0.1
 depend SUNWcdhcm
 depend SUNWcos
@@ -797,7 +797,7 @@ end package
 package lang-support-chinese-HK
 cluster lang-support-chinese-HK
 classification "System/Localizations"
-description "Language Support cluster - Chinese (Traditional; Hong Kong)"
+summary "Language Support cluster - Chinese (Traditional; Hong Kong)"
 version 0.1
 $(i386_ONLY)depend SUNWddu-l10n
 depend SUNWdesktop-other-l10n-zhHK
@@ -824,7 +824,7 @@ end package
 package lang-support-chinese-TW
 cluster lang-support-chinese-TW
 classification "System/Localizations"
-description "Language Support cluster - Chinese (Traditional; Taiwan)"
+summary "Language Support cluster - Chinese (Traditional; Taiwan)"
 version 0.1
 $(i386_ONLY)depend SUNWddu-l10n
 depend SUNWdesktop-other-l10n-zhTW
@@ -853,7 +853,7 @@ end package
 package lang-support-all
 cluster lang-support-all
 classification "System/Localizations"
-description "Language Support cluster - all"
+summary "Language Support cluster - all"
 version 0.1
 depend lang-support-albanian
 depend lang-support-arabic

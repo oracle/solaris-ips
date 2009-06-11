@@ -1,6 +1,6 @@
 package openoffice
 classification "Applications/Office"
-description "OpenOffice.org 3.1.0"
+summary "OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-base
 import ooobasis31-binfilter
@@ -56,7 +56,7 @@ end package
 
 package openoffice-sdk
 classification "Applications/Office"
-description "Software Development Kit for OpenOffice.org 3.1.0"
+summary "Software Development Kit for OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-sdk
 depend openoffice
@@ -64,7 +64,7 @@ end package
 
 package openoffice-de
 classification "Desktop (GNOME)/Localizations"
-description "German localization of OpenOffice.org 3.1.0"
+summary "German localization of OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-de
 import ooobasis31-de-base
@@ -81,7 +81,7 @@ end package
 
 package openoffice-es
 classification "Desktop (GNOME)/Localizations"
-description "Spanish localization for OpenOffice.org 3.1.0"
+summary "Spanish localization for OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-es
 import ooobasis31-es-base
@@ -98,7 +98,7 @@ end package
 
 package openoffice-fr
 classification "Desktop (GNOME)/Localizations"
-description "French localization for OpenOffice.org 3.1.0"
+summary "French localization for OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-fr
 import ooobasis31-fr-base
@@ -115,7 +115,7 @@ end package
 
 package openoffice-hu
 classification "Desktop (GNOME)/Localizations"
-description "Hungarian localization for OpenOffice.org 3.1.0"
+summary "Hungarian localization for OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-hu
 import ooobasis31-hu-base
@@ -132,7 +132,7 @@ end package
 
 package openoffice-it
 classification "Desktop (GNOME)/Localizations"
-description "Italian localization for OpenOffice.org 3.1.0"
+summary "Italian localization for OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-it
 import ooobasis31-it-base
@@ -149,7 +149,7 @@ end package
 
 package openoffice-ja
 classification "Desktop (GNOME)/Localizations"
-description "Japanese localization for OpenOffice.org 3.1.0"
+summary "Japanese localization for OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-ja
 import ooobasis31-ja-base
@@ -166,7 +166,7 @@ end package
 
 package openoffice-ko
 classification "Desktop (GNOME)/Localizations"
-description "Korean localization for OpenOffice.org 3.1.0"
+summary "Korean localization for OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-ko
 import ooobasis31-ko-base
@@ -183,7 +183,7 @@ end package
 
 package openoffice-nl
 classification "Desktop (GNOME)/Localizations"
-description "Dutch localization for OpenOffice.org 3.1.0"
+summary "Dutch localization for OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-nl
 import ooobasis31-nl-base
@@ -200,7 +200,7 @@ end package
 
 package openoffice-pl
 classification "Desktop (GNOME)/Localizations"
-description "Polish localization for OpenOffice.org 3.1.0"
+summary "Polish localization for OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-pl
 import ooobasis31-pl-base
@@ -217,7 +217,7 @@ end package
 
 package openoffice-pt
 classification "Desktop (GNOME)/Localizations"
-description "Portuguese localization for OpenOffice.org 3.1.0"
+summary "Portuguese localization for OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-pt
 import ooobasis31-pt-base
@@ -234,7 +234,7 @@ end package
 
 package openoffice-pt-BR
 classification "Desktop (GNOME)/Localizations"
-description "Portuguese Brazilian localization for OpenOffice.org 3.1.0"
+summary "Portuguese Brazilian localization for OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-pt-BR
 import ooobasis31-pt-BR-base
@@ -251,7 +251,7 @@ end package
 
 package openoffice-ru
 classification "Desktop (GNOME)/Localizations"
-description "Russian localization for OpenOffice.org 3.1.0"
+summary "Russian localization for OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-ru
 import ooobasis31-ru-base
@@ -268,7 +268,7 @@ end package
 
 package openoffice-sv
 classification "Desktop (GNOME)/Localizations"
-description "Swedish localization for OpenOffice.org 3.1.0"
+summary "Swedish localization for OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-sv
 import ooobasis31-sv-base
@@ -285,7 +285,7 @@ end package
 
 package openoffice-zh-CN
 classification "Desktop (GNOME)/Localizations"
-description "Simplified Chinese localization for OpenOffice.org 3.1.0"
+summary "Simplified Chinese localization for OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-zh-CN
 import ooobasis31-zh-CN-base
@@ -302,7 +302,7 @@ end package
 
 package openoffice-zh-TW
 classification "Desktop (GNOME)/Localizations"
-description "Traditional Chinese localization for OpenOffice.org 3.1.0"
+summary "Traditional Chinese localization for OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-zh-TW
 import ooobasis31-zh-TW-base

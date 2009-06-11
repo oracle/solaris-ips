@@ -17,7 +17,7 @@ end package
 
 package developer/gcc/gcc-dev-4
 classification "Development/Suites"
-description "GNU Compiler Collection 4.3.2 Development cluster" 
+summary "GNU Compiler Collection 4.3.2 Development cluster" 
 depend SUNWaconf
 depend SUNWbison
 depend SUNWcvs

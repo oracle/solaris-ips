@@ -58,6 +58,7 @@ class package(object):
                 self.srcpkgs = []
                 self.classification = ""
                 self.desc = ""
+                self.summary = ""
                 self.version = ""
                 self.imppkg = None
                 pkgdict[name] = self
@@ -133,8 +134,13 @@ class package(object):
                         self.version = "%s-%s" % (def_vers,
                             get_branch(self.name))
                 if not self.desc:
-                        self.desc = zap_strings(p.pkginfo["NAME"],
-                            description_detritus)
+                        try:
+                                self.desc = p.pkginfo["DESC"]
+                        except KeyError:
+                                self.desc = None
+                if not self.summary:
+                        self.summary = zap_strings(p.pkginfo["NAME"],
+                            summary_detritus)
 
                 # This is how we'd import dependencies, but we'll use
                 # file-specific dependencies only, since these tend to be
@@ -457,6 +463,7 @@ def end_package(pkg):
         print "Package '%s'" % pkg.name
         print "  Version:", pkg.version
         print "  Description:", pkg.desc
+        print "  Summary:", pkg.summary
         print "  Classification: ", pkg.classification
 
 def publish_pkg(pkg):
@@ -734,6 +741,12 @@ def publish_pkg(pkg):
                     description = pkg.desc)
                 t.add(action)
 
+        if pkg.summary:
+                print "    %s add set pkg.summary=%s" % (pkg.name, pkg.summary)
+                attrs = dict(name="pkg.summary", value=pkg.summary)
+                action = actions.attribute.AttributeAction(None, **attrs)
+                t.add(action)
+
         if pkg.classification:
                 print "    %s add set info.classification=%s" % \
                     (pkg.name, pkg.classification)
@@ -971,9 +984,9 @@ elided_files = {}
 #
 just_these_pkgs = []
 #
-# strings to rip out of descriptions (case insensitve)
+# strings to rip out of summaries (case insensitve)
 #
-description_detritus = [", (usr)", ", (root)", " (usr)", " (root)",
+summary_detritus = [", (usr)", ", (root)", " (usr)", " (root)",
 " (/usr)", " - / filesystem", ",root(/)"]
 #
 # list of global includes to add to every package
@@ -1250,6 +1263,9 @@ def SolarisParse(mf):
                 elif token == "description":
                         curpkg.desc = lexer.get_token()
 
+                elif token == "summary":
+                        curpkg.summary = lexer.get_token()
+
                 elif token == "depend":
                         curpkg.depend.append(lexer.get_token())
 
@@ -1398,6 +1414,7 @@ for _p in sorted(newpkgs):
         print "Package '%s'" % _p.name
         print "  Version:", _p.version
         print "  Description:", _p.desc
+        print "  Summary:", _p.summary
         print "  Classification:", _p.classification
         try:
                 publish_pkg(_p)

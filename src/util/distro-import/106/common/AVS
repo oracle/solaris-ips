@@ -1,6 +1,6 @@
 package avs
 classification "Drivers/Storage"
-description "Availability Suite"
+summary "Availability Suite"
 version 0.1
 depend SUNWii
 depend SUNWrdc

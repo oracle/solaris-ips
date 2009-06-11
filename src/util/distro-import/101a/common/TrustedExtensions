@@ -1,6 +1,6 @@
 package trusted-extensions
 classification "Desktop (GNOME)/Trusted Extensions"
-description "Trusted Extensions"
+summary "Trusted Extensions"
 depend SUNWtgnome-tsoljdsdevmgr
 depend SUNWtgnome-tsoljdslabel
 depend SUNWtgnome-tsoljdsselmgr

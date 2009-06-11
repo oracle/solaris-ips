@@ -1,6 +1,6 @@
 package web/webstack-ui
 classification "Web Services/Application and Web Servers"
-description "Web Stack Options and Desktop Menus"
+summary "Web Stack Options and Desktop Menus"
 import SUNWwebstackui
 depend SUNWj6rt
 depend amp
@@ -8,7 +8,7 @@ end package
 
 package amp-dev
 classification "Development/Integrated Development Environments"
-description "AMP Development cluster"
+summary "AMP Development cluster"
 depend SUNWPython
 depend SUNWapch22d
 depend SUNWapch22m-jk

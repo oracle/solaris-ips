@@ -1,6 +1,6 @@
 package java-dev
 classification "Development/Java"
-description "Java Development cluster"
+summary "Java Development cluster"
 depend SUNWant
 depend SUNWcvs
 depend SUNWfirefox
@@ -23,7 +23,7 @@ end package
 
 package ss-dev
 classification "Development/Integrated Development Environments"
-description "Sun Studio Development cluster"
+summary "Sun Studio Development cluster"
 depend SUNWaconf 
 depend SUNWbison
 depend SUNWbtool
@@ -49,7 +49,7 @@ end package
 
 package hpc-dev
 classification "Development/High Performance Computing"
-description "HPC Application Development cluster"
+summary "HPC Application Development cluster"
 depend SUNWcvs
 depend SUNWgmake
 depend SUNWj6cfg
@@ -69,7 +69,7 @@ end package
 
 package ruby-dev
 classification "Development/Ruby"
-description "Ruby Development cluster"
+summary "Ruby Development cluster"
 depend SUNWcvs
 depend SUNWfirefox
 depend SUNWj6cfg

@@ -4,5 +4,5 @@ usr/bin/cat
 usr/bin/chmod
 usr/bin/chown
 end import
-description "Core SunOS utilities"
+summary "Core SunOS utilities"
 end package
