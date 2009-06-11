@@ -3,10 +3,10 @@ classification "Applications/System Utilities"
 import SUNWgnome-system-tools
 drop usr/share/applications/services.desktop
 drop usr/share/applications/shares.desktop
-from SUNWfixes import
 # Insert hooks for Visual Panels
-usr/lib/vp-services
-usr/lib/vp-shares
+add file vp-services path=usr/lib/vp-services mode=0555 owner=root group=bin
+add file vp-shares path=usr/lib/vp-shares mode=0555 owner=root group=bin
+from SUNWfixes import
 usr/share/applications/services.desktop
 usr/share/applications/shares.desktop
 end import

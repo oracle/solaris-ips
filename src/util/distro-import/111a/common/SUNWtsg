@@ -2,7 +2,6 @@ package SUNWtsg
 classification "System/Trusted"
 import SUNWtsg
 drop etc/zones/SUNWtsoldef.xml
-from SUNWfixes import
-etc/zones/SUNWtsoldef.xml
-end import
+add file SUNWtsoldef.xml path=etc/zones/SUNWtsoldef.xml mode=0444 \
+	owner=root group=bin
 end package

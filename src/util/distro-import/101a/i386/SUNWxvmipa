@@ -8,10 +8,11 @@ drop var/svc/manifest/system/ipagent.xml
 import SUNWxvmipau
 # broken for IPv6
 drop usr/lib/xen/bin/ipagent
-from SUNWfixes import
-lib/svc/method/svc-ipagent
-usr/lib/xen/bin/ipagent
-var/svc/manifest/system/ipagent.xml
-end import
+add file svc-ipagent path=lib/svc/method/svc-ipagent mode=0555 owner=root \
+	group=bin
+add file ipagent path=usr/lib/xen/bin/ipagent mode=0755 owner=root group=bin
+add file ipagent.xml path=var/svc/manifest/system/ipagent.xml mode=0444 \
+	owner=root group=sys \
+	restart_fmri=svc:/system/manifest-import:default
 depend SUNWxvmdom
 end package

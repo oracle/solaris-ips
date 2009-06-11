@@ -723,6 +723,14 @@ def publish_pkg(pkg):
                         action.attrs["pkg.size"] = str(os.stat(fname).st_size)
                         if action.name == "license":
                                 action.attrs["transaction_id"] = transaction_id
+                        elif "path" in action.attrs:
+                                path = action.attrs["path"]
+                                deps, u = process_dependencies(fname, path)
+                                pkg.depend += deps
+                                if u:
+                                        print "%s has missing dependencies: " \
+                                            "%s" % (path, u)
+                                        undeps |= set(u)
                 #
                 # fmris may not be completely specified; enhance them to current
                 # version if this is the case

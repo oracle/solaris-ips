@@ -2,8 +2,7 @@ package SUNWmpapi
 classification "System/Libraries"
 import SUNWmpapi
 import SUNWmpapir
-from SUNWfixes import
-etc/mpapi.conf
-end import
+add file mpapi.conf path=etc/mpapi.conf mode=0644 owner=root group=bin \
+	preserve=true
 depend SUNWmpsvplr
 end package

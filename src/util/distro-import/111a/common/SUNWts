@@ -2,9 +2,9 @@ package SUNWts
 classification "System/Trusted"
 import SUNWtsu
 import SUNWtsr
-from SUNWfixes import
-usr/lib/brand/labeled
-usr/lib/brand/labeled/config.xml
-usr/lib/brand/labeled/platform.xml
-end import
+add dir path=usr/lib/brand/labeled mode=0755 owner=root group=sys
+add file config.xml path=usr/lib/brand/labeled/config.xml mode=0444 \
+	owner=root group=bin
+add file platform.xml path=usr/lib/brand/labeled/platform.xml mode=0444 \
+	owner=root group=bin
 end package

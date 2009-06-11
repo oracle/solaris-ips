@@ -3,7 +3,7 @@ classification "Desktop (GNOME)/Sessions"
 import SUNWgnome-display-mgr
 import SUNWgnome-display-mgr-root
 drop var/svc/manifest/application/graphical-login/gdm.xml
-from SUNWfixes import
-var/svc/manifest/application/graphical-login/gdm.xml
-end import
+add file gdm.xml path=var/svc/manifest/application/graphical-login/gdm.xml \
+	mode=0444 owner=root group=sys \
+	restart_fmri=svc:/system/manifest-import:default
 end package

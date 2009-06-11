@@ -3,7 +3,6 @@ classification "System/Core"
 import SUNWgrub
 version 0.97
 drop boot/grub/splash.xpm.gz
-from SUNWfixes import
-boot/grub/splash.xpm.gz
-end import
+add file splash.xpm.gz path=boot/grub/splash.xpm.gz mode=0644 owner=root \
+	group=sys
 end package

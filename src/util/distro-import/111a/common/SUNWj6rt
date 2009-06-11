@@ -6,12 +6,16 @@ drop usr/jdk/instances/jdk1.6.0/jre/README
 drop usr/jdk/instances/jdk1.6.0/jre/lib/$(ARCH)/motif21/libmawt.so
 drop usr/jdk/instances/jdk1.6.0/jre/lib/fontconfig.OpenSolaris.bfc
 drop usr/jdk/instances/jdk1.6.0/jre/lib/fontconfig.OpenSolaris.properties.src
-from SUNWfixes import
-usr/jdk/instances/jdk1.6.0/jre/LICENSE
-usr/jdk/instances/jdk1.6.0/jre/README
-usr/jdk/instances/jdk1.6.0/jre/lib/fontconfig.OpenSolaris.bfc
-usr/jdk/instances/jdk1.6.0/jre/lib/fontconfig.OpenSolaris.properties.src
-end import
+add file DLJ/LICENSE path=usr/jdk/instances/jdk1.6.0/jre/LICENSE mode=0644 \
+	owner=root group=bin
+add file DLJ/README path=usr/jdk/instances/jdk1.6.0/jre/README mode=0644 \
+	owner=root group=bin
+add file fontconfig.OpenSolaris.bfc \
+	path=usr/jdk/instances/jdk1.6.0/jre/lib/fontconfig.OpenSolaris.bfc \
+	mode=0644 owner=root group=bin
+add file fontconfig.OpenSolaris.properties.src \
+	path=usr/jdk/instances/jdk1.6.0/jre/lib/fontconfig.OpenSolaris.properties.src \
+	mode=0644 owner=root group=bin
 add link path=usr/bin/ControlPanel target=../java/jre/bin/ControlPanel
 add link path=usr/bin/java target=../java/bin/java
 add link path=usr/bin/javaws target=../java/bin/javaws

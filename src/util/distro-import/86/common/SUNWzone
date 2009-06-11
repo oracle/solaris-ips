@@ -4,8 +4,8 @@ import SUNWzoneu
 import SUNWzoner
 drop etc/zones/SUNWblank.xml
 drop etc/zones/SUNWdefault.xml
-from SUNWfixes import
-etc/zones/SUNWblank.xml
-etc/zones/SUNWdefault.xml
-end import
+add file SUNWblank.xml path=etc/zones/SUNWblank.xml mode=0444 owner=root \
+	group=bin
+add file SUNWdefault.xml path=etc/zones/SUNWdefault.xml mode=0444 owner=root \
+	group=bin
 end package

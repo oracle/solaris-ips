@@ -4,8 +4,6 @@ import SUNWsshdu
 import SUNWsshdr
 # Replace method script to support generating keys on live CD
 drop lib/svc/method/sshd
-from SUNWfixes import
-lib/svc/method/sshd
-end import
+add file sshd path=lib/svc/method/sshd mode=0555 owner=root group=bin
 depend SUNWloc
 end package

@@ -3,10 +3,10 @@ classification "Development/Java"
 import SUNWj6dev
 drop usr/jdk/instances/jdk1.6.0/LICENSE
 drop usr/jdk/instances/jdk1.6.0/README.html
-from SUNWfixes import
-usr/jdk/instances/jdk1.6.0/LICENSE
-usr/jdk/instances/jdk1.6.0/README.html
-end import
+add file DLJ/LICENSE path=usr/jdk/instances/jdk1.6.0/LICENSE mode=0644 \
+	owner=root group=bin
+add file DLJ/README.html path=usr/jdk/instances/jdk1.6.0/README.html mode=0644 \
+	owner=root group=bin
 add link path=usr/bin/HtmlConverter target=../java/bin/HtmlConverter
 add link path=usr/bin/appletviewer target=../java/bin/appletviewer
 add link path=usr/bin/apt target=../java/bin/apt

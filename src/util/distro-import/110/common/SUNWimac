@@ -2,8 +2,7 @@ package SUNWimac
 classification "System/Libraries"
 import SUNWimac
 import SUNWimacr
-from SUNWfixes import
-etc/ima.conf
-end import
+add file ima.conf path=etc/ima.conf mode=0644 owner=root group=bin \
+	preserve=true
 depend SUNWima
 end package

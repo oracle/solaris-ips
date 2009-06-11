@@ -44,30 +44,41 @@ drop sbin/pfsh
 drop sbin/sh
 add link path=sbin/pfsh target=../usr/has/bin/sh
 add link path=sbin/sh target=../usr/bin/$(ARCH32)/ksh93
-from SUNWfixes import
-# until the necessary actions are available
-etc/inet/services
-etc/security/auth_attr
-etc/security/prof_attr
+add file hosts path=etc/inet/hosts mode=0444 owner=root group=sys preserve=true
+add file services path=etc/inet/services mode=0444 owner=root group=sys \
+	preserve=true
+add file mailcap path=etc/mailcap mode=0644 owner=root group=bin preserve=true
+add file mime.types path=etc/mime.types mode=0644 owner=root group=bin \
+	preserve=true
+add file auth_attr path=etc/security/auth_attr mode=0644 owner=root group=sys \
+	preserve=true
+add file exec_attr path=etc/security/exec_attr mode=0644 owner=root group=sys \
+	preserve=true
+add file policy.conf path=etc/security/policy.conf mode=0644 owner=root \
+	group=sys preserve=true
+add file prof_attr path=etc/security/prof_attr mode=0644 owner=root group=sys \
+	preserve=true
+add file .bashrc path=etc/skel/.bashrc mode=0644 owner=root group=other \
+	preserve=true
+add file .profile path=etc/skel/.profile mode=0644 owner=root group=other \
+	preserve=true
+add file user_attr path=etc/user_attr mode=0644 owner=root group=sys \
+	preserve=true
+add dir path=root mode=0700 owner=root group=root
+add file .bashrc path=root/.bashrc mode=0644 owner=root group=root \
+	preserve=true
+add file .profile path=root/.profile mode=0644 owner=root group=root \
+	preserve=true
 # switch to gdm
-var/svc/profile/generic_open.xml
-var/svc/profile/generic_limited_net.xml
-# customizations for indiana
-etc/inet/hosts
-etc/mailcap
-etc/mime.types
+add file generic_open.xml path=var/svc/profile/generic_open.xml mode=0444 \
+	owner=root group=sys
+add file generic_limited_net.xml path=var/svc/profile/generic_limited_net.xml \
+	mode=0444 owner=root group=sys
+from SUNWfixes import
 etc/nsswitch.conf
 etc/pam.conf
 etc/passwd
-etc/security/exec_attr
-etc/security/policy.conf
 etc/shadow
-etc/skel/.bashrc
-etc/skel/.profile
-etc/user_attr
-root
-root/.bashrc
-root/.profile
 usr/bin/ksh
 usr/has/bin/ex
 usr/has/bin/sh
