@@ -58,7 +58,7 @@ START_DELAY_DEFAULT = 120
 REFRESH_PERIOD_DEFAULT = "Never"
 SHOW_NOTIFY_ICON_DEFAULT = True
 IMAGE_DIRECTORY_DEFAULT = "/"
-LASTCHECK_DIR_NAME = os.path.expanduser("~") + '/.updatemanager/notify/'
+LASTCHECK_DIR_NAME = os.path.join(os.path.expanduser("~"),'.updatemanager/notify')
 IMAGE_DIR_COMMAND = "svcprop -p update/image_dir svc:/application/pkg/update"
 
 NOTIFY_ICON_PATH = "/usr/share/icons/update-manager/notify_update.png"
@@ -93,8 +93,9 @@ class UpdateManagerNotifier:
                         self.application_dir = "/"
                 misc.setlocale(locale.LC_ALL, "")
                 for module in (gettext, gtk.glade):
-                        module.bindtextdomain("pkg", self.application_dir + \
-                            "/usr/share/locale")
+                        module.bindtextdomain("pkg", os.path.join(
+                            self.application_dir,
+                            "usr/share/locale"))
                         module.textdomain("pkg")
                 self.pr = None
                 self.last_check_filename = None
@@ -192,7 +193,8 @@ class UpdateManagerNotifier:
         def get_last_check_time(self):
                 if (self.last_check_filename == None):
                         self.last_check_filename = \
-                                LASTCHECK_DIR_NAME + self.host + '-lastcheck'
+                                os.path.join(LASTCHECK_DIR_NAME,
+                                    self.host + '-lastcheck')
                 try:
                         f = open(self.last_check_filename, "r")
 

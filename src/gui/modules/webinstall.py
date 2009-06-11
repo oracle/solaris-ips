@@ -61,8 +61,9 @@ class Webinstall:
                         self.application_dir = "/"
                 misc.setlocale(locale.LC_ALL, "")
                 for module in (gettext, gtk.glade):
-                        module.bindtextdomain("pkg", self.application_dir +
-                            "/usr/share/locale")
+                        module.bindtextdomain("pkg", os.path.join(
+                            self.application_dir,
+                            "usr/share/locale"))
                         module.textdomain("pkg")
                 self.pub_pkg_list = None
                 self.pr = progress.NullProgressTracker()
@@ -72,8 +73,8 @@ class Webinstall:
                 self.preferred = None
                 
                 # Webinstall Dialog
-                self.gladefile = self.application_dir + \
-                        "/usr/share/package-manager/packagemanager.glade"
+                self.gladefile = os.path.join(self.application_dir,
+                        "usr/share/package-manager/packagemanager.glade")
                 w_xmltree_webinstall = gtk.glade.XML(self.gladefile, "webinstalldialog")
                 self.w_webinstall_dialog = \
                         w_xmltree_webinstall.get_widget("webinstalldialog")

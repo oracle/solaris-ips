@@ -229,10 +229,10 @@ class Updatemanager:
                         self.application_dir = "/"
                 misc.setlocale(locale.LC_ALL, "")
                 for module in (gettext, gtk.glade):
-                        module.bindtextdomain("pkg", self.application_dir +
-                            "/usr/share/locale")
+                        module.bindtextdomain("pkg", os.path.join(
+                            self.application_dir,
+                            "usr/share/locale"))
                         module.textdomain("pkg")
-                # XXX Remove and use _() where self._ and self.parent._ are being used
                 # Duplicate ListStore setup in get_updates_to_list()
                 self.um_list = \
                     gtk.ListStore(
@@ -273,8 +273,8 @@ class Updatemanager:
                 self.release_notes_url = "http://www.opensolaris.org"
 
                 # Progress Dialog
-                self.gladefile = self.application_dir + \
-                    "/usr/share/update-manager/updatemanager.glade"
+                self.gladefile = os.path.join(self.application_dir,
+                    "usr/share/update-manager/updatemanager.glade")
                 w_xmltree_progress = gtk.glade.XML(self.gladefile, "progressdialog")
                 self.w_progress_dialog = w_xmltree_progress.get_widget("progressdialog")
                 self.w_progress_dialog.connect('delete-event', lambda stub1, stub2: True)
@@ -564,12 +564,14 @@ class Updatemanager:
                         renderer.set_property("mode", gtk.CELL_RENDERER_MODE_INERT)
                 
         def __get_icon_pixbuf(self, icon_name):
-                return gui_misc.get_pixbuf_from_path(self.application_dir +
-                    "/usr/share/icons/update-manager/", icon_name)
+                return gui_misc.get_pixbuf_from_path(os.path.join(
+                    self.application_dir,
+                    "usr/share/icons/update-manager/"), icon_name)
 
         def __get_app_pixbuf(self, icon_name):
-                return gui_misc.get_pixbuf_from_path(self.application_dir +
-                    "/usr/share/update-manager/", icon_name)
+                return gui_misc.get_pixbuf_from_path(os.path.join(
+                    self.application_dir,
+                    "usr/share/update-manager/"), icon_name)
                         
         def __get_selected_fmris(self):
                 model = self.w_um_treeview.get_model()

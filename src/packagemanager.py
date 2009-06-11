@@ -212,8 +212,9 @@ class PackageManager:
                         self.application_dir = "/"
                 misc.setlocale(locale.LC_ALL, "")
                 for module in (gettext, gtk.glade):
-                        module.bindtextdomain("pkg", self.application_dir + \
-                            "/usr/share/locale")
+                        module.bindtextdomain("pkg", os.path.join(
+                            self.application_dir,
+                            "usr/share/locale"))
                         module.textdomain("pkg")
                 # XXX Remove and use _() where self._ and self.parent._ are being used
                 main_window_title = _('Package Manager')
@@ -279,8 +280,8 @@ class PackageManager:
                 self.__image_activity_lock = Lock()
 
                 # Create Widgets and show gui
-                self.gladefile = self.application_dir + \
-                    "/usr/share/package-manager/packagemanager.glade"
+                self.gladefile = os.path.join(self.application_dir,
+                    "usr/share/package-manager/packagemanager.glade")
                 w_tree_main = gtk.glade.XML(self.gladefile, "mainwindow")
                 w_tree_progress = gtk.glade.XML(self.gladefile, "progressdialog")
                 w_tree_preferences = gtk.glade.XML(self.gladefile, "preferencesdialog")
@@ -718,19 +719,19 @@ class PackageManager:
 
 
         def __load_startpage_locale(self, start_page_lang_base):
-                start_page_url = self.application_dir + \
-                        start_page_lang_base % (self.lang, START_PAGE_HOME)
+                start_page_url = os.path.join(self.application_dir,
+                        start_page_lang_base % (self.lang, START_PAGE_HOME))
                 if self.__load_uri(self.document, start_page_url):
                         return True
                         
                 if self.lang_root != None and self.lang_root != self.lang:
-                        start_page_url = self.application_dir + \
-                                start_page_lang_base % (self.lang_root, START_PAGE_HOME)
+                        start_page_url = os.path.join(self.application_dir,
+                                start_page_lang_base % (self.lang_root, START_PAGE_HOME))
                         if self.__load_uri(self.document, start_page_url):
                                 return True
 
-                start_page_url = self.application_dir + \
-                        start_page_lang_base % ("C", START_PAGE_HOME)                        
+                start_page_url = os.path.join(self.application_dir,
+                        start_page_lang_base % ("C", START_PAGE_HOME))
                 if self.__load_uri(self.document, start_page_url):
                         return True
                 return False

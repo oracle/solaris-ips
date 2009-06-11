@@ -44,39 +44,36 @@ def get_client_api_version():
         return 14 # CLIENT_API_VERSION Used by PM, UM and WebInstall
 
 def get_app_pixbuf(application_dir, icon_name):
-        return get_pixbuf_from_path(application_dir +
-            "/usr/share/package-manager/", icon_name)
+        return get_pixbuf_from_path(os.path.join(application_dir,
+            "usr/share/package-manager"), icon_name)
 
 def get_icon_pixbuf(application_dir, icon_name):
-        return get_pixbuf_from_path(application_dir +
-            "/usr/share/icons/package-manager/", icon_name)
+        return get_pixbuf_from_path(os.path.join(application_dir,
+            "usr/share/icons/package-manager"), icon_name)
 
 def get_pixbuf_from_path(path, icon_name):
         icon = icon_name.replace(' ', '_')
 
         # Performance: Faster to check if files exist rather than catching
         # exceptions when they do not. Picked up open failures using dtrace
-        png_exists = os.path.exists(path + icon + ".png")
-        svg_exists = os.path.exists(path + icon + ".svg")
+        png_path = os.path.join(path, icon + ".png")
+        png_exists = os.path.exists(png_path)
+        svg_path = os.path.join(path, icon + ".png")
+        svg_exists = os.path.exists(png_path)
 
         if not png_exists and not svg_exists:
                 return None
         try:
-                return gtk.gdk.pixbuf_new_from_file(path + icon + ".png")
+                return gtk.gdk.pixbuf_new_from_file(png_path)
         except gobject.GError:
                 try:
-                        return gtk.gdk.pixbuf_new_from_file(path + icon + ".png")
+                        return gtk.gdk.pixbuf_new_from_file(svg_path)
                 except gobject.GError:
-                        iconview = gtk.IconView()
-                        icon = iconview.render_icon(getattr(gtk,
-                            "STOCK_MISSING_IMAGE"),
-                            size = gtk.ICON_SIZE_MENU,
-                            detail = None)
-                        # XXX Could return image-we don't want to show ugly icon.
                         return None
+
 def display_help(application_dir="", id=None):
-                props = { gnome.PARAM_APP_DATADIR : application_dir + \
-                            '/usr/share/package-manager/help' }
+                props = { gnome.PARAM_APP_DATADIR : os.path.join(application_dir,
+                            'usr/share/package-manager/help') }
                 gnome.program_init('package-manager', '0.1', properties=props)
                 if id != None:
                         gnome.help_display('package-manager', link_id=id)
