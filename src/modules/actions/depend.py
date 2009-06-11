@@ -255,14 +255,17 @@ class DependencyAction(generic.Action):
                 # it creating a dummy timestamp.  So we have to split it apart
                 # manually.
                 #
-                # XXX This code will need to change once we start using fmris
-                # with publishers.
+                # XXX This code will need to change if we start using fmris
+                # with publishers in dependencies.
                 #
                 if pfmri.startswith("pkg:/"):
                         pfmri = pfmri[5:]
                 # Note that this creates a directory hierarchy!
-                pfmri = urllib.quote(pfmri, "@").replace("@", "/")
-
-                return [
-                        ("depend", None, pfmri, None)
+                inds = [
+                        ("depend", ctype, pfmri, None)
                 ]
+
+                if "@" in pfmri:
+                        stem = pfmri.split("@")[0]
+                        inds.append(("depend", ctype, stem, None))
+                return inds

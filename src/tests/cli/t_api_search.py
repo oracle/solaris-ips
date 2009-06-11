@@ -350,6 +350,8 @@ add file /tmp/example_file group=bin mode=0444 owner=root path=usr/share/info/ma
 add file /tmp/example_file group=bin mode=0444 owner=root path=usr/share/man/man1/gmake.1 pkg.size=18
 add license /tmp/example_file license=SUNWgmake.copyright pkg.size=18 transaction_id=1211931083_pkg%3A%2FSUNWgmake%403.81%2C5.11-0.89%3A20080527T163123Z
 add depend fmri=pkg:/SUNWcsl@0.5.11-0.89 type=require
+add depend fmri=SUNWtestbar@0.5.11-0.111 type=require
+add depend fmri=SUNWtestfoo@0.5.11-0.111 type=incorporate
 add set name=description value="gmake - GNU make"
 add legacy arch=i386 category=system desc="GNU make - A utility used to build software (gmake) 3.81" hotline="Please contact your local service provider" name="gmake - GNU make" pkg=SUNWgmake vendor="Sun Microsystems, Inc." version=11.11.0,REV=2008.04.29.02.08
 close
@@ -359,6 +361,18 @@ close
             ("pkg:/SUNWgmake@3.81-0.89", "basename", "link path=usr/sfw/bin/gmake target=../../bin/gmake"),
             ('pkg:/SUNWgmake@3.81-0.89', 'basename', 'file 820157a2043e3135f342b238129b556aade20347 chash=bfa46fc98d1ca97f1260090797d35a35e76096a3 elfarch=i386 elfbits=32 elfhash=68cca393e816e6adcbac1e8ffe9c618de70413e0 group=bin mode=0555 owner=root path=usr/bin/gmake pkg.csize=38 pkg.size=18'),
             ('pkg:/SUNWgmake@3.81-0.89', 'gmake', 'set name=description value="gmake - GNU make"')
+        ])
+
+        res_983_csl_dependency = set([
+            ('pkg:/SUNWgmake@3.81-0.89', 'require', 'depend fmri=pkg:/SUNWcsl@0.5.11-0.89 type=require')
+        ])
+
+        res_983_bar_dependency = set([
+            ('pkg:/SUNWgmake@3.81-0.89', 'require', 'depend fmri=SUNWtestbar@0.5.11-0.111 type=require')
+        ])
+
+        res_983_foo_dependency = set([
+            ('pkg:/SUNWgmake@3.81-0.89', 'incorporate', 'depend fmri=SUNWtestfoo@0.5.11-0.111 type=incorporate')
         ])
 
         res_local_pkg_ret_pkg = set([
@@ -1608,6 +1622,26 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
                     progresstracker, lambda x: False, PKG_CLIENT_NAME)
 
                 self._search_op(api_obj, True, "gmake", self.res_bug_983)
+                self._search_op(api_obj, True, "SUNWcsl@0.5.11-0.89",
+                    self.res_983_csl_dependency)
+                self._search_op(api_obj, True, "SUNWcsl",
+                    self.res_983_csl_dependency)
+                self._search_op(api_obj, True, "SUNWtestbar@0.5.11-0.111",
+                    self.res_983_bar_dependency)
+                self._search_op(api_obj, True, "SUNWtestbar",
+                    self.res_983_bar_dependency)
+                self._search_op(api_obj, True, "SUNWtestfoo@0.5.11-0.111",
+                    self.res_983_foo_dependency)
+                self._search_op(api_obj, True, "SUNWtestfoo",
+                    self.res_983_foo_dependency)
+                self._search_op(api_obj, True, "depend:require:",
+                    self.res_983_csl_dependency | self.res_983_bar_dependency)
+                self._search_op(api_obj, True, "depend:incorporate:",
+                    self.res_983_foo_dependency)
+                self._search_op(api_obj, True, "depend::",
+                    self.res_983_csl_dependency | self.res_983_bar_dependency |
+                    self.res_983_foo_dependency)
+
                 
 class TestApiSearchBasicsRestartingDepot(TestApiSearchBasics):        
         def setUp(self):

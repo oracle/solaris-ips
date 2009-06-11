@@ -434,6 +434,25 @@ EXAMPLES
      The token shows up in the package SUNWbge both as the basename for the
      file action representing /kernel/drv/bge and as a driver name.
 
+     Example 5: Search for installed packages which depend on SUNWipkg.
+
+     $ pkg search -l 'depend::SUNWipkg'
+     INDEX      ACTION    VALUE                     PACKAGE
+     incorporate depend    SUNWipkg@0.5.11-0.111     pkg:/entire@0.5.11-0.111
+     require    depend    SUNWipkg@0.5.11-0.111     pkg:/slim_install@0.1-0.111
+     require    depend    SUNWipkg@0.5.11-0.111     pkg:/SUNWipkg-brand@0.5.11-0.111
+
+     Example 6: Search for all incorporate dependencies in installed packages.
+
+     $ pkg search -l 'depend:incorporate:'
+     INDEX      ACTION    VALUE                     PACKAGE
+     incorporate depend    BRCMbnx@0.5.11-0.111      pkg:/entire@0.5.11-0.111
+     incorporate depend    BRCMbnx@0.5.11-0.111      pkg:/entire@0.5.11-0.111
+     incorporate depend    FSWxorg-fonts@0.5.11-0.111 pkg:/entire@0.5.11-0.111
+     incorporate depend    FSWxorg-fonts-core@0.5.11-0.111 pkg:/entire@0.5.11-0.111
+     [ ... ]
+
+
 EXIT STATUS
      The following exit values are returned:
 
