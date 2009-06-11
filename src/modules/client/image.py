@@ -305,6 +305,9 @@ class Image(object):
                 self.cfg_cache = ic
 
         def save_config(self):
+                # First, create the image directories if they haven't been, so
+                # the cfg_cache can be written.
+                self.mkdirs()
                 self.cfg_cache.write(self.imgdir)
 
         # XXX mkdirs and set_attrs() need to be combined into a create
@@ -391,16 +394,8 @@ class Image(object):
                 self.add_publisher(newpub, refresh_allowed=refresh_allowed,
                     progtrack=progtrack)
 
-                # Next, create the image directories if they haven't been
-                # (add_publisher will normally do this if it needs to write
-                # something to disk).  Waiting until after add_publisher is
-                # called avoids leaving an empty, useless set of directories
-                # for the image if the add fails.
-                self.mkdirs()
-
-                # Finally, since all operations were successful, save the image
-                # configuration.
-                self.save_config()
+                # No need to save configuration as add_publisher will do that
+                # if successful.
 
                 self.history.log_operation_end()
 

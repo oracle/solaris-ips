@@ -141,6 +141,29 @@ class TestPkgImageCreateBasics(testutils.SingleDepotTestCase):
                 self.assertFalse(os.path.exists(os.path.join(abs_img_path, img_path)))
                 shutil.rmtree(abs_img_path)
 
+        def test_7_image_create_no_refresh(self):
+                """Verify that image-create --no-refresh works as expected.
+                See bug 8777 for related issue."""
+
+                durl = self.dc.get_depot_url()
+
+                pkgsend_data = """
+                open baz@0.0
+                close
+                """
+                self.pkgsend_bulk(durl, pkgsend_data)
+
+                # First, check to be certain that an image-create --no-refresh
+                # will succeed.
+                self.image_create(durl, prefix="norefresh",
+                    additional_args="--no-refresh")
+                self.pkg("list --no-refresh -a | grep baz", exit=1)
+
+                # Finally, verify that using set-publisher will cause a refresh
+                # which in turn should cause 'baz' to be listed.
+                self.pkg("set-publisher -O %s norefresh" % durl)
+                self.pkg("list --no-refresh -a | grep baz")
+
 
 class TestImageCreateNoDepot(testutils.CliTestCase):
         persistent_depot = True
