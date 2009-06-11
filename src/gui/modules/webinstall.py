@@ -133,7 +133,9 @@ class Webinstall:
         def __nothing_todo(self, infobuffer, textiter):
                 self.w_webinstall_proceed.hide()
                 self.w_webinstall_cancel.hide()
+                self.w_webinstall_info_label.hide()
                 self.w_webinstall_close.show()
+                self.w_webinstall_close.grab_focus()
 
                 infobuffer.insert(textiter,
                     _("\n All specified repositories and packages are already on the "
@@ -170,12 +172,10 @@ class Webinstall:
         def process_param(self, param=None):
                 if param == None or self.api_o == None:
                         self.w_webinstall_proceed.set_sensitive(False)
+                        self.w_webinstall_cancel.grab_focus()
                         return
                 self.param = param
-                self.pub_pkg_list = self.api_parse_publisher_info(param)
-                if self.pub_pkg_list == None:
-                        self.w_webinstall_proceed.set_sensitive(False)
-                        return
+                self.pub_pkg_list = self.api_parse_publisher_info()
                 self.__create_task_lists()        
                 infobuffer = self.w_webinstall_textview.get_buffer()
                 infobuffer.set_text("")
@@ -187,9 +187,6 @@ class Webinstall:
                 textiter = infobuffer.get_end_iter()
                 if num_new_pub == 0 and num_install_tasks == 0:
                         self.__nothing_todo(infobuffer, textiter)
-                        self.w_webinstall_proceed.set_sensitive(False)
-                        self.w_webinstall_cancel.grab_focus()
-                        self.w_webinstall_info_label.hide()
                         return
                         
                 self.__output_new_pub_tasks(infobuffer, textiter, num_new_pub)
@@ -374,12 +371,9 @@ class Webinstall:
                 msgbox.run()
                 msgbox.destroy()
 
-        def api_parse_publisher_info(self, param=None):
+        def api_parse_publisher_info(self):
                 '''<path to mimetype file|origin_url>
                    returns list of publisher and package list tuples'''
-                if not self.param:
-                        self.w_webinstall_proceed.set_sensitive(False)
-                        return None
                 try:
                         return self.api_o.parse_p5i(location=self.param)
                 except (api_errors.InvalidP5IFile, 
@@ -391,4 +385,5 @@ class Webinstall:
                         self.__error_occurred( 
                             self.w_webinstall_dialog,
                             str(ex), gtk.MESSAGE_ERROR, _("Repository Error"))
+                        sys.exit(1)
                         return None

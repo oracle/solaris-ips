@@ -83,7 +83,6 @@ EXTERNAL_URI = 'uri'           # External field: uri to navigate to in external
 EXTERNAL_PROTOCOL = 'protocol' # External field: optional protocol scheme,
                                # defaults to http
 DEFAULT_PROTOCOL = 'http'
-PKGINFO_SUFFIX   = '.p5i'      # Mime type file extension
 
 import getopt
 import pwd
@@ -3782,8 +3781,7 @@ Use -U (--update-all) to proceed with Update All"""
 
 
         # Setup webinstall
-        if info_install_arg or (len(sys.argv) == 2 and \
-            sys.argv[1].endswith(PKGINFO_SUFFIX)):
+        if info_install_arg or len(sys.argv) == 2:
                 webinstall = webinstall.Webinstall(image_dir)
                 if len(sys.argv) == 2:
                         info_install_arg = sys.argv[1]
