@@ -2333,9 +2333,10 @@ class PackageManager:
         def __check_if_something_was_changed(self):
                 ''' Returns True if any of the check boxes for package was changed, false
                 if not'''
-                for pkg in self.application_list:
-                        if pkg[enumerations.MARK_COLUMN] == True:
-                                return True
+                if self.application_list:
+                        for pkg in self.application_list:
+                                if pkg[enumerations.MARK_COLUMN] == True:
+                                        return True
                 return False
 
         def __setup_repositories_combobox(self, api_o, repositories_list):
@@ -3114,15 +3115,14 @@ class PackageManager:
                         pkgs_known = self.__get_inventory_list(pargs,
                             True, True)
                 except api_errors.InventoryException:
-                        # Can't happen when all_known is true and no args,
-                        # but here for completeness.
-                        err = _("Selected repository does not contain any packages."
-                                "\nPlease reload the list of package.")
+                        # This can happen if the repository does not
+                        # contain any packages
+                        err = _("Selected repository does not contain any packages.")
                         gobject.idle_add(self.w_progress_dialog.hide)
                         gobject.idle_add(self.error_occured, err, None,
                             gtk.MESSAGE_INFO)
                         self.unset_busy_cursor()
-                        return
+                        pkgs_known = []
 
                 return self.__add_pkgs_to_lists(pkgs_known, application_list,
                     category_list, section_list)
@@ -3232,9 +3232,11 @@ class PackageManager:
                             ]
                         pkg_count += 1
 
-                self.__add_package_to_list(next_app, application_list, pkg_add,
-                    pkg_name, category_icon, categories, category_list, pkg_publisher)
-                pkg_add += 1
+                if next_app:
+                        self.__add_package_to_list(next_app, application_list, 
+                            pkg_add, pkg_name, category_icon, categories, 
+                            category_list, pkg_publisher)
+                        pkg_add += 1
                 if category_list != None:
                         self.__add_categories_to_sections(sections,
                             category_list, section_list)
