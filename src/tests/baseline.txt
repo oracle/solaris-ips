@@ -125,6 +125,8 @@ api.t_manifest.py TestManifest.test_errors|pass
 api.t_manifest.py TestManifest.test_set_content1|pass
 api.t_misc.py TestMisc.testMakedirs|pass
 api.t_misc.py TestMisc.test_hash_file_name|pass
+api.t_misc.py TestMisc.test_pub_prefix|pass
+api.t_misc.py TestMisc.test_pub_url|pass
 api.t_p5i.py TestP5I.test_parse_write|pass
 api.t_pkgtarfile.py TestPkgTarFile.testerrorlevelIsCorrect|pass
 api.t_plat.py TestPlat.testAdmin|pass

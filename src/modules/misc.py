@@ -206,9 +206,11 @@ _valid_proto = ["http", "https"]
 def valid_pub_prefix(prefix):
         """Verify that the publisher prefix only contains valid characters."""
 
+        if not prefix:
+                return False
+
         # This is a workaround for the the hostname_re being slow when
         # it comes to finding invalid characters in the prefix string.
-
         if _invalid_host_chars.match(prefix):
                 # prefix bad chars
                 return False
@@ -220,6 +222,9 @@ def valid_pub_prefix(prefix):
 
 def valid_pub_url(url):
         """Verify that the publisher URL contains only valid characters."""
+
+        if not url:
+                return False
 
         # First split the URL and check if the scheme is one we support
         o = urlparse.urlsplit(url)
