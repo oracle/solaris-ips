@@ -2858,7 +2858,7 @@ class Image(object):
                 progtrack.evaluate_start()
                 self.load_constraints(progtrack)
 
-                unfound_fmris = []
+                unmatched_fmris = []
                 multiple_matches = []
                 illegal_fmris = []
                 constraint_violations = []
@@ -2922,7 +2922,7 @@ class Image(object):
                                 assert(e.notfound or e.illegal)
                                 error = 1
                                 if e.notfound:
-                                        unfound_fmris.append(p)
+                                        unmatched_fmris.append(p)
                                 else:
                                         illegal_fmris.append(p)
                                 continue
@@ -2966,7 +2966,7 @@ class Image(object):
                                 ip.propose_fmri(npmatch[0])
 
                 if error != 0:
-                        raise api_errors.PlanCreationException(unfound_fmris,
+                        raise api_errors.PlanCreationException(unmatched_fmris,
                             multiple_matches, [], illegal_fmris,
                             constraint_violations=constraint_violations)
 
@@ -3004,7 +3004,7 @@ class Image(object):
 
                 err = 0
 
-                unfound_fmris = []
+                unmatched_fmris = []
                 multiple_matches = []
                 missing_matches = []
                 illegal_fmris = []
@@ -3025,12 +3025,12 @@ class Image(object):
                                                     ordered=False))
                                                 missing_matches.append(ppat)
                                         except api_errors.InventoryException:
-                                                unfound_fmris.append(ppat)
+                                                unmatched_fmris.append(ppat)
                                 elif e.illegal:
                                         illegal_fmris.append(ppat)
                                 else:
                                         raise RuntimeError("Caught inventory "
-                                            "exception without unfound or "
+                                            "exception without unmatched or "
                                             "illegal fmris set.")
                                 err = 1
                                 continue
@@ -3045,7 +3045,7 @@ class Image(object):
                         ip.propose_fmri_removal(matches[0][0])
 
                 if err == 1:
-                        raise api_errors.PlanCreationException(unfound_fmris,
+                        raise api_errors.PlanCreationException(unmatched_fmris,
                             multiple_matches, missing_matches, illegal_fmris)
                 if verbose:
                         msg(_("Before evaluation:"))

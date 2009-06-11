@@ -130,11 +130,11 @@ class FileInUseException(PermissionsException):
                     "operation again.") % self.path
 
 class PlanCreationException(ApiException):
-        def __init__(self, unfound_fmris=EmptyI, multiple_matches=EmptyI,
+        def __init__(self, unmatched_fmris=EmptyI, multiple_matches=EmptyI,
             missing_matches=EmptyI, illegal=EmptyI,
             constraint_violations=EmptyI, badarch=EmptyI):
                 ApiException.__init__(self)
-                self.unfound_fmris         = unfound_fmris
+                self.unmatched_fmris       = unmatched_fmris
                 self.multiple_matches      = multiple_matches
                 self.missing_matches       = missing_matches
                 self.illegal               = illegal
@@ -143,12 +143,12 @@ class PlanCreationException(ApiException):
 
         def __str__(self):
                 res = []
-                if self.unfound_fmris:
+                if self.unmatched_fmris:
                         s = _("""\
 The following pattern(s) did not match any packages in the current catalog.
 Try relaxing the pattern, refreshing and/or examining the catalogs:""")
                         res += [s]
-                        res += ["\t%s" % p for p in self.unfound_fmris]
+                        res += ["\t%s" % p for p in self.unmatched_fmris]
 
                 if self.multiple_matches:
                         s = _("'%s' matches multiple packages")

@@ -1,3 +1,10 @@
+Version 15:
+Incompatible with clients using versions 1-14.
+Changes:
+   The unfound_fmris variable in the
+   pkg.client.api_errors.PlanCreationException class is now called 
+   unmatched_fmris.
+
 Version 14:
 Compatible with clients using versions 12-14.
 Changes:

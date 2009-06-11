@@ -53,7 +53,7 @@ from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 from pkg.misc import versioned_urlopen
 
-CURRENT_API_VERSION = 14
+CURRENT_API_VERSION = 15
 CURRENT_P5I_VERSION = 1
 
 class ImageInterface(object):
@@ -89,7 +89,7 @@ class ImageInterface(object):
                 canceled changes. It can raise VersionException and
                 ImageNotFoundException."""
 
-                compatible_versions = set([12, 13, 14])
+                compatible_versions = set([15])
 
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
@@ -906,7 +906,7 @@ class ImageInterface(object):
                 return True
 
         def __set_history_PlanCreationException(self, e):
-                if e.unfound_fmris or e.multiple_matches or \
+                if e.unmatched_fmris or e.multiple_matches or \
                     e.missing_matches or e.illegal:
                         self.log_operation_end(error=e,
                             result=history.RESULT_FAILED_BAD_REQUEST)

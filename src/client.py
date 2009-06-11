@@ -80,7 +80,7 @@ from pkg.client.retrieve import (CatalogRetrievalError,
     DatastreamRetrievalError, ManifestRetrievalError)
 from pkg.misc import EmptyI, msg, emsg, PipeError
 
-CLIENT_API_VERSION = 14
+CLIENT_API_VERSION = 15
 PKG_CLIENT_NAME = "pkg"
 
 def error(text, cmd=None):

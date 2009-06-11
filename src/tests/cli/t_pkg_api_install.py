@@ -38,7 +38,7 @@ import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 import pkg.client.progress as progress
 
-API_VERSION = 14
+API_VERSION = 15
 PKG_CLIENT_NAME = "pkg"
 
 class TestPkgApiInstall(testutils.SingleDepotTestCase):
@@ -484,7 +484,7 @@ class TestPkgApiInstall(testutils.SingleDepotTestCase):
                     progresstracker, lambda x: True, PKG_CLIENT_NAME)
 
                 def check_unfound(e):
-                        return e.unfound_fmris
+                        return e.unmatched_fmris
 
                 def check_illegal(e):
                         return e.illegal
