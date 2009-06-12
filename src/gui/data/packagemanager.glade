@@ -314,12 +314,12 @@
           <widget class="GtkToolbar" id="actiontoolbar">
             <property name="visible">True</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-            <property name="toolbar_style">GTK_TOOLBAR_BOTH</property>
             <child>
               <widget class="GtkToolButton" id="reloadbutton">
                 <property name="visible">True</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="tooltip" translatable="yes">Click to get list of newest packages.</property>
+                <property name="is_important">True</property>
                 <property name="label" translatable="yes">Reload</property>
                 <property name="icon">reload24x.png</property>
                 <signal name="clicked" handler="on_reload_button_clicked"/>
@@ -334,6 +334,7 @@
                 <property name="sensitive">False</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="tooltip" translatable="yes">Click to update all installed packages.</property>
+                <property name="is_important">True</property>
                 <property name="label" translatable="yes">Update All</property>
                 <property name="icon">update_all24x.png</property>
                 <signal name="clicked" handler="on_update_all_button_clicked"/>
@@ -348,6 +349,7 @@
                 <property name="sensitive">False</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="tooltip" translatable="yes">Select packages by marking the checkbox and click to Install/Update.</property>
+                <property name="is_important">True</property>
                 <property name="label" translatable="yes">Install/Update</property>
                 <property name="icon">install_update24x.png</property>
                 <signal name="clicked" handler="on_install_update_button_clicked"/>
@@ -362,6 +364,7 @@
                 <property name="sensitive">False</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="tooltip" translatable="yes">Select packages by marking the checkbox and click to Remove selected.</property>
+                <property name="is_important">True</property>
                 <property name="label" translatable="yes">Remove</property>
                 <property name="icon">remove24x.png</property>
                 <signal name="clicked" handler="on_remove_button_clicked"/>
