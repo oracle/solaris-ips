@@ -69,8 +69,8 @@ GCONF = \
    data/updatemanager-preferences.schemas
 
 GLADEICONS = \
-   data/PM_app_48x.png \
-   data/PM_package_36x.png
+   data/UM_app_48x.png \
+   data/UM_package_36x.png
 
 ICONS = \
    data/icons/notify_update.png \
@@ -148,8 +148,8 @@ clobber: clean
 	rm -f $(ROOTCOMPONENTS)
 
 # See APPICONS above.
-data/updatemanager.png: data/PM_app_48x.png
-	cp data/PM_app_48x.png data/updatemanager.png
+data/updatemanager.png: data/UM_app_48x.png
+	cp data/UM_app_48x.png data/updatemanager.png
 
 PWD:sh = pwd
 

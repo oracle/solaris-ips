@@ -666,7 +666,7 @@ class Updatemanager:
                 # Setup Icons
                 self.done_icon = self.__get_icon_pixbuf("status_checkmark")
                 self.blank_icon = self.__get_icon_pixbuf("status_blank")
-                self.w_um_dialog.set_icon(self.__get_app_pixbuf("PM_package_36x"))
+                self.w_um_dialog.set_icon(self.__get_app_pixbuf("UM_package_36x"))
 
         def __get_image_path(self):
                 '''This function gets the image path or the default'''
@@ -1007,7 +1007,7 @@ class Updatemanager:
                     parent_name = _("Update Manager"),
                     pkg_list = ["SUNWipkg", "SUNWipkg-gui", "SUNWipkg-um"],
                     main_window = self.w_um_dialog,
-                    icon_confirm_dialog = self.__get_app_pixbuf("PM_package_36x"))
+                    icon_confirm_dialog = self.__get_app_pixbuf("UM_package_36x"))
                 return
                
         def __on_selectall_checkbutton_toggled(self, widget):

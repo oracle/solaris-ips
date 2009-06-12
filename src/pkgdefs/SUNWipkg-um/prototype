@@ -34,8 +34,8 @@ d none usr/share/man 755 root bin
 d none usr/share/man/cat1 755 root bin
 f none usr/share/man/cat1/pm-updatemanager.1 444 root bin
 d none usr/share/update-manager 755 root bin
-f none usr/share/update-manager/PM_app_48x.png 444 root bin
-f none usr/share/update-manager/PM_package_36x.png 444 root bin
+f none usr/share/update-manager/UM_app_48x.png 444 root bin
+f none usr/share/update-manager/UM_package_36x.png 444 root bin
 f none usr/share/update-manager/updatemanager.glade 444 root bin
 d none var 755 root sys
 d none var/svc 755 root sys
