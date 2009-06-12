@@ -439,7 +439,14 @@ class InstallUpdate(progress.ProgressTracker):
                     FileListRetrievalError), ex:
                         msg = _("Please check the network "
                             "connection.\nIs the repository accessible?\n\n"
-                            "%s" % str(ex))
+                            "%s") % str(ex)
+                        self.__g_error_stage(msg)
+                        return
+                except api_errors.InvalidDepotResponseException, e:
+                        msg = _("\nUnable to contact a valid package depot. "
+                            "Please check your network\nsettings and "
+                            "attempt to contact the server using a web "
+                            "browser.\n\n%s") % str(e)
                         self.__g_error_stage(msg)
                         return
                 except api_errors.IpkgOutOfDateException:
