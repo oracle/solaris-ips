@@ -1,4 +1,4 @@
-#!/bin/ksh
+#!/bin/ksh93
 #
 # CDDL HEADER START
 #
@@ -28,10 +28,24 @@ export PATH=../../../proto/root_$(uname -p)/usr/bin:$PATH
 export PYTHONPATH=../../../proto/root_$(uname -p)/usr/lib/python2.4/vendor-packages
 export PACKAGEPATH=../../../packages/i386
 
+TMPFILE=$(mktemp ./temp_redistXXXXXX)
 #
 # This needs to be kept in sync with the redistributable version number.
 #
 REDIST_CLUSTER_VERSION=0.1
+
+# Ensure that we catch any pipeline failures.
+set -o pipefail
+trap 'rm -fr $TMPFILE ./temp_image; print -u2 "$0: fatal error"; exit 1' ERR EXIT
+
+if [[ -z $1 ]]; then
+	print -u2 "usage: $0 <buildid>"
+	exit 1
+fi
+if [[ -z $REPO ]]; then
+	print -u2 "\$REPO must be set to a repository URL"
+	exit 1
+fi
 
 buildid=$(echo $1 | tr -d '[a-z]')
 
@@ -39,19 +53,43 @@ buildid=$(echo $1 | tr -d '[a-z]')
 # is a client API in place that can handle all repository types, it's necessary.
 if [[ "$REPO" == http* ]]; then
         # create a temp image so we can get things from the repo
-        pkg image-create -a opensolaris.org=$REPO ./temp_image
-        pkg -R ./temp_image contents -o action.raw -H -t depend -r \
-                redistributable@$REDIST_CLUSTER_VERSION-0.${buildid} | \
-                sed 's/type=require/type=incorporate/'
-        rm -r ./temp_image
+	pkg image-create -a opensolaris.org=$REPO ./temp_image > /dev/null || \
+	    exit 1
+	pkg -R ./temp_image contents -o action.raw -H -t depend -r \
+	    redistributable@$REDIST_CLUSTER_VERSION-0.${buildid} | \
+	    sed 's/type=require/type=incorporate/' > $TMPFILE || \
+	    exit 1
+	rm -r ./temp_image
 elif [[ "$REPO" == file* ]]; then
-        REPO_PATH=$(echo $REPO | sed 's|file://||')
-        MPATH=$REPO_PATH/pkg/redistributable
-        MANIFEST=$(ls $MPATH/${REDIST_CLUSTER_VERSION}%2C*-0.${buildid}* | \
-            sort -r | head -1)
-        cat $MANIFEST | grep '^depend' | sed 's/type=require/type=incorporate/'
+	REPO_PATH=$(echo $REPO | sed 's@file://@@' || exit 1)
+	MPATH=$REPO_PATH/pkg/redistributable
+	MANIFEST=$(ls $MPATH/${REDIST_CLUSTER_VERSION}%2C*-0.${buildid}* | \
+	    sort -r | head -1 || exit 1)
+	cat $MANIFEST | grep '^depend' |
+	    sed 's/type=require/type=incorporate/' > $TMPFILE || exit 1
 else
-        exit 1
+	exit 1
 fi
 
-echo 'set name=description value="entire incorporation"'
+if [[ ! -s $TMPFILE ]]; then
+	print -u2 "zero length redistributable incorporation!"
+	exit 1
+fi
+
+#
+# We use the unstripped build id here.
+#
+# Note also that we don't add a classification, as this package is an
+# implementation artifact.
+#
+echo "set name=pkg.summary value=\"Build $1 entire incorporation\""
+echo "set name=description value=\"Build $1 entire incorporation\""
+echo "set name=pkg.description value=\"This package constrains" \
+    "package versions to those for build $1.  WARNING: Proper" \
+    "system update and correct package selection depend on the" \
+    "presence of this incorporation.  Removing this package will" \
+    "result in an unsupported system.\""
+cat $TMPFILE
+rm -f $TMPFILE
+trap '' ERR EXIT
+exit 0
