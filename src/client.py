@@ -1941,13 +1941,13 @@ def publisher_list(img_dir, args):
                                 t = time.strptime(nb, "%Y%m%d%H%M%SZ")
                                 nb = datetime.datetime.utcfromtimestamp(
                                     calendar.timegm(t))
-                                times["effective"] = nb.ctime()
+                                times["effective"] = nb.strftime("%c")
 
                                 na = cert.get_notAfter()
                                 t = time.strptime(na, "%Y%m%d%H%M%SZ")
                                 na = datetime.datetime.utcfromtimestamp(
                                     calendar.timegm(t))
-                                times["expiration"] = na.ctime()
+                                times["expiration"] = na.strftime("%c")
                                 c["valid"] = True
 
                 return cert_cache[ssl_cert]
@@ -2030,7 +2030,7 @@ def publisher_list(img_dir, args):
                         pub = api_inst.get_publisher(prefix=name, alias=name)
                         dt = api_inst.get_publisher_last_update_time(pub.prefix)
                         if dt:
-                                dt = dt.ctime()
+                                dt = dt.strftime("%c")
 
                         msg("")
                         msg(_("            Publisher:"), pub.prefix)

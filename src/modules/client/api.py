@@ -758,7 +758,8 @@ class ImageInterface(object):
                                 release = version.release
                                 build_release = version.build_release
                                 branch = version.branch
-                                packaging_date = version.get_timestamp().ctime()
+                                packaging_date = \
+                                    version.get_timestamp().strftime("%c")
                         pref_pub = None
                         if PackageInfo.PREF_PUBLISHER in info_needed:
                                 pref_pub = False
@@ -1717,5 +1718,5 @@ class PackageInfo(object):
                 return PackageInfo(pkg_stem=name, publisher=pub,
                     version=version.release,
                     build_release=version.build_release, branch=version.branch,
-                    packaging_date=version.get_timestamp().ctime(),
+                    packaging_date=version.get_timestamp().strftime("%c"),
                     pfmri=str(f))

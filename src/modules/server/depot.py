@@ -792,8 +792,8 @@ Packaging Date: %s
 License:
 %s
 """ % (name, summary, publisher, ver.release, ver.build_release,
-    ver.branch, ver.get_timestamp().ctime(), misc.bytes_to_str(m.get_size()),
-    f, lsummary.read())
+    ver.branch, ver.get_timestamp().strftime("%c"),
+    misc.bytes_to_str(m.get_size()), f, lsummary.read())
 
         def __get_publisher(self):
                 rargs = {}
