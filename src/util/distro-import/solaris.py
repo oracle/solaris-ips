@@ -744,15 +744,22 @@ def publish_pkg(pkg):
                 t.add(action)
 
         if pkg.desc:
-                print "    %s add set description=%s" % (pkg.name, pkg.desc)
-                action = actions.attribute.AttributeAction(None,
-                    description = pkg.desc)
+                print "    %s add set pkg.description=%s" % (pkg.name, pkg.desc)
+                attrs = dict(name="pkg.description", value=pkg.desc)
+                action = actions.attribute.AttributeAction(None, **attrs)
                 t.add(action)
 
         if pkg.summary:
                 print "    %s add set pkg.summary=%s" % (pkg.name, pkg.summary)
                 attrs = dict(name="pkg.summary", value=pkg.summary)
                 action = actions.attribute.AttributeAction(None, **attrs)
+                t.add(action)
+
+                # Retain the description entry in the package manifest for 
+                # now for backward compatibility.
+                print "    %s add set description=%s" % (pkg.name, pkg.summary)
+                action = actions.attribute.AttributeAction(None,
+                    description = pkg.summary)
                 t.add(action)
 
         if pkg.classification:
