@@ -46,6 +46,16 @@ class TestPkgDepot(testutils.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
         persistent_depot = True
 
+        foo10 = """
+            open foo@1.0,5.11-0
+            add dir path=tmp/foo mode=0755 owner=root group=bin
+            close """
+
+        bar10 = """
+            open bar@1.0,5.11-0
+            add dir path=tmp/bar mode=0755 owner=root group=bin
+            close """
+
         quux10 = """
             open quux@1.0,5.11-0
             add dir mode=0755 owner=root group=bin path=/bin
@@ -210,6 +220,29 @@ class TestPkgDepot(testutils.SingleDepotTestCase):
                     urllib.quote(plist[0]))
                 misc.versioned_urlopen(depot_url, "manifest", [0],
                     urllib.quote(plist[0]))
+
+        def test_bug_5707(self):
+                """Testing depotcontroller.refresh()."""
+
+                depot_url = self.dc.get_depot_url()
+                self.pkgsend_bulk(depot_url, self.foo10)
+
+                self.image_create(depot_url)
+                self.pkg("install foo")
+                self.pkg("verify")
+
+                depot_file_url = "file://%s" % self.dc.get_repodir()
+                self.pkgsend_bulk(depot_url, self.bar10)
+                self.pkg("refresh")
+
+                self.pkg("install bar")
+                self.pkg("verify")
+
+                self.dc.refresh()
+                self.pkg("refresh")
+
+                self.pkg("install bar")
+                self.pkg("verify")
 
         def test_bug_8010(self):
                 """Publish stuff to the depot, get a full version of the

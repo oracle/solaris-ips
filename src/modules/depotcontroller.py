@@ -272,6 +272,15 @@ class DepotController(object):
                         self.stop()
                         return False
                         
+        def refresh(self):
+                if self.__depot_handle == None:
+                        # XXX might want to remember and return saved
+                        # exit status
+                        return 0
+
+                os.kill(self.__depot_handle.pid, signal.SIGUSR1)
+                return self.__depot_handle.poll()
+
         def kill(self):
 
                 if self.__depot_handle == None:

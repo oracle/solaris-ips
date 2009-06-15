@@ -55,6 +55,7 @@ import pkg.fmri as fmri
 import pkg.manifest as manifest
 import pkg.misc as misc
 import pkg.p5i as p5i
+import pkg.server.errors as errors
 import pkg.server.face as face
 import pkg.server.repository as repo
 import pkg.version as version
@@ -158,6 +159,26 @@ class DepotHTTP(object):
 
                         opattr = getattr(self, op)
                         setattr(opattr, ver, func)
+
+                if hasattr(cherrypy.engine, "signal_handler"):
+                        # This handles SIGUSR1
+                        cherrypy.engine.subscribe("graceful", self.refresh)
+
+        def refresh(self):
+                """Catch SIGUSR1 and restart the depot (picking up any
+                changes to the cfg_cache that may have been made.
+                """
+
+                self.scfg.acquire_in_flight()
+                try:
+                        self.scfg.acquire_catalog(verbose=True)
+                except (catalog.CatalogPermissionsException, errors.SvrConfigError), e:
+                        self.bus.log("pkg.depotd: %s" % e)
+                        self.bus.exit()
+
+                self.__repo.load_config(self.__repo.cfgpathname)
+                self.rcfg = self.__repo.rcfg
+                face.init(self.scfg, self.rcfg)
 
         @cherrypy.expose
         def default(self, *tokens, **params):
