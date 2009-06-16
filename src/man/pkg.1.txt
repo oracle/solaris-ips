@@ -46,20 +46,34 @@ SYNOPSIS
      /usr/bin/pkg help
 
 DESCRIPTION
-     pkg is the retrieval client for the image packaging system.  With a
-     valid configuration, pkg can be invoked to create locations for
+     pkg is the retrieval client for the image packaging system.  With
+     a valid configuration, pkg can be invoked to create locations for
      packages to be installed, called 'images', and install packages
      into those images.  Packages are published by publishers, who may
      make their packages available at one or more repositories.  pkg,
      then, retrieves packages from a publisher's repository and
      installs them into an image.
 
-     pkg can also uninstall packages, refresh the package catalogs,
-     validate package installation in an image and query the image for
-     various tokens.  These queries can also be made of pkg(5)
+     A publisher is a forward domain name that can be used to identify a
+     person, group of persons, or an organization as the source of one or
+     more packages.  The name of a publisher does not have to be contained
+     within the URIs that identify the locations of publisher repositories.
+     For example, the name of a publisher might be "example.com", but its
+     repositories may be hosted at "example.org" or "example.net".
+
+     A repository is a location where clients can publish and retrieve
+     package content (files contained within the package such as programs,
+     documents, etc.) and metadata (information about the package such as
+     its name, description, etc.).  As an example, a publisher named
+     "example.org" may have their repository located at the URI
+     "http://example.org/repository".
+
+     pkg can also uninstall packages, refresh publisher metadata (such as
+     catalogs), validate package installation in an image, and query the
+     image for various tokens.  These queries can also be made of pkg(5)
      repositories.
 
-     Images can be of three types:  full images, capable of providing a
+     Images can be of three types: full images, capable of providing a
      complete system; partial images, which are linked to a full image
      (parent image), but do not provide a complete system on their own;
      and user images, which contain only relocatable packages.  (See
@@ -331,7 +345,16 @@ SUBCOMMANDS
           Update an existing publisher or add an additional package
           publisher.
 
-          With -P, set the specified publisher as the preferred publisher.
+          With -P, set the specified publisher as the preferred publisher.  When
+          installing new packages, the preferred publisher will be checked first
+          when determining which package repositories should be used for the
+          retrieval of package content and metadata during package operations.
+          When updating existing packages, if a package was installed from a
+          publisher that was preferred at the time of install, then updates will
+          be obtained from the current preferred publisher.  For packages that
+          were installed from a publisher that was not preferred at the time of
+          install, updates will always be obtained from the original publisher
+          regardless of the current, preferred publisher.
 
           With -c and -k, specify client SSL certificate and key respectively.
 
@@ -408,7 +431,8 @@ EXAMPLES
      which is available for all actions, will display a line for all
      actions, which is not desired here.
 
-     $ pkg contents -t dir,file,link,hardlink -o action.name,mode,pkg.size,path,target SUNWzfs
+     $ pkg contents -t dir,file,link,hardlink \
+          -o action.name,mode,pkg.size,path,target SUNWzfs
      NAME  MODE   SIZE PATH                                TARGET
      dir   0755        etc
      dir   0755        etc/fs
@@ -451,6 +475,19 @@ EXAMPLES
      incorporate depend    FSWxorg-fonts@0.5.11-0.111 pkg:/entire@0.5.11-0.111
      incorporate depend    FSWxorg-fonts-core@0.5.11-0.111 pkg:/entire@0.5.11-0.111
      [ ... ]
+
+     Example 7:  Add new publisher example.org, with a repository located at
+     http://www.example.org/repo:
+
+     $ pkg set-publisher -O http://www.example.org/repo example.org
+
+     Example 8:  Add new publisher example.com, with a secure repository
+     located at https://secure.example.com/repo, and a key and cert stored
+     in the directory /root/creds:
+
+     $ pkg set-publisher -k /root/creds/example.key \
+          -c /root/creds/example.cert -O https://secure.example.com/repo \
+          example.com
 
 
 EXIT STATUS

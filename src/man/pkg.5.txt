@@ -26,6 +26,13 @@ DESCRIPTION
      name.  Although the namespace is hierarchical and arbitrarily deep,
      there is no enforced containment -- the name is essentially arbitrary.
 
+     A publisher's identifying name is a forward domain name that can be used
+     to identify a person, group of persons, or an organization as the source
+     of one or more packages.  A publisher name should be constructed from an
+     Internet domain name that is owned, managed, or represented by or on
+     behalf of a publisher.  Other constructions may lead to collisions and be
+     unsafe for general use.
+
      The version follows the package name, separated by an '@'.  It
      consists of four sequences of numbers, separated by punctuation.  The
      elements in the first three sequences are separated by dots, and the
