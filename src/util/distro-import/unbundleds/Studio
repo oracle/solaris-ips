@@ -1,12 +1,40 @@
 package sunstudio
-version 0.2009.3
-depend sunstudioexpress
+version 12.1
+depend sunstudio12u1
+end package
+
+package sunstudio12u1
+classification "Development/Integrated Development Environments"
+summary "Sun Studio - C, C++, & Fortran compilers and Tools"
+version 12.1
+import sunstudio12u1
+depend SUNWarc
+depend SUNWcpp
+depend SUNWhea
+depend SUNWj6cfg
+depend SUNWj6dev
+depend SUNWj6dmo
+depend SUNWj6dmx
+depend SUNWj6dvx
+depend SUNWj6man
+depend SUNWj6rt
+depend SUNWj6rtx
+depend SUNWlibm
+depend SUNWsprot
+depend SUNWtoo
+add depend fmri=sunstudioexpress@0.2009.3.1 type=optional
+add set name=info.keyword value="Fortran compiler module iropt optimizer \
+    autopar debug debugger debugging breakpoint parallelization tuning \
+    multi-thread multi-core productivity HPC linux collector platform \
+    xprofile profile profiling performance library blas lapack fftpack \
+    fft solver sparse autopar C C++ OpenMP Studio IDE editor refactoring \
+    DLight"
 end package
 
 package sunstudioexpress
 classification "Development/Integrated Development Environments"
 summary "Sun Studio Express - C, C++, & Fortran compilers and Tools"
-version 0.2009.3
+version 0.2009.3.1
 import sunstudioexpress
 depend SUNWarc
 depend SUNWcpp
@@ -22,4 +50,10 @@ depend SUNWj6rtx
 depend SUNWlibm
 depend SUNWsprot
 depend SUNWtoo
+add set name=info.keyword value="Fortran compiler module iropt optimizer \
+    autopar debug debugger debugging breakpoint parallelization tuning \
+    multi-thread multi-core productivity HPC linux collector platform \
+    xprofile profile profiling performance library blas lapack fftpack \
+    fft solver sparse autopar C C++ OpenMP Studio IDE editor refactoring \
+    DLight"
 end package
