@@ -1,0 +1,4 @@
+package SUNWfcoeu
+classification "Drivers/Storage"
+import SUNWfcoeu
+end package

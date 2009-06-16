@@ -1,0 +1,6 @@
+package SUNWjaxb
+classification "Development/Java"
+import SUNWjaxb
+depend SUNWactivation
+version 2.1.11
+end package

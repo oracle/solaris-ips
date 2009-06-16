@@ -1,0 +1,5 @@
+package SUNWdbus-python24
+classification "System/Libraries"
+import SUNWdbus-python24
+import SUNWdbus-python24-devel
+end package

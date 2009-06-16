@@ -1,0 +1,6 @@
+package SUNWpowerman
+classification "System/Administration and Configuration"
+import SUNWpowermanr
+import SUNWpowermanu
+version 2.3
+end package

@@ -1,0 +1,5 @@
+package SUNWunrar
+classification "Applications/System Utilities"
+import SUNWunrar
+version 3.8.5
+end package

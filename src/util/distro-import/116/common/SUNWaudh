@@ -1,0 +1,4 @@
+package SUNWaudh
+classification "System/Media"
+import SUNWaudh
+end package

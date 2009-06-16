@@ -1,0 +1,5 @@
+package SUNWlibgnomecanvas
+classification "Desktop (GNOME)/Libraries"
+import SUNWlibgnomecanvas
+import SUNWlibgnomecanvas-devel
+end package

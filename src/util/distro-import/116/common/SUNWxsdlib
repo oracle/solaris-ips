@@ -1,0 +1,5 @@
+package SUNWxsdlib
+classification "Development/Java"
+import SUNWxsdlib
+version 0.2009.4.15
+end package

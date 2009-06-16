@@ -1,0 +1,5 @@
+package SUNWjaxen-core
+classification "Development/Java"
+import SUNWjaxen-core
+version 1.1.1
+end package

@@ -1,0 +1,6 @@
+package SUNWcglib
+classification "Development/Java"
+import SUNWcglib
+depend SUNWjarjar
+version 2.2
+end package

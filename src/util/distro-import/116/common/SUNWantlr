@@ -1,0 +1,6 @@
+package SUNWantlr
+classification "Development/Other Languages"
+import SUNWantlr
+depend SUNWstringtemplate
+version 3.0
+end package

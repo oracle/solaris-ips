@@ -1,0 +1,10 @@
+package SUNWdom4j
+classification "Development/Java"
+import SUNWdom4j
+depend SUNWjaxen-core
+depend SUNWpull-parser
+depend SUNWrelaxngDatatype
+depend SUNWxpp3min
+depend SUNWxsdlib
+version 1.6.1
+end package

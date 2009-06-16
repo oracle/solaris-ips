@@ -1,0 +1,5 @@
+package SUNWdrivel
+classification "Applications/Internet"
+import SUNWdrivel
+import SUNWdrivel-root
+end package

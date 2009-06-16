@@ -1,0 +1,5 @@
+package SUNWpython26-notify
+classification "Development/Python"
+import SUNWpython26-notify
+import SUNWpython26-notify-devel
+end package

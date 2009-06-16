@@ -1,0 +1,5 @@
+package SUNWfipe
+classification "System/Hardware"
+import SUNWfipe
+add driver name=fipe alias=pci8086,360c alias=pci8086,25f0
+end package

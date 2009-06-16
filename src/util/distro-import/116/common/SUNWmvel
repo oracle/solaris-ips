@@ -1,0 +1,5 @@
+package SUNWmvel
+classification "Development/Java"
+import SUNWmvel
+version 1.2.22
+end package

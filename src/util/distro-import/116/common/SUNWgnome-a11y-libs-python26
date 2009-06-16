@@ -1,0 +1,6 @@
+package SUNWgnome-a11y-libs-python26
+classification "Applications/Universal Access"
+import SUNWgnome-a11y-libs-python26
+depend SUNWgnome-a11y-libs
+depend SUNWgnome-python-libs
+end package

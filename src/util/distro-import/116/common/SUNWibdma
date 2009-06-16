@@ -1,0 +1,4 @@
+package SUNWibdma
+classification "System/Hardware"
+import SUNWibdmar
+end package

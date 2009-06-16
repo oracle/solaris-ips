@@ -1,0 +1,6 @@
+package SUNWntp
+classification "System/Services"
+import SUNWntpu
+import SUNWntpr
+version 4.2.5.172
+end package

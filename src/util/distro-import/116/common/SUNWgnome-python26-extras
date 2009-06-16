@@ -1,0 +1,6 @@
+package SUNWgnome-python26-extras
+classification "Development/Python"
+import SUNWgnome-python26-extras
+import SUNWgnome-python26-extras-devel
+depend SUNWgnome-python26-libs
+end package

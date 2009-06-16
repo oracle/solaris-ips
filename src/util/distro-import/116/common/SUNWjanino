@@ -1,0 +1,5 @@
+package SUNWjanino
+classification "Development/Java"
+import SUNWjanino
+version 2.5.10
+end package

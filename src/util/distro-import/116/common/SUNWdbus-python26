@@ -1,0 +1,5 @@
+package SUNWdbus-python26
+classification "System/Libraries"
+import SUNWdbus-python26
+import SUNWdbus-python26-devel
+end package

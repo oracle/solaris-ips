@@ -1,0 +1,4 @@
+package SUNWfirefox-apoc-adapter
+classification "Applications/Internet"
+import SUNWfirefox-apoc-adapter
+end package

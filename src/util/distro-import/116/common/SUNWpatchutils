@@ -1,0 +1,7 @@
+package SUNWpatchutils
+classification "System/Text Tools"
+import SUNWpatchutils
+depend_path /usr/bin/gdiff
+depend_path /usr/bin/gpatch
+version 0.3.0
+end package

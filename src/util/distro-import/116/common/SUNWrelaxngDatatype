@@ -1,0 +1,5 @@
+package SUNWrelaxngDatatype
+classification "Development/Java"
+import SUNWrelaxngDatatype
+version 1.0
+end package

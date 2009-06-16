@@ -1,0 +1,6 @@
+package SUNWtor
+classification "Applications/Internet"
+import SUNWtor
+import SUNWtor-root
+version 0.2.0.34
+end package

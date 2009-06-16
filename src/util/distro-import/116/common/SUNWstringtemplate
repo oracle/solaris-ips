@@ -1,0 +1,6 @@
+package SUNWstringtemplate
+classification "Development/Java"
+import SUNWstringtemplate
+depend SUNWantlr2
+version 3.2
+end package

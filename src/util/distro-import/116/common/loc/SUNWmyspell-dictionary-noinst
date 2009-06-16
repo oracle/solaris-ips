@@ -1,0 +1,4 @@
+package SUNWmyspell-dictionary-noinst
+classification "System/Localizations"
+import SUNWmyspell-dictionary-noinst
+end package

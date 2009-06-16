@@ -1,0 +1,5 @@
+package SUNWlibglade
+classification "Desktop (GNOME)/Libraries"
+import SUNWlibglade
+import SUNWlibglade-devel
+end package

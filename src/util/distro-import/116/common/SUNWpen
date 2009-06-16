@@ -1,0 +1,6 @@
+package SUNWpen
+classification "Applications/Internet"
+import SUNWpen
+import SUNWpenr
+version 0.18.0
+end package

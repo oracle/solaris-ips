@@ -1,0 +1,5 @@
+package SUNWawstats
+classification "Web Services/Application and Web Servers"
+import SUNWawstats
+version 6.9
+end package

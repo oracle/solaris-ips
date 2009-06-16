@@ -1,0 +1,12 @@
+package SUNWgnome-base-libs
+classification "Desktop (GNOME)/Libraries"
+import SUNWgnome-base-libs
+import SUNWgnome-base-libs-devel
+import SUNWgnome-base-libs-root
+depend SUNWglib2
+depend SUNWgtk2
+depend SUNWlibart
+depend SUNWlibglade
+depend SUNWlibgnomecanvas
+depend SUNWpango
+end package

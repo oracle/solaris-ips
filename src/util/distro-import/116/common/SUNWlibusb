@@ -1,0 +1,4 @@
+package SUNWlibusb
+classification "System/Libraries"
+import SUNWlibusb
+end package

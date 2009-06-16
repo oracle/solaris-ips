@@ -1,0 +1,9 @@
+package SUNWrmod
+classification "System/Core"
+import SUNWrmodr
+drop boot/solaris.xpm.gz
+add file solaris.xpm path=boot/solaris.xpm mode=0644 owner=root group=sys
+add file master path=boot/solaris/devicedb/master mode=0644 owner=root \
+	group=sys preserve=true
+import SUNWrmodu
+end package

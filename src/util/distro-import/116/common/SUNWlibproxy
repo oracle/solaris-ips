@@ -1,0 +1,5 @@
+package SUNWlibproxy
+classification "System/Libraries"
+import SUNWlibproxy
+import SUNWlibproxy-devel
+end package

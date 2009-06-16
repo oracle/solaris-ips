@@ -1,0 +1,4 @@
+package SUNWpython26-imaging
+classification "Development/Python"
+import SUNWpython26-imaging
+end package

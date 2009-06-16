@@ -1,0 +1,4 @@
+package SUNWgtk-doc
+classification "Desktop (GNOME)/Libraries"
+import SUNWgtk-doc
+end package

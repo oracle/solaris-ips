@@ -1,0 +1,6 @@
+package SUNWjxl
+classification "Development/Java"
+import SUNWjxl
+depend SUNWlog4j
+version 2.4.2
+end package

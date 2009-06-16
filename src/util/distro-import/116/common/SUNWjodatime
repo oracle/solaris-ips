@@ -1,0 +1,5 @@
+package SUNWjodatime
+classification "Development/Java"
+import SUNWjodatime
+version 1.5.1
+end package

@@ -1,0 +1,4 @@
+package SUNWgtk-vnc-python26
+classification "Development/GNOME and GTK+"
+import SUNWgtk-vnc-python26
+end package

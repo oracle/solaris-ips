@@ -1,0 +1,11 @@
+package SUNWdrools
+classification "Development/Java"
+import SUNWdrools
+depend SUNWantlr
+depend SUNWjanino
+depend SUNWjdtcore
+depend SUNWjxl
+depend SUNWmvel
+depend SUNWxstream
+version 4.0.7
+end package

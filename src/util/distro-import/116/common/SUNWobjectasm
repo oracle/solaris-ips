@@ -1,0 +1,5 @@
+package SUNWobjectasm
+classification "Development/Java"
+import SUNWobjectasm
+version 3.1
+end package

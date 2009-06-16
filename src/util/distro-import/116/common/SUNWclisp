@@ -1,0 +1,5 @@
+package SUNWclisp
+classification "Development/Other Languages"
+import SUNWclisp
+version 2.47
+end package

@@ -1,0 +1,5 @@
+package SUNWbwm-ng
+classification "Applications/System Utilities"
+import SUNWbwm-ng
+version 0.6
+end package

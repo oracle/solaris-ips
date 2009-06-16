@@ -1,0 +1,5 @@
+package SUNWfcgi-doc
+classification "Web Services/Application and Web Servers"
+import SUNWfcgi-doc
+version 2.4.0
+end package

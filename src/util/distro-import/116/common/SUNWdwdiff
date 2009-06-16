@@ -1,0 +1,5 @@
+package SUNWdwdiff
+classification "System/Text Tools"
+import SUNWdwdiff
+version 1.5.2
+end package

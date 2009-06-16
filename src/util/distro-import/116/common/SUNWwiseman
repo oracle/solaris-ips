@@ -1,0 +1,9 @@
+package SUNWwiseman
+classification "Development/Java"
+import SUNWwisemanr
+import SUNWwisemanu
+depend SUNWjaxb
+depend SUNWsaaj
+depend SUNWtcat
+version 1.0
+end package

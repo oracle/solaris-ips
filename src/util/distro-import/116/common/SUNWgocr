@@ -1,0 +1,5 @@
+package SUNWgocr
+classification "Applications/Graphics and Imaging"
+import SUNWgocr
+version 0.46
+end package

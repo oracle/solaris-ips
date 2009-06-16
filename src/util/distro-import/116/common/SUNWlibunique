@@ -1,0 +1,5 @@
+package SUNWlibunique
+classification "System/Libraries"
+import SUNWlibunique
+import SUNWlibunique-devel
+end package

@@ -1,0 +1,6 @@
+package SUNWjarjar
+classification "Development/Java"
+import SUNWjarjar
+depend SUNWobjectasm
+version 1.0
+end package

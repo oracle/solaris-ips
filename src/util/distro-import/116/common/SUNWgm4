@@ -1,0 +1,5 @@
+package SUNWgm4
+classification "Development/GNU"
+import SUNWgm4
+version 1.4.12
+end package

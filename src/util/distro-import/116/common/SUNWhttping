@@ -1,0 +1,5 @@
+package SUNWhttping
+classification "Applications/Internet"
+import SUNWhttping
+version 1.3.0
+end package

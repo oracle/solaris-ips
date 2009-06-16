@@ -1,0 +1,9 @@
+package SUNWgrub
+classification "System/Core"
+$(i386_ONLY)import SUNWgrub
+import SUNWgrubr
+version 0.97
+$(i386_ONLY)drop boot/grub/splash.xpm.gz
+$(i386_ONLY)add file splash.xpm.gz path=boot/grub/splash.xpm.gz mode=0644 \
+$(i386_ONLY)	owner=root group=sys
+end package

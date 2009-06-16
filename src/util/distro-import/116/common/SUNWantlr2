@@ -1,0 +1,5 @@
+package SUNWantlr2
+classification "Development/Other Languages"
+import SUNWantlr2
+version 2.7.7
+end package

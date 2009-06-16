@@ -1,0 +1,5 @@
+package SUNWiftop
+classification "Applications/System Utilities"
+import SUNWiftop
+version 0.17
+end package

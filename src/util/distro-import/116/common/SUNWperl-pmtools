@@ -1,0 +1,5 @@
+package SUNWperl-pmtools
+classification "Development/Perl"
+import SUNWperl-pmtools
+version 1.10
+end package

@@ -1,0 +1,7 @@
+package SUNWxorg-server
+classification "System/X11"
+import SUNWxorg-server
+depend SUNWxorg-xkb
+$(i386_ONLY)depend SUNWxsvc
+version 1.6.1.901
+end package

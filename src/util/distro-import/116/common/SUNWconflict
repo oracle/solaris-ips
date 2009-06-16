@@ -1,0 +1,5 @@
+package SUNWconflict
+classification "Applications/System Utilities"
+import SUNWconflict
+version 0.2004.9.1
+end package

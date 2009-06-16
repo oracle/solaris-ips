@@ -1,0 +1,5 @@
+package SUNWlog4j
+classification "Development/Java"
+import SUNWlog4j
+version 1.2.15
+end package

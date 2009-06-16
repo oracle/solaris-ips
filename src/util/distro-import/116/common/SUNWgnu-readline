@@ -1,0 +1,5 @@
+package SUNWgnu-readline
+classification "System/Libraries"
+import SUNWgnu-readline
+version 5.2
+end package

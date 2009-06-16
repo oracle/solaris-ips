@@ -1,0 +1,5 @@
+package SUNWpwgen
+classification "Applications/System Utilities"
+import SUNWpwgen
+version 2.6
+end package

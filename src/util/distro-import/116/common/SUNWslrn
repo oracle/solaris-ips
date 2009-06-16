@@ -1,0 +1,5 @@
+package SUNWslrn
+classification "Applications/Internet"
+import SUNWslrn
+version 0.9.9.1
+end package
