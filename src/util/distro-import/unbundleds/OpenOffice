@@ -77,6 +77,7 @@ import ooobasis31-de-math
 import ooobasis31-de-res
 import ooobasis31-de-writer
 import openofficeorg3-de
+depend openoffice
 end package
 
 package openoffice-es
@@ -94,6 +95,7 @@ import ooobasis31-es-math
 import ooobasis31-es-res
 import ooobasis31-es-writer
 import openofficeorg3-es
+depend openoffice
 end package
 
 package openoffice-fr
@@ -111,6 +113,7 @@ import ooobasis31-fr-math
 import ooobasis31-fr-res
 import ooobasis31-fr-writer
 import openofficeorg3-fr
+depend openoffice
 end package
 
 package openoffice-hu
@@ -128,6 +131,7 @@ import ooobasis31-hu-math
 import ooobasis31-hu-res
 import ooobasis31-hu-writer
 import openofficeorg3-hu
+depend openoffice
 end package
 
 package openoffice-it
@@ -145,6 +149,7 @@ import ooobasis31-it-math
 import ooobasis31-it-res
 import ooobasis31-it-writer
 import openofficeorg3-it
+depend openoffice
 end package
 
 package openoffice-ja
@@ -162,6 +167,7 @@ import ooobasis31-ja-math
 import ooobasis31-ja-res
 import ooobasis31-ja-writer
 import openofficeorg3-ja
+depend openoffice
 end package
 
 package openoffice-ko
@@ -179,6 +185,7 @@ import ooobasis31-ko-math
 import ooobasis31-ko-res
 import ooobasis31-ko-writer
 import openofficeorg3-ko
+depend openoffice
 end package
 
 package openoffice-nl
@@ -196,6 +203,7 @@ import ooobasis31-nl-math
 import ooobasis31-nl-res
 import ooobasis31-nl-writer
 import openofficeorg3-nl
+depend openoffice
 end package
 
 package openoffice-pl
@@ -213,6 +221,7 @@ import ooobasis31-pl-math
 import ooobasis31-pl-res
 import ooobasis31-pl-writer
 import openofficeorg3-pl
+depend openoffice
 end package
 
 package openoffice-pt
@@ -230,6 +239,7 @@ import ooobasis31-pt-math
 import ooobasis31-pt-res
 import ooobasis31-pt-writer
 import openofficeorg3-pt
+depend openoffice
 end package
 
 package openoffice-pt-BR
@@ -247,6 +257,7 @@ import ooobasis31-pt-BR-math
 import ooobasis31-pt-BR-res
 import ooobasis31-pt-BR-writer
 import openofficeorg3-pt-BR
+depend openoffice
 end package
 
 package openoffice-ru
@@ -264,6 +275,7 @@ import ooobasis31-ru-math
 import ooobasis31-ru-res
 import ooobasis31-ru-writer
 import openofficeorg3-ru
+depend openoffice
 end package
 
 package openoffice-sv
@@ -281,6 +293,7 @@ import ooobasis31-sv-math
 import ooobasis31-sv-res
 import ooobasis31-sv-writer
 import openofficeorg3-sv
+depend openoffice
 end package
 
 package openoffice-zh-CN
@@ -298,6 +311,7 @@ import ooobasis31-zh-CN-math
 import ooobasis31-zh-CN-res
 import ooobasis31-zh-CN-writer
 import openofficeorg3-zh-CN
+depend openoffice
 end package
 
 package openoffice-zh-TW
@@ -315,4 +329,5 @@ import ooobasis31-zh-TW-math
 import ooobasis31-zh-TW-res
 import ooobasis31-zh-TW-writer
 import openofficeorg3-zh-TW
+depend openoffice
 end package
