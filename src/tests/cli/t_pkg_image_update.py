@@ -54,13 +54,60 @@ class TestImageUpdate(testutils.ManyDepotTestCase):
             add dir mode=0755 owner=root group=bin path=/bin
             close """
 
+        baz10 = """
+            open baz@1.0,5.11-0
+            add dir mode=0755 owner=root group=bin path=/lib
+            close """
+
+        baz11 = """
+            open baz@1.1,5.11-0
+            add dir mode=0755 owner=root group=bin path=/lib
+            close """
+
+        qux10 = """
+            open qux@1.0,5.11-0
+            add depend type=require fmri=pkg:/quux@1.0
+            add dir mode=0755 owner=root group=bin path=/lib
+            close """
+
+        qux11 = """
+            open qux@1.1,5.11-0
+            add depend type=require fmri=pkg:/quux@1.1
+            add dir mode=0755 owner=root group=bin path=/lib
+            close """
+
+        quux10 = """
+            open quux@1.0,5.11-0
+            add depend type=require fmri=pkg:/corge@1.0
+            add dir mode=0755 owner=root group=bin path=/usr
+            close """
+
+        quux11 = """
+            open quux@1.1,5.11-0
+            add depend type=require fmri=pkg:/corge@1.1
+            add dir mode=0755 owner=root group=bin path=/usr
+            close """
+
+        corge10 = """
+            open corge@1.0,5.11-0
+            add dir mode=0755 owner=root group=bin path=/bin
+            close """
+
+        corge11 = """
+            open corge@1.1,5.11-0
+            add dir mode=0755 owner=root group=bin path=/bin
+            close """
+
         def setUp(self):
                 testutils.ManyDepotTestCase.setUp(self, 3)
                 durl1 = self.dcs[1].get_depot_url()
                 durl2 = self.dcs[2].get_depot_url()
-                durl3 = self.dcs[3].get_depot_url()
-                self.pkgsend_bulk(durl1, self.foo10 + self.foo11)
-                self.pkgsend_bulk(durl2, self.bar10 + self.bar11)
+                self.pkgsend_bulk(durl1, self.foo10 + self.foo11 + \
+                    self.baz11 + self.qux10 + self.qux11 + self.quux10 + \
+                    self.quux11 + self.corge11)
+                self.pkgsend_bulk(durl2, self.foo10 + self.bar10 + \
+                    self.bar11 + self.baz10 + self.qux10 + self.qux11 + \
+                    self.quux10 + self.quux11 + self.corge10)
 
         def test_image_update_bad_opts(self):
                 """Test image-update with bad options."""
@@ -72,7 +119,7 @@ class TestImageUpdate(testutils.ManyDepotTestCase):
                 self.pkg("image-update -vq", exit=2)
                 self.pkg("image-update foo", exit=2)
 
-        def test_after_pub_removal(self):
+        def test_01_after_pub_removal(self):
                 """Install packages from multiple publishers, then verify that
                 removal of the second publisher will not prevent an
                 image-update."""
@@ -97,7 +144,8 @@ class TestImageUpdate(testutils.ManyDepotTestCase):
                 self.pkg("image-update -nv")
 
                 # Add two publishers using the removed publisher's repository,
-                # an image-update should be possible despite the conflict.
+                # an image-update should be possible despite the conflict (as
+                # the newer versions will simply be ignored).
                 self.pkg("set-publisher -O %s test3" % durl2)
                 self.pkg("set-publisher -O %s test4" % durl2)
                 self.pkg("image-update -nv")
@@ -120,6 +168,58 @@ class TestImageUpdate(testutils.ManyDepotTestCase):
                 self.pkg("set-publisher -O %s test2" % durl3)
                 self.pkg("set-publisher -O %s test3" % durl2)
                 self.pkg("image-update -nv")
+
+        def test_02_update_multi_publisher(self):
+                """Verify that image-updates work as expected when different
+                publishers offer the same package."""
+
+                durl1 = self.dcs[1].get_depot_url()
+                durl2 = self.dcs[2].get_depot_url()
+                durl3 = self.dcs[3].get_depot_url()
+                self.image_create(durl1, prefix="test1")
+
+                # First, verify that the preferred status of a publisher will
+                # choose which source is used for image-update when two
+                # publishers offer the same package and the package publisher
+                # was preferred at the time of install.
+                self.pkg("set-publisher -P -O %s test2" % durl2)
+                self.pkg("install foo@1.0")
+                self.pkg("info foo@1.0 | grep test2")
+                self.pkg("set-publisher -P test1")
+                self.pkg("image-update -v")
+                self.pkg("info foo@1.1 | grep test1")
+                self.pkg("uninstall foo")
+
+                # Next, verify that the preferred status of a publisher will
+                # not cause an upgrade of a package if the newer version is
+                # offered by the preferred publisher and the package publisher
+                # was not preferred at the time of isntall and was not used
+                # to install the package.
+                self.pkg("install baz@1.0")
+                self.pkg("info baz@1.0 | grep test2")
+                self.pkg("image-update -v")
+                self.pkg("info baz@1.0 | grep test2")
+                self.pkg("uninstall baz")
+
+                # Next, verify that if two non-preferred publishers offer
+                # the same package, that the publisher it was installed from
+                # will be chosen for an update and the update will succeed. In
+                # addition, its dependencies should be selected from the same
+                # publisher used for the update if that publisher has them and
+                # the remaining dependencies selected from the first available.
+                self.pkg("set-publisher -P -O %s test3" % durl3)
+                self.pkg("install pkg://test1/qux@1.0")
+                self.pkg("info qux@1.0 | grep test1")
+                self.pkg("info quux@1.0 | grep test1")
+                self.pkg("info corge@1.0 | grep test2")
+                self.pkg("image-update -v")
+                self.pkg("info qux@1.1 | grep test1")
+                self.pkg("info quux@1.1 | grep test1")
+                self.pkg("info corge@1.1 | grep test1")
+
+                # Finally, cleanup and verify no packages are installed.
+                self.pkg("uninstall -vr corge")
+                self.pkg("list", exit=1)
 
 
 if __name__ == "__main__":

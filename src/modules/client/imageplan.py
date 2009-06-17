@@ -327,16 +327,29 @@ class ImagePlan(object):
                         cf = self.image.constraints.apply_constraints_to_fmri(f)
 
                         # This will be the newest version of the specified
-                        # dependency package, coming from the preferred
-                        # publisher, if it's available there.  Package names
-                        # specified in dependencies are treated as exact.
-                        cf = self.image.inventory([ cf ], all_known=True,
+                        # dependency package.  Package names specified in
+                        # dependencies are treated as exact.  Matches from the
+                        # preferred publisher are used first, then matches from
+                        # the same publisher as the evaluated fmri, and then
+                        # first available.  Callers can override this behavior
+                        # by specifying the publisher prefix as part of the FMRI.
+                        matches = list(self.image.inventory([ cf ], all_known=True,
                             matcher=fmri.exact_name_match, preferred=True,
-                            first_only=True, ordered=False).next()[0]
+                            ordered=False))
 
-                        # XXX LOG "adding dependency %s" % pfmri
-
-                        #msg("adding dependency %s" % cf)
+                        cf = matches[0][0]
+                        evalpub = pfmri.get_publisher()
+                        if len(matches) > 1 and not cf.preferred_publisher() \
+                            and cf.get_publisher() != evalpub:
+                                # If more than one match was returned, and it
+                                # wasn't for the preferred publisher or for the
+                                # same publisher as the fmri being evaluated,
+                                # then try to find a match that has the same
+                                # publisher as the fmri being evaluated.
+                                for f, st in matches[1:]:
+                                        if f.get_publisher() == evalpub:
+                                                cf = f
+                                                break
 
                         self.propose_fmri(cf)
                         self.evaluate_fmri(cf)

@@ -375,6 +375,12 @@ class Catalog(object):
                 The fmri is expected not to have an embedded publisher.  If it
                 does, it will be ignored."""
 
+                if pfmri.has_publisher():
+                        # Cache entries must not contain the name of the
+                        # publisher, otherwise matching during packaging
+                        # operations may not work correctly.
+                        pfmri = fmri.PkgFmri(pfmri.get_fmri(anarchy=True))
+
                 pversion = str(pfmri.version)
                 if pfmri.pkg_name not in d:
                         # This is the simplest representation of the cache data
@@ -388,7 +394,7 @@ class Catalog(object):
                         d[pfmri.pkg_name][pversion] = (pfmri, { pub: known })
                         bisect.insort(d[pfmri.pkg_name]["versions"],
                             pfmri.version)
-                else:
+                elif pub not in d[pfmri.pkg_name][pversion][1]:
                         d[pfmri.pkg_name][pversion][1][pub] = known
 
         @staticmethod

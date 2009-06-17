@@ -1831,19 +1831,28 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
 
         foo10 = """
             open foo@1.0,5.11-0
-            close """
+            close"""
 
         bar10 = """
             open bar@1.0,5.11-0
-            close """
+            close"""
 
         moo10 = """
             open moo@1.0,5.11-0
-            close """
+            close"""
 
         quux10 = """
             open quux@1.0,5.11-0
             add depend type=optional fmri=optional@1.0
+            close"""
+
+        baz10 = """
+            open baz@1.0,5.11-0
+            add depend type=require fmri=corge@1.0
+            close"""
+
+        corge10 = """
+            open corge@1.0,5.11-0
             close"""
 
         optional10 = """
@@ -1900,11 +1909,12 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
                 self.pkgsend_bulk(durl1, self.foo10 + self.moo10 + \
                     self.quux10 + self.optional10 + self.upgrade_p10 + \
                     self.upgrade_np11 + self.incorp_p10 + self.incorp_p11 + \
-                    self.incorp_np10 + self.incorp_np11)
+                    self.incorp_np10 + self.incorp_np11 + self.baz10 + \
+                    self.corge10)
 
                 durl2 = self.dcs[2].get_depot_url()
                 self.pkgsend_bulk(durl2, self.foo10 + self.bar10 + \
-                    self.upgrade_p11 + self.upgrade_np10)
+                    self.upgrade_p11 + self.upgrade_np10 + self.corge10)
 
                 # Create image and hence primary publisher
                 self.image_create(durl1, prefix="test1")
@@ -2175,6 +2185,34 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
                 # for subsequent tests.
                 self.pkg("set-publisher -O %s -P test1" % \
                     self.dcs[1].get_depot_url())
+
+        def test_13_non_preferred_multimatch(self):
+                """Verify that when multiple non-preferred publishers offer the
+                same package that the expected install behaviour occurs."""
+
+                self.pkg("set-publisher -P -O %s test3" % \
+                    self.dcs[3].get_depot_url())
+
+                # First, verify that installing a package from a non-preferred
+                # publisher will cause its dependencies to be installed from the
+                # same publisher if the preferred publisher does not offer them.
+                self.pkg("install pkg://test1/baz")
+                self.pkg("info baz | grep test1")
+                self.pkg("info corge | grep test1")
+                self.pkg("uninstall -r corge")
+
+                # Next, verify that naming the specific publishers for a package
+                # and all of its dependencies will install the package from the
+                # specified sources instead of the same publisher the package is a
+                # dependency of.
+                self.pkg("install pkg://test1/baz pkg://test2/corge")
+                self.pkg("info baz | grep test1")
+                self.pkg("info corge | grep test2")
+                self.pkg("uninstall -r corge")
+
+                # Finally, cleanup for the next test.
+                self.pkg("set-publisher -P test1")
+                self.pkg("unset-publisher test3")
 
 
 class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):

@@ -361,7 +361,8 @@ class ImageInterface(object):
                                 self.img.make_install_plan(pkg_list,
                                     self.progresstracker,
                                     self.__check_cancelation,
-                                    noexecute, verbose=verbose)
+                                    noexecute, verbose=verbose,
+                                    multimatch_ignore=True)
 
                                 assert self.img.imageplan
 

@@ -316,7 +316,8 @@ cli.t_pkg_image_create.py TestPkgImageCreateBasics.test_766|pass
 cli.t_pkg_image_create.py TestPkgImageCreateBasics.test_7_image_create_no_refresh|pass
 cli.t_pkg_image_create.py TestPkgImageCreateBasics.test_basic|pass
 cli.t_pkg_image_create.py TestPkgImageCreateBasics.test_image_create_bad_opts|pass
-cli.t_pkg_image_update.py TestImageUpdate.test_after_pub_removal|pass
+cli.t_pkg_image_update.py TestImageUpdate.test_01_after_pub_removal|pass
+cli.t_pkg_image_update.py TestImageUpdate.test_02_update_multi_publisher|pass
 cli.t_pkg_image_update.py TestImageUpdate.test_image_update_bad_opts|pass
 cli.t_pkg_info.py TestPkgInfoBasics.test_bug_2274|pass
 cli.t_pkg_info.py TestPkgInfoBasics.test_info_empty_image|pass
@@ -357,6 +358,7 @@ cli.t_pkg_install.py TestMultipleDepots.test_09_uninstall_from_wrong_publisher|p
 cli.t_pkg_install.py TestMultipleDepots.test_10_install_after_publisher_removal|pass
 cli.t_pkg_install.py TestMultipleDepots.test_11_uninstall_after_preferred_publisher_change|pass
 cli.t_pkg_install.py TestMultipleDepots.test_12_uninstall_after_publisher_removal|pass
+cli.t_pkg_install.py TestMultipleDepots.test_13_non_preferred_multimatch|pass
 cli.t_pkg_install.py TestPkgInstallActions.test_bad_hardlinks|pass
 cli.t_pkg_install.py TestPkgInstallActions.test_bad_links|pass
 cli.t_pkg_install.py TestPkgInstallActions.test_basics_0|pass

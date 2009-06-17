@@ -2659,16 +2659,13 @@ class Image(object):
                 being sorted by version (descending).  By default, this is True.
                 """
 
-                # "preferred" and "first_only" are private arguments that are
-                # currently only used in evaluate_fmri(), but could be made more
-                # generally useful.  "preferred" ensures that all potential
-                # matches from the preferred publisher are generated before
-                # those from non-preferred publishers.  In the current
-                # implementation, this consumes more memory.  "first_only"
-                # signals us to return only the first match, which allows us to
-                # save all the memory that "preferred" currently eats up.
+                # "preferred" is a private argument that is currently only used
+                # in evaluate_fmri(), but could be made more generally useful.
+                # "preferred" ensures that all potential matches from the
+                # preferred publisher are generated before those from
+                # non-preferred publishers.  In the current implementation, this
+                # consumes more memory.
                 preferred = kwargs.pop("preferred", False)
-                first_only = kwargs.pop("first_only", False)
                 ppub = self.cfg_cache.preferred_publisher
 
                 if not preferred:
@@ -2680,17 +2677,8 @@ class Image(object):
                         for f in self.__inventory(*args, **kwargs):
                                 if f[0].get_publisher() == ppub:
                                         yield f
-                                        if first_only:
-                                                return
                                 else:
-                                        if first_only:
-                                                if not firstnp:
-                                                        firstnp = f
-                                        else:
-                                                nplist.append(f)
-                        if first_only:
-                                yield firstnp
-                                return
+                                        nplist.append(f)
 
                         for f in nplist:
                                 yield f
@@ -2829,7 +2817,7 @@ class Image(object):
                 return olist, onames
 
         def make_install_plan(self, pkg_list, progtrack, check_cancelation,
-            noexecute, filters = None, verbose=False):
+            noexecute, filters=None, verbose=False, multimatch_ignore=False):
                 """Take a list of packages, specified in pkg_list, and attempt
                 to assemble an appropriate image plan.  This is a helper
                 routine for some common operations in the client.
@@ -2839,7 +2827,14 @@ class Image(object):
                 when an ambiguous package name is specified.  If the user
                 wishes to install a package from a non-preferred publisher,
                 the full FMRI that contains a publisher should be used
-                to name the package."""
+                to name the package.
+
+                'multimatch_ignore' is an optional, boolean value that
+                indicates whether packages that have multiple matches for
+                only non-preferred publishers should be ignored when creating
+                the install plan.  This is intended to be used during an
+                image-update.
+                """
 
                 self.load_catalogs(progtrack)
 
@@ -2946,6 +2941,11 @@ class Image(object):
                                     self.__filter_install_matches(npmatch,
                                     npnames)
                                 if len(npnames) > 1:
+                                        if multimatch_ignore:
+                                                # Caller has requested that this
+                                                # package be skipped if multiple
+                                                # matches are found.
+                                                continue
                                         # If there are still multiple matches
                                         # after filtering, fail.
                                         multiple_matches.append((p,
