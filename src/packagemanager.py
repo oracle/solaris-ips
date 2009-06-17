@@ -3780,7 +3780,12 @@ Use -U (--update-all) to proceed with Update All"""
                         image_dir = os.environ["PKG_IMAGE"]
                 except KeyError:
                         image_dir = os.getcwd()
-
+        try:
+                gtk.init_check()
+        except RuntimeError, e:
+                print _("Unable to initialize gtk")
+                print str(e)
+                sys.exit(1)
 
         # Setup webinstall
         if info_install_arg or len(sys.argv) == 2:
