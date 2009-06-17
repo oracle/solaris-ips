@@ -146,7 +146,7 @@ def load_passwd(dirpath):
         f = file(passwd_file)
         for line in f:
                 arr = line.rstrip().split(":")
-                if len(arr) < 7:
+                if len(arr) != 7:
                         # Skip any line we can't make sense of.
                         continue
                 try:
@@ -174,7 +174,7 @@ def load_groups(dirpath):
         f = file(group_file)
         for line in f:
                 arr = line.rstrip().split(":")
-                if len(arr) < 4:
+                if len(arr) != 4:
                         # Skip any line we can't make sense of.
                         continue
                 try:
