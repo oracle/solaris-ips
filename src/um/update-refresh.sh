@@ -45,6 +45,11 @@
 #
 # ##########################################################################
 
+# Wait a random part of 30 minutes so servers do not get hit all at once
+let dither=1800*$RANDOM
+let dither=dither/32767
+sleep $dither
+
 # Refresh the IPS catalog
 fmri=svc:/application/pkg/update
 image_dir=`svcprop -p update/image_dir $fmri`

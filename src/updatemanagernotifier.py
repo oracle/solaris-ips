@@ -31,6 +31,7 @@ import socket
 import locale
 import gettext
 import getopt
+import random
 try:
         import gobject
         gobject.threads_init()
@@ -128,7 +129,7 @@ class UpdateManagerNotifier:
                 self.pr = progress.NullProgressTracker()
                 if self.get_show_icon_on_startup():
                         self.client.set_bool(SHOW_ICON_ON_STARTUP_PREFERENCES, False)
-                        gobject.idle_add(self.check_for_updates)
+                        self.schedule_check_for_updates()
                 else:
                         gobject.idle_add(self.do_next_check)
                 return False
@@ -210,8 +211,6 @@ class UpdateManagerNotifier:
                 return 0
 
         def set_last_check_time(self):
-                self.last_check_time = time.time()
-
                 try:
                         os.makedirs(LASTCHECK_DIR_NAME)
                 except os.error, eargs:
@@ -265,6 +264,15 @@ class UpdateManagerNotifier:
                         self.status_icon = self.create_status_icon()
                 self.client.set_bool(SHOW_ICON_ON_STARTUP_PREFERENCES, value)
                 self.status_icon.set_visible(value)
+
+        def schedule_check_for_updates(self):
+                self.last_check_time = time.time()
+                # Add random delay so that servers will not be hit 
+                # all at once
+                random_delay = random.randint(0, 1800)
+                if debug:
+                        print "random_delay in do_next_check", random_delay
+                gobject.timeout_add(random_delay * 1000, self.check_for_updates)
 
         def check_for_updates(self):
                 image_directory = os.popen(IMAGE_DIR_COMMAND).readline().rstrip()
@@ -398,7 +406,7 @@ class UpdateManagerNotifier:
                         print "time for check: %f - %f \n" % (time.time(), \
                                 self.last_check_time)
                 if self.is_check_required():
-                        gobject.idle_add(self.check_for_updates)
+                        self.schedule_check_for_updates()
                 else:
                         self.schedule_next_check_for_checks()
                 return False
