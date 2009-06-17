@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -60,7 +60,7 @@ class SolarisPackageDatastreamBundle(object):
                 self.pkgmap = {}
 
                 for p in self.pkg.manifest:
-                        if p.type in "fevd":
+                        if p.type in "fevdsl":
                                 if p.pathname.startswith("/"):
                                         dir = "root"
                                 else:
@@ -99,6 +99,9 @@ class SolarisPackageDatastreamBundle(object):
                                 dir = "reloc/"
                         if p.type == "d" and \
                             dir + p.pathname not in self.pkg.datastream:
+                                yield self.action(self.pkgmap, None,
+                                    dir + p.pathname)
+                        if p.type in "ls":
                                 yield self.action(self.pkgmap, None,
                                     dir + p.pathname)
 
