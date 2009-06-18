@@ -43,6 +43,8 @@ m_1_zfs_promote=$(gettext "promoting '%s'.")
 m_1_zfs_destroy=$(gettext "destroying '%s'.")
 m_2_zfs_rename=$(gettext "renaming '%s' to '%s'.")
 m_3_zfs_set=$(gettext "setting property %s='%s' for '%s'.")
+m_rm_r=$(gettext "recursively deleting '%s'.")
+m_rm=$(gettext "deleting '%s'.")
 
 w_no_ds=$(gettext "Warning: no zonepath dataset found.")
 
@@ -87,10 +89,29 @@ usage_err()
 	usage >&2
 }
 
-rm_rf()
+rm_zonepath()
 {
-	# rm -f will never report any errors
-	$nop /bin/rm -rf $@
+	# cleanup stuff we know about and leave any user data alone
+
+	[[ -z "$opt_n" ]] && [[ -n "$opt_v" ]] &&
+		printf "$m_rm\n" "$zonepath/SUNWattached.xml"
+	$nop /bin/rm -f "$zonepath/SUNWattached.xml"
+
+	[[ -z "$opt_n" ]] && [[ -n "$opt_v" ]] &&
+		printf "$m_rm_r\n" "$zonepath/lu"
+	$nop /bin/rm -rf "$zonepath/lu"
+
+	[[ -z "$opt_n" ]] && [[ -n "$opt_v" ]] &&
+		printf "$m_rm_r\n" "$zonepath/dev"
+	$nop /bin/rm -rf "$zonepath/dev"
+
+	[[ -z "$opt_n" ]] && [[ -n "$opt_v" ]] &&
+		printf "$m_rm_r\n" "$zonepath/root"
+	$nop /bin/rm -rf "$zonepath/root"
+
+	[[ -z "$opt_n" ]] && [[ -n "$opt_v" ]] &&
+		printf "$m_rm\n" "$zonepath"
+	$nop /bin/rmdir "$zonepath" 2>/dev/null
 }
 
 zfs_destroy()
@@ -295,8 +316,14 @@ shift `expr $OPTIND - 1`
 zoneroot=$zonepath/root
 
 nop=""
-[[ -n "$opt_n" ]] &&
+if [[ -n "$opt_n" ]]; then
 	nop="echo"
+	#
+	# in '-n' mode we should never return success (since we haven't
+	# actually done anything). so override ZONE_SUBPROC_OK here.
+	#
+	ZONE_SUBPROC_OK=$ZONE_SUBPROC_FATAL
+fi
 
 #
 # We want uninstall to work in the face of various problems, such as a
@@ -305,10 +332,8 @@ nop=""
 # are tolerant of errors.
 #
 
-#
 # get_current_gzbe
-#
-CURRENT_GZBE=`/usr/sbin/beadm list -H | /usr/bin/nawk -F\; '{
+CURRENT_GZBE=`/sbin/beadm list -H | /bin/nawk -F\; '{
 	# Field 3 is the BE status.  'N' is the active BE.
 	if ($3 ~ "N")
 		# Field 2 is the BE UUID
@@ -319,30 +344,44 @@ if [ -z "$CURRENT_GZBE" ]; then
 	print "$f_no_gzbe"
 fi
 
-#
-# get_zonepath_ds $zonepath
-#
-ZONEPATH_DS=`/usr/sbin/zfs list -t filesystem -o name,mountpoint | \
-    /usr/bin/nawk -v zonepath=$zonepath '{
+# find the dataset associated with $zonepath
+ZONEPATH_DS=`/sbin/zfs list -t filesystem -o name,mountpoint | \
+    /bin/nawk -v zonepath=$zonepath '{
 	if ($2 == zonepath)
 		print $1
 }'`
 
 if [ -z "$ZONEPATH_DS" ]; then
-	printf "$f_no_ds\n"
+	# there is no $zonepath dataset
+	rm_zonepath
+	exit $ZONE_SUBPROC_OK
+fi
+
+# find the dataset associated with $ZONEPATH_DS/ROOT
+ZONEPATH_RDS=`/sbin/zfs list -H -t filesystem -o name \
+	$ZONEPATH_DS/ROOT 2>/dev/null`
+
+if [ -z "$ZONEPATH_RDS" ]; then
+	# there is no $ZONEPATH_DS/ROOT dataset
+	c=`/sbin/zfs list -H -t filesystem -r $ZONEPATH_DS | wc -l`
+	if [ $c = 1 ]; then
+		# $zonepath dataset has no descendents
+		zfs_destroy "$ZONEPATH_DS"
+	fi
+	rm_zonepath
 	exit $ZONE_SUBPROC_OK
 fi
 
 # find all the zone BEs datasets associated with this global zone BE.
 unset fs_all
 (( fs_all_c = 0 ))
-if [ -n "$ZONEPATH_DS" -a -n "$CURRENT_GZBE" ]; then
+if [ -n "$CURRENT_GZBE" ]; then
 	/sbin/zfs list -H -t filesystem -o $PROP_PARENT,name \
-	    -r $ZONEPATH_DS/ROOT |
+	    -r $ZONEPATH_RDS |
 	    while IFS="	" read uid fs; do
 
-		# only look at filesystems directly below $ZONEPATH_DS/ROOT
-		[[ "$fs" != ~()($ZONEPATH_DS/ROOT/+([^/])) ]] &&
+		# only look at filesystems directly below $ZONEPATH_RDS
+		[[ "$fs" != ~()($ZONEPATH_RDS/+([^/])) ]] &&
 			continue
 
 		# match by PROP_PARENT uuid
@@ -768,22 +807,14 @@ done
 # Check if there are any other datasets left.  There may be datasets
 # associated with other GZ BEs, so we need to leave things alone in that case.
 #
-if [ -n "$ZONEPATH_DS" ]; then
-	DS=`/usr/sbin/zfs list -H -r -t filesystem -o name $ZONEPATH_DS/ROOT | \
-	    /usr/bin/egrep "$ZONEPATH_DS/ROOT/"`
-	if [ -z "$DS" ]; then
-		# If not, destroy the ROOT dataset.
-		zfs_destroy "$ZONEPATH_DS/ROOT"
-
-		# And its parent.
-		zfs_destroy "$ZONEPATH_DS"
-
-		rm_rf $zonepath
-	fi
-else
-	rm_rf $zonepath
+c=`/sbin/zfs list -H -t filesystem -r $ZONEPATH_RDS | wc -l`
+if [ $c = 1 ]; then
+	zfs_destroy "$ZONEPATH_RDS"
+fi
+c=`/sbin/zfs list -H -t filesystem -r $ZONEPATH_DS | wc -l`
+if [ $c = 1 ]; then
+	zfs_destroy "$ZONEPATH_DS"
 fi
 
-[[ -n "$opt_n" ]] &&
-	exit $ZONE_SUBPROC_FATAL
+rm_zonepath
 exit $ZONE_SUBPROC_OK
