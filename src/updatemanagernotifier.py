@@ -50,6 +50,7 @@ except ImportError:
 import pkg.client.image as image
 import pkg.client.progress as progress
 import pkg.misc as misc
+import pkg.gui.misc as gui_misc
 
 # Put _() in the global namespace
 import __builtin__
@@ -62,7 +63,8 @@ IMAGE_DIRECTORY_DEFAULT = "/"
 LASTCHECK_DIR_NAME = os.path.join(os.path.expanduser("~"),'.updatemanager/notify')
 IMAGE_DIR_COMMAND = "svcprop -p update/image_dir svc:/application/pkg/update"
 
-NOTIFY_ICON_PATH = "/usr/share/icons/update-manager/notify_update.png"
+ICON_LOCATION = "/usr/share/update-manager/icons"
+NOTIFY_ICON_NAME = "notify_update"
 GKSU_PATH = "/usr/bin/gksu"
 UPDATEMANAGER = "pm-updatemanager"
 
@@ -333,7 +335,10 @@ class UpdateManagerNotifier:
                 return image_obj
 
         def create_status_icon(self):
-                status_icon = gtk.status_icon_new_from_file(NOTIFY_ICON_PATH)
+                icon_theme = gtk.IconTheme()
+                icon_theme.append_search_path(ICON_LOCATION)
+                icon = gui_misc.get_icon(icon_theme, NOTIFY_ICON_NAME, 24)
+                status_icon = gtk.status_icon_new_from_pixbuf(icon)
                 status_icon.set_visible(False)
                 status_icon.connect('activate', self.activate_status_icon)
                 status_icon.connect('notify', self.notify_status_icon)

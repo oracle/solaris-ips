@@ -123,8 +123,8 @@ class Beadmin:
                 self.list_filter = self.be_list.filter_new()
                 self.w_be_treeview.set_model(self.list_filter)
                 self.__init_tree_views()
-                self.active_image = gui_misc.get_icon_pixbuf(
-                    self.parent.application_dir, "status_checkmark")
+                self.active_image = gui_misc.get_icon(
+                    self.parent.icon_theme, "status_checkmark")
                 w_active_gtkimage.set_from_pixbuf(self.active_image)
 
                 bebuffer = self.w_beconfirmation_textview.get_buffer()

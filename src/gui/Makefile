@@ -30,6 +30,7 @@ INSTALL = /usr/sbin/install -s
 
 ROOT = ../../proto/root_${MACH}/usr
 ROOTETC = ../../proto/root_${MACH}/etc
+ROOTSHARE = $(ROOT)/share/package-manager
 ROOTUSRLIB = $(ROOT)/lib
 
 ROOTAPPICONSHARE = $(ROOT)/share/icons/hicolor/48x48/apps
@@ -37,14 +38,14 @@ ROOTDATASHARE = $(ROOTSHARE)/data
 ROOTDESKTOPSHARE = $(ROOT)/share/applications
 ROOTGCONFSHARE = $(ROOTETC)/gconf/schemas
 ROOTHELPSHARE = $(ROOT)/share/gnome/help/package-manager
-ROOTICONSHARE = $(ROOT)/share/icons/package-manager
+ROOTICON16SHARE = $(ROOTSHARE)/icons/hicolor/16x16/actions
+ROOTICON22SHARE = $(ROOTSHARE)/icons/hicolor/22x22/actions
 ROOTMIMEICONSHARE = $(ROOT)/share/icons/hicolor/48x48/mimetypes
 ROOTMIMETYPESHARE = $(ROOT)/share/mime/packages
 ROOTPYTHON = $(ROOTUSRLIB)/python2.4
 ROOTPYTHONPKG = $(ROOTPYTHONVENDOR)/pkg/gui
 ROOTPYTHONVENDOR = $(ROOTPYTHON)/vendor-packages
-ROOTSHARE = $(ROOT)/share/package-manager
-ROOTSPSHARE = $(ROOT)/share/package-manager/data/startpagebase
+ROOTSPSHARE = $(ROOTSHARE)/data/startpagebase
 
 ROOTDIRS = \
    $(ROOTAPPICONSHARE) \
@@ -52,7 +53,8 @@ ROOTDIRS = \
    $(ROOTDESKTOPSHARE) \
    $(ROOTGCONFSHARE) \
    $(ROOTHELPSHARE) \
-   $(ROOTICONSHARE) \
+   $(ROOTICON16SHARE) \
+   $(ROOTICON22SHARE) \
    $(ROOTMIMEICONSHARE) \
    $(ROOTMIMETYPESHARE) \
    $(ROOTPYTHONPKG) \
@@ -110,14 +112,16 @@ SP_LOCALES = C de es fr it ja ko pt_BR ru sv zh_CN zh_HK zh_TW
 BUILDHELPFILES = \
 	$(HELP_LOCALES:%=help/%/package-manager.xml) \
 
-ICONS = \
-   data/icons/status_checkmark.png \
-   data/icons/status_installed.png \
-   data/icons/status_newupdate.png \
-   data/icons/search.png \
-   data/icons/search_all.png \
-   data/icons/progress_checkmark.png \
-   data/icons/progress_blank.png
+ICONS16 = \
+   data/icons/16x16/status_checkmark.png \
+   data/icons/16x16/status_installed.png \
+   data/icons/16x16/status_newupdate.png \
+   data/icons/16x16/progress_checkmark.png \
+   data/icons/16x16/progress_blank.png
+
+ICONS22 = \
+   data/icons/22x22/search.png \
+   data/icons/22x22/search_all.png
 
 PYMODS = \
    modules/__init__.py \
@@ -179,7 +183,8 @@ ROOTSPDIRS = \
 ROOTSPFILES = \
 	$(STATICSPFILES:data/startpagebase/%=$(ROOTSPSHARE)/%)
 
-ROOTICONS = $(ICONS:data/icons/%=$(ROOTICONSHARE)/%)
+ROOTICONS16 = $(ICONS16:data/icons/16x16/%=$(ROOTICON16SHARE)/%)
+ROOTICONS22 = $(ICONS22:data/icons/22x22/%=$(ROOTICON22SHARE)/%)
 
 ROOTPYGLADE = $(ROOTSHARE)/packagemanager.glade
 
@@ -196,7 +201,8 @@ ROOTCOMPONENTS = \
    $(ROOTGCONF) \
    $(ROOTGLADEICONS) \
    $(ROOTHELPFILES) \
-   $(ROOTICONS) \
+   $(ROOTICONS16) \
+   $(ROOTICONS22) \
    $(ROOTMIMEICONS) \
    $(ROOTMIMETYPE) \
    $(ROOTPYGLADE) \
@@ -256,7 +262,7 @@ link:
 	ln -sf $(PWD)/data/packagemanager.desktop /usr/share/applications/packagemanager.desktop
 	ln -sf $(PWD)/data/addmoresoftware.desktop /usr/share/applications/addmoresoftware.desktop
 	ln -sf $(PWD)/data/packagemanager.schemas /etc/gconf/schemas/packagemanager-preferences.schemas
-	ln -sf $(PWD)/data/icons /usr/share/icons/package-manager
+	ln -sf $(PWD)/data/icons /usr/share/package-manager/icons/hicolor
 	ln -sf $(PWD)/data/icons/packagemanager.png /usr/share/icons/hicolor/48x48/apps/packagemanager.png
 	ln -sf $(PWD)/modules /usr/lib/python2.4/vendor-packages/pkg/gui
 
@@ -309,8 +315,11 @@ $(ROOTHELPDIRS): $(ROOTDIRS)
 $(ROOTHELPSHARE)/%: $(ROOTHELPDIRS) help/%
 	$(INSTALL) -f $(@D) -m 0644 $<
 
-$(ROOTICONSHARE)/%: $(ROOTDIRS) data/icons/%
-	$(INSTALL) -f $(ROOTICONSHARE) -m 0644 $<
+$(ROOTICON16SHARE)/%: $(ROOTDIRS) data/icons/16x16/%
+	$(INSTALL) -f $(ROOTICON16SHARE) -m 0644 $<
+
+$(ROOTICON22SHARE)/%: $(ROOTDIRS) data/icons/22x22/%
+	$(INSTALL) -f $(ROOTICON22SHARE) -m 0644 $<
 
 $(ROOTPYTHONPKG)/%: $(ROOTDIRS) modules/%
 	$(INSTALL) -f $(ROOTPYTHONPKG) -m 0644 $<

@@ -65,6 +65,7 @@ IMAGE_DIRECTORY_DEFAULT = "/"   # Image default directory
 IMAGE_DIR_COMMAND = "svcprop -p update/image_dir svc:/application/pkg/update"
 CLIENT_API_VERSION = gui_misc.get_client_api_version()
 
+ICON_LOCATION = "/usr/share/update-manager/icons"
 PKG_CLIENT_NAME = "updatemanager" # API client name
 SELECTION_CHANGE_LIMIT = 0.5    # Time limit in seconds to cancel selection updates
 IND_DELAY = 0.05                # Time delay for printing index progress
@@ -265,6 +266,8 @@ class Updatemanager:
                 self.ua_be_name = None
                 self.application_path = None
                 self.cur_pkg = None
+                self.icon_theme = gtk.IconTheme()
+                self.icon_theme.append_search_path(ICON_LOCATION)
                 self.show_all_opts = False
                 self.show_install_updates_only = False
                 self.do_refresh = False
@@ -564,9 +567,7 @@ class Updatemanager:
                         renderer.set_property("mode", gtk.CELL_RENDERER_MODE_INERT)
                 
         def __get_icon_pixbuf(self, icon_name):
-                return gui_misc.get_pixbuf_from_path(os.path.join(
-                    self.application_dir,
-                    "usr/share/icons/update-manager/"), icon_name)
+                return gui_misc.get_icon(self.icon_theme, icon_name)
 
         def __get_app_pixbuf(self, icon_name):
                 return gui_misc.get_pixbuf_from_path(os.path.join(

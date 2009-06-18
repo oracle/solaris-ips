@@ -63,6 +63,8 @@ STATUS_COLUMN_INDEX = 2   # Index of Status Column in Application TreeView
 
 PKG_CLIENT_NAME = "packagemanager"
 
+# Location for themable icons
+ICON_LOCATION = "/usr/share/package-manager/icons"
 # Load Start Page from lang dir if available
 START_PAGE_CACHE_LANG_BASE = "var/pkg/gui_cache/startpagebase/%s/%s"
 START_PAGE_LANG_BASE = "usr/share/package-manager/data/startpagebase/%s/%s"
@@ -248,13 +250,15 @@ class PackageManager:
                 self.lang_root = None
                 self.visible_status_id = 0
                 self.categories_status_id = 0
+                self.icon_theme = gtk.IconTheme()
+                self.icon_theme.append_search_path(ICON_LOCATION)
                 self.search_options = [
                     ('ips-search',
-                    gui_misc.get_icon_pixbuf(self.application_dir, 'search'),
+                    gui_misc.get_icon(self.icon_theme, 'search', 20),
                     _("_Current Repository (Name and Description)"),
                     _("Search Current Repository (Name and Description)")),
                     ('ips-search-all',
-                    gui_misc.get_icon_pixbuf(self.application_dir, 'search_all'),
+                    gui_misc.get_icon(self.icon_theme, 'search_all', 20),
                     _("_All Repositories (Exact Match)"),
                     _("Search All Repositories (Exact Match)"))
                     ]
@@ -3132,9 +3136,9 @@ class PackageManager:
                 if section_list != None:
                         self.__init_sections(section_list)
                 #Only one instance of those icons should be in memory
-                update_available_icon = gui_misc.get_icon_pixbuf(self.application_dir,
+                update_available_icon = gui_misc.get_icon(self.icon_theme,
                     "status_newupdate")
-                installed_icon = gui_misc.get_icon_pixbuf(self.application_dir,
+                installed_icon = gui_misc.get_icon(self.icon_theme,
                     "status_installed")
                 update_for_category_icon = \
                     self.get_icon_pixbuf_from_glade_dir("legend_newupdate")
@@ -3479,7 +3483,8 @@ class PackageManager:
 
         def reload_packages(self):
                 self.api_o = self.__get_api_object(self.image_directory, self.pr)
-                self.cache_o = self.__get_cache_obj(self.application_dir, self.api_o)
+                self.cache_o = self.__get_cache_obj(self.icon_theme, 
+                    self.application_dir, self.api_o)
                 self.__on_reload(None)
 
         def set_busy_cursor(self):
@@ -3492,15 +3497,15 @@ class PackageManager:
                 self.image_directory = image_directory
                 if not self.api_o:
                         self.api_o = self.__get_api_object(image_directory, self.pr)
-                        self.cache_o = self.__get_cache_obj(self.application_dir,
-                            self.api_o)
+                        self.cache_o = self.__get_cache_obj(self.icon_theme,
+                            self.application_dir, self.api_o)
                         self.img_timestamp = self.cache_o.get_index_timestamp()
                 self.repositories_list = self.__get_new_repositories_liststore()
                 self.__setup_repositories_combobox(self.api_o, self.repositories_list)
 
         @staticmethod
-        def __get_cache_obj(application_dir, api_o):
-                cache_o = cache.CacheListStores(application_dir,
+        def __get_cache_obj(icon_theme, application_dir, api_o):
+                cache_o = cache.CacheListStores(icon_theme, application_dir,
                     api_o)
                 return cache_o
 
@@ -3637,7 +3642,7 @@ class PackageManager:
                         self.__on_reload(None)
                         return
                 self.img_timestamp = self.cache_o.get_index_timestamp()
-                installed_icon = gui_misc.get_icon_pixbuf(self.application_dir,
+                installed_icon = gui_misc.get_icon(self.icon_theme,
                     "status_installed")
                 visible_list = update_list.get(visible_repository)
                 if visible_list:

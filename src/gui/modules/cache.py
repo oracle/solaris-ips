@@ -41,10 +41,10 @@ CACHE_VERSION=7
 INDEX_HASH_LENGTH=41
 
 class CacheListStores:
-        def __init__(self, application_dir, api_o):
+        def __init__(self, icon_theme, application_dir, api_o):
                 self.api_o = api_o
-                self.update_available_icon = gui_misc.get_icon_pixbuf(application_dir, "status_newupdate")
-                self.installed_icon = gui_misc.get_icon_pixbuf(application_dir, "status_installed")
+                self.update_available_icon = gui_misc.get_icon(icon_theme, "status_newupdate")
+                self.installed_icon = gui_misc.get_icon(icon_theme, "status_installed")
                 self.category_icon = gui_misc.get_pixbuf_from_path(application_dir +
                     "/usr/share/package-manager/", "legend_newupdate")
 

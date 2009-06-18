@@ -31,18 +31,20 @@ INSTALL = /usr/sbin/install -s
 ROOT = ../../proto/root_${MACH}/usr
 ROOTETC = ../../proto/root_${MACH}/etc
 ROOTLIB = ../../proto/root_${MACH}/lib
+ROOTSHARE = $(ROOT)/share/update-manager
 ROOTUSRLIB = $(ROOT)/lib
 
 ROOTAPPICONSHARE = $(ROOT)/share/icons/hicolor/48x48/apps
 ROOTAUTOSTARTSHARE = $(ROOTETC)/xdg/autostart
 ROOTDESKTOPSHARE = $(ROOT)/share/applications
 ROOTGCONFSHARE = $(ROOTETC)/gconf/schemas
-ROOTICONSHARE = $(ROOT)/share/icons/update-manager
+ROOTICON16SHARE = $(ROOTSHARE)/icons/hicolor/16x16/actions
+ROOTICON24SHARE = $(ROOTSHARE)/icons/hicolor/24x24/actions
+ROOTICON36SHARE = $(ROOTSHARE)/icons/hicolor/36x36/actions
 ROOTPYTHON = $(ROOTUSRLIB)/python2.4
 ROOTPYTHONPKG = $(ROOTPYTHONVENDOR)/pkg/um
 ROOTPYTHONVENDOR = $(ROOTPYTHON)/vendor-packages
 ROOTSCRIPTSSHARE = $(ROOT)/lib/update-manager
-ROOTSHARE = $(ROOT)/share/update-manager
 ROOTSVCSHARE = $(ROOTLIB)/svc/method
 
 ROOTDIRS = \
@@ -50,7 +52,9 @@ ROOTDIRS = \
    $(ROOTAUTOSTARTSHARE) \
    $(ROOTDESKTOPSHARE) \
    $(ROOTGCONFSHARE) \
-   $(ROOTICONSHARE) \
+   $(ROOTICON16SHARE) \
+   $(ROOTICON24SHARE) \
+   $(ROOTICON36SHARE) \
    $(ROOTPYTHONPKG) \
    $(ROOTSCRIPTSSHARE) \
    $(ROOTSHARE) \
@@ -69,13 +73,17 @@ GCONF = \
    data/updatemanager-preferences.schemas
 
 GLADEICONS = \
-   data/UM_app_48x.png \
-   data/UM_package_36x.png
+   data/UM_app_48x.png
 
-ICONS = \
-   data/icons/notify_update.png \
-   data/icons/status_checkmark.png \
-   data/icons/status_blank.png
+ICONS16 = \
+   data/icons/16x16/status_checkmark.png \
+   data/icons/16x16/status_blank.png
+
+ICONS24 = \
+   data/icons/24x24/notify_update.png
+
+ICONS36 = \
+   data/icons/36x36/UM_package.png
 
 PYGLADE = \
    data/updatemanager.glade
@@ -99,7 +107,9 @@ ROOTGCONF = $(GCONF:data/%=$(ROOTGCONFSHARE)/%)
 
 ROOTGLADEICONS = $(GLADEICONS:data/%=$(ROOTSHARE)/%)
 
-ROOTICONS = $(ICONS:data/icons/%=$(ROOTICONSHARE)/%)
+ROOTICONS16 = $(ICONS16:data/icons/16x16/%=$(ROOTICON16SHARE)/%)
+ROOTICONS24 = $(ICONS24:data/icons/24x24/%=$(ROOTICON24SHARE)/%)
+ROOTICONS36 = $(ICONS36:data/icons/36x36/%=$(ROOTICON36SHARE)/%)
 
 ROOTPYGLADE = $(PYGLADE:data/%=$(ROOTSHARE)/%)
 
@@ -113,7 +123,9 @@ ROOTCOMPONENTS = \
    $(ROOTDESKTOP) \
    $(ROOTGCONF) \
    $(ROOTGLADEICONS) \
-   $(ROOTICONS) \
+   $(ROOTICONS16) \
+   $(ROOTICONS24) \
+   $(ROOTICONS36) \
    $(ROOTPYGLADE) \
    $(ROOTSCRIPTS) \
    $(ROOTSVC)
@@ -161,7 +173,7 @@ link:
 	ln -sf $(PWD)/pkg-update /lib/svc/method/pkg-update
 	ln -sf $(PWD)/data/updatemanagernotifier.desktop /etc/xdg/autostart/updatemanagernotifier.desktop
 	ln -sf $(PWD)/data/updatemanager-preferences.schemas /etc/gconf/schemas/updatemanage-preferences.schemas
-	ln -sf $(PWD)/data/icons /usr/share/icons/update-manager
+	ln -sf $(PWD)/data/icons /usr/share/update-manager/icons/hicolor
 	ln -sf $(PWD)/data/icons/updatemanager.png /usr/share/icons/hicolor/48x48/apps/updatemanager.png
 	ln -sf $(PWD)/data/updatemanager.desktop /usr/share/applications/updatemanager.desktop
 
@@ -190,8 +202,14 @@ $(ROOTDESKTOPSHARE)/%: $(ROOTDIRS) data/%
 $(ROOTGCONFSHARE)/%: $(ROOTDIRS) data/%
 	$(INSTALL) -f $(ROOTGCONFSHARE) -m 0644 $<
 
-$(ROOTICONSHARE)/%: $(ROOTDIRS) data/icons/%
-	$(INSTALL) -f $(ROOTICONSHARE) -m 0644 $<
+$(ROOTICON16SHARE)/%: $(ROOTDIRS) data/icons/16x16/%
+	$(INSTALL) -f $(ROOTICON16SHARE) -m 0644 $<
+
+$(ROOTICON24SHARE)/%: $(ROOTDIRS) data/icons/24x24/%
+	$(INSTALL) -f $(ROOTICON24SHARE) -m 0644 $<
+
+$(ROOTICON36SHARE)/%: $(ROOTDIRS) data/icons/36x36/%
+	$(INSTALL) -f $(ROOTICON36SHARE) -m 0644 $<
 
 $(ROOTPYTHONPKG)/%: $(ROOTDIRS) modules/%
 	$(INSTALL) -f $(ROOTPYTHONPKG) -m 0644 $<

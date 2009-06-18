@@ -71,14 +71,20 @@ def get_pixbuf_from_path(path, icon_name):
                 except gobject.GError:
                         return None
 
+def get_icon(icon_theme, name, size=16):
+        try:
+                return icon_theme.load_icon(name, size, 0)
+        except gobject.GError, e:
+                return None
+
 def display_help(application_dir="", id=None):
-                props = { gnome.PARAM_APP_DATADIR : os.path.join(application_dir,
-                            'usr/share/package-manager/help') }
-                gnome.program_init('package-manager', '0.1', properties=props)
-                if id != None:
-                        gnome.help_display('package-manager', link_id=id)
-                else:
-                        gnome.help_display('package-manager')
+        props = { gnome.PARAM_APP_DATADIR : os.path.join(application_dir,
+                    'usr/share/package-manager/help') }
+        gnome.program_init('package-manager', '0.1', properties=props)
+        if id != None:
+                gnome.help_display('package-manager', link_id=id)
+        else:
+                gnome.help_display('package-manager')
 
 def get_pkg_name(pkg_name):
         index = -1

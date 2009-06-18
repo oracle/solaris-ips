@@ -133,10 +133,10 @@ class InstallUpdate(progress.ProgressTracker):
                 self.current_stage_icon = self.w_stage1_icon
                 self.current_stage_label_done = None
 
-                self.done_icon = gui_misc.get_icon_pixbuf(
-                    self.parent.application_dir, "progress_checkmark")
-                blank_icon = gui_misc.get_icon_pixbuf(
-                    self.parent.application_dir, "progress_blank")
+                self.done_icon = gui_misc.get_icon(
+                    self.parent.icon_theme, "progress_checkmark")
+                blank_icon = gui_misc.get_icon(
+                    self.parent.icon_theme, "progress_blank")
 
                 self.w_stage1_icon.set_from_pixbuf(blank_icon)
                 self.w_stage2_icon.set_from_pixbuf(blank_icon)
