@@ -86,6 +86,7 @@
                         <property name="label" translatable="yes">Cu_t</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_edit_cut_activate"/>
+                        <accelerator key="X" modifiers="GDK_CONTROL_MASK" signal="activate"/>
                       </widget>
                     </child>
                     <child>
@@ -97,6 +98,7 @@
                         <property name="label" translatable="yes">_Copy</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_edit_copy_activate"/>
+                        <accelerator key="C" modifiers="GDK_CONTROL_MASK" signal="activate"/>
                       </widget>
                     </child>
                     <child>
@@ -108,6 +110,7 @@
                         <property name="label" translatable="yes">_Paste</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_edit_paste_activate"/>
+                        <accelerator key="V" modifiers="GDK_CONTROL_MASK" signal="activate"/>
                       </widget>
                     </child>
                     <child>
@@ -469,7 +472,6 @@
                             <signal name="changed" handler="on_searchentry_changed"/>
                             <signal name="focus_out_event" handler="on_searchentry_focus_out_event"/>
                             <signal name="focus_in_event" handler="on_searchentry_focus_in_event"/>
-                            <signal name="event" handler="on_searchentry_event"/>
                             <signal name="activate" handler="on_searchentry_activate"/>
                           </widget>
                           <packing>

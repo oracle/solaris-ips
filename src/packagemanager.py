@@ -346,7 +346,7 @@ class PackageManager:
 
                 self.w_main_view_notebook = \
                     w_tree_main.get_widget("main_view_notebook")
-                self.w_searchentry_dialog = w_tree_main.get_widget("searchentry")
+                self.w_searchentry = w_tree_main.get_widget("searchentry")
                 self.w_installupdate_button = \
                     w_tree_main.get_widget("install_update_button")
                 self.w_remove_button = w_tree_main.get_widget("remove_button")
@@ -368,6 +368,7 @@ class PackageManager:
                 self.w_selectupdates_menuitem = \
                     w_tree_main.get_widget("edit_select_updates")
                 self.w_deselect_menuitem = w_tree_main.get_widget("edit_deselect")
+                self.w_main_clipboard =  gtk.clipboard_get(gtk.gdk.SELECTION_CLIPBOARD)
                 self.w_progress_dialog = w_tree_progress.get_widget("progressdialog")
                 self.w_progress_dialog.connect('delete-event', lambda stub1, stub2: True)
                 self.w_progress_dialog.set_title(_("Update All"))
@@ -416,7 +417,7 @@ class PackageManager:
                 self.remove_button_tooltip = gtk.Tooltips()
                 self.__update_reload_button()
                 self.w_main_window.set_title(main_window_title)
-                self.w_searchentry_dialog.grab_focus()
+                self.w_searchentry.grab_focus()
 
                 # Update All Completed Dialog
                 w_xmltree_ua_completed = gtk.glade.XML(self.gladefile,
@@ -447,7 +448,6 @@ class PackageManager:
                                     self.__on_searchentry_focus_in,
                                 "on_searchentry_focus_out_event": \
                                     self.__on_searchentry_focus_out,
-                                "on_searchentry_event":self.__on_searchentry_event,
                                 "on_searchentry_activate": \
                                     self.__on_searchentry_activate,
                                 "on_sectionscombobox_changed": \
@@ -574,6 +574,67 @@ class PackageManager:
                         self.w_main_view_notebook.set_current_page(
                             NOTEBOOK_PACKAGE_LIST_PAGE)
                 self.remote_search_error_dialog.set_transient_for(self.w_main_window)
+                self.__setup_text_signals()
+
+        def __setup_text_signals(self):
+                self.w_generalinfo_textview.get_buffer().connect(
+                    "notify::has-selection", self.__on_text_buffer_has_selection)
+                self.w_installedfiles_textview.get_buffer().connect(
+                    "notify::has-selection", self.__on_text_buffer_has_selection)
+                self.w_dependencies_textview.get_buffer().connect(
+                    "notify::has-selection", self.__on_text_buffer_has_selection)
+                self.w_license_textview.get_buffer().connect(
+                    "notify::has-selection", self.__on_text_buffer_has_selection)
+                self.w_searchentry.connect(
+                    "notify::cursor-position", self.__on_searchentry_selection)
+                self.w_searchentry.connect(
+                    "notify::selection-bound", self.__on_searchentry_selection)
+                self.w_generalinfo_textview.connect(
+                    "focus-in-event", self.__on_textview_focus_in)
+                self.w_installedfiles_textview.connect(
+                    "focus-in-event", self.__on_textview_focus_in)
+                self.w_dependencies_textview.connect(
+                    "focus-in-event", self.__on_textview_focus_in)
+                self.w_license_textview.connect(
+                    "focus-in-event", self.__on_textview_focus_in)
+                self.w_generalinfo_textview.connect(
+                    "focus-out-event", self.__on_textview_focus_out)
+                self.w_installedfiles_textview.connect(
+                    "focus-out-event", self.__on_textview_focus_out)
+                self.w_dependencies_textview.connect(
+                    "focus-out-event", self.__on_textview_focus_out)
+                self.w_license_textview.connect(
+                    "focus-out-event", self.__on_textview_focus_out)
+
+        def __on_textview_focus_in(self, widget, event):
+                char_count = widget.get_buffer().get_char_count()
+                if char_count > 0:
+                        self.w_selectall_menuitem.set_sensitive(True)
+                else:
+                        self.w_selectall_menuitem.set_sensitive(False)
+                bounds = widget.get_buffer().get_selection_bounds()
+                if bounds:
+                        offset1 = bounds[0].get_offset() 
+                        offset2 = bounds[1].get_offset() 
+                        if abs(offset2 - offset1) == char_count:
+                                self.w_selectall_menuitem.set_sensitive(False)
+                        self.w_deselect_menuitem.set_sensitive(True)
+                        self.w_copy_menuitem.set_sensitive(True)
+                else:
+                        self.w_deselect_menuitem.set_sensitive(False)
+
+        def __on_textview_focus_out(self, widget, event):
+                self.__enable_disable_select_all()
+                self.__enable_disable_deselect()
+                self.w_copy_menuitem.set_sensitive(False)
+
+        def __on_text_buffer_has_selection(self, object, pspec):
+                if object.get_selection_bounds():
+                        self.w_copy_menuitem.set_sensitive(True)
+                        self.w_deselect_menuitem.set_sensitive(True)
+                else:
+                        self.w_copy_menuitem.set_sensitive(False)
+                        self.w_deselect_menuitem.set_sensitive(False)
 
         def __register_iconsets(self, icon_info):
                 factory = gtk.IconFactory()
@@ -647,7 +708,7 @@ class PackageManager:
                         self.w_main_view_notebook.set_current_page(
                             NOTEBOOK_START_PAGE)
                         self.update_statusbar_for_search()
-                        self.w_searchentry_dialog.grab_focus()
+                        self.w_searchentry.grab_focus()
                 else:
                         self.set_busy_cursor()
                         self.w_repository_combobox.set_active(
@@ -1437,21 +1498,22 @@ class PackageManager:
 
         def __on_searchentry_changed(self, widget):
                 '''On text search field changed we should refilter the main view'''
-                if len(widget.get_text()) > 0:
+                if widget.get_text_length() > 0:
                         self.w_clear_search_button.set_sensitive(True)
                 else:
                         self.w_clear_search_button.set_sensitive(False)
+                self.__enable_disable_entry_selection(widget)
                 if self.typeahead_search and not self.is_remote_search:
                         self.__do_search()
                 elif self.is_remote_search and not self.changing_search_option:
-                        if self.w_searchentry_dialog.get_text() == "":
+                        if self.w_searchentry.get_text() == "":
                                 self.current_not_show_repos = []
                                 self.w_infosearch_frame.hide()
                                 self.__link_load_blank()
                                 self.w_main_view_notebook.set_current_page(
                                     NOTEBOOK_START_PAGE)
                                 self.update_statusbar_for_search()
-                                self.w_searchentry_dialog.grab_focus()
+                                self.w_searchentry.grab_focus()
 
         def __do_search(self):
                 if self.changing_search_option:
@@ -1464,7 +1526,7 @@ class PackageManager:
                         self.__set_main_view_package_list()
                         self.__do_local_search()
                 else:
-                        text = self.w_searchentry_dialog.get_text()
+                        text = self.w_searchentry.get_text()
                         if text == "":
                                 self.unset_busy_cursor()
                                 return
@@ -1489,7 +1551,7 @@ class PackageManager:
                 self.in_setup = False
 
         def __do_remote_search(self):
-                text = self.w_searchentry_dialog.get_text()
+                text = self.w_searchentry.get_text()
                 # Here we call the search API to get the results
                 searches = []
                 servers = []
@@ -1606,7 +1668,7 @@ class PackageManager:
                 if self.application_refilter_id != 0:
                         gobject.source_remove(self.application_refilter_id)
                         self.application_refilter_id = 0
-                if self.w_searchentry_dialog.get_text() == "" or \
+                if self.w_searchentry.get_text() == "" or \
                     not self.typeahead_search:
                         self.application_refilter_id = \
                             gobject.idle_add(self.__application_refilter)
@@ -1643,18 +1705,25 @@ class PackageManager:
                 return False
 
         def __on_edit_paste(self, widget):
-                self.w_searchentry_dialog.paste_clipboard()
+                self.w_searchentry.paste_clipboard()
 
         def __on_clear_paste(self, widget):
-                bounds = self.w_searchentry_dialog.get_selection_bounds()
-                self.w_searchentry_dialog.delete_text(bounds[0], bounds[1])
+                bounds = self.w_searchentry.get_selection_bounds()
+                self.w_searchentry.delete_text(bounds[0], bounds[1])
                 return
 
         def __on_copy(self, widget):
-                self.w_searchentry_dialog.copy_clipboard()
+                focus_widget = self.w_main_window.get_focus()
+                if focus_widget == self.w_searchentry:
+                        self.w_searchentry.copy_clipboard()
+                        self.w_paste_menuitem.set_sensitive(True)
+                elif self.__is_a_textview(focus_widget):
+                        focus_widget.get_buffer().copy_clipboard(
+                            self.w_main_clipboard)
 
         def __on_cut(self, widget):
-                self.w_searchentry_dialog.cut_clipboard()
+                self.w_searchentry.cut_clipboard()
+                self.w_paste_menuitem.set_sensitive(True)
 
         def __popup_position_func(self, menu):
                 ''' Position popup menu immediately below search button'''
@@ -1675,10 +1744,10 @@ class PackageManager:
                 return True
 
         def __on_edit_search_clicked(self, widget):
-                self.w_searchentry_dialog.grab_focus()
+                self.w_searchentry.grab_focus()
 
         def __on_clear_search(self, widget):
-                self.w_searchentry_dialog.delete_text(0, -1)
+                self.w_searchentry.delete_text(0, -1)
                 self.__do_search()
                 return
 
@@ -1699,7 +1768,29 @@ class PackageManager:
                             gobject.timeout_add(TYPE_AHEAD_DELAY,
                                 self.__show_licenses)
 
+        def __is_a_textview(self, widget):
+                if (widget == self.w_generalinfo_textview or
+                    widget == self.w_installedfiles_textview or
+                    widget == self.w_dependencies_textview or
+                    widget == self.w_license_textview):
+                        return True
+                else:
+                        return False
+                    
+                    
         def __on_select_all(self, widget):
+                focus_widget = self.w_main_window.get_focus()
+                if self.__is_a_textview(focus_widget):
+                        focus_widget.emit('select-all', True)
+                        self.w_selectall_menuitem.set_sensitive(False)
+                        self.w_deselect_menuitem.set_sensitive(True)
+                        return
+                elif focus_widget == self.w_searchentry:
+                        focus_widget.select_region(0, -1)
+                        self.w_selectall_menuitem.set_sensitive(False)
+                        self.w_deselect_menuitem.set_sensitive(True)
+                        return
+
                 sort_filt_model = \
                     self.w_application_treeview.get_model() #gtk.TreeModelSort
                 filt_model = sort_filt_model.get_model() #gtk.TreeModelFilter
@@ -1723,6 +1814,8 @@ class PackageManager:
                                 pkg_status = model.get_value(itr,
                                     enumerations.STATUS_COLUMN)
                                 self.__add_pkg_stem_to_list(pkg_stem, pkg_status)
+                self.w_selectall_menuitem.set_sensitive(False)
+                self.w_deselect_menuitem.set_sensitive(True)
                 self.__enable_disable_selection_menus()
                 self.update_statusbar()
                 self.__enable_disable_install_remove()
@@ -1758,6 +1851,18 @@ class PackageManager:
                 self.__enable_disable_install_remove()
 
         def __on_deselect(self, widget):
+                focus_widget = self.w_main_window.get_focus()
+                if self.__is_a_textview(focus_widget):
+                        focus_widget.emit('select-all', False)
+                        self.w_deselect_menuitem.set_sensitive(False)
+                        self.w_selectall_menuitem.set_sensitive(True)
+                        return
+                elif focus_widget == self.w_searchentry:
+                        focus_widget.select_region(0, 0)
+                        self.w_deselect_menuitem.set_sensitive(False)
+                        self.w_selectall_menuitem.set_sensitive(True)
+                        return
+
                 sort_filt_model = \
                     self.w_application_treeview.get_model() #gtk.TreeModelSort
                 filt_model = sort_filt_model.get_model() #gtk.TreeModelFilter
@@ -1783,6 +1888,8 @@ class PackageManager:
                                 model.set_value(itr, enumerations.MARK_COLUMN, False)
                                 self.__remove_pkg_stem_from_list(model.get_value(itr,
                                     enumerations.STEM_COLUMN))
+                self.w_selectall_menuitem.set_sensitive(True)
+                self.w_deselect_menuitem.set_sensitive(False)
                 self.__enable_disable_selection_menus()
                 self.update_statusbar()
                 self.__enable_disable_install_remove()
@@ -1833,24 +1940,60 @@ class PackageManager:
                                 pass
 
         def __on_searchentry_focus_in(self, widget, event):
-                self.w_paste_menuitem.set_sensitive(True)
+                if self.w_main_clipboard.wait_is_text_available():
+                        self.w_paste_menuitem.set_sensitive(True)
+                char_count = widget.get_text_length()
+                if char_count > 0:
+                        self.w_selectall_menuitem.set_sensitive(True)
+                else:
+                        self.w_selectall_menuitem.set_sensitive(False)
+                bounds = widget.get_selection_bounds()
+                if bounds:
+                        offset1 = bounds[0]
+                        offset2 = bounds[1] 
+                        if abs(offset2 - offset1) == char_count:
+                                self.w_selectall_menuitem.set_sensitive(False)
+                        self.w_deselect_menuitem.set_sensitive(True)
+                        self.w_copy_menuitem.set_sensitive(True)
+                else:
+                        self.w_deselect_menuitem.set_sensitive(False)
 
         def __on_searchentry_focus_out(self, widget, event):
                 self.w_paste_menuitem.set_sensitive(False)
+                self.__enable_disable_select_all()
+                self.__enable_disable_deselect()
+                self.w_cut_menuitem.set_sensitive(False)
+                self.w_copy_menuitem.set_sensitive(False)
+                self.w_clear_menuitem.set_sensitive(False)
 
         def __on_searchentry_activate(self, widget):
                 self.__do_search()
 
-        def __on_searchentry_event(self, widget, event):
-                if widget.get_selection_bounds():
+        def __on_searchentry_selection(self, widget, pspec):
+                self.__enable_disable_entry_selection(widget)
+
+        def __enable_disable_entry_selection(self, widget):
+                char_count = widget.get_text_length()
+                bounds = widget.get_selection_bounds()
+                if bounds:
                         #enable selection functions
                         self.w_cut_menuitem.set_sensitive(True)
                         self.w_copy_menuitem.set_sensitive(True)
                         self.w_clear_menuitem.set_sensitive(True)
+                        if char_count == abs(bounds[1] - bounds[0]):
+                                self.w_selectall_menuitem.set_sensitive(False)
+                        else:
+                                self.w_selectall_menuitem.set_sensitive(True)
+                        self.w_deselect_menuitem.set_sensitive(True)
                 else:
                         self.w_cut_menuitem.set_sensitive(False)
                         self.w_copy_menuitem.set_sensitive(False)
                         self.w_clear_menuitem.set_sensitive(False)
+                        self.w_deselect_menuitem.set_sensitive(False)
+                        if char_count == 0:
+                                self.w_selectall_menuitem.set_sensitive(False)
+                        else:
+                                self.w_selectall_menuitem.set_sensitive(True)
 
         def __refilter_on_idle(self):
                 if self.application_refilter_id != 0:
@@ -1867,7 +2010,7 @@ class PackageManager:
                 '''This function is for handling category double click activations'''
                 if self.w_filter_combobox.get_model():
                         self.w_filter_combobox.set_active(self.saved_filter_combobox_active)
-                self.w_searchentry_dialog.delete_text(0, -1)
+                self.w_searchentry.delete_text(0, -1)
                 if self.is_remote_search:
                         self.__unset_remote_search(True)
                         if self.selected == 0:
@@ -1892,7 +2035,7 @@ class PackageManager:
                 if self.changing_search_option or self.is_remote_search:
                         return
                 self.w_filter_combobox.set_active(self.saved_filter_combobox_active, )
-                self.w_searchentry_dialog.delete_text(0, -1)
+                self.w_searchentry.delete_text(0, -1)
                 self.__set_main_view_package_list()
                 model, itr = selection.get_selected()
                 if self.is_remote_search:
@@ -1945,7 +2088,7 @@ class PackageManager:
                 active = self.w_filter_combobox.get_active()
                 if active != enumerations.FILTER_SELECTED:
                         self.saved_filter_combobox_active = active
-                self.w_searchentry_dialog.delete_text(0, -1)
+                self.w_searchentry.delete_text(0, -1)
                 self.__set_main_view_package_list()
                 if self.is_remote_search:
                         self.set_busy_cursor()
@@ -2104,7 +2247,7 @@ class PackageManager:
                         return
                 self.cancelled = True
                 self.in_setup = True
-                self.w_searchentry_dialog.delete_text(0, -1)
+                self.w_searchentry.delete_text(0, -1)
                 self.set_busy_cursor()
                 self.__set_empty_details_panel()
                 pub = [active_publisher, ]
@@ -2801,7 +2944,7 @@ class PackageManager:
                 application view'''
                 if self.in_setup or self.cancelled:
                         return False
-                search_text = self.w_searchentry_dialog.get_text()
+                search_text = self.w_searchentry.get_text()
                 if not search_text == "":
                         if not model.get_value(itr, enumerations.NAME_COLUMN) == None:
                                 if search_text.lower() in model.get_value(itr,
@@ -2884,9 +3027,7 @@ class PackageManager:
         def __enable_disable_selection_menus(self):
                 if self.in_setup:
                         return
-                self.__enable_disable_select_all()
                 self.__enable_disable_select_updates()
-                self.__enable_disable_deselect()
                 self.unset_busy_cursor()
 
         def __enable_disable_select_all(self):
@@ -3024,10 +3165,11 @@ class PackageManager:
                 self.__enable_disable_install_remove()
 
         def __enable_disable_deselect(self):
-                for row in self.w_application_treeview.get_model():
-                        if row[enumerations.MARK_COLUMN]:
-                                self.w_deselect_menuitem.set_sensitive(True)
-                                return
+                if self.w_application_treeview.get_model():
+                        for row in self.w_application_treeview.get_model():
+                                if row[enumerations.MARK_COLUMN]:
+                                        self.w_deselect_menuitem.set_sensitive(True)
+                                        return
                 self.w_deselect_menuitem.set_sensitive(False)
                 return
 
