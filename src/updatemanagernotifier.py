@@ -51,6 +51,7 @@ import pkg.client.image as image
 import pkg.client.progress as progress
 import pkg.misc as misc
 import pkg.gui.misc as gui_misc
+from pkg.client import global_settings
 
 # Put _() in the global namespace
 import __builtin__
@@ -67,6 +68,7 @@ ICON_LOCATION = "/usr/share/update-manager/icons"
 NOTIFY_ICON_NAME = "notify_update"
 GKSU_PATH = "/usr/bin/gksu"
 UPDATEMANAGER = "pm-updatemanager"
+PKG_CLIENT_NAME="updatemanagernotifier"
 
 UPDATEMANAGER_PREFERENCES = "/apps/updatemanager/preferences"
 START_DELAY_PREFERENCES = "/apps/updatemanager/preferences/start_delay"
@@ -90,6 +92,7 @@ NEVER_SECS = 365*24*60*60
 class UpdateManagerNotifier:
         def __init__(self):
                 os.nice(20)
+                global_settings.client_name = PKG_CLIENT_NAME
                 try:
                         self.application_dir = os.environ["UPDATE_MANAGER_NOTIFIER_ROOT"]
                 except KeyError:
@@ -287,7 +290,7 @@ class UpdateManagerNotifier:
                 api_obj.refresh()
                 
                 pkg_upgradeable = None
-                for pkg, state in misc.get_inventory_list(image_obj, [],
+                for pkg, state in misc.get_inventory_list(api_obj.img, [],
                     all_known=True, all_versions=False):
                         if state["upgradable"] and state["state"] == "installed":
                                 pkg_upgradeable = pkg
