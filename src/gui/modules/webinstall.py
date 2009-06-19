@@ -46,8 +46,6 @@ import pkg.gui.repository as repository
 from pkg.client import global_settings
 import pkg.client.publisher as publisher
         
-CLIENT_API_VERSION = gui_misc.get_client_api_version()
-
 debug = False
 
 class Webinstall:
@@ -117,7 +115,8 @@ class Webinstall:
                 self.w_webinstall_dialog.show_all()
                 self.w_webinstall_dialog.set_icon(
                     gui_misc.get_app_pixbuf(self.application_dir,"PM_app_48x"))
-                self.api_o = self.__get_api_object(self.image_dir, self.pr)
+                self.api_o = gui_misc.get_api_object(self.image_dir, self.pr,
+                    self.w_webinstall_dialog)
         
         def __output_new_pub_tasks(self, infobuffer, textiter, num_tasks):
                 if num_tasks == 0:
@@ -252,8 +251,9 @@ class Webinstall:
                         if self.api_o != None and self.api_o.has_publisher(name):
                                 return True
                 except api_errors.PublisherError, ex:
-                        gobject.idle_add(self.__error_occurred, self.w_webinstall_dialog, 
-                            str(ex), gtk.MESSAGE_ERROR, _("Repository Error"))
+                        gobject.idle_add(gui_misc.error_occurred, 
+                            self.w_webinstall_dialog, 
+                            str(ex), _("Repository Error"))
                 return False
 
         def __on_proceed_button_clicked(self, widget):
@@ -315,7 +315,8 @@ class Webinstall:
                         print "Install Packages: %s" % all_package_stems
                 
                 #TBD: Having to get new api object, self.api_o.reset() is not working
-                self.api_o = self.__get_api_object(self.image_dir, self.pr)
+                self.api_o = gui_misc.get_api_object(self.image_dir, self.pr,
+                    self.w_webinstall_dialog)
                 installupdate.InstallUpdate(all_package_stems, self, self.api_o, 
                     action = enumerations.INSTALL_UPDATE,
                     parent_name = _("Package Manager"),
@@ -340,37 +341,6 @@ class Webinstall:
         def update_package_list(self, update_list):
                 self.__exit_app()
 
-        def __get_api_object(self, img_dir, progtrack):
-                api_o = None
-                try:
-                        api_o = api.ImageInterface(img_dir,
-                            CLIENT_API_VERSION,
-                            progtrack, None, PKG_CLIENT_NAME)
-                except (api_errors.VersionException,\
-                    api_errors.ImageNotFoundException), ex:
-                        gobject.idle_add(self.__error_occurred, self.w_webinstall_dialog, 
-                            str(ex), gtk.MESSAGE_ERROR, _("API Error"))
-                return api_o
-
-        # TBD: Move generic error handling into gui misc module and reuse across modules
-        @staticmethod
-        def __error_occurred(parent, error_msg, msg_type=gtk.MESSAGE_ERROR, 
-                title = None):
-                msgbox = gtk.MessageDialog(parent =
-                    parent,
-                    buttons = gtk.BUTTONS_CLOSE,
-                    flags = gtk.DIALOG_MODAL,
-                    type = msg_type,
-                    message_format = None)
-                msgbox.set_property('text', error_msg)
-                if title != None:
-                        msgbox.set_title(title)
-                else:
-                        msgbox.set_title(_("Error"))
-                        
-                msgbox.run()
-                msgbox.destroy()
-
         def api_parse_publisher_info(self):
                 '''<path to mimetype file|origin_url>
                    returns list of publisher and package list tuples'''
@@ -382,8 +352,8 @@ class Webinstall:
                         api_errors.UnsupportedP5IFile,
                         api_errors.PublisherError), ex:
                         self.w_webinstall_proceed.set_sensitive(False)
-                        self.__error_occurred( 
+                        gui_misc.error_occurred( 
                             self.w_webinstall_dialog,
-                            str(ex), gtk.MESSAGE_ERROR, _("Repository Error"))
+                            str(ex), _("Repository Error"))
                         sys.exit(1)
                         return None

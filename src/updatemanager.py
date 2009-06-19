@@ -63,7 +63,6 @@ __builtin__._ = gettext.gettext
 
 IMAGE_DIRECTORY_DEFAULT = "/"   # Image default directory
 IMAGE_DIR_COMMAND = "svcprop -p update/image_dir svc:/application/pkg/update"
-CLIENT_API_VERSION = gui_misc.get_client_api_version()
 
 ICON_LOCATION = "/usr/share/update-manager/icons"
 PKG_CLIENT_NAME = "updatemanager" # API client name
@@ -404,10 +403,11 @@ class Updatemanager:
                             "Check updatemanager.py signals") % error
 
                 self.pr = GUIProgressTracker(self)
-                self.api_obj = None
  
                 self.w_um_dialog.show_all()
                 self.w_um_dialog.resize(620, 500)
+                self.api_obj = gui_misc.get_api_object(self.__get_image_path(),
+                    progress.NullProgressTracker(), self.w_um_dialog)
 
         def __set_cancel_state(self, status):
                 if self.install_error:
@@ -695,11 +695,13 @@ class Updatemanager:
                         gobject.TYPE_STRING,      # UM_STEM                        
                         )
 
-                image_obj = self.__get_image_obj_from_directory(self.__get_image_path())
-                
+                image_obj = self.api_obj.img
+                self.api_obj.refresh()
+
                 count = 0
                 pkg_upgradeable = None
-                for pkg, state in sorted(image_obj.inventory(all_known = True)):
+                for pkg, state in sorted(misc.get_inventory_list(
+                    image_obj, [], all_known = True, all_versions = False)):
                         while gtk.events_pending():
                                 gtk.main_iteration(False)
                         if state["upgradable"] and state["state"] == "installed":
@@ -743,34 +745,7 @@ class Updatemanager:
                 # gobject.timeout_add(1000, self.__setup_sizes)
                 
         def __get_api_obj(self):
-                if self.api_obj != None:
-                        return self.api_obj
-                try:
-                        self.api_obj = api.ImageInterface(self.__get_image_path(),
-                            CLIENT_API_VERSION, self.pr, self.__set_cancel_state,
-                            PKG_CLIENT_NAME)
-                        return self.api_obj
-                except api_errors.ImageNotFoundException, ine:
-                        self.w_um_expander.set_expanded(True)
-                        infobuffer = self.w_um_textview.get_buffer()
-                        infobuffer.set_text("")
-                        textiter = infobuffer.get_end_iter()
-                        infobuffer.insert_with_tags_by_name(textiter, _("Error\n"),
-                            "bold")
-                        infobuffer.insert(textiter,
-                            _("'%s' is not an install image\n") % 
-                            ine.user_specified)
-                except api_errors.VersionException, ve:
-                        self.w_um_expander.set_expanded(True)
-                        infobuffer = self.w_um_textview.get_buffer()
-                        infobuffer.set_text("")
-                        textiter = infobuffer.get_end_iter()
-                        infobuffer.insert_with_tags_by_name(textiter, _("Error\n"),
-                            "bold")
-                        infobuffer.insert(textiter, 
-                            _("Version mismatch: expected %s received %s\n") %
-                            (ve.expected_version, ve.received_version))
-                return None
+                return self.api_obj
                 
         def __display_noupdates(self):
                 self.w_um_intro_label.set_markup(_("<b>No Updates available.</b>"))
@@ -845,37 +820,6 @@ class Updatemanager:
                 self.details_cache[name] = str_details
                 return str_details
 
-        # This is copied from a similar function in packagemanager.py 
-        def __get_image_obj_from_directory(self, image_directory):
-                image_obj = image.Image()
-                dr = "/"
-                try:
-                        image_obj.find_root(image_directory)
-                        while gtk.events_pending():
-                                gtk.main_iteration(False)
-                        image_obj.load_config()
-                        while gtk.events_pending():
-                                gtk.main_iteration(False)
-                        image_obj.load_catalogs(self.pr)
-                        while gtk.events_pending():
-                                gtk.main_iteration(False)
-                except ValueError:
-                        print _('%s is not valid image, trying root image') \
-                            % image_directory
-                        try:
-                                dr = os.environ["PKG_IMAGE"]
-                        except KeyError:
-                                print
-                        try:
-                                image_obj.find_root(dr)
-                                image_obj.load_config()
-                        except ValueError:
-                                print _('%s is not valid root image, return None') \
-                                    % dr
-                                image_obj = None
-                return image_obj
-
-                
         @staticmethod
         def __removed_filter(model, itr):
                 '''This function filters category in the main application view'''
@@ -939,8 +883,10 @@ class Updatemanager:
                 try:
                         gnome.url_show(self.release_notes_url)
                 except gobject.GError:
-                        self.__error_occurred(_("Unable to navigate to:\n\t%s") % 
-                            self.release_notes_url)
+                        gui_misc.error_occurred(self.w_um_dialog,
+                            _("Unable to navigate to:\n\t%s") % 
+                            self.release_notes_url,
+                            msg_title=_("Update Manager"))
 
         def __on_um_dialog_close(self, widget):
                 self.__exit_app()
@@ -1490,23 +1436,6 @@ class Updatemanager:
 
         def shutdown_after_image_update(self):
                 self.__display_update_image_success()
-
-        def __error_occurred(self, error_msg, msg_title=None, msg_type=gtk.MESSAGE_ERROR):
-                msgbox = gtk.MessageDialog(parent =
-                    self.w_um_dialog,
-                    buttons = gtk.BUTTONS_CLOSE,
-                    flags = gtk.DIALOG_MODAL,
-                    type = msg_type,
-                    message_format = None)
-                msgbox.set_property('text', error_msg)
-                title = None
-                if msg_title:
-                        title = msg_title
-                else:
-                        title = _("Update Manager")
-                msgbox.set_title(title)
-                msgbox.run()
-                msgbox.destroy()
 
 #-------------------- remove those
 def main():

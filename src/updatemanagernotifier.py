@@ -282,11 +282,13 @@ class UpdateManagerNotifier:
                         print "image_directory: %s" % image_directory
                 if len(image_directory) == 0:
                         image_directory = IMAGE_DIRECTORY_DEFAULT
-                image_obj = self.__get_image_obj_from_directory(image_directory)
+                api_obj = gui_misc.get_api_object(image_directory,
+                    self.pr, None)
+                api_obj.refresh()
                 
                 pkg_upgradeable = None
-                for pkg, state in image_obj.inventory(all_known=True,
-                    ordered=False):
+                for pkg, state in misc.get_inventory_list(image_obj, [],
+                    all_known=True, all_versions=False):
                         if state["upgradable"] and state["state"] == "installed":
                                 pkg_upgradeable = pkg
                                 break
@@ -303,36 +305,6 @@ class UpdateManagerNotifier:
                         self.show_status_icon(False)
                 self.schedule_next_check_for_checks()
                 return False                                
-
-        # This is copied from a similar function in packagemanager.py 
-        def __get_image_obj_from_directory(self, image_directory):
-                image_obj = image.Image()
-                dr = "/"
-                try:
-                        image_obj.find_root(image_directory)
-                        while gtk.events_pending():
-                                gtk.main_iteration(False)
-                        image_obj.load_config()
-                        while gtk.events_pending():
-                                gtk.main_iteration(False)
-                        image_obj.load_catalogs(self.pr)
-                        while gtk.events_pending():
-                                gtk.main_iteration(False)
-                except ValueError:
-                        print _('%s is not valid image, trying root image') \
-                            % image_directory
-                        try:
-                                dr = os.environ["PKG_IMAGE"]
-                        except KeyError:
-                                print
-                        try:
-                                image_obj.find_root(dr)
-                                image_obj.load_config()
-                        except ValueError:
-                                print _('%s is not valid root image, return None') \
-                                    % dr
-                                image_obj = None
-                return image_obj
 
         def create_status_icon(self):
                 icon_theme = gtk.IconTheme()

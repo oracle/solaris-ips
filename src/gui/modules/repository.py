@@ -1200,18 +1200,10 @@ class Repository:
                 self.progress_stop_thread = True
 
         def __error_occurred(self, error_msg, msg_type=gtk.MESSAGE_ERROR, title = None):
-                msgbox = gtk.MessageDialog(parent =
-                    self.error_dialog_parent,
-                    buttons = gtk.BUTTONS_CLOSE,
-                    flags = gtk.DIALOG_MODAL,
-                    type = msg_type,
-                    message_format = None)
-                msgbox.set_property('text', error_msg)
                 if title != None:
-                        msgbox.set_title(title)
+                        msg_title = title
                 else:   # More Generic for WebInstall
-                        msgbox.set_title(_("Repository error"))
-                        
-                msgbox.run()
-                msgbox.destroy()
+                        msg_title = _("Repository error")
+                gui_misc.error_occurred(self.error_dialog_parent,
+                    error_msg, msg_title, msg_type)
 

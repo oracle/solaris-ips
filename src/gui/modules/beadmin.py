@@ -388,7 +388,7 @@ class Beadmin:
                                 for orig in not_renamed:
                                         msg += _("%s <b>to</b> %s\n") % (orig, 
                                             not_renamed.get(orig))                                
-                        gobject.idle_add(self.__error_occured, msg)
+                        gobject.idle_add(self.__error_occurred, msg)
                         return
                 gobject.idle_add(self.__on_cancel_be_clicked, None)
                                 
@@ -398,16 +398,12 @@ class Beadmin:
         def __rename_be(self, orig_name, new_name):
                 return be.beRename(orig_name, new_name)
 
-        def __error_occured(self, error_msg, reset=True):
-                msg = error_msg
-                msgbox = gtk.MessageDialog(parent = self.w_beadmin_dialog,
-                    buttons = gtk.BUTTONS_CLOSE,
-                    flags = gtk.DIALOG_MODAL, type = gtk.MESSAGE_ERROR,
-                    message_format = None)
-                msgbox.set_markup(msg)
-                msgbox.set_title(_("BE error"))
-                msgbox.run()
-                msgbox.destroy()
+        def __error_occurred(self, error_msg, reset=True):
+                gui_misc.error_occurred(self.w_beadmin_dialog,
+                    error_msg,
+                    _("BE error"),
+                    gtk.MESSAGE_ERROR,
+                    True)
                 if reset:
                         self.__on_reset_be()
 
@@ -493,7 +489,7 @@ class Beadmin:
                         msg = _("The <b>libbe</b> library couldn't  "
                             "prepare list of Boot Environments."
                             "\nAll functions for managing Boot Environments are disabled")
-                        self.__error_occured(msg, False)
+                        self.__error_occurred(msg, False)
                         return
                 else:
                         be_list_loop = be_list

@@ -144,8 +144,6 @@ DISPLAY_LINK,
 CLICK_LINK,
 ) = range(2)
 
-CLIENT_API_VERSION = gui_misc.get_client_api_version()
-
 class PackageManager:
         def __init__(self):
                 signal.signal(signal.SIGINT, self.__main_application_quit)
@@ -218,7 +216,7 @@ class PackageManager:
                             "usr/share/locale"))
                         module.textdomain("pkg")
                 # XXX Remove and use _() where self._ and self.parent._ are being used
-                main_window_title = _('Package Manager')
+                self.main_window_title = _('Package Manager')
                 self.user_rights = portable.is_admin()
                 self.cancelled = False                    # For background processes
                 self.image_directory = None
@@ -416,7 +414,7 @@ class PackageManager:
                 self.install_button_tooltip = gtk.Tooltips()
                 self.remove_button_tooltip = gtk.Tooltips()
                 self.__update_reload_button()
-                self.w_main_window.set_title(main_window_title)
+                self.w_main_window.set_title(self.main_window_title)
                 self.w_searchentry.grab_focus()
 
                 # Update All Completed Dialog
@@ -1657,7 +1655,7 @@ class PackageManager:
                             "The catalogs have not been loaded.\n"
                             "Please try after few seconds.\n")
                         gobject.idle_add(self.w_progress_dialog.hide)
-                        gobject.idle_add(self.error_occured, err)
+                        gobject.idle_add(self.error_occurred, err)
                         return
                 return self.__add_pkgs_to_lists(pkgs_known, application_list,
                     None, None)
@@ -2293,7 +2291,7 @@ class PackageManager:
                                 if first_loop == True:
                                         first_loop = False
                                         gobject.idle_add(self.setup_progressdialog_show)
-                                self.__load_catalogs()
+                                self.api_o.refresh(pubs=[publisher])
                                 self.__add_pkgs_to_lists_from_api(publisher,
                                     application_list, category_list, section_list)
                                 category_list.prepend([0, _('All'), None, None, False,
@@ -2372,8 +2370,8 @@ class PackageManager:
                 try:
                         gnome.url_show(self.release_notes_url)
                 except gobject.GError:
-                        self.error_occured(_("Unable to navigate to:\n\t%s") % 
-                            self.release_notes_url, msg_title=_("Package Manager"))
+                        self.error_occurred(_("Unable to navigate to:\n\t%s") % 
+                            self.release_notes_url)
 
         def __on_help_about(self, widget):
                 wTreePlan = gtk.glade.XML(self.gladefile, "aboutdialog")
@@ -3117,15 +3115,6 @@ class PackageManager:
                         self.__image_activity_lock.release()
                 return res
 
-        def __load_catalogs(self):
-                self.__image_activity_lock.acquire()
-                try:
-                        self.catalog_loaded = False
-                        self.api_o.img.load_catalogs(self.pr)
-                        self.catalog_loaded = True
-                finally:
-                        self.__image_activity_lock.release()
-
         def __enable_disable_update_all(self):
                 #XXX Api to provide fast information if there are some updates
                 #available within image
@@ -3147,7 +3136,9 @@ class PackageManager:
 
         def __check_if_updates_available(self):
                 try:
-                        self.__load_catalogs()
+                        self.catalog_loaded = False
+                        self.api_o.refresh()
+                        self.catalog_loaded = True
                         res = self.__get_inventory_list([], False, False)
                         for pfmri, state in res:
                                 if state["upgradable"]:
@@ -3183,7 +3174,7 @@ class PackageManager:
                         self.catalog_loaded = True
                 except api_errors.PublisherError:
                         # In current implementation, this will never happen
-                        # We are not refrehsing specific publisher
+                        # We are not refreshing specific publisher
                         self.__catalog_refresh_done()
                         raise
                 except api_errors.PermissionsException:
@@ -3223,13 +3214,13 @@ class PackageManager:
                                         ermsg += _("Unknown error")
                                         ermsg += "\n"
 
-                        gobject.idle_add(self.error_occured, ermsg,
+                        gobject.idle_add(self.error_occurred, ermsg,
                             None, gtk.MESSAGE_INFO)
                         self.__catalog_refresh_done()
                         return -1
                 except api_errors.InvalidDepotResponseException, idrex:
                         err = str(idrex)
-                        gobject.idle_add(self.error_occured, err,
+                        gobject.idle_add(self.error_occurred, err,
                             None, gtk.MESSAGE_INFO)
                         self.__catalog_refresh_done()
                         return -1
@@ -3265,7 +3256,7 @@ class PackageManager:
                         # contain any packages
                         err = _("Selected repository does not contain any packages.")
                         gobject.idle_add(self.w_progress_dialog.hide)
-                        gobject.idle_add(self.error_occured, err, None,
+                        gobject.idle_add(self.error_occurred, err, None,
                             gtk.MESSAGE_INFO)
                         self.unset_busy_cursor()
                         pkgs_known = []
@@ -3509,7 +3500,15 @@ class PackageManager:
                     "Processing package entries: %d of %d") % (count, total)  )
                 gobject.idle_add(self.w_progressbar.set_fraction, fraction)
 
-        def error_occured(self, error_msg, msg_title=None, msg_type=gtk.MESSAGE_ERROR):
+        def error_occurred(self, error_msg, msg_title=None, msg_type=gtk.MESSAGE_ERROR):
+                if msg_title:
+                        title = msg_title
+                else:
+                        title = _("Package Manager")
+                gui_misc.error_occurred(self.w_main_window, error_msg,
+                    title, msg_type, use_markup=True)
+
+
                 msgbox = gtk.MessageDialog(parent =
                     self.w_main_window,
                     buttons = gtk.BUTTONS_CLOSE,
@@ -3574,7 +3573,14 @@ class PackageManager:
 
         @staticmethod
         def get_installed_version(api_o, pkg):
-                return api_o.img.get_version_installed(pkg)
+                info = api_o.info([pkg], False, frozenset(
+                    [api.PackageInfo.STATE, api.PackageInfo.IDENTITY]))
+                found = info[api.ImageInterface.INFO_FOUND]
+                try:
+                        version = found[0]
+                except IndexError:
+                        version = None
+                return version
 
         @staticmethod
         def get_manifest(img, package):
@@ -3624,7 +3630,8 @@ class PackageManager:
                 self.__init_show_filter()                #Initiates filter
 
         def reload_packages(self):
-                self.api_o = self.__get_api_object(self.image_directory, self.pr)
+                self.api_o = gui_misc.get_api_object(self.image_directory, 
+                    self.pr, self.w_main_window)
                 self.cache_o = self.__get_cache_obj(self.icon_theme, 
                     self.application_dir, self.api_o)
                 self.__on_reload(None)
@@ -3638,7 +3645,8 @@ class PackageManager:
         def process_package_list_start(self, image_directory):
                 self.image_directory = image_directory
                 if not self.api_o:
-                        self.api_o = self.__get_api_object(image_directory, self.pr)
+                        self.api_o = gui_misc.get_api_object(image_directory, 
+                            self.pr, self.w_main_window)
                         self.cache_o = self.__get_cache_obj(self.icon_theme,
                             self.application_dir, self.api_o)
                         self.img_timestamp = self.cache_o.get_index_timestamp()
@@ -3650,18 +3658,6 @@ class PackageManager:
                 cache_o = cache.CacheListStores(icon_theme, application_dir,
                     api_o)
                 return cache_o
-
-        @staticmethod
-        def __get_api_object(img_dir, progtrack):
-                api_o = None
-                try:
-                        api_o = api.ImageInterface(img_dir,
-                            CLIENT_API_VERSION,
-                            progtrack, None, PKG_CLIENT_NAME)
-                except (api_errors.VersionException,\
-                    api_errors.ImageNotFoundException):
-                        raise
-                return api_o
 
         def process_package_list_end(self):
                 self.__set_first_category_text()
@@ -3778,7 +3774,7 @@ class PackageManager:
                         return
                 visible_repository = self.__get_visible_repository_name()
                 default_publisher = self.default_publisher
-                self.__load_catalogs()
+                self.api_o.refresh()
                 if not self.img_timestamp:
                         self.img_timestamp = self.cache_o.get_index_timestamp()
                         self.__on_reload(None)
@@ -3800,16 +3796,16 @@ class PackageManager:
                                         self.__remove_pkg_stem_from_list(pkg_stem)
                                         if self.info_cache.has_key(pkg_stem):
                                                 del self.info_cache[pkg_stem]
-                                        package_installed = \
-                                            self.get_installed_version(self.api_o, pkg)
+                                        package_info = self.get_installed_version(
+                                            self.api_o, pkg_stem)
+                                        package_installed =  (package_info.state 
+                                            == api.PackageInfo.INSTALLED)
+                                        print pkg_stem, package_installed
                                         if package_installed:
-                                                inst_stem = \
-                                                    package_installed.get_pkg_stem()
-                                                if inst_stem == pkg_stem:
-                                                        row[enumerations.STATUS_COLUMN] = \
-                                                            enumerations.INSTALLED
-                                                        row[enumerations.STATUS_ICON_COLUMN] = \
-                                                            installed_icon
+                                                row[enumerations.STATUS_COLUMN] = \
+                                                    enumerations.INSTALLED
+                                                row[enumerations.STATUS_ICON_COLUMN] = \
+                                                    installed_icon
                                         else:
                                                 row[enumerations.STATUS_COLUMN] = \
                                                     enumerations.NOT_INSTALLED

@@ -36,12 +36,14 @@ try:
         import gtk
 except ImportError:
         sys.exit(1)
+import pkg.client.api_errors as api_errors
+import pkg.client.api as api
 
-def get_client_api_version():
-        """Return the current version of the Client API the PM, UM and
-        WebInstall GUIs have been tested against and are known to work
-        with.""" 
-        return 15 # CLIENT_API_VERSION Used by PM, UM and WebInstall
+from pkg.client import global_settings
+
+#The current version of the Client API the PM, UM and
+#WebInstall GUIs have been tested against and are known to work with.
+CLIENT_API_VERSION = 15
 
 def get_app_pixbuf(application_dir, icon_name):
         return get_pixbuf_from_path(os.path.join(application_dir,
@@ -115,3 +117,44 @@ def get_pkg_name(pkg_name):
                 return pkg_name[index:].strip("/") + converted_name
         return pkg_name_bk
 
+def get_api_object(img_dir, progtrack, parent_dialog):
+        api_o = None
+        message = None
+        try:
+                api_o = api.ImageInterface(img_dir,
+                    CLIENT_API_VERSION,
+                    progtrack, None, global_settings.client_name)
+        except api_errors.VersionException, ex:
+                message = _("Version mismatch: expected version %d, got version %d") % \
+                    (ex.expected_version, ex.received_version)
+        except api_errors.ImageNotFoundException, ex:
+                message = _("%s is not an install image") % e.user_dir
+        if message != None:
+                if parent_dialog != None:
+                        error_occurred(parent_dialog,
+                            message, _("API Error"))
+                else:
+                        print message
+                sys.exit(0)
+        return api_o
+
+def error_occurred(parent, error_msg, msg_title = None,
+    msg_type=gtk.MESSAGE_ERROR, use_markup = False):
+        msgbox = gtk.MessageDialog(parent =
+            parent,
+            buttons = gtk.BUTTONS_CLOSE,
+            flags = gtk.DIALOG_MODAL,
+            type = msg_type,
+            message_format = None)
+        if use_markup:
+                msgbox.set_markup(error_msg)
+        else:
+                msgbox.set_property('text', error_msg)
+        if msg_title != None:
+                title = msg_title
+        else:
+                title = _("Error")
+
+        msgbox.set_title(title)
+        msgbox.run()
+        msgbox.destroy()
