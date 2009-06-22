@@ -250,6 +250,9 @@ category = C
 [SUNWarcmsr]
 category = Storage
 
+[SUNWareca]
+category = System Utilities
+
 [SUNWastdev]
 category = Software Management
 
@@ -476,6 +479,9 @@ category = Window Managers
 category = Libraries
 
 [SUNWconflict]
+category = System Utilities
+
+[SUNWconman]
 category = System Utilities
 
 [SUNWcontact-lookup-applet]
@@ -2939,6 +2945,9 @@ category = Hardware
 category = Internet
 
 [SUNWperl-authen-pam]
+category = Perl
+
+[SUNWperl-net-ssleay]
 category = Perl
 
 [SUNWperl-pmtools]

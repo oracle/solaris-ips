@@ -1,0 +1,5 @@
+package SUNWareca
+classification "Applications/System Utilities"
+import SUNWareca
+version 7.1
+end package
