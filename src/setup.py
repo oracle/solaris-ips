@@ -152,6 +152,7 @@ scripts_sunos = {
         lib_dir: [
                 ['depot.py', 'pkg.depotd'],
                 ['updatemanagernotifier.py', 'updatemanagernotifier'],
+                ['launch.py', 'pm-launch'],
                 ],
         svc_method_dir: [
                 ['svc/svc-pkg-depot', 'svc-pkg-depot'],

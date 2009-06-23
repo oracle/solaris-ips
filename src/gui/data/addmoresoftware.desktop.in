@@ -2,7 +2,7 @@
 _Name=Add More Software
 _GenericName=Add More Software
 _Comment=Install, update and remove software packages
-Exec=gksu /usr/bin/packagemanager
+Exec=/usr/lib/pm-launch /usr/bin/packagemanager
 Icon=packagemanager
 Terminal=false
 MultipleArgs=false
