@@ -20,7 +20,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
@@ -37,8 +37,10 @@ liblist_alloc()
 {
 	liblist_t *n;
 
-	if ((n = malloc(sizeof (liblist_t))) == NULL)
-		return (PyErr_NoMemory());
+	if ((n = malloc(sizeof (liblist_t))) == NULL) {
+		(void) PyErr_NoMemory();
+		return (NULL);
+	}
 
 	n->head = NULL;
 	n->tail = NULL;
@@ -73,8 +75,10 @@ liblist_add(liblist_t *lst, off_t off)
 	if (!lst)
 		return (NULL);
 
-	if ((n = malloc(sizeof (libnode_t))) == NULL)
-		return (PyErr_NoMemory());
+	if ((n = malloc(sizeof (libnode_t))) == NULL) {
+		(void) PyErr_NoMemory();
+		return (NULL);
+	}
 
 	n->nameoff = off;
 	n->verlist = NULL;
@@ -96,7 +100,7 @@ liblist_foreach(liblist_t *lst, int (*cb)(libnode_t *, void *, void *),
     void *info, void *info2)
 {
 	if (!lst)
-		return;
+		return (-1);
 
 	libnode_t *n = lst->head;
 

@@ -20,7 +20,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
@@ -134,9 +134,11 @@ getident(int fd)
 {
 	char *id = NULL;
 
-	if ((id = malloc(EI_NIDENT)) == NULL)
-		return (PyErr_NoMemory());
-	
+	if ((id = malloc(EI_NIDENT)) == NULL) {
+		(void) PyErr_NoMemory();
+		return (NULL);
+	}
+
 	if (lseek(fd, 0, SEEK_SET) == -1) {
 		PyErr_SetFromErrno(PyExc_IOError);
 		free(id);
@@ -197,8 +199,10 @@ gethead(Elf *elf)
 		return (NULL);
 	}
 
-	if ((hdr = malloc(sizeof (GElf_Ehdr))) == NULL)
-		return (PyErr_NoMemory());
+	if ((hdr = malloc(sizeof (GElf_Ehdr))) == NULL) {
+		(void) PyErr_NoMemory();
+		return (NULL);
+	}
 
 	if (gelf_getehdr(elf, hdr) == 0) {
 		PyErr_SetString(ElfError, elf_errmsg(-1));
@@ -216,8 +220,10 @@ getheaderinfo(int fd)
 	GElf_Ehdr *hdr;
 	hdrinfo_t *hi;
 
-	if ((hi = malloc(sizeof (hdrinfo_t))) == NULL)
-		return (PyErr_NoMemory());
+	if ((hi = malloc(sizeof (hdrinfo_t))) == NULL) {
+		(void) PyErr_NoMemory();
+		return (NULL);
+	}
 
 	if (elf_version(EV_CURRENT) == EV_NONE) {
 		PyErr_SetString(ElfError, elf_errmsg(-1));
@@ -379,8 +385,7 @@ getdynamic(int fd)
 				uint32_t bot = htonl((uint32_t)n);
 				SHA1Update(&shc, &top, sizeof (top));
 				SHA1Update(&shc, &bot, sizeof (bot));
-			}
-			else {
+			} else {
 				int hash;
 				hash = readhash(fd, &shc, shdr.sh_offset,
 				    shdr.sh_size);
@@ -507,7 +512,8 @@ getdynamic(int fd)
 	}
 
 	/* Consolidate version and dependency information */
-	liblist_foreach(deps, setver_liblist_cb, vers, NULL);
+	if (liblist_foreach(deps, setver_liblist_cb, vers, NULL) == -1)
+		goto bad;
 	liblist_free(vers);
 	vers = NULL;
 
@@ -547,7 +553,7 @@ getdynamic(int fd)
 	}
 
 	if ((dyn = malloc(sizeof (dyninfo_t))) == NULL) {
-		PyErr_NoMemory();
+		(void) PyErr_NoMemory();
 		goto bad;
 	}
 

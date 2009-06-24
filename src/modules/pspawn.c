@@ -20,7 +20,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
@@ -320,7 +320,7 @@ pspawn(PyObject *self, PyObject *args, PyObject *kwds)
 	len = PySequence_Size(args_seq);
 	spawn_args = malloc(sizeof (char *) * (len + 1));
 	if (spawn_args == NULL) {
-		PyErr_NoMemory();
+		(void) PyErr_NoMemory();
 		goto out_args;
 	}
 
@@ -344,7 +344,7 @@ pspawn(PyObject *self, PyObject *args, PyObject *kwds)
 		len = PySequence_Size(env_seq);
 		spawn_env = malloc(sizeof (char *) * (len + 1));
 		if (spawn_env == NULL) {
-			PyErr_NoMemory();
+			(void) PyErr_NoMemory();
 			goto out_env;
 		}
 
