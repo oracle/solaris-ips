@@ -166,7 +166,8 @@ class PkgPlan(object):
 
                 # Stash information needed by legacy actions.
                 self.__legacy_info["description"] = \
-                    self.__destination_mfst.get("description", "none provided")
+                    self.__destination_mfst.get("pkg.summary",
+                    self.__destination_mfst.get("description", "none provided"))
 
                 # Add any repair actions to the update list
                 self.actions[1].extend(self.__repair_actions)

@@ -784,7 +784,7 @@ class DepotHTTP(object):
                         if not publisher:
                                 publisher = ""
 
-                summary = m.get("description", "")
+                summary = m.get("pkg.summary", m.get("description", ""))
 
                 lsummary = cStringIO.StringIO()
                 for i, entry in enumerate(m.gen_actions_by_type("license")):

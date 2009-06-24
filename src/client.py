@@ -227,6 +227,10 @@ def list_inventory(img, args):
         img.history.operation_name = "list"
         img.load_catalogs(progress.NullProgressTracker())
 
+        api_inst = api.ImageInterface(img.get_root(), CLIENT_API_VERSION,
+            get_tracker(quiet=True), None, PKG_CLIENT_NAME)
+        info_needed = frozenset([api.PackageInfo.SUMMARY])
+
         seen_one_pkg = False
         found = False
         try:
@@ -294,8 +298,15 @@ def list_inventory(img, args):
                         elif summary:
                                 pf = pfmri.get_name() + pub
 
-                                m = img.get_manifest(pfmri)
-                                msg(fmt_str % (pf, m.get("description", "")))
+                                try:
+                                        ret = api_inst.info([pfmri], False,
+                                            info_needed)
+                                        pis = ret[api.ImageInterface.INFO_FOUND]
+                                except api_errors.ApiException, e:
+                                        error(e)
+                                        return 1
+
+                                msg(fmt_str % (pf, pis[0].summary)) 
 
                         else:
                                 pf = pfmri.get_name() + pub
