@@ -28,6 +28,7 @@
 import gettext
 import getopt
 import os
+import simplejson
 import sys
 
 # Alias gettext.gettext to _
@@ -73,6 +74,12 @@ class GenOSFiles:
         #
         self.os_subcat_name = "../../gui/data/opensolaris.org"
 
+        # Location of the classifications file (override with -c option).
+        self.class_file = "./classifications.txt"
+
+        # Dictionary of valid categories / sub-categories.
+        self.categories = {}
+
         # Dictionary of packages found.
         #
         self.packages = {}
@@ -81,12 +88,25 @@ class GenOSFiles:
         #
         self.package_count = 0
 
-    def save_entry(self, pathname, category, sub_category):
+    def init_categories(self):
+        """Initialize a dictionary of valid categories / sub-categories.
+        The categories are the keys and the sub-categories are a list
+        of valid sub-categories for that category).
+        """
+
+        try:
+            fileobj = open(self.class_file, 'r')
+            self.categories = simplejson.load(fileobj)
+        except IOError, e:
+            print >> sys.stderr, "Unable to get package classifications.", e
+            sys.exit(3)
+
+    def save_entry(self, pathname, categories, sub_categories):
         """For the given package name, create a new entry in a list of
         the classifications for this package. The entry will consist of
-        a build number, a category and a sub_category. If the category
-        and sub-category are None, then this means that for that build
-        number, this packages was not classified.
+        a build number, a list of categories and a list of sub_categories.
+        If the categories and sub-categories are None, then this means 
+        that for that build number, this package was not classified.
         """
 
         # The following adjustments are made because the GUI Package
@@ -101,34 +121,44 @@ class GenOSFiles:
         # System/X11           -> System/X11 (System)
         #
         if self.package_name:
-            old_sub_category = sub_category
+            for i, (category, sub_category) in \
+                enumerate(zip(categories, sub_categories)):
 
-            if category == "Desktop (GNOME)" and \
-               sub_category == "Localizations":
-                sub_category = "Localizations (Desktop)"
+                if not category in self.categories or \
+                    not sub_category in self.categories[category]:
+                    sys.stderr.write("WARNING: package %s: " % 
+                        self.package_name)
+                    sys.stderr.write(" classification %s/%s not valid\n" % 
+                        (category, sub_category))
 
-            elif category == "System" and sub_category == "Databases":
-                sub_category = "Databases (System)"
+                old_sub_category = sub_category
 
-            elif category == "System" and sub_category == "Libraries":
-                sub_category = "Libraries (System)"
+                if category == "Desktop (GNOME)" and \
+                   sub_category == "Localizations":
+                    sub_categories[i] = "Localizations (Desktop)"
 
-            elif category == "System" and sub_category == "Localizations":
-                sub_category = "Localizations (System)"
+                elif category == "System" and sub_category == "Databases":
+                    sub_categories[i] = "Databases (System)"
 
-            elif category == "System" and sub_category == "X11":
-                sub_category = "X11 (System)"
+                elif category == "System" and sub_category == "Libraries":
+                    sub_categories[i] = "Libraries (System)"
 
-            if self.debug:
-                if old_sub_category != sub_category:
-                    sys.stderr.write("CHANGED: sub_category: %s\n" %
-                                     sub_category)
+                elif category == "System" and sub_category == "Localizations":
+                    sub_categories[i] = "Localizations (System)"
 
-            if sub_category and len(sub_category) == 0:
-                message = "**** Package %s: empty sub-category\n" % \
-                          self.package_name
-                sys.stderr.write(message)
-                return
+                elif category == "System" and sub_category == "X11":
+                    sub_categories[i] = "X11 (System)"
+
+                if self.debug:
+                    if old_sub_category != sub_category:
+                        sys.stderr.write("CHANGED: sub_category: %s\n" %
+                                         sub_category)
+
+                if sub_category and len(sub_category) == 0:
+                    message = "**** Package %s: empty sub-category\n" % \
+                              self.package_name
+                    sys.stderr.write(message)
+                    return
 
             tokens = pathname[len(self.prefix):-1].split("/")
             if self.debug:
@@ -144,18 +174,16 @@ class GenOSFiles:
 
             if self.package_name in self.packages:
                 packages = self.packages[self.package_name]
-                packages.append([build_no, category, sub_category])
+                packages.append([build_no, categories, sub_categories])
                 self.packages[self.package_name] = packages
             else:
                 self.packages[self.package_name] = \
-                    [ [build_no, category, sub_category] ]
+                    [ [build_no, categories, sub_categories] ]
 
         else:
             message = \
                 "**** Classification with no package name in %s" % pathname
             sys.stderr.write(message)
-
-        self.package_name = None
 
     def extract_info(self, pathname):
         """Extract information that we are interested in. This will be the
@@ -172,6 +200,8 @@ class GenOSFiles:
 
         self.package_name = None
         classification_found = False
+        categories = []
+        sub_categories = []
         for line in lines:
             line = line.rstrip()
             if line.startswith("package"):
@@ -192,15 +222,19 @@ class GenOSFiles:
                     if self.debug:
                         sys.stderr.write("category: %s\n" % category)
                         sys.stderr.write("sub_category: %s\n" % sub_category)
+                    categories.append(category)
+                    sub_categories.append(sub_category)
                 except IndexError:
                     message = "**** Malformed classification line: %s:\n" % line
                     sys.stderr.write(message)
                     return
 
-                self.save_entry(pathname, category, sub_category)
-
             elif line.startswith("end package"):
+                self.save_entry(pathname, categories, sub_categories)
+                self.package_name = None
                 classification_found = False
+                categories = []
+                sub_categories = []
 
         if self.package_name and not classification_found:
             self.save_entry(pathname, None, None)
@@ -255,21 +289,23 @@ Usage:
 
         categories = {}
         for key in sorted(self.packages.keys()):
-            build_no, category, sub_category = self.packages[key]
+            build_no, pkg_categories, pkg_sub_categories = self.packages[key]
 
-            if category and sub_category:
-                if category in categories:
-                    # If we already have a list started for this category,
-                    # then just append this sub-category to it, if it isn't
-                    # already there.
-                    #
-                    sub_categories = categories[category]
-                    if not sub_category in sub_categories:
-                        sub_categories.append(sub_category)
-                        categories[category] = sub_categories
-                else:
-                    categories[category] = [ sub_category ]
+            for i, (category, sub_category) in \
+                enumerate(zip(pkg_categories, pkg_sub_categories)):
 
+                if category and sub_category:
+                    if category in categories:
+                        # If we already have a list started for this category,
+                        # then just append this sub-category to it, if it isn't
+                        # already there.
+                        #
+                        sub_categories = categories[category]
+                        if not sub_category in sub_categories:
+                            sub_categories.append(sub_category)
+                            categories[category] = sub_categories
+                    else:
+                        categories[category] = [ sub_category ]
 
         fout = open(self.os_cat_name, 'w')
 
@@ -300,9 +336,11 @@ Usage:
 
         fout = open(self.os_subcat_name, 'w')
         for key in sorted(self.packages.keys()):
-            build_no, category, sub_category = self.packages[key]
-            if category and sub_category:
-                fout.write("[%s]\ncategory = %s\n\n" % (key, sub_category))
+            build_no, categories, sub_categories = self.packages[key]
+
+            if categories and sub_categories:
+                pkg_sub_str = ",".join(sub_categories)
+                fout.write("[%s]\ncategory = %s\n\n" % (key, pkg_sub_str))
         fout.close()
 
     def main(self):
@@ -328,6 +366,8 @@ Usage:
                 self.usage()
             if opt in ("-s", "--subcategory"):
                 self.os_subcat_name = val.strip()
+
+        self.init_categories()
 
         cmd = 'find %s -type f -print' % self.prefix
         lines = os.popen(cmd).readlines()

@@ -4,7 +4,11 @@ depend sunstudio12u1
 end package
 
 package sunstudio12u1
+classification "Development/C"
+classification "Development/C++"
+classification "Development/High Performance Computing"
 classification "Development/Integrated Development Environments"
+classification "Development/Suites"
 summary "Sun Studio - C, C++, & Fortran compilers and Tools"
 version 12.1
 import sunstudio12u1
@@ -32,7 +36,11 @@ add set name=info.keyword value="Fortran compiler module iropt optimizer \
 end package
 
 package sunstudioexpress
+classification "Development/C"
+classification "Development/C++"
+classification "Development/High Performance Computing"
 classification "Development/Integrated Development Environments"
+classification "Development/Suites"
 summary "Sun Studio Express - C, C++, & Fortran compilers and Tools"
 version 0.2009.3.1
 import sunstudioexpress

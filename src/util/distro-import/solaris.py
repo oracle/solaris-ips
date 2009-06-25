@@ -56,7 +56,7 @@ class package(object):
                 self.dropped_licenses = []
                 self.nonhollow_dirs = {}
                 self.srcpkgs = []
-                self.classification = ""
+                self.classification = []
                 self.desc = ""
                 self.summary = ""
                 self.version = ""
@@ -464,7 +464,7 @@ def end_package(pkg):
         print "  Version:", pkg.version
         print "  Description:", pkg.desc
         print "  Summary:", pkg.summary
-        print "  Classification: ", pkg.classification
+        print "  Classification: ", ",".join(pkg.classification)
 
 def publish_pkg(pkg):
 
@@ -1272,8 +1272,8 @@ def SolarisParse(mf):
 
                 elif token == "classification":
                         cat_subcat = lexer.get_token()
-                        curpkg.classification = \
-                            "org.opensolaris.category.2008:%s" % cat_subcat
+                        curpkg.classification.append(
+                            "org.opensolaris.category.2008:%s" % cat_subcat)
 
                 elif token == "description":
                         curpkg.desc = lexer.get_token()
@@ -1430,7 +1430,7 @@ for _p in sorted(newpkgs):
         print "  Version:", _p.version
         print "  Description:", _p.desc
         print "  Summary:", _p.summary
-        print "  Classification:", _p.classification
+        print "  Classification:", ",".join(_p.classification)
         try:
                 publish_pkg(_p)
         except trans.TransactionError, _e:

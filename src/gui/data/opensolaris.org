@@ -4595,10 +4595,10 @@ category = Storage
 category = Storage
 
 [sunstudio12u1]
-category = Integrated Development Environments
+category = C,C++,High Performance Computing,Integrated Development Environments,Suites
 
 [sunstudioexpress]
-category = Integrated Development Environments
+category = C,C++,High Performance Computing,Integrated Development Environments,Suites
 
 [system/ldoms/ldomsmanager]
 category = Virtualization
