@@ -246,6 +246,31 @@ class TestPkgsendBasics(testutils.SingleDepotTestCase):
                    " grep 'l.foo.*pkg.size=3'")
                 self.image_destroy()
 
+        def test_9_multiple_dirs(self):
+                rootdir = self.get_test_prefix()
+                dir_1 = os.path.join(rootdir, "dir_1")
+                dir_2 = os.path.join(rootdir, "dir_2")
+                os.mkdir(dir_1)
+                os.mkdir(dir_2)
+                file(os.path.join(dir_1, "A"), "wb").close()
+                file(os.path.join(dir_2, "B"), "wb").close()
+                mfpath = os.path.join(rootdir, "manifest_test")
+                mf = file(mfpath, "w")
+                # test omission of set action by having illegal fmri value
+                mf.write("""file NOHASH mode=0755 owner=root group=bin path=/A
+                    file NOHASH mode=0755 owner=root group=bin path=/B
+                    set name="fmri" value="totally_bogus"
+                    """)
+                mf.close()
+                dhurl = self.dc.get_depot_url()
+                self.pkgsend(dhurl,
+                    """publish -d %s -d %s testmultipledirs@1.0 < %s"""
+                    % (dir_1, dir_2, mfpath))
+                self.image_create(dhurl)
+                self.pkg("install testmultipledirs")
+                self.pkg("verify")
+                self.image_destroy()
+
 class TestPkgsendRename(testutils.SingleDepotTestCase):
 
         def test_rename1(self):

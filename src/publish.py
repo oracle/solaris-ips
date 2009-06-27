@@ -84,9 +84,9 @@ Packager subcommands:
         pkgsend open [-en] pkg_fmri
         pkgsend add action arguments
         pkgsend import [-T file_pattern] bundlefile ...
-        pkgsend include [-d basedir] manifest ...
+        pkgsend include [-d basedir] .. [manifest] ...
         pkgsend close [-A]
-
+        pkgsend publish [-d basedir] ... fmri [manifest] ...
         pkgsend rename src_fmri dest_fmri
 
 Options:
@@ -204,64 +204,131 @@ def trans_rename(repo_uri, args):
         t.rename(args[0], args[1])
         return 0
 
-def trans_include(repo_uri, fargs):
+def trans_publish(repo_uri, fargs):
+        error_occurred = False
+        opts, pargs = getopt.getopt(fargs, "-d:")
+        include_opts = []
 
-        basedir = None
+        for opt, arg in opts:
+                if opt == "-d":
+                        include_opts += [opt, arg]
+        if not pargs:
+                usage(_("No fmri argument specified for subcommand"), 
+                    cmd="publish")
+        
+        t = trans.Transaction(repo_uri, pkg_name=pargs[0])
+        t.open()
+        del pargs[0]
+        if trans_include(repo_uri, include_opts + pargs, transaction=t):
+                abandon = True
+        else:
+                abandon = False
+        pkg_state, pkg_fmri = t.close(abandon=abandon)
+        for val in (pkg_state, pkg_fmri):
+                if val is not None:
+                        msg(val)
+        if abandon:
+                return 1
+        return 0
+        
+def trans_include(repo_uri, fargs, transaction=None):
+        basedirs = []
+        error_occurred = False
 
         opts, pargs = getopt.getopt(fargs, "d:")
         for opt, arg in opts:
                 if opt == "-d":
-                        basedir = arg
+                        basedirs.append(arg)
 
-        try:
-                trans_id = os.environ["PKG_TRANS_ID"]
-        except KeyError:
-                usage(_("No transaction ID specified in $PKG_TRANS_ID"),
-                    cmd="include")
+        if transaction == None:
+                try:
+                        trans_id = os.environ["PKG_TRANS_ID"]
+                except KeyError:
+                        usage(_("No transaction ID specified in $PKG_TRANS_ID"),
+                            cmd="include")
+                t = trans.Transaction(repo_uri, trans_id=trans_id)
+        else:
+                t = transaction
 
-        if not fargs:
-                usage(_("No arguments specified for subcommand."),
-                    cmd="include")
+        if not pargs:
+                filelist = [("<stdin>", sys.stdin)]
+        else:
+                try:
+                        filelist = [(f, file(f)) for f in pargs]
+                except IOError, e:
+                        error(e, cmd="include")
+                        return 1
 
-        t = trans.Transaction(repo_uri, trans_id=trans_id)
-        for filename in pargs:
-                f = file(filename)
-                for line in f:
-                        line = line.strip() #
+        for filename, f in filelist:
+                for lineno, line in enumerate(f):
+                        line = line.strip()
                         if not line or line[0] == '#':
                                 continue
                         args = line.split()
                         if args[0] in ("file", "license"):
-                                if basedir:
-                                        fullpath = args[1].lstrip(os.path.sep)
-                                        fullpath = os.path.join(basedir,
-                                            fullpath)
+                                if args[1] == "NOHASH":
+                                        try:
+                                                filepath = pkg.actions.fromstr(
+                                                    line, None).attrs["path"]
+                                        except KeyError, e:
+                                                error(_("line %d: missing path")
+                                                    % (lineno + 1))
+                                                error_occurred = True
+                                                continue
+                                        except pkg.actions.ActionError, e:
+                                                error("line %d: %s" %
+                                                    (lineno + 1, e),
+                                                    cmd="include")
+                                                error_occurred = True
+                                                continue
                                 else:
-                                        fullpath = args[1]
-
-                                try:
-                                        # ignore local pathname
+                                        filepath = args[1]
                                         line = line.replace(args[1], "NOHASH",
                                             1)
-                                        action = pkg.actions.fromstr(line,
-                                            data=fullpath)
-                                except ValueError, e:
-                                        error(e[0], cmd="include")
-                                        return 1
+
+                                if basedirs:
+                                        path = filepath.lstrip(os.path.sep)
+                                        # look for file in specified dirs
+                                        for d in basedirs:
+                                                data = os.path.join(d, path)
+                                                if os.path.isfile(data):
+                                                        break
+                                else:
+                                        data = filepath
+
+
+                                if not os.path.isfile(data):
+                                        error(_("line %s: File %s not found") %
+                                            (lineno + 1, args[1]),
+                                            cmd="include")
+                                        error_occurred = True
+                                        continue
                         else:
-                                try:
-                                        action = pkg.actions.fromstr(line)
-                                except ValueError, e:
-                                        error(e[0], cmd="include")
-                                        return 1
+                                data = None
+                        try:
+                                action = pkg.actions.fromstr(line,
+                                                data=data)
+                        except  pkg.actions.ActionError, e:
+                                error(_("line %d: %s") %
+                                    (lineno + 1, e),
+                                    cmd="include")
+                                error_occurred = True
+                                continue
 
                         # cleanup any leading / in path to prevent problems
                         if "path" in action.attrs:
-                                np = action.attrs["path"].lstrip(os.path.sep)
-                                action.attrs["path"] = np
-
+                                action.attrs["path"] = \
+                                        action.attrs["path"].lstrip("/")
+                        # omit set name=fmri actions
+                        if action.name == "set" and \
+                            action.attrs["name"] == "fmri":
+                                continue
+                                
                         t.add(action)
-        return 0
+        if error_occurred:
+                return 1
+        else:
+                return 0
 
 def trans_import(repo_uri, args):
         try:
@@ -347,6 +414,8 @@ def main_func():
                         ret = trans_import(repo_uri, pargs)
                 elif subcommand == "include":
                         ret = trans_include(repo_uri, pargs)
+                elif subcommand == "publish":
+                        ret = trans_publish(repo_uri, pargs)
                 elif subcommand == "rename":
                         ret = trans_rename(repo_uri, pargs)
                 else:

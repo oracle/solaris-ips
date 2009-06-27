@@ -11,7 +11,8 @@ SYNOPSIS
      /usr/bin/pkgsend open [-en] pkg_fmri
      /usr/bin/pkgsend add action arguments
      /usr/bin/pkgsend import [-T pattern] bundlefile ...
-     /usr/bin/pkgsend include [-d basedir] manifest ...
+     /usr/bin/pkgsend include [-d basedir] ... [manifest] ...
+     /usr/bin/pkgsend publish [-d basedir] ... pkg_fmri [manifest] ...
      /usr/bin/pkgsend close [-A]
 
 DESCRIPTION
@@ -69,22 +70,30 @@ SUBCOMMANDS
                [seq]  matches any character in seq
                [!seq] matches any character not in seq
 
-     include [-d basedir] manifest ...
+     include [-d basedir] ... [manifest] ...
           Add resources associated with the multiple actions present in
-          each manifest file to the current transaction.  Each line in the
+          each manifest file to the current transaction.  If no files
+          are specified, the standard input is read.  Each line in the
           file should be the string representation of an action.  In
           particular, the "add" token as described above should not be
           present, nor should there be open and close tokens representing
           transaction boundaries.  For those actions with datastreams, the
           path to the file containing the data should be the second word on
-          the line.
+          the line; for file actions if this is set to "NOHASH" the value of
+          the "path" attribute is used instead.
 
           If the user specifies the -d option, basedir is prepended to
-          the search path when locating files in the manifest.
+          the search path when locating files in the manifest.  Multiple
+          -d options have their directories searched in the order they
+          appear on the command line.
 
      close [-A]
           Close current transaction.  With -A, abandon the current
           transaction.
+
+     publish [ -d basedir] ... fmri [manifest] ...
+          Combines open, include and publish in a single operation.
+
 
 ENVIRONMENT VARIABLES
      The following environment variables are supported:
