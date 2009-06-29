@@ -11,4 +11,4 @@ $(i386_ONLY)chattr lib/libc.so.1 drop preserve
 $(i386_ONLY)chattr usr/lib/libc/libc_hwcap1.so.1 reboot_needed=true
 $(i386_ONLY)chattr usr/lib/libc/libc_hwcap2.so.1 reboot_needed=true
 $(i386_ONLY)chattr usr/lib/libc/libc_hwcap3.so.1 reboot_needed=true
-end package 
+end package
