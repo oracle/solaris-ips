@@ -590,8 +590,8 @@ class SlowSearchUsed(SearchException):
         an index.  It's raised after all results have been yielded."""
 
         def __str__(self):
-                return _("Search capabilities and performance are degraded.\n"
-                    "To improve, run 'pkg rebuild-index'.")
+                return _("Search performance is degraded.\n"
+                    "Run 'pkg rebuild-index' to improve search speed.")
 
 
 class BooleanQueryException(ApiException):
