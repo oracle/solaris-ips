@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import unittest
@@ -95,6 +95,15 @@ class TestElf(pkg5unittest.Pkg5TestCase):
 		if os.path.exists("/usr/lib/crti.o"):
 			elf.get_dynamic("/usr/lib/crti.o")
 
+		if os.path.exists("/usr/kernel/drv/fssnap"):
+			elf.get_dynamic("/usr/kernel/drv/fssnap")
+
+		if os.path.exists("/usr/kernel/drv/amd64/fssnap"):
+			elf.get_dynamic("/usr/kernel/drv/amd64/fssnap")
+
+		if os.path.exists("/usr/kernel/drv/sparcv9/fssnap"):
+			elf.get_dynamic("/usr/kernel/drv/sparcv9/fssnap")
+
 
 		self.assertRaises(OSError, elf.get_dynamic, "/does/not/exist")
 
@@ -123,6 +132,15 @@ class TestElf(pkg5unittest.Pkg5TestCase):
 
 		if os.path.exists("/usr/lib/crti.o"):
 			elf.get_info("/usr/lib/crti.o")
+
+		if os.path.exists("/usr/kernel/drv/fssnap"):
+			elf.get_info("/usr/kernel/drv/fssnap")
+
+		if os.path.exists("/usr/kernel/drv/amd64/fssnap"):
+			elf.get_info("/usr/kernel/drv/amd64/fssnap")
+
+		if os.path.exists("/usr/kernel/drv/sparcv9/fssnap"):
+			elf.get_info("/usr/kernel/drv/sparcv9/fssnap")
 
 		self.assertRaises(OSError, elf.get_info, "/does/not/exist");
 		

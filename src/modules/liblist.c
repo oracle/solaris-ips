@@ -100,7 +100,7 @@ liblist_foreach(liblist_t *lst, int (*cb)(libnode_t *, void *, void *),
     void *info, void *info2)
 {
 	if (!lst)
-		return (-1);
+		return (0);
 
 	libnode_t *n = lst->head;
 
