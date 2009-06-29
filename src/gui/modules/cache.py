@@ -37,7 +37,7 @@ try:
 except ImportError:
         nobe = True
 
-CACHE_VERSION=7
+CACHE_VERSION=8
 INDEX_HASH_LENGTH=41
 
 class CacheListStores:
@@ -169,7 +169,6 @@ class CacheListStores:
                         app = {}
                         app["mark"] = application[enumerations.MARK_COLUMN]
                         app["name"] = application[enumerations.NAME_COLUMN]
-                        app["description"] = application[enumerations.DESCRIPTION_COLUMN]
                         app["status"] = application[enumerations.STATUS_COLUMN]
                         app["fmri"] = application[enumerations.FMRI_COLUMN]
                         app["stem"] = application[enumerations.STEM_COLUMN]
@@ -241,7 +240,6 @@ class CacheListStores:
                         marked = False
                         status_icon = None
                         name = app.get("name")
-                        description = app.get("description")
                         status = app.get("status")
                         if status == enumerations.INSTALLED:
                                 status_icon = self.installed_icon
@@ -256,9 +254,10 @@ class CacheListStores:
                         is_visible = app.get("is_visible")
                         category_list = app.get("category_list")
                         pkg_authority = app.get("pkg_authority")
+                        #Not Caching Descriptions, set to "..." so they will be refetched
                         app = \
                             [
-                                marked, status_icon, name, description, status,
+                                marked, status_icon, name, "...", status,
                                 fmri, stem, display_name, is_visible, 
                                 category_list, pkg_authority
                             ]

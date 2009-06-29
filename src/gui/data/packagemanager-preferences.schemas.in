@@ -115,15 +115,15 @@
       </locale>
     </schema>
     <schema>
-      <key>/schemas/apps/packagemanager/preferences/remote_search_error</key>
-      <applyto>/apps/packagemanager/preferences/remote_search_error</applyto>
+      <key>/schemas/apps/packagemanager/preferences/api_search_error</key>
+      <applyto>/apps/packagemanager/preferences/api_search_error</applyto>
       <owner>packagemanager</owner>
       <type>str</type>
       <default>""</default>
       <locale name="C">
-         <short>Comma separated list of repositories which we do show if they doesn't support remote search</short>
+         <short>Comma separated list of repositories which we show if there are API errors when searching them</short>
          <long>
-          A string which determines if the remote search repository is shown or not in the error dialog.
+          A string which determines if the repository is shown or not in the error dialog.
          </long>
       </locale>
     </schema>

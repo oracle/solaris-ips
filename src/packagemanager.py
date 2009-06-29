@@ -45,7 +45,7 @@ INFO_NOTEBOOK_LICENSE_PAGE = 3            # License Tab index
 TYPE_AHEAD_DELAY = 600    # The last type in search box after which search is performed
 SEARCH_STR_FORMAT = "<%s>"
 SEARCH_LIMIT = 100                        # Maximum number of results shown for
-                                          # remote search
+                                          # api search
 MIN_APP_WIDTH = 750                       # Minimum application width
 MIN_APP_HEIGHT = 500                     # Minimum application height
 INITIAL_APP_WIDTH_PREFERENCES = "/apps/packagemanager/preferences/initial_app_width"
@@ -56,7 +56,7 @@ INITIAL_SHOW_FILTER_PREFERENCES = "/apps/packagemanager/preferences/initial_show
 INITIAL_SECTION_PREFERENCES = "/apps/packagemanager/preferences/initial_section"
 SHOW_STARTPAGE_PREFERENCES = "/apps/packagemanager/preferences/show_startpage"
 TYPEAHEAD_SEARCH_PREFERENCES = "/apps/packagemanager/preferences/typeahead_search"
-REMOTE_SEARCH_ERROR_PREFERENCES = "/apps/packagemanager/preferences/remote_search_error"
+API_SEARCH_ERROR_PREFERENCES = "/apps/packagemanager/preferences/api_search_error"
 CATEGORIES_STATUS_COLUMN_INDEX = 0   # Index of Status Column in Categories TreeView
 
 STATUS_COLUMN_INDEX = 2   # Index of Status Column in Application TreeView
@@ -121,6 +121,7 @@ import pkg.misc as misc
 import pkg.client.progress as progress
 import pkg.client.api_errors as api_errors
 import pkg.client.api as api
+import pkg.client.publisher as publisher
 import pkg.client.retrieve as retrieve
 import pkg.portable as portable
 import pkg.fmri as fmri
@@ -167,7 +168,7 @@ class PackageManager:
                         self.typeahead_search = \
                             self.client.get_bool(TYPEAHEAD_SEARCH_PREFERENCES)
                         self.gconf_not_show_repos = \
-                            self.client.get_string(REMOTE_SEARCH_ERROR_PREFERENCES)
+                            self.client.get_string(API_SEARCH_ERROR_PREFERENCES)
                         self.initial_app_width = \
                             self.client.get_int(INITIAL_APP_WIDTH_PREFERENCES)
                         self.initial_app_height = \
@@ -194,6 +195,7 @@ class PackageManager:
                 self.set_show_filter = 0
                 self.set_section = 0
                 self.current_search_option = 0
+                self.in_search_mode = False
 
                 socket.setdefaulttimeout(
                     int(os.environ.get("PKG_CLIENT_TIMEOUT", "30"))) # in seconds
@@ -231,10 +233,9 @@ class PackageManager:
                 self.ua_be_name = None
                 self.application_path = None
                 self.default_publisher = None
-                self.current_not_show_repos = []
+                self.current_repos_with_search_errors = []
                 self.first_run = True
                 self.in_reload = False
-                self.in_search = False
                 self.selected_pkgstem = None
                 self.selected_model = None
                 self.selected_path = None
@@ -253,17 +254,19 @@ class PackageManager:
                 self.search_options = [
                     ('ips-search',
                     gui_misc.get_icon(self.icon_theme, 'search', 20),
-                    _("_Current Repository (Name and Description)"),
-                    _("Search Current Repository (Name and Description)")),
+                    _("_Current Repository"),
+                    _("Search Current Repository")),
                     ('ips-search-all',
                     gui_misc.get_icon(self.icon_theme, 'search_all', 20),
-                    _("_All Repositories (Exact Match)"),
-                    _("Search All Repositories (Exact Match)"))
+                    _("_All Repositories"),
+                    _("Search All Repositories"))
                     ]
-                self.__register_iconsets(self.search_options)
-
+                self.__register_iconsets(self.search_options)               
                 self.visible_repository = None
                 self.visible_repository_uptodate = False
+                self.last_active_publisher = None
+                self.search_start = 0
+                self.search_time_sec = 0
                 self.section_list = None
                 self.filter_list = self.__get_new_filter_liststore()
                 self.application_list = None
@@ -286,23 +289,23 @@ class PackageManager:
                 w_tree_main = gtk.glade.XML(self.gladefile, "mainwindow")
                 w_tree_progress = gtk.glade.XML(self.gladefile, "progressdialog")
                 w_tree_preferences = gtk.glade.XML(self.gladefile, "preferencesdialog")
-                w_tree_remote_search_error = gtk.glade.XML(self.gladefile,
-                    "remote_search_error")
+                w_tree_api_search_error = gtk.glade.XML(self.gladefile,
+                    "api_search_error")
                 self.w_preferencesdialog = \
                     w_tree_preferences.get_widget("preferencesdialog")
                 self.w_startpage_checkbutton = \
                     w_tree_preferences.get_widget("startpage_checkbutton")
                 self.w_typeaheadsearch_checkbutton = \
                     w_tree_preferences.get_widget("typeaheadsearch_checkbutton")
-                self.remote_search_error_dialog = \
-                    w_tree_remote_search_error.get_widget("remote_search_error")
-                self.remote_search_error_textview = \
-                    w_tree_remote_search_error.get_widget("remote_search_error_text")
-                self.remote_search_checkbox = \
-                    w_tree_remote_search_error.get_widget("remote_search_checkbox")
-                self.remote_search_button = \
-                    w_tree_remote_search_error.get_widget("remote_search_button")
-                infobuffer = self.remote_search_error_textview.get_buffer()
+                self.api_search_error_dialog = \
+                    w_tree_api_search_error.get_widget("api_search_error")
+                self.api_search_error_textview = \
+                    w_tree_api_search_error.get_widget("api_search_error_text")
+                self.api_search_checkbox = \
+                    w_tree_api_search_error.get_widget("api_search_checkbox")
+                self.api_search_button = \
+                    w_tree_api_search_error.get_widget("api_search_button")
+                infobuffer = self.api_search_error_textview.get_buffer()
                 infobuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)
 
                 self.w_main_window = w_tree_main.get_widget("mainwindow")
@@ -385,8 +388,7 @@ class PackageManager:
                 self.search_image = w_tree_main.get_widget("search_image")
                 self.search_button = w_tree_main.get_widget("set_search")
                 self.a11y_search_button = self.search_button.get_accessible()
-                self.is_remote_search = False
-                self.need_descriptions = True
+                self.is_search_all = False
                 self.searchmenu = gtk.Menu()
                 self.search_image.set_from_pixbuf(self.search_options[0][1])
                 self.a11y_search_button.set_description(self.search_options[0][3])
@@ -407,7 +409,7 @@ class PackageManager:
                 self.saved_category_list = None
                 self.saved_section_list = None
                 self.saved_selected_application_path = None
-                self.search_message_id = 0
+                self.statusbar_message_id = 0
                 toolbar =  w_tree_main.get_widget("toolbutton2")
                 toolbar.set_expand(True)
                 self.__init_repository_tree_view()
@@ -508,14 +510,14 @@ class PackageManager:
                                 "on_preferencesclose_clicked": \
                                     self.__on_preferencesclose_clicked,
                             }
-                        dic_remote_search_error = \
+                        dic_api_search_error = \
                             {
-                                "on_remote_search_checkbox_toggled": \
-                                    self.__on_remote_search_checkbox_toggled,
-                                "on_remote_search_button_clicked": \
-                                    self.__on_remote_search_button_clicked,
-                                "on_remote_search_error_delete_event": \
-                                    self.__on_remote_search_error_delete_event,
+                                "on_api_search_checkbox_toggled": \
+                                    self.__on_api_search_checkbox_toggled,
+                                "on_api_search_button_clicked": \
+                                    self.__on_api_search_button_clicked,
+                                "on_api_search_error_delete_event": \
+                                    self.__on_api_search_error_delete_event,
                             }
                         dic_completed = \
                             {
@@ -530,8 +532,8 @@ class PackageManager:
                         w_tree_main.signal_autoconnect(dic_mainwindow)
                         w_tree_progress.signal_autoconnect(dic_progress)
                         w_tree_preferences.signal_autoconnect(dic_preferences)
-                        w_tree_remote_search_error.signal_autoconnect(
-                            dic_remote_search_error)
+                        w_tree_api_search_error.signal_autoconnect(
+                            dic_api_search_error)
                 except AttributeError, error:
                         print _(
                             "GUI will not respond to any event! %s."
@@ -571,7 +573,7 @@ class PackageManager:
                 else:
                         self.w_main_view_notebook.set_current_page(
                             NOTEBOOK_PACKAGE_LIST_PAGE)
-                self.remote_search_error_dialog.set_transient_for(self.w_main_window)
+                self.api_search_error_dialog.set_transient_for(self.w_main_window)
                 self.__setup_text_signals()
 
         def __setup_text_signals(self):
@@ -647,23 +649,27 @@ class PackageManager:
                 # The value i is the index in the table search_options
                 # of the current choice.
                 # Index 0 corresponds to Current Repository.
-                # We assume that anything else is remote search.
+                # We assume that anything else is search all.
                 # This may need to be revisited if more search options are
                 # added.
                 if i == self.current_search_option:
                         return
                 self.current_search_option = i
                 self.changing_search_option = True
-                self.__update_repository_combobox_for_search(i != 0)
-                self.__update_gui_for_search(i != 0)
+                is_search_all = (i != 0)
+                self.__update_repository_combobox_for_search(is_search_all)
+                if is_search_all:
+                        self.__setup_before_search_all_mode()
+                else:
+                        self.__restore_setup_for_browse()
                 self.changing_search_option = False
 
-        def __update_repository_combobox_for_search(self, is_remote):
-                if is_remote:
+        def __update_repository_combobox_for_search(self, is_search_all):
+                if is_search_all:
                         self.saved_repository_combobox_active = \
                             self.w_repository_combobox.get_active()
                 self.__disconnect_repository_model()
-                if is_remote:
+                if is_search_all:
                         self.repositories_list.prepend(
                             [-1, _("All Repositories Search Results"), ])
                 else:
@@ -672,57 +678,6 @@ class PackageManager:
                 self.w_repository_combobox.set_model(self.repositories_list)
                 self.visible_repository = None
 
-        def __update_gui_for_search(self, is_remote):
-                self.is_remote_search = is_remote
-                self.__on_clear_search(None)
-                self.current_not_show_repos = []
-                self.w_infosearch_frame.hide()
-                if is_remote:
-                        self.need_descriptions = False
-                        self.saved_sections_combobox_active = \
-                            self.w_sections_combobox.get_active()
-                        self.saved_filter_combobox_active = \
-                            self.w_filter_combobox.get_active()
-                        self.saved_application_list = self.application_list
-                        self.saved_application_list_filter = \
-                            self.application_list_filter
-                        self.saved_application_list_sort = \
-                            self.application_list_sort
-                        self.saved_category_list = self.category_list
-                        self.saved_section_list = self.section_list
-                        model, itr = self.package_selection.get_selected()
-                        if itr:
-                                path = model.get_path(itr)
-                                self.saved_selected_application_path = path
-                        self.w_repository_combobox.set_active(0)
-                        self.w_filter_combobox.set_active(0)
-                        self.w_sections_combobox.set_active(0)
-                        category_list = self.__get_new_category_liststore()
-                        category_list.prepend([-1, _('All'), None, None, False,
-                            True, None])
-                        self.category_list = category_list
-                        self.__init_tree_views(None, category_list, None)
-                        self.__link_load_blank()
-                        self.w_main_view_notebook.set_current_page(
-                            NOTEBOOK_START_PAGE)
-                        self.update_statusbar_for_search()
-                        self.w_searchentry.grab_focus()
-                else:
-                        self.set_busy_cursor()
-                        self.w_repository_combobox.set_active(
-                            self.saved_repository_combobox_active)
-                        self.set_section = self.saved_sections_combobox_active
-                        self.set_show_filter = self.saved_filter_combobox_active
-                        self.need_descriptions = True
-                        self.__init_tree_views(self.saved_application_list,
-                            self.saved_category_list, self.saved_section_list,
-                            self.saved_application_list_filter,
-                            self.saved_application_list_sort)
-                        if self.saved_selected_application_path != None:
-                                self.package_selection.select_path(
-                                    self.saved_selected_application_path)
-                                self.saved_selected_application_path = None
-                        self.__set_main_view_package_list()
 
         def __link_load_blank(self):
                 self.document.clear()
@@ -808,23 +763,27 @@ class PackageManager:
                     % (start_page_url)))
                 self.document.close_stream()
 
-        def __parse_remote_search_error(self, error):
-                self.current_not_show_repos = []
+        def __parse_api_search_error(self, error):
+                self.current_repos_with_search_errors = []
                 if "failed_servers" in error.__dict__ and len(error.failed_servers) > 0:
-                        # the error msg in the misc.py is not translated
+                        #TBD we should not have to parse the error output
                         rem_str = " doesn't speak a known version of search operation"
+                        timeout_str = "urlopen error timed out"
                         repos = []
                         for err in error.failed_servers:
                                 err_str = str(err[1])
                                 if rem_str in err_str:
                                         repo = err_str.replace(rem_str,"")
-                                        self.current_not_show_repos.append(repo)
+                                        self.current_repos_with_search_errors.append(repo)
+                                elif timeout_str in err_str:
+                                        repo = err[0].repositories[0].origins[0].uri
+                                        self.current_repos_with_search_errors.append(repo)
 
         def __on_infosearch_button_clicked(self, widget):
-                self.__handle_remote_search_error(True)
+                self.__handle_api_search_error(True)
 
-        def __handle_remote_search_error(self, show_all=False):
-                if len(self.current_not_show_repos) == 0:
+        def __handle_api_search_error(self, show_all=False):
+                if len(self.current_repos_with_search_errors) == 0:
                         self.w_infosearch_frame.hide()
                         return
                 else:
@@ -833,23 +792,23 @@ class PackageManager:
 
                 repo_pubs = self.__get_repo_publishers()
                 repo_count = 0
-                for url in self.current_not_show_repos:
+                for url in self.current_repos_with_search_errors:
                         if show_all or (url not in self.gconf_not_show_repos):
                                 repo_count += 1
                 if repo_count == 0:
                         return
 
-                infobuffer = self.remote_search_error_textview.get_buffer()
+                infobuffer = self.api_search_error_textview.get_buffer()
                 infobuffer.set_text("")
                 textiter = infobuffer.get_end_iter()
-                for url in self.current_not_show_repos:
+                for url in self.current_repos_with_search_errors:
                         if show_all or (url not in self.gconf_not_show_repos):
                                 infobuffer.insert_with_tags_by_name(textiter,
-                                        _("%s") % repo_pubs[url], "bold")
-                                infobuffer.insert(textiter, _(" (%s)\n") % url)
-                self.remote_search_checkbox.set_active(False)
-                self.remote_search_error_dialog.show()
-                self.remote_search_button.grab_focus()
+                                        "%s" % repo_pubs[url], "bold")
+                                infobuffer.insert(textiter, " (%s)\n" % url)
+                self.api_search_checkbox.set_active(False)
+                self.api_search_error_dialog.show()
+                self.api_search_button.grab_focus()
 
         def __get_repo_publishers(self):
                 repo_pub_dict = {}
@@ -1084,7 +1043,6 @@ class PackageManager:
                 column.set_resizable(True)
                 column.set_sort_column_id(enumerations.NAME_COLUMN)
                 column.set_sort_indicator(True)
-                column.set_min_width(200)
                 column.set_cell_data_func(name_renderer, self.cell_data_function, None)
                 column.connect_after('clicked',
                     self.__application_treeview_column_sorted, None)
@@ -1096,17 +1054,24 @@ class PackageManager:
                 column.connect_after('clicked',
                     self.__application_treeview_column_sorted, None)
                 self.w_application_treeview.append_column(column)
-                description_renderer = gtk.CellRendererText()
-                if self.is_remote_search:
+                if self.is_search_all:
+                        repository_renderer = gtk.CellRendererText()
                         column = gtk.TreeViewColumn(_('Repository'),
-                            description_renderer,
+                            repository_renderer,
                             text = enumerations.AUTHORITY_COLUMN)
                         column.set_sort_column_id(enumerations.AUTHORITY_COLUMN)
-                else:
-                        column = gtk.TreeViewColumn(_('Description'),
-                            description_renderer,
-                            text = enumerations.DESCRIPTION_COLUMN)
-                        column.set_sort_column_id(enumerations.DESCRIPTION_COLUMN)
+                        column.set_resizable(True)
+                        column.set_sort_indicator(True)
+                        column.set_cell_data_func(repository_renderer,
+                            self.cell_data_function, None)
+                        column.connect_after('clicked',
+                            self.__application_treeview_column_sorted, None)
+                        self.w_application_treeview.append_column(column)
+                description_renderer = gtk.CellRendererText()
+                column = gtk.TreeViewColumn(_('Description'),
+                    description_renderer,
+                    text = enumerations.DESCRIPTION_COLUMN)
+                column.set_sort_column_id(enumerations.DESCRIPTION_COLUMN)
                 column.set_resizable(True)
                 column.set_sort_indicator(True)
                 column.set_cell_data_func(description_renderer,
@@ -1208,12 +1173,13 @@ class PackageManager:
                         self.w_filter_combobox.set_row_separator_func(
                             self.combobox_id_separator)
 
-                self.section_list = section_list
+                if section_list != None:
+                        self.section_list = section_list
                 if category_list != None:
                         self.category_list = category_list
                         self.category_list_filter = category_list_filter
                         self.w_categories_treeview.set_model(category_list_filter)
-                        if not self.is_remote_search:
+                        if not self.is_search_all:
                                 category_list_filter.set_visible_func(
                                     self.category_filter)
                                 self.__set_categories_visibility(self.set_section)
@@ -1226,8 +1192,8 @@ class PackageManager:
                                 self.w_filter_combobox.set_model(self.filter_list)
                                 self.w_filter_combobox.set_active(self.set_show_filter)
                         self.w_application_treeview.set_model(
-                                self.application_list_sort)
-                        if not self.is_remote_search:
+                            self.application_list_sort)
+                        if not self.in_search_mode:
                                 if application_list_filter == None:
                                         self.application_list_filter.set_visible_func(
                                             self.__application_filter)
@@ -1235,7 +1201,7 @@ class PackageManager:
                 category_selection = self.w_categories_treeview.get_selection()
                 category_model, category_iter = category_selection.get_selected()
                 self.pylintstub = category_model
-                if not category_iter and not self.is_remote_search:
+                if not category_iter and not self.in_search_mode:
                 #no category was selected, so select "All"
                         category_selection.select_path(0)
                         category_model, category_iter = category_selection.get_selected()
@@ -1311,7 +1277,7 @@ class PackageManager:
                         itr = model.iter_next(itr)
 
         def __application_treeview_column_sorted(self, widget, user_data):
-                self.__set_accessible_visible_status(False)
+                self.__set_visible_status(False)
 
         def __init_repository_tree_view(self):
                 cell = gtk.CellRendererText()
@@ -1325,10 +1291,10 @@ class PackageManager:
                 # We ignore any changes in the size during initialization.
                 if self.visible_status_id == 0:
                         self.visible_status_id = gobject.idle_add(
-                            self.__set_accessible_visible_status)
+                            self.__set_visible_status)
 
         def __application_treeview_vadjustment_changed(self, widget, user_data):
-                self.__set_accessible_visible_status()
+                self.__set_visible_status()
 
         def __set_accessible_status(self, model, itr):
                 status = model.get_value(itr, enumerations.STATUS_COLUMN)
@@ -1346,19 +1312,31 @@ class PackageManager:
                             STATUS_COLUMN_INDEX)
                         obj.set_image_description(desc)
 
-        def __set_accessible_visible_status(self, check_range = True):
+        def __set_visible_status(self, check_range = True):
                 self.visible_status_id = 0
-                if self.a11y_application_treeview.get_n_accessible_children() == 0:
-                        # accessibility is not enabled
+                if self.w_main_view_notebook.get_current_page() != \
+                    NOTEBOOK_PACKAGE_LIST_PAGE:
                         return
+                a11y_enabled = False
+                if self.a11y_application_treeview.get_n_accessible_children() != 0:
+                        a11y_enabled = True
 
                 visible_range = self.w_application_treeview.get_visible_range()
                 if visible_range == None:
                         return
                 start = visible_range[0][0]
                 end = visible_range[1][0]
-                # We try to minimize the range of accessible objects
-                # on which we set image descriptions
+                if debug_descriptions:
+                        print "Range Start: %d End: %d" % (start, end)
+
+                # Switching Publishers need to use default range
+                active_pub = self.__get_active_publisher()
+                if self.last_active_publisher != active_pub:
+                        check_range = False
+                self.last_active_publisher = active_pub
+                if self.in_search_mode:
+                        check_range = False
+                
                 if self.application_treeview_range != None:
                         if check_range:
                                 old_start = self.application_treeview_range[0][0]
@@ -1373,13 +1351,106 @@ class PackageManager:
                                                         end = old_start
                                         else:
                                                 start = old_end
+                if debug_descriptions:
+                        print "Adjusted Range Start: %d End: %d" % (start, end)
                 self.application_treeview_range = visible_range
-                model = self.w_application_treeview.get_model()
-                itr = model.get_iter_from_string(str(start))
+
+                sort_filt_model = \
+                    self.w_application_treeview.get_model() #gtk.TreeModelSort
+                filt_model = sort_filt_model.get_model() #gtk.TreeModelFilter
+                model = filt_model.get_model() #gtk.ListStore
+                sf_itr = sort_filt_model.get_iter_from_string(str(start))                
+                pkg_stems_and_itr_to_fetch = {}
                 while start <= end:
+                        filtered_itr = sort_filt_model.convert_iter_to_child_iter(None,
+                            sf_itr)
+                        app_itr = filt_model.convert_iter_to_child_iter(filtered_itr)
+
+                        desc = sort_filt_model.get_value(sf_itr,
+                            enumerations.DESCRIPTION_COLUMN)
+                        # Only Fetch description for packages without a
+                        # description
+                        if desc == '...':
+                                fmri = sort_filt_model.get_value(sf_itr,
+                                    enumerations.FMRI_COLUMN)
+                                pkg_stem = fmri.get_pkg_stem(
+                                    include_scheme = True)
+                                pkg_stems_and_itr_to_fetch[pkg_stem] = \
+                                    model.get_string_from_iter(app_itr)
+                        if a11y_enabled:
+                                self.__set_accessible_status(sort_filt_model, sf_itr)
                         start += 1
-                        self.__set_accessible_status(model, itr)
-                        itr = model.iter_next(itr)
+                        sf_itr = sort_filt_model.iter_next(sf_itr)
+
+                if debug_descriptions:
+                        print "PKGS to FETCH: \n%s" % pkg_stems_and_itr_to_fetch
+                if len(pkg_stems_and_itr_to_fetch) > 0:
+                        Thread(target = self.__get_pkg_descriptions,
+                            args = [pkg_stems_and_itr_to_fetch, model]).start() 
+                    
+        def __doing_search(self):
+                return self.search_start > 0
+                
+        def __get_pkg_descriptions(self, pkg_stems_and_itr_to_fetch, orig_model):
+                # Note: no need to aquire lock even though this can be called from
+                # multiple threads, it is just creating an update job and dispatching it
+                # to the idle handler, not modifying any global state
+                info = None
+                if not self.__doing_search():
+                        gobject.idle_add(self.__update_statusbar_message,
+                            _("Fetching descriptions..."))
+                try:
+                        info = self.api_o.info(pkg_stems_and_itr_to_fetch.keys(), False,
+                                frozenset([api.PackageInfo.IDENTITY,
+                                    api.PackageInfo.SUMMARY]))
+                except (misc.TransportFailures, retrieve.ManifestRetrievalError,
+                    retrieve.DatastreamRetrievalError):
+                        self.update_statusbar()
+                        return
+                if info and len(info.get(0)) == 0:
+                        self.update_statusbar()
+                        return
+                pkg_infos = info.get(0)
+                pkg_descriptions_for_update = []
+                for pkg_info in pkg_infos:
+                        short_fmri = fmri.PkgFmri(pkg_info.fmri).get_pkg_stem(
+                            include_scheme = True)
+                        pkg_descriptions_for_update.append((short_fmri,
+                            pkg_stems_and_itr_to_fetch[short_fmri],
+                            pkg_info.summary))
+                if debug_descriptions:
+                        print "FETCHED PKGS: \n%s" % pkg_descriptions_for_update
+                gobject.idle_add(self.__update_description_from_iter,
+                    pkg_descriptions_for_update, orig_model)
+
+        def __update_description_from_iter(self, pkg_descriptions_for_update, orig_model):
+                sort_filt_model = \
+                    self.w_application_treeview.get_model() #gtk.TreeModelSort
+                filt_model = sort_filt_model.get_model() #gtk.TreeModelFilter
+                model = filt_model.get_model() #gtk.ListStore
+
+                #If model has changed abandon description updates
+                if orig_model != model:
+                        return
+
+                if debug_descriptions:
+                        print "UPDATE DESCRIPTIONS: \n%s" % pkg_descriptions_for_update
+                for pkg_stem, path, summary in pkg_descriptions_for_update:
+                        itr = model.get_iter_from_string(path)
+                        stored_pkg_fmri = model.get_value(itr, enumerations.FMRI_COLUMN)
+                        stored_pkg_stem = stored_pkg_fmri.get_pkg_stem(
+                            include_scheme = True)
+
+                        if pkg_stem != stored_pkg_stem:
+                                if debug:
+                                        print ("__update_description_from_iter(): "
+                                            "model not consistent so abandoning "
+                                            "these description updates.")
+                                self.update_statusbar()
+                                return
+                        model.set_value(itr, enumerations.DESCRIPTION_COLUMN, summary)
+                if not self.__doing_search():
+                        self.update_statusbar()
 
         def __create_icon_column(self, name, expand_pixbuf, enum_value, set_data_func):
                 column = gtk.TreeViewColumn()
@@ -1472,11 +1543,11 @@ class PackageManager:
                 else:
                         self.__main_application_quit()
 
-        def __on_remote_search_error_delete_event(self, widget, event):
-                self.__on_remote_search_button_clicked(None)
+        def __on_api_search_error_delete_event(self, widget, event):
+                self.__on_api_search_button_clicked(None)
 
-        def __on_remote_search_button_clicked(self, widget):
-                self.remote_search_error_dialog.hide()
+        def __on_api_search_button_clicked(self, widget):
+                self.api_search_error_dialog.hide()
 
         def __on_file_quit_activate(self, widget):
                 ''' handler for quit menu event '''
@@ -1495,60 +1566,159 @@ class PackageManager:
                 beadm.Beadmin(self)
 
         def __on_searchentry_changed(self, widget):
-                '''On text search field changed we should refilter the main view'''
                 if widget.get_text_length() > 0:
                         self.w_clear_search_button.set_sensitive(True)
                 else:
                         self.w_clear_search_button.set_sensitive(False)
                 self.__enable_disable_entry_selection(widget)
-                if self.typeahead_search and not self.is_remote_search:
+                if self.typeahead_search and not self.is_search_all:
                         self.__do_search()
-                elif self.is_remote_search and not self.changing_search_option:
+                elif self.is_search_all and not self.changing_search_option:
                         if self.w_searchentry.get_text() == "":
-                                self.current_not_show_repos = []
                                 self.w_infosearch_frame.hide()
                                 self.__link_load_blank()
                                 self.w_main_view_notebook.set_current_page(
                                     NOTEBOOK_START_PAGE)
-                                self.update_statusbar_for_search()
+                                self.__update_statusbar_for_search()
                                 self.w_searchentry.grab_focus()
 
+        def __update_statusbar_for_search(self):
+                self.__update_statusbar_message(
+                    self.search_options[self.current_search_option][3])
+
+        def __update_statusbar_message(self, message):
+                if self.statusbar_message_id > 0:
+                        self.w_main_statusbar.remove(0, self.statusbar_message_id)
+                        self.statusbar_message_id = 0
+                self.statusbar_message_id = self.w_main_statusbar.push(0, message)
+
+        def __setup_before_search_all_mode(self):
+                self.is_search_all = True
+                self.w_infosearch_frame.hide()
+
+                self.__save_setup_before_search()
+                self.w_repository_combobox.set_active(0)
+                self.__link_load_blank()
+                self.w_main_view_notebook.set_current_page(
+                    NOTEBOOK_START_PAGE)
+                self.__update_statusbar_for_search()
+                self.w_searchentry.grab_focus()
+                if len(self.w_searchentry.get_text()) > 0:
+                        start, end = self.w_searchentry.get_selection_bounds()
+                        self.w_searchentry.select_region(end, end)
+                self.__unselect_category()
+
+        def __clear_before_search(self):
+                self.in_setup = True
+                application_list = self.__get_new_application_liststore()
+                self.__set_empty_details_panel()
+                self.__set_main_view_package_list()
+                self.__init_tree_views(application_list, None, None)
+                self.__unselect_category()
+
+        def __restore_setup_for_browse(self):
+                self.in_search_mode = False
+                self.is_search_all = False
+                self.w_infosearch_frame.hide()
+
+                self.set_busy_cursor()
+                self.w_repository_combobox.set_active(
+                    self.saved_repository_combobox_active)
+                self.set_section = self.saved_sections_combobox_active
+                self.set_show_filter = self.saved_filter_combobox_active
+                if self.saved_category_list == self.category_list:
+                        self.__init_tree_views(self.saved_application_list,
+                            None, None,
+                            self.saved_application_list_filter,
+                            self.saved_application_list_sort)
+                else:
+                        self.__init_tree_views(self.saved_application_list,
+                            self.saved_category_list, self.saved_section_list,
+                            self.saved_application_list_filter,
+                            self.saved_application_list_sort)
+                        
+                self.__set_main_view_package_list()
+
+        def __save_setup_before_search(self, single_search=False):
+                #Do not save search data models
+                if self.in_search_mode:
+                        return
+                self.saved_sections_combobox_active = \
+                        self.w_sections_combobox.get_active()
+                self.saved_filter_combobox_active = \
+                        self.w_filter_combobox.get_active()                        
+                self.saved_application_list = self.application_list
+                self.saved_application_list_sort = \
+                        self.application_list_sort
+                self.saved_application_list_filter = \
+                        self.application_list_filter
+                self.saved_category_list = self.category_list
+                self.saved_section_list = self.section_list
+                if single_search:
+                        self.saved_repository_combobox_active = \
+                                self.w_repository_combobox.get_active()
+                self.w_filter_combobox.set_active(0)
+
         def __do_search(self):
+                self.search_start = 0
                 if self.changing_search_option:
                         return
                 active = self.w_filter_combobox.get_active()
                 if active != enumerations.FILTER_SELECTED:
-                        self.saved_filter_combobox_active = active
+                        self.saved_filter_combobox_active = active                        
+                if len(self.w_searchentry.get_text()) == 0:
+                        return
+                if not self.is_search_all:
+                        self.__save_setup_before_search(single_search=True)
+                self.__clear_before_search()
                 self.set_busy_cursor()
-                if not self.is_remote_search:
-                        self.__set_main_view_package_list()
-                        self.__do_local_search()
+                self.in_search_mode = True
+                        
+                self.w_infosearch_frame.hide()
+                self.__update_statusbar_message(_("Searching..."))
+                if not self.is_search_all:
+                        Thread(target = self.__do_api_search,
+                            args = (self.is_search_all, )).start()
                 else:
-                        text = self.w_searchentry.get_text()
-                        if text == "":
-                                self.unset_busy_cursor()
-                                return
-                        selection = self.w_categories_treeview.get_selection()
-                        model, itr = selection.get_selected()
-                        if itr:
-                                cat_path = model.get_string_from_iter(itr)
-                                selected_section = self.w_sections_combobox.get_active()
-                                section_row = self.section_list[selected_section]
-                                section_row[enumerations.SECTION_SUBCATEGORY] = cat_path
-                                selection.unselect_all()
-                        self.w_infosearch_frame.hide()
-                        self.update_statusbar_for_searching()
-                        self.in_search = True
-                        Thread(target = self.__do_remote_search,
+                        Thread(target = self.__do_api_search,
                             args = ()).start()
 
+        def __unselect_category(self):
+                selection = self.w_categories_treeview.get_selection()
+                model, itr = selection.get_selected()
+                if itr:
+                        cat_path = model.get_string_from_iter(itr)
+                        selected_section = self.w_sections_combobox.get_active()
+                        section_row = self.section_list[selected_section]
+                        section_row[enumerations.SECTION_SUBCATEGORY] = cat_path
+                        selection.unselect_all()
+
         def __process_after_search_failure(self):
+                self.search_start = 0
+                self.search_time_sec = 0
                 self.application_list = []
                 self.update_statusbar()
                 self.unset_busy_cursor()
                 self.in_setup = False
 
-        def __do_remote_search(self):
+        def __get_origin_uri(self, repo):
+                if repo == None:
+                        return None
+                origin_uri = repo.origins[0]
+                ret_uri = None
+                if isinstance(origin_uri, str):
+                        if len(origin_uri) > 0:
+                                ret_uri = origin_uri.strip("/")
+                elif isinstance(origin_uri, publisher.RepositoryURI):
+                        uri = origin_uri.uri
+                        if uri != None and len(uri) > 0:
+                                ret_uri = uri.strip("/")
+                return ret_uri
+
+
+        def __do_api_search(self, search_all = True):
+                self.search_start = time.time()
+                self.search_time_sec = 0
                 text = self.w_searchentry.get_text()
                 # Here we call the search API to get the results
                 searches = []
@@ -1557,12 +1727,24 @@ class PackageManager:
                 pargs = []
                 search_str = SEARCH_STR_FORMAT % text
                 pargs.append(search_str)
+                if search_all:
+                        servers = None
+                else:
+                        pub_prefix = self.__get_active_publisher()
+                        if pub_prefix != None:
+                                pub = self.api_o.get_publisher(prefix=pub_prefix)
+                        else:
+                                pub = self.api_o.get_preferred_publisher()
+                        origin_uri = self.__get_origin_uri(pub.selected_repository)
+                        servers.append({"origin": origin_uri})
                 if debug:
                         print "pargs:", pargs
                         print "servers:", servers
+                        
+                case_sensitive = False
                 searches.append(self.api_o.remote_search(
-                    [api.Query(" ".join(pargs), False, True, None, None)],
-                    ))
+                    [api.Query(" ".join(pargs), case_sensitive, True, None, None)],
+                    servers=servers))
                 result_tuple = {}
                 try:
                         for query_num, publisher, (v, return_type, tmp) in \
@@ -1584,9 +1766,9 @@ class PackageManager:
                                         return
                                 self.pylintstub = query_num
                 except api_errors.ProblematicSearchServers, ex:
-                        self.__parse_remote_search_error(ex)
+                        self.__parse_api_search_error(ex)
                         gobject.idle_add(self.w_progress_dialog.hide)
-                        gobject.idle_add(self.__handle_remote_search_error)
+                        gobject.idle_add(self.__handle_api_search_error)
                         if len(result_tuple) == 0:
                                 self.__process_after_search_with_zero_results()
                                 return
@@ -1599,13 +1781,12 @@ class PackageManager:
                         print "Number of search results:", len(result_tuple)
                 for name, repo in result_tuple:
                         a_res = name, repo
-                        result.insert(0, a_res)
+                        result.append(a_res)
                 if len(result) == 0:
                         if debug:
                                 print "No search results"
                         self.__process_after_search_with_zero_results()
                         return
-                result.reverse()
                 # We cannot get status of the packages if catalogs have not
                 # been loaded so we pause for up to 5 seconds here to
                 # allow catalogs to be loaded
@@ -1617,16 +1798,23 @@ class PackageManager:
                         times -= 1
                 self.in_setup = True
                 application_list = self.__get_list_from_search(result)
+                if self.search_start > 0:
+                        self.search_time_sec = int(time.time() - self.search_start)
+                self.search_start = 0
+                gobject.idle_add(self.__set_empty_details_panel)
+                gobject.idle_add(self.__set_main_view_package_list)
+                gobject.idle_add(self.__init_tree_views, application_list,
+                    None, None)
+
+        def __process_after_search_with_zero_results(self):
+                if self.search_start > 0:
+                        self.search_time_sec = int(time.time() - self.search_start)
+                self.search_start = 0
+                self.in_setup = True
+                application_list = self.__get_new_application_liststore()
                 gobject.idle_add(self.__set_empty_details_panel)
                 gobject.idle_add(self.__set_main_view_package_list)
                 gobject.idle_add(self.__init_tree_views, application_list, None, None)
-
-        def __process_after_search_with_zero_results(self):
-                        self.in_setup = True
-                        application_list = self.__get_new_application_liststore()
-                        gobject.idle_add(self.__set_empty_details_panel)
-                        gobject.idle_add(self.__set_main_view_package_list)
-                        gobject.idle_add(self.__init_tree_views, application_list, None, None)
 
         def __get_list_from_search(self, search_result):
                 application_list = self.__get_new_application_liststore()
@@ -1639,12 +1827,9 @@ class PackageManager:
                 pargs = []
                 default_pub = self.api_o.get_preferred_publisher().prefix
                 for name, publisher in search_result:
-                        if publisher == default_pub:
-                                pargs.append("pkg:/" + name)
-                        else:
-                                pargs.append("pkg://" + publisher + "/" + name)
+                        pargs.append("pkg://" + publisher + "/" + name)
                 # We now need to get the status for each package
-                if debug:
+                if debug_descriptions:
                         print "pargs:", pargs
                 try:
                         pkgs_known = self.__get_inventory_list(pargs,
@@ -1660,21 +1845,6 @@ class PackageManager:
                 return self.__add_pkgs_to_lists(pkgs_known, application_list,
                     None, None)
 
-        def __do_local_search(self):
-                self.in_search = True
-                self.w_filter_combobox.set_active(enumerations.FILTER_ALL)
-                if self.application_refilter_id != 0:
-                        gobject.source_remove(self.application_refilter_id)
-                        self.application_refilter_id = 0
-                if self.w_searchentry.get_text() == "" or \
-                    not self.typeahead_search:
-                        self.application_refilter_id = \
-                            gobject.idle_add(self.__application_refilter)
-                else:
-                        self.application_refilter_id = \
-                            gobject.timeout_add(TYPE_AHEAD_DELAY,
-                            self.__application_refilter)
-
         def __application_refilter(self):
                 ''' Disconnecting the model from the treeview improves
                 performance when assistive technologies are enabled'''
@@ -1682,7 +1852,7 @@ class PackageManager:
                         return
                 self.application_refilter_id = 0
                 self.application_refilter_idle_id = 0
-                if not self.is_remote_search:
+                if not self.in_search_mode:
                         model = self.w_application_treeview.get_model()
                         self.w_application_treeview.set_model(None)
                         self.application_list_filter.refilter()
@@ -1694,7 +1864,7 @@ class PackageManager:
                 self.application_treeview_range = None
                 if self.visible_status_id == 0:
                         self.visible_status_id = gobject.idle_add(
-                            self.__set_accessible_visible_status)
+                            self.__set_visible_status)
                 self.categories_treeview_initialized = True
                 self.categories_treeview_range = None
                 if self.categories_status_id == 0:
@@ -1919,20 +2089,20 @@ class PackageManager:
                 except GError:
                         pass
 
-        def __on_remote_search_checkbox_toggled(self, widget):
-                active = self.remote_search_checkbox.get_active()
-                if len(self.current_not_show_repos) > 0:
+        def __on_api_search_checkbox_toggled(self, widget):
+                active = self.api_search_checkbox.get_active()
+                if len(self.current_repos_with_search_errors) > 0:
                         if active:
-                                for url in self.current_not_show_repos:
+                                for url in self.current_repos_with_search_errors:
                                         if url not in self.gconf_not_show_repos:
                                                 self.gconf_not_show_repos += url + ","
                         else:
-                                for url in self.current_not_show_repos:
+                                for url in self.current_repos_with_search_errors:
                                         self.gconf_not_show_repos = \
                                             self.gconf_not_show_repos.replace(
                                             url + ",", "")
                         try:
-                                self.client.set_string(REMOTE_SEARCH_ERROR_PREFERENCES,
+                                self.client.set_string(API_SEARCH_ERROR_PREFERENCES,
                                     self.gconf_not_show_repos)
                         except GError:
                                 pass
@@ -1963,6 +2133,7 @@ class PackageManager:
                 self.w_cut_menuitem.set_sensitive(False)
                 self.w_copy_menuitem.set_sensitive(False)
                 self.w_clear_menuitem.set_sensitive(False)
+                return False
 
         def __on_searchentry_activate(self, widget):
                 self.__do_search()
@@ -2009,8 +2180,8 @@ class PackageManager:
                 if self.w_filter_combobox.get_model():
                         self.w_filter_combobox.set_active(self.saved_filter_combobox_active)
                 self.w_searchentry.delete_text(0, -1)
-                if self.is_remote_search:
-                        self.__unset_remote_search(True)
+                if self.in_search_mode or self.is_search_all:
+                        self.__unset_search(True)
                         if self.selected == 0:
                                 gobject.idle_add(self.__enable_disable_install_remove)
                         return
@@ -2028,21 +2199,24 @@ class PackageManager:
 
         def __on_category_selection_changed(self, selection, widget):
                 '''This function is for handling category selection changes'''
-                if self.in_setup:
+                if self.in_setup or self.changing_search_option:
                         return
-                if self.changing_search_option or self.is_remote_search:
-                        return
-                self.w_filter_combobox.set_active(self.saved_filter_combobox_active, )
-                self.w_searchentry.delete_text(0, -1)
-                self.__set_main_view_package_list()
                 model, itr = selection.get_selected()
-                if self.is_remote_search:
-                        return
                 if itr:
                         cat_path = model.get_string_from_iter(itr)
-                        selected_section = self.w_sections_combobox.get_active()
+                        if self.is_search_all:
+                                selected_section = self.set_section
+                        else:
+                                selected_section = self.w_sections_combobox.get_active()
                         section_row = self.section_list[selected_section]
                         section_row[enumerations.SECTION_SUBCATEGORY] = cat_path
+
+                if self.in_search_mode or self.is_search_all:
+                        return
+                
+                if self.saved_filter_combobox_active != None:
+                        self.w_filter_combobox.set_active(self.saved_filter_combobox_active)
+                self.__set_main_view_package_list()
 
                 self.set_busy_cursor()
                 self.__refilter_on_idle()
@@ -2081,18 +2255,17 @@ class PackageManager:
 
         def __on_filtercombobox_changed(self, widget):
                 '''On filter combobox changed'''
-                if self.in_setup or self.in_search or self.changing_search_option:
+                if self.in_setup or self.changing_search_option:
                         return
                 active = self.w_filter_combobox.get_active()
                 if active != enumerations.FILTER_SELECTED:
                         self.saved_filter_combobox_active = active
-                self.w_searchentry.delete_text(0, -1)
                 self.__set_main_view_package_list()
-                if self.is_remote_search:
+                if self.in_search_mode or self.is_search_all:
                         self.set_busy_cursor()
                         self.saved_filter_combobox_active = \
                             self.w_filter_combobox.get_active()
-                        self.__unset_remote_search(True)
+                        self.__unset_search(True)
                         return
                 self.set_busy_cursor()
                 self.__refilter_on_idle()
@@ -2148,14 +2321,14 @@ class PackageManager:
                         return
                 self.__set_main_view_package_list()
                 self.set_busy_cursor()
-                if self.is_remote_search:
-                        self.saved_sections_combobox_active = \
-                            self.w_sections_combobox.get_active()
-                        self.__unset_remote_search(True)
-                        return
                 self.__set_first_category_text()
                 self.__set_categories_visibility(widget.get_active())
                 self.category_list_filter.refilter()
+                if self.in_search_mode or self.is_search_all:
+                        self.saved_sections_combobox_active = \
+                            self.w_sections_combobox.get_active()
+                        self.__unset_search(True)
+                        return
                 self.__refilter_on_idle()
                 if self.selected == 0:
                         gobject.idle_add(self.__enable_disable_install_remove)
@@ -2170,8 +2343,7 @@ class PackageManager:
                         list_store = category_model.get_model()
                         list_store[0][1] = all_cat_text
 
-        def __unset_remote_search(self, same_repo):
-                self.current_not_show_repos = []
+        def __unset_search(self, same_repo):
                 self.w_infosearch_frame.hide()
                 self.changing_search_option = True
                 self.current_search_option = 0
@@ -2183,15 +2355,14 @@ class PackageManager:
                 if visible_repository in self.to_remove:
                         self.to_remove.pop(visible_repository)
                 self.__update_tooltips()
-                self.__update_repository_combobox_for_search(False)
+                if self.is_search_all:
+                        self.__update_repository_combobox_for_search(False)
                 pixbuf = self.search_options[0][1]
                 self.search_image.set_from_pixbuf(pixbuf)
+                self.in_search_mode = False
+                self.is_search_all = False
                 if same_repo:
-                        self.__update_gui_for_search(False)
-                else:
-                        self.__on_clear_search(None)
-                        self.is_remote_search = False
-                        self.need_descriptions = True
+                        self.__restore_setup_for_browse()
                 self.changing_search_option = False
 
         def __on_repositorycombobox_changed(self, widget):
@@ -2199,20 +2370,19 @@ class PackageManager:
                 if self.changing_search_option:
                         return
                 self.changing_search_option = True
-                self.__on_clear_search(None)
                 active_publisher = self.__get_active_publisher()
-                if self.is_remote_search:
+                if self.is_search_all:
                         same_repo = False
                         active =  self.w_repository_combobox.get_active() - 1
                         if active == -1:
                                 # We get here is we choose "Add ..." when
-                                # doing remote search
+                                # doing api search
                                 self.changing_search_option = False
                                 return
                         if not active_publisher == _("Add..."):
                                 if self.saved_repository_combobox_active == active:
                                         same_repo = True
-                                self.__unset_remote_search(same_repo)
+                                self.__unset_search(same_repo)
                                 self.w_repository_combobox.set_active(active)
 
                         if same_repo:
@@ -2231,7 +2401,7 @@ class PackageManager:
                 # name cannot contain "..." in the name.
                 if active_publisher == _("Add..."):
                         index = -1
-                        if self.is_remote_search:
+                        if self.is_search_all:
                                 index = 0
                         else:
                                 model = self.w_repository_combobox.get_model()
@@ -2245,9 +2415,15 @@ class PackageManager:
                         return
                 self.cancelled = True
                 self.in_setup = True
-                self.w_searchentry.delete_text(0, -1)
                 self.set_busy_cursor()
                 self.__set_empty_details_panel()
+                if self.in_search_mode:
+                        self.__unset_search(False)
+                        self.w_searchentry.grab_focus()
+                        if len(self.w_searchentry.get_text()) > 0:
+                                start, end = self.w_searchentry.get_selection_bounds()
+                                self.w_searchentry.select_region(end, end)
+
                 pub = [active_publisher, ]
                 self.set_show_filter = self.initial_show_filter
                 self.set_section = self.initial_section
@@ -2256,6 +2432,8 @@ class PackageManager:
 
         def __get_active_publisher(self):
                 pub_iter = self.w_repository_combobox.get_active_iter()
+                if pub_iter == None:
+                        return None
                 return self.repositories_list.get_value(pub_iter, \
                             enumerations.REPOSITORY_NAME)
 
@@ -2412,8 +2590,8 @@ class PackageManager:
         def __on_reload(self, widget):
                 if self.description_thread_running:
                         self.cancelled = True
-                if self.is_remote_search:
-                        self.__unset_remote_search(False)
+                if self.in_search_mode or self.is_search_all:
+                        self.__unset_search(False)
                 self.__set_empty_details_panel()
                 self.in_setup = True
                 self.visible_repository = None
@@ -2451,7 +2629,7 @@ class PackageManager:
                         else:
                                 gobject.spawn_async([self.application_path,
                                     "-U", be_name])
-                elif not self.is_remote_search:
+                elif not self.in_search_mode:
                         visible_repository = self.__get_visible_repository_name()
                         self.__dump_datamodels(visible_repository,
                                 self.application_list, self.category_list,
@@ -2942,18 +3120,6 @@ class PackageManager:
                 application view'''
                 if self.in_setup or self.cancelled:
                         return False
-                search_text = self.w_searchentry.get_text()
-                if not search_text == "":
-                        if not model.get_value(itr, enumerations.NAME_COLUMN) == None:
-                                if search_text.lower() in model.get_value(itr,
-                                    enumerations.NAME_COLUMN).lower():
-                                        return True
-                        if not model.get_value(itr, enumerations.DESCRIPTION_COLUMN) == \
-                            None:
-                                if search_text.lower() in model.get_value(itr,
-                                    enumerations.DESCRIPTION_COLUMN).lower():
-                                        return True
-                        return False
                 filter_id = self.w_filter_combobox.get_active()
                 if filter_id == enumerations.FILTER_SELECTED:
                         return model.get_value(itr, enumerations.MARK_COLUMN)
@@ -2983,11 +3149,8 @@ class PackageManager:
                                         break
                 if (model.get_value(itr, enumerations.IS_VISIBLE_COLUMN) == False):
                         return False
-                if search_text == "":
-                        return (category &
-                            self.__is_package_filtered(model, itr, filter_id))
-                else:
-                        return False
+                return (category &
+                    self.__is_package_filtered(model, itr, filter_id))
 
         @staticmethod
         def __is_package_filtered(model, itr, filter_id):
@@ -3018,6 +3181,8 @@ class PackageManager:
 
         def __get_visible_repository_name(self):
                 pub_iter = self.w_repository_combobox.get_active_iter()
+                if pub_iter == None:
+                        return None
                 visible = self.repositories_list.get_value(pub_iter, \
                     enumerations.REPOSITORY_NAME)
                 return visible
@@ -3026,19 +3191,16 @@ class PackageManager:
                 if self.in_setup:
                         return
                 self.__enable_disable_select_updates()
-                self.unset_busy_cursor()
+                if not self.__doing_search():
+                        self.unset_busy_cursor()
 
         def __enable_disable_select_all(self):
                 if self.in_setup:
                         return
-                was_in_search = self.in_search
-                self.in_search = False
                 if len(self.w_application_treeview.get_model()) > 0:
                         for row in self.w_application_treeview.get_model():
                                 if not row[enumerations.MARK_COLUMN]:
                                         self.w_selectall_menuitem.set_sensitive(True)
-                                        if was_in_search:
-                                                self.w_application_treeview.grab_focus()
                                         return
                         self.w_selectall_menuitem.set_sensitive(False)
                 else:
@@ -3357,7 +3519,7 @@ class PackageManager:
                                 else:
                                         status_icon = installed_icon
                         marked = False
-                        if not self.is_remote_search:
+                        if not self.is_search_all:
                                 pkgs = self.selected_pkgs.get(pkg_publisher)
                                 if pkgs != None:
                                         if pkg_stem in pkgs:
@@ -3582,35 +3744,6 @@ class PackageManager:
                         version = None
                 return version
 
-        @staticmethod
-        def get_manifest(img, package):
-                '''helper function'''
-                # XXX Should go to the  -> imageinfo.py
-                manifest = None
-
-                # 3087 shutdown time is too long when closing down soon after startup
-                if packagemanager.cancelled:
-                        return manifest
-                try:
-                        manifest = img.get_manifest(package)
-                except OSError:
-                        # XXX It is possible here that the user doesn't have network con,
-                        # XXX proper permissions to save manifest, should we do something
-                        # XXX and popup information dialog?
-                        pass
-                except (retrieve.ManifestRetrievalError,
-                    retrieve.DatastreamRetrievalError, NameError):
-                        pass
-                except misc.TransportFailures:
-                        pass
-                return manifest
-
-        @staticmethod
-        def update_desc(description, pkg):
-                if pkg[enumerations.DESCRIPTION_COLUMN] != description:
-                        pkg[enumerations.DESCRIPTION_COLUMN] = description
-                return
-
 #-----------------------------------------------------------------------------#
 # Public Methods
 #-----------------------------------------------------------------------------#
@@ -3682,68 +3815,36 @@ class PackageManager:
                         Thread(target = self.__enable_disable_update_all).start()
                 self.first_run = False
                 self.in_reload = False
-                if self.need_descriptions:
-                        self.__get_manifests_thread()
-
-        def __get_manifests_thread(self):
-                Thread(target = self.get_manifests_for_packages,
-                    args = ()).start()
 
         def get_icon_pixbuf_from_glade_dir(self, icon_name):
                 return gui_misc.get_pixbuf_from_path(self.application_dir +
                     "/usr/share/package-manager/", icon_name)
 
-        def get_manifests_for_packages(self):
-                ''' Function, which get's manifest for packages. If the manifest is not
-                locally tries to retrieve it. For installed packages gets manifest
-                for the particular version (local operation only), if the package is
-                not installed than the newest one'''
-                time.sleep(2)
-                count = 0
-                self.description_thread_running = True
-                img = self.api_o.img
-                for pkg in self.application_list:
-                        if self.cancelled:
-                                self.description_thread_running = False
-                                return
-                        info = None
-                        package = pkg[enumerations.FMRI_COLUMN]
-                        if (img and package):
-                                man = self.get_manifest(img, package)
-                                if man:
-                                        info = man.get("description", "")
-                        gobject.idle_add(self.update_desc, info, pkg)
-                        count += 1
-                        if count % 2 ==  0:
-                                time.sleep(0.001)
-                self.api_o.log_operation_start("info")
-                self.api_o.log_operation_end()
-                self.description_thread_running = False
-
-        def update_statusbar_for_search(self):
-                status_str = self.search_options[self.current_search_option][3]
-                self.search_message_id = self.w_main_statusbar.push(0, status_str)
-
-        def update_statusbar_for_searching(self):
-                if self.search_message_id > 0:
-                        self.w_main_statusbar.remove(0, self.search_message_id)
-                        self.search_message_id = 0
-                status_str = _("Searching...")
-                self.search_message_id = self.w_main_statusbar.push(0, status_str)
-
         def update_statusbar(self):
                 '''Function which updates statusbar'''
-                if self.search_message_id > 0:
-                        self.w_main_statusbar.remove(0, self.search_message_id)
-                        self.search_message_id = 0
-                if self.is_remote_search:
-                        opt_str = self.search_options[self.current_search_option][3]
-                        if len(self.application_list) == SEARCH_LIMIT:
-                                fmt_str = _("%s: first %d found")
+                if self.statusbar_message_id > 0:
+                        self.w_main_statusbar.remove(0, self.statusbar_message_id)
+                        self.statusbar_message_id = 0
+                search_text = self.w_searchentry.get_text()
+                if self.in_search_mode:
+                        if self.is_search_all:
+                                opt_str = _('Searched All for "%s"') % (search_text)
                         else:
-                                fmt_str = _("%s: %d found")
-                        status_str = fmt_str % (opt_str,
-                            len(self.application_list))
+                                opt_str = \
+                                        _('Searched %(last_active)s '
+                                            'for "%(search_text)s"') \
+                                        % {"last_active" : self.last_active_publisher,
+                                            "search_text" : search_text}
+                        if len(self.application_list) == SEARCH_LIMIT:
+                                fmt_str = _("%(option_str)s:  first %(number)d "
+                                    "found %(time)s")
+                        else:
+                                fmt_str = _("%(option_str)s:  %(number)d found %(time)s")
+                        time_str = ""
+                        if self.search_time_sec > 0:
+                                time_str = _("in %d seconds") % self.search_time_sec
+                        status_str = fmt_str % {"option_str" : opt_str,
+                            "number" : len(self.application_list), "time" : time_str}
                         self.w_main_statusbar.push(0, status_str)
                         return
                 installed = 0
@@ -3881,6 +3982,7 @@ def main():
 
 if __name__ == '__main__':
         debug = False
+        debug_descriptions = False
         update_all_proceed = False
         ua_be_name = None
         app_path = None
