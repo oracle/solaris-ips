@@ -1,5 +1,5 @@
 package SUNWgnu-emacs-gtk
-classification "System/Text Tools"
+classification "Development/Editors"
 import SUNWgnu-emacs-gtk
 version 22.1
 depend SUNWgnu-emacs

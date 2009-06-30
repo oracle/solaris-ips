@@ -1019,7 +1019,7 @@ category = Networking
 category = Multimedia Libraries
 
 [SUNWgetting-started-guide]
-category = Text Tools
+category = Documentation
 
 [SUNWgetting-started-l10n-de]
 category = Localizations (System)
@@ -1526,19 +1526,19 @@ category = Databases
 category = System Utilities
 
 [SUNWgnu-emacs]
-category = Text Tools
+category = Editors
 
 [SUNWgnu-emacs-el]
-category = Text Tools
+category = Editors
 
 [SUNWgnu-emacs-gtk]
-category = Text Tools
+category = Editors
 
 [SUNWgnu-emacs-nox]
-category = Text Tools
+category = Editors
 
 [SUNWgnu-emacs-x]
-category = Text Tools
+category = Editors
 
 [SUNWgnu-findutils]
 category = System Utilities
@@ -1655,7 +1655,7 @@ category = Accessories
 category = Administration and Configuration
 
 [SUNWgvim]
-category = Text Tools
+category = Editors
 
 [SUNWgzip]
 category = System Utilities

@@ -1,5 +1,5 @@
 package SUNWgvim
-classification "System/Text Tools"
+classification "Development/Editors"
 import SUNWgvim
 version 7.2.84
 depend SUNWvim
