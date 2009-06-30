@@ -42,7 +42,8 @@ MAX_INFO_CACHE_LIMIT = 100                # Max number of package descriptions t
 NOTEBOOK_PACKAGE_LIST_PAGE = 0            # Main Package List page index
 NOTEBOOK_START_PAGE = 1                   # Main View Start page index
 INFO_NOTEBOOK_LICENSE_PAGE = 3            # License Tab index
-TYPE_AHEAD_DELAY = 600    # The last type in search box after which search is performed
+SHOW_INFO_DELAY = 600       # Delay before showing selected pacakge information
+SHOW_LICENSE_DELAY = 600    # Delay before showing license information
 SEARCH_STR_FORMAT = "<%s>"
 SEARCH_LIMIT = 100                        # Maximum number of results shown for
                                           # api search
@@ -55,7 +56,6 @@ INITIAL_APP_VPOS_PREFERENCES = "/apps/packagemanager/preferences/initial_app_vpo
 INITIAL_SHOW_FILTER_PREFERENCES = "/apps/packagemanager/preferences/initial_show_filter"
 INITIAL_SECTION_PREFERENCES = "/apps/packagemanager/preferences/initial_section"
 SHOW_STARTPAGE_PREFERENCES = "/apps/packagemanager/preferences/show_startpage"
-TYPEAHEAD_SEARCH_PREFERENCES = "/apps/packagemanager/preferences/typeahead_search"
 API_SEARCH_ERROR_PREFERENCES = "/apps/packagemanager/preferences/api_search_error"
 CATEGORIES_STATUS_COLUMN_INDEX = 0   # Index of Status Column in Categories TreeView
 
@@ -165,8 +165,6 @@ class PackageManager:
                             self.client.get_int(INITIAL_SECTION_PREFERENCES)
                         self.show_startpage = \
                             self.client.get_bool(SHOW_STARTPAGE_PREFERENCES)
-                        self.typeahead_search = \
-                            self.client.get_bool(TYPEAHEAD_SEARCH_PREFERENCES)
                         self.gconf_not_show_repos = \
                             self.client.get_string(API_SEARCH_ERROR_PREFERENCES)
                         self.initial_app_width = \
@@ -183,7 +181,6 @@ class PackageManager:
                         self.initial_show_filter = 0
                         self.initial_section = 3
                         self.show_startpage = True
-                        self.typeahead_search = False
                         self.gconf_not_show_repos = ""
                         self.initial_app_width = 800
                         self.initial_app_height = 600
@@ -295,8 +292,6 @@ class PackageManager:
                     w_tree_preferences.get_widget("preferencesdialog")
                 self.w_startpage_checkbutton = \
                     w_tree_preferences.get_widget("startpage_checkbutton")
-                self.w_typeaheadsearch_checkbutton = \
-                    w_tree_preferences.get_widget("typeaheadsearch_checkbutton")
                 self.api_search_error_dialog = \
                     w_tree_api_search_error.get_widget("api_search_error")
                 self.api_search_error_textview = \
@@ -503,8 +498,6 @@ class PackageManager:
                             {
                                 "on_startpage_checkbutton_toggled": \
                                     self.__on_startpage_checkbutton_toggled,
-                                "on_typeaheadsearch_checkbutton_toggled": \
-                                    self.__on_typeaheadsearch_checkbutton_toggled,
                                 "on_preferenceshelp_clicked": \
                                     self.__on_preferenceshelp_clicked,
                                 "on_preferencesclose_clicked": \
@@ -1571,9 +1564,7 @@ class PackageManager:
                 else:
                         self.w_clear_search_button.set_sensitive(False)
                 self.__enable_disable_entry_selection(widget)
-                if self.typeahead_search and not self.is_search_all:
-                        self.__do_search()
-                elif self.is_search_all and not self.changing_search_option:
+                if self.is_search_all and not self.changing_search_option:
                         if self.w_searchentry.get_text() == "":
                                 self.w_infosearch_frame.hide()
                                 self.__link_load_blank()
@@ -1933,7 +1924,7 @@ class PackageManager:
                                 gobject.source_remove(self.show_licenses_id)
                                 self.show_licenses_id = 0
                         self.last_show_licenses_id = self.show_licenses_id = \
-                            gobject.timeout_add(TYPE_AHEAD_DELAY,
+                            gobject.timeout_add(SHOW_LICENSE_DELAY,
                                 self.__show_licenses)
 
         def __is_a_textview(self, widget):
@@ -2064,7 +2055,6 @@ class PackageManager:
 
         def __on_preferences(self, widget):
                 self.w_startpage_checkbutton.set_active(self.show_startpage)
-                self.w_typeaheadsearch_checkbutton.set_active(self.typeahead_search)
                 self.w_preferencesdialog.show()
 
         def __on_preferencesclose_clicked(self, widget):
@@ -2078,14 +2068,6 @@ class PackageManager:
                 try:
                         self.client.set_bool(SHOW_STARTPAGE_PREFERENCES,
                             self.show_startpage)
-                except GError:
-                        pass
-
-        def __on_typeaheadsearch_checkbutton_toggled(self, widget):
-                self.typeahead_search = self.w_typeaheadsearch_checkbutton.get_active()
-                try:
-                        self.client.set_bool(TYPEAHEAD_SEARCH_PREFERENCES,
-                            self.typeahead_search)
                 except GError:
                         pass
 
@@ -2236,7 +2218,7 @@ class PackageManager:
                         gobject.idle_add(self.__show_fetching_package_info, pkg)
                         self.showing_empty_details = False
                         self.last_show_info_id = self.show_info_id = \
-                            gobject.timeout_add(TYPE_AHEAD_DELAY,
+                            gobject.timeout_add(SHOW_INFO_DELAY,
                                 self.__show_info, model, model.get_path(itr))
                         if (self.w_info_notebook.get_current_page() == 
                             INFO_NOTEBOOK_LICENSE_PAGE):
