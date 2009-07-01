@@ -87,6 +87,7 @@ usr/has/bin/view
 end import
 # include etc/ftpd/ftpusers in base package
 from SUNWftpr import
+etc/ftpd
 etc/ftpd/ftpusers
 end import
 depend SUNWperl584core
