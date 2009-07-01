@@ -1344,6 +1344,7 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
                 self._search_op(api_obj, remote, '*space',
                     self.res_space_space_star)
                 self._search_op(api_obj, remote, 'space', set())
+                time.sleep(1)
                 self.pkgsend_bulk(durl, self.space_pkg10, optional=False)
                 # Need to add install of subsequent package and
                 # local side search as well as remote
@@ -1811,7 +1812,7 @@ class TestApiSearchBasicsRestartingDepot(TestApiSearchBasics):
                     self.res_remote_path, servers=[{"origin": durl}])
                 lfh = file(self.dc.get_logpath(), "rb")
                 found = 0
-                num_expected = 4
+                num_expected = 6
                 for line in lfh:
                         if "X-IPKG-UUID:" in line:
                                 tmp = line.split()
@@ -1902,7 +1903,7 @@ class TestApiSearchMulti(testutils.ManyDepotTestCase):
                     set(), servers=[{"origin": self.durl1}])
                 self._search_op(api_obj, True, "example_path",
                     set(), servers=[{"origin": self.durl3}])
-                num_expected = { 1: 4, 2: 3, 3: 0 }
+                num_expected = { 1: 7, 2: 3, 3: 0 }
                 for d in range(1,(len(self.dcs) + 1)):
                         try:
                                 pub = api_obj.img.get_publisher(

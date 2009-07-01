@@ -36,7 +36,6 @@ import datetime
 import traceback
 import string
 from threading import Thread
-from urllib2 import URLError
 try:
         import gobject
         import gtk
@@ -52,11 +51,7 @@ except ImportError:
         nobe = True
 import pkg.client.progress as progress
 import pkg.misc
-from pkg.client.retrieve import ManifestRetrievalError
-from pkg.client.retrieve import DatastreamRetrievalError
-from pkg.client.filelist import FileListRetrievalError
 import pkg.client.api_errors as api_errors
-from pkg.misc import TransferTimedOutException, TransportException
 import pkg.gui.beadmin as beadm
 import pkg.gui.misc as gui_misc
 import pkg.gui.enumerations as enumerations
@@ -434,10 +429,7 @@ class InstallUpdate(progress.ProgressTracker):
                                 msg = e.message
                         self.__g_error_stage(msg)
                         return
-                except (api_errors.NetworkUnavailableException, 
-                    TransferTimedOutException, TransportException, URLError, 
-                    ManifestRetrievalError, DatastreamRetrievalError, 
-                    FileListRetrievalError), ex:
+                except api_errors.TransportError, ex:
                         msg = _("Please check the network "
                             "connection.\nIs the repository accessible?\n\n"
                             "%s") % str(ex)

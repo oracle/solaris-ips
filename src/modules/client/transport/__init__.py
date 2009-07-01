@@ -1,4 +1,4 @@
-#!/usr/bin/python2.4
+#!/usr/bin/python
 #
 # CDDL HEADER START
 #
@@ -20,19 +20,9 @@
 # CDDL HEADER END
 #
 
+#
 # Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+#
 
-__all__ = ["global_settings"]
-
-class GlobalSettings(object):
-        """ This class defines settings which are global
-            to the client instance """
-
-        def __init__(self):
-                object.__init__(self)
-                self.PKG_TIMEOUT_MAX = 4
-                self.PKG_CLIENT_TIMEOUT = 30
-                self.client_name = None
-
-global_settings = GlobalSettings()
+__all__ = [ "transport" ]

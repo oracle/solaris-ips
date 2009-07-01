@@ -1,4 +1,3 @@
-#!/usr/bin/python2.4
 #
 # CDDL HEADER START
 #
@@ -19,20 +18,27 @@
 #
 # CDDL HEADER END
 #
-
 # Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+#
 
-__all__ = ["global_settings"]
+MACH:sh = uname -p
 
-class GlobalSettings(object):
-        """ This class defines settings which are global
-            to the client instance """
+ROOT = ../../../proto/root_$(MACH)
+PKG = SUNWpython-pycurl
+PKGARCHIVE = ../../../packages/$(MACH)
 
-        def __init__(self):
-                object.__init__(self)
-                self.PKG_TIMEOUT_MAX = 4
-                self.PKG_CLIENT_TIMEOUT = 30
-                self.client_name = None
+install: sysv-pkg
 
-global_settings = GlobalSettings()
+sysv-pkg: $(PKGARCHIVE)
+	[ -f $(PKGARCHIVE)/$(PKG)/pkgmap ] || pkgmk -a $(MACH) -o -r $(ROOT) -d $(PKGARCHIVE)
+
+clean: FRC
+
+clobber: clean
+	rm -rf $(PKGARCHIVE)/$(PKG)
+
+$(PKGARCHIVE):
+	[ -d $(PKGARCHIVE) ] || mkdir -p $(PKGARCHIVE)
+
+FRC:

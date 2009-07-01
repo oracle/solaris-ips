@@ -335,3 +335,50 @@ class Repository(object):
                     for q in query_lst
                 ]
                 return res_list
+
+class NastyRepository(Repository):
+        """A repository object that helps the Nasty server misbehave.
+        At the present time, this only overrides the catalog method,
+        so that the catalog may pass a scfg object to the Catalog and
+        UpdateLog."""
+
+        def __init__(self, scfg, cfgpathname=None):
+                """Prepare the repository for use."""
+
+                Repository.__init__(self, scfg, cfgpathname)
+
+        def catalog(self, last_modified=None):
+                """Returns a generator object containing an incremental update
+                if 'last_modified' is provided.  If 'last_modified' is not
+                provided, a generator object for the full version of the catalog
+                will be returned instead.  'last_modified' should be a datetime
+                object or an ISO8601 formatted string."""
+
+                self.scfg.inc_catalog()
+
+                if isinstance(last_modified, basestring):
+                        last_modified = catalog.ts_to_datetime(last_modified)
+
+                # Incremental catalog updates
+                c = self.scfg.catalog
+                ul = self.scfg.updatelog
+                if last_modified:
+                        if not ul.up_to_date(last_modified) and \
+                            ul.enough_history(last_modified):
+                                for line in ul._gen_updates(last_modified,
+                                    self.scfg):
+                                        yield line
+                        else:
+                                raise RepositoryCatalogNoUpdatesError(
+                                    "incremental", c.last_modified())
+                        return
+
+                # Full catalog request.
+                # Return attributes first.
+                for line in c.attrs_as_lines():
+                        yield line
+
+                # Return the contents last.
+                for line in c.as_lines(self.scfg):
+                        yield line
+

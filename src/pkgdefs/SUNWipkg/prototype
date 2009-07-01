@@ -1,5 +1,5 @@
-i pkginfo
 i copyright
+i pkginfo
 d none lib 755 root bin
 d none lib/svc 755 root bin
 d none lib/svc/method 755 root bin
@@ -81,8 +81,6 @@ f none usr/lib/python2.4/vendor-packages/pkg/client/constraint.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/client/constraint.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/client/debugvalues.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/client/debugvalues.pyc 444 root bin
-f none usr/lib/python2.4/vendor-packages/pkg/client/filelist.py 444 root bin
-f none usr/lib/python2.4/vendor-packages/pkg/client/filelist.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/client/filter.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/client/filter.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/client/history.py 444 root bin
@@ -107,8 +105,21 @@ f none usr/lib/python2.4/vendor-packages/pkg/client/publisher.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/client/publisher.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/client/query_parser.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/client/query_parser.pyc 444 root bin
-f none usr/lib/python2.4/vendor-packages/pkg/client/retrieve.py 444 root bin
-f none usr/lib/python2.4/vendor-packages/pkg/client/retrieve.pyc 444 root bin
+d none usr/lib/python2.4/vendor-packages/pkg/client/transport 755 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/client/transport/__init__.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/client/transport/__init__.pyc 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/client/transport/engine.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/client/transport/engine.pyc 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/client/transport/exception.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/client/transport/exception.pyc 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/client/transport/fileobj.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/client/transport/fileobj.pyc 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/client/transport/repo.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/client/transport/repo.pyc 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/client/transport/stats.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/client/transport/stats.pyc 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/client/transport/transport.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/client/transport/transport.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/client/variant.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/client/variant.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/cpiofile.py 444 root bin
@@ -260,6 +271,10 @@ d none usr/share/man/cat1m 755 root bin
 f none usr/share/man/cat1m/pkg.depotd.1m 444 root bin
 d none usr/share/man/cat5 755 root bin
 f none usr/share/man/cat5/pkg.5 444 root bin
+d none usr/share/pkg 755 root bin
+d none usr/share/pkg/cacert 755 root bin
+s none usr/share/pkg/cacert/72fa7371.0=Verisign_Class_3_Public_Primary_Certification_Authority-G2.pem
+f none usr/share/pkg/cacert/Verisign_Class_3_Public_Primary_Certification_Authority-G2.pem 444 root bin
 d none var 755 root sys
 d none var/svc 755 root sys
 d none var/svc/manifest 755 root sys

@@ -41,7 +41,6 @@ import pkg.catalog as catalog
 import pkg.client.api_errors as api_errors
 import pkg.fmri as fmri
 import pkg.portable as portable
-from pkg.misc import TruncatedTransferException
 
 class UpdateLogException(Exception):
         def __init__(self, args=None):
@@ -284,15 +283,13 @@ class UpdateLog(object):
                 Ts is the timestamp when the local copy of the catalog
                 was last modified."""
 
-                update_type = c.info().getheader("X-Catalog-Type", "full")
-
-                cl_size = int(c.info().getheader("Content-Length", "-1"))
+                update_type = c.getheader("X-Catalog-Type", "full")
 
                 try:
                         if update_type == "incremental":
-                                UpdateLog._recv_updates(c, path, ts, cl_size)
+                                UpdateLog._recv_updates(c, path, ts)
                         else:
-                                catalog.recv(c, path, pub, cl_size)
+                                catalog.recv(c, path, pub)
                 except EnvironmentError, e:
                         if isinstance(e, EnvironmentError):
                                 if e.errno == errno.EACCES:
@@ -301,7 +298,7 @@ class UpdateLog(object):
                         raise
 
         @staticmethod
-        def _recv_updates(filep, path, cts, content_size=-1):
+        def _recv_updates(filep, path, cts):
                 """A static method that takes a file-like object,
                 a path, and a timestamp.  This is the other half of
                 send_updates().  It reads a stream as an incoming updatelog and
@@ -322,11 +319,8 @@ class UpdateLog(object):
                 unknown_lines = []
                 bad_fmri = None
                 attrs = {}
-                size = 0
 
                 for s in filep:
-
-                        size += len(s)
 
                         l = s.split(None, 3)
                         if len(l) < 4:
@@ -382,18 +376,9 @@ class UpdateLog(object):
                                                     (l[2], sf, sv, rf, rv)
                                                 add_lines.append(line)
 
-                # Check that content was properly received before
-                # modifying any files.
-                if content_size > -1 and size != content_size:
-                        url = None
-                        if hasattr(filep, "geturl") and callable(filep.geturl):
-                                url = filep.geturl()
-                        raise TruncatedTransferException(url, size,
-                            content_size)
-
                 # If we got a parse error on FMRIs and transfer
                 # wasn't truncated, raise a retryable transport
-                elif bad_fmri:
+                if bad_fmri:
                         raise bad_fmri
 
                 # Verify that they aren't already in the catalog
@@ -644,4 +629,66 @@ class UpdateLog(object):
 # Allow these methods to be invoked without explictly naming the UpdateLog
 # class.
 recv = UpdateLog.recv
+
+class NastyUpdateLog(UpdateLog):
+
+        def __init__(self, update_root, cat, maxfiles = 336):
+
+                UpdateLog.__init__(self, update_root, cat, maxfiles)
+
+        def _gen_updates(self, ts, scfg=None):
+                """Look through the logs for updates that have occurred after
+                the timestamp.  Yield each of those updates in line-update
+                format."""
+
+                # The files that need to be examined depend upon the timestamp
+                # supplied by the client, and the log files actually present.
+                #
+                # The following cases exist:
+                #
+                # 1. No updates have occurred since timestamp.  Send nothing.
+                #
+                # 2. Timestamp is older than oldest log record.  Client needs
+                # to download full catalog.
+                #
+                # 3. Timestamp falls within a range for which update records
+                # exist.  If the timestamp is in the middle of a log-file, send
+                # the entire file -- the client will pick what entries to add.
+                # Then send all newer files.
+                
+                be_nasty = False
+
+                if scfg and scfg.need_nasty_occasionally():
+                        be_nasty = True
+
+                rts = datetime.datetime(ts.year, ts.month, ts.day, ts.hour)
+                assert rts <= ts
+
+                # send data from logfiles newer or equal to rts
+                for lf in self.logfiles:
+
+                        lf_time = datetime.datetime(
+                            *time.strptime(lf, "%Y%m%d%H")[0:6])
+
+                        if lf_time >= rts:
+                                fn = "%s" % lf
+                                logf = file(os.path.join(self.rootdir, fn),
+                                    "r")
+                                for line in logf:
+                                        # NASTY
+                                        # There's only one opportunity to
+                                        # truncate the request, but if we don't
+                                        # truncate the request we can try to
+                                        # truncate a line too.
+                                        if be_nasty and \
+                                            scfg.need_nasty_occasionally():
+                                                return
+                                        elif be_nasty and \
+                                            scfg.need_nasty_infrequently(): 
+                                                linelen = random.randint(1,
+                                                    len(line))
+                                                yield line[0:linelen]
+                                        else:         
+                                                yield line
+                                logf.close()
 

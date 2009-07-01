@@ -115,6 +115,17 @@ _client_version = "pkg/%s (%s %s; %s %s; %%s; %%s)" % \
     (VERSION, portable.util.get_canonical_os_name(), platform.machine(),
     portable.util.get_os_release(), platform.version())
 
+def user_agent_str(img, client_name):
+
+        if not img or img.type is None:
+                imgtype = IMG_NONE
+        else:
+                imgtype = img.type
+
+        useragent = _client_version % (img_type_names[imgtype], client_name)
+
+        return useragent
+
 def versioned_urlopen(base_uri, operation, versions = None, tail = None,
     data = None, headers = None, ssl_creds = None, imgtype = IMG_NONE,
     method = "GET", uuid = None):
@@ -607,181 +618,6 @@ class CfgCacheError(Exception):
         """Thrown when there are errors with the cfg cache."""
         def __init__(self, args=None):
                 self.args = args
-
-class TransportException(Exception):
-        """ Abstract base class for various transport exceptions """
-        def __init__(self):
-                self.count = 1
-
-class TransportFailures(TransportException):
-        """ This exception encapsulates multiple transport exceptions """
-
-        #
-        # This class is a subclass of TransportException so that calling
-        # code can reasonably 'except TransportException' and get either
-        # a single-valued or in this case a multi-valued instance.
-        #
-        def __init__(self):
-                TransportException.__init__(self)
-                self.exceptions = []
-
-        def append(self, exc):
-                assert isinstance(exc, TransportException)
-                for x in self.exceptions:
-                        if cmp(x, exc) == 0:
-                                x.count += 1
-                                return
-
-                self.exceptions.append(exc)
-
-        def __str__(self):
-                if len(self.exceptions) == 0:
-                        return "[no errors accumulated]"
-
-                s = ""
-                for i, x in enumerate(self.exceptions):
-                        if len(self.exceptions) > 1:
-                                s += "%d: " % (i + 1)
-                        s += str(x)
-                        if x.count > 1:
-                                s += " (happened %d times)" % x.count
-                        s += "\n"
-                return s
-
-        def __len__(self):
-                return len(self.exceptions)
-
-class TransferIOException(TransportException):
-        """Raised for retryable IO errors on underlying transport.
-        Protocol errors are TransferContentExceptions, timeouts
-        are TransferTimedOutExceptions."""
-        def __init__(self, url, reason=None):
-                TransportException.__init__(self)
-                self.url = url
-                self.reason = reason
-
-        def __str__(self):
-                s = "IO Error while communicating with '%s'" % self.url
-                if self.reason:
-                        s += ": %s" % self.reason
-                s += "."
-                return s
-
-        def __cmp__(self, other):
-                if not isinstance(other, TransferIOException):
-                        return -1        
-                r = cmp(self.url, other.url)
-                if r != 0:
-                        return r
-                return cmp(self.reason, other.reason)
-
-class TransferTimedOutException(TransportException):
-        """Raised when the transfer times out, or is terminated with a
-        retryable error."""
-        def __init__(self, url, reason=None):
-                TransportException.__init__(self)
-                self.url = url
-                self.reason = reason
-
-        def __str__(self):
-                s = "Transfer from '%s' timed out" % self.url
-                if self.reason:
-                        s += ": %s" % self.reason
-                s += "."
-                return s
-
-        def __cmp__(self, other):
-                if not isinstance(other, TransferTimedOutException):
-                        return -1        
-                r = cmp(self.url, other.url)
-                if r != 0:
-                        return r
-                return cmp(self.reason, other.reason)
-
-
-# Retryable http errors.  These are the HTTP errors that we'll catch.  When we
-# catch them, we throw a TransferTimedOutException instead re-raising the
-# HTTPError and letting some other handler catch it.
-
-# XXX consider moving to pkg.client module
-retryable_http_errors = set((httplib.REQUEST_TIMEOUT, httplib.BAD_GATEWAY,
-        httplib.GATEWAY_TIMEOUT))
-retryable_socket_errors = set((errno.ECONNABORTED, errno.ECONNRESET,
-        errno.ECONNREFUSED))
-
-
-class TransferContentException(TransportException):
-        """Raised when there are problems downloading the requested content."""
-        def __init__(self, url, reason=None):
-                TransportException.__init__(self)
-                self.url = url
-                self.reason = reason
-
-        def __str__(self):
-                s = "Transfer from '%s' failed" % self.url
-                if self.reason:
-                        s += ": %s" % self.reason
-                s += "."
-                return s
-
-        def __cmp__(self, other):
-                if not isinstance(other, TransferContentException):
-                        return -1        
-                r = cmp(self.url, other.url)
-                if r != 0:
-                        return r
-                return cmp(self.reason, other.reason)
-
-class TruncatedTransferException(TransportException):
-        """Raised when the transfer that was received doesn't match the
-        expected length."""
-        def __init__(self, url, recd=-1, expected=-1):
-                TransportException.__init__(self)
-                self.url = url
-                self.recd = recd
-                self.expected = expected
-
-        def __str__(self):
-                s = "Transfer from '%s' unexpectedly terminated" % self.url
-                if self.recd > -1 and self.expected > -1:
-                        s += ": received %d of %d bytes" % (self.recd,
-                            self.expected)
-                s += "."
-                return s
-
-        def __cmp__(self, other):
-                if not isinstance(other, TruncatedTransferException):
-                        return -1        
-                r = cmp(self.url, other.url)
-                if r != 0:
-                        return r
-                r = cmp(self.expected, other.expected)
-                if r != 0:
-                        return r
-                return cmp(self.recd, other.recd)
-
-
-class InvalidContentException(TransportException):
-        """Raised when the content's hash/chash doesn't verify, or the
-        content is received in an unreadable format."""
-        def __init__(self, path, data):
-                TransportException.__init__(self)
-                self.path = path
-                self.data = data
-
-        def __str__(self):
-                s = "Invalid content for action with path %s" % self.path
-                if self.data:
-                        s += " %s." % self.data
-                return s
-
-        def __cmp__(self, other):
-                if not isinstance(other, InvalidContentException):
-                        return -1        
-                r = cmp(self.path, other.path)
-                if r != 0:
-                        return r
-                return cmp(self.data, other.data)
 
 # ImmutableDict and EmptyI for argument defaults
 EmptyI = tuple()

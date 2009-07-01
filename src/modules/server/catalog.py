@@ -30,6 +30,7 @@ except ImportError:
 
 import errno
 import os
+import random
 import shutil
 import signal
 import sys
@@ -369,3 +370,45 @@ class ServerCatalog(catalog.Catalog):
                         ServerCatalog.cache_fmri(cat, f, pub)
 
                 catf.close()
+
+class NastyServerCatalog(ServerCatalog):
+        """The catalog for the nasty server."""
+
+        def as_lines(self, scfg=None):
+                """Returns a generator function that produces the contents of
+                the catalog as a list of strings."""
+
+                be_nasty = False
+
+                # NASTY
+                # First roll the dice to decide whether we should be nasty.
+                # Later roll again to decide when to be nasty.
+                if scfg and scfg.need_nasty_occasionally():
+                        be_nasty = True
+
+                try:
+                        cfile = file(self.catalog_file, "r")
+                except EnvironmentError, e:
+                        # Missing catalog is fine; other errors need to
+                        # be reported.
+                        if e.errno == errno.ENOENT:
+                                return
+                        raise
+
+                for e in cfile:
+                        # NASTY
+                        # There's only one opportunity to truncate
+                        # the request, but if we don't truncate the
+                        # request we can try to truncate a line too.
+                        if be_nasty and scfg.need_nasty_occasionally():
+                                return
+                        elif be_nasty and \
+                            scfg.need_nasty_infrequently(): 
+                                linelen = random.randint(1, len(e))
+                                badline = e[0:linelen]
+                                yield badline
+                        else:
+                                yield e
+
+                cfile.close()
+

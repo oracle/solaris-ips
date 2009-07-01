@@ -40,9 +40,6 @@ import pkg.fmri as fmri
 from pkg.client.filter import compile_filter
 from pkg.misc import msg
 
-from pkg.client.retrieve import ManifestRetrievalError
-from pkg.client.retrieve import DatastreamRetrievalError
-
 UNEVALUATED       = 0 # nothing done yet
 EVALUATED_PKGS    = 1 # established fmri changes
 EVALUATED_OK      = 2 # ready to execute
@@ -437,11 +434,6 @@ class ImagePlan(object):
                         except KeyError, e:
                                 outstring += "Attempting to install %s " \
                                     "causes:\n\t%s\n" % (f.get_name(), e)
-                        except (ManifestRetrievalError,
-                            DatastreamRetrievalError), e:
-                                raise api_errors.NetworkUnavailableException(
-                                    str(e))
-
                 if outstring:
                         raise RuntimeError("No packages were installed because "
                             "package dependencies could not be satisfied\n" +

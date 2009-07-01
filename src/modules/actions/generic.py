@@ -39,7 +39,6 @@ try:
 except AttributeError:
         os.SEEK_SET, os.SEEK_CUR, os.SEEK_END = range(3)
 import pkg.actions
-import pkg.client.retrieve as retrieve
 import pkg.portable as portable
 
 class Action(object):
@@ -399,7 +398,7 @@ class Action(object):
                         return None
 
                 def opener():
-                        return retrieve.get_datastream(img, fmri, self.hash)
+                        return img.transport.get_datastream(fmri, self.hash)
 
                 return opener
 

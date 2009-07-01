@@ -34,9 +34,11 @@ import httplib
 import inspect
 import itertools
 import os
+import random
 import re
 import socket
 import tarfile
+import time
 # Without the below statements, tarfile will trigger calls to getpwuid and
 # getgrgid for every file downloaded.  This in turn leads to nscd usage which
 # limits the throughput of the depot process.  Setting these attributes to
@@ -939,3 +941,371 @@ License:
                         raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
                 buf.seek(0)
                 return buf.getvalue()
+
+
+class NastyDepotHTTP(DepotHTTP):
+        """A class that creates a depot that misbehaves.  Naughty
+        depots are useful for testing."""
+
+
+        def __init__(self, scfg, cfgpathname=None):
+                """Include config in scfg, and cfgpathname, if needed."""
+
+                DepotHTTP.__init__(self, scfg, cfgpathname)
+
+                self.__repo = repo.NastyRepository(scfg, cfgpathname)
+                self.rcfg = self.__repo.rcfg
+                self.scfg = self.__repo.scfg
+
+                # Handles the BUI (Browser User Interface).
+                face.init(scfg, self.rcfg)
+
+                # Store any possible configuration changes.
+                self.__repo.write_config()
+
+                self.requested_files = []
+
+                cherrypy.tools.nasty_httperror = cherrypy.Tool('before_handler',
+                    NastyDepotHTTP.nasty_retryable_error)
+
+        # Method for CherryPy tool for Nasty Depot
+        @staticmethod
+        def nasty_retryable_error(bonus=0):
+                """A static method that's used by the cherrpy tools,
+                and in depot code, to generate a retryable HTTP error."""
+
+                retryable_errors = [httplib.REQUEST_TIMEOUT,
+                    httplib.BAD_GATEWAY, httplib.GATEWAY_TIMEOUT]
+         
+                # NASTY
+                # emit error code that client should know how to retry
+                if cherrypy.request.app.root.scfg.need_nasty_bonus(bonus):
+                        code = retryable_errors[random.randint(0,
+                            len(retryable_errors) - 1)]
+                        raise cherrypy.HTTPError(code)
+
+        # Override _cp_config for catalog_0 operation
+        def catalog_0(self, *tokens):
+                """Provide an incremental update or full version of the
+                catalog, as appropriate, to the requesting client."""
+
+                request = cherrypy.request
+
+                response = cherrypy.response
+                response.headers["Content-type"] = "text/plain"
+                response.headers["Last-Modified"] = \
+                    self.scfg.catalog.last_modified()
+
+                lm = request.headers.get("If-Modified-Since", None)
+                if lm is not None:
+                        try:
+                                lm = catalog.ts_to_datetime(lm)
+                        except ValueError:
+                                lm = None
+                        else:
+                                if not self.scfg.updatelog.enough_history(lm):
+                                        # Ignore incremental requests if there
+                                        # isn't enough history to provide one.
+                                        lm = None
+                                elif self.scfg.updatelog.up_to_date(lm):
+                                        response.status = httplib.NOT_MODIFIED
+                                        return
+
+                if lm:
+                        # If a last modified date and time was provided, then an
+                        # incremental update is being requested.
+                        response.headers["X-Catalog-Type"] = "incremental"
+                else:
+                        response.headers["X-Catalog-Type"] = "full"
+                        response.headers["Content-Length"] = str(
+                            self.scfg.catalog.size())
+
+                def output():
+                        try:
+                                for l in self.__repo.catalog(lm):
+                                        yield l
+                        except repo.RepositoryError, e:
+                                # Can't do anything in a streaming generator
+                                # except log the error and return.
+                                cherrypy.log("Request failed: %s" % str(e))
+                                return
+
+                return output()
+
+        catalog_0._cp_config = { "response.stream": True,
+                                 "tools.nasty_httperror.on": True,
+                                 "tools.nasty_httperror.bonus": 1 }
+
+        def manifest_0(self, *tokens):
+                """The request is an encoded pkg FMRI.  If the version is
+                specified incompletely, we return an error, as the client is
+                expected to form correct requests based on its interpretation
+                of the catalog and its image policies."""
+
+                # Parse request into FMRI component and decode.
+                try:
+                        # If more than one token (request path component) was
+                        # specified, assume that the extra components are part
+                        # of the fmri and have been split out because of bad
+                        # proxy behaviour.
+                        pfmri = "/".join(tokens)
+                        fpath = self.__repo.manifest(pfmri)
+                except (IndexError, repo.RepositoryInvalidFMRIError), e:
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
+                except repo.RepositoryError, e:
+                        # Treat any remaining repository error as a 404, but
+                        # log the error and include the real failure
+                        # information.
+                        cherrypy.log("Request failed: %s" % str(e))
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
+
+                # NASTY
+                # Send an error before serving the file, perhaps
+                if self.scfg.need_nasty():
+                        self.nasty_retryable_error()
+                elif self.scfg.need_nasty_infrequently():
+                        # Fall asleep before finishing the request
+                        time.sleep(35)
+                elif self.scfg.need_nasty_rarely():
+                        # Forget that the manifest is here
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND)
+
+                # NASTY
+                # Call a misbehaving serve_file
+                return self.nasty_serve_file(fpath, "text/plain")
+
+        manifest_0._cp_config = { "response.stream": True }
+
+        def filelist_0(self, *tokens, **params):
+                """Request data contains application/x-www-form-urlencoded
+                entries with the requested filenames.  The resulting tar stream
+                is output directly to the client. """
+
+                try:
+                        self.scfg.inc_flist()
+
+                        # NASTY
+                        if self.scfg.need_nasty_occasionally():
+                                return
+
+                        # Create a dummy file object that hooks to the write()
+                        # callable which is all tarfile needs to output the
+                        # stream.  This will write the bytes to the client
+                        # through our parent server process.
+                        f = Dummy()
+                        f.write = cherrypy.response.write
+
+                        tar_stream = tarfile.open(mode = "w|",
+                            fileobj = f)
+
+                        # We can use the request object for storage of data
+                        # specific to this request.  In this case, it allows us
+                        # to provide our on_end_request function with access to
+                        # the stream we are processing.
+                        cherrypy.request.tar_stream = tar_stream
+
+                        # This is a special hook just for this request so that
+                        # if an exception is encountered, the stream will be
+                        # closed properly regardless of which thread is
+                        # executing.
+                        cherrypy.request.hooks.attach("on_end_request",
+                            self._tar_stream_close, failsafe = True)
+
+                        # NASTY
+                        if self.scfg.need_nasty_infrequently():
+                                time.sleep(35)
+
+                        for v in params.values():
+
+                                # NASTY
+                                # Stash filename for later use.
+                                # Toss out the list if it's larger than 1024
+                                # items.
+                                if len(self.requested_files) > 1024:
+                                        self.requested_files = [v]
+                                else:
+                                        self.requested_files.append(v)
+
+                                # NASTY
+                                if self.scfg.need_nasty_infrequently():
+                                        # Give up early
+                                        break
+                                elif self.scfg.need_nasty_infrequently():
+                                        # Skip this file
+                                        continue
+                                elif self.scfg.need_nasty_rarely():
+                                        # Take a nap
+                                        time.sleep(35)
+
+                                filepath = os.path.normpath(os.path.join(
+                                    self.scfg.file_root,
+                                    misc.hash_file_name(v)))
+
+                                # If file isn't here, skip it
+                                if not os.path.exists(filepath):
+                                        continue
+
+                                # NASTY
+                                # Send a file with the wrong content
+                                if self.scfg.need_nasty_rarely():
+                                        pick = random.randint(0,
+                                            len(self.requested_files) - 1)
+                                        badfn = self.requested_files[pick]
+                                        badpath = os.path.normpath(
+                                            os.path.join(self.scfg.file_root,
+                                            misc.hash_file_name(badfn)))
+
+                                        tar_stream.add(badpath, v, False)
+                                else:
+                                        tar_stream.add(filepath, v, False)
+
+                                self.scfg.inc_flist_files()
+
+                        # NASTY
+                        # Write garbage into the stream
+                        if self.scfg.need_nasty_infrequently():
+                                f.write("NASTY!")
+
+                        # NASTY
+                        # Send an extraneous file
+                        if self.scfg.need_nasty_infrequently():
+                                pick = random.randint(0,
+                                    len(self.requested_files) - 1)
+                                extrafn = self.requested_files[pick]
+                                extrapath = os.path.normpath(
+                                    os.path.join(self.scfg.file_root,
+                                    misc.hash_file_name(extrafn)))
+
+                                tar_stream.add(extrapath, extrafn, False)
+
+
+                        # Flush the remaining bytes to the client.
+                        tar_stream.close()
+                        cherrypy.request.tar_stream = None
+
+                except Exception, e:
+                        # If we find an exception of this type, the
+                        # client has most likely been interrupted.
+                        if isinstance(e, socket.error) \
+                            and e.args[0] == errno.EPIPE:
+                                return
+                        raise
+
+                yield ""
+
+        # We have to configure the headers either through the _cp_config
+        # namespace, or inside the function itself whenever we are using
+        # a streaming generator.  This is because headers have to be setup
+        # before the response even begins and the point at which @tools
+        # hooks in is too late.
+        filelist_0._cp_config = {
+                "response.stream": True,
+                "tools.nasty_httperror.on": True,
+                "tools.response_headers.on": True,
+                "tools.response_headers.headers": [("Content-Type",
+                "application/data")]
+        }
+
+        def file_0(self, *tokens):
+                """Outputs the contents of the file, named by the SHA-1 hash
+                name in the request path, directly to the client."""
+
+                try:
+                        fhash = tokens[0]
+                except IndexError:
+                        fhash = None
+
+                try:
+                        fpath = self.__repo.file(fhash)
+                except repo.RepositoryFileNotFoundError, e:
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
+                except repo.RepositoryError, e:
+                        # Treat any remaining repository error as a 404, but
+                        # log the error and include the real failure
+                        # information.
+                        cherrypy.log("Request failed: %s" % str(e))
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
+
+                # NASTY
+                # Stash filename for later use.
+                # Toss out the list if it's larger than 1024
+                # items.
+                if len(self.requested_files) > 1024:
+                        self.requested_files = [fhash]
+                else:
+                        self.requested_files.append(fhash)
+
+                # NASTY
+                # Send an error before serving the file, perhaps
+                if self.scfg.need_nasty():
+                        self.nasty_retryable_error()
+                elif self.scfg.need_nasty_rarely():
+                        # Fall asleep before finishing the request
+                        time.sleep(35)
+                elif self.scfg.need_nasty_rarely():
+                        # Forget that the manifest is here
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND)
+
+                # NASTY
+                # Send the wrong file
+                if self.scfg.need_nasty_rarely():
+                        pick = random.randint(0, len(self.requested_files) - 1)
+                        badfn = self.requested_files[pick]
+                        badpath = os.path.normpath(os.path.join(
+                            self.scfg.file_root, misc.hash_file_name(badfn)))
+
+                        return serve_file(badpath, "application/data")
+
+                # NASTY
+                # Call a misbehaving serve_file
+                return self.nasty_serve_file(fpath, "application/data")
+
+        file_0._cp_config = { "response.stream": True }
+
+        def nasty_serve_file(self, filepath, content_type):
+                """A method that imitates the functionality of serve_file(),
+                but behaves in a nasty manner."""
+
+                already_nasty = False
+
+                response = cherrypy.response
+                response.headers["Content-Type"] = content_type
+                try:
+                        fst = os.stat(filepath)
+                        filesz = fst.st_size
+                        file = open(filepath, "rb")
+                except EnvironmentError:
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND)
+
+                # NASTY
+                # Send incorrect content length
+                if self.scfg.need_nasty_rarely():
+                        response.headers["Content-Length"] = str(filesz +
+                                random.randint(1, 1024))
+                        already_nasty = True
+                else:
+                        response.headers["Content-Length"] = str(filesz)
+
+                # NASTY
+                # Send truncated file
+                if self.scfg.need_nasty_rarely() and not already_nasty:
+                        response.body = file.read(filesz - random.randint(1,
+                            filesz - 1))
+                        # If we're sending data, lie about the length and
+                        # make the client catch us.
+                        if content_type == "application/data":
+                                response.headers["Content-Length"] = str(
+                                    len(response.body))
+                elif self.scfg.need_nasty_rarely() and not already_nasty:
+                        # Write garbage into the response
+                        response.body = file.read(filesz)
+                        response.body += "NASTY!"
+                        # If we're sending data, lie about the length and
+                        # make the client catch us.
+                        if content_type == "application/data":
+                                response.headers["Content-Length"] = str(
+                                    len(response.body))
+                else:
+                        response.body = file.read(filesz)
+
+                return response.body

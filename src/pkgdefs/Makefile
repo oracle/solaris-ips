@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -34,7 +34,7 @@ BUILDPYOPENSSL:sh = if [ -n "$BUILD_PYOPENSSL" ]; then echo SUNWpython-pyopenssl
 
 SUBDIRS= SUNWipkg SUNWipkg-brand SUNWipkg-gui SUNWipkg-gui-data \
     SUNWipkg-gui-l10n SUNWipkg-um SUNWpython-cherrypy SUNWpython-mako \
-    SUNWpython-ply $(BUILDPYOPENSSL)
+    SUNWpython-ply SUNWpython-pycurl $(BUILDPYOPENSSL)
 
 all:
 

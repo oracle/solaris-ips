@@ -1,0 +1,10 @@
+package SUNWipkg
+classification "System/Packaging"
+import SUNWipkg
+depend SUNWpython-cherrypy@3.1.1
+depend SUNWpython-mako@0.2.2
+depend SUNWpython-ply@3.1
+depend SUNWpython-pycurl@7.19.0
+depend SUNWpython-pyopenssl@0.8
+depend SUNWpython24-simplejson
+end package

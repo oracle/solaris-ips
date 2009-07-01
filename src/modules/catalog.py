@@ -36,7 +36,6 @@ import stat
 import bisect
 
 import pkg.fmri as fmri
-from pkg.misc import TruncatedTransferException
 import pkg.portable as portable
 import pkg.version as version
 
@@ -683,15 +682,12 @@ class Catalog(object):
                 return self.attrs.get("origin", None)
 
         @classmethod
-        def recv(cls, filep, path, pub=None, content_size=-1):
+        def recv(cls, filep, path, pub=None):
                 """A static method that takes a file-like object and
                 a path.  This is the other half of catalog.send().  It
                 reads a stream as an incoming catalog and lays it down
-                on disk. Content_size is the size in bytes, if known,
-                of the transfer that is being received.  The default
-                value of -1 means that the size is not known."""
+                on disk."""
 
-                size = 0
                 bad_fmri = None
 
                 if not os.path.exists(path):
@@ -706,50 +702,46 @@ class Catalog(object):
                 attrpath_final = os.path.normpath(os.path.join(path, "attrs"))
                 catpath_final = os.path.normpath(os.path.join(path, "catalog"))
 
-                for s in filep:
-                        slen = len(s)
-                        size += slen
+                try:
+                        for s in filep:
+                                slen = len(s)
 
-                        # If line is too short, process the next one
-                        if slen < 2:
-                                continue
-                        # check that line is in the proper format
-                        elif not s[1].isspace():
-                                continue
-                        elif not s[0] in known_prefixes:
-                                catf.write(s)
-                        elif s.startswith("S "):
-                                attrf.write(s)
-                        elif s.startswith("R "):
-                                catf.write(s)
-                        else:
-                                # XXX Need to be able to handle old and new
-                                # format catalogs.
-                                try:
-                                        f = fmri.PkgFmri(s[2:])
-                                except fmri.IllegalFmri, e:
-                                        bad_fmri = e
+                                # If line is too short, process the next one
+                                if slen < 2:
                                         continue
+                                # check that line is in the proper format
+                                elif not s[1].isspace():
+                                        continue
+                                elif not s[0] in known_prefixes:
+                                        catf.write(s)
+                                elif s.startswith("S "):
+                                        attrf.write(s)
+                                elif s.startswith("R "):
+                                        catf.write(s)
+                                else:
+                                        # XXX Need to be able to handle old and
+                                        # new format catalogs.
+                                        try:
+                                                f = fmri.PkgFmri(s[2:])
+                                        except fmri.IllegalFmri, e:
+                                                bad_fmri = e
+                                                continue
 
-                                catf.write("%s %s %s %s\n" %
-                                    (s[0], "pkg", f.pkg_name, f.version))
-
-                # Check that content was properly received before
-                # modifying any files.
-                if content_size > -1 and size != content_size:
-                        url = None
-                        if hasattr(filep, "geturl") and callable(filep.geturl):
-                                url = filep.geturl()
+                                        catf.write("%s %s %s %s\n" %
+                                            (s[0], "pkg", f.pkg_name,
+                                            f.version))
+                except:
+                        # Re-raise all uncaught exceptions after performing
+                        # cleanup.
                         attrf.close()
                         catf.close()
                         os.remove(attrpath)
                         os.remove(catpath)
-                        raise TruncatedTransferException(url, size,
-                            content_size)
+                        raise
 
                 # If we got a parse error on FMRIs and transfer
                 # wasn't truncated, raise a FmriFailures error.
-                elif bad_fmri:
+                if bad_fmri:
                         attrf.close()
                         catf.close()
                         os.remove(attrpath)

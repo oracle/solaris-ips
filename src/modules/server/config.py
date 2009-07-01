@@ -28,6 +28,7 @@
 import errno
 import os
 import os.path
+import random
 import shutil
 
 import pkg.server.catalog as catalog
@@ -236,3 +237,85 @@ Number of packages renamed: %d
 
         def search_available(self):
                 return self.catalog.search_available()
+
+class NastySvrConfig(SvrConfig):
+        """A subclass of SvrConfig that helps implement options
+        for the Nasty server, which misbehaves in order to test
+        the client's failure resistance."""
+
+        def __init__(self, repo_root, content_root, publisher,
+            auto_create=False, fork_allowed=False, writable_root=None):
+
+                # Call parent's constructor
+                SvrConfig.__init__(self, repo_root, content_root, publisher,
+                    auto_create, fork_allowed, writable_root)
+
+                self.nasty = 0
+ 
+        def acquire_catalog(self, rebuild=False, verbose=False):
+                """Tell the catalog to set itself up.  Associate an
+                instance of the catalog with this depot."""
+
+                if self.is_mirror():
+                        return
+
+                if rebuild:
+                        self.destroy_catalog()
+
+                self.catalog = catalog.NastyServerCatalog(self.cat_root,
+                    pkg_root=self.pkg_root, read_only=self.read_only,
+                    index_root=self.index_root, repo_root=self.repo_root,
+                    rebuild=rebuild, verbose=verbose,
+                    fork_allowed=self.fork_allowed,
+                    has_writable_root=self.has_writable_root)
+
+                # UpdateLog allows server to issue incremental catalog updates
+                self.updatelog = updatelog.NastyUpdateLog(self.update_root,
+                    self.catalog)
+
+        def set_nasty(self, level):
+                """Set the nasty level using an integer."""
+
+                self.nasty = level
+
+        def is_nasty(self):
+                """Returns true if nasty has been enabled."""
+
+                if self.nasty > 0:
+                        return True
+                return False
+
+        def need_nasty(self):
+                """Randomly returns true when the server should misbehave."""
+
+                if random.randint(1, 100) <= self.nasty:
+                        return True
+                return False
+
+        def need_nasty_bonus(self, bonus=0):
+                """Used to temporarily apply extra nastiness to an operation."""
+
+                if self.nasty + bonus > 95:
+                        nasty = 95
+                else:
+                        nasty = self.nasty + bonus
+
+                if random.randint(1, 100) <= nasty:
+                        return True
+                return False
+
+        def need_nasty_occasionally(self):
+                if random.randint(1, 500) <= self.nasty:
+                        return True
+                return False
+
+        def need_nasty_infrequently(self):
+                if random.randint(1, 2000) <= self.nasty:
+                        return True
+                return False
+
+        def need_nasty_rarely(self):
+                if random.randint(1, 20000) <= self.nasty:
+                        return True
+                return False
+

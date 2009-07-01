@@ -94,6 +94,14 @@ PLYDIR = '%s-%s' % (PLY, PLYVER)
 PLYURL = 'http://www.dabeaz.com/ply/%s' % (PLYARC)
 PLYHASH = '38efe9e03bc39d40ee73fa566eb9c1975f1a8003'
 
+PC = 'pycurl'
+PCIDIR = 'pycurl'
+PCVER = '7.19.0'
+PCARC = '%s-%s.tar.gz' % (PC, PCVER)
+PCDIR = '%s-%s' % (PC, PCVER)
+PCURL = 'http://pycurl.sourceforge.net/download/%s' % PCARC
+PCHASH = '3fb59eca1461331bb9e9e8d6fe3b23eda961a416'
+
 osname = platform.uname()[0].lower()
 ostype = arch = 'unknown'
 if osname == 'sunos':
@@ -126,6 +134,9 @@ else:
         root_dir = os.path.normpath(os.path.join(pwd, os.pardir, "proto", "root_" + arch))
 pkgs_dir = os.path.normpath(os.path.join(pwd, os.pardir, "packages", arch))
 extern_dir = os.path.normpath(os.path.join(pwd, "extern"))
+
+cacert_dir = os.path.normpath(os.path.join(pwd, "cacert"))
+cacert_install_dir = 'usr/share/pkg/cacert'
 
 py_install_dir = 'usr/lib/python2.4/vendor-packages'
 
@@ -216,6 +227,7 @@ packages = [
         'pkg.actions',
         'pkg.bundle',
         'pkg.client',
+        'pkg.client.transport',
         'pkg.portable',
         'pkg.publish',
         'pkg.server'
@@ -409,6 +421,10 @@ class install_func(_install):
                                     os.stat(dst_path).st_mode
                                     | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
+                # Take cacerts in cacert_dir and install them in
+                # proto-area-relative cacert_install_dir
+                install_cacerts()
+
                 install_sw(CP, CPVER, CPARC, CPDIR, CPURL, CPIDIR, CPHASH)
 		if "BUILD_PYOPENSSL" in os.environ and \
                     os.environ["BUILD_PYOPENSSL"] != "":
@@ -431,6 +447,7 @@ class install_func(_install):
                     MAKOHASH)
                 install_sw(PLY, PLYVER, PLYARC, PLYDIR, PLYURL, PLYIDIR,
                     PLYHASH)
+                install_sw(PC, PCVER, PCARC, PCDIR, PCURL, PCIDIR, PCHASH)
 
                 # Remove some bits that we're not going to package, but be sure
                 # not to complain if we try to remove them twice.
@@ -468,6 +485,34 @@ def hash_sw(swname, swarc, swhash):
                 print "bad checksum! %s != %s" % (swhash, hash.hexdigest())
                 return False
 
+def install_cacerts():
+
+        findir = os.path.join(root_dir, cacert_install_dir)
+        dir_util.mkpath(findir, verbose = True)
+        for f in os.listdir(cacert_dir):
+
+                # Copy certificate
+                srcname = os.path.normpath(os.path.join(cacert_dir, f))
+                dn, copied = file_util.copy_file(srcname, findir, update = True)
+
+                if not copied:
+                        continue
+
+                # Call openssl to create hash symlink
+                cmd = ["/usr/bin/openssl", "x509", "-noout", "-hash", "-in",
+                    srcname]
+
+                p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+                hashval = p.stdout.read()
+                p.wait()
+
+                hashval = hashval.strip()
+                hashval += ".0" 
+
+                hashpath = os.path.join(findir, hashval)
+                if os.path.exists(hashpath):
+                        os.unlink(hashpath)
+                os.symlink(f, hashpath)
 
 def install_sw(swname, swver, swarc, swdir, swurl, swidir, swhash):
         swarc = os.path.join(extern_dir, swarc)
@@ -499,6 +544,20 @@ def install_sw(swname, swver, swarc, swdir, swurl, swidir, swhash):
                 for m in tar.getmembers():
                         tar.extract(m, extern_dir)
                 tar.close()
+
+        # If there are patches, apply them now.
+        patchdir = os.path.join("patch", swname)
+        already_patched = os.path.join(swdir, ".patched")
+        if os.path.exists(patchdir) and not os.path.exists(already_patched):
+                patches = os.listdir(patchdir)
+                for p in patches:
+                        patchpath = os.path.join(os.path.pardir,
+                            os.path.pardir, patchdir, p)
+                        print "Applying %s to %s" % (p, swname)
+                        subprocess.Popen(['patch', '-d', swdir, '-i',
+                            patchpath]).wait()
+                file(already_patched, "w").close()
+
         swinst_dir = os.path.join(root_dir, py_install_dir, swidir)
         if not os.path.exists(swinst_dir):
                 print "installing %s" % swname

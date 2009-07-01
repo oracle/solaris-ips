@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import errno
@@ -28,7 +28,6 @@ import itertools
 import os
 
 import pkg.manifest as manifest
-import pkg.client.filelist as filelist
 import pkg.actions.directory as directory
 from pkg.misc import msg
 from pkg.misc import get_pkg_otw_size
@@ -232,15 +231,19 @@ class PkgPlan(object):
 
         def download(self):
                 """Download data for any actions that need it."""
-                flist = filelist.FileList(self.image, self.destination_fmri,
-                    self.__progtrack, self.check_cancelation)
                 self.__progtrack.download_start_pkg(self.get_xfername())
-                for src, dest in itertools.chain(*self.actions):
-                        if dest:
-                                if dest.needsdata(src):
-                                        flist.add_action(dest)
+                mfile = self.image.transport.multi_file(self.destination_fmri,
+                    self.__progtrack, self.check_cancelation)
 
-                flist.flush()
+                if not mfile:
+                        self.__progtrack.download_end_pkg()
+                        return
+
+                for src, dest in itertools.chain(*self.actions):
+                        if dest and dest.needsdata(src):
+                                mfile.add_action(dest)
+
+                mfile.wait_files() 
                 self.__progtrack.download_end_pkg()
 
         def gen_install_actions(self):

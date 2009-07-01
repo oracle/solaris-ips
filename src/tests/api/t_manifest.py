@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import unittest
@@ -34,7 +34,6 @@ import pkg as pkg
 import pkg.manifest as manifest
 import pkg.actions as actions
 import pkg.fmri as fmri
-import pkg.client.retrieve as retrieve
 import pkg.client.filter as filter
 
 # Set the path so that modules above can be found

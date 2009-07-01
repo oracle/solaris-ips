@@ -26,9 +26,7 @@
 #
 
 import copy
-import httplib
 import os
-import socket
 import simplejson as json
 import StringIO
 import sys
@@ -51,7 +49,6 @@ import pkg.search_errors as search_errors
 
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
-from pkg.misc import versioned_urlopen
 
 CURRENT_API_VERSION = 15
 CURRENT_P5I_VERSION = 1
@@ -136,10 +133,10 @@ class ImageInterface(object):
                 two things. The first is a boolean which tells the client
                 whether there is anything to do. The third is either None, or an
                 exception which indicates partial success. It can raise
-                PlanCreationException, NetworkUnavailableException,
-                PermissionsException and InventoryException. The noexecute
-                argument is included for compatibility with operational
-                history. The hope is it can be removed in the future."""
+                PlanCreationException, PermissionsException and
+                InventoryException. The noexecute argument is included
+                for compatibility with operational history.
+                The hope is it can be removed in the future."""
 
                 self.__activity_lock.acquire()
                 try:
@@ -162,6 +159,8 @@ class ImageInterface(object):
                                                 self.img.refresh_publishers(
                                                     progtrack=self.progresstracker)
                                         except KeyboardInterrupt:
+                                                raise
+                                        except api_errors.InvalidDepotResponseException:
                                                 raise
                                         except:
                                                 # Since this is not a refresh
@@ -286,8 +285,8 @@ class ImageInterface(object):
                 either None, or an exception which indicates partial success.
                 This is currently used to indicate a failure in refreshing
                 catalogs. It can raise CatalogRefreshException,
-                IpkgOutOfDateException, NetworkUnavailableException,
-                PlanCreationException and PermissionsException."""
+                IpkgOutOfDateException, PlanCreationException and
+                PermissionsException."""
 
                 self.__activity_lock.acquire()
                 try:
@@ -313,6 +312,8 @@ class ImageInterface(object):
                                                 self.img.refresh_publishers(
                                                     progtrack=self.progresstracker)
                                         except KeyboardInterrupt:
+                                                raise
+                                        except api_errors.InvalidDepotResponseException:
                                                 raise
                                         except:
                                                 # Since this is not a refresh
@@ -444,6 +445,7 @@ class ImageInterface(object):
                                         raise
 
                                 if self.__canceling:
+                                        self.img.transport.reset()
                                         self.img.cleanup_downloads()
                                         raise api_errors.CanceledException()
                                 self.prepared = True
@@ -601,6 +603,13 @@ class ImageInterface(object):
                         if self.img.history.operation_name:
                                 self.log_operation_end()
                         self.executed = True
+                        try:
+                                if int(os.environ.get("PKG_DUMP_STATS", 0)) > 0:
+                                        self.img.transport.stats.dump()
+                        except ValueError:
+                                # Don't generate stats if an invalid value
+                                # is supplied.
+                                pass
                 finally:
                         self.__activity_lock.release()
 
@@ -670,6 +679,19 @@ class ImageInterface(object):
                 returns a dictionary of lists.  The keys for the dictionary are
                 the constants specified in the class definition.  The values are
                 lists of PackageInfo objects or strings."""
+
+                # Currently, this is mostly a wapper for activity locking.
+                self.__activity_lock.acquire()
+                try:
+                        i = self._info_op(fmri_strings, local, info_needed)
+                finally:
+                        self.__activity_lock.release()
+
+                return i
+
+        def _info_op(self, fmri_strings, local, info_needed):
+                """Performs the actual info operation.  The external
+                interface to the API's consumers is defined in info()."""
 
                 bad_opts = info_needed - PackageInfo.ALL_OPTIONS
                 if bad_opts:
@@ -996,126 +1018,84 @@ class ImageInterface(object):
                 a list of servers to search against.  It performs each query
                 against each server and yields the results in turn.  If no
                 servers are provided, the search is conducted against all
-                active servers known by the image."""
+                active servers known by the image.
+
+                The servers argument is a list of servers in two possible
+                forms: the old deprecated form of a publisher, in a
+                dictionary, or a Publisher object. """
 
                 failed = []
                 invalid = []
+                unsupported = []
 
                 if not servers:
                         servers = self.img.gen_publishers()
 
-                single = True
-
-                if not len(query_str_and_args_lst) == 1:
-                        single = False
-
-                allow_version_zero = single
-
-                version_list = [1]
-
-                if single:
-                        method = "GET"
-                        q = query_str_and_args_lst[0]
-                        qs = [urllib.quote(str(q), safe='')]
-                        version_1_data = None
-                        l = query_p.QueryLexer()
-                        l.build()
-                        qp = query_p.QueryParser(l)
-                        # Parse the query to determine whether it can be
-                        # represented in search/0 syntax.
-                        try:
-                                query = qp.parse(q.encoded_text())
-                        except query_p.BooleanQueryException, e:
-                                raise api_errors.BooleanQueryException(e)
-                        except query_p.ParseError, e:
-                                raise api_errors.ParseError(e)
-                        if query.allow_version(0):
-                                version_list.append(0)
-                                qs.append(urllib.quote(q.ver_0(), safe=''))
-
-                else:
-                        method = "POST"
-                        qs = None
-                        version_1_data = urllib.urlencode(
-                            [(i, str(q))
-                            for i, q in enumerate(query_str_and_args_lst)])
-
                 for pub in servers:
-                        prefix = None
-                        uuid = None
-                        if not isinstance(pub, publisher.Publisher):
+                        descriptive_name = None
+
+                        if isinstance(pub, dict):
                                 origin = pub["origin"]
                                 try:
                                         pub = self.img.get_publisher(
                                             origin=origin)
                                 except api_errors.UnknownPublisher:
-                                        pass
-                        # This cannot be an else statment to the previous if
-                        # clause because it needs to work on the value of pub
-                        # after it has been set by self.img.get_publisher.
-                        if isinstance(pub, publisher.Publisher):
-                                repo = pub.selected_repository
-                                origin = pub.selected_repository.origins[0]
-                                prefix = pub.prefix
-                                uuid = pub.client_uuid
+                                        pub = publisher.RepositoryURI(origin)
+                                        descriptive_name = origin
 
-                        ssl_key = None
-                        ssl_cert = None
-                        if isinstance(origin, publisher.RepositoryURI):
-                                ssl_key = origin.ssl_key
-                                ssl_cert = origin.ssl_cert
-                                origin = origin.uri
-                        if ssl_cert:
-                                try:
-                                        misc.validate_ssl_cert(ssl_cert,
-                                            prefix=prefix, uri=origin)
-                                except api_errors.CertificateError, e:
-                                        failed.append((pub, e))
+                        if not descriptive_name:
+                                descriptive_name = pub.prefix
+
+                        try:
+                                res = self.img.transport.do_search(pub,
+                                    query_str_and_args_lst) 
+                        except api_errors.NegativeSearchResult:
+                                continue
+                        except api_errors.TransportError, e:
+                                failed.append((descriptive_name, e))
+                                continue
+                        except api_errors.UnsupportedSearchError, e:
+                                unsupported.append((descriptive_name, e))
+                                continue
+                        except api_errors.MalformedSearchRequest, e:
+                                ex = self._validate_search(
+                                    query_str_and_args_lst)
+                                if ex:
+                                        raise ex
+                                failed.append((descriptive_name, e))
+                                continue
+
+                        try:
+                                if not self.validate_response(res, 1):
+                                        invalid.append(descriptive_name)
                                         continue
-                        ssl_tuple = (ssl_key, ssl_cert)
-                        try:
-                                res, v = versioned_urlopen(origin,
-                                    "search", version_list, tail=qs,
-                                    data=version_1_data,
-                                    ssl_creds=ssl_tuple, imgtype=self.img.type,
-                                    method=method, uuid=uuid)
-                        except urllib2.HTTPError, e:
-                                if e.code != httplib.NOT_FOUND and \
-                                    e.code != httplib.NO_CONTENT:
-                                        failed.append((pub, e))
-                                continue
-                        except (urllib2.URLError, httplib.BadStatusLine,
-                            httplib.IncompleteRead, RuntimeError,
-                            ValueError), e:
-                                failed.append((pub, e))
-                                continue
-                        except KeyboardInterrupt:
-                                raise
-                        except Exception, e:
-                                failed.append((pub, "Could not perform search."
-                                    "\nException: str:%s repr:%r" % (e, e)))
+                                for line in res:
+                                        yield self.__parse_v_1(line, pub, 1)
+                        except api_errors.TransportError, e:
+                                failed.append((descriptive_name, e))
                                 continue
 
-                        try:
-                                if v == 0:
-                                        for line in res:
-                                                yield self.__parse_v_0(line,
-                                                    pub, v)
-                                else:
-                                        if not self.validate_response(res, v):
-                                                invalid.append(pub)
-                                                continue
-                                        for line in res:
-                                                yield self.__parse_v_1(line,
-                                                    pub, v)
-                        except (socket.timeout, socket.error, ValueError,
-                            httplib.IncompleteRead,
-                            api_errors.ServerReturnError), e:
-                                failed.append((pub, e))
-                                continue
-                if failed or invalid:
+                if failed or invalid or unsupported:
                         raise api_errors.ProblematicSearchServers(failed,
-                            invalid)
+                            invalid, unsupported)
+
+        def _validate_search(self, query_str_lst):
+                """Called by remote search if server responds that the
+                request was invalid.  In this case, parse the query on
+                the client-side and determine what went wrong."""
+
+                for q in query_str_lst:
+                        l = query_p.QueryLexer()
+                        l.build()
+                        qp = query_p.QueryParser(l)
+                        try:
+                                query = qp.parse(q.encoded_text())
+                        except query_p.BooleanQueryException, e:
+                                return api_errors.BooleanQueryException(e)
+                        except query_p.ParseError, e:
+                                return api_errors.ParseError(e)
+
+                return None
 
         def rebuild_search_index(self):
                 """Rebuilds the search indexes.  Removes all
@@ -1352,7 +1332,7 @@ class ImageInterface(object):
                                         # One of the publisher's repository
                                         # origins may have changed, so the
                                         # publisher needs to be revalidated.
-                                        self.img.valid_publisher_test(pub)
+                                        self.img.transport.valid_publisher_test(pub)
 
                                         # Because the more strict test above
                                         # was performed, there is no point in

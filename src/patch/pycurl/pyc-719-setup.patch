@@ -1,0 +1,16 @@
+--- setup.py.old	Mon Nov 24 18:03:47 2008
++++ setup.py	Mon Nov 24 18:04:06 2008
+@@ -95,12 +95,11 @@
+             if not re.search(r"^\/+usr\/+include\/*$", e[2:]):
+                 include_dirs.append(e[2:])
+         else:
+             extra_compile_args.append(e)
+     libs = split_quoted(
+-        os.popen("'%s' --libs" % CURL_CONFIG).read()+\
+-        os.popen("'%s' --static-libs" % CURL_CONFIG).read())
++        os.popen("'%s' --libs" % CURL_CONFIG).read())
+     for e in libs:
+         if e[:2] == "-l":
+             libraries.append(e[2:])
+             if e[2:] == 'ssl':
+                 define_macros.append(('HAVE_CURL_OPENSSL', 1))

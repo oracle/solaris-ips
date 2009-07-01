@@ -35,33 +35,29 @@ import time
 import urllib
 
 import pkg.Uuid25
-import pkg.catalog             as catalog
-import pkg.client.api_errors   as api_errors
-import pkg.client.constraint   as constraint
-import pkg.client.history      as history
-import pkg.client.imageconfig  as imageconfig
-import pkg.client.imageplan    as imageplan
-import pkg.client.imagestate   as imagestate
-import pkg.client.pkgplan      as pkgplan
-import pkg.client.progress     as progress
-import pkg.client.publisher    as publisher
-import pkg.client.retrieve     as retrieve
-import pkg.client.variant      as variant
+import pkg.catalog                      as catalog
+import pkg.client.api_errors            as api_errors
+import pkg.client.constraint            as constraint
+import pkg.client.history               as history
+import pkg.client.imageconfig           as imageconfig
+import pkg.client.imageplan             as imageplan
+import pkg.client.imagestate            as imagestate
+import pkg.client.pkgplan               as pkgplan
+import pkg.client.progress              as progress
+import pkg.client.publisher             as publisher
+import pkg.client.transport.transport   as transport
+import pkg.client.variant               as variant
 import pkg.fmri
-import pkg.manifest            as manifest
-import pkg.misc                as misc
-import pkg.portable            as portable
+import pkg.manifest                     as manifest
+import pkg.misc                         as misc
+import pkg.portable                     as portable
 import pkg.version
 
-from pkg.actions import MalformedActionError
 from pkg.client import global_settings
-from pkg.client.api_errors import InvalidDepotResponseException
 from pkg.client.imagetypes import IMG_USER, IMG_ENTIRE
 from pkg.misc import CfgCacheError
 from pkg.misc import EmptyI, EmptyDict
 from pkg.misc import msg, emsg
-from pkg.misc import TransportException
-from pkg.misc import TransportFailures
 
 CATALOG_CACHE_FILE = "catalog_cache"
 img_user_prefix = ".org.opensolaris,pkg"
@@ -162,7 +158,7 @@ class Image(object):
                 self.dl_cache_dir = None
                 self.dl_cache_incoming = None
                 self.is_user_cache_dir = False
-                self.state = imagestate.ImageState()
+                self.state = imagestate.ImageState(self)
                 self.attrs = {
                     "Policy-Require-Optional": False,
                     "Policy-Pursue-Latest": True
@@ -173,12 +169,11 @@ class Image(object):
 
                 self.constraints = constraint.ConstraintSet()
 
+                # Transport operations for this image
+                self.transport = transport.Transport(self)
+
                 # a place to keep info about saved_files; needed by file action
                 self.saved_files = {}
-
-                # A place to keep track of which manifests (based on fmri and
-                # operation) have already provided intent information.
-                self.__touched_manifests = {}
 
                 self.__manifest_cache = {}
 
@@ -420,149 +415,6 @@ class Image(object):
                         if inc_disabled or not pub.disabled:
                                 yield self.cfg_cache.publishers[p]
 
-        def get_url_by_publisher(self, prefix=None):
-                """Return the URL prefix associated with the given prefix.
-                For the undefined case, represented by None, return the
-                preferred publisher."""
-
-                # XXX This function is a possible location to insert one or more
-                # policies regarding use of mirror responses, etc.
-
-                if prefix is None:
-                        prefix = self.cfg_cache.preferred_publisher
-
-                try:
-                        o = self.cfg_cache.publishers[prefix]["origin"]
-                except KeyError:
-                        # If the publisher that we're trying to get no longer
-                        # exists, fall back to preferred publisher.
-                        prefix = self.cfg_cache.preferred_publisher
-                        o = self.cfg_cache.publishers[prefix]["origin"]
-
-                return o.rstrip("/")
-
-        def gen_depot_status(self):
-                """Walk all publishers and return all depot status
-                objects for both mirrors and primary publishers."""
-
-                pubs = self.cfg_cache.publishers
-                # return depot status objects in publisher order
-                for pub in pubs.keys():
-                        # first yield publisher origin
-                        yield self.cfg_cache.publisher_status[pub]
-                        # then return mirrors
-                        for ds in self.cfg_cache.mirror_status[pub]:
-                                yield ds
-
-        def num_mirrors(self, pub):
-                """Return the number of mirrors configured for the
-                given publisher."""
-
-                if pub == None:
-                        pub = self.cfg_cache.preferred_publisher
-
-                try:
-                        num = len(self.cfg_cache.mirror_status[pub])
-                except KeyError:
-                        # pub isn't in the list of mirrors, return 0
-                        num = 0
-
-                return num
-
-        def select_mirror(self, pub = None, chosen_set = None):
-                """For the given publisher, look through the status of
-                the mirrors.  Pick the best one.  This method returns
-                a DepotStatus object or None.  The chosen_set argument
-                contains a set object that lists the mirrors that were
-                previously chosen.  This allows us to choose both
-                by depot status statistics and ensures we don't
-                always pick the same depot."""
-
-                if pub == None:
-                        pub = self.cfg_cache.preferred_publisher
-                try:
-                        slst = self.cfg_cache.mirror_status[pub]
-                except KeyError:
-                        # If the publisher that we're trying to get no longer
-                        # exists, fall back to preferred publisher.
-                        pub = self.cfg_cache.preferred_publisher
-                        slst = self.cfg_cache.mirror_status[pub]
-
-                if len(slst) == 0:
-                        if pub in self.cfg_cache.publisher_status:
-                                return self.cfg_cache.publisher_status[pub]
-                        else:
-                                return None
-
-                # Choose mirror with fewest errors.
-                # If mirrors have same number of errors, choose mirror
-                # with smaller number of good transactions.  Assume it's
-                # being underused, not high-latency.
-                #
-                # XXX Will need to revisit the above assumption.
-                def cmp_depotstatus(a, b):
-                        res = cmp(a.errors, b.errors)
-                        if res == 0:
-                                return cmp(a.good_tx, b.good_tx)
-                        return res
-
-                slst.sort(cmp = cmp_depotstatus)
-
-                # All mirrors in the chosen_set have already been
-                # selected.  Try the publisher origin instead.
-                # Empty chosen_set, next time we start over.
-                if chosen_set and len(chosen_set) == len(slst):
-                        chosen_set.clear()
-                        return self.cfg_cache.publisher_status[pub]
-
-                if chosen_set and slst[0] in chosen_set:
-                        for ds in slst:
-                                if ds not in chosen_set:
-                                        return ds
-
-                return slst[0]
-
-        def get_ssl_credentials(self, prefix=None, origin=None,
-            pubent=None):
-                """Deprecated; this function will be removed in a future
-                release.  This information should be retrieved directly from a
-                repository origin or mirror object.
-
-                Return a tuple containing (ssl_key, ssl_cert) for the
-                specified publisher prefix.  If the publisher isn't specified,
-                attempt to determine the publisher by the given origin.  If
-                neither is specified, use the preferred publisher.  pubent
-                is a dictionary argument that contains the publisher
-                information."""
-
-                if not pubent and prefix is None:
-                        if origin is None:
-                                prefix = self.cfg_cache.preferred_publisher
-                        else:
-                                pubs = self.cfg_cache.publishers
-                                for pfx, pub in pubs.iteritems():
-                                        repo = pub.selected_repository
-                                        if repo.has_origin(origin):
-                                                prefix = pfx
-                                                break
-                                else:
-                                        return None
-
-                # One of these should be defined at this point unless the
-                # caller didn't provide anything.
-                assert prefix or origin or pubent
-
-                if not pubent:
-                        try:
-                                pubent = self.cfg_cache.publishers[prefix]
-                        except KeyError:
-                                prefix = self.cfg_cache.preferred_publisher
-                                pubent = self.cfg_cache.publishers[prefix]
-
-                repo = pubent.selected_repository
-                origin = repo.origins[0]
-                return (origin.ssl_key, origin.ssl_cert)
-
         def check_cert_validity(self):
                 """Look through the publishers defined for the image.  Print
                 a message and exit with an error if one of the certificates
@@ -577,22 +429,6 @@ class Image(object):
                                                     uri.ssl_cert,
                                                     prefix=p.prefix, uri=uri)
                 return True
-
-        def get_uuid(self, prefix):
-                """Deprecated; this function will be removed in a future
-                release.  This information should be retrieved directly from a
-                publisher object.
-
-                Return the UUID for the specified publisher prefix.  If the
-                policy for sending the UUID is set to false, return None."""
-
-                if not self.cfg_cache.get_policy(imageconfig.SEND_UUID):
-                        return None
-
-                try:
-                        return self.cfg_cache.publishers[prefix].client_uuid
-                except KeyError:
-                        return None
 
         def has_publisher(self, prefix=None, alias=None):
                 for pub in self.gen_publishers():
@@ -611,7 +447,7 @@ class Image(object):
                             alias=alias)
                 except api_errors.ApiException, e:
                         self.history.log_operation_end(e)
-                        raise e
+                        raise
 
                 if pub.prefix == self.cfg_cache.preferred_publisher:
                         e = api_errors.RemovePreferredPublisher()
@@ -703,7 +539,7 @@ class Image(object):
                                     alias=alias)
                         except api_errors.UnknownPublisher, e:
                                 self.history.log_operation_end(error=e)
-                                raise e
+                                raise
 
                 if pub.disabled:
                         e = api_errors.SetPreferredPublisherDisabled(pub)
@@ -762,7 +598,7 @@ class Image(object):
                         try:
                                 # First, verify that the publisher has a valid
                                 # pkg(5) repository.
-                                self.valid_publisher_test(pub)
+                                self.transport.valid_publisher_test(pub)
 
                                 self.__retrieve_catalogs(full_refresh=True,
                                     pubs=[pub], progtrack=progtrack)
@@ -832,107 +668,32 @@ class Image(object):
 
                 return False
 
-        def __fetch_manifest_with_retries(self, fmri, excludes=EmptyI):
-                """go get the manifest we want - retry if needed"""
+        def __fetch_manifest(self, fmri, excludes=EmptyI):
+                """A wrapper call for getting manifests.  This invokes
+                the transport method, gets the manifest, and performs
+                any additional image-related processing."""
 
-                retry_count = global_settings.PKG_TIMEOUT_MAX
-                failures = TransportFailures()
+                m = self.transport.get_manifest(fmri, excludes,
+                    self.state.get_intent_str(fmri))
 
-                while retry_count > 0:
-                        try:
-                                mcontent = retrieve.get_manifest(self, fmri)
+                # What is the client currently processing?
+                targets = self.state.get_targets()
+                
+                intent = None
+                for entry in targets:
+                        target, reason = entry
 
-                                m = manifest.CachedManifest(fmri, self.pkgdir,
-                                    self.cfg_cache.preferred_publisher,
-                                    excludes, mcontent)
+                        # Ignore the publisher for comparison.
+                        np_target = target.get_fmri(anarchy=True)
+                        np_fmri = fmri.get_fmri(anarchy=True)
+                        if np_target == np_fmri:
+                                intent = reason
 
-                                # What is the client currently processing?
-                                targets = self.state.get_targets()
+                # If no intent could be found, assume INTENT_INFO.
+                self.state.set_touched_manifest(fmri, 
+                    max(intent, imagestate.INTENT_INFO))
 
-                                intent = None
-                                for entry in targets:
-                                        target, reason = entry
-
-                                        # Ignore the publisher for comparison.
-                                        np_target = target.get_fmri(
-                                            anarchy=True)
-                                        np_fmri = fmri.get_fmri(anarchy=True)
-                                        if np_target == np_fmri:
-                                                intent = reason
-
-                                # If no intent could be found, assume
-                                # INTENT_INFO.
-                                self.__set_touched_manifest(fmri,
-                                    max(intent, imagestate.INTENT_INFO))
-
-                                return m
-
-                        except TransportException, e:
-                                retry_count -= 1
-                                failures.append(e)
-
-                        except MalformedActionError, e:
-                                retry_count -= 1
-                                pub = fmri.get_publisher()
-                                url = self.cfg_cache.publishers[pub]["origin"]
-                                te = misc.TransferContentException(url=url,
-                                    reason=str(e))
-                                failures.append(te)
-
-                raise failures
-
-        def __get_touched_manifest(self, fmri, intent):
-                """Returns whether intent information has been provided for the
-                given fmri."""
-
-                op = self.history.operation_name
-                if not op:
-                        # The client may not have provided the name of the
-                        # operation it is performing.
-                        op = "unknown"
-
-                if op not in self.__touched_manifests:
-                        # No intent information has been provided for fmris
-                        # for the current operation.
-                        return False
-
-                f = str(fmri)
-                if f not in self.__touched_manifests[op]:
-                        # No intent information has been provided for this
-                        # fmri for the current operation.
-                        return False
-
-                if intent not in self.__touched_manifests[op][f]:
-                        # No intent information has been provided for this
-                        # fmri for the current operation and reason.
-                        return False
-
-                return True
-
-        def __set_touched_manifest(self, fmri, intent):
-                """Records that intent information has been provided for the
-                given fmri's manifest."""
-
-                op = self.history.operation_name
-                if not op:
-                        # The client may not have provided the name of the
-                        # operation it is performing.
-                        op = "unknown"
-
-                if op not in self.__touched_manifests:
-                        # No intent information has yet been provided for fmris
-                        # for the current operation.
-                        self.__touched_manifests[op] = {}
-
-                f = str(fmri)
-                if f not in self.__touched_manifests[op]:
-                        # No intent information has yet been provided for this
-                        # fmri for the current operation.
-                        self.__touched_manifests[op][f] = { intent: None }
-                else:
-                        # No intent information has yet been provided for this
-                        # fmri for the current operation and reason.
-                        self.__touched_manifests[op][f][intent] = None
+                return m
 
         def __touch_manifest(self, fmri):
                 """Perform steps necessary to 'touch' a manifest to provide
@@ -947,7 +708,7 @@ class Image(object):
                 if not target or intent == imagestate.INTENT_EVALUATE:
                         return
 
-                if not self.__get_touched_manifest(fmri, intent):
+                if not self.state.get_touched_manifest(fmri, intent):
                         # If the manifest for this fmri hasn't been "seen"
                         # before, determine if intent information needs to be
                         # provided.
@@ -959,8 +720,15 @@ class Image(object):
                                 # If the client is currently processing
                                 # the given fmri (for an install, etc.)
                                 # then intent information is needed.
-                                retrieve.touch_manifest(self, fmri)
-                                self.__set_touched_manifest(fmri, intent)
+                                try:
+                                        self.transport.touch_manifest(fmri,
+                                            self.state.get_intent_str(fmri))
+                                except (api_errors.UnknownPublisher,
+                                    api_errors.TransportError), e:
+                                        # It's not fatal if we can't find
+                                        # or reach the publisher.
+                                        pass
+                                self.state.set_touched_manifest(fmri, intent)
 
         def get_manifest_path(self, fmri):
                 """Return path to on-disk manifest"""
@@ -977,8 +745,7 @@ class Image(object):
                             self.cfg_cache.preferred_publisher,
                             excludes)
                 except KeyError:
-                        return self.__fetch_manifest_with_retries(fmri,
-                            excludes)
+                        return self.__fetch_manifest(fmri, excludes)
 
         def get_manifest(self, fmri, add_to_cache=True, all_arch=False):
                 """return manifest; uses cached version if available.
@@ -1379,140 +1146,6 @@ class Image(object):
                                 dependents.extend(self.__req_dependents[f])
                 return dependents
 
-        def __do_get_versions(self, pub):
-                """An internal method that is a wrapper around get_catalog.
-                This handles retryable exceptions and timeouts."""
-
-                retry_count = global_settings.PKG_TIMEOUT_MAX
-                failures = TransportFailures()
-                versdict = None
-
-                while not versdict:
-                        try:
-                                versdict = retrieve.get_versions(self, pub)
-                        except TransportException, e:
-                                retry_count -= 1
-                                failures.append(e)
-
-                                if retry_count <= 0:
-                                        raise failures
-
-                return versdict
-
-        def valid_publisher_test(self, pub):
-                """Test that the publisher supplied in pub actually
-                points to a valid packaging server."""
-
-                try:
-                        vd = self.__do_get_versions(pub)
-                except (retrieve.VersionRetrievalError,
-                    TransportFailures), e:
-                        # Failure when contacting server.  Report
-                        # this as an error.
-                        raise InvalidDepotResponseException(pub["origin"],
-                            "Transport errors encountered when trying to "
-                            "contact depot server.  Reported the following "
-                            "errors:\n%s" % e)
-
-                if not self._valid_versions_test(vd):
-                        raise InvalidDepotResponseException(pub["origin"],
-                            "Invalid or unparseable version information.")
-
-        def captive_portal_test(self, pubs=None):
-                """A captive portal forces a HTTP client on a network to see a
-                special web page, usually for pubentication purposes
-                (http://en.wikipedia.org/wiki/Captive_portal).
-
-                'pubs' is an optional list of publisher objects to be used for
-                the check.  If not provided, any publishers available for
-                packaging operations will be used for the test instead."""
-
-                if not pubs:
-                        pubs = list(self.gen_publishers())
-
-                vd = None
-                for pub in pubs:
-                        try:
-                                vd = self.__do_get_versions(pub)
-                        except (retrieve.VersionRetrievalError,
-                            TransportFailures):
-                                # Encountered a transport error while
-                                # trying to contact this publisher.
-                                # Pick another publisher instead.
-                                continue
-
-                        if self._valid_versions_test(vd):
-                                return
-                        else:
-                                raise InvalidDepotResponseException(
-                                    pub["origin"], _("This server is not a "
-                                    "valid package depot."))
-                if not vd:
-                        # We got all the way through the list of puborites but
-                        # encountered transport errors in every case.  This is
-                        # likely a network configuration problem.  Report our
-                        # inability to contact a server.
-                        raise InvalidDepotResponseException(None,
-                            "Unable to contact any configured publishers. "
-                            "This is likely a network configuration problem.")
-
-        @staticmethod
-        def _valid_versions_test(versdict):
-                """Check that the versions information contained in
-                versdict contains valid version specifications.
-
-                In order to test for this condition, pick a publisher
-                from the list of active publishers.  Check to see if
-                we can connect to it.  If so, test to see if it supports
-                the versions/0 operations.  If versions/0 is not found,
-                we get an unparseable response, or the response does
-                not contain pkg-server, or versions 0 then we're not
-                talking to a depot.  Return an error in these cases."""
-
-                if "pkg-server" in versdict:
-                        # success!
-                        return True
-                elif "versions" in versdict:
-                        try:
-                                versids = [
-                                    int(v)
-                                    for v in versdict["versions"].split()
-                                ]
-                        except ValueError:
-                                # Unable to determine version number.  Fail.
-                                return False
-
-                        if 0 not in versids:
-                                # Paranoia.  versions 0 should be in the
-                                # output for versions/0.  If we're here,
-                                # something has gone very wrong.  EPIC FAIL!
-                                return False
-
-                        # found versions/0, success!
-                        return True
-
-                # Some other error encountered. Fail
-                return False
-
-        def _do_get_catalog(self, pub, hdr, ts):
-                """An internal method that is a wrapper around get_catalog.
-                This handles retryable exceptions and timeouts."""
-
-                retry_count = global_settings.PKG_TIMEOUT_MAX
-                failures = TransportFailures()
-                success = False
-
-                while not success:
-                        try:
-                                success = retrieve.get_catalog(self, pub,
-                                    hdr, ts)
-                        except TransportException, e:
-                                retry_count -= 1
-                                failures.append(e)
-
-                                if retry_count <= 0:
-                                        raise failures
-
         def refresh_publishers(self, full_refresh=False, immediate=False,
             pubs=None, progtrack=None, validate=True):
                 """Refreshes the metadata (e.g. catalog) for one or more
@@ -1582,7 +1215,7 @@ class Image(object):
                                 # from the publisher repositories, a check needs
                                 # to be done to ensure that the client isn't
                                 # stuck behind a captive portal.
-                                self.captive_portal_test()
+                                self.transport.captive_portal_test()
 
                         self.__retrieve_catalogs(full_refresh=full_refresh,
                             pubs=pubs_to_refresh, progtrack=progtrack)
@@ -1656,7 +1289,7 @@ class Image(object):
                         full_refresh_this_pub = False
 
                         cat = None
-                        ts = 0
+                        ts = None
                         size = 0
                         if pub.prefix in self.__catalogs:
                                 cat = self.__catalogs[pub.prefix]
@@ -1671,17 +1304,14 @@ class Image(object):
                                 if cat.origin() not in repo.origins:
                                         full_refresh_this_pub = True
 
-                        if ts and not full_refresh and \
-                            not full_refresh_this_pub:
-                                hdr = {"If-Modified-Since": ts}
-                        else:
-                                hdr = {}
+                        if full_refresh or full_refresh_this_pub:
+                                # Set timestamp to None in order
+                                # to perform full refresh.
+                                ts = None
 
                         try:
-                                self._do_get_catalog(pub, hdr, ts)
-                        except retrieve.CatalogRetrievalError, e:
-                                failed.append((pub, e))
-                        except TransportFailures, e:
+                                self.transport.get_catalog(pub, ts)
+                        except api_errors.TransportError, e:
                                 failed.append((pub, e))
                         else:
                                 if catalog_changed(pub.prefix, ts, size):

@@ -34,41 +34,6 @@ from pkg.misc import emsg
 import pkg.portable as portable
 import re
 
-class DepotStatus(object):
-        """An object that encapsulates status about a depot server.
-        This includes things like observed performance, availability,
-        successful and unsuccessful transaction rates, etc."""
-
-        def __init__(self, prefix, url):
-                """prefix is the publisher prefix for this depot.  url is the
-                URL that names the server or mirror itself."""
-
-                self.prefix = prefix
-                self.url = url.rstrip("/")
-                self.available = True
-
-                self.errors = 0
-                self.good_tx = 0
-
-                self.last_tx_time = None
-
-        def record_error(self):
-
-                self.errors += 1
-
-        def record_success(self, tx_time):
-
-                self.good_tx += 1
-                self.last_tx_time = tx_time
-
-        def set_available(self, avail):
-
-                if avail:
-                        self.available = True
-                else:
-                        self.available = False
-
-
 # The default_policies dictionary defines the policies that are supported by 
 # pkg(5) and their default values. Calls to the ImageConfig.get_policy method
 # should use the constants defined here.
@@ -110,8 +75,6 @@ class ImageConfig(object):
         def __init__(self, imgroot):
                 self.__imgroot = imgroot
                 self.publishers = {}
-                self.publisher_status = {}
-                self.mirror_status = {}
                 self.properties = dict((
                     (p, str(v)) 
                     for p, v in default_policies.iteritems()
@@ -163,17 +126,9 @@ class ImageConfig(object):
                 for s in cp.sections():
                         if re.match("authority_.*", s):
                                 k, a = self.read_publisher(pmroot, cp, s)
-                                ms = []
 
                                 self.publishers[k] = a
-                                self.publisher_status[k] = DepotStatus(k,
-                                    a["origin"])
-
-                                for mirror in a["mirrors"]:
-                                        ms.append(DepotStatus(k, mirror))
-
-                                self.mirror_status[k] = ms
-                                
+                               
                                 if self.preferred_publisher == None:
                                         self.preferred_publisher = k
 
@@ -221,8 +176,6 @@ class ImageConfig(object):
                                         k, a = self.read_publisher(pmroot, cp,
                                             s)
                                         self.publishers[k] = a
-                                        # status objects are not created for
-                                        # disabled publishers
 
         def write(self, path):
                 """Write the configuration to the given directory"""

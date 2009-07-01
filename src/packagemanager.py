@@ -122,7 +122,6 @@ import pkg.client.progress as progress
 import pkg.client.api_errors as api_errors
 import pkg.client.api as api
 import pkg.client.publisher as publisher
-import pkg.client.retrieve as retrieve
 import pkg.portable as portable
 import pkg.fmri as fmri
 import pkg.gui.repository as repository
@@ -194,13 +193,19 @@ class PackageManager:
                 self.current_search_option = 0
                 self.in_search_mode = False
 
-                socket.setdefaulttimeout(
-                    int(os.environ.get("PKG_CLIENT_TIMEOUT", "30"))) # in seconds
+                # Override default PKG_TIMEOUT_MAX and PKG_CLIENT_TIMEOUT 
+                # if a value has been specified in the environment.
+                global_settings.PKG_TIMEOUT_MAX = int(os.environ.get(
+                    "PKG_TIMEOUT_MAX", global_settings.PKG_TIMEOUT_MAX))
 
-                # Override default PKG_TIMEOUT_MAX if a value has been specified
-                # in the environment.
-                global_settings.PKG_TIMEOUT_MAX = int(os.environ.get("PKG_TIMEOUT_MAX",
-                    global_settings.PKG_TIMEOUT_MAX))
+                global_settings.PKG_CLIENT_TIMEOUT = int(os.environ.get(
+                    "PKG_CLIENT_TIMEOUT", global_settings.PKG_CLIENT_TIMEOUT))
+
+                # This call only affects sockets created by Python.  The
+                # transport framework must set the timeout value internally
+                #
+                # value is in seconds
+                socket.setdefaulttimeout(global_settings.PKG_TIMEOUT_MAX)
 
                 global_settings.client_name = PKG_CLIENT_NAME
 
@@ -1397,8 +1402,7 @@ class PackageManager:
                         info = self.api_o.info(pkg_stems_and_itr_to_fetch.keys(), False,
                                 frozenset([api.PackageInfo.IDENTITY,
                                     api.PackageInfo.SUMMARY]))
-                except (misc.TransportFailures, retrieve.ManifestRetrievalError,
-                    retrieve.DatastreamRetrievalError):
+                except api_errors.TransportError:
                         self.update_statusbar()
                         return
                 if info and len(info.get(0)) == 0:
@@ -2987,8 +2991,7 @@ class PackageManager:
                 try:
                         info = self.api_o.info([selected_pkgstem],
                             True, frozenset([api.PackageInfo.LICENSES]))
-                except (misc.TransportFailures, retrieve.ManifestRetrievalError,
-                    retrieve.DatastreamRetrievalError):
+                except (api_errors.TransportError):
                         pass
                 if self.showing_empty_details or (license_id != 
                     self.last_show_licenses_id):
@@ -2998,8 +3001,7 @@ class PackageManager:
                         # Get license from remote
                                 info = self.api_o.info([selected_pkgstem],
                                     False, frozenset([api.PackageInfo.LICENSES]))
-                        except (misc.TransportFailures, retrieve.ManifestRetrievalError,
-                            retrieve.DatastreamRetrievalError):
+                        except (api_errors.TransportError):
                                 pass
                 if self.showing_empty_details or (license_id != 
                     self.last_show_licenses_id):
@@ -3027,8 +3029,7 @@ class PackageManager:
                         info = self.api_o.info([pkg_stem], local,
                             api.PackageInfo.ALL_OPTIONS -
                             frozenset([api.PackageInfo.LICENSES]))
-                except (misc.TransportFailures, retrieve.ManifestRetrievalError,
-                    retrieve.DatastreamRetrievalError):
+                except (api_errors.TransportError):
                         return info
                 pkgs_info = None
                 package_info = None

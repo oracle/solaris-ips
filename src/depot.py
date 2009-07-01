@@ -128,9 +128,9 @@ def usage(text):
         print """\
 Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
            [-t socket_timeout] [--cfg-file] [--content-root] [--debug]
-           [--log-access dest] [--log-errors dest] [--mirror] [--proxy-base url]
-           [--readonly] [--rebuild] [--ssl-cert-file] [--ssl-dialog]
-           [--ssl-key-file] [--writable-root dir]
+           [--log-access dest] [--log-errors dest] [--mirror] [--nasty]
+           [--proxy-base url] [--readonly] [--rebuild] [--ssl-cert-file]
+           [--ssl-dialog] [--ssl-key-file] [--writable-root dir]
 
         --cfg-file      The pathname of the file from which to read and to
                         write configuration information.
@@ -153,6 +153,11 @@ Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
         --mirror        Package mirror mode; publishing and metadata operations
                         disallowed.  Cannot be used with --readonly or
                         --rebuild.
+        --nasty         Instruct the server to misbehave.  At random intervals
+                        it will time-out, send bad responses, hang up on
+                        clients, and generally be hostile.  The option
+                        takes a value (1 to 100) for how nasty the server
+                        should be.
         --proxy-base    The url to use as the base for generating internal
                         redirects and content.
         --readonly      Read-only operation; modifying operations disallowed.
@@ -202,6 +207,8 @@ if __name__ == "__main__":
         reindex = REINDEX_DEFAULT
         proxy_base = None
         mirror = MIRROR_DEFAULT
+        nasty = False
+        nasty_value = 0
         repo_config_file = None
         ssl_cert_file = None
         ssl_key_file = None
@@ -238,9 +245,9 @@ if __name__ == "__main__":
         opt = None
         try:
                 long_opts = ["cfg-file=", "content-root=", "debug=", "mirror",
-                    "proxy-base=", "readonly", "rebuild", "refresh-index",
-                    "ssl-cert-file=", "ssl-dialog=", "ssl-key-file=",
-                    "writable-root="]
+                    "nasty=", "proxy-base=", "readonly", "rebuild",
+                    "refresh-index", "ssl-cert-file=", "ssl-dialog=",
+                    "ssl-key-file=", "writable-root="]
                 for opt in log_opts:
                         long_opts.append("%s=" % opt.lstrip('--'))
                 opts, pargs = getopt.getopt(sys.argv[1:], "d:np:s:t:",
@@ -296,6 +303,19 @@ if __name__ == "__main__":
                                 log_routes[opt.lstrip("--log-")] = arg
                         elif opt == "--mirror":
                                 mirror = True
+                        elif opt == "--nasty":
+                                value_err = None
+                                try:
+                                        nasty_value = int(arg)
+                                except ValueError, e:
+                                        value_err = e
+
+                                if value_err or (nasty_value > 100 or
+                                    nasty_value < 1):
+                                        raise OptionError, "Invalid value " \
+                                            "for nasty option.\n Please " \
+                                            "choose a value between 1 and 100."
+                                nasty = True
                         elif opt == "--proxy-base":
                                 # Attempt to decompose the url provided into
                                 # its base parts.  This is done so we can
@@ -443,15 +463,22 @@ if __name__ == "__main__":
 
         fork_allowed = not reindex
                 
-        scfg = config.SvrConfig(repo_path, content_root, AUTH_DEFAULT,
-            auto_create=not readonly, fork_allowed=fork_allowed,
-            writable_root=writable_root)
+        if nasty:
+                scfg = config.NastySvrConfig(repo_path, content_root,
+                    AUTH_DEFAULT, auto_create=not readonly,
+                    fork_allowed=fork_allowed, writable_root=writable_root)
+                scfg.set_nasty(nasty_value)
+        else:
+                scfg = config.SvrConfig(repo_path, content_root, AUTH_DEFAULT,
+                    auto_create=not readonly, fork_allowed=fork_allowed,
+                    writable_root=writable_root)
 
         if readonly:
                 scfg.set_read_only()
 
         if mirror:
                 scfg.set_mirror()
+
 
         try:
                 scfg.init_dirs()
@@ -628,8 +655,12 @@ if __name__ == "__main__":
                 sys.exit(1)
 
         try:
-                root = cherrypy.Application(depot.DepotHTTP(scfg,
-                    repo_config_file))
+                if nasty:
+                        root = cherrypy.Application(depot.NastyDepotHTTP(scfg,
+                            repo_config_file))
+                else:
+                        root = cherrypy.Application(depot.DepotHTTP(scfg,
+                            repo_config_file))
         except rc.InvalidAttributeValueError, _e:
                 emsg("pkg.depotd: repository.conf error: %s" % _e)
                 sys.exit(1)

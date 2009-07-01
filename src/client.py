@@ -75,9 +75,6 @@ from pkg.client.debugvalues import DebugValues
 from pkg.client.history import (RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
     RESULT_FAILED_CONFIGURATION, RESULT_FAILED_TRANSPORT, RESULT_FAILED_UNKNOWN,
     RESULT_FAILED_OUTOFMEMORY)
-from pkg.client.filelist import FileListRetrievalError
-from pkg.client.retrieve import (CatalogRetrievalError,
-    DatastreamRetrievalError, ManifestRetrievalError)
 from pkg.misc import EmptyI, msg, emsg, PipeError
 
 CLIENT_API_VERSION = 15
@@ -574,7 +571,6 @@ def image_update(img_dir, args):
                 return 1
         except (api_errors.CertificateError,
             api_errors.PlanCreationException,
-            api_errors.NetworkUnavailableException,
             api_errors.PermissionsException), e:
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
@@ -599,10 +595,12 @@ def image_update(img_dir, args):
         # XXX would be nice to kick the progress tracker.
         try:
                 api_inst.prepare()
-        except misc.TransportException:
+        except api_errors.TransportError, e:
                 # move past the progress tracker line.
                 msg("\n")
-                raise
+                if verbose:
+                        e.verbose = True
+                raise e
         except KeyboardInterrupt:
                 raise
         except api_errors.PermissionsException, e:
@@ -736,7 +734,6 @@ def install(img_dir, args):
                         return 1
         except (api_errors.CertificateError,
             api_errors.PlanCreationException,
-            api_errors.NetworkUnavailableException,
             api_errors.PermissionsException), e:
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
@@ -758,10 +755,12 @@ def install(img_dir, args):
         # XXX would be nice to kick the progress tracker.
         try:
                 api_inst.prepare()
-        except misc.TransportException:
+        except api_errors.TransportError, e:
                 # move past the progress tracker line.
                 msg("\n")
-                raise
+                if verbose:
+                        e.verbose = True
+                raise e
         except KeyboardInterrupt:
                 raise
         except api_errors.PermissionsException, e:
@@ -879,10 +878,12 @@ the following packages that depend on it:""" % e[0])
         # XXX would be nice to kick the progress tracker.
         try:
                 api_inst.prepare()
-        except misc.TransportException:
+        except api_errors.TransportError, e:
                 # move past the progress tracker line.
                 msg("\n")
-                raise
+                if verbose:
+                        e.verbose = True
+                raise e
         except api_errors.FileInUseException, e:
                 error("\n" + str(e))
                 return 1
@@ -932,30 +933,6 @@ def unfreeze(img, args):
         """Attempt to return package specified to INSTALLED state from FROZEN
         state."""
         return 0
-
-def process_v_0_search(tup, first):
-        """Transforms the tuples returned by search v1 into the four column
-        output format.
-
-        The "tup" parameter is a four tuple with the each entry corresponding
-        to a column of the output.
-        
-        The "first" parameter is a boolean stating whether this is the first
-        time this function has been called.  This controls the printing of the
-        header information."""
-
-        try:
-                index, mfmri, action, value = tup
-        except ValueError:
-                error(_("The server returned a malformed result.\n"
-                    "The problematic structure: %r") % (tup,))
-                return False
-        if first:
-                msg("%-10s %-9s %-25s %s" %
-                    ("INDEX", "ACTION", "VALUE", "PACKAGE"))
-        msg("%-10s %-9s %-25s %s" % (index, action, value,
-            fmri.PkgFmri(str(mfmri)).get_short_fmri()))
-        return True
 
 def __convert_output(a_str, match):
         """Converts a string to a three tuple with the information to fill
@@ -1020,8 +997,13 @@ def process_v_1_search(tup, first, return_type, pub):
                 if first:
                         msg("%s" % ("PACKAGE"))
                 pub_name = ''
-                if pub is not None and "prefix" in pub:
+                # If pub is not None, it's either a RepositoryURI or a Publisher
+                # object.  If it's a Publisher, it has a prefix.  Otherwise,
+                # use the uri.
+                if pub is not None and hasattr(pub, "prefix"):
                         pub_name = " (%s)" % pub.prefix
+                elif pub is not None and hasattr(pub, "uri"):
+                        pub_name = " (%s)" % pub.uri
                 msg("%s%s" %
                     (fmri.PkgFmri(str(pfmri)).get_short_fmri(), pub_name))
         return True
@@ -1100,11 +1082,8 @@ def search(img_dir, args):
                                     "result:%r") % (raw_value,))
                                 bad_res = True
                                 continue
-                        if v == 0:
-                                ret = process_v_0_search(tmp, first)
-                        else:
-                                ret = process_v_1_search(tmp, first,
-                                    return_type, pub)
+                        ret = process_v_1_search(tmp, first,
+                            return_type, pub)
                         good_res |= ret
                         bad_res |= not ret
                         first = False
@@ -1613,20 +1592,6 @@ def display_catalog_failures(cre):
                                 else:
                                         emsg("    %s: %s" % \
                                             (pub["origin"], err.args[0][1]))
-                elif isinstance(err, CatalogRetrievalError) and \
-                    isinstance(err.exc, EnvironmentError) and \
-                    err.exc.errno == errno.EACCES:
-                        if err.prefix:
-                                emsg("   ", _("Could not update catalog "
-                                     "for '%s' due to insufficient "
-                                     "permissions.") % err.prefix)
-                        else:
-                                emsg("   ", _("Could not update a catalog "
-                                     "due to insufficient permissions."))
-
-                        emsg("   ", _("Please try the command again "
-                        "using pfexec, or otherwise increase \n    your "
-                        "permissions."))
                 else:
                         emsg("   ", err)
 
@@ -1661,8 +1626,7 @@ def publisher_refresh(img_dir, args):
                 error(e)
                 error(_("'pkg publisher' will show a list of publishers."))
                 return 1
-        except (api_errors.PermissionsException,
-            api_errors.NetworkUnavailableException), e:
+        except (api_errors.PermissionsException), e:
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
                 error("\n" + str(e))
@@ -2289,6 +2253,7 @@ def image_create(img, args):
                     "\nAdditional details:\n\n%(error)s") %
                     { "pub_url": pub_url, "error": e },
                     cmd="image-create")
+                print_proxy_config()
                 return 1
         except api_errors.CatalogRefreshException, cre:
                 # Ensure messages are displayed after the spinner.
@@ -2428,6 +2393,25 @@ def history_list(img, args):
 
         return 0
 
+def print_proxy_config():
+        """If the user has configured http_proxy or https_proxy in the
+        environment, print out the values.  Some transport errors are
+        not debuggable without this information handy."""
+
+        http_proxy = os.environ.get("http_proxy", None)
+        https_proxy = os.environ.get("https_proxy", None)
+
+        if not http_proxy and not https_proxy:
+                return
+
+        emsg(_("\nThe following proxy configuration is set in the"
+            " environment:\n"))
+        if http_proxy:
+                emsg(_("http_proxy: %s\n") % http_proxy)
+        if https_proxy:
+                emsg(_("https_proxy: %s\n") % https_proxy)
+
+
 # To allow exception handler access to the image.
 __img = None
 
@@ -2472,13 +2456,17 @@ def main_func():
         elif not subcommand:
                 usage()
 
-        socket.setdefaulttimeout(
-            int(os.environ.get("PKG_CLIENT_TIMEOUT", "30"))) # in seconds
-
-        # Override default PKG_TIMEOUT_MAX if a value has been specified
-        # in the environment.
+        # Override default PKG_TIMEOUT_MAX and PKG_CLIENT_TIMEOUT 
+        # if a value has been specified in the environment.
         global_settings.PKG_TIMEOUT_MAX = int(os.environ.get("PKG_TIMEOUT_MAX",
             global_settings.PKG_TIMEOUT_MAX))
+
+        global_settings.PKG_CLIENT_TIMEOUT = int(os.environ.get(
+            "PKG_CLIENT_TIMEOUT", global_settings.PKG_CLIENT_TIMEOUT))
+
+        # This call only affects sockets created by Python.  The transport
+        # framework must set the timeout value internally.
+        socket.setdefaulttimeout(global_settings.PKG_TIMEOUT_MAX) # in seconds
 
         if subcommand == "image-create":
                 if "mydir" in locals():
@@ -2637,29 +2625,24 @@ if __name__ == "__main__":
                         __img.history.abort(RESULT_FAILED_BAD_REQUEST)
                 error(__e)
                 __ret = 1
-        except misc.TransportException, __e:
+        except api_errors.TransportError, __e:
                 if __img:
                         __img.history.abort(RESULT_FAILED_TRANSPORT)
-                error(_("\nMaximum number of network retries exceeded during "
-                    "download. Details follow:\n%s") % __e)
-                __ret = 1
-        except (ManifestRetrievalError,
-            DatastreamRetrievalError, FileListRetrievalError), __e:
-                if __img:
-                        __img.history.abort(RESULT_FAILED_TRANSPORT)
-                error(_("An error was encountered while attempting to retrieve"
-                    " package or file data for the requested operation."))
-                error(__e)
+                emsg(_("\nErrors were encountered while attempting to retrieve"
+                    " package or file data for\nthe requested operation."))
+                emsg(_("Details follow:\n\n%s") % __e)
+                print_proxy_config()
                 __ret = 1
         except api_errors.InvalidDepotResponseException, __e:
                 if __img:
                         __img.history.abort(RESULT_FAILED_TRANSPORT)
-                error(_("\nUnable to contact a valid package depot. "
+                emsg(_("\nUnable to contact a valid package depot. "
                     "This may be due to a problem with the server, "
                     "network misconfiguration, or an incorrect pkg client "
                     "configuration.  Please check your network settings and "
                     "attempt to contact the server using a web browser."))
-                error(_("\nAdditional details:\n\n%s") % __e)
+                emsg(_("\nAdditional details:\n\n%s") % __e)
+                print_proxy_config()
                 __ret = 1 
         except history.HistoryLoadException, __e:
                 # Since a history related error occurred, discard all

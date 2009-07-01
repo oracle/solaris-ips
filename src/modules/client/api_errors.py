@@ -25,10 +25,7 @@
 # Use is subject to license terms.
 #
 
-import httplib
 import os
-import socket
-import urllib2
 import urlparse
 
 # EmptyI for argument defaults; can't import from misc due to circular
@@ -45,14 +42,6 @@ class ImageNotFoundException(ApiException):
                 self.user_specified = user_specified
                 self.user_dir = user_dir
                 self.root_dir = root_dir
-
-class NetworkUnavailableException(ApiException):
-        def __init__(self, caught_exception):
-                ApiException.__init__(self)
-                self.ex = caught_exception
-
-        def __str__(self):
-                return str(self.ex)
 
 class VersionException(ApiException):
         def __init__(self, expected_version, received_version):
@@ -288,10 +277,110 @@ class InventoryException(ApiException):
                 return outstr
 
 
+# SearchExceptions
+
 class SearchException(ApiException):
         """Based class used for all search-related api exceptions."""
         pass
 
+
+class MainDictParsingException(SearchException):
+        """This is used when the main dictionary could not parse a line."""
+        def __init__(self, e):
+                SearchException.__init__(self)
+                self.e = e
+
+        def __str__(self):
+                return str(self.e)
+
+
+class MalformedSearchRequest(SearchException):
+        """Raised when the server cannot understand the format of the
+        search request."""
+
+        def __init__(self, url):
+                SearchException.__init__(self)
+                self.url = url
+
+        def __str__(self):
+                return str(self.url)
+
+
+class NegativeSearchResult(SearchException):
+        """Returned when the search cannot find any matches."""
+
+        def __init__(self, url):
+                SearchException.__init__(self)
+                self.url = url
+
+        def __str__(self):
+                return _("The search at url %s returned no results.") % self.url
+
+
+class ProblematicSearchServers(SearchException):
+        """This class wraps exceptions which could appear while trying to
+        do a search request."""
+
+        def __init__(self, failed=EmptyI, invalid=EmptyI, unsupported=EmptyI):
+                SearchException.__init__(self)
+                self.failed_servers = failed
+                self.invalid_servers  = invalid
+                self.unsupported_servers = unsupported
+
+        def __str__(self):
+                s = _("Some servers failed to respond appropriately:\n")
+                for pub, err in self.failed_servers:
+                        s += _("%(o)s:\n%(msg)s\n") % \
+                            { "o": pub, "msg": err}
+                for pub in self.invalid_servers:
+                        s += _("%s did not return a valid response.\n" \
+                            % pub)
+                if len(self.unsupported_servers) > 0:
+                        s += _("Some servers don't support requested search"
+                            " operation:\n")
+                for pub, err in self.unsupported_servers:
+                        s += _("%(o)s:\n%(msg)s\n") % \
+                            { "o": pub, "msg": err}
+
+                return s
+
+
+class SlowSearchUsed(SearchException):
+        """This exception is thrown when a local search is performed without
+        an index.  It's raised after all results have been yielded."""
+
+        def __str__(self):
+                return _("Search performance is degraded.\n"
+                    "Run 'pkg rebuild-index' to improve search speed.")
+
+
+class UnsupportedSearchError(SearchException):
+        """Returned when a search protocol is not supported by the
+        remote server."""
+
+        def __init__(self, url=None, proto=None):
+                SearchException.__init__(self)
+                self.url = url
+                self.proto = proto
+
+        def __str__(self):
+                s = _("Search server does not support the requested protocol:")
+                if self.url:
+                        s += "\nServer URL: %s" % self.url
+                if self.proto:
+                        s += "\nRequested operation: %s" % self.proto
+                return s
+
+        def __cmp__(self, other):
+                if not isinstance(other, UnsupportedSearchError):
+                        return -1        
+                r = cmp(self.url, other.url)
+                if r != 0:
+                        return r
+                return cmp(self.proto, other.proto)
+
+
+# IndexingExceptions.
 
 class IndexingException(SearchException):
         """ The base class for all exceptions that can occur while indexing. """
@@ -306,6 +395,17 @@ class CorruptedIndexException(IndexingException):
         pass
 
 
+class InconsistentIndexException(IndexingException):
+        """This is used when the existing index is found to have inconsistent
+        versions."""
+        def __init__(self, e):
+                IndexingException.__init__(self, e)
+                self.exception = e
+
+        def __str__(self):
+                return str(self.exception)
+
+
 class ProblematicPermissionsIndexException(IndexingException):
         """ This is used when the indexer is unable to create, move, or remove
         files or directories it should be able to. """
@@ -315,11 +415,23 @@ class ProblematicPermissionsIndexException(IndexingException):
                     "permissions. Please correct this issue then " \
                     "rebuild the index." % self.cause
 
+# Query Parsing Exceptions
+class BooleanQueryException(ApiException):
+        """This exception is used when the children of a boolean operation
+        have different return types.  The command 'pkg search foo AND <bar>'
+        is the simplest example of this."""
 
-class MainDictParsingException(SearchException):
-        """This is used when the main dictionary could not parse a line."""
         def __init__(self, e):
-                SearchException.__init__(self)
+                ApiException.__init__(self)
+                self.e = e
+
+        def __str__(self):
+                return str(self.e)
+
+
+class ParseError(ApiException):
+        def __init__(self, e):
+                ApiException.__init__(self)
                 self.e = e
 
         def __str__(self):
@@ -393,35 +505,39 @@ class UnsupportedP5IFile(DataError):
 
 
 class TransportError(ApiException):
-        """Base exception class for all transfer exceptions."""
-
-        def __init__(self, *args, **kwargs):
-                ApiException.__init__(self, *args)
-                if args:
-                        self.data = args[0]
-                else:
-                        self.data = None
-                self.args = kwargs
+        """Abstract exception class for all transport exceptions.
+        Specific transport exceptions should be implemented in the
+        transport code.  Callers wishing to catch transport exceptions
+        should use this class.  Subclasses must implement all methods
+        defined here that raise NotImplementedError."""
 
         def __str__(self):
-                return str(self.data)
+                raise NotImplementedError
 
 
-class RetrievalError(TransportError):
+class RetrievalError(ApiException):
         """Used to indicate that a a requested resource could not be
         retrieved."""
 
+        def __init__(self, data, location=None):
+                ApiException.__init__(self)
+                self.data = data
+                self.location = location
+
         def __str__(self):
-                location = self.args.get("location", None)
-                if location:
+                if self.location:
                         return _("Error encountered while retrieving data from "
-                            "'%s':\n%s") % (location, self.data)
+                            "'%s':\n%s") % (self.location, self.data)
                 return _("Error encountered while retrieving data from: %s") % \
                     self.data
 
 
-class InvalidResourceLocation(TransportError):
+class InvalidResourceLocation(ApiException):
         """Used to indicate that an invalid transport location was provided."""
+
+        def __init__(self, data):
+                ApiException.__init__(self)
+                self.data = data
 
         def __str__(self):
                 return _("'%s' is not a valid location.") % self.data
@@ -512,108 +628,10 @@ class UnrecognizedOptionsToInfo(ApiException):
                         s += _(" '") + str(o) + _("'")
                 return s
 
-
-class ProblematicSearchServers(SearchException):
-        """This class wraps exceptions which could appear while trying to
-        do a search request."""
-
-        def __init__(self, failed, invalid):
-                self.failed_servers = failed
-                self.invalid_servers  = invalid
-
-        def __str__(self):
-                s = _("Some servers failed to respond appropriately:\n")
-                for pub, err in self.failed_servers:
-                        # The messages and structure for these error
-                        # messages was often lifted from retrieve.py.
-                        if isinstance(err, urllib2.HTTPError):
-                                s += _("    %(o)s: %(msg)s (%(code)d)\n") % \
-                                    { "o": pub["origin"], "msg": err.msg,
-                                    "code": err.code }
-                        elif isinstance(err, urllib2.URLError):
-                                if isinstance(err.args[0], socket.timeout):
-                                        s += _("    %s: timeout\n") % \
-                                            (pub["origin"],)
-                                else:
-                                        s += _("    %(o)s: %(other)s\n") % \
-                                            { "o": pub["origin"],
-                                            "other": err.args[0][1] }
-                        elif isinstance(err, httplib.BadStatusLine):
-                                s += _("    %(o)s: Unable to read status of "
-                                    "HTTP response:%(l)s\n        This is "
-                                    "most likely not a pkg(5) depot.  Please "
-                                    "check the URL and the \n        port "
-                                    "number.") % \
-                                    { "o": pub["origin"], "l": err.line}
-                        elif isinstance(err,
-                            (httplib.IncompleteRead, ValueError)):
-                                s += _("    %s: Incomplete read from "
-                                       "host") % pub["origin"]
-                        # RunetimeErrors arise when no supported version
-                        # of the operation request is found.
-                        elif isinstance(err, RuntimeError):
-                                s += _("    %(o)s: %(msg)s\n") % \
-                                    { "o": pub["origin"], "msg": err}
-                        elif isinstance(err, socket.timeout):
-                                s += _("    %s: Socket timeout") % pub["origin"]
-                        elif isinstance(err, socket.error):
-                                s += _("    %(o)s: Socket error, reason: "
-                                    "%(msg)s") % { "o": pub["origin"],
-                                    "msg": err }
-                        else:
-                                s += _("    %(o)s: %(msg)s") % \
-                                    { "o": pub["origin"], "msg": err}
-                for pub in self.invalid_servers:
-                        s += _("%s appears not to be a valid package depot.\n" \
-                            % pub['origin'])
-                return s
-
-
 class IncorrectIndexFileHash(ApiException):
         """This is used when the index hash value doesn't match the hash of the
         packages installed in the image."""
         pass
-
-
-class InconsistentIndexException(IndexingException):
-        """This is used when the existing index is found to have inconsistent
-        versions."""
-        def __init__(self, e):
-                self.exception = e
-
-        def __str__(self):
-                return str(self.exception)
-
-
-class SlowSearchUsed(SearchException):
-        """This exception is thrown when a local search is performed without
-        an index.  It's raised after all results have been yielded."""
-
-        def __str__(self):
-                return _("Search performance is degraded.\n"
-                    "Run 'pkg rebuild-index' to improve search speed.")
-
-
-class BooleanQueryException(ApiException):
-        """This exception is used when the children of a boolean operation
-        have different return types.  The command 'pkg search foo AND <bar>'
-        is the simplest example of this."""
-
-        def __init__(self, e):
-                ApiException.__init__(self)
-                self.e = e
-
-        def __str__(self):
-                return str(self.e)
-
-
-class ParseError(ApiException):
-        def __init__(self, e):
-                ApiException.__init__(self)
-                self.e = e
-
-        def __str__(self):
-                return str(self.e)
 
 
 class PublisherError(ApiException):
