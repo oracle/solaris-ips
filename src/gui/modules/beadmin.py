@@ -24,6 +24,7 @@
 #
 
 import sys
+import os
 import pango
 import time
 import datetime
@@ -98,9 +99,11 @@ class Beadmin:
                 self.progress_stop_thread = False
                 self.initial_active = 0
                 self.initial_default = 0
-                w_tree_beadmin = gtk.glade.XML(parent.gladefile, "beadmin")
-                w_tree_progress = gtk.glade.XML(parent.gladefile, "progressdialog")
-                w_tree_beconfirmation = gtk.glade.XML(parent.gladefile,
+                gladefile = os.path.join(self.parent.application_dir,
+                    "usr/share/package-manager/packagemanager.glade")
+                w_tree_beadmin = gtk.glade.XML(gladefile, "beadmin")
+                w_tree_progress = gtk.glade.XML(gladefile, "progressdialog")
+                w_tree_beconfirmation = gtk.glade.XML(gladefile,
                     "beconfirmationdialog")
                 self.w_beadmin_dialog = w_tree_beadmin.get_widget("beadmin")
                 self.w_be_treeview = w_tree_beadmin.get_widget("betreeview")

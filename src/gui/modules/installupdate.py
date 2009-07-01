@@ -28,6 +28,7 @@ MIN_IND_ELEMENTS_BOUNCE = 5      # During indexing the progress will be progress
                                  # otherwise it will bounce
 
 import errno
+import os
 import sys
 import time
 import pango
@@ -104,8 +105,8 @@ class InstallUpdate(progress.ProgressTracker):
                 self.stop_bouncing_progress = False
                 self.stopped_bouncing_progress = True
                 self.update_list = {}
-                gladefile = self.parent.application_dir + \
-                    "/usr/share/package-manager/packagemanager.glade"
+                gladefile = os.path.join(self.parent.application_dir,
+                    "usr/share/package-manager/packagemanager.glade")
                 w_tree_dialog = gtk.glade.XML(gladefile, "createplandialog")
                 w_tree_uaconfirm = gtk.glade.XML(gladefile, "ua_confirm_dialog")
                 w_tree_removeconfirm = \
