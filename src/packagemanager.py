@@ -64,7 +64,7 @@ STATUS_COLUMN_INDEX = 2   # Index of Status Column in Application TreeView
 PKG_CLIENT_NAME = "packagemanager"
 
 # Location for themable icons
-ICON_LOCATION = "/usr/share/package-manager/icons"
+ICON_LOCATION = "usr/share/package-manager/icons"
 # Load Start Page from lang dir if available
 START_PAGE_CACHE_LANG_BASE = "var/pkg/gui_cache/startpagebase/%s/%s"
 START_PAGE_LANG_BASE = "usr/share/package-manager/data/startpagebase/%s/%s"
@@ -247,7 +247,8 @@ class PackageManager:
                 self.visible_status_id = 0
                 self.categories_status_id = 0
                 self.icon_theme = gtk.IconTheme()
-                self.icon_theme.append_search_path(ICON_LOCATION)
+                icon_location = os.path.join(self.application_dir, ICON_LOCATION)
+                self.icon_theme.append_search_path(icon_location)
                 self.search_options = [
                     ('ips-search',
                     gui_misc.get_icon(self.icon_theme, 'search', 20),
