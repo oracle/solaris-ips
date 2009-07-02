@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -58,6 +58,14 @@ class TarBundle(object):
                             mode=oct(stat.S_IMODE(tarinfo.mode)),
                             owner=tarinfo.uname, group=tarinfo.gname,
                             path=tarinfo.name)
+                elif tarinfo.issym():
+                        return link.LinkAction(path=tarinfo.name,
+                            target=tarinfo.linkname)
+                elif tarinfo.islnk():
+                        return hardlink.HardLinkAction(path=tarinfo.name,
+                            target=tarinfo.linkname)
+                else:
+                        return unknown.UnknownAction(path=tarinfo.name)
 
 def test(filename):
         try:
