@@ -649,6 +649,7 @@ class Image(object):
                         pps.append(pp)
 
                 ip = imageplan.ImagePlan(self, progtrack, lambda: False)
+                ip.update_index = False
                 progtrack.evaluate_start()
                 ip.pkg_plans = pps
 

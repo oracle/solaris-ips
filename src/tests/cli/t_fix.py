@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import testutils
@@ -28,6 +28,7 @@ if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 
 import os
+import time
 import unittest
 
 class TestFix(testutils.SingleDepotTestCase):
@@ -65,6 +66,11 @@ class TestFix(testutils.SingleDepotTestCase):
                 self.pkgsend_bulk(durl, self.amber10)
                 self.image_create(durl)
                 self.pkg("install amber@1.0")
+
+                index_file = os.path.join(self.img_path, "var","pkg","index",
+                    "main_dict.ascii.v2")
+                orig_mtime = os.stat(index_file).st_mtime
+                time.sleep(1)
                 
                 victim = "etc/amber2"
                 # Initial size
@@ -83,6 +89,9 @@ class TestFix(testutils.SingleDepotTestCase):
                 # Make sure it's the same size as the original
                 size2 = self.file_size(victim)
                 self.assertEqual(size1, size2)
+
+                new_mtime = os.stat(index_file).st_mtime
+                self.assertEqual(orig_mtime, new_mtime)
 
         def test_fix2(self):
                 """Hardlink test: make sure that a file getting fixed gets any
