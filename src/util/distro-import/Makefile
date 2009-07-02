@@ -307,6 +307,7 @@ UNBUNDLED_TARGETS=		\
 	MessageQueue41.import	\
 	NetBeans.import		\
 	OpenDS.import		\
+	OpenJDK7.import		\
 	OpenOffice.import	\
 	Studio.import		\
 	Webstackui.import
