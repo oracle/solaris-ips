@@ -94,6 +94,15 @@ SUBCOMMANDS
      publish [ -d basedir] ... fmri [manifest] ...
           Combines open, include and publish in a single operation.
 
+     generate [ -T pattern] bundlefile ...
+          Read each given bundlefile (such as an SVR4 package, directory,
+          tarfile, etc) and emit the manifest describing the bundlefile to
+          the stdout.  The -T option works as in the import command.
+          The repo argument or PKG_TRANS_ID is not used with this subcommand.
+          Once obtained, the manifest can be annotated, have dependencies
+          analyzed, added, etc before being passed to the publish or import
+          subcommands.
+
 
 ENVIRONMENT VARIABLES
      The following environment variables are supported:

@@ -88,6 +88,7 @@ Packager subcommands:
         pkgsend close [-A]
         pkgsend publish [-d basedir] ... fmri [manifest] ...
         pkgsend rename src_fmri dest_fmri
+        pkgsend generate [-T file_pattern] bundlefile ....
 
 Options:
         -s repo_uri     target repository URI
@@ -330,6 +331,22 @@ def trans_include(repo_uri, fargs, transaction=None):
         else:
                 return 0
 
+def gen_actions(files, timestamp_files):
+        for filename in files:
+                bundle = pkg.bundle.make_bundle(filename)
+                for action in bundle:
+                        if action.name == "file":
+                                basename = os.path.basename(action.attrs["path"])
+                                for pattern in timestamp_files:
+                                        if fnmatch.fnmatch(basename, pattern):
+                                                break
+                                else:
+                                        try:
+                                                del action.attrs["timestamp"]
+                                        except KeyError:
+                                                pass
+                        yield action
+
 def trans_import(repo_uri, args):
         try:
                 trans_id = os.environ["PKG_TRANS_ID"]
@@ -349,27 +366,35 @@ def trans_import(repo_uri, args):
         if not args:
                 usage(_("No arguments specified for subcommand."),
                     cmd="import")
+        t = trans.Transaction(repo_uri, trans_id=trans_id)
 
-        for filename in pargs:
-                bundle = pkg.bundle.make_bundle(filename)
-                t = trans.Transaction(repo_uri, trans_id=trans_id)
-
-                for action in bundle:
-                        if action.name == "file":
-                                basename = os.path.basename(
-                                    action.attrs["path"])
-                                for pattern in timestamp_files:
-                                        if fnmatch.fnmatch(basename, pattern):
-                                                break
-                                else:
-                                        try:
-                                                del action.attrs["timestamp"]
-                                        except KeyError:
-                                                pass
+        for action in gen_actions(pargs, timestamp_files):
                         t.add(action)
         return 0
 
+def trans_generate(args):
+        opts, pargs = getopt.getopt(args, "T:")
+
+        timestamp_files = []
+
+        for opt, arg in opts:
+                if opt == "-T":
+                        timestamp_files.append(arg)
+
+        if not args:
+                usage(_("No arguments specified for subcommand."),
+                    cmd="generate")
+
+        for action in gen_actions(pargs, timestamp_files):
+                if "path" in action.attrs and hasattr(action, "hash") \
+                    and action.hash == "NOHASH":
+                        action.hash = action.attrs["path"]
+                print action
+
+        return 0
+
 def main_func():
+
         # XXX /usr/lib/locale is OpenSolaris-specific.
         gettext.install("pkgsend", "/usr/lib/locale")
 
@@ -418,6 +443,8 @@ def main_func():
                         ret = trans_publish(repo_uri, pargs)
                 elif subcommand == "rename":
                         ret = trans_rename(repo_uri, pargs)
+                elif subcommand == "generate":
+                        ret = trans_generate(pargs)
                 else:
                         usage(_("unknown subcommand '%s'") % subcommand)
         except getopt.GetoptError, e:
