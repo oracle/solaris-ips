@@ -19,11 +19,12 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
 import os
+import subprocess
 import errno
 import sys
 import time
@@ -47,7 +48,6 @@ try:
 except ImportError:
         print "SUNWpython-notify package must be installed"
         sys.exit(1)
-import pkg.client.image as image
 import pkg.client.progress as progress
 import pkg.misc as misc
 import pkg.gui.misc as gui_misc
@@ -63,12 +63,12 @@ SHOW_NOTIFY_ICON_DEFAULT = True
 IMAGE_DIRECTORY_DEFAULT = "/"
 LASTCHECK_DIR_NAME = os.path.join(os.path.expanduser("~"),'.updatemanager/notify')
 IMAGE_DIR_COMMAND = "svcprop -p update/image_dir svc:/application/pkg/update"
+CHECK_FOR_UPDATES = "/usr/lib/um-checkforupdates"
 
 ICON_LOCATION = "/usr/share/update-manager/icons"
 NOTIFY_ICON_NAME = "notify_update"
 GKSU_PATH = "/usr/bin/gksu"
 UPDATEMANAGER = "pm-updatemanager"
-PKG_CLIENT_NAME="updatemanagernotifier"
 
 UPDATEMANAGER_PREFERENCES = "/apps/updatemanager/preferences"
 START_DELAY_PREFERENCES = "/apps/updatemanager/preferences/start_delay"
@@ -92,7 +92,6 @@ NEVER_SECS = 365*24*60*60
 class UpdateManagerNotifier:
         def __init__(self):
                 os.nice(20)
-                global_settings.client_name = PKG_CLIENT_NAME
                 try:
                         self.application_dir = os.environ["UPDATE_MANAGER_NOTIFIER_ROOT"]
                 except KeyError:
@@ -274,9 +273,10 @@ class UpdateManagerNotifier:
                 self.last_check_time = time.time()
                 # Add random delay so that servers will not be hit 
                 # all at once
-                random_delay = random.randint(0, 1800)
                 if debug:
-                        print "random_delay in do_next_check", random_delay
+                        random_delay = 0
+                else:
+                        random_delay = random.randint(0, 1800)
                 gobject.timeout_add(random_delay * 1000, self.check_for_updates)
 
         def check_for_updates(self):
@@ -285,24 +285,12 @@ class UpdateManagerNotifier:
                         print "image_directory: %s" % image_directory
                 if len(image_directory) == 0:
                         image_directory = IMAGE_DIRECTORY_DEFAULT
-                api_obj = gui_misc.get_api_object(image_directory,
-                    self.pr, None)
-                api_obj.refresh()
-                
-                pkg_upgradeable = None
-                for pkg, state in misc.get_inventory_list(api_obj.img, [],
-                    all_known=True, all_versions=False):
-                        if state["upgradable"] and state["state"] == "installed":
-                                pkg_upgradeable = pkg
-                                break
-                        
-                if debug == True:
-                        if pkg_upgradeable != None:
-                                print "Packages to be updated"
-                        else:
-                                print "No packages to be updated"
+                return_code = subprocess.call([CHECK_FOR_UPDATES,
+                    image_directory])
+                if debug:
+                        print "return from subprocess is %d" % return_code
                 self.set_last_check_time()
-                if pkg_upgradeable != None:
+                if return_code == 0:
                         self.show_status_icon(True)
                 else:
                         self.show_status_icon(False)
@@ -419,7 +407,6 @@ class UpdateManagerNotifier:
 
                 gtk.gdk.get_default_root_window().property_change(atom,
                         "INTEGER", 16, gtk.gdk.PROP_MODE_REPLACE, atom_args)
-
 
 ###############################################################################
 #-----------------------------------------------------------------------------#
