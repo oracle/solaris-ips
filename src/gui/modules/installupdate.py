@@ -383,27 +383,38 @@ class InstallUpdate(progress.ProgressTracker):
 
         def __proceed_with_stages_thread_ex(self):
                 try:
-                        if self.action == enumerations.IMAGE_UPDATE:
-                                self.__start_substage(
-                                    _("Ensuring %s is up to date...") % self.parent_name, 
-                                    bounce_progress=True)
-                                opensolaris_image = True
-                                ips_uptodate = True
-                                notfound = self.__installed_fmris_from_args(
-                                    ["SUNWipkg", "SUNWcs"])
-                                if notfound:
-                                        opensolaris_image = False
-                                if opensolaris_image:
-                                        ips_uptodate = self.__ipkg_ipkgui_uptodate()
-                                if not ips_uptodate:
-                                        #Do the stuff with installing ipkg ipkggui and
-                                        #restart in the special mode
-                                        self.ips_update = True
-                                        self.__proceed_with_ipkg_thread()
-                                        return
-                                else:
-                                        self.api_o.reset()
-                        self.__proceed_with_stages_thread()
+                        try:
+                                if self.action == enumerations.IMAGE_UPDATE:
+                                        self.__start_substage(
+                                            _("Ensuring %s is up to date...") % 
+                                            self.parent_name, 
+                                            bounce_progress=True)
+                                        opensolaris_image = True
+                                        ips_uptodate = True
+                                        notfound = self.__installed_fmris_from_args(
+                                            ["SUNWipkg", "SUNWcs"])
+                                        if notfound:
+                                                opensolaris_image = False
+                                        if opensolaris_image:
+                                                ips_uptodate = \
+                                                    self.__ipkg_ipkgui_uptodate()
+                                        if not ips_uptodate:
+                                        #Do the stuff with installing pkg pkg-gui
+                                        #and restart in the special mode
+                                                self.ips_update = True
+                                                self.__proceed_with_ipkg_thread()
+                                                return
+                                        else:
+                                                self.api_o.reset()
+                                self.__proceed_with_stages_thread()
+                        except (MemoryError, EnvironmentError), __e:
+                                if isinstance(__e, EnvironmentError) and \
+                                    __e.errno != errno.ENOMEM:
+                                        raise
+                                msg = pkg.misc.out_of_memory()
+                                self.__g_error_stage(msg)
+                                return
+
                 except api_errors.CertificateError:
                         self.stop_bouncing_progress = True
                         msg = _("Accessing this restricted repository failed."
