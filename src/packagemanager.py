@@ -2432,8 +2432,16 @@ class PackageManager:
                 self.saved_filter_combobox_active = self.initial_show_filter
                 application_list, category_list , section_list = \
                     self.__get_application_categories_lists(publishers)
+                self.__unset_saved()
                 gobject.idle_add(self.__init_tree_views, application_list,
                     category_list, section_list)
+
+        def __unset_saved(self):
+                self.saved_application_list = None
+                self.saved_application_list_filter = None
+                self.saved_application_list_sort = None
+                self.saved_category_list = None
+                self.saved_section_list = None
 
         def __get_application_categories_lists(self, publishers=[]):
                 if not self.visible_repository:
@@ -2468,8 +2476,12 @@ class PackageManager:
                         if self.application_list and self.category_list and \
                             not self.visible_repository_uptodate:
                                 if self.visible_repository:
+                                        dump_list = self.application_list
+                                        if self.saved_application_list != None:
+                                                dump_list = \
+                                                    self.saved_application_list
                                         self.__dump_datamodels(self.visible_repository,
-                                            self.application_list, self.category_list,
+                                            dump_list, self.category_list,
                                             self.section_list)
                         self.visible_repository = self.__get_active_publisher()
                         self.visible_repository_uptodate = uptodate
