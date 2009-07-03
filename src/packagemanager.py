@@ -365,11 +365,12 @@ class PackageManager:
                 self.w_cut_menuitem = w_tree_main.get_widget("edit_cut")
                 self.w_copy_menuitem = w_tree_main.get_widget("edit_copy")
                 self.w_paste_menuitem = w_tree_main.get_widget("edit_paste")
-                self.w_clear_menuitem = w_tree_main.get_widget("edit_clear")
+                self.w_delete_menuitem = w_tree_main.get_widget("edit_delete")
                 self.w_selectall_menuitem = w_tree_main.get_widget("edit_select_all")
                 self.w_selectupdates_menuitem = \
                     w_tree_main.get_widget("edit_select_updates")
                 self.w_deselect_menuitem = w_tree_main.get_widget("edit_deselect")
+                self.w_clear_search_menuitem = w_tree_main.get_widget("clear")
                 self.w_main_clipboard =  gtk.clipboard_get(gtk.gdk.SELECTION_CLIPBOARD)
                 self.w_progress_dialog = w_tree_progress.get_widget("progressdialog")
                 self.w_progress_dialog.connect('delete-event', lambda stub1, stub2: True)
@@ -468,10 +469,11 @@ class PackageManager:
                                 "on_help_about_activate":self.__on_help_about,
                                 "on_help_help_activate":self.__on_help_help,
                                 "on_edit_paste_activate":self.__on_edit_paste,
-                                "on_edit_clear_activate":self.__on_clear_paste,
+                                "on_edit_delete_activate":self.__on_delete,
                                 "on_edit_copy_activate":self.__on_copy,
                                 "on_edit_cut_activate":self.__on_cut,
                                 "on_edit_search_activate":self.__on_edit_search_clicked,
+                                "on_clear_search_activate":self.__on_clear_search,
                                 "on_set_search_clicked":self.__on_set_search_clicked,
                                 "on_set_search_button_press_event":self.__on_set_search,
                                 "on_clear_search_clicked":self.__on_clear_search,
@@ -1566,8 +1568,10 @@ class PackageManager:
         def __on_searchentry_changed(self, widget):
                 if widget.get_text_length() > 0:
                         self.w_clear_search_button.set_sensitive(True)
+                        self.w_clear_search_menuitem.set_sensitive(True)
                 else:
                         self.w_clear_search_button.set_sensitive(False)
+                        self.w_clear_search_menuitem.set_sensitive(False)
                 self.__enable_disable_entry_selection(widget)
                 if self.is_search_all and not self.changing_search_option:
                         if self.w_searchentry.get_text() == "":
@@ -1871,7 +1875,7 @@ class PackageManager:
         def __on_edit_paste(self, widget):
                 self.w_searchentry.paste_clipboard()
 
-        def __on_clear_paste(self, widget):
+        def __on_delete(self, widget):
                 bounds = self.w_searchentry.get_selection_bounds()
                 self.w_searchentry.delete_text(bounds[0], bounds[1])
                 return
@@ -2119,7 +2123,7 @@ class PackageManager:
                 self.__enable_disable_deselect()
                 self.w_cut_menuitem.set_sensitive(False)
                 self.w_copy_menuitem.set_sensitive(False)
-                self.w_clear_menuitem.set_sensitive(False)
+                self.w_delete_menuitem.set_sensitive(False)
                 return False
 
         def __on_searchentry_activate(self, widget):
@@ -2135,7 +2139,7 @@ class PackageManager:
                         #enable selection functions
                         self.w_cut_menuitem.set_sensitive(True)
                         self.w_copy_menuitem.set_sensitive(True)
-                        self.w_clear_menuitem.set_sensitive(True)
+                        self.w_delete_menuitem.set_sensitive(True)
                         if char_count == abs(bounds[1] - bounds[0]):
                                 self.w_selectall_menuitem.set_sensitive(False)
                         else:
@@ -2144,7 +2148,7 @@ class PackageManager:
                 else:
                         self.w_cut_menuitem.set_sensitive(False)
                         self.w_copy_menuitem.set_sensitive(False)
-                        self.w_clear_menuitem.set_sensitive(False)
+                        self.w_delete_menuitem.set_sensitive(False)
                         self.w_deselect_menuitem.set_sensitive(False)
                         if char_count == 0:
                                 self.w_selectall_menuitem.set_sensitive(False)
