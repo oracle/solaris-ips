@@ -1,0 +1,4 @@
+chattr_glob etc/security/auth_attr path=etc/security/auth_attr.d/$(PKGNAME) restart_fmri=svc:/system/rbac
+chattr_glob etc/security/exec_attr path=etc/security/exec_attr.d/$(PKGNAME) restart_fmri=svc:/system/rbac
+chattr_glob etc/security/prof_attr path=etc/security/prof_attr.d/$(PKGNAME) restart_fmri=svc:/system/rbac
+chattr_glob etc/user_attr path=etc/user_attr.d/$(PKGNAME) restart_fmri=svc:/system/rbac

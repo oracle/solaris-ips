@@ -9,6 +9,7 @@
 \.make\.
 \.intltool-merge-cache
 ~$
+^nbproject
 ^proto
 ^packages
 # Specific build products

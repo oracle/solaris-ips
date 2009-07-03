@@ -1,0 +1,91 @@
+package SUNWcs
+classification "System/Core"
+import SUNWcsu exclude usr/openwin
+# BEGIN NON-REDISTRIBUTABLE
+drop usr/bin/ksh
+drop usr/bin/pfksh
+drop usr/bin/rksh
+add link path=usr/bin/rksh target=rksh93
+# END NON-REDISTRIBUTABLE
+# /usr/has
+add dir path=usr/has mode=0755 owner=root group=bin
+add dir path=usr/has/bin mode=0755 owner=root group=bin
+add dir path=usr/has/man mode=0755 owner=root group=bin
+add dir path=usr/has/man/man1 mode=0755 owner=root group=bin
+# Replace BSD vi with vim
+drop usr/bin/ex
+drop usr/bin/vi
+drop usr/bin/view
+# Use the 32-bit ksh93 as a replacement /bin/sh
+drop usr/bin/pfsh
+add link path=usr/bin/pfsh target=../has/bin/sh
+from SUNWman import
+usr/share/man/man1/ex.1
+usr/share/man/man1/sh.1
+usr/share/man/man1/vi.1
+usr/share/man/man1/view.1
+chattr usr/share/man/man1/ex.1 path=usr/has/man/man1/ex.1
+chattr usr/share/man/man1/sh.1 path=usr/has/man/man1/sh.1
+chattr usr/share/man/man1/vi.1 path=usr/has/man/man1/vi.1
+chattr usr/share/man/man1/view.1 path=usr/has/man/man1/view.1
+end import
+import SUNWcsr
+drop etc/inet/hosts
+drop etc/nsswitch.conf
+drop etc/pam.conf
+drop etc/passwd
+drop etc/security/policy.conf
+drop etc/shadow
+drop etc/skel/.profile
+drop var/svc/profile/generic_limited_net.xml
+drop var/svc/profile/generic_open.xml
+# Use the 32-bit ksh93 as a replacement /bin/sh
+drop sbin/pfsh
+drop sbin/sh
+add link path=sbin/pfsh target=../usr/has/bin/sh
+add link path=sbin/sh target=../usr/bin/$(ARCH32)/ksh93
+add file hosts path=etc/inet/hosts mode=0444 owner=root group=sys preserve=true
+add file services path=etc/inet/services mode=0444 owner=root group=sys \
+	preserve=true
+add file mailcap path=etc/mailcap mode=0644 owner=root group=bin preserve=true
+add file mime.types path=etc/mime.types mode=0644 owner=root group=bin \
+	preserve=true
+add file policy.conf path=etc/security/policy.conf mode=0644 owner=root \
+	group=sys preserve=true
+add file .bashrc path=etc/skel/.bashrc mode=0644 owner=root group=other \
+	preserve=true
+add file .profile path=etc/skel/.profile mode=0644 owner=root group=other \
+	preserve=true
+add dir path=root mode=0700 owner=root group=root
+add file .bashrc path=root/.bashrc mode=0644 owner=root group=root \
+	preserve=true
+add file .profile path=root/.profile mode=0644 owner=root group=root \
+	preserve=true
+# switch to gdm
+add file generic_open.xml path=var/svc/profile/generic_open.xml mode=0444 \
+	owner=root group=sys
+add file generic_limited_net.xml path=var/svc/profile/generic_limited_net.xml \
+	mode=0444 owner=root group=sys
+from SUNWfixes import
+etc/nsswitch.conf
+etc/pam.conf
+etc/passwd
+etc/shadow
+usr/bin/ksh
+usr/has/bin/ex
+usr/has/bin/sh
+usr/has/bin/vi
+usr/has/bin/view
+end import
+# include etc/ftpd/ftpusers in base package
+from SUNWftpr import
+etc/ftpd
+etc/ftpd/ftpusers
+end import
+depend SUNWperl584core
+# add new directories for *attr files
+add dir path=etc/security/auth_attr.d mode=0755 owner=root group=sys
+add dir path=etc/security/exec_attr.d mode=0755 owner=root group=sys
+add dir path=etc/security/prof_attr.d mode=0755 owner=root group=sys
+add dir path=etc/user_attr.d mode=0755 owner=root group=bin
+end package

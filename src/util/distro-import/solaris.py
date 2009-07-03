@@ -451,6 +451,7 @@ def pkg_path(pkgname):
 
 
 def start_package(pkgname):
+        set_macro("PKGNAME", urllib.quote(pkgname, ""))
         return package(pkgname)
 
 def end_package(pkg):
@@ -460,6 +461,7 @@ def end_package(pkg):
         elif "-" not in pkg.version:
                 pkg.version += "-%s" % pkg_branch
 
+        clear_macro("PKGNAME")
         print "Package '%s'" % pkg.name
         print "  Version:", pkg.version
         print "  Description:", pkg.desc
@@ -1010,6 +1012,12 @@ global_includes = []
 # list of macro substitutions
 macro_definitions = {}
 
+def set_macro(key, value):
+        macro_definitions.update([("$(%s)" % key, value)])
+
+def clear_macro(key):
+        del macro_definitions["$(%s)" % key]
+
 try:
         _opts, _args = getopt.getopt(sys.argv[1:], "B:D:I:G:NT:b:dj:m:ns:v:w:p:")
 except getopt.GetoptError, _e:
@@ -1027,7 +1035,7 @@ for opt, arg in _opts:
                 just_these_pkgs.append(arg)
         elif opt == "-m":
                 _a = arg.split("=", 1)
-                macro_definitions.update([("$(%s)" % _a[0], _a[1])])
+                set_macro(_a[0], _a[1])
         elif opt == "-n":
                 nopublish = True
         elif opt == "-p":
