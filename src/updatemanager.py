@@ -566,14 +566,9 @@ class Updatemanager:
                         renderer.set_property("sensitive", False)
                         renderer.set_property("mode", gtk.CELL_RENDERER_MODE_INERT)
                 
-        def __get_icon_pixbuf(self, icon_name):
-                return gui_misc.get_icon(self.icon_theme, icon_name)
+        def __get_icon_pixbuf(self, icon_name, size=16):
+                return gui_misc.get_icon(self.icon_theme, icon_name, size)
 
-        def __get_app_pixbuf(self, icon_name):
-                return gui_misc.get_pixbuf_from_path(os.path.join(
-                    self.application_dir,
-                    "usr/share/update-manager/"), icon_name)
-                        
         def __get_selected_fmris(self):
                 model = self.w_um_treeview.get_model()
                 iter_next = model.get_iter_first()
@@ -667,7 +662,7 @@ class Updatemanager:
                 # Setup Icons
                 self.done_icon = self.__get_icon_pixbuf("status_checkmark")
                 self.blank_icon = self.__get_icon_pixbuf("status_blank")
-                self.w_um_dialog.set_icon(self.__get_app_pixbuf("UM_package_36x"))
+                self.w_um_dialog.set_icon(self.__get_icon_pixbuf("UM_package", 36))
 
         def __get_image_path(self):
                 '''This function gets the image path or the default'''
@@ -954,7 +949,7 @@ class Updatemanager:
                     parent_name = _("Update Manager"),
                     pkg_list = ["SUNWipkg", "SUNWipkg-gui", "SUNWipkg-um"],
                     main_window = self.w_um_dialog,
-                    icon_confirm_dialog = self.__get_app_pixbuf("UM_package_36x"))
+                    icon_confirm_dialog = self.__get_icon_pixbuf("UM_package", 36))
                 return
                
         def __on_selectall_checkbutton_toggled(self, widget):
