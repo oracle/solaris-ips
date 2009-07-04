@@ -415,13 +415,8 @@ class InstallUpdate(progress.ProgressTracker):
                                 self.__g_error_stage(msg)
                                 return
 
-                except api_errors.CertificateError:
-                        self.stop_bouncing_progress = True
-                        msg = _("Accessing this restricted repository failed."
-                            "\nYou either need to register to access this repository,"
-                            "\nthe certificate expired, or you need to accept the"
-                            " repository\ncertificate.")
-                        self.__g_error_stage(msg)
+                except api_errors.CertificateError, e:
+                        self.__g_error_stage(str(e))
                         return
                 except api_errors.PlanCreationException, e:
                         self.__g_error_stage(str(e))
