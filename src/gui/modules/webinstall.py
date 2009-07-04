@@ -24,6 +24,8 @@
 #
 
 PKG_CLIENT_NAME = "packagemanager"
+# Location for themable icons
+ICON_LOCATION = "usr/share/package-manager/icons"
 
 import locale
 import os
@@ -37,7 +39,7 @@ except ImportError:
         sys.exit(1)
 import pkg.misc as misc
 import pkg.gui.misc as gui_misc
-import pkg.client.progress as progress
+import pkg.gui.progress as progress
 import pkg.client.api_errors as api_errors
 import pkg.client.api as api
 import pkg.gui.installupdate as installupdate
@@ -67,6 +69,9 @@ class Webinstall:
                 self.pr = progress.NullProgressTracker()
                 self.pub_new_tasks = []
                 self.pkg_install_tasks = []
+                self.icon_theme = gtk.IconTheme()
+                icon_location = os.path.join(self.application_dir, ICON_LOCATION)
+                self.icon_theme.append_search_path(icon_location)
                 self.param = None
                 self.preferred = None
                 

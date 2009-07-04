@@ -31,7 +31,6 @@ import time
 import locale
 import gettext
 import pango
-import errno
 from threading import Thread
 from threading import Timer
 
@@ -64,7 +63,7 @@ __builtin__._ = gettext.gettext
 IMAGE_DIRECTORY_DEFAULT = "/"   # Image default directory
 IMAGE_DIR_COMMAND = "svcprop -p update/image_dir svc:/application/pkg/update"
 
-ICON_LOCATION = "/usr/share/update-manager/icons"
+ICON_LOCATION = "usr/share/package-manager/icons"
 PKG_CLIENT_NAME = "updatemanager" # API client name
 SELECTION_CHANGE_LIMIT = 0.5    # Time limit in seconds to cancel selection updates
 IND_DELAY = 0.05                # Time delay for printing index progress
@@ -81,143 +80,6 @@ UM_LATEST_VER,
 UM_SIZE,
 UM_STEM,
 ) = range(8)
-
-#UPDATE STEPS
-(
-UPDATE_EVAL,
-UPDATE_DOWNLOAD,
-UPDATE_INSTALL,
-UPDATE_INDEX,
-) = range(4)
-
-#UPDATE TYPES
-(
-UPDATE_ACTIVE,
-UPDATE_INACTIVE,
-UPDATE_DONE,
-) = range(3)
-
-class GUIProgressTracker(progress.ProgressTracker):
-        """ This progress tracker is designed for Gnome GUI's
-        The parent must provide a number of callback methods to render progress
-        in the GUI context. """
-
-        def __init__(self, parent):
-                progress.ProgressTracker.__init__(self)
-                self.parent = parent
-                
-                self.act_started = False
-                self.ind_started = False
-                self.last_print_time = 0
-                self.dl_started = False
-                self.dl_cur_pkg = None
-
-        def reset(self):
-                progress.ProgressTracker.reset(self)
-                self.act_started = False
-                self.ind_started = False
-                self.last_print_time = 0
-                self.dl_started = False
-                
-        def cat_output_start(self):
-                catstr = _("Fetching catalog: '%s' ..." % (self.cat_cur_catalog))
-                gobject.idle_add(self.parent.output, "%s" % catstr)
-
-        def cat_output_done(self):
-                gobject.idle_add(self.parent.output_done, _("Fetching catalog"))
-
-        def cache_cats_output_start(self):
-                return
-
-        def cache_cats_output_done(self):
-                return
-
-        def load_cat_cache_output_start(self):
-                return
-
-        def load_cat_cache_output_done(self):
-                return
-
-        def eval_output_start(self):
-                s = _("Creating Plan ... ")
-                gobject.idle_add(self.parent.output, "%s" % s)
-
-        def eval_output_progress(self):
-                if (time.time() - self.last_print_time) >= 0.10:
-                        self.last_print_time = time.time()
-                else:
-                        return
-                gobject.idle_add(self.parent.progress_pulse)
-
-        def eval_output_done(self):
-                gobject.idle_add(self.parent.output_done, _("Creating Plan"))
-                self.last_print_time = 0
-
-        def ver_output(self):
-                if self.ver_cur_fmri != None:
-                        if (time.time() - self.last_print_time) >= 0.10:
-                                self.last_print_time = time.time()
-                        else:
-                                return
-                        gobject.idle_add(self.parent.progress_pulse)
-                        gobject.idle_add(self.parent.output, 
-                            _("Verifying: %s ...") %
-                            self.ver_cur_fmri.get_pkg_stem())
-                else:
-                        gobject.idle_add(self.parent.output, "")
-                        self.last_print_time = 0
-
-        def ver_output_error(self, actname, errors):
-                gobject.idle_add(self.parent.output_done, _("Verifying"))
-
-        def dl_output(self):
-                gobject.idle_add(self.parent.dl_progress, 
-                    self.dl_started, self.dl_cur_pkg,
-                    self.dl_cur_npkgs, self.dl_goal_npkgs,
-                    self.dl_cur_nfiles, self.dl_goal_nfiles,
-                    self.dl_cur_nbytes / 1024.0 / 1024.0,
-                    self.dl_goal_nbytes / 1024.0 / 1024.0)
-
-                if not self.dl_started:
-                        self.dl_started = True
-
-        def dl_output_done(self):
-                self.dl_cur_pkg = _("Completed")
-                self.dl_output()
-                gobject.idle_add(self.parent.output_done, _("Download"))
-
-        def act_output(self):
-                if (time.time() - self.last_print_time) >= 0.05:
-                        self.last_print_time = time.time()
-                else:
-                        return
-                
-                gobject.idle_add(self.parent.act_progress, self.act_started,
-                    self.act_phase, self.act_cur_nactions, self.act_goal_nactions)
-
-                if not self.act_started:
-                        self.act_started = True
-
-        def act_output_done(self):
-                self.act_output()
-                gobject.idle_add(self.parent.output_done, _("Install"))
-
-        def ind_output(self):
-                if (time.time() - self.last_print_time) >= IND_DELAY:
-                        self.last_print_time = time.time()
-                else:
-                        return
-
-                gobject.idle_add(self.parent.ind_progress, self.ind_started,
-                    self.ind_phase, self.ind_cur_nitems, self.ind_goal_nitems)
-
-                if not self.ind_started:
-                        self.ind_started = True
-                        
-        def ind_output_done(self):
-                self.act_output()
-                gobject.idle_add(self.parent.output_done, _("Index"))
-
 
 class Updatemanager:
         def __init__(self):
@@ -246,32 +108,21 @@ class Updatemanager:
                         gobject.TYPE_STRING,      # UM_STEM                        
                         )
                 self.progress_stop_thread = False
-                self.initial_active = 0
-                self.initial_default = 0
                 self.last_select_time = 0
-                self.size_thread_running = False
-                self.cancelled = False
                 self.fmri_description = None
                 self.image_dir_arg = None
-                self.install = False
-                self.install_error = False
-                self.done_icon = None
-                self.blank_icon = None
-                self.update_stage = UPDATE_EVAL
                 self.toggle_counter = 0
                 self.selection_timer = None
                 self.package_selection = None
                 self.update_all_proceed = False
                 self.ua_be_name = None
                 self.application_path = None
-                self.cur_pkg = None
                 self.icon_theme = gtk.IconTheme()
+                icon_location = os.path.join(self.application_dir, ICON_LOCATION)
                 self.icon_theme.append_search_path(ICON_LOCATION)
-                self.show_all_opts = False
-                self.show_install_updates_only = False
-                self.do_refresh = False
                 self.ua_start = 0
                 self.pylintstub = None
+                self.api_obj = None
                 self.release_notes_url = "http://www.opensolaris.org"
 
                 # Progress Dialog
@@ -291,28 +142,9 @@ class Updatemanager:
                 infobuffer = self.w_progressinfo_textview.get_buffer()
                 infobuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)
 
-                self.w_progressinfo_expander_label = \
-                    w_xmltree_progress.get_widget("progressinfo_expander_label")
-                
                 self.w_progress_install_vbox = \
                     w_xmltree_progress.get_widget("progress_install_vbox")
                 
-                self.w_progress_eval_img = \
-                    w_xmltree_progress.get_widget("progress_eval_img")
-                self.w_progress_eval_label = \
-                    w_xmltree_progress.get_widget("progress_eval_label")
-                self.w_progress_download_img = \
-                    w_xmltree_progress.get_widget("progress_download_img")
-                self.w_progress_download_label = \
-                    w_xmltree_progress.get_widget("progress_download_label")
-                self.w_progress_install_img = \
-                    w_xmltree_progress.get_widget("progress_install_img")
-                self.w_progress_install_label = \
-                    w_xmltree_progress.get_widget("progress_install_label")
-                self.w_progress_index_img = \
-                    w_xmltree_progress.get_widget("progress_index_img")
-                self.w_progress_index_label = \
-                    w_xmltree_progress.get_widget("progress_index_label")
                 self.w_progress_closeon_finish_chk = \
                     w_xmltree_progress.get_widget("closeon_finish_checkbutton")
 
@@ -333,7 +165,6 @@ class Updatemanager:
 
                 self.w_progress_dialog.set_transient_for(self.w_um_dialog)
 
-                self.w_um_scrolledwindow = w_xmltree_um.get_widget("um_scrolledwindow")
                 self.w_um_treeview = w_xmltree_um.get_widget("um_treeview")  
                 self.w_um_textview = w_xmltree_um.get_widget("um_textview")  
                 infobuffer = self.w_um_textview.get_buffer()
@@ -368,8 +199,6 @@ class Updatemanager:
                                     self.__on_cancel_button_clicked,
                                 "on_help_button_clicked": \
                                     self.__on_help_button_clicked,
-                                "on_install_button_clicked": \
-                                    self.__on_install_button_clicked,
                                 "on_um_updateall_button_clicked": \
                                     self.__on_updateall_button_clicked,
                                 "on_um_expander_activate": \
@@ -378,15 +207,6 @@ class Updatemanager:
                                     self.__on_selectall_checkbutton_toggled,
                             }
                         w_xmltree_um.signal_autoconnect(dic)
-
-                        dic_progress = \
-                            {
-                                "on_progresscancel_clicked": \
-                                    self.__on_progresscancel_clicked,
-                                "on_progressok_clicked": \
-                                    self.__on_progressok_clicked,
-                            }
-                        w_xmltree_progress.signal_autoconnect(dic_progress)
 
                         dic_completed = \
                             {
@@ -402,131 +222,16 @@ class Updatemanager:
                         print _("GUI will not respond to any event! %s. "
                             "Check updatemanager.py signals") % error
 
-                self.pr = GUIProgressTracker(self)
+                self.pr = progress.NullProgressTracker()
  
                 self.w_um_dialog.show_all()
                 self.w_um_dialog.resize(620, 500)
-                self.api_obj = gui_misc.get_api_object(self.__get_image_path(),
-                    progress.NullProgressTracker(), self.w_um_dialog)
 
         def __set_cancel_state(self, status):
-                if self.install_error:
-                        return
-                        
                 if status:
                         gobject.idle_add(self.w_progress_cancel.grab_focus)
-
                 gobject.idle_add(self.w_progress_cancel.set_sensitive, status)
                 
-        def __progress_step(self, type_step, img, label, str_step):
-                if type_step == UPDATE_ACTIVE:
-                        self.__progress_active_step(img, label, str_step)
-                elif type_step == UPDATE_DONE:
-                        self.__progress_done_step(img, label, str_step)
-                else:
-                        self.__progress_inactive_step(img, label, str_step)
-                        
-        def __progress_steps(self, eval_type, evaluate, dl_type, download, install_type,
-            install, index_type, index):                        
-                self.__progress_step(eval_type, self.w_progress_eval_img,
-                    self.w_progress_eval_label, evaluate)
-                self.__progress_step(dl_type, self.w_progress_download_img,
-                    self.w_progress_download_label,download)
-                self.__progress_step(install_type, self.w_progress_install_img,
-                    self.w_progress_install_label, install)
-                self.__progress_step(index_type, self.w_progress_index_img,
-                    self.w_progress_index_label, index)
-                        
-        def __progress_steps_start(self):
-                self.__progress_steps(
-                    UPDATE_ACTIVE, _("Evaluate"),
-                    UPDATE_INACTIVE, _("Download"),
-                    UPDATE_INACTIVE, _("Install"),
-                    UPDATE_INACTIVE, _("Index"))
-                        
-        def __progress_steps_download(self):
-                self.__progress_steps(
-                    UPDATE_DONE, _("Evaluate"),
-                    UPDATE_ACTIVE, _("Download"),
-                    UPDATE_INACTIVE, _("Install"),
-                    UPDATE_INACTIVE, _("Index"))
- 
-        def __progress_steps_install(self):
-                self.__progress_steps(
-                    UPDATE_DONE, _("Evaluate"),
-                    UPDATE_DONE, _("Download"),
-                    UPDATE_ACTIVE, _("Install"),
-                    UPDATE_INACTIVE, _("Index"))
- 
-        def __progress_steps_index(self):
-                self.__progress_steps(
-                    UPDATE_DONE, _("Evaluate"),
-                    UPDATE_DONE, _("Download"),
-                    UPDATE_DONE, _("Install"),
-                    UPDATE_ACTIVE, _("Index"))
-        
-        def __progress_steps_done(self):
-                self.__progress_steps(
-                    UPDATE_DONE, _("Evaluate"),
-                    UPDATE_DONE, _("Download"),
-                    UPDATE_DONE, _("Install"),
-                    UPDATE_DONE, _("Index"))
-
-
-        def __progress_cancel_eval(self):
-                self.__progress_cancel_step(self.w_progress_eval_img,
-                    self.w_progress_eval_label, _("Evaluate - canceling..."))
-
-        def __progress_cancel_download(self):
-                self.__progress_cancel_step(self.w_progress_download_img,
-                    self.w_progress_download_label, _("Download - canceling..."))
-                        
-
-        def __progress_error_eval(self):
-                self.__progress_error_step(self.w_progress_eval_img,
-                    self.w_progress_eval_label, _("Evaluate - failed"))
-
-        def __progress_error_download(self):
-                self.__progress_error_step(self.w_progress_download_img,
-                    self.w_progress_download_label, _("Download - failed"))
-
-        def __progress_error_install(self):
-                self.__progress_error_step(self.w_progress_install_img,
-                    self.w_progress_install_label, _("Install - failed"))
-
-        def __progress_error_index(self):
-                self.__progress_error_step(self.w_progress_index_img,
-                    self.w_progress_index_label, _("Index - failed"))
-
-        @staticmethod
-        def __progress_active_step(widget_image, widget_label, str_step):
-                widget_label.set_markup("<b>%s</b>" % str_step)
-                widget_image.set_from_stock(gtk.STOCK_GO_FORWARD, gtk.ICON_SIZE_MENU) 
-
-        def __progress_inactive_step(self, widget_image, widget_label, str_step):
-                widget_label.set_text("%s" % str_step)
-                widget_image.set_from_pixbuf(self.blank_icon)
-
-        def __progress_done_step(self, widget_image, widget_label, str_step):
-                widget_label.set_markup("<b>%s</b>" % str_step)                
-                widget_image.set_from_pixbuf(self.done_icon)
-
-        def __progress_error_step(self, widget_image, widget_label, str_step):
-                widget_label.set_markup("<b>%s</b>" % str_step)
-                widget_image.set_from_stock(gtk.STOCK_REMOVE, gtk.ICON_SIZE_MENU)
-                
-                # On error open the Details panel and make sure the Window is visible
-                # to the user, even if it has been minimized
-                self.w_progressinfo_expander.set_expanded(True)
-                self.w_progress_cancel.set_sensitive(True)
-                self.w_um_dialog.present()
-
-        @staticmethod
-        def __progress_cancel_step(widget_image, widget_label, str_step):
-                widget_label.set_markup("<b>%s</b>" % str_step)
-                widget_image.set_from_stock(gtk.STOCK_STOP, gtk.ICON_SIZE_MENU) 
-
-
         def __set_initial_selection(self):
                 self.__selectall_toggle(True)
                 if len(self.um_list) == 0:
@@ -536,19 +241,6 @@ class Updatemanager:
                         if self.update_all_proceed:
                                 self.__on_updateall_button_clicked(None)
                                 self.update_all_proceed = False
-
-        def __remove_installed(self, installed_fmris):
-                model = self.w_um_treeview.get_model()
-                iter_next = model.get_iter_first()
-
-                installed_fmris_dic = dict([(k, None) for k in installed_fmris])
-
-                while iter_next != None:
-                        if model.get_value(iter_next, UM_NAME) in installed_fmris_dic:
-                                self.um_list.remove(iter_next)
-                                self.toggle_counter -= 1
-                        else:
-                                iter_next = model.iter_next(iter_next)
                         
         def __mark_cell_data_default_function(self, column, renderer, model, itr, data):
                 if itr:
@@ -591,27 +283,13 @@ class Updatemanager:
                 toggle_renderer.set_property("activatable", True)
                 column.set_expand(False)
 
-                # Show Canceland Install Updates + selection column + checkbox
-                if self.show_install_updates_only:
-                        self.w_um_updateall_button.hide()
-                        self.show_all_opts = True
-
-                # Show Cancel, Update All and Install Updates + selection column+checkbox
-                if self.show_all_opts:
-                        self.w_select_checkbox.show()
-                        self.w_um_install_button.show()
-                        self.w_um_treeview.append_column(column)
-                        self.w_um_intro_label.set_text(_(
-                            "Updates are available for the following packages.\n"
-                            "Select the packages you want to update and click Install."))
                 # Show Cancel, Update All only
-                else:
-                        self.w_select_checkbox.hide()
-                        self.w_um_install_button.hide()
-                        self.w_um_intro_label.set_text(_(
-                            "Updates are available for the following packages.\n"
-                            "Click Update All to create a new boot environment and "
-                            "install all packages into it."))
+                self.w_select_checkbox.hide()
+                self.w_um_install_button.hide()
+                self.w_um_intro_label.set_text(_(
+                    "Updates are available for the following packages.\n"
+                    "Click Update All to create a new boot environment and "
+                    "install all packages into it."))
                         
                 render_pixbuf = gtk.CellRendererPixbuf()
                 column = gtk.TreeViewColumn()
@@ -660,8 +338,6 @@ class Updatemanager:
                     self.__on_package_selection_changed, None)
 
                 # Setup Icons
-                self.done_icon = self.__get_icon_pixbuf("status_checkmark")
-                self.blank_icon = self.__get_icon_pixbuf("status_blank")
                 self.w_um_dialog.set_icon(self.__get_icon_pixbuf("UM_package", 36))
 
         def __get_image_path(self):
@@ -690,15 +366,22 @@ class Updatemanager:
                         gobject.TYPE_STRING,      # UM_STEM                        
                         )
 
+                self.api_obj = self.__get_api_obj()
                 image_obj = self.api_obj.img
-                self.api_obj.refresh()
+                #TODO: This part is required so misc.get_inventory_list
+                #      is returning desired list of packages.
+                #      After the list api (bug #5872) is in place
+                #      this part should be replaced.
+                image_obj.load_catalogs(self.pr)
 
                 count = 0
                 pkg_upgradeable = None
                 for pkg, state in sorted(misc.get_inventory_list(
                     image_obj, [], all_known = True, all_versions = False)):
+
                         while gtk.events_pending():
                                 gtk.main_iteration(False)
+
                         if state["upgradable"] and state["state"] == "installed":
                                 pkg_upgradeable = pkg
                         
@@ -740,8 +423,11 @@ class Updatemanager:
                 # gobject.timeout_add(1000, self.__setup_sizes)
                 
         def __get_api_obj(self):
+                if self.api_obj == None:
+                        self.api_obj = gui_misc.get_api_object(self.__get_image_path(),
+                            progress.NullProgressTracker(), self.w_um_dialog)
                 return self.api_obj
-                
+
         def __display_noupdates(self):
                 self.w_um_intro_label.set_markup(_("<b>No Updates available.</b>"))
                 self.w_um_treeview.hide()
@@ -893,7 +579,6 @@ class Updatemanager:
                 gui_misc.display_help(self.application_dir, "um_info")
 
         def __exit_app(self, be_name = None):
-                self.cancelled = True
                 if be_name:
                         if self.image_dir_arg:
                                 gobject.spawn_async([self.application_path, "-R",
@@ -909,34 +594,6 @@ class Updatemanager:
         
         def restart_after_ips_update(self, be_name):
                 self.__exit_app(be_name)
-
-        def __on_progressok_clicked(self, widget):
-                self.w_progress_dialog.hide()
-
-        def __on_progresscancel_clicked(self, widget):
-                if self.install_error:
-                        self.w_progress_dialog.hide()
-                        self.w_progressinfo_expander.set_expanded(False)
-                        
-                if self.api_obj != None and self.api_obj.can_be_canceled():
-                        if self.update_stage == UPDATE_EVAL:
-                                self.__progress_cancel_eval()
-                        elif  self.update_stage == UPDATE_DOWNLOAD:
-                                self.__progress_cancel_download()
-                                
-                        self.__update_progress_info(
-                                _("\nCanceling update, please wait ..."))
-                        self.w_progress_cancel.set_sensitive(False)
-                        Thread(target = self.api_obj.cancel).start()
-                else:
-                        self.__update_progress_info(
-                                _("\nUnable to cancel at this time."))
-
-        def __on_install_button_clicked(self, widget):
-                self.setup_progressdialog_show(_("Installing Updates"),
-                        showCancel = True, showOK = True,
-                        isInstall = True, showCloseOnFinish = debug)
-                Thread(target = self.__install).start()   
 
         def __on_updateall_button_clicked(self, widget):
                 self.__selectall_toggle(True)
@@ -954,39 +611,6 @@ class Updatemanager:
                
         def __on_selectall_checkbutton_toggled(self, widget):
                 self.__selectall_toggle(widget.get_active())
-
-        def __handle_incorporated_error(self, list_incorp):
-                self.__update_progress_info(_("ERROR"), True)
-                self.__update_progress_info(
-                        _("Following Incorporated package(s) cannot be updated:"))
-                for i in list_incorp:
-                        self.__update_progress_info("\t%s" % i)
-                self.__update_progress_info(
-                        _("Update using: Update All\n"), True)
-
-        def __handle_update_progress_error(self, str_error, ex = None,
-                stage = UPDATE_EVAL):
-                self.install_error = True
-                if stage == UPDATE_EVAL:
-                        gobject.idle_add(self.__progress_error_eval)
-                elif stage == UPDATE_DOWNLOAD:
-                        gobject.idle_add(self.__progress_error_download)
-                elif stage == UPDATE_INSTALL:
-                        gobject.idle_add(self.__progress_error_install)
-                elif stage == UPDATE_INDEX:
-                        gobject.idle_add(self.__progress_error_index)
-                else:
-                        gobject.idle_add(self.__progress_error_eval)
-                        
-                gobject.idle_add(self.__update_progress_info,
-                    _("\nERROR"), True)
-                if ex != None:
-                        gobject.idle_add(self.__update_progress_info,
-                            _("%s\n%s" % (str_error, ex)))
-                else:
-                        gobject.idle_add(self.__update_progress_info,
-                            _("%s\n" % str_error))
-                self.__cleanup()
 
         def __display_update_image_success(self):
                 elapsed_sec = int(time.time() - self.ua_start)
@@ -1020,161 +644,7 @@ class Updatemanager:
                 gobject.idle_add(self.w_progress_dialog.hide)
                 gobject.idle_add(self.w_progressinfo_expander.set_expanded, False)
                 self.__cleanup()                
-
-        def __install(self):
-                self.install = True
-                self.install_error = False
-                self.update_stage = UPDATE_EVAL
-                list_fmris_to_install = self.__get_selected_fmris()
-                if len(list_fmris_to_install) == 0:
-                        self.__handle_update_progress_error(
-                            _("Nothing selected to update."))
-                        return
-                        
-                if self.__get_api_obj() == None:
-                        return
-      
-                if debug:
-                        print _("Updating ...")
-                        print list_fmris_to_install
-                        
-                # Evaluate
-                try:
-                        gobject.idle_add(self.__update_progress_info,
-                            _("\nEvaluate\n"), True)
-                        ret, exception_caught = \
-                            self.__get_api_obj().plan_install(list_fmris_to_install,
-                            [], refresh_catalogs = self.do_refresh)
-                        if exception_caught != None:
-                                self.__handle_update_progress_error(
-                                    _("Update error in plan install:"),
-                                    exception_caught,
-                                    stage = self.update_stage)
-                        return
-                                
-                except (api_errors.CanceledException):
-                        self.__handle_cancel_exception()
-                        return
-                except (api_errors.ApiException), aex:
-                        self.__handle_update_progress_error(
-                            _("Update unexpected API error:"), aex,
-                            stage = self.update_stage)
-                        return
-                except (Exception), uex:
-                        self.__handle_update_progress_error(
-                            _("Update unexpected error:"), uex,
-                            stage = self.update_stage)
-                        return
-                
-                if not ret:
-                        #XXX Nothing to do, must be an incorporated package
-                        # need to offer Update All to user
-                        self.install_error = True
-                        gobject.idle_add(self.__progress_error_eval)
-                        gobject.idle_add(self.__handle_incorporated_error,
-                            list_fmris_to_install)
-                        self.__cleanup()    
-                        return
-                        
-                list_changes = self.__get_api_obj().describe().get_changes()
-                list_planned = [x[1].pkg_stem for x in list_changes]
-
-                if len(list_planned) != len(list_fmris_to_install):
-                        list_incorp = self.__unique(list_fmris_to_install, list_planned)
-                        gobject.idle_add(self.__progress_error_eval)
-                        gobject.idle_add(self.__handle_incorporated_error, list_incorp)
-
-                gobject.idle_add(self.__update_progress_info,
-                    _("Packages to be installed:"))
-                for i in list_planned:
-                        gobject.idle_add(self.__update_progress_info, "\t%s" % i)
-
-                if self.__shared_update_steps(_("Update"),
-                    _("Update finished successfully.")) != 0:
-                        return
-                        
-                gobject.idle_add(self.__remove_installed, list_planned)
-                gobject.idle_add(self.w_um_install_button.set_sensitive, False)
-                gobject.idle_add(self.w_progressinfo_expander.set_expanded, False)
         
-        def __shared_update_steps(self, what_msg, success_msg):
-                # Download
-                try:
-                        self.update_stage = UPDATE_DOWNLOAD
-                        self.__get_api_obj().prepare()
-                except (api_errors.CanceledException):
-                        self.__handle_cancel_exception()
-                        return 1
-                except (api_errors.ApiException), aex:
-                        self.install_error = True
-                        gobject.idle_add(self.__progress_error_download)
-                        gobject.idle_add(self.__update_progress_info,
-                            _("\nERROR"), True)
-                        gobject.idle_add(self.__update_progress_info,
-                            _("%s Download failed:\n%s" % (what_msg, aex)))
-                        self.__cleanup()                
-                        return 1
-                except EnvironmentError, uex:
-                        if uex.errno in (errno.EDQUOT, errno.ENOSPC):
-                                self.__handle_update_progress_error(
-                                    _(
-                                    "%s exceded available disc space" % (what_msg)),
-                                    stage = self.update_stage)
-                                gobject.idle_add(self.__prompt_to_load_beadm)
-                        else:
-                                self.__handle_update_progress_error(
-                                    _("%s unexpected error:" % (what_msg)),
-                                    uex, stage = self.update_stage)
-                        return 1
-                except Exception, uex:
-                        self.__handle_update_progress_error(
-                                _("%s unexpected error:" % (what_msg)),
-                                uex, stage = self.update_stage)
-                        return 1
-
-                # Install
-                try:
-                        self.update_stage = UPDATE_INSTALL
-                        gobject.idle_add(self.w_progress_cancel.set_sensitive, False)
-                        self.__get_api_obj().execute_plan()
-                except (api_errors.CanceledException):
-                        self.__handle_cancel_exception()
-                        return 1
-                except (api_errors.ApiException), aex:
-                        self.install_error = True
-                        gobject.idle_add(self.__progress_error_install)
-                        gobject.idle_add(self.__update_progress_info,
-                            _("\nERROR"), True)
-                        gobject.idle_add(self.__update_progress_info,
-                            _("%s Execute plan failed:\n%s" % (what_msg, aex)))
-                        self.__cleanup()                
-                        return 1
-                except EnvironmentError, uex:
-                        if uex.errno in (errno.EDQUOT, errno.ENOSPC):
-                                self.__handle_update_progress_error(
-                                    _(
-                                    "%s exceded available disc space" % what_msg),
-                                    stage = self.update_stage)
-                                gobject.idle_add(self.__prompt_to_load_beadm)
-                        else:
-                                self.__handle_update_progress_error(
-                                    _("%s unexpected error:" % (what_msg)),
-                                    uex, stage = self.update_stage)
-                        return 1
-                except Exception, uex:
-                        self.__handle_update_progress_error(
-                                _("%s unexpected error:" % (what_msg)),
-                                uex, stage = self.update_stage)
-                        return 1
-                        
-                self.__cleanup()                
-                gobject.idle_add(self.__progress_steps_done)
-                gobject.idle_add(self.__update_progress_info,
-                    _(success_msg), True)
-                gobject.idle_add(self.w_progress_ok.set_sensitive, True)
-                        
-                return 0
-
         def __prompt_to_load_beadm(self):
                 msgbox = gtk.MessageDialog(parent = self.w_progress_dialog,
                     buttons = gtk.BUTTONS_OK_CANCEL, flags = gtk.DIALOG_MODAL,
@@ -1204,7 +674,6 @@ class Updatemanager:
                 return [item for item in list1 if item not in list2]
                 
         def __cleanup(self):
-                self.install = False
                 self.api_obj.reset()
                 self.pr.reset()
                 self.progress_stop_thread = True   
@@ -1254,176 +723,38 @@ class Updatemanager:
                         else:
                                 renderer.set_property("weight", pango.WEIGHT_NORMAL)
         
-        def __on_progressdialog_progress(self, isInstall):
+        def __on_progressdialog_progress(self):
                 if not self.progress_stop_thread:
                         self.w_progressbar.pulse()
                         return True
                 else:
-                        if isInstall:
-                                self.w_progressbar.set_fraction(0.0)
-                                if not self.install_error and \
-                                    self.w_progress_closeon_finish_chk.get_active():
-                                        self.w_progress_dialog.hide()
-                        else:
-                                self.w_progress_dialog.hide()
-                        return False
+                        self.w_progress_dialog.hide()
+                return False
 
-        def setup_progressdialog_show(self, title, info = None, showDetails = True, 
-                showCancel = False, showOK = False, isInstall = False, 
-                showCloseOnFinish = False):
+        def setup_progressdialog_show(self, title):
                 infobuffer = self.w_progressinfo_textview.get_buffer()
                 infobuffer.set_text("")
-
-                if info != None:
-                        self.w_progressinfo_label.set_text(info)
-                        self.w_progressinfo_label.show()
-                else:
-                        self.w_progressinfo_label.hide()
-                        
-                if showDetails:
-                        self.w_progressinfo_expander.show()    
-                        self.w_progressinfo_separator.show()    
-                        self.w_progressinfo_expander.set_expanded(False)  
-                else:
-                        self.w_progressinfo_expander.hide()    
-                        self.w_progressinfo_separator.hide()    
-                        
-                if showCancel:
-                        self.w_progress_cancel.show()
-                        self.w_progress_cancel.set_sensitive(True)
-                        self.w_progress_cancel.grab_focus()
-                else:
-                        self.w_progress_cancel.hide() 
-                        
-                if showOK:
-                        self.w_progress_ok.show()
-                        self.w_progress_ok.set_sensitive(False)
-                else:
-                        self.w_progress_ok.hide()
-
-                if isInstall:
-                        self.__progress_steps_start()
-                        self.w_progress_install_vbox.show()
-                else:
-                        self.w_progress_install_vbox.hide()   
-                        
-                if showCloseOnFinish:
-                        self.w_progress_closeon_finish_chk.show()
-                        self.w_progress_ok.show()
-                else:
-                        self.w_progress_closeon_finish_chk.hide()
-                        self.w_progress_ok.hide()
-                        
-                self.w_progress_dialog.set_title(title)
-                
+                self.w_progressinfo_label.hide()                        
+                self.w_progressinfo_expander.hide()    
+                self.w_progressinfo_separator.hide()                            
+                self.w_progress_cancel.hide() 
+                self.w_progress_ok.hide()
+                self.w_progress_install_vbox.hide()   
+                self.w_progress_closeon_finish_chk.hide()
+                self.w_progress_ok.hide()                        
+                self.w_progress_dialog.set_title(title)                
                 self.w_progress_dialog.show()
                 self.progress_stop_thread = False
-                gobject.timeout_add(100, self.__on_progressdialog_progress, isInstall)
+                gobject.timeout_add(100, self.__on_progressdialog_progress)
 
         def setup_updates(self):
                 Thread(target = self.get_updates_to_list(), args = ()).start()
                 return False
 
         @staticmethod
-        def __update_size(size, pkg):
-                pkg[UM_SIZE] = size/ 1024.0 /1024.0 # Display in MB
-
-        # Handle GUI Progress Output
-        def output(self, str_out): 
-                self.__update_progress_info(str_out)
-                if debug:
-                        print str_out
-                
-        def output_done(self, what="not specified"): 
-                self.__update_progress_info(" ")
-                        
-                if debug:
-                        print "%s: finished" % what
-                
-        @staticmethod
         def progress_pulse():
                 if debug:
                         print "pulse: \n"
-
-        def dl_progress(self, dl_started, dl_cur_pkg,
-            dl_cur_npkgs, dl_goal_npkgs,
-            dl_cur_nfiles, dl_goal_nfiles,
-            dl_cur_nmegbytes, dl_goal_nmegbytes): 
-                if not dl_started:
-                        self.cur_pkg = ""
-                        self.__progress_steps_download()
-                        self.__update_progress_info(_("\nDownload\n"), True)
-                        
-                if self.cur_pkg != dl_cur_pkg:
-                        self.__update_progress_info("%s" % dl_cur_pkg)
-                self.cur_pkg = dl_cur_pkg
-                        
-                self.__update_progress_info(
-                    _("\tpkg %d/%d: \tfiles %d/%d \txfer %.2f/%.2f(meg)") %
-                    (dl_cur_npkgs, dl_goal_npkgs,
-                    dl_cur_nfiles, dl_goal_nfiles,
-                    dl_cur_nmegbytes, dl_goal_nmegbytes))
-                
-                if debug:
-                        print "DL: %s - %s\npkg %d/%d: files %d/%d: megs %.2f/%.2f\n" % \
-                            (dl_started, dl_cur_pkg,
-                            dl_cur_npkgs, dl_goal_npkgs,
-                            dl_cur_nfiles, dl_goal_nfiles,
-                            dl_cur_nmegbytes, dl_goal_nmegbytes)
-
-        def act_progress(self, act_started,
-            act_phase, act_cur_nactions, act_goal_nactions): 
-                                
-                if not act_started:
-                        self.__progress_steps_install()
-                        self.__update_progress_info(_("\nInstall\n"), True)
-                        self.__update_progress_info(
-                            _("\t%s\t%d/%d actions") %
-                            (act_phase, act_cur_nactions, act_goal_nactions))
-                else:
-                        self.__update_progress_info(
-                            _("\t%s\t%d/%d actions") %
-                            (act_phase, act_cur_nactions, act_goal_nactions))
-                
-                if debug:
-                        print "Install: %s - %s\nact %d/%d\n" % \
-                            (act_started, act_phase, act_cur_nactions,
-                            act_goal_nactions)
-
-        def ind_progress(self, ind_started,
-            ind_phase, ind_cur_nitems, ind_goal_nitems):
-                if not self.install:
-                        return
-                        
-                if not ind_started:
-                        if self.update_stage != UPDATE_INSTALL:
-                                return
-                        self.update_stage = UPDATE_INDEX
-                        self.__progress_steps_index()                        
-                        self.__update_progress_info(_("Index\n"), True)
-                        self.__update_progress_info(_("\t%-25s\t%d/%d actions" %
-                            (ind_phase, ind_cur_nitems, ind_goal_nitems)))
-                else:
-                        self.__update_progress_info(
-                            _("\t%-25s\t%d/%d actions") %
-                            (ind_phase, ind_cur_nitems, ind_goal_nitems))
-                        
-                if debug:
-                        print "Index: %s - %s\nact %d/%d\n" % \
-                            (ind_started, ind_phase, ind_cur_nitems, ind_goal_nitems)
-
-        def __update_progress_info(self, str_out, bold = False):
-                infobuffer = self.w_progressinfo_textview.get_buffer()
-                textiter = infobuffer.get_end_iter()
-                
-                # Requires TextView tag to be setup once in __init__
-                # infobuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)
-                if bold:
-                        infobuffer.insert_with_tags_by_name(textiter,
-                            "%s\n" % str_out, "bold")
-                else:
-                        infobuffer.insert(textiter, "%s\n" % str_out)
-                self.w_progressinfo_textview.scroll_to_iter(textiter, 0.0)
                 
         def update_package_list(self, update_list):
                 self.pylintstub = update_list
@@ -1441,14 +772,10 @@ if __name__ == "__main__":
         um = Updatemanager()
         list_uninstalled = False
         debug = False
-        show_all_opts = False
-        show_install_updates_only = False
-        do_refresh = False
 
         try:
-                opts, args = getopt.getopt(sys.argv[1:], "huairR:U:",
-                    ["help", "uninstalled", "all", "install_updates", 
-                    "refresh", "image-dir=", "update-all="])
+                opts, args = getopt.getopt(sys.argv[1:], "huR:U:",
+                    ["help", "uninstalled", "image-dir=", "update-all="])
         except getopt.error, msg:
                 print "%s, for help use --help" % msg
                 sys.exit(2)
@@ -1468,27 +795,15 @@ Use -U (--update-all) to proceed with Update All"""
                         sys.exit(0)
                 if option in ("-u", "--uninstalled"):
                         list_uninstalled = True
-                if option in ("-a", "--all"):
-                        show_all_opts = True
-                if option in ("-i", "--install_updates"):
-                        show_install_updates_only = True
-                # Refresh catalogs during plan_install and plan_update_all
-                if option in ("-r", "--refresh"):
-                        do_refresh = True
                 if option in ("-R", "--image-dir"):
                         um.image_dir_arg = argument
                 if option in ("-U", "--update-all"):
                         um.update_all_proceed = True
                         um.ua_be_name = argument
 
-
-        um.show_all_opts = show_all_opts
-        um.show_install_updates_only = show_install_updates_only
-        um.do_refresh = do_refresh
         um.init_tree_views()
 
-        um.setup_progressdialog_show(_("Checking for new software"),
-            showDetails = False)
+        um.setup_progressdialog_show(_("Checking for new software"))
         gobject.timeout_add(UPDATES_FETCH_DELAY, um.setup_updates)
         main()
 

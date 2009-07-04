@@ -125,15 +125,16 @@ ICONS22 = \
 
 PYMODS = \
    modules/__init__.py \
-   modules/imageinfo.py \
+   modules/beadmin.py \
    modules/cache.py \
-   modules/installupdate.py \
-   modules/repository.py \
    modules/enumerations.py \
-   modules/parseqs.py \
-   modules/webinstall.py \
+   modules/imageinfo.py \
+   modules/installupdate.py \
    modules/misc.py \
-   modules/beadmin.py
+   modules/parseqs.py \
+   modules/progress.py \
+   modules/repository.py \
+   modules/webinstall.py
 
 PYCMODS = $(PYMODS:%.py=%.pyc)
 

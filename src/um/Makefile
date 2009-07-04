@@ -38,7 +38,6 @@ ROOTAPPICONSHARE = $(ROOT)/share/icons/hicolor/48x48/apps
 ROOTAUTOSTARTSHARE = $(ROOTETC)/xdg/autostart
 ROOTDESKTOPSHARE = $(ROOT)/share/applications
 ROOTGCONFSHARE = $(ROOTETC)/gconf/schemas
-ROOTICON16SHARE = $(ROOTSHARE)/icons/hicolor/16x16/actions
 ROOTICON24SHARE = $(ROOTSHARE)/icons/hicolor/24x24/actions
 ROOTICON36SHARE = $(ROOTSHARE)/icons/hicolor/36x36/actions
 ROOTPYTHON = $(ROOTUSRLIB)/python2.4
@@ -52,7 +51,6 @@ ROOTDIRS = \
    $(ROOTAUTOSTARTSHARE) \
    $(ROOTDESKTOPSHARE) \
    $(ROOTGCONFSHARE) \
-   $(ROOTICON16SHARE) \
    $(ROOTICON24SHARE) \
    $(ROOTICON36SHARE) \
    $(ROOTPYTHONPKG) \
@@ -74,10 +72,6 @@ GCONF = \
 
 GLADEICONS = \
    data/UM_app_48x.png
-
-ICONS16 = \
-   data/icons/16x16/status_checkmark.png \
-   data/icons/16x16/status_blank.png
 
 ICONS24 = \
    data/icons/24x24/notify_update.png
@@ -107,7 +101,6 @@ ROOTGCONF = $(GCONF:data/%=$(ROOTGCONFSHARE)/%)
 
 ROOTGLADEICONS = $(GLADEICONS:data/%=$(ROOTSHARE)/%)
 
-ROOTICONS16 = $(ICONS16:data/icons/16x16/%=$(ROOTICON16SHARE)/%)
 ROOTICONS24 = $(ICONS24:data/icons/24x24/%=$(ROOTICON24SHARE)/%)
 ROOTICONS36 = $(ICONS36:data/icons/36x36/%=$(ROOTICON36SHARE)/%)
 
@@ -123,7 +116,6 @@ ROOTCOMPONENTS = \
    $(ROOTDESKTOP) \
    $(ROOTGCONF) \
    $(ROOTGLADEICONS) \
-   $(ROOTICONS16) \
    $(ROOTICONS24) \
    $(ROOTICONS36) \
    $(ROOTPYGLADE) \
@@ -201,9 +193,6 @@ $(ROOTDESKTOPSHARE)/%: $(ROOTDIRS) data/%
 
 $(ROOTGCONFSHARE)/%: $(ROOTDIRS) data/%
 	$(INSTALL) -f $(ROOTGCONFSHARE) -m 0644 $<
-
-$(ROOTICON16SHARE)/%: $(ROOTDIRS) data/icons/16x16/%
-	$(INSTALL) -f $(ROOTICON16SHARE) -m 0644 $<
 
 $(ROOTICON24SHARE)/%: $(ROOTDIRS) data/icons/24x24/%
 	$(INSTALL) -f $(ROOTICON24SHARE) -m 0644 $<

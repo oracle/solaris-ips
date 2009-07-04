@@ -33,10 +33,6 @@ f none usr/share/man/cat1/pm-updatemanager.1 444 root bin
 d none usr/share/update-manager 755 root bin
 d none usr/share/update-manager/icons 755 root bin
 d none usr/share/update-manager/icons/hicolor 755 root bin
-d none usr/share/update-manager/icons/hicolor/16x16 755 root bin
-d none usr/share/update-manager/icons/hicolor/16x16/actions 755 root bin
-f none usr/share/update-manager/icons/hicolor/16x16/actions/status_blank.png 444 root other
-f none usr/share/update-manager/icons/hicolor/16x16/actions/status_checkmark.png 444 root other
 d none usr/share/update-manager/icons/hicolor/24x24 755 root bin
 d none usr/share/update-manager/icons/hicolor/24x24/actions 755 root bin
 f none usr/share/update-manager/icons/hicolor/24x24/actions/notify_update.png 444 root other

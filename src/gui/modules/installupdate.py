@@ -23,10 +23,6 @@
 # Use is subject to license terms.
 #
 
-MIN_IND_ELEMENTS_BOUNCE = 5      # During indexing the progress will be progressive if 
-                                 # the number of indexing elements is greater then this, 
-                                 # otherwise it will bounce
-
 import errno
 import os
 import sys
@@ -49,8 +45,7 @@ try:
         import libbe as be
 except ImportError:
         nobe = True
-import pkg.client.progress as progress
-import pkg.misc
+import pkg.gui.progress as progress
 import pkg.client.api_errors as api_errors
 import pkg.gui.beadmin as beadm
 import pkg.gui.misc as gui_misc
@@ -59,14 +54,14 @@ import pkg.gui.enumerations as enumerations
 ERROR_FORMAT = "<span color = \"red\">%s</span>"
 
 
-class InstallUpdate(progress.ProgressTracker):
+class InstallUpdate(progress.GuiProgressTracker):
         def __init__(self, list_of_packages, parent, api_o,
             ips_update = False, action = -1, be_name = None, 
             parent_name = "", pkg_list = None, main_window = None,
             icon_confirm_dialog = None, title = None, web_install = False):
                 if action == -1:
                         return
-                progress.ProgressTracker.__init__(self)
+                progress.GuiProgressTracker.__init__(self)
                 self.web_install = web_install
                 self.web_updates_list = None
                 api_o.progresstracker = self
@@ -81,11 +76,9 @@ class InstallUpdate(progress.ProgressTracker):
                 self.w_main_window = main_window
                 self.ips_update = ips_update
                 self.list_of_packages = list_of_packages
-                self.act_phase_last = None
                 self.action = action
                 self.canceling = False
                 self.current_stage_name = None
-                self.ind_started = None
                 self.ip = None
                 self.operations_done = False
                 self.prev_ind_phase = None
@@ -97,7 +90,7 @@ class InstallUpdate(progress.ProgressTracker):
                           2:[_("Downloading..."), _("Download")],
                           3:[_("Installing..."), _("Install")],
                          }
-                self.stop_bouncing_progress = False
+                self.stop_progress_bouncing = False
                 self.stopped_bouncing_progress = True
                 self.update_list = {}
                 gladefile = os.path.join(self.parent.application_dir,
@@ -499,7 +492,7 @@ class InstallUpdate(progress.ProgressTracker):
                         return
                 except api_errors.CanceledException:
                         gobject.idle_add(self.w_dialog.hide)
-                        self.stop_bouncing_progress = True
+                        self.stop_bouncing_progress()
                         return
                 except api_errors.BENamingNotSupported:
                         msg = _("Specifying BE Name not supported.\n")
@@ -533,7 +526,7 @@ class InstallUpdate(progress.ProgressTracker):
                             errno.EDQUOT or uex.args[0] == errno.ENOSPC)):
                                 gobject.idle_add(self.__prompt_to_load_beadm)
                                 gobject.idle_add(self.w_dialog.hide)
-                                self.stop_bouncing_progress = True
+                                self.stop_bouncing_progress()
                         else:
                                 traceback_lines = traceback.format_exc().splitlines()
                                 traceback_str = ""
@@ -593,7 +586,7 @@ class InstallUpdate(progress.ProgressTracker):
                 self.current_stage_label = self.w_stage1_label
                 self.current_stage_icon = self.w_stage1_icon
                 self.__start_stage(self.stages.get(1))
-                self.__g_update_details_text(self.stages.get(1)[0]+"\n", "bold")
+                self.update_details_text(self.stages.get(1)[0]+"\n", "bold")
                 
         def __start_stage_two(self):
                 # End previous stage
@@ -601,14 +594,14 @@ class InstallUpdate(progress.ProgressTracker):
                 self.current_stage_label = self.w_stage2_label
                 self.current_stage_icon = self.w_stage2_icon
                 self.__start_stage(self.stages.get(2))
-                self.__g_update_details_text(self.stages.get(2)[0]+"\n", "bold")
+                self.update_details_text(self.stages.get(2)[0]+"\n", "bold")
 
         def __start_stage_three(self):
                 self.__end_stage()
                 self.current_stage_label = self.w_stage3_label
                 self.current_stage_icon = self.w_stage3_icon
                 self.__start_stage(self.stages.get(3))
-                self.__g_update_details_text(self.stages.get(3)[0]+"\n", "bold")
+                self.update_details_text(self.stages.get(3)[0]+"\n", "bold")
 
         def __start_stage(self, stage_text):
                 self.current_stage_label_done = stage_text[1]
@@ -626,10 +619,10 @@ class InstallUpdate(progress.ProgressTracker):
                 if msg == None or len(msg) == 0:
                         msg = _("No futher information available") 
                 self.operations_done = True
-                self.stop_bouncing_progress = True
-                self.__g_update_details_text(_("\nError:\n"), "bold")
-                self.__g_update_details_text("%s" % msg, "level1")
-                self.__g_update_details_text("\n")
+                self.stop_bouncing_progress()
+                self.update_details_text(_("\nError:\n"), "bold")
+                self.update_details_text("%s" % msg, "level1")
+                self.update_details_text("\n")
                 txt = "<b>" + self.current_stage_label_done + _(" - Failed </b>")
                 gobject.idle_add(self.current_stage_label.set_markup, txt)
                 gobject.idle_add(self.current_stage_icon.set_from_stock, 
@@ -639,7 +632,7 @@ class InstallUpdate(progress.ProgressTracker):
 
         def __g_exception_stage(self, tracebk):
                 self.operations_done = True
-                self.stop_bouncing_progress = True
+                self.stop_bouncing_progress()
                 txt = "<b>" + self.current_stage_label_done + _(" - Failed </b>")
                 gobject.idle_add(self.current_stage_label.set_markup, txt)
                 gobject.idle_add(self.current_stage_icon.set_from_stock, 
@@ -650,47 +643,57 @@ class InstallUpdate(progress.ProgressTracker):
                     ) % self.current_stage_name
                 msg_2 = _("http://defect.opensolaris.org\n\n")
                 msg_3 = _("Exception value:\n")
-                self.__g_update_details_text(_("\nError:\n"), "bold")
-                self.__g_update_details_text("%s" % msg_1, "level1")
-                self.__g_update_details_text("%s" % msg_2, "bold", "level2")
+                self.update_details_text(_("\nError:\n"), "bold")
+                self.update_details_text("%s" % msg_1, "level1")
+                self.update_details_text("%s" % msg_2, "bold", "level2")
                 if tracebk:
                         msg = _("Exception traceback:\n")
-                        self.__g_update_details_text("%s" % msg, 
+                        self.update_details_text("%s" % msg, 
                             "bold","level1")
-                        self.__g_update_details_text("%s\n" % tracebk, "level2")
+                        self.update_details_text("%s\n" % tracebk, "level2")
                 else:
                         msg = _("No futher information available")
-                        self.__g_update_details_text("%s\n" % msg, "level2")
+                        self.update_details_text("%s\n" % msg, "level2")
                 gobject.idle_add(self.w_expander.set_expanded, True)
                 gobject.idle_add(self.w_cancel_button.set_sensitive, True)
 
         def __start_substage(self, text, bounce_progress=True):
                 if text:
-                        gobject.idle_add(self.__stages_label_set_markup, text)
-                        self.__g_update_details_text(text + "\n")
+                        self.update_label_text(text)
+                        self.update_details_text(text + "\n")
                 if bounce_progress:
                         if self.stopped_bouncing_progress:
-                                self.__start_bouncing_progress()
+                                self.start_bouncing_progress()
                 else:
-                        self.stop_bouncing_progress = True
+                        self.stop_bouncing_progress()
+
+        def update_label_text(self, markup_text):
+                gobject.idle_add(self.__stages_label_set_markup, markup_text)
 
         def __stages_label_set_markup(self, markup_text):
                 if not self.canceling == True:
                         self.w_stages_label.set_markup(markup_text)
 
-        def __start_bouncing_progress(self):
-                self.stop_bouncing_progress = False
+        def start_bouncing_progress(self):
+                self.stop_progress_bouncing = False
                 self.stopped_bouncing_progress = False
                 Thread(target = 
                     self.__g_progressdialog_progress_pulse).start()
 
         def __g_progressdialog_progress_pulse(self):
-                while not self.stop_bouncing_progress:
+                while not self.stop_progress_bouncing:
                         gobject.idle_add(self.w_progressbar.pulse)
                         time.sleep(0.1)
                 self.stopped_bouncing_progress = True
 
-        def __g_update_details_text(self, text, *tags):
+        def is_progress_bouncing(self):
+                return not self.stopped_bouncing_progress
+
+        def stop_bouncing_progress(self):
+                if self.is_progress_bouncing():
+                        self.stop_progress_bouncing = True
+
+        def update_details_text(self, text, *tags):
                 gobject.idle_add(self.__update_details_text, text, *tags)
 
         def __update_details_text(self, text, *tags):
@@ -702,23 +705,9 @@ class InstallUpdate(progress.ProgressTracker):
                         buf.insert(textiter, text)
                 self.w_details_textview.scroll_to_iter(textiter, 0.0)
                 
-        def __update_download_progress(self, cur_bytes, total_bytes):
-                prog = float(cur_bytes)/total_bytes
-                self.w_progressbar.set_fraction(prog)
-                size_a_str = ""
-                size_b_str = ""
-                if cur_bytes >= 0:
-                        size_a_str = pkg.misc.bytes_to_str(cur_bytes)
-                if total_bytes >= 0:
-                        size_b_str = pkg.misc.bytes_to_str(total_bytes)
-                c = _("Downloaded %(current)s of %(total)s") % \
-                    {"current" : size_a_str,
-                    "total" : size_b_str}
-                self.__stages_label_set_markup(c)
-
-        def __update_install_progress(self, current, total):
+        def update_progress(self, current, total):
                 prog = float(current)/total
-                self.w_progressbar.set_fraction(prog)
+                gobject.idle_add(self.w_progressbar.set_fraction, prog)
 
         def __plan_stage(self):
                 '''Function which plans the image'''
@@ -765,7 +754,7 @@ class InstallUpdate(progress.ProgressTracker):
                 self.__update_details_text("\n"+ done_txt, "bold")
                 self.w_cancel_button.set_label("gtk-close")
                 self.w_progressbar.hide()
-                self.stop_bouncing_progress = True
+                self.stop_bouncing_progress()
                 self.operations_done = True
                 if self.parent != None:
                         if not self.web_install and not self.ips_update \
@@ -800,7 +789,7 @@ class InstallUpdate(progress.ProgressTracker):
                 update_iter = None
                 remove_iter = None
                 plan = self.api_o.describe().get_changes()
-                self.__g_update_details_text("\n")
+                self.update_details_text("\n")
                 for pkg_plan in plan:
                         origin_fmri = pkg_plan[0]
                         destination_fmri = pkg_plan[1]
@@ -808,24 +797,24 @@ class InstallUpdate(progress.ProgressTracker):
                                 if not update_iter:
                                         update_iter = True
                                         txt = _("Packages To Be Updated:\n")
-                                        self.__g_update_details_text(txt, "bold")
+                                        self.update_details_text(txt, "bold")
                                 pkg_a = self.__get_pkgstr_from_pkginfo(destination_fmri)
-                                self.__g_update_details_text(pkg_a+"\n", "level1")
+                                self.update_details_text(pkg_a+"\n", "level1")
                         elif not origin_fmri and destination_fmri:
                                 if not install_iter:
                                         install_iter = True
                                         txt = _("Packages To Be Installed:\n")
-                                        self.__g_update_details_text(txt, "bold")
+                                        self.update_details_text(txt, "bold")
                                 pkg_a = self.__get_pkgstr_from_pkginfo(destination_fmri)
-                                self.__g_update_details_text(pkg_a+"\n", "level1")
+                                self.update_details_text(pkg_a+"\n", "level1")
                         elif origin_fmri and not destination_fmri:
                                 if not remove_iter:
                                         remove_iter = True
                                         txt = _("Packages To Be Removed:\n")
-                                        self.__g_update_details_text(txt, "bold")
+                                        self.update_details_text(txt, "bold")
                                 pkg_a = self.__get_pkgstr_from_pkginfo(origin_fmri)
-                                self.__g_update_details_text(pkg_a+"\n", "level1")
-                self.__g_update_details_text("\n")
+                                self.update_details_text(pkg_a+"\n", "level1")
+                self.update_details_text("\n")
 
         def __get_pkgstr_from_pkginfo(self, pkginfo):
                 dt_str = self.get_datetime(pkginfo.packaging_date)
@@ -855,94 +844,6 @@ class InstallUpdate(progress.ProgressTracker):
                         version_suf += "%d" % s_bran[l_ver]
                 pkg_version = version_pref + version_suf + dt_str
                 return pkg_name + "@" + pkg_version  
-
-        def act_output(self):
-                if self.act_phase != self.act_phase_last:
-                        self.act_phase_last = self.act_phase
-                        gobject.idle_add(self.__stages_label_set_markup, self.act_phase)
-                        self.__g_update_details_text(_("%s\n") % self.act_phase, "level1")
-                gobject.idle_add(self.__update_install_progress,
-                    self.act_cur_nactions, self.act_goal_nactions)
-                return
-
-        def act_output_done(self):
-                return
-
-        def cat_output_start(self): 
-                return
-
-        def cat_output_done(self): 
-                return
-
-        def cache_cats_output_start(self):
-                return
-
-        def cache_cats_output_done(self):
-                return
-
-        def load_cat_cache_output_start(self):
-                return
-
-        def load_cat_cache_output_done(self):
-                return
-
-        def dl_output(self):
-                gobject.idle_add(self.__update_download_progress, \
-                    self.dl_cur_nbytes, self.dl_goal_nbytes)
-                if self.prev_pkg != self.dl_cur_pkg:
-                        self.prev_pkg = self.dl_cur_pkg
-                        self.__g_update_details_text(
-                            _("Package %d of %d: %s\n") % (self.dl_cur_npkgs+1, 
-                            self.dl_goal_npkgs, self.dl_cur_pkg), "level1")
-
-        def dl_output_done(self):
-                self.__g_update_details_text("\n")
-
-        def eval_output_start(self):
-                '''Called by progress tracker when the evaluation of the packages just 
-                started.'''
-                return
-
-        def eval_output_progress(self):
-                '''Called by progress tracker each time some package was evaluated. The
-                call is being done by calling progress tracker evaluate_progress() 
-                function'''
-                if self.prev_pkg != self.eval_cur_fmri:
-                        self.prev_pkg = self.eval_cur_fmri
-                        self.__g_update_details_text("%s\n" % self.eval_cur_fmri,
-                            "level1")
-                        text = _("Evaluating: %s") % self.eval_cur_fmri.get_name()
-                        gobject.idle_add(self.__stages_label_set_markup, text)
-
-        def eval_output_done(self):
-                return
-
-        def ind_output(self):
-                if self.ind_started != self.ind_phase:
-                        self.ind_started = self.ind_phase
-                        gobject.idle_add(self.__stages_label_set_markup, self.ind_phase)
-                        self.__g_update_details_text(
-                            _("%s\n") % (self.ind_phase), "level1")
-                gobject.idle_add(self.__indexing_progress)
-
-        def __indexing_progress(self):
-                #It doesn't look nice if the progressive is just for few elements
-                if self.ind_goal_nitems > MIN_IND_ELEMENTS_BOUNCE:
-                        gobject.idle_add(self.__update_install_progress, 
-                            self.ind_cur_nitems-1, self.ind_goal_nitems)
-                else:
-                        if self.stopped_bouncing_progress:
-                                self.__start_bouncing_progress()
-                        
-        def ind_output_done(self):
-                gobject.idle_add(self.__update_install_progress, self.ind_cur_nitems, 
-                    self.ind_goal_nitems)
-
-        def ver_output(self): 
-                return
-
-        def ver_output_error(self, actname, errors): 
-                return
 
         @staticmethod
         def get_datetime(date_time):

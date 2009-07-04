@@ -3966,7 +3966,6 @@ class PackageManager:
                                             self.api_o, pkg_stem)
                                         package_installed =  (package_info.state 
                                             == api.PackageInfo.INSTALLED)
-                                        print pkg_stem, package_installed
                                         if package_installed:
                                                 row[enumerations.STATUS_COLUMN] = \
                                                     enumerations.INSTALLED
