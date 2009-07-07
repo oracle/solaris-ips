@@ -111,7 +111,6 @@ include common/SUNWcar
 include common/SUNWcdrw
 include common/SUNWcea
 include common/SUNWced
-include common/SUNWcedu
 include common/SUNWcfcl
 include common/SUNWcfpl
 include common/SUNWcglib
@@ -170,6 +169,7 @@ include common/SUNWdmfe
 include common/SUNWdmgt
 include common/SUNWdoc
 include common/SUNWdom4j
+include common/SUNWdosbox
 include common/SUNWdoxygen
 include common/SUNWdpl
 include common/SUNWdrools
@@ -179,6 +179,7 @@ include common/SUNWdtrc
 include common/SUNWdtrp
 include common/SUNWdvdrw
 include common/SUNWdwdiff
+include common/SUNWejabberd
 include common/SUNWelinks
 include common/SUNWemlxs
 include common/SUNWepydoc
@@ -434,6 +435,7 @@ include common/SUNWinstall-test
 include common/SUNWinstalladm-tools
 include common/SUNWintgige
 include common/SUNWio-tools
+include common/SUNWiozone
 include common/SUNWipc
 include common/SUNWiperf
 include common/SUNWipf
@@ -549,12 +551,15 @@ include common/SUNWlibusb
 include common/SUNWlibusbugen
 include common/SUNWlibvisual
 include common/SUNWlibxmlpp
+include common/SUNWlibxmlrpc-c
 include common/SUNWlighttpd14
 include common/SUNWlinks
 include common/SUNWllc
 include common/SUNWlldap
 include common/SUNWloc
 include common/SUNWlog4j
+include common/SUNWlogilab-astng
+include common/SUNWlogilab-common
 include common/SUNWlogrotate
 include common/SUNWlp-cmds
 include common/SUNWlpr-cmds
@@ -585,6 +590,7 @@ include common/SUNWmp
 include common/SUNWmpapi
 include common/SUNWmpathadm
 include common/SUNWmpsvplr
+include common/SUNWmptsas
 include common/SUNWmrsas
 include common/SUNWmrtg
 include common/SUNWmrxvt
@@ -728,6 +734,7 @@ include common/SUNWpython-lxml
 include common/SUNWpython-mako
 include common/SUNWpython-notify
 include common/SUNWpython-ply
+include common/SUNWpython-pycurl
 include common/SUNWpython-pyopenssl
 include common/SUNWpython-setuptools
 include common/SUNWpython-twisted
@@ -821,6 +828,7 @@ include common/SUNWsfman
 include common/SUNWsfwdemo
 include common/SUNWsfwhea
 include common/SUNWsg3utils
+include common/SUNWshmux
 include common/SUNWsigcpp
 include common/SUNWsimplewbem
 include common/SUNWslang
@@ -842,6 +850,7 @@ include common/SUNWsmmgr
 include common/SUNWsmpd
 include common/SUNWsnack
 include common/SUNWsndm
+include common/SUNWsnort
 include common/SUNWsolnm
 include common/SUNWsongbird
 include common/SUNWspeex
@@ -982,6 +991,7 @@ include common/SUNWxvnc
 include common/SUNWxwacx
 include common/SUNWxwdem
 include common/SUNWxwdv
+include common/SUNWxwfs
 include common/SUNWxwfsw
 include common/SUNWxwice
 include common/SUNWxwinc
@@ -1302,8 +1312,10 @@ $(i386_ONLY)include i386/SUNWarcmsr
 $(i386_ONLY)include i386/SUNWatheros
 $(i386_ONLY)include i386/SUNWatigfx
 $(i386_ONLY)include i386/SUNWatu
+$(i386_ONLY)include i386/SUNWaudiocmi
 $(i386_ONLY)include i386/SUNWaudiohd
 $(i386_ONLY)include i386/SUNWavant
+$(i386_ONLY)include i386/SUNWbfe
 $(i386_ONLY)include i386/SUNWccsm
 $(i386_ONLY)include i386/SUNWclutter
 $(i386_ONLY)include i386/SUNWclutter-cairo
@@ -1442,6 +1454,7 @@ $(i386_ONLY)include common/SUNWccfwctrl
 $(i386_ONLY)include common/SUNWccinv
 $(i386_ONLY)include common/SUNWccsign
 $(i386_ONLY)include common/SUNWcctpx
+include common/SUNWcedu
 $(i386_ONLY)include common/SUNWciu8
 $(i386_ONLY)include common/SUNWcsmauth
 include common/SUNWdbus-bindings
@@ -1772,6 +1785,7 @@ depend SUNWauda
 depend SUNWaudd
 depend SUNWaudf
 depend SUNWaudh
+$(i386_ONLY)depend SUNWaudiocmi
 $(i386_ONLY)depend SUNWaudiohd
 depend SUNWaudit
 depend SUNWauto-install
@@ -1787,6 +1801,7 @@ depend SUNWbash
 depend SUNWbcc
 $(sparc_ONLY)depend SUNWbcp
 depend SUNWbeadm
+$(i386_ONLY)depend SUNWbfe
 depend SUNWbge
 depend SUNWbind
 depend SUNWbinutils
@@ -1812,7 +1827,6 @@ depend SUNWcdhcm
 depend SUNWcdrw
 depend SUNWcea
 depend SUNWced
-depend SUNWcedu
 depend SUNWcfcl
 depend SUNWcfpl
 $(sparc_ONLY)depend SUNWcg6
@@ -1912,6 +1926,7 @@ depend SUNWdmfe
 depend SUNWdmgt
 depend SUNWdoc
 depend SUNWdom4j
+depend SUNWdosbox
 depend SUNWdoxygen
 depend SUNWdpl
 $(sparc_ONLY)depend SUNWdrcr
@@ -1931,6 +1946,7 @@ $(sparc_ONLY)depend SUNWefb
 $(sparc_ONLY)depend SUNWefbcf
 $(sparc_ONLY)depend SUNWefbw
 $(sparc_ONLY)depend SUNWefc
+depend SUNWejabberd
 depend SUNWelinks
 depend SUNWemlxs
 depend SUNWepydoc
@@ -2288,6 +2304,7 @@ depend SUNWinstalladm-tools
 depend SUNWintgige
 depend SUNWio-tools
 $(sparc_ONLY)depend SUNWiopc
+depend SUNWiozone
 depend SUNWipc
 depend SUNWiperf
 depend SUNWipf
@@ -2523,12 +2540,15 @@ depend SUNWlibusbugen
 $(i386_ONLY)depend SUNWlibvirt
 depend SUNWlibvisual
 depend SUNWlibxmlpp
+depend SUNWlibxmlrpc-c
 depend SUNWlighttpd14
 depend SUNWlinks
 depend SUNWllc
 depend SUNWlldap
 depend SUNWloc
 depend SUNWlog4j
+depend SUNWlogilab-astng
+depend SUNWlogilab-common
 depend SUNWlogrotate
 depend SUNWlp-cmds
 depend SUNWlpr-cmds
@@ -2566,6 +2586,7 @@ depend SUNWmp
 depend SUNWmpapi
 depend SUNWmpathadm
 depend SUNWmpsvplr
+depend SUNWmptsas
 depend SUNWmrsas
 depend SUNWmrtg
 depend SUNWmrxvt
@@ -2739,6 +2760,7 @@ depend SUNWpython-lxml
 depend SUNWpython-mako
 depend SUNWpython-notify
 depend SUNWpython-ply
+depend SUNWpython-pycurl
 depend SUNWpython-pyopenssl
 depend SUNWpython-setuptools
 depend SUNWpython-twisted
@@ -2844,6 +2866,7 @@ depend SUNWsfman
 depend SUNWsfwdemo
 depend SUNWsfwhea
 depend SUNWsg3utils
+depend SUNWshmux
 $(i386_ONLY)depend SUNWsi3124
 depend SUNWsigcpp
 depend SUNWsimplewbem
@@ -2865,6 +2888,7 @@ depend SUNWsmmgr
 depend SUNWsmpd
 depend SUNWsnack
 depend SUNWsndm
+depend SUNWsnort
 depend SUNWsolnm
 depend SUNWsongbird
 depend SUNWspeex
@@ -3066,6 +3090,7 @@ depend SUNWxvnc
 depend SUNWxwacx
 depend SUNWxwdem
 depend SUNWxwdv
+depend SUNWxwfs
 depend SUNWxwfsw
 depend SUNWxwice
 depend SUNWxwinc
@@ -3176,6 +3201,7 @@ $(i386_ONLY)depend SUNWapch22m-php5
 $(i386_ONLY)depend SUNWbrasero
 $(i386_ONLY)depend SUNWcakrx
 $(i386_ONLY)depend SUNWcarx
+depend SUNWcedu
 depend SUNWdbus-bindings
 $(sparc_ONLY)depend SUNWffb
 $(sparc_ONLY)depend SUNWffbcf
@@ -3286,12 +3312,14 @@ $(i386_ONLY)depend SUNWatu
 depend SUNWauda
 depend SUNWaudd
 depend SUNWaudf
+$(i386_ONLY)depend SUNWaudiocmi
 $(i386_ONLY)depend SUNWaudiohd
 depend SUNWav1394
 depend SUNWavahi-bridge-dsd
 depend SUNWbart
 depend SUNWbash
 depend SUNWbeadm
+$(i386_ONLY)depend SUNWbfe
 depend SUNWbge
 depend SUNWbind
 depend SUNWbip
@@ -3324,6 +3352,7 @@ depend SUNWcsd
 depend SUNWcsl
 $(sparc_ONLY)depend SUNWcti2
 depend SUNWcups-libs
+depend SUNWcurl
 $(sparc_ONLY)depend SUNWcvc
 depend SUNWdbus
 depend SUNWdbus-glib
@@ -3423,6 +3452,7 @@ depend SUNWglib2
 depend SUNWglibmm
 depend SUNWgnome-a11y-gok
 depend SUNWgnome-a11y-libs
+depend SUNWgnome-a11y-libs-python24
 depend SUNWgnome-a11y-reader
 depend SUNWgnome-a11y-speech
 depend SUNWgnome-a11y-speech-espeak
@@ -3480,6 +3510,7 @@ depend SUNWgnome-ps-viewer
 depend SUNWgnome-python-desktop
 depend SUNWgnome-python-extras
 depend SUNWgnome-python-libs
+depend SUNWgnome-python26-libs
 depend SUNWgnome-remote-desktop
 depend SUNWgnome-screenshot
 depend SUNWgnome-search-tool
@@ -3498,6 +3529,7 @@ depend SUNWgnome-wm
 depend SUNWgnu-coreutils
 depend SUNWgnu-diffutils
 depend SUNWgnu-findutils
+depend SUNWgnu-idn
 depend SUNWgnu-nano
 depend SUNWgnu-which
 depend SUNWgnutls
@@ -3511,6 +3543,7 @@ depend SUNWgssc
 depend SUNWgssdh
 depend SUNWgssk
 depend SUNWgst-python
+depend SUNWgst-python26
 depend SUNWgtar
 depend SUNWgtk2
 depend SUNWgtkmm
@@ -3650,6 +3683,7 @@ depend SUNWmlib
 depend SUNWmpapi
 depend SUNWmpathadm
 depend SUNWmpsvplr
+depend SUNWmptsas
 depend SUNWmrsas
 depend SUNWmusicbrainz
 $(i386_ONLY)depend SUNWmv88sx
@@ -3726,6 +3760,7 @@ depend SUNWpython-cherrypy
 depend SUNWpython-mako
 depend SUNWpython-notify
 depend SUNWpython-ply
+depend SUNWpython-pycurl
 depend SUNWpython-pyopenssl
 depend SUNWpython-twisted
 depend SUNWpython-xdg

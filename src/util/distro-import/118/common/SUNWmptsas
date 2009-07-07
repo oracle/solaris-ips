@@ -1,0 +1,7 @@
+package SUNWmptsas
+classification "Drivers/Storage"
+import SUNWmptsas
+add driver name=mpt_sas class=scsi-self-identifying \
+	alias=pci1000,72 \
+	alias=pciex1000,72
+end package

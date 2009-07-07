@@ -1,0 +1,6 @@
+package SUNWpconsole
+classification "Applications/System Utilities"
+import SUNWpconsole
+import SUNWpconsoler
+version 1.0
+end package

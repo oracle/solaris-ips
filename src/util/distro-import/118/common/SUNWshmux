@@ -1,0 +1,5 @@
+package SUNWshmux
+classification "Applications/System Utilities"
+import SUNWshmux
+version 1.0.2
+end package

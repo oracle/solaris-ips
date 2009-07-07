@@ -1,0 +1,7 @@
+package SUNWejabberd
+classification "Web Services/Communications"
+import SUNWejabberdr
+import SUNWejabberdu
+depend SUNWerlang
+version 2.0.5
+end package

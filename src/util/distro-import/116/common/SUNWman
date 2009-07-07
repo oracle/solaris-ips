@@ -11,6 +11,8 @@ drop usr/share/man/man1/rksh.1
 add link path=usr/share/man/man1/ksh.1 target=ksh93.1
 add link path=usr/share/man/man1/rksh.1 target=ksh93.1
 add link path=usr/share/man/man1/sh.1 target=ksh93.1
+# Obsolete
+drop usr/share/man/man1m/showrev.1m
 # BEGIN NON-REDISTRIBUTABLE
 drop usr/share/man/man1/cpp.1
 drop usr/share/man/man1/digestp.1

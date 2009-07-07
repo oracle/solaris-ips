@@ -1,0 +1,7 @@
+package SUNWced
+classification "Drivers/Networking"
+import SUNWced
+$(i386_ONLY)import SUNWcedu
+$(sparc_ONLY)import SUNWcedu exclude usr/include/sys/mii.h
+add driver name=ce perms="* 0600 root sys" alias=pci108e,abba alias=pci100b,35
+end package

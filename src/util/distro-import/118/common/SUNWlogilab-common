@@ -1,0 +1,6 @@
+package SUNWlogilab-common
+classification "Development/Python"
+import SUNWlogilab-common
+depend SUNWgnome-python26-libs
+version 0.40.0
+end package

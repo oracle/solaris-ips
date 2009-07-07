@@ -286,6 +286,9 @@ category = Media
 [SUNWaudh]
 category = Media
 
+[SUNWaudiocmi]
+category = Media
+
 [SUNWaudiohd]
 category = Media
 
@@ -330,6 +333,9 @@ category = Core
 
 [SUNWbeadm]
 category = Core
+
+[SUNWbfe]
+category = Networking
 
 [SUNWbge]
 category = Networking
@@ -404,9 +410,6 @@ category = Media
 category = Networking
 
 [SUNWced]
-category = Networking
-
-[SUNWcedu]
 category = Networking
 
 [SUNWcfcl]
@@ -706,6 +709,9 @@ category = Text Tools
 [SUNWdom4j]
 category = Java
 
+[SUNWdosbox]
+category = System Utilities
+
 [SUNWdoxygen]
 category = Distribution Tools
 
@@ -762,6 +768,9 @@ category = Display
 
 [SUNWefc]
 category = Administration and Configuration
+
+[SUNWejabberd]
+category = Communications
 
 [SUNWelinks]
 category = Internet
@@ -1834,6 +1843,9 @@ category = Administration and Configuration
 [SUNWiopc]
 category = Core
 
+[SUNWiozone]
+category = System
+
 [SUNWipc]
 category = Core
 
@@ -2536,6 +2548,9 @@ category = Multimedia Libraries
 [SUNWlibxmlpp]
 category = C++
 
+[SUNWlibxmlrpc-c]
+category = C,C++
+
 [SUNWlighttpd14]
 category = Application and Web Servers
 
@@ -2553,6 +2568,12 @@ category = Localizations (System)
 
 [SUNWlog4j]
 category = Java
+
+[SUNWlogilab-astng]
+category = Python
+
+[SUNWlogilab-common]
+category = Python
 
 [SUNWlogrotate]
 category = Administration and Configuration
@@ -3193,6 +3214,9 @@ category = Python
 [SUNWpython-ply]
 category = Python
 
+[SUNWpython-pycurl]
+category = Python
+
 [SUNWpython-pyopenssl]
 category = Python
 
@@ -3508,6 +3532,9 @@ category = System
 [SUNWsg3utils]
 category = System Utilities
 
+[SUNWshmux]
+category = System Utilities
+
 [SUNWsi3124]
 category = Ports
 
@@ -3573,6 +3600,9 @@ category = Other Languages
 
 [SUNWsndm]
 category = Core
+
+[SUNWsnort]
+category = Internet
 
 [SUNWsolnm]
 category = Core
@@ -4177,6 +4207,9 @@ category = X11 (System)
 [SUNWxwdv]
 category = X11 (System)
 
+[SUNWxwfs]
+category = X11 (System)
+
 [SUNWxwfsw]
 category = X11 (System)
 
@@ -4272,6 +4305,18 @@ category = C
 
 [developer/netbeans/plugin/nb-dtrace]
 category = System
+
+[developer/openjdk7/demo]
+category = Java
+
+[developer/openjdk7/demo-64]
+category = Java
+
+[developer/openjdk7/tools]
+category = Java
+
+[developer/openjdk7/tools-64]
+category = Java
 
 [developer/opensolaris/osnet]
 category = Distribution Tools
@@ -4528,6 +4573,9 @@ category = Integrated Development Environments
 [opends]
 category = Administration and Configuration
 
+[openjdk7-dev]
+category = Java
+
 [openoffice]
 category = Office
 
@@ -4602,6 +4650,18 @@ category = C,C++,High Performance Computing,Integrated Development Environments,
 
 [system/ldoms/ldomsmanager]
 category = Virtualization
+
+[system/openjdk7/manual]
+category = Java
+
+[system/openjdk7/manual-ja]
+category = Java
+
+[system/openjdk7/runtime]
+category = Java
+
+[system/openjdk7/runtime-64]
+category = Java
 
 [trusted-extensions]
 category = Trusted Extensions

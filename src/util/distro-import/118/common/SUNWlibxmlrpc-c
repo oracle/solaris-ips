@@ -1,0 +1,6 @@
+package SUNWlibxmlrpc-c
+classification "Development/C"
+classification "Development/C++"
+import SUNWlibxmlrpc-c
+version 1.6.32
+end package

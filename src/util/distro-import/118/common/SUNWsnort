@@ -1,0 +1,6 @@
+package SUNWsnort
+classification "Applications/Internet"
+import SUNWsnortr
+import SUNWsnortu
+version 2.8.4.1
+end package
