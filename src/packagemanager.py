@@ -45,8 +45,6 @@ INFO_NOTEBOOK_LICENSE_PAGE = 3            # License Tab index
 SHOW_INFO_DELAY = 600       # Delay before showing selected pacakge information
 SHOW_LICENSE_DELAY = 600    # Delay before showing license information
 SEARCH_STR_FORMAT = "<%s>"
-SEARCH_LIMIT = 100                        # Maximum number of results shown for
-                                          # api search
 MIN_APP_WIDTH = 750                       # Minimum application width
 MIN_APP_HEIGHT = 500                     # Minimum application height
 INITIAL_APP_WIDTH_PREFERENCES = "/apps/packagemanager/preferences/initial_app_width"
@@ -265,11 +263,12 @@ class PackageManager:
                     _("Search All Repositories"))
                     ]
                 self.__register_iconsets(self.search_options)               
-                self.visible_repository = None
-                self.visible_repository_uptodate = False
-                self.last_active_publisher = None
+                self.last_visible_publisher = None
+                self.last_visible_publisher_uptodate = False
+                self.publisher_changed = True
                 self.search_start = 0
                 self.search_time_sec = 0
+                self.search_all_pub_being_searched = None
                 self.section_list = None
                 self.filter_list = self.__get_new_filter_liststore()
                 self.application_list = None
@@ -677,8 +676,6 @@ class PackageManager:
                         self.repositories_list.remove(
                             self.repositories_list.get_iter_first())
                 self.w_repository_combobox.set_model(self.repositories_list)
-                self.visible_repository = None
-
 
         def __link_load_blank(self):
                 self.document.clear()
@@ -764,21 +761,19 @@ class PackageManager:
                     % (start_page_url)))
                 self.document.close_stream()
 
-        def __parse_api_search_error(self, error):
+        def __process_api_search_error(self, error):
                 self.current_repos_with_search_errors = []
-                if "failed_servers" in error.__dict__ and len(error.failed_servers) > 0:
-                        #TBD we should not have to parse the error output
-                        rem_str = " doesn't speak a known version of search operation"
-                        timeout_str = "urlopen error timed out"
-                        repos = []
-                        for err in error.failed_servers:
-                                err_str = str(err[1])
-                                if rem_str in err_str:
-                                        repo = err_str.replace(rem_str,"")
-                                        self.current_repos_with_search_errors.append(repo)
-                                elif timeout_str in err_str:
-                                        repo = err[0].repositories[0].origins[0].uri
-                                        self.current_repos_with_search_errors.append(repo)
+
+                for pub, err in error.failed_servers:
+                        self.current_repos_with_search_errors.append(
+                            (pub, _("failed to respond"), err))
+                for pub in error.invalid_servers:
+                        self.current_repos_with_search_errors.append(
+                            (pub, _("invalid response"),
+                                _("A valid response was not returned.")))
+                for pub, err in error.unsupported_servers:
+                        self.current_repos_with_search_errors.append(
+                            (pub, _("unsupported search"), err))
 
         def __on_infosearch_button_clicked(self, widget):
                 self.__handle_api_search_error(True)
@@ -787,26 +782,28 @@ class PackageManager:
                 if len(self.current_repos_with_search_errors) == 0:
                         self.w_infosearch_frame.hide()
                         return
-                else:
-                        self.w_infosearch_button.set_size_request(26, 22)
-                        self.w_infosearch_frame.show()
 
-                repo_pubs = self.__get_repo_publishers()
                 repo_count = 0
-                for url in self.current_repos_with_search_errors:
-                        if show_all or (url not in self.gconf_not_show_repos):
+                for pub, err_type, err_str in self.current_repos_with_search_errors:
+                        if show_all or (pub not in self.gconf_not_show_repos):
                                 repo_count += 1
                 if repo_count == 0:
+                        self.w_infosearch_frame.hide()
                         return
 
+                self.w_infosearch_button.set_size_request(26, 22)
+                self.w_infosearch_frame.show()
                 infobuffer = self.api_search_error_textview.get_buffer()
                 infobuffer.set_text("")
                 textiter = infobuffer.get_end_iter()
-                for url in self.current_repos_with_search_errors:
-                        if show_all or (url not in self.gconf_not_show_repos):
+                for pub, err_type, err_str in self.current_repos_with_search_errors:
+
+                        if show_all or (pub not in self.gconf_not_show_repos):
                                 infobuffer.insert_with_tags_by_name(textiter,
-                                        "%s" % repo_pubs[url], "bold")
-                                infobuffer.insert(textiter, " (%s)\n" % url)
+                                    "%(pub)s (%(err_type)s)\n" % {"pub": pub,
+                                    "err_type": err_type}, "bold")
+                                infobuffer.insert(textiter, "%s\n" % (err_str))
+
                 self.api_search_checkbox.set_active(False)
                 self.api_search_error_dialog.show()
                 self.api_search_button.grab_focus()
@@ -1017,7 +1014,8 @@ class PackageManager:
                         )
 
         def __init_application_tree_view(self, application_list,
-            application_list_filter, application_list_sort):
+            application_list_filter, application_list_sort,
+            application_sort_column):
                 ##APPLICATION MAIN TREEVIEW
                 if application_list_filter == None:
                         application_list_filter = application_list.filter_new()
@@ -1025,7 +1023,7 @@ class PackageManager:
                         application_list_sort = \
                             gtk.TreeModelSort(application_list_filter)
                         application_list_sort.set_sort_column_id(
-                            enumerations.NAME_COLUMN, gtk.SORT_ASCENDING)
+                            application_sort_column, gtk.SORT_ASCENDING)
                         application_list_sort.set_sort_func(
                             enumerations.STATUS_ICON_COLUMN, self.__status_sort_func)
                 toggle_renderer = gtk.CellRendererToggle()
@@ -1042,6 +1040,7 @@ class PackageManager:
                 column = gtk.TreeViewColumn(_("Name"), name_renderer,
                     text = enumerations.NAME_COLUMN)
                 column.set_resizable(True)
+                column.set_min_width(150)
                 column.set_sort_column_id(enumerations.NAME_COLUMN)
                 column.set_sort_indicator(True)
                 column.set_cell_data_func(name_renderer, self.cell_data_function, None)
@@ -1090,7 +1089,8 @@ class PackageManager:
 
         def __init_tree_views(self, application_list, category_list, 
             section_list, application_list_filter = None, 
-            application_list_sort = None):
+            application_list_sort = None, 
+            application_sort_column = enumerations.NAME_COLUMN):
                 '''This function connects treeviews with their models and also applies
                 filters'''
                 if category_list == None:
@@ -1118,7 +1118,8 @@ class PackageManager:
 
                 if application_list != None:
                         self.__init_application_tree_view(application_list,
-                            application_list_filter, application_list_sort)
+                            application_list_filter, application_list_sort, 
+                            application_sort_column)
 
                 if self.first_run:
                         # When vadj changes we need to set image descriptions
@@ -1318,6 +1319,9 @@ class PackageManager:
                 if self.w_main_view_notebook.get_current_page() != \
                     NOTEBOOK_PACKAGE_LIST_PAGE:
                         return
+                if self.__doing_search():
+                        return
+
                 a11y_enabled = False
                 if self.a11y_application_treeview.get_n_accessible_children() != 0:
                         a11y_enabled = True
@@ -1331,10 +1335,9 @@ class PackageManager:
                         print "Range Start: %d End: %d" % (start, end)
 
                 # Switching Publishers need to use default range
-                active_pub = self.__get_active_publisher()
-                if self.last_active_publisher != active_pub:
+                if self.publisher_changed:
                         check_range = False
-                self.last_active_publisher = active_pub
+                        self.publisher_changed = False
                 if self.in_search_mode:
                         check_range = False
                 
@@ -1374,10 +1377,11 @@ class PackageManager:
                         if desc == '...':
                                 fmri = sort_filt_model.get_value(sf_itr,
                                     enumerations.FMRI_COLUMN)
-                                pkg_stem = fmri.get_pkg_stem(
-                                    include_scheme = True)
-                                pkg_stems_and_itr_to_fetch[pkg_stem] = \
-                                    model.get_string_from_iter(app_itr)
+                                if fmri != None:
+                                        pkg_stem = fmri.get_pkg_stem(
+                                            include_scheme = True)
+                                        pkg_stems_and_itr_to_fetch[pkg_stem] = \
+                                            model.get_string_from_iter(app_itr)
                         if a11y_enabled:
                                 self.__set_accessible_status(sort_filt_model, sf_itr)
                         start += 1
@@ -1431,6 +1435,10 @@ class PackageManager:
 
                 #If model has changed abandon description updates
                 if orig_model != model:
+                        return
+
+                #If doing a search abandon description updates
+                if self.__doing_search():
                         return
 
                 if debug_descriptions:
@@ -1730,7 +1738,7 @@ class PackageManager:
                 if search_all:
                         servers = None
                 else:
-                        pub_prefix = self.__get_active_publisher()
+                        pub_prefix = self.__get_selected_publisher()
                         if pub_prefix != None:
                                 pub = self.api_o.get_publisher(prefix=pub_prefix)
                         else:
@@ -1738,38 +1746,56 @@ class PackageManager:
                         origin_uri = self.__get_origin_uri(pub.selected_repository)
                         servers.append({"origin": origin_uri})
                 if debug:
-                        print "pargs:", pargs
-                        print "servers:", servers
-                        
+                        print "Search: pargs %s servers: %s" % (pargs, servers)
+
+                #TBD If we ever search just Installed pkgs should allow for a local search
                 case_sensitive = False
+                return_actions = True
                 searches.append(self.api_o.remote_search(
-                    [api.Query(" ".join(pargs), case_sensitive, True, None, None)],
+                    [api.Query(" ".join(pargs), case_sensitive, return_actions)],
                     servers=servers))
-                result_tuple = {}
+                if debug:
+                        print "Search Args: %s : cs: %s : retact: %s" % \
+                                ("".join(pargs), case_sensitive, return_actions)
+
+                last_name = ""
+                self.search_all_pub_being_searched = None
+
+                # Sorting results by Name gives best overall appearance and flow
+                sort_col = enumerations.NAME_COLUMN
                 try:
                         for query_num, publisher, (v, return_type, tmp) in \
                             itertools.chain(*searches):
-                                if v == 1 and \
-                                    return_type == api.Query.RETURN_PACKAGES:
-                                        repo = None
-                                        if publisher is not None \
-                                            and "prefix" in publisher:
-                                                repo = publisher["prefix"]
-                                        name = fmri.PkgFmri(str(tmp)).get_name()
-                                        result_tuple[(name, repo)] = -1
-                                        if len(result_tuple) == SEARCH_LIMIT:
-                                                break
-                                else:
-                                        # We are not interested in this error
+                                if v < 1 or return_type != api.Query.RETURN_PACKAGES:
                                         gobject.idle_add(self.w_progress_dialog.hide)
                                         self.__process_after_search_failure()
                                         return
+
+                                pub = None
+                                if publisher is not None \
+                                    and "prefix" in publisher:
+                                        pub = publisher["prefix"]
+                                name = fmri.PkgFmri(str(tmp)).get_name()
+                                if last_name != name:
+                                        if debug:
+                                                print "Result Name: %s (%s)" % (name, pub)
+                                        a_res = name, pub
+                                        result.append(a_res)
+                                        #Ignore Status when fetching
+                                        application_list = \
+                                                self.__get_min_list_from_search(result)
+                                        self.search_all_pub_being_searched = pub
+                                        self.in_setup = True
+                                        gobject.idle_add(self.__init_tree_views, 
+                                            application_list, None, None, None, None,
+                                            sort_col)
+                                last_name = name
                                 self.pylintstub = query_num
                 except api_errors.ProblematicSearchServers, ex:
-                        self.__parse_api_search_error(ex)
+                        self.__process_api_search_error(ex)
                         gobject.idle_add(self.w_progress_dialog.hide)
                         gobject.idle_add(self.__handle_api_search_error)
-                        if len(result_tuple) == 0:
+                        if len(result) == 0:
                                 self.__process_after_search_with_zero_results()
                                 return
                 except Exception, ex:
@@ -1778,10 +1804,7 @@ class PackageManager:
                         self.__process_after_search_failure()
                         return
                 if debug:
-                        print "Number of search results:", len(result_tuple)
-                for name, repo in result_tuple:
-                        a_res = name, repo
-                        result.append(a_res)
+                        print "Number of search results:", len(result)
                 if len(result) == 0:
                         if debug:
                                 print "No search results"
@@ -1796,15 +1819,18 @@ class PackageManager:
                                 break
                         time.sleep(1)
                         times -= 1
+
+                #Now fetch full result set with Status
                 self.in_setup = True
-                application_list = self.__get_list_from_search(result)
+                application_list = self.__get_full_list_from_search(result)
+                gobject.idle_add(self.__init_tree_views, application_list, None, None, \
+                    None, None, sort_col)
+
                 if self.search_start > 0:
                         self.search_time_sec = int(time.time() - self.search_start)
+                        if debug:
+                                print "Search time: %d (sec)" % self.search_time_sec
                 self.search_start = 0
-                gobject.idle_add(self.__set_empty_details_panel)
-                gobject.idle_add(self.__set_main_view_package_list)
-                gobject.idle_add(self.__init_tree_views, application_list,
-                    None, None)
 
         def __process_after_search_with_zero_results(self):
                 if self.search_start > 0:
@@ -1816,7 +1842,16 @@ class PackageManager:
                 gobject.idle_add(self.__set_main_view_package_list)
                 gobject.idle_add(self.__init_tree_views, application_list, None, None)
 
-        def __get_list_from_search(self, search_result):
+        def __get_min_list_from_search(self, search_result):
+                application_list = self.__get_new_application_liststore()
+                for name, publisher in search_result:
+                        application_list.append(
+                            [False, None, name, '...', enumerations.NOT_INSTALLED, None, 
+                            "pkg://" + publisher + "/" + name, None, True, None, 
+                            publisher])
+                return application_list
+
+        def __get_full_list_from_search(self, search_result):
                 application_list = self.__get_new_application_liststore()
                 self.__add_pkgs_to_list_from_search(search_result,
                     application_list)
@@ -2084,14 +2119,16 @@ class PackageManager:
                 active = self.api_search_checkbox.get_active()
                 if len(self.current_repos_with_search_errors) > 0:
                         if active:
-                                for url in self.current_repos_with_search_errors:
-                                        if url not in self.gconf_not_show_repos:
-                                                self.gconf_not_show_repos += url + ","
+                                for pub, err_type, err_str in \
+                                        self.current_repos_with_search_errors:
+                                        if pub not in self.gconf_not_show_repos:
+                                                self.gconf_not_show_repos += pub + ","
                         else:
-                                for url in self.current_repos_with_search_errors:
+                                for pub, err_type, err_str in \
+                                        self.current_repos_with_search_errors:
                                         self.gconf_not_show_repos = \
                                             self.gconf_not_show_repos.replace(
-                                            url + ",", "")
+                                            pub + ",", "")
                         try:
                                 self.client.set_string(API_SEARCH_ERROR_PREFERENCES,
                                     self.gconf_not_show_repos)
@@ -2338,13 +2375,13 @@ class PackageManager:
                 self.w_infosearch_frame.hide()
                 self.changing_search_option = True
                 self.current_search_option = 0
-                visible_repository = self.__get_visible_repository_name()
-                if visible_repository in self.selected_pkgs:
-                        self.selected_pkgs.pop(visible_repository)
-                if visible_repository in self.to_install_update:
-                        self.to_install_update.pop(visible_repository)
-                if visible_repository in self.to_remove:
-                        self.to_remove.pop(visible_repository)
+                selected_publisher = self.__get_selected_publisher()
+                if selected_publisher in self.selected_pkgs:
+                        self.selected_pkgs.pop(selected_publisher)
+                if selected_publisher in self.to_install_update:
+                        self.to_install_update.pop(selected_publisher)
+                if selected_publisher in self.to_remove:
+                        self.to_remove.pop(selected_publisher)
                 self.__update_tooltips()
                 if self.is_search_all:
                         self.__update_repository_combobox_for_search(False)
@@ -2361,27 +2398,26 @@ class PackageManager:
                 if self.changing_search_option:
                         return
                 self.changing_search_option = True
-                active_publisher = self.__get_active_publisher()
+                selected_publisher = self.__get_selected_publisher()
                 if self.is_search_all:
                         same_repo = False
-                        active =  self.w_repository_combobox.get_active() - 1
-                        if active == -1:
+                        index =  self.w_repository_combobox.get_active() - 1
+                        if index == -1:
                                 # We get here is we choose "Add ..." when
                                 # doing api search
                                 self.changing_search_option = False
                                 return
-                        if not active_publisher == _("Add..."):
-                                if self.saved_repository_combobox_active == active:
+                        if not selected_publisher == _("Add..."):
+                                if self.saved_repository_combobox_active == index:
                                         same_repo = True
                                 self.__unset_search(same_repo)
-                                self.w_repository_combobox.set_active(active)
-
+                                self.w_repository_combobox.set_active(index)
                         if same_repo:
                                 self.changing_search_option = False
                                 return
-                        active_publisher = self.__get_active_publisher()
+                        selected_publisher = self.__get_selected_publisher()
                 self.changing_search_option = False
-                if self.visible_repository == active_publisher:
+                if selected_publisher == self.last_visible_publisher:
                 # If we are coming back to the same repository, we do
                 # not want to setup publishers. This is the case when
                 # we are calling Add... then we are firing the event for
@@ -2390,14 +2426,14 @@ class PackageManager:
                         return
                 # Checking for Add... is fine enough, as the repository
                 # name cannot contain "..." in the name.
-                if active_publisher == _("Add..."):
+                if selected_publisher == _("Add..."):
                         index = -1
                         if self.is_search_all:
                                 index = 0
                         else:
                                 model = self.w_repository_combobox.get_model()
                                 for entry in model:
-                                        if entry[1] == self.visible_repository:
+                                        if entry[1] == self.last_visible_publisher:
                                                 index = entry[0]
                                                 break
                         # We do not want to switch permanently to the Add...
@@ -2415,13 +2451,13 @@ class PackageManager:
                                 start, end = self.w_searchentry.get_selection_bounds()
                                 self.w_searchentry.select_region(end, end)
 
-                pub = [active_publisher, ]
+                pub = [selected_publisher, ]
                 self.set_show_filter = self.initial_show_filter
                 self.set_section = self.initial_section
                 Thread(target = self.__setup_publisher, args = [pub]).start()
                 self.__set_main_view_package_list()
 
-        def __get_active_publisher(self):
+        def __get_selected_publisher(self):
                 pub_iter = self.w_repository_combobox.get_active_iter()
                 if pub_iter == None:
                         return None
@@ -2433,6 +2469,8 @@ class PackageManager:
                 application_list, category_list , section_list = \
                     self.__get_application_categories_lists(publishers)
                 self.__unset_saved()
+                self.publisher_changed = True
+                self.last_visible_publisher = self.__get_selected_publisher()
                 gobject.idle_add(self.__init_tree_views, application_list,
                     category_list, section_list)
 
@@ -2444,8 +2482,6 @@ class PackageManager:
                 self.saved_section_list = None
 
         def __get_application_categories_lists(self, publishers=[]):
-                if not self.visible_repository:
-                        self.visible_repository = self.__get_active_publisher()
                 application_list = self.__get_new_application_liststore()
                 category_list = self.__get_new_category_liststore()
                 section_list = self.__get_new_section_liststore()
@@ -2474,17 +2510,16 @@ class PackageManager:
                                 category_list.prepend([0, _('All'), None, None, False,
                                     True, None])
                         if self.application_list and self.category_list and \
-                            not self.visible_repository_uptodate:
-                                if self.visible_repository:
+                            not self.last_visible_publisher_uptodate:
+                                if self.last_visible_publisher:
                                         dump_list = self.application_list
                                         if self.saved_application_list != None:
                                                 dump_list = \
                                                     self.saved_application_list
-                                        self.__dump_datamodels(self.visible_repository,
-                                            dump_list, self.category_list,
-                                            self.section_list)
-                        self.visible_repository = self.__get_active_publisher()
-                        self.visible_repository_uptodate = uptodate
+                                        self.__dump_datamodels(
+                                            self.last_visible_publisher, dump_list,
+                                            self.category_list, self.section_list)
+                        self.last_visible_publisher_uptodate = uptodate
                 return application_list, category_list, section_list
 
         def __check_if_cache_uptodate(self, publisher):
@@ -2494,6 +2529,24 @@ class PackageManager:
 
         def __dump_datamodels(self, publisher, application_list, category_list,
             section_list):
+                #Consistency check - only dump models if publisher passed in matches 
+                #publisher in application list
+                if application_list == None:
+                        return
+                try:
+                        app_pub = self.application_list[0]\
+                                [enumerations.AUTHORITY_COLUMN]
+                except IndexError, ValueError:
+                        #Empty application list nothing to dump
+                        return
+
+                if publisher != app_pub:
+                        if debug:
+                                print "ERROR: __dump_data_models(): INCONSISTENT " \
+                                        "pub %s != app_list_pub %s" % \
+                                        (publisher,  app_pub)
+                        return
+
                 if self.cache_o:
                         if self.img_timestamp == \
                             self.cache_o.get_index_timestamp():
@@ -2520,8 +2573,8 @@ class PackageManager:
                                 install_update.append(
                                     model.get_value(itr, enumerations.STEM_COLUMN))
                 else:
-                        visible_repository = self.__get_visible_repository_name()
-                        pkgs = self.selected_pkgs.get(visible_repository)
+                        visible_publisher = self.__get_selected_publisher()
+                        pkgs = self.selected_pkgs.get(visible_publisher)
                         if pkgs:
                                 for pkg_stem in pkgs:
                                         status = pkgs.get(pkg_stem)
@@ -2573,8 +2626,8 @@ class PackageManager:
                                 remove_list.append(
                                     model.get_value(itr, enumerations.STEM_COLUMN))
                 else:
-                        visible_repository = self.__get_visible_repository_name()
-                        pkgs = self.selected_pkgs.get(visible_repository)
+                        visible_publisher = self.__get_selected_publisher()
+                        pkgs = self.selected_pkgs.get(visible_publisher)
                         if pkgs:
                                 for pkg_stem in pkgs:
                                         status = pkgs.get(pkg_stem)
@@ -2597,7 +2650,7 @@ class PackageManager:
                         self.__unset_search(False)
                 self.__set_empty_details_panel()
                 self.in_setup = True
-                self.visible_repository = None
+                self.last_visible_publisher = None
                 if widget != None:
                         self.__remove_cache()
                 self.w_progress_dialog.set_title(_("Refreshing catalogs"))
@@ -2632,9 +2685,12 @@ class PackageManager:
                         else:
                                 gobject.spawn_async([self.application_path,
                                     "-U", be_name])
-                elif not self.in_search_mode:
-                        visible_repository = self.__get_visible_repository_name()
-                        self.__dump_datamodels(visible_repository,
+                elif self.in_search_mode:
+                        self.__dump_datamodels(self.__get_selected_publisher(),
+                            self.saved_application_list, self.category_list,
+                            self.section_list)
+                else:
+                        self.__dump_datamodels(self.__get_selected_publisher(),
                                 self.application_list, self.category_list,
                                 self.section_list)
 
@@ -2730,7 +2786,7 @@ class PackageManager:
                         self.w_reload_button.set_sensitive(False)
 
         def __add_pkg_stem_to_list(self, stem, status):
-                publisher = self.__get_active_publisher()
+                publisher = self.__get_selected_publisher()
                 if self.selected_pkgs.get(publisher) == None:
                         self.selected_pkgs[publisher] = {}
                 self.selected_pkgs.get(publisher)[stem] = status
@@ -3170,22 +3226,14 @@ class PackageManager:
                 if len(self.repositories_list) <= 1:
                         return True
                 else:
-                        visible_repository = self.__get_visible_repository_name()
+                        visible_publisher = self.__get_selected_publisher()
                         pkg = model.get_value(itr, enumerations.FMRI_COLUMN)
                         if not pkg:
                                 return False
-                        if cmp(pkg.get_publisher(), visible_repository) == 0:
+                        if cmp(pkg.get_publisher(), visible_publisher) == 0:
                                 return True
                         else:
                                 return False
-
-        def __get_visible_repository_name(self):
-                pub_iter = self.w_repository_combobox.get_active_iter()
-                if pub_iter == None:
-                        return None
-                visible = self.repositories_list.get_value(pub_iter, \
-                    enumerations.REPOSITORY_NAME)
-                return visible
 
         def __enable_disable_selection_menus(self):
                 if self.in_setup:
@@ -3240,8 +3288,8 @@ class PackageManager:
 
         def __enable_if_selected_for_removal(self):
                 sensitive = False
-                visible_repository = self.__get_visible_repository_name()
-                selected = self.to_remove.get(visible_repository)
+                visible_publisher = self.__get_selected_publisher()
+                selected = self.to_remove.get(visible_publisher)
                 if selected > 0:
                         sensitive = True
                 self.w_remove_button.set_sensitive(sensitive)
@@ -3250,8 +3298,8 @@ class PackageManager:
 
         def __enable_if_selected_for_install_update(self):
                 sensitive = False
-                visible_repository = self.__get_visible_repository_name()
-                selected = self.to_install_update.get(visible_repository)
+                visible_publisher = self.__get_selected_publisher()
+                selected = self.to_install_update.get(visible_publisher)
                 if selected > 0:
                         sensitive = True
                 self.w_installupdate_button.set_sensitive(sensitive)
@@ -3826,54 +3874,71 @@ class PackageManager:
                         self.w_main_statusbar.remove(0, self.statusbar_message_id)
                         self.statusbar_message_id = 0
                 search_text = self.w_searchentry.get_text()
-                if self.in_search_mode:
-                        if self.is_search_all:
-                                opt_str = _('Searched All for "%s"') % (search_text)
-                        else:
-                                opt_str = \
-                                        _('Searched %(last_active)s '
-                                            'for "%(search_text)s"') \
-                                        % {"last_active" : self.last_active_publisher,
-                                            "search_text" : search_text}
-                        if len(self.application_list) == SEARCH_LIMIT:
-                                fmt_str = _("%(option_str)s:  first %(number)d "
-                                    "found %(time)s")
-                        else:
-                                fmt_str = _("%(option_str)s:  %(number)d found %(time)s")
-                        time_str = ""
-                        if self.search_time_sec > 0:
-                                time_str = _("in %d seconds") % self.search_time_sec
-                        status_str = fmt_str % {"option_str" : opt_str,
-                            "number" : len(self.application_list), "time" : time_str}
+
+                if not self.in_search_mode:
+                        installed = 0
+                        self.selected = 0
+                        sel = 0
+                        if self.application_list == None:
+                                return
+                        visible_publisher = self.__get_selected_publisher()
+                        pkgs = self.selected_pkgs.get(visible_publisher)
+                        if pkgs:
+                                self.selected = len(pkgs)
+                        for pkg_row in self.application_list:
+                                if pkg_row[enumerations.STATUS_COLUMN] == \
+                                        enumerations.INSTALLED \
+                                        or pkg_row[enumerations.STATUS_COLUMN] == \
+                                    enumerations.UPDATABLE:
+                                        installed = installed + 1
+                                if pkg_row[enumerations.MARK_COLUMN]:
+                                        sel = sel + 1
+                        listed_str = _('%d listed') % len(self.application_list)
+                        sel_str = _('%d selected') % sel
+                        inst_str = _('%d installed') % installed
+                        status_str = _("%s: %s , %s, %s.") % (visible_publisher,
+                            listed_str, inst_str, sel_str)
                         self.w_main_statusbar.push(0, status_str)
                         return
-                installed = 0
-                self.selected = 0
-                sel = 0
-                if self.application_list == None:
-                        return
-                visible_repository = self.__get_visible_repository_name()
-                pkgs = self.selected_pkgs.get(visible_repository)
-                if pkgs:
-                        self.selected = len(pkgs)
-                for pkg_row in self.application_list:
-                        if pkg_row[enumerations.STATUS_COLUMN] == enumerations.INSTALLED \
-                            or pkg_row[enumerations.STATUS_COLUMN] == \
-                            enumerations.UPDATABLE:
-                                installed = installed + 1
-                        if pkg_row[enumerations.MARK_COLUMN]:
-                                sel = sel + 1
-                listed_str = _('%d listed') % len(self.application_list)
-                sel_str = _('%d selected') % sel
-                inst_str = _('%d installed') % installed
-                status_str = _("%s: %s , %s, %s.") % (visible_repository, listed_str,
-                        inst_str, sel_str)
+
+                # In Search Mode
+                active = ""
+                if self.is_search_all:
+                        if self.__doing_search():
+                                if self.search_all_pub_being_searched != None:
+                                        active = "(" + self.search_all_pub_being_searched + \
+                                                ") "
+                                opt_str = _('Searching... '
+                                    '%(active)sfor "%(search_text)s"') % \
+                                        {"active": active, "search_text": search_text}
+                        else:
+                                opt_str = _('Searched All for "%s"') % (search_text)
+                else:
+                        search_str = _("Searched")
+                        if self.__doing_search():
+                                search_str = _("Searching...")
+                        visible_publisher = self.__get_selected_publisher()
+                        if visible_publisher != None:
+                                active = "(" + visible_publisher + ") "
+                        opt_str = \
+                                _('%(search)s %(last_active)sfor "%(search_text)s"') \
+                                % {"search": search_str, "last_active" : active,
+                                    "search_text" : search_text}
+                fmt_str = _("%(option_str)s:  %(number)d found %(time)s")
+                time_str = ""
+                if self.search_time_sec == 1:
+                        time_str = _("in 1 second")
+                elif self.search_time_sec > 1:
+                        time_str = _("in %d seconds") % self.search_time_sec
+                        
+                status_str = fmt_str % {"option_str" : opt_str, "number" :
+                    len(self.application_list), "time" : time_str}
                 self.w_main_statusbar.push(0, status_str)
 
         def update_package_list(self, update_list):
                 if update_list == None and self.img_timestamp:
                         return
-                visible_repository = self.__get_visible_repository_name()
+                visible_publisher = self.__get_selected_publisher()
                 default_publisher = self.default_publisher
                 self.api_o.refresh()
                 if not self.img_timestamp:
@@ -3883,7 +3948,7 @@ class PackageManager:
                 self.img_timestamp = self.cache_o.get_index_timestamp()
                 installed_icon = gui_misc.get_icon(self.icon_theme,
                     "status_installed")
-                visible_list = update_list.get(visible_repository)
+                visible_list = update_list.get(visible_publisher)
                 if visible_list:
                         i = 0
                         while i < len(visible_list):
@@ -3913,11 +3978,11 @@ class PackageManager:
                                                 row[enumerations.STATUS_ICON_COLUMN] = \
                                                     None
                                         row[enumerations.MARK_COLUMN] = False
-                        self.__dump_datamodels(visible_repository,
+                        self.__dump_datamodels(visible_publisher,
                                 self.application_list, self.category_list,
                                 self.section_list)
                 for publisher in update_list:
-                        if publisher != visible_repository:
+                        if publisher != visible_publisher:
                                 pkg_list = update_list.get(publisher)
                                 for pkg in pkg_list:
                                         pkg_stem = None
