@@ -483,7 +483,8 @@ def hash_sw(swname, swarc, swhash):
         if hash.hexdigest() == swhash:
                 return True
         else:
-                print "bad checksum! %s != %s" % (swhash, hash.hexdigest())
+                print >> sys.stderr, "bad checksum! %s != %s" % \
+                    (swhash, hash.hexdigest())
                 return False
 
 def install_cacerts():
@@ -530,7 +531,8 @@ def install_sw(swname, swver, swarc, swdir, swurl, swidir, swhash):
                 if not os.path.exists(swarc) or \
                     (hdr.gettype() != "application/x-gzip" and
                      hdr.gettype() != "application/x-tar"):
-                        print "Unable to retrieve %s.\nPlease retrieve the file " \
+                        print >> sys.stderr, "Unable to retrieve %s.\n" \
+                            "Please retrieve the file " \
                             "and place it at: %s\n" % (swurl, swarc)
                         # remove a partial download or error message from proxy
                         remove_sw(swname)
@@ -555,8 +557,14 @@ def install_sw(swname, swver, swarc, swdir, swurl, swidir, swhash):
                         patchpath = os.path.join(os.path.pardir,
                             os.path.pardir, patchdir, p)
                         print "Applying %s to %s" % (p, swname)
-                        subprocess.Popen(['patch', '-d', swdir, '-i',
-                            patchpath]).wait()
+                        args = ['patch', '-d', swdir, '-i', patchpath, '-p0']
+                        ret = subprocess.Popen(args).wait()
+                        if ret != 0:
+                                print >> sys.stderr, \
+                                    "patch failed and returned %d." % ret
+                                print >> sys.stderr, \
+                                    "Command was: %s" % " ".join(args)
+                                sys.exit(1)
                 file(already_patched, "w").close()
 
         swinst_dir = os.path.join(root_dir, py_install_dir, swidir)
@@ -568,8 +576,10 @@ def install_sw(swname, swver, swarc, swdir, swurl, swidir, swhash):
                     '--install-data=%s' % py_install_dir]
                 ret = subprocess.Popen(args, cwd = swdir).wait()
                 if ret != 0:
-                        print "install failed and returned %d." % ret
-                        print "Command was: %s" % " ".join(args)
+                        print >> sys.stderr, \
+                            "install failed and returned %d." % ret
+                        print >> sys.stderr, \
+                            "Command was: %s" % " ".join(args)
                         sys.exit(1)
 
 
