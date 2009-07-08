@@ -262,41 +262,6 @@ class Image(object):
 
                 ic = imageconfig.ImageConfig(self.root)
                 ic.read(self.imgdir)
-
-                # make sure we define architecture variant; upgrade config
-                # file if possible.
-                changed = False
-                if "variant.arch" not in ic.variants:
-                        ic.variants["variant.arch"] = platform.processor()
-                        try:
-                                ic.write(self.imgdir)
-                                changed = True
-                        except api_errors.PermissionsException:
-                                pass
-                # make sure we define zone variant; upgrade config if possible
-                if "variant.opensolaris.zone" not in ic.variants:
-                        zone = ic.filters.get("opensolaris.zone", "")
-                        if zone == "nonglobal":
-                                ic.variants[
-                                    "variant.opensolaris.zone"] = "nonglobal"
-                        else:
-                                ic.variants[
-                                    "variant.opensolaris.zone"] = "global"
-                        try:
-                                ic.write(self.imgdir)
-                                changed = True
-                        except api_errors.PermissionsException:
-                                pass
-
-                #
-                # If we made changes to the configuration, reload it;
-                # this lets any processing which is a side-effect of
-                # these changes take place.
-                #
-                if changed:
-                        ic = imageconfig.ImageConfig(self.root)
-                        ic.read(self.imgdir)
-
                 self.cfg_cache = ic
 
         def save_config(self):

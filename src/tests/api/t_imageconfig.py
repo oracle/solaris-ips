@@ -97,6 +97,8 @@ sort_policy: priority
                 self.assertEqual(repo.registration_uri, "http://zruty.sfbay:10001/reg.html")
                 self.assertEqual(repo.related_uris, [])
                 self.assertEqual(repo.sort_policy, "priority")
+                # uuid should have been set even though it wasn't in the file
+                self.assertNotEqual(pub.client_uuid, None)
 
         def test_1_unicode(self):
                 self.ic.read(self.sample_dir)
@@ -116,6 +118,19 @@ sort_policy: priority
                 #
                 shutil.rmtree(self.sample_dir)
                 self.assertRaises(RuntimeError, self.ic.read, self.sample_dir)
+
+        def test_3_reread(self):
+                """Verify that the uuid determined during the first read is the
+                same as the uuid in the second read."""
+                self.ic.read(self.sample_dir)
+                pub = self.ic.publishers["sfbay.sun.com"]
+                uuid = pub.client_uuid
+
+                ic2 = imageconfig.ImageConfig(self.sample_dir)
+                ic2.read(self.sample_dir)
+                pub2 = ic2.publishers["sfbay.sun.com"]
+                self.assertEqual(pub2.client_uuid, uuid)
+
 
 # XXX more test cases needed.
 

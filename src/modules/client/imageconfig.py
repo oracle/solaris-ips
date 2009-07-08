@@ -26,6 +26,7 @@
 import ConfigParser
 import errno
 import os.path
+import platform
 import pkg.fmri as fmri
 import pkg.client.api_errors as api_errors
 import pkg.client.publisher as publisher
@@ -101,6 +102,8 @@ class ImageConfig(object):
         def read(self, path):
                 """Read the config files for the image from the given directory.
                 """
+                # keep track of whether the config needs to be rewritten
+                changed = False
 
                 cp = ConfigParser.SafeConfigParser()
 
@@ -116,16 +119,41 @@ class ImageConfig(object):
                 pmroot = os.path.join(path, PUB_META_DIR)
 
                 #
-                # Must load variants first, since in the case of zones,
+                # Must load filters first, since the value of a filter can
+                # impact the default value of the zone variant.
+                #
+                if cp.has_section("filter"):
+                        for o in cp.options("filter"):
+                                self.filters[o] = cp.get("filter", o)
+
+                #
+                # Must load variants next, since in the case of zones,
                 # the variant can impact the processing of publishers.
                 #
                 if cp.has_section("variant"):
                         for o in cp.options("variant"):
                                 self.variants[o] = cp.get("variant", o)
 
+                # make sure we define architecture variant
+                if "variant.arch" not in self.variants:
+                        self.variants["variant.arch"] = platform.processor()
+                        changed = True
+
+                # make sure we define zone variant
+                if "variant.opensolaris.zone" not in self.variants:
+                        zone = self.filters.get("opensolaris.zone", "")
+                        if zone == "nonglobal":
+                                self.variants[
+                                    "variant.opensolaris.zone"] = "nonglobal"
+                        else:
+                                self.variants[
+                                    "variant.opensolaris.zone"] = "global"
+                        changed = True
+
                 for s in cp.sections():
                         if re.match("authority_.*", s):
-                                k, a = self.read_publisher(pmroot, cp, s)
+                                k, a, c = self.read_publisher(pmroot, cp, s)
+                                changed |= c
 
                                 self.publishers[k] = a
                                
@@ -142,10 +170,6 @@ class ImageConfig(object):
                         for o in cp.options("property"):
                                 self.properties[o] = cp.get("property", 
                                     o, raw=True).decode('utf-8')
-
-                if cp.has_section("filter"):
-                        for o in cp.options("filter"):
-                                self.filters[o] = cp.get("filter", o)
 
                 try:
                         self.preferred_publisher = \
@@ -173,9 +197,19 @@ class ImageConfig(object):
                                     "configuration from %s" % dafile)
                         for s in cp.sections():
                                 if re.match("authority_.*", s):
-                                        k, a = self.read_publisher(pmroot, cp,
+                                        k, a, c = self.read_publisher(pmroot, cp,
                                             s)
                                         self.publishers[k] = a
+                                        changed |= c
+
+                #
+                # If the configuration changed, rewrite it if possible
+                #
+                if changed:
+                        try:
+                                self.write(path)
+                        except api_errors.PermissionsException:
+                                pass
 
         def write(self, path):
                 """Write the configuration to the given directory"""
@@ -184,18 +218,20 @@ class ImageConfig(object):
                 # compatibility with the older code is no longer needed
                 da = ConfigParser.SafeConfigParser()
 
+                # For compatibility, the preferred-publisher is written out
+                # as the preferred-authority.  Modify a copy so that we don't
+                # change the in-memory copy.
+                props = self.properties.copy()
                 try:
-                        del self.properties["preferred-publisher"]
+                        del props["preferred-publisher"]
                 except KeyError:
                         pass
-
-                self.properties["preferred-authority"] = \
-                    self.preferred_publisher
+                props["preferred-authority"] = self.preferred_publisher
 
                 cp.add_section("property")
-                for p in self.properties:
+                for p in props:
                         cp.set("property", p,
-                            self.properties[p].encode("utf-8"))
+                            props[p].encode("utf-8"))
 
                 cp.add_section("filter")
                 for f in self.filters:
@@ -307,6 +343,7 @@ class ImageConfig(object):
 
         def read_publisher(self, meta_root, cp, s):
                 # publisher block has alias, prefix, origin, and mirrors
+                changed = False
                 try:
                         alias = cp.get(s, "alias")
                 except ConfigParser.NoOptionError:
@@ -455,4 +492,8 @@ class ImageConfig(object):
                     client_uuid=client_uuid, disabled=disabled,
                     meta_root=pmroot, repositories=[r])
 
-                return prefix, pub
+                # write out the UUID if it was set
+                if pub.client_uuid != client_uuid:
+                        changed = True
+
+                return prefix, pub, changed

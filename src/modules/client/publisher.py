@@ -1012,7 +1012,7 @@ class Publisher(object):
         def reset_client_uuid(self):
                 """Replaces the current client_uuid with a new UUID."""
 
-                self.__client_uuid = pkg.Uuid25.uuid1()
+                self.__client_uuid = str(pkg.Uuid25.uuid1())
 
         def set_origin(self, origin):
                 """Deprecated"""
