@@ -422,6 +422,24 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
                 self.pkg("install foo@1.1", exit=1)
                 self.dc.start()
 
+        def test_bug_9929(self):
+                """Make sure that we can uninstall/install a package that
+                already has its contents on disk."""
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.foo11)
+                self.image_create(durl)
+
+                self.pkg("install foo")
+
+                self.dc.stop()
+                self.pkg("uninstall foo")
+                lr_path = os.path.join(self.img_path, "var","pkg","catalog",
+                    "test", "last_refreshed")
+                os.unlink(lr_path) 
+                self.pkg("install --no-refresh foo")
+                self.dc.start()
+
 class TestPkgInstallAmbiguousPatterns(testutils.SingleDepotTestCase):
 
         # An "ambiguous" package name pattern is one which, because of the

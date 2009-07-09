@@ -76,9 +76,6 @@ class Transport(object):
 
                 self.__repo_cache = trepo.RepoCache(self.__engine)
 
-                if not self.__portal_test_executed:
-                        self.captive_portal_test()
-
         def reset(self):
                 """Resets the transport.  This needs to be done
                 if an install plan has been canceled and needs to
@@ -100,6 +97,10 @@ class Transport(object):
 
                 if isinstance(pub, publisher.Publisher):
                         header = self.__build_header(uuid=self.__get_uuid(pub))
+
+                # If captive portal test hasn't been executed, run it
+                # prior to this operation.
+                self.captive_portal_test()
 
                 for d in self.__gen_origins(pub, retry_count):
 
@@ -156,6 +157,10 @@ class Transport(object):
                 retry_count = global_settings.PKG_TIMEOUT_MAX
                 header = self.__build_header(uuid=self.__get_uuid(pub))
                 croot = pub.meta_root
+
+                # If captive portal test hasn't been executed, run it
+                # prior to this operation.
+                self.captive_portal_test()
 
                 for d in self.__gen_origins(pub, retry_count):
 
@@ -271,6 +276,10 @@ class Transport(object):
                 header = self.__build_header(intent=intent,
                     uuid=self.__get_uuid(pub))
 
+                # If captive portal test hasn't been executed, run it
+                # prior to this operation.
+                self.captive_portal_test()
+
                 for d in self.__gen_origins(pub, retry_count):
 
                         repostats = self.stats[d.get_url()]
@@ -361,6 +370,10 @@ class Transport(object):
                 # is the cache where valid content lives.
                 completed_dir = self.__img.cached_download_dir()
                 download_dir = self.__img.incoming_download_dir()
+
+                # If captive portal test hasn't been executed, run it
+                # prior to this operation.
+                self.captive_portal_test()
 
                 # Check if the download_dir exists.  If it doesn't create
                 # the directories.
@@ -455,6 +468,10 @@ class Transport(object):
                 verlines = None
                 header = self.__build_header(uuid=self.__get_uuid(pub))
 
+                # If captive portal test hasn't been executed, run it
+                # prior to this operation.
+                self.captive_portal_test()
+
                 for d in self.__gen_origins(pub, retry_count):
 
                         # If a transport exception occurs,
@@ -538,12 +555,14 @@ class Transport(object):
 
         def captive_portal_test(self):
                 """A captive portal forces a HTTP client on a network
-                to see a special web page, usually for pubentication
+                to see a special web page, usually for authentication
                 purposes.  (http://en.wikipedia.org/wiki/Captive_portal)."""
 
-                vd = None
+                if self.__portal_test_executed:
+                        return
 
                 self.__portal_test_executed = True
+                vd = None
 
                 for pub in self.__img.gen_publishers():
                         try:
