@@ -71,8 +71,9 @@ SECTION_ENABLED,
 #Filter
 (
 FILTER_ID,
+FILTER_ICON,
 FILTER_NAME,
-) = range(2)
+) = range(3)
 
 #Filter
 (

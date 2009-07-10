@@ -41,10 +41,12 @@ CACHE_VERSION=8
 INDEX_HASH_LENGTH=41
 
 class CacheListStores:
-        def __init__(self, icon_theme, application_dir, api_o):
+        def __init__(self, icon_theme, application_dir, api_o, update_available_icon,
+            installed_icon, not_installed_icon):
                 self.api_o = api_o
-                self.update_available_icon = gui_misc.get_icon(icon_theme, "status_newupdate")
-                self.installed_icon = gui_misc.get_icon(icon_theme, "status_installed")
+                self.update_available_icon = update_available_icon
+                self.installed_icon = installed_icon
+                self.not_installed_icon = not_installed_icon
                 self.category_icon = gui_misc.get_pixbuf_from_path(application_dir +
                     "/usr/share/package-manager/", "legend_newupdate")
 
@@ -245,6 +247,8 @@ class CacheListStores:
                                 status_icon = self.installed_icon
                         elif status == enumerations.UPDATABLE:
                                 status_icon = self.update_available_icon
+                        else:
+                                status_icon = self.not_installed_icon
                         fmri = app.get("fmri")
                         stem = app.get("stem")
                         if selected_pkgs_pub != None:

@@ -113,11 +113,14 @@ BUILDHELPFILES = \
 	$(HELP_LOCALES:%=help/%/package-manager.xml) \
 
 ICONS16 = \
+   data/icons/16x16/filter_all.png \
+   data/icons/16x16/filter_selected.png \
+   data/icons/16x16/progress_blank.png \
+   data/icons/16x16/progress_checkmark.png \
    data/icons/16x16/status_checkmark.png \
    data/icons/16x16/status_installed.png \
    data/icons/16x16/status_newupdate.png \
-   data/icons/16x16/progress_checkmark.png \
-   data/icons/16x16/progress_blank.png
+   data/icons/16x16/status_notinstalled.png
 
 ICONS22 = \
    data/icons/22x22/search.png \

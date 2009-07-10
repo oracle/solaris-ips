@@ -66,11 +66,14 @@ d none usr/share/package-manager/icons 755 root bin
 d none usr/share/package-manager/icons/hicolor 755 root bin
 d none usr/share/package-manager/icons/hicolor/16x16 755 root bin
 d none usr/share/package-manager/icons/hicolor/16x16/actions 755 root bin
+f none usr/share/package-manager/icons/hicolor/16x16/actions/filter_all.png 444 root other
+f none usr/share/package-manager/icons/hicolor/16x16/actions/filter_selected.png 444 root other
 f none usr/share/package-manager/icons/hicolor/16x16/actions/progress_blank.png 444 root other
 f none usr/share/package-manager/icons/hicolor/16x16/actions/progress_checkmark.png 444 root other
 f none usr/share/package-manager/icons/hicolor/16x16/actions/status_checkmark.png 444 root other
 f none usr/share/package-manager/icons/hicolor/16x16/actions/status_installed.png 444 root other
 f none usr/share/package-manager/icons/hicolor/16x16/actions/status_newupdate.png 444 root other
+f none usr/share/package-manager/icons/hicolor/16x16/actions/status_notinstalled.png 444 root other
 d none usr/share/package-manager/icons/hicolor/22x22 755 root bin
 d none usr/share/package-manager/icons/hicolor/22x22/actions 755 root bin
 f none usr/share/package-manager/icons/hicolor/22x22/actions/search.png 444 root other

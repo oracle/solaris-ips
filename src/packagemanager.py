@@ -262,7 +262,29 @@ class PackageManager:
                     _("_All Repositories"),
                     _("Search All Repositories"))
                     ]
-                self.__register_iconsets(self.search_options)               
+                self.__register_iconsets(self.search_options)
+
+                self.installed_icon = gui_misc.get_icon(self.icon_theme,
+                    'status_installed')
+                self.not_installed_icon = gui_misc.get_icon(self.icon_theme,
+                    'status_notinstalled')
+                self.update_available_icon = gui_misc.get_icon(self.icon_theme,
+                    'status_newupdate')
+                self.filter_options = [
+                    (enumerations.FILTER_ALL,
+                    gui_misc.get_icon(self.icon_theme, 'filter_all'),
+                    _('All Packages')),
+                    (enumerations.FILTER_INSTALLED, self.installed_icon,
+                    _('Installed Packages')),
+                    (enumerations.FILTER_UPDATES, self.update_available_icon,
+                    _('Updates')),
+                    (enumerations.FILTER_NOT_INSTALLED, self.not_installed_icon,
+                    _('Not installed Packages')),
+                    (-1, None, ""),
+                    (enumerations.FILTER_SELECTED,
+                    gui_misc.get_icon(self.icon_theme, 'filter_selected'),
+                    _('Selected Packages'))
+                    ]
                 self.last_visible_publisher = None
                 self.last_visible_publisher_uptodate = False
                 self.publisher_changed = True
@@ -996,6 +1018,7 @@ class PackageManager:
         def __get_new_filter_liststore():
                 return gtk.ListStore(
                         gobject.TYPE_INT,         # enumerations.FILTER_ID
+                        gtk.gdk.Pixbuf,           # enumerations.FILTER_ICON
                         gobject.TYPE_STRING,      # enumerations.FILTER_NAME
                         )
 
@@ -1160,13 +1183,21 @@ class PackageManager:
                         self.w_sections_combobox.add_attribute( cell,
                             'sensitive', enumerations.SECTION_ENABLED )
                         ##FILTER COMBOBOX
-                        #enumerations.FILTER_NAME
+                        render_pixbuf = gtk.CellRendererPixbuf()
+                        self.w_filter_combobox.pack_start(render_pixbuf, expand = True)
+                        self.w_filter_combobox.add_attribute(render_pixbuf, "pixbuf", 
+                            enumerations.FILTER_ICON)
+                        self.w_filter_combobox.set_cell_data_func(render_pixbuf,
+                            self.filter_cell_data_function, enumerations.FILTER_ICON)
+                        
                         cell = gtk.CellRendererText()
                         self.w_filter_combobox.pack_start(cell, True)
                         self.w_filter_combobox.add_attribute(cell, 'text',
                             enumerations.FILTER_NAME)
+                        self.w_filter_combobox.set_cell_data_func(cell,
+                            self.filter_cell_data_function, enumerations.FILTER_NAME)
                         self.w_filter_combobox.set_row_separator_func(
-                            self.combobox_id_separator)
+                            self.combobox_filter_id_separator)
 
                 if section_list != None:
                         self.section_list = section_list
@@ -1510,16 +1541,14 @@ class PackageManager:
                 section_list.append([9, _('Web Services'), cat_path, enabled ])
 
         def __init_show_filter(self):
-                self.filter_list.append([enumerations.FILTER_ALL, _('All Packages'), ])
-                self.filter_list.append([enumerations.FILTER_INSTALLED,
-                    _('Installed Packages'), ])
-                self.filter_list.append([enumerations.FILTER_UPDATES,
-                    _('Updates'), ])
-                self.filter_list.append([enumerations.FILTER_NOT_INSTALLED,
-                    _('Non-installed Packages'), ])
-                self.filter_list.append([-1, "", ])
-                self.filter_list.append([enumerations.FILTER_SELECTED,
-                    _('Selected Packages'), ])
+                max_length = 0
+                for filter_id, pixbuf, label in self.filter_options:
+                        self.filter_list.append([filter_id, pixbuf, label, ])
+			if filter_id == -1:
+                                continue
+                        max_length = self.__get_max_text_length(
+                            max_length, label, self.w_filter_combobox)
+                
                 if self.initial_show_filter >= enumerations.FILTER_ALL and \
                     self.initial_show_filter < len(self.filter_list):
                         row = self.filter_list[self.initial_show_filter]
@@ -1527,7 +1556,20 @@ class PackageManager:
                                 self.initial_show_filter = enumerations.FILTER_ALL
                 else:
                         self.initial_show_filter = enumerations.FILTER_ALL
+                return max_length
 
+        @staticmethod
+        def __get_max_text_length(length_to_check, text, widget):
+                if widget == None:
+                        return length
+                context = widget.get_pango_context()
+                metrics = context.get_metrics(context.get_font_description())
+                current_length = pango.PIXELS(
+                    metrics.get_approximate_char_width() * len(text))
+                if current_length > length_to_check:
+                        return current_length
+                else:
+                        return length_to_check
 
         def __on_cancel_progressdialog_clicked(self, widget):
                 self.progress_canceled = True
@@ -3445,14 +3487,9 @@ class PackageManager:
             category_list, section_list):
                 if section_list != None:
                         self.__init_sections(section_list)
-                #Only one instance of those icons should be in memory
-                update_available_icon = gui_misc.get_icon(self.icon_theme,
-                    "status_newupdate")
-                installed_icon = gui_misc.get_icon(self.icon_theme,
-                    "status_installed")
+                #Imageinfo for categories
                 update_for_category_icon = \
                     self.get_icon_pixbuf_from_glade_dir("legend_newupdate")
-                #Imageinfo for categories
                 imginfo = imageinfo.ImageInfo()
                 sectioninfo = imageinfo.ImageInfo()
                 pubs = [p.prefix for p in self.api_o.get_publishers()]
@@ -3528,11 +3565,13 @@ class PackageManager:
                         if state["state"] == "installed":
                                 pkg_state = enumerations.INSTALLED
                                 if state["upgradable"] == True:
-                                        status_icon = update_available_icon
+                                        status_icon = self.update_available_icon
                                         category_icon = update_for_category_icon
                                         pkg_state = enumerations.UPDATABLE
                                 else:
-                                        status_icon = installed_icon
+                                        status_icon = self.installed_icon
+                        else:
+                                status_icon = self.not_installed_icon
                         marked = False
                         if not self.is_search_all:
                                 pkgs = self.selected_pkgs.get(pkg_publisher)
@@ -3715,6 +3754,17 @@ class PackageManager:
                 return cmp(a[1], b[1])
 
         @staticmethod
+        def filter_cell_data_function(column, renderer, model, itr, data):
+                '''Function which sets icon size'''
+                if data == enumerations.FILTER_NAME:
+                        renderer.set_property("xalign", 0)
+                        renderer.set_property("width", max_filter_length + 10)
+                elif data == enumerations.FILTER_ICON:
+                        renderer.set_property("xalign", 0)
+                        renderer.set_property("width", 24)
+                return
+
+        @staticmethod
         def cell_data_function(column, renderer, model, itr, data):
                 '''Function which sets the background colour to black if package is
                 selected'''
@@ -3733,6 +3783,11 @@ class PackageManager:
         def combobox_id_separator(model, itr):
                 return model.get_value(itr, 0) == -1 and \
                     model.get_value(itr, 1) == ""
+
+        @staticmethod
+        def combobox_filter_id_separator(model, itr):
+                return model.get_value(itr, 0) == -1 and \
+                    model.get_value(itr, 2) == ""
 
         @staticmethod
         def category_filter(model, itr):
@@ -3775,7 +3830,9 @@ class PackageManager:
                 self.w_progress_dialog.hide()
 
         def init_show_filter(self):
-                self.__init_show_filter()                #Initiates filter
+                """ Sets up the Filter Combobox and returns the maximum length of text
+                    labels it is displaying."""
+                return self.__init_show_filter()                #Initiates filter
 
         def reload_packages(self):
                 self.api_o = gui_misc.get_api_object(self.image_directory, 
@@ -3801,10 +3858,10 @@ class PackageManager:
                 self.repositories_list = self.__get_new_repositories_liststore()
                 self.__setup_repositories_combobox(self.api_o, self.repositories_list)
 
-        @staticmethod
-        def __get_cache_obj(icon_theme, application_dir, api_o):
+        def __get_cache_obj(self, icon_theme, application_dir, api_o):
                 cache_o = cache.CacheListStores(icon_theme, application_dir,
-                    api_o)
+                    api_o, self.update_available_icon, self.installed_icon,
+                    self.not_installed_icon)
                 return cache_o
 
         def process_package_list_end(self):
@@ -3913,8 +3970,6 @@ class PackageManager:
                         self.__on_reload(None)
                         return
                 self.img_timestamp = self.cache_o.get_index_timestamp()
-                installed_icon = gui_misc.get_icon(self.icon_theme,
-                    "status_installed")
                 visible_list = update_list.get(visible_publisher)
                 if visible_list:
                         i = 0
@@ -3937,12 +3992,12 @@ class PackageManager:
                                                 row[enumerations.STATUS_COLUMN] = \
                                                     enumerations.INSTALLED
                                                 row[enumerations.STATUS_ICON_COLUMN] = \
-                                                    installed_icon
+                                                    self.installed_icon
                                         else:
                                                 row[enumerations.STATUS_COLUMN] = \
                                                     enumerations.NOT_INSTALLED
                                                 row[enumerations.STATUS_ICON_COLUMN] = \
-                                                    None
+                                                    self.not_installed_icon
                                         row[enumerations.MARK_COLUMN] = False
                         self.__dump_datamodels(visible_publisher,
                                 self.application_list, self.category_list,
@@ -4014,6 +4069,7 @@ def main():
 if __name__ == '__main__':
         debug = False
         debug_descriptions = False
+        max_filter_length = 0
         update_all_proceed = False
         ua_be_name = None
         app_path = None
@@ -4082,7 +4138,7 @@ Use -U (--update-all) to proceed with Update All"""
         while gtk.events_pending():
                 gtk.main_iteration(False)
 
-        packagemanager.init_show_filter()
+        max_filter_length = packagemanager.init_show_filter()
 
         packagemanager.process_package_list_start(image_dir)
 
