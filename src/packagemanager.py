@@ -3805,7 +3805,7 @@ class PackageManager:
 
         @staticmethod
         def get_installed_version(api_o, pkg):
-                info = api_o.info([pkg], False, frozenset(
+                info = api_o.info([pkg], True, frozenset(
                     [api.PackageInfo.STATE, api.PackageInfo.IDENTITY]))
                 found = info[api.ImageInterface.INFO_FOUND]
                 try:
@@ -3986,8 +3986,11 @@ class PackageManager:
                                                 del self.info_cache[pkg_stem]
                                         package_info = self.get_installed_version(
                                             self.api_o, pkg_stem)
-                                        package_installed =  (package_info.state 
-                                            == api.PackageInfo.INSTALLED)
+                                        package_installed =  False
+                                        if package_info:
+                                                package_installed =  \
+                                                    (package_info.state 
+                                                    == api.PackageInfo.INSTALLED)
                                         if package_installed:
                                                 row[enumerations.STATUS_COLUMN] = \
                                                     enumerations.INSTALLED
