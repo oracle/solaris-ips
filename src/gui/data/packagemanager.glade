@@ -11,6 +11,7 @@
     <property name="default_width">800</property>
     <property name="default_height">615</property>
     <property name="icon">PM_app_48x.png</property>
+    <signal name="key_press_event" handler="on_mainwindow_key_press_event"/>
     <signal name="delete_event" handler="on_mainwindow_delete_event"/>
     <child>
       <widget class="GtkVBox" id="vbox1">

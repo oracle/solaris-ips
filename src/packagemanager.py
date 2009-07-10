@@ -466,6 +466,8 @@ class PackageManager:
                             {
                                 "on_mainwindow_delete_event": \
                                     self.__on_mainwindow_delete_event,
+                                "on_mainwindow_key_press_event": \
+                                    self.__on_mainwindow_key_press_event,
                                 "on_searchentry_changed":self.__on_searchentry_changed,
                                 "on_searchentry_focus_in_event": \
                                     self.__on_searchentry_focus_in,
@@ -1574,6 +1576,12 @@ class PackageManager:
         def __on_cancel_progressdialog_clicked(self, widget):
                 self.progress_canceled = True
                 self.progress_stop_timer_thread = True
+
+        def __on_mainwindow_key_press_event(self, widget, event):
+                if self.is_busy_cursor_set():
+                        return True
+                else:
+                        return False
 
         def __on_mainwindow_delete_event(self, widget, event):
                 ''' handler for delete event of the main window '''
@@ -3840,6 +3848,9 @@ class PackageManager:
                 self.cache_o = self.__get_cache_obj(self.icon_theme, 
                     self.application_dir, self.api_o)
                 self.__on_reload(None)
+
+        def is_busy_cursor_set(self):
+                return self.gdk_window.is_visible()
 
         def set_busy_cursor(self):
                 self.gdk_window.show()
