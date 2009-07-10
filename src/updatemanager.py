@@ -345,9 +345,13 @@ class Updatemanager:
                 if self.image_dir_arg != None:
                         return self.image_dir_arg
 
-                image_directory = os.popen(IMAGE_DIR_COMMAND).readline().rstrip()
-                if len(image_directory) == 0:
-                        image_directory = IMAGE_DIRECTORY_DEFAULT
+                try:
+                        image_directory = os.environ["PKG_IMAGE"]
+                except KeyError:
+                        image_directory = \
+                            os.popen(IMAGE_DIR_COMMAND).readline().rstrip()
+                        if len(image_directory) == 0:
+                                image_directory = IMAGE_DIRECTORY_DEFAULT
                 return image_directory
                 
         def get_updates_to_list(self):
