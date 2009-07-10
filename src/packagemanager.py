@@ -677,13 +677,6 @@ class PackageManager:
                             self.repositories_list.get_iter_first())
                 self.w_repository_combobox.set_model(self.repositories_list)
 
-        def __link_load_blank(self):
-                self.document.clear()
-                self.document.open_stream('text/html')
-                self.document.write_stream(_(
-                    "<html><head></head><body></body></html>"))
-                self.document.close_stream()
-
         def __search_menu_item_activate(self, widget):
                 name = widget.get_name()
                 i = 0
@@ -1195,10 +1188,9 @@ class PackageManager:
                                 self.w_filter_combobox.set_active(self.set_show_filter)
                         self.w_application_treeview.set_model(
                             self.application_list_sort)
-                        if not self.in_search_mode:
-                                if application_list_filter == None:
-                                        self.application_list_filter.set_visible_func(
-                                            self.__application_filter)
+                        if application_list_filter == None:
+                                self.application_list_filter.set_visible_func(
+                                    self.__application_filter)
 
                 category_selection = self.w_categories_treeview.get_selection()
                 category_model, category_iter = category_selection.get_selected()
@@ -1581,14 +1573,6 @@ class PackageManager:
                         self.w_clear_search_button.set_sensitive(False)
                         self.w_clear_search_menuitem.set_sensitive(False)
                 self.__enable_disable_entry_selection(widget)
-                if self.is_search_all and not self.changing_search_option:
-                        if self.w_searchentry.get_text() == "":
-                                self.w_infosearch_frame.hide()
-                                self.__link_load_blank()
-                                self.w_main_view_notebook.set_current_page(
-                                    NOTEBOOK_START_PAGE)
-                                self.__update_statusbar_for_search()
-                                self.w_searchentry.grab_focus()
 
         def __update_statusbar_for_search(self):
                 self.__update_statusbar_message(
@@ -1606,15 +1590,12 @@ class PackageManager:
 
                 self.__save_setup_before_search()
                 self.w_repository_combobox.set_active(0)
-                self.__link_load_blank()
-                self.w_main_view_notebook.set_current_page(
-                    NOTEBOOK_START_PAGE)
+                self.__clear_before_search()
                 self.__update_statusbar_for_search()
                 self.w_searchentry.grab_focus()
-                if len(self.w_searchentry.get_text()) > 0:
+                if self.w_searchentry.get_text_length() > 0:
                         start, end = self.w_searchentry.get_selection_bounds()
                         self.w_searchentry.select_region(end, end)
-                self.__unselect_category()
 
         def __clear_before_search(self):
                 self.in_setup = True
@@ -1633,7 +1614,6 @@ class PackageManager:
                 self.w_repository_combobox.set_active(
                     self.saved_repository_combobox_active)
                 self.set_section = self.saved_sections_combobox_active
-                self.set_show_filter = self.saved_filter_combobox_active
                 if self.saved_category_list == self.category_list:
                         self.__init_tree_views(self.saved_application_list,
                             None, None,
@@ -1653,8 +1633,6 @@ class PackageManager:
                         return
                 self.saved_sections_combobox_active = \
                         self.w_sections_combobox.get_active()
-                self.saved_filter_combobox_active = \
-                        self.w_filter_combobox.get_active()                        
                 self.saved_application_list = self.application_list
                 self.saved_application_list_sort = \
                         self.application_list_sort
@@ -1665,16 +1643,11 @@ class PackageManager:
                 if single_search:
                         self.saved_repository_combobox_active = \
                                 self.w_repository_combobox.get_active()
-                self.w_filter_combobox.set_active(0)
 
         def __do_search(self):
                 self.search_start = 0
-                if self.changing_search_option:
-                        return
-                active = self.w_filter_combobox.get_active()
-                if active != enumerations.FILTER_SELECTED:
-                        self.saved_filter_combobox_active = active                        
-                if len(self.w_searchentry.get_text()) == 0:
+                if self.changing_search_option or \
+                        self.w_searchentry.get_text_length() == 0:
                         return
                 if not self.is_search_all:
                         self.__save_setup_before_search(single_search=True)
@@ -1887,11 +1860,10 @@ class PackageManager:
                         return
                 self.application_refilter_id = 0
                 self.application_refilter_idle_id = 0
-                if not self.in_search_mode:
-                        model = self.w_application_treeview.get_model()
-                        self.w_application_treeview.set_model(None)
-                        self.application_list_filter.refilter()
-                        self.w_application_treeview.set_model(model)
+                model = self.w_application_treeview.get_model()
+                self.w_application_treeview.set_model(None)
+                self.application_list_filter.refilter()
+                self.w_application_treeview.set_model(model)
                 gobject.idle_add(self.__set_empty_details_panel)
                 gobject.idle_add(self.__enable_disable_selection_menus)
                 gobject.idle_add(self.__enable_disable_install_remove)
@@ -1951,7 +1923,10 @@ class PackageManager:
 
         def __on_clear_search(self, widget):
                 self.w_searchentry.delete_text(0, -1)
-                self.__do_search()
+                # Only clear out search results
+                if self.in_search_mode or self.is_search_all:
+                        self.__clear_before_search()
+                        self.__update_statusbar_message(_("Search cleared"))
                 return
 
         def __on_startpage(self, widget):
@@ -2289,12 +2264,6 @@ class PackageManager:
                 if active != enumerations.FILTER_SELECTED:
                         self.saved_filter_combobox_active = active
                 self.__set_main_view_package_list()
-                if self.in_search_mode or self.is_search_all:
-                        self.set_busy_cursor()
-                        self.saved_filter_combobox_active = \
-                            self.w_filter_combobox.get_active()
-                        self.__unset_search(True)
-                        return
                 self.set_busy_cursor()
                 self.__refilter_on_idle()
                 if self.selected == 0:
@@ -2446,10 +2415,6 @@ class PackageManager:
                 self.__set_empty_details_panel()
                 if self.in_search_mode:
                         self.__unset_search(False)
-                        self.w_searchentry.grab_focus()
-                        if len(self.w_searchentry.get_text()) > 0:
-                                start, end = self.w_searchentry.get_selection_bounds()
-                                self.w_searchentry.select_region(end, end)
 
                 pub = [selected_publisher, ]
                 self.set_show_filter = self.initial_show_filter
@@ -3205,6 +3170,8 @@ class PackageManager:
                                         break
                 if (model.get_value(itr, enumerations.IS_VISIBLE_COLUMN) == False):
                         return False
+                if self.in_search_mode:
+                        return self.__is_package_filtered(model, itr, filter_id)
                 return (category &
                     self.__is_package_filtered(model, itr, filter_id))
 
