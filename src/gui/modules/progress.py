@@ -111,7 +111,7 @@ class GuiProgressTracker(NullProgressTracker):
         def dl_output_done(self):
                 self.update_details_text("\n")
 
-        def act_output(self):
+        def act_output(self, force=False):
                 if self.act_phase != self.act_phase_last:
                         self.act_phase_last = self.act_phase
                         self.update_label_text(self.act_phase)
@@ -122,7 +122,7 @@ class GuiProgressTracker(NullProgressTracker):
         def act_output_done(self):
                 return
 
-        def ind_output(self):
+        def ind_output(self, force=False):
                 if self.ind_started != self.ind_phase:
                         self.ind_started = self.ind_phase
                         self.update_label_text(self.ind_phase)

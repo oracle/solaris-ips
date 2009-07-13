@@ -27,8 +27,6 @@ import os
 import sys
 import gettext
 
-import pkg.client.api as api
-import pkg.client.api_errors as api_errors
 import pkg.client.progress as progress
 import pkg.misc as misc
 import pkg.gui.misc as gui_misc
@@ -37,7 +35,7 @@ from pkg.client import global_settings
 UPDATES_AVAILABLE = 0
 NO_UPDATES_AVAILABLE = 1
 ERROR_OCCURRED = 2
-PKG_CLIENT_NAME="updatemanagernotifier"
+PKG_CLIENT_NAME = "updatemanagernotifier"
 
 
 # Put _() in the global namespace

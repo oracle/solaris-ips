@@ -76,15 +76,15 @@ def get_pixbuf_from_path(path, icon_name):
 def get_icon(icon_theme, name, size=16):
         try:
                 return icon_theme.load_icon(name, size, 0)
-        except gobject.GError, e:
+        except gobject.GError:
                 return None
 
-def display_help(application_dir="", id=None):
+def display_help(application_dir="", help_id=None):
         props = { gnome.PARAM_APP_DATADIR : os.path.join(application_dir,
                     'usr/share/package-manager/help') }
         gnome.program_init('package-manager', '0.1', properties=props)
-        if id != None:
-                gnome.help_display('package-manager', link_id=id)
+        if help_id != None:
+                gnome.help_display('package-manager', link_id=help_id)
         else:
                 gnome.help_display('package-manager')
 
@@ -128,7 +128,7 @@ def get_api_object(img_dir, progtrack, parent_dialog):
                 message = _("Version mismatch: expected version %d, got version %d") % \
                     (ex.expected_version, ex.received_version)
         except api_errors.ImageNotFoundException, ex:
-                message = _("%s is not an install image") % e.user_dir
+                message = _("%s is not an install image") % ex.user_dir
         if message != None:
                 if parent_dialog != None:
                         error_occurred(parent_dialog,

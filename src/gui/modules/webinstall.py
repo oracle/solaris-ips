@@ -41,12 +41,10 @@ import pkg.misc as misc
 import pkg.gui.misc as gui_misc
 import pkg.gui.progress as progress
 import pkg.client.api_errors as api_errors
-import pkg.client.api as api
 import pkg.gui.installupdate as installupdate
 import pkg.gui.enumerations as enumerations
 import pkg.gui.repository as repository
 from pkg.client import global_settings
-import pkg.client.publisher as publisher
         
 debug = False
 
@@ -287,7 +285,7 @@ class Webinstall:
                 else:
                         msg = _("Failed to add %s.\n") % pub
                         msg += _("No URI specified")
-                        self.__error_occurred( 
+                        gui_misc.error_occurred( 
                                     self.w_webinstall_dialog,
                                     msg, gtk.MESSAGE_ERROR, _("Repository Error"))
 

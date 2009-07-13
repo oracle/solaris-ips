@@ -51,7 +51,6 @@ except ImportError:
 import pkg.client.progress as progress
 import pkg.misc as misc
 import pkg.gui.misc as gui_misc
-from pkg.client import global_settings
 
 # Put _() in the global namespace
 import __builtin__

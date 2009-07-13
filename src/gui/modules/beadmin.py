@@ -35,7 +35,6 @@ from threading import Thread
 try:
         import gobject
         gobject.threads_init()
-        import gnome
         import gtk
         import gtk.glade
         import pygtk
@@ -347,23 +346,23 @@ class Beadmin:
                 # Remove
                 for row in self.be_list:
                         if row[BE_MARKED]:
-				time.sleep(0.1)
+                                time.sleep(0.1)
                                 result = self.__destroy_be(row[BE_NAME])
                                 if result != 0:
                                         not_deleted.append(row[BE_NAME])
                 # Rename
                 for row in self.be_list:
                         if row[BE_NAME] != row[BE_ORIG_NAME]:
-				time.sleep(0.1)
+                                time.sleep(0.1)
                                 result = self.__rename_be(row[BE_ORIG_NAME],
                                     row[BE_NAME])
-                                if result !=0:
+                                if result != 0:
                                         not_renamed[row[BE_ORIG_NAME]] = row[BE_NAME]
                 # Set active
                 for row in self.be_list:
                         if row[BE_ACTIVE_DEFAULT] == True and row[BE_ID] != \
                             self.initial_default:
-				time.sleep(0.1)
+                                time.sleep(0.1)
                                 result = self.__set_default_be(row[BE_NAME])
                                 if result != 0:
                                         not_default = row[BE_NAME]
@@ -389,16 +388,18 @@ class Beadmin:
                                 msg += _("<b>Couldn't rename Boot "
                                     "Environments:</b>\n")
                                 for orig in not_renamed:
-                                        msg += _("%s <b>to</b> %s\n") % (orig, 
-                                            not_renamed.get(orig))                                
+                                        msg += _("%s <b>to</b> %s\n") % (orig, \
+                                            not_renamed.get(orig))
                         gobject.idle_add(self.__error_occurred, msg)
                         return
                 gobject.idle_add(self.__on_cancel_be_clicked, None)
                                 
-        def __rename_cell(self, model, itr, new_name):
+        @staticmethod
+        def __rename_cell(model, itr, new_name):
                 model.set_value(itr, BE_NAME, new_name)
 
-        def __rename_be(self, orig_name, new_name):
+        @staticmethod
+        def __rename_be(orig_name, new_name):
                 return be.beRename(orig_name, new_name)
 
         def __error_occurred(self, error_msg, reset=True):
@@ -563,10 +564,12 @@ class Beadmin:
                     start_editing=True)
                 self.w_be_treeview.scroll_to_cell(self.initial_active)
 
-        def __destroy_be(self, be_name):
+        @staticmethod
+        def __destroy_be(be_name):
                 return be.beDestroy(be_name, 1, True)
 
-        def __set_default_be(self, be_name):
+        @staticmethod
+        def __set_default_be(be_name):
                 return be.beActivate(be_name)
 
         def __cell_data_default_function(self, column, renderer, model, itr, data):

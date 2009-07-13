@@ -45,9 +45,7 @@ try:
 except ImportError:
         sys.exit(1)
 
-import pkg.client.image as image
 import pkg.client.api as api
-import pkg.client.api_errors as api_errors
 import pkg.client.progress as progress
 import pkg.gui.beadmin as beadm
 import pkg.gui.installupdate as installupdate
@@ -119,7 +117,7 @@ class Updatemanager:
                 self.application_path = None
                 self.icon_theme = gtk.IconTheme()
                 icon_location = os.path.join(self.application_dir, ICON_LOCATION)
-                self.icon_theme.append_search_path(ICON_LOCATION)
+                self.icon_theme.append_search_path(icon_location)
                 self.ua_start = 0
                 self.pylintstub = None
                 self.api_obj = None

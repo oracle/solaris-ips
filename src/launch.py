@@ -23,11 +23,11 @@
 # Use is subject to license terms.
 #
 
-HTTP_PROXY_HOST='/system/http_proxy/host'
-HTTP_PROXY_PORT='/system/http_proxy/port'
-HTTP_PROXY_USE = "/system/http_proxy/use_http_proxy"
-HTTP_PROXY_VARIABLE='http_proxy'
-HTTPS_PROXY_VARIABLE='https_proxy'
+HTTP_PROXY_HOST = '/system/http_proxy/host'
+HTTP_PROXY_PORT = '/system/http_proxy/port'
+HTTP_PROXY_USE = '/system/http_proxy/use_http_proxy'
+HTTP_PROXY_VARIABLE = 'http_proxy'
+HTTPS_PROXY_VARIABLE = 'https_proxy'
 
 import gconf
 import os
@@ -35,13 +35,13 @@ import sys
 import subprocess
 
 def get_http_proxy():
-        host= client.get_string(HTTP_PROXY_HOST)
+        host = client.get_string(HTTP_PROXY_HOST)
         port = client.get_int(HTTP_PROXY_PORT)
         return 'http://' + host + ':' + str(port) + '/'
 
 if __name__ == '__main__':
         client = gconf.client_get_default()
-        use_http_proxy= client.get_bool(HTTP_PROXY_USE)
+        use_http_proxy = client.get_bool(HTTP_PROXY_USE)
         if use_http_proxy:
                 http_proxy = get_http_proxy()
                 if os.getenv(HTTP_PROXY_VARIABLE) == None:

@@ -52,13 +52,16 @@
 # C0111: Missing Docstring
 # W0511: Used when a warning note as FIXME or XXX is detected.
 # W0613: Unused argument
+# W0704: Except doesn't do anything
+# W0142: Used * or ** magic
+# R0921: Abstract class not referenced
 #
 # W0212: Access to a protected member                            (fix)
 # Some duplicated code is giving us a number of protected access warnings that we will get rid of when this code duplication is removed
 # W0612: Unused variable                                         (fix)
 # Some of the access methods we use in return a number of elements of which we only need to use one
 
-disable-msg=C0111,W0511,W0613
+disable-msg=C0111,W0511,W0613,W0704,W0142,R0921
 
 
 [REPORTS]
@@ -123,13 +126,13 @@ max-args=15
 max-locals=60
 
 # Maximum number of return / yield for function / method body
-max-returns=10
+max-returns=22
 
 # Maximum number of branch for function / method body
-max-branchs=30
+max-branchs=34
 
 # Maximum number of statements in function / method body
-max-statements=200
+max-statements=260
 
 # Maximum number of parents for a class (see R0901).
 max-parents=7
@@ -137,14 +140,14 @@ max-parents=7
 # Maximum number of attributes for a class (see R0902).
 # Require large number of instance attributes as we are loading up handles to widget elements and only want to do this in init
 # for performance reasons
-max-attributes=150
+max-attributes=165
 
 # Minimum number of public methods for a class (see R0903).
 min-public-methods=0
 
 # Maximum number of public methods for a class (see R0904).
-# Increase from 20 to 40 as we are deriving off various classes and can't reduce the number further
-max-public-methods=40
+# Increase from 20 to 56 as we are deriving off various classes and can't reduce the number further
+max-public-methods=56
 
 [IMPORTS]
 
@@ -156,7 +159,7 @@ max-line-length=90
 
 # Maximum number of lines in a module
 # Increased from 1500 as the packagemanager is doing a lot of GUI initialisation that we can't logically put anywhere else.
-max-module-lines=3000
+max-module-lines=4100
 
 # String used as indentation unit. This is usually " " (4 spaces) or
 # "\t" (1 tab).

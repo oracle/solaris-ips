@@ -30,7 +30,6 @@ import time
 import pango
 import datetime
 import traceback
-import string
 from threading import Thread
 try:
         import gobject
@@ -46,6 +45,8 @@ try:
 except ImportError:
         nobe = True
 import pkg.gui.progress as progress
+import pkg.misc
+import pkg.client.history as history
 import pkg.client.api_errors as api_errors
 import pkg.gui.beadmin as beadm
 import pkg.gui.misc as gui_misc
@@ -85,6 +86,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.prev_pkg = None
                 self.progress_stop_timer_running = False
                 self.proposed_be_name = None
+                self.pylint_stub = None
                 self.stages = {
                           1:[_("Preparing..."), _("Preparation")],
                           2:[_("Downloading..."), _("Download")],
@@ -164,7 +166,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                                 "on_ua_be_name_entry_changed": \
                                 self.__on_ua_be_name_entry_changed,
                                 "on_ua_help_button_clicked": \
-                                self.__on_ua_help_button_clicked,                                
+                                self.__on_ua_help_button_clicked,
                             }
                         dic_removeconfirm = \
                             {
@@ -292,15 +294,15 @@ class InstallUpdate(progress.GuiProgressTracker):
                                         break
                 if active_name != None:
                         proposed_name = None
-                        list = string.rsplit(active_name, '-', 1)
-                        if len(list) == 1:
+                        name_list = active_name.rsplit('-', 1)
+                        if len(name_list) == 1:
                                 proposed_name = self.__construct_be_name(
                                     active_name, 0)
                         else:
                                 try:
-                                        i = int(list[1])
+                                        i = int(name_list[1])
                                         proposed_name = self.__construct_be_name(
-                                            list[0], i)
+                                            name_list[0], i)
                                 except ValueError:
                                         proposed_name = self.__construct_be_name(
                                             active_name, 0)
@@ -329,7 +331,8 @@ class InstallUpdate(progress.GuiProgressTracker):
                                 break
                 return in_use
  
-        def __is_be_name_valid(self, name):
+        @staticmethod
+        def __is_be_name_valid( name):
                 if name == "":
                         return True
                 return be.beVerifyBEName(name) == 0
@@ -366,6 +369,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                         return True
                 upgrade_needed, cre = self.api_o.plan_install(
                     self.ipkg_ipkgui_list, filters = [])
+                self.pylint_stub = cre
                 return not upgrade_needed
 
         def __proceed_with_stages(self):
@@ -408,12 +412,6 @@ class InstallUpdate(progress.GuiProgressTracker):
                                 self.__g_error_stage(msg)
                                 return
 
-                except api_errors.CertificateError, e:
-                        self.__g_error_stage(str(e))
-                        return
-                except api_errors.PlanCreationException, e:
-                        self.__g_error_stage(str(e))
-                        return
                 except api_errors.InventoryException, e:
                         msg = _("Inventory exception:\n")
                         if e.illegal:
@@ -492,7 +490,6 @@ class InstallUpdate(progress.GuiProgressTracker):
                         return
                 except api_errors.CanceledException:
                         gobject.idle_add(self.w_dialog.hide)
-                        self.stop_bouncing_progress()
                         return
                 except api_errors.BENamingNotSupported:
                         msg = _("Specifying BE Name not supported.\n")
@@ -502,38 +499,49 @@ class InstallUpdate(progress.GuiProgressTracker):
                         msg = _("Invalid BE Name: %s.\n") % self.proposed_be_name
                         self.__g_error_stage(msg)
                         return
-                except api_errors.PermissionsException, pex:
-                        msg = str(pex)
-                        self.__g_error_stage(msg)
-                        return
                 except (api_errors.UnableToCopyBE, 
                     api_errors.UnableToMountBE,
                     api_errors.BENameGivenOnDeadBE,
-                    api_errors.UnableToRenameBE), ex:
+                    api_errors.UnableToRenameBE,
+                    api_errors.PermissionsException,
+                    api_errors.PlanCreationException,
+                    api_errors.CertificateError), ex:
                         msg = str(ex)
                         self.__g_error_stage(msg)
                         return
-                except Exception, uex:
-                        # We do want to prompt user to load BE admin if there is
-                        # not enough disk space. This error can either come as an
-                        # error within API exception, see bug #7642 or as a standalone
-                        # error, that is why we need to check for both situations.
-                        if ("error" in uex.__dict__ and isinstance(uex.error, OSError)
-                            and ("args" in uex.error.__dict__ and uex.error.args and \
-                            (uex.error.args[0] == errno.EDQUOT or 
-                            uex.error.args[0] == errno.ENOSPC))) \
-                            or ("args" in uex.__dict__ and uex.args and (uex.args[0] ==
-                            errno.EDQUOT or uex.args[0] == errno.ENOSPC)):
-                                gobject.idle_add(self.__prompt_to_load_beadm)
-                                gobject.idle_add(self.w_dialog.hide)
-                                self.stop_bouncing_progress()
+                # We do want to prompt user to load BE admin if there is
+                # not enough disk space. This error can either come as an
+                # error within API exception, see bug #7642 or as a standalone
+                # error, that is why we need to check for both situations.
+                except EnvironmentError, uex:
+                        if uex.errno in (errno.EDQUOT, errno.ENOSPC):
+                                self.__handle_nospace_error()
                         else:
-                                traceback_lines = traceback.format_exc().splitlines()
-                                traceback_str = ""
-                                for line in traceback_lines: 
-                                        traceback_str += line + "\n"
-                                self.__g_exception_stage(traceback_str)
-                                sys.exc_clear()
+                                self.__handle_error()
+                        return
+                except history.HistoryStoreException, uex:
+                        if (isinstance(uex.error, EnvironmentError) and
+                           uex.error.errno in (errno.EDQUOT, errno.ENOSPC)):
+                                self.__handle_nospace_error()
+                        else:
+                                self.__handle_error()
+                        return
+                except Exception:
+                        self.__handle_error()
+                        return
+
+        def __handle_nospace_error(self):
+                gobject.idle_add(self.__prompt_to_load_beadm)
+                gobject.idle_add(self.w_dialog.hide)
+                self.stop_bouncing_progress()
+
+        def __handle_error(self):
+                traceback_lines = traceback.format_exc().splitlines()
+                traceback_str = ""
+                for line in traceback_lines:
+                        traceback_str += line + "\n"
+                self.__g_exception_stage(traceback_str)
+                sys.exc_clear()
 
         def __proceed_with_ipkg_thread(self):
                 self.__start_substage(_("Updating %s") % self.parent_name, 
@@ -642,7 +650,6 @@ class InstallUpdate(progress.GuiProgressTracker):
                     "by filing a bug together with exception value at:\n"
                     ) % self.current_stage_name
                 msg_2 = _("http://defect.opensolaris.org\n\n")
-                msg_3 = _("Exception value:\n")
                 self.update_details_text(_("\nError:\n"), "bold")
                 self.update_details_text("%s" % msg_1, "level1")
                 self.update_details_text("%s" % msg_2, "bold", "level2")
@@ -733,6 +740,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                             refresh_catalogs = False,
                             noexecute = False, force = True,
                             be_name = self.proposed_be_name)
+                        self.pylint_stub = opensolaris_image
                         if cre and not cre.succeeded:
                                 raise api_errors.CatalogRefreshException(None, None, None
                                     ,_("Catalog refresh failed during Update All."))

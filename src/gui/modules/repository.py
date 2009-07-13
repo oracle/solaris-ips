@@ -214,7 +214,7 @@ class Repository:
                                 "on_repositorytreeview_button_release_event": \
                                     self.__on_repositorytreeview_button_release_event,
                                 "on_repositoryhelp_clicked": \
-                                    self.__on_repositoryhelp_clicked,                                                                        
+                                    self.__on_repositoryhelp_clicked,
                             }
                         dic_conf = \
                             {
@@ -969,14 +969,14 @@ class Repository:
                                 raise
                         err = (_("Failed to add repository: %s\n\n") % prefix)
                         err += str(idrex)
-                        self.__error_with_reset_repo_selection(err)
+                        self.__error_with_stop_progress(err)
                 except RuntimeError, ex:
                         self.progress_stop_thread = True
                         if not silent:
                                 raise
                         err = (_("Failed to add %s.\n") % prefix)
                         err += str(ex)
-                        self.__error_with_reset_repo_selection(err)
+                        self.__error_with_stop_progress(err)
                         return
                 except api_errors.PermissionsException:
                         self.progress_stop_thread = True
@@ -984,7 +984,7 @@ class Repository:
                                 raise
                         err = (_("Failed to add %s.") % prefix) + \
                             _("\nPlease check your permissions.")
-                        self.__error_with_reset_repo_selection(err,
+                        self.__error_with_stop_progress(err,
                             gtk.MESSAGE_INFO)
                 except api_errors.CatalogRefreshException:
                         self.progress_stop_thread = True
@@ -995,7 +995,7 @@ class Repository:
                             _(
                             "\nPlease check the network connection or URL.\nIs the "
                             "repository accessible?")
-                        self.__error_with_reset_repo_selection(err, gtk.MESSAGE_INFO)
+                        self.__error_with_stop_progress(err, gtk.MESSAGE_INFO)
 
         def __delete_repository(self, name, silent=True):
                 try:
@@ -1005,14 +1005,14 @@ class Repository:
                 except api_errors.PublisherError, ex:
                         if not silent:
                                 raise
-                        self.__error_with_reset_repo_selection(str(ex))
+                        self.__error_with_stop_progress(str(ex))
                         return
                 except api_errors.PermissionsException:
                         if not silent:
                                 raise
                         err = (_("Failed to delete %s.") % name) + \
                             _("\nPlease check your permissions.")
-                        self.__error_with_reset_repo_selection(err,
+                        self.__error_with_stop_progress(err,
                             gtk.MESSAGE_INFO)
 
         def __setup_mirrors(self, mirrors):
@@ -1036,7 +1036,7 @@ class Repository:
                 try:
                         self.repo_copy.add_mirror(mirror)
                 except api_errors.PublisherError, ex:
-                        self.__error_with_reset_repo_selection(str(ex))
+                        self.__error_with_stop_progress(str(ex))
                         return                        
                 gobject.idle_add(self.__setup_mirrors, self.repo_copy.mirrors)
 
@@ -1044,7 +1044,7 @@ class Repository:
                 try:
                         self.repo_copy.remove_mirror(mirror)
                 except api_errors.PublisherError, ex:
-                        self.__error_with_reset_repo_selection(str(ex))
+                        self.__error_with_stop_progress(str(ex))
                         return                        
                 gobject.idle_add(self.__setup_mirrors, self.repo_copy.mirrors)
 
@@ -1186,17 +1186,9 @@ class Repository:
                             chooser.get_filename())
                 chooser.destroy()
 
-        def __error_with_reset_repo_selection(self, error_msg,
+        def __error_with_stop_progress(self, error_msg,
             msg_type=gtk.MESSAGE_ERROR):
                 gobject.idle_add(self.__error_occurred, error_msg, msg_type)
-                self.__reset_repo_selection()
-
-        def __reset_repo_selection(self):
-                sel = None
-                selection = self.w_repository_treeview.get_selection()
-                model, ite = selection.get_selected()
-                if ite:
-                        sel = model.get_value(ite, 0)
                 self.progress_stop_thread = True
 
         def __error_occurred(self, error_msg, msg_type=gtk.MESSAGE_ERROR, title = None):

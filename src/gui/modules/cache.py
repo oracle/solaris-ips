@@ -24,9 +24,7 @@
 #
 
 import cPickle
-import time
 import os
-import pkg.catalog as catalog
 import pkg.gui.enumerations as enumerations
 import pkg.gui.misc as gui_misc
 
@@ -37,8 +35,8 @@ try:
 except ImportError:
         nobe = True
 
-CACHE_VERSION=8
-INDEX_HASH_LENGTH=41
+CACHE_VERSION = 8
+INDEX_HASH_LENGTH = 41
 
 class CacheListStores:
         def __init__(self, icon_theme, application_dir, api_o, update_available_icon,
@@ -86,7 +84,8 @@ class CacheListStores:
                         cache_dir = None
                 return cache_dir
 
-        def __mkdir(self, directory_path):
+        @staticmethod
+        def __mkdir(directory_path):
                 if not os.path.isdir(directory_path):
                         os.makedirs(directory_path)
 
@@ -160,7 +159,8 @@ class CacheListStores:
                         cat["visible"] = category[enumerations.CATEGORY_VISIBLE]
                         cat["section_list"] = category[enumerations.SECTION_LIST_OBJECT]
                         categories.append(cat)
-                self.__dump_cache_file(cache_dir + publisher+"_categories.cpl", categories)
+                self.__dump_cache_file(cache_dir + publisher+"_categories.cpl",
+                    categories)
 
         def __dump_application_list(self, publisher, application_list):
                 cache_dir = self.__get_cache_dir()
@@ -174,9 +174,11 @@ class CacheListStores:
                         app["status"] = application[enumerations.STATUS_COLUMN]
                         app["fmri"] = application[enumerations.FMRI_COLUMN]
                         app["stem"] = application[enumerations.STEM_COLUMN]
-                        app["display_name"] = application[enumerations.DISPLAY_NAME_COLUMN]
+                        app["display_name"] = \
+                            application[enumerations.DISPLAY_NAME_COLUMN]
                         app["is_visible"] = application[enumerations.IS_VISIBLE_COLUMN]
-                        app["category_list"] = application[enumerations.CATEGORY_LIST_COLUMN]
+                        app["category_list"] = \
+                            application[enumerations.CATEGORY_LIST_COLUMN]
                         app["pkg_authority"] = application[enumerations.AUTHORITY_COLUMN]
                         apps.append(app)
                 self.__dump_cache_file(cache_dir + publisher+"_packages.cpl", apps)
@@ -206,7 +208,8 @@ class CacheListStores:
                 cache_dir = self.__get_cache_dir()
                 if not cache_dir:
                         return
-                categories = self.__read_cache_file(cache_dir + publisher+"_categories.cpl")
+                categories = self.__read_cache_file(
+                    cache_dir + publisher+"_categories.cpl")
                 cat_count = 0
                 for cat in categories:
                         cat_id = cat.get("id")
@@ -231,7 +234,8 @@ class CacheListStores:
                 cache_dir = self.__get_cache_dir()
                 if not cache_dir:
                         return
-                applications = self.__read_cache_file(cache_dir + publisher+"_packages.cpl")
+                applications = self.__read_cache_file(
+                    cache_dir + publisher+"_packages.cpl")
                 app_count = len(application_list)
                 if app_count > 0:
                         app_count += 1
@@ -309,13 +313,15 @@ class CacheListStores:
                                         return name
                 return None
 
-        def __read_cache_file(self, file_path):
+        @staticmethod
+        def __read_cache_file(file_path):
                 fh = open(file_path, 'r')
                 data = cPickle.load(fh)
                 fh.close()
                 return data
 
-        def __dump_cache_file(self, file_path, data):
+        @staticmethod
+        def __dump_cache_file(file_path, data):
                 fh = open(file_path,"w")
                 cPickle.dump(data, fh, True)
                 fh.close()

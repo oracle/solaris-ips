@@ -149,8 +149,8 @@ class PackageManager:
                 # with gksu and had NFS mounted home directory in which
                 # case dbus called from gconf cannot write to the directory.
                 if os.getuid() == 0:
-                        dir = self.__find_root_home_dir()
-                        os.putenv('HOME', dir)
+                        home_dir = self.__find_root_home_dir()
+                        os.putenv('HOME', home_dir)
                 self.api_o = None
                 self.cache_o = None
                 self.img_timestamp = None
@@ -242,6 +242,7 @@ class PackageManager:
                 self.info_cache = {}
                 self.selected = 0
                 self.selected_pkgs = {}
+                self.start_page_url = None
                 self.to_install_update = {}
                 self.to_remove = {}
                 self.in_startpage_startup = self.show_startpage
@@ -548,7 +549,7 @@ class PackageManager:
                                 "on_ua_complete_close_button_clicked": \
                                      self.__on_ua_completed_close,
                                 "on_ua_completed_linkbutton_clicked": \
-                                     self.__on_ua_completed_linkbutton_clicked,                                     
+                                     self.__on_ua_completed_linkbutton_clicked,
                             }
                         w_xmltree_ua_completed.signal_autoconnect(dic_completed)
         
@@ -652,8 +653,8 @@ class PackageManager:
                 self.__enable_disable_deselect()
                 self.w_copy_menuitem.set_sensitive(False)
 
-        def __on_text_buffer_has_selection(self, object, pspec):
-                if object.get_selection_bounds():
+        def __on_text_buffer_has_selection(self, obj, pspec):
+                if obj.get_selection_bounds():
                         self.w_copy_menuitem.set_sensitive(True)
                         self.w_deselect_menuitem.set_sensitive(True)
                 else:
@@ -747,13 +748,13 @@ class PackageManager:
                         return
                 if self.__load_startpage_locale(START_PAGE_LANG_BASE):
                         return                        
-                self.__handle_startpage_load_error(start_page_url)
+                self.__handle_startpage_load_error(self.start_page_url)
 
 
         def __load_startpage_locale(self, start_page_lang_base):
-                start_page_url = os.path.join(self.application_dir,
+                self.start_page_url = os.path.join(self.application_dir,
                         start_page_lang_base % (self.lang, START_PAGE_HOME))
-                if self.__load_uri(self.document, start_page_url):
+                if self.__load_uri(self.document, self.start_page_url):
                         return True
                         
                 if self.lang_root != None and self.lang_root != self.lang:
@@ -1400,10 +1401,10 @@ class PackageManager:
                         # Only Fetch description for packages without a
                         # description
                         if desc == '...':
-                                fmri = sort_filt_model.get_value(sf_itr,
+                                pkg_fmri = sort_filt_model.get_value(sf_itr,
                                     enumerations.FMRI_COLUMN)
-                                if fmri != None:
-                                        pkg_stem = fmri.get_pkg_stem(
+                                if pkg_fmri != None:
+                                        pkg_stem = pkg_fmri.get_pkg_stem(
                                             include_scheme = True)
                                         pkg_stems_and_itr_to_fetch[pkg_stem] = \
                                             model.get_string_from_iter(app_itr)
@@ -1546,7 +1547,7 @@ class PackageManager:
                 max_length = 0
                 for filter_id, pixbuf, label in self.filter_options:
                         self.filter_list.append([filter_id, pixbuf, label, ])
-			if filter_id == -1:
+                        if filter_id == -1:
                                 continue
                         max_length = self.__get_max_text_length(
                             max_length, label, self.w_filter_combobox)
@@ -1563,7 +1564,7 @@ class PackageManager:
         @staticmethod
         def __get_max_text_length(length_to_check, text, widget):
                 if widget == None:
-                        return length
+                        return 0
                 context = widget.get_pango_context()
                 metrics = context.get_metrics(context.get_font_description())
                 current_length = pango.PIXELS(
@@ -1646,6 +1647,7 @@ class PackageManager:
                 if self.w_searchentry.get_text_length() > 0:
                         start, end = self.w_searchentry.get_selection_bounds()
                         self.w_searchentry.select_region(end, end)
+                        self.pylintstub = start
 
         def __clear_before_search(self):
                 self.in_setup = True
@@ -1732,7 +1734,8 @@ class PackageManager:
                 self.unset_busy_cursor()
                 self.in_setup = False
 
-        def __get_origin_uri(self, repo):
+        @staticmethod
+        def __get_origin_uri(repo):
                 if repo == None:
                         return None
                 origin_uri = repo.origins[0]
@@ -1787,27 +1790,28 @@ class PackageManager:
                 # Sorting results by Name gives best overall appearance and flow
                 sort_col = enumerations.NAME_COLUMN
                 try:
-                        for query_num, publisher, (v, return_type, tmp) in \
+                        for query_num, pub, (v, return_type, tmp) in \
                             itertools.chain(*searches):
                                 if v < 1 or return_type != api.Query.RETURN_PACKAGES:
                                         gobject.idle_add(self.w_progress_dialog.hide)
                                         self.__process_after_search_failure()
                                         return
 
-                                pub = None
-                                if publisher is not None \
-                                    and "prefix" in publisher:
-                                        pub = publisher["prefix"]
+                                active_pub = None
+                                if pub is not None \
+                                    and "prefix" in pub:
+                                        active_pub = pub["prefix"]
                                 name = fmri.PkgFmri(str(tmp)).get_name()
                                 if last_name != name:
                                         if debug:
-                                                print "Result Name: %s (%s)" % (name, pub)
-                                        a_res = name, pub
+                                                print "Result Name: %s (%s)" \
+                                                    % (name, active_pub)
+                                        a_res = name, active_pub
                                         result.append(a_res)
                                         #Ignore Status when fetching
                                         application_list = \
                                                 self.__get_min_list_from_search(result)
-                                        self.search_all_pub_being_searched = pub
+                                        self.search_all_pub_being_searched = active_pub
                                         self.in_setup = True
                                         gobject.idle_add(self.__init_tree_views, 
                                             application_list, None, None, None, None,
@@ -1867,11 +1871,11 @@ class PackageManager:
 
         def __get_min_list_from_search(self, search_result):
                 application_list = self.__get_new_application_liststore()
-                for name, publisher in search_result:
+                for name, pub in search_result:
                         application_list.append(
                             [False, None, name, '...', enumerations.NOT_INSTALLED, None, 
-                            "pkg://" + publisher + "/" + name, None, True, None, 
-                            publisher])
+                            "pkg://" + pub + "/" + name, None, True, None, 
+                            pub])
                 return application_list
 
         def __get_full_list_from_search(self, search_result):
@@ -1883,9 +1887,8 @@ class PackageManager:
         def __add_pkgs_to_list_from_search(self, search_result,
             application_list):
                 pargs = []
-                default_pub = self.api_o.get_preferred_publisher().prefix
-                for name, publisher in search_result:
-                        pargs.append("pkg://" + publisher + "/" + name)
+                for name, pub in search_result:
+                        pargs.append("pkg://" + pub + "/" + name)
                 # We now need to get the status for each package
                 if debug_descriptions:
                         print "pargs:", pargs
@@ -2148,6 +2151,8 @@ class PackageManager:
                                         self.current_repos_with_search_errors:
                                         if pub not in self.gconf_not_show_repos:
                                                 self.gconf_not_show_repos += pub + ","
+                                        self.pylintstub = err_type
+                                        self.pylintstub = err_str
                         else:
                                 for pub, err_type, err_str in \
                                         self.current_repos_with_search_errors:
@@ -2231,7 +2236,8 @@ class PackageManager:
         def __on_category_row_activated(self, view, path, col, user):
                 '''This function is for handling category double click activations'''
                 if self.w_filter_combobox.get_model():
-                        self.w_filter_combobox.set_active(self.saved_filter_combobox_active)
+                        self.w_filter_combobox.set_active(
+                            self.saved_filter_combobox_active)
                 self.w_searchentry.delete_text(0, -1)
                 if self.in_search_mode or self.is_search_all:
                         self.__unset_search(True)
@@ -2268,7 +2274,8 @@ class PackageManager:
                         return
                 
                 if self.saved_filter_combobox_active != None:
-                        self.w_filter_combobox.set_active(self.saved_filter_combobox_active)
+                        self.w_filter_combobox.set_active(
+                            self.saved_filter_combobox_active)
                 self.__set_main_view_package_list()
 
                 self.set_busy_cursor()
@@ -2479,7 +2486,7 @@ class PackageManager:
                 return self.repositories_list.get_value(pub_iter, \
                             enumerations.REPOSITORY_NAME)
 
-        def __setup_publisher(self, publishers=[]):
+        def __setup_publisher(self, publishers):
                 self.saved_filter_combobox_active = self.initial_show_filter
                 application_list, category_list , section_list = \
                     self.__get_application_categories_lists(publishers)
@@ -2496,17 +2503,17 @@ class PackageManager:
                 self.saved_category_list = None
                 self.saved_section_list = None
 
-        def __get_application_categories_lists(self, publishers=[]):
+        def __get_application_categories_lists(self, publishers):
                 application_list = self.__get_new_application_liststore()
                 category_list = self.__get_new_category_liststore()
                 section_list = self.__get_new_section_liststore()
                 first_loop = True
-                for publisher in publishers:
+                for pub in publishers:
                         uptodate = False
                         try:
-                                uptodate = self.__check_if_cache_uptodate(publisher)
+                                uptodate = self.__check_if_cache_uptodate(pub)
                                 if uptodate:
-                                        self.__add_pkgs_to_lists_from_cache(publisher,
+                                        self.__add_pkgs_to_lists_from_cache(pub,
                                             application_list, category_list,
                                             section_list)
                         except (UnpicklingError, EOFError, IOError):
@@ -2519,8 +2526,8 @@ class PackageManager:
                                 if first_loop == True:
                                         first_loop = False
                                         gobject.idle_add(self.setup_progressdialog_show)
-                                self.api_o.refresh(pubs=[publisher])
-                                self.__add_pkgs_to_lists_from_api(publisher,
+                                self.api_o.refresh(pubs=[pub])
+                                self.__add_pkgs_to_lists_from_api(pub,
                                     application_list, category_list, section_list)
                                 category_list.prepend([0, _('All'), None, None, False,
                                     True, None])
@@ -2537,12 +2544,12 @@ class PackageManager:
                         self.last_visible_publisher_uptodate = uptodate
                 return application_list, category_list, section_list
 
-        def __check_if_cache_uptodate(self, publisher):
+        def __check_if_cache_uptodate(self, pub):
                 if self.cache_o:
-                        return self.cache_o.check_if_cache_uptodate(publisher)
+                        return self.cache_o.check_if_cache_uptodate(pub)
                 return False
 
-        def __dump_datamodels(self, publisher, application_list, category_list,
+        def __dump_datamodels(self, pub, application_list, category_list,
             section_list):
                 #Consistency check - only dump models if publisher passed in matches 
                 #publisher in application list
@@ -2551,33 +2558,33 @@ class PackageManager:
                 try:
                         app_pub = self.application_list[0]\
                                 [enumerations.AUTHORITY_COLUMN]
-                except IndexError, ValueError:
+                except (IndexError, ValueError):
                         #Empty application list nothing to dump
                         return
 
-                if publisher != app_pub:
+                if pub != app_pub:
                         if debug:
                                 print "ERROR: __dump_data_models(): INCONSISTENT " \
                                         "pub %s != app_list_pub %s" % \
-                                        (publisher,  app_pub)
+                                        (pub,  app_pub)
                         return
 
                 if self.cache_o:
                         if self.img_timestamp == \
                             self.cache_o.get_index_timestamp():
                                 Thread(target = self.cache_o.dump_datamodels,
-                                    args = (publisher, application_list, category_list,
+                                    args = (pub, application_list, category_list,
                                     section_list)).start()
                         else:
                                 self.__remove_cache()
 
         def __remove_cache(self):
                 model = self.w_repository_combobox.get_model()
-                for publisher in model:
-                        pub_name = publisher[1]
+                for pub in model:
+                        pub_name = pub[1]
                         if pub_name and pub_name != _("Add..."):
                                 Thread(target = self.cache_o.remove_datamodel,
-                                    args = [publisher[1]]).start()
+                                    args = [pub[1]]).start()
 
         def __on_install_update(self, widget):
                 self.api_o.reset()
@@ -2801,41 +2808,41 @@ class PackageManager:
                         self.w_reload_button.set_sensitive(False)
 
         def __add_pkg_stem_to_list(self, stem, status):
-                publisher = self.__get_selected_publisher()
-                if self.selected_pkgs.get(publisher) == None:
-                        self.selected_pkgs[publisher] = {}
-                self.selected_pkgs.get(publisher)[stem] = status
+                pub = self.__get_selected_publisher()
+                if self.selected_pkgs.get(pub) == None:
+                        self.selected_pkgs[pub] = {}
+                self.selected_pkgs.get(pub)[stem] = status
                 if status == enumerations.NOT_INSTALLED or \
                     status == enumerations.UPDATABLE:
-                        if self.to_install_update.get(publisher) == None:
-                                self.to_install_update[publisher] = 1
+                        if self.to_install_update.get(pub) == None:
+                                self.to_install_update[pub] = 1
                         else:
-                                self.to_install_update[publisher] += 1
+                                self.to_install_update[pub] += 1
                 if status == enumerations.UPDATABLE or status == enumerations.INSTALLED:
-                        if self.to_remove.get(publisher) == None:
-                                self.to_remove[publisher] = 1
+                        if self.to_remove.get(pub) == None:
+                                self.to_remove[pub] = 1
                         else:
-                                self.to_remove[publisher] += 1
+                                self.to_remove[pub] += 1
                 self.__update_tooltips()
 
         def __update_tooltips(self):
                 to_remove = None
                 to_install = None
                 no_iter = 0
-                for publisher in self.to_remove:
-                        packages = self.to_remove.get(publisher)
+                for pub in self.to_remove:
+                        packages = self.to_remove.get(pub)
                         if packages > 0:
                                 if no_iter == 0:
                                         to_remove = _("Selected for Removal:")
-                                to_remove += "\n   %s: %d" % (publisher, packages)
+                                to_remove += "\n   %s: %d" % (pub, packages)
                                 no_iter += 1
                 no_iter = 0
-                for publisher in self.to_install_update:
-                        packages = self.to_install_update.get(publisher)
+                for pub in self.to_install_update:
+                        packages = self.to_install_update.get(pub)
                         if packages > 0:
                                 if no_iter == 0:
                                         to_install = _("Selected for Install/Update:")
-                                to_install += "\n   %s: %d" % (publisher, packages)
+                                to_install += "\n   %s: %d" % (pub, packages)
                                 no_iter += 1
                 if not to_install:
                         to_install = _("Select packages by marking the checkbox "
@@ -2849,35 +2856,35 @@ class PackageManager:
 
         def __remove_pkg_stem_from_list(self, stem):
                 remove_pub = []
-                for publisher in self.selected_pkgs:
-                        pkgs = self.selected_pkgs.get(publisher)
+                for pub in self.selected_pkgs:
+                        pkgs = self.selected_pkgs.get(pub)
                         status = None
                         if stem in pkgs:
                                 status = pkgs.pop(stem)
                         if status == enumerations.NOT_INSTALLED or \
                             status == enumerations.UPDATABLE:
-                                if self.to_install_update.get(publisher) == None:
-                                        self.to_install_update[publisher] = 0
+                                if self.to_install_update.get(pub) == None:
+                                        self.to_install_update[pub] = 0
                                 else:
-                                        self.to_install_update[publisher] -= 1
+                                        self.to_install_update[pub] -= 1
                         if status == enumerations.UPDATABLE or \
                             status == enumerations.INSTALLED:
-                                if self.to_remove.get(publisher) == None:
-                                        self.to_remove[publisher] = 0
+                                if self.to_remove.get(pub) == None:
+                                        self.to_remove[pub] = 0
                                 else:
-                                        self.to_remove[publisher] -= 1
+                                        self.to_remove[pub] -= 1
                         if len(pkgs) == 0:
-                                remove_pub.append(publisher)
-                for publisher in remove_pub:
-                        self.selected_pkgs.pop(publisher)
+                                remove_pub.append(pub)
+                for pub in remove_pub:
+                        self.selected_pkgs.pop(pub)
                 self.__update_tooltips()
 
         def __clear_pkg_selections(self):
                 # We clear the selections as the preffered repository was changed
                 # and pkg stems are not valid.
                 remove_pub = []
-                for publisher in self.selected_pkgs:
-                        stems = self.selected_pkgs.get(publisher)
+                for pub in self.selected_pkgs:
+                        stems = self.selected_pkgs.get(pub)
                         for pkg_stem in stems:
                                 remove_pub.append(pkg_stem)
                 for pkg_stem in remove_pub:
@@ -3461,20 +3468,20 @@ class PackageManager:
                         self.__catalog_refresh_done()
                 return 0
 
-        def __add_pkgs_to_lists_from_cache(self, publisher, application_list,
+        def __add_pkgs_to_lists_from_cache(self, pub, application_list,
             category_list, section_list):
                 if self.cache_o:
-                        self.cache_o.load_application_list(publisher, application_list,
+                        self.cache_o.load_application_list(pub, application_list,
                             self.selected_pkgs)
-                        self.cache_o.load_category_list(publisher, category_list)
-                        self.cache_o.load_section_list(publisher, section_list)
+                        self.cache_o.load_category_list(pub, category_list)
+                        self.cache_o.load_section_list(pub, section_list)
 
-        def __add_pkgs_to_lists_from_api(self, publisher, application_list,
+        def __add_pkgs_to_lists_from_api(self, pub, application_list,
             category_list, section_list):
                 """ This method set up image from the given directory and
                 returns the image object or None"""
                 pargs = []
-                pargs.append("pkg://" + publisher + "/*")
+                pargs.append("pkg://" + pub + "/*")
                 try:
                         pkgs_known = self.__get_inventory_list(pargs,
                             True, True)
@@ -3606,9 +3613,9 @@ class PackageManager:
                 return
 
         def __add_categories_to_sections(self, sections, category_list, section_list):
-                for publisher in sections:
-                        for section in sections[publisher]:
-                                for category in sections[publisher][section].split(","):
+                for pub in sections:
+                        for section in sections[pub]:
+                                for category in sections[pub][section].split(","):
                                         self.__add_category_to_section(_(category),
                                             _(section), category_list, section_list)
 
@@ -3621,11 +3628,11 @@ class PackageManager:
                 return
 
         def __add_package_to_list(self, app, application_list, pkg_add,
-            pkg_name, category_icon, categories, category_list, publisher):
+            pkg_name, category_icon, categories, category_list, pub):
                 row_iter = application_list.insert(pkg_add, app)
                 if category_list == None:
                         return
-                cat_pub = categories.get(publisher)
+                cat_pub = categories.get(pub)
                 if pkg_name in cat_pub:
                         pkg_categories = cat_pub.get(pkg_name)
                         for pcat in pkg_categories.split(","):
@@ -3941,8 +3948,8 @@ class PackageManager:
                 if self.is_search_all:
                         if self.__doing_search():
                                 if self.search_all_pub_being_searched != None:
-                                        active = "(" + self.search_all_pub_being_searched + \
-                                                ") "
+                                        active = "(" + \
+                                            self.search_all_pub_being_searched + ") "
                                 opt_str = _('Searching... '
                                     '%(active)sfor "%(search_text)s"') % \
                                         {"active": active, "search_text": search_text}
@@ -4016,14 +4023,14 @@ class PackageManager:
                         self.__dump_datamodels(visible_publisher,
                                 self.application_list, self.category_list,
                                 self.section_list)
-                for publisher in update_list:
-                        if publisher != visible_publisher:
-                                pkg_list = update_list.get(publisher)
+                for pub in update_list:
+                        if pub != visible_publisher:
+                                pkg_list = update_list.get(pub)
                                 for pkg in pkg_list:
                                         pkg_stem = None
-                                        if publisher != default_publisher:
+                                        if pub != default_publisher:
                                                 pkg_stem = "pkg://%s/%s" % \
-                                                        (publisher, pkg)
+                                                        (pub, pkg)
                                         else:
                                                 pkg_stem = "pkg:/%s" % pkg
                                         if pkg_stem:
