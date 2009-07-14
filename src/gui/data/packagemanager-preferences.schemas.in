@@ -1,6 +1,20 @@
 <gconfschemafile>
   <schemalist>
     <schema>
+      <key>/schemas/apps/packagemanager/preferences/max_search_completion</key>
+      <applyto>/apps/packagemanager/preferences/max_search_completion</applyto>
+      <owner>packagemanager</owner>
+      <type>int</type>
+      <default>20</default>
+      <locale name="C">
+         <short>Maximum entries for Search Completion</short>
+         <long>
+          An integer which specifies the maximum number of entries to store for
+          search completion.
+         </long>
+      </locale>
+    </schema>
+    <schema>
       <key>/schemas/apps/packagemanager/preferences/initial_app_width</key>
       <applyto>/apps/packagemanager/preferences/initial_app_width</applyto>
       <owner>packagemanager</owner>

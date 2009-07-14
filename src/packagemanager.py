@@ -46,7 +46,9 @@ SHOW_INFO_DELAY = 600       # Delay before showing selected pacakge information
 SHOW_LICENSE_DELAY = 600    # Delay before showing license information
 SEARCH_STR_FORMAT = "<%s>"
 MIN_APP_WIDTH = 750                       # Minimum application width
-MIN_APP_HEIGHT = 500                     # Minimum application height
+MIN_APP_HEIGHT = 500                      # Minimum application height
+MAX_SEARCH_COMPLETION_PREFERENCES = \
+        "/apps/packagemanager/preferences/max_search_completion"
 INITIAL_APP_WIDTH_PREFERENCES = "/apps/packagemanager/preferences/initial_app_width"
 INITIAL_APP_HEIGHT_PREFERENCES = "/apps/packagemanager/preferences/initial_app_height"
 INITIAL_APP_HPOS_PREFERENCES = "/apps/packagemanager/preferences/initial_app_hposition"
@@ -156,6 +158,8 @@ class PackageManager:
                 self.img_timestamp = None
                 self.client = gconf.client_get_default()
                 try:
+                        self.max_search_completion = \
+                            self.client.get_int(MAX_SEARCH_COMPLETION_PREFERENCES)
                         self.initial_show_filter = \
                             self.client.get_int(INITIAL_SHOW_FILTER_PREFERENCES)
                         self.initial_section = \
@@ -175,6 +179,7 @@ class PackageManager:
                 except GError:
                         # Default values - the same as in the 
                         # packagemanager-preferences.schemas
+                        self.max_search_completion = 20
                         self.initial_show_filter = 0
                         self.initial_section = 3
                         self.show_startpage = True
@@ -364,6 +369,7 @@ class PackageManager:
                 self.w_main_view_notebook = \
                     w_tree_main.get_widget("main_view_notebook")
                 self.w_searchentry = w_tree_main.get_widget("searchentry")
+                self.search_completion = gtk.ListStore(str)
                 self.w_installupdate_button = \
                     w_tree_main.get_widget("install_update_button")
                 self.w_remove_button = w_tree_main.get_widget("remove_button")
@@ -594,6 +600,17 @@ class PackageManager:
                 self.api_search_error_dialog.set_transient_for(self.w_main_window)
                 self.__setup_text_signals()
 
+        def __search_completion_cb(self, entry):
+                text = entry.get_text()
+                if text:
+                        if text not in [row[0] for row in self.search_completion]:
+                                if len(self.search_completion) == \
+                                        self.max_search_completion:
+                                        itr = self.search_completion.get_iter_first()
+                                        self.search_completion.remove(itr)
+                                self.search_completion.append([text])
+                return
+                
         def __setup_text_signals(self):
                 self.w_generalinfo_textview.get_buffer().connect(
                     "notify::has-selection", self.__on_text_buffer_has_selection)
@@ -2709,6 +2726,9 @@ class PackageManager:
                                 self.application_list, self.category_list,
                                 self.section_list)
 
+                if len(self.search_completion) > 0 and self.cache_o != None:
+                        self.cache_o.dump_search_completion_info(self.search_completion)
+
                 width, height = self.w_main_window.get_size()
                 hpos = self.w_main_hpaned.get_position()
                 vpos = self.w_main_vpaned.get_position()
@@ -3866,6 +3886,7 @@ class PackageManager:
                         self.cache_o = self.__get_cache_obj(self.icon_theme,
                             self.application_dir, self.api_o)
                         self.img_timestamp = self.cache_o.get_index_timestamp()
+                        self.__setup_search_completion()
                 self.repositories_list = self.__get_new_repositories_liststore()
                 self.__setup_repositories_combobox(self.api_o, self.repositories_list)
 
@@ -3874,6 +3895,16 @@ class PackageManager:
                     api_o, self.update_available_icon, self.installed_icon,
                     self.not_installed_icon)
                 return cache_o
+
+        def __setup_search_completion(self):
+                completion = gtk.EntryCompletion()
+                if self.cache_o != None:
+                        self.cache_o.load_search_completion_info(self.search_completion)
+                completion.set_model(self.search_completion)
+                self.w_searchentry.set_completion(completion)
+                completion.set_text_column(0)
+                self.w_searchentry.connect('activate', self.__search_completion_cb)
+
 
         def process_package_list_end(self):
                 self.__set_first_category_text()

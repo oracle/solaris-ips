@@ -25,6 +25,12 @@
 
 import cPickle
 import os
+import sys
+try:
+        import gtk
+except ImportError:
+        sys.exit(1)
+from threading import Thread
 import pkg.gui.enumerations as enumerations
 import pkg.gui.misc as gui_misc
 
@@ -77,7 +83,7 @@ class CacheListStores:
 
         def __get_cache_dir(self):
                 img = self.api_o.img
-                cache_dir = "%s/gui_cache/" % (img.imgdir)
+                cache_dir = os.path.join(img.imgdir, "gui_cache")
                 try:
                         self.__mkdir(cache_dir)
                 except OSError:
@@ -115,7 +121,8 @@ class CacheListStores:
                 dump_info["be_name"] = None
 
                 try:
-                        self.__dump_cache_file(cache_dir + publisher+".cpl", dump_info)
+                        self.__dump_cache_file(os.path.join(cache_dir, publisher+".cpl"),
+                            dump_info)
                 except IOError:
                         #Silently return, as probably user doesn't have permissions or
                         #other error which simply doesn't affect the GUI work
@@ -134,7 +141,8 @@ class CacheListStores:
                 dump_info["be_name"] = self.__get_active_be_name()
 
                 try:
-                        self.__dump_cache_file(cache_dir + publisher+".cpl", dump_info)
+                        self.__dump_cache_file(os.path.join(cache_dir, publisher+".cpl"),
+                            dump_info)
                         self.__dump_category_list(publisher, category_list)
                         self.__dump_application_list(publisher, application_list)
                         self.__dump_section_list(publisher, section_list)
@@ -159,8 +167,8 @@ class CacheListStores:
                         cat["visible"] = category[enumerations.CATEGORY_VISIBLE]
                         cat["section_list"] = category[enumerations.SECTION_LIST_OBJECT]
                         categories.append(cat)
-                self.__dump_cache_file(cache_dir + publisher+"_categories.cpl",
-                    categories)
+                self.__dump_cache_file(os.path.join(cache_dir, 
+                    publisher+"_categories.cpl"), categories)
 
         def __dump_application_list(self, publisher, application_list):
                 cache_dir = self.__get_cache_dir()
@@ -181,7 +189,8 @@ class CacheListStores:
                             application[enumerations.CATEGORY_LIST_COLUMN]
                         app["pkg_authority"] = application[enumerations.AUTHORITY_COLUMN]
                         apps.append(app)
-                self.__dump_cache_file(cache_dir + publisher+"_packages.cpl", apps)
+                self.__dump_cache_file(
+                    os.path.join(cache_dir, publisher+"_packages.cpl"), apps)
 
         def __dump_section_list(self, publisher, section_list):
                 cache_dir = self.__get_cache_dir()
@@ -195,13 +204,14 @@ class CacheListStores:
                         sec["subcategory"] = section[enumerations.SECTION_SUBCATEGORY]
                         sec["enabled"] = section[enumerations.SECTION_ENABLED]
                         sections.append(sec)
-                self.__dump_cache_file(cache_dir + publisher+"_sections.cpl", sections)
+                self.__dump_cache_file(os.path.join(cache_dir, publisher+"_sections.cpl"),
+                    sections)
 
         def __load_cache_info(self, publisher):
                 cache_dir = self.__get_cache_dir()
                 if not cache_dir:
                         return None
-                info = self.__read_cache_file(cache_dir + publisher+".cpl")
+                info = self.__read_cache_file(os.path.join(cache_dir, publisher+".cpl"))
                 return info
 
         def load_category_list(self, publisher, category_list):
@@ -209,7 +219,7 @@ class CacheListStores:
                 if not cache_dir:
                         return
                 categories = self.__read_cache_file(
-                    cache_dir + publisher+"_categories.cpl")
+                    os.path.join(cache_dir, publisher+"_categories.cpl"))
                 cat_count = 0
                 for cat in categories:
                         cat_id = cat.get("id")
@@ -235,7 +245,7 @@ class CacheListStores:
                 if not cache_dir:
                         return
                 applications = self.__read_cache_file(
-                    cache_dir + publisher+"_packages.cpl")
+                    os.path.join(cache_dir, publisher+"_packages.cpl"))
                 app_count = len(application_list)
                 if app_count > 0:
                         app_count += 1
@@ -276,7 +286,8 @@ class CacheListStores:
                 cache_dir = self.__get_cache_dir()
                 if not cache_dir:
                         return
-                sections = self.__read_cache_file(cache_dir + publisher+"_sections.cpl")
+                sections = self.__read_cache_file(
+                    os.path.join(cache_dir, publisher+"_sections.cpl"))
                 sec_count = 0
                 for sec in sections:
                         sec_id = sec.get("id")
@@ -326,5 +337,43 @@ class CacheListStores:
                 cPickle.dump(data, fh, True)
                 fh.close()
 
+        def __dump_search_completion_info(self, completion_list):
+                cache_dir = self.__get_cache_dir()
+                if not cache_dir:
+                        return
+                texts = []
+                for text in completion_list:
+                        txt = {}
+                        txt["text"] = text[0]
+                        texts.append(txt)
+                try:
+                        self.__dump_cache_file(
+                            os.path.join(cache_dir, ".__search__completion.cpl"), texts)
+                except IOError:
+                        return
 
+        def __load_search_completion_info(self, completion_list):
+                cache_dir = self.__get_cache_dir()
+                if not cache_dir:
+                        return
+                texts = []
+                try:
+                        texts = self.__read_cache_file(
+                            os.path.join(cache_dir, ".__search__completion.cpl"))
+                except IOError:
+                        return gtk.ListStore(str)
 
+                txt_count = 0
+                for txt in texts:
+                        txt_val = txt.get("text")
+                        text = [ txt_val ]
+                        completion_list.insert(txt_count, text)
+                        txt_count += 1
+
+        def dump_search_completion_info(self, completion_list):
+                Thread(target = self.__dump_search_completion_info,
+                    args = (completion_list, )).start()
+
+        def load_search_completion_info(self, completion_list):
+                Thread(target = self.__load_search_completion_info,
+                    args = (completion_list, )).start()
