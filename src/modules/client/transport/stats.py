@@ -177,6 +177,9 @@ class RepoStats(object):
                 """Return the average transfer speed in bytes/sec for
                    operations against this uri."""
 
+                if self.__seconds_xfr == 0:
+                        return 0.0
+
                 return float(self.__bytes_xfr / self.__seconds_xfr)
 
         @property

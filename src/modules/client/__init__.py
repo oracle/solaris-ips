@@ -23,6 +23,8 @@
 # Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
+import os
+
 __all__ = ["global_settings"]
 
 class GlobalSettings(object):
@@ -31,8 +33,38 @@ class GlobalSettings(object):
 
         def __init__(self):
                 object.__init__(self)
-                self.PKG_TIMEOUT_MAX = 4
-                self.PKG_CLIENT_TIMEOUT = 30
                 self.client_name = None
+                self.pkg_client_max_timeout_default = 4
+                self.pkg_client_connect_timeout_default = 60
+                self.pkg_client_lowspeed_timeout_default = 30
+                # Minimum bytes/sec before client thinks about giving up
+                # on connection.
+                self.pkg_client_lowspeed_limit = 1024
+                try:
+                        # Maximum number of timeouts before client gives up.
+                        self.PKG_CLIENT_MAX_TIMEOUT = int(os.environ.get(
+                            "PKG_CLIENT_MAX_TIMEOUT",
+                            self.pkg_client_max_timeout_default))
+                except ValueError:
+                        self.PKG_CLIENT_MAX_TIMEOUT = \
+                            self.pkg_client_max_timeout_default
+                try:
+                        # Number of seconds trying to connect before client
+                        # aborts.
+                        self.PKG_CLIENT_CONNECT_TIMEOUT = int(os.environ.get(
+                            "PKG_CLIENT_CONNECT_TIMEOUT",
+                            self.pkg_client_connect_timeout_default))
+                except ValueError:
+                        self.PKG_CLIENT_CONNECT_TIMEOUT = \
+                            self.pkg_client_connect_timeout_default
+                try:
+                        # Number of seconds below lowspeed limit before
+                        # transaction is aborted.
+                        self.PKG_CLIENT_LOWSPEED_TIMEOUT = int(os.environ.get(
+                            "PKG_CLIENT_LOWSPEED_TIMEOUT",
+                            self.pkg_client_lowspeed_timeout_default))
+                except ValueError:
+                        self.PKG_CLIENT_LOWSPEED_TIMEOUT = \
+                            self.pkg_client_lowspeed_timeout_default
 
 global_settings = GlobalSettings()

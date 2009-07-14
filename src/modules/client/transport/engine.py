@@ -149,6 +149,7 @@ class CurlTransportEngine(TransportEngine):
                         # Otherwise fall through to transport's exception
                         # generation.
                         if en == pycurl.E_ABORTED_BY_CALLBACK:
+                                ex = None
                                 ex_to_raise = api_errors.CanceledException
                         elif en == pycurl.E_HTTP_RETURNED_ERROR:
                                 ex = tx.TransportProtoError(proto, httpcode,
@@ -157,9 +158,9 @@ class CurlTransportEngine(TransportEngine):
                                 ex = tx.TransportFrameworkError(en, url, em,
                                     repourl=urlstem)
 
-                        if ex.retryable:
+                        if ex and ex.retryable:
                                 failures.append(ex) 
-                        elif not ex_to_raise:
+                        elif ex and not ex_to_raise:
                                 ex_to_raise = ex
 
                         done_handles.append(h)
@@ -436,8 +437,17 @@ class CurlTransportEngine(TransportEngine):
                 # Set nosignal, so timeouts don't crash client
                 hdl.setopt(pycurl.NOSIGNAL, 1)
 
-                # Use globally set timeout
-                hdl.setopt(pycurl.TIMEOUT, global_settings.PKG_CLIENT_TIMEOUT)
+                # Set connect timeout.  Its value is defined in global_settings.
+                hdl.setopt(pycurl.CONNECTTIMEOUT,
+                    global_settings.PKG_CLIENT_CONNECT_TIMEOUT)
+
+                # Set lowspeed limit and timeout.  Clients that are too
+                # slow or have hung after specified amount of time will
+                # abort the connection.
+                hdl.setopt(pycurl.LOW_SPEED_LIMIT,
+                    global_settings.pkg_client_lowspeed_limit)
+                hdl.setopt(pycurl.LOW_SPEED_TIME,
+                    global_settings.PKG_CLIENT_LOWSPEED_TIMEOUT)
 
                 # Follow redirects
                 hdl.setopt(pycurl.FOLLOWLOCATION, True)

@@ -191,21 +191,14 @@ class PackageManager:
                 self.current_search_option = 0
                 self.in_search_mode = False
 
-                # Override default PKG_TIMEOUT_MAX and PKG_CLIENT_TIMEOUT 
-                # if a value has been specified in the environment.
-                global_settings.PKG_TIMEOUT_MAX = int(os.environ.get(
-                    "PKG_TIMEOUT_MAX", global_settings.PKG_TIMEOUT_MAX))
-
-                global_settings.PKG_CLIENT_TIMEOUT = int(os.environ.get(
-                    "PKG_CLIENT_TIMEOUT", global_settings.PKG_CLIENT_TIMEOUT))
+                global_settings.client_name = PKG_CLIENT_NAME
 
                 # This call only affects sockets created by Python.  The
-                # transport framework must set the timeout value internally
-                #
-                # value is in seconds
-                socket.setdefaulttimeout(global_settings.PKG_TIMEOUT_MAX)
-
-                global_settings.client_name = PKG_CLIENT_NAME
+                # transport framework uses the defaults in global_settings,
+                # which may be overridden in the environment.  The default
+                # socket module should only be used in rare cases by ancillary
+                # code, making it safe to code the value here, at least for now.
+                socket.setdefaulttimeout(30) # in secs
 
                 try:
                         self.application_dir = os.environ["PACKAGE_MANAGER_ROOT"]

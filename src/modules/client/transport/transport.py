@@ -92,7 +92,7 @@ class Transport(object):
 
                 failures = tx.TransportFailures()
                 fobj = None
-                retry_count = global_settings.PKG_TIMEOUT_MAX
+                retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 header = None
 
                 if isinstance(pub, publisher.Publisher):
@@ -154,7 +154,7 @@ class Transport(object):
                 ts."""
 
                 failures = tx.TransportFailures()
-                retry_count = global_settings.PKG_TIMEOUT_MAX
+                retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 header = self.__build_header(uuid=self.__get_uuid(pub))
                 croot = pub.meta_root
 
@@ -213,7 +213,7 @@ class Transport(object):
                 TransportError and perform any retry logic that is desired.
                 """
 
-                retry_count = global_settings.PKG_TIMEOUT_MAX
+                retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 failures = tx.TransportFailures()
                 pub_prefix = fmri.get_publisher()
                 pub = self.__img.get_publisher(pub_prefix)
@@ -242,7 +242,7 @@ class Transport(object):
                 pub_prefix = fmri.get_publisher()
                 pub = self.__img.get_publisher(pub_prefix)
                 mfst = fmri.get_url_path()
-                retry_count = global_settings.PKG_TIMEOUT_MAX
+                retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 header = self.__build_header(intent=intent,
                     uuid=self.__get_uuid(pub))
 
@@ -267,7 +267,7 @@ class Transport(object):
                 """Given a fmri, and optional excludes, return a manifest
                 object."""
 
-                retry_count = global_settings.PKG_TIMEOUT_MAX
+                retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 failures = tx.TransportFailures()
                 pub_prefix = fmri.get_publisher()
                 pub = self.__img.get_publisher(pub_prefix)
@@ -360,7 +360,7 @@ class Transport(object):
                 A mfile object contains information about the multiple-file
                 request that will be performed."""
 
-                retry_count = global_settings.PKG_TIMEOUT_MAX
+                retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 failures = []
                 filelist = mfile.keys()
                 pub = mfile.get_publisher()
@@ -463,7 +463,7 @@ class Transport(object):
                 """Query the publisher's origin servers for versions
                 information.  Return a dictionary of "name":"versions" """
 
-                retry_count = global_settings.PKG_TIMEOUT_MAX
+                retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 failures = tx.TransportFailures()
                 verlines = None
                 header = self.__build_header(uuid=self.__get_uuid(pub))
