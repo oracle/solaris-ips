@@ -837,8 +837,9 @@ class Repository:
         def __on_repository_delete_event(self, widget, event):
                 self.__on_repositoryclose_clicked(widget)
 
-        def __on_repositoryhelp_clicked(self, widget):
-                gui_misc.display_help(self.parent.application_dir, "manage_repo")
+        @staticmethod
+        def __on_repositoryhelp_clicked(widget):
+                gui_misc.display_help("manage_repo")
 
         def __on_repositoryclose_clicked(self, widget):
                 # if the number is greater then 1 it means that we did something

@@ -79,10 +79,12 @@ def get_icon(icon_theme, name, size=16):
         except gobject.GError:
                 return None
 
-def display_help(application_dir="", help_id=None):
+def init_for_help(application_dir="/"):
         props = { gnome.PARAM_APP_DATADIR : os.path.join(application_dir,
                     'usr/share/package-manager/help') }
         gnome.program_init('package-manager', '0.1', properties=props)
+
+def display_help(help_id=None):
         if help_id != None:
                 gnome.help_display('package-manager', link_id=help_id)
         else:

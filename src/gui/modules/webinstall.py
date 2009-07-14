@@ -63,6 +63,7 @@ class Webinstall:
                             self.application_dir,
                             "usr/share/locale"))
                         module.textdomain("pkg")
+                gui_misc.init_for_help(self.application_dir)
                 self.pub_pkg_list = None
                 self.pr = progress.NullProgressTracker()
                 self.pub_new_tasks = []
@@ -214,8 +215,9 @@ class Webinstall:
         def __on_cancel_button_clicked(self, widget):
                 self.__exit_app()
 
-        def __on_help_button_clicked(self, widget):
-                gui_misc.display_help(self.application_dir, "webinstall")
+        @staticmethod
+        def __on_help_button_clicked(widget):
+                gui_misc.display_help("webinstall")
 
         def __exit_app(self, be_name = None):
                 self.w_webinstall_dialog.destroy()

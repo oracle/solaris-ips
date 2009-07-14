@@ -93,6 +93,7 @@ class Updatemanager:
                             self.application_dir,
                             "usr/share/locale"))
                         module.textdomain("pkg")
+                gui_misc.init_for_help(self.application_dir)
                 # Duplicate ListStore setup in get_updates_to_list()
                 self.um_list = \
                     gtk.ListStore(
@@ -577,8 +578,9 @@ class Updatemanager:
         def __on_cancel_button_clicked(self, widget):
                 self.__exit_app()
                 
-        def __on_help_button_clicked(self, widget):
-                gui_misc.display_help(self.application_dir, "um_info")
+        @staticmethod
+        def __on_help_button_clicked(widget):
+                gui_misc.display_help("um_info")
 
         def __exit_app(self, be_name = None):
                 if be_name:

@@ -215,7 +215,7 @@ class PackageManager:
                             self.application_dir,
                             "usr/share/locale"))
                         module.textdomain("pkg")
-                # XXX Remove and use _() where self._ and self.parent._ are being used
+                gui_misc.init_for_help(self.application_dir)
                 self.main_window_title = _('Package Manager')
                 self.user_rights = portable.is_admin()
                 self.cancelled = False                    # For background processes
@@ -2142,8 +2142,9 @@ class PackageManager:
         def __on_preferencesclose_clicked(self, widget):
                 self.w_preferencesdialog.hide()
 
-        def __on_preferenceshelp_clicked(self, widget):
-                gui_misc.display_help(self.application_dir, "pm_win")
+        @staticmethod
+        def __on_preferenceshelp_clicked(widget):
+                gui_misc.display_help("pm_win")
 
         def __on_startpage_checkbutton_toggled(self, widget):
                 self.show_startpage = self.w_startpage_checkbutton.get_active()
@@ -2646,8 +2647,9 @@ class PackageManager:
                     y = None: aboutdialog.destroy())
                 aboutdialog.run()
 
-        def __on_help_help(self, widget):
-                gui_misc.display_help(self.application_dir)
+        @staticmethod
+        def __on_help_help(widget):
+                gui_misc.display_help()
 
         def __on_remove(self, widget):
                 self.api_o.reset()
