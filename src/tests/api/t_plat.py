@@ -41,7 +41,6 @@ import pkg5unittest
 
 class TestPlat(pkg5unittest.Pkg5TestCase):
         def setUp(self):
-                self.cwd = os.getcwd()
                 pass
                 
         def testbasic(self):
@@ -85,6 +84,7 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
                 if util.get_canonical_os_type() != 'windows':
                         return
                 import pkg.portable.os_windows as os_windows
+                cwd = os.getcwdu()
                 exefilesrc = 'C:\\Windows\\system32\\more.com'
                 self.assert_(os.path.exists(exefilesrc))
 
@@ -109,31 +109,24 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
                 proc.communicate()
 
                 # Make sure that the moved executable gets deleted
-                # First do a rename in another image
-                tdir2 = tempfile.mkdtemp()
-                img2 = image.Image()
-                img2.history.client_name = "pkg-test"
-                img2.set_attrs(image.IMG_USER, tdir2, False, "test", 
-                    "http://localhost:10000", refresh_allowed=False)
-                fd2, path2 = tempfile.mkstemp(dir = tdir2)
-                os.write(fd2, "bar")
-                os.close(fd2)
-                portable.rename(path2, os.path.join(tdir2, "bar"))
-                # Now do another rename in the original image
-                # This should cause the executable to deleted from the trash
-                portable.rename(exefile, os.path.join(tdir1, "foo"))
+                # This is a white-box test
+                # To simulate running another process, we delete the cache
+                # and call get_trashdir as if another file was being moved
+                # to the trash.
+                os_windows.cached_image_info = []
+                os_windows.get_trashdir(exefile)
                 self.assert_(not os.path.exists(os.path.join(img1.imgdir, 
                     os_windows.trashname)))
 
                 # cleanup
-                os.chdir(self.cwd)
-                shutil.rmtree(img1.get_root())
-                shutil.rmtree(img2.get_root())
+                os.chdir(cwd)
+                shutil.rmtree(tdir1)
 
         def testRemoveOfRunningExecutable(self):
                 if util.get_canonical_os_type() != 'windows':
                         return
                 import pkg.portable.os_windows as os_windows
+                cwd = os.getcwdu()
                 exefilesrc = 'C:\\Windows\\system32\\more.com'
                 self.assert_(os.path.exists(exefilesrc))
 
@@ -152,30 +145,19 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
                 self.assert_(not os.path.exists(exefile))
                 proc.communicate()
 
-                # Make sure that the removed executable gets deleted
-                # First do a rename in another image
-                tdir2 = tempfile.mkdtemp()
-                img2 = image.Image()
-                img2.history.client_name = "pkg-test"
-                img2.set_attrs(image.IMG_USER, tdir2, False, "test", 
-                    "http://localhost:10000", refresh_allowed=False)
-                fd2, path2 = tempfile.mkstemp(dir = tdir2)
-                os.write(fd2, "bar")
-                os.close(fd2)
-                portable.rename(path2, os.path.join(tdir2, "bar"))
-                # Now do another rename in the original image
-                # This should cause the executable to deleted from the trash
-                fd3, path3 = tempfile.mkstemp(dir = tdir1)
-                os.write(fd3, "baz")
-                os.close(fd3)
-                portable.rename(path3, os.path.join(tdir1, "foo"))
-                self.assert_(not os.path.exists(os.path.join(img1.imgdir, 
+                # Make sure that the moved executable gets deleted
+                # This is a white-box test
+                # To simulate running another process, we delete the cache
+                # and call get_trashdir as if another file was being moved
+                # to the trash.
+                os_windows.cached_image_info = []
+                os_windows.get_trashdir(exefile)
+                self.assert_(not os.path.exists(os.path.join(img1.imgdir,
                     os_windows.trashname)))
 
                 # cleanup
-                os.chdir(self.cwd)
-                shutil.rmtree(img1.get_root())
-                shutil.rmtree(img2.get_root())
+                os.chdir(cwd)
+                shutil.rmtree(tdir1)
             
 if __name__ == "__main__":
         unittest.main()

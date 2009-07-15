@@ -37,6 +37,7 @@ import shutil
 import os
 import errno
 import tempfile
+import threading
 import util as os_util
 
 def get_isainfo():
@@ -125,43 +126,45 @@ def chown(path, owner, group):
 # as needed.
         
 trashname = "trash"
-cached_image = None
+
+# cached_image_info is a list of tuples (image root, image trash directory) for
+# all of the images that have been accessed by this process. It is used to
+# quickly find the trash directory for a path without having to create an
+# image object for it each time.
+cached_image_info = []
+cache_lock = threading.Lock()
 
 def get_trashdir(path):
         """
-        Use path to determine its image, and return the directory name of
-        the trash directory within that image. This method does not create
+        Use path to determine the trash directory.  This method does not create
         the directory. If path is not contained within an image, return None.
-        The image is cached in the module variable cached_image.
+        The directories for the images that have already been accessed are
+        cached to improve the speed of this method.
         """
+        global cached_image_info
+        global cache_lock
         import pkg.client.image as image
-        import pkg.client.api_errors as api_errors
-        global cached_image    
-        if not cached_image or not path.startswith(cached_image.get_root()):
-                cached_image = image.Image()
-                try:
-                        cached_image.find_root(os.path.dirname(path))
-                except api_errors.ImageNotFoundException:
-                        # if path is not within an image, revert to the 
-                        # initial state
-                        cached_image = None
-                        return None
-        trashdir = os.path.join(cached_image.imgdir, trashname)
-        return trashdir
-        
-def empty_trash(path):
-        """
-        Cleanup files that were left by previous calls to rename.  The path
-        is used to find the image where the files were left. 
-        """
-        # Either this is the first time, or the path is in a different image
-        # from what we have cached. 
-        global cached_image
-        if cached_image and path.startswith(cached_image.get_root()):
-                return
-        trashdir = get_trashdir(path)
-        if trashdir:
-                shutil.rmtree(trashdir, True)
+        from pkg.client.api_errors import ImageNotFoundException
+        try:
+            cache_lock.acquire()
+            for iroot, itrash in cached_image_info:
+                    if path.startswith(iroot):
+                            return itrash
+
+            img = image.Image()
+            try:
+                    img.find_root(os.path.dirname(path))
+            except ImageNotFoundException:
+                    # path is not within an image, no trash dir
+                    return None
+            trashdir = os.path.join(img.imgdir, trashname)
+            # this is the first time putting something in the trash for
+            # this image, so try to empty the trash first
+            shutil.rmtree(trashdir, True)
+            cached_image_info.append((img.get_root(), trashdir))
+            return trashdir
+        finally:
+            cache_lock.release()
 
 def move_to_trash(path):
         """
@@ -194,9 +197,6 @@ def rename(src, dst):
                         move_to_trash(dst)
                 # finally rename the file
                 os.rename(src, dst)
-        # this probably does not get rid of a file that was just moved to trash
-        # this is here to get rid of files from previous calls to rename
-        empty_trash(dst)
 
 def remove(path):
         """
