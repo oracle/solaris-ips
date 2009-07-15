@@ -7,7 +7,7 @@ NAME
 SYNOPSIS
      /usr/bin/pm-updatemanager [options]
 
-     /usr/bin/pm-updatemanager [-hrRU]  [--help] [--refresh] [--image-dir dir]
+     /usr/bin/pm-updatemanager [-hRU]  [--help] [--image-dir dir]
         [--update-all be_name]
 
 DESCRIPTION
@@ -20,10 +20,6 @@ OPTIONS
 
      --help or -h
           Displays a usage message.
-
-     ---refresh or -r
-           Force a refresh before checking for updaters. By default, a
-           refresh is not done before checking for updates.
 
      ---image-dir or -R dir
           Operate on the image rooted at dir, rather than the one discovered

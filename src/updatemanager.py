@@ -61,7 +61,8 @@ __builtin__._ = gettext.gettext
 IMAGE_DIRECTORY_DEFAULT = "/"   # Image default directory
 IMAGE_DIR_COMMAND = "svcprop -p update/image_dir svc:/application/pkg/update"
 
-ICON_LOCATION = "usr/share/package-manager/icons"
+PKG_ICON_LOCATION = "usr/share/package-manager/icons"
+ICON_LOCATION = "usr/share/update-manager/icons"
 PKG_CLIENT_NAME = "updatemanager" # API client name
 SELECTION_CHANGE_LIMIT = 0.5    # Time limit in seconds to cancel selection updates
 IND_DELAY = 0.05                # Time delay for printing index progress
@@ -117,6 +118,8 @@ class Updatemanager:
                 self.ua_be_name = None
                 self.application_path = None
                 self.icon_theme = gtk.IconTheme()
+                pkg_icon_location = os.path.join(self.application_dir, PKG_ICON_LOCATION)
+                self.icon_theme.append_search_path(pkg_icon_location)
                 icon_location = os.path.join(self.application_dir, ICON_LOCATION)
                 self.icon_theme.append_search_path(icon_location)
                 self.ua_start = 0

@@ -2,7 +2,7 @@
 _Name=Update Manager
 _GenericName=Update Manager
 _Comment=Install available updates
-Exec=/usr/lib/pm-launch /usr/bin/pm-updatemanager -r
+Exec=/usr/lib/pm-launch /usr/bin/pm-updatemanager
 Icon=updatemanager
 Terminal=false
 MultipleArgs=false
