@@ -1276,7 +1276,9 @@ class TermQuery(object):
                         send_res = []
                         f = fmri.PkgFmri(fmri_str)
                         path = self._manifest_path_func(f)
-                        file_handle = open(path)
+                        # XXX If action size changes substantially, we should
+                        # reexamine whether the buffer size should be changed.
+                        file_handle = open(path, "rb", buffering=512)
                         for o in sorted(offsets):
                                 file_handle.seek(o)
                                 send_res.append((fv, at, st,
