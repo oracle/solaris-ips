@@ -3080,7 +3080,8 @@ class PackageManager:
                         try:
                                 lic_u = unicode(lic, "utf-8")
                         except UnicodeDecodeError:
-                                lic_u += ""
+                                lic_u = _("License could not be shown "
+                                    "due to conversion problem.")
                 licbuffer = self.w_license_textview.get_buffer()
                 licbuffer.set_text(lic_u)
 
