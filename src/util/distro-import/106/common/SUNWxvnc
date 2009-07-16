@@ -6,5 +6,5 @@ from SUNWxwplr import
 var/svc/manifest/application/x11/xvnc-inetd.xml
 end import
 depend SUNWperl584core
-depend SUNWxorg-xkb
+depend_path /usr/X11/lib/X11/xkb/rules/base
 end package

@@ -19,7 +19,7 @@ drop usr/openwin/lib/libGLw.so.1
 drop usr/openwin/share
 drop usr/openwin/share/include
 drop usr/openwin/share/include/GL
-# Depends on ogl-select service from SUNWxwplr to create links at boot
-depend SUNWxwplr
+# Depends on ogl-select service to create links at boot
+depend_path /var/svc/manifest/application/opengl/ogl-select.xml
 version 7.4.2
 end package

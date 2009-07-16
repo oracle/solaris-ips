@@ -1,6 +1,6 @@
 package SUNWpciaccess
 classification "System/Hardware"
 import SUNWpciaccess
-depend SUNWhwdata
+depend_path /usr/share/hwdata/pci.ids
 version 0.10.6
 end package

@@ -174,5 +174,5 @@ drop usr/openwin/share/include/dga/XineramaInfo.h
 drop usr/openwin/share/include/dga/dga.h
 drop usr/openwin/share/include/dga/dga_externaldefs.h
 drop usr/openwin/share/include/X11/Sunowconfig.h
-depend SUNWhea
+depend_path /usr/include/sys/types.h
 end package

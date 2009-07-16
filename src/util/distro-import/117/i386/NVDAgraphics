@@ -265,7 +265,7 @@ add link path=dev/nvidia14 target=fbs/nvidia14 variant.opensolaris.zone=global
 add link path=dev/nvidia15 target=fbs/nvidia15 variant.opensolaris.zone=global
 add link path=dev/nvidiactl target=../devices/pseudo/nvidia@255:nvidiactl \
 	variant.opensolaris.zone=global
-# Depends on ogl-select service from SUNWxwplr to create links at boot
-depend SUNWxwplr
+# Depends on ogl-select service to create links at boot
+depend_path /var/svc/manifest/application/opengl/ogl-select.xml
 version 0.185.18.14
 end package
