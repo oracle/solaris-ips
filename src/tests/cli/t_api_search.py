@@ -27,14 +27,15 @@ import testutils
 if __name__ == "__main__":
 	testutils.setup_environment("../../../proto")
 
-import unittest
-import os
-import sys
 import copy
+import difflib
+import os
 import re
 import shutil
-import difflib
+import sys
+import tempfile
 import time
+import unittest
 
 import pkg.client.api as api
 import pkg.client.api_errors as api_errors
@@ -991,11 +992,14 @@ close
 
         @staticmethod
         def _overwrite_hash(ffh_path):
-                fh = open(ffh_path, "r+")
+                fd, tmp = tempfile.mkstemp()
+                portable.copyfile(ffh_path, tmp)
+                fh = open(tmp, "r+")
                 fh.seek(0)
                 fh.seek(20)
                 fh.write("*")
                 fh.close()
+                portable.rename(tmp, ffh_path)
 
         def _check_no_index(self):
                 ind_dir, ind_dir_tmp = self._get_index_dirs()
@@ -1201,10 +1205,10 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
                         api_obj.reset()
                         self._search_op(api_obj, False, "example_pkg",
                             self.res_local_pkg)
-                        
+
                 ffh = ss.IndexStoreSetHash(ss.FULL_FMRI_HASH_FILE)
                 ffh_path = os.path.join(index_dir, ffh.get_file_name())
-                dest_path = ffh_path + "TMP"
+                dest_fh, dest_path = tempfile.mkstemp()
                 shutil.copy(ffh_path, dest_path)
                 self._overwrite_hash(ffh_path)
                 self.assertRaises(api_errors.IncorrectIndexFileHash,

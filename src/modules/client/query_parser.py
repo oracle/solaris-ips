@@ -100,7 +100,9 @@ class TermQuery(qp.TermQuery):
             ss.IndexStoreSet(ss.FAST_ADD)
         qp.TermQuery._global_data_dict["fast_remove"] = \
             ss.IndexStoreSet(ss.FAST_REMOVE)
-        
+        qp.TermQuery._global_data_dict["fmri_hash"] = \
+            ss.IndexStoreSetHash(ss.FULL_FMRI_HASH_FILE)
+
         def __init__(self, term):
                 qp.TermQuery.__init__(self, term)
                 self._impl_fmri_to_path = None
@@ -131,12 +133,6 @@ class TermQuery(qp.TermQuery):
                 TermQuery.client_dict_lock.acquire()
                 try:
                         try:
-                                # Temporarily add the fmri_hash storage object
-                                # to the shared dictionary structure so that its
-                                # file will be opened at the same time as the
-                                # other storage objects.
-                                qp.TermQuery._global_data_dict["fmri_hash"] = \
-                                    ss.IndexStoreSetHash(ss.FULL_FMRI_HASH_FILE)
                                 qp.TermQuery.set_info(self, dir_path,
                                     fmri_to_manifest_path_func, case_sensitive)
                                 # Take local copies of the client-only
@@ -155,9 +151,6 @@ class TermQuery(qp.TermQuery):
                                 # search will be used.
                                 TopQuery.use_slow = True
                 finally:
-                        # Remove the fmri_hash object from the shared data
-                        # structure since it does not work when shared.
-                        del qp.TermQuery._global_data_dict["fmri_hash"]
                         TermQuery.client_dict_lock.release()
                 
         def search(self, restriction, fmris, manifest_func, excludes):

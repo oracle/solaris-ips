@@ -142,6 +142,8 @@ class IndexStoreBase(object):
                 self._file_path = None
                 self._size = None
                 self._mtime = None
+                self._inode = None
+                self._have_read = False
 
         def get_file_name(self):
                 return self._name
@@ -153,6 +155,11 @@ class IndexStoreBase(object):
                 else:
                         self._file_handle = f_handle
                         self._file_path = f_path
+                        if self._mtime is None: 
+                                stat_info = os.stat(self._file_path)
+                                self._mtime = stat_info.st_mtime
+                                self._size = stat_info.st_size
+                                self._inode = stat_info.st_ino
 
         def get_file_path(self):
                 return self._file_path
@@ -164,6 +171,7 @@ class IndexStoreBase(object):
                 """Closes the file handle and clears it so that it cannot
                 be reused.
                 """
+
                 if self._file_handle:
                         self._file_handle.close()
                         self._file_handle = None
@@ -185,12 +193,14 @@ class IndexStoreBase(object):
                 storage has changed since it was last read.
                 """
                 stat_info = os.stat(self._file_path)
-                if self._mtime != stat_info.st_mtime or \
+                if self._inode != stat_info.st_ino or \
+                    self._mtime != stat_info.st_mtime or \
                     self._size != stat_info.st_size:
-                        self._mtime = stat_info.st_mtime
-                        self._size = stat_info.st_size
                         return True
-                return False
+                return not self._have_read
+
+        def read_dict_file(self):
+                self._have_read = True
 
         def open(self, directory):
                 """This uses consistent open to ensure that the version line
@@ -542,19 +552,19 @@ class IndexStoreListDict(IndexStoreBase):
                 call
                 """
                 assert self._file_handle
-                if self.should_reread():
-                        self._dict.clear()
-                        self._list = []
-                        for i, line in enumerate(self._file_handle):
-                                # A blank line means that id can be reused.
-                                tmp = self._build_func(line.rstrip('\n'))
-                                if line == '\n':
-                                        self._list_of_empties.append(i)
-                                else:
-                                        self._dict[tmp] = i
-                                self._list.append(tmp)
-                                self._line_cnt = i + 1
-                                self._next_id = i + 1
+                self._dict.clear()
+                self._list = []
+                for i, line in enumerate(self._file_handle):
+                        # A blank line means that id can be reused.
+                        tmp = self._build_func(line.rstrip("\n"))
+                        if line == "\n":
+                                self._list_of_empties.append(i)
+                        else:
+                                self._dict[tmp] = i
+                        self._list.append(tmp)
+                        self._line_cnt = i + 1
+                        self._next_id = i + 1
+                IndexStoreBase.read_dict_file(self)
                 return self._line_cnt
 
         def count_entries_removed_during_partial_indexing(self):
@@ -585,11 +595,11 @@ class IndexStoreDict(IndexStoreBase):
                 """Reads in a dictionary stored in line number -> entity
                 format
                 """
-                if self.should_reread():
-                        self._dict.clear()
-                        for line_cnt, line in enumerate(self._file_handle):
-                                line = line.rstrip('\n')
-                                self._dict[line_cnt] = line
+                self._dict.clear()
+                for line_cnt, line in enumerate(self._file_handle):
+                        line = line.rstrip("\n")
+                        self._dict[line_cnt] = line
+                IndexStoreBase.read_dict_file(self)
 
         def matching_read_dict_file(self, in_set, update=False):
                 """If it's necessary to reread the file, it rereads the
@@ -602,7 +612,7 @@ class IndexStoreDict(IndexStoreBase):
                 is left in place and any new information is added to it.
                 """
 
-                if update or self.should_reread():
+                if update or not self._have_read:
                         if not update:
                                 self._dict.clear()
                         match_cnt = 0
@@ -662,13 +672,13 @@ class IndexStoreDictMutable(IndexStoreBase):
                 """Reads in a dictionary stored in with an entity
                 and its number on each line.
                 """
-                if self.should_reread():
-                        self._dict.clear()
-                        for line in self._file_handle:
-                                res = line.split(" ")
-                                token = self.__unquote(res[0])
-                                offset = int(res[1])
-                                self._dict[token] = offset
+                self._dict.clear()
+                for line in self._file_handle:
+                        res = line.split(" ")
+                        token = self.__unquote(res[0])
+                        offset = int(res[1])
+                        self._dict[token] = offset
+                IndexStoreBase.read_dict_file(self)
 
         def open_out_file(self, use_dir, version_num):
                 """Opens the output file for this class and prepares it
@@ -702,7 +712,7 @@ class IndexStoreSetHash(IndexStoreBase):
         def __init__(self, file_name):
                 IndexStoreBase.__init__(self, file_name)
                 self.hash_val = sha.new().hexdigest()
-                
+
         def set_hash(self, vals):
                 """Set the has value."""
                 self.hash_val = self.calc_hash(vals) 
@@ -724,19 +734,20 @@ class IndexStoreSetHash(IndexStoreBase):
         def read_dict_file(self):
                 """Process a dictionary file written using the above method
                 """
-                if self.should_reread():
-                        sp = self._file_handle.tell()
-                        res = 0
-                        for res, line in enumerate(self._file_handle):
-                                assert res < 1
-                                self.hash_val = line.rstrip()
-                        self._file_handle.seek(sp)
-                        return res
+                sp = self._file_handle.tell()
+                res = 0
+                for res, line in enumerate(self._file_handle):
+                        assert res < 1
+                        self.hash_val = line.rstrip()
+                self._file_handle.seek(sp)
+                IndexStoreBase.read_dict_file(self)
+                return res
 
         def check_against_file(self, vals):
                 """Check the hash value of vals against the value stored
                 in the file for this object."""
-                self.read_dict_file()
+                if not self._have_read:
+                        self.read_dict_file()
                 incoming_hash = self.calc_hash(vals)
                 if self.hash_val != incoming_hash:
                         raise search_errors.IncorrectIndexFileHash(
@@ -784,13 +795,13 @@ class IndexStoreSet(IndexStoreBase):
                 """
                 assert self._file_handle
                 res = 0
-                if self.should_reread():
-                        self._set.clear()
-                        for i, line in enumerate(self._file_handle):
-                                line = line.rstrip('\n')
-                                assert i == len(self._set)
-                                self.add_entity(line)
-                                res = i + 1
+                self._set.clear()
+                for i, line in enumerate(self._file_handle):
+                        line = line.rstrip("\n")
+                        assert i == len(self._set)
+                        self.add_entity(line)
+                        res = i + 1
+                IndexStoreBase.read_dict_file(self)
                 return res
 
         def read_and_discard_matching_from_argument(self, fmri_set):
@@ -887,10 +898,10 @@ class InvertedDict(IndexStoreBase):
                 information in a dictionary."""
 
                 assert self._file_handle
-                if self.should_reread():
-                        for l in self._file_handle:
-                                fmris, offs = l.split("!")
-                                self._dict[fmris] = offs
+                for l in self._file_handle:
+                        fmris, offs = l.split("!")
+                        self._dict[fmris] = offs
+                IndexStoreBase.read_dict_file(self)
 
         @staticmethod
         def de_delta(offs):
