@@ -51,6 +51,7 @@ class TestUserGroup(pkg5unittest.Pkg5TestCase):
                 grpfile = file(os.path.join(self.tempdir, "etc", "group"), "w")
                 grpfile.write( \
 """root::0:
+gk::0:
 other::1:root
 bin::2:root,daemon
 sys::3:root,bin,adm
@@ -65,6 +66,8 @@ tty::7:root,adm""")
 
                 self.assert_(0 == \
                     portable.get_group_by_name("root", self.tempdir, True))
+                self.assert_(0 == \
+                    portable.get_group_by_name("gk", self.tempdir, True))
 
                 self.assertRaises(KeyError, portable.get_name_by_gid,
                     12345, self.tempdir, True)
@@ -100,10 +103,15 @@ adm::4:root,daemon
 uucp::5:root
 mail::6:root
 tty::7:root,adm
+gk::0:
 +""")
                 grpfile.close()
+                self.assert_("root" == \
+                    portable.get_name_by_gid(0, self.tempdir, True))
                 self.assert_(0 == \
                     portable.get_group_by_name("root", self.tempdir, True))
+                self.assert_(0 == \
+                    portable.get_group_by_name("gk", self.tempdir, True))
                 self.assert_(7 == \
                     portable.get_group_by_name("tty", self.tempdir, True))
 
@@ -125,6 +133,7 @@ tty::7:root,adm
                 grpfile = file(os.path.join(self.tempdir, "etc", "group"), "w")
                 grpfile.write( \
 """root::0:
+gk::0:
 bin::2:root,daemon
 +plusgrp
 adm::4:root,daemon
@@ -133,8 +142,12 @@ mail::6:root
 tty::7:root,adm
 +""")
                 grpfile.close()
+                self.assert_("root" == \
+                    portable.get_name_by_gid(0, self.tempdir, True))
                 self.assert_(0 == \
                     portable.get_group_by_name("root", self.tempdir, True))
+                self.assert_(0 == \
+                    portable.get_group_by_name("gk", self.tempdir, True))
                 self.assert_(7 == \
                     portable.get_group_by_name("tty", self.tempdir, True))
 
@@ -149,6 +162,7 @@ tty::7:root,adm
                 passwd = file(os.path.join(self.tempdir, "etc", "passwd"), "w")
                 passwd.write( \
 """root:x:0:0::/root:/usr/bin/bash
+gk:x:0:0::/root:/usr/bin/bash
 daemon:x:1:1::/:
 bin:x:2:2::/usr/bin:
 sys:x:3:3::/:
@@ -163,6 +177,8 @@ moop:x:999:999:moop:/usr/moop:""")
 
                 self.assert_(0 == \
                     portable.get_user_by_name("root", self.tempdir, True))
+                self.assert_(0 == \
+                    portable.get_user_by_name("gk", self.tempdir, True))
                 self.assert_(999 == \
                     portable.get_user_by_name("moop", self.tempdir, True))
 
@@ -201,6 +217,7 @@ sys:x:3:3::/:
 blorg
 corrupt:x
 
+gk:x:0:0::/root:/usr/bin/bash
 adm:x:4:4:Admin:/var/adm:
 lp:x:71:8:Line Printer Admin:/usr/spool/lp:
 uucp:x:5:5:uucp Admin:/usr/lib/uucp:
@@ -208,6 +225,8 @@ uucp:x:5:5:uucp Admin:/usr/lib/uucp:
                 passwd.close()
                 self.assert_(0 == \
                     portable.get_user_by_name("root", self.tempdir, True))
+                self.assert_(0 == \
+                    portable.get_user_by_name("gk", self.tempdir, True))
                 self.assert_("uucp" == \
                     portable.get_name_by_uid(5, self.tempdir, True))
 
@@ -229,6 +248,7 @@ uucp:x:5:5:uucp Admin:/usr/lib/uucp:
                 passwd = file(os.path.join(self.tempdir, "etc", "passwd"), "w")
                 passwd.write( \
 """root:x:0:0::/root:/usr/bin/bash
+gk:x:0:0::/root:/usr/bin/bash
 daemon:x:1:1::/:
 bin:x:2:2::/usr/bin:
 sys:x:3:3::/:
@@ -240,11 +260,16 @@ uucp:x:5:5:uucp Admin:/usr/lib/uucp:
                 passwd.close()
                 self.assert_(0 == \
                     portable.get_user_by_name("root", self.tempdir, True))
+                self.assert_(0 == \
+                    portable.get_user_by_name("gk", self.tempdir, True))
+                self.assert_("root" == \
+                    portable.get_name_by_uid(0, self.tempdir, True))
                 self.assert_("uucp" == \
                     portable.get_name_by_uid(5, self.tempdir, True))
 
                 self.assertRaises(KeyError, portable.get_user_by_name,
                     "plususer", self.tempdir, True)
+
 
 if __name__ == "__main__":
         unittest.main()

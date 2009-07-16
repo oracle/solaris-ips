@@ -158,7 +158,10 @@ def load_passwd(dirpath):
                 pw_entry = pwd.struct_passwd(arr)
 
                 user[pw_entry.pw_name] = pw_entry
-                uid[pw_entry.pw_uid] = pw_entry
+                # Traditional systems allow multiple users to have the same
+                # user id, so only the first one should be mapped to the
+                # current pw_entry.
+                uid.setdefault(pw_entry.pw_uid, pw_entry)
 
         users_lastupdate[dirpath] = passwd_stamp
         f.close()
@@ -185,7 +188,10 @@ def load_groups(dirpath):
                 gr_entry = grp.struct_group(arr)
 
                 group[gr_entry.gr_name] = gr_entry
-                gid[gr_entry.gr_gid] = gr_entry
+                # Traditional systems allow multiple groups to have the same
+                # group id, so only the first one should be mapped to the
+                # current pw_entry.
+                gid.setdefault(gr_entry.gr_gid, gr_entry)
 
         groups_lastupdate[dirpath] = group_stamp
         f.close()
