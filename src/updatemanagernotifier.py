@@ -51,6 +51,7 @@ except ImportError:
 import pkg.client.progress as progress
 import pkg.misc as misc
 import pkg.gui.misc as gui_misc
+import pkg.gui.enumerations as enumerations
 
 # Put _() in the global namespace
 import __builtin__
@@ -62,7 +63,7 @@ SHOW_NOTIFY_ICON_DEFAULT = True
 IMAGE_DIRECTORY_DEFAULT = "/"
 LASTCHECK_DIR_NAME = os.path.join(os.path.expanduser("~"),'.updatemanager/notify')
 IMAGE_DIR_COMMAND = "svcprop -p update/image_dir svc:/application/pkg/update"
-CHECK_FOR_UPDATES = "/usr/lib/um-checkforupdates"
+CHECK_FOR_UPDATES = "/usr/lib/pm-checkforupdates"
 
 ICON_LOCATION = "/usr/share/update-manager/icons"
 NOTIFY_ICON_NAME = "notify_update"
@@ -285,11 +286,11 @@ class UpdateManagerNotifier:
                 if len(image_directory) == 0:
                         image_directory = IMAGE_DIRECTORY_DEFAULT
                 return_code = subprocess.call([CHECK_FOR_UPDATES,
-                    image_directory])
+                    '--nice', image_directory])
                 if debug:
                         print "return from subprocess is %d" % return_code
                 self.set_last_check_time()
-                if return_code == 0:
+                if return_code == enumerations.UPDATES_AVAILABLE:
                         self.show_status_icon(True)
                 else:
                         self.show_status_icon(False)

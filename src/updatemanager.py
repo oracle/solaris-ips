@@ -26,6 +26,7 @@
 
 import getopt
 import os
+import subprocess
 import sys
 import time
 import locale
@@ -63,6 +64,7 @@ IMAGE_DIR_COMMAND = "svcprop -p update/image_dir svc:/application/pkg/update"
 
 PKG_ICON_LOCATION = "usr/share/package-manager/icons"
 ICON_LOCATION = "usr/share/update-manager/icons"
+CHECK_FOR_UPDATES = "/usr/lib/pm-checkforupdates"
 PKG_CLIENT_NAME = "updatemanager" # API client name
 SELECTION_CHANGE_LIMIT = 0.5    # Time limit in seconds to cancel selection updates
 IND_DELAY = 0.05                # Time delay for printing index progress
@@ -371,6 +373,15 @@ class Updatemanager:
                         gobject.TYPE_STRING,      # UM_SIZE
                         gobject.TYPE_STRING,      # UM_STEM                        
                         )
+
+                # Use check_for_updates to determine whether updates
+                # are available
+                return_code = subprocess.call([CHECK_FOR_UPDATES,
+                    self.__get_image_path()])
+                if return_code == enumerations.NO_UPDATES_AVAILABLE:
+                        self.progress_stop_thread = True
+                        gobject.idle_add(self.__display_noupdates)
+                        return
 
                 self.api_obj = self.__get_api_obj()
                 image_obj = self.api_obj.img

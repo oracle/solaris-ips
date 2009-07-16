@@ -163,7 +163,7 @@ scripts_sunos = {
         lib_dir: [
                 ['depot.py', 'pkg.depotd'],
                 ['updatemanagernotifier.py', 'updatemanagernotifier'],
-                ['checkforupdates.py', 'um-checkforupdates'],
+                ['checkforupdates.py', 'pm-checkforupdates'],
                 ['launch.py', 'pm-launch'],
                 ],
         svc_method_dir: [

@@ -8,6 +8,7 @@ d none usr 755 root sys
 d none usr/bin 755 root bin
 f none usr/bin/packagemanager 755 root bin
 d none usr/lib 755 root bin
+f none usr/lib/pm-checkforupdates 755 root bin
 f none usr/lib/pm-launch 755 root bin
 d none usr/lib/python2.4 755 root bin
 d none usr/lib/python2.4/vendor-packages 755 root bin

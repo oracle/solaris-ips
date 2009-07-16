@@ -23,7 +23,6 @@
 # Use is subject to license terms.
 #
 
-import cPickle
 import os
 import sys
 try:
@@ -51,8 +50,9 @@ class CacheListStores:
                 self.update_available_icon = update_available_icon
                 self.installed_icon = installed_icon
                 self.not_installed_icon = not_installed_icon
-                self.category_icon = gui_misc.get_pixbuf_from_path(application_dir +
-                    "/usr/share/package-manager/", "legend_newupdate")
+                self.category_icon = gui_misc.get_pixbuf_from_path(
+                    os.path.join(application_dir,
+                    "usr/share/package-manager/"), "legend_newupdate")
 
         def check_if_cache_uptodate(self, publisher):
                 try:
@@ -82,22 +82,11 @@ class CacheListStores:
                 return True
 
         def __get_cache_dir(self):
-                img = self.api_o.img
-                cache_dir = os.path.join(img.imgdir, "gui_cache")
-                try:
-                        self.__mkdir(cache_dir)
-                except OSError:
-                        cache_dir = None
-                return cache_dir
-
-        @staticmethod
-        def __mkdir(directory_path):
-                if not os.path.isdir(directory_path):
-                        os.makedirs(directory_path)
+                return gui_misc.get_cache_dir(self.api_o)
 
         def get_index_timestamp(self):
                 img = self.api_o.img
-                index_path = "%s/state/installed" % (img.imgdir)
+                index_path = os.path.join(img.imgdir, "state/installed")
                 try:
                         return os.path.getmtime(index_path)
                 except (OSError, IOError):
@@ -121,7 +110,8 @@ class CacheListStores:
                 dump_info["be_name"] = None
 
                 try:
-                        self.__dump_cache_file(os.path.join(cache_dir, publisher+".cpl"),
+                        gui_misc.dump_cache_file(
+                            os.path.join(cache_dir, publisher+".cpl"),
                             dump_info)
                 except IOError:
                         #Silently return, as probably user doesn't have permissions or
@@ -141,7 +131,8 @@ class CacheListStores:
                 dump_info["be_name"] = self.__get_active_be_name()
 
                 try:
-                        self.__dump_cache_file(os.path.join(cache_dir, publisher+".cpl"),
+                        gui_misc.dump_cache_file(
+                            os.path.join(cache_dir, publisher+".cpl"),
                             dump_info)
                         self.__dump_category_list(publisher, category_list)
                         self.__dump_application_list(publisher, application_list)
@@ -167,7 +158,7 @@ class CacheListStores:
                         cat["visible"] = category[enumerations.CATEGORY_VISIBLE]
                         cat["section_list"] = category[enumerations.SECTION_LIST_OBJECT]
                         categories.append(cat)
-                self.__dump_cache_file(os.path.join(cache_dir, 
+                gui_misc.dump_cache_file(os.path.join(cache_dir, 
                     publisher+"_categories.cpl"), categories)
 
         def __dump_application_list(self, publisher, application_list):
@@ -189,7 +180,7 @@ class CacheListStores:
                             application[enumerations.CATEGORY_LIST_COLUMN]
                         app["pkg_authority"] = application[enumerations.AUTHORITY_COLUMN]
                         apps.append(app)
-                self.__dump_cache_file(
+                gui_misc.dump_cache_file(
                     os.path.join(cache_dir, publisher+"_packages.cpl"), apps)
 
         def __dump_section_list(self, publisher, section_list):
@@ -204,21 +195,22 @@ class CacheListStores:
                         sec["subcategory"] = section[enumerations.SECTION_SUBCATEGORY]
                         sec["enabled"] = section[enumerations.SECTION_ENABLED]
                         sections.append(sec)
-                self.__dump_cache_file(os.path.join(cache_dir, publisher+"_sections.cpl"),
+                gui_misc.dump_cache_file(
+                    os.path.join(cache_dir, publisher+"_sections.cpl"),
                     sections)
 
         def __load_cache_info(self, publisher):
                 cache_dir = self.__get_cache_dir()
                 if not cache_dir:
                         return None
-                info = self.__read_cache_file(os.path.join(cache_dir, publisher+".cpl"))
+                info = gui_misc.read_cache_file(os.path.join(cache_dir, publisher+".cpl"))
                 return info
 
         def load_category_list(self, publisher, category_list):
                 cache_dir = self.__get_cache_dir()
                 if not cache_dir:
                         return
-                categories = self.__read_cache_file(
+                categories = gui_misc.read_cache_file(
                     os.path.join(cache_dir, publisher+"_categories.cpl"))
                 cat_count = 0
                 for cat in categories:
@@ -244,7 +236,7 @@ class CacheListStores:
                 cache_dir = self.__get_cache_dir()
                 if not cache_dir:
                         return
-                applications = self.__read_cache_file(
+                applications = gui_misc.read_cache_file(
                     os.path.join(cache_dir, publisher+"_packages.cpl"))
                 app_count = len(application_list)
                 if app_count > 0:
@@ -286,7 +278,7 @@ class CacheListStores:
                 cache_dir = self.__get_cache_dir()
                 if not cache_dir:
                         return
-                sections = self.__read_cache_file(
+                sections = gui_misc.read_cache_file(
                     os.path.join(cache_dir, publisher+"_sections.cpl"))
                 sec_count = 0
                 for sec in sections:
@@ -324,19 +316,6 @@ class CacheListStores:
                                         return name
                 return None
 
-        @staticmethod
-        def __read_cache_file(file_path):
-                fh = open(file_path, 'r')
-                data = cPickle.load(fh)
-                fh.close()
-                return data
-
-        @staticmethod
-        def __dump_cache_file(file_path, data):
-                fh = open(file_path,"w")
-                cPickle.dump(data, fh, True)
-                fh.close()
-
         def __dump_search_completion_info(self, completion_list):
                 cache_dir = self.__get_cache_dir()
                 if not cache_dir:
@@ -347,7 +326,7 @@ class CacheListStores:
                         txt["text"] = text[0]
                         texts.append(txt)
                 try:
-                        self.__dump_cache_file(
+                        gui_misc.dump_cache_file(
                             os.path.join(cache_dir, ".__search__completion.cpl"), texts)
                 except IOError:
                         return
@@ -358,7 +337,7 @@ class CacheListStores:
                         return
                 texts = []
                 try:
-                        texts = self.__read_cache_file(
+                        texts = gui_misc.read_cache_file(
                             os.path.join(cache_dir, ".__search__completion.cpl"))
                 except IOError:
                         return gtk.ListStore(str)

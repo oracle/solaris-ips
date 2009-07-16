@@ -62,6 +62,7 @@ CATEGORIES_STATUS_COLUMN_INDEX = 0   # Index of Status Column in Categories Tree
 STATUS_COLUMN_INDEX = 2   # Index of Status Column in Application TreeView
 
 PKG_CLIENT_NAME = "packagemanager"
+CHECK_FOR_UPDATES = "/usr/lib/pm-checkforupdates"
 
 # Location for themable icons
 ICON_LOCATION = "usr/share/package-manager/icons"
@@ -89,6 +90,7 @@ DEFAULT_PROTOCOL = 'http'
 import getopt
 import pwd
 import os
+import subprocess
 import sys
 import time
 import locale
@@ -835,15 +837,6 @@ class PackageManager:
                 self.api_search_checkbox.set_active(False)
                 self.api_search_error_dialog.show()
                 self.api_search_button.grab_focus()
-
-        def __get_repo_publishers(self):
-                repo_pub_dict = {}
-                pubs = self.api_o.get_publishers()
-                for pub in pubs:
-                        repo = pub.selected_repository
-                        origin = repo.origins[0]
-                        repo_pub_dict[origin.uri] = pub.prefix
-                return repo_pub_dict
 
         def __on_url(self, view, link):
                 # Handle mouse over events on links and reset when not on link
@@ -3372,7 +3365,6 @@ class PackageManager:
                 gobject.idle_add(self.w_updateall_menuitem.set_sensitive, False)
                 update_available = self.__check_if_updates_available()
                 gobject.idle_add(self.__g_enable_disable_update_all, update_available)
-                gobject.idle_add(self.__show_info_after_catalog_load)
                 return False
 
         def __show_info_after_catalog_load(self):
@@ -3385,20 +3377,22 @@ class PackageManager:
                         self.__show_licenses()
 
         def __check_if_updates_available(self):
+                # First we load the catalogs so package info can work
                 try:
                         self.catalog_loaded = False
                         self.api_o.refresh()
                         self.catalog_loaded = True
-                        res = self.__get_inventory_list([], False, False)
-                        for pfmri, state in res:
-                                if state["upgradable"]:
-                                        self.pylintstub = pfmri
-                                        return True
-
                 except api_errors.InventoryException:
                         gobject.idle_add(self.__set_empty_details_panel)
                         return False
-                return False
+                gobject.idle_add(self.__show_info_after_catalog_load)
+
+                return_code = subprocess.call([CHECK_FOR_UPDATES,
+                    self.image_directory])
+                if return_code == enumerations.UPDATES_AVAILABLE:
+                        return True
+                else:
+                        return False
 
         def __g_enable_disable_update_all(self, update_available):
                 self.w_updateall_button.set_sensitive(update_available)

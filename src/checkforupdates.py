@@ -25,60 +25,149 @@
 
 import os
 import sys
-import gettext
+import time
+import getopt
 
 import pkg.client.progress as progress
-import pkg.misc as misc
+import pkg.client.api_errors as api_errors
 import pkg.gui.misc as gui_misc
+import pkg.gui.enumerations as enumerations
 from pkg.client import global_settings
+from cPickle import UnpicklingError
 
-UPDATES_AVAILABLE = 0
-NO_UPDATES_AVAILABLE = 1
-ERROR_OCCURRED = 2
-PKG_CLIENT_NAME = "updatemanagernotifier"
+PKG_CLIENT_NAME = "check_for_updates"
+CACHE_VERSION =  1
+CACHE_NAME = ".last_refresh_cache"
 
-
-# Put _() in the global namespace
-import __builtin__
-__builtin__._ = gettext.gettext
-
-def check_for_updates(image_directory):
-        os.nice(20)
+def __check_for_updates(image_directory, nice):
+        if nice:
+                os.nice(20)
         global_settings.client_name = PKG_CLIENT_NAME
         pr = progress.NullProgressTracker()
 
         api_obj = gui_misc.get_api_object(image_directory, pr, None)
-        api_obj.refresh()
+        if api_obj == None:
+                return enumerations.UPDATES_UNDETERMINED
+        ret = __check_last_refresh(api_obj)
+        if ret != enumerations.UPDATES_UNDETERMINED:
+                return ret
+        elif debug:
+                print "Updates undetermined in check_last_refresh"
 
-        pkg_upgradeable = None
-        for pkg, state in misc.get_inventory_list(api_obj.img, [],
-           all_known=True, all_versions=False):
-                if state["upgradable"] and state["state"] == "installed":
-                        pkg_upgradeable = pkg
-                        break
-                
-        if pkg_upgradeable != None:
+        try:
+                stuff_to_do, opensolaris_image, cre = \
+                    api_obj.plan_update_all(sys.argv[0],
+                    refresh_catalogs = True,
+                    noexecute = True, force = True, verbose = False) 
+        except api_errors.ApiException, e:
+                if debug:
+                        print "Exception occurred: ", str(e)
+                return enumerations.UPDATES_UNDETERMINED
+        if debug:
+                print "stuff_to_do: ", stuff_to_do
+                print "opensolaris_image: ", opensolaris_image
+                print "cre: ", cre
+
+        if cre and not cre.succeeded:
+                if debug:
+                        print "Error occurred in plan_update_all"
+                return enumerations.UPDATES_UNDETERMINED
+        __dump_updates_available(api_obj, stuff_to_do)
+        if stuff_to_do:
                 if debug:
                         print "Updates Available"
-                sys.exit(UPDATES_AVAILABLE)
+                return enumerations.UPDATES_AVAILABLE
         else:
                 if debug:
                         print "No updates Available"
-                sys.exit(NO_UPDATES_AVAILABLE)
+                return enumerations.NO_UPDATES_AVAILABLE
+
+def __check_last_refresh(api_obj):
+        cache_dir = gui_misc.get_cache_dir(api_obj)
+        if not cache_dir:
+                return enumerations.UPDATES_UNDETERMINED
+        try:
+                info = gui_misc.read_cache_file(os.path.join(
+                    cache_dir, CACHE_NAME + '.cpl'))
+                if info.get("version") != CACHE_VERSION:
+                        return enumerations.UPDATES_UNDETERMINED
+                old_publishers = info.get("publishers")
+                count = 0
+                for p in api_obj.get_publishers():
+                        if p.disabled:
+                                continue
+                        try:
+                                if old_publishers[p.prefix] != p.last_refreshed:
+                                        return enumerations.UPDATES_UNDETERMINED
+                        except KeyError:
+                                return enumerations.UPDATES_UNDETERMINED
+                        count += 1
+
+                if count != len(old_publishers):
+                        return enumerations.UPDATES_UNDETERMINED
+                if info.get("updates_available"):
+                        return enumerations.UPDATES_AVAILABLE
+                else:
+                        return enumerations.NO_UPDATES_AVAILABLE
+
+        except (UnpicklingError, IOError):
+                return enumerations.UPDATES_UNDETERMINED
+
+def __dump_updates_available(api_obj, stuff_to_do):
+        cache_dir = gui_misc.get_cache_dir(api_obj)
+        if not cache_dir:
+                return
+        publisher_list = {}
+        for p in api_obj.get_publishers():
+                if p.disabled:
+                        continue
+                publisher_list[p.prefix] = p.last_refreshed
+        if debug:
+                print "publisher_list:", publisher_list
+        dump_info = {}
+        dump_info["version"] = CACHE_VERSION
+        dump_info["updates_available"] = stuff_to_do
+        dump_info["publishers"] = publisher_list
+
+        try:
+                gui_misc.dump_cache_file(os.path.join(
+                    cache_dir, CACHE_NAME + '.cpl'), dump_info)
+        except IOError, e:
+                if debug:
+                        print "Failed to dump cache: %s" % str(e)
+
+        return
 
 ###############################################################################
 #-----------------------------------------------------------------------------#
 # Main
 #-----------------------------------------------------------------------------#
 
-def main(image_directory):
-        check_for_updates(image_directory)
-        return ERROR_OCCURRED
+def main(image_directory, nice):
+        return __check_for_updates(image_directory, nice)
 
 if __name__ == '__main__':
         debug = False
-        if len(sys.argv) != 2:
-                print "One argument, image directory must be specified"
-                sys.exit(ERROR_OCCURRED)
-        image_dir = sys.argv[1]
-        main(image_dir)
+        set_nice = False
+        try:
+                opts, pargs = getopt.getopt(sys.argv[1:], "n", ["nice"])
+        except getopt.GetoptError, ex:
+                print "Usage: illegal option -- %s" % ex.opt
+                sys.exit(enumerations.UPDATES_UNDETERMINED)
+        if len(pargs) != 1:
+                print "Usage: One argument, image directory must be specified"
+                sys.exit(enumerations.UPDATES_UNDETERMINED)
+        image_dir = pargs[0]
+        for opt, args in opts:
+                if debug:
+                        print "opt: ", opt
+                        print "args: ", args
+                if opt in ( "-n", "--nice"):
+                        set_nice = True
+        if debug:
+                print "Start check_for_updates for: ", image_dir, set_nice
+                a = time.time()
+        return_value = main(image_dir, set_nice)
+        if debug:
+                print "time taken: ", time.time() - a
+        sys.exit(return_value)

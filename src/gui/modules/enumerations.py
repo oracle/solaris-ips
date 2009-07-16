@@ -115,4 +115,10 @@ PUBLISHER_MIRRORS,
 PUBLISHER_ENABLED,
 ) = range(7)
 
+# Return values from /usr/lib/pm-checkforupdates
+(
+UPDATES_AVAILABLE,
+NO_UPDATES_AVAILABLE,
+UPDATES_UNDETERMINED
+) = range(3)
 

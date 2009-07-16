@@ -17,7 +17,6 @@ f none usr/bin/pm-updatemanager 755 root bin
 d none usr/lib 755 root bin
 d none usr/lib/update-manager 755 root bin
 f none usr/lib/update-manager/update-refresh.sh 755 root bin
-f none usr/lib/um-checkforupdates 755 root bin
 f none usr/lib/updatemanagernotifier 755 root bin
 d none usr/share 755 root sys
 d none usr/share/applications 755 root other

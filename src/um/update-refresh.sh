@@ -26,7 +26,10 @@
 # This script is run as part of a cron job at 0:30, 9:30, 12:30, 18:30, 21:30
 # 1. Refresh the IPS catalog
 #
-# 2. Fetch updates to Packagemanager's Start Page files:
+# 2. Call /usr/lib/pm-checkforupdates to check and cache whether updates
+#    are available
+#
+# 3. Fetch updates to Packagemanager's Start Page files:
 #    startpagebase-<locale prefix>.tar.gz
 #
 # From the URL in the specifed Packagemanager Gconf key:
@@ -57,6 +60,9 @@ image_dir=`svcprop -p update/image_dir $fmri`
 cd $image_dir
 
 pkg refresh 2>/dev/null
+
+# Check and cache whether updates are available
+/usr/lib/pm-checkforupdates --nice $image_dir
 
 # Fetch updates to Packagemanager's Start Page files
 TAR="/usr/gnu/bin/tar"

@@ -28,6 +28,7 @@ SPECIAL_CATEGORIES = ["locale", "plugin"] # We should cut all, but last part of 
                                           # However we need to have an exception rule
                                           # where we will cut all but three last parts.
 
+import cPickle
 import os
 import sys
 try:
@@ -119,6 +120,19 @@ def get_pkg_name(pkg_name):
                 return pkg_name[index:].strip("/") + converted_name
         return pkg_name_bk
 
+def get_cache_dir(api_object):
+        img = api_object.img
+        cache_dir = os.path.join(img.imgdir, "gui_cache")
+        try:
+                __mkdir(cache_dir)
+        except OSError:
+                cache_dir = None
+        return cache_dir
+
+def __mkdir(directory_path):
+        if not os.path.isdir(directory_path):
+                os.makedirs(directory_path)
+
 def get_api_object(img_dir, progtrack, parent_dialog):
         api_o = None
         message = None
@@ -135,10 +149,21 @@ def get_api_object(img_dir, progtrack, parent_dialog):
                 if parent_dialog != None:
                         error_occurred(parent_dialog,
                             message, _("API Error"))
+                        sys.exit(0)
                 else:
                         print message
-                sys.exit(0)
         return api_o
+
+def read_cache_file(file_path):
+        fh = open(file_path, 'r')
+        data = cPickle.load(fh)
+        fh.close()
+        return data
+
+def dump_cache_file(file_path, data):
+        fh = open(file_path,"w")
+        cPickle.dump(data, fh, True)
+        fh.close()
 
 def error_occurred(parent, error_msg, msg_title = None,
     msg_type=gtk.MESSAGE_ERROR, use_markup = False):
