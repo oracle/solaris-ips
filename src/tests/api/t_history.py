@@ -408,6 +408,42 @@ class TestHistory(pkg5unittest.Pkg5TestCase):
                 self.assertEqual(he.operation_end_state, "None")
                 self.assertEqual(he.operation_errors, [])
 
+        def test_12_bug_9287(self):
+                """Verify that the current exception stack won't be logged
+                unless it is for the same exception the operation ended
+                with."""
+
+                h = self.__h
+
+                # Test that an exception that occurs before an operation
+                # starts won't be recorded if it is not the same exception
+                # the operation ended with.
+
+                # Clear history completely.
+                h.purge()
+                shutil.rmtree(h.path)
+
+                # Populate the exception stack.
+                try:
+                        d = {}
+                        d['nosuchkey']
+                except KeyError:
+                        pass
+
+                h.log_operation_start("test-exceptions")
+                e = AssertionError()
+                h.log_operation_end(error=e)
+
+                for entry in sorted(os.listdir(h.path)):
+                        # Load the history entry.
+                        he = history.History(root_dir=h.root_dir,
+                            filename=entry)
+
+                        # Verify that the right exception was logged.
+                        for e in he.operation_errors:
+                                self.assertNotEqual(e.find("AssertionError"),
+                                    -1)
+
 if __name__ == "__main__":
         unittest.main()
 

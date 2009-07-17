@@ -118,6 +118,7 @@ api.t_history.py TestHistory.test_08_bug_3540|pass
 api.t_history.py TestHistory.test_09_bug_5153|pass
 api.t_history.py TestHistory.test_10_snapshots|pass
 api.t_history.py TestHistory.test_11_bug_8072|pass
+api.t_history.py TestHistory.test_12_bug_9287|pass
 api.t_imageconfig.py TestImageConfig.test_0_read|pass
 api.t_imageconfig.py TestImageConfig.test_1_unicode|pass
 api.t_imageconfig.py TestImageConfig.test_2_missing_conffile|pass

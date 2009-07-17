@@ -169,8 +169,11 @@ Operation Start State:
 Operation End State:
 %s
 Operation User: %s (%s)
+Operation Errors:
+%s
 """ % (self.name, self.result, self.start_time, self.end_time,
-    self.start_state, self.end_state, self.username, self.userid)
+    self.start_state, self.end_state, self.username, self.userid,
+    self.errors)
 
         # All "time" values should be in UTC, using ISO 8601 as the format.
         # Name of the operation performed (e.g. install, image-update, etc.).
@@ -286,6 +289,13 @@ class History(object):
                 # of just referencing self to avoid any of the special logic in
                 # place interfering with logic here.
                 if name == "operation_name":
+                        # Before a new operation starts, clear exception state
+                        # for the current one so that when this one ends, the
+                        # last operation's exception won't be recorded to this
+                        # one.  If the error hasn't been recorded by now, it
+                        # doesn't matter anyway, so should be safe to clear.
+                        sys.exc_clear()
+
                         # Mark the operation as having started and record
                         # other, relevant information.
                         op.start_time = misc.time_to_timestamp(None)
@@ -686,13 +696,24 @@ class History(object):
                 if self.operation_name:
                         out_stack = None
                         out_err = None
+                        use_current_stack = True
                         if isinstance(error, Exception):
-                                # Assume the exception being logged is the last
-                                # one that occurred and get its traceback.
-                                output = traceback.format_exc()
-                        else:
+                                # Attempt to get the exception's stack trace
+                                # from the stack.  If the exception on the stack
+                                # isn't the same object as the one being logged,
+                                # then we have to use the current stack (which
+                                # is somewhat less useful) instead of being able
+                                # to find the code location of the original
+                                # error.
+                                type, val, tb = sys.exc_info()
+                                if error == val:
+                                        output = traceback.format_exc()
+                                        use_current_stack = False
+
+                        if use_current_stack:
                                 # Assume the current stack is more useful if
-                                # the error doesn't inherit from Exception.
+                                # the error doesn't inherit from Exception or
+                                # we can't use the last exception's stack.
                                 out_stack = "".join(traceback.format_stack())
 
                                 if error:
@@ -702,13 +723,15 @@ class History(object):
                                         # it is not contained within the
                                         # output of format_exc().
                                         out_err = str(error)
-                                        if not out_err:
-                                                out_err = error.__class__.__name__
+                                        if not out_err or out_err == "None":
+                                                out_err = \
+                                                    error.__class__.__name__
 
                                 output = "".join([
                                     item for item in [out_stack, out_err]
                                     if item
                                 ])
+
                         self.operation_errors.append(output.strip())
 
         def create_snapshot(self):
