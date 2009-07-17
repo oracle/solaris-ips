@@ -23,20 +23,6 @@
 # Use is subject to license terms.
 #
 
-# Progress:
-# Startup Progress has two phases:
-# - Start phase:
-#   The start phase should be fairly constant at around a few seconds and so is given 5%
-#   of the total progress bar.
-# - Package entry loading phase:
-#   The package entry loading phase is given the remaining 95% of the bar for progress.
-
-INITIAL_PROGRESS_TIME_INTERVAL = 0.5      # Time to update progress during start phase
-INITIAL_PROGRESS_TIME_PERCENTAGE = 0.005  # Amount to update progress during start phase
-INITIAL_PROGRESS_TOTAL_PERCENTAGE = 0.05  # Total progress for start phase
-PACKAGE_PROGRESS_TOTAL_INCREMENTS = 95    # Total increments for loading phase
-PACKAGE_PROGRESS_PERCENT_INCREMENT = 0.01 # Amount to update progress during loading phase
-PACKAGE_PROGRESS_PERCENT_TOTAL = 1.0      # Total progress for loading phase
 MAX_DESC_LEN = 60                         # Max length of the description
 MAX_INFO_CACHE_LIMIT = 100                # Max number of package descriptions to cache
 NOTEBOOK_PACKAGE_LIST_PAGE = 0            # Main Package List page index
@@ -218,14 +204,13 @@ class PackageManager:
                         module.textdomain("pkg")
                 gui_misc.init_for_help(self.application_dir)
                 self.main_window_title = _('Package Manager')
+                self.gdk_window = None
                 self.user_rights = portable.is_admin()
                 self.cancelled = False                    # For background processes
                 self.image_directory = None
                 self.description_thread_running = False   # For background processes
                 gtk.rc_parse('~/.gtkrc-1.2-gnome2')       # Load gtk theme
-                self.progress_stop_timer_thread = False
-                self.progress_fraction_time_count = 0
-                self.progress_canceled = False
+                self.progress_stop_thread = True
                 self.catalog_loaded = False
                 self.image_dir_arg = None
                 self.update_all_proceed = False
@@ -301,7 +286,6 @@ class PackageManager:
                 self.gladefile = os.path.join(self.application_dir,
                     "usr/share/package-manager/packagemanager.glade")
                 w_tree_main = gtk.glade.XML(self.gladefile, "mainwindow")
-                w_tree_progress = gtk.glade.XML(self.gladefile, "progressdialog")
                 w_tree_preferences = gtk.glade.XML(self.gladefile, "preferencesdialog")
                 w_tree_api_search_error = gtk.glade.XML(self.gladefile,
                     "api_search_error")
@@ -354,8 +338,14 @@ class PackageManager:
                     gtk.gdk.color_parse("white"))
 
                 self.w_main_statusbar = w_tree_main.get_widget("statusbar")
+                self.w_statusbar_hbox = w_tree_main.get_widget("statusbar_hbox")
                 self.w_infosearch_frame = w_tree_main.get_widget("infosearch_frame")
                 self.w_infosearch_button = w_tree_main.get_widget("infosearch_button")
+
+                self.w_progress_frame = w_tree_main.get_widget("progress_frame")
+                self.w_status_progressbar = w_tree_main.get_widget("status_progressbar")
+                self.w_status_progressbar.set_pulse_step(0.1)
+                self.w_progress_frame.hide()
 
                 self.w_main_view_notebook = \
                     w_tree_main.get_widget("main_view_notebook")
@@ -389,19 +379,10 @@ class PackageManager:
                 self.w_deselect_menuitem = w_tree_main.get_widget("edit_deselect")
                 self.w_clear_search_menuitem = w_tree_main.get_widget("clear")
                 self.w_main_clipboard =  gtk.clipboard_get(gtk.gdk.SELECTION_CLIPBOARD)
-                self.w_progress_dialog = w_tree_progress.get_widget("progressdialog")
-                self.w_progress_dialog.connect('delete-event', lambda stub1, stub2: True)
-                self.w_progress_dialog.set_title(_("Update All"))
-                self.w_progressinfo_label = w_tree_progress.get_widget("progressinfo")
-                self.w_progressinfo_label.set_text(_(
-                    "Checking SUNWipkg and SUNWipkg-gui versions\n\nPlease wait ..."))
-                self.w_progressbar = w_tree_progress.get_widget("progressbar")
-                self.w_progressbar.set_pulse_step(0.1)
-                self.w_progress_cancel = w_tree_progress.get_widget("progresscancel")
-                self.progress_canceled = False
                 self.saved_filter_combobox_active = self.initial_show_filter
                 self.search_image = w_tree_main.get_widget("search_image")
                 self.search_button = w_tree_main.get_widget("do_search")
+                self.progress_cancel = w_tree_main.get_widget("progress_cancel")
                 self.is_all_publishers = False
                 self.search_image.set_from_pixbuf(gui_misc.get_icon(self.icon_theme,
                     'search', 20))
@@ -447,6 +428,8 @@ class PackageManager:
                             {
                                 "on_mainwindow_delete_event": \
                                     self.__on_mainwindow_delete_event,
+                                "on_mainwindow_check_resize": \
+                                    self.__on_mainwindow_check_resize,
                                 "on_mainwindow_key_press_event": \
                                     self.__on_mainwindow_key_press_event,
                                 "on_searchentry_changed":self.__on_searchentry_changed,
@@ -481,6 +464,8 @@ class PackageManager:
                                 "on_clear_search_clicked":self.__on_clear_search,
                                 "on_do_search_clicked":self.__do_search,
                                 "on_do_search_button_press_event":self.__do_search,
+                                "on_progress_cancel_clicked": \
+                                    self.__on_progress_cancel_clicked,
                                 "on_edit_select_all_activate":self.__on_select_all,
                                 "on_edit_select_updates_activate": \
                                     self.__on_select_updates,
@@ -500,11 +485,6 @@ class PackageManager:
                                     self.__on_notebook_change,
                                 "on_infosearch_button_clicked": \
                                     self.__on_infosearch_button_clicked,
-                            }
-                        dic_progress = \
-                            {
-                                "on_cancel_progressdialog_clicked": \
-                                    self.__on_cancel_progressdialog_clicked,
                             }
                         dic_preferences = \
                             {
@@ -535,7 +515,6 @@ class PackageManager:
         
                             
                         w_tree_main.signal_autoconnect(dic_mainwindow)
-                        w_tree_progress.signal_autoconnect(dic_progress)
                         w_tree_preferences.signal_autoconnect(dic_preferences)
                         w_tree_api_search_error.signal_autoconnect(
                             dic_api_search_error)
@@ -570,6 +549,7 @@ class PackageManager:
                 self.gdk_window = gtk.gdk.Window(gdk_win, gtk.gdk.screen_width(),
                     gtk.gdk.screen_height(), gtk.gdk.WINDOW_CHILD, 0, gtk.gdk.INPUT_ONLY)
                 gdk_cursor = gtk.gdk.Cursor(gtk.gdk.WATCH)
+
                 self.gdk_window.set_cursor(gdk_cursor)
                 # Until package icons become available hide Package Icon Panel
                 w_package_hbox.hide()
@@ -788,7 +768,7 @@ class PackageManager:
                 else:
                         display_link = self.__handle_link(None, link, DISPLAY_LINK)
                         if display_link != None:
-                                self.w_main_statusbar.push(0, display_link)
+                                self.__update_statusbar_message(display_link)
                         else:
                                 self.update_statusbar()
 
@@ -818,13 +798,13 @@ class PackageManager:
                 pass
 
         def __load_uri(self, document, link):
-                self.w_main_statusbar.push(0, _("Loading... " + link))
+                self.__update_statusbar_message(_("Loading... " + link))
                 try:
                         f = self.__open_url(link)
                 except  (IOError, OSError), err:
                         if debug:
                                 print "err: %s" % (err)
-                        self.w_main_statusbar.push(0, _("Stopped"))
+                        self.__update_statusbar_message(_("Stopped"))
                         return False
                 self.current_url = self.__resolve_uri(link)
 
@@ -838,7 +818,7 @@ class PackageManager:
 
                 self.document.write_stream(f.read())
                 self.document.close_stream()
-                self.w_main_statusbar.push(0, _("Done"))
+                self.__update_statusbar_message(_("Done"))
                 return True
 
         def __link_load_error(self, link):
@@ -1402,6 +1382,8 @@ class PackageManager:
         def __update_description_from_iter(self, pkg_descriptions_for_update, orig_model):
                 sort_filt_model = \
                     self.w_application_treeview.get_model() #gtk.TreeModelSort
+                if not sort_filt_model:
+                        return
                 filt_model = sort_filt_model.get_model() #gtk.TreeModelFilter
                 model = filt_model.get_model() #gtk.ListStore
 
@@ -1520,10 +1502,6 @@ class PackageManager:
                 else:
                         return length_to_check
 
-        def __on_cancel_progressdialog_clicked(self, widget):
-                self.progress_canceled = True
-                self.progress_stop_timer_thread = True
-
         def __on_mainwindow_key_press_event(self, widget, event):
                 if self.is_busy_cursor_set():
                         return True
@@ -1539,6 +1517,12 @@ class PackageManager:
                         return True
                 else:
                         self.__main_application_quit()
+
+        def __on_mainwindow_check_resize(self, widget):
+                if widget and self.gdk_window:
+                        status_height = self.w_statusbar_hbox.get_allocation().height
+                        self.gdk_window.move_resize(0, 0, widget.get_size()[0],
+                            widget.get_size()[1]-status_height)
 
         def __on_api_search_error_delete_event(self, widget, event):
                 self.__on_api_search_button_clicked(None)
@@ -1614,7 +1598,6 @@ class PackageManager:
                 self.in_search_mode = False
                 self.is_all_publishers = False
                 self.w_infosearch_frame.hide()
-
                 self.set_busy_cursor()
                 self.w_repository_combobox.set_active(
                     self.saved_repository_combobox_active)
@@ -1743,7 +1726,6 @@ class PackageManager:
                         for query_num, pub, (v, return_type, tmp) in \
                             itertools.chain(*searches):
                                 if v < 1 or return_type != api.Query.RETURN_PACKAGES:
-                                        gobject.idle_add(self.w_progress_dialog.hide)
                                         self.__process_after_search_failure()
                                         return
 
@@ -1770,14 +1752,18 @@ class PackageManager:
                                 self.pylintstub = query_num
                 except api_errors.ProblematicSearchServers, ex:
                         self.__process_api_search_error(ex)
-                        gobject.idle_add(self.w_progress_dialog.hide)
                         gobject.idle_add(self.__handle_api_search_error)
                         if len(result) == 0:
                                 self.__process_after_search_with_zero_results()
                                 return
+                except api_errors.CanceledException:
+                        # TBD. Currently search is not cancelable
+                        # so this should not happen, but the logic is in place
+                        # to support cancelable search.
+                        self.unset_busy_cursor()
+                        return
                 except Exception, ex:
                         # We are not interested in this error
-                        gobject.idle_add(self.w_progress_dialog.hide)
                         self.__process_after_search_failure()
                         return
                 if debug:
@@ -1850,7 +1836,6 @@ class PackageManager:
                         err = _("Unable to get status for search results.\n"
                             "The catalogs have not been loaded.\n"
                             "Please try after few seconds.\n")
-                        gobject.idle_add(self.w_progress_dialog.hide)
                         gobject.idle_add(self.error_occurred, err)
                         return
                 return self.__add_pkgs_to_lists(pkgs_known, application_list,
@@ -1913,6 +1898,9 @@ class PackageManager:
                         self.__clear_before_search()
                         self.__update_statusbar_message(_("Search cleared"))
                 return
+
+        def __on_progress_cancel_clicked(self, widget):
+                Thread(target = self.api_o.cancel, args = ()).start()
 
         def __on_startpage(self, widget):
                 self.__load_startpage()
@@ -2417,7 +2405,6 @@ class PackageManager:
                 application_list = self.__get_new_application_liststore()
                 category_list = self.__get_new_category_liststore()
                 section_list = self.__get_new_section_liststore()
-                first_loop = True
                 for pub in publishers:
                         uptodate = False
                         try:
@@ -2433,9 +2420,9 @@ class PackageManager:
                                 category_list = self.__get_new_category_liststore()
                                 uptodate = False
                         if not uptodate:
-                                if first_loop == True:
-                                        first_loop = False
-                                        gobject.idle_add(self.setup_progressdialog_show)
+                                status_str = _("Refreshing package catalog information")
+                                gobject.idle_add(self.__update_statusbar_message,
+                                    status_str)
                                 self.api_o.refresh(pubs=[pub])
                                 self.__add_pkgs_to_lists_from_api(pub,
                                     application_list, category_list, section_list)
@@ -2443,6 +2430,9 @@ class PackageManager:
                                     True, None])
                         if self.application_list and self.category_list and \
                             not self.last_visible_publisher_uptodate:
+                                status_str = _("Loading package list")
+                                gobject.idle_add(self.__update_statusbar_message,
+                                    status_str)
                                 if self.last_visible_publisher:
                                         dump_list = self.application_list
                                         if self.saved_application_list != None:
@@ -2456,7 +2446,11 @@ class PackageManager:
 
         def __check_if_cache_uptodate(self, pub):
                 if self.cache_o:
-                        return self.cache_o.check_if_cache_uptodate(pub)
+                        uptodate = self.cache_o.check_if_cache_uptodate(pub)
+                        # We need to reset the state of the api, otherwise
+                        # method api.can_be_canceled() will return True
+                        self.api_o.reset()
+                        return uptodate
                 return False
 
         def __dump_datamodels(self, pub, application_list, category_list,
@@ -2577,6 +2571,7 @@ class PackageManager:
                     action = enumerations.REMOVE)
 
         def __on_reload(self, widget):
+                self.w_searchentry.grab_focus()
                 if self.description_thread_running:
                         self.cancelled = True
                 if self.in_search_mode or self.is_all_publishers:
@@ -2586,22 +2581,14 @@ class PackageManager:
                 self.last_visible_publisher = None
                 if widget != None:
                         self.__remove_cache()
-                self.w_progress_dialog.set_title(_("Refreshing catalogs"))
-                self.w_progressinfo_label.set_text(_("Refreshing catalogs..."))
-                self.progress_stop_timer_thread = False
-                Thread(target = self.__progressdialog_progress_pulse).start()
-                self.w_progress_dialog.show()
-                self.w_progress_cancel.hide()
+                self.set_busy_cursor()
+                status_str = _("Refreshing package catalog information")
+                self.__update_statusbar_message(status_str)
                 self.__disconnect_models()
                 self.in_reload = True
                 Thread(target = self.__catalog_refresh).start()
 
         def __catalog_refresh_done(self):
-                self.progress_stop_timer_thread = True
-                #Let the progress_pulse finish. This should be done other way, but at
-                #The moment this works fine
-                time.sleep(0.2)
-                gobject.idle_add(self.w_progress_cancel.show)
                 gobject.idle_add(self.process_package_list_start,
                     self.image_directory)
 
@@ -3411,7 +3398,6 @@ class PackageManager:
                         # This can happen if the repository does not
                         # contain any packages
                         err = _("Selected repository does not contain any packages.")
-                        gobject.idle_add(self.w_progress_dialog.hide)
                         gobject.idle_add(self.error_occurred, err, None,
                             gtk.MESSAGE_INFO)
                         self.unset_busy_cursor()
@@ -3448,13 +3434,9 @@ class PackageManager:
                         sections[pub] = section
                 pkg_count = 0
                 pkg_add = 0
-                progress_percent = INITIAL_PROGRESS_TOTAL_PERCENTAGE
                 total_pkg_count = len(pkgs_known)
-                progress_increment = \
-                        total_pkg_count / PACKAGE_PROGRESS_TOTAL_INCREMENTS
-                self.progress_stop_timer_thread = True
-                while gtk.events_pending():
-                        gtk.main_iteration(False)
+                status_str = _("Loading package list")
+                gobject.idle_add(self.__update_statusbar_message, status_str)
                 prev_stem = ""
                 prev_pfmri_str = ""
                 next_app = None
@@ -3484,14 +3466,8 @@ class PackageManager:
                         prev_pfmri_str = pkg.get_short_fmri()
                         prev_state = state
 
-                        if progress_increment > 0 and pkg_count % progress_increment == 0:
-                                progress_percent += PACKAGE_PROGRESS_PERCENT_INCREMENT
-                                if progress_percent <= PACKAGE_PROGRESS_PERCENT_TOTAL:
-                                        self.__progressdialog_progress_percent(
-                                            progress_percent, pkg_count, total_pkg_count)
-                                while gtk.events_pending():
-                                        gtk.main_iteration(False)
-
+                        gobject.idle_add(self.__progress_set_fraction,
+                            pkg_count, total_pkg_count)
                         status_icon = None
                         category_icon = None
                         pkg_name = pkg.get_name()
@@ -3530,8 +3506,8 @@ class PackageManager:
                 if category_list != None:
                         self.__add_categories_to_sections(sections,
                             category_list, section_list)
-                self.__progressdialog_progress_percent(PACKAGE_PROGRESS_PERCENT_TOTAL,
-                    total_pkg_count, total_pkg_count)
+                gobject.idle_add(self.__progress_set_fraction,
+                    pkg_count, total_pkg_count)
                 return
 
         def __add_categories_to_sections(self, sections, category_list, section_list):
@@ -3626,32 +3602,44 @@ class PackageManager:
                                                                 section_lst.append(
                                                                     section_id)
 
-        def __progressdialog_progress_pulse(self):
-                while not self.progress_stop_timer_thread:
-                        gobject.idle_add(self.w_progressbar.pulse)
+
+        def __progress_set_fraction(self, count, total):
+                self.__progress_pulse_stop()
+                if count == total:
+                        self.w_progress_frame.hide()
+                        return False
+                if self.api_o.can_be_canceled():
+                        self.progress_cancel.show()
+                else:
+                        self.progress_cancel.hide()
+                self.w_progress_frame.show()
+                result = (count + 0.0)/total
+                if result > 1.0:
+                        result = 1.0
+                elif result < 0.0:
+                        result = 0.0
+                self.w_status_progressbar.set_fraction(result)
+
+
+        def __progress_pulse_start(self):
+                if self.progress_stop_thread == True:
+                        self.progress_stop_thread = False
+                        Thread(target = self.__progress_pulse).start()
+
+        def __progress_pulse_stop(self):
+                self.progress_stop_thread = True
+
+        def __progress_pulse(self):
+                gobject.idle_add(self.w_progress_frame.show)
+                while not self.progress_stop_thread:
+                        if self.api_o.can_be_canceled():
+                                gobject.idle_add(self.progress_cancel.show)
+                        else:
+                                gobject.idle_add(self.progress_cancel.hide)
+                        gobject.idle_add(self.w_status_progressbar.pulse)
                         time.sleep(0.1)
-                gobject.idle_add(self.w_progress_dialog.hide)
-                self.progress_stop_timer_thread = False
-
-        # For initial setup before loading package entries allow 5% of progress bar
-        # update it on a time base as we have no other way to judge progress at this point
-        def __progressdialog_progress_time(self):
-                while not self.progress_stop_timer_thread and \
-                        self.progress_fraction_time_count <= \
-                            INITIAL_PROGRESS_TOTAL_PERCENTAGE:
-
-                        gobject.idle_add(self.w_progressbar.set_fraction,
-                            self.progress_fraction_time_count)
-                        self.progress_fraction_time_count += \
-                                INITIAL_PROGRESS_TIME_PERCENTAGE
-                        time.sleep(INITIAL_PROGRESS_TIME_INTERVAL)
-                self.progress_stop_timer_thread = False
-                self.progress_fraction_time_count = 0
-
-        def __progressdialog_progress_percent(self, fraction, count, total):
-                gobject.idle_add(self.w_progressinfo_label.set_text, _(
-                    "Processing package entries: %d of %d") % (count, total)  )
-                gobject.idle_add(self.w_progressbar.set_fraction, fraction)
+                gobject.idle_add(self.w_progress_frame.hide)
+                self.progress_stop_thread = True
 
         def error_occurred(self, error_msg, msg_title=None, msg_type=gtk.MESSAGE_ERROR):
                 if msg_title:
@@ -3754,18 +3742,6 @@ class PackageManager:
 #-----------------------------------------------------------------------------#
 # Public Methods
 #-----------------------------------------------------------------------------#
-        def setup_progressdialog_show(self):
-                self.w_progress_dialog.set_title(_("Loading Repository Information"))
-                self.w_progressinfo_label.set_text(
-                    _( "Fetching package entries ..."))
-                self.w_progress_cancel.hide()
-                self.w_progress_dialog.show()
-                Thread(target = self.__progressdialog_progress_time).start()
-
-        def setup_progressdialog_hide(self):
-                self.progress_stop_timer_thread = True
-                self.w_progress_dialog.hide()
-
         def init_show_filter(self):
                 """ Sets up the Filter Combobox and returns the maximum length of text
                     labels it is displaying."""
@@ -3782,9 +3758,11 @@ class PackageManager:
                 return self.gdk_window.is_visible()
 
         def set_busy_cursor(self):
+                self.__progress_pulse_start()
                 self.gdk_window.show()
 
         def unset_busy_cursor(self):
+                self.__progress_pulse_stop()
                 self.gdk_window.hide()
 
         def process_package_list_start(self, image_directory):
@@ -3823,7 +3801,6 @@ class PackageManager:
                 # in update all: bug 6357
                         self.__on_update_all(None)
                         self.update_all_proceed = False
-                self.setup_progressdialog_hide()
                 self.__enable_disable_install_remove()
                 self.update_statusbar()
                 self.in_setup = False
@@ -3873,7 +3850,7 @@ class PackageManager:
                         inst_str = _('%d installed') % installed
                         status_str = _("%s: %s , %s, %s.") % (visible_publisher,
                             listed_str, inst_str, sel_str)
-                        self.w_main_statusbar.push(0, status_str)
+                        self.__update_statusbar_message(status_str)
                         return
 
                 # In Search Mode
@@ -3908,7 +3885,7 @@ class PackageManager:
                         
                 status_str = fmt_str % {"option_str" : opt_str, "number" :
                     len(self.application_list), "time" : time_str}
-                self.w_main_statusbar.push(0, status_str)
+                self.__update_statusbar_message(status_str)
 
         def update_package_list(self, update_list):
                 if update_list == None and self.img_timestamp:
