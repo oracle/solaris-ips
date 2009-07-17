@@ -590,7 +590,7 @@ class PackageManager:
                                         len_search_completion >= \
                                                 self.max_search_completion:
                                         itr = self.search_completion.get_iter_first()
-                                        itr:
+                                        if itr:
                                                 self.search_completion.remove(itr)
                                 self.search_completion.append([text])
                 return
