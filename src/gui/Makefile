@@ -123,8 +123,7 @@ ICONS16 = \
    data/icons/16x16/status_notinstalled.png
 
 ICONS22 = \
-   data/icons/22x22/search.png \
-   data/icons/22x22/search_all.png
+   data/icons/22x22/search.png
 
 PYMODS = \
    modules/__init__.py \

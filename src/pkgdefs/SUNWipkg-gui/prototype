@@ -78,7 +78,6 @@ f none usr/share/package-manager/icons/hicolor/16x16/actions/status_notinstalled
 d none usr/share/package-manager/icons/hicolor/22x22 755 root bin
 d none usr/share/package-manager/icons/hicolor/22x22/actions 755 root bin
 f none usr/share/package-manager/icons/hicolor/22x22/actions/search.png 444 root other
-f none usr/share/package-manager/icons/hicolor/22x22/actions/search_all.png 444 root other
 f none usr/share/package-manager/PM_app_48x.png 444 root bin
 f none usr/share/package-manager/PM_package_36x.png 444 root bin
 f none usr/share/package-manager/arrow.png 444 root bin

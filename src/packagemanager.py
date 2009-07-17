@@ -195,7 +195,6 @@ class PackageManager:
                         self.gconf_not_show_repos = ""
                 self.set_show_filter = 0
                 self.set_section = 0
-                self.current_search_option = 0
                 self.in_search_mode = False
 
                 global_settings.client_name = PKG_CLIENT_NAME
@@ -253,18 +252,6 @@ class PackageManager:
                 self.icon_theme = gtk.IconTheme()
                 icon_location = os.path.join(self.application_dir, ICON_LOCATION)
                 self.icon_theme.append_search_path(icon_location)
-                self.search_options = [
-                    ('ips-search',
-                    gui_misc.get_icon(self.icon_theme, 'search', 20),
-                    _("_Current Repository"),
-                    _("Search Current Repository")),
-                    ('ips-search-all',
-                    gui_misc.get_icon(self.icon_theme, 'search_all', 20),
-                    _("_All Repositories"),
-                    _("Search All Repositories"))
-                    ]
-                self.__register_iconsets(self.search_options)
-
                 self.installed_icon = gui_misc.get_icon(self.icon_theme,
                     'status_installed')
                 self.not_installed_icon = gui_misc.get_icon(self.icon_theme,
@@ -303,6 +290,8 @@ class PackageManager:
                 self.categories_treeview_initialized = False
                 self.category_list = None
                 self.repositories_list = None
+                self.repo_combobox_all_pubs_index = 0
+                self.repo_combobox_add_index = 0
                 self.pr = progress.NullProgressTracker()
                 self.pylintstub = None
                 self.release_notes_url = "http://www.opensolaris.org"
@@ -371,12 +360,17 @@ class PackageManager:
                 self.w_main_view_notebook = \
                     w_tree_main.get_widget("main_view_notebook")
                 self.w_searchentry = w_tree_main.get_widget("searchentry")
+                self.entry_embedded_icons_supported = True
+                try:
+                        self.w_searchentry.set_property("secondary-icon-stock", None)
+                except TypeError:
+                        self.entry_embedded_icons_supported = False
                 self.search_completion = gtk.ListStore(str)
                 self.w_installupdate_button = \
                     w_tree_main.get_widget("install_update_button")
                 self.w_remove_button = w_tree_main.get_widget("remove_button")
                 self.w_updateall_button = w_tree_main.get_widget("update_all_button")
-                self.w_reload_button = w_tree_main.get_widget("reloadbutton")
+                self.w_reload_menuitem = w_tree_main.get_widget("file_reload")
                 self.w_repository_combobox = w_tree_main.get_widget("repositorycombobox")
                 self.w_sections_combobox = w_tree_main.get_widget("sectionscombobox")
                 self.w_filter_combobox = w_tree_main.get_widget("filtercombobox")
@@ -405,28 +399,13 @@ class PackageManager:
                 self.w_progressbar.set_pulse_step(0.1)
                 self.w_progress_cancel = w_tree_progress.get_widget("progresscancel")
                 self.progress_canceled = False
-                self.w_clear_search_button = w_tree_main.get_widget("clear_search")
-                self.w_clear_search_button.set_sensitive(False)
-                clear_search_image = w_tree_main.get_widget("clear_image")
-                clear_search_image.set_from_stock(gtk.STOCK_CLEAR, gtk.ICON_SIZE_MENU)
                 self.saved_filter_combobox_active = self.initial_show_filter
                 self.search_image = w_tree_main.get_widget("search_image")
-                self.search_button = w_tree_main.get_widget("set_search")
-                self.a11y_search_button = self.search_button.get_accessible()
-                self.is_search_all = False
-                self.searchmenu = gtk.Menu()
-                self.search_image.set_from_pixbuf(self.search_options[0][1])
-                self.a11y_search_button.set_description(self.search_options[0][3])
-                for stock_id, pixbuf, label, description in self.search_options:
-                        action = gtk.Action(stock_id, label, None, stock_id)
-                        action.connect('activate',
-                            self.__search_menu_item_activate)
-                        menu_item = action.create_menu_item()
-                        self.searchmenu.append(menu_item)
-                        self.pylintstub = description
-                        self.pylintstub = pixbuf
-                self.changing_search_option = False
-                self.saved_repository_combobox_active = -1
+                self.search_button = w_tree_main.get_widget("do_search")
+                self.is_all_publishers = False
+                self.search_image.set_from_pixbuf(gui_misc.get_icon(self.icon_theme,
+                    'search', 20))
+                self.saved_repository_combobox_active = 0
                 self.saved_sections_combobox_active = 0
                 self.saved_application_list = None
                 self.saved_application_list_filter = None
@@ -476,7 +455,7 @@ class PackageManager:
                                 "on_searchentry_focus_out_event": \
                                     self.__on_searchentry_focus_out,
                                 "on_searchentry_activate": \
-                                    self.__on_searchentry_activate,
+                                    self.__do_search,
                                 "on_sectionscombobox_changed": \
                                     self.__on_sectionscombobox_changed,
                                 "on_filtercombobox_changed": \
@@ -499,9 +478,9 @@ class PackageManager:
                                 "on_edit_cut_activate":self.__on_cut,
                                 "on_edit_search_activate":self.__on_edit_search_clicked,
                                 "on_clear_search_activate":self.__on_clear_search,
-                                "on_set_search_clicked":self.__on_set_search_clicked,
-                                "on_set_search_button_press_event":self.__on_set_search,
                                 "on_clear_search_clicked":self.__on_clear_search,
+                                "on_do_search_clicked":self.__do_search,
+                                "on_do_search_button_press_event":self.__do_search,
                                 "on_edit_select_all_activate":self.__on_select_all,
                                 "on_edit_select_updates_activate": \
                                     self.__on_select_updates,
@@ -606,10 +585,13 @@ class PackageManager:
                 text = entry.get_text()
                 if text:
                         if text not in [row[0] for row in self.search_completion]:
-                                if len(self.search_completion) == \
-                                        self.max_search_completion:
+                                len_search_completion = len(self.search_completion)
+                                if len_search_completion > 0 and \
+                                        len_search_completion >= \
+                                                self.max_search_completion:
                                         itr = self.search_completion.get_iter_first()
-                                        self.search_completion.remove(itr)
+                                        itr:
+                                                self.search_completion.remove(itr)
                                 self.search_completion.append([text])
                 return
                 
@@ -682,49 +664,10 @@ class PackageManager:
                         self.pylintstub = description
                 factory.add_default()
 
-        def __set_search_option(self, i):
-                # The value i is the index in the table search_options
-                # of the current choice.
-                # Index 0 corresponds to Current Repository.
-                # We assume that anything else is search all.
-                # This may need to be revisited if more search options are
-                # added.
-                if i == self.current_search_option:
+        def __set_all_publishers_mode(self):
+                if self.is_all_publishers:
                         return
-                self.current_search_option = i
-                self.changing_search_option = True
-                is_search_all = (i != 0)
-                self.__update_repository_combobox_for_search(is_search_all)
-                if is_search_all:
-                        self.__setup_before_search_all_mode()
-                else:
-                        self.__restore_setup_for_browse()
-                self.changing_search_option = False
-
-        def __update_repository_combobox_for_search(self, is_search_all):
-                if is_search_all:
-                        self.saved_repository_combobox_active = \
-                            self.w_repository_combobox.get_active()
-                self.__disconnect_repository_model()
-                if is_search_all:
-                        self.repositories_list.prepend(
-                            [-1, _("All Repositories Search Results"), ])
-                else:
-                        self.repositories_list.remove(
-                            self.repositories_list.get_iter_first())
-                self.w_repository_combobox.set_model(self.repositories_list)
-
-        def __search_menu_item_activate(self, widget):
-                name = widget.get_name()
-                i = 0
-                for stock_id, pixbuf, label, description in self.search_options:
-                        if stock_id == name:
-                                self.__set_search_option(i)
-                                self.search_image.set_from_pixbuf(pixbuf)
-                                self.a11y_search_button.set_description(description)
-                                break
-                        i += 1
-                        self.pylintstub = label
+                self.__setup_before_all_publishers_mode()
 
         def __setup_startpage(self, show_startpage):
                 self.opener = urllib.FancyURLopener()
@@ -1076,7 +1019,7 @@ class PackageManager:
                 column.connect_after('clicked',
                     self.__application_treeview_column_sorted, None)
                 self.w_application_treeview.append_column(column)
-                if self.is_search_all:
+                if self.is_all_publishers:
                         repository_renderer = gtk.CellRendererText()
                         column = gtk.TreeViewColumn(_('Repository'),
                             repository_renderer,
@@ -1211,7 +1154,7 @@ class PackageManager:
                         self.category_list = category_list
                         self.category_list_filter = category_list_filter
                         self.w_categories_treeview.set_model(category_list_filter)
-                        if not self.is_search_all:
+                        if not self.is_all_publishers:
                                 category_list_filter.set_visible_func(
                                     self.category_filter)
                                 self.__set_categories_visibility(self.set_section)
@@ -1621,16 +1564,24 @@ class PackageManager:
 
         def __on_searchentry_changed(self, widget):
                 if widget.get_text_length() > 0:
-                        self.w_clear_search_button.set_sensitive(True)
+                        if self.entry_embedded_icons_supported:
+                                self.w_searchentry.set_property("secondary-icon-stock", 
+                                    gtk.STOCK_CANCEL)
+                                self.w_searchentry.set_property(
+                                   "secondary-icon-sensitive", True)
                         self.w_clear_search_menuitem.set_sensitive(True)
                 else:
-                        self.w_clear_search_button.set_sensitive(False)
+                        if self.entry_embedded_icons_supported:
+                                self.w_searchentry.set_property("secondary-icon-stock", 
+                                    None)
                         self.w_clear_search_menuitem.set_sensitive(False)
                 self.__enable_disable_entry_selection(widget)
 
         def __update_statusbar_for_search(self):
-                self.__update_statusbar_message(
-                    self.search_options[self.current_search_option][3])
+                if self.is_all_publishers:
+                        self.__update_statusbar_message(_("Search all sources"))
+                else:
+                        self.__update_statusbar_message(_("Search current source"))
 
         def __update_statusbar_message(self, message):
                 if self.statusbar_message_id > 0:
@@ -1638,12 +1589,11 @@ class PackageManager:
                         self.statusbar_message_id = 0
                 self.statusbar_message_id = self.w_main_statusbar.push(0, message)
 
-        def __setup_before_search_all_mode(self):
-                self.is_search_all = True
+        def __setup_before_all_publishers_mode(self):
+                self.is_all_publishers = True
                 self.w_infosearch_frame.hide()
 
                 self.__save_setup_before_search()
-                self.w_repository_combobox.set_active(0)
                 self.__clear_before_search()
                 self.__update_statusbar_for_search()
                 self.w_searchentry.grab_focus()
@@ -1662,7 +1612,7 @@ class PackageManager:
 
         def __restore_setup_for_browse(self):
                 self.in_search_mode = False
-                self.is_search_all = False
+                self.is_all_publishers = False
                 self.w_infosearch_frame.hide()
 
                 self.set_busy_cursor()
@@ -1695,16 +1645,17 @@ class PackageManager:
                         self.application_list_filter
                 self.saved_category_list = self.category_list
                 self.saved_section_list = self.section_list
-                if single_search:
-                        self.saved_repository_combobox_active = \
-                                self.w_repository_combobox.get_active()
 
-        def __do_search(self):
+                pub_index = self.w_repository_combobox.get_active()
+                if pub_index != self.repo_combobox_all_pubs_index and \
+                        pub_index != self.repo_combobox_add_index:
+                        self.saved_repository_combobox_active = pub_index
+
+        def __do_search(self, widget=None, ev=None):
                 self.search_start = 0
-                if self.changing_search_option or \
-                        self.w_searchentry.get_text_length() == 0:
+                if self.w_searchentry.get_text_length() == 0:
                         return
-                if not self.is_search_all:
+                if not self.is_all_publishers:
                         self.__save_setup_before_search(single_search=True)
                 self.__clear_before_search()
                 self.set_busy_cursor()
@@ -1712,12 +1663,8 @@ class PackageManager:
                         
                 self.w_infosearch_frame.hide()
                 self.__update_statusbar_message(_("Searching..."))
-                if not self.is_search_all:
-                        Thread(target = self.__do_api_search,
-                            args = (self.is_search_all, )).start()
-                else:
-                        Thread(target = self.__do_api_search,
-                            args = ()).start()
+                Thread(target = self.__do_api_search,
+                    args = (self.is_all_publishers, )).start()
 
         def __unselect_category(self):
                 selection = self.w_categories_treeview.get_selection()
@@ -1956,31 +1903,13 @@ class PackageManager:
                 self.w_searchentry.cut_clipboard()
                 self.w_paste_menuitem.set_sensitive(True)
 
-        def __popup_position_func(self, menu):
-                ''' Position popup menu immediately below search button'''
-                root = self.w_main_window.window.get_origin()
-                alloc = self.search_button.get_allocation()
-                return (root[0] + alloc.x, root[1] + alloc.y + alloc.height, False)
-
-        def __on_set_search(self, widget, event):
-                if  event.type == gtk.gdk.BUTTON_PRESS:
-                        self.searchmenu.popup(None, None, self.__popup_position_func,
-                            event.button, event.time)
-                        return True
-                return False
-
-        def __on_set_search_clicked(self, widget):
-                self.searchmenu.popup(None, None, self.__popup_position_func,
-                    0, 0)
-                return True
-
         def __on_edit_search_clicked(self, widget):
                 self.w_searchentry.grab_focus()
 
-        def __on_clear_search(self, widget):
+        def __on_clear_search(self, widget, icon_pos=0, event=None):
                 self.w_searchentry.delete_text(0, -1)
                 # Only clear out search results
-                if self.in_search_mode or self.is_search_all:
+                if self.in_search_mode or self.is_all_publishers:
                         self.__clear_before_search()
                         self.__update_statusbar_message(_("Search cleared"))
                 return
@@ -2197,9 +2126,6 @@ class PackageManager:
                 self.w_delete_menuitem.set_sensitive(False)
                 return False
 
-        def __on_searchentry_activate(self, widget):
-                self.__do_search()
-
         def __on_searchentry_selection(self, widget, pspec):
                 self.__enable_disable_entry_selection(widget)
 
@@ -2243,7 +2169,7 @@ class PackageManager:
                         self.w_filter_combobox.set_active(
                             self.saved_filter_combobox_active)
                 self.w_searchentry.delete_text(0, -1)
-                if self.in_search_mode or self.is_search_all:
+                if self.in_search_mode or self.is_all_publishers:
                         self.__unset_search(True)
                         if self.selected == 0:
                                 gobject.idle_add(self.__enable_disable_install_remove)
@@ -2262,19 +2188,19 @@ class PackageManager:
 
         def __on_category_selection_changed(self, selection, widget):
                 '''This function is for handling category selection changes'''
-                if self.in_setup or self.changing_search_option:
+                if self.in_setup:
                         return
                 model, itr = selection.get_selected()
                 if itr:
                         cat_path = model.get_string_from_iter(itr)
-                        if self.is_search_all:
+                        if self.is_all_publishers:
                                 selected_section = self.set_section
                         else:
                                 selected_section = self.w_sections_combobox.get_active()
                         section_row = self.section_list[selected_section]
                         section_row[enumerations.SECTION_SUBCATEGORY] = cat_path
 
-                if self.in_search_mode or self.is_search_all:
+                if self.in_search_mode or self.is_all_publishers:
                         return
                 
                 if self.saved_filter_combobox_active != None:
@@ -2319,7 +2245,7 @@ class PackageManager:
 
         def __on_filtercombobox_changed(self, widget):
                 '''On filter combobox changed'''
-                if self.in_setup or self.changing_search_option:
+                if self.in_setup:
                         return
                 active = self.w_filter_combobox.get_active()
                 if active != enumerations.FILTER_SELECTED:
@@ -2375,14 +2301,12 @@ class PackageManager:
                 '''On section combobox changed'''
                 if self.in_setup:
                         return
-                if self.changing_search_option:
-                        return
                 self.__set_main_view_package_list()
                 self.set_busy_cursor()
                 self.__set_first_category_text()
                 self.__set_categories_visibility(widget.get_active())
                 self.category_list_filter.refilter()
-                if self.in_search_mode or self.is_search_all:
+                if self.in_search_mode or self.is_all_publishers:
                         self.saved_sections_combobox_active = \
                             self.w_sections_combobox.get_active()
                         self.__unset_search(True)
@@ -2403,8 +2327,6 @@ class PackageManager:
 
         def __unset_search(self, same_repo):
                 self.w_infosearch_frame.hide()
-                self.changing_search_option = True
-                self.current_search_option = 0
                 selected_publisher = self.__get_selected_publisher()
                 if selected_publisher in self.selected_pkgs:
                         self.selected_pkgs.pop(selected_publisher)
@@ -2413,60 +2335,42 @@ class PackageManager:
                 if selected_publisher in self.to_remove:
                         self.to_remove.pop(selected_publisher)
                 self.__update_tooltips()
-                if self.is_search_all:
-                        self.__update_repository_combobox_for_search(False)
-                pixbuf = self.search_options[0][1]
-                self.search_image.set_from_pixbuf(pixbuf)
                 self.in_search_mode = False
-                self.is_search_all = False
+                self.is_all_publishers = False
                 if same_repo:
                         self.__restore_setup_for_browse()
-                self.changing_search_option = False
 
         def __on_repositorycombobox_changed(self, widget):
                 '''On repository combobox changed'''
-                if self.changing_search_option:
-                        return
-                self.changing_search_option = True
                 selected_publisher = self.__get_selected_publisher()
-                if self.is_search_all:
-                        same_repo = False
-                        index =  self.w_repository_combobox.get_active() - 1
-                        if index == -1:
-                                # We get here is we choose "Add ..." when
-                                # doing api search
-                                self.changing_search_option = False
+                index =  self.w_repository_combobox.get_active()
+                if self.is_all_publishers:
+                        if index == self.repo_combobox_all_pubs_index:
                                 return
-                        if not selected_publisher == _("Add..."):
-                                if self.saved_repository_combobox_active == index:
-                                        same_repo = True
-                                self.__unset_search(same_repo)
-                                self.w_repository_combobox.set_active(index)
+                        if index == self.repo_combobox_add_index:
+                                self.w_repository_combobox.set_active(
+                                    self.repo_combobox_all_pubs_index)
+                                self.__on_edit_repositories_activate(None)
+                                return
+                        same_repo = self.saved_repository_combobox_active == index
+                        self.__unset_search(same_repo)
                         if same_repo:
-                                self.changing_search_option = False
                                 return
+                        self.w_repository_combobox.set_active(index)
                         selected_publisher = self.__get_selected_publisher()
-                self.changing_search_option = False
                 if selected_publisher == self.last_visible_publisher:
-                # If we are coming back to the same repository, we do
-                # not want to setup publishers. This is the case when
-                # we are calling Add... then we are firing the event for
-                # Add... case and immediately coming back to the
-                # previously selected repository.
                         return
-                # Checking for Add... is fine enough, as the repository
-                # name cannot contain "..." in the name.
-                if selected_publisher == _("Add..."):
+                if index == self.repo_combobox_all_pubs_index:
+                        self.__set_all_publishers_mode()
+                        return
+                        
+                if index == self.repo_combobox_add_index:
                         index = -1
-                        if self.is_search_all:
-                                index = 0
-                        else:
-                                model = self.w_repository_combobox.get_model()
-                                for entry in model:
-                                        if entry[1] == self.last_visible_publisher:
-                                                index = entry[0]
-                                                break
-                        # We do not want to switch permanently to the Add...
+                        model = self.w_repository_combobox.get_model()
+                        for entry in model:
+                                if entry[1] == self.last_visible_publisher:
+                                        index = entry[0]
+                                        break
                         self.w_repository_combobox.set_active(index)
                         self.__on_edit_repositories_activate(None)
                         return
@@ -2497,6 +2401,8 @@ class PackageManager:
                 self.__unset_saved()
                 self.publisher_changed = True
                 self.last_visible_publisher = self.__get_selected_publisher()
+                self.saved_repository_combobox_active = \
+                        self.w_repository_combobox.get_active()   
                 gobject.idle_add(self.__init_tree_views, application_list,
                     category_list, section_list)
 
@@ -2673,7 +2579,7 @@ class PackageManager:
         def __on_reload(self, widget):
                 if self.description_thread_running:
                         self.cancelled = True
-                if self.in_search_mode or self.is_search_all:
+                if self.in_search_mode or self.is_all_publishers:
                         self.__unset_search(False)
                 self.__set_empty_details_panel()
                 self.in_setup = True
@@ -2772,7 +2678,13 @@ class PackageManager:
                         repositories_list.append([i, prefix, ])
                         enabled_repos.append(prefix)
                         i = i + 1
+                self.repo_combobox_all_pubs_index = i
+                repositories_list.append([self.repo_combobox_all_pubs_index, 
+                    _("All Sources (Search Only)"), ])
+                i = i + 1
                 repositories_list.append([-1, "", ])
+                i = i + 1
+                self.repo_combobox_add_index = i
                 repositories_list.append([-1, _("Add..."), ])
                 pkgs_to_remove = []
                 for repo_name in selected_repos:
@@ -2811,9 +2723,9 @@ class PackageManager:
 
         def __update_reload_button(self):
                 if self.user_rights:
-                        self.w_reload_button.set_sensitive(True)
+                        self.w_reload_menuitem.set_sensitive(True)
                 else:
-                        self.w_reload_button.set_sensitive(False)
+                        self.w_reload_menuitem.set_sensitive(False)
 
         def __add_pkg_stem_to_list(self, stem, status):
                 pub = self.__get_selected_publisher()
@@ -3598,7 +3510,7 @@ class PackageManager:
                         else:
                                 status_icon = self.not_installed_icon
                         marked = False
-                        if not self.is_search_all:
+                        if not self.is_all_publishers:
                                 pkgs = self.selected_pkgs.get(pkg_publisher)
                                 if pkgs != None:
                                         if pkg_stem in pkgs:
@@ -3966,7 +3878,7 @@ class PackageManager:
 
                 # In Search Mode
                 active = ""
-                if self.is_search_all:
+                if self.is_all_publishers:
                         if self.__doing_search():
                                 if self.search_all_pub_being_searched != None:
                                         active = "(" + \
