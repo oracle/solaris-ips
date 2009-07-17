@@ -136,7 +136,7 @@ f none usr/lib/python2.4/vendor-packages/pkg/flavor/base.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/flavor/depthlimitedmf.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/flavor/depthlimitedmf.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/flavor/elf.py 444 root bin
-f none usr/lib/python2.4/vendor-packages/pkg/flavor/elf.pyc 444 root bi
+f none usr/lib/python2.4/vendor-packages/pkg/flavor/elf.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/flavor/hardlink.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/flavor/hardlink.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/flavor/python.py 444 root bin
