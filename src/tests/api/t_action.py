@@ -177,6 +177,7 @@ Incorrect attribute list.
                 except action.MalformedActionError:
                         malformed = True
 
+                # If the action isn't malformed, something is wrong.
                 self.assert_(malformed, "Action not malformed: " + text)
 
         def assertInvalid(self, text):
@@ -187,7 +188,8 @@ Incorrect attribute list.
                 except action.InvalidActionError:
                         invalid = True
 
-                self.assert_(malformed, "Action not invalid: " + text)
+                # If the action isn't invalid, something is wrong.
+                self.assert_(invalid, "Action not invalid: " + text)
 
         def test_action_errors(self):
                 # Unknown action type
@@ -221,13 +223,23 @@ Incorrect attribute list.
                 # Whitespace in key
                 self.assertMalformed("file 1234 path=/tmp/foo bro ken")
 
-                # Missing required attribute path
+                # Attribute value is invalid.
+                self.assertInvalid("depend type=unknown fmri=foo@1.0")
+
+                # Missing required attribute 'type'.
+                self.assertInvalid("depend fmri=foo@1.0")
+
+                # Missing key attribute 'fmri'.
+                self.assertInvalid("depend type=require")
+
+                # Missing required attribute 'path'.
                 self.assertRaises(action.InvalidActionError, action.fromstr,
                     "file 1234 owner=foo")
 
-                # Missing required attribute name
+                # Missing required attribute 'name'.
                 self.assertRaises(action.InvalidActionError, action.fromstr,
                     "driver alias=pci1234,56 alias=pci4567,89 class=scsi")
+
 
 if __name__ == "__main__":
         unittest.main()

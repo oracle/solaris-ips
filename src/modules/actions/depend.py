@@ -66,6 +66,19 @@ class DependencyAction(generic.Action):
 
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
+                if "type" not in self.attrs:
+                        raise pkg.actions.InvalidActionError(
+                            str(self), _("Missing type attribute"))
+
+                if "fmri" not in self.attrs:
+                        raise pkg.actions.InvalidActionError(
+                            str(self), _("Missing fmri attribute"))
+
+                if self.attrs["type"] not in self.known_types:
+                        raise pkg.actions.InvalidActionError(str(self),
+                            _("Unknown type (%s) in depend action") %
+                            self.attrs["type"])
+
                 try:
                         if "fmri" in self.attrs:
                                 self.clean_fmri()
@@ -179,6 +192,7 @@ class DependencyAction(generic.Action):
 
                 name = f.get_name()
                 max_ver = None
+                presence = None
 
                 if ctype == "require":
                         presence = constraint.Constraint.ALWAYS
@@ -194,6 +208,8 @@ class DependencyAction(generic.Action):
                                 presence = constraint.Constraint.MAYBE
                 elif ctype == "transfer":
                         presence = constraint.Constraint.MAYBE
+
+                assert presence
 
                 return f, constraint.Constraint(name, min_ver, max_ver,
                     presence, source_name)

@@ -139,6 +139,14 @@ class TestPkgsendBasics(testutils.SingleDepotTestCase):
                 self.pkgsend(dhurl, "open foo@1.0")
 
                 for url in (dhurl, dfurl):
+                        # Should fail because type attribute is missing.
+                        self.pkgsend(url,
+                            "add depend fmri=foo@1.0", exit=1)
+
+                        # Should fail because type attribute is invalid.
+                        self.pkgsend(url,
+                            "add depend type=unknown fmri=foo@1.0", exit=1)
+
                         # Should fail because path attribute is missing.
                         self.pkgsend(url,
                             "add file /bin/ls", exit=1)

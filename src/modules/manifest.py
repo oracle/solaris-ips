@@ -417,7 +417,7 @@ class Manifest(object):
                         if l and l[0] != "#":
                                 try:
                                         action = actions.fromstr(l)
-                                except actions.MalformedActionError, e:
+                                except actions.ActionError, e:
                                         log((_("%(fp)s:\n%(e)s") %
                                             { "fp": file_path, "e": e }))
                                 else:

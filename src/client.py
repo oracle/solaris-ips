@@ -126,7 +126,7 @@ Advanced subcommands:
         pkg contents [-Hmr] [-o attribute ...] [-s sort_key]
             [-t action_type ... ] [pkg_fmri_pattern ...]
         pkg image-create [-fFPUz] [--force] [--full|--partial|--user] [--zone]
-            [-k ssl_key] [-c ssl_cert] [--no-refresh] 
+            [-k ssl_key] [-c ssl_cert] [--no-refresh]
             [--variant <variant_spec>=<instance>]
             (-p|--publisher) name=uri dir
 
@@ -303,7 +303,7 @@ def list_inventory(img, args):
                                         error(e)
                                         return 1
 
-                                msg(fmt_str % (pf, pis[0].summary)) 
+                                msg(fmt_str % (pf, pis[0].summary))
 
                         else:
                                 pf = pfmri.get_name() + pub
@@ -393,7 +393,7 @@ def fix_image(img, args):
                 try:
                         be = bootenv.BootEnv(img.get_root())
                         if be.exists():
-                                msg(_("Created ZFS snapshot: %s" % 
+                                msg(_("Created ZFS snapshot: %s" %
                                     be.snapshot_name))
                 except RuntimeError:
                         pass # Error is printed by the BootEnv call.
@@ -939,7 +939,7 @@ def __convert_output(a_str, match):
         the INDEX, ACTION, and VALUE columns.
 
         The "a_str" parameter is the string representation of an action.
-        
+
         The "match" parameter is a string whose precise interpretation is given
         below.
 
@@ -949,7 +949,7 @@ def __convert_output(a_str, match):
         differently because they only have one attribute, and many values
         associated with that attribute.  For those actions, the match parameter
         states which value matched the query."""
-        
+
         a = actions.fromstr(a_str.rstrip())
         if isinstance(a, actions.attribute.AttributeAction):
                 return a.attrs.get(a.key_attr), a.name, match
@@ -967,10 +967,10 @@ def process_v_1_search(tup, first, return_type, pub):
         of the information that will be converted.
 
         The type of the "tup" parameter depends on the value of "return_type".
-        If "return_type" is action information, "tup" is a three-tuple of the fmri
-        name, the match, and a string representation of the action.  In the case
-        where "return_type" is package information, "tup" is a one-tuple containing
-        the fmri name."""
+        If "return_type" is action information, "tup" is a three-tuple of the
+        fmri name, the match, and a string representation of the action.  In
+        the case where "return_type" is package information, "tup" is a one-
+        tuple containing the fmri name."""
 
         if return_type == api.Query.RETURN_ACTIONS:
                 try:
@@ -984,9 +984,8 @@ def process_v_1_search(tup, first, return_type, pub):
                             ("INDEX", "ACTION", "VALUE", "PACKAGE"))
                 try:
                         out1, out2, out3 = __convert_output(action, match)
-                except (actions.UnknownActionError,
-                    actions.MalformedActionError), e:
-                        error(_("The server returned a malformed action.\n%s") %
+                except actions.ActionError, e:
+                        error(_("The server returned an invalid action.\n%s") %
                             e)
                         return False
                 msg("%-10s %-9s %-25s %s" %
@@ -1062,7 +1061,7 @@ def search(img_dir, args):
         first = True
         good_res = False
         bad_res = False
-        
+
         try:
                 if local:
                         searches.append(api_inst.local_search(query))
@@ -1110,7 +1109,7 @@ def search(img_dir, args):
         elif bad_res:
                 retcode = 1
         elif not first:
-                retcode = 0      
+                retcode = 0
         return retcode
 
 def info(img_dir, args):
@@ -1532,10 +1531,10 @@ def list_contents(img, args):
 
         manifests = ( img.get_manifest(f, all_arch=display_raw) for f in fmris )
 
-        actionlist = [ 
+        actionlist = [
             (m, a)
             for m in manifests
-            for a in m.gen_actions(excludes) 
+            for a in m.gen_actions(excludes)
         ]
 
         if fmris:
@@ -2164,7 +2163,7 @@ def image_create(img, args):
                         try:
                                 v_name, v_value = arg.split("=", 1)
                                 if not v_name.startswith("variant."):
-                                        v_name = "variant.%s" % v_name 
+                                        v_name = "variant.%s" % v_name
                         except ValueError:
                                 usage(_("image-create requires variant "
                                     "arguments to be of the form "
@@ -2638,7 +2637,7 @@ if __name__ == "__main__":
                     "attempt to contact the server using a web browser."))
                 emsg(_("\nAdditional details:\n\n%s") % __e)
                 print_proxy_config()
-                __ret = 1 
+                __ret = 1
         except history.HistoryLoadException, __e:
                 # Since a history related error occurred, discard all
                 # information about the current operation(s) in progress.
