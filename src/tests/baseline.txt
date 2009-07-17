@@ -23,6 +23,17 @@ api.t_catalog.py TestUpdateLog.testnotuptodate|pass
 api.t_catalog.py TestUpdateLog.testoneupdate|pass
 api.t_catalog.py TestUpdateLog.testrolllogfiles|pass
 api.t_catalog.py TestUpdateLog.testsequentialupdate|pass
+api.t_dependencies.py TestDependencyAnalyzer.test_ext_elf|pass
+api.t_dependencies.py TestDependencyAnalyzer.test_ext_hardlink|pass
+api.t_dependencies.py TestDependencyAnalyzer.test_ext_pb|pass
+api.t_dependencies.py TestDependencyAnalyzer.test_ext_python_dep|pass
+api.t_dependencies.py TestDependencyAnalyzer.test_int_elf|pass
+api.t_dependencies.py TestDependencyAnalyzer.test_int_hardlink|pass
+api.t_dependencies.py TestDependencyAnalyzer.test_int_pb|pass
+api.t_dependencies.py TestDependencyAnalyzer.test_symlinks|pass
+api.t_dependencies.py TestDependencyAnalyzer.test_variants_1|pass
+api.t_dependencies.py TestDependencyAnalyzer.test_variants_2|pass
+api.t_dependencies.py TestDependencyAnalyzer.test_variants_3|pass
 api.t_elf.py TestElf.test_get_dynamic|pass
 api.t_elf.py TestElf.test_get_info|pass
 api.t_elf.py TestElf.test_is_elf_object|pass
@@ -170,6 +181,7 @@ api.t_unix_usergrp.py TestUserGroup.testUser1|pass
 api.t_unix_usergrp.py TestUserGroup.testUser2|pass
 api.t_unix_usergrp.py TestUserGroup.testUser3|pass
 api.t_unix_usergrp.py TestUserGroup.testUser4|pass
+api.t_variant.py TestVariants.test_1|pass
 api.t_version.py TestVersion.testbogusdotsequence|pass
 api.t_version.py TestVersion.testbogusversion1|pass
 api.t_version.py TestVersion.testbogusversion2|pass
@@ -454,6 +466,8 @@ cli.t_pkg_uninstall.py TestCommandLine.test_pkg_bogus_opts|pass
 cli.t_pkg_uninstall.py TestCommandLine.test_rmdir_cwd|pass
 cli.t_pkg_verify.py TestPkgVerify.test_pkg_verify_bad_opts|pass
 cli.t_pkg_version.py TestPkgVersion.test_pkg_version_bad_opts|pass
+cli.t_pkgdep.py TestPkgdepBasics.test_opts|pass
+cli.t_pkgdep.py TestPkgdepBasics.test_output|pass
 cli.t_pkgrecv.py TestPkgrecvMulti.test_0_opts|pass
 cli.t_pkgrecv.py TestPkgrecvMulti.test_1_recv_pkgsend|pass
 cli.t_pkgrecv.py TestPkgrecvMulti.test_2_recv_compare|pass

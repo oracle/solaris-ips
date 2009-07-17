@@ -40,6 +40,7 @@ except AttributeError:
         os.SEEK_SET, os.SEEK_CUR, os.SEEK_END = range(3)
 import pkg.actions
 import pkg.portable as portable
+import pkg.variant as variant
 
 class Action(object):
         """Class representing a generic packaging object.
@@ -388,6 +389,11 @@ class Action(object):
                         if k.startswith("facet."):
                                 facets.append(k)
                 return variants, facets
+
+        def get_variants(self):
+                return variant.Variants(dict((
+                    (v, [self.attrs[v]]) for v in self.get_varcet_keys()[0]
+                )))
 
         def get_remote_opener(self, img, fmri):
                 """Return an opener for the action's datastream which pulls from

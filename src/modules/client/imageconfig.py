@@ -27,13 +27,15 @@ import ConfigParser
 import errno
 import os.path
 import platform
-import pkg.fmri as fmri
+import re
+
 import pkg.client.api_errors as api_errors
 import pkg.client.publisher as publisher
-import pkg.client.variant as variant
-from pkg.misc import emsg
+import pkg.fmri as fmri
 import pkg.portable as portable
-import re
+import pkg.variant as variant
+
+from pkg.misc import emsg
 
 # The default_policies dictionary defines the policies that are supported by 
 # pkg(5) and their default values. Calls to the ImageConfig.get_policy method

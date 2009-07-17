@@ -28,14 +28,14 @@
 import os
 import errno
 
+import pkg.client.actuator as actuator
 import pkg.client.api_errors as api_errors
 import pkg.client.imagestate as imagestate
 import pkg.client.pkgplan as pkgplan
 import pkg.client.indexer as indexer
-import pkg.client.variant as variant
-import pkg.search_errors as se
-import pkg.client.actuator as actuator
 import pkg.fmri as fmri
+import pkg.search_errors as se
+import pkg.variant as variant
 
 from pkg.client.filter import compile_filter
 from pkg.misc import msg

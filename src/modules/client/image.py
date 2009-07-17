@@ -46,11 +46,11 @@ import pkg.client.pkgplan               as pkgplan
 import pkg.client.progress              as progress
 import pkg.client.publisher             as publisher
 import pkg.client.transport.transport   as transport
-import pkg.client.variant               as variant
 import pkg.fmri
 import pkg.manifest                     as manifest
 import pkg.misc                         as misc
 import pkg.portable                     as portable
+import pkg.variant                      as variant
 import pkg.version
 
 from pkg.client import global_settings

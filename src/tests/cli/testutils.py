@@ -375,6 +375,37 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
 
                 return retcode
 
+        def pkgdep(self, command, proto=None, exit=0, comment=""):
+                wrapper = ""
+                if os.environ.has_key("PKGCOVERAGE"):
+                        wrapper = "figleaf"
+
+                if proto is None:
+                        proto = g_proto_area
+                        
+                cmdline = "%s %s/usr/bin/pkgdep %s %s" % (wrapper, g_proto_area,
+                    command, proto)
+                self.debugcmd(cmdline)
+
+                p = subprocess.Popen(cmdline, shell = True,
+                    stdout = subprocess.PIPE,
+                    stderr = subprocess.PIPE)
+
+                self.output = p.stdout.read()
+                self.errout = p.stderr.read()
+                retcode = p.wait()
+                self.debugresult(retcode, self.output)
+
+                if retcode == 99:
+                        raise TracebackException(cmdline, self.output, comment,
+                            debug=self.get_debugbuf())
+                elif retcode != exit:
+                        raise UnexpectedExitCodeException(cmdline,
+                            exit, retcode, self.output, comment,
+                            debug=self.get_debugbuf())
+
+                return retcode
+
         def pkgrecv(self, server_url=None, command=None, exit=0, out=False,
             comment=""):
 

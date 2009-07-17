@@ -7,6 +7,7 @@ f none lib/svc/method/svc-pkg-depot 755 root bin
 d none usr 755 root sys
 d none usr/bin 755 root bin
 f none usr/bin/pkg 755 root bin
+f none usr/bin/pkgdep 755 root bin
 f none usr/bin/pkgrecv 755 root bin
 f none usr/bin/pkgsend 755 root bin
 d none usr/lib 755 root bin
@@ -120,8 +121,6 @@ f none usr/lib/python2.4/vendor-packages/pkg/client/transport/stats.py 444 root 
 f none usr/lib/python2.4/vendor-packages/pkg/client/transport/stats.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/client/transport/transport.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/client/transport/transport.pyc 444 root bin
-f none usr/lib/python2.4/vendor-packages/pkg/client/variant.py 444 root bin
-f none usr/lib/python2.4/vendor-packages/pkg/client/variant.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/cpiofile.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/cpiofile.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/dependency.py 444 root bin
@@ -129,6 +128,21 @@ f none usr/lib/python2.4/vendor-packages/pkg/dependency.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/depotcontroller.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/depotcontroller.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/elf.so 755 root bin
+d none usr/lib/python2.4/vendor-packages/pkg/flavor 755 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/flavor/__init__.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/flavor/__init__.pyc 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/flavor/base.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/flavor/base.pyc 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/flavor/depthlimitedmf.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/flavor/depthlimitedmf.pyc 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/flavor/elf.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/flavor/elf.pyc 444 root bi
+f none usr/lib/python2.4/vendor-packages/pkg/flavor/hardlink.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/flavor/hardlink.pyc 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/flavor/python.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/flavor/python.pyc 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/flavor/script.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/flavor/script.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/fmri.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/fmri.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/indexer.py 444 root bin
@@ -162,6 +176,8 @@ f none usr/lib/python2.4/vendor-packages/pkg/pspawn.so 755 root bin
 d none usr/lib/python2.4/vendor-packages/pkg/publish 755 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/publish/__init__.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/publish/__init__.pyc 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/publish/dependencies.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/publish/dependencies.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/publish/transaction.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/publish/transaction.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/query_parser.py 444 root bin
@@ -208,6 +224,8 @@ f none usr/lib/python2.4/vendor-packages/pkg/updatelog.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/updatelog.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/urlhelpers.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/urlhelpers.pyc 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/variant.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/variant.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/version.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/version.pyc 444 root bin
 d none usr/share 755 root sys

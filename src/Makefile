@@ -23,6 +23,7 @@
 #
 
 # client.py -> /usr/bin/pkg
+# pkgdep.py -> /usr/bin/pkgdep
 # pull.py -> /usr/bin/pkgrecv
 # publish.py -> /usr/bin/pkgsend
 # depot.py -> /usr/lib/pkg.depotd

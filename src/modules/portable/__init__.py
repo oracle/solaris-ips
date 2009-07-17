@@ -74,6 +74,10 @@ def get_platform():
         information, e.g. "i86pc"."""
         raise NotImplementedError
 
+def get_file_type(paths):
+        """ Return a list containing the file type for each file in paths."""
+        raise NotImplementedError
+
 # Account access
 # --------------
 def get_group_by_name(name, dirpath, use_file):
@@ -193,6 +197,11 @@ def get_root(path):
         paths, where the root of the filesystem is significant (and
         often leads to ambiguity in cross-platform code)."""
         raise NotImplementedError
+
+# File type constants
+# -------------------
+ELF, EXEC, UNFOUND = range(0, 3)
+
 
 import platform
 import util as os_util

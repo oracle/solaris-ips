@@ -51,7 +51,7 @@ class Variants(dict):
 
         def popitem(self):
                 popped = dict.popitem(self)
-                self.__ketset.remove(popped[0])
+                self.__keyset.remove(popped[0])
                 return popped
 
         def setdefault(self, item, default=None):
@@ -78,3 +78,30 @@ class Variants(dict):
                         if self[a] != action.attrs[a]:
                                 return False
                 return True
+
+        def merge(self, var):
+                """Combine two sets of variants into one."""
+                for name in var:
+                        if name in self:
+                                self[name].extend(var[name])
+                                self[name] = list(set(self[name]))
+                        else:
+                                self[name] = list(set(var[name]))
+
+        def issubset(self, var):
+                """Returns whether self is a subset of variant var."""
+                for k in self:
+                        if k not in var:
+                                return False
+                        if set(self[k]) - set(var[k]):
+                                return False
+                return True
+
+        def difference(self, var):
+                """Returns the variants in self and not in var."""
+                res = Variants()
+                for k in self:
+                        tmp = set(self[k]) - set(var.get(k, []))
+                        if tmp:
+                                res[k] = tmp
+                return res

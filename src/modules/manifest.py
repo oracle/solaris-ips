@@ -32,6 +32,7 @@ from pkg.misc import EmptyI, expanddirs
 
 import pkg.actions as actions
 import pkg.portable as portable
+import pkg.variant as variant
 from pkg.actions.attribute import AttributeAction
 
 class Manifest(object):
@@ -480,6 +481,14 @@ class Manifest(object):
                 if not isinstance(variants, str):
                         return variants
                 return [variants]
+
+        def get_all_variants(self):
+                """Return a dictionary mapping variant tags to their values."""
+                return variant.Variants(dict((
+                    (name, self.attributes[name])
+                    for name in self.attributes
+                    if name.startswith("variant.")
+                )))
 
         def get(self, key, default):
                 try:

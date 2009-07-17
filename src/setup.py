@@ -155,6 +155,7 @@ brand_dir = 'usr/lib/brand/ipkg'
 scripts_sunos = {
         scripts_dir: [
                 ['client.py', 'pkg'],
+                ['pkgdep.py', 'pkgdep'],
                 ['publish.py', 'pkgsend'],
                 ['pull.py', 'pkgrecv'],
                 ['packagemanager.py', 'packagemanager'],
@@ -189,6 +190,7 @@ scripts_windows = {
 scripts_other_unix = {
         scripts_dir: [
                 ['client.py', 'client.py'],
+                ['pkgdep.py', 'pkgdep'],
                 ['pull.py', 'pull.py'],
                 ['publish.py', 'publish.py'],
                 ['scripts/pkg.sh', 'pkg'],
@@ -229,6 +231,7 @@ packages = [
         'pkg.bundle',
         'pkg.client',
         'pkg.client.transport',
+        'pkg.flavor',
         'pkg.portable',
         'pkg.publish',
         'pkg.server'

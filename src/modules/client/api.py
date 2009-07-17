@@ -42,10 +42,10 @@ import pkg.client.image as image
 import pkg.client.indexer as indexer
 import pkg.client.publisher as publisher
 import pkg.client.query_parser as query_p
-import pkg.client.variant as variant
 import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.search_errors as search_errors
+import pkg.variant as variant
 
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
