@@ -177,10 +177,6 @@ class PkgPlan(object):
                 # image cache.
                 self.__origin_mfst = None
                 self.__destination_mfst = None
-                if self.origin_fmri:
-                        self.image.uncache_manifest(self.origin_fmri)
-                if self.destination_fmri:
-                        self.image.uncache_manifest(self.destination_fmri)
 
         def get_legacy_info(self):
                 """ Returns information needed by the legacy action to

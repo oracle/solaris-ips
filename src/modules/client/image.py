@@ -175,8 +175,6 @@ class Image(object):
                 # a place to keep info about saved_files; needed by file action
                 self.saved_files = {}
 
-                self.__manifest_cache = {}
-
                 # right now we don't explicitly set dir/file modes everywhere;
                 # set umask to proper value to prevent problems w/ overly
                 # locked down umask.
@@ -726,28 +724,10 @@ class Image(object):
                         arch = {"variant.arch": self.get_arch()}
                         v = [variant.Variants(arch).allow_action]
 
-                # XXX This is a temporary workaround so that GUI api consumsers
-                # are not negatively impacted by manifest caching.  This should
-                # be removed by bug 4231 whenever a better way to handle caching
-                # is found.
-                if global_settings.client_name == "pkg" and not all_arch:
-                        if fmri in self.__manifest_cache:
-                                m = self.__manifest_cache[fmri]
-                        else:
-                                m = self.__get_manifest(fmri, v)
-                                if add_to_cache:
-                                        self.__manifest_cache[fmri] = m
-                else:
-                        m = self.__get_manifest(fmri, v)
+                m = self.__get_manifest(fmri, v)
 
                 self.__touch_manifest(fmri)
                 return m
-
-        def uncache_manifest(self, fmri):
-                """Remove specified FMRI from manifest cache."""
-
-                if fmri in self.__manifest_cache:
-                        del self.__manifest_cache[fmri]
 
         def installed_file_publisher(self, filepath):
                 """Find the pkg's installed file named by filepath.
@@ -1963,7 +1943,6 @@ class Image(object):
 
         def clear_pkg_state(self):
                 self.__pkg_states = None
-                self.__manifest_cache = {}
 
         def strtofmri(self, myfmri):
                 return pkg.fmri.PkgFmri(myfmri, self.attrs["Build-Release"])
