@@ -82,6 +82,11 @@ class Transport(object):
                 be restarted.  This clears the state of the
                 transport and its associated components."""
 
+                if not self.__engine:
+                        # Not configured, just init and return
+                        self.__setup()
+                        return
+
                 self.__engine.reset()
                 self.__repo_cache.clear_cache()
 
@@ -389,7 +394,11 @@ class Transport(object):
                         else:
                                 raise tx.TransportOperationError(
                                     "Unable to stat VFS: %s" % e)
-                        
+
+                # Call setup if the transport isn't configured yet.
+                if not self.__engine:
+                        self.__setup()
+
                 # set the file buffer size to the blocksize of our filesystem
                 self.__engine.set_file_bufsz(destvfs[statvfs.F_BSIZE])
 
@@ -680,19 +689,23 @@ class Transport(object):
                         try:
                                 fhash = misc.gunzip_from_stream(ifile, ofile)
                         except zlib.error, e:
+                                s = os.stat(filepath)
                                 os.remove(filepath)
                                 raise tx.InvalidContentException(path,
                                     "zlib.error:%s" %
-                                    (" ".join([str(a) for a in e.args])))
+                                    (" ".join([str(a) for a in e.args])),
+                                    size=s.st_size)
 
                         ifile.close()
                         ofile.close()
 
                         if action.hash != fhash:
+                                s = os.stat(filepath)
                                 os.remove(filepath)
                                 raise tx.InvalidContentException(action.path,
                                     "hash failure:  expected: %s"
-                                    "computed: %s" % (action.hash, fhash))
+                                    "computed: %s" % (action.hash, fhash),
+                                    size=s.st_size)
                         return
 
                 newhash = misc.get_data_digest(filepath)[0]
@@ -786,20 +799,27 @@ class MultiFile(object):
                 Create an opener that points to the file at path for the
                 action's data method."""
 
+                totalsz = 0
                 nactions = 0
-                pkgsz = 0
+
+                filesz = os.stat(path).st_size
 
                 for action in self._fhash[hashval]:
                         action.data = self._make_opener(path)
                         nactions += 1
-                        if pkgsz == 0:
-                                pkgsz = misc.get_pkg_otw_size(action)
+                        totalsz += misc.get_pkg_otw_size(action)
 
-                # mark the actions with openers as done
-                # The progress tracker already added bytes for the first
-                # instance of this file, add the bytes for any other
-                # instances.
-                bytes = pkgsz * (nactions - 1)
+                # The progress tracker accounts for the sizes of all actions
+                # even if we only have to perform one download to satisfy
+                # multiple actions with the same hashval.  Since we know
+                # the size of the file we downloaded, but not necessarily
+                # the size of the action responsible for the download,
+                # generate the total size and subtract the size that was
+                # downloaded.  The downloaded size was already accounted for in
+                # the engine's progress tracking.  Adjust the progress tracker
+                # by the difference between what we have and the total we should
+                # have received.
+                bytes = totalsz - filesz
                 self._progtrack.download_add_progress((nactions - 1), bytes)
 
         def subtract_progress(self, size):
