@@ -48,7 +48,7 @@ CATEGORIES_STATUS_COLUMN_INDEX = 0   # Index of Status Column in Categories Tree
 STATUS_COLUMN_INDEX = 2   # Index of Status Column in Application TreeView
 
 PKG_CLIENT_NAME = "packagemanager"
-CHECK_FOR_UPDATES = "/usr/lib/pm-checkforupdates"
+CHECK_FOR_UPDATES = "usr/lib/pm-checkforupdates"
 
 # Location for themable icons
 ICON_LOCATION = "usr/share/package-manager/icons"
@@ -3291,7 +3291,8 @@ class PackageManager:
                         return False
                 gobject.idle_add(self.__show_info_after_catalog_load)
 
-                return_code = subprocess.call([CHECK_FOR_UPDATES,
+                return_code = subprocess.call([os.path.join(self.application_dir, 
+                    CHECK_FOR_UPDATES),
                     self.image_directory])
                 if return_code == enumerations.UPDATES_AVAILABLE:
                         return True
@@ -3423,19 +3424,19 @@ class PackageManager:
                 pubs = [p.prefix for p in self.api_o.get_publishers()]
                 categories = {}
                 sections = {}
-                share_path = "/usr/share/package-manager/data/"
+                share_path = os.path.join(self.application_dir,
+                    "usr/share/package-manager/data")
                 for pub in pubs:
-                        category = imginfo.read(self.application_dir +
-                            share_path + pub)
+                        category = imginfo.read(os.path.join(share_path, pub))
                         if len(category) == 0:
-                                category = imginfo.read(self.application_dir +
-                                    share_path + "opensolaris.org")
+                                category = imginfo.read(os.path.join(share_path,
+                                    "opensolaris.org"))
                         categories[pub] = category
-                        section = sectioninfo.read(self.application_dir +
-                            share_path + pub + ".sections")
+                        section = sectioninfo.read(os.path.join(share_path,
+                            pub + ".sections"))
                         if len(section) == 0:
-                                section = sectioninfo.read(self.application_dir +
-                                    share_path + "opensolaris.org.sections")
+                                section = sectioninfo.read(os.path.join(share_path,
+                                "opensolaris.org.sections"))
                         sections[pub] = section
                 pkg_count = 0
                 pkg_add = 0
@@ -3822,8 +3823,10 @@ class PackageManager:
                 self.in_reload = False
 
         def get_icon_pixbuf_from_glade_dir(self, icon_name):
-                return gui_misc.get_pixbuf_from_path(self.application_dir +
-                    "/usr/share/package-manager/", icon_name)
+                return gui_misc.get_pixbuf_from_path(
+                    os.path.join(self.application_dir, 
+                    "usr/share/package-manager/"),
+                    icon_name)
 
         def update_statusbar(self):
                 '''Function which updates statusbar'''
