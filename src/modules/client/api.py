@@ -98,22 +98,25 @@ class ImageInterface(object):
                 if global_settings.client_name is None:
                         global_settings.client_name = pkg_client_name
 
-                # These variables are private and not part of the API.
-                self.img = image.Image()
-                self.img.find_root(img_path)
-                self.img.load_config()
-                self.progresstracker = progesstracker
-                self.cancel_state_callable = cancel_state_callable
-                self.plan_type = None
-                self.plan_desc = None
-                self.prepared = False
-                self.executed = False
-                self.be_name = None
-
+                self.__img = image.Image()
+                self.__img.find_root(img_path)
+                self.__img.load_config()
+                self.__progresstracker = progesstracker
+                self.__cancel_state_callable = cancel_state_callable
+                self.__plan_type = None
+                self.__plan_desc = None
+                self.__prepared = False
+                self.__executed = False
+                self.__be_name = None
                 self.__can_be_canceled = False
                 self.__canceling = False
-
                 self.__activity_lock = threading.Lock()
+
+        @property
+        def img(self):
+                """Private; public access to this property will be removed at
+                a later date.  Do not use."""
+                return self.__img
 
         @staticmethod
         def check_be_name(be_name):
@@ -141,23 +144,23 @@ class ImageInterface(object):
                 self.__activity_lock.acquire()
                 try:
                         self.__set_can_be_canceled(True)
-                        if self.plan_type is not None:
+                        if self.__plan_type is not None:
                                 raise api_errors.PlanExistsException(
-                                    self.plan_type)
+                                    self.__plan_type)
                         try:
                                 self.log_operation_start("install")
                                 # Verify validity of certificates before
                                 # attempting network operations.
                                 try:
-                                        self.img.check_cert_validity()
+                                        self.__img.check_cert_validity()
                                 except api_errors.ExpiringCertificate, e:
                                         misc.emsg(e)
 
                                 exception_caught = None
                                 if refresh_catalogs:
                                         try:
-                                                self.img.refresh_publishers(
-                                                    progtrack=self.progresstracker)
+                                                self.__img.refresh_publishers(
+                                                    progtrack=self.__progresstracker)
                                         except KeyboardInterrupt:
                                                 raise
                                         except api_errors.InvalidDepotResponseException:
@@ -168,28 +171,28 @@ class ImageInterface(object):
                                                 # it doesn't matter if it fails.
                                                 pass
 
-                                self.img.make_install_plan(pkg_list,
-                                    self.progresstracker,
+                                self.__img.make_install_plan(pkg_list,
+                                    self.__progresstracker,
                                     self.__check_cancelation, noexecute,
                                     filters=filters, verbose=verbose)
 
-                                assert self.img.imageplan
+                                assert self.__img.imageplan
 
                                 if self.__canceling:
                                         raise api_errors.CanceledException()
                                 self.__set_can_be_canceled(False)
 
                                 if not noexecute:
-                                        self.plan_type = self.__INSTALL
+                                        self.__plan_type = self.__INSTALL
 
-                                self.plan_desc = PlanDescription(
-                                    self.img.imageplan)
-                                if self.img.imageplan.nothingtodo() or \
+                                self.__plan_desc = PlanDescription(
+                                    self.__img.imageplan)
+                                if self.__img.imageplan.nothingtodo() or \
                                     noexecute:
                                         self.log_operation_end(
                                             result=history.RESULT_NOTHING_TO_DO)
-                                self.img.imageplan.update_index = update_index
-                                res = not self.img.imageplan.nothingtodo()
+                                self.__img.imageplan.update_index = update_index
+                                res = not self.__img.imageplan.nothingtodo()
                         except api_errors.PlanCreationException, e:
                                 self.__set_history_PlanCreationException(e)
                                 self.__reset_unlock()
@@ -219,32 +222,32 @@ class ImageInterface(object):
                 self.__activity_lock.acquire()
                 try:
                         self.__set_can_be_canceled(True)
-                        if self.plan_type is not None:
+                        if self.__plan_type is not None:
                                 raise api_errors.PlanExistsException(
-                                    self.plan_type)
+                                    self.__plan_type)
                         try:
                                 self.log_operation_start("uninstall")
-                                self.img.make_uninstall_plan(pkg_list,
-                                    recursive_removal, self.progresstracker,
+                                self.__img.make_uninstall_plan(pkg_list,
+                                    recursive_removal, self.__progresstracker,
                                     self.__check_cancelation, noexecute,
                                     verbose=verbose)
 
-                                assert self.img.imageplan
+                                assert self.__img.imageplan
 
                                 if self.__canceling:
                                         raise api_errors.CanceledException()
                                 self.__set_can_be_canceled(False)
 
                                 if not noexecute:
-                                        self.plan_type = self.__UNINSTALL
+                                        self.__plan_type = self.__UNINSTALL
 
-                                self.plan_desc = PlanDescription(
-                                    self.img.imageplan)
+                                self.__plan_desc = PlanDescription(
+                                    self.__img.imageplan)
                                 if noexecute:
                                         self.log_operation_end(
                                             result=history.RESULT_NOTHING_TO_DO)
-                                self.img.imageplan.update_index = update_index
-                                res = not self.img.imageplan.nothingtodo()
+                                self.__img.imageplan.update_index = update_index
+                                res = not self.__img.imageplan.nothingtodo()
                         except api_errors.PlanCreationException, e:
                                 self.__set_history_PlanCreationException(e)
                                 self.__reset_unlock()
@@ -291,26 +294,26 @@ class ImageInterface(object):
                 self.__activity_lock.acquire()
                 try:
                         self.__set_can_be_canceled(True)
-                        if self.plan_type is not None:
+                        if self.__plan_type is not None:
                                 raise api_errors.PlanExistsException(
-                                    self.plan_type)
+                                    self.__plan_type)
                         try:
                                 self.log_operation_start("image-update")
                                 exception_caught = None
                                 self.check_be_name(be_name)
-                                self.be_name = be_name
+                                self.__be_name = be_name
 
                                 # Verify validity of certificates before
                                 # attempting network operations.
                                 try:
-                                        self.img.check_cert_validity()
+                                        self.__img.check_cert_validity()
                                 except api_errors.ExpiringCertificate, e:
                                         misc.emsg(e)
 
                                 if refresh_catalogs:
                                         try:
-                                                self.img.refresh_publishers(
-                                                    progtrack=self.progresstracker)
+                                                self.__img.refresh_publishers(
+                                                    progtrack=self.__progresstracker)
                                         except KeyboardInterrupt:
                                                 raise
                                         except api_errors.InvalidDepotResponseException:
@@ -323,8 +326,8 @@ class ImageInterface(object):
                                 else:
                                         # If refresh wasn't called, the catalogs
                                         # have to be manually loaded.
-                                        self.img.load_catalogs(
-                                            self.progresstracker)
+                                        self.__img.load_catalogs(
+                                            self.__progresstracker)
 
                                 # If we can find SUNWipkg and SUNWcs in the
                                 # target image, then we assume this is a valid
@@ -332,7 +335,7 @@ class ImageInterface(object):
                                 # special case behaviors.
                                 opensolaris_image = True
                                 fmris, notfound, illegals = \
-                                    self.img.installed_fmris_from_args(
+                                    self.__img.installed_fmris_from_args(
                                         ["SUNWipkg", "SUNWcs"])
                                 assert(len(illegals) == 0)
                                 if notfound:
@@ -340,12 +343,12 @@ class ImageInterface(object):
 
                                 if opensolaris_image and not force:
                                         try:
-                                                if not self.img.ipkg_is_up_to_date(
+                                                if not self.__img.ipkg_is_up_to_date(
                                                     actual_cmd,
                                                     self.__check_cancelation,
                                                     noexecute,
                                                     refresh_allowed=refresh_catalogs,
-                                                    progtrack=self.progresstracker):
+                                                    progtrack=self.__progresstracker):
                                                         error = api_errors.IpkgOutOfDateException()
                                                         self.log_operation_end(error=error)
                                                         raise error
@@ -356,16 +359,16 @@ class ImageInterface(object):
 
                                 pkg_list = [
                                     ipkg.get_pkg_stem()
-                                    for ipkg in self.img.gen_installed_pkgs()
+                                    for ipkg in self.__img.gen_installed_pkgs()
                                 ]
 
-                                self.img.make_install_plan(pkg_list,
-                                    self.progresstracker,
+                                self.__img.make_install_plan(pkg_list,
+                                    self.__progresstracker,
                                     self.__check_cancelation,
                                     noexecute, verbose=verbose,
                                     multimatch_ignore=True)
 
-                                assert self.img.imageplan
+                                assert self.__img.imageplan
 
                                 if self.__canceling:
                                         self.__reset_unlock()
@@ -373,17 +376,17 @@ class ImageInterface(object):
                                 self.__set_can_be_canceled(False)
 
                                 if not noexecute:
-                                        self.plan_type = self.__IMAGE_UPDATE
+                                        self.__plan_type = self.__IMAGE_UPDATE
 
-                                self.plan_desc = PlanDescription(
-                                    self.img.imageplan)
+                                self.__plan_desc = PlanDescription(
+                                    self.__img.imageplan)
 
-                                if self.img.imageplan.nothingtodo() or \
+                                if self.__img.imageplan.nothingtodo() or \
                                     noexecute:
                                         self.log_operation_end(
                                             result=history.RESULT_NOTHING_TO_DO)
-                                self.img.imageplan.update_index = update_index
-                                res = not self.img.imageplan.nothingtodo()
+                                self.__img.imageplan.update_index = update_index
+                                res = not self.__img.imageplan.nothingtodo()
                         except api_errors.PlanCreationException, e:
                                 self.__set_history_PlanCreationException(e)
                                 self.__reset_unlock()
@@ -412,7 +415,7 @@ class ImageInterface(object):
         def describe(self):
                 """Returns None if no plan is ready yet, otherwise returns
                 a PlanDescription"""
-                return self.plan_desc
+                return self.__plan_desc
 
         def prepare(self):
                 """Takes care of things which must be done before the plan
@@ -427,30 +430,30 @@ class ImageInterface(object):
 
                 try:
                         try:
-                                if not self.img.imageplan:
+                                if not self.__img.imageplan:
                                         raise api_errors.PlanMissingException()
 
-                                if self.prepared:
+                                if self.__prepared:
                                         raise api_errors.AlreadyPreparedException()
-                                assert self.plan_type == self.__INSTALL or \
-                                    self.plan_type == self.__UNINSTALL or \
-                                    self.plan_type == self.__IMAGE_UPDATE
+                                assert self.__plan_type == self.__INSTALL or \
+                                    self.__plan_type == self.__UNINSTALL or \
+                                    self.__plan_type == self.__IMAGE_UPDATE
                                 try:
-                                        self.img.imageplan.preexecute()
+                                        self.__img.imageplan.preexecute()
                                 except search_errors.ProblematicPermissionsIndexException, e:
-                                        self.img.cleanup_downloads()
+                                        self.__img.cleanup_downloads()
                                         raise api_errors.ProblematicPermissionsIndexException(e)
                                 except:
-                                        self.img.cleanup_downloads()
+                                        self.__img.cleanup_downloads()
                                         raise
 
                                 if self.__canceling:
-                                        self.img.transport.reset()
-                                        self.img.cleanup_downloads()
+                                        self.__img.transport.reset()
+                                        self.__img.cleanup_downloads()
                                         raise api_errors.CanceledException()
-                                self.prepared = True
+                                self.__prepared = True
                         except Exception, e:
-                                if self.img.history.operation_name:
+                                if self.__img.history.operation_name:
                                         # If an operation is in progress, log
                                         # the error and mark its end.
                                         self.log_operation_end(error=e)
@@ -458,7 +461,7 @@ class ImageInterface(object):
                         except:
                                 # Handle exceptions that are not subclasses of
                                 # Exception.
-                                if self.img.history.operation_name:
+                                if self.__img.history.operation_name:
                                         # If an operation is in progress, log
                                         # the error and mark its end.
                                         exc_type, exc_value, exc_traceback = \
@@ -480,28 +483,28 @@ class ImageInterface(object):
                 self.__activity_lock.acquire()
                 self.__set_can_be_canceled(False)
                 try:
-                        if not self.img.imageplan:
+                        if not self.__img.imageplan:
                                 raise api_errors.PlanMissingException()
 
-                        if not self.prepared:
+                        if not self.__prepared:
                                 raise api_errors.PrematureExecutionException()
 
-                        if self.executed:
+                        if self.__executed:
                                 raise api_errors.AlreadyExecutedException()
 
-                        assert self.plan_type == self.__INSTALL or \
-                            self.plan_type == self.__UNINSTALL or \
-                            self.plan_type == self.__IMAGE_UPDATE
+                        assert self.__plan_type == self.__INSTALL or \
+                            self.__plan_type == self.__UNINSTALL or \
+                            self.__plan_type == self.__IMAGE_UPDATE
 
                         try:
-                                be = bootenv.BootEnv(self.img.get_root())
+                                be = bootenv.BootEnv(self.__img.get_root())
                         except RuntimeError:
-                                be = bootenv.BootEnvNull(self.img.get_root())
+                                be = bootenv.BootEnvNull(self.__img.get_root())
 
-                        if self.plan_type is self.__IMAGE_UPDATE:
+                        if self.__plan_type is self.__IMAGE_UPDATE:
                                 try:
-                                        be.init_image_recovery(self.img,
-                                            self.be_name)
+                                        be.init_image_recovery(self.__img,
+                                            self.__be_name)
                                 except Exception, e:
                                         self.log_operation_end(error=e)
                                         raise
@@ -513,59 +516,59 @@ class ImageInterface(object):
                                         self.log_operation_end(error=exc_type)
                                         raise
 
-                                if self.img.is_liveroot():
+                                if self.__img.is_liveroot():
                                         e = api_errors.ImageUpdateOnLiveImageException()
                                         self.log_operation_end(error=e)
                                         raise e
 
                         try:
-                                self.img.imageplan.execute()
+                                self.__img.imageplan.execute()
 
-                                if self.plan_type is self.__IMAGE_UPDATE:
+                                if self.__plan_type is self.__IMAGE_UPDATE:
                                         be.activate_image()
                                 else:
                                         be.activate_install_uninstall()
                                 ret_code = 0
                         except RuntimeError, e:
-                                if self.plan_type is self.__IMAGE_UPDATE:
+                                if self.__plan_type is self.__IMAGE_UPDATE:
                                         be.restore_image()
                                 else:
                                         be.restore_install_uninstall()
                                 # Must be done after bootenv restore.
                                 self.log_operation_end(error=e)
-                                self.img.cleanup_downloads()
+                                self.__img.cleanup_downloads()
                                 raise
                         except search_errors.ProblematicPermissionsIndexException, e:
                                 error = api_errors.ProblematicPermissionsIndexException(e)
                                 self.log_operation_end(error=error)
-                                self.img.cleanup_downloads()
+                                self.__img.cleanup_downloads()
                                 raise error
                         except (search_errors.InconsistentIndexException,
                                 search_errors.PartialIndexingException), e:
                                 error = api_errors.CorruptedIndexException(e)
                                 self.log_operation_end(error=error)
-                                self.img.cleanup_downloads()
+                                self.__img.cleanup_downloads()
                                 raise error
                         except search_errors.MainDictParsingException, e:
                                 error = api_errors.MainDictParsingException(e)
                                 self.log_operation_end(error=error)
-                                self.img.cleanup_downloads()
+                                self.__img.cleanup_downloads()
                                 raise error
                         except actuator.NonzeroExitException, e:
                                 # Won't happen during image-update
                                 be.restore_install_uninstall()
                                 error = api_errors.ActuatorException(e)
-                                self.img.cleanup_downloads()
+                                self.__img.cleanup_downloads()
                                 self.log_operation_end(error=error)
                                 raise error
                         except Exception, e:
-                                if self.plan_type is self.__IMAGE_UPDATE:
+                                if self.__plan_type is self.__IMAGE_UPDATE:
                                         be.restore_image()
                                 else:
                                         be.restore_install_uninstall()
                                 # Must be done after bootenv restore.
                                 self.log_operation_end(error=e)
-                                self.img.cleanup_downloads()
+                                self.__img.cleanup_downloads()
                                 raise
                         except:
                                 # Handle exceptions that are not subclasses of
@@ -573,39 +576,39 @@ class ImageInterface(object):
                                 exc_type, exc_value, exc_traceback = \
                                     sys.exc_info()
 
-                                if self.plan_type is self.__IMAGE_UPDATE:
+                                if self.__plan_type is self.__IMAGE_UPDATE:
                                         be.restore_image()
                                 else:
                                         be.restore_install_uninstall()
                                 # Must be done after bootenv restore.
                                 self.log_operation_end(error=exc_type)
-                                self.img.cleanup_downloads()
+                                self.__img.cleanup_downloads()
                                 raise
 
-                        if self.img.imageplan.state != EXECUTED_OK:
-                                if self.plan_type is self.__IMAGE_UPDATE:
+                        if self.__img.imageplan.state != EXECUTED_OK:
+                                if self.__plan_type is self.__IMAGE_UPDATE:
                                         be.restore_image()
                                 else:
                                         be.restore_install_uninstall()
 
                                 error = api_errors.ImageplanStateException(
-                                    self.img.imageplan.state)
+                                    self.__img.imageplan.state)
                                 # Must be done after bootenv restore.
                                 self.log_operation_end(error=error)
                                 raise error
 
-                        self.img.cleanup_downloads()
-                        self.img.cleanup_cached_content()
+                        self.__img.cleanup_downloads()
+                        self.__img.cleanup_cached_content()
 
                         # If the end of the operation wasn't already logged
                         # by one of the above operations, then log it as
                         # ending now.
-                        if self.img.history.operation_name:
+                        if self.__img.history.operation_name:
                                 self.log_operation_end()
-                        self.executed = True
+                        self.__executed = True
                         try:
                                 if int(os.environ.get("PKG_DUMP_STATS", 0)) > 0:
-                                        self.img.transport.stats.dump()
+                                        self.__img.transport.stats.dump()
                         except ValueError:
                                 # Don't generate stats if an invalid value
                                 # is supplied.
@@ -621,10 +624,10 @@ class ImageInterface(object):
                 self.__activity_lock.acquire()
                 self.__set_can_be_canceled(False)
                 try:
-                        self.img.refresh_publishers(full_refresh=full_refresh,
+                        self.__img.refresh_publishers(full_refresh=full_refresh,
                             immediate=immediate, pubs=pubs,
-                            progtrack=self.progresstracker, validate=validate)
-                        return self.img
+                            progtrack=self.__progresstracker, validate=validate)
+                        return self.__img
                 finally:
                         self.__activity_lock.release()
 
@@ -662,12 +665,12 @@ class ImageInterface(object):
                         if not local:
                                 s = StringIO.StringIO()
                                 hash_val = misc.gunzip_from_stream(
-                                    lic.get_remote_opener(self.img,
+                                    lic.get_remote_opener(self.__img,
                                     mfst.fmri)(), s)
                                 text = s.getvalue()
                                 s.close()
                         else:
-                                text = lic.get_local_opener(self.img,
+                                text = lic.get_local_opener(self.__img,
                                     mfst.fmri)().read()[:-1]
                         license_lst.append(LicenseInfo(text))
                 return license_lst
@@ -698,7 +701,7 @@ class ImageInterface(object):
                         raise api_errors.UnrecognizedOptionsToInfo(bad_opts)
 
                 self.log_operation_start("info")
-                self.img.load_catalogs(self.progresstracker)
+                self.__img.load_catalogs(self.__progresstracker)
 
                 fmris = []
                 notfound = []
@@ -707,7 +710,7 @@ class ImageInterface(object):
 
                 if local:
                         fmris, notfound, illegals = \
-                            self.img.installed_fmris_from_args(fmri_strings)
+                            self.__img.installed_fmris_from_args(fmri_strings)
                         if not fmris and not notfound and not illegals:
                                 self.log_operation_end(
                                     result=history.RESULT_NOTHING_TO_DO)
@@ -716,7 +719,7 @@ class ImageInterface(object):
                         # Verify validity of certificates before attempting
                         # network operations.
                         try:
-                                self.img.check_cert_validity()
+                                self.__img.check_cert_validity()
                         except api_errors.ExpiringCertificate, e:
                                 misc.emsg(e)
                         except api_errors.CertificateError, e:
@@ -727,7 +730,7 @@ class ImageInterface(object):
                         # Image.make_install_plan()!
                         for p in fmri_strings:
                                 try:
-                                        matches = list(self.img.inventory([ p ],
+                                        matches = list(self.__img.inventory([p],
                                             all_known=True, ordered=False))
                                 except api_errors.InventoryException, e:
                                         assert(len(e.notfound) == 1 or \
@@ -790,7 +793,7 @@ class ImageInterface(object):
                                         pref_pub = True
                         state = None
                         if PackageInfo.STATE in info_needed:
-                                if self.img.is_installed(f):
+                                if self.__img.is_installed(f):
                                         state = PackageInfo.INSTALLED
                                 else:
                                         state = PackageInfo.NOT_INSTALLED
@@ -800,8 +803,8 @@ class ImageInterface(object):
                         if (frozenset([PackageInfo.SIZE, PackageInfo.LICENSES,
                             PackageInfo.SUMMARY, PackageInfo.CATEGORIES]) |
                             PackageInfo.ACTION_OPTIONS) & info_needed:
-                                mfst = self.img.get_manifest(f)
-                                excludes = self.img.list_excludes()
+                                mfst = self.__img.get_manifest(f)
+                                excludes = self.__img.list_excludes()
                                 if PackageInfo.SIZE in info_needed:
                                         size = mfst.get_size(excludes=excludes)
                                 if PackageInfo.LICENSES in info_needed:
@@ -875,8 +878,8 @@ class ImageInterface(object):
                 cancelable state."""
                 if self.__can_be_canceled != status:
                         self.__can_be_canceled = status
-                        if self.cancel_state_callable:
-                                self.cancel_state_callable(
+                        if self.__cancel_state_callable:
+                                self.__cancel_state_callable(
                                     self.__can_be_canceled)
 
         def reset(self):
@@ -892,14 +895,16 @@ class ImageInterface(object):
                 """Private method. Provides a way to reset without taking the
                 activity lock. Should only be called by a thread which already
                 holds the activity lock."""
-                self.img.imageplan = None
-                self.plan_desc = None
-                self.plan_type = None
-                self.prepared = False
-                self.executed = False
+
+                self.__img.imageplan = None
+                self.__plan_desc = None
+                self.__plan_type = None
+                self.__prepared = False
+                self.__executed = False
+                self.__be_name = None
                 self.__set_can_be_canceled(False)
                 self.__canceling = False
-                self.progresstracker.reset()
+                self.__progresstracker.reset()
 
         def __check_cancelation(self):
                 """Private method. Provides a callback method for internal
@@ -954,19 +959,19 @@ class ImageInterface(object):
                                 raise api_errors.BooleanQueryException(e)
                         except query_p.ParseError, e:
                                 raise api_errors.ParseError(e)
-                        self.img.update_index_dir()
-                        assert self.img.index_dir
+                        self.__img.update_index_dir()
+                        assert self.__img.index_dir
                         try:
                                 query.set_info(q.num_to_return, q.start_point,
-                                    self.img.index_dir,
-                                    self.img.get_manifest_path,
-                                    self.img.gen_installed_pkg_names,
+                                    self.__img.index_dir,
+                                    self.__img.get_manifest_path,
+                                    self.__img.gen_installed_pkg_names,
                                     q.case_sensitive)
                                 excludes = [variant.Variants(
-                                    {"variant.arch": self.img.get_arch()}
+                                    {"variant.arch": self.__img.get_arch()}
                                     ).allow_action]
-                                res = query.search(self.img.gen_installed_pkgs,
-                                    self.img.get_manifest_path, excludes)
+                                res = query.search(self.__img.gen_installed_pkgs,
+                                    self.__img.get_manifest_path, excludes)
                         except search_errors.InconsistentIndexException, e:
                                 raise api_errors.InconsistentIndexException(e)
                         # i is being inserted to track which query the results
@@ -1029,7 +1034,7 @@ class ImageInterface(object):
                 unsupported = []
 
                 if not servers:
-                        servers = self.img.gen_publishers()
+                        servers = self.__img.gen_publishers()
 
                 for pub in servers:
                         descriptive_name = None
@@ -1037,7 +1042,7 @@ class ImageInterface(object):
                         if isinstance(pub, dict):
                                 origin = pub["origin"]
                                 try:
-                                        pub = self.img.get_publisher(
+                                        pub = self.__img.get_publisher(
                                             origin=origin)
                                 except api_errors.UnknownPublisher:
                                         pub = publisher.RepositoryURI(origin)
@@ -1047,7 +1052,7 @@ class ImageInterface(object):
                                 descriptive_name = pub.prefix
 
                         try:
-                                res = self.img.transport.do_search(pub,
+                                res = self.__img.transport.do_search(pub,
                                     query_str_and_args_lst) 
                         except api_errors.NegativeSearchResult:
                                 continue
@@ -1103,18 +1108,18 @@ class ImageInterface(object):
                 performing the incremental update which is usually used.
                 This is useful for times when the index for the client has
                 been corrupted."""
-                self.img.update_index_dir()
+                self.__img.update_index_dir()
                 self.log_operation_start("rebuild-index")
-                if not os.path.isdir(self.img.index_dir):
-                        self.img.mkdirs()
+                if not os.path.isdir(self.__img.index_dir):
+                        self.__img.mkdirs()
                 try:
                         excludes = [variant.Variants(
-                            {"variant.arch": self.img.get_arch()}).allow_action]
-                        ind = indexer.Indexer(self.img, self.img.get_manifest,
-                            self.img.get_manifest_path,
-                            self.progresstracker, excludes)
+                            {"variant.arch": self.__img.get_arch()}).allow_action]
+                        ind = indexer.Indexer(self.__img, self.__img.get_manifest,
+                            self.__img.get_manifest_path,
+                            self.__progresstracker, excludes)
                         ind.rebuild_index_from_scratch(
-                            self.img.gen_installed_pkgs())
+                            self.__img.gen_installed_pkgs())
                 except search_errors.ProblematicPermissionsIndexException, e:
                         error = api_errors.ProblematicPermissionsIndexException(e)
                         self.log_operation_end(error=error)
@@ -1122,7 +1127,7 @@ class ImageInterface(object):
                 except search_errors.MainDictParsingException, e:
                         error = api_errors.MainDictParsingException(e)
                         self.log_operation_end(error=error)
-                        self.img.cleanup_downloads()
+                        self.__img.cleanup_downloads()
                         raise error
                 else:
                         self.log_operation_end()
@@ -1142,13 +1147,13 @@ class ImageInterface(object):
         def add_publisher(self, pub, refresh_allowed=True):
                 """Add the provided publisher object to the image
                 configuration."""
-                self.img.add_publisher(pub, refresh_allowed=refresh_allowed,
-                    progtrack=self.progresstracker)
+                self.__img.add_publisher(pub, refresh_allowed=refresh_allowed,
+                    progtrack=self.__progresstracker)
 
         def get_preferred_publisher(self):
                 """Returns the preferred publisher object for the image."""
                 return self.get_publisher(
-                    prefix=self.img.get_preferred_publisher())
+                    prefix=self.__img.get_preferred_publisher())
 
         def get_publisher(self, prefix=None, alias=None, duplicate=False):
                 """Retrieves a publisher object matching the provided prefix
@@ -1158,7 +1163,7 @@ class ImageInterface(object):
                 a copy of the publisher object should be returned instead
                 of the original.
                 """
-                pub = self.img.get_publisher(prefix=prefix, alias=alias)
+                pub = self.__img.get_publisher(prefix=prefix, alias=alias)
                 if duplicate:
                         # Never return the original so that changes to the
                         # retrieved object are not reflected until
@@ -1179,12 +1184,12 @@ class ImageInterface(object):
                         # are not reflected until update_publisher is called.
                         pubs = [
                             copy.copy(p)
-                            for p in self.img.get_publishers().values()
+                            for p in self.__img.get_publishers().values()
                         ]
                 else:
-                        pubs = self.img.get_publishers().values()
+                        pubs = self.__img.get_publishers().values()
                 return misc.get_sorted_publishers(pubs,
-                    preferred=self.img.get_preferred_publisher())
+                    preferred=self.__img.get_preferred_publisher())
 
         def get_publisher_last_update_time(self, prefix=None, alias=None):
                 """Returns a datetime object representing the last time the
@@ -1196,7 +1201,7 @@ class ImageInterface(object):
                 try:
                         self.__set_can_be_canceled(True)
                         try:
-                                dt = self.img.get_publisher_last_update_time(
+                                dt = self.__img.get_publisher_last_update_time(
                                     prefix)
                         except:
                                 self.__reset_unlock()
@@ -1208,17 +1213,17 @@ class ImageInterface(object):
         def has_publisher(self, prefix=None, alias=None):
                 """Retrieves a publisher object matching the provided prefix
                 (name) or alias."""
-                return self.img.has_publisher(prefix=prefix, alias=alias)
+                return self.__img.has_publisher(prefix=prefix, alias=alias)
 
         def remove_publisher(self, prefix=None, alias=None):
                 """Removes a publisher object matching the provided prefix
                 (name) or alias."""
-                self.img.remove_publisher(prefix=prefix, alias=alias,
-                    progtrack=self.progresstracker)
+                self.__img.remove_publisher(prefix=prefix, alias=alias,
+                    progtrack=self.__progresstracker)
 
         def set_preferred_publisher(self, prefix=None, alias=None):
                 """Sets the preferred publisher for the image."""
-                self.img.set_preferred_publisher(prefix=prefix, alias=alias)
+                self.__img.set_preferred_publisher(prefix=prefix, alias=alias)
 
         def update_publisher(self, pub, refresh_allowed=True):
                 """Replaces an existing publisher object with the provided one
@@ -1233,7 +1238,7 @@ class ImageInterface(object):
                 self.log_operation_start("update-publisher")
 
                 if pub.disabled and \
-                    pub.prefix == self.img.get_preferred_publisher():
+                    pub.prefix == self.__img.get_preferred_publisher():
                         raise api_errors.SetPreferredPublisherDisabled(
                             pub.prefix)
 
@@ -1272,7 +1277,7 @@ class ImageInterface(object):
                 updated = False
                 disable = False
                 orig_pub = None
-                publishers = self.img.get_publishers()
+                publishers = self.__img.get_publishers()
                 for key, old in publishers.iteritems():
                         if pub._source_object_id == id(old):
                                 if need_refresh(old, pub):
@@ -1318,11 +1323,11 @@ class ImageInterface(object):
                                 # in the event that a publisher is disabled; in
                                 # any other case (the origin changing, etc.),
                                 # refresh() will do the right thing.
-                                self.img.remove_publisher_metadata(pub)
+                                self.__img.remove_publisher_metadata(pub)
 
                                 # Now reload the catalogs so that in-memory and
                                 # on-disk state will reflect the removal.
-                                self.img.load_catalogs(self.progresstracker,
+                                self.__img.load_catalogs(self.__progresstracker,
                                     force=True)
                         elif not pub.disabled and not refresh_catalog:
                                 refresh_catalog = pub.needs_refresh
@@ -1332,7 +1337,8 @@ class ImageInterface(object):
                                         # One of the publisher's repository
                                         # origins may have changed, so the
                                         # publisher needs to be revalidated.
-                                        self.img.transport.valid_publisher_test(pub)
+                                        self.__img.transport.valid_publisher_test(
+                                            pub)
 
                                         # Because the more strict test above
                                         # was performed, there is no point in
@@ -1369,7 +1375,7 @@ class ImageInterface(object):
                         raise
 
                 # Successful; so save configuration.
-                self.img.save_config()
+                self.__img.save_config()
                 self.log_operation_end()
                 return
 
@@ -1383,17 +1389,17 @@ class ImageInterface(object):
                 be based on the class of 'error' and 'error' will be recorded
                 for the current operation.  If 'result' and 'error' is not
                 provided, success is assumed."""
-                self.img.history.log_operation_end(error=error, result=result)
+                self.__img.history.log_operation_end(error=error, result=result)
 
         def log_operation_error(self, error):
                 """Adds an error to the list of errors to be recorded in image
                 history for the current opreation."""
-                self.img.history.log_operation_error(error)
+                self.__img.history.log_operation_error(error)
 
         def log_operation_start(self, name):
                 """Marks the start of an operation to be recorded in image
                 history."""
-                self.img.history.log_operation_start(name)
+                self.__img.history.log_operation_start(name)
 
         def parse_p5i(self, fileobj=None, location=None):
                 """Reads the pkg(5) publisher json formatted data at 'location'
@@ -1523,7 +1529,7 @@ class ImageInterface(object):
                         plist = []
                         for p in pubs:
                                 if not isinstance(p, publisher.Publisher):
-                                        plist.append(self.img.get_publisher(
+                                        plist.append(self.__img.get_publisher(
                                             prefix=p, alias=p))
                                 else:
                                         plist.append(p)
