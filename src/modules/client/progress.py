@@ -50,8 +50,11 @@ class ProgressTracker(object):
             with tracking the progress of long-running operations: it is
             NOT a general purpose output mechanism nor an error collector.
 
-            Subclasses must implement all of the *_output_* methods.
-        """
+            Subclasses of ProgressTracker must implement all of the
+            *_output_* methods.
+
+            External consumers should base their subclasses on the
+            NullProgressTracker class. """
 
         def __init__(self):
                 self.reset()
@@ -314,7 +317,7 @@ class ProgressTrackerException(Exception):
 
 class QuietProgressTracker(ProgressTracker):
         """ This progress tracker outputs nothing, but is semantically
-            intended to be "quiet"  See also NullProgressTracker below """
+            intended to be "quiet"  See also NullProgressTracker below. """
 
         def __init__(self):
                 ProgressTracker.__init__(self)
@@ -375,10 +378,12 @@ class NullProgressTracker(QuietProgressTracker):
         """ This ProgressTracker is a subclass of QuietProgressTracker
             because that's convenient for now.  It is semantically intended to
             be a no-op progress tracker, and is useful for short-running
-            operations which need not display progress of any kind. """
+            operations which need not display progress of any kind.
 
-        def __init__(self):
-                QuietProgressTracker.__init__(self)
+            This subclass should be used by external consumers wanting to create
+            their own ProgressTracker class as any new output methods added to
+            the ProgressTracker class will also be handled here, insulating them
+            from additions to the ProgressTracker class. """
 
 
 class CommandLineProgressTracker(ProgressTracker):
