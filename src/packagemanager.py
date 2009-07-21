@@ -28,6 +28,8 @@ MAX_INFO_CACHE_LIMIT = 100                # Max number of package descriptions t
 NOTEBOOK_PACKAGE_LIST_PAGE = 0            # Main Package List page index
 NOTEBOOK_START_PAGE = 1                   # Main View Start page index
 INFO_NOTEBOOK_LICENSE_PAGE = 3            # License Tab index
+PUBLISHER_ADD = 0                         # Index for "Add..." string
+PUBLISHER_ALL = 1                         # Index for "All Sources" string
 SHOW_INFO_DELAY = 600       # Delay before showing selected pacakge information
 SHOW_LICENSE_DELAY = 600    # Delay before showing license information
 SEARCH_STR_FORMAT = "<%s>"
@@ -258,6 +260,9 @@ class PackageManager:
                     gui_misc.get_icon(self.icon_theme, 'filter_selected'),
                     _('Selected Packages'))
                     ]
+                self.publisher_options = { 
+                    PUBLISHER_ADD : _("Add..."),
+                    PUBLISHER_ALL : _("All Sources (Search Only)")}
                 self.last_visible_publisher = None
                 self.last_visible_publisher_uptodate = False
                 self.publisher_changed = True
@@ -2491,7 +2496,8 @@ class PackageManager:
                 model = self.w_repository_combobox.get_model()
                 for pub in model:
                         pub_name = pub[1]
-                        if pub_name and pub_name != _("Add..."):
+                        if (pub_name and 
+                            pub_name not in self.publisher_options.values()):
                                 Thread(target = self.cache_o.remove_datamodel,
                                     args = [pub[1]]).start()
 
@@ -2672,12 +2678,13 @@ class PackageManager:
                         i = i + 1
                 self.repo_combobox_all_pubs_index = i
                 repositories_list.append([self.repo_combobox_all_pubs_index, 
-                    _("All Sources (Search Only)"), ])
+                    self.publisher_options[PUBLISHER_ALL], ])
                 i = i + 1
                 repositories_list.append([-1, "", ])
                 i = i + 1
                 self.repo_combobox_add_index = i
-                repositories_list.append([-1, _("Add..."), ])
+                repositories_list.append([-1,
+                    self.publisher_options[PUBLISHER_ADD], ])
                 pkgs_to_remove = []
                 for repo_name in selected_repos:
                         if repo_name not in enabled_repos:
