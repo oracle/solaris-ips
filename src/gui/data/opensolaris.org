@@ -121,6 +121,9 @@ category = Printing
 [SUNWaac]
 category = Ports
 
+[SUNWaalib]
+category = Libraries (System)
+
 [SUNWacc]
 category = Administration and Configuration
 
@@ -253,6 +256,9 @@ category = Storage
 [SUNWareca]
 category = System Utilities
 
+[SUNWarn]
+category = Networking
+
 [SUNWastdev]
 category = Software Management
 
@@ -304,6 +310,9 @@ category = Administration and Configuration
 [SUNWautoef]
 category = Text Tools
 
+[SUNWautogen]
+category = Other Languages
+
 [SUNWav1394]
 category = Ports
 
@@ -333,6 +342,9 @@ category = Core
 
 [SUNWbeadm]
 category = Core
+
+[SUNWbeanshell]
+category = Java
 
 [SUNWbfe]
 category = Networking
@@ -369,6 +381,9 @@ category = Core
 
 [SUNWbtool]
 category = Core
+
+[SUNWbvi]
+category = Editors
 
 [SUNWbwm-ng]
 category = System Utilities
@@ -465,6 +480,9 @@ category = Services
 
 [SUNWcodeina]
 category = Sound and Video
+
+[SUNWcommons-collections]
+category = Java
 
 [SUNWcompiz]
 category = Window Managers
@@ -1663,6 +1681,9 @@ category = Accessories
 [SUNWgui-install]
 category = Administration and Configuration
 
+[SUNWguile]
+category = Other Languages
+
 [SUNWgvim]
 category = Editors
 
@@ -2470,6 +2491,9 @@ category = Libraries
 [SUNWlibopenusb]
 category = Libraries (System)
 
+[SUNWlibosip2]
+category = Libraries (System)
+
 [SUNWlibpcap]
 category = Libraries (System)
 
@@ -3016,6 +3040,9 @@ category = Core
 [SUNWpilot-link]
 category = System Utilities
 
+[SUNWpipe-viewer]
+category = System Utilities
+
 [SUNWpixman]
 category = Libraries (System)
 
@@ -3192,6 +3219,9 @@ category = System Utilities
 
 [SUNWpycups]
 category = Printing
+
+[SUNWpylint]
+category = Python
 
 [SUNWpysqlite]
 category = Databases
@@ -3396,6 +3426,9 @@ category = Networking
 
 [SUNWruxwsvr]
 category = X11 (System)
+
+[SUNWrwd]
+category = Networking
 
 [SUNWrwn]
 category = Networking

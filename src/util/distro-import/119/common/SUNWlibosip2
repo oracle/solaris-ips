@@ -1,0 +1,5 @@
+package SUNWlibosip2
+classification "System/Libraries"
+import SUNWlibosip2
+version 3.3.0
+end package

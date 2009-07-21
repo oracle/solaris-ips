@@ -1,0 +1,12 @@
+package SUNWfcprt
+classification "System/Hardware"
+import SUNWfcprt
+import SUNWfcprtr
+depend SUNWcfpl
+#
+# network/fcoe_config was renamed in snv_118.  In order to work-around
+# 6859248, deliver a replacement service method which exits with an
+# equivalent of SMF_EXIT_OK.
+#
+add link path=lib/svc/method/fcoeconfig target=../../../usr/bin/true
+end package
