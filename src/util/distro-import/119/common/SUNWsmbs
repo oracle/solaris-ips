@@ -1,0 +1,7 @@
+package SUNWsmbs
+classification "System/File System"
+import SUNWsmbsu
+import SUNWsmbsr
+import SUNWsmbskr
+add driver name=smbsrv perms="* 0640 root sys"
+end package
