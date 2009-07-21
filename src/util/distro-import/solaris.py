@@ -135,7 +135,8 @@ class package(object):
                             get_branch(self.name))
                 if not self.desc:
                         try:
-                                self.desc = p.pkginfo["DESC"]
+                                self.desc = zap_strings(p.pkginfo["DESC"],
+                                    summary_detritus)
                         except KeyError:
                                 self.desc = None
                 if not self.summary:
