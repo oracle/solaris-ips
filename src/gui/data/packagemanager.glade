@@ -194,6 +194,16 @@
                       </widget>
                     </child>
                     <child>
+                      <widget class="GtkMenuItem" id="gotolist">
+                        <property name="visible">True</property>
+                        <property name="tooltip" translatable="yes">Go to package list</property>
+                        <property name="label" translatable="yes">Go to package _list</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="on_goto_list_activate"/>
+                        <accelerator key="L" modifiers="GDK_CONTROL_MASK" signal="activate"/>
+                      </widget>
+                    </child>
+                    <child>
                       <widget class="GtkMenuItem" id="clear">
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>

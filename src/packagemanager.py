@@ -460,6 +460,7 @@ class PackageManager:
                                 "on_edit_copy_activate":self.__on_copy,
                                 "on_edit_cut_activate":self.__on_cut,
                                 "on_edit_search_activate":self.__on_edit_search_clicked,
+                                "on_goto_list_activate":self.__on_goto_list_clicked,
                                 "on_clear_search_activate":self.__on_clear_search,
                                 "on_clear_search_clicked":self.__on_clear_search,
                                 "on_do_search_clicked":self.__do_search,
@@ -1887,6 +1888,10 @@ class PackageManager:
         def __on_cut(self, widget):
                 self.w_searchentry.cut_clipboard()
                 self.w_paste_menuitem.set_sensitive(True)
+
+        def __on_goto_list_clicked(self, widget):
+                self.__set_main_view_package_list()
+                self.w_application_treeview.grab_focus()
 
         def __on_edit_search_clicked(self, widget):
                 self.w_searchentry.grab_focus()
