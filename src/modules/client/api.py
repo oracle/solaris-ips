@@ -98,6 +98,9 @@ class ImageInterface(object):
                 if global_settings.client_name is None:
                         global_settings.client_name = pkg_client_name
 
+                # Store this for reset().
+                self.__img_path = img_path
+
                 self.__img = image.Image()
                 self.__img.find_root(img_path)
                 self.__img.load_config()
@@ -896,7 +899,12 @@ class ImageInterface(object):
                 activity lock. Should only be called by a thread which already
                 holds the activity lock."""
 
-                self.__img.imageplan = None
+                # Recreate the image object using the path the api
+                # object was created with instead of the current path.
+                self.__img = image.Image()
+                self.__img.find_root(self.__img_path)
+                self.__img.load_config()
+
                 self.__plan_desc = None
                 self.__plan_type = None
                 self.__prepared = False
