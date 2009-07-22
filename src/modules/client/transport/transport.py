@@ -370,6 +370,7 @@ class Transport(object):
                 filelist = mfile.keys()
                 pub = mfile.get_publisher()
                 progtrack = mfile.get_progtrack()
+                header = self.__build_header(uuid=self.__get_uuid(pub))
 
                 # download_dir is temporary download path.  Completed_dir
                 # is the cache where valid content lives.
@@ -411,7 +412,8 @@ class Transport(object):
                         # that occurred during the transport operation.
                         # An exception handler here isn't necessary
                         # unless we want to supress a permanant failure.
-                        errlist = d.get_files(filelist, download_dir, progtrack)
+                        errlist = d.get_files(filelist, download_dir,
+                            progtrack, header)
 
                         for e in errlist:
                                 req = getattr(e, "request", None)

@@ -55,7 +55,7 @@ class TransportRepo(object):
 
                 raise NotImplementedError
 
-        def get_files(self, filelist, dest, progtrack):
+        def get_files(self, filelist, dest, progtrack, header=None):
                 """Get multiple files from the repo at once.
                 The files are named by hash and supplied in filelist.
                 If dest is specified, download to the destination
@@ -94,9 +94,10 @@ class HTTPRepo(TransportRepo):
                 self._repouri = repouri
                 self._engine = engine
 
-        def _add_file_url(self, url, filepath=None, progtrack=None):
+        def _add_file_url(self, url, filepath=None, progtrack=None,
+            header=None):
                 self._engine.add_url(url, filepath=filepath,
-                    progtrack=progtrack, repourl=self._url)
+                    progtrack=progtrack, repourl=self._url, header=header)
 
         def _fetch_url(self, url, header=None, compress=False):
                 return self._engine.get_url(url, header, repourl=self._url,
@@ -173,7 +174,7 @@ class HTTPRepo(TransportRepo):
 
                 return self._fetch_url(requesturl, header, compress=True)
 
-        def get_files(self, filelist, dest, progtrack):
+        def get_files(self, filelist, dest, progtrack, header=None):
                 """Get multiple files from the repo at once.
                 The files are named by hash and supplied in filelist.
                 If dest is specified, download to the destination
@@ -192,7 +193,7 @@ class HTTPRepo(TransportRepo):
                         urllist.append(url)
                         fn = os.path.join(dest, f)
                         self._add_file_url(url, filepath=fn,
-                            progtrack=progtrack)
+                            progtrack=progtrack, header=header)
 
                 while self._engine.pending:
                         self._engine.run()
@@ -262,10 +263,12 @@ class HTTPSRepo(HTTPRepo):
                 HTTPRepo.__init__(self, repostats, repouri, engine)
 
         # override the download functions to use ssl cert/key
-        def _add_file_url(self, url, filepath=None, progtrack=None):
+        def _add_file_url(self, url, filepath=None, progtrack=None,
+            header=None):
                 self._engine.add_url(url, filepath=filepath,
                     progtrack=progtrack, sslcert=self._repouri.ssl_cert,
-                    sslkey=self._repouri.ssl_key, repourl=self._url)
+                    sslkey=self._repouri.ssl_key, repourl=self._url,
+                    header=header)
 
         def _fetch_url(self, url, header=None, compress=False):
                 return self._engine.get_url(url, header=header,
