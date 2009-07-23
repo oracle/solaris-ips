@@ -37,6 +37,7 @@ import shutil
 import sys
 import tempfile
 import urllib
+import urlparse
 
 # Set the path so that modules above can be found
 path_to_parent = os.path.join(os.path.dirname(__file__), "..")
@@ -176,12 +177,14 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
                 fobj.seek(0)
                 (fd1, path1) = tempfile.mkstemp(dir=self.get_test_prefix())
                 os.write(fd1, fobj.read())
+                os.close(fd1)
                 validate_results(p5i.parse(location=path1))
 
                 # Verify that parse returns the expected object and information
                 # when provided a file URI.
                 location = os.path.abspath(path1)
-                location = urllib.pathname2url(location)
+                location = urlparse.urlunparse(("file", "",
+                    urllib.pathname2url(location), "", "", ""))
                 validate_results(p5i.parse(location=location))
                 fobj.close()
                 fobj = None
@@ -199,7 +202,8 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
                 # p5i information.
                 lcpath = os.path.join(self.get_test_prefix(), "libc.so.1")
                 location = os.path.abspath(lcpath)
-                location = urllib.pathname2url(location)
+                location = urlparse.urlunparse(("file", "",
+                    urllib.pathname2url(location), "", "", ""))
 
                 # First, test as a file:// URI.
                 self.assertRaises(api_errors.InvalidP5IFile, p5i.parse,

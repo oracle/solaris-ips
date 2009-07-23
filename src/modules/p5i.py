@@ -32,6 +32,7 @@ import pkg.fmri as fmri
 import simplejson as json
 import urllib
 import urllib2
+import urlparse
 
 CURRENT_VERSION = 1
 MIME_TYPE = "application/vnd.pkg5.info"
@@ -62,7 +63,8 @@ def parse(fileobj=None, location=None):
                 if location.find("://") == -1:
                         # Convert the file path to a URI.
                         location = os.path.abspath(location)
-                        location = "file://%s" % urllib.pathname2url(location)
+                        location = urlparse.urlunparse(("file", "",
+                            urllib.pathname2url(location), "", "", ""))
 
                 try:
                         fileobj = urllib2.urlopen(location)

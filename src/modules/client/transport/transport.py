@@ -385,23 +385,25 @@ class Transport(object):
                 # the directories.
                 self._makedirs(download_dir)
 
+                # Call setup if the transport isn't configured yet.
+                if not self.__engine:
+                        self.__setup()
+
                 # Call statvfs to find the blocksize of download_dir's
                 # filesystem.
                 try:
                         destvfs = os.statvfs(download_dir)
+                        # set the file buffer size to the blocksize of our filesystem
+                        self.__engine.set_file_bufsz(destvfs[statvfs.F_BSIZE])
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES:
                                 raise apx.PermissionsException(e.filename)
                         else:
                                 raise tx.TransportOperationError(
                                     "Unable to stat VFS: %s" % e)
-
-                # Call setup if the transport isn't configured yet.
-                if not self.__engine:
-                        self.__setup()
-
-                # set the file buffer size to the blocksize of our filesystem
-                self.__engine.set_file_bufsz(destvfs[statvfs.F_BSIZE])
+                except AttributeError, e:
+                        # os.statvfs is not available on Windows
+                        pass
 
                 for d in self.__gen_repos(pub, retry_count):
 

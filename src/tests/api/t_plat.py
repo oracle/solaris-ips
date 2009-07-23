@@ -41,6 +41,7 @@ import pkg5unittest
 
 class TestPlat(pkg5unittest.Pkg5TestCase):
         def setUp(self):
+                self.cwd = os.getcwd()
                 pass
                 
         def testbasic(self):
@@ -125,6 +126,7 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
                     os_windows.trashname)))
 
                 # cleanup
+                os.chdir(self.cwd)
                 shutil.rmtree(img1.get_root())
                 shutil.rmtree(img2.get_root())
 
@@ -171,6 +173,7 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
                     os_windows.trashname)))
 
                 # cleanup
+                os.chdir(self.cwd)
                 shutil.rmtree(img1.get_root())
                 shutil.rmtree(img2.get_root())
             

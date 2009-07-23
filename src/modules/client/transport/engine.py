@@ -34,7 +34,8 @@ import urlparse
 # Need to ignore SIGPIPE if using pycurl in NOSIGNAL mode.
 try:
         import signal
-        signal.signal(signal.SIGPIPE, signal.SIG_IGN)
+        if hasattr(signal, "SIGPIPE"):
+                signal.signal(signal.SIGPIPE, signal.SIG_IGN)
 except ImportError:
         pass
 

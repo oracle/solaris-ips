@@ -1,0 +1,25 @@
+--- setup.py.old	2009-07-13 11:36:43.375000000 -0500
++++ setup.py	2009-07-13 11:53:28.000000000 -0500
+@@ -64,18 +64,18 @@
+     # their cURL source installation.  The path set here is just an example
+     # and thus unlikely to match your installation.
+     CURL_DIR = r"c:\src\build\pycurl\curl-7.16.2.1"
++    if os.environ.has_key("CURL_DIR"):
++        CURL_DIR = os.environ["CURL_DIR"]
+     CURL_DIR = scan_argv("--curl-dir=", CURL_DIR)
++    
+     print "Using curl directory:", CURL_DIR
+     assert os.path.isdir(CURL_DIR), "please check CURL_DIR in setup.py"
+     include_dirs.append(os.path.join(CURL_DIR, "include"))
+-    extra_objects.append(os.path.join(CURL_DIR, "lib", "libcurl.lib"))
+-    extra_link_args.extend(["gdi32.lib", "wldap32.lib", "winmm.lib", "ws2_32.lib",])
++    extra_link_args.extend(["-lcurl", "-lgdi32", "-lwldap32", "-lwinmm", "-lws2_32",])
+     add_libdirs("LIB", ";")
+     if string.find(sys.version, "MSC") >= 0:
+         extra_compile_args.append("-O2")
+-        extra_compile_args.append("-GF")        # enable read-only string pooling
+         extra_compile_args.append("-WX")        # treat warnings as errors
+-        extra_link_args.append("/opt:nowin98")  # use small section alignment
+ else:
+     # Find out the rest the hard way
+     OPENSSL_DIR = scan_argv("--openssl-dir=", "")

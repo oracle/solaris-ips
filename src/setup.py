@@ -475,7 +475,7 @@ def hash_sw(swname, swarc, swhash):
 
         print "checksumming %s" % swname
         hash = sha.new()
-        f = open(swarc, 'r')
+        f = open(swarc, "rb")
         while True:
                 data = f.read(65536)
                 if data == "":
@@ -504,7 +504,7 @@ def install_cacerts():
                         continue
 
                 # Call openssl to create hash symlink
-                cmd = ["/usr/bin/openssl", "x509", "-noout", "-hash", "-in",
+                cmd = ["openssl", "x509", "-noout", "-hash", "-in",
                     srcname]
 
                 p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
@@ -517,7 +517,10 @@ def install_cacerts():
                 hashpath = os.path.join(findir, hashval)
                 if os.path.exists(hashpath):
                         os.unlink(hashpath)
-                os.symlink(f, hashpath)
+                if hasattr(os, "symlink"):
+                        os.symlink(f, hashpath)
+                else:
+                        file_util.copy_file(srcname, hashpath)
 
 def install_sw(swname, swver, swarc, swdir, swurl, swidir, swhash):
         swarc = os.path.join(extern_dir, swarc)
@@ -560,7 +563,9 @@ def install_sw(swname, swver, swarc, swdir, swurl, swidir, swhash):
                         patchpath = os.path.join(os.path.pardir,
                             os.path.pardir, patchdir, p)
                         print "Applying %s to %s" % (p, swname)
-                        args = ['patch', '-d', swdir, '-i', patchpath, '-p0']
+                        args = ["patch", "-d", swdir, "-i", patchpath, "-p0"]
+                        if osname == "windows":
+                                args.append("--binary")
                         ret = subprocess.Popen(args).wait()
                         if ret != 0:
                                 print >> sys.stderr, \
