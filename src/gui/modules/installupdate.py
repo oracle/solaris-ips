@@ -256,7 +256,9 @@ class InstallUpdate(progress.GuiProgressTracker):
                                 return
                         gobject.idle_add(self.parent.update_package_list, None)
 
-        def __on_ua_help_button_clicked(self, widget):
+
+        @staticmethod
+        def __on_ua_help_button_clicked(widget):
                 gui_misc.display_help("update_all")
                 
         def __on_ua_cancel_button_clicked(self, widget):
@@ -490,6 +492,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                         return
                 except api_errors.CanceledException:
                         gobject.idle_add(self.w_dialog.hide)
+                        self.stop_bouncing_progress()
                         return
                 except api_errors.BENamingNotSupported:
                         msg = _("Specifying BE Name not supported.\n")
