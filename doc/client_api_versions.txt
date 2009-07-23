@@ -1,3 +1,13 @@
+Version 17:
+Compatible with clients using versions 15-16.
+Changes:
+    The following properties were added to pkg.client.api
+    ImageInterface class:
+
+        root
+            The absolute pathname of the filesystem root of the image.
+            This property is read-only.
+
 Version 16:
 Compatible with clients using version 15.
 Changes:

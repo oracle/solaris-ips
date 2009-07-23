@@ -268,6 +268,18 @@ class TestPkgApi(testutils.SingleDepotTestCase):
 
                 self.pkg("verify")
 
+        def test_properties(self):
+                """Verify that properties of the ImageInterface api object are
+                accessible and return expected values."""
+
+                durl = self.dc.get_depot_url()
+                self.image_create(durl)
+
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+
+                self.assertEqual(api_obj.root, self.img_path)
 
         def test_publisher_apis(self):
                 """Verify that the publisher api methods work as expected.

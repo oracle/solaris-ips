@@ -50,7 +50,7 @@ import pkg.variant as variant
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 16
+CURRENT_API_VERSION = 17
 CURRENT_P5I_VERSION = 1
 
 class ImageInterface(object):
@@ -86,7 +86,7 @@ class ImageInterface(object):
                 canceled changes. It can raise VersionException and
                 ImageNotFoundException."""
 
-                compatible_versions = set([15, 16])
+                compatible_versions = set([15, 16, 17])
 
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
@@ -120,6 +120,14 @@ class ImageInterface(object):
                 """Private; public access to this property will be removed at
                 a later date.  Do not use."""
                 return self.__img
+
+        @property
+        def root(self):
+                """The absolute pathname of the filesystem root of the image.
+                This property is read-only."""
+                if not self.__img:
+                        return None
+                return self.__img.root
 
         @staticmethod
         def check_be_name(be_name):
