@@ -210,5 +210,6 @@ def write(fileobj, pubs, pkg_names=None):
         except KeyError:
                 pass
 
-        return json.dump(dump_struct, fileobj, ensure_ascii=False,
+        json.dump(dump_struct, fileobj, ensure_ascii=False,
             allow_nan=False, indent=2, sort_keys=True)
+        fileobj.write("\n")

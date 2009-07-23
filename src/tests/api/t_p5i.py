@@ -78,7 +78,8 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
     }
   ], 
   "version": 1
-}"""
+}
+"""
 
         misc_files = [ "libc.so.1" ]
 
@@ -133,6 +134,10 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
                 # Dump the p5i data.
                 fobj = cStringIO.StringIO()
                 p5i.write(fobj, [pub], pkg_names=pnames)
+
+                # Verify that the p5i data ends with a terminating newline.
+                fobj.seek(-1, 2)
+                self.assertEqual(fobj.read(), "\n")
 
                 # Verify that output matches expected output.
                 fobj.seek(0)
