@@ -3799,7 +3799,7 @@ class PackageManager:
 
         def __get_cache_obj(self, icon_theme, application_dir, api_o):
                 cache_o = cache.CacheListStores(icon_theme, application_dir,
-                    api_o, self.update_available_icon, self.installed_icon,
+                    api_o, self.lang, self.update_available_icon, self.installed_icon,
                     self.not_installed_icon)
                 return cache_o
 

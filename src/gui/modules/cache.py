@@ -40,13 +40,14 @@ try:
 except ImportError:
         nobe = True
 
-CACHE_VERSION = 8
+CACHE_VERSION = 9
 INDEX_HASH_LENGTH = 41
 
 class CacheListStores:
-        def __init__(self, icon_theme, application_dir, api_o, update_available_icon,
-            installed_icon, not_installed_icon):
+        def __init__(self, icon_theme, application_dir, api_o, lang,
+            update_available_icon, installed_icon, not_installed_icon):
                 self.api_o = api_o
+                self.lang = lang
                 self.update_available_icon = update_available_icon
                 self.installed_icon = installed_icon
                 self.not_installed_icon = not_installed_icon
@@ -59,6 +60,8 @@ class CacheListStores:
                         info = self.__load_cache_info(publisher)
                         if info:
                                 if info.get("version") != CACHE_VERSION:
+                                        return False
+                                if info.get("lang") != self.lang:
                                         return False
                                 image_last_modified = \
                                     self.__get_publisher_timestamp(publisher)
@@ -108,6 +111,7 @@ class CacheListStores:
                 dump_info["publisher"] = publisher
                 dump_info["index_hash"] = None
                 dump_info["be_name"] = None
+                dump_info["lang"] = None
 
                 try:
                         gui_misc.dump_cache_file(
@@ -129,6 +133,7 @@ class CacheListStores:
                 dump_info["publisher"] = publisher
                 dump_info["index_hash"] = self.get_index_timestamp()
                 dump_info["be_name"] = self.__get_active_be_name()
+                dump_info["lang"] = self.lang
 
                 try:
                         gui_misc.dump_cache_file(
