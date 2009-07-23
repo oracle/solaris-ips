@@ -778,13 +778,23 @@ class SelectedRepositoryRemoval(PublisherError):
                     "publisher.")
 
 
-class SetPreferredPublisherDisabled(PublisherError):
+class SetDisabledPublisherPreferred(PublisherError):
         """Used to indicate an attempt to set a disabled publisher as the
         preferred publisher was made."""
 
         def __str__(self):
                 return _("Publisher '%s' is disabled and cannot be set as the "
                     "preferred publisher.") % self.data
+
+
+class SetPreferredPublisherDisabled(PublisherError):
+        """Used to indicate that an attempt was made to set the preferred
+        publisher as disabled."""
+
+        def __str__(self):
+                return _("The preferred publisher may not be disabled."
+                    "  Another publisher must be set as the preferred "
+                    "publisher before this publisher can be disabled.")
 
 
 class UnknownLegalURI(PublisherError):

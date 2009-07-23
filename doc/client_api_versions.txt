@@ -1,3 +1,12 @@
+Version 18:
+Compatible with clients using version 15-17.
+Changes:
+   The following exceptions were added to pkg.client.api_errors:
+    
+    class SetDisabledPublisherPreferred(PublisherError):
+        """Used to indicate an attempt to set a disabled publisher as
+        the preferred publisher was made."""
+
 Version 17:
 Compatible with clients using versions 15-16.
 Changes:

@@ -508,7 +508,7 @@ class Image(object):
                                 raise
 
                 if pub.disabled:
-                        e = api_errors.SetPreferredPublisherDisabled(pub)
+                        e = api_errors.SetDisabledPublisherPreferred(pub)
                         self.history.log_operation_end(error=e)
                         raise e
                 self.cfg_cache.preferred_publisher = pub.prefix
