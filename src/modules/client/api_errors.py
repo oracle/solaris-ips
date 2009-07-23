@@ -945,6 +945,28 @@ class InvalidCertificate(CertificateError):
                 return _("Invalid certificate '%s'.") % self.data
 
 
+class NoSuchKey(CertificateError):
+        """Used to indicate that a key could not be found."""
+
+        def __str__(self):
+                publisher = self.args.get("publisher", None)
+                uri = self.args.get("uri", None)
+                if publisher:
+                        if uri:
+                                return _("Unable to locate key '%(key)s' for "
+                                    "publisher '%(pub)s' needed to access "
+                                    "'%(uri)s'.") % { "key": self.data,
+                                    "pub": publisher, "uri": uri }
+                        return _("Unable to locate key '%(key)s' for publisher "
+                            "'%(pub)s'.") % { "key": self.data, "pub": publisher
+                            }
+                if uri:
+                        return _("Unable to locate key '%(key)s' needed to "
+                            "access '%(uri)s'.") % { "key": self.data,
+                            "uri": uri }
+                return _("Unable to locate key '%s'.") % self.data
+
+
 class NoSuchCertificate(CertificateError):
         """Used to indicate that a certificate could not be found."""
 

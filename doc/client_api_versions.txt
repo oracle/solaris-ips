@@ -1,14 +1,22 @@
+Version 16:
+Compatible with clients using version 15.
+Changes:
+   The following exceptions were added to pkg.client.api_errors:
+    
+    class NoSuchKey(CertificateError):
+        """Used to indicate that a key could not be found."""
+
 Version 15:
 Incompatible with clients using versions 1-14.
 Changes:
-   The unfound_fmris variable in the
-   pkg.client.api_errors.PlanCreationException class is now called 
-   unmatched_fmris.
+    The unfound_fmris variable in the
+    pkg.client.api_errors.PlanCreationException class is now called 
+    unmatched_fmris.
 
 Version 14:
 Compatible with clients using versions 12-14.
 Changes:
-   The following methods were added to pkg.client.publisher.Publisher:
+    The following methods were added to pkg.client.publisher.Publisher:
 
         def create_meta_root(self):
                 """Create the publisher's meta_root."""

@@ -466,8 +466,8 @@ class ImageConfig(object):
                                 ssl_key = os.path.abspath(ssl_key)
                         if not os.path.exists(ssl_key):
                                 # XXX need client messaging framework
-                                emsg(api_errors.NoSuchCertificate(ssl_key,
-                                    uri=origin, publisher=prefix))
+                                emsg(api_errors.NoSuchKey(ssl_key, uri=origin,
+                                    publisher=prefix))
                                 ssl_key = None
 
                 if ssl_cert:

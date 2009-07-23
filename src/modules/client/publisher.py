@@ -165,7 +165,7 @@ class RepositoryURI(object):
                                     "ssl_key", value=filename)
                         filename = os.path.abspath(filename)
                         if not os.path.exists(filename):
-                                raise api_errors.NoSuchCertificate(filename,
+                                raise api_errors.NoSuchKey(filename,
                                     uri=self.uri)
                 if filename == "":
                         filename = None

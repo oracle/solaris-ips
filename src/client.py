@@ -2181,10 +2181,6 @@ def image_create(img, args):
                             ssl_key)
                 else:
                         ssl_key = os.path.abspath(ssl_key)
-                if not os.path.exists(ssl_key):
-                        msg(_("pkg: set-publisher: SSL key file '%s' does " \
-                            "not exist") % ssl_key)
-                        return 1
 
         if ssl_cert:
                 # When creating zones, the path is image-root-relative.
@@ -2193,10 +2189,6 @@ def image_create(img, args):
                             ssl_cert)
                 else:
                         ssl_cert = os.path.abspath(ssl_cert)
-                if not os.path.exists(ssl_cert):
-                        msg(_("pkg: set-publisher: SSL key cert '%s' does " \
-                            "not exist") % ssl_cert)
-                        return 1
 
         if not pub_name and not pub_url:
                 usage(_("image-create requires a publisher argument"))
