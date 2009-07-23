@@ -394,7 +394,10 @@ class Image(object):
                 return True
 
         def has_publisher(self, prefix=None, alias=None):
-                for pub in self.gen_publishers():
+                """Returns a boolean value indicating whether a publisher
+                exists in the image configuration that matches the given
+                prefix or alias."""
+                for pub in self.gen_publishers(inc_disabled=True):
                         if prefix == pub.prefix or (alias and
                             alias == pub.alias):
                                 return True

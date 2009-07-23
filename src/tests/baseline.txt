@@ -149,6 +149,9 @@ api.t_plat.py TestPlat.testRemoveOfRunningExecutable|pass
 api.t_plat.py TestPlat.testRenameOfRunningExecutable|pass
 api.t_plat.py TestPlat.testUtils|pass
 api.t_plat.py TestPlat.testbasic|pass
+api.t_publisher.py TestPublisher.test_01_repository_uri|pass
+api.t_publisher.py TestPublisher.test_02_repository|pass
+api.t_publisher.py TestPublisher.test_03_publisher|pass
 api.t_repositoryconfig.py TestRepositoryConfig.test__set_invalid_attribute|pass
 api.t_repositoryconfig.py TestRepositoryConfig.test_get_attribute|pass
 api.t_repositoryconfig.py TestRepositoryConfig.test_get_attribute_type|pass

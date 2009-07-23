@@ -1219,8 +1219,8 @@ class ImageInterface(object):
                 return dt
 
         def has_publisher(self, prefix=None, alias=None):
-                """Retrieves a publisher object matching the provided prefix
-                (name) or alias."""
+                """Returns a boolean value indicating whether a publisher using
+                the given prefix or alias exists."""
                 return self.__img.has_publisher(prefix=prefix, alias=alias)
 
         def remove_publisher(self, prefix=None, alias=None):

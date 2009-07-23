@@ -110,8 +110,9 @@ class RepositoryURI(object):
                 self.ssl_key = ssl_key
 
         def __copy__(self):
-                uri = RepositoryURI(self.__uri, ssl_cert=self.__ssl_cert,
-                    ssl_key=self.__ssl_key)
+                uri = RepositoryURI(self.__uri, priority=self.__priority,
+                    ssl_cert=self.__ssl_cert, ssl_key=self.__ssl_key,
+                    trailing_slash=self.__trailing_slash)
                 uri._source_object_id = id(self)
                 return uri
 
@@ -142,6 +143,9 @@ class RepositoryURI(object):
                         raise api_errors.UnsupportedRepositoryURIAttribute(
                             "ssl_cert", scheme=self.scheme)
                 if filename:
+                        if not isinstance(filename, basestring):
+                                raise api_errors.BadRepositoryAttributeValue(
+                                    "ssl_cert", value=filename)
                         filename = os.path.abspath(filename)
                         if not os.path.exists(filename):
                                 raise api_errors.NoSuchCertificate(filename,
@@ -156,6 +160,9 @@ class RepositoryURI(object):
                         raise api_errors.UnsupportedRepositoryURIAttribute(
                             "ssl_key", scheme=self.scheme)
                 if filename:
+                        if not isinstance(filename, basestring):
+                                raise api_errors.BadRepositoryAttributeValue(
+                                    "ssl_key", value=filename)
                         filename = os.path.abspath(filename)
                         if not os.path.exists(filename):
                                 raise api_errors.NoSuchCertificate(filename,
@@ -164,6 +171,12 @@ class RepositoryURI(object):
                         filename = None
                 # XXX attempt key verification here?
                 self.__ssl_key = filename
+
+        def __set_trailing_slash(self, value):
+                if value not in (True, False):
+                        raise api_errors.BadRepositoryAttributeValue(
+                            "trailing_slash", value=value)
+                self.__trailing_slash = value
 
         def __set_uri(self, uri):
                 if uri is None:
@@ -207,8 +220,8 @@ class RepositoryURI(object):
             "The URI used to access a repository.")
 
         priority = property(lambda self: self.__priority, __set_priority, None,
-           "An integer value representing the importance of this repository "
-           "URI relative to others.")
+            "An integer value representing the importance of this repository "
+            "URI relative to others.")
 
         @property
         def scheme(self):
@@ -216,6 +229,12 @@ class RepositoryURI(object):
                 if not self.__uri:
                         return ""
                 return urlparse.urlsplit(self.__uri, allow_fragments=0)[0]
+
+        trailing_slash = property(lambda self: self.__trailing_slash,
+            __set_trailing_slash, None,
+            "A boolean value indicating whether any URI provided for this "
+            "object should have a trailing slash appended when setting the "
+            "URI property.")
 
 
 class Repository(object):
@@ -393,7 +412,10 @@ class Repository(object):
                                 value = int(value)
                         except (TypeError, ValueError):
                                 raise api_errors.BadRepositoryAttributeValue(
-                                    "refresh_seconds", value)
+                                    "refresh_seconds", value=value)
+                        if value < 0:
+                                raise api_errors.BadRepositoryAttributeValue(
+                                    "refresh_seconds", value=value)
                 self.__refresh_seconds = value
 
         def __set_sort_policy(self, value):
@@ -428,17 +450,6 @@ class Repository(object):
                 self.__add_uri("mirrors", mirror, dup_check=dup_check,
                     priority=priority, ssl_cert=ssl_cert, ssl_key=ssl_key)
 
-        def add_related_uri(self, uri, priority=None, ssl_cert=None,
-            ssl_key=None):
-                """Adds the specified related URI to the repository.
-
-                'uri' can be a RepositoryURI object or a URI string.  If
-                it is a RepositoryURI object, all other parameters will be
-                ignored."""
-
-                self.__add_uri("related_uris", uri, priority=priority,
-                    ssl_cert=ssl_cert, ssl_key=ssl_key, trailing_slash=False)
-
         def add_origin(self, origin, priority=None, ssl_cert=None,
             ssl_key=None):
                 """Adds the specified origin to the repository.
@@ -454,6 +465,17 @@ class Repository(object):
 
                 self.__add_uri("origins", origin, dup_check=dup_check,
                     priority=priority, ssl_cert=ssl_cert, ssl_key=ssl_key)
+
+        def add_related_uri(self, uri, priority=None, ssl_cert=None,
+            ssl_key=None):
+                """Adds the specified related URI to the repository.
+
+                'uri' can be a RepositoryURI object or a URI string.  If
+                it is a RepositoryURI object, all other parameters will be
+                ignored."""
+
+                self.__add_uri("related_uris", uri, priority=priority,
+                    ssl_cert=ssl_cert, ssl_key=ssl_key, trailing_slash=False)
 
         def get_mirror(self, mirror):
                 """Returns a RepositoryURI object representing the mirror
@@ -735,9 +757,10 @@ class Publisher(object):
                         if r == self.selected_repository:
                                 selected = repo
                         repositories.append(repo)
-                pub = Publisher(self.__prefix, client_uuid=self.__client_uuid,
-                    disabled=self.__disabled, meta_root=self.meta_root,
-                    repositories=repositories, selected_repository=selected)
+                pub = Publisher(self.__prefix, alias=self.__alias,
+                    client_uuid=self.__client_uuid, disabled=self.__disabled,
+                    meta_root=self.meta_root, repositories=repositories,
+                    selected_repository=selected)
                 pub._source_object_id = id(self)
                 return pub
 
@@ -876,7 +899,8 @@ class Publisher(object):
                 self.__prefix = prefix
 
         def __set_selected_repository(self, value):
-                if not isinstance(value, Repository):
+                if not isinstance(value, Repository) or \
+                    value not in self.repositories:
                         raise api_errors.UnknownRepository(value)
                 self.__selected_repository = value
 

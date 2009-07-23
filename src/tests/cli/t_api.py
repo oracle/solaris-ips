@@ -30,11 +30,11 @@ if __name__ == "__main__":
 	testutils.setup_environment("../../../proto")
 
 import cStringIO
-import pkg.fmri as fmri
 import os
 import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 import pkg.client.progress as progress
+import pkg.fmri as fmri
 import sys
 import tempfile
 import time
@@ -332,6 +332,18 @@ class TestPkgApi(testutils.SingleDepotTestCase):
                 self.assertEqual(repo.refresh_seconds, 43200)
                 self.assertEqual(repo.registered, False)
 
+                # Verify that duplicates match their original.
+                cpub = api_obj.get_publisher(alias=pub.alias, duplicate=True)
+                for p in ("alias", "prefix", "meta_root"):
+                        self.assertEqual(getattr(pub, p), getattr(cpub, p))
+
+                for p in ("collection_type", "description", "legal_uris",
+                    "mirrors", "name", "origins", "refresh_seconds",
+                    "registered", "registration_uri", "related_uris",
+                    "sort_policy"):
+                        srepo = pub.selected_repository
+                        crepo = cpub.selected_repository
+                        self.assertEqual(getattr(srepo, p), getattr(crepo, p))
                 cpub = None
 
                 cpubs = api_obj.get_publishers(duplicate=True)
@@ -410,7 +422,23 @@ class TestPkgApi(testutils.SingleDepotTestCase):
 
                 # Now verify that we can retrieve the added publisher.
                 api_obj.get_publisher(prefix=pub.prefix)
-                api_obj.get_publisher(alias=pub.alias)
+                cpub = api_obj.get_publisher(alias=pub.alias, duplicate=True)
+
+                # Now update the publisher and set it to disabled, to verify
+                # that api functions still work as expected.
+                cpub.disabled = True
+                api_obj.update_publisher(cpub)
+
+                cpub = api_obj.get_publisher(alias=cpub.alias, duplicate=True)
+                self.assertTrue(cpub.disabled)
+
+                self.assertTrue(api_obj.has_publisher(prefix=cpub.prefix))
+
+                # Now attempt to update the disabled publisher.
+                cpub = api_obj.get_publisher(alias=cpub.alias, duplicate=True)
+                cpub.alias = "copycopycat"
+                api_obj.update_publisher(cpub)
+                cpub = None
 
                 # Verify that parse returns the expected object and information
                 # when provided a file path.
