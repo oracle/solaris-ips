@@ -93,7 +93,8 @@ class TestPkgApi(testutils.SingleDepotTestCase):
     }
   ], 
   "version": 1
-}"""
+}
+"""
 
 
         misc_files = [ "libc.so.1" ]

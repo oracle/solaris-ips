@@ -44,6 +44,7 @@ import pkg.client.publisher as publisher
 import pkg.client.query_parser as query_p
 import pkg.fmri as fmri
 import pkg.misc as misc
+import pkg.p5i as p5i
 import pkg.search_errors as search_errors
 import pkg.variant as variant
 
@@ -1436,83 +1437,7 @@ class ImageInterface(object):
 
                 'fileobj' or 'location' must be provided."""
 
-                if location is None and fileobj is None:
-                        raise api_errors.InvalidResourceLocation(location)
-
-                if location:
-                        if location.startswith(os.path.sep):
-                                location = os.path.abspath(location)
-                                location = "file://" + location
-
-                        try:
-                                fileobj = urllib2.urlopen(location)
-                        except (EnvironmentError, ValueError,
-                            urllib2.HTTPError), e:
-                                raise api_errors.RetrievalError(e,
-                                    location=location)
-
-                try:
-                        dump_struct = json.load(fileobj)
-                except (EnvironmentError, urllib2.HTTPError), e:
-                        raise api_errors.RetrievalError(e)
-                except ValueError, e:
-                        # Not a valid json file.
-                        raise api_errors.InvalidP5IFile(e)
-
-                try:
-                        ver = int(dump_struct["version"])
-                except KeyError:
-                        raise api_errors.InvalidP5IFile(_("missing version"))
-                except ValueError:
-                        raise api_errors.InvalidP5IFile(_("invalid version"))
-
-                if ver > CURRENT_P5I_VERSION:
-                        raise api_errors.UnsupportedP5IFile()
-
-                result = []
-                try:
-                        plist = dump_struct.get("publishers", [])
-
-                        for p in plist:
-                                alias = p.get("alias", None)
-                                prefix = p.get("name", None)
-
-                                if not prefix:
-                                        prefix = "Unknown"
-
-                                pub = publisher.Publisher(prefix, alias=alias)
-                                pkglist = p.get("packages", [])
-                                result.append((pub, pkglist))
-
-                                for r in p.get("repositories", []):
-                                        rargs = {}
-                                        for prop in ("collection_type",
-                                            "description", "name",
-                                            "refresh_seconds",
-                                            "registration_uri"):
-                                                val = r.get(prop, None)
-                                                if val is None or val == "None":
-                                                        continue
-                                                rargs[prop] = val
-
-                                        for prop in ("legal_uris", "mirrors",
-                                            "origins", "related_uris"):
-                                                val = r.get(prop, [])
-                                                if not isinstance(val, list):
-                                                        continue
-                                                rargs[prop] = val
-
-                                        if rargs.get("origins", None):
-                                                repo = publisher.Repository(
-                                                    **rargs)
-                                                pub.add_repository(repo)
-
-                        pkglist = dump_struct.get("packages", [])
-                        if pkglist:
-                                result.append((None, pkglist))
-                except (api_errors.PublisherError, TypeError, ValueError), e:
-                        raise api_errors.InvalidP5IFile(str(e))
-                return result
+                return p5i.parse(fileobj=fileobj, location=location)
 
         def write_p5i(self, fileobj, pkg_names=None, pubs=None):
                 """Writes the publisher, repository, and provided package names
@@ -1530,12 +1455,6 @@ class ImageInterface(object):
                 objects.  If not provided, the information for all publishers
                 (excluding those disabled) will be output."""
 
-                dump_struct = {
-                    "packages": [],
-                    "publishers": [],
-                    "version": CURRENT_P5I_VERSION,
-                }
-
                 if not pubs:
                         plist = [
                             p for p in self.get_publishers()
@@ -1550,67 +1469,18 @@ class ImageInterface(object):
                                 else:
                                         plist.append(p)
 
-                if pkg_names is None:
-                        pkg_names = {}
-
-                def copy_pkg_names(source, dest):
-                        for entry in source:
-                                # Publisher information is intentionally
-                                # omitted as association with this specific
-                                # publisher is implied by location in the
-                                # output.
-                                if isinstance(entry, PackageInfo):
-                                        dest.append(entry.fmri.get_fmri(
-                                            anarchy=True))
-                                elif isinstance(entry, fmri.PkgFmri):
-                                        dest.append(entry.get_fmri(
-                                            anarchy=True))
+                # Transform PackageInfo object entries into PkgFmri entries
+                # before passing them to the p5i module.
+                new_pkg_names = {}
+                for pub in pkg_names:
+                        pkglist = []
+                        for p in pkg_names[pub]:
+                                if isinstance(p, PackageInfo):
+                                        pkglist.append(p.fmri)
                                 else:
-                                        dest.append(str(entry))
-
-                dpubs = dump_struct["publishers"]
-                for p in plist:
-                        dpub = {
-                            "alias": p.alias,
-                            "name": p.prefix,
-                            "packages": [],
-                            "repositories": []
-                        }
-                        dpubs.append(dpub)
-
-                        try:
-                                copy_pkg_names(pkg_names[p.prefix],
-                                    dpub["packages"])
-                        except KeyError:
-                                pass
-
-                        drepos = dpub["repositories"]
-                        for r in p.repositories:
-                                reg_uri = ""
-                                if r.registration_uri:
-                                        reg_uri = r.registration_uri.uri
-
-                                drepos.append({
-                                    "collection_type": r.collection_type,
-                                    "description": r.description,
-                                    "legal_uris": [u.uri for u in r.legal_uris],
-                                    "mirrors": [u.uri for u in r.mirrors],
-                                    "name": r.name,
-                                    "origins": [u.uri for u in r.origins],
-                                    "refresh_seconds": r.refresh_seconds,
-                                    "registration_uri": reg_uri,
-                                    "related_uris": [
-                                        u.uri for u in r.related_uris
-                                    ],
-                                })
-
-                try:
-                        copy_pkg_names(pkg_names[""], dump_struct["packages"])
-                except KeyError:
-                        pass
-
-                return json.dump(dump_struct, fileobj, ensure_ascii=False,
-                    allow_nan=False, indent=2, sort_keys=True)
+                                        pkglist.append(p)
+                        new_pkg_names[pub] = pkglist
+                p5i.write(fileobj, plist, pkg_names=new_pkg_names)
 
 
 class Query(query_p.Query):
