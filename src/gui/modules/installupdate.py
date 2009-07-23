@@ -59,7 +59,8 @@ class InstallUpdate(progress.GuiProgressTracker):
         def __init__(self, list_of_packages, parent, api_o,
             ips_update = False, action = -1, be_name = None, 
             parent_name = "", pkg_list = None, main_window = None,
-            icon_confirm_dialog = None, title = None, web_install = False):
+            icon_confirm_dialog = None, title = None, web_install = False,
+            skip_be_dialog = False):
                 if action == -1:
                         return
                 progress.GuiProgressTracker.__init__(self)
@@ -212,7 +213,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 elif self.action == enumerations.IMAGE_UPDATE:
                         self.w_dialog.set_title(_("Update All"))
                         w_ua_proceed_button.grab_focus()
-                        if not self.be_name:
+                        if not self.be_name and not skip_be_dialog:
                                 if nobe or not "beVerifyBEName" in be.__dict__:
                                         self.w_ua_be_name_box.set_property(
                                             "visible", False)
@@ -504,7 +505,6 @@ class InstallUpdate(progress.GuiProgressTracker):
                         return
                 except (api_errors.UnableToCopyBE, 
                     api_errors.UnableToMountBE,
-                    api_errors.BENameGivenOnDeadBE,
                     api_errors.UnableToRenameBE,
                     api_errors.PermissionsException,
                     api_errors.PlanCreationException,
@@ -512,6 +512,17 @@ class InstallUpdate(progress.GuiProgressTracker):
                         msg = str(ex)
                         self.__g_error_stage(msg)
                         return
+                except api_errors.BENameGivenOnDeadBE, ex:
+                        # 9363. We will try again to perform image-update
+                        # but this time without passing be_name to the api
+                        # if this fails for the second time, we will print error.
+                        if self.proposed_be_name != None:
+                                self.proposed_be_name = None
+                                self.__proceed_with_stages_thread_ex()
+                        else:
+                                msg = str(ex)
+                                self.__g_error_stage(msg)
+                                return
                 # We do want to prompt user to load BE admin if there is
                 # not enough disk space. This error can either come as an
                 # error within API exception, see bug #7642 or as a standalone

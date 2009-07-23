@@ -215,6 +215,7 @@ class PackageManager:
                 self.progress_stop_thread = True
                 self.catalog_loaded = False
                 self.image_dir_arg = None
+                self.user_image_dir = False
                 self.update_all_proceed = False
                 self.ua_be_name = None
                 self.application_path = None
@@ -2534,7 +2535,8 @@ class PackageManager:
                     action = enumerations.IMAGE_UPDATE, be_name = self.ua_be_name,
                     parent_name = _("Package Manager"),
                     pkg_list = ["SUNWipkg", "SUNWipkg-gui"],
-                    main_window = self.w_main_window)
+                    main_window = self.w_main_window,
+                    skip_be_dialog = self.user_image_dir)
                 return
 
         def __on_ua_completed_linkbutton_clicked(self, widget):
@@ -4025,6 +4027,7 @@ if __name__ == '__main__':
         ua_be_name = None
         app_path = None
         image_dir = None
+        user_image_dir = False
         info_install_arg = None
         save_selected = _("Save selected...")
         save_selected_pkgs = _("Save selected packages...")
@@ -4052,6 +4055,7 @@ Use -U (--update-all) to proceed with Update All"""
                         sys.exit(0)
                 if option in ("-R", "--image-dir"):
                         image_dir = argument
+                        user_image_dir = True
                 if option in ("-U", "--update-all"):
                         update_all_proceed = True
                         ua_be_name = argument
@@ -4061,6 +4065,7 @@ Use -U (--update-all) to proceed with Update All"""
         if image_dir == None:
                 try:
                         image_dir = os.environ["PKG_IMAGE"]
+                        user_image_dir = True
                 except KeyError:
                         image_dir = os.getcwd()
         try:
@@ -4083,6 +4088,7 @@ Use -U (--update-all) to proceed with Update All"""
         packagemanager = PackageManager()
         packagemanager.application_path = app_path
         packagemanager.image_dir_arg = image_dir
+        packagemanager.user_image_dir = user_image_dir
         packagemanager.update_all_proceed = update_all_proceed
         packagemanager.ua_be_name = ua_be_name
 

@@ -617,6 +617,9 @@ class Updatemanager:
                 self.__selectall_toggle(True)
                 self.__get_api_obj().reset()
                 self.ua_start = time.time()
+                skip_be_dlg = False
+                if self.__get_image_path() != IMAGE_DIRECTORY_DEFAULT:
+                        skip_be_dlg = True
                 installupdate.InstallUpdate([], self,
                     self.api_obj, ips_update = False,
                     action = enumerations.IMAGE_UPDATE,
@@ -624,7 +627,8 @@ class Updatemanager:
                     parent_name = _("Update Manager"),
                     pkg_list = ["SUNWipkg", "SUNWipkg-gui", "SUNWipkg-um"],
                     main_window = self.w_um_dialog,
-                    icon_confirm_dialog = self.__get_icon_pixbuf("UM_package", 36))
+                    icon_confirm_dialog = self.__get_icon_pixbuf("UM_package", 36),
+                    skip_be_dialog = skip_be_dlg)
                 return
                
         def __on_selectall_checkbutton_toggled(self, widget):
