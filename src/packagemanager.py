@@ -281,6 +281,7 @@ class PackageManager:
                 self.categories_treeview_initialized = False
                 self.category_list = None
                 self.repositories_list = None
+                self.repository_category = {}
                 self.repo_combobox_all_pubs_index = 0
                 self.repo_combobox_add_index = 0
                 self.pr = progress.NullProgressTracker()
@@ -1150,7 +1151,12 @@ class PackageManager:
                 if application_list != None:
                         if category_list != None:
                                 self.w_sections_combobox.set_model(section_list)
-                                self.w_sections_combobox.set_active(self.set_section)
+                                try:
+                                        section = self.repository_category[\
+                                            self.last_visible_publisher]
+                                except KeyError:
+                                        section = self.set_section
+                                self.w_sections_combobox.set_active(section)
                                 self.w_filter_combobox.set_model(self.filter_list)
                                 self.w_filter_combobox.set_active(self.set_show_filter)
                         self.w_application_treeview.set_model(
@@ -2359,6 +2365,9 @@ class PackageManager:
                         selected_publisher = self.__get_selected_publisher()
                 if selected_publisher == self.last_visible_publisher:
                         return
+                if self.last_visible_publisher:
+                        self.repository_category[self.last_visible_publisher] = \
+                            self.w_sections_combobox.get_active()
                 if index == self.repo_combobox_all_pubs_index:
                         self.__set_all_publishers_mode()
                         return
