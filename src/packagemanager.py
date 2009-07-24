@@ -2609,25 +2609,6 @@ class PackageManager:
                 if self.in_setup:
                         return
 
-                if be_name:
-                        if self.image_dir_arg:
-                                gobject.spawn_async([self.application_path, "-R",
-                                    self.image_dir_arg, "-U", be_name])
-                        else:
-                                gobject.spawn_async([self.application_path,
-                                    "-U", be_name])
-                elif self.in_search_mode:
-                        self.__dump_datamodels(self.__get_selected_publisher(),
-                            self.saved_application_list, self.category_list,
-                            self.section_list)
-                else:
-                        self.__dump_datamodels(self.__get_selected_publisher(),
-                                self.application_list, self.category_list,
-                                self.section_list)
-
-                if len(self.search_completion) > 0 and self.cache_o != None:
-                        self.cache_o.dump_search_completion_info(self.search_completion)
-
                 width, height = self.w_main_window.get_size()
                 hpos = self.w_main_hpaned.get_position()
                 vpos = self.w_main_vpaned.get_position()
@@ -2640,6 +2621,30 @@ class PackageManager:
                         pass
 
                 self.w_main_window.hide()
+                if be_name:
+                        if self.image_dir_arg:
+                                gobject.spawn_async([self.application_path, "-R",
+                                    self.image_dir_arg, "-U", be_name])
+                        else:
+                                gobject.spawn_async([self.application_path,
+                                    "-U", be_name])
+                else:
+                        if self.is_all_publishers:
+                                self.w_repository_combobox.set_active(
+                                    self.saved_repository_combobox_active)
+                        pub = self.__get_selected_publisher()
+                        if self.in_search_mode:
+                                self.__dump_datamodels(pub,
+                                    self.saved_application_list, self.category_list,
+                                    self.section_list)
+                        else:
+                                self.__dump_datamodels(pub,
+                                    self.application_list, self.category_list,
+                                    self.section_list)
+
+                if len(self.search_completion) > 0 and self.cache_o != None:
+                        self.cache_o.dump_search_completion_info(self.search_completion)
+
                 while gtk.events_pending():
                         gtk.main_iteration(False)
                 gtk.main_quit()
