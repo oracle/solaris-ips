@@ -56,7 +56,7 @@ class TransportException(api_errors.TransportError):
                 """Subclasses that wish to provided a simplified output
                 interface must implement this routine and simple_str."""
 
-                return self.__cmp__(self, other)
+                return self.__cmp__(other)
 
         def simple_str(self):
                 """Subclasses that wish to provided a simplified output

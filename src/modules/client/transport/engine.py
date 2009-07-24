@@ -318,25 +318,32 @@ class CurlTransportEngine(TransportEngine):
                 if not self.pending:
                         return
 
-                while 1:
+                if self.__active_handles > 0:
+                        # timeout returned in milliseconds
+                        timeout = self.__mhandle.timeout()
+                        if timeout == -1:
+                                # Pick our own timeout.
+                                timeout = 1.0
+                        elif timeout > 0:
+                                # Timeout of 0 means skip call
+                                # to select.
+                                #
+                                # Convert from milliseconds to seconds.
+                                timeout = timeout / 1000.0
 
-                        if self.__active_handles > 0:
-                                rc = self.__mhandle.select(1.0)
-                                if rc == -1:
-                                        # Select timed out, try again.
-                                        continue
+                        if timeout:
+                               self.__mhandle.select(timeout)
 
-                        while self.__req_q and self.__freehandles:
-                                t = self.__req_q.pop()
-                                eh = self.__freehandles.pop(-1)
-                                self.__setup_handle(eh, t)
-                                self.__mhandle.add_handle(eh)
+                while self.__freehandles and self.__req_q:
+                        t = self.__req_q.pop()
+                        eh = self.__freehandles.pop(-1)
+                        self.__setup_handle(eh, t)
+                        self.__mhandle.add_handle(eh)
 
-                        self.__call_perform()
+                self.__call_perform()
 
-                        self.__cleanup_requests()
+                self.__cleanup_requests()
 
-                        break
 
         def remove_request(self, url):
                 """In order to remove a request, it may be necessary
