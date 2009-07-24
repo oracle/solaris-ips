@@ -35,6 +35,7 @@ SHOW_LICENSE_DELAY = 600    # Delay before showing license information
 SEARCH_STR_FORMAT = "<%s>"
 MIN_APP_WIDTH = 750                       # Minimum application width
 MIN_APP_HEIGHT = 500                      # Minimum application height
+IMAGE_DIRECTORY_DEFAULT = "/"             # Image default directory
 MAX_SEARCH_COMPLETION_PREFERENCES = \
         "/apps/packagemanager/preferences/max_search_completion"
 INITIAL_APP_WIDTH_PREFERENCES = "/apps/packagemanager/preferences/initial_app_width"
@@ -215,7 +216,6 @@ class PackageManager:
                 self.progress_stop_thread = True
                 self.catalog_loaded = False
                 self.image_dir_arg = None
-                self.user_image_dir = False
                 self.update_all_proceed = False
                 self.ua_be_name = None
                 self.application_path = None
@@ -2530,13 +2530,16 @@ class PackageManager:
 
         def __on_update_all(self, widget):
                 self.api_o.reset()
+                skip_be_dlg = False
+                if self.api_o.root != IMAGE_DIRECTORY_DEFAULT:
+                        skip_be_dlg = True
                 installupdate.InstallUpdate([], self,
                     self.api_o, ips_update = False,
                     action = enumerations.IMAGE_UPDATE, be_name = self.ua_be_name,
                     parent_name = _("Package Manager"),
                     pkg_list = ["SUNWipkg", "SUNWipkg-gui"],
                     main_window = self.w_main_window,
-                    skip_be_dialog = self.user_image_dir)
+                    skip_be_dialog = skip_be_dlg)
                 return
 
         def __on_ua_completed_linkbutton_clicked(self, widget):
@@ -2919,7 +2922,7 @@ class PackageManager:
                 if len(description) > MAX_DESC_LEN:
                         description = description[:MAX_DESC_LEN] + " ..."
                 self.w_shortdescription_label.set_text(description)
-                inst_str = _("Root: %s\n") % self.api_o.img.get_root()
+                inst_str = _("Root: %s\n") % self.api_o.root
                 dep_str = _("Dependencies:\n")
 
                 if local_info.dependencies:
@@ -4027,7 +4030,6 @@ if __name__ == '__main__':
         ua_be_name = None
         app_path = None
         image_dir = None
-        user_image_dir = False
         info_install_arg = None
         save_selected = _("Save selected...")
         save_selected_pkgs = _("Save selected packages...")
@@ -4055,7 +4057,6 @@ Use -U (--update-all) to proceed with Update All"""
                         sys.exit(0)
                 if option in ("-R", "--image-dir"):
                         image_dir = argument
-                        user_image_dir = True
                 if option in ("-U", "--update-all"):
                         update_all_proceed = True
                         ua_be_name = argument
@@ -4065,7 +4066,6 @@ Use -U (--update-all) to proceed with Update All"""
         if image_dir == None:
                 try:
                         image_dir = os.environ["PKG_IMAGE"]
-                        user_image_dir = True
                 except KeyError:
                         image_dir = os.getcwd()
         try:
@@ -4088,7 +4088,6 @@ Use -U (--update-all) to proceed with Update All"""
         packagemanager = PackageManager()
         packagemanager.application_path = app_path
         packagemanager.image_dir_arg = image_dir
-        packagemanager.user_image_dir = user_image_dir
         packagemanager.update_all_proceed = update_all_proceed
         packagemanager.ua_be_name = ua_be_name
 
