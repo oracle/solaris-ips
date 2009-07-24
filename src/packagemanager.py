@@ -3831,7 +3831,7 @@ class PackageManager:
                 else:
                         self.unset_busy_cursor()
                 
-                if self.first_run or self.in_reload:
+                if self.user_rights and (self.first_run or self.in_reload):
                         Thread(target = self.__enable_disable_update_all).start()
                 self.first_run = False
                 self.in_reload = False

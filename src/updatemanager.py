@@ -47,6 +47,7 @@ except ImportError:
         sys.exit(1)
 
 import pkg.client.api as api
+import pkg.portable as portable
 import pkg.client.progress as progress
 import pkg.gui.beadmin as beadm
 import pkg.gui.installupdate as installupdate
@@ -111,6 +112,7 @@ class Updatemanager:
                         )
                 self.progress_stop_thread = False
                 self.last_select_time = 0
+                self.user_rights = portable.is_admin()
                 self.fmri_description = None
                 self.image_dir_arg = None
                 self.toggle_counter = 0
@@ -445,8 +447,17 @@ class Updatemanager:
                             progress.NullProgressTracker(), self.w_um_dialog)
                 return self.api_obj
 
+        def __display_nopermissions(self):
+                self.w_um_intro_label.set_markup(
+                    _("<b>You do not have sufficient permissions.</b>"
+                    "\n\nPlease restart pm-updatemanager using pfexec."))
+                self.__setup_display()
+
         def __display_noupdates(self):
                 self.w_um_intro_label.set_markup(_("<b>No Updates available.</b>"))
+                self.__setup_display()
+
+        def __setup_display(self):
                 self.w_um_treeview.hide()
                 self.w_um_expander.hide()
                 self.w_um_install_button.set_sensitive(False)
@@ -770,7 +781,11 @@ class Updatemanager:
                 gobject.timeout_add(100, self.__on_progressdialog_progress)
 
         def setup_updates(self):
-                Thread(target = self.get_updates_to_list(), args = ()).start()
+                if self.user_rights:
+                        Thread(target = self.get_updates_to_list(), args = ()).start()
+                else:
+                        self.progress_stop_thread = True
+                        self.__display_nopermissions()
                 return False
 
         @staticmethod
