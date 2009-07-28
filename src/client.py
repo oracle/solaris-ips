@@ -85,7 +85,10 @@ def error(text, cmd=None):
 
         if cmd:
                 text = "%s: %s" % (cmd, text)
+                pkg_cmd = "pkg "
         else:
+                pkg_cmd = "pkg: "
+
                 # If we get passed something like an Exception, we can convert
                 # it down to a string.
                 text = str(text)
@@ -97,14 +100,19 @@ def error(text, cmd=None):
 
         # This has to be a constant value as we can't reliably get our actual
         # program name on all platforms.
-        emsg(ws + "pkg: " + text_nows)
+        emsg(ws + pkg_cmd + text_nows)
 
-def usage(usage_error=None, cmd=None, retcode=2):
+def usage(usage_error=None, cmd=None, retcode=2, full=False):
         """Emit a usage message and optionally prefix it with a more
             specific error message.  Causes program to exit. """
 
         if usage_error:
                 error(usage_error, cmd=cmd)
+
+        if not full:
+                # The full usage message isn't desired.
+                emsg(_("Try `pkg --help or -?' for more information."))
+                sys.exit(retcode)
 
         emsg(_("""\
 Usage:
@@ -209,7 +217,7 @@ def list_inventory(img, args):
                         refresh_catalogs = False
 
         if summary and verbose:
-                usage(_("-s and -v may not be combined"))
+                usage(_("-s and -v may not be combined"), cmd="list")
 
         if verbose:
                 fmt_str = "%-64s %-10s %s"
@@ -423,7 +431,7 @@ def verify_image(img, args):
                         display_headers = False
 
         if verbose and quiet:
-                usage(_("verify: -v and -q may not be combined"))
+                usage(_("-v and -q may not be combined"), cmd="verify")
 
         progresstracker = get_tracker(quiet)
 
@@ -527,11 +535,11 @@ def image_update(img_dir, args):
                         be_name = arg
 
         if verbose and quiet:
-                usage(_("image-update: -v and -q may not be combined"))
+                usage(_("-v and -q may not be combined"), cmd="image-update")
 
         if pargs:
-                usage(_("image-update: command does not take operands " \
-                    "('%s')") % " ".join(pargs))
+                usage(_("command does not take operands ('%s')") % \
+                    " ".join(pargs), cmd="image-update")
 
         progresstracker = get_tracker(quiet)
 
@@ -691,10 +699,10 @@ def install(img_dir, args):
                         update_index = False
 
         if not pargs:
-                usage(_("install: at least one package name required"))
+                usage(_("at least one package name required"), cmd="install")
 
         if verbose and quiet:
-                usage(_("install: -v and -q may not be combined"))
+                usage(_("-v and -q may not be combined"), cmd="install")
 
         progresstracker = get_tracker(quiet)
 
@@ -829,10 +837,10 @@ def uninstall(img_dir, args):
                         update_index = False
 
         if not pargs:
-                usage(_("uninstall: at least one package name required"))
+                usage(_("at least one package name required"), cmd="uninstall")
 
         if verbose and quiet:
-                usage(_("uninstall: -v and -q may not be combined"))
+                usage(_("-v and -q may not be combined"), cmd="uninstall")
 
         progresstracker = get_tracker(quiet)
 
@@ -1041,7 +1049,8 @@ def search(img_dir, args):
                 remote = True
 
         if not pargs:
-                usage()
+                usage(_("at least one search term must be provided"),
+                    cmd="search")
 
         searches = []
 
@@ -1132,10 +1141,11 @@ def info(img_dir, args):
         if not info_local and not info_remote:
                 info_local = True
         elif info_local and info_remote:
-                usage(_("info: -l and -r may not be combined"))
+                usage(_("-l and -r may not be combined"), cmd="info")
 
         if info_remote and not pargs:
-                usage(_("info: must request remote info for specific packages"))
+                usage(_("must request remote info for specific packages"),
+                    cmd="info")
 
         if not check_fmri_args(pargs):
                 return 1
@@ -1217,11 +1227,11 @@ def info(img_dir, args):
                         emsg()
                 if info_local:
                         emsg(_("""\
-pkg: no packages matching the following patterns you specified are
+pkg: info: no packages matching the following patterns you specified are
 installed on the system.  Try specifying -r to query remotely:"""))
                 elif info_remote:
                         emsg(_("""\
-pkg: no packages matching the following patterns you specified were
+pkg: info: no packages matching the following patterns you specified were
 found in the catalog.  Try relaxing the patterns, refreshing, and/or
 examining the catalogs:"""))
                 emsg()
@@ -1397,11 +1407,11 @@ def list_contents(img, args):
         if not remote and not local:
                 local = True
         elif local and remote:
-                usage(_("contents: -l and -r may not be combined"))
+                usage(_("-l and -r may not be combined"), cmd="contents")
 
         if remote and not pargs:
                 usage(_("contents: must request remote contents for specific "
-                   "packages"))
+                   "packages"), cmd="contents")
 
         if not check_fmri_args(pargs):
                 return 1
@@ -1414,15 +1424,15 @@ def list_contents(img, args):
                     intersection(set([x[0] for x in opts]))
 
                 if len(invalid) > 0:
-                        usage(_("contents: -m and %s may not be specified " \
-                            "at the same time") % invalid.pop())
+                        usage(_("-m and %s may not be specified at the same "
+                            "time") % invalid.pop(), cmd="contents")
 
         for a in attrs:
                 if a.startswith("action.") and not a in valid_special_attrs:
-                        usage(_("Invalid attribute '%s'") % a)
+                        usage(_("Invalid attribute '%s'") % a, cmd="contents")
 
                 if a.startswith("pkg.") and not a in valid_special_attrs:
-                        usage(_("Invalid attribute '%s'") % a)
+                        usage(_("Invalid attribute '%s'") % a, cmd="contents")
 
         img.history.operation_name = "contents"
         img.load_catalogs(progress.QuietProgressTracker())
@@ -1482,14 +1492,14 @@ def list_contents(img, args):
                                         npmatch.append(m)
 
                         if len(pnames.keys()) > 1:
-                                msg(_("pkg: '%s' matches multiple packages") % \
-                                    p)
+                                msg(_("pkg: contents: '%s' matches multiple "
+                                    "packages") % p)
                                 for k in pnames.keys():
                                         msg("\t%s" % k)
                                 continue
                         elif len(pnames.keys()) < 1 and len(npnames.keys()) > 1:
-                                msg(_("pkg: '%s' matches multiple packages") % \
-                                    p)
+                                msg(_("pkg: contents: '%s' matches multiple "
+                                    "packages") % p)
                                 for k in npnames.keys():
                                         msg("\t%s" % k)
                                 continue
@@ -1547,11 +1557,11 @@ def list_contents(img, args):
                         emsg()
                 if local:
                         emsg(_("""\
-pkg: no packages matching the following patterns you specified are
+pkg: contents: no packages matching the following patterns you specified are
 installed on the system.  Try specifying -r to query remotely:"""))
                 elif remote:
                         emsg(_("""\
-pkg: no packages matching the following patterns you specified were
+pkg: contents: no packages matching the following patterns you specified were
 found in the catalog.  Try relaxing the patterns, refreshing, and/or
 examining the catalogs:"""))
                 emsg()
@@ -1826,7 +1836,8 @@ def publisher_unset(img_dir, args):
         """pkg unset-publisher publisher ..."""
 
         if len(args) == 0:
-                usage()
+                usage(_("at least one publisher must be specified"),
+                    cmd="unset-publisher")
 
         try:
                 api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
@@ -2034,21 +2045,21 @@ def property_set(img, args):
         try:
                 propname, propvalue = pargs
         except ValueError:
-                usage(_("set-property: requires a property name and value"))
+                usage(_("requires a property name and value"),
+                    cmd="set-property")
 
         if propname == "preferred-publisher":
-                error(_("set-property: set-publisher must be used to change "
-                        "the preferred publisher"))
+                error(_("set-publisher must be used to change the preferred "
+                    "publisher"), cmd="set-property")
                 return 1
 
         try:
                 img.set_property(propname, propvalue)
         except api_errors.PermissionsException, e:
-                # Prepend a newline because otherwise the exception will
-                # be printed on the same line as the spinner.
-                error("\nset-property failed:\n" + str(e))
+                # Prepend a newline because otherwise the exception
+                # will be printed on the same line as the spinner.
+                error("\n" + str(e), cmd="set-property")
                 return 1
-
         return 0
 
 def property_unset(img, args):
@@ -2061,23 +2072,25 @@ def property_unset(img, args):
         # ensure no options are passed in
         opts, pargs = getopt.getopt(args, "")
         if not pargs:
-                usage(_("unset-property: requires at least one property name"))
+                usage(_("requires at least one property name"),
+                    cmd="unset-property")
 
         for p in pargs:
                 if p == "preferred-publisher":
-                        error(_("unset-property: set-publisher must be used to "
-                            "change the preferred publisher"))
+                        error(_("set-publisher must be used to change the "
+                            "preferred publisher"), cmd="unset-property")
                         return 1
 
                 try:
                         img.delete_property(p)
                 except KeyError:
-                        error(_("unset-property: no such property: %s") % p)
+                        error(_("no such property: %s") % p,
+                            cmd="unset-property")
                         return 1
                 except api_errors.PermissionsException, e:
                         # Prepend a newline because otherwise the exception
                         # will be printed on the same line as the spinner.
-                        error("\n" + str(e))
+                        error("\n" + str(e), cmd="unset-property")
                         return 1
 
         return 0
@@ -2156,22 +2169,23 @@ def image_create(img, args):
                         try:
                                 pub_name, pub_url = arg.split("=", 1)
                         except ValueError:
-                                usage(_("image-create requires publisher "
-                                    "argument to be of the form "
-                                    "'<prefix>=<url>'."))
+                                usage(_("publisher argument must be of the "
+                                    "form '<prefix>=<url>'."),
+                                    cmd="image-create")
                 if opt == "--variant":
                         try:
                                 v_name, v_value = arg.split("=", 1)
                                 if not v_name.startswith("variant."):
                                         v_name = "variant.%s" % v_name
                         except ValueError:
-                                usage(_("image-create requires variant "
-                                    "arguments to be of the form "
-                                    "'<name>=<value>'."))
+                                usage(_("variant arguments must be of the "
+                                    "form '<name>=<value>'."),
+                                    cmd="image-create")
                         variants[v_name] = v_value
 
         if len(pargs) != 1:
-                usage(_("image-create requires a single image directory path"))
+                usage(_("only one image directory path may be specified"),
+                    cmd="image-create")
         image_dir = pargs[0]
 
         if ssl_key:
@@ -2191,33 +2205,34 @@ def image_create(img, args):
                         ssl_cert = os.path.abspath(ssl_cert)
 
         if not pub_name and not pub_url:
-                usage(_("image-create requires a publisher argument"))
+                usage(_("a publisher must be specified"), cmd="image-create")
 
         if not pub_name or not pub_url:
-                usage(_("image-create requires publisher argument to be of "
-                    "the form '<prefix>=<url>'."))
+                usage(_("publisher argument must be of the form "
+                    "'<prefix>=<url>'."), cmd="image-create")
 
         if pub_name.startswith(fmri.PREF_PUB_PFX):
-                error(_("image-create requires that a prefix not match: %s"
-                        % fmri.PREF_PUB_PFX))
+                error(_("a publisher's prefix may not start with the text: %s"
+                        % fmri.PREF_PUB_PFX), cmd="image-create")
                 return 1
 
         if not misc.valid_pub_prefix(pub_name):
-                error(_("image-create: publisher prefix has invalid " \
-                    "characters"))
+                error(_("publisher prefix contains invalid characters"),
+                    cmd="image-create")
                 return 1
 
         # Bail if there is already an image there
         if img.image_type(image_dir) != None and not force:
-                error(_("there is already an image at: %s") % image_dir)
-                error(_("To override, use the -f (force) option."))
+                error(_("there is already an image at: %s.\nTo override, use "
+                    "the -f (force) option.") % image_dir, cmd="image-create")
                 return 1
 
         # Bail if the directory exists but isn't empty
         if os.path.exists(image_dir) and \
             len(os.listdir(image_dir)) > 0 and not force:
-                error(_("Non-empty directory: %s") % image_dir)
-                error(_("To override, use the -f (force) option."))
+                error(_("the specified image path is not empty: %s.\nTo "
+                    "override, use the -f (force) option.") % image_dir,
+                    cmd="image-create")
                 return 1
 
         try:
@@ -2228,7 +2243,8 @@ def image_create(img, args):
                 # Ensure messages are displayed after the spinner.
                 emsg("\n")
                 error(_("cannot create image at %(image_dir)s: %(reason)s") %
-                    { "image_dir": image_dir, "reason": e.args[1] })
+                    { "image_dir": image_dir, "reason": e.args[1] },
+                    cmd="image-create")
                 return 1
         except api_errors.PermissionsException, e:
                 # Ensure messages are displayed after the spinner.
@@ -2264,25 +2280,27 @@ def rebuild_index(img_dir, pargs):
         quiet = False
 
         if pargs:
-                usage(_("rebuild-index: command does not take operands " \
-                    "('%s')") % " ".join(pargs))
+                usage(_("command does not take operands ('%s')") % \
+                    " ".join(pargs), cmd="rebuild-index")
         try:
                 api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
                     get_tracker(quiet), None, PKG_CLIENT_NAME)
         except api_errors.ImageNotFoundException, e:
-                error(_("'%s' is not an install image") % e.user_dir)
+                error(_("'%s' is not an install image") % e.user_dir,
+                    cmd="rebuild-index")
                 return 1
 
         try:
                 api_inst.rebuild_search_index()
         except api_errors.CorruptedIndexException:
-                error(INCONSISTENT_INDEX_ERROR_MESSAGE)
+                error(INCONSISTENT_INDEX_ERROR_MESSAGE, cmd="rebuild-index")
                 return 1
         except api_errors.ProblematicPermissionsIndexException, e:
-                error(str(e) + PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE)
+                error(str(e) + PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE,
+                    cmd="rebuild-index")
                 return 1
         except api_errors.MainDictParsingException, e:
-                error(str(e))
+                error(str(e), cmd="rebuild-index")
                 return 1
         else:
                 return 0
@@ -2302,7 +2320,7 @@ def history_list(img, args):
                         long_format = True
 
         if omit_headers and long_format:
-                usage(_("history: -H and -l may not be combined"))
+                usage(_("-H and -l may not be combined"), cmd="history")
 
         if not long_format:
                 if not omit_headers:
@@ -2443,9 +2461,9 @@ def main_func():
                         show_usage = True
 
         if show_usage:
-                usage(retcode=0)
+                usage(retcode=0, full=True)
         elif not subcommand:
-                usage()
+                usage(_("no subcommand specified"))
 
         # This call only affects sockets created by Python.  The transport
         # framework uses the defaults in global_settings, which may be
@@ -2461,8 +2479,7 @@ def main_func():
                 try:
                         ret = image_create(img, pargs)
                 except getopt.GetoptError, e:
-                        usage(_("illegal %s option -- %s") % \
-                            (subcommand, e.opt))
+                        usage(_("illegal option -- %s") % e.opt, cmd=subcommand)
                 return ret
         elif subcommand == "version":
                 if "mydir" in locals():
@@ -2567,8 +2584,7 @@ def main_func():
                         usage(_("unknown subcommand '%s'") % subcommand)
 
         except getopt.GetoptError, e:
-                usage(_("illegal %(cmd)s option -- %(error)s") %
-                    { "cmd": subcommand, "error": e.opt })
+                usage(_("illegal option -- %s") % e.opt, cmd=subcommand)
 
 
 #
