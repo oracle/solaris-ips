@@ -1,15 +1,16 @@
 package netbeans
 classification "Development/Integrated Development Environments"
 summary "Open-source Integrated Development Environment for enterprise, web and mobile applications in Java, C/C++, and Ruby"
-version 6.5.1
+version 6.7
 import netbeans-full
 depend SUNWj6rt
 depend SUNWj6dev
 depend libnb-apisupport
 depend libnb-cnd
+depend libnb-dlight
 depend libnb-enterprise
+depend libnb-ergonomics
 depend libnb-groovy
-depend libnb-gsf
 depend libnb-ide
 depend libnb-identity
 depend libnb-java
@@ -17,154 +18,175 @@ depend libnb-php
 depend libnb-platform
 depend libnb-profiler
 depend libnb-ruby
-depend libnb-soa
-depend libnb-visualweb
 depend libnb-webcommon
 depend libnb-websvccommon
-depend libnb-xml
-depend netbeans-incorporation@6.5.1
+depend netbeans-incorporation@6.7
+end package
+
+# obsolete - leave at this version
+package libnb-gsf
+version 6.7
+depend netbeans-ide
+end package
+
+# obsolete - leave at this version
+package libnb-soa
+version 6.7
+end package
+
+# obsolete - leave at this version
+package libnb-visualweb
+version 6.7
+end package
+
+# obsolete - leave at this version
+package libnb-xml
+version 6.7
 end package
 
 # obsolete - leave at this version
 package SUNWnetbeans-ide
-version 6.5.1
+version 6.7
 depend netbeans-ide
 end package
 
 # obsolete - leave at this version
 package SUNWnetbeans-desktop
-version 6.5.1
+version 6.7
 depend netbeans-desktop
 end package
 
 # obsolete - leave at this version
 package SUNWnetbeans-javaee
-version 6.5.1
+version 6.7
 depend netbeans-java
 end package
 
 # obsolete - leave at this version
 package SUNWnetbeans-javase
-version 6.5.1
+version 6.7
 depend netbeans-javase
 end package
 
 # obsolete - leave at this version
 package SUNWnetbeans-ruby
-version 6.5.1
+version 6.7
 depend netbeans-ruby
 end package
 
 # obsolete - leave at this version
 package SUNWnetbeans-cpp
-version 6.5.1
+version 6.7
 depend netbeans-cpp
 end package
 
 # obsolete - leave at this version
 package SUNWlibnb-apisupport1
-version 6.5.1
+version 6.7
 end package
 
 # obsolete - leave at this version
 package SUNWlibnb-cnd1
-version 6.5.1
+version 6.7
 end package
 
 # obsolete - leave at this version
 package SUNWlibnb-enterprise4
-version 6.5.1
+version 6.7
 end package
 
 # obsolete - leave at this version
 package SUNWlibnb-gsf1
-version 6.5.1
+version 6.7
 end package
 
 # obsolete - leave at this version
 package SUNWlibnb-ide8
-version 6.5.1
+version 6.7
 end package
 
 # obsolete - leave at this version
 package SUNWlibnb-java1
-version 6.5.1
+version 6.7
 end package
 
 # obsolete - leave at this version
 package SUNWlibnb-platform7
-version 6.5.1
+version 6.7
 end package
 
 # obsolete - leave at this version
 package SUNWlibnb-profiler2
-version 6.5.1
+version 6.7
 end package
 
 # obsolete - leave at this version
 package SUNWlibnb-ruby1
-version 6.5.1
+version 6.7
 end package
 
 # obsolete - leave at this version
 package SUNWlibnb-visualweb1
-version 6.5.1
+version 6.7
 end package
 
 # obsolete - leave at this version
 package SUNWlibnb-xml1
-version 6.5.1
+version 6.7
 end package
 
 package netbeans-incorporation
-version 6.5.1
+version 6.7
 summary "netbeans incorporation to insure all components are upgraded at once"
-add depend type=incorporate fmri=SUNWlibnb-apisupport1@6.5.1
-add depend type=incorporate fmri=SUNWlibnb-cnd1@6.5.1
-add depend type=incorporate fmri=SUNWlibnb-enterprise4@6.5.1
-add depend type=incorporate fmri=SUNWlibnb-gsf1@6.5.1
-add depend type=incorporate fmri=SUNWlibnb-ide8@6.5.1
-add depend type=incorporate fmri=SUNWlibnb-java1@6.5.1
-add depend type=incorporate fmri=SUNWlibnb-platform7@6.5.1
-add depend type=incorporate fmri=SUNWlibnb-profiler2@6.5.1
-add depend type=incorporate fmri=SUNWlibnb-ruby1@6.5.1
-add depend type=incorporate fmri=SUNWlibnb-visualweb1@6.5.1
-add depend type=incorporate fmri=SUNWlibnb-xml1@6.5.1
-add depend type=incorporate fmri=SUNWnetbeans-cpp@6.5.1
-add depend type=incorporate fmri=SUNWnetbeans-desktop@6.5.1
-add depend type=incorporate fmri=SUNWnetbeans-ide@6.5.1
-add depend type=incorporate fmri=SUNWnetbeans-javaee@6.5.1
-add depend type=incorporate fmri=SUNWnetbeans-javase@6.5.1
-add depend type=incorporate fmri=SUNWnetbeans-ruby@6.5.1
-add depend type=incorporate fmri=netbeans-cpp@6.5.1
-add depend type=incorporate fmri=netbeans-desktop@6.5.1
-add depend type=incorporate fmri=netbeans-full@6.5.1
-add depend type=incorporate fmri=netbeans-ide@6.5.1
-add depend type=incorporate fmri=netbeans-java@6.5.1
-add depend type=incorporate fmri=netbeans-javase@6.5.1
-add depend type=incorporate fmri=netbeans-php@6.5.1
-add depend type=incorporate fmri=netbeans-ruby@6.5.1
-add depend type=incorporate fmri=libnb-apisupport@6.5.1
-add depend type=incorporate fmri=libnb-cnd@6.5.1
-add depend type=incorporate fmri=libnb-enterprise@6.5.1
-add depend type=incorporate fmri=libnb-groovy@6.5.1
-add depend type=incorporate fmri=libnb-gsf@6.5.1
-add depend type=incorporate fmri=libnb-ide@6.5.1
-add depend type=incorporate fmri=libnb-identity@6.5.1
-add depend type=incorporate fmri=libnb-java@6.5.1
-add depend type=incorporate fmri=libnb-php@6.5.1
-add depend type=incorporate fmri=libnb-platform@6.5.1
-add depend type=incorporate fmri=libnb-profiler@6.5.1
-add depend type=incorporate fmri=libnb-ruby@6.5.1
-add depend type=incorporate fmri=libnb-soa@6.5.1
-add depend type=incorporate fmri=libnb-visualweb@6.5.1
-add depend type=incorporate fmri=libnb-webcommon@6.5.1
-add depend type=incorporate fmri=libnb-websvccommon@6.5.1
-add depend type=incorporate fmri=libnb-xml@6.5.1
+add depend type=incorporate fmri=SUNWlibnb-apisupport1@6.7
+add depend type=incorporate fmri=SUNWlibnb-cnd1@6.7
+add depend type=incorporate fmri=SUNWlibnb-enterprise4@6.7
+add depend type=incorporate fmri=SUNWlibnb-gsf1@6.7
+add depend type=incorporate fmri=SUNWlibnb-ide8@6.7
+add depend type=incorporate fmri=SUNWlibnb-java1@6.7
+add depend type=incorporate fmri=SUNWlibnb-platform7@6.7
+add depend type=incorporate fmri=SUNWlibnb-profiler2@6.7
+add depend type=incorporate fmri=SUNWlibnb-ruby1@6.7
+add depend type=incorporate fmri=SUNWlibnb-visualweb1@6.7
+add depend type=incorporate fmri=SUNWlibnb-xml1@6.7
+add depend type=incorporate fmri=SUNWnetbeans-cpp@6.7
+add depend type=incorporate fmri=SUNWnetbeans-desktop@6.7
+add depend type=incorporate fmri=SUNWnetbeans-ide@6.7
+add depend type=incorporate fmri=SUNWnetbeans-javaee@6.7
+add depend type=incorporate fmri=SUNWnetbeans-javase@6.7
+add depend type=incorporate fmri=SUNWnetbeans-ruby@6.7
+add depend type=incorporate fmri=netbeans@6.7
+add depend type=incorporate fmri=netbeans-cpp@6.7
+add depend type=incorporate fmri=netbeans-desktop@6.7
+add depend type=incorporate fmri=netbeans-full@6.7
+add depend type=incorporate fmri=netbeans-ide@6.7
+add depend type=incorporate fmri=netbeans-java@6.7
+add depend type=incorporate fmri=netbeans-javase@6.7
+add depend type=incorporate fmri=netbeans-php@6.7
+add depend type=incorporate fmri=netbeans-ruby@6.7
+add depend type=incorporate fmri=libnb-apisupport@6.7
+add depend type=incorporate fmri=libnb-cnd@6.7
+add depend type=incorporate fmri=libnb-dlight@6.7
+add depend type=incorporate fmri=libnb-enterprise@6.7
+add depend type=incorporate fmri=libnb-ergonomics@6.7
+add depend type=incorporate fmri=libnb-groovy@6.7
+add depend type=incorporate fmri=libnb-gsf@6.7
+add depend type=incorporate fmri=libnb-ide@6.7
+add depend type=incorporate fmri=libnb-identity@6.7
+add depend type=incorporate fmri=libnb-java@6.7
+add depend type=incorporate fmri=libnb-php@6.7
+add depend type=incorporate fmri=libnb-platform@6.7
+add depend type=incorporate fmri=libnb-profiler@6.7
+add depend type=incorporate fmri=libnb-ruby@6.7
+add depend type=incorporate fmri=libnb-soa@6.7
+add depend type=incorporate fmri=libnb-visualweb@6.7
+add depend type=incorporate fmri=libnb-webcommon@6.7
+add depend type=incorporate fmri=libnb-websvccommon@6.7
+add depend type=incorporate fmri=libnb-xml@6.7
 end package
 
 package libnb-apisupport
-version 6.5.1
+version 6.7
 classification "Development/Integrated Development Environments"
 import libnb-apisupport
 depend netbeans-ide
@@ -174,7 +196,7 @@ depend libnb-java
 end package
 
 package libnb-cnd
-version 6.5.1
+version 6.7
 classification "Development/Integrated Development Environments"
 import libnb-cnd
 depend netbeans-ide
@@ -182,24 +204,40 @@ depend libnb-platform
 depend libnb-ide
 end package
 
+package libnb-dlight
+version 6.7
+classification "Development/Integrated Development Environments"
+import libnb-dlight
+depend netbeans-ide
+depend libnb-platform
+depend libnb-ide
+end package
+
 package libnb-enterprise
-version 6.5.1
+version 6.7
 classification "Development/Integrated Development Environments"
 import libnb-enterprise
 depend netbeans-ide
 depend libnb-platform
 depend libnb-ide
 depend libnb-java
-depend libnb-gsf
+end package
+
+package libnb-ergonomics
+version 6.7
+classification "Development/Integrated Development Environments"
+import libnb-ergonomics
+depend netbeans-ide
+depend libnb-platform
+depend libnb-ide
 end package
 
 package libnb-groovy
-version 6.5.1
+version 6.7
 classification "Development/Integrated Development Environments"
 import libnb-groovy
 depend netbeans-ide
 depend libnb-apisupport
-depend libnb-gsf
 depend libnb-ide
 depend libnb-java
 depend libnb-platform
@@ -207,16 +245,8 @@ depend libnb-profiler
 depend libnb-websvccommon
 end package
 
-package libnb-gsf
-version 6.5.1
-classification "Development/Integrated Development Environments"
-import libnb-gsf
-depend netbeans-ide
-depend libnb-platform
-end package
-
 package libnb-ide
-version 6.5.1
+version 6.7
 classification "Development/Integrated Development Environments"
 import libnb-ide
 depend netbeans-ide
@@ -224,20 +254,19 @@ depend libnb-platform
 end package
 
 package libnb-identity
-version 6.5.1
+version 6.7
 classification "Development/Integrated Development Environments"
 import libnb-identity
 depend netbeans-ide
 depend libnb-platform
 depend libnb-ide
 depend libnb-java
-depend libnb-gsf
 depend libnb-enterprise
 depend libnb-websvccommon
 end package
 
 package libnb-java
-version 6.5.1
+version 6.7
 classification "Development/Integrated Development Environments"
 import libnb-java
 depend netbeans-ide
@@ -247,7 +276,7 @@ depend libnb-websvccommon
 end package
 
 package libnb-php
-version 6.5.1
+version 6.7
 classification "Development/Integrated Development Environments"
 import libnb-php
 depend netbeans-ide
@@ -257,73 +286,43 @@ depend libnb-websvccommon
 end package
 
 package libnb-platform
-version 6.5.1
+version 6.7
 classification "Development/Integrated Development Environments"
 import libnb-platform
 depend netbeans-ide
 end package
 
 package libnb-profiler
-version 6.5.1
+version 6.7
 classification "Development/Integrated Development Environments"
 import libnb-profiler
 depend netbeans-ide
 depend libnb-platform
 depend libnb-ide
 depend libnb-java
-depend libnb-gsf
 depend libnb-websvccommon
 end package
 
 package libnb-ruby
-version 6.5.1
+version 6.7
 classification "Development/Integrated Development Environments"
 import libnb-ruby
 depend netbeans-ide
 depend libnb-platform
 depend libnb-ide
-depend libnb-gsf
-end package
-
-package libnb-soa
-version 6.5.1
-classification "Development/Integrated Development Environments"
-import libnb-soa
-depend netbeans-ide
-depend libnb-platform
-depend libnb-ide
-depend libnb-xml
-depend libnb-java
-depend libnb-enterprise
-depend libnb-gsf
-depend libnb-websvccommon
-end package
-
-package libnb-visualweb
-version 6.5.1
-classification "Development/Integrated Development Environments"
-import libnb-visualweb
-depend netbeans-ide
-depend libnb-platform
-depend libnb-ide
-depend libnb-java
-depend libnb-enterprise
-depend libnb-gsf
-depend libnb-websvccommon
 end package
 
 package libnb-webcommon
-version 6.5.1
+version 6.7
 classification "Development/Integrated Development Environments"
 import libnb-webcommon
 depend netbeans-ide
 depend libnb-platform
 depend libnb-ide
-depend libnb-gsf
 end package
 
 package libnb-websvccommon
-version 6.5.1
+version 6.7
 classification "Development/Integrated Development Environments"
 import libnb-websvccommon
 depend netbeans-ide
@@ -331,17 +330,8 @@ depend libnb-platform
 depend libnb-ide
 end package
 
-package libnb-xml
-version 6.5.1
-classification "Development/Integrated Development Environments"
-import libnb-xml
-depend netbeans-ide
-depend libnb-platform
-depend libnb-ide
-end package
-
 package netbeans-cpp
-version 6.5.1
+version 6.7
 classification "Development/Integrated Development Environments"
 import netbeans-cpp
 depend SUNWj6rt
@@ -350,33 +340,33 @@ depend developer/netbeans/plugin/nb-dtrace
 depend libnb-cnd
 depend libnb-ide
 depend libnb-platform
-depend netbeans-incorporation@6.5.1
+depend netbeans-incorporation@6.7
 end package
 
 package netbeans-desktop
-version 6.5.1
+version 6.7
 classification "Development/Integrated Development Environments"
 import netbeans-desktop
 end package
 
 package netbeans-full
-version 6.5.1
+version 6.7
 depend developer/netbeans/plugin/nb-dtrace
 depend netbeans
 end package
 
 package netbeans-ide
-version 6.5.1
+version 6.7
 classification "Development/Integrated Development Environments"
 import netbeans-ide
 depend SUNWj6rt
 depend SUNWj6dev
 depend netbeans-desktop
-depend netbeans-incorporation@6.5.1
+depend netbeans-incorporation@6.7
 end package
 
 package netbeans-java
-version 6.5.1
+version 6.7
 classification "Development/Integrated Development Environments"
 import netbeans-java
 depend SUNWj6rt
@@ -385,62 +375,55 @@ depend developer/netbeans/plugin/nb-dtrace
 depend libnb-apisupport
 depend libnb-enterprise
 depend libnb-groovy
-depend libnb-gsf
 depend libnb-ide
 depend libnb-identity
 depend libnb-java
 depend libnb-platform
 depend libnb-profiler
-depend libnb-visualweb
 depend libnb-webcommon
 depend libnb-websvccommon
-depend libnb-xml
-depend netbeans-incorporation@6.5.1
+depend netbeans-incorporation@6.7
 end package
 
 package netbeans-javase
-version 6.5.1
+version 6.7
 classification "Development/Integrated Development Environments"
 import netbeans-javase
 depend SUNWj6rt
 depend SUNWj6dev
 depend developer/netbeans/plugin/nb-dtrace
 depend libnb-apisupport
-depend libnb-gsf
 depend libnb-ide
 depend libnb-java
 depend libnb-platform
 depend libnb-profiler
 depend libnb-websvccommon
-depend netbeans-incorporation@6.5.1
+depend netbeans-incorporation@6.7
 end package
 
 package netbeans-php
-version 6.5.1
+version 6.7
 classification "Development/Integrated Development Environments"
 import netbeans-php
 depend SUNWj6rt
 depend SUNWj6dev
 depend developer/netbeans/plugin/nb-dtrace
-depend libnb-gsf
 depend libnb-ide
 depend libnb-platform
 depend libnb-php
 depend libnb-websvccommon
-depend netbeans-incorporation@6.5.1
+depend netbeans-incorporation@6.7
 end package
 
 package netbeans-ruby
-version 6.5.1
+version 6.7
 classification "Development/Integrated Development Environments"
 import netbeans-ruby
 depend SUNWj6rt
 depend SUNWj6dev
 depend developer/netbeans/plugin/nb-dtrace
-depend libnb-gsf
 depend libnb-ide
 depend libnb-platform
 depend libnb-ruby
-depend netbeans-incorporation@6.5.1
+depend netbeans-incorporation@6.7
 end package
-
