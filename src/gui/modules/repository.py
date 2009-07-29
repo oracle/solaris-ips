@@ -655,11 +655,14 @@ class Repository:
                 if len(name) == 0:
                         return False
 
-                if not misc.valid_pub_url(name):
+                try:
+                        publisher.RepositoryURI(name)
+                        return True
+                except api_errors.PublisherError:
                         # Check whether the user has started typing a valid URL.
                         # If he has we do not display an error message.
                         valid_start = False
-                        for val in misc._valid_proto:
+                        for val in publisher.SUPPORTED_SCHEMES:
                                 check_str = "%s://" % val
                                 if check_str.startswith(name):
                                         valid_start = True
@@ -669,8 +672,7 @@ class Repository:
                         else:
                                 self.url_error = _("URL is not valid")
                         return False
-                return True
-        
+            
         def __on_repositoryname_changed(self, widget):
                 self.__validate_name(widget)
 
