@@ -91,7 +91,6 @@ import gettext
 import signal
 from threading import Thread
 from threading import Lock
-from urllib2 import HTTPError, URLError
 from cPickle import UnpicklingError
 
 try:
@@ -544,6 +543,7 @@ class PackageManager:
                 self.show_licenses_id = 0
                 self.showing_empty_details = False
                 self.in_setup = True
+                self.catalog_refresh_done = False
                 if self.initial_app_width >= MIN_APP_WIDTH and \
                         self.initial_app_height >= MIN_APP_HEIGHT:
                         self.w_main_window.resize(self.initial_app_width,
@@ -2421,6 +2421,23 @@ class PackageManager:
                 self.saved_category_list = None
                 self.saved_section_list = None
 
+        def __refresh_for_publisher(self, pub):
+                status_str = _("Refreshing package catalog information")
+                gobject.idle_add(self.__update_statusbar_message,
+                    status_str)
+                try:
+                        self.api_o.refresh(pubs=[pub])
+                except api_errors.CatalogRefreshException, cre:
+                        self.__catalog_refresh_message(cre)
+                except api_errors.InvalidDepotResponseException, idrex:
+                        err = str(idrex)
+                        gobject.idle_add(self.error_occurred, err,
+                            None, gtk.MESSAGE_INFO)
+                except api_errors.ApiException, ex:
+                        err = str(ex)
+                        gobject.idle_add(self.error_occurred, err,
+                            None, gtk.MESSAGE_INFO)
+
         def __get_application_categories_lists(self, publishers):
                 application_list = self.__get_new_application_liststore()
                 category_list = self.__get_new_category_liststore()
@@ -2440,10 +2457,7 @@ class PackageManager:
                                 category_list = self.__get_new_category_liststore()
                                 uptodate = False
                         if not uptodate:
-                                status_str = _("Refreshing package catalog information")
-                                gobject.idle_add(self.__update_statusbar_message,
-                                    status_str)
-                                self.api_o.refresh(pubs=[pub])
+                                self.__refresh_for_publisher(pub)
                                 self.__add_pkgs_to_lists_from_api(pub,
                                     application_list, category_list, section_list)
                                 category_list.prepend([0, _('All'), None, None, False,
@@ -3288,12 +3302,12 @@ class PackageManager:
                         self.__image_activity_lock.release()
                 return res
 
-        def __enable_disable_update_all(self):
+        def __enable_disable_update_all(self, refresh_done):
                 #XXX Api to provide fast information if there are some updates
                 #available within image
                 gobject.idle_add(self.w_updateall_button.set_sensitive, False)
                 gobject.idle_add(self.w_updateall_menuitem.set_sensitive, False)
-                update_available = self.__check_if_updates_available()
+                update_available = self.__check_if_updates_available(refresh_done)
                 gobject.idle_add(self.__g_enable_disable_update_all, update_available)
                 return False
 
@@ -3306,13 +3320,30 @@ class PackageManager:
                     not self.showing_empty_details):
                         self.__show_licenses()
 
-        def __check_if_updates_available(self):
+        def __check_if_updates_available(self, refresh_done):
                 # First we load the catalogs so package info can work
                 try:
-                        self.catalog_loaded = False
-                        self.api_o.refresh()
-                        self.catalog_loaded = True
+                        if not refresh_done:
+                                self.catalog_loaded = False
+                                self.api_o.refresh()
+                                self.catalog_loaded = True
                 except api_errors.InventoryException:
+                        gobject.idle_add(self.__set_empty_details_panel)
+                        return False
+                except api_errors.InvalidDepotResponseException, idrex:
+                        err = str(idrex)
+                        gobject.idle_add(self.error_occurred, err,
+                            None, gtk.MESSAGE_INFO)
+                        gobject.idle_add(self.__set_empty_details_panel)
+                        return False
+                except api_errors.CatalogRefreshException, cre:
+                        self.__catalog_refresh_message(cre)
+                        gobject.idle_add(self.__set_empty_details_panel)
+                        return False
+                except api_errors.ApiException, ex:
+                        err = str(ex)
+                        gobject.idle_add(self.error_occurred, err,
+                            None, gtk.MESSAGE_INFO)
                         gobject.idle_add(self.__set_empty_details_panel)
                         return False
                 gobject.idle_add(self.__show_info_after_catalog_load)
@@ -3345,6 +3376,7 @@ class PackageManager:
                         # Since the user requested the refresh, perform it
                         # immediately for all publishers.
                         self.api_o.refresh(immediate=True)
+                        self.catalog_refresh_done = True
                         # Refresh will load the catalogs.
                         self.catalog_loaded = True
                 except api_errors.PublisherError:
@@ -3358,39 +3390,7 @@ class PackageManager:
                         self.__catalog_refresh_done()
                         return -1
                 except api_errors.CatalogRefreshException, cre:
-                        total = cre.total
-                        succeeded = cre.succeeded
-                        ermsg = _("Network problem.\n\n")
-                        ermsg += _("Details:\n")
-                        ermsg += "%s/%s" % (succeeded, total)
-                        ermsg += _(" catalogs successfully updated:\n")
-                        for pub, err in cre.failed:
-                                if isinstance(err, HTTPError):
-                                        ermsg += "   %s: %s - %s\n" % \
-                                            (err.filename, err.code, err.msg)
-                                elif isinstance(err, URLError):
-                                        if err.args[0][0] == 8:
-                                                ermsg += "    %s: %s\n" % \
-                                                    (urlparse.urlsplit(
-                                                        pub["origin"])[1].split(":")[0],
-                                                    err.args[0][1])
-                                        else:
-                                                if isinstance(err.args[0], \
-                                                    socket.timeout):
-                                                        ermsg += "    %s: %s\n" % \
-                                                            (pub["origin"], "timeout")
-                                                else:
-                                                        ermsg += "    %s: %s\n" % \
-                                                            (pub["origin"], \
-                                                            err.args[0][1])
-                                elif "data" in err.__dict__ and err.data:
-                                        ermsg += err.data
-                                else:
-                                        ermsg += _("Unknown error")
-                                        ermsg += "\n"
-
-                        gobject.idle_add(self.error_occurred, ermsg,
-                            None, gtk.MESSAGE_INFO)
+                        self.__catalog_refresh_message(cre)
                         self.__catalog_refresh_done()
                         return -1
                 except api_errors.InvalidDepotResponseException, idrex:
@@ -3429,7 +3429,7 @@ class PackageManager:
                 except api_errors.InventoryException:
                         # This can happen if the repository does not
                         # contain any packages
-                        err = _("Selected repository does not contain any packages.")
+                        err = _("Selected package source does not contain any packages.")
                         gobject.idle_add(self.error_occurred, err, None,
                             gtk.MESSAGE_INFO)
                         self.unset_busy_cursor()
@@ -3681,23 +3681,6 @@ class PackageManager:
                 gui_misc.error_occurred(self.w_main_window, error_msg,
                     title, msg_type, use_markup=True)
 
-
-                msgbox = gtk.MessageDialog(parent =
-                    self.w_main_window,
-                    buttons = gtk.BUTTONS_CLOSE,
-                    flags = gtk.DIALOG_MODAL,
-                    type = msg_type,
-                    message_format = None)
-                msgbox.set_property('text', error_msg)
-                title = None
-                if msg_title:
-                        title = msg_title
-                else:
-                        title = _("Package Manager")
-                msgbox.set_title(title)
-                msgbox.run()
-                msgbox.destroy()
-
 #-----------------------------------------------------------------------------#
 # Static Methods
 #-----------------------------------------------------------------------------#
@@ -3844,7 +3827,9 @@ class PackageManager:
                         self.unset_busy_cursor()
                 
                 if self.user_rights and (self.first_run or self.in_reload):
-                        Thread(target = self.__enable_disable_update_all).start()
+                        Thread(target = self.__enable_disable_update_all,
+                            args = (self.catalog_refresh_done,)).start()
+                self.catalog_refresh_done = False
                 self.first_run = False
                 self.in_reload = False
 
@@ -3986,6 +3971,18 @@ class PackageManager:
                 self.__enable_disable_install_remove()
                 self.update_statusbar()
                 Thread(target = self.__enable_disable_update_all).start()
+
+        def __catalog_refresh_message(self, cre):
+                total = cre.total
+                succeeded = cre.succeeded
+                ermsg = _("Network problem.\n\n")
+                ermsg += _("Details:\n")
+                ermsg += "%s/%s" % (succeeded, total)
+                ermsg += _(" catalogs successfully updated:\n")
+                for pub, err in cre.failed:
+                        ermsg += "%s: %s\n" % (pub["origin"], str(err))
+                gobject.idle_add(self.error_occurred, ermsg,
+                    None, gtk.MESSAGE_INFO)
 
         @staticmethod
         def __find_root_home_dir():
