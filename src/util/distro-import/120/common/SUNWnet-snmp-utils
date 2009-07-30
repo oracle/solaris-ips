@@ -1,0 +1,5 @@
+package SUNWnet-snmp-utils
+classification "System/Enterprise Management"
+import SUNWnet-snmp-utils
+version 5.4.1
+end package

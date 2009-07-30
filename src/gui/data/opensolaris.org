@@ -337,6 +337,9 @@ category = Shells
 [SUNWbcc]
 category = Other Languages
 
+[SUNWbcmsata]
+category = Storage
+
 [SUNWbcp]
 category = Core
 
@@ -354,6 +357,9 @@ category = Networking
 
 [SUNWbind]
 category = Services
+
+[SUNWbindc]
+category = Internet
 
 [SUNWbinutils]
 category = GNU
@@ -2017,6 +2023,9 @@ category = Java
 [SUNWjdtcore]
 category = Java
 
+[SUNWjedit]
+category = Editors
+
 [SUNWjettison]
 category = Java
 
@@ -2554,6 +2563,9 @@ category = Multimedia Libraries
 [SUNWlibtool]
 category = GNU
 
+[SUNWlibtorrent]
+category = Libraries (System)
+
 [SUNWlibunique]
 category = Libraries (System)
 
@@ -2573,7 +2585,10 @@ category = Multimedia Libraries
 category = C++
 
 [SUNWlibxmlrpc-c]
-category = C,C++
+category = Libraries (System)
+
+[SUNWlibyaz]
+category = Databases
 
 [SUNWlighttpd14]
 category = Application and Web Servers
@@ -2827,6 +2842,18 @@ category = Services
 [SUNWneon]
 category = Libraries (System)
 
+[SUNWnet-snmp-addons]
+category = Enterprise Management
+
+[SUNWnet-snmp-core]
+category = Enterprise Management
+
+[SUNWnet-snmp-doc]
+category = Enterprise Management
+
+[SUNWnet-snmp-utils]
+category = Enterprise Management
+
 [SUNWnet6]
 category = System
 
@@ -2839,13 +2866,7 @@ category = Games
 [SUNWnfsc]
 category = File System
 
-[SUNWnfsckr]
-category = File System
-
 [SUNWnfss]
-category = File System
-
-[SUNWnfsskr]
 category = File System
 
 [SUNWnge]
@@ -2982,6 +3003,9 @@ category = Networking
 
 [SUNWpd]
 category = Other Peripherals
+
+[SUNWpdsh]
+category = System Utilities
 
 [SUNWpdu]
 category = Hardware
@@ -3316,6 +3340,9 @@ category = Python
 [SUNWpython26-zope-interface]
 category = Python
 
+[SUNWpywbem]
+category = Python
+
 [SUNWpyyaml24]
 category = Python
 
@@ -3414,6 +3441,9 @@ category = System Utilities
 
 [SUNWrtls]
 category = Hardware
+
+[SUNWrtorrent]
+category = Internet
 
 [SUNWrtw]
 category = Networking
@@ -3556,9 +3586,6 @@ category = GNU
 [SUNWsfman]
 category = GNU
 
-[SUNWsfwdemo]
-category = System
-
 [SUNWsfwhea]
 category = System
 
@@ -3592,9 +3619,6 @@ category = Services
 [SUNWslrn]
 category = Internet
 
-[SUNWsmagt]
-category = Enterprise Management
-
 [SUNWsmapi]
 category = Enterprise Management
 
@@ -3607,23 +3631,11 @@ category = File System
 [SUNWsmbs]
 category = File System
 
-[SUNWsmbskr]
-category = File System
-
-[SUNWsmcmd]
-category = Enterprise Management
-
-[SUNWsmdoc]
-category = Enterprise Management
-
 [SUNWsmedia]
 category = Libraries (System)
 
 [SUNWsmhba]
 category = Libraries (System)
-
-[SUNWsmmgr]
-category = Administration and Configuration
 
 [SUNWsmpd]
 category = Storage
@@ -3931,6 +3943,9 @@ category = Fonts
 [SUNWttf-arphic-uming]
 category = Fonts
 
+[SUNWttf-gentium]
+category = Fonts
+
 [SUNWttf-google-droid]
 category = Fonts
 
@@ -3946,6 +3961,9 @@ category = Fonts
 [SUNWttf-ipafont]
 category = Fonts
 
+[SUNWttf-kacst]
+category = Fonts
+
 [SUNWttf-thai-scalable]
 category = Fonts
 
@@ -3953,6 +3971,9 @@ category = Fonts
 category = Fonts
 
 [SUNWttf-unfonts-ko-extra]
+category = Fonts
+
+[SUNWttf-unifont]
 category = Fonts
 
 [SUNWttf-wqy-zenhei]
@@ -3963,6 +3984,9 @@ category = Internet
 
 [SUNWuacm]
 category = Ports
+
+[SUNWuath]
+category = Networking
 
 [SUNWucbt]
 category = System
@@ -4195,9 +4219,6 @@ category = X11 (System)
 [SUNWxpp3min]
 category = Java
 
-[SUNWxprint-server]
-category = X11 (System)
-
 [SUNWxsane]
 category = System Utilities
 
@@ -4261,9 +4282,6 @@ category = X11 (System)
 [SUNWxwopt]
 category = X11 (System)
 
-[SUNWxwpft]
-category = X11 (System)
-
 [SUNWxwplr]
 category = X11 (System)
 
@@ -4292,9 +4310,6 @@ category = Administration and Configuration
 category = File System
 
 [SUNWzfs-auto-snapshot]
-category = File System
-
-[SUNWzfskr]
 category = File System
 
 [SUNWzip]
@@ -4534,13 +4549,16 @@ category = Integrated Development Environments
 [libnb-cnd]
 category = Integrated Development Environments
 
+[libnb-dlight]
+category = Integrated Development Environments
+
 [libnb-enterprise]
 category = Integrated Development Environments
 
-[libnb-groovy]
+[libnb-ergonomics]
 category = Integrated Development Environments
 
-[libnb-gsf]
+[libnb-groovy]
 category = Integrated Development Environments
 
 [libnb-ide]
@@ -4564,19 +4582,10 @@ category = Integrated Development Environments
 [libnb-ruby]
 category = Integrated Development Environments
 
-[libnb-soa]
-category = Integrated Development Environments
-
-[libnb-visualweb]
-category = Integrated Development Environments
-
 [libnb-webcommon]
 category = Integrated Development Environments
 
 [libnb-websvccommon]
-category = Integrated Development Environments
-
-[libnb-xml]
 category = Integrated Development Environments
 
 [netbeans]

@@ -1,0 +1,4 @@
+package SUNWttf-kacst
+classification "System/Fonts"
+import SUNWttf-kacst
+end package

@@ -1,0 +1,5 @@
+package SUNWlibyaz
+classification "Development/Databases"
+import SUNWlibyaz
+version 3.0.46
+end package

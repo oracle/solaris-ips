@@ -1,0 +1,5 @@
+package SUNWpdsh
+classification "Applications/System Utilities"
+import SUNWpdsh
+version 2.18
+end package

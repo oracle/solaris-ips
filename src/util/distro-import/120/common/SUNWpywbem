@@ -1,0 +1,5 @@
+package SUNWpywbem
+classification "Development/Python"
+import SUNWpywbem
+version 0.7.0
+end package

@@ -1,0 +1,18 @@
+#
+# As there isn't currently a way to rename packages on upgrade, create an
+# empty package which will cause the previous contents of the package to
+# be deleted when the empty version is installed and declare a dependency
+# on the package with the new name.
+#
+# SUNWsmmgr was EOFed in snv_120.
+#
+package SUNWsmmgr
+depend SUNWnet-snmp-core
+version 5.0.9
+#
+# application/management/sma was deleted in snv_120.  In order to
+# work-around 6859248, deliver a replacement service method which exits
+# with an equivalent of SMF_EXIT_OK.
+#
+add link path=lib/svc/method/svc-sma target=../../../usr/bin/true
+end package

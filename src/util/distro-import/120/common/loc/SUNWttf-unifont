@@ -1,0 +1,4 @@
+package SUNWttf-unifont
+classification "System/Fonts"
+import SUNWttf-unifont
+end package

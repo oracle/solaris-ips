@@ -1,0 +1,5 @@
+package SUNWrtorrent
+classification "Applications/Internet"
+import SUNWrtorrent
+version 0.8.2
+end package
