@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -28,6 +28,7 @@
 
 f_nosource=$(gettext "Error: unable to determine source zone dataset.")
 f_sysunconfig=$(gettext "Error: sys-unconfig failed.")
+f_nobrand=$(gettext "Error: unable to determine source zone brand.")
 
 # Set up ZFS dataset hierarchy for the zone.
 
@@ -50,10 +51,16 @@ fi
 sourcezone=$1
 
 # Find the active source zone dataset to clone.
-sourcezonepath=`/usr/sbin/zonecfg -z $sourcezone info zonepath | \
-    /usr/bin/cut -f2 -d' '`
+sourcezonepath=`/usr/sbin/zoneadm -z $sourcezone list -p | awk -F: '{print $4}'`
 if [ -z "$sourcezonepath" ]; then
 	fail_fatal "$f_nosource"
+fi
+
+# Find the active source zone brand
+brand=`/usr/sbin/zoneadm -z $sourcezone list -p | awk -F: '{print $6}'`
+
+if [ -z "$brand" ]; then
+	fail_fatal "$f_nobrand"
 fi
 
 get_current_gzbe
@@ -134,7 +141,10 @@ fi
 /usr/sbin/mount -F zfs $zpds/$zpname/ROOT/$BENAME $zonepath/root || \
 	fail_incomplete "$f_zfs_mount"
 
-/usr/sbin/sys-unconfig -R $zonepath/root || fail_incomplete "$f_sysunconfig"
+if [ $brand != labeled ]; then
+	/usr/sbin/sys-unconfig -R $zonepath/root || \
+	    fail_incomplete "$f_sysunconfig"
+fi
 
 /usr/sbin/umount $zonepath/root || fail_fatal "$f_umount"
 

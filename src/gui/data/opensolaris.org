@@ -4705,6 +4705,9 @@ category = Java
 [system/openjdk7/runtime-64]
 category = Java
 
+[system/trusted/trusted-nonglobal]
+category = Trusted
+
 [trusted-extensions]
 category = Trusted Extensions
 

@@ -3228,6 +3228,7 @@ depend lang-support-vietnamese
 depend slim_install
 depend storage-nas
 depend storage-server
+depend system/trusted/trusted-nonglobal
 depend trusted-extensions
 $(i386_ONLY)depend xvm
 $(i386_ONLY)depend xvm-gui
@@ -4051,4 +4052,5 @@ include common/LangSupport
 include common/StorageNAS
 include common/StorageServer
 include common/TrustedExtensions
+include common/TrustedNonGlobal
 include common/osnet-dev
