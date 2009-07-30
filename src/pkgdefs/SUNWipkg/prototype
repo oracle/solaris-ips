@@ -151,6 +151,8 @@ f none usr/lib/python2.4/vendor-packages/pkg/manifest.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/manifest.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/misc.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/misc.pyc 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/nrlock.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/nrlock.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/p5i.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/p5i.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/pkggzip.py 444 root bin
