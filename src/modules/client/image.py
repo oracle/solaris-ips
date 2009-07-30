@@ -142,6 +142,7 @@ class Image(object):
         image_subdirs = required_subdirs + [ "index", "state/installed" ]
 
         def __init__(self):
+                self.arch_change = False
                 self.cfg_cache = None
                 self.type = None
                 self.root = None
@@ -155,6 +156,7 @@ class Image(object):
                 self.__catalogs = {}
                 self._catalog = {}
                 self.__pkg_states = None
+                self.new_variants = {}
                 self.dl_cache_dir = None
                 self.dl_cache_incoming = None
                 self.is_user_cache_dir = False
@@ -365,7 +367,10 @@ class Image(object):
                     "variant.opensolaris.zone"] == "nonglobal"
 
         def get_arch(self):
-                return self.cfg_cache.variants["variant.arch"]
+                if "variant.arch" in self.new_variants:
+                        return self.new_variants["variant.arch"]
+                else:
+                        return self.cfg_cache.variants["variant.arch"]
 
         def get_root(self):
                 return self.root
@@ -600,6 +605,92 @@ class Image(object):
                                     errors)
                                 yield (act, errors)
 
+        def __call_imageplan_evaluate(self, ip, verbose=False):
+                if verbose:
+                        msg(_("Before evaluation:"))
+                        msg(ip)
+
+                # A plan can be requested without actually performing an
+                # operation on the image.
+                if self.history.operation_name:
+                        self.history.operation_start_state = ip.get_plan()
+
+                try:
+                        ip.evaluate()
+                except constraint.ConstraintException, e:
+                        raise api_errors.PlanCreationException(
+                            constraint_violations=str(e).split("\n"))
+
+                self.imageplan = ip
+
+                if self.history.operation_name:
+                        self.history.operation_end_state = \
+                            ip.get_plan(full=False)
+
+                if verbose:
+                        msg(_("After evaluation:"))
+                        ip.display()
+
+        def image_change_variant(self, variants, progtrack, check_cancelation,
+            noexecute, verbose=False):
+
+                ip = imageplan.ImagePlan(self, progtrack, lambda: False,
+                    noexecute=noexecute, variants=variants,
+                    recursive_removal=True)
+                progtrack.evaluate_start()
+
+                # make sure that some variants are actually changing
+                variants = dict(set(variants.iteritems()) - \
+                    set(self.cfg_cache.variants.iteritems()))
+
+                if not variants:
+                        self.__call_imageplan_evaluate(ip, verbose)
+                        msg("No variant changes.")
+                        return
+
+                #
+                # only get manifests for all architectures if we're
+                # changing the architecture variant
+                #
+                if "variant.arch" in variants:
+                        self.arch_change=True
+
+                #
+                # we can't set self.new_variants until after we
+                # instantiate the image plan since the image plan has
+                # to cache information like the old excludes, and
+                # once we set new_variants things like self.list_excludes()
+                # and self.get_arch() will report valus based off of the
+                # new variants we're moving too.
+                #
+                self.new_variants = variants
+
+                for fmri in self.gen_installed_pkgs():
+                        m = self.get_manifest(fmri)
+                        m_arch = m.get_variants("variant.arch");
+                        if not m_arch:
+                                # keep packages that don't have an explicit arch
+                                ip.propose_fmri(fmri)
+                        elif self.get_arch() in m_arch:
+                                # keep packages that match the current arch
+                                ip.propose_fmri(fmri)
+                        else:
+                                # remove packages for different archs
+                                ip.propose_fmri_removal(fmri)
+
+                self.__call_imageplan_evaluate(ip, verbose)
+
+        def image_config_update(self):
+                if not self.new_variants:
+                        return
+                ic = self.cfg_cache
+                ic.variants.update(self.new_variants)
+                ic.write(self.imgdir)
+                ic = imageconfig.ImageConfig(self.root)
+                ic.read(self.imgdir)
+                self.cfg_cache = ic
+
+
         def repair(self, repairs, progtrack):
                 """Repair any actions in the fmri that failed a verify."""
                 # XXX: This (lambda x: False) is temporary until we move pkg fix
@@ -714,13 +805,15 @@ class Image(object):
                 except KeyError:
                         return self.__fetch_manifest(fmri, excludes)
 
-        def get_manifest(self, fmri, add_to_cache=True, all_arch=False):
+        def get_manifest(self, fmri, all_arch=False):
                 """return manifest; uses cached version if available.
                 all_arch controls whether manifest contains actions
                 for all architectures"""
 
                 # Normally elide other arch variants
-                if all_arch:
+                add_to_cache=True
+                if self.arch_change or all_arch:
+                        all_arch = True
                         add_to_cache = False
                         v = EmptyI
                 else:
@@ -1054,6 +1147,10 @@ class Image(object):
                 if new_variants:
                         new_vars = self.cfg_cache.variants.copy()
                         new_vars.update(new_variants)
+                        return [new_vars.allow_action]
+                elif self.new_variants:
+                        new_vars = self.cfg_cache.variants.copy()
+                        new_vars.update(self.new_variants)
                         return [new_vars.allow_action]
                 else:
                         return [self.cfg_cache.variants.allow_action]
@@ -2438,8 +2535,6 @@ class Image(object):
 
                 head = []
                 tail = []
-
-
                 for p in pkg_list:
                         if p in inc_list:
                                 head.append(p)
@@ -2543,30 +2638,7 @@ class Image(object):
                             multiple_matches, [], illegal_fmris,
                             constraint_violations=constraint_violations)
 
-                if verbose:
-                        msg(_("Before evaluation:"))
-                        msg(ip)
-
-                # A plan can be requested without actually performing an
-                # operation on the image.
-                if self.history.operation_name:
-                        self.history.operation_start_state = ip.get_plan()
-
-                try:
-                        ip.evaluate()
-                except constraint.ConstraintException, e:
-                        raise api_errors.PlanCreationException(
-                            constraint_violations=str(e).split("\n"))
-
-                self.imageplan = ip
-
-                if self.history.operation_name:
-                        self.history.operation_end_state = \
-                            ip.get_plan(full=False)
-
-                if verbose:
-                        msg(_("After evaluation:"))
-                        msg(ip.display())
+                self.__call_imageplan_evaluate(ip, verbose)
 
         def make_uninstall_plan(self, fmri_list, recursive_removal,
             progresstracker, check_cancelation, noexecute, verbose=False):
@@ -2620,18 +2692,8 @@ class Image(object):
                 if err == 1:
                         raise api_errors.PlanCreationException(unmatched_fmris,
                             multiple_matches, missing_matches, illegal_fmris)
-                if verbose:
-                        msg(_("Before evaluation:"))
-                        msg(ip)
 
-                self.history.operation_start_state = ip.get_plan()
-                ip.evaluate()
-                self.history.operation_end_state = ip.get_plan(full=False)
-                self.imageplan = ip
-
-                if verbose:
-                        msg(_("After evaluation:"))
-                        ip.display()
+                self.__call_imageplan_evaluate(ip, verbose)
 
         def ipkg_is_up_to_date(self, actual_cmd, check_cancelation, noexecute,
             refresh_allowed=True, progtrack=None):

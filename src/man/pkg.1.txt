@@ -26,6 +26,9 @@ SYNOPSIS
      /usr/bin/pkg image-update [-fnvq] [--be-name name] [--no-refresh]
          [--no-index]
 
+     /usr/bin/pkg change-variant [-nvq] [--be-name name]
+         <variant_spec>=<instance> [<variant_spec>=<instance> ...]
+
      /usr/bin/pkg set-property propname propvalue
      /usr/bin/pkg unset-property propname ...
      /usr/bin/pkg property [-H] [propname ...]
@@ -318,6 +321,20 @@ SUBCOMMANDS
           are always checked.
 
           The -H option causes the headers to be omitted.
+
+     change-variant [-nvq] [--be-name name]
+       <variant_spec>=<instance> [<variant_spec>=<instance> ...]
+          Change the specified variants in the current image.
+
+          With the -n option, execute the requested operation but make no
+          persistent changes to the image.
+
+          With the -v option, issue verbose progress messages during the
+          requested operation.  With the -q option, be completely silent.
+
+          With --be-name, rename the newly created boot environment to be the
+          argument given.  This option is only valid if a new boot environment
+          is created during image update. See also beadm(1m).
 
      fix [pkg_fmri_pattern ...]
           Fix any errors reported by pkg verify.

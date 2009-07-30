@@ -30,7 +30,6 @@ import os
 import simplejson as json
 import StringIO
 import sys
-import threading
 import urllib
 import urllib2
 
@@ -47,23 +46,25 @@ import pkg.misc as misc
 import pkg.p5i as p5i
 import pkg.search_errors as search_errors
 import pkg.variant as variant
+import pkg.nrlock
 
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 18
+CURRENT_API_VERSION = 19
 CURRENT_P5I_VERSION = 1
 
 class ImageInterface(object):
         """This class presents an interface to images that clients may use.
         There is a specific order of methods which must be used to install
         or uninstall packages, or update an image. First, plan_install,
-        plan_uninstall, or plan_update_all must be called. After that
-        method completes successfully, describe may be called, and prepare
-        must be called. Finally, execute_plan may be called to implement
-        the previous created plan. The other methods do not hav an ordering
-        imposed upon them, and may be used as needed. Cancel may only be
-        invoked while a cancelable method is running."""
+        plan_uninstall, plan_update_all or plan_change_variant must be
+        called.  After that method completes successfully, describe may be
+        called, and prepare must be called. Finally, execute_plan may be
+        called to implement the previous created plan. The other methods
+        do not have an ordering imposed upon them, and may be used as
+        needed. Cancel may only be invoked while a cancelable method is
+        running."""
 
         # Constants used to reference specific values that info can return.
         INFO_FOUND = 0
@@ -87,7 +88,7 @@ class ImageInterface(object):
                 canceled changes. It can raise VersionException and
                 ImageNotFoundException."""
 
-                compatible_versions = set([15, 16, 17, 18])
+                compatible_versions = set([19])
 
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
@@ -114,7 +115,7 @@ class ImageInterface(object):
                 self.__be_name = None
                 self.__can_be_canceled = False
                 self.__canceling = False
-                self.__activity_lock = threading.Lock()
+                self.__activity_lock = pkg.nrlock.NRLock()
 
         @property
         def img(self):
@@ -135,6 +136,116 @@ class ImageInterface(object):
                 bootenv.BootEnv.check_be_name(be_name)
                 return True
 
+
+        def __cert_verify(self, log_op_end=None):
+                """Verify validity of certificates.  Any
+                api_errors.ExpiringCertificate exceptions are caught
+                here, a message is displayed, and execution continues.
+                All other exceptions will be passed to the calling
+                context.  The caller can also set log_op_end to a list
+                of exceptions that should result in a call to
+                self.log_operation_end() before the exception is passed
+                on."""
+
+                if log_op_end == None:
+                        log_op_end = []
+
+                # we always explicitly handle api_errors.ExpiringCertificate
+                assert api_errors.ExpiringCertificate not in log_op_end
+
+                try:
+                        self.__img.check_cert_validity()
+                except api_errors.ExpiringCertificate, e:
+                        misc.emsg(e)
+                except:
+                        exc_type, exc_value, exc_traceback = sys.exc_info()
+                        if exc_type in log_op_end:
+                                self.log_operation_end(error=exc_value)
+                        raise
+
+        def __load_catalog(self, refresh_catalogs=True, manual_load=True):
+                """Refresh and load catalogs, or load the old on-disk
+                catalogs."""
+
+                #
+                # Verify validity of certificates before possibly
+                # attempting network operations.
+                #
+                self.__cert_verify()
+
+                if refresh_catalogs:
+                        try:
+                                self.__img.refresh_publishers(
+                                    progtrack=self.__progresstracker)
+                        except KeyboardInterrupt:
+                                raise
+                        except api_errors.InvalidDepotResponseException:
+                                raise
+                        except:
+                                # Since this is not a refresh
+                                # that was explicitly requested,
+                                # it doesn't matter if it fails.
+                                pass
+                elif manual_load:
+                        # If refresh wasn't called, the catalogs
+                        # have to be manually loaded.
+                        self.__img.load_catalogs(self.__progresstracker)
+
+        def __plan_common_start(self, operation):
+                """Start planning an operation.  Aquire locks and log
+                the start of the operation."""
+
+                self.__activity_lock.acquire()
+                try:
+                        self.__set_can_be_canceled(True)
+                        if self.__plan_type is not None:
+                                raise api_errors.PlanExistsException(
+                                    self.__plan_type)
+                except:
+                        self.__activity_lock.release()
+                        raise
+
+                assert self.__activity_lock._is_owned()
+                self.log_operation_start(operation)
+
+        def __plan_common_finish(self):
+                """Finish planning an operation."""
+
+                assert self.__activity_lock._is_owned()
+                self.__activity_lock.release()
+
+        def __plan_common_exception(self, log_op_end=None):
+                """Deal with exceptions that can occur while planning an
+                operation.  Any exceptions generated here are passed
+                onto the calling context.  By default all exceptions
+                will result in a call to self.log_operation_end() before
+                they are passed onto the calling context.  Optionally,
+                the caller can specify the exceptions that should result
+                in a call to self.log_operation_end() by setting
+                log_op_end."""
+
+                if log_op_end == None:
+                        log_op_end = []
+
+                # we always explicity handle api_errors.PlanCreationException
+                assert api_errors.PlanCreationException not in log_op_end
+
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+
+                if exc_type == api_errors.PlanCreationException:
+                        self.__set_history_PlanCreationException(exc_value)
+                        self.__reset_unlock()
+                        self.__activity_lock.release()
+                        raise
+                if not log_op_end or exc_type in log_op_end:
+                        self.log_operation_end(error=exc_value)
+                        self.__reset_unlock()
+                        self.__activity_lock.release()
+                        raise
+                raise
+                # NOTREACHED
+
+
         def plan_install(self, pkg_list, filters, refresh_catalogs=True,
             noexecute=False, verbose=False, update_index=True):
                 """Contructs a plan to install the packages provided in
@@ -153,71 +264,39 @@ class ImageInterface(object):
                 for compatibility with operational history.
                 The hope is it can be removed in the future."""
 
-                self.__activity_lock.acquire()
+                self.__plan_common_start("install")
                 try:
-                        self.__set_can_be_canceled(True)
-                        if self.__plan_type is not None:
-                                raise api_errors.PlanExistsException(
-                                    self.__plan_type)
-                        try:
-                                self.log_operation_start("install")
-                                # Verify validity of certificates before
-                                # attempting network operations.
-                                try:
-                                        self.__img.check_cert_validity()
-                                except api_errors.ExpiringCertificate, e:
-                                        misc.emsg(e)
+                        self.__load_catalog(refresh_catalogs, manual_load=False)
 
-                                exception_caught = None
-                                if refresh_catalogs:
-                                        try:
-                                                self.__img.refresh_publishers(
-                                                    progtrack=self.__progresstracker)
-                                        except KeyboardInterrupt:
-                                                raise
-                                        except api_errors.InvalidDepotResponseException:
-                                                raise
-                                        except:
-                                                # Since this is not a refresh
-                                                # that was explicitly requested,
-                                                # it doesn't matter if it fails.
-                                                pass
+                        self.__img.make_install_plan(pkg_list,
+                            self.__progresstracker,
+                            self.__check_cancelation, noexecute,
+                            filters=filters, verbose=verbose)
 
-                                self.__img.make_install_plan(pkg_list,
-                                    self.__progresstracker,
-                                    self.__check_cancelation, noexecute,
-                                    filters=filters, verbose=verbose)
+                        assert self.__img.imageplan
 
-                                assert self.__img.imageplan
+                        if self.__canceling:
+                                raise api_errors.CanceledException()
+                        self.__set_can_be_canceled(False)
 
-                                if self.__canceling:
-                                        raise api_errors.CanceledException()
-                                self.__set_can_be_canceled(False)
+                        if not noexecute:
+                                self.__plan_type = self.__INSTALL
 
-                                if not noexecute:
-                                        self.__plan_type = self.__INSTALL
+                        self.__plan_desc = PlanDescription(self.__img.imageplan)
+                        if self.__img.imageplan.nothingtodo() or noexecute:
+                                self.log_operation_end(
+                                    result=history.RESULT_NOTHING_TO_DO)
 
-                                self.__plan_desc = PlanDescription(
-                                    self.__img.imageplan)
-                                if self.__img.imageplan.nothingtodo() or \
-                                    noexecute:
-                                        self.log_operation_end(
-                                            result=history.RESULT_NOTHING_TO_DO)
-                                self.__img.imageplan.update_index = update_index
-                                res = not self.__img.imageplan.nothingtodo()
-                        except api_errors.PlanCreationException, e:
-                                self.__set_history_PlanCreationException(e)
-                                self.__reset_unlock()
-                                raise
-                        except (api_errors.CanceledException, fmri.IllegalFmri,
-                            Exception), e:
-                                self.log_operation_end(error=e)
-                                self.__reset_unlock()
-                                raise
-                finally:
-                        self.__activity_lock.release()
+                        self.__img.imageplan.update_index = update_index
+                except:
+                        self.__plan_common_exception(log_op_end=[
+                            api_errors.CanceledException, fmri.IllegalFmri,
+                            Exception])
+                        # NOTREACHED
 
-                return res, exception_caught
+                self.__plan_common_finish()
+                res = not self.__img.imageplan.nothingtodo()
+                return res
 
         def plan_uninstall(self, pkg_list, recursive_removal, noexecute=False,
             verbose=False, update_index=True):
@@ -231,55 +310,34 @@ class ImageInterface(object):
                 the uninstall, it returns True, otherwise it returns False. It
                 can raise NonLeafPackageException and PlanCreationException."""
 
-                self.__activity_lock.acquire()
+                self.__plan_common_start("uninstall")
+
                 try:
-                        self.__set_can_be_canceled(True)
-                        if self.__plan_type is not None:
-                                raise api_errors.PlanExistsException(
-                                    self.__plan_type)
-                        try:
-                                self.log_operation_start("uninstall")
-                                self.__img.make_uninstall_plan(pkg_list,
-                                    recursive_removal, self.__progresstracker,
-                                    self.__check_cancelation, noexecute,
-                                    verbose=verbose)
+                        self.__img.make_uninstall_plan(pkg_list,
+                            recursive_removal, self.__progresstracker,
+                            self.__check_cancelation, noexecute,
+                            verbose=verbose)
 
-                                assert self.__img.imageplan
+                        assert self.__img.imageplan
 
-                                if self.__canceling:
-                                        raise api_errors.CanceledException()
-                                self.__set_can_be_canceled(False)
+                        if self.__canceling:
+                                raise api_errors.CanceledException()
+                        self.__set_can_be_canceled(False)
 
-                                if not noexecute:
-                                        self.__plan_type = self.__UNINSTALL
+                        if not noexecute:
+                                self.__plan_type = self.__UNINSTALL
 
-                                self.__plan_desc = PlanDescription(
-                                    self.__img.imageplan)
-                                if noexecute:
-                                        self.log_operation_end(
-                                            result=history.RESULT_NOTHING_TO_DO)
-                                self.__img.imageplan.update_index = update_index
-                                res = not self.__img.imageplan.nothingtodo()
-                        except api_errors.PlanCreationException, e:
-                                self.__set_history_PlanCreationException(e)
-                                self.__reset_unlock()
-                                raise
-                        except Exception, e:
-                                self.log_operation_end(error=e)
-                                self.__reset_unlock()
-                                raise
-                        except:
-                                # Handle exceptions that are not subclasses of
-                                # Exception.
-                                exc_type, exc_value, exc_traceback = \
-                                    sys.exc_info()
+                        self.__plan_desc = PlanDescription(self.__img.imageplan)
+                        if noexecute:
+                                self.log_operation_end(
+                                    result=history.RESULT_NOTHING_TO_DO)
+                        self.__img.imageplan.update_index = update_index
+                except:
+                        self.__plan_common_exception()
+                        # NOTREACHED
 
-                                self.log_operation_end(error=exc_type)
-                                self.__reset_unlock()
-                                raise
-                finally:
-                        self.__activity_lock.release()
-
+                self.__plan_common_finish()
+                res = not self.__img.imageplan.nothingtodo()
                 return res
 
         def plan_update_all(self, actual_cmd, refresh_catalogs=True,
@@ -303,126 +361,132 @@ class ImageInterface(object):
                 IpkgOutOfDateException, PlanCreationException and
                 PermissionsException."""
 
-                self.__activity_lock.acquire()
+                self.__plan_common_start("image-update")
                 try:
-                        self.__set_can_be_canceled(True)
-                        if self.__plan_type is not None:
-                                raise api_errors.PlanExistsException(
-                                    self.__plan_type)
-                        try:
-                                self.log_operation_start("image-update")
-                                exception_caught = None
-                                self.check_be_name(be_name)
-                                self.__be_name = be_name
+                        self.check_be_name(be_name)
+                        self.__be_name = be_name
 
-                                # Verify validity of certificates before
-                                # attempting network operations.
+                        self.__load_catalog(refresh_catalogs)
+
+                        # If we can find SUNWipkg and SUNWcs in the
+                        # target image, then we assume this is a valid
+                        # opensolaris image, and activate some
+                        # special case behaviors.
+                        opensolaris_image = True
+                        fmris, notfound, illegals = \
+                            self.__img.installed_fmris_from_args(
+                                ["SUNWipkg", "SUNWcs"])
+                        assert(len(illegals) == 0)
+                        if notfound:
+                                opensolaris_image = False
+
+                        if opensolaris_image and not force:
                                 try:
-                                        self.__img.check_cert_validity()
-                                except api_errors.ExpiringCertificate, e:
-                                        misc.emsg(e)
+                                        if not self.__img.ipkg_is_up_to_date(
+                                            actual_cmd,
+                                            self.__check_cancelation,
+                                            noexecute,
+                                            refresh_allowed=refresh_catalogs,
+                                            progtrack=self.__progresstracker):
+                                                raise api_errors.IpkgOutOfDateException()
+                                except api_errors.ImageNotFoundException:
+                                        # Can't do anything in this
+                                        # case; so proceed.
+                                        pass
 
-                                if refresh_catalogs:
-                                        try:
-                                                self.__img.refresh_publishers(
-                                                    progtrack=self.__progresstracker)
-                                        except KeyboardInterrupt:
-                                                raise
-                                        except api_errors.InvalidDepotResponseException:
-                                                raise
-                                        except:
-                                                # Since this is not a refresh
-                                                # that was explicitly requested,
-                                                # it doesn't matter if it fails.
-                                                pass
-                                else:
-                                        # If refresh wasn't called, the catalogs
-                                        # have to be manually loaded.
-                                        self.__img.load_catalogs(
-                                            self.__progresstracker)
+                        pkg_list = [
+                            ipkg.get_pkg_stem()
+                            for ipkg in self.__img.gen_installed_pkgs()
+                        ]
 
-                                # If we can find SUNWipkg and SUNWcs in the
-                                # target image, then we assume this is a valid
-                                # opensolaris image, and activate some
-                                # special case behaviors.
-                                opensolaris_image = True
-                                fmris, notfound, illegals = \
-                                    self.__img.installed_fmris_from_args(
-                                        ["SUNWipkg", "SUNWcs"])
-                                assert(len(illegals) == 0)
-                                if notfound:
-                                        opensolaris_image = False
+                        self.__img.make_install_plan(pkg_list,
+                            self.__progresstracker,
+                            self.__check_cancelation,
+                            noexecute, verbose=verbose,
+                            multimatch_ignore=True)
 
-                                if opensolaris_image and not force:
-                                        try:
-                                                if not self.__img.ipkg_is_up_to_date(
-                                                    actual_cmd,
-                                                    self.__check_cancelation,
-                                                    noexecute,
-                                                    refresh_allowed=refresh_catalogs,
-                                                    progtrack=self.__progresstracker):
-                                                        error = api_errors.IpkgOutOfDateException()
-                                                        self.log_operation_end(error=error)
-                                                        raise error
-                                        except api_errors.ImageNotFoundException:
-                                                # Can't do anything in this
-                                                # case; so proceed.
-                                                pass
+                        assert self.__img.imageplan
 
-                                pkg_list = [
-                                    ipkg.get_pkg_stem()
-                                    for ipkg in self.__img.gen_installed_pkgs()
-                                ]
+                        if self.__canceling:
+                                raise api_errors.CanceledException()
+                        self.__set_can_be_canceled(False)
 
-                                self.__img.make_install_plan(pkg_list,
-                                    self.__progresstracker,
-                                    self.__check_cancelation,
-                                    noexecute, verbose=verbose,
-                                    multimatch_ignore=True)
+                        if not noexecute:
+                                self.__plan_type = self.__IMAGE_UPDATE
 
-                                assert self.__img.imageplan
+                        self.__plan_desc = PlanDescription(self.__img.imageplan)
 
-                                if self.__canceling:
-                                        self.__reset_unlock()
-                                        raise api_errors.CanceledException()
-                                self.__set_can_be_canceled(False)
+                        if self.__img.imageplan.nothingtodo() or noexecute:
+                                self.log_operation_end(
+                                    result=history.RESULT_NOTHING_TO_DO)
+                        self.__img.imageplan.update_index = update_index
 
-                                if not noexecute:
-                                        self.__plan_type = self.__IMAGE_UPDATE
+                except:
+                        self.__plan_common_exception(
+                            log_op_end=[api_errors.IpkgOutOfDateException])
+                        # NOTREACHED
 
-                                self.__plan_desc = PlanDescription(
-                                    self.__img.imageplan)
+                self.__plan_common_finish()
+                res = not self.__img.imageplan.nothingtodo()
+                return res, opensolaris_image
 
-                                if self.__img.imageplan.nothingtodo() or \
-                                    noexecute:
-                                        self.log_operation_end(
-                                            result=history.RESULT_NOTHING_TO_DO)
-                                self.__img.imageplan.update_index = update_index
-                                res = not self.__img.imageplan.nothingtodo()
-                        except api_errors.PlanCreationException, e:
-                                self.__set_history_PlanCreationException(e)
-                                self.__reset_unlock()
-                                raise
-                        except api_errors.IpkgOutOfDateException:
-                                self.__reset_unlock()
-                                raise
-                        except Exception, e:
-                                self.log_operation_end(error=e)
-                                self.__reset_unlock()
-                                raise
-                        except:
-                                # Handle exceptions that are not subclasses of
-                                # Exception.
-                                exc_type, exc_value, exc_traceback = \
-                                    sys.exc_info()
+        def plan_change_variant(self, variants, noexecute=False,
+            verbose=False, be_name=None):
 
-                                self.log_operation_end(error=exc_type)
-                                self.__reset_unlock()
-                                raise
-                finally:
-                        self.__activity_lock.release()
+                """Creates a plan to change the specified variants on an image.
+                There is option to refresh_catalogs since if we're changing
+                architectures, we have to download manifests that were
+                previously uncached.  noexecute determines whether the history
+                will be recorded after planning is finished.  verbose controls
+                whether verbose debugging output will be printed to the
+                terminal.  This function has two return values.  The first is
+                a boolean which tells the client whether there is anything to
+                do.  The third is either None, or an exception which indicates
+                partial success.  This is currently used to indicate a failure
+                in refreshing catalogs. It can raise CatalogRefreshException,
+                IpkgOutOfDateException, NetworkUnavailableException,
+                PlanCreationException and PermissionsException."""
 
-                return res, opensolaris_image, exception_caught
+                self.__plan_common_start("change-variant")
+                try:
+                        self.check_be_name(be_name)
+                        self.be_name = be_name
+
+                        self.__load_catalog(refresh_catalogs=True)
+
+                        self.__img.image_change_variant(variants,
+                            self.__progresstracker,
+                            self.__check_cancelation,
+                            noexecute, verbose=verbose)
+
+                        assert self.__img.imageplan
+
+                        if self.__canceling:
+                                raise api_errors.CanceledException()
+                        self.__set_can_be_canceled(False)
+
+                        if not noexecute:
+                                self.__plan_type = self.__IMAGE_UPDATE
+
+                        self.plan_desc = PlanDescription(self.__img.imageplan)
+
+                        if self.__img.imageplan.nothingtodo() or noexecute:
+                                self.log_operation_end(
+                                    result=history.RESULT_NOTHING_TO_DO)
+
+                        #
+                        # We always rebuild the search index after a
+                        # variant change
+                        #
+                        self.__img.imageplan.update_index = True
+
+                except:
+                        self.__plan_common_exception()
+                        # NOTREACHED
+
+                self.__plan_common_finish()
+                res = not self.__img.imageplan.nothingtodo()
+                return res
 
         def describe(self):
                 """Returns None if no plan is ready yet, otherwise returns
@@ -730,13 +794,8 @@ class ImageInterface(object):
                 else:
                         # Verify validity of certificates before attempting
                         # network operations.
-                        try:
-                                self.__img.check_cert_validity()
-                        except api_errors.ExpiringCertificate, e:
-                                misc.emsg(e)
-                        except api_errors.CertificateError, e:
-                                self.log_operation_end(error=e)
-                                raise
+                        self.__cert_verify(
+                            log_op_end=[api_errors.CertificateError])
 
                         # XXX This loop really needs not to be copied from
                         # Image.make_install_plan()!
@@ -908,6 +967,8 @@ class ImageInterface(object):
                 activity lock. Should only be called by a thread which already
                 holds the activity lock."""
 
+                assert self.__activity_lock._is_owned()
+
                 # Recreate the image object using the path the api
                 # object was created with instead of the current path.
                 self.__img = image.Image()
@@ -1001,7 +1062,7 @@ class ImageInterface(object):
                 """This function parses the string returned by a version 0
                 search server and puts it into the expected format of
                 (query_number, publisher, (version, return_type, (results))).
-                
+
                 "query_number" in the return value is fixed at 0 since search
                 v0 servers cannot accept multiple queries in a single HTTP
                 request."""
@@ -1222,6 +1283,7 @@ class ImageInterface(object):
                                     prefix)
                         except:
                                 self.__reset_unlock()
+                                self.__activity_lock.release()
                                 raise
                 finally:
                         self.__activity_lock.release()

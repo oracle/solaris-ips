@@ -77,7 +77,7 @@ from pkg.client.history import (RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
     RESULT_FAILED_OUTOFMEMORY)
 from pkg.misc import EmptyI, msg, emsg, PipeError
 
-CLIENT_API_VERSION = 15
+CLIENT_API_VERSION = 19
 PKG_CLIENT_NAME = "pkg"
 
 def error(text, cmd=None):
@@ -137,6 +137,8 @@ Advanced subcommands:
             [-k ssl_key] [-c ssl_cert] [--no-refresh]
             [--variant <variant_spec>=<instance>]
             (-p|--publisher) name=uri dir
+        pkg change-variant [-nvq] [--be-name name] <variant_spec>=<instance>
+            [<variant_spec>=<instance> ...]
 
         pkg set-property propname propvalue
         pkg unset-property propname ...
@@ -504,6 +506,211 @@ installed on the system.\n"""))
                 return 1
         return 0
 
+def __api_prepare(operation, api):
+        # Exceptions which happen here are printed in the above level, with
+        # or without some extra decoration done here.
+        # XXX would be nice to kick the progress tracker.
+        try:
+                api.prepare()
+        except api_errors.PermissionsException, e:
+                # Prepend a newline because otherwise the exception will
+                # be printed on the same line as the spinner.
+                error("\n" + str(e))
+                return False
+        except api_errors.FileInUseException, e:
+                error("\n" + str(e))
+                return False
+        except api_errors.TransportException, e:
+                # move past the progress tracker line.
+                msg("\n")
+                if verbose:
+                        e.verbose = True
+                raise e
+        except KeyboardInterrupt:
+                raise
+        except:
+                error(_("\nAn unexpected error happened while preparing for " \
+                    "%s:") % operation)
+                raise
+        return True
+
+def __api_execute_plan(operation, api, raise_ActionExecutionError=True):
+        try:
+                api.execute_plan()
+        except RuntimeError, e:
+                error(_("%s failed: %s") % (operation, e))
+                return False
+        except api_errors.ImageUpdateOnLiveImageException:
+                error(_("%s cannot be done on live image") % operation)
+                return False
+        except api_errors.CorruptedIndexException, e:
+                error(INCONSISTENT_INDEX_ERROR_MESSAGE)
+                return False
+        except api_errors.ProblematicPermissionsIndexException, e:
+                error(str(e) + PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE)
+                return False
+        except api_errors.PermissionsException, e:
+                # Prepend a newline because otherwise the exception will
+                # be printed on the same line as the spinner.
+                error("\n" + str(e))
+                return False
+        except api_errors.MainDictParsingException, e:
+                error(str(e))
+                return False
+        except KeyboardInterrupt:
+                raise
+        except api_errors.BEException, e:
+                error(e)
+                return False
+        except api_errors.ActionExecutionError, e:
+                if not raise_ActionExecutionError:
+                        return False
+                error(_("An unexpected error happened during " \
+                    "%s: %s") % (operation, e))
+                raise
+        except Exception, e:
+                error(_("An unexpected error happened during " \
+                    "%s: %s") % (operation, e))
+                raise
+        return True
+
+def __api_alloc(img_dir, quiet):
+        progresstracker = get_tracker(quiet)
+
+        try:
+                api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
+                    progresstracker, cancel_state_callable=None,
+                    pkg_client_name=PKG_CLIENT_NAME)
+        except api_errors.ImageNotFoundException, e:
+                error(_("No image rooted at '%s'") % e.user_dir)
+                return None
+
+        return api_inst
+
+def __api_plan_exception(op, noexecute):
+        e_type, e, e_traceback = sys.exc_info()
+
+        if e_type == api_errors.ImageNotFoundException:
+                error(_("No image rooted at '%s'") % e.user_dir)
+                return False
+        if e_type == api_errors.InventoryException:
+                error(_("%s failed (inventory exception):\n%s") % (op, e))
+                return False
+        if e_type == api_errors.IpkgOutOfDateException:
+                msg(_("""\
+WARNING: pkg(5) appears to be out of date, and should be updated before
+running %s.  Please update pkg(5) using 'pfexec pkg install
+SUNWipkg' and then retry the %s."""
+                    ) % (op, op))
+                return False
+        if e_type == api_errors.NonLeafPackageException:
+                error(_("""\
+Cannot remove '%s' due to the following packages that depend on it:"""
+                    ) % e[0])
+                for d in e[1]:
+                        emsg("  %s" % d)
+                return False
+        if e_type == api_errors.CatalogRefreshException:
+                if display_catalog_failures(e) != 0:
+                        raise RuntimeError("Catalog refresh failed during %s." %
+                            op)
+                if noexecute:
+                        return True
+                return False
+        if e_type == api_errors.BEException:
+                error(_(e))
+                return False
+        if e_type in (api_errors.CertificateError,
+            api_errors.PlanCreationException,
+            api_errors.PermissionsException):
+                # Prepend a newline because otherwise the exception will
+                # be printed on the same line as the spinner.
+                error("\n" + str(e))
+                return False
+        if e_type == fmri.IllegalFmri:
+                error(e, cmd=op)
+                return False
+
+        # if we didn't deal with the exception above, pass it on.
+        raise
+        # NOTREACHED
+
+def change_variant(img_dir, args):
+        """Attempt to change a variant associated with an image, updating
+        the image contents as necessary."""
+
+        op = "change-variant"
+        opts, pargs = getopt.getopt(args, "nvq", ["be-name="])
+
+        quiet = noexecute = verbose = False
+        be_name = None
+        for opt, arg in opts:
+                if opt == "-n":
+                        noexecute = True
+                elif opt == "-v":
+                        verbose = True
+                elif opt == "-q":
+                        quiet = True
+                elif opt == "--be-name":
+                        be_name = arg
+
+        if verbose and quiet:
+                usage(_("%s: -v and -q may not be combined") % op)
+
+        if not pargs:
+                usage(_("%s: no variants specified") % op)
+
+        variants = dict();
+        for arg in pargs:
+                # '=' is not allowed in variant names or values
+                if (len(arg.split('=')) != 2):
+                        usage(_("%s: variants must to be of the form "
+                            "'<name>=<value>'.") % op)
+
+                # get the variant name and value
+                name, value = arg.split('=')
+                if not name.startswith("variant."):
+                        name = "variant.%s" % name
+
+                # make sure the user didn't specify duplicate variants
+                if name in variants:
+                        usage(_("%s: duplicate variant specified: %s") %
+                            (op, name));
+                variants[name] = value
+
+        api_inst = __api_alloc(img_dir, quiet)
+        if api_inst == None:
+                return 1
+
+        try:
+                stuff_to_do = api_inst.plan_change_variant(variants,
+                    noexecute=noexecute, verbose=verbose, be_name=be_name)
+        except:
+                if not __api_plan_exception(op, noexecute=noexecute):
+                        return 1
+
+        if not stuff_to_do:
+                msg(_("No updates necessary for this image."))
+                return 0
+
+        if noexecute:
+                return 0
+
+
+        # Exceptions which happen here are printed in the above level, with
+        # or without some extra decoration done here.
+        if not __api_prepare("change-variant", api_inst):
+                return 1
+
+        ret_code = 0
+        if not __api_execute_plan("change-variant", api_inst):
+                ret_code = 1
+
+        if bool(os.environ.get("PKG_MIRROR_STATS", False)):
+                print_mirror_stats(api_inst)
+
+        return ret_code
+
 def image_update(img_dir, args):
         """Attempt to take all installed packages specified to latest
         version."""
@@ -512,6 +719,7 @@ def image_update(img_dir, args):
         # XXX Are filters appropriate for an image update?
         # XXX Leaf package refinements.
 
+        op = "image-update"
         opts, pargs = getopt.getopt(args, "fnvq", ["be-name=", "no-refresh",
             "no-index"])
 
@@ -541,117 +749,32 @@ def image_update(img_dir, args):
                 usage(_("command does not take operands ('%s')") % \
                     " ".join(pargs), cmd="image-update")
 
-        progresstracker = get_tracker(quiet)
-
-        try:
-                api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
-                    progresstracker, cancel_state_callable=None,
-                    pkg_client_name=PKG_CLIENT_NAME)
-        except api_errors.ImageNotFoundException, e:
-                error(_("No image rooted at '%s'") % e.user_dir)
+        api_inst = __api_alloc(img_dir, quiet)
+        if api_inst == None:
                 return 1
 
         try:
-                # cre is either None or a catalog refresh exception which was
-                # caught while planning.
-                stuff_to_do, opensolaris_image, cre = \
+                stuff_to_do, opensolaris_image = \
                     api_inst.plan_update_all(sys.argv[0], refresh_catalogs,
                         noexecute, force=force, verbose=verbose,
                         update_index=update_index, be_name=be_name)
-                if cre and not display_catalog_failures(cre):
-                        raise RuntimeError("Catalog refresh failed during"
-                            " image-update.")
-                if not stuff_to_do:
-                        msg(_("No updates available for this image."))
-                        return 0
-        except api_errors.InventoryException, e:
-                error(_("image-update failed (inventory exception):\n%s") % e)
-                return 1
-        except api_errors.CatalogRefreshException, e:
-                if display_catalog_failures(e) == 0:
-                        if not noexecute:
-                                return 1
-                else:
-                        raise RuntimeError("Catalog refresh failed during"
-                            " image-update.")
-        except api_errors.BEException, e:
-                error(_(e))
-                return 1
-        except (api_errors.CertificateError,
-            api_errors.PlanCreationException,
-            api_errors.PermissionsException), e:
-                # Prepend a newline because otherwise the exception will
-                # be printed on the same line as the spinner.
-                error("\n" + str(e))
-                return 1
-        except api_errors.IpkgOutOfDateException:
-                msg(_("WARNING: pkg(5) appears to be out of date, and should " \
-                    "be updated before\nrunning image-update.\n"))
-                msg(_("Please update pkg(5) using 'pfexec pkg install " \
-                    "SUNWipkg' and then retry\nthe image-update."))
-                return 1
-        except api_errors.ImageNotFoundException, e:
-                error(_("No image rooted at '%s'") % e.user_dir)
-                return 1
+        except:
+                if not __api_plan_exception(op, noexecute=noexecute):
+                        return 1
+
+        if not stuff_to_do:
+                msg(_("No updates available for this image."))
+                return 0
+
         if noexecute:
                 return 0
 
+        if not __api_prepare(op, api_inst):
+                return 1
+
         ret_code = 0
-
-        # Exceptions which happen here are printed in the above level, with
-        # or without some extra decoration done here.
-        # XXX would be nice to kick the progress tracker.
-        try:
-                api_inst.prepare()
-        except api_errors.TransportError, e:
-                # move past the progress tracker line.
-                msg("\n")
-                if verbose:
-                        e.verbose = True
-                raise e
-        except KeyboardInterrupt:
-                raise
-        except api_errors.PermissionsException, e:
-                # Prepend a newline because otherwise the exception will
-                # be printed on the same line as the spinner.
-                error("\n" + str(e))
-                return 1
-        except:
-                error(_("\nAn unexpected error happened while preparing for " \
-                    "image-update:"))
-                raise
-
-        try:
-                api_inst.execute_plan()
-        except RuntimeError, e:
-                error(_("image-update failed: %s") % e)
+        if not __api_execute_plan(op, api_inst):
                 ret_code = 1
-        except api_errors.ImageUpdateOnLiveImageException:
-                error(_("image-update cannot be done on live image"))
-                ret_code = 1
-        except api_errors.CorruptedIndexException, e:
-                error(INCONSISTENT_INDEX_ERROR_MESSAGE)
-                ret_code = 1
-        except api_errors.ProblematicPermissionsIndexException, e:
-                error(str(e) + PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE)
-                ret_code = 1
-        except api_errors.PermissionsException, e:
-                # Prepend a newline because otherwise the exception will
-                # be printed on the same line as the spinner.
-                error("\n" + str(e))
-                ret_code = 1
-        except api_errors.MainDictParsingException, e:
-                error(str(e))
-                ret_code = 1
-        except api_errors.BEException, e:
-                error(_(e))
-                return 1
-        except KeyboardInterrupt:
-                raise
-        except Exception, e:
-                error(_("\nAn unexpected error happened during " \
-                    "image-update: %s") % e)
-                raise
 
         if ret_code == 0 and opensolaris_image:
                 msg("\n" + "-" * 75)
@@ -678,7 +801,7 @@ def install(img_dir, args):
         are interpreted as glob patterns."""
 
         # XXX Publisher-catalog issues.
-
+        op = "install"
         opts, pargs = getopt.getopt(args, "nvf:q", ["no-refresh", "no-index"])
 
         quiet = noexecute = verbose = False
@@ -704,8 +827,6 @@ def install(img_dir, args):
         if verbose and quiet:
                 usage(_("-v and -q may not be combined"), cmd="install")
 
-        progresstracker = get_tracker(quiet)
-
         if not check_fmri_args(pargs):
                 return 1
 
@@ -713,103 +834,34 @@ def install(img_dir, args):
         pkg_list = [ pat.replace("*", ".*").replace("?", ".")
             for pat in pargs ]
 
-        try:
-                api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
-                    progresstracker, None, PKG_CLIENT_NAME)
-        except api_errors.ImageNotFoundException, e:
-                error(_("'%s' is not an install image") % e.user_dir)
+        api_inst = __api_alloc(img_dir, quiet)
+        if api_inst == None:
                 return 1
 
         try:
-                # cre is either None or a catalog refresh exception which was
-                # caught while planning.
-                stuff_to_do, cre = api_inst.plan_install(pkg_list, filters,
+                stuff_to_do = api_inst.plan_install(pkg_list, filters,
                     refresh_catalogs, noexecute, verbose=verbose,
                     update_index=update_index)
-                if cre and not display_catalog_failures(cre):
-                        raise RuntimeError("Catalog refresh failed during"
-                            " install.")
-                if not stuff_to_do:
-                        msg(_("No updates available for this image."))
-                        return 0
-        except api_errors.CatalogRefreshException, e:
-                if display_catalog_failures(e) == 0:
-                        if not noexecute:
-                                return 1
-                else:
-                        error(_("Catalog refresh failed during install."),
-                            cmd="install")
+        except:
+                if not __api_plan_exception(op, noexecute=noexecute):
                         return 1
-        except (api_errors.CertificateError,
-            api_errors.PlanCreationException,
-            api_errors.PermissionsException), e:
-                # Prepend a newline because otherwise the exception will
-                # be printed on the same line as the spinner.
-                error("\n" + str(e), cmd="install")
-                return 1
-        except api_errors.InventoryException, e:
-                error(_("install failed (inventory exception):\n%s") % e,
-                    cmd="install")
-                return 1
-        except fmri.IllegalFmri, e:
-                error(e, cmd="install")
-                return 1
+
+        if not stuff_to_do:
+                msg(_("No updates necessary for this image."))
+                return 0
 
         if noexecute:
                 return 0
 
         # Exceptions which happen here are printed in the above level, with
         # or without some extra decoration done here.
-        # XXX would be nice to kick the progress tracker.
-        try:
-                api_inst.prepare()
-        except api_errors.TransportError, e:
-                # move past the progress tracker line.
-                msg("\n")
-                if verbose:
-                        e.verbose = True
-                raise e
-        except KeyboardInterrupt:
-                raise
-        except api_errors.PermissionsException, e:
-                # Prepend a newline because otherwise the exception will
-                # be printed on the same line as the spinner.
-                error("\n" + str(e))
+        if not __api_prepare(op, api_inst):
                 return 1
-        except:
-                error(_("\nAn unexpected error happened while preparing for " \
-                    "install:"))
-                raise
 
         ret_code = 0
-
-        try:
-                api_inst.execute_plan()
-        except RuntimeError, e:
-                error(_("installation failed: %s") % e)
+        if not __api_execute_plan(op, api_inst,
+            raise_ActionExecutionError=False):
                 ret_code = 1
-        except api_errors.CorruptedIndexException, e:
-                error(INCONSISTENT_INDEX_ERROR_MESSAGE)
-                ret_code = 1
-        except api_errors.ProblematicPermissionsIndexException, e:
-                error(str(e) + PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE)
-                ret_code = 1
-        except api_errors.PermissionsException, e:
-                # Prepend a newline because otherwise the exception will
-                # be printed on the same line as the spinner.
-                error("\n" + str(e))
-                ret_code = 1
-        except api_errors.MainDictParsingException, e:
-                error(str(e))
-                ret_code = 1
-        except KeyboardInterrupt:
-                raise
-        except api_errors.ActionExecutionError:
-                ret_code = 1
-        except Exception, e:
-                error(_("An unexpected error happened during " \
-                    "installation: %s") % e)
-                raise
 
         if bool(os.environ.get("PKG_MIRROR_STATS", False)):
                 print_mirror_stats(api_inst)
@@ -820,6 +872,7 @@ def install(img_dir, args):
 def uninstall(img_dir, args):
         """Attempt to take package specified to DELETED state."""
 
+        op = "uninstall"
         opts, pargs = getopt.getopt(args, "nrvq", ["no-index"])
 
         quiet = noexecute = recursive_removal = verbose = False
@@ -842,8 +895,6 @@ def uninstall(img_dir, args):
         if verbose and quiet:
                 usage(_("-v and -q may not be combined"), cmd="uninstall")
 
-        progresstracker = get_tracker(quiet)
-
         if not check_fmri_args(pargs):
                 return 1
 
@@ -851,84 +902,27 @@ def uninstall(img_dir, args):
         pkg_list = [ pat.replace("*", ".*").replace("?", ".")
             for pat in pargs ]
 
-        try:
-                api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
-                    progresstracker, None, PKG_CLIENT_NAME)
-        except api_errors.ImageNotFoundException, e:
-                error(_("'%s' is not an install image") % e.user_dir)
+        api_inst = __api_alloc(img_dir, quiet)
+        if api_inst == None:
                 return 1
-
         try:
                 if not api_inst.plan_uninstall(pkg_list, recursive_removal,
                     noexecute, verbose=verbose, update_index=update_index):
                         assert 0
-        except api_errors.InventoryException, e:
-                error(_("uninstall failed (inventory exception):\n%s") % e)
-                return 1
-        except api_errors.NonLeafPackageException, e:
-                error("""Cannot remove '%s' due to
-the following packages that depend on it:""" % e[0])
-                for d in e[1]:
-                        emsg("  %s" % d)
-                return 1
-        except (api_errors.PlanCreationException,
-            api_errors.PermissionsException), e:
-                # Prepend a newline because otherwise the exception will
-                # be printed on the same line as the spinner.
-                error("\n" + str(e))
-                return 1
-
+        except:
+                if not __api_plan_exception(op, noexecute=noexecute):
+                        return 1
         if noexecute:
                 return 0
 
         # Exceptions which happen here are printed in the above level, with
         # or without some extra decoration done here.
-        # XXX would be nice to kick the progress tracker.
-        try:
-                api_inst.prepare()
-        except api_errors.TransportError, e:
-                # move past the progress tracker line.
-                msg("\n")
-                if verbose:
-                        e.verbose = True
-                raise e
-        except api_errors.FileInUseException, e:
-                error("\n" + str(e))
+        if not __api_prepare(op, api_inst):
                 return 1
-        except KeyboardInterrupt:
-                raise
-        except:
-                error(_("\nAn unexpected error happened while preparing for " \
-                    "install:"))
-                raise
 
         ret_code = 0
-
-        try:
-                api_inst.execute_plan()
-        except RuntimeError, e:
-                error(_("uninstallation failed: %s") % e)
+        if not __api_execute_plan(op, api_inst):
                 ret_code = 1
-        except api_errors.CorruptedIndexException, e:
-                error(INCONSISTENT_INDEX_ERROR_MESSAGE)
-                ret_code = 1
-        except api_errors.ProblematicPermissionsIndexException, e:
-                error(str(e) + PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE)
-                ret_code = 1
-        except api_errors.PermissionsException, e:
-                # Prepend a newline because otherwise the exception will
-                # be printed on the same line as the spinner.
-                error("\n" + str(e))
-                ret_code = 1
-        except api_errors.MainDictParsingException, e:
-                error(str(e))
-                ret_code = 1
-        except KeyboardInterrupt:
-                raise
-        except Exception, e:
-                error(_("An unexpected error happened during " \
-                    "uninstallation: %s") % e)
-                raise
 
         return ret_code
 
@@ -2541,6 +2535,8 @@ def main_func():
                         return list_inventory(img, pargs)
                 elif subcommand == "image-update":
                         return image_update(mydir, pargs)
+                elif subcommand == "change-variant":
+                        return change_variant(mydir, pargs)
                 elif subcommand == "install":
                         return install(mydir, pargs)
                 elif subcommand == "uninstall":

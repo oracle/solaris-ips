@@ -123,7 +123,7 @@ class ImagePlan(object):
                         s = s + "%s\n" % pp
 
                 s = s + "Actuators:\n%s" % self.actuators
-                
+
                 s = s + "Variants: %s -> %s\n" % (self.old_excludes, self.new_excludes)
                 return s
 
@@ -158,7 +158,8 @@ class ImagePlan(object):
 
         def propose_fmri(self, pfmri):
                 # is a version of fmri.stem in the inventory?
-                if self.image.has_version_installed(pfmri):
+                if self.image.has_version_installed(pfmri) and \
+                    self.old_excludes == self.new_excludes:
                         return
 
                 #   is there a freeze or incorporation statement?
@@ -245,9 +246,9 @@ class ImagePlan(object):
                 # always consider var and var/pkg fixed in image....
                 # XXX should be fixed for user images
                 if self.__directories == None:
-                        dirs = set(["var",  
-                                    "var/pkg", 
-                                    "var/sadm", 
+                        dirs = set(["var",
+                                    "var/pkg",
+                                    "var/sadm",
                                     "var/sadm/install"])
                         for fmri in self.gen_new_installed_pkgs():
                                 m = self.image.get_manifest(fmri)
@@ -359,11 +360,17 @@ class ImagePlan(object):
                 pp = pkgplan.PkgPlan(self.image, self.progtrack, \
                     self.check_cancelation)
 
-                try:
-                        pp.propose_destination(pfmri, m)
-                except RuntimeError:
-                        msg("pkg: %s already installed" % pfmri)
-                        return
+                if self.old_excludes != self.new_excludes:
+                        if self.image.install_file_present(pfmri):
+                                pp.propose_reinstall(pfmri, m)
+                        else:
+                                pp.propose_destination(pfmri, m)
+                else:
+                        try:
+                                pp.propose_destination(pfmri, m)
+                        except RuntimeError:
+                                msg("pkg: %s already installed" % pfmri)
+                                return
 
                 pp.evaluate(self.old_excludes, self.new_excludes)
 
@@ -380,7 +387,7 @@ class ImagePlan(object):
 
                 self.progtrack.evaluate_progress(pfmri)
 
-                dependents = set(self.image.get_dependents(pfmri, 
+                dependents = set(self.image.get_dependents(pfmri,
                     self.progtrack))
 
                 # Don't consider those dependencies already being removed in
@@ -698,7 +705,7 @@ class ImagePlan(object):
                 # It's necessary to do this check here because the state of the
                 # image before the current operation is performed is desired.
                 empty_image = self.is_image_empty()
-                
+
                 self.actuators.exec_prep(self.image)
 
                 self.actuators.exec_pre_actuators(self.image)
@@ -708,7 +715,8 @@ class ImagePlan(object):
 
                                 # execute removals
 
-                                self.progtrack.actions_set_goal(_("Removal Phase"),
+                                self.progtrack.actions_set_goal(
+                                    _("Removal Phase"),
                                     len(self.removal_actions))
                                 for p, src, dest in self.removal_actions:
                                         p.execute_removal(src, dest)
@@ -717,7 +725,8 @@ class ImagePlan(object):
 
                                 # execute installs
 
-                                self.progtrack.actions_set_goal(_("Install Phase"),
+                                self.progtrack.actions_set_goal(
+                                    _("Install Phase"),
                                     len(self.install_actions))
 
                                 for p, src, dest in self.install_actions:
@@ -727,7 +736,8 @@ class ImagePlan(object):
 
                                 # execute updates
 
-                                self.progtrack.actions_set_goal(_("Update Phase"),
+                                self.progtrack.actions_set_goal(
+                                    _("Update Phase"),
                                     len(self.update_actions))
 
                                 for p, src, dest in self.update_actions:
@@ -737,9 +747,11 @@ class ImagePlan(object):
                                 self.progtrack.actions_done()
 
                                 # handle any postexecute operations
-
                                 for p in self.pkg_plans:
                                         p.postexecute()
+
+                                # write out variant changes to the image config
+                                self.image.image_config_update()
 
                                 self.image.clear_pkg_state()
                         except EnvironmentError, e:

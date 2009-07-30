@@ -45,7 +45,7 @@ import pkg.fmri as fmri
 import pkg.portable as portable
 import pkg.search_storage as ss
 
-API_VERSION = 15
+API_VERSION = 19
 PKG_CLIENT_NAME = "pkg"
 
 class TestApiSearchBasics(testutils.SingleDepotTestCase):

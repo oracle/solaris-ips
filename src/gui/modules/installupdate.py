@@ -57,7 +57,7 @@ ERROR_FORMAT = "<span color = \"red\">%s</span>"
 
 class InstallUpdate(progress.GuiProgressTracker):
         def __init__(self, list_of_packages, parent, api_o,
-            ips_update = False, action = -1, be_name = None, 
+            ips_update = False, action = -1, be_name = None,
             parent_name = "", pkg_list = None, main_window = None,
             icon_confirm_dialog = None, title = None, web_install = False,
             skip_be_dialog = False):
@@ -187,7 +187,7 @@ class InstallUpdate(progress.GuiProgressTracker):
 
                 self.w_dialog.set_transient_for(self.w_main_window)
                 self.w_ua_dialog.set_transient_for(self.w_main_window)
-                if self.icon_confirm_dialog != None:  
+                if self.icon_confirm_dialog != None:
                         self.w_ua_dialog.set_icon(self.icon_confirm_dialog)
 
                 if self.action == enumerations.REMOVE:
@@ -245,14 +245,14 @@ class InstallUpdate(progress.GuiProgressTracker):
                         txt = "<b>" + self.current_stage_label_done + " - " \
                             + cancel_txt + "</b>"
                         gobject.idle_add(self.current_stage_label.set_markup, txt)
-                        gobject.idle_add(self.current_stage_icon.set_from_stock, 
+                        gobject.idle_add(self.current_stage_icon.set_from_stock,
                             gtk.STOCK_CANCEL, gtk.ICON_SIZE_MENU)
                         gobject.idle_add(self.w_stages_label.set_markup, cancel_txt)
                         self.w_cancel_button.set_sensitive(False)
                 if self.operations_done:
                         self.w_dialog.hide()
                         if self.web_install:
-                                gobject.idle_add(self.parent.update_package_list, 
+                                gobject.idle_add(self.parent.update_package_list,
                                     self.web_updates_list)
                                 return
                         gobject.idle_add(self.parent.update_package_list, None)
@@ -261,11 +261,11 @@ class InstallUpdate(progress.GuiProgressTracker):
         @staticmethod
         def __on_ua_help_button_clicked(widget):
                 gui_misc.display_help("update_all")
-                
+
         def __on_ua_cancel_button_clicked(self, widget):
                 self.w_ua_dialog.hide()
                 if self.web_install:
-                        gobject.idle_add(self.parent.update_package_list, 
+                        gobject.idle_add(self.parent.update_package_list,
                             self.web_updates_list)
                         return
                 gobject.idle_add(self.parent.update_package_list, None)
@@ -313,7 +313,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                         if proposed_name != None:
                                 self.w_ua_be_name_entry.set_text(proposed_name)
 
-                        
+
         def __construct_be_name(self, name, i):
                 in_use = True
                 proposed_name = None
@@ -322,7 +322,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                         proposed_name = name + '-'  + str(i)
                         in_use = self.__is_be_name_in_use(proposed_name)
                 return proposed_name
-            
+
         def __is_be_name_in_use(self, name):
                 in_use = False
                 if name == "":
@@ -333,13 +333,13 @@ class InstallUpdate(progress.GuiProgressTracker):
                                 in_use = True
                                 break
                 return in_use
- 
+
         @staticmethod
         def __is_be_name_valid( name):
                 if name == "":
                         return True
                 return be.beVerifyBEName(name) == 0
-   
+
         def __validate_be_name(self, widget):
                 name = widget.get_text()
                 is_name_valid = self.__is_be_name_valid(name)
@@ -354,7 +354,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 if error_str != None:
                         self.w_ua_error_label.set_markup(error_str)
                         self.w_ua_error_label.show()
-                  
+
                 self.w_ua_proceed_button.set_sensitive(error_str == None)
 
         def __on_ua_be_name_entry_changed(self, widget):
@@ -370,15 +370,14 @@ class InstallUpdate(progress.GuiProgressTracker):
         def __ipkg_ipkgui_uptodate(self):
                 if self.ipkg_ipkgui_list == None:
                         return True
-                upgrade_needed, cre = self.api_o.plan_install(
+                upgrade_needed = self.api_o.plan_install(
                     self.ipkg_ipkgui_list, filters = [])
-                self.pylint_stub = cre
                 return not upgrade_needed
 
         def __proceed_with_stages(self):
                 self.__start_stage_one()
                 self.w_dialog.show()
-                Thread(target = self.__proceed_with_stages_thread_ex, 
+                Thread(target = self.__proceed_with_stages_thread_ex,
                     args = ()).start()
 
         def __proceed_with_stages_thread_ex(self):
@@ -386,8 +385,8 @@ class InstallUpdate(progress.GuiProgressTracker):
                         try:
                                 if self.action == enumerations.IMAGE_UPDATE:
                                         self.__start_substage(
-                                            _("Ensuring %s is up to date...") % 
-                                            self.parent_name, 
+                                            _("Ensuring %s is up to date...") %
+                                            self.parent_name,
                                             bounce_progress=True)
                                         opensolaris_image = True
                                         ips_uptodate = True
@@ -503,7 +502,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                         msg = _("Invalid BE Name: %s.\n") % self.proposed_be_name
                         self.__g_error_stage(msg)
                         return
-                except (api_errors.UnableToCopyBE, 
+                except (api_errors.UnableToCopyBE,
                     api_errors.UnableToMountBE,
                     api_errors.UnableToRenameBE,
                     api_errors.PermissionsException,
@@ -558,7 +557,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 sys.exc_clear()
 
         def __proceed_with_ipkg_thread(self):
-                self.__start_substage(_("Updating %s") % self.parent_name, 
+                self.__start_substage(_("Updating %s") % self.parent_name,
                     bounce_progress=True)
                 self.__afterplan_information()
                 self.prev_pkg = None
@@ -577,25 +576,25 @@ class InstallUpdate(progress.GuiProgressTracker):
                         self.__afterplan_information()
                         self.prev_pkg = None
                         # The api.prepare() mostly is downloading the files so we are
-                        # Not showing this stage in the main stage dialog. If download 
+                        # Not showing this stage in the main stage dialog. If download
                         # is necessary, then we are showing it in the details view
                         if not self.action == enumerations.REMOVE:
                                 self.__start_stage_two()
-                                self.__start_substage(None, 
+                                self.__start_substage(None,
                                     bounce_progress=False)
                         self.api_o.prepare()
                         self.__start_stage_three()
-                        self.__start_substage(None, 
+                        self.__start_substage(None,
                             bounce_progress=False)
                         self.api_o.execute_plan()
                         gobject.idle_add(self.__operations_done)
                 else:
                         if self.web_install:
                                 gobject.idle_add(self.w_expander.hide)
-                                gobject.idle_add(self.__operations_done, 
+                                gobject.idle_add(self.__operations_done,
                                     _("All packages already installed."))
                                 return
-                                
+
                         msg = None
                         if self.action == enumerations.INSTALL_UPDATE:
                                 msg = _("Selected package(s) cannot be updated on "
@@ -609,7 +608,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.current_stage_icon = self.w_stage1_icon
                 self.__start_stage(self.stages.get(1))
                 self.update_details_text(self.stages.get(1)[0]+"\n", "bold")
-                
+
         def __start_stage_two(self):
                 # End previous stage
                 self.__end_stage()
@@ -627,19 +626,19 @@ class InstallUpdate(progress.GuiProgressTracker):
 
         def __start_stage(self, stage_text):
                 self.current_stage_label_done = stage_text[1]
-                gobject.idle_add(self.current_stage_label.set_markup, 
+                gobject.idle_add(self.current_stage_label.set_markup,
                     "<b>"+stage_text[0]+"</b>")
-                gobject.idle_add(self.current_stage_icon.set_from_stock, 
+                gobject.idle_add(self.current_stage_icon.set_from_stock,
                     gtk.STOCK_GO_FORWARD, gtk.ICON_SIZE_MENU)
 
         def __end_stage(self):
-                gobject.idle_add(self.current_stage_label.set_text, 
+                gobject.idle_add(self.current_stage_label.set_text,
                     self.current_stage_label_done)
                 gobject.idle_add(self.current_stage_icon.set_from_pixbuf, self.done_icon)
 
         def __g_error_stage(self, msg):
                 if msg == None or len(msg) == 0:
-                        msg = _("No futher information available") 
+                        msg = _("No futher information available")
                 self.operations_done = True
                 self.stop_bouncing_progress()
                 self.update_details_text(_("\nError:\n"), "bold")
@@ -647,7 +646,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.update_details_text("\n")
                 txt = "<b>" + self.current_stage_label_done + _(" - Failed </b>")
                 gobject.idle_add(self.current_stage_label.set_markup, txt)
-                gobject.idle_add(self.current_stage_icon.set_from_stock, 
+                gobject.idle_add(self.current_stage_icon.set_from_stock,
                     gtk.STOCK_DIALOG_ERROR, gtk.ICON_SIZE_MENU)
                 gobject.idle_add(self.w_expander.set_expanded, True)
                 gobject.idle_add(self.w_cancel_button.set_sensitive, True)
@@ -657,7 +656,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.stop_bouncing_progress()
                 txt = "<b>" + self.current_stage_label_done + _(" - Failed </b>")
                 gobject.idle_add(self.current_stage_label.set_markup, txt)
-                gobject.idle_add(self.current_stage_icon.set_from_stock, 
+                gobject.idle_add(self.current_stage_icon.set_from_stock,
                     gtk.STOCK_DIALOG_ERROR, gtk.ICON_SIZE_MENU)
                 msg_1 = _("An unknown error occurred in the %s stage.\n"
                     "Please let the developers know about this problem\n"
@@ -669,7 +668,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.update_details_text("%s" % msg_2, "bold", "level2")
                 if tracebk:
                         msg = _("Exception traceback:\n")
-                        self.update_details_text("%s" % msg, 
+                        self.update_details_text("%s" % msg,
                             "bold","level1")
                         self.update_details_text("%s\n" % tracebk, "level2")
                 else:
@@ -698,7 +697,7 @@ class InstallUpdate(progress.GuiProgressTracker):
         def start_bouncing_progress(self):
                 self.stop_progress_bouncing = False
                 self.stopped_bouncing_progress = False
-                Thread(target = 
+                Thread(target =
                     self.__g_progressdialog_progress_pulse).start()
 
         def __g_progressdialog_progress_pulse(self):
@@ -725,7 +724,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 else:
                         buf.insert(textiter, text)
                 self.w_details_textview.scroll_to_iter(textiter, 0.0)
-                
+
         def update_progress(self, current, total):
                 prog = float(current)/total
                 gobject.idle_add(self.w_progressbar.set_fraction, prog)
@@ -734,30 +733,22 @@ class InstallUpdate(progress.GuiProgressTracker):
                 '''Function which plans the image'''
                 stuff_to_do = False
                 if self.action == enumerations.INSTALL_UPDATE:
-                        stuff_to_do, cre = self.api_o.plan_install(
-                            self.list_of_packages, refresh_catalogs = False, 
+                        stuff_to_do = self.api_o.plan_install(
+                            self.list_of_packages, refresh_catalogs = False,
                             filters = [])
-                        if cre and not cre.succeeded:
-                                # cre is either None or a catalog refresh exception 
-                                # which was caught while planning.
-                                raise api_errors.CatalogRefreshException(None, None, None
-                                    ,_("Catalog refresh failed during install."))
                 elif self.action == enumerations.REMOVE:
                         plan_uninstall = self.api_o.plan_uninstall
                         stuff_to_do = \
                             plan_uninstall(self.list_of_packages, False, False)
-                elif self.action == enumerations.IMAGE_UPDATE:  
+                elif self.action == enumerations.IMAGE_UPDATE:
                         # we are passing force, since we already checked if the
                         # SUNWipkg and SUNWipkg-gui are up to date.
-                        stuff_to_do, opensolaris_image, cre = \
+                        stuff_to_do, opensolaris_image = \
                             self.api_o.plan_update_all(sys.argv[0],
                             refresh_catalogs = False,
                             noexecute = False, force = True,
                             be_name = self.proposed_be_name)
                         self.pylint_stub = opensolaris_image
-                        if cre and not cre.succeeded:
-                                raise api_errors.CatalogRefreshException(None, None, None
-                                    ,_("Catalog refresh failed during Update All."))
                 return stuff_to_do
 
         def __operations_done(self, alternate_done_txt = None):
@@ -794,7 +785,7 @@ class InstallUpdate(progress.GuiProgressTracker):
         def __prompt_to_load_beadm(self):
                 msgbox = gtk.MessageDialog(parent = self.w_main_window,
                     buttons = gtk.BUTTONS_OK_CANCEL, flags = gtk.DIALOG_MODAL,
-                    type = gtk.MESSAGE_ERROR, 
+                    type = gtk.MESSAGE_ERROR,
                     message_format = _(
                         "Not enough disk space, the selected action cannot "
                         "be performed.\n\n"
@@ -807,7 +798,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                         beadm.Beadmin(self.parent)
 
         def __afterplan_information(self):
-                install_iter = None 
+                install_iter = None
                 update_iter = None
                 remove_iter = None
                 plan = self.api_o.describe().get_changes()
@@ -865,7 +856,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                                 l_ver += 1
                         version_suf += "%d" % s_bran[l_ver]
                 pkg_version = version_pref + version_suf + dt_str
-                return pkg_name + "@" + pkg_version  
+                return pkg_name + "@" + pkg_version
 
         @staticmethod
         def get_datetime(date_time):
@@ -876,7 +867,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 except ValueError:
                         return None
                 if date_tmp:
-                        date_tmp2 = datetime.datetime(*date_tmp[0:5])        
+                        date_tmp2 = datetime.datetime(*date_tmp[0:5])
                         return date_tmp2.strftime(":%m%d")
                 return None
 

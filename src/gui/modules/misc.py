@@ -44,7 +44,7 @@ from pkg.client import global_settings
 
 #The current version of the Client API the PM, UM and
 #WebInstall GUIs have been tested against and are known to work with.
-CLIENT_API_VERSION = 15
+CLIENT_API_VERSION = 19
 
 def get_app_pixbuf(application_dir, icon_name):
         return get_pixbuf_from_path(os.path.join(application_dir,

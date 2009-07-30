@@ -70,18 +70,25 @@ class PkgPlan(object):
 
                 return s
 
-        def propose_repair(self, fmri, mfst, actions):
+        def propose_reinstall(self, fmri, mfst):
                 self.destination_fmri = fmri
                 self.__destination_mfst = mfst
                 self.__legacy_info["version"] = self.destination_fmri.version
-                self.origin_fmri = None
+                self.origin_fmri = fmri
                 self.__origin_mfst = mfst
+
+                if not self.image.install_file_present(fmri):
+                        raise RuntimeError, "not installed"
+
+        def propose_repair(self, fmri, mfst, actions):
+                self.propose_reinstall(fmri, mfst)
+                self.origin_fmri = None
 
                 # Create a list of (src, dst) pairs for the actions to send to
                 # execute_repair.  src is none in this case since we aren't
                 # upgrading, just repairing.
                 lst = [(None, x) for x in actions]
-                
+
                 # Only install actions, no update or remove
                 self.__repair_actions = lst
 
@@ -116,7 +123,7 @@ class PkgPlan(object):
 
                 if self.destination_fmri:
                         fmri_set.add(self.destination_fmri)
-                        
+
         def evaluate(self, old_excludes=EmptyI, new_excludes=EmptyI):
                 """Determine the actions required to transition the package."""
                 # if origin unset, determine if we're dealing with an previously
@@ -140,8 +147,8 @@ class PkgPlan(object):
                 if ddups:
                         raise RuntimeError, ["Duplicate actions", ddups]
 
-                self.actions = self.__destination_mfst.difference(self.__origin_mfst,
-                    old_excludes, new_excludes)
+                self.actions = self.__destination_mfst.difference(
+                    self.__origin_mfst, old_excludes, new_excludes)
 
                 # figure out how many implicit directories disappear in this
                 # transition and add directory remove actions.  These won't
@@ -173,7 +180,7 @@ class PkgPlan(object):
 
                 #
                 # We cross a point of no return here, and throw away the origin
-                # and destination manifests; we also delete them from the 
+                # and destination manifests; we also delete them from the
                 # image cache.
                 self.__origin_mfst = None
                 self.__destination_mfst = None
@@ -301,7 +308,7 @@ class PkgPlan(object):
                         else:
                                 src.postremove(self)
 
-                # For an uninstall or an upgrade, remove the installation 
+                # For an uninstall or an upgrade, remove the installation
                 # turds from the origin's directory.
                 # XXX should this just go in preexecute?
                 if self.destination_fmri == None or self.origin_fmri != None:

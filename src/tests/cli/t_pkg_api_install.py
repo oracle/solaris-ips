@@ -38,7 +38,7 @@ import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 import pkg.client.progress as progress
 
-API_VERSION = 15
+API_VERSION = 19
 PKG_CLIENT_NAME = "pkg"
 
 class TestPkgApiInstall(testutils.SingleDepotTestCase):

@@ -218,7 +218,7 @@ class History(object):
         client_args = None
 
         # A stack where operation data will actually be stored.
-        __operations = None
+        __operations = []
 
         # A private property used by preserve() and restore() to store snapshots
         # of history and operation state information.
