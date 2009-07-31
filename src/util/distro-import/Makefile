@@ -373,11 +373,9 @@ FILELIST_RAMDISK_PKG_71		= SUNWcakr.i
 
 default:	120/slim_import
 
-cluster.import:
-#cluster.import:	$(WOS_PKGS)/.clustertoc Makefile
-#	./clustertoc2import.py $(WOS_PKGS)/.clustertoc | \
-#	sed "s/version 2.2.1a/version 2.2.1.1/" > $@
-	echo > $@
+cluster.import:	$(WOS_PKGS)/.clustertoc Makefile
+	./clustertoc2import.py $(WOS_PKGS)/.clustertoc | \
+	sed "s/version 2.2.1a/version 2.2.1.1/" > $@
 
 proto/etc/user_attr.cdonly: proto $(BUILDID)/user_attr
 	( cat $(BUILDID)/user_attr; \
