@@ -55,7 +55,7 @@ def __check_for_updates(image_directory, nice):
                 print "Updates undetermined in check_last_refresh"
 
         try:
-                stuff_to_do, opensolaris_image, cre = \
+                stuff_to_do, opensolaris_image = \
                     api_obj.plan_update_all(sys.argv[0],
                     refresh_catalogs = True,
                     noexecute = True, force = True, verbose = False) 
@@ -66,12 +66,7 @@ def __check_for_updates(image_directory, nice):
         if debug:
                 print "stuff_to_do: ", stuff_to_do
                 print "opensolaris_image: ", opensolaris_image
-                print "cre: ", cre
 
-        if cre and not cre.succeeded:
-                if debug:
-                        print "Error occurred in plan_update_all"
-                return enumerations.UPDATES_UNDETERMINED
         __dump_updates_available(api_obj, stuff_to_do)
         if stuff_to_do:
                 if debug:
