@@ -1,5 +1,15 @@
+Version 19:
+Incompatible with clients using versions 0-18.
+Changes:
+    The ImageInterface class changed as follows:
+        * plan_update_all no longer returns a third value, the exception
+          caught.  This value was never set.
+
+        * plan_install no longer returns a second value, the exception
+          caught.  This value was never set.
+
 Version 18:
-Compatible with clients using version 15-17.
+Compatible with clients using versions 15-17.
 Changes:
    The following exceptions were added to pkg.client.api_errors:
     

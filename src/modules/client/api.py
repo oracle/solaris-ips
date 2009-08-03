@@ -249,20 +249,18 @@ class ImageInterface(object):
         def plan_install(self, pkg_list, filters, refresh_catalogs=True,
             noexecute=False, verbose=False, update_index=True):
                 """Contructs a plan to install the packages provided in
-                pkg_list. pkg_list is a list of packages to install. filters
+                pkg_list.  pkg_list is a list of packages to install.  filters
                 is a list of filters to apply to the actions of the installed
-                packages. refresh_catalogs controls whether the catalogs will
+                packages.  refresh_catalogs controls whether the catalogs will
                 automatically be refreshed. noexecute determines whether the
-                history will be recorded after planning is finished. verbose
+                history will be recorded after planning is finished.  verbose
                 controls whether verbose debugging output will be printed to the
-                terminal. Its existence is temporary. It returns a tuple of
-                two things. The first is a boolean which tells the client
-                whether there is anything to do. The third is either None, or an
-                exception which indicates partial success. It can raise
-                PlanCreationException, PermissionsException and
-                InventoryException. The noexecute argument is included
-                for compatibility with operational history.
-                The hope is it can be removed in the future."""
+                terminal.  Its existence is temporary.  It returns a boolean
+                which tells the client whether there is anything to do.  It can
+                raise PlanCreationException, PermissionsException and
+                InventoryException. The noexecute argument is included for
+                compatibility with operational history.  The hope is it can be
+                removed in the future."""
 
                 self.__plan_common_start("install")
                 try:
@@ -344,22 +342,19 @@ class ImageInterface(object):
             noexecute=False, force=False, verbose=False, update_index=True,
             be_name=None):
                 """Creates a plan to update all packages on the system to the
-                latest known versions. actual_cmd is the command used to start
-                the client. It is used to determine the image to check whether
-                SUNWipkg is up to date. refresh_catalogs controls whether the
-                catalogs will automatically be refreshed. noexecute determines
+                latest known versions.  actual_cmd is the command used to start
+                the client.  It is used to determine the image to check whether
+                SUNWipkg is up to date.  refresh_catalogs controls whether the
+                catalogs will automatically be refreshed.  noexecute determines
                 whether the history will be recorded after planning is finished.
                 force controls whether update should proceed even if ipkg is not
-                up to date. verbose controls whether verbose debugging output
-                will be printed to the terminal. Its existence is temporary. It
-                returns a tuple of three things. The first is a boolean which
-                tells the client whether there is anything to do. The second
-                tells whether the image is an opensolaris image. The third is
-                either None, or an exception which indicates partial success.
-                This is currently used to indicate a failure in refreshing
-                catalogs. It can raise CatalogRefreshException,
-                IpkgOutOfDateException, PlanCreationException and
-                PermissionsException."""
+                up to date.  verbose controls whether verbose debugging output
+                will be printed to the terminal.  Its existence is temporary. It
+                returns a tuple of two things.  The first is a boolean which
+                tells the client whether there is anything to do.  The second
+                tells whether the image is an opensolaris image.  It can raise
+                CatalogRefreshException, IpkgOutOfDateException,
+                PlanCreationException and PermissionsException."""
 
                 self.__plan_common_start("image-update")
                 try:
@@ -432,7 +427,6 @@ class ImageInterface(object):
 
         def plan_change_variant(self, variants, noexecute=False,
             verbose=False, be_name=None):
-
                 """Creates a plan to change the specified variants on an image.
                 There is option to refresh_catalogs since if we're changing
                 architectures, we have to download manifests that were
