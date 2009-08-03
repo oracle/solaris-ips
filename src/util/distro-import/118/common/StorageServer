@@ -43,9 +43,7 @@ depend SUNWmpsvplr
 $(i386_ONLY)depend SUNWmv88sx
 depend SUNWndmp
 depend SUNWnfsc
-depend SUNWnfsckr
 depend SUNWnfss
-depend SUNWnfsskr
 depend SUNWqlc
 depend SUNWqlcu
 depend SUNWrdc
@@ -54,17 +52,13 @@ depend SUNWscm
 depend SUNWsmapi
 depend SUNWsmba
 depend SUNWsmbfs
-depend SUNWsmbfskr
 depend SUNWsmbs
-depend SUNWsmbskr
 depend SUNWsmedia
 depend SUNWsmpd
 depend SUNWspsv
 $(sparc_ONLY)depend SUNWssad
 depend SUNWstmf
 depend SUNWvscan
-depend SUNWvscankr
 depend SUNWzfs
 depend SUNWzfs-auto-snapshot
-depend SUNWzfskr
 end package
