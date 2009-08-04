@@ -1,0 +1,5 @@
+package SUNWpm
+classification "System/Administration and Configuration"
+import SUNWpmu
+import SUNWpmr
+end package

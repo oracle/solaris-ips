@@ -65,7 +65,6 @@ sparc_DEFINES=		\
 
 ARCH_DEFINES=$($(ARCH)_DEFINES)
 
-TMPPKGS=SUNWfixes
 EXTRA_OPTIONS=
 
 GLOBAL_CHATTRS_BASE=	\
@@ -294,6 +293,18 @@ FIX_FILES_117 = $(FIX_FILES_BASE)
 FIX_FILES_118 = $(FIX_FILES_BASE)
 FIX_FILES_119 = $(FIX_FILES_BASE)
 FIX_FILES_120 = $(FIX_FILES_BASE)
+FIX_FILES_121 =				\
+	driver_aliases			\
+	ksh				\
+	name_to_major			\
+	nsswitch.conf			\
+	pam.conf			\
+	passwd				\
+	services.desktop		\
+	sh				\
+	shadow				\
+	shares.desktop			\
+	vi
 FIX_FILES = $(FIX_FILES_$(BUILDID))
 
 JDKFILES = LICENSE README.html
@@ -381,17 +392,17 @@ proto/etc/user_attr.cdonly: proto $(BUILDID)/user_attr
 	( cat $(BUILDID)/user_attr; \
 	  echo "jack::::profiles=Primary Administrator;roles=root") > $@
 
-proto/etc/driver_aliases:	proto $(BUILDID)/redist_cluster cluster.import
+$(BUILDID)/driver_aliases:	$(BUILDID)/redist_cluster cluster.import
 	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsd etc/driver_aliases | \
 	./driver_names.py $(INCLUDE_PATH_$(BUILDID)) \
 	$(BUILDID)/redist_cluster > $@
 
-proto/etc/name_to_major:	proto $(BUILDID)/redist_cluster cluster.import
+$(BUILDID)/name_to_major:	$(BUILDID)/redist_cluster cluster.import
 	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsd etc/name_to_major | \
 	./driver_names.py $(INCLUDE_PATH_$(BUILDID)) \
 	$(BUILDID)/redist_cluster > $@
 
-proto/etc/nsswitch.conf:	proto Makefile
+$(BUILDID)/nsswitch.conf:	Makefile
 	./get_file_from_pkg.py	$(WOS_PKGS)/SUNWcsr etc/nsswitch.files > $@
 
 proto/etc/X11/gdm/custom.conf:	proto Makefile
@@ -402,16 +413,12 @@ proto/etc/X11/gdm/custom.conf:	proto Makefile
 			    print "GdmXserverTimeout=30";		\
 			    continue }  { print $$0 }' > $@
 
-proto/etc/power.conf:	proto Makefile
-	./get_file_from_pkg.py	$(WOS_PKGS)/SUNWpmr etc/power.conf | nawk \
-	'/^autoshutdown/{gsub("unconfigured","default");} {print $$0}' > $@
-
 proto/boot/solaris/filelist.ramdisk:	proto
 	(./get_file_from_pkg.py $(WOS_PKGS)/$(FILELIST_RAMDISK_PKG_$(BUILDID)) \
 	    boot/solaris/filelist.ramdisk; \
 	echo etc/zfs/zpool.cache) > $@
 
-proto/etc/pam.conf:	proto
+$(BUILDID)/pam.conf:
 	(./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr etc/pam.conf;	\
 	echo "gdm-autologin auth  required    pam_unix_cred.so.1";	\
 	echo "gdm-autologin auth  sufficient  pam_allow.so.1";		\
@@ -449,15 +456,15 @@ proto/usr/share/man/man.cf:	proto
 	'/MANSECTS/s/$$/,1openssl,3openssl,5openssl,7openssl/' \
 	> $@
 
-proto/usr/bin/ksh:	proto $(PROG)
+$(BUILDID)/ksh:	$(PROG)
 	cp $(PROG) $@
 
-proto/usr/share/applications/shares.desktop: proto
+$(BUILDID)/shares.desktop:
 	./get_file_from_pkg.py $(WOS_PKGS)/SUNWgnome-system-tools \
 	usr/share/applications/shares.desktop | \
 	./desktop_exec.sh /usr/lib/vp-shares > $@
 
-proto/usr/share/applications/services.desktop: proto
+$(BUILDID)/services.desktop: proto
 	./get_file_from_pkg.py $(WOS_PKGS)/SUNWgnome-system-tools \
 	usr/share/applications/services.desktop | \
 	./desktop_exec.sh /usr/lib/vp-services > $@
@@ -465,18 +472,18 @@ proto/usr/share/applications/services.desktop: proto
 #
 # change root's default shell, homedir, password
 #
-proto/etc/passwd:	proto Makefile
+$(BUILDID)/passwd:	Makefile
 	(./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr etc/passwd | nawk -F:			\
 	'/^root/{ print "root:x:0:0:Super-User:/root:/usr/bin/bash";continue} {print $$0}') > $@
 
-proto/etc/shadow:	proto Makefile
+$(BUILDID)/shadow:	Makefile
 	(./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr etc/shadow | nawk -F:		\
 	'/^root/{ print "root:$$5$$VgppCOxA$$ycFmYW4ObRRHhtsGEygDdexk5bugqgSiaSR9niNCouC:14146::::::";continue} {print $$0}') > $@
 
-proto/usr/has/bin/sh:	proto Makefile
+$(BUILDID)/sh:	Makefile
 	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr sbin/sh > $@
 
-proto/usr/has/bin/vi:	proto Makefile
+$(BUILDID)/vi:	Makefile
 	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsu usr/bin/edit > $@
 
 proto/usr/sbin/extract_hostid:	proto ../misc/extract_hostid
@@ -517,12 +524,6 @@ proto:	Makefile
 	mkdir -p proto/var/svc/manifest/system/xvm
 	mkdir -p proto/var/svc/profile
 
-%/$(TMPPKGS):
-	$(MAKE) BUILDID=$(@D) $(@F)
-
-%:	$(BUILDID)/%.prototype $(BUILDID)/%.pkginfo $(FIX_FILES:%=proto/%)
-	pkgmk -b ./proto -r . -f $(BUILDID)/$@.prototype -d `pwd` -o
-
 INCLUDE_PATH_75a = 75a:73:72:71:00
 INCLUDE_PATH_79b = 79b:78:77:76:$(INCLUDE_PATH_75a)
 INCLUDE_PATH_84 = 84:83:82:81:80:$(INCLUDE_PATH_79b)
@@ -556,14 +557,14 @@ INCLUDE_PATH_118 = 118:$(INCLUDE_PATH_117)
 INCLUDE_PATH_119 = 119:$(INCLUDE_PATH_118)
 INCLUDE_PATH_120 = 120:$(INCLUDE_PATH_119)
 
-import:	cluster.import $(TMPPKGS)
+import:	cluster.import $(FIX_FILES:%=$(BUILDID)/%)
 	$(SOLARIS.PY) -s $(REPO) -w $(WOS_PKGS) $(ELIDED_FILES:%=-D %) \
 		$(INCLUDE_PATH_$(BUILDID):%=-I %) $(BUILDID)/all.i386
 
 %/import:
 	$(MAKE) BUILDID=$(@:%/import=%) import
 
-slim_import:	$(BUILDID)/slim_cluster $(TMPPKGS)
+slim_import:	$(BUILDID)/slim_cluster $(FIX_FILES:%=$(BUILDID)/%)
 	$(SOLARIS.PY) -s $(REPO) $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) \
 		$(JUST_THESE_PKGS:%=-j %) $(INCLUDE_PATH_$(BUILDID):%=-I %) \
 		$(BUILDID)/slim_cluster
@@ -574,7 +575,7 @@ slim_import:	$(BUILDID)/slim_cluster $(TMPPKGS)
 	fi
 	$(MAKE) BUILDID=$(@:%/slim_import=%) slim_import
 
-redist_import:	$(BUILDID)/redist_cluster $(TMPPKGS)
+redist_import:	$(BUILDID)/redist_cluster $(FIX_FILES:%=$(BUILDID)/%)
 	$(SOLARIS.PY) -s $(REPO) $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) \
 		$(JUST_THESE_PKGS:%=-j %) $(INCLUDE_PATH_$(BUILDID):%=-I %) \
 		$(BUILDID)/redist_cluster
@@ -647,7 +648,6 @@ clean:
 
 clobber: clean
 	rm -f $(PROG)
-	rm -rf $(TMPPKGS)
 
 lint:
 	$(LINT) $(LINTFLAGS) $(SRCS)

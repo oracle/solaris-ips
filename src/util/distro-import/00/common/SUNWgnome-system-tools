@@ -6,10 +6,10 @@ drop usr/share/applications/shares.desktop
 # Insert hooks for Visual Panels
 add file vp-services path=usr/lib/vp-services mode=0555 owner=root group=bin
 add file vp-shares path=usr/lib/vp-shares mode=0555 owner=root group=bin
-from SUNWfixes import
-usr/share/applications/services.desktop
-usr/share/applications/shares.desktop
-end import
+add file services.desktop path=usr/share/applications/services.desktop \
+    mode=0644 owner=root group=bin
+add file shares.desktop path=usr/share/applications/shares.desktop \
+    mode=0644 owner=root group=bin
 import SUNWgnome-system-tools-devel
 import SUNWgnome-system-tools-root
 depend SUNWperl-authen-pam
