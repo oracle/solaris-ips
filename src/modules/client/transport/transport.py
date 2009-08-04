@@ -753,7 +753,7 @@ class MultiFile(object):
                 cachedpath = self._transport._action_cached(action)
                 if cachedpath:
                         action.data = self._make_opener(cachedpath)
-                        filesz = misc.get_pkg_otw_size(action)
+                        filesz = int(misc.get_pkg_otw_size(action))
                         self._progtrack.download_add_progress(1, filesz)
                         return
 
@@ -823,7 +823,7 @@ class MultiFile(object):
                 # the engine's progress tracking.  Adjust the progress tracker
                 # by the difference between what we have and the total we should
                 # have received.
-                bytes = totalsz - filesz
+                bytes = int(totalsz - filesz)
                 self._progtrack.download_add_progress((nactions - 1), bytes)
 
         def subtract_progress(self, size):
@@ -833,7 +833,7 @@ class MultiFile(object):
                 it has happened before make_openers, so it's only necessary
                 to adjust the progress for a single file."""
 
-                self._progtrack.download_add_progress(-1, -size)
+                self._progtrack.download_add_progress(-1, int(-size))
 
         def wait_files(self):
                 """Wait for outstanding file retrieval operations to

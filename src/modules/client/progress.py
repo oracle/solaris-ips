@@ -182,13 +182,13 @@ class ProgressTracker(object):
                         self.dl_output_done()
 
                 if self.dl_cur_npkgs != self.dl_goal_npkgs:
-                        emsg("\nExpected %d pkgs, received %d pkgs instead." %
+                        emsg("\nExpected %s pkgs, received %s pkgs instead." %
                             (self.dl_goal_npkgs, self.dl_cur_npkgs))
                 if self.dl_cur_nfiles != self.dl_goal_nfiles:
-                        emsg("\nExpected %d files, received %d files instead."
+                        emsg("\nExpected %s files, received %s files instead."
                             % (self.dl_goal_nfiles, self.dl_cur_nfiles))
                 if self.dl_cur_nbytes != self.dl_goal_nbytes:
-                        emsg("\nExpected %d bytes, received %d bytes instead."
+                        emsg("\nExpected %s bytes, received %s bytes instead."
                             % (self.dl_goal_nbytes, self.dl_cur_nbytes))
 
                 assert self.dl_cur_npkgs == self.dl_goal_npkgs

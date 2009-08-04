@@ -638,7 +638,7 @@ class FileProgress(object):
                 # Subtract the total amount we've counted as progress
                 # from the actual size of the file.  This is the adjustment,
                 # positive or negative.
-                adjustment = size - self.dlcurrent
+                adjustment = int(size - self.dlcurrent)
                 
                 self.progtrack.download_add_progress(1, adjustment)
                 self.completed = True
