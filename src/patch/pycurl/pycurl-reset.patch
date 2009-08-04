@@ -1,5 +1,5 @@
---- src/pycurl.c.old	Tue Sep  9 10:40:34 2008
-+++ src/pycurl.c	Tue Apr 28 20:22:53 2009
+--- src/pycurl.c.orig	Fri Jul 31 15:21:36 2009
++++ src/pycurl.c	Fri Jul 31 15:26:56 2009
 @@ -745,69 +745,86 @@
      memset(self->error, 0, sizeof(self->error));
  
@@ -151,3 +151,27 @@
  /* --------------- unsetopt/setopt/getinfo --------------- */
  
  static PyObject *
+@@ -1625,10 +1653,11 @@
+         case CURLOPT_SSH_PRIVATE_KEYFILE:
+         case CURLOPT_COPYPOSTFIELDS:
+         case CURLOPT_SSH_HOST_PUBLIC_KEY_MD5:
+         case CURLOPT_CRLFILE:
+         case CURLOPT_ISSUERCERT:
++        case CURLOPT_NOPROXY:
+ /* FIXME: check if more of these options allow binary data */
+             str = PyString_AsString_NoNUL(obj);
+             if (str == NULL)
+                 return NULL;
+             break;
+@@ -3733,10 +3762,11 @@
+     insint_c(d, "SSH_HOST_PUBLIC_KEY_MD5", CURLOPT_SSH_HOST_PUBLIC_KEY_MD5);
+     insint_c(d, "AUTOREFERER", CURLOPT_AUTOREFERER);
+     insint_c(d, "CRLFILE", CURLOPT_CRLFILE);
+     insint_c(d, "ISSUERCERT", CURLOPT_ISSUERCERT);
+     insint_c(d, "ADDRESS_SCOPE", CURLOPT_ADDRESS_SCOPE);
++    insint_c(d, "NOPROXY", CURLOPT_NOPROXY);
+ 
+     insint_c(d, "M_TIMERFUNCTION", CURLMOPT_TIMERFUNCTION);
+     insint_c(d, "M_SOCKETFUNCTION", CURLMOPT_SOCKETFUNCTION);
+     insint_c(d, "M_PIPELINING", CURLMOPT_PIPELINING);
+     insint_c(d, "M_MAXCONNECTS", CURLMOPT_MAXCONNECTS);

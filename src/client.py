@@ -520,7 +520,7 @@ def __api_prepare(operation, api):
         except api_errors.FileInUseException, e:
                 error("\n" + str(e))
                 return False
-        except api_errors.TransportException, e:
+        except api_errors.TransportError, e:
                 # move past the progress tracker line.
                 msg("\n")
                 if verbose:

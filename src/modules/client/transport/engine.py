@@ -183,6 +183,8 @@ class CurlTransportEngine(TransportEngine):
 
                         if httpcode == httplib.OK:
                                 h.success = True
+                                if h.fileprog:
+                                        h.fileprog.commit(bytes)
                         else:
                                 ex = tx.TransportProtoError(proto,
                                     httpcode, url, repourl=urlstem)
@@ -460,6 +462,10 @@ class CurlTransportEngine(TransportEngine):
                 # Follow redirects
                 hdl.setopt(pycurl.FOLLOWLOCATION, True)
 
+                # Make sure that we don't use a proxy if the destination
+                # is localhost.
+                hdl.setopt(pycurl.NOPROXY, "localhost")
+
                 # Set user agent, if client has defined it
                 if self.__user_agent:
                         hdl.setopt(pycurl.USERAGENT, self.__user_agent)
@@ -618,11 +624,24 @@ class FileProgress(object):
                 by this file from the ProgressTracker."""
 
                 self.progtrack.download_add_progress(0, -self.dlcurrent)
-                if self.completed:
-                        self.progtrack.download_add_progress(-1, 0)
+                self.completed = True
 
-                self.dltotal = 0
-                self.dlcurrent = 0
+        def commit(self, size):
+                """Indicate that this download has succeeded.  The size
+                argument is the total size that we received.  Compare this
+                value against the dlcurrent.  If it's out of sync, which
+                can happen if the underlying framework swaps our request
+                across connections, adjust the progress tracker by the
+                amount we're off."""
+
+
+                # Subtract the total amount we've counted as progress
+                # from the actual size of the file.  This is the adjustment,
+                # positive or negative.
+                adjustment = size - self.dlcurrent
+                
+                self.progtrack.download_add_progress(1, adjustment)
+                self.completed = True
 
         def progress_callback(self, dltot, dlcur, ultot, ulcur):
                 """Called by pycurl/libcurl framework to update
@@ -632,17 +651,16 @@ class FileProgress(object):
                     self.progtrack.check_cancelation():
                         return -1
 
+                if self.completed:
+                        return 0
+
                 if self.dltotal != dltot:
                         self.dltotal = dltot
 
-                new_progress = dlcur - self.dlcurrent
+                new_progress = int(dlcur - self.dlcurrent)
                 if new_progress > 0:
                         self.dlcurrent += new_progress
                         self.progtrack.download_add_progress(0, new_progress)
-
-                if not self.completed and self.dlcurrent == self.dltotal:
-                        self.completed = True
-                        self.progtrack.download_add_progress(1, 0)
 
                 return 0
 
