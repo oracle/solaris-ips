@@ -32,7 +32,7 @@ packaging object."""
 
 import errno
 import os
-from stat import *
+import stat
 
 from pkg.client.api_errors import ActionExecutionError
 import link
@@ -90,33 +90,38 @@ class HardLinkAction(link.LinkAction):
                                 raise ActionExecutionError(self, e)
 
         def verify(self, img, **args):
-                path = self.attrs["path"]
+
+                #
+                # We only allow hard links to regular files, so the hard
+                # link should lstat() as a regular file.
+                #
+                lstat, errors, abort = \
+                    self.verify_fsobj_common(img, stat.S_IFREG)
+                if abort:
+                        assert errors
+                        return errors
+
                 target = self.get_target_path()
-
-                errors = []
                 path = os.path.normpath(os.path.sep.join(
-                    (img.get_root(), path)))
-
-                if not os.path.exists(path):
-                        errors.append("No such path %s" % self.attrs["path"])
-
+                    (img.get_root(), self.attrs["path"])))
                 target = os.path.normpath(os.path.sep.join(
                     (img.get_root(), target)))
 
                 if not os.path.exists(target):
-                        errors.append("Target %s doesn't exist" % \
+                        errors.append("Target '%s' does not exist" %
                             self.attrs["target"])
 
-                # No point in continuing if we have errors already
+                # No point in continuing if no target
                 if errors:
                         return errors
 
                 try:
-                        if os.stat(path)[ST_INO] != os.stat(target)[ST_INO]:
-                                errors.append("Path and Target (%s) inodes not the same" % \
+                        if os.stat(path).st_ino != os.stat(target).st_ino:
+                                errors.append("Broken: Path and Target (%s) "
+                                    "inodes not the same" %
                                     self.get_target_path())
 
                 except OSError, e:
-                        errors.append("Unexpected exception: %s" % e)
+                        errors.append("Unexpected OSError: %s" % e)
 
                 return errors

@@ -32,7 +32,7 @@ directory-type packaging object."""
 
 import os
 import errno
-from stat import *
+import stat
 import generic
 import pkg.portable as portable
 import pkg.actions
@@ -112,39 +112,8 @@ class DirectoryAction(generic.Action):
         def verify(self, img, **args):
                 """ make sure directory is correctly installed"""
 
-                mode = int(self.attrs["mode"], 8)
-                owner = img.get_user_by_name(self.attrs["owner"])
-                group = img.get_group_by_name(self.attrs["group"])
-
-                path = os.path.normpath(os.path.sep.join((img.get_root(),
-                                        self.attrs["path"])))
-                try:
-                        stat = os.lstat(path)
-                except OSError, e:
-                        if e.errno == errno.ENOENT:
-                                return ["Directory does not exist"]
-                        if e.errno == errno.EACCES:
-                                return ["Skipping: Permission denied"]
-                        return ["Unexpected exception: %s" % e]
-
-                errors = []
-
-                if not S_ISDIR(stat[ST_MODE]):
-                        errors.append("Not a directory")
-
-                if stat[ST_UID] != owner:
-                        errors.append("Owner: '%s' should be '%s'" % \
-                            (img.get_name_by_uid(stat[ST_UID], True),
-                            img.get_name_by_uid(owner, True)))
-                if stat[ST_GID] != group:
-                        errors.append("Group: '%s' should be '%s'" % \
-                            (img.get_name_by_gid(stat[ST_GID], True),
-                            img.get_name_by_gid(group, True)))
-
-                if S_IMODE(stat[ST_MODE]) != mode:
-                        errors.append("Mode: 0%.3o should be 0%.3o" % \
-                            (S_IMODE(stat[ST_MODE]), mode))
-
+                lstat, errors, abort = \
+                    self.verify_fsobj_common(img, stat.S_IFDIR)
                 return errors
 
         def remove(self, pkgplan):

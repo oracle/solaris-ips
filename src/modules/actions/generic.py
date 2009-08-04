@@ -41,6 +41,7 @@ except AttributeError:
 import pkg.actions
 import pkg.portable as portable
 import pkg.variant as variant
+import stat
 
 class Action(object):
         """Class representing a generic packaging object.
@@ -412,6 +413,74 @@ class Action(object):
                 """Returns an empty list if correctly installed in the given
                 image."""
                 return []
+
+        def verify_fsobj_common(self, img, ftype):
+
+                errors = []
+                abort = False
+                def ftype_to_name(ftype):
+                        assert ftype is not None
+                        tmap = {
+                                stat.S_IFIFO: "fifo",
+                                stat.S_IFCHR: "character device",
+                                stat.S_IFDIR: "directory",
+                                stat.S_IFBLK: "block device",
+                                stat.S_IFREG: "regular file",
+                                stat.S_IFLNK: "symbolic link",
+                                stat.S_IFSOCK: "socket",
+                        }
+                        if ftype in tmap:
+                                return tmap[ftype]
+                        else:
+                                return "Unknown (0x%x)" % ftype
+
+                mode = owner = group = None
+                if "mode" in self.attrs:
+                        mode = int(self.attrs["mode"], 8)
+                if "owner" in self.attrs:
+                        owner = img.get_user_by_name(self.attrs["owner"])
+                if "group" in self.attrs:
+                        group = img.get_group_by_name(self.attrs["group"])
+
+                path = os.path.normpath(
+                    os.path.sep.join((img.get_root(), self.attrs["path"])))
+
+                lstat = None
+                try:
+                        lstat = os.lstat(path)
+                except OSError, e:
+                        if e.errno == errno.ENOENT:
+                                errors.append("Missing: %s does not exist" %
+                                    ftype_to_name(ftype))
+                        elif e.errno == errno.EACCES:
+                                errors.append("Skipping: Permission denied")
+                        else:
+                                errors.append("Unexpected OSError: %s" % e)
+                        abort = True
+
+                if abort:
+                        return lstat, errors, abort
+
+                if ftype is not None and ftype != stat.S_IFMT(lstat.st_mode):
+                        errors.append("File Type: '%s' should be '%s'" %
+                            (ftype_to_name(stat.S_IFMT(lstat.st_mode)),
+                             ftype_to_name(ftype)))
+                        abort = True
+
+                if owner is not None and lstat.st_uid != owner:
+                        errors.append("Owner: '%s (%d)' should be '%s (%d)'" %
+                            (img.get_name_by_uid(lstat.st_uid, True),
+                            lstat.st_uid, self.attrs["owner"], owner))
+
+                if group is not None and lstat.st_gid != group:
+                        errors.append("Group: '%s (%s)' should be '%s (%s)'" %
+                            (img.get_name_by_gid(lstat.st_gid, True),
+                            lstat.st_gid, self.attrs["group"], group))
+
+                if mode is not None and stat.S_IMODE(lstat.st_mode) != mode:
+                        errors.append("Mode: 0%.3o should be 0%.3o" %
+                            (stat.S_IMODE(lstat.st_mode), mode))
+                return lstat, errors, abort
 
         def needsdata(self, orig):
                 """Returns True if the action transition requires a

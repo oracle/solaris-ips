@@ -143,7 +143,7 @@ class FileAction(generic.Action):
                 if os.path.exists(final_path) and \
                     not os.path.islink(final_path) and \
                     os.path.isdir(final_path):
-                        try:    
+                        try:
                                 os.rmdir(final_path)
                         except OSError, e:
                                 if e.errno == errno.ENOENT:
@@ -204,67 +204,37 @@ class FileAction(generic.Action):
         def verify(self, img, **args):
                 """ verify that file is present and if preserve attribute
                 not present, that hashes match"""
-                path = self.attrs["path"]
-                mode = int(self.attrs["mode"], 8)
-                owner = img.get_user_by_name(self.attrs["owner"])
-                group = img.get_group_by_name(self.attrs["group"])
-
                 path = os.path.normpath(os.path.sep.join(
-                    (img.get_root(), path)))
+                    (img.get_root(), self.attrs["path"])))
 
-                errors = []
-
-                try:
-                        fs = os.lstat(path)
-                except OSError, e:
-                        if e.errno == errno.ENOENT:
+                lstat, errors, abort = \
+                    self.verify_fsobj_common(img, stat.S_IFREG)
+                if lstat:
+                        if not stat.S_ISREG(lstat.st_mode):
                                 self.replace_required = True
-                                errors.append("File does not exist")
-                        elif e.errno == errno.EACCES:
-                                errors.append("Skipping: Permission denied")
-                        else:
-                                errors.append("Unexpected OSError: %s" % e)
 
-                # If we have errors already there isn't much point in
-                # continuing.
-                if errors:
+                if abort:
+                        assert errors
                         return errors
 
                 if path.lower().endswith("/cat") and args["verbose"] == True:
                         errors.append("Warning: package may contain bobcat!  "
                             "(http://xkcd.com/325/)")
 
-                if not stat.S_ISREG(fs.st_mode):
-                        errors.append("%s is not a regular file" % \
-                            self.attrs["path"])
-                        self.replace_required = True
-
-                if fs.st_uid != owner:
-                        errors.append("Owner: '%s' should be '%s'" % \
-                            (img.get_name_by_uid(fs.st_uid, True),
-                             img.get_name_by_uid(owner, True)))
-                if fs.st_gid != group:
-                        errors.append("Group: '%s' should be '%s'" % \
-                            (img.get_name_by_gid(fs.st_gid, True),
-                             img.get_name_by_gid(group, True)))
-                if stat.S_IMODE(fs.st_mode) != mode:
-                        errors.append("Mode: 0%.3o should be 0%.3o" % \
-                            (stat.S_IMODE(fs.st_mode), mode))
-
-                if "timestamp" in self.attrs and fs.st_mtime != \
+                if "timestamp" in self.attrs and lstat.st_mtime != \
                     misc.timestamp_to_time(self.attrs["timestamp"]):
                         errors.append("Timestamp: %s should be %s" %
-                            (misc.time_to_timestamp(fs.st_mtime), 
+                            (misc.time_to_timestamp(lstat.st_mtime),
                             self.attrs["timestamp"]))
-                             
+
                 # avoid checking pkg.size if elfhash present;
                 # different size files may have the same elfhash
                 if "preserve" not in self.attrs and \
                     "pkg.size" in self.attrs and    \
                     "elfhash" not in self.attrs and \
-                    fs.st_size != int(self.attrs["pkg.size"]):
+                    lstat.st_size != int(self.attrs["pkg.size"]):
                         errors.append("Size: %d bytes should be %d" % \
-                            (fs.st_size, int(self.attrs["pkg.size"])))
+                            (lstat.st_size, int(self.attrs["pkg.size"])))
 
                 if "preserve" in self.attrs:
                         return errors
@@ -290,7 +260,8 @@ class FileAction(generic.Action):
                                 except RuntimeError, e:
                                         errors.append("Elfhash: %s" % e)
 
-                                if elfhash is not None and elfhash != self.attrs["elfhash"]:
+                                if elfhash is not None and \
+                                    elfhash != self.attrs["elfhash"]:
                                         elferror = "Elfhash: %s should be %s" % \
                                             (elfhash, self.attrs["elfhash"])
 
@@ -312,7 +283,7 @@ class FileAction(generic.Action):
                                         self.replace_required = True
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES:
-                                errors.append("Skipping: Permission Denied" % e)
+                                errors.append("Skipping: Permission Denied")
                         else:
                                 errors.append("Unexpected Error %s" % e)
                 except KeyboardInterrupt:
@@ -337,7 +308,7 @@ class FileAction(generic.Action):
                         return True
 
                 return False
-                
+
 
         def remove(self, pkgplan):
                 path = os.path.normpath(os.path.sep.join(
@@ -389,12 +360,12 @@ class FileAction(generic.Action):
                 ]
 
         def save_file(self, image, full_path):
-                """save a file for later (in same process invocation) 
+                """save a file for later (in same process invocation)
                 installation"""
 
                 saved_name = image.temporary_file()
                 misc.copyfile(full_path, saved_name)
-                 
+
                 image.saved_files[self.attrs["save_file"]] = (self, saved_name)
 
         def restore_file(self, image):

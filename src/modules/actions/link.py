@@ -36,6 +36,7 @@ import errno
 import generic
 import pkg.actions
 from pkg.client.api_errors import ActionExecutionError
+import stat
 
 class LinkAction(generic.Action):
         """Class representing a link-type packaging object."""
@@ -90,24 +91,21 @@ class LinkAction(generic.Action):
                 path = self.attrs["path"]
                 target = self.attrs["target"]
 
-                errors = []
                 path = os.path.normpath(os.path.sep.join(
                     (img.get_root(), path)))
-                
-                try:
-                        if not os.path.islink(path):
-                                errors.append("%s is not symbolic link" % self.attrs["path"])
-                except EnvironmentError, e:
-                        errors.append("%s is not symbolic link" % self.attrs["path"])
 
-                # No point in continuing if it's not a link
-                if errors:
+                lstat, errors, abort = \
+                    self.verify_fsobj_common(img, stat.S_IFLNK)
+
+                if abort:
+                        assert errors
                         return errors
 
                 atarget = os.readlink(path)
 
                 if target != atarget:
-                        errors.append("target=%s" % atarget)
+                        errors.append("Target: '%s' should be '%s'" %
+                            (atarget, target))
 
                 return errors
 
