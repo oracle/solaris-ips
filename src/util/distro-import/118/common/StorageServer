@@ -14,6 +14,7 @@ depend SUNWemlxs
 depend SUNWfchba
 depend SUNWfcip
 depend SUNWfcmdb
+depend SUNWfcoet
 depend SUNWfcp
 depend SUNWfcprt
 depend SUNWfcsm
@@ -56,6 +57,7 @@ depend SUNWsmbs
 depend SUNWsmedia
 depend SUNWsmpd
 depend SUNWspsv
+depend SUNWsrpt
 $(sparc_ONLY)depend SUNWssad
 depend SUNWstmf
 depend SUNWvscan
