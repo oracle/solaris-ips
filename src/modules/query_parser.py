@@ -122,7 +122,11 @@ class QueryLexer(object):
                 return t
 
         def t_error(self, t):
-                raise RuntimeError("%s is a unparseable character")
+                raise RuntimeError("\n".join(
+                    [_("An unparseable character in query at position : %d") %
+                        (self.get_pos() + 1),
+                    "%s" % self.get_string(),
+                    "%s" % (" " * self.get_pos() + "^")]))
 
         def build(self, **kwargs):
                 self.lexer = lex.lex(object=self, **kwargs)
