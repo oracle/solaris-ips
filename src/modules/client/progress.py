@@ -654,11 +654,12 @@ class FancyUNIXProgressTracker(ProgressTracker):
                                 self.spinner += 1
                                 if self.spinner >= len(self.spinner_chars):
                                         self.spinner = 0
-                                print "%-50s..... %c%c" % \
+                                s = "%-50s..... %c%c" % \
                                     (self.ver_cur_fmri.get_pkg_stem(),
                                      self.spinner_chars[self.spinner],
-                                     self.spinner_chars[self.spinner]),
-                                print self.cr,
+                                     self.spinner_chars[self.spinner])
+                                self.curstrlen = len(s)
+                                print s, self.cr,
                                 sys.stdout.flush()
                         else:
                                 # Add a carriage return to prevent python from
@@ -681,7 +682,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 # for now we just get the "Verifying" progress
                 # thingy out of the way.
                 try:
-                        print " " * 40, self.cr,
+                        print " " * self.curstrlen, self.cr,
                         sys.stdout.flush()
                 except IOError, e:
                         if e.errno == errno.EPIPE:
