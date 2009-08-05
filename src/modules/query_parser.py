@@ -318,6 +318,38 @@ class QueryParser(object):
 
 class QueryException(Exception):
         pass
+
+
+class DetailedValueError(QueryException):
+
+        def __init__(self, name, bad_value, whole_query):
+                QueryException.__init__(self)
+                self.name = name
+                self.bad_value = bad_value
+                self.query = whole_query
+
+        def __str__(self):
+                return _("In query %(query)s, %(name)s had a bad value of "
+                    "'%(bv)s'.") % {
+                        "query":self.query,
+                        "name":self.name,
+                        "bv":self.bad_value
+                    }
+
+
+class IncompleteQuery(QueryException):
+
+        def __init__(self, whole_query):
+                QueryException.__init__(self)
+                self.query = whole_query
+
+        def __str__(self):
+                return _("A query is expected to have five fields: "
+                    "case sensitivity, return type, number of results to "
+                    "return, the number at which to start returning results, "
+                    "and the text of the query.  The query provided lacked at "
+                    "least one of those fields:\n%s") % self.query
+
         
 class ParseError(QueryException):
         def __init__(self, parse_object, string_position, input_string):
@@ -396,30 +428,48 @@ class Query(object):
                         return "<%s>" % self.__text
                 else:
                         return self.__text
-        
+
         @staticmethod
         def fromstr(s):
                 """Take the output of the __str__ method of this class and
                 return a Query object from that string."""
 
-                case_sensitive, return_type, num_to_return, start_point, \
-                    text = tuple(s.split("_", 4))
+                try:
+                        case_sensitive, return_type, num_to_return, \
+                            start_point, text = s.split("_", 4)
+                except ValueError:
+                        raise IncompleteQuery(s)
                 if case_sensitive == 'True':
                         case_sensitive = True
                 elif case_sensitive == 'False':
                         case_sensitive = False
                 else:
-                        assert 0
+                        raise DetailedValueError("case_sensitive",
+                            case_sensitive, s)
                 if num_to_return == 'None':
                         num_to_return = None
                 else:
-                        num_to_return = int(num_to_return)
+                        try:
+                                num_to_return = int(num_to_return)
+                        except ValueError:
+                                raise DetailedValueError("num_to_return",
+                                    num_to_return, s)
                 if start_point == 'None':
                         start_point = None
                 else:
-                        start_point = int(start_point)
-                return_type = int(return_type)
-                return Query(text, case_sensitive, int(return_type),
+                        try:
+                                start_point = int(start_point)
+                        except ValueError:
+                                raise DetailedValueError("start_point",
+                                    start_point, s)
+                try:
+                        return_type = int(return_type)
+                except ValueError:
+                        raise DetailedValueError("return_type", return_type, s)
+                if return_type != Query.RETURN_PACKAGES and \
+                    return_type != Query.RETURN_ACTIONS:
+                        raise DetailedValueError("return_type", return_type, s)
+                return Query(text, case_sensitive, return_type,
                     num_to_return, start_point)
 
         @staticmethod

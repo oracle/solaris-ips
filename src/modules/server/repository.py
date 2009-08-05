@@ -328,7 +328,13 @@ class Repository(object):
                 """Searches the index for each query in the list of query
                 strings.  Each string should be the output of str(Query)."""
 
-                query_lst = [query_p.Query.fromstr(s) for s in query_str_lst]
+                try:
+                        query_lst = [
+                            query_p.Query.fromstr(s)
+                            for s in query_str_lst
+                        ]
+                except query_p.QueryException, e:
+                        raise RepositoryError(e)
                 
                 res_list = [
                     self.scfg.catalog.search(q)

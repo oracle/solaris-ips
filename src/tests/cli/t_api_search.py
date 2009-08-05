@@ -36,6 +36,7 @@ import sys
 import tempfile
 import time
 import unittest
+import urllib2
 
 import pkg.client.api as api
 import pkg.client.api_errors as api_errors
@@ -1030,6 +1031,25 @@ close
                 api_obj.execute_plan()
                 api_obj.reset()
 
+        @staticmethod
+        def validateAssertRaises(ex_type, validate_func, func, *args, **kwargs):
+                try:
+                        func(*args, **kwargs)
+                except ex_type, e:
+                        validate_func(e)
+                else:
+                        raise RuntimeError("Didn't raise expected exception.")
+
+        @staticmethod
+        def _check_err(e, expected_str, expected_code):
+                err = e.read()
+                if expected_code != e.code:
+                        raise RuntimeError("Got wrong code, expected %s got "
+                            "%s" % (expected_code, e.code))
+                if expected_str not in err:
+                        raise RuntimeError("Got unexpected error message of:\n"
+                            "%s" % err)
+
 
 class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
         # Only start/stop the depot once (instead of for every test)
@@ -1719,7 +1739,168 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
                 for p in pkg_list:
                         self._do_install(api_obj, [p])
 
-                
+        def test_bug_9845_01(self):
+                """Test that a corrupt query doesn't break the server."""
+                durl = self.dc.get_depot_url()
+                expected_string = _("A query is expected to have five fields: "
+                    "case sensitivity, return type, number of results to "
+                    "return, the number at which to start returning results, "
+                    "and the text of the query.  The query provided lacked at "
+                    "least one of those fields:")
+                expected_code = 404
+                q_str = "foo"
+                self.validateAssertRaises(urllib2.HTTPError,
+                    lambda x: self._check_err(x, expected_string,
+                        expected_code),
+                    urllib2.urlopen, durl + "/search/1/" + q_str)
+
+        def test_bug_9845_02(self):
+                """Test that a corrupt case_sensitive value doesn't break the "
+                server."""
+                durl = self.dc.get_depot_url()
+                expected_string = _("%(name)s had a bad value of '%(bv)s'") % {
+                    "name": "case_sensitive",
+                    "bv": "FAlse"
+                }
+                expected_code = 404
+                q_str = "FAlse_2_None_None_foo"
+                self.validateAssertRaises(urllib2.HTTPError,
+                    lambda x: self._check_err(x, expected_string,
+                        expected_code),
+                    urllib2.urlopen, durl + "/search/1/" + q_str)
+
+        def test_bug_9845_03(self): 
+                """Test that a corrupt return_type value doesn't break the "
+                server."""
+                durl = self.dc.get_depot_url()
+                expected_string = _("%(name)s had a bad value of '%(bv)s'") % {
+                    "name": "return_type",
+                    "bv": "3"
+                }
+                expected_code = 404
+                q_str = "False_3_None_None_foo"
+                self.validateAssertRaises(urllib2.HTTPError,
+                    lambda x: self._check_err(x, expected_string,
+                        expected_code),
+                    urllib2.urlopen, durl + "/search/1/" + q_str)
+
+        def test_bug_9845_04(self):
+                """Test that a corrupt return_type value doesn't break the "
+                server."""
+                durl = self.dc.get_depot_url()
+                expected_string = _("%(name)s had a bad value of '%(bv)s'") % {
+                    "name": "return_type",
+                    "bv": "A"
+                }
+                expected_code = 404
+                q_str = "False_A_None_None_foo"
+                self.validateAssertRaises(urllib2.HTTPError,
+                    lambda x: self._check_err(x, expected_string,
+                        expected_code),
+                    urllib2.urlopen, durl + "/search/1/" + q_str)
+
+        def test_bug_9845_05(self):
+                """Test that a corrupt num_to_return value doesn't break the "
+                server."""
+                durl = self.dc.get_depot_url()
+                expected_string = _("%(name)s had a bad value of '%(bv)s'") % {
+                    "name": "num_to_return",
+                    "bv": "NOne"
+                }
+                expected_code = 404
+                q_str = "False_2_NOne_None_foo"
+                self.validateAssertRaises(urllib2.HTTPError,
+                    lambda x: self._check_err(x, expected_string,
+                        expected_code),
+                    urllib2.urlopen, durl + "/search/1/" + q_str)
+
+        def test_bug_9845_06(self):
+                """Test that a corrupt start_point value doesn't break the "
+                server."""
+                durl = self.dc.get_depot_url()
+                expected_string = _("%(name)s had a bad value of '%(bv)s'") % {
+                    "name": "start_point",
+                    "bv": "NOne"
+                }
+                expected_code = 404
+                q_str = "False_2_None_NOne_foo"
+                self.validateAssertRaises(urllib2.HTTPError,
+                    lambda x: self._check_err(x, expected_string,
+                        expected_code),
+                    urllib2.urlopen, durl + "/search/1/" + q_str)
+
+        def test_bug_9845_07(self):
+                """Test that a corrupt case_sensitive value doesn't break the "
+                server."""
+                durl = self.dc.get_depot_url()
+                expected_string = _("%(name)s had a bad value of '%(bv)s'") % {
+                    "name": "case_sensitive",
+                    "bv": ""
+                }
+                expected_code = 404
+                q_str = "_2_None_None_foo"
+                self.validateAssertRaises(urllib2.HTTPError,
+                    lambda x: self._check_err(x, expected_string,
+                        expected_code),
+                    urllib2.urlopen, durl + "/search/1/" + q_str)
+
+        def test_bug_9845_08(self):
+                """Test that a missing return_type value doesn't break the "
+                server."""
+                durl = self.dc.get_depot_url()
+                expected_string = _("%(name)s had a bad value of '%(bv)s'") % {
+                    "name": "return_type",
+                    "bv": ""
+                }
+                expected_code = 404
+                q_str = "False__None_None_foo"
+                self.validateAssertRaises(urllib2.HTTPError,
+                    lambda x: self._check_err(x, expected_string,
+                        expected_code),
+                    urllib2.urlopen, durl + "/search/1/" + q_str)
+
+        def test_bug_9845_09(self):
+                """Test that a missing num_to_return value doesn't break the "
+                server."""
+                durl = self.dc.get_depot_url()
+                expected_string = _("%(name)s had a bad value of '%(bv)s'") % {
+                    "name": "num_to_return",
+                    "bv": ""
+                }
+                expected_code = 404
+                q_str = "False_2__None_foo"
+                self.validateAssertRaises(urllib2.HTTPError,
+                    lambda x: self._check_err(x, expected_string,
+                        expected_code),
+                    urllib2.urlopen, durl + "/search/1/" + q_str)
+
+        def test_bug_9845_10(self):
+                """Test that a missing start_point value doesn't break the "
+                server."""
+                durl = self.dc.get_depot_url()
+                expected_string = _("%(name)s had a bad value of '%(bv)s'") % {
+                    "name": "start_point",
+                    "bv": ""
+                }
+                expected_code = 404
+                q_str = "False_2_None__foo"
+                self.validateAssertRaises(urllib2.HTTPError,
+                    lambda x: self._check_err(x, expected_string,
+                        expected_code),
+                    urllib2.urlopen, durl + "/search/1/" + q_str)
+
+        def test_bug_9845_11(self):
+                """Test that missing query text doesn't break the server."""
+                durl = self.dc.get_depot_url()
+                expected_string = _("Could not parse query.")
+                expected_code = 400
+                q_str = "False_2_None_None_"
+                self.validateAssertRaises(urllib2.HTTPError,
+                    lambda x: self._check_err(x, expected_string,
+                        expected_code),
+                    urllib2.urlopen, durl + "/search/1/" + q_str)
+
+
 class TestApiSearchBasicsRestartingDepot(TestApiSearchBasics):        
         def setUp(self):
                 self.debug_features = ["headers"]
