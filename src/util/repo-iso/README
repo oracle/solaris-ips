@@ -1,0 +1,215 @@
+OpenSolarisTM 2009.06 Release Repository Image
+
+1.  Overview
+
+    For some deployments, direct access to the repository at
+    http://pkg.opensolaris.org/release is not possible, or provides
+    insufficient performance.  This product contains the package
+    metadata and content to allow the construction of a local copy of the
+    release/ repository, which can then be made available on the local
+    system or over a private network to other systems.  It can be installed
+    on multiple systems, which can in turn be configured as mirrors, to
+    increase the available aggregate resources available to packaging
+    clients.
+
+2.  Usage
+
+    This product is provided in two forms:
+
+    * A single ISO image, suitable for use with lofi(7D) for live mounting,
+      or copying to a USB flash device
+
+    * As a set of ISO images (possibly on media) suitable for burning to
+      4.7 GB DVD media.  The following two procedures cover typical uses
+      with each of these forms.
+
+    Please note that the example commands listed in this document should be
+    executed as root, or executed using the 'pfexec' command as appropriate
+    for your environment.
+
+2.1.  Single image case
+
+    To use the single ISO image, you must first make it available to the
+    pkg.depotd(1m) server:
+
+        lofiadm -a <full_path_to>/osol-repo-0906-full.iso /dev/lofi/1
+        mount -F hsfs /dev/lofi/1 /mnt
+        lofiadm -d /dev/lofi/1
+
+    Please note that not specifying a full, absolute path to the image will
+    result in an error when attempting to mount the image.  In addition, if
+    you choose not to copy the contents of the repository directory in the
+    ISO image to another filesystem, as directed below, you will have to
+    remount the ISO image every time your system restarts to be able to use
+    it with pkg.depotd(1m).
+
+    Alternatively, for performance reasons, you may wish to relocate the
+    repository to faster storage, such as a compressed ZFS filesystem.
+    rsync(1) is a useful tool for a bulk copy of this kind.  You can copy
+    the repository directory and its contents to a destination of your
+    choice using the following command:
+
+        rsync -aP /mnt/repo <destination>
+
+    Be aware that a trailing slash on /mnt/repo above (e.g. '/mnt/repo/')
+    would copy the contents of the directory instead of the directory
+    itself which will not provide the expected results.
+
+2.1.1  Using a USB Flash Device
+
+    The single ISO image can also be written directly to a USB flash device.
+    To do so, you will need a USB flash device with a capacity of at least
+    8 GB.  Any existing content will be overwritten.
+
+    To copy the ISO image to a usb flash device, you will need to know
+    the device name (e.g. /dev/dsk/c10t0d0p0).  To determine the device
+    name, use the rmformat(1) utility with the -l option.
+
+    Next, ensure that any existing filesystem on the device has been
+    unmounted using the rmumount(1) utility.  The ISO image may then be
+    copied to the flash device as follows:
+
+        dd if=osol-repo-0906-full.iso of=<device name> ibs=32K obs=32K
+
+    After that is complete, you may set a relevant label for the device
+    using the rmformat(1) utility:
+
+        rmformat -b '<label>' <device name>
+
+    When finished, simply remove the flash device from the system.
+
+2.1.2   Using DVD Media
+
+    The single ISO image can also be written to DVD Media with a capacity of
+    at least 7.2 GiB.  Specifically, Single-Sided Dual-Layer DVD-9 media, or
+    Double-Sided Single-Layer DVD-10 media at a minimum.  Your hardware must
+    also support writing to this media.
+
+    To record the image to the media, simply insert the blank media, and
+    execute the following command:
+
+        cdrecord osol-repo-0906-full.iso
+
+2.2.  Multiple ISO case
+
+    Unlike the single image case in 2.1, you must use rsync(1) to collect
+    the images into a single filesystem location before they can be used.
+
+    To do this, you must mount each ISO image and use rsync(1) to copy its
+    contents to a location of your choice.  Be aware that the filesystem
+    where the target path is located must have at least 7.4 GiB of space
+    available:
+
+        lofiadm -a <full_path_to>/osol-repo-0906-p01.iso /dev/lofi/1
+        mount -F hsfs /dev/lofi/1 /mnt
+        rsync -aP /mnt/repo <destination>
+        umount /mnt
+        lofiadm -d /dev/lofi/1
+
+
+        lofiadm -a <full_path_to>/osol-repo-0906-p02.iso /dev/lofi/1
+        mount -F hsfs /dev/lofi/1 /mnt
+        rsync -aP /mnt/repo <destination>
+        umount /mnt
+        lofiadm -d /dev/lofi/1
+
+    Be aware that a trailing slash on /mnt/repo above (e.g. '/mnt/repo/')
+    would copy the contents of the directory instead of the directory
+    itself which will not provide the expected results.  In addition, the
+    <destination> must be the same for both rsync invocations.
+
+2.2.1   Using DVD Media
+
+    The multiple ISO images can also be written to DVD Media with a
+    capacity of at least 3.6 GiB.  Specifically, Single-Sided Single-
+    Layer DVD-5 media.  Your hardware must also support writing to this
+    media.
+
+    For each image you will need to insert blank media and execute the
+    following command (where <image_name> is osol-repo-0906-p01.iso or
+    osol-repo-0906-p02.iso):
+
+        cdrecord <image_name>
+
+2.3.  Using the repository data
+
+    Once the repository image has been made available, whether by mounting
+    an image or copying the data to a specific location, it can be served to
+    clients using pkg.depotd(1m).  Before doing so, you will need to alter
+    the provided repository configuration template to match your environment.
+
+    First, configure pkg.depotd(1m) using SMF (where <data_source> is the
+    full path to where the 'repo' directory is located, such as '/mnt' or
+    <destination> from the examples in section 2.2):
+
+        svccfg -s application/pkg/server setprop \
+            pkg/inst_root=<data_source>/repo
+        svccfg -s application/pkg/server setprop pkg/readonly=true
+
+    By default, pkg.depotd(1m) will listen for connections on port 80.  You
+    can change this by executing the following command:
+
+        svccfg -s application/pkg/server setprop pkg/port=<port_number>
+
+    You may also wish to review the man page for pkg.depotd(1m) for additional
+    settings that may need to be changed based on your needs.
+
+    Next, copy the <data_source>/repo/cfg_cache file to a new, permanent
+    location of your choice that is accessible by the root user on system
+    startup.  As an example:
+
+        cp <data_source>/repo/cfg_cache /etc/0906_cfg_cache
+
+    Next, configure the pkg.depotd(1m) service to use the new configuration
+    file:
+
+        svccfg -s application/pkg/server setprop \
+            pkg/cfg_file=<path_to_your_cfg_cache>
+
+    Then, using a text editor of your choice, change the following line in
+    the above file:
+
+        origins = http://pkg.opensolaris.org/release
+
+    Replace everything after ' = ', to the end of the line, with the
+    network-accessible hostname of the system that the depot server will be
+    hosted on as follows (if you changed the port number above, you would
+    include it using :<port_number>, after '.com' in the example below): 
+
+        origins = http://example.com/
+
+    There are additional values within the file that you may wish to customize
+    to provide additional information to packaging clients.  Please see "pydoc
+    pkg.client.publisher" in the "class Repository" section for an explanation
+    of these properties.
+
+    pkg.depotd(1m) can now be started and used for serving packages to pkg(5)
+    clients by refreshing the corresponding SMF service configuration and
+    enabling the service:
+
+        svcadm refresh application/pkg/server
+        svcadm enable application/pkg/server
+
+    To set clients to use only this depot server to retrieve package content
+    for the OpenSolaris 2009.06 release, execute the following command on each
+    client (where <origin> is the value you provided for 'origins' above):
+
+        pkg set-publisher -O <origin> opensolaris.org
+
+    Alternatively, clients may be configured to use the depot server as a
+    mirror instead, allowing them to retrieve newer packages that may be
+    available while still accelerating operations for package content found
+    on your depot server (where <origin> is the value you provided for
+    'origins' above) or to increase aggregate resources available to clients
+    during packaging operations:
+
+        pkg set-publisher -m <origin> opensolaris.org
+
+    Please note that you should only use this depot as an origin or a mirror
+    on each system.
+
+3.  Further assistance
+
+    If you have a support plan with Sun, please contact your service
+    representative.  Community discussion of this media product can be
+    found at pkg-discuss@opensolaris.org.
