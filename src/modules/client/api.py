@@ -593,12 +593,6 @@ class ImageInterface(object):
 
                         try:
                                 self.__img.imageplan.execute()
-
-                                if self.__plan_type is self.__IMAGE_UPDATE:
-                                        be.activate_image()
-                                else:
-                                        be.activate_install_uninstall()
-                                ret_code = 0
                         except RuntimeError, e:
                                 if self.__plan_type is self.__IMAGE_UPDATE:
                                         be.restore_image()
@@ -631,6 +625,9 @@ class ImageInterface(object):
                                 self.__img.cleanup_downloads()
                                 self.log_operation_end(error=error)
                                 raise error
+                        except api_errors.WrapIndexingException, e:
+                                self.__finished_execution(be)
+                                raise
                         except Exception, e:
                                 if self.__plan_type is self.__IMAGE_UPDATE:
                                         be.restore_image()
@@ -655,27 +652,10 @@ class ImageInterface(object):
                                 self.__img.cleanup_downloads()
                                 raise
 
-                        if self.__img.imageplan.state != EXECUTED_OK:
-                                if self.__plan_type is self.__IMAGE_UPDATE:
-                                        be.restore_image()
-                                else:
-                                        be.restore_install_uninstall()
+                        self.__finished_execution(be)
 
-                                error = api_errors.ImageplanStateException(
-                                    self.__img.imageplan.state)
-                                # Must be done after bootenv restore.
-                                self.log_operation_end(error=error)
-                                raise error
 
-                        self.__img.cleanup_downloads()
-                        self.__img.cleanup_cached_content()
 
-                        # If the end of the operation wasn't already logged
-                        # by one of the above operations, then log it as
-                        # ending now.
-                        if self.__img.history.operation_name:
-                                self.log_operation_end()
-                        self.__executed = True
                         try:
                                 if int(os.environ.get("PKG_DUMP_STATS", 0)) > 0:
                                         self.__img.transport.stats.dump()
@@ -685,6 +665,38 @@ class ImageInterface(object):
                                 pass
                 finally:
                         self.__activity_lock.release()
+
+        def __finished_execution(self, be):
+                if self.__img.imageplan.state != EXECUTED_OK:
+                        if self.__plan_type is self.__IMAGE_UPDATE:
+                                be.restore_image()
+                        else:
+                                be.restore_install_uninstall()
+
+                        error = api_errors.ImageplanStateException(
+                            self.__img.imageplan.state)
+                        # Must be done after bootenv restore.
+                        self.log_operation_end(error=error)
+                        raise error
+                if self.__plan_type is self.__IMAGE_UPDATE:
+                        be.activate_image()
+                else:
+                        be.activate_install_uninstall()
+                self.__img.cleanup_downloads()
+                self.__img.cleanup_cached_content()
+                # If the end of the operation wasn't already logged
+                # by one of the previous operations, then log it as
+                # ending now.
+                if self.img.history.operation_name:
+                        self.log_operation_end()
+                self.__executed = True
+                try:
+                        if int(os.environ.get("PKG_DUMP_STATS", 0)) > 0:
+                                self.__img.transport.stats.dump()
+                except ValueError:
+                        # Don't generate stats if an invalid value
+                        # is supplied.
+                        pass
 
         def __refresh(self, full_refresh=False, pubs=None, immediate=False,
             validate=True):

@@ -562,6 +562,8 @@ def __api_execute_plan(operation, api, raise_ActionExecutionError=True):
         except api_errors.BEException, e:
                 error(e)
                 return False
+        except api_errors.WrapSuccessfulIndexingException:
+                raise
         except api_errors.ActionExecutionError, e:
                 if not raise_ActionExecutionError:
                         return False
@@ -2265,7 +2267,6 @@ def image_create(img, args):
                         return 3
         return 0
 
-
 def rebuild_index(img_dir, pargs):
         """pkg rebuild-index
 
@@ -2424,9 +2425,6 @@ def main_func():
         global __img
         __img = img = image.Image()
 
-        misc.setlocale(locale.LC_ALL, "", error)
-        gettext.install("pkg", "/usr/share/locale")
-
         try:
                 opts, pargs = getopt.getopt(sys.argv[1:], "R:D:?",
                     ["debug=", "help"])
@@ -2582,19 +2580,23 @@ def main_func():
         except getopt.GetoptError, e:
                 usage(_("illegal option -- %s") % e.opt, cmd=subcommand)
 
-
 #
 # Establish a specific exit status which means: "python barfed an exception"
 # so that we can more easily detect these in testing of the CLI commands.
 #
-if __name__ == "__main__":
+def handle_errors(func, non_wrap_print=True, *args, **kwargs):
+        traceback_str = _("\n\nThis is an internal error.  Please let the "
+            "developers know about this\nproblem by filing a bug at "
+            "http://defect.opensolaris.org and including the\nabove "
+            "traceback and this message.  The version of pkg(5) is "
+            "'%s'.") % pkg.VERSION
         try:
                 # Out of memory errors can be raised as EnvironmentErrors with
                 # an errno of ENOMEM, so in order to handle those exceptions
                 # with other errnos, we nest this try block and have the outer
                 # one handle the other instances.
                 try:
-                        __ret = main_func()
+                        __ret = func(*args, **kwargs)
                 except (MemoryError, EnvironmentError), __e:
                         if isinstance(__e, EnvironmentError) and \
                             __e.errno != errno.ENOMEM:
@@ -2680,16 +2682,31 @@ if __name__ == "__main__":
                      'api': __e.expected_version
                     })
                 __ret = 1
+        except api_errors.WrapSuccessfulIndexingException, __e:
+                __ret = 0
+        except api_errors.WrapIndexingException, __e:
+                def func():
+                        raise __e.wrapped
+                __ret = handle_errors(func, non_wrap_print=False)
+                s = ""
+                if __ret == 99:
+                        s += _("\n%s%s") % (__e, traceback_str)
+
+                s += _("\n\nDespite the error while indexing, the "
+                    "image-update, install, or uninstall\nhas completed "
+                    "successfuly.")
+                error(s)
         except:
                 if __img:
                         __img.history.abort(RESULT_FAILED_UNKNOWN)
-                traceback.print_exc()
-                error(
-                    _("\n\nThis is an internal error.  Please let the "
-                    "developers know about this\nproblem by filing a bug at "
-                    "http://defect.opensolaris.org and including the\nabove "
-                    "traceback and this message.  The version of pkg(5) is "
-                    "'%s'.") % pkg.VERSION)
+                if non_wrap_print:
+                        traceback.print_exc()
+                        error(traceback_str)
                 __ret = 99
+        return __ret
 
+if __name__ == "__main__":
+        misc.setlocale(locale.LC_ALL, "", error)
+        gettext.install("pkg", "/usr/share/locale")
+        __ret = handle_errors(main_func)
         sys.exit(__ret)

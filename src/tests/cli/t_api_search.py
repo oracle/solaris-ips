@@ -42,6 +42,7 @@ import pkg.client.api_errors as api_errors
 import pkg.client.query_parser as query_parser
 import pkg.client.progress as progress
 import pkg.fmri as fmri
+import pkg.indexer as indexer
 import pkg.portable as portable
 import pkg.search_storage as ss
 
@@ -1198,10 +1199,15 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
                         self._search_op(api_obj, False, "example_pkg",
                             self.res_local_pkg)
                         self._overwrite_version_number(orig_path)
-                        self._do_uninstall(api_obj, ["example_pkg"])
+                        self.assertRaises(
+                            api_errors.WrapSuccessfulIndexingException,
+                            self._do_uninstall, api_obj, ["example_pkg"])
+                        api_obj.reset()
                         self._search_op(api_obj, False, "example_pkg", set())
                         self._overwrite_version_number(orig_path)
-                        self._do_install(api_obj, ["example_pkg"])
+                        self.assertRaises(
+                            api_errors.WrapSuccessfulIndexingException,
+                            self._do_install, api_obj, ["example_pkg"])
                         api_obj.reset()
                         self._search_op(api_obj, False, "example_pkg",
                             self.res_local_pkg)
@@ -1219,7 +1225,8 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
                 self._search_op(api_obj, False, "example_pkg",
                     self.res_local_pkg)
                 self._overwrite_hash(ffh_path)
-                self._do_uninstall(api_obj, ["example_pkg"])
+                self.assertRaises(api_errors.WrapSuccessfulIndexingException,
+                    self._do_uninstall, api_obj, ["example_pkg"])
                 self._search_op(api_obj, False, "example_pkg", set())
 
         def test_080_weird_patterns(self):
@@ -1421,7 +1428,9 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
 
                         f(index_dir, index_dir_tmp)
 
-                        self._do_uninstall(api_obj, ["example_pkg"])
+                        self.assertRaises(
+                            api_errors.WrapSuccessfulIndexingException,
+                            self._do_uninstall, api_obj, ["example_pkg"])
 
                         self.image_destroy()
 
@@ -1447,7 +1456,9 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
 
                         f(index_dir, index_dir_tmp)
 
-                        self._do_uninstall(api_obj, ["another_pkg"])
+                        self.assertRaises(
+                            api_errors.WrapSuccessfulIndexingException,
+                            self._do_uninstall, api_obj, ["another_pkg"])
 
                         self.image_destroy()
                 
@@ -1473,7 +1484,9 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
 
                         f(index_dir, index_dir_tmp)
 
-                        self._do_uninstall(api_obj, ["example_pkg"])
+                        self.assertRaises(
+                            api_errors.WrapSuccessfulIndexingException,
+                            self._do_uninstall, api_obj, ["example_pkg"])
 
                         self.image_destroy()
 
@@ -1500,7 +1513,9 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
 
                         f(index_dir, index_dir_tmp)
 
-                        self._do_image_update(api_obj)
+                        self.assertRaises(
+                            api_errors.WrapSuccessfulIndexingException,
+                            self._do_image_update, api_obj)
 
                         self.image_destroy()
 
@@ -1646,6 +1661,63 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
                 self._search_op(api_obj, True, "depend::",
                     self.res_983_csl_dependency | self.res_983_bar_dependency |
                     self.res_983_foo_dependency)
+
+        def test_bug_7534(self):
+                """Tests that an automatic reindexing is detected by the test
+                suite."""
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.example_pkg10)
+                self.image_create(durl)
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+
+                index_dir = os.path.join(self.img_path, "var","pkg","index")
+
+                orig_fn = os.path.join(index_dir,
+                    query_parser.TermQuery._global_data_dict.values()[0].\
+                    get_file_name())
+                dest_fn = orig_fn + "TMP"
+                
+                self._do_install(api_obj, ["example_pkg"])
+                api_obj.rebuild_search_index()
+
+                portable.rename(orig_fn, dest_fn)
+                self.assertRaises(api_errors.WrapSuccessfulIndexingException,
+                    self._do_uninstall, api_obj, ["example_pkg"])
+
+        def test_bug_9729_1(self):
+                """Test that installing more than
+                indexer.MAX_ADDED_NUMBER_PACKAGES packages at a time doesn't
+                cause any type of indexing error."""
+                durl = self.dc.get_depot_url()
+                pkg_list = []
+                for i in range(0, indexer.MAX_ADDED_NUMBER_PACKAGES + 1):
+                        self.pkgsend_bulk(durl,
+                            "open pkg%s@1.0,5.11-0\nclose\n" % i)
+                        pkg_list.append("pkg%s" % i)
+                self.image_create(durl)
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+                self._do_install(api_obj, pkg_list)
+
+        def test_bug_9729_2(self):
+                """Test that installing more than
+                indexer.MAX_ADDED_NUMBER_PACKAGES packages one after another
+                doesn't cause any type of indexing error."""
+                durl = self.dc.get_depot_url()
+                pkg_list = []
+                for i in range(0, indexer.MAX_ADDED_NUMBER_PACKAGES + 1):
+                        self.pkgsend_bulk(durl,
+                            "open pkg%s@1.0,5.11-0\nclose\n" % i)
+                        pkg_list.append("pkg%s" % i)
+                self.image_create(durl)
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+                for p in pkg_list:
+                        self._do_install(api_obj, [p])
 
                 
 class TestApiSearchBasicsRestartingDepot(TestApiSearchBasics):        

@@ -581,26 +581,33 @@ class Indexer(object):
                                         self._write_main_dict_line(
                                             out_main_dict_handle,
                                             tok, existing_entries, out_dir)
+
+                        # For any new tokens which are alphabetically after the
+                        # last entry in the existing file, add them to the end
+                        # of the file.
+                        while new_toks_available:
+                                assert len(next_new_tok) > 0
+                                self._write_main_dict_line(
+                                    out_main_dict_handle, next_new_tok,
+                                    new_tok_info, out_dir)
+                                try:
+                                        next_new_tok, new_tok_info = \
+                                            new_toks_it.next()
+                                except StopIteration:
+                                        new_toks_available = False
                 finally:
                         if not self.empty_index:
                                 file_handle.close()
                                 self._data_main_dict.close_file_handle()
 
-                # For any new tokens which are alphabetically after the last
-                # entry in the existing file, add them to the end of the file.
-                while new_toks_available:
-                        assert len(next_new_tok) > 0
-                        self._write_main_dict_line(
-                            out_main_dict_handle, next_new_tok,
-                            new_tok_info, out_dir)
-                        try:
-                                next_new_tok, new_tok_info = new_toks_it.next()
-                        except StopIteration:
-                                new_toks_available = False
-                out_main_dict_handle.close()
-                self._data_token_offset.close_file_handle()
+                        out_main_dict_handle.close()
+                        self._data_token_offset.close_file_handle()
+                        for fh in self.at_fh.values():
+                                fh.close()
+                        for fh in self.st_fh.values():
+                                fh.close()
 
-                removed_paths = []
+                        removed_paths = []
 
         def _write_assistant_dicts(self, out_dir):
                 """Write out the companion dictionaries needed for
@@ -633,7 +640,7 @@ class Indexer(object):
                 It allows the index to automatically be rebuilt if the number
                 of packages added since last index rebuild is greater than
                 MAX_ADDED_NUMBER_PACKAGES."""
-                
+
                 # Allow the use of a directory other than the default
                 # directory to store the intermediate results in.
                 if not tmp_index_dir:
@@ -671,8 +678,9 @@ class Indexer(object):
                                         self._data_main_dict.close_file_handle()
                                         if self._progtrack:
                                                 self._progtrack.index_optimize()
-                                        image.rebuild_search_index(
-                                            self._progtrack)
+                                        self.rebuild_index_from_scratch(
+                                            image.gen_installed_pkgs(),
+                                            tmp_index_dir)
                                         return
 
                         elif input_type == IDX_INPUT_TYPE_FMRI:
@@ -876,13 +884,11 @@ class Indexer(object):
                                 pass
 
                         for at, fh in self.at_fh.items():
-                                fh.close()
                                 shutil.move(
                                     os.path.join(source_dir, "__at_" + at),
                                     os.path.join(dest_dir, "__at_" + at))
 
                         for st, fh in self.st_fh.items():
-                                fh.close()
                                 shutil.move(
                                     os.path.join(source_dir, "__st_" + st),
                                     os.path.join(dest_dir, "__st_" + st))

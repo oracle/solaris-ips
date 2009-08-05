@@ -27,6 +27,7 @@
 
 import os
 import errno
+import traceback
 
 import pkg.client.actuator as actuator
 import pkg.client.api_errors as api_errors
@@ -108,6 +109,8 @@ class ImagePlan(object):
                 self.actuators = None
 
                 self.update_index = True
+
+                self.preexecuted_indexing_error = None
 
         def __str__(self):
                 if self.state == UNEVALUATED:
@@ -619,16 +622,27 @@ class ImagePlan(object):
                                         try:
                                                 ind.check_index_has_exactly_fmris(
                                                         self.image.gen_installed_pkg_names())
-                                        except se.IncorrectIndexFileHash:
+                                        except se.IncorrectIndexFileHash, e:
+                                                self.preexecuted_indexing_error = \
+                                                    api_errors.WrapSuccessfulIndexingException(
+                                                        e,
+                                                        traceback.format_exc(),
+                                                        traceback.format_stack()
+                                                        )
                                                 ind.rebuild_index_from_scratch(
-                                                        self.image.gen_installed_pkgs())
-                        except se.IndexingException:
+                                                        self.image.\
+                                                            gen_installed_pkgs()
+                                                        )
+                        except se.IndexingException, e:
                                 # If there's a problem indexing, we want to
                                 # attempt to finish the installation anyway. If
                                 # there's a problem updating the index on the
                                 # new image, that error needs to be
                                 # communicated to the user.
-                                pass
+                                self.preexecuted_indexing_error = \
+                                    api_errors.WrapSuccessfulIndexingException(
+                                        e, traceback.format_exc(),
+                                        traceback.format_stack())
 
                 try:
                         try:
@@ -803,13 +817,16 @@ class ImagePlan(object):
                                 if empty_image or ind.check_index_existence():
                                         ind.client_update_index((self.filters,
                                             plan_info), self.image)
-                        except (KeyboardInterrupt,
-                            se.ProblematicPermissionsIndexException):
+                        except KeyboardInterrupt:
+                                raise
+                        except se.ProblematicPermissionsIndexException:
                                 # ProblematicPermissionsIndexException
                                 # is included here as there's little
                                 # chance that trying again will fix this
                                 # problem.
-                                raise
+                                raise api_errors.WrapIndexingException(e,
+                                    traceback.format_exc(),
+                                    traceback.format_stack())
                         except Exception, e:
                                 # It's important to delete and rebuild
                                 # from scratch rather than using the
@@ -822,13 +839,24 @@ class ImagePlan(object):
                                 # something has gone wrong so that we
                                 # continue to get feedback to allow
                                 # us to debug the code.
-                                ind = indexer.Indexer(self.image,
-                                    self.image.get_manifest,
-                                    self.image.get_manifest_path,
-                                    progtrack=self.progtrack,
-                                    excludes=self.new_excludes)
-                                ind.rebuild_index_from_scratch(
-                                    self.image.gen_installed_pkgs())
+                                try:
+                                        ind = indexer.Indexer(self.image,
+                                            self.image.get_manifest,
+                                            self.image.get_manifest_path,
+                                            progtrack=self.progtrack,
+                                            excludes=self.new_excludes)
+                                        ind.rebuild_index_from_scratch(
+                                            self.image.gen_installed_pkgs())
+                                except Exception, e:
+                                        raise api_errors.WrapIndexingException(
+                                            e, traceback.format_exc(),
+                                            traceback.format_stack())
+                                raise \
+                                    api_errors.WrapSuccessfulIndexingException(
+                                        e, traceback.format_exc(),
+                                        traceback.format_stack())
+                        if self.preexecuted_indexing_error is not None:
+                                raise self.preexecuted_indexing_error
 
         def is_image_empty(self):
                 try:

@@ -415,6 +415,30 @@ class ProblematicPermissionsIndexException(IndexingException):
                     "permissions. Please correct this issue then " \
                     "rebuild the index." % self.cause
 
+class WrapIndexingException(ApiException):
+        """This exception is used to wrap an indexing exception during install,
+        uninstall, or image-update so that a more appropriate error message
+        can be displayed to the user."""
+
+        def __init__(self, e, tb, stack):
+                ApiException.__init__(self)
+                self.wrapped = e
+                self.tb = tb
+                self.stack = stack
+
+        def __str__(self):
+                tmp = self.tb.split("\n")
+                res = tmp[:1] + [s.rstrip("\n") for s in self.stack] + tmp[1:]
+                return "\n".join(res)
+
+
+class WrapSuccessfulIndexingException(WrapIndexingException):
+        """This exception is used to wrap an indexing exception during install,
+        uninstall, or image-update which was recovered from by performing a
+        full reindex."""
+        pass
+
+
 # Query Parsing Exceptions
 class BooleanQueryException(ApiException):
         """This exception is used when the children of a boolean operation
