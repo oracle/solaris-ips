@@ -3773,12 +3773,18 @@ class PackageManager:
                 return self.gdk_window.is_visible()
 
         def set_busy_cursor(self):
+                if self.gdk_window.get_state() & gtk.gdk.WINDOW_STATE_WITHDRAWN:
+                        self.gdk_window.show()
+                        self.w_main_window.get_accessible().emit('state-change',
+                            'busy', True)
                 self.__progress_pulse_start()
-                self.gdk_window.show()
 
         def unset_busy_cursor(self):
                 self.__progress_pulse_stop()
-                self.gdk_window.hide()
+                if not (self.gdk_window.get_state() & gtk.gdk.WINDOW_STATE_WITHDRAWN):
+                        self.gdk_window.hide()
+                        self.w_main_window.get_accessible().emit('state-change',
+                            'busy', False)
 
         def process_package_list_start(self, image_directory):
                 self.image_directory = image_directory
