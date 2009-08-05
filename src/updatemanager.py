@@ -407,12 +407,9 @@ class Updatemanager:
                         # Allow testing by listing uninstalled packages, -u option
                         add_package = False
                         if pkg_upgradeable != None and not state["upgradable"]:
+                                add_package = pkg_upgradeable.is_same_pkg(pkg)
                                 if list_uninstalled:
-                                        add_package = not \
-                                        image_obj.fmri_is_same_pkg(pkg_upgradeable, pkg)
-                                else:
-                                        add_package = \
-                                        image_obj.fmri_is_same_pkg(pkg_upgradeable, pkg)
+                                        add_package = not add_package
 
                         if add_package:
                                 count += 1

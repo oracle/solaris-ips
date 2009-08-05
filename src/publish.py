@@ -87,7 +87,6 @@ Packager subcommands:
         pkgsend include [-d basedir] .. [manifest] ...
         pkgsend close [-A]
         pkgsend publish [-d basedir] ... fmri [manifest] ...
-        pkgsend rename src_fmri dest_fmri
         pkgsend generate [-T file_pattern] bundlefile ....
 
 Options:
@@ -195,14 +194,6 @@ def trans_add(repo_uri, args):
 
         t = trans.Transaction(repo_uri, trans_id=trans_id)
         t.add(action)
-        return 0
-
-def trans_rename(repo_uri, args):
-        if not args:
-                usage(_("No arguments specified for subcommand."), cmd="rename")
-
-        t = trans.Transaction(repo_uri)
-        t.rename(args[0], args[1])
         return 0
 
 def trans_publish(repo_uri, fargs):
@@ -441,8 +432,6 @@ def main_func():
                         ret = trans_include(repo_uri, pargs)
                 elif subcommand == "publish":
                         ret = trans_publish(repo_uri, pargs)
-                elif subcommand == "rename":
-                        ret = trans_rename(repo_uri, pargs)
                 elif subcommand == "generate":
                         ret = trans_generate(pargs)
                 else:

@@ -148,14 +148,13 @@ class ImagePlan(object):
 
         def is_proposed_fmri(self, pfmri):
                 for pf in self.target_fmris:
-                        if self.image.fmri_is_same_pkg(pfmri, pf):
-                                return not self.image.fmri_is_successor(pfmri,
-                                    pf)
+                        if pfmri.is_same_pkg(pf):
+                                return not pfmri.is_successor(pf)
                 return False
 
         def is_proposed_rem_fmri(self, pfmri):
                 for pf in self.target_rem_fmris:
-                        if self.image.fmri_is_same_pkg(pfmri, pf):
+                        if pfmri.is_same_pkg(pf):
                                 return True
                 return False
 
@@ -179,10 +178,10 @@ class ImagePlan(object):
                 # Add fmri to target list only if it (or a successor) isn't
                 # there already.
                 for i, p in enumerate(self.target_fmris):
-                        if self.image.fmri_is_successor(pfmri, p):
+                        if pfmri.is_successor(p):
                                 self.target_fmris[i] = pfmri
                                 break
-                        if self.image.fmri_is_successor(p, pfmri):
+                        if p.is_successor(pfmri):
                                 break
                 else:
                         self.target_fmris.append(pfmri)
@@ -201,7 +200,7 @@ class ImagePlan(object):
                 # returns true if older version of this pfmri has been proposed
                 # already
                 for p in self.target_fmris:
-                        if self.image.fmri_is_successor(pfmri, p):
+                        if pfmri.is_successor(p):
                                 return True
                 return False
 
@@ -212,7 +211,7 @@ class ImagePlan(object):
                         return
 
                 for i, p in enumerate(self.target_rem_fmris):
-                        if self.image.fmri_is_successor(pfmri, p):
+                        if pfmri.is_successor(p):
                                 self.target_rem_fmris[i] = pfmri
                                 break
                 else:

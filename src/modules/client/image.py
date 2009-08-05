@@ -1014,7 +1014,7 @@ class Image(object):
                 package stem of the given fmri or None if no match is found."""
 
                 for f in self.gen_installed_pkgs():
-                        if self.fmri_is_same_pkg(f, pfmri):
+                        if f.is_same_pkg(pfmri):
                                 return f
                 return None
 
@@ -1077,33 +1077,14 @@ class Image(object):
                 elif not fmri.has_publisher():
                         fmri.set_publisher(self.get_preferred_publisher(), True)
 
-                if v and self.fmri_is_successor(v, fmri):
+                if v and v.is_successor(fmri):
                         return True
-                else:
-                        try:
-                                cat = self.get_catalog(fmri, exception = True)
-                        except KeyError:
-                                return False
-
-                        # If fmri has been renamed, get the list of newer
-                        # packages that are equivalent to fmri.
-                        rpkgs = cat.rename_newer_pkgs(fmri)
-                        for f in rpkgs:
-
-                                v = self.get_version_installed(f)
-
-                                if v and self.fmri_is_successor(v, fmri):
-                                        return True
-
                 return False
 
         def older_version_installed(self, fmri):
                 """This method is used by the package plan to determine if an
-                older version of the package is installed.  This takes
-                the destination fmri and checks if an older package exists.
-                This looks first under the existing name, and then sees
-                if an older version is installed under another name.  This
-                allows upgrade correctly locate the src fmri, if one exists."""
+                older version of the package is installed.  This takes the
+                destination fmri and checks if an older package exists."""
 
                 v = self.get_version_installed(fmri)
 
@@ -1111,15 +1092,6 @@ class Image(object):
 
                 if v:
                         return v
-                else:
-                        cat = self.get_catalog(fmri)
-
-                        rpkgs = cat.rename_older_pkgs(fmri)
-                        for f in rpkgs:
-                                v = self.get_version_installed(f)
-                                if v and self.fmri_is_successor(fmri, v):
-                                        return v
-
                 return None
 
         def is_installed(self, fmri):
@@ -1186,9 +1158,10 @@ class Image(object):
                 # upon under multiple versions.  That is, if pkgA depends on
                 # libc@1 and pkgB depends on libc@2, we need to return both pkgA
                 # and pkgB.  If we used package names as keys, this would be
-                # simpler, but it wouldn't handle package rename.
+                # simpler, but it wouldn't handle catalog operations (such as
+                # rename) that might have been applied to the fmri.
                 for f in self.__req_dependents.iterkeys():
-                        if self.fmri_is_successor(pfmri, f):
+                        if pfmri.is_successor(f):
                                 dependents.extend(self.__req_dependents[f])
                 return dependents
 
@@ -1914,43 +1887,6 @@ class Image(object):
 
                 pub.remove_meta_root()
                 self.__destroy_catalog_cache()
-
-        def fmri_is_same_pkg(self, cfmri, pfmri):
-                """Determine whether fmri and pfmri share the same package
-                name, even if they're not equivalent versions.  This
-                also checks if two packages with different names are actually
-                the same because of a rename operation."""
-
-                # If the catalog has a rename record that names fmri as a
-                # destination, it's possible that pfmri could be the same pkg by
-                # rename.
-                if cfmri.is_same_pkg(pfmri):
-                        return True
-
-                # Get the catalog for the correct publisher
-                cat = self.get_catalog(cfmri)
-                return cat.rename_is_same_pkg(cfmri, pfmri)
-
-
-        def fmri_is_successor(self, cfmri, pfmri):
-                """Since the catalog keeps track of renames, it's no longer
-                sufficient to rely on the FMRI class to determine whether a
-                package is a successor.  This routine takes two FMRIs, and
-                if they have the same publisher, checks if they've been
-                renamed.  If a rename has occurred, this runs the is_successor
-                routine from the catalog.  Otherwise, this runs the standard
-                fmri.is_successor() code."""
-
-                # Get the catalog for the correct publisher
-                cat = self.get_catalog(cfmri)
-
-                # If the catalog has a rename record that names fmri as a
-                # destination, it's possible that pfmri could be a successor by
-                # rename.
-                if cfmri.is_successor(pfmri):
-                        return True
-                else:
-                        return cat.rename_is_successor(cfmri, pfmri)
 
         def gen_installed_pkg_names(self):
                 """Generate the string representation of all installed

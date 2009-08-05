@@ -26,7 +26,7 @@
 
 import cherrypy
 import itertools
-import pkg.catalog
+import pkg.server.catalog
 import pkg.fmri
 import pkg.version
 import pkg.server.api_errors as api_errors
@@ -92,7 +92,7 @@ class CatalogInterface(_Interface):
                 c = self.__catalog
                 if not c:
                         return []
-                return pkg.catalog.extract_matching_fmris(c.fmris(),
+                return pkg.server.catalog.extract_matching_fmris(c.fmris(),
                     patterns=patterns)
 
         def get_matching_version_fmris(self, versions):
@@ -111,7 +111,7 @@ class CatalogInterface(_Interface):
                 if not c:
                         return []
 
-                return pkg.catalog.extract_matching_fmris(c.fmris(),
+                return pkg.server.catalog.extract_matching_fmris(c.fmris(),
                     versions=versions)
 
         @property
@@ -125,7 +125,7 @@ class CatalogInterface(_Interface):
                 lm = self.__catalog.last_modified()
                 if not lm:
                         return None
-                return pkg.catalog.ts_to_datetime(lm)
+                return pkg.server.catalog.ts_to_datetime(lm)
 
         @property
         def package_count(self):

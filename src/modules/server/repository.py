@@ -25,9 +25,9 @@
 import errno
 import os
 
-import pkg.catalog as catalog
 import pkg.fmri as fmri
 import pkg.misc as misc
+import pkg.server.catalog as catalog
 import pkg.server.query_parser as query_p
 import pkg.server.repositoryconfig as rc
 import pkg.server.transaction as trans

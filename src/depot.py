@@ -99,10 +99,10 @@ except ImportError:
             """3.2.0) is required to use this program."""
         sys.exit(2)
 
-import pkg.catalog as catalog
 from pkg.misc import port_available, msg, emsg, setlocale
 import pkg.portable.util as os_util
 import pkg.search_errors as search_errors
+import pkg.server.catalog as catalog
 import pkg.server.config as config
 import pkg.server.depot as depot
 import pkg.server.depotresponse as dr

@@ -9,11 +9,6 @@ api.t_catalog.py TestCatalog.testcatalogfmris2|pass
 api.t_catalog.py TestCatalog.testcatalogfmris3|pass
 api.t_catalog.py TestCatalog.testcatalogfmris4|pass
 api.t_catalog.py TestCatalog.testnpkgs|pass
-api.t_catalog.py TestCatalogRename.testDuplicateRename|pass
-api.t_catalog.py TestCatalogRename.testFMRIValidator|pass
-api.t_catalog.py TestCatalogRename.testMissingDest|pass
-api.t_catalog.py TestCatalogRename.testPresentSrc|pass
-api.t_catalog.py TestCatalogRename.testRenameConstraints|pass
 api.t_catalog.py TestEmptyCatalog.testfmris|pass
 api.t_catalog.py TestEmptyCatalog.testloadattrs|pass
 api.t_catalog.py TestEmptyCatalog.testmatchingfmris|pass
@@ -519,14 +514,6 @@ cli.t_pkgsend.py TestPkgsendBasics.test_6_help|pass
 cli.t_pkgsend.py TestPkgsendBasics.test_7_create_repo|pass
 cli.t_pkgsend.py TestPkgsendBasics.test_8_bug_7908|pass
 cli.t_pkgsend.py TestPkgsendBasics.test_9_multiple_dirs|pass
-cli.t_pkgsend.py TestPkgsendRename.test_rename1|pass
-cli.t_pkgsend.py TestPkgsendRename.test_rename2|pass
-cli.t_pkgsend.py TestPkgsendRename.test_rename3|pass
-cli.t_pkgsend.py TestPkgsendRename.test_rename4|fail
-cli.t_pkgsend.py TestPkgsendRenameFile.test_rename1|pass
-cli.t_pkgsend.py TestPkgsendRenameFile.test_rename2|pass
-cli.t_pkgsend.py TestPkgsendRenameFile.test_rename3|pass
-cli.t_pkgsend.py TestPkgsendRenameFile.test_rename4|fail
 cli.t_setUp.py TestSetUp.test_first_depot_start|pass
 cli.t_setUp.py TestSetUp.test_second_depot_start|pass
 cli.t_variants.py TestPkgVariants.test_old_zones_pkgs|pass

@@ -36,7 +36,7 @@ import urlparse
 
 from pkg.misc import versioned_urlopen
 import pkg.portable.util as os_util
-import pkg.catalog as catalog
+import pkg.server.catalog as catalog
 import pkg.server.config as config
 import pkg.server.repository as repo
 import pkg.server.repositoryconfig as rc
@@ -223,15 +223,6 @@ class FileTransaction(object):
                         self.__repo.refresh_index()
                 except repo.RepositoryError, e:
                         raise TransactionOperationError("refresh_index",
-                            msg=str(e))
-
-        def rename(self, src_fmri, dest_fmri):
-
-                # Intentionally not documented.
-                try:
-                        self.__repo.rename(src_fmri, dest_fmri)
-                except repo.RepositoryError, e:
-                        raise TransactionOperationError("rename",
                             msg=str(e))
 
 
@@ -429,27 +420,6 @@ class HTTPTransaction(object):
                 raise TransactionOperationError("refresh_index",
                         status=httplib.NOT_FOUND)
 
-        def rename(self, src_fmri, dest_fmri):
-
-                # Intentionally not documented.
-                req_dict = { "Src-FMRI": src_fmri, "Dest-FMRI": dest_fmri }
-                req_str = urllib.urlencode(req_dict)
-                try:
-                        c, v = versioned_urlopen(self.origin_url, "rename",
-                            [0], data=req_str)
-                except (httplib.BadStatusLine, RuntimeError), e:
-                        status = httplib.INTERNAL_SERVER_ERROR
-                        msg = str(e)
-                except (urllib2.HTTPError, urllib2.URLError), e:
-                        status, msg = self.__get_urllib_error(e)
-                else:
-                        msg = None
-                        status = c.code
-
-                if status / 100 == 4 or status / 100 == 5:
-                        raise TransactionOperationError("rename",
-                            status=status, msg=msg)
-
 
 class NullTransaction(object):
         """Provides a simulated publishing interface suitable for testing
@@ -492,12 +462,6 @@ class NullTransaction(object):
         def refresh_index():
                 """Instructs the repository to refresh its search indices.
                 Returns nothing."""
-                pass
-
-        @staticmethod
-        def rename(src_fmri, dest_fmri):
-
-                # Intentionally not documented.
                 pass
 
 

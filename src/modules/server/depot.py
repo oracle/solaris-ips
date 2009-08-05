@@ -51,12 +51,12 @@ import urllib
 
 import pkg
 import pkg.actions as actions
-import pkg.catalog as catalog
 import pkg.client.publisher as publisher
 import pkg.fmri as fmri
 import pkg.manifest as manifest
 import pkg.misc as misc
 import pkg.p5i as p5i
+import pkg.server.catalog as catalog
 import pkg.server.errors as errors
 import pkg.server.face as face
 import pkg.server.repository as repo
@@ -80,7 +80,6 @@ class DepotHTTP(object):
             "info",
             "manifest",
             "filelist",
-            "rename",
             "file",
             "open",
             "close",
@@ -531,31 +530,6 @@ class DepotHTTP(object):
                 "tools.response_headers.headers": [("Content-Type",
                 "application/data")]
         }
-
-        def rename_0(self, *tokens, **params):
-                """Renames an existing package specified by Src-FMRI to
-                Dest-FMRI.  Returns no output."""
-
-                try:
-                        src_fmri = params["Src-FMRI"]
-                except KeyError:
-                        raise cherrypy.HTTPError(httplib.BAD_REQUEST,
-                            "No source FMRI present.")
-
-                try:
-                        dest_fmri = params['Dest-FMRI']
-                except KeyError:
-                        raise cherrypy.HTTPError(httplib.BAD_REQUEST,
-                            "No destination FMRI present.")
-
-                try:
-                        self.__repo.rename(src_fmri, dest_fmri)
-                except repo.RepositoryError, e:
-                        # Assume a bad request was made.  A 404 can't be
-                        # returned here as misc.versioned_urlopen will interpret
-                        # that to mean that the server doesn't support this
-                        # operation.
-                        raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
 
         def file_0(self, *tokens):
                 """Outputs the contents of the file, named by the SHA-1 hash

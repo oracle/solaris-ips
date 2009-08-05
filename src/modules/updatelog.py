@@ -37,10 +37,10 @@ import time
 import tempfile
 import threading
 
-import pkg.catalog as catalog
 import pkg.client.api_errors as api_errors
 import pkg.fmri as fmri
 import pkg.portable as portable
+import pkg.server.catalog as catalog
 
 class UpdateLogException(Exception):
         def __init__(self, args=None):
@@ -119,31 +119,6 @@ class UpdateLog(object):
                         self.__append_to_log(logstr)
 
                         self.last_update = ts
-                finally:
-                        self.updatelog_lock.release()
-
-                return ts
-
-        def rename_package(self, srcname, srcvers, destname, destvers):
-                """Record that package oldname has been renamed to newname,
-                effective as of version vers."""
-
-                self.updatelog_lock.acquire()
-
-                try:
-                        # Record rename in catalog
-                        ts, rr = self.catalog.rename_package(srcname, srcvers,
-                             destname, destvers)
-
-                        # Now add rename record to updatelog
-                        self._check_logs()
-
-                        # The format for a catalog rename record is described
-                        # in the docstring for the RenameRecord class.
-
-                        logstr = "+ %s %s\n" % (ts.isoformat(), rr)
-
-                        self.__append_to_log(logstr)
                 finally:
                         self.updatelog_lock.release()
 
@@ -253,7 +228,7 @@ class UpdateLog(object):
                 # mkstemp uses mode 600.  Rename the tempfile into
                 # place as the new logfile.
                 try:
-                        os.chmod(tmpfile, catalog.Catalog.file_mode)
+                        os.chmod(tmpfile, catalog.ServerCatalog.file_mode)
                         portable.rename(tmpfile, logpath)
                 except EnvironmentError:
                         portable.remove(tmpfile)
@@ -289,7 +264,7 @@ class UpdateLog(object):
                         if update_type == "incremental":
                                 UpdateLog._recv_updates(c, path, ts)
                         else:
-                                catalog.recv(c, path, pub)
+                                catalog.ServerCatalog.recv(c, path, pub)
                 except EnvironmentError, e:
                         if isinstance(e, EnvironmentError):
                                 if e.errno == errno.EACCES:
@@ -367,15 +342,6 @@ class UpdateLog(object):
                                                 add_lines.append(line)
                                                 added += 1
 
-                                        # The format for R records is
-                                        # described in the docstring for
-                                        # RenameRecords
-                                        elif l[2] == "R":
-                                                sf, sv, rf, rv = l[3].split()
-                                                line = "%s %s %s %s %s\n" % \
-                                                    (l[2], sf, sv, rf, rv)
-                                                add_lines.append(line)
-
                 # If we got a parse error on FMRIs and transfer
                 # wasn't truncated, raise a retryable transport
                 if bad_fmri:
@@ -420,7 +386,7 @@ class UpdateLog(object):
                 tfile.close()
                 pfile.close()
 
-                os.chmod(tmpfile, catalog.Catalog.file_mode)
+                os.chmod(tmpfile, catalog.ServerCatalog.file_mode)
                 portable.rename(tmpfile, catpath)
 
                 # Now re-write npkgs and Last-Modified in attributes file
@@ -449,7 +415,7 @@ class UpdateLog(object):
                         tfile.write(s)
 
                 tfile.close()
-                os.chmod(tmpfile, catalog.Catalog.file_mode)
+                os.chmod(tmpfile, catalog.ServerCatalog.file_mode)
                 portable.rename(tmpfile, apath)
 
                 return True
