@@ -33,10 +33,11 @@ from pkg.actions import *
 
 class SolarisPackageDirBundle(object):
 
-        def __init__(self, filename):
+        def __init__(self, filename, data=True):
                 self.pkg = SolarisPackage(filename)
                 self.pkgname = self.pkg.pkginfo["PKG"]
                 self.filename = filename
+                self.data = data
 
         def __iter__(self):
                 faspac = []
@@ -47,6 +48,11 @@ class SolarisPackageDirBundle(object):
                 pkgmap = {}
                 for p in self.pkg.manifest:
                         pkgmap[p.pathname] = p
+
+                if not self.data:
+                        for p in self.pkg.manifest:
+                                yield self.action(p, None)
+                        return
 
                 def j(path):
                         return os.path.join(self.pkg.basedir, path)
@@ -98,10 +104,27 @@ class SolarisPackageDirBundle(object):
 				    "install", r(p.pathname, p.type)))
 
         def action(self, mapline, data):
-                if mapline.type in "fev":
-                        return file.FileAction(data, mode=mapline.mode,
+                preserve_dict = {
+                            "renameold": "renameold",
+                            "renamenew": "renamenew",
+                            "preserve": "true",
+                            "svmpreserve": "true"
+                        }
+                if mapline.type in "f":
+                        a = file.FileAction(data, mode=mapline.mode,
                             owner=mapline.owner, group=mapline.group,
                             path=mapline.pathname, 
+                            timestamp=misc.time_to_timestamp(int(mapline.modtime)))
+                        if mapline.klass in preserve_dict:
+                                a.attrs["preserve"] = preserve_dict[mapline.klass]
+                        return a
+                elif mapline.type in "ev":
+                        # for editable files, map klass onto IPS names; if match
+                        # fails, make sure we at least preserve file
+                        preserve=preserve_dict.get(mapline.klass, "true")
+                        return file.FileAction(data, mode=mapline.mode,
+                            owner=mapline.owner, group=mapline.group,
+                            path=mapline.pathname, preserve=preserve,
                             timestamp=misc.time_to_timestamp(int(mapline.modtime)))
 
                 elif mapline.type in "dx":

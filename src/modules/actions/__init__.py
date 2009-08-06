@@ -143,6 +143,13 @@ class InvalidActionError(ActionError):
 
 from _actions import _fromstr
 
+def attrsfromstr(string):
+        """Create an attribute dict given a string w/ key=value pairs.
+
+        Raises MalformedActionError if the attributes have syntactic problems.
+        """
+        return _fromstr("bogus %s" % string)[2]
+
 def fromstr(string, data=None):
         """Create an action instance based on a str() representation of an
         action.

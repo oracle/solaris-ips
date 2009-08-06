@@ -24,11 +24,11 @@ usr/share/man/man1/ex.1
 usr/share/man/man1/sh.1
 usr/share/man/man1/vi.1
 usr/share/man/man1/view.1
+end import
 chattr usr/share/man/man1/ex.1 path=usr/has/man/man1/ex.1
 chattr usr/share/man/man1/sh.1 path=usr/has/man/man1/sh.1
 chattr usr/share/man/man1/vi.1 path=usr/has/man/man1/vi.1
 chattr usr/share/man/man1/view.1 path=usr/has/man/man1/view.1
-end import
 import SUNWcsr
 drop etc/inet/hosts
 drop etc/nsswitch.conf

@@ -1,0 +1,9 @@
+package SUNWmfrun
+classification "System/X11"
+import SUNWmfrun
+import SUNWmfdev
+import SUNWmfman exclude usr/dt/man
+from SUNWdtma import
+usr/dt/share/man/man1/uil.1x
+end import
+end package
