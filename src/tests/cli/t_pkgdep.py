@@ -52,6 +52,10 @@ hardlink path=usr/foo target=../var/log/syslog
 file NOHASH group=sys mode=0644 owner=root path=var/log/syslog 
 """
 
+        kernmod_manf = """ \
+file NOHASH group=sys mode=0755 owner=root path=usr/kernel/drv/fssnap
+"""
+
         res_manf_1 = """\
 depend %(depend_debug_prefix)s.file=usr/bin/python2.4 fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.4/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=script
 depend %(depend_debug_prefix)s.file=usr/lib/python2.4/vendor-packages/pkg/__init__.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.4/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python
@@ -85,6 +89,10 @@ depend %(depend_debug_prefix)s.file=var/log/syslog fmri=%(dummy_fmri)s type=requ
 """ % {"depend_debug_prefix":base.Dependency.DEPEND_DEBUG_PREFIX, "dummy_fmri":base.Dependency.DUMMY_FMRI}
 
         res_manf_2_missing = "ascii text"
+
+        res_kernmod_manf = """\
+depend fmri=%(dummy_fmri)s %(depend_debug_prefix)s.file=fs/ufs %(depend_debug_prefix)s.path=kernel %(depend_debug_prefix)s.path=usr/kernel %(depend_debug_prefix)s.reason=usr/kernel/drv/fssnap %(depend_debug_prefix)s.type=elf type=require
+depend fmri=%(dummy_fmri)s %(depend_debug_prefix)s.file=misc/fssnap_if %(depend_debug_prefix)s.path=kernel %(depend_debug_prefix)s.path=usr/kernel %(depend_debug_prefix)s.reason=usr/kernel/drv/fssnap %(depend_debug_prefix)s.type=elf type=require""" % {"depend_debug_prefix":base.Dependency.DEPEND_DEBUG_PREFIX, "dummy_fmri":base.Dependency.DUMMY_FMRI}
 
         @staticmethod
         def make_manifest(str):
@@ -167,4 +175,10 @@ depend %(depend_debug_prefix)s.file=var/log/syslog fmri=%(dummy_fmri)s type=requ
 
                 self.pkgdep("-I %s" % tp, proto="/")
                 self.check_res(self.res_int_manf, self.output)
+                self.check_res("", self.errout)
+
+                tp = self.make_manifest(self.kernmod_manf)
+                
+                self.pkgdep(tp, proto="/")
+                self.check_res(self.res_kernmod_manf, self.output)
                 self.check_res("", self.errout)

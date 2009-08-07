@@ -10,6 +10,7 @@ modules."""
 
 import dis
 import imp
+import marshal
 import modulefinder
 import os
 import sys

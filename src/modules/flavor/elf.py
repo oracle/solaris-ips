@@ -56,7 +56,7 @@ class UnsupportedDynamicToken(base.DependencyAnalysisError):
         def __str__(self):
                 return  _("%s had this token, %s, in its run path:%s. We are "
                     "unable to handle this token at this time.") % \
-                    (self.fp, self.token, self.rp)
+                    (self.fp, self.tok, self.rp)
 
 
 class ElfDependency(base.MultiplePathDependency):
@@ -147,10 +147,11 @@ def process_elf_dependencies(action, proto_dir, pkg_vars, **kwargs):
             installed_path.split("/")[2] == "kernel"):
                 if rp:
                         raise RuntimeError("RUNPATH set for kernel module "
-                            "(%s): %s" % (path, rp))
+                            "(%s): %s" % (installed_path, rp))
                 # Add this platform to the search path.
-                if path.startswith("platform"):
-                        rp.append("/platform/%s/kernel" % path.split("/")[1]) 
+                if installed_path.startswith("platform"):
+                        rp.append("/platform/%s/kernel" %
+                            installed_path.split("/")[1]) 
                 # Default kernel search path
                 rp.extend(("/kernel", "/usr/kernel"))
                 # What subdirectory should we look in for 64-bit kernel modules?
@@ -176,7 +177,8 @@ def process_elf_dependencies(action, proto_dir, pkg_vars, **kwargs):
                         tok = p[p.find("$"):]
                         if "/" in tok:
                                 tok = tok[:tok.find("/")]
-                        elist.append(UnsupportedDynamicToken(d, p, tok))
+                        elist.append(UnsupportedDynamicToken(installed_path, p,
+                            tok))
 
         rp = [p for p in rp[:] if "$" not in p]
 
