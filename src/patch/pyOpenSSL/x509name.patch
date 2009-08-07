@@ -1,0 +1,11 @@
+--- src/crypto/x509name.c	2009-08-06 17:11:35.953125000 -0500
++++ src/crypto/x509name.c.new	2009-08-06 17:11:21.437500000 -0500
+@@ -13,7 +13,7 @@
+ #define crypto_MODULE
+ #include "crypto.h"
+ 
+-static PyMethodDef crypto_X509Name_methods[];
++static PyMethodDef crypto_X509Name_methods[4];
+ 
+ /*
+  * Constructor for X509Name, never called by Python code directly
