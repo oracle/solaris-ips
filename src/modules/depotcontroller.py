@@ -23,12 +23,10 @@
 # Use is subject to license terms.
 #
 
-import errno
 import os
 import sys
 import signal
 import time
-import socket
 import urllib2
 import httplib
 import pkg.pkgsubprocess as subprocess
@@ -83,8 +81,8 @@ class DepotController(object):
         def get_port(self):
                 return self.__port
 
-        def set_repodir(self, dir):
-                self.__dir = dir
+        def set_repodir(self, repodir):
+                self.__dir = repodir
 
         def get_repodir(self):
                 return self.__dir
@@ -177,7 +175,6 @@ class DepotController(object):
 
                 args = []
                 if os.environ.has_key("PKGCOVERAGE"):
-                        wrapper = "figleaf"
                         args.append("figleaf")
                 args.append(self.__depot_path)
                 if self.__depot_content_root:
@@ -222,8 +219,11 @@ class DepotController(object):
 
 		self.__output = open(self.__logpath, "w", 0)
 
-		self.__depot_handle = subprocess.Popen(args = args, \
-		    stdout = self.__output, stderr = self.__output)
+		self.__depot_handle = subprocess.Popen(args = args,
+                    stdin = subprocess.PIPE,
+		    stdout = self.__output,
+                    stderr = self.__output,
+                    close_fds=True)
 		if self.__depot_handle == None:
 			raise DepotStateException("Could not start Depot")
                 
@@ -235,7 +235,13 @@ class DepotController(object):
                 
 		sleeptime = 0.05
 		contact = False
-		while sleeptime <= 40.0:
+                while sleeptime <= 40.0:
+                        rc = self.__depot_handle.poll()
+                        if rc is not None:
+                                raise DepotStateException("Depot exited "
+                                    "unexpectedly while starting "
+                                    "(exit code %d)" % rc)
+
 			if self.is_alive():
 				contact = True
 				break
@@ -256,7 +262,7 @@ class DepotController(object):
 		sleeptime = 0.05
 		died = False
                 rc = None
-		while sleeptime <= 1.0:
+		while sleeptime <= 10.0:
 
                         rc = self.__depot_handle.poll()
                         if rc is not None:
@@ -325,44 +331,53 @@ class DepotController(object):
                 self.__depot_handle = None
                 return status
 
-        def stop(self, force = False):
+        def stop(self):
                 if self.__state == self.HALTED:
                         raise DepotStateException("Depot already stopped")
 
                 return self.kill()
 
-
-if __name__ == "__main__":
+def test_func():
         dc = DepotController()
         dc.set_port(12000)
         try:
                 os.mkdir("/tmp/fooz")
-        except:
+        except OSError:
                 pass
 
         dc.set_repodir("/tmp/fooz")
 
         for j in range(0, 100):
                 print "%4d: Starting Depot... (%s)" % (j, " ".join(dc.get_args())),
-                dc.start()
-                print " Done.    ",
-                print "... Ping ",
-                sys.stdout.flush()
-                time.sleep(0.2)
-                while dc.is_alive() == False:
-                        pass
-                print "... Done.  ",
+                try:
+                        dc.start()
+                        print " Done.    ",
+                        print "... Ping ",
+                        sys.stdout.flush()
+                        time.sleep(0.2)
+                        while dc.is_alive() == False:
+                                pass
+                        print "... Done.  ",
 
-                print "Stopping Depot...",
-                status = dc.stop()
-                if status == 0:
-                        print " Done.",
-                elif status < 0:
-                        print " Result: Signal %d" % (-1 * status),
-                else:
-                        print " Result: Exited %d" % status,
-                print
-		file = open("/tmp/depot.log", "r")
-		print file.read()
-		file.close()
+                        print "Stopping Depot...",
+                        status = dc.stop()
+                        if status == 0:
+                                print " Done.",
+                        elif status < 0:
+                                print " Result: Signal %d" % (-1 * status),
+                        else:
+                                print " Result: Exited %d" % status,
+                        print
+                        f = open("/tmp/depot.log", "r")
+                        print f.read()
+                        f.close()
+                except KeyboardInterrupt:
+                        print "\nKeyboard Interrupt: Cleaning up Depots..."
+                        dc.stop()
+                        print "\nDone"
+                        sys.exit(0)
+
+
+if __name__ == "__main__":
+        test_func()
 

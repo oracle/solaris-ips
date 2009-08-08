@@ -72,10 +72,7 @@ class Popen(subprocess.Popen):
                         if executable == None:
                                 executable = args[0]
 
-                        if close_fds:
-                                sfa = pkg.pspawn.closechild_fds()
-                        else:
-                                sfa = SpawnFileAction()
+                        sfa = SpawnFileAction()
 
                         # Child file actions
                         # Close parent's pipe ends
@@ -102,6 +99,10 @@ class Popen(subprocess.Popen):
                                 sfa.add_close(c2pwrite)
                         if errwrite and errwrite not in (p2cread, c2pwrite):
                                 sfa.add_close(errwrite)
+
+                        # Close all other fds, if asked for.
+                        if close_fds:
+                                sfa.add_close_childfds()
 
                         if cwd != None:
                                 os.chdir(cwd)
