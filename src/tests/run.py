@@ -48,6 +48,8 @@ import unittest
 sys.path.insert(0, ".")
 
 import cli.testutils
+import gui.testutils
+
 if __name__ == "__main__":
         cli.testutils.setup_environment("../../proto")
 
@@ -188,11 +190,16 @@ if __name__ == "__main__":
 
         api_suite = find_tests("api", onlyval)
         cli_suite = find_tests("cli", onlyval)
+        gui_suite = find_tests("gui", onlyval)
 
         suites = []
         suites.append(api_suite)
         if ostype == "posix":
                 suites.append(cli_suite)
+                if gui.testutils.check_if_a11y_enabled():
+                        suites.append(gui_suite)
+                else:
+                        print "Accessibility not enabled, GUI tests disabled."
 
         # Initialize the baseline results and load them
         baseline = baseline.BaseLine(bfile, generate)

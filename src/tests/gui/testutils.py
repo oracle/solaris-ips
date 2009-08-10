@@ -1,0 +1,41 @@
+#!/usr/bin/python2.4
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Use is subject to license terms.
+
+import pygtk
+pygtk.require('2.0')
+import gtk
+
+def check_if_a11y_enabled():
+                # To determine if A11Y is enabled we are starting small gtk application
+                # and then we do check if the applications' window does contain
+                # accessible widget. This allows us to be sure that A11Y is not 
+                # only enabled in the gconf key, but it's truly running.
+                window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+                button = gtk.Button("Check Accessibility")
+                window.add(button)
+                a11y_enabled = False
+                if window.get_accessible().get_n_accessible_children() != 0:
+                        a11y_enabled = True
+                return a11y_enabled

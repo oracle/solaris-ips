@@ -1,0 +1,83 @@
+#!/usr/bin/python2.4
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Use is subject to license terms.
+
+from cli import testutils
+
+if __name__ == "__main__":
+        testutils.setup_environment("../../../proto")
+
+try:
+        import ldtp
+except ImportError:
+        raise ImportError, "SUNWldtp package not installed."
+
+class TestPkgGuiInstallBasics(testutils.SingleDepotTestCase):
+        # Only start/stop the depot once (instead of for every test)
+        persistent_depot = True
+
+        foo10 = """
+            open package1@1.0,5.11-0
+            add set name="description" value="Some package1 description"
+            close """
+
+        def setUp(self, debug_features=None):
+                testutils.SingleDepotTestCase.setUp(self)
+
+        def tearDown(self):
+                testutils.SingleDepotTestCase.tearDown(self)
+
+        def testInstallSimplePackage(self):
+                pkgname = 'package1'
+                repo_url = self.dc.get_depot_url()
+                self.pkgsend_bulk(repo_url, self.foo10)
+                self.image_create(repo_url)
+                ldtp.launchapp("%s/usr/bin/packagemanager" % testutils.g_proto_area)
+
+                ldtp.waittillguinotexist('dlgLoading Repository Information')
+
+                ldtp.activatetext('frmPackageManager', 'txtSearch')
+                ldtp.enterstring('frmPackageManager', 'txtSearch', pkgname)
+                ldtp.generatekeyevent('<enter>')
+
+                # Select the package to install
+                ldtp.selectrow('frmPackageManager', 'Packages', pkgname)
+                ldtp.click('frmPackageManager', 'btnInstall/Update')
+
+                # Instead of doing wait(5) we are currently waiting for the object
+                # "close button" in the loop
+                # when objectexist() == 1 the loop will break
+                while (ldtp.objectexist('dlgInstall/Update', 'btnClose') == 0):
+                        ldtp.wait(0.1)
+
+                # Get focus to the Install/Update dialog
+                ldtp.click('dlgInstall/Update', 'btnClose')
+                
+                ldtp.waittillguinotexist('dlgInstall/Update')
+
+                self.pkg("list")
+                self.pkg("verify")
+
+                # Quit packagemanager
+                ldtp.click('frmPackageManager', 'mnuQuit')

@@ -529,3 +529,10 @@ cli.t_setUp.py TestSetUp.test_first_depot_start|pass
 cli.t_setUp.py TestSetUp.test_second_depot_start|pass
 cli.t_variants.py TestPkgVariants.test_old_zones_pkgs|pass
 cli.t_variants.py TestPkgVariants.test_variant_1|pass
+gui.t_pm_addrepo.py TestPkgGuiAddRepoBasics.testAddRepository|pass
+gui.t_pm_helpabout.py TestPkgGuiHelp.testPmAbout|pass
+gui.t_pm_helpabout.py TestPkgGuiHelp.testPmHelp|pass
+gui.t_pm_install.py TestPkgGuiInstallBasics.testInstallSimplePackage|pass
+gui.t_pm_rmrepo.py TestPkgGuiRmRepoBasics.testRmRepository|pass
+gui.t_pm_start.py TestPkgGuiStartBasics.testStartPackagemanager|pass
+gui.t_pm_uninstall.py TestPkgGuiUninstallBasics.testUninstallSimplePackage|pass
