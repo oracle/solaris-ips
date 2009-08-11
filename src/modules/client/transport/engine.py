@@ -165,8 +165,6 @@ class CurlTransportEngine(TransportEngine):
                                 ex_to_raise = ex
 
                         done_handles.append(h)
-                        if h.fileprog:
-                                h.fileprog.abort()
 
                 for h in good:
                         # Get statistics for each handle.
@@ -183,8 +181,6 @@ class CurlTransportEngine(TransportEngine):
 
                         if httpcode == httplib.OK:
                                 h.success = True
-                                if h.fileprog:
-                                        h.fileprog.commit(bytes)
                         else:
                                 ex = tx.TransportProtoError(proto,
                                     httpcode, url, repourl=urlstem)
@@ -212,9 +208,6 @@ class CurlTransportEngine(TransportEngine):
                                         failures.append(ex)
                                 elif not ex_to_raise:
                                         ex_to_raise = ex
-
-                                if h.fileprog:
-                                        h.fileprog.abort()
 
                         done_handles.append(h)
 
@@ -585,6 +578,8 @@ class CurlTransportEngine(TransportEngine):
                         hdl.fobj.close()
                         hdl.fobj = None
                         if not hdl.success:
+                                if hdl.fileprog:
+                                        hdl.fileprog.abort()
                                 try:
                                         os.remove(hdl.filepath)
                                 except EnvironmentError, e:
@@ -593,6 +588,12 @@ class CurlTransportEngine(TransportEngine):
                                                     tx.TransportOperationError(
                                                     "Unable to remove file: %s"
                                                     % e)
+                        else:
+                                if hdl.fileprog:
+                                        filesz = os.stat(hdl.filepath).st_size
+                                        hdl.fileprog.commit(filesz)
+
+
                 hdl.url = None
                 hdl.repourl = None
                 hdl.success = False
@@ -634,12 +635,8 @@ class FileProgress(object):
                 across connections, adjust the progress tracker by the
                 amount we're off."""
 
-
-                # Subtract the total amount we've counted as progress
-                # from the actual size of the file.  This is the adjustment,
-                # positive or negative.
                 adjustment = int(size - self.dlcurrent)
-                
+
                 self.progtrack.download_add_progress(1, adjustment)
                 self.completed = True
 
