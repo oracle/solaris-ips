@@ -63,6 +63,8 @@ elif osname == 'windows':
         arch = osname
 elif osname == 'darwin':
         arch = osname
+elif osname == "aix":
+        arch = osname
 
 ostype = os.name
 if ostype == '':

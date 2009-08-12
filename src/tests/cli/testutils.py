@@ -75,6 +75,8 @@ def setup_environment(path_to_proto):
                 proc = osname
         elif osname == 'darwin':
                 proc = osname
+        elif osname == 'aix':
+                proc = osname
         else:
                 print "Unable to determine appropriate proto area location."
                 print "This is a porting problem."

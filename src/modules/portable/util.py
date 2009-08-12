@@ -47,7 +47,7 @@ def get_canonical_os_name():
         """
         
         psl = platform.system().lower()
-        if psl in ['sunos', 'darwin', 'windows']:
+        if psl in ['sunos', 'darwin', 'windows', 'aix']:
                 return psl
 
         if psl == 'linux':

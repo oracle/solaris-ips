@@ -116,6 +116,9 @@ elif osname == 'windows':
 elif osname == 'darwin':
         arch = osname
         ostype = "posix"
+elif osname == 'aix':
+        arch = "aix"
+        ostype = "posix"
 
 pwd = os.path.normpath(sys.path[0])
 
@@ -209,6 +212,7 @@ scripts = {
         "linux": scripts_other_unix,
         "windows": scripts_windows,
         "darwin": scripts_other_unix,
+        "aix" : scripts_other_unix,
         "unknown": scripts_sunos,
         }
 
