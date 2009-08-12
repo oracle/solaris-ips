@@ -74,10 +74,12 @@ add file generic_open.xml path=var/svc/profile/generic_open.xml mode=0444 \
 	owner=root group=sys
 add file generic_limited_net.xml path=var/svc/profile/generic_limited_net.xml \
 	mode=0444 owner=root group=sys
-add file nsswitch.conf path=etc/nsswitch.conf mode=0644 owner=root group=root
-add file pam.conf path=etc/pam.conf mode=0644 owner=root group=sys
-add file passwd path=etc/passwd mode=0644 owner=root group=sys
-add file shadow path=etc/shadow mode=0400 owner=root group=sys
+add file nsswitch.conf path=etc/nsswitch.conf mode=0644 owner=root \
+	group=root preserve=true
+add file pam.conf path=etc/pam.conf mode=0644 owner=root group=sys \
+	preserve=true
+add file passwd path=etc/passwd mode=0644 owner=root group=sys preserve=true
+add file shadow path=etc/shadow mode=0400 owner=root group=sys preserve=true
 add file ksh path=usr/bin/ksh mode=0755 owner=root group=bin
 add file sh path=usr/has/bin/sh mode=0755 owner=root group=root
 add file vi path=usr/has/bin/vi mode=0755 owner=root group=bin
