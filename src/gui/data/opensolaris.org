@@ -298,6 +298,9 @@ category = Media
 [SUNWaudiohd]
 category = Media
 
+[SUNWaudiovia97]
+category = Media
+
 [SUNWaudit]
 category = Administration and Configuration
 
@@ -2753,6 +2756,9 @@ category = Ports
 category = Java
 
 [SUNWmxfe]
+category = Networking
+
+[SUNWmyri10ge]
 category = Networking
 
 [SUNWmyspell-dictionary-cs]

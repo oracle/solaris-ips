@@ -1,0 +1,6 @@
+package SUNWxvmipa
+classification "System/Virtualization"
+import SUNWxvmipar
+import SUNWxvmipau
+depend SUNWxvmdom
+end package

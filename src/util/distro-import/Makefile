@@ -99,6 +99,7 @@ GLOBAL_CHATTRS_117 = $(GLOBAL_CHATTRS_106)
 GLOBAL_CHATTRS_118 = $(GLOBAL_CHATTRS_106)
 GLOBAL_CHATTRS_119 = $(GLOBAL_CHATTRS_106)
 GLOBAL_CHATTRS_120 = $(GLOBAL_CHATTRS_106)
+GLOBAL_CHATTRS_121 = $(GLOBAL_CHATTRS_106)
 GLOBAL_CHATTRS = $(GLOBAL_CHATTRS_$(BUILDID))
 
 SOLARIS.PY=PYTHONPATH=$(PROTO_AREA)/usr/lib/python2.4/vendor-packages \
@@ -111,14 +112,14 @@ SOLARIS.PY=PYTHONPATH=$(PROTO_AREA)/usr/lib/python2.4/vendor-packages \
 # we're doing this until the necessary actions are available.  For now,
 # cache as-installed versions.
 #
-ELIDED_FILES_BASE= \
+ELIDED_FILES_BASE=			\
 	boot/solaris/devicedb/master	\
 	etc/hba.conf			\
 	etc/ima.conf			\
 	etc/inet/services		\
 	etc/mpapi.conf
 
-ELIDED_FILES_ATTR = 	\
+ELIDED_FILES_ATTR =			\
 	etc/security/auth_attr		\
 	etc/security/exec_attr		\
 	etc/security/prof_attr		\
@@ -152,6 +153,7 @@ ELIDED_FILES_117 = $(ELIDED_FILES_106)
 ELIDED_FILES_118 = $(ELIDED_FILES_106)
 ELIDED_FILES_119 = $(ELIDED_FILES_106)
 ELIDED_FILES_120 = $(ELIDED_FILES_106)
+ELIDED_FILES_121 = $(ELIDED_FILES_106)
 ELIDED_FILES = $(ELIDED_FILES_$(BUILDID))
 
 #
@@ -225,6 +227,7 @@ CACHED_FILES_117 =
 CACHED_FILES_118 =
 CACHED_FILES_119 =
 CACHED_FILES_120 =
+CACHED_FILES_121 =
 
 CACHED_FILES = $(CACHED_FILES_$(BUILDID))
 
@@ -292,7 +295,7 @@ FIX_FILES_116 = $(FIX_FILES_BASE)
 FIX_FILES_117 = $(FIX_FILES_BASE)
 FIX_FILES_118 = $(FIX_FILES_BASE)
 FIX_FILES_119 = $(FIX_FILES_BASE)
-FIX_FILES_120 = $(FIX_FILES_121) #$(FIX_FILES_BASE)
+FIX_FILES_120 = $(FIX_FILES_BASE)
 FIX_FILES_121 =				\
 	driver_aliases			\
 	ksh				\
@@ -369,7 +372,8 @@ BUILDS=	75a			\
 	117			\
 	118			\
 	119			\
-	120
+	120			\
+	121
 
 #
 # Starting in build 80, filelist.ramdisk began moving between various
@@ -382,7 +386,7 @@ FILELIST_RAMDISK_PKG_74		= SUNWcakr.i
 FILELIST_RAMDISK_PKG_72		= SUNWcakr.i
 FILELIST_RAMDISK_PKG_71		= SUNWcakr.i
 
-default:	120/slim_import
+default:	121/slim_import
 
 cluster.import:	$(WOS_PKGS)/.clustertoc Makefile
 	./clustertoc2import.py $(WOS_PKGS)/.clustertoc | \
@@ -556,6 +560,7 @@ INCLUDE_PATH_117 = 117:$(INCLUDE_PATH_116)
 INCLUDE_PATH_118 = 118:$(INCLUDE_PATH_117)
 INCLUDE_PATH_119 = 119:$(INCLUDE_PATH_118)
 INCLUDE_PATH_120 = 120:$(INCLUDE_PATH_119)
+INCLUDE_PATH_121 = 121:$(INCLUDE_PATH_120)
 
 import:	cluster.import $(FIX_FILES:%=$(BUILDID)/%)
 	$(SOLARIS.PY) -s $(REPO) -w $(WOS_PKGS) $(ELIDED_FILES:%=-D %) \

@@ -1,0 +1,15 @@
+package SUNWxwman
+classification "System/X11"
+import SUNWxwman exclude usr/openwin
+# Not yet confirmed redistributable
+drop usr/openwin/man
+drop usr/openwin/share
+drop usr/openwin/share/man
+drop usr/openwin/share/man/man1
+drop usr/openwin/share/man/man1/makepsres.1
+drop usr/openwin/share/man/man1/pswrap.1
+drop usr/openwin/share/man/man1/redxblue.1
+drop usr/openwin/share/man/man1/xdm.1
+drop usr/openwin/share/man/man4
+drop usr/openwin/share/man/man4/rasterfile.4
+end package

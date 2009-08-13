@@ -1,0 +1,9 @@
+package SUNWmyri10ge
+classification "Drivers/Networking"
+import SUNWmyri10ge
+add driver name=myri10ge perms="* 0666 root sys" clone_perms="0666 root sys" \
+	alias=pci14c1,8 \
+	alias=pciex14c1,8 \
+	alias=pci14c1,9 \
+	alias=pciex14c1,9
+end package
