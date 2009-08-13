@@ -2,7 +2,6 @@ package developer/gcc/gcc-432
 classification "Development/C"
 version 4.3.2
 import SUNWgcc432
-$(sparc_ONLY)import SUNWscgfss432
 depend SUNWarc
 depend SUNWbinutils
 depend developer/gcc/gcc-runtime-432
