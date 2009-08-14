@@ -87,6 +87,7 @@ class CurlTransportEngine(TransportEngine):
                         eh.filepath = None
                         eh.success = False
                         eh.fileprog = None
+                        eh.filetime = -1
                         self.__chandles.append(eh)
 
                 # copy handles into handle freelist
@@ -172,6 +173,7 @@ class CurlTransportEngine(TransportEngine):
                         repostats.record_tx()
                         bytes = h.getinfo(pycurl.SIZE_DOWNLOAD)
                         seconds = h.getinfo(pycurl.TOTAL_TIME)
+                        h.filetime = h.getinfo(pycurl.INFO_FILETIME)
                         repostats.record_progress(bytes, seconds)
 
                         httpcode = h.getinfo(pycurl.RESPONSE_CODE)
@@ -503,6 +505,8 @@ class CurlTransportEngine(TransportEngine):
                                     "Unable to open file: %s" % e)
          
                         hdl.setopt(pycurl.WRITEDATA, hdl.fobj)
+                        # Request filetime, if endpoint knows it.
+                        hdl.setopt(pycurl.OPT_FILETIME, True)
                         hdl.filepath = treq.filepath
                 elif treq.writefunc:
                         hdl.setopt(pycurl.WRITEFUNCTION, treq.writefunc)
@@ -592,6 +596,13 @@ class CurlTransportEngine(TransportEngine):
                                 if hdl.fileprog:
                                         filesz = os.stat(hdl.filepath).st_size
                                         hdl.fileprog.commit(filesz)
+                                if hdl.filepath and hdl.filetime > -1:
+                                        # Set atime/mtime, if we were able to
+                                        # figure it out.  File action will
+                                        # override this at install time, if the
+                                        # action has a timestamp property.
+                                        ft = hdl.filetime
+                                        os.utime(hdl.filepath, (ft, ft))
 
 
                 hdl.url = None
@@ -599,6 +610,7 @@ class CurlTransportEngine(TransportEngine):
                 hdl.success = False
                 hdl.filepath = None
                 hdl.fileprog = None
+                hdl.filetime = -1
 
 
 class FileProgress(object):
