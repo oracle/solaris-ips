@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 MACH=$(uname -p)
@@ -31,13 +31,32 @@ export PYTHONPATH=../../../proto/root_$MACH/usr/lib/python2.4/vendor-packages
 buildid=$(echo $1 | tr -d '[a-z]')
 pkgname=$2
 
-PKG_ARCHIVE=../../../packages/$MACH
-CHERRYPY_VER=$(pkgparam -d $PKG_ARCHIVE SUNWpython-cherrypy VERSION)
-PYOPENSSL_VER=$(pkgparam -d $PKG_ARCHIVE SUNWpython-pyopenssl VERSION)
+PKG_ARCHIVE=${PKG_ARCHIVE:=../../../packages/$MACH}
+if [[ -d $PKG_ARCHIVE/SUNWpython-cherrypy ]]; then
+	CHERRYPY_VER=$(pkgparam -d $PKG_ARCHIVE SUNWpython-cherrypy VERSION)
+fi
+if [[ -d $PKG_ARCHIVE/SUNWpython-mako ]]; then
+	MAKO_VER=$(pkgparam -d $PKG_ARCHIVE SUNWpython-mako VERSION)
+fi
+if [[ -d $PKG_ARCHIVE/SUNWpython-ply ]]; then
+	PLY_VER=$(pkgparam -d $PKG_ARCHIVE SUNWpython-ply VERSION)
+fi
+if [[ -d $PKG_ARCHIVE/SUNWpython-pycurl ]]; then
+	PYCURL_VER=$(pkgparam -d $PKG_ARCHIVE SUNWpython-pycurl VERSION)
+fi
+if [[ -d $PKG_ARCHIVE/SUNWpython-pyopenssl ]]; then
+	PYOPENSSL_VER=$(pkgparam -d $PKG_ARCHIVE SUNWpython-pyopenssl VERSION)
+fi
 
 if [[ $pkgname == "SUNWpython-cherrypy" ]]; then
 	pkgvers=$CHERRYPY_VER
-elif [[ $pkgname == "SUNWpython-pyopenssl" ]]; then 
+elif [[ $pkgname == "SUNWpython-mako" ]]; then
+	pkgvers=$MAKO_VER
+elif [[ $pkgname == "SUNWpython-ply" ]]; then
+	pkgvers=$PLY_VER
+elif [[ $pkgname == "SUNWpython-pycurl" ]]; then
+	pkgvers=$PYCURL_VER
+elif [[ $pkgname == "SUNWpython-pyopenssl" ]]; then
 	pkgvers=$PYOPENSSL_VER
 else
 	pkgvers=0.5.11
@@ -55,14 +74,33 @@ if [[ $pkgname != "SUNWipkg-gui-l10n" ]]; then
 	pkgsend import -T \*.py $pkgdir
 fi
 
+#
 # We don't add a dependency on SUNWopenssl for SUNWpython-pyopenssl, since
 # SUNWopenssl is always installed
+#
+# We specify the versions of the dependencies below precisely rather than
+# relying on the "calculated" *_VER environment variables as there are
+# cases where a different version is necessary (for example, 3.1 versus
+# 3.1.0 or 3.1.1 for SUNWpython-cherrypy) and since in older versions of
+# SUNWipkg, incorporations weren't always handled correctly.
+#
 if [[ $pkgname == "SUNWipkg" ]]; then
-	pkgsend add depend fmri=SUNWpython-pyopenssl@$PYOPENSSL_VER-0.$buildid type=require
-	pkgsend add depend fmri=SUNWpython-cherrypy@$CHERRYPY_VER type=require
+	pkgsend add depend fmri=SUNWpython-cherrypy@3.1-0.$buildid type=require
+	pkgsend add depend fmri=SUNWpython-mako@0.2.2-0.$buildid type=require
+	pkgsend add depend fmri=SUNWpython-ply@3.1-0.$buildid type=require
+	pkgsend add depend fmri=SUNWpython-pycurl@7.19.0.1-0.$buildid \
+	    type=require
+	pkgsend add depend fmri=SUNWpython-pyopenssl@0.7-0.$buildid type=require
+	pkgsend add depend fmri=SUNWpython24-simplejson@0.5.11-0.$buildid \
+	    type=require
 elif [[ $pkgname == "SUNWipkg-gui" ]]; then
 	pkgsend import $PKG_ARCHIVE/SUNWipkg-gui-data
 	pkgsend import $PKG_ARCHIVE/SUNWipkg-gui-l10n
+	pkgsend add depend fmri=SUNWgnome-python-extras@0.5.11-0.$buildid \
+	    type=require
 	pkgsend add depend fmri=SUNWipkg-gui-l10n type=require
+elif [[ $pkgname == "SUNWpython-pycurl" ]]; then
+	pkgsend add depend fmri=SUNWcurl@7.19.4-0.$buildid type=require
+	pkgsend add depend fmri=SUNWgnu-idn@1.9-0.$buildid type=require
 fi
 pkgsend close
