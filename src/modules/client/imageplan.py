@@ -29,6 +29,7 @@ import os
 import errno
 import traceback
 
+import pkg.actions
 import pkg.client.actuator as actuator
 import pkg.client.api_errors as api_errors
 import pkg.client.imagestate as imagestate
@@ -93,7 +94,7 @@ class ImagePlan(object):
                 self.target_update_count = 0
 
                 self.__directories = None
-                self.__link_actions = None
+                self.__cached_actions = {}
 
                 ifilters = [
                     "%s = %s" % (k, v)
@@ -259,20 +260,26 @@ class ImagePlan(object):
                         self.__directories = dirs
                 return self.__directories
 
-        def get_link_actions(self):
-                """return a dictionary of hardlink action lists indexed by
-                target """
-                if self.__link_actions == None:
-                        d = {}
-                        for act in \
-                            self.gen_new_installed_actions_bytype("hardlink"):
-                                t = act.get_target_path()
-                                if t in d:
-                                        d[t].append(act)
-                                else:
-                                        d[t] = [act]
-                self.__link_actions = d
-                return self.__link_actions
+        def get_actions(self, name, key=None):
+                """Return a dictionary of actions of the type given by 'name'
+                describing the target image.  If 'key' is given and not None,
+                the dictionary's key will be the name of the action type's key
+                attribute.  Otherwise, it's a callable taking an action as an
+                argument which returns the key.  This dictionary is cached for
+                quick future lookups."""
+                if key is None:
+                        attr_name = pkg.actions.types[name].key_attr
+                        key = lambda act: act.attrs[attr_name]
+
+                if (name, key) in self.__cached_actions:
+                        return self.__cached_actions[(name, key)]
+
+                d = {}
+                for act in self.gen_new_installed_actions_bytype(name):
+                        t = key(act)
+                        d.setdefault(t, []).append(act)
+                self.__cached_actions[(name, key)] = d
+                return self.__cached_actions[(name, key)]
 
         def evaluate_fmri(self, pfmri):
                 self.progtrack.evaluate_progress(pfmri)
@@ -535,7 +542,8 @@ class ImagePlan(object):
 
                 self.progtrack.evaluate_progress()
                 # Go over update actions
-                l_actions = self.get_link_actions()
+                l_actions = self.get_actions("hardlink",
+                    lambda a: a.get_target_path())
                 l_refresh = []
                 for a in self.update_actions:
                         # For any files being updated that are the target of

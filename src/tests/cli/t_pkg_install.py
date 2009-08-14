@@ -832,21 +832,73 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
             close
         """
 
+        dricon1 = """
+            open dricon@1
+            add dir path=/tmp mode=755 owner=root group=root
+            add dir path=/etc mode=755 owner=root group=root
+            add file /tmp/dricon_da path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
+            add file /tmp/dricon_n2m path=/etc/name_to_major mode=644 owner=root group=sys preserve=true
+            close
+        """
 
-        misc_files = [ "/tmp/amber1", "/tmp/amber2",
-                    "/tmp/bronzeA1",  "/tmp/bronzeA2",
-                    "/tmp/bronze1", "/tmp/bronze2",
-                    "/tmp/copyright1", "/tmp/copyright2",
-                    "/tmp/copyright3", "/tmp/copyright4",
-                    "/tmp/libc.so.1", "/tmp/sh", "/tmp/config1", "/tmp/config2"]
+        dricon2 = """
+            open dricon@2
+            add dir path=/tmp mode=755 owner=root group=root
+            add dir path=/etc mode=755 owner=root group=root
+            add file /tmp/dricon2_da path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
+            add file /tmp/dricon_n2m path=/etc/name_to_major mode=644 owner=root group=sys preserve=true
+            add driver name=zigit alias=pci8086,1234
+            close
+        """
+
+        dricon3 = """
+            open dricon@3
+            add dir path=/tmp mode=755 owner=root group=root
+            add dir path=/etc mode=755 owner=root group=root
+            add file /tmp/dricon2_da path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
+            add file /tmp/dricon_n2m path=/etc/name_to_major mode=644 owner=root group=sys preserve=true
+            add driver name=zigit alias=pci8086,1234
+            add driver name=figit alias=pci8086,1234
+            close
+        """
+
+
+        misc_files = [
+            "/tmp/amber1", "/tmp/amber2", "/tmp/bronzeA1",  "/tmp/bronzeA2",
+            "/tmp/bronze1", "/tmp/bronze2",
+            "/tmp/copyright1", "/tmp/copyright2",
+            "/tmp/copyright3", "/tmp/copyright4",
+            "/tmp/libc.so.1", "/tmp/sh", "/tmp/config1", "/tmp/config2",
+            "/tmp/dricon_da", "/tmp/dricon2_da", "/tmp/dricon_n2m"
+        ]
+
+        misc_files_contents = {
+            "/tmp/dricon_da": """\
+wigit "pci8086,1234"
+wigit "pci8086,4321"
+# someother "pci8086,1234"
+foobar "pci8086,9999"
+""",
+            "/tmp/dricon2_da": """\
+zigit "pci8086,1234"
+wigit "pci8086,4321"
+# someother "pci8086,1234"
+foobar "pci8086,9999"
+""",
+            "/tmp/dricon_n2m": """\
+wigit 1
+foobar 2
+"""
+        }
 
         def setUp(self):
                 testutils.SingleDepotTestCase.setUp(self)
                 for p in self.misc_files:
                         f = open(p, "w")
-                        # write the name of the file into the file, so that
-                        # all files have differing contents
-                        f.write(p)
+                        # If no contents are specified, write the name of the
+                        # file into the file, so that all files have differing
+                        # contents
+                        f.write(self.misc_files_contents.get(p, p))
                         f.close()
                         self.debug("wrote %s" % p)
 
@@ -1072,6 +1124,30 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
 
                 self.pkg("install iron@2.0")
                 self.pkg("verify -v")
+
+        def test_upgrade_driver_conflicts(self):
+                """Test to make sure driver_aliases conflicts don't cause
+                add_drv to fail."""
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.dricon1)
+                self.pkgsend_bulk(durl, self.dricon2)
+                self.pkgsend_bulk(durl, self.dricon3)
+
+                self.image_create(durl)
+
+                self.pkg("list -afv")
+                self.pkg("install dricon@1")
+                # This one should comment out the wigit entry in driver_aliases
+                self.pkg("install dricon@2")
+                da_contents = file(os.path.join(self.get_img_path(),
+                    "etc/driver_aliases")).readlines()
+                self.assert_("# wigit \"pci8086,1234\"\n" in da_contents)
+                self.assert_("wigit \"pci8086,1234\"\n" not in da_contents)
+                self.assert_("wigit \"pci8086,4321\"\n" in da_contents)
+                self.assert_("zigit \"pci8086,1234\"\n" in da_contents)
+                # This one should fail
+                self.pkg("install dricon@3", exit=1)
 
 
         def file_append(self, path, string):

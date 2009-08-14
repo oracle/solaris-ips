@@ -452,6 +452,7 @@ cli.t_pkg_install.py TestPkgInstallUpgrade.test_upgrade1|pass
 cli.t_pkg_install.py TestPkgInstallUpgrade.test_upgrade2|pass
 cli.t_pkg_install.py TestPkgInstallUpgrade.test_upgrade3|pass
 cli.t_pkg_install.py TestPkgInstallUpgrade.test_upgrade4|pass
+cli.t_pkg_install.py TestPkgInstallUpgrade.test_upgrade_driver_conflicts|pass
 cli.t_pkg_intent.py TestPkgIntent.test_0_info|pass
 cli.t_pkg_intent.py TestPkgIntent.test_1_install_uninstall|pass
 cli.t_pkg_intent.py TestPkgIntent.test_2_upgrade|pass

@@ -570,6 +570,7 @@ class ImageInterface(object):
                                 be = bootenv.BootEnv(self.__img.get_root())
                         except RuntimeError:
                                 be = bootenv.BootEnvNull(self.__img.get_root())
+                        self.__img.bootenv = be
 
                         if self.__plan_type is self.__IMAGE_UPDATE:
                                 try:

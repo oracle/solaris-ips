@@ -127,6 +127,90 @@ class DriverAction(generic.Action):
                 except IOError:
                         pass
 
+                alias_conflict = False
+                lines = []
+                # Iterate through driver_aliases to see if this driver binds to
+                # an alias that some other driver already binds to.  If we find
+                # that it does, and it's unclaimed by any other driver action,
+                # then we want to comment out (for easier recovery) the entry
+                # from the file.  If it's claimed by another driver action, then
+                # we should fail installation, as if two driver actions tried to
+                # deliver the same driver.  If it's unclaimed, but appears to
+                # belong to a driver of the same name as this one, we'll safely
+                # slurp it in with __get_image_data().
+                try:
+                        driver_actions = image.imageplan.get_actions("driver")
+                        for fields in DriverAction.__gen_read_binding_file(
+                            image, "etc/driver_aliases", raw=True, minfields=2,
+                            maxfields=2):
+                                if isinstance(fields, str):
+                                        lines.append(fields + "\n")
+                                        continue
+
+                                name, alias = fields
+                                lines.append("%s \"%s\"\n" % tuple(fields))
+
+                                if name != self.attrs["name"] and \
+                                    alias in self.attrlist("alias"):
+                                        alias_conflict = True
+                                        be_name = getattr(image.bootenv,
+                                            "be_name_clone", None)
+                                        errdict = {
+                                            "new": self.attrs["name"],
+                                            "old": name,
+                                            "alias": alias,
+                                            "line": len(lines),
+                                            "be": be_name,
+                                            "imgroot": image.get_root()
+                                        }
+                                        if name in driver_actions:
+                                                # XXX This check will eventually
+                                                # be done in preexecution.
+                                                raise RuntimeError("\
+The '%(new)s' driver shares the alias '%(alias)s' with the '%(old)s'\n\
+driver; both drivers cannot be installed simultaneously.  Please remove\n\
+the package delivering '%(old)s' or ensure that the package delivering\n\
+'%(new)s' will not be installed, and try the operation again." % errdict)
+                                        else:
+                                                comment = "# pkg(5): "
+                                                lines[-1] = comment + lines[-1]
+                                                # XXX Module printing
+                                                if be_name:
+                                                        print "\
+The '%(new)s' driver shares the alias '%(alias)s' with the '%(old)s'\n\
+driver, but the system cannot determine how the latter was delivered.\n\
+Its entry on line %(line)d in /etc/driver_aliases has been commented\n\
+out.  If this driver is no longer needed, it may be removed by booting\n\
+into the '%(be)s' boot environment and invoking 'rem_drv %(old)s'\n\
+as well as removing line %(line)d from /etc/driver_aliases or, before\n\
+rebooting, mounting the '%(be)s' boot environment and running\n\
+'rem_drv -b <mountpoint> %(old)s' and removing line %(line)d from\n\
+<mountpoint>/etc/driver_aliases." % \
+                                                            errdict
+                                                else:
+                                                        print "\
+The '%(new)s' driver shares the  alias '%(alias)s' with the '%(old)s'\n\
+driver, but the system cannot determine how the latter was delivered.\n\
+Its entry on line %(line)d in /etc/driver_aliases has been commented\n\
+out.  If this driver is no longer needed, it may be removed by invoking\n\
+'rem_drv -b %(imgroot)s %(old)s' as well as removing line %(line)d\n\
+from %(imgroot)s/etc/driver_aliases." % \
+                                                            errdict
+                except IOError:
+                        pass
+
+                if alias_conflict:
+                        dap = image.get_root() + "/etc/driver_aliases"
+                        datd, datp = mkstemp(suffix=".driver_aliases",
+                            dir=image.get_root() + "/etc")
+                        f = os.fdopen(datd, "w")
+                        f.writelines(lines)
+                        f.close()
+                        st = os.stat(dap)
+                        os.chmod(datp, st.st_mode)
+                        os.chown(datp, st.st_uid, st.st_gid)
+                        os.rename(datp, dap)
+
                 # In the case where the the packaging system thinks the driver
                 # is installed and the driver database doesn't, do a fresh
                 # install instead of an update.  If the system thinks the driver
@@ -446,7 +530,8 @@ class DriverAction(generic.Action):
                             {"name": self.attrs["name"], "perm": i})
 
         @staticmethod
-        def __gen_read_binding_file(img, path, minfields=None, maxfields=None):
+        def __gen_read_binding_file(img, path, minfields=None, maxfields=None,
+            raw=False):
 
                 myfile = file(os.path.normpath(os.path.join(
                     img.get_root(), path)))
@@ -465,14 +550,20 @@ class DriverAction(generic.Action):
 
                         if minfields is not None:
                                 if len(result_fields) < minfields:
+                                        if raw:
+                                                yield line
                                         continue
 
                         if maxfields is not None:
                                 if len(result_fields) > maxfields:
+                                        if raw:
+                                                yield line
                                         continue
 
                         if result_fields:
                                 yield result_fields
+                        elif raw:
+                                yield line
                 myfile.close()
 
 
