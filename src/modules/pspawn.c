@@ -167,6 +167,7 @@ fa_addopen(PyObject *obj, PyObject *args)
 
 struct walk_data {
 	int skip_fd;
+	int start_fd;
 	posix_spawn_file_actions_t *fap;
 };
 
@@ -177,7 +178,7 @@ walk_func(void *data, int fd)
 	PyObject *v;
 	struct walk_data *wd = (struct walk_data *)data;
 
-	if ((fd > 2) && (fd != wd->skip_fd)) {
+	if ((fd >= wd->start_fd) && (fd != wd->skip_fd)) {
 		rc = posix_spawn_file_actions_addclose(wd->fap, fd);
 		if (rc != 0) {
 			v = Py_BuildValue("(is)", rc, strerror(rc));
@@ -191,27 +192,29 @@ walk_func(void *data, int fd)
 }
 
 PyDoc_STRVAR(addclosechildfds_doc,
-"add_close_childfds([except]) -> SpawnFileAction\n\
+"add_close_childfds(start, [except]) -> SpawnFileAction\n\
 \n\
 Add to a SpawnFileAction a series of 'closes' that will close all of\n\
-the fds > 2 in the child process.  A single fd may be skipped, provided that\n\
-it is given as the optional except argument.\n");
+the fds >= startfd in the child process.  A single fd may be skipped,\n\
+provided that it is given as the optional except argument.\n");
 
 static PyObject *
 fa_addclosechildfds(PyObject *obj, PyObject *args)
 {
 	int except_fd = -1;
+	int start_fd = -1;
 	int rc;
 	struct walk_data wd = { 0 };
 	FileAction *self = (FileAction *)obj;
 
-	rc = PyArg_ParseTuple(args, "|i", &except_fd);
+	rc = PyArg_ParseTuple(args, "i|i", &start_fd, &except_fd);
 	if (rc == 0) {
 		return (NULL);
 	}
 
 	/* set up walk_data for fdwalk */
 	wd.skip_fd = except_fd;
+	wd.start_fd = start_fd;
 	wd.fap = self->fa;
 
 	/* Perform the walk.  PyErr set by walk_func */

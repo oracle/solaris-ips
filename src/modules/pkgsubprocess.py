@@ -76,12 +76,16 @@ class Popen(subprocess.Popen):
 
                         # Child file actions
                         # Close parent's pipe ends
+                        closed_fds = []
                         if p2cwrite:
                                 sfa.add_close(p2cwrite)
+                                closed_fds.append(p2cwrite)
                         if c2pread:
                                 sfa.add_close(c2pread)
+                                closed_fds.append(c2pread)
                         if errread:
                                 sfa.add_close(errread)
+                                closed_fds.append(errread)
 
                         # Dup fds for child
                         if p2cread:
@@ -95,14 +99,40 @@ class Popen(subprocess.Popen):
                         # same fd more than once.
                         if p2cread:
                                 sfa.add_close(p2cread)
+                                closed_fds.append(p2cread)
                         if c2pwrite and c2pwrite not in (p2cread,):
                                 sfa.add_close(c2pwrite)
+                                closed_fds.append(c2pwrite)
                         if errwrite and errwrite not in (p2cread, c2pwrite):
                                 sfa.add_close(errwrite)
+                                closed_fds.append(errwrite)
 
                         # Close all other fds, if asked for.
                         if close_fds:
-                                sfa.add_close_childfds()
+                                #
+                                # This is a bit tricky.  Due to a sad
+                                # behaviour with posix_spawn in nevada
+                                # builds before the fix for 6807216 (in
+                                # nevada 110), (and perhaps on other OS's?)
+                                # you can't have two close actions close the
+                                # same FD, or an error results.  So we track
+                                # everything we have closed, then manually
+                                # fstat and close up to the max we have
+                                # closed) .  Then we close everything above
+                                # that efficiently with add_close_childfds().
+                                #
+                                for i in range(3, max(closed_fds) + 1):
+                                        # scheduled closed already? skip
+                                        if i in closed_fds:
+                                                continue
+                                        try:
+                                                os.fstat(i)
+                                                sfa.add_close(i)
+                                                closed_fds.append(i)
+                                        except OSError:
+                                                pass 
+                                closefrom = max([3, max(closed_fds) + 1])
+                                sfa.add_close_childfds(closefrom)
 
                         if cwd != None:
                                 os.chdir(cwd)

@@ -337,17 +337,17 @@ class DepotController(object):
 
                 return self.kill()
 
-def test_func():
+def test_func(testdir):
         dc = DepotController()
-        dc.set_port(12000)
+        dc.set_port(22222)
         try:
-                os.mkdir("/tmp/fooz")
+                os.mkdir(testdir)
         except OSError:
                 pass
 
-        dc.set_repodir("/tmp/fooz")
+        dc.set_repodir(testdir)
 
-        for j in range(0, 100):
+        for j in range(0, 10):
                 print "%4d: Starting Depot... (%s)" % (j, " ".join(dc.get_args())),
                 try:
                         dc.start()
@@ -374,10 +374,14 @@ def test_func():
                 except KeyboardInterrupt:
                         print "\nKeyboard Interrupt: Cleaning up Depots..."
                         dc.stop()
-                        print "\nDone"
-                        sys.exit(0)
-
+                        raise
 
 if __name__ == "__main__":
-        test_func()
+        testdir = "/tmp/depotcontrollertest.%d" % os.getpid()
+        try:
+                test_func(testdir)
+        except KeyboardInterrupt:
+                pass
+        os.system("rm -fr %s" % testdir)
+        print "\nDone"
 
