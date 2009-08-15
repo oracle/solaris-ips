@@ -1142,7 +1142,7 @@ foobar 2
                 self.pkg("install dricon@2")
                 da_contents = file(os.path.join(self.get_img_path(),
                     "etc/driver_aliases")).readlines()
-                self.assert_("# wigit \"pci8086,1234\"\n" in da_contents)
+                self.assert_("# pkg(5): wigit \"pci8086,1234\"\n" in da_contents)
                 self.assert_("wigit \"pci8086,1234\"\n" not in da_contents)
                 self.assert_("wigit \"pci8086,4321\"\n" in da_contents)
                 self.assert_("zigit \"pci8086,1234\"\n" in da_contents)
