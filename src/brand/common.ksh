@@ -162,14 +162,14 @@ get_preferred_publisher() {
 #
 # Emit to stdout the key and cert associated with the publisher
 # name provided.  Returns 'None' if no information is present.
+# For now we assume that the mirrors all use the same key and cert
+# as the main publisher.
 #
 get_pub_secinfo() {
-	key=$( LC_ALL=C $PKG publisher $1 | egrep '^ *SSL Key:' |
-	    awk '{print $3}' )
-	[[ $? -ne 0 ]] && return 1
-	cert=$( LC_ALL=C $PKG publisher $1 | egrep '^ *SSL Cert:' |
-	    awk '{print $3}' )
-	[[ $? -ne 0 ]] && return 1
+	key=$(LC_ALL=C $PKG publisher $1 |
+	    nawk -F': ' '/SSL Key/ {print $2; exit 0}')
+	cert=$(LC_ALL=C $PKG publisher $1 |
+	    nawk -F': ' '/SSL Cert/ {print $2; exit 0}')
 	print $key $cert
 }
 
