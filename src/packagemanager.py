@@ -3976,7 +3976,8 @@ class PackageManager:
                 self.__enable_disable_selection_menus()
                 self.__enable_disable_install_remove()
                 self.update_statusbar()
-                Thread(target = self.__enable_disable_update_all).start()
+                Thread(target = self.__enable_disable_update_all,
+                    args = (False,)).start()
 
         def __catalog_refresh_message(self, cre):
                 total = cre.total
