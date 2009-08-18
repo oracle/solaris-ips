@@ -90,6 +90,9 @@ class GuiProgressTracker(NullProgressTracker):
         def ver_output_error(self, actname, errors):
                 return
 
+        def ver_output_done(self):
+                return
+
         def dl_output(self):
                 self.update_progress(self.dl_cur_nbytes, self.dl_goal_nbytes)
                 size_a_str = ""

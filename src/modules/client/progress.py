@@ -32,8 +32,6 @@ import time
 from pkg.misc import PipeError, emsg
 import pkg.portable as portable
 
-IND_DELAY = 0.05
-
 class ProgressTracker(object):
         """ This abstract class is used by the client to render and track
             progress towards the completion of various tasks, such as
@@ -151,7 +149,7 @@ class ProgressTracker(object):
 
         def verify_done(self):
                 self.ver_cur_fmri = None
-                self.ver_output()
+                self.ver_output_done()
 
         def download_set_goal(self, npkgs, nfiles, nbytes):
                 self.dl_goal_npkgs = npkgs
@@ -290,6 +288,10 @@ class ProgressTracker(object):
                 raise NotImplementedError("ver_output_error() not implemented "
                     "in superclass")
 
+        def ver_output_done(self):
+                raise NotImplementedError("ver_output_done() not implemented "
+                    "in superclass")
+
         def dl_output(self):
                 raise NotImplementedError("dl_output() not implemented in "
                     "superclass")
@@ -361,6 +363,9 @@ class QuietProgressTracker(ProgressTracker):
                 return
 
         def ver_output(self):
+                return
+
+        def ver_output_done(self):
                 return
 
         def ver_output_error(self, actname, errors):
@@ -440,6 +445,9 @@ class CommandLineProgressTracker(ProgressTracker):
         def ver_output_error(self, actname, errors):
                 return
 
+        def ver_output_done(self):
+                return
+
         def dl_output(self):
                 try:
                         # The first time, emit header.
@@ -511,6 +519,13 @@ class FancyUNIXProgressTracker(ProgressTracker):
             to load the 'curses' package.  If that or other terminal-liveness
             tests fail, it gives up: the client should pick some other more
             suitable tracker.  (Probably CommandLineProgressTracker). """
+
+        #
+        # The minimum interval at which we should update the display during
+        # operations which produce a lot of output.  Needed to avoid spamming
+        # a slow terminal.
+        #
+        TERM_DELAY = 0.10
 
         def __init__(self):
                 ProgressTracker.__init__(self)
@@ -620,13 +635,11 @@ class FancyUNIXProgressTracker(ProgressTracker):
                         raise
 
         def eval_output_progress(self):
-                if (time.time() - self.last_print_time) >= 0.10:
-                        self.last_print_time = time.time()
-                else:
+                if (time.time() - self.last_print_time) < self.TERM_DELAY:
                         return
-                self.spinner += 1
-                if self.spinner >= len(self.spinner_chars):
-                        self.spinner = 0
+
+                self.last_print_time = time.time()
+                self.spinner = (self.spinner + 1) % len(self.spinner_chars)
                 try:
                         print self.cr,
                         s = "Creating Plan %c" % self.spinner_chars[
@@ -645,34 +658,21 @@ class FancyUNIXProgressTracker(ProgressTracker):
 
         def ver_output(self):
                 try:
+                        assert self.ver_cur_fmri != None
                         print self.cr,
-                        if self.ver_cur_fmri != None:
-                                if (time.time() - self.last_print_time) >= 0.10:
-                                        self.last_print_time = time.time()
-                                else:
-                                        return
-                                self.spinner += 1
-                                if self.spinner >= len(self.spinner_chars):
-                                        self.spinner = 0
-                                s = "%-50s..... %c%c" % \
-                                    (self.ver_cur_fmri.get_pkg_stem(),
-                                     self.spinner_chars[self.spinner],
-                                     self.spinner_chars[self.spinner])
-                                self.curstrlen = len(s)
-                                print s, self.cr,
-                                sys.stdout.flush()
-                        else:
-                                # Add a carriage return to prevent python from
-                                # auto-terminating with a newline if this is the
-                                # last output line on exit.  This works because
-                                # python doesn't think there's any output to
-                                # terminate even though sys.stdout.softspace is
-                                # in effect.  sys.stdout.softspace isn't set
-                                # here because more output may happen after
-                                # this.
-                                print " " * 80, self.cr,
-                                sys.stdout.flush()
-                                self.last_print_time = 0
+                        if (time.time() - self.last_print_time) < \
+                            self.TERM_DELAY:
+                                return
+                        self.last_print_time = time.time()
+                        self.spinner = (self.spinner + 1) % \
+                            len(self.spinner_chars)
+                        s = "%-50s..... %c%c" % \
+                            (self.ver_cur_fmri.get_pkg_stem(),
+                             self.spinner_chars[self.spinner],
+                             self.spinner_chars[self.spinner])
+                        self.curstrlen = len(s)
+                        print s, self.cr,
+                        sys.stdout.flush()
                 except IOError, e:
                         if e.errno == errno.EPIPE:
                                 raise PipeError, e
@@ -689,7 +689,32 @@ class FancyUNIXProgressTracker(ProgressTracker):
                                 raise PipeError, e
                         raise
 
-        def dl_output(self):
+        def ver_output_done(self):
+                try:
+                        print self.cr,
+                        # Add a carriage return to prevent python from
+                        # auto-terminating with a newline if this is the
+                        # last output line on exit.  This works because
+                        # python doesn't think there's any output to
+                        # terminate even though sys.stdout.softspace is
+                        # in effect.  sys.stdout.softspace isn't set
+                        # here because more output may happen after
+                        # this.
+                        print " " * self.curstrlen, self.cr,
+                        sys.stdout.flush()
+                        self.last_print_time = 0
+                except IOError, e:
+                        if e.errno == errno.EPIPE:
+                                raise PipeError, e
+                        raise
+
+        def dl_output(self, force=False):
+                if self.dl_started and not force and \
+                    (time.time() - self.last_print_time) < self.TERM_DELAY:
+                        return
+
+                self.last_print_time = time.time()
+
                 try:
                         # The first time, emit header.
                         if not self.dl_started:
@@ -718,7 +743,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
 
         def dl_output_done(self):
                 self.dl_cur_pkg = "Completed"
-                self.dl_output()
+                self.dl_output(force=True)
                 try:
                         print
                         print
@@ -729,11 +754,11 @@ class FancyUNIXProgressTracker(ProgressTracker):
                         raise
 
         def act_output(self, force=False):
-                if force or (time.time() - self.last_print_time) >= 0.05:
-                        self.last_print_time = time.time()
-                else:
+                if not force and \
+                    (time.time() - self.last_print_time) < self.TERM_DELAY:
                         return
 
+                self.last_print_time = time.time()
                 try:
                         # The first time, emit header.
                         if not self.act_started:
@@ -778,11 +803,11 @@ class FancyUNIXProgressTracker(ProgressTracker):
                         raise
 
         def ind_output(self, force=False):
-                if force or (time.time() - self.last_print_time) >= IND_DELAY:
-                        self.last_print_time = time.time()
-                else:
+                if not force and \
+                    (time.time() - self.last_print_time) < self.TERM_DELAY:
                         return
 
+                self.last_print_time = time.time()
                 try:
                         # The first time, emit header.
                         if not self.ind_started:
