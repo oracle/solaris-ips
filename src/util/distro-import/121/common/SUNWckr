@@ -50,10 +50,29 @@ add driver name=ipnet perms="lo0 0666 root sys"
 add driver name=nulldriver
 add driver name=dlpistub perms="* 0666 root sys"
 add driver name=simnet perms="* 0666 root sys" clone_perms="0666 root sys"
+#
+# As a result of 6806540 which was integrated into snv_121, several
+# drivers were renamed.  As these older drivers did not have driver
+# actions associated with them and since the new driver was specified
+# with a less-specific binding than the older one, some of the older,
+# more-specific bindings would otherwise be left as-is.  Until all
+# relevant systems start off with driver actions for all drivers, leave
+# in the more-specific bindings but against the new driver's name.
+#
 $(i386_ONLY)add driver name=pcieb \
 $(i386_ONLY)	alias=pciexclass,060400 \
 $(i386_ONLY)	alias=pciexclass,060401
-$(sparc_ONLY)add driver name=pcieb alias=pciexclass,060400
+$(sparc_ONLY)add driver name=pcieb \
+$(sparc_ONLY)	alias=pciexclass,060400 \
+$(sparc_ONLY)	alias=pciex10b5,8114 \
+$(sparc_ONLY)	alias=pciex10b5,8532 \
+$(sparc_ONLY)	alias=pciex10b5,8516 \
+$(sparc_ONLY)	alias=pciex10b5,8548 \
+$(sparc_ONLY)	alias=pciex10b5,8533 \
+$(sparc_ONLY)	alias=pciex10b5,8517 \
+$(sparc_ONLY)	alias=pciex10b5,8518 \
+$(sparc_ONLY)	alias=pciex108e,9010 \
+$(sparc_ONLY)	alias=pciex108e,9020
 $(sparc_ONLY)add driver name=pcieb_bcm alias=pciex1166,103
 #
 # In 2008.05, etc/boot/solaris/filelist.ramdisk was created in order to
