@@ -654,16 +654,6 @@ class ImageInterface(object):
                                 raise
 
                         self.__finished_execution(be)
-
-
-
-                        try:
-                                if int(os.environ.get("PKG_DUMP_STATS", 0)) > 0:
-                                        self.__img.transport.stats.dump()
-                        except ValueError:
-                                # Don't generate stats if an invalid value
-                                # is supplied.
-                                pass
                 finally:
                         self.__activity_lock.release()
 
