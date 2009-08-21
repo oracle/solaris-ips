@@ -506,7 +506,7 @@ installed on the system.\n"""))
                 return 1
         return 0
 
-def __api_prepare(operation, api):
+def __api_prepare(operation, api, verbose=False):
         # Exceptions which happen here are printed in the above level, with
         # or without some extra decoration done here.
         # XXX would be nice to kick the progress tracker.
@@ -701,7 +701,7 @@ def change_variant(img_dir, args):
 
         # Exceptions which happen here are printed in the above level, with
         # or without some extra decoration done here.
-        if not __api_prepare("change-variant", api_inst):
+        if not __api_prepare("change-variant", api_inst, verbose=verbose):
                 return 1
 
         ret_code = 0
@@ -771,7 +771,7 @@ def image_update(img_dir, args):
         if noexecute:
                 return 0
 
-        if not __api_prepare(op, api_inst):
+        if not __api_prepare(op, api_inst, verbose=verbose):
                 return 1
 
         ret_code = 0
@@ -857,7 +857,7 @@ def install(img_dir, args):
 
         # Exceptions which happen here are printed in the above level, with
         # or without some extra decoration done here.
-        if not __api_prepare(op, api_inst):
+        if not __api_prepare(op, api_inst, verbose=verbose):
                 return 1
 
         ret_code = 0
@@ -919,7 +919,7 @@ def uninstall(img_dir, args):
 
         # Exceptions which happen here are printed in the above level, with
         # or without some extra decoration done here.
-        if not __api_prepare(op, api_inst):
+        if not __api_prepare(op, api_inst, verbose=verbose):
                 return 1
 
         ret_code = 0
