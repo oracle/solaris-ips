@@ -23,19 +23,27 @@
 # Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
-import pygtk
-pygtk.require('2.0')
-import gtk
+try:
+        import pygtk
+        pygtk.require('2.0')
+        import gtk
+except ImportError:
+        pass
+
+def check_for_gtk():
+        return "gtk" in globals()
 
 def check_if_a11y_enabled():
-                # To determine if A11Y is enabled we are starting small gtk application
-                # and then we do check if the applications' window does contain
-                # accessible widget. This allows us to be sure that A11Y is not 
-                # only enabled in the gconf key, but it's truly running.
-                window = gtk.Window(gtk.WINDOW_TOPLEVEL)
-                button = gtk.Button("Check Accessibility")
-                window.add(button)
-                a11y_enabled = False
-                if window.get_accessible().get_n_accessible_children() != 0:
-                        a11y_enabled = True
-                return a11y_enabled
+        if not check_for_gtk():
+                return False
+        # To determine if A11Y is enabled we are starting small gtk application
+        # and then we do check if the applications' window does contain
+        # accessible widget. This allows us to be sure that A11Y is not 
+        # only enabled in the gconf key, but it's truly running.
+        window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+        button = gtk.Button("Check Accessibility")
+        window.add(button)
+        a11y_enabled = False
+        if window.get_accessible().get_n_accessible_children() != 0:
+                a11y_enabled = True
+        return a11y_enabled

@@ -198,10 +198,12 @@ if __name__ == "__main__":
         suites.append(api_suite)
         if ostype == "posix":
                 suites.append(cli_suite)
-                if gui.testutils.check_if_a11y_enabled():
-                        suites.append(gui_suite)
-                else:
+                if not gui.testutils.check_for_gtk():
+                        print "GTK not present, GUI tests disabled."
+                elif not gui.testutils.check_if_a11y_enabled():
                         print "Accessibility not enabled, GUI tests disabled."
+                else:
+                        suites.append(gui_suite)
 
         # Initialize the baseline results and load them
         baseline = baseline.BaseLine(bfile, generate)
