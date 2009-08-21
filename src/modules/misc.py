@@ -356,7 +356,12 @@ def setlocale(category, loc=None, printer=None):
 
         try:
                 locale.setlocale(category, loc)
-        except locale.Error:
+                # Because of Python bug 813449, getdefaultlocale may fail
+                # with a ValueError even if setlocale succeeds. So we call
+                # it here to prevent having this error raised if it is 
+                # called later by other non-pkg(5) code.
+                locale.getdefaultlocale()
+        except (locale.Error, ValueError):
                 try:
                         dl = " '%s.%s'" % locale.getdefaultlocale()
                 except ValueError:
