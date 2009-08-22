@@ -88,6 +88,21 @@
  check this checkbox.">Show all versions</label>
                         </p>
                 </form>
+%       else:
+                <form action="catalog.shtml">
+                        <p>
+                                <input id="show-all-versions" type="checkbox"
+%                       if show_all_versions:
+                                    checked="checked"
+%                       endif
+                                    name="show_all_versions" value="1"/>
+                                <label for="show-all-versions" title="By
+ default, only the latest versions of packages are shown.  To show all versions,
+ check this checkbox and click Refresh.">Show all versions</label>
+                                <input id="submit-browse" type="submit"
+                                    name="action" value="Refresh"/>
+                        </p>
+                </form>
 %       endif
         </div>
         <div class="yui-b results">
@@ -106,20 +121,21 @@
                 ver = selected_match
                 pattern = "*,%s-%s" % (ver.build_release, ver.branch)
                 flist = catalog.get_matching_version_fmris(pattern)
-
-                found = {}
-                if not show_all_versions:
-                        nlist = []
-                        for f in flist:
-                                if f.pkg_name not in found:
-                                        found[f.pkg_name] = True
-                                        nlist.append(f)
-                        flist = nlist
-                        nlist = None
         else:
                 flist = [f for f in catalog.fmris()]
-        flist.sort()
+                flist.sort(reverse=True)
 
+        found = {}
+        if not show_all_versions:
+                nlist = []
+                for f in flist:
+                         if f.pkg_name not in found:
+                                 found[f.pkg_name] = True
+                                 nlist.append(f)
+                flist = nlist
+                nlist = None
+        flist.sort()
+ 
         rclass = None
 %>
 %       for pfmri in flist:
