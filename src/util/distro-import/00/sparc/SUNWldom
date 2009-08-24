@@ -11,6 +11,6 @@ add driver name=vds alias=SUNW,sun4v-disk-server
 add driver name=vldc alias=SUNW,sun4v-channel
 add driver name=vnet perms="* 0666 root sys" clone_perms="0666 root sys" \
 	alias=SUNW,sun4v-network
-add driver name=vsw "perms="* 0666 root sys" clone_perms="0666 root sys" \
+add driver name=vsw perms="* 0666 root sys" clone_perms="0666 root sys" \
 	alias=SUNW,sun4v-network-switch
 end package
