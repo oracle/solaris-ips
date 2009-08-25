@@ -1,5 +1,5 @@
 package developer/opensolaris/pkg5
-classification "Development/System"
+classification "Development/Distribution Tools"
 summary "Dependencies required to build the pkg(5) project."
 depend SUNWPython-extra
 depend SUNWgnome-common-devel

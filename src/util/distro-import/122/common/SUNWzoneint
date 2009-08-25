@@ -1,4 +1,4 @@
 package SUNWzoneint
-classification "Development/Distribution Tools"
+classification "Development/System"
 import SUNWzoneint
 end package
