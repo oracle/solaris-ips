@@ -69,10 +69,9 @@ m_usage=$(gettext    "$0: [-h] [-P publisher=uri] [-e extrapkg [...]]")
 m_done=$(gettext      " done.")
 
 is_brand_labeled() {
-	brand=`/usr/sbin/zoneadm -z $zonename list -p | awk -F: '{print $6}'`
-	if [ -z "$brand" ]; then
-		brand_labeled=0
-	elif [ $brand = "labeled" ]; then
+	brand_labeled=0
+	brand=$(/usr/sbin/zoneadm -z $zonename list -p | awk -F: '{print $6}')
+	if [[ $brand == "labeled" ]]; then
 		brand_labeled=1
 	fi
 }
