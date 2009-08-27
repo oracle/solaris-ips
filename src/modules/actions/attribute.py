@@ -91,6 +91,8 @@ class AttributeAction(generic.Action):
                             fmri_obj.get_pkg_stem(include_scheme=False))
                             for w in [
                                 fmri_obj.get_pkg_stem(include_scheme=False),
+                                fmri_obj.get_pkg_stem(include_scheme=False,
+                                    anarchy=True),
                                 str(fmri_obj.version.build_release),
                                 str(fmri_obj.version.release),
                                 str(fmri_obj.version.timestr)

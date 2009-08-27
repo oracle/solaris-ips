@@ -214,8 +214,8 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
             ('pkg:/example_pkg@1.0-0', ']', 'set name=weirdness value="] [ * ?"')    
         ])
         
-        local_fmri_string = \
-            ('pkg:/example_pkg@1.0-0', 'example_pkg', '')
+        local_fmri_string = ('pkg:/example_pkg@1.0-0', 'example_pkg',
+            'set name=fmri value=pkg:/example_pkg@1.0,5.11-0:')
 
         res_local_pkg = set([
                 local_fmri_string
@@ -252,14 +252,13 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
             ("pkg:/example_pkg@1.1-0", "path", "dir group=bin mode=0755 owner=root path=bin")
         ])
 
+        res_local_pkg_example11 = set([
+            ("pkg:/example_pkg@1.1-0", "example_pkg", "set name=fmri value=pkg:/example_pkg@1.1,5.11-0:")
+        ])
+
         res_local_wildcard_example11 = set([
             ("pkg:/example_pkg@1.1-0", "basename", "file 820157a2043e3135f342b238129b556aade20347 chash=bfa46fc98d1ca97f1260090797d35a35e76096a3 group=bin mode=0555 owner=root path=bin/example_path11 pkg.csize=38 pkg.size=18"),
-            ("pkg:/example_pkg@1.1-0", "example_pkg", "")
-       ])
-
-        res_local_pkg_example11 = set([
-            ("pkg:/example_pkg@1.1-0", "example_pkg", "")
-        ])
+        ]).union(res_local_pkg_example11)
 
         res_cat_pkg10 = set([
             ('pkg:/cat@1.0-0', 'System/Security', 'set name=info.classification value=org.opensolaris.category.2008:System/Security value=org.random:Other/Category')
@@ -295,17 +294,17 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
 
         res_remote_fat10_star = res_fat10_sparc | res_fat10_i386
 
+        local_fat_10_fmri_string = set([('pkg:/fat@1.0-0', 'fat', 'set name=fmri value=pkg:/fat@1.0,5.11-0:')])
+        
         res_local_fat10_i386_star = res_fat10_i386.union(set([
             ('pkg:/fat@1.0-0', 'test', 'set name=publisher value=test'),
-            ('pkg:/fat@1.0-0', 'fat', ''),
             ('pkg:/fat@1.0-0', 'sparc', 'set name=variant.arch value=sparc value=i386')
-        ]))
+        ])).union(local_fat_10_fmri_string)
 
         res_local_fat10_sparc_star = res_fat10_sparc.union(set([
             ('pkg:/fat@1.0-0', 'test', 'set name=publisher value=test'),
-            ('pkg:/fat@1.0-0', 'fat', ''),
             ('pkg:/fat@1.0-0', 'i386', 'set name=variant.arch value=sparc value=i386')
-        ]))
+        ])).union(local_fat_10_fmri_string)
         
         res_space_with_star = set([
             ('pkg:/space_pkg@1.0-0', 'basename', 'file 820157a2043e3135f342b238129b556aade20347 chash=bfa46fc98d1ca97f1260090797d35a35e76096a3 group=sys mode=0444 owner=nobody path="unique/with a space" pkg.csize=38 pkg.size=18')
@@ -458,7 +457,7 @@ close
         @staticmethod
         def _replace_act(act):
                 if act.startswith('set name=fmri'):
-                        return ''
+                        return act.strip().rsplit(":", 1)[0] + ":"
                 else:
                         return act.strip()
                         
@@ -2091,6 +2090,10 @@ class TestApiSearchMulti(testutils.ManyDepotTestCase):
             open example_pkg@1.0,5.11-0
             close """
 
+        res_alternate_server_local = set([
+            ('pkg:/example_pkg@1.0-0', 'test2/example_pkg', 'set name=fmri value=pkg://test2/example_pkg@1.0,5.11-0:')
+        ])
+
         def setUp(self):
                 testutils.ManyDepotTestCase.setUp(self, 3,
                     debug_features=["headers"])
@@ -2117,28 +2120,20 @@ class TestApiSearchMulti(testutils.ManyDepotTestCase):
                                     str(proposed_answer - correct_answer)
                         self.assert_(correct_answer == proposed_answer)
 
-        @staticmethod
-        def _extract_action_from_res(it):
-                return (
-                    (fmri.PkgFmri(str(pkg_name)).get_short_fmri(), piece,
-                    TestApiSearchBasics._replace_act(act))
-                    for query_num, auth, (version, return_type,
-                    (pkg_name, piece, act))
-                    in it
-                )
-                        
         def _search_op(self, api_obj, remote, token, test_value,
             case_sensitive=False, return_actions=True, num_to_return=None,
             start_point=None, servers=None):
                 search_func = api_obj.local_search
-                if remote:
-                        search_func = api_obj.remote_search
                 query = api.Query(token, case_sensitive, return_actions,
                     num_to_return, start_point)
-                res = set(self._extract_action_from_res(search_func([query],
-                    servers=servers)))
+                if remote:
+                        search_func = api_obj.remote_search
+                        res = set(TestApiSearchBasics._extract_action_from_res(
+                            search_func([query], servers=servers)))
+                else:
+                        res = set(TestApiSearchBasics._extract_action_from_res(
+                            search_func([query])))
                 self._check(set(res), test_value)
-
 
         def test_bug_2955(self):
                 """See http://defect.opensolaris.org/bz/show_bug.cgi?id=2955"""
@@ -2146,7 +2141,24 @@ class TestApiSearchMulti(testutils.ManyDepotTestCase):
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
                     progresstracker, lambda x: False, PKG_CLIENT_NAME)
                 TestApiSearchBasics._do_install(api_obj, ["example_pkg"])
+                # Test for bug 10690 by checking whether the fmri names
+                # for packages installed from the non-preferred publisher
+                # are parsed correctly. Specifically, test whether the name
+                # alone is searchable, as well as the publisher/name
+                # combination.
+                self._search_op(api_obj, False, "set::test2/example_pkg",
+                    self.res_alternate_server_local)
+                self._search_op(api_obj, False, "set::example_pkg",
+                    self.res_alternate_server_local)
+                self._search_op(api_obj, False, "set::test2/*",
+                    self.res_alternate_server_local)
                 api_obj.rebuild_search_index()
+                self._search_op(api_obj, False, "set::test2/example_pkg",
+                    self.res_alternate_server_local)
+                self._search_op(api_obj, False, "set::example_pkg",
+                    self.res_alternate_server_local)
+                self._search_op(api_obj, False, "set::test2/*",
+                    self.res_alternate_server_local)
                 TestApiSearchBasics._do_uninstall(api_obj, ["example_pkg"])
 
         def test_bug_8318(self):
