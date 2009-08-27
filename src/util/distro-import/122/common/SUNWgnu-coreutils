@@ -1,0 +1,5 @@
+package SUNWgnu-coreutils
+classification "Applications/System Utilities"
+import SUNWgnu-coreutils
+version 7.4
+end package

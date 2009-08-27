@@ -691,12 +691,6 @@ category = Scripts
 [SUNWdexwsvr]
 category = X11 (System)
 
-[SUNWdfb]
-category = Display
-
-[SUNWdfbh]
-category = System
-
 [SUNWdhcm]
 category = Services
 
@@ -871,6 +865,9 @@ category = Hardware
 [SUNWfcoe]
 category = Storage
 
+[SUNWfcoei]
+category = Storage
+
 [SUNWfcoet]
 category = Storage
 
@@ -987,6 +984,9 @@ category = System Utilities
 
 [SUNWfppd]
 category = Printing
+
+[SUNWfreeipmi]
+category = Hardware
 
 [SUNWfreetype2]
 category = Libraries (System)
@@ -3031,6 +3031,12 @@ category = Perl
 [SUNWperl-xml-parser]
 category = Perl
 
+[SUNWperl510core]
+category = Perl
+
+[SUNWperl510usr]
+category = Perl
+
 [SUNWperl584core]
 category = Perl
 
@@ -3441,6 +3447,9 @@ category = Core
 
 [SUNWrsmo]
 category = Hardware
+
+[SUNWrss-glx]
+category = X11 (System)
 
 [SUNWrsync]
 category = System Utilities
@@ -4228,6 +4237,9 @@ category = Java
 [SUNWxsane]
 category = System Utilities
 
+[SUNWxscreensaver]
+category = X11 (System)
+
 [SUNWxscreensaver-hacks]
 category = X11 (System)
 
@@ -4303,9 +4315,6 @@ category = X11 (System)
 [SUNWxwslb]
 category = X11
 
-[SUNWxwsvr]
-category = X11 (System)
-
 [SUNWxwxft]
 category = X11 (System)
 
@@ -4326,6 +4335,9 @@ category = Libraries (System)
 
 [SUNWzone]
 category = Core
+
+[SUNWzoneint]
+category = System
 
 [SUNWzsh]
 category = Shells
@@ -4373,6 +4385,9 @@ category = Java
 category = Java
 
 [developer/opensolaris/osnet]
+category = Distribution Tools
+
+[developer/opensolaris/pkg5]
 category = Distribution Tools
 
 [developer/tool/exuberant-ctags]

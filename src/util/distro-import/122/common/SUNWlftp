@@ -1,0 +1,6 @@
+package SUNWlftp
+classification "Applications/System Utilities"
+import SUNWlftpr
+import SUNWlftpu
+version 3.7.15
+end package

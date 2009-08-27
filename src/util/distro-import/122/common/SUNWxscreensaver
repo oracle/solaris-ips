@@ -1,0 +1,5 @@
+package SUNWxscreensaver
+classification "System/X11"
+import SUNWxscreensaver
+version 5.1
+end package

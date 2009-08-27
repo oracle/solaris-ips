@@ -1,0 +1,5 @@
+package SUNWperl510usr
+classification "Development/Perl"
+import SUNWperl510usr
+version 5.10.0
+end package
