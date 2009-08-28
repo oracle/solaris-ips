@@ -2471,6 +2471,8 @@ def main_func():
                 try:
                         ret = image_create(img, pargs)
                 except getopt.GetoptError, e:
+                        if e.opt in ("help", "?"):
+                                usage(full=True)
                         usage(_("illegal option -- %s") % e.opt, cmd=subcommand)
                 return ret
         elif subcommand == "version":
@@ -2578,6 +2580,8 @@ def main_func():
                         usage(_("unknown subcommand '%s'") % subcommand)
 
         except getopt.GetoptError, e:
+                if e.opt in ("help", "?"):
+                        usage(full=True)
                 usage(_("illegal option -- %s") % e.opt, cmd=subcommand)
 
 #
