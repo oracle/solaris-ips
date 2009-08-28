@@ -861,6 +861,18 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
             add driver name=figit alias=pci8086,1234
             close
         """
+	liveroot10 = """
+            open liveroot@1.0
+            add dir path=/etc mode=755 owner=root group=root
+            add file /tmp/liveroot1 path=/etc/liveroot mode=644 owner=root group=sys reboot-needed=true
+            close
+        """
+	liveroot20 = """
+            open liveroot@2.0
+            add dir path=/etc mode=755 owner=root group=root
+            add file /tmp/liveroot2 path=/etc/liveroot mode=644 owner=root group=sys reboot-needed=true
+            close
+        """
 
 
         misc_files = [
@@ -869,7 +881,8 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
             "/tmp/copyright1", "/tmp/copyright2",
             "/tmp/copyright3", "/tmp/copyright4",
             "/tmp/libc.so.1", "/tmp/sh", "/tmp/config1", "/tmp/config2",
-            "/tmp/dricon_da", "/tmp/dricon2_da", "/tmp/dricon_n2m"
+            "/tmp/dricon_da", "/tmp/dricon2_da", "/tmp/dricon_n2m",
+            "/tmp/liveroot1", "/tmp/liveroot2"
         ]
 
         misc_files_contents = {
@@ -1124,6 +1137,22 @@ foobar 2
 
                 self.pkg("install iron@2.0")
                 self.pkg("verify -v")
+
+        def test_upgrade_liveroot(self):
+                """ test to make sure upgrade of package fails if on live root
+                and reboot is needed"""
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.liveroot10)
+                self.pkgsend_bulk(durl, self.liveroot20)
+                self.image_create(durl)
+
+                self.pkg("--debug simulate_live_root=True install liveroot@1.0")
+                self.pkg("verify -v")
+                self.pkg("--debug simulate_live_root=True install liveroot@2.0", exit=1)
+                self.pkg("--debug simulate_live_root=True uninstall liveroot", exit=1)
+                # "break" liveroot@1
+                self.file_append("etc/liveroot", "this file has been changed")
+                self.pkg("--debug simulate_live_root=True fix liveroot", exit=1)
 
         def test_upgrade_driver_conflicts(self):
                 """Test to make sure driver_aliases conflicts don't cause

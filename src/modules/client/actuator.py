@@ -51,12 +51,9 @@ class GenericActuator(object):
 
         def __scan(self, dictionary, attrs):
                 for a in set(attrs.keys()) & self.actuator_attrs:
-                        if a in dictionary:
-                                dictionary[a].add(attrs[a])
-                        else:
-                                dictionary[a] = set([attrs[a]])
+			dictionary.setdefault(a, set()).add(attrs[a])
 
-        def clone_required(self):
+        def reboot_needed(self):
                 return False
 
         def exec_prep(self, image):
@@ -103,7 +100,7 @@ class Actuator(GenericActuator):
         """Solaris specific Actuator implementation..."""
 
         actuator_attrs = set([
-            "reboot_on_update", # have to reboot to update this file
+            "reboot-needed",    # have to reboot to update this file
             "refresh_fmri",     # refresh this service on any change
             "restart_fmri",     # restart this service on any change
             "suspend_fmri",     # suspend this service during update
@@ -125,8 +122,9 @@ class Actuator(GenericActuator):
                     for smf in d[fmri]
                     ])
 
-        def clone_required(self):
-                return "reboot_on_update" in self.update
+        def reboot_needed(self):
+                return bool("true" in self.update.get("reboot-needed", [])) or \
+                    bool("true" in self.removal.get("reboot-needed", []))
 
         def exec_prep(self, image):
                 if not image.is_liveroot():

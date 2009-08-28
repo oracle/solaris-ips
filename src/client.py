@@ -407,7 +407,14 @@ def fix_image(img, args):
                                     be.snapshot_name))
                 except RuntimeError:
                         pass # Error is printed by the BootEnv call.
-                success = img.repair(repairs, progresstracker)
+                try:
+                        success = img.repair(repairs, progresstracker)
+                except api_errors.RebootNeededOnLiveImageException:
+                        error(_("Requested \"fix\" operation would affect files that cannot be "
+                                "modified in live image.\n"
+                                "Please retry this operation on an alternate boot environment."))
+                	success = False
+
                 if not success:
                         progresstracker.verify_done()
                         return 1
@@ -542,6 +549,12 @@ def __api_execute_plan(operation, api, raise_ActionExecutionError=True):
                 return False
         except api_errors.ImageUpdateOnLiveImageException:
                 error(_("%s cannot be done on live image") % operation)
+                return False
+        except api_errors.RebootNeededOnLiveImageException:
+                error(_("Requested \"%s\" operation would affect files that cannot be "
+                        "modified in live image.\n"
+                        "Please retry this operation on an alternate boot environment.") %
+                      operation)
                 return False
         except api_errors.CorruptedIndexException, e:
                 error(INCONSISTENT_INDEX_ERROR_MESSAGE)

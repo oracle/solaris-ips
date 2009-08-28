@@ -591,6 +591,12 @@ class ImageInterface(object):
                                         e = api_errors.ImageUpdateOnLiveImageException()
                                         self.log_operation_end(error=e)
                                         raise e
+                        else:
+                                if self.__img.imageplan.actuators.reboot_needed() and \
+                                    self.__img.is_liveroot():
+                                        e = api_errors.RebootNeededOnLiveImageException()
+                                        self.log_operation_end(error=e)
+                                        raise e
 
                         try:
                                 self.__img.imageplan.execute()

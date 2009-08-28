@@ -372,7 +372,7 @@ DESCRIPTION
 
      The following actuators are defined:
 
-     reboot_on_update  Can be set to "true" or "false".  If an action
+     reboot-needed  Can be set to "true" or "false".  If an action
                  with this actuator set to "true" is installed or
                  updated during a package installation, then the
                  packaging transaction can be advertised as requiring a

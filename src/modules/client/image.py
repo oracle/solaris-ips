@@ -53,6 +53,7 @@ import pkg.portable                     as portable
 import pkg.variant                      as variant
 import pkg.version
 
+from pkg.client.debugvalues import DebugValues
 from pkg.client import global_settings
 from pkg.client.imagetypes import IMG_USER, IMG_ENTIRE
 from pkg.misc import CfgCacheError
@@ -360,7 +361,7 @@ class Image(object):
                 self.history.log_operation_end()
 
         def is_liveroot(self):
-                return self.root == "/"
+                return bool(self.root == "/" or DebugValues.get_value("simulate_live_root"))
 
         def is_zone(self):
                 return self.cfg_cache.variants[
@@ -711,6 +712,8 @@ class Image(object):
                 ip.pkg_plans = pps
 
                 ip.evaluate()
+                if ip.actuators.reboot_needed() and self.is_liveroot():
+                        raise api_errors.RebootNeededOnLiveImageException()
                 ip.preexecute()
                 ip.execute()
 

@@ -37,6 +37,7 @@ import errno
 import os
 import platform
 import shutil
+import sys
 import util as os_util
 # used to cache contents of passwd and group files
 users = {}
@@ -45,6 +46,17 @@ users_lastupdate = {}
 groups = {}
 gids = {}
 groups_lastupdate = {}
+
+# storage to repeat first call to group routines
+__been_here = {}
+
+def already_called():
+        callers_name = sys._getframe(1).f_code.co_name
+        if callers_name in __been_here:
+                return True
+        else:
+                __been_here[callers_name] = True
+                return False
 
 def get_isainfo():
         return platform.uname()[5]	
@@ -70,12 +82,17 @@ def get_userid():
         return os.getuid()
 
 def get_username():
+        if not already_called():
+                get_username()
         return pwd.getpwuid(get_userid()).pw_name
 
 def is_admin():
         return os.getuid() == 0
 
 def get_group_by_name(name, dirpath, use_file):
+        if not already_called():
+                get_group_by_name(name, dirpath, use_file)
+
         if not use_file:
                 return grp.getgrnam(name).gr_gid
         try: 
@@ -91,6 +108,9 @@ def get_group_by_name(name, dirpath, use_file):
                 raise KeyError, "group name not found: %s" % name
 
 def get_user_by_name(name, dirpath, use_file):
+        if not already_called():
+                get_user_by_name(name, dirpath, use_file)
+
         if not use_file:
                 return pwd.getpwnam(name).pw_uid
         try: 
@@ -106,6 +126,9 @@ def get_user_by_name(name, dirpath, use_file):
                 raise KeyError, "user name not found: %s" % name
 
 def get_name_by_gid(gid, dirpath, use_file):
+        if not already_called():
+                get_name_by_gid(gid, dirpath, use_file)
+
         if not use_file:
                 return grp.getgrgid(gid).gr_name
         try: 
@@ -121,6 +144,9 @@ def get_name_by_gid(gid, dirpath, use_file):
                 raise KeyError, "group ID not found: %s" % gid
 
 def get_name_by_uid(uid, dirpath, use_file):
+        if not already_called():
+                get_name_by_uid(uid, dirpath, use_file)
+
         if not use_file:
                 return pwd.getpwuid(uid).pw_name
         try: 

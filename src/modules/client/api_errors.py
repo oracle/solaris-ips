@@ -82,6 +82,9 @@ class IpkgOutOfDateException(ApiException):
 class ImageUpdateOnLiveImageException(ApiException):
         pass
 
+class RebootNeededOnLiveImageException(ApiException):
+        pass
+
 class CanceledException(ApiException):
         pass
 
