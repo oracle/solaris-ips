@@ -148,18 +148,22 @@ class Package(object):
                         hollow = False
 
                 for action in bundle:
-                        if includes and ("path" not in action.attrs or \
-                            action.attrs["path"] not in includes):
-                                continue
-                        elif includes:
-                                includes_seen.append(action.attrs["path"])
+                        if includes:
+                                if action.name == "license":
+                                        pass # always include license.
+                                elif "path" not in action.attrs or \
+                                    action.attrs["path"] not in includes:
+                                        continue
+                                else:
+                                        includes_seen.append(
+                                            action.attrs["path"])
+
                         elif not includes and "path" in action.attrs and \
                             action.attrs["path"] in excludes:
                                 if show_debug:
                                         print "excluding %s from %s" % \
                                             (action.attrs["path"], imppkg_name)
                                 continue
-
  
                         if action.name == "unknown":
                                 continue
