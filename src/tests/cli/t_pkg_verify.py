@@ -41,6 +41,19 @@ class TestPkgVerify(testutils.SingleDepotTestCase):
                 self.image_create(durl)
 
                 self.pkg("verify -vq", exit=2)
+                
+        def test_bug_1463(self):
+            """When multiple FMRIs are given to pkg verify,
+            if any of them aren't installed it should fail."""
+            pkg1 = """
+                open foo@1.0,5.11-0
+                close
+            """
+            durl = self.dc.get_depot_url()
+            self.pkgsend_bulk(durl, pkg1)
+            self.image_create(durl)
+            self.pkg("install foo")
+            self.pkg("verify foo nonexistent", exit=1)
 
 if __name__ == "__main__":
         unittest.main()
