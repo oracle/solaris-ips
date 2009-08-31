@@ -199,7 +199,16 @@ class FileAction(generic.Action):
                 # Handle timestamp if specified
                 if "timestamp" in self.attrs:
                         t = misc.timestamp_to_time(self.attrs["timestamp"])
-                        os.utime(final_path, (t, t))
+                        try:
+                                os.utime(final_path, (t, t))
+                        except OSError, e:
+                                if e.errno != errno.EACCES:
+                                        raise
+                                # On Windows, the time cannot be changed on a 
+                                # read-only file
+                                os.chmod(final_path, 0600)
+                                os.utime(final_path, (t, t))
+                                os.chmod(final_path, mode)
 
         def verify(self, img, **args):
                 """ verify that file is present and if preserve attribute
