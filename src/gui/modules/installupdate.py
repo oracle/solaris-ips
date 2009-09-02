@@ -44,6 +44,7 @@ try:
         import libbe as be
 except ImportError:
         nobe = True
+import pkg
 import pkg.gui.progress as progress
 import pkg.misc
 import pkg.client.history as history
@@ -661,8 +662,8 @@ class InstallUpdate(progress.GuiProgressTracker):
                 gobject.idle_add(self.current_stage_icon.set_from_stock,
                     gtk.STOCK_DIALOG_ERROR, gtk.ICON_SIZE_MENU)
                 msg_1 = _("An unknown error occurred in the %s stage.\n"
-                    "Please let the developers know about this problem\n"
-                    "by filing a bug together with exception value at:\n"
+                    "Please let the developers know about this problem by\n"
+                    "filing a bug together with the error details listed below at:\n"
                     ) % self.current_stage_name
                 msg_2 = _("http://defect.opensolaris.org\n\n")
                 self.update_details_text(_("\nError:\n"), "bold")
@@ -676,6 +677,36 @@ class InstallUpdate(progress.GuiProgressTracker):
                 else:
                         msg = _("No futher information available")
                         self.update_details_text("%s\n" % msg, "level2")
+                msg_3 = _("pkg version: ")
+                self.update_details_text("%s" % msg_3,
+                    "bold","level1")
+                self.update_details_text("%s\n\n" % pkg.VERSION, "level2")
+                publisher_header = _("List of configured publishers:")
+                self.update_details_text("%s" % publisher_header,
+                    "bold","level1")
+                pref_pub = self.api_o.get_preferred_publisher()
+                fmt = "\n%s\t%s\t%s (%s)"
+                publisher_str = ""
+                for pub in self.api_o.get_publishers():
+                        pstatus = " "
+                        if pub == pref_pub:
+                                # Preferred
+                                pstatus = "P"
+                        elif pub.disabled:
+                                # Disabled
+                                pstatus = "D"
+                        else:
+                                # Enabled, but not preferred
+                                pstatus = "E"
+                        r = pub.selected_repository
+                        for uri in r.origins:
+                                # Origin
+                                publisher_str += fmt % (pstatus, "O", pub.prefix, uri)
+                        for uri in r.mirrors:
+                                # Mirror
+                                publisher_str += fmt % (pstatus, "M", pub.prefix, uri)
+                self.update_details_text("%s\n" % publisher_str,
+                    "level2")
                 gobject.idle_add(self.w_expander.set_expanded, True)
                 gobject.idle_add(self.w_cancel_button.set_sensitive, True)
 
