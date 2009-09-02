@@ -780,6 +780,8 @@ class ImagePlan(object):
                                     e.errno == errno.EPERM:
                                         raise api_errors.PermissionsException(
                                             e.filename)
+                                elif e.errno == errno.EROFS:
+                                        raise api_errors.ReadOnlyFileSystemException(e.filename)
                                 raise
                 except:
                         self.actuators.exec_fail_actuators(self.image)

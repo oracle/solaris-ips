@@ -51,7 +51,7 @@ import pkg.nrlock
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 19
+CURRENT_API_VERSION = 20
 CURRENT_P5I_VERSION = 1
 
 class ImageInterface(object):
@@ -88,7 +88,7 @@ class ImageInterface(object):
                 canceled changes. It can raise VersionException and
                 ImageNotFoundException."""
 
-                compatible_versions = set([19])
+                compatible_versions = set([19, 20])
 
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,

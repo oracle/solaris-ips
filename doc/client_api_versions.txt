@@ -1,3 +1,12 @@
+Version 20:
+Compatible with clients using version 19.
+Changes:
+   The following exceptions were added to pkg.client.api_errors:
+
+   class ReadOnlyFileSystemException(PermissionsException):
+   """Used to indicate that the operation was attempted on a
+   read-only filesystem"""
+
 Version 19:
 Incompatible with clients using versions 0-18.
 Changes:

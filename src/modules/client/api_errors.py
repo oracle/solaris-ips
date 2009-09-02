@@ -121,6 +121,23 @@ class FileInUseException(PermissionsException):
                     "in use. Please stop using the file and try the\n"
                     "operation again.") % self.path
 
+
+class ReadOnlyFileSystemException(PermissionsException):
+        """Used to indicate that the operation was attempted on a 
+        read-only filesystem"""
+
+        def __init__(self, path):
+                ApiException.__init__(self)
+                self.path = path
+
+        def __str__(self):
+                if self.path:
+                        return _("Could not complete the operation on %s: "
+                            "read-only filesystem\n") % self.path
+                return _("Could not complete the operation: read-only "
+                        "filesystem.")
+
+
 class PlanCreationException(ApiException):
         def __init__(self, unmatched_fmris=EmptyI, multiple_matches=EmptyI,
             missing_matches=EmptyI, illegal=EmptyI,

@@ -583,6 +583,9 @@ def __api_execute_plan(operation, api, raise_ActionExecutionError=True):
                 error(_("An unexpected error happened during " \
                     "%s: %s") % (operation, e))
                 raise
+        except api_errors.ReadOnlyFileSystemException, e:
+                error(e)
+                raise
         except Exception, e:
                 error(_("An unexpected error happened during " \
                     "%s: %s") % (operation, e))
@@ -2713,6 +2716,8 @@ def handle_errors(func, non_wrap_print=True, *args, **kwargs):
                     "image-update, install, or uninstall\nhas completed "
                     "successfuly.")
                 error(s)
+        except api_errors.ReadOnlyFileSystemException, __e:
+                __ret = 1
         except:
                 if __img:
                         __img.history.abort(RESULT_FAILED_UNKNOWN)
