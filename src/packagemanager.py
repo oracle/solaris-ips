@@ -3746,8 +3746,8 @@ class PackageManager:
                 return dt
 
         @staticmethod
-        def get_installed_version(api_o, pkg):
-                info = api_o.info([pkg], True, frozenset(
+        def __get_version(api_o, local, pkg):
+                info = api_o.info([pkg], local, frozenset(
                     [api.PackageInfo.STATE, api.PackageInfo.IDENTITY]))
                 found = info[api.ImageInterface.INFO_FOUND]
                 try:
@@ -3914,6 +3914,38 @@ class PackageManager:
                     len(self.application_list), "time" : time_str}
                 self.__update_statusbar_message(status_str)
 
+        def __reset_row_status(self, row):
+                pkg_stem = row[enumerations.STEM_COLUMN]
+                self.__remove_pkg_stem_from_list(pkg_stem)
+                if self.info_cache.has_key(pkg_stem):
+                        del self.info_cache[pkg_stem]
+                package_info = self.__get_version(self.api_o, 
+                    local = True, pkg = pkg_stem)
+                package_installed =  False
+                if package_info:
+                        package_installed =  \
+                            (package_info.state == api.PackageInfo.INSTALLED)
+                if package_installed:
+                        package_info = self.__get_version(self.api_o, 
+                            local = False, pkg = pkg_stem)
+                        if (package_info and 
+                            package_info.state == api.PackageInfo.INSTALLED):
+                                row[enumerations.STATUS_COLUMN] = \
+                                    enumerations.INSTALLED
+                                row[enumerations.STATUS_ICON_COLUMN] = \
+                                    self.installed_icon
+                        else:
+                                row[enumerations.STATUS_COLUMN] = \
+                                    enumerations.UPDATABLE
+                                row[enumerations.STATUS_ICON_COLUMN] = \
+                                    self.update_available_icon
+                else:
+                        row[enumerations.STATUS_COLUMN] = \
+                            enumerations.NOT_INSTALLED
+                        row[enumerations.STATUS_ICON_COLUMN] = \
+                            self.not_installed_icon
+                row[enumerations.MARK_COLUMN] = False
+
         def update_package_list(self, update_list):
                 if update_list == None and self.img_timestamp:
                         return
@@ -3934,29 +3966,7 @@ class PackageManager:
                                 i +=  1
                         for row in self.application_list:
                                 if row[enumerations.NAME_COLUMN] in visible_list:
-                                        pkg = row[enumerations.FMRI_COLUMN]
-                                        pkg_stem = row[enumerations.STEM_COLUMN]
-                                        self.__remove_pkg_stem_from_list(pkg_stem)
-                                        if self.info_cache.has_key(pkg_stem):
-                                                del self.info_cache[pkg_stem]
-                                        package_info = self.get_installed_version(
-                                            self.api_o, pkg_stem)
-                                        package_installed =  False
-                                        if package_info:
-                                                package_installed =  \
-                                                    (package_info.state 
-                                                    == api.PackageInfo.INSTALLED)
-                                        if package_installed:
-                                                row[enumerations.STATUS_COLUMN] = \
-                                                    enumerations.INSTALLED
-                                                row[enumerations.STATUS_ICON_COLUMN] = \
-                                                    self.installed_icon
-                                        else:
-                                                row[enumerations.STATUS_COLUMN] = \
-                                                    enumerations.NOT_INSTALLED
-                                                row[enumerations.STATUS_ICON_COLUMN] = \
-                                                    self.not_installed_icon
-                                        row[enumerations.MARK_COLUMN] = False
+                                        self.__reset_row_status(row)
                         self.__dump_datamodels(visible_publisher,
                                 self.application_list, self.category_list,
                                 self.section_list)
