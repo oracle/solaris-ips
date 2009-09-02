@@ -2548,8 +2548,9 @@ class PackageManager:
                         self.__remove_cache()
 
                 installupdate.InstallUpdate(install_update, self, \
-                    self.api_o, ips_update = False, \
-                    action = enumerations.INSTALL_UPDATE)
+                    self.image_directory, ips_update = False, \
+                    action = enumerations.INSTALL_UPDATE,
+                    main_window = self.w_main_window)
 
         def __on_update_all(self, widget):
                 self.api_o.reset()
@@ -2557,7 +2558,7 @@ class PackageManager:
                 if self.api_o.root != IMAGE_DIRECTORY_DEFAULT:
                         skip_be_dlg = True
                 installupdate.InstallUpdate([], self,
-                    self.api_o, ips_update = False,
+                    self.image_directory, ips_update = False,
                     action = enumerations.IMAGE_UPDATE, be_name = self.ua_be_name,
                     parent_name = _("Package Manager"),
                     pkg_list = ["SUNWipkg", "SUNWipkg-gui"],
@@ -2606,8 +2607,9 @@ class PackageManager:
                         self.__remove_cache()
 
                 installupdate.InstallUpdate(remove_list, self,
-                    self.api_o, ips_update = False,
-                    action = enumerations.REMOVE)
+                    self.image_directory, ips_update = False,
+                    action = enumerations.REMOVE,
+                    main_window = self.w_main_window)
 
         def __on_reload(self, widget):
                 self.w_searchentry.grab_focus()

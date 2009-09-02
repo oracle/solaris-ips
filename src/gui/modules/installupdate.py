@@ -56,7 +56,7 @@ ERROR_FORMAT = "<span color = \"red\">%s</span>"
 
 
 class InstallUpdate(progress.GuiProgressTracker):
-        def __init__(self, list_of_packages, parent, api_o,
+        def __init__(self, list_of_packages, parent, image_directory,
             ips_update = False, action = -1, be_name = None,
             parent_name = "", pkg_list = None, main_window = None,
             icon_confirm_dialog = None, title = None, web_install = False,
@@ -66,9 +66,11 @@ class InstallUpdate(progress.GuiProgressTracker):
                 progress.GuiProgressTracker.__init__(self)
                 self.web_install = web_install
                 self.web_updates_list = None
-                api_o.progresstracker = self
-                self.api_o = api_o
                 self.parent = parent
+                self.api_o = gui_misc.get_api_object(image_directory,
+                    self, main_window)
+                if self.api_o == None:
+                        return
                 self.be_list = None
                 self.be_name = be_name
                 self.parent_name = parent_name

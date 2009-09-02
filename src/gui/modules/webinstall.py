@@ -319,10 +319,7 @@ class Webinstall:
                 if debug:
                         print "Install Packages: %s" % all_package_stems
                 
-                #TBD: Having to get new api object, self.api_o.reset() is not working
-                self.api_o = gui_misc.get_api_object(self.image_dir, self.pr,
-                    self.w_webinstall_dialog)
-                installupdate.InstallUpdate(all_package_stems, self, self.api_o, 
+                installupdate.InstallUpdate(all_package_stems, self, self.image_dir, 
                     action = enumerations.INSTALL_UPDATE,
                     parent_name = _("Package Manager"),
                     main_window = self.w_webinstall_dialog,

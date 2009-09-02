@@ -629,7 +629,7 @@ class Updatemanager:
                 if self.__get_image_path() != IMAGE_DIRECTORY_DEFAULT:
                         skip_be_dlg = True
                 installupdate.InstallUpdate([], self,
-                    self.api_obj, ips_update = False,
+                    self.__get_image_path(), ips_update = False,
                     action = enumerations.IMAGE_UPDATE,
                     be_name = self.ua_be_name,
                     parent_name = _("Update Manager"),
