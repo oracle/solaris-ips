@@ -62,7 +62,7 @@ cd $image_dir
 pkg refresh 2>/dev/null
 
 # Check and cache whether updates are available
-/usr/lib/pm-checkforupdates --nice $image_dir 2>/dev/null
+/usr/lib/pm-checkforupdates --nice $image_dir
 
 # Fetch updates to Packagemanager's Start Page files
 TAR="/usr/gnu/bin/tar"

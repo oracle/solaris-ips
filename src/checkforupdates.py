@@ -30,7 +30,7 @@ import getopt
 
 import pkg.client.progress as progress
 import pkg.client.api_errors as api_errors
-import pkg.gui.misc as gui_misc
+import pkg.gui.misc_non_gui as gui_misc
 import pkg.gui.enumerations as enumerations
 from pkg.client import global_settings
 from cPickle import UnpicklingError
@@ -45,7 +45,19 @@ def __check_for_updates(image_directory, nice):
         global_settings.client_name = PKG_CLIENT_NAME
         pr = progress.NullProgressTracker()
 
-        api_obj = gui_misc.get_api_object(image_directory, pr, None)
+        message = None
+        try:
+                api_obj = gui_misc.get_api_object(image_directory, pr)
+        except api_errors.VersionException, e:
+                message = _("Version mismatch: expected version %d, got version %d") % \
+                    (e.expected_version, e.received_version)
+        except api_errors.ImageNotFoundException, e:
+                message = _("%s is not an install image") % e.user_dir
+        if message != None:
+                if debug:
+                        print "Failed to get Api object: %s", message
+                return enumerations.UPDATES_UNDETERMINED
+
         if api_obj == None:
                 return enumerations.UPDATES_UNDETERMINED
         ret = __check_last_refresh(api_obj)

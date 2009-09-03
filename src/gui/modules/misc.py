@@ -28,7 +28,6 @@ SPECIAL_CATEGORIES = ["locale", "plugin"] # We should cut all, but last part of 
                                           # However we need to have an exception rule
                                           # where we will cut all but three last parts.
 
-import cPickle
 import os
 import sys
 try:
@@ -38,13 +37,8 @@ try:
 except ImportError:
         sys.exit(1)
 import pkg.client.api_errors as api_errors
-import pkg.client.api as api
-
-from pkg.client import global_settings
-
-#The current version of the Client API the PM, UM and
-#WebInstall GUIs have been tested against and are known to work with.
-CLIENT_API_VERSION = 19
+from pkg.gui.misc_non_gui import get_cache_dir, read_cache_file, \
+    dump_cache_file, get_api_object as ngao
 
 def get_app_pixbuf(application_dir, icon_name):
         return get_pixbuf_from_path(os.path.join(application_dir,
@@ -120,26 +114,11 @@ def get_pkg_name(pkg_name):
                 return pkg_name[index:].strip("/") + converted_name
         return pkg_name_bk
 
-def get_cache_dir(api_object):
-        img = api_object.img
-        cache_dir = os.path.join(img.imgdir, "gui_cache")
-        try:
-                __mkdir(cache_dir)
-        except OSError:
-                cache_dir = None
-        return cache_dir
-
-def __mkdir(directory_path):
-        if not os.path.isdir(directory_path):
-                os.makedirs(directory_path)
-
 def get_api_object(img_dir, progtrack, parent_dialog):
         api_o = None
         message = None
         try:
-                api_o = api.ImageInterface(img_dir,
-                    CLIENT_API_VERSION,
-                    progtrack, None, global_settings.client_name)
+                api_o = ngao(img_dir, progtrack)
         except api_errors.VersionException, ex:
                 message = _("Version mismatch: expected version %d, got version %d") % \
                     (ex.expected_version, ex.received_version)
@@ -153,17 +132,6 @@ def get_api_object(img_dir, progtrack, parent_dialog):
                 else:
                         print message
         return api_o
-
-def read_cache_file(file_path):
-        fh = open(file_path, 'r')
-        data = cPickle.load(fh)
-        fh.close()
-        return data
-
-def dump_cache_file(file_path, data):
-        fh = open(file_path,"w")
-        cPickle.dump(data, fh, True)
-        fh.close()
 
 def error_occurred(parent, error_msg, msg_title = None,
     msg_type=gtk.MESSAGE_ERROR, use_markup = False):

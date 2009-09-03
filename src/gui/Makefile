@@ -133,6 +133,7 @@ PYMODS = \
    modules/imageinfo.py \
    modules/installupdate.py \
    modules/misc.py \
+   modules/misc_non_gui.py \
    modules/parseqs.py \
    modules/progress.py \
    modules/repository.py \
