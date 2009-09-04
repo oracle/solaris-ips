@@ -861,6 +861,31 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
             add driver name=figit alias=pci8086,1234
             close
         """
+
+        dripol1 = """
+            open dripol@1
+            add dir path=/tmp mode=755 owner=root group=root
+            add dir path=/etc mode=755 owner=root group=root
+            add dir path=/etc/security mode=755 owner=root group=root
+            add file /tmp/dricon2_da path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
+            add file /tmp/dricon_n2m path=/etc/name_to_major mode=644 owner=root group=sys preserve=true
+            add file /tmp/dripol1_dp path=/etc/security/device_policy mode=644 owner=root group=sys preserve=true
+            add driver name=frigit policy="read_priv_set=net_rawaccess write_priv_set=net_rawaccess"
+            close
+        """
+
+        dripol2 = """
+            open dripol@2
+            add dir path=/tmp mode=755 owner=root group=root
+            add dir path=/etc mode=755 owner=root group=root
+            add dir path=/etc/security mode=755 owner=root group=root
+            add file /tmp/dricon2_da path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
+            add file /tmp/dricon_n2m path=/etc/name_to_major mode=644 owner=root group=sys preserve=true
+            add file /tmp/dripol1_dp path=/etc/security/device_policy mode=644 owner=root group=sys preserve=true
+            add driver name=frigit
+            close
+        """
+
 	liveroot10 = """
             open liveroot@1.0
             add dir path=/etc mode=755 owner=root group=root
@@ -874,7 +899,6 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
             close
         """
 
-
         misc_files = [
             "/tmp/amber1", "/tmp/amber2", "/tmp/bronzeA1",  "/tmp/bronzeA2",
             "/tmp/bronze1", "/tmp/bronze2",
@@ -882,7 +906,7 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
             "/tmp/copyright3", "/tmp/copyright4",
             "/tmp/libc.so.1", "/tmp/sh", "/tmp/config1", "/tmp/config2",
             "/tmp/dricon_da", "/tmp/dricon2_da", "/tmp/dricon_n2m",
-            "/tmp/liveroot1", "/tmp/liveroot2"
+            "/tmp/dripol1_dp", "/tmp/liveroot1", "/tmp/liveroot2"
         ]
 
         misc_files_contents = {
@@ -901,7 +925,11 @@ foobar "pci8086,9999"
             "/tmp/dricon_n2m": """\
 wigit 1
 foobar 2
+""",
+            "/tmp/dripol1_dp": """\
+*		read_priv_set=none		write_priv_set=none
 """
+
         }
 
         def setUp(self):
@@ -1178,6 +1206,37 @@ foobar 2
                 # This one should fail
                 self.pkg("install dricon@3", exit=1)
 
+        def test_driver_policy_removal(self):
+                """Test for bug #9568 - that removing a policy for a
+                driver where there is no minor node associated with it,
+                works successfully.
+                """
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.dripol1)
+                self.pkgsend_bulk(durl, self.dripol2)
+
+                self.image_create(durl)
+
+                self.pkg("list -afv")
+
+                # Should install the frigit driver with a policy.
+                self.pkg("install dripol@1")
+
+                # Check that there is a policy entry for this
+                # device in /etc/security/device_policy
+                dp_contents = file(os.path.join(self.get_img_path(),
+                    "etc/security/device_policy")).readlines()
+                self.assert_("frigit:*\tread_priv_set=net_rawaccess\twrite_priv_set=net_rawaccess\n" in dp_contents)
+
+                # Should reinstall the frigit driver without a policy.
+                self.pkg("install dripol@2")
+
+                # Check that there is no longer a policy entry for this
+                # device in /etc/security/device_policy
+                dp_contents = file(os.path.join(self.get_img_path(),
+                    "etc/security/device_policy")).readlines()
+                self.assert_("frigit:*\tread_priv_set=net_rawaccess\twrite_priv_set=net_rawaccess\n" not in dp_contents)
 
         def file_append(self, path, string):
                 file_path = os.path.join(self.get_img_path(), path)

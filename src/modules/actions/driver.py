@@ -112,8 +112,8 @@ class DriverAction(generic.Action):
         def install(self, pkgplan, orig):
                 image = pkgplan.image
 
-		if image.is_zone():
-			return
+                if image.is_zone():
+                        return
 
                 # See if it's installed
                 major = False
@@ -495,18 +495,23 @@ from %(imgroot)s/etc/driver_aliases." % \
                 # with it.
                 for i in rem_policy:
                         spec = i.split()
-                        if len(spec) == 2:
-                                print "driver (%s) upgrade (removal of policy" \
-                                    "'%s) failed: minor node spec required." % \
-                                    (self.attrs["name"], i)
-                                continue
-                        elif len(spec) != 3:
-                                print "driver (%s) upgrade (removal of policy" \
-                                    "'%s) failed: invalid policy spec." % \
-                                    (self.attrs["name"], i)
+                        # Test if there is a minor node and if so use it
+                        # for the policy removal. Otherwise, if none is
+                        # supplied, then use the wild card to match.
+                        if len(spec) == 3:
+                                minornode = spec[0]
+                        elif len(spec) == 2:
+                                # This can happen when the policy is defined
+                                # in the package manifest without an associated
+                                # minor node.
+                                minornode = "*"
+                        else:
+                                print "driver (%s) update (removal of " \
+                                    "policy '%s') failed: invalid policy " \
+                                    "spec." % (self.attrs["name"], i)
                                 continue
 
-                        args = rem_base + ("-p", spec[0], self.attrs["name"])
+                        args = rem_base + ("-p", minornode, self.attrs["name"])
                         self.__call(args, "driver (%(name)s) upgrade (removal "
                             "of policy '%(policy)s')",
                             {"name": self.attrs["name"], "policy": i})
@@ -686,14 +691,14 @@ from %(imgroot)s/etc/driver_aliases." % \
                                 n = ""
                                 try:
                                         n, c = fields[0].split(":", 1)
-                                        # Canonicalize a "*" minorspec to empty
-                                        if c == "*":
-                                                del fields[0]
-                                        else:
-                                                fields[0] = c
+                                        fields[0] = c
                                 except ValueError:
+                                        # If there is no minor node
+                                        # specificition then set it to the
+                                        # wildcard but saving the driver
+                                        # name first.
                                         n = fields[0]
-                                        del fields[0]
+                                        fields[0] = "*"
                                 except IndexError:
                                         pass
 
@@ -734,8 +739,8 @@ from %(imgroot)s/etc/driver_aliases." % \
         def verify(self, img, **args):
                 """Verify that the driver is installed as specified."""
 
-		if img.is_zone():
-			return []
+                if img.is_zone():
+                        return []
 
                 name = self.attrs["name"]
 
@@ -809,10 +814,10 @@ from %(imgroot)s/etc/driver_aliases." % \
                 return errors
 
         def remove(self, pkgplan):
-		image = pkgplan.image
+                image = pkgplan.image
 
-		if image.is_zone():
-			return
+                if image.is_zone():
+                        return
 
                 args = (
                     self.rem_drv,
