@@ -27,10 +27,11 @@
 
 import itertools
 import os
-import subprocess
-import tempfile
+import urllib
 
 import pkg.actions as actions
+import pkg.client.api as api
+import pkg.client.api_errors as api_errors
 import pkg.flavor.base as base
 import pkg.flavor.elf as elf_dep
 import pkg.flavor.hardlink as hardlink
@@ -40,8 +41,6 @@ import pkg.manifest as manifest
 import pkg.portable as portable
 import pkg.variant as variants
 
-from pkg.misc import EmptyI
-
 def list_implicit_deps(file_path, proto_dir, remove_internal_deps=True):
         """Given the manifest provided in file_path, use the known dependency
         generators to produce a list of dependencies the files delivered by
@@ -50,15 +49,10 @@ def list_implicit_deps(file_path, proto_dir, remove_internal_deps=True):
         'file_path' is the path to the manifest for the package.
 
         'proto_dir' is the path to the proto area which holds the files that
-        will be delivered by the package.
-        """
+        will be delivered by the package."""
 
         proto_dir = os.path.abspath(proto_dir)
-        m = manifest.Manifest()
-        fh = open(file_path, "rb")
-        lines = fh.read()
-        fh.close()
-        m.set_content(lines)
+        m = make_manifest(file_path)
         pkg_vars = m.get_all_variants()
         deps, elist, missing = list_implicit_deps_for_manifest(m, proto_dir,
             pkg_vars)
@@ -78,39 +72,39 @@ def resolve_internal_deps(deps, mfst, proto_dir, pkg_vars):
         'proto_dir' is the path to the proto area which holds the files that
         will be delivered by the package.
 
-        'pkg_vars' are the variants that this package was published against.
-        """
+        'pkg_vars' are the variants that this package was published against."""
 
         res = []
         delivered = {}
         delivered_bn = {}
         for a in mfst.gen_actions_by_type("file"):
-                vars = a.get_variants()
-                if not vars:
-                        vars = pkg_vars
+                pvars = variants.VariantSets(a.get_variants())
+                if not pvars:
+                        pvars = pkg_vars
                 p = a.attrs["path"]
-                delivered.setdefault(p, variants.Variants()).merge(vars)
+                delivered.setdefault(p, variants.VariantSets()).merge(pvars)
                 p = os.path.join(proto_dir, p)
                 np = os.path.normpath(p)
                 rp = os.path.realpath(p)
                 # adding the normalized path
-                delivered.setdefault(np, variants.Variants()).merge(vars)
+                delivered.setdefault(np, variants.VariantSets()).merge(pvars)
                 # adding the real path
-                delivered.setdefault(rp, variants.Variants()).merge(vars)
+                delivered.setdefault(rp, variants.VariantSets()).merge(pvars)
                 bn = os.path.basename(p)
-                delivered_bn.setdefault(bn, variants.Variants()).merge(vars)
+                delivered_bn.setdefault(bn, variants.VariantSets()).merge(pvars)
                 
         for d in deps:
-                etype, vars = d.resolve_internal(delivered_files=delivered,
+                etype, pvars = d.resolve_internal(delivered_files=delivered,
                     delivered_base_names=delivered_bn)
                 if etype is None:
                         continue
-                d.dep_vars = vars
+                d.dep_vars = pvars
                 res.append(d)
         return res
 
 def no_such_file(action, **kwargs):
         """Function to handle dispatch of files not found on the system."""
+
         return [], [base.MissingFile(action.attrs["path"])]
 
 # Dictionary which maps codes from portable.get_file_type to the functions which
@@ -146,8 +140,8 @@ def list_implicit_deps_for_manifest(mfst, proto_dir, pkg_vars):
         'elist' is a list of errors encountered while finding dependencies.
 
         'missing' is a dictionary mapping a file type that isn't recognized by
-        portable.get_file_type to a file which produced that filetype.
-        """
+        portable.get_file_type to a file which produced that filetype."""
+
         deps = []
         elist = []
         missing = {}
@@ -175,3 +169,245 @@ def list_implicit_deps_for_manifest(mfst, proto_dir, pkg_vars):
                     proto_dir))
         return deps, elist, missing
 
+def make_manifest(fp):
+        """Given the file path, 'fp', return a Manifest for that path."""
+
+        m = manifest.Manifest()
+        try:
+                fh = open(fp, "rb")
+                lines = fh.read()
+                fh.close()
+        except EnvironmentError, e:
+                raise 
+        m.set_content(lines)
+        return m
+
+def choose_name(fp, mfst):
+        """Find the package name for this manifest. If it's defined in a set
+        action in the manifest, use that. Otherwise use the basename of the
+        path to the manifest as the name.
+        'fp' is the path to the file for the manifest.
+
+        'mfst' is the Manifest object."""
+
+        if mfst is None:
+                return urllib.unquote(os.path.basename(fp))
+        name = mfst.get("fmri", None)
+        if name is not None:
+                return name
+        return urllib.unquote(os.path.basename(fp))
+
+def helper(lst, file_dep, dep_vars, pkg_vars):
+        """Creates the depend actions from lst for the dependency and determines
+        which variants have been accounted for.
+
+        'lst' is a list of fmri, variants pairs. The fmri a package which can
+        satisfy the dependency. The variants are the variants under which it
+        satisfies the dependency.
+
+        'file_dep' is the dependency that needs to be satisfied.
+
+        'dep_vars' is the variants under which 'file_dep' has not yet been
+        satisfied."""
+
+        res = []
+        for pfmri, delivered_vars in lst:
+                if not dep_vars.intersects(delivered_vars):
+                        continue
+                action_vars = dep_vars.intersection(delivered_vars)
+                dep_vars.mark_as_satisfied(delivered_vars)
+                action_vars.remove_identical(pkg_vars)
+                attrs = file_dep.attrs.copy()
+                attrs.update({"fmri":str(pfmri)})
+                attrs.update(action_vars)
+                res.append(actions.depend.DependencyAction(**attrs))
+                if dep_vars.is_satisfied():
+                        break
+        return res, dep_vars
+
+def find_package_using_delivered_files(delivered, file_dep, dep_vars, pkg_vars):
+        """Uses a dictionary mapping file paths to packages to determine which
+        package delivers the dependency under which variants.
+
+        'delivered' is a dictionary mapping paths to a list of fmri, variants
+        pairs.
+
+        'file_dep' is the dependency that is being resolved.
+
+        'dep_vars' are the variants for which the dependency has not yet been
+        resolved."""
+
+        rps = [""]
+        if "%s.path" % base.Dependency.DEPEND_DEBUG_PREFIX in file_dep.attrs:
+                rps = file_dep.attrs["%s.path" %
+                    base.Dependency.DEPEND_DEBUG_PREFIX]
+        paths = [
+            os.path.join(rp,
+                file_dep.attrs["%s.file" % base.Dependency.DEPEND_DEBUG_PREFIX])
+            for rp in rps
+        ]
+        res = []
+        for p in paths:
+                delivered_list = []
+                if p in delivered:
+                        delivered_list = delivered[p]
+                # XXX Eventually, this needs to be changed to use the
+                # link information provided by the manifests being
+                # resolved against, including the packages currently being
+                # published.
+                new_res, dep_vars = helper(delivered_list, file_dep, dep_vars,
+                    pkg_vars)
+                res.extend(new_res)
+                if dep_vars.is_satisfied():
+                        break
+        return res, dep_vars
+
+def __run_search(paths, api_inst):
+        """Function which interfaces with the search engine and extracts the
+        fmri and variants from the actions which deliver the paths being
+        searched for.
+
+        'paths' is the paths to search for.
+
+        'api_inst' is an ImageInterface which references the current image."""
+
+        qs = [
+            api.Query(p, case_sensitive=False, return_actions=True)
+            for p in paths
+        ]
+        search_res = api_inst.local_search(qs)
+        res = []
+        try:
+                for num, pub, (version, return_type, (pfmri, match, a_str)) \
+                    in search_res:
+                        pfmri = fmri.PkgFmri(pfmri)
+                        m = api_inst.img.get_manifest(pfmri)
+                        vars = variants.VariantSets(actions.fromstr(
+                            a_str.rstrip()).get_variants())
+                        vars.merge_unknown(m.get_all_variants())
+                        res.append((pfmri, vars))
+        except api_errors.SlowSearchUsed:
+                pass
+        return res
+
+def find_package_using_search(api_inst, file_dep, dep_vars, pkg_vars):
+        """Uses an image's local search to find the packages which deliver the
+        depedency.
+
+        'api_inst' is an ImageInterface which references the current image.
+
+        'file_dep' is the dependency being resolved.
+
+        'dep_vars' is the variants for which the depenency has not yet been
+        resolved."""
+
+        rps = [""]
+        if "%s.path" % base.Dependency.DEPEND_DEBUG_PREFIX in file_dep.attrs:
+                rps = file_dep.attrs["%s.path" %
+                    base.Dependency.DEPEND_DEBUG_PREFIX]
+        ps = [
+            os.path.normpath(os.path.join("/", rp,
+                file_dep.attrs["%s.file" %
+                base.Dependency.DEPEND_DEBUG_PREFIX]))
+            for rp in rps
+        ]
+        res_pkgs = __run_search(ps, api_inst)
+
+        res = []
+        new_res, dep_vars = helper(res_pkgs, file_dep, dep_vars, pkg_vars)
+        res.extend(new_res)
+        # Need to check for res incase neither the action nor the package had
+        # any variants defined.
+        if res and dep_vars.is_satisfied():
+                return res, dep_vars
+        
+        tmp = ((os.path.realpath(p), p) for p in ps)
+        rps = [rp for rp, p in tmp if rp != p]
+        if not rps:
+                return res, dep_vars
+        res_pkgs = __run_search(rps, api_inst)
+        new_res, dep_vars = helper(res_pkgs, file_dep, dep_vars, pkg_vars)
+        res.extend(new_res)
+        return res, dep_vars
+
+def find_package(api_inst, delivered, file_dep, pkg_vars):
+        """Find the packages which resolve the dependency. It returns a list of
+        dependency actions with the fmri tag resolved.
+
+        'api_inst' is an ImageInterface which references the current image.
+
+        'delivered' is a dictionary mapping paths to a list of fmri, variants
+        pairs.
+
+        'file_dep' is the dependency being resolved.
+
+        "pkg_vars' is the variants against which the package was published."""
+
+        dep_vars = variants.VariantSets(file_dep.get_variants())
+        dep_vars.merge_unknown(pkg_vars)
+        res, dep_vars = \
+            find_package_using_delivered_files(delivered, file_dep,
+                dep_vars, pkg_vars)
+        if res and dep_vars.is_satisfied():
+                return res, dep_vars
+        search_res, dep_vars = \
+            find_package_using_search(api_inst, file_dep, dep_vars, pkg_vars)
+        res.extend(search_res)
+        return res, dep_vars
+
+def is_file_dependency(act):
+        return act.name == "depend" and \
+            act.attrs.get("fmri", None) == base.Dependency.DUMMY_FMRI and \
+            "%s.file" % base.Dependency.DEPEND_DEBUG_PREFIX in act.attrs
+
+def resolve_deps(manifest_paths, api_inst):
+        """For each manifest given, resolve the file dependencies to package
+        dependencies. It returns a mapping from manifest_path to a list of
+        dependencies and a list of unresolved dependencies.
+
+        'manifest_paths' is a list of paths to the manifests being resolved.
+
+        'api_inst' is an ImageInterface which references the current image."""
+
+        manifests = [
+            (mp, choose_name(mp, mfst), mfst, mfst.get_all_variants())
+            for mp, mfst in ((mp, make_manifest(mp)) for mp in manifest_paths)
+        ]
+        delivered_files = {}
+        # Build a list of all files delivered in the manifests being resolved.
+        for n, f_list, pkg_vars in (
+            (name,
+            itertools.chain(mfst.gen_actions_by_type("file"),
+                mfst.gen_actions_by_type("hardlink"),
+                mfst.gen_actions_by_type("link")),
+            pv)
+            for mp, name, mfst, pv in manifests
+        ):
+                for f in f_list:
+                        dep_vars = variants.VariantSets(f.get_variants())
+                        dep_vars.merge_unknown(pkg_vars)
+                        delivered_files.setdefault(
+                            f.attrs["path"], []).append((n, dep_vars))
+        pkg_deps = {}
+        errs = []
+        for mp, name, mfst, pkg_vars in manifests:
+                if mfst is None:
+                        pkg_deps[mp] = None
+                        continue
+                pkg_res = [
+                    (d, find_package(api_inst, delivered_files, d, pkg_vars))
+                    for d in mfst.gen_actions_by_type("depend")
+                    if is_file_dependency(d)
+                ]
+                deps = []
+                for file_dep, (res, dep_vars) in pkg_res:
+                        if not res:
+                                dep_vars.merge_unknown(pkg_vars)
+                                errs.append((mp, file_dep, dep_vars))
+                        else:
+                                deps.extend(res)
+                                if not dep_vars.is_satisfied():
+                                        errs.append((mp, file_dep, dep_vars))
+                pkg_deps[mp] = deps
+                        
+        return pkg_deps, errs

@@ -50,21 +50,38 @@ class TestVariants(pkg5unittest.Pkg5TestCase):
         
         def test_1(self):
                 """Test basic functionality of variants."""
-                v1 = variant.Variants(dict([(1, ["a"]), (3, ["b"])]))
-                v2 = variant.Variants(dict([(1, ["a"]), (4, ["b"])]))
-                v3 = variant.Variants(dict([(1, ["a"]), (3, ["c"])]))
-                v1_v2_merge = variant.Variants(dict([(1, ["a"]), (3, ["b"]),
+                v1 = variant.VariantSets(dict([(1, ["a"]), (3, ["b"])]))
+                v2 = variant.VariantSets(dict([(1, ["a"]), (4, ["b"])]))
+                v3 = variant.VariantSets(dict([(1, ["a"]), (3, ["c"])]))
+                v4 = variant.VariantSets(dict([(1, ["b"]), (4, ["v"])]))
+                v5 = variant.VariantSets(dict([(1, ["a"]), (3, ["b"])]))
+                v1_v2_merge = variant.VariantSets(dict([(1, ["a"]), (3, ["b"]),
                     (4, ["b"])]))
-                v1_v3_merge = variant.Variants(dict([(1, ["a"]),
+                v1_v3_merge = variant.VariantSets(dict([(1, ["a"]),
                     (3, ["b", "c"])]))
+                v4_v1_merge_unknown = variant.VariantSets(dict([(1, ["b"]),
+                    (3, ["b"]), (4, ["v"])]))
 
-                self.assertEqual(v1.issubset(v2), False, )
+                self.assertEqual(v1.issubset(v2), False)
                 self.assertEqual(v1.issubset(v1_v2_merge), True)
                 self.assertEqual(v1.issubset(v1_v3_merge), True)
                 self.assertEqual(v1.difference(v3), dict([(3, set(["b"]))]))
                 self.assertEqual(v1.difference(v1_v3_merge), {})
+
+                self.assertEqual(v1.intersects(v2), False)
+                self.assertEqual(v1.intersects(v1_v2_merge), True)
+                self.assertEqual(v1_v2_merge.intersects(v1), False)
+                self.assertEqual(v1.intersects(v1_v3_merge), True)
+                self.assertEqual(v1_v3_merge.intersects(v1), True)
+
+                v4.merge_unknown(v1)
+                self.__check_equal(v4, v4_v1_merge_unknown)
+                
                 v2.merge(v1)
                 self.__check_equal(v2, v1_v2_merge)
                 v1.merge(v3)
                 self.__check_equal(v1, v1_v3_merge)
-                
+
+                v1.remove_identical(v5)
+                self.__check_equal(v1, dict([(3, ["b", "c"])]))
+

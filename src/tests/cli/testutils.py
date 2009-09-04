@@ -377,13 +377,17 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
 
                 return retcode
 
-        def pkgdep(self, command, proto=None, exit=0, comment=""):
+        def pkgdep(self, command, proto=None, use_proto=True, exit=0,
+            comment=""):
                 wrapper = ""
                 if os.environ.has_key("PKGCOVERAGE"):
                         wrapper = "figleaf"
 
                 if proto is None:
                         proto = g_proto_area
+
+                if not use_proto:
+                        proto = ""
                         
                 cmdline = "%s %s/usr/bin/pkgdep %s %s" % (wrapper, g_proto_area,
                     command, proto)

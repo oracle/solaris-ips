@@ -33,6 +33,7 @@ link:
 	-mkdir -p /usr/share/man/cat1 /usr/share/man/cat1m /usr/share/man/cat5
 	ln -sf $(PWD)/packagemanager.1.txt /usr/share/man/cat1/packagemanager.1
 	ln -sf $(PWD)/pkg.1.txt /usr/share/man/cat1/pkg.1
+	ln -sf $(PWD)/pkgdep.1.txt /usr/share/man/cat1/pkgdep.1
 	ln -sf $(PWD)/pkgrecv.1.txt /usr/share/man/cat1/pkgrecv.1
 	ln -sf $(PWD)/pkgsend.1.txt /usr/share/man/cat1/pkgsend.1
 	ln -sf $(PWD)/pm-updatemanager.1.txt /usr/share/man/cat1/pm-updatemanager.1

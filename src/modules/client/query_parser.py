@@ -79,11 +79,38 @@ class TopQuery(qp.TopQuery):
         without using indexes.  It yields all results, then raises the
         exception."""
 
-        use_slow = False
+        def __init__(self, *args, **kwargs):
+                qp.TopQuery.__init__(self, *args, **kwargs)
+                self.__use_slow_search = False
+
+        def get_use_slow_search(self):
+                """Return whether slow search has been used."""
+
+                return self.__use_slow_search
+
+        def set_use_slow_search(self, val):
+                """Set whether slow search has been used."""
+
+                self.__use_slow_search = val
+                
+        def set_info(self, **kwargs):
+                """This function provides the necessary information to the AST
+                so that a search can be performed."""
+
+                qp.TopQuery.set_info(self,
+                    get_use_slow_search=self.get_use_slow_search,
+                    set_use_slow_search=self.set_use_slow_search,
+                    **kwargs)
+
         def search(self, *args):
+                """This function performs performs local client side search.
+
+                If slow search was used, then after all results have been
+                returned, it raises SlowSearchUsed."""
+
                 for i in qp.TopQuery.search(self, *args):
                         yield i
-                if TopQuery.use_slow:
+                if self.__use_slow_search:
                         raise api_errors.SlowSearchUsed()
 
 class TermQuery(qp.TermQuery):
@@ -111,30 +138,32 @@ class TermQuery(qp.TermQuery):
                 self.full_fmri_hash = None
                 self._data_fast_add = None
 
-        def set_info(self, dir_path, fmri_to_manifest_path_func,
-            expected_fmri_names_func, case_sensitive):
+        def set_info(self, gen_installed_pkg_names, get_use_slow_search,
+            set_use_slow_search, **kwargs):
                 """This function provides the necessary information to the AST
                 so that a search can be performed.
 
-                The "dir_path" parameter is the path to the indexes stored on
-                disk.
-
-                The "fmri_to_manifest_path_func" parameter is a function which
-                takes a fmri and returns a path to the manifest for that fmri.
-
-                The "expected_fmri_names_func" parameter is a function which
+                The "gen_installed_pkg_names" parameter is a function which
                 returns a generator function which iterates over the names of
                 the installed packages in the image.
 
-                The "case_sensitive" parameter determines whether the search
-                should be case-sensitive."""
+                The "get_use_slow_search" parameter is a function that returns
+                whether slow search has been used.
 
-                self._efn = expected_fmri_names_func()
+                The "set_use_slow_search" parameter is a function that sets
+                whether slow search was used."""
+
+                self.get_use_slow_search = get_use_slow_search
+                self._efn = gen_installed_pkg_names()
                 TermQuery.client_dict_lock.acquire()
                 try:
                         try:
-                                qp.TermQuery.set_info(self, dir_path,
-                                    fmri_to_manifest_path_func, case_sensitive)
+                                qp.TermQuery.set_info(self,
+                                    gen_installed_pkg_names=\
+                                        gen_installed_pkg_names,
+                                    get_use_slow_search=get_use_slow_search,
+                                    set_use_slow_search=set_use_slow_search,
+                                    **kwargs)
                                 # Take local copies of the client-only
                                 # dictionaries so that if another thread
                                 # changes the shared data structure, this
@@ -145,11 +174,11 @@ class TermQuery(qp.TermQuery):
                                     TermQuery._global_data_dict["fast_remove"]
                                 self.full_fmri_hash = \
                                     self._global_data_dict["fmri_hash"]
-                                TopQuery.use_slow = False
+                                set_use_slow_search(False)
                         except se.NoIndexException:
                                 # If no index was found, the slower version of
                                 # search will be used.
-                                TopQuery.use_slow = True
+                                set_use_slow_search(True)
                 finally:
                         TermQuery.client_dict_lock.release()
                 
@@ -173,7 +202,7 @@ class TermQuery(qp.TermQuery):
 
                 if restriction:
                         return self._restricted_search_internal(restriction)
-                elif not TopQuery.use_slow:
+                elif not self.get_use_slow_search():
                         try:
                                 self.full_fmri_hash.check_against_file(
                                     self._efn)
@@ -282,25 +311,7 @@ class TermQuery(qp.TermQuery):
                 The "excludes" parameter is a list of variants defined in the
                 image."""
 
-                # If the list of fmris to be searched isn't set in the class
-                # set it once and then share that work among all TermQuery
-                # instances.
-                if TermQuery.fmris is None:
-                        TermQuery.fmris = list(fmris())
-                it  = self._slow_search_internal(manifest_func, excludes)
-                return it
-
-        def _slow_search_internal(self, manifest_func, excludes):
-                """This function performs search when no prebuilt index is
-                available.
-
-                The "manifest_func" parameter is a function which maps fmris
-                to the path to their manifests.
-
-                The "excludes" parameter is a list of variants defined in the
-                image."""
-
-                for pfmri in TermQuery.fmris:
+                for pfmri in list(fmris()):
                         fmri_str = pfmri.get_fmri(anarchy=True,
                             include_scheme=False)
                         if not (self.pkg_name_wildcard or

@@ -285,6 +285,7 @@ f none usr/share/lib/pkg/web/shared.shtml 444 root bin
 d none usr/share/man 755 root bin
 d none usr/share/man/cat1 755 root bin
 f none usr/share/man/cat1/pkg.1 444 root bin
+f none usr/share/man/cat1/pkgdep.1 444 root bin
 f none usr/share/man/cat1/pkgrecv.1 444 root bin
 f none usr/share/man/cat1/pkgsend.1 444 root bin
 d none usr/share/man/cat1m 755 root bin

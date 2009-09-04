@@ -1,0 +1,98 @@
+User Commands                                             pkgdep(1)
+
+
+NAME
+     pkgdep - image packaging system dependency analyzer
+
+SYNOPSIS
+     /usr/bin/pkgdep [options] command [cmd_options] [operands]
+
+     /usr/bin/pkgdep generate [-IMm] manifest_path proto_dir
+
+     /usr/bin/pkgdep resolve [-dMos] manifest_path ...
+
+DESCRIPTION
+     The pkgdep command allows the user to produce the files upon which a
+     package depends due to its contents, or resolve those dependencies into
+     the packages which contain the files depended upon. The typical use is to
+     use the production phase to independently generate the dependencies for
+     all packages being published, then pass all those manifests to the
+     resolve phase so it can resolve any dependencies between the packages
+     being published as well as resolving against the reference set of 
+     packages. Currently, the reference set of packages is defined as the
+     packages currently installed on the publisher's system.
+
+OPTIONS
+     The following options are supported:
+
+     -R dir
+          Operate on the image rooted at dir, rather than the one discovered
+          automatically.
+
+     --help or -?
+          Displays a usage message.
+
+SUBCOMMANDS
+     The following subcommands are supported:
+
+     generate [-IMm] manifest_path proto_dir
+          Produce the dependencies on files of the manifest specified by 
+          manifest_path, whose contents are found in proto_dir.
+
+          With -I, the dependencies which are satisified within the manifest
+          given will be shown.
+
+          With -M, a list of those file types which could not be analyzed 
+          will be displayed. 
+
+          With -m, the original manifest will be repeated with any 
+          discovered dependencies added after.
+
+     resolve [-mo] [-d output_dir] [-s suffix] manifest_path ...
+          Transform dependencies on files into dependencies on the packages
+          which deliver those files.  Dependencies are first resolved against
+          the manifests given on the command line and then against the packages
+          installed on the system.  By default, the dependencies for each 
+          manifest are placed in a file whose name is determined by appending
+          ".res" to the manifest's path.
+
+          With -m, repeat the manifest, with any dependencies produced by
+          the generate step removed, before adding the resolved 
+          dependencies.
+
+          With -o, write the results to standard out.
+
+          With -d, write the resolved dependencies for each manifest 
+          provided in a separate file in output_dir.  By default, each file
+          will have the same basename as the manifest that was the source
+          of the dependencies written to that file.
+
+          With -s, for each output file, append the given suffix (a "." 
+          will be added to the argument if not provided) to the basename of 
+          the file that was the source of the resolved dependencies.
+
+
+EXAMPLES
+     Example 1: Generate the dependencies for the manifest written in foo,
+     whose content directory is in ./bar/baz and store the results in 
+     foo.fdeps.
+
+     $ pkgdep generate foo ./bar/baz > foo.fdeps
+
+     Example 2: Resolve the file dependencies in foo.fdeps, and bar.fdeps 
+     against each other, and the packages currently installed on the system.
+
+     $ pkgdep resolve foo.fdeps bar.fdeps
+     $ ls *.res
+       foo.fdeps.res     bar.fdeps.res
+
+     Example 3: Generate the file dependencies for two manifests (foo and 
+     bar) and retain all the information in the original manifests. Then 
+     resolve the file dependencies and place the resulting manifests, which
+     could be used with pkgsend publish, in ./res
+
+     $ pkgdep generate -m foo > ./deps/foo
+     $ pkgdep generate -m bar > ./deps/bar
+     $ pkgdep resolve -m -d ./res ./deps/foo ./deps/bar
+     $ ls ./res
+       foo     bar

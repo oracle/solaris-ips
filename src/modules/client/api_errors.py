@@ -1079,3 +1079,13 @@ class ServerReturnError(ApiException):
 
         def __str__(self):
                 return _("Gave a bad response:%s") % self.line
+
+class MissingFileArgumentException(ApiException):
+        """This exception is used when a file was given as an argument but
+        no such file could be found."""
+        def __init__(self, path):
+                ApiException.__init__(self)
+                self.path = path
+
+        def __str__(self):
+                return _("Could not find %s") % self.path

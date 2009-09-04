@@ -28,6 +28,7 @@
 import os
 
 import pkg.actions.depend as depend
+import pkg.variant as variant
 
 class DependencyAnalysisError(Exception):
         pass
@@ -74,7 +75,7 @@ class Dependency(depend.DependencyAction):
                 self.action = action
                 self.pkg_vars = pkg_vars
                 self.proto_dir = proto_dir
-                vs = action.get_variants()
+                vs = variant.VariantSets(action.get_variants())
                 if vs == {}:
                         self.dep_vars = None
                 else:
@@ -110,7 +111,7 @@ class Dependency(depend.DependencyAction):
                 action that produced this dependency, and another set of
                 variants."""
 
-                vars = self.action.get_variants()
+                vars = variant.VariantSets(self.action.get_variants())
                 for k in self.pkg_vars:
                         if k not in vars:
                                 vars[k] = self.pkg_vars[k]

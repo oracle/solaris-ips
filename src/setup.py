@@ -219,6 +219,7 @@ scripts = {
 man1_files = [
         'man/packagemanager.1',
         'man/pkg.1',
+        'man/pkgdep.1',
         'man/pkgsend.1',
         'man/pkgrecv.1',
         'man/pm-updatemanager.1',

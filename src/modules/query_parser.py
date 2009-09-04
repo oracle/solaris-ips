@@ -536,13 +536,13 @@ class BooleanQuery(object):
                         else:
                                 raise BooleanQueryException(self.rc, self.lc)
 
-        def set_info(self, *args):
+        def set_info(self, **kwargs):
                 """This function passes information to the terms prior to
                 search being executed.  For a boolean query, it only needs to
                 pass whatever information exists onto its children."""
 
-                self.lc.set_info(*args)
-                self.rc.set_info(*args)
+                self.lc.set_info(**kwargs)
+                self.rc.set_info(**kwargs)
                 
         def search(self, *args):
                 """Distributes the search to the two children and returns a
@@ -659,12 +659,12 @@ class PkgConversion(object):
         def __str__(self):
                 return "p<%s>" % str(self.query)
 
-        def set_info(self, *args):
+        def set_info(self, **kwargs):
                 """This function passes information to the terms prior to
                 search being executed.  It only needs to pass whatever
                 information exists to its child."""
 
-                self.query.set_info(*args)
+                self.query.set_info(**kwargs)
 
         @staticmethod
         def optional_action_to_package(it, return_type, current_type):
@@ -721,12 +721,12 @@ class PhraseQuery(object):
         def __str__(self):
                 return "Phrase Query:'" + self.full_str + "'"
 
-        def set_info(self, *args):
+        def set_info(self, **kwargs):
                 """This function passes information to the terms prior to
                 search being executed.  It only needs to pass whatever
                 information exists to its child."""
 
-                self.query.set_info(*args)
+                self.query.set_info(**kwargs)
 
         def filter_res(self, l):
                 """Check to see if the phrase is contained in l, the string of
@@ -807,12 +807,12 @@ class FieldQuery(object):
                 return "( PN:%s AT:%s ST:%s Q:%s)" % (self.query.pkg_name,
                     self.query.action_type, self.query.key, self.query)
 
-        def set_info(self, *args):
+        def set_info(self, **kwargs):
                 """This function passes information to the terms prior to
                 search being executed.  It only needs to pass whatever
                 information exists to its child."""
 
-                self.query.set_info(*args)
+                self.query.set_info(**kwargs)
 
         @staticmethod
         def __is_wildcard(s):
@@ -875,7 +875,7 @@ class TopQuery(object):
                             if self.__keep(x)
                         )
 
-        def set_info(self, num_to_return, start_point, *args):
+        def set_info(self, num_to_return, start_point, **kwargs):
                 """This function passes information to the terms prior to
                 search being executed.  This is also where the starting point
                 and number of results to return is set.  Both "num_to_return"
@@ -884,7 +884,8 @@ class TopQuery(object):
                 if start_point:
                         self.start_point = start_point
                 self.num_to_return = num_to_return
-                self.query.set_info(*args)
+                self.query.set_info(start_point=start_point,
+                    num_to_return=num_to_return, **kwargs)
                 
                         
         def search(self, *args):
@@ -966,19 +967,23 @@ class TermQuery(object):
                 if not self._term.endswith('*'):
                         self._term += "*"
         
-        def set_info(self, dir_path, fmri_to_manifest_path_func,
-            case_sensitive):
+        def set_info(self, index_dir, get_manifest_path,
+            case_sensitive, **kwargs):
                 """Sets the information needed to search which is specific to
-                the particular index used to back the search.  dir_path is a
-                path to the base directory of the index.
-                fmri_to_manifest_path_func is a function which when given a
-                fully specified fmri returns the path to the manifest file
-                for that fmri.  case_sensitive is a boolean which determines
-                whether search is case sensitive or not."""
+                the particular index used to back the search.
 
-                self._dir_path = dir_path
-                assert dir_path
-                self._manifest_path_func = fmri_to_manifest_path_func
+                'index_dir' is a path to the base directory of the index.
+                
+                'get_manifest_path' is a function which when given a
+                fully specified fmri returns the path to the manifest file
+                for that fmri.
+
+                'case_sensitive' is a boolean which determines whether search
+                is case sensitive or not."""
+
+                self._dir_path = index_dir
+                assert self._dir_path
+                self._manifest_path_func = get_manifest_path
                 self._case_sensitive = case_sensitive
 
                 # Take the staic class lock because it's possible we'll

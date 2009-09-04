@@ -1116,8 +1116,10 @@ class ServerCatalog(object):
                 l.build()
                 qp = query_p.QueryParser(l)
                 query = qp.parse(q.encoded_text())
-                query.set_info(q.num_to_return, q.start_point, self.index_root,
-                    self.get_manifest_path, q.case_sensitive)
+                query.set_info(num_to_return=q.num_to_return,
+                    start_point=q.start_point, index_dir=self.index_root,
+                    get_manifest_path=self.get_manifest_path,
+                    case_sensitive=q.case_sensitive)
                 return query.search(self.fmris)                
 
         def search_available(self):

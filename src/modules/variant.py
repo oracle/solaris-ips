@@ -79,29 +79,157 @@ class Variants(dict):
                                 return False
                 return True
 
+class VariantSets(Variants):
+        """Class for holding sets of variants. The parent class is designed to
+        hold one value per variant. This class is used when multiple values for
+        a variant need to be used. It ensures that the value each variant
+        maps to is a set of one or more variant values."""
+
+        def __init__(self, init=EmptyI):
+                self.set_sats = False
+                self.not_sat_set = None
+                Variants.__init__(self, init)
+
+        def update(self, d):
+                for a in d:
+                        if isinstance(d[a], set):
+                                self[a] = d[a]
+                        elif isinstance(d[a], list):
+                                self[a] = set(d[a])
+                        else:
+                                self[a] = set([d[a]])
+
+        def copy(self):
+                return VariantSets(self)
+        
+        def __setitem__(self, item, value):
+                assert(not self.set_sats)
+                if isinstance(value, list):
+                        value = set(value)
+                elif not isinstance(value, set):
+                        value = set([value])
+                Variants.__setitem__(self, item, value)
+        
         def merge(self, var):
                 """Combine two sets of variants into one."""
                 for name in var:
                         if name in self:
-                                self[name].extend(var[name])
-                                self[name] = list(set(self[name]))
+                                self[name].update(var[name])
                         else:
-                                self[name] = list(set(var[name]))
+                                self[name] = var[name]
 
         def issubset(self, var):
                 """Returns whether self is a subset of variant var."""
                 for k in self:
                         if k not in var:
                                 return False
-                        if set(self[k]) - set(var[k]):
+                        if self[k] - var[k]:
                                 return False
                 return True
 
         def difference(self, var):
                 """Returns the variants in self and not in var."""
-                res = Variants()
+                res = VariantSets()
                 for k in self:
-                        tmp = set(self[k]) - set(var.get(k, []))
+                        tmp = self[k] - var.get(k, [])
                         if tmp:
                                 res[k] = tmp
                 return res
+
+        def merge_unknown(self, var):
+                """Pull the values for unknown keys in var into self."""
+                for name in var:
+                        if name not in self:
+                                self[name] = var[name]
+
+        def intersects(self, var):
+                """Returns whether self and var share at least one value for
+                each variant in self."""
+                for k in self:
+                        if k not in var:
+                                return False
+                        found = False
+                        for v in self[k]:
+                                if v in var[k]:
+                                        found = True
+                                        break
+                        if not found:
+                                return False
+                return True
+
+        def intersection(self, var):
+                """Find those variant values in self that are also in var, and
+                return them."""
+
+                res = VariantSets()
+                for k in self:
+                        if k not in var:
+                                raise RuntimeError("%s cannot be intersected "
+                                    "with %s becuase %s is not a key in the "
+                                    "latter." % (self, var, k))
+                        res[k] = self[k] & var[k]
+                return res
+
+        def __variant_cross_product(self):
+                """Generates the cross product of all the values for all the
+                variants in self."""
+
+                tmp = []
+                for k in sorted(self):
+                        if tmp == []:
+                                tmp = [[v] for v in self[k]]
+                                continue
+                        new_tmp = []
+                        new_tmp.extend([
+                            exist[:] + [v] for v in self[k]
+                            for exist in tmp
+                        ])
+                        tmp = new_tmp
+                return set([tuple(v) for v in tmp])
+                                
+        def mark_as_satisfied(self, var):
+                """Mark those variant combinations seen in var as being
+                satisfied in self."""
+
+                if not self.set_sats:
+                        self.set_sats = True
+                        self.not_sat_set = self.__variant_cross_product()
+                self.not_sat_set -= var.__variant_cross_product()
+
+        def is_satisfied(self):
+                """Returns whether all variant combinations for this package
+                have been satisfied."""
+
+                return self.set_sats and not self.not_sat_set
+
+        def get_satisfied(self):
+                """Returns the combinations of variants which have been
+                satisfied for this VariantSets."""
+                if self == {}:
+                        return None
+                sats = self.__variant_cross_product()
+                var_names = sorted(self)
+                return [zip(var_names, tup) for tup in sorted(sats)]
+
+        def get_unsatisfied(self):
+                """Returns the variant combinations for self which have not
+                been satisfied."""
+
+                if not self.set_sats:
+                        self.set_sats = True
+                        self.not_sat_set = self.__variant_cross_product()
+                var_names = sorted(self)
+                return [zip(var_names, tup) for tup in sorted(self.not_sat_set)]
+
+        def remove_identical(self, var):
+                """For each key in self, remove it from the dictionary if its
+                values are identical to the values that var maps k to."""
+
+                for k in self.keys():
+                        if k not in var:
+                                continue
+                        if self[k] == var[k]:
+                                del self[k]
+
+        def __repr__(self):
+                return "VariantSets(%s)" % dict.__repr__(self)

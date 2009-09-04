@@ -484,7 +484,7 @@ class Manifest(object):
 
         def get_all_variants(self):
                 """Return a dictionary mapping variant tags to their values."""
-                return variant.Variants(dict((
+                return variant.VariantSets(dict((
                     (name, self.attributes[name])
                     for name in self.attributes
                     if name.startswith("variant.")

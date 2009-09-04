@@ -1043,15 +1043,19 @@ class ImageInterface(object):
                         self.__img.update_index_dir()
                         assert self.__img.index_dir
                         try:
-                                query.set_info(q.num_to_return, q.start_point,
-                                    self.__img.index_dir,
-                                    self.__img.get_manifest_path,
-                                    self.__img.gen_installed_pkg_names,
-                                    q.case_sensitive)
+                                query.set_info(num_to_return=q.num_to_return,
+                                    start_point=q.start_point,
+                                    index_dir=self.__img.index_dir,
+                                    get_manifest_path=\
+                                        self.__img.get_manifest_path,
+                                    gen_installed_pkg_names=\
+                                        self.__img.gen_installed_pkg_names,
+                                    case_sensitive=q.case_sensitive)
                                 excludes = [variant.Variants(
                                     {"variant.arch": self.__img.get_arch()}
                                     ).allow_action]
-                                res = query.search(self.__img.gen_installed_pkgs,
+                                res = query.search(
+                                    self.__img.gen_installed_pkgs,
                                     self.__img.get_manifest_path, excludes)
                         except search_errors.InconsistentIndexException, e:
                                 raise api_errors.InconsistentIndexException(e)

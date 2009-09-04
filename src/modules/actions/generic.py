@@ -204,7 +204,7 @@ class Action(object):
                 # We pay a performance penalty to do so, but it seems worth it.
                 for k in sorted(self.attrs.keys()):
                         v = self.attrs[k]
-                        if isinstance(v, list):
+                        if isinstance(v, list) or isinstance(v, set):
                                 out += " " + " ".join([
                                     "%s=%s" % (k, q(lmt)) for lmt in v
                                 ])
@@ -392,8 +392,8 @@ class Action(object):
                 return variants, facets
 
         def get_variants(self):
-                return variant.Variants(dict((
-                    (v, [self.attrs[v]]) for v in self.get_varcet_keys()[0]
+                return variant.VariantSets(dict((
+                    (v, self.attrs[v]) for v in self.get_varcet_keys()[0]
                 )))
 
         def get_remote_opener(self, img, fmri):
