@@ -35,6 +35,8 @@ SHOW_LICENSE_DELAY = 600    # Delay before showing license information
 SEARCH_STR_FORMAT = "<%s>"
 MIN_APP_WIDTH = 750                       # Minimum application width
 MIN_APP_HEIGHT = 500                      # Minimum application height
+SECTION_ID_OFFSET = 10000                 # Offset to allow Sections to be identified 
+                                          # in category tree
 IMAGE_DIRECTORY_DEFAULT = "/"             # Image default directory
 MAX_SEARCH_COMPLETION_PREFERENCES = \
         "/apps/packagemanager/preferences/max_search_completion"
@@ -47,8 +49,12 @@ INITIAL_SECTION_PREFERENCES = "/apps/packagemanager/preferences/initial_section"
 SHOW_STARTPAGE_PREFERENCES = "/apps/packagemanager/preferences/show_startpage"
 API_SEARCH_ERROR_PREFERENCES = "/apps/packagemanager/preferences/api_search_error"
 CATEGORIES_STATUS_COLUMN_INDEX = 0   # Index of Status Column in Categories TreeView
-
 STATUS_COLUMN_INDEX = 2   # Index of Status Column in Application TreeView
+SEARCH_TXT_GREY_STYLE = "#757575" #Close to DimGrey
+SEARCH_TXT_BLACK_STYLE = "#000000"
+GDK_2BUTTON_PRESS = 5     # gtk.gdk._2BUTTON_PRESS causes pylint warning
+GDK_RIGHT_BUTTON = 3      # normally button 3 = right click
+
 
 PKG_CLIENT_NAME = "packagemanager"
 CHECK_FOR_UPDATES = "usr/lib/pm-checkforupdates"
@@ -171,7 +177,7 @@ class PackageManager:
                         # packagemanager-preferences.schemas
                         self.max_search_completion = 20
                         self.initial_show_filter = 0
-                        self.initial_section = 3
+                        self.initial_section = 2
                         self.show_startpage = True
                         self.gconf_not_show_repos = ""
                         self.initial_app_width = 800
@@ -271,6 +277,7 @@ class PackageManager:
                 self.search_all_pub_being_searched = None
                 self.section_list = None
                 self.filter_list = self.__get_new_filter_liststore()
+                self.length_visible_list = 0
                 self.application_list = None
                 self.a11y_application_treeview = None
                 self.a11y_categories_treeview = None
@@ -280,14 +287,15 @@ class PackageManager:
                 self.categories_treeview_initialized = False
                 self.category_list = None
                 self.repositories_list = None
-                self.repository_category = {}
                 self.repo_combobox_all_pubs_index = 0
                 self.repo_combobox_add_index = 0
                 self.pr = progress.NullProgressTracker()
                 self.pylintstub = None
                 self.release_notes_url = "http://www.opensolaris.org"
                 self.__image_activity_lock = Lock()
-
+                self.category_expanded_paths = {}
+                self.category_active_paths = {}
+                
                 # Create Widgets and show gui
                 self.gladefile = os.path.join(self.application_dir,
                     "usr/share/package-manager/packagemanager.glade")
@@ -318,6 +326,9 @@ class PackageManager:
 
                 self.w_application_treeview = \
                     w_tree_main.get_widget("applicationtreeview")
+                self.w_application_treeview.connect('key_press_event',
+                    self.__on_applicationtreeview_button_and_key_events)
+
                 self.w_categories_treeview = w_tree_main.get_widget("categoriestreeview")
                 self.w_info_notebook = w_tree_main.get_widget("details_notebook")
                 self.w_generalinfo_textview = \
@@ -361,14 +372,17 @@ class PackageManager:
                         self.w_searchentry.set_property("secondary-icon-stock", None)
                 except TypeError:
                         self.entry_embedded_icons_supported = False
+                self.search_text_style = -1
+                self.__set_search_text_mode(enumerations.SEARCH_STYLE_PROMPT)
                 self.search_completion = gtk.ListStore(str)
+                self.w_package_menu = w_tree_main.get_widget("package_menu")
+                self.w_reload_button = w_tree_main.get_widget("reload_button")
                 self.w_installupdate_button = \
                     w_tree_main.get_widget("install_update_button")
                 self.w_remove_button = w_tree_main.get_widget("remove_button")
                 self.w_updateall_button = w_tree_main.get_widget("update_all_button")
                 self.w_reload_menuitem = w_tree_main.get_widget("file_reload")
                 self.w_repository_combobox = w_tree_main.get_widget("repositorycombobox")
-                self.w_sections_combobox = w_tree_main.get_widget("sectionscombobox")
                 self.w_filter_combobox = w_tree_main.get_widget("filtercombobox")
                 self.w_packageicon_image = w_tree_main.get_widget("packageimage")
                 self.w_installupdate_menuitem = \
@@ -393,13 +407,14 @@ class PackageManager:
                 self.search_image.set_from_pixbuf(gui_misc.get_icon(self.icon_theme,
                     'search', 20))
                 self.saved_repository_combobox_active = 0
-                self.saved_sections_combobox_active = 0
+                self.saved_section_active = 0
                 self.saved_application_list = None
                 self.saved_application_list_filter = None
                 self.saved_application_list_sort = None
                 self.saved_category_list = None
                 self.saved_section_list = None
                 self.saved_selected_application_path = None
+                self.section_categories_list = {}
                 self.statusbar_message_id = 0
                 toolbar =  w_tree_main.get_widget("toolbutton2")
                 toolbar.set_expand(True)
@@ -408,7 +423,7 @@ class PackageManager:
                 self.remove_button_tooltip = gtk.Tooltips()
                 self.__update_reload_button()
                 self.w_main_window.set_title(self.main_window_title)
-                self.w_searchentry.grab_focus()
+                self.w_repository_combobox.grab_focus()
 
                 # Update All Completed Dialog
                 w_xmltree_ua_completed = gtk.glade.XML(self.gladefile,
@@ -445,8 +460,6 @@ class PackageManager:
                                     self.__on_searchentry_focus_out,
                                 "on_searchentry_activate": \
                                     self.__do_search,
-                                "on_sectionscombobox_changed": \
-                                    self.__on_sectionscombobox_changed,
                                 "on_filtercombobox_changed": \
                                     self.__on_filtercombobox_changed,
                                 "on_repositorycombobox_changed": \
@@ -492,6 +505,8 @@ class PackageManager:
                                     self.__on_notebook_change,
                                 "on_infosearch_button_clicked": \
                                     self.__on_infosearch_button_clicked,
+                                "on_applicationtreeview_button_press_event": \
+                                    self.__on_applicationtreeview_button_and_key_events,
                             }
                         dic_preferences = \
                             {
@@ -569,6 +584,21 @@ class PackageManager:
                 self.api_search_error_dialog.set_transient_for(self.w_main_window)
                 self.__setup_text_signals()
 
+        def __set_search_text_mode(self, style):
+                if style == enumerations.SEARCH_STYLE_NORMAL:
+                        self.w_searchentry.modify_text(gtk.STATE_NORMAL,
+                                gtk.gdk.color_parse(SEARCH_TXT_BLACK_STYLE))
+                        if self.search_text_style == enumerations.SEARCH_STYLE_PROMPT or\
+                                self.w_searchentry.get_text() == _("Search (Ctrl-F)"):
+                                self.w_searchentry.set_text("")
+                        self.search_text_style = enumerations.SEARCH_STYLE_NORMAL
+                        
+                else:
+                        self.w_searchentry.modify_text(gtk.STATE_NORMAL,
+                                gtk.gdk.color_parse(SEARCH_TXT_GREY_STYLE))
+                        self.search_text_style = enumerations.SEARCH_STYLE_PROMPT
+                        self.w_searchentry.set_text(_("Search (Ctrl-F)"))
+        
         def __search_completion_cb(self, entry):
                 text = entry.get_text()
                 if text:
@@ -932,13 +962,10 @@ class PackageManager:
 
         @staticmethod
         def __get_new_category_liststore():
-                return gtk.ListStore(
+                return gtk.TreeStore(
                         gobject.TYPE_INT,         # enumerations.CATEGORY_ID
                         gobject.TYPE_STRING,      # enumerations.CATEGORY_NAME
                         gobject.TYPE_STRING,      # enumerations.CATEGORY_DESCRIPTION
-                        gtk.gdk.Pixbuf,           # enumerations.CATEGORY_ICON
-                        gobject.TYPE_BOOLEAN,     # enumerations.CATEGORY_ICON_VISIBLE
-                        gobject.TYPE_BOOLEAN,     # enumerations.CATEGORY_VISIBLE
                         gobject.TYPE_PYOBJECT,    # enumerations.SECTION_LIST_OBJECT
                         )
 
@@ -947,7 +974,6 @@ class PackageManager:
                 return gtk.ListStore(
                         gobject.TYPE_INT,         # enumerations.SECTION_ID
                         gobject.TYPE_STRING,      # enumerations.SECTION_NAME
-                        gobject.TYPE_STRING,      # enumerations.SECTION_SUBCATEGORY
                         gobject.TYPE_BOOLEAN,     # enumerations.SECTION_ENABLED
                         )
 
@@ -1081,44 +1107,26 @@ class PackageManager:
                         vadj = self.w_application_treeview.get_vadjustment()
                         vadj.connect('value-changed',
                             self.__application_treeview_vadjustment_changed, None)
-                        vadj = self.w_categories_treeview.get_vadjustment()
-                        vadj.connect('value-changed',
-                            self.__categories_treeview_vadjustment_changed, None)
 
                         # When the size of the application_treeview changes
                         # we need to set image descriptions on visible status icons.
                         self.w_application_treeview.connect('size-allocate',
                             self.__application_treeview_size_allocate, None)
-                        self.w_categories_treeview.connect('size-allocate',
-                            self.__categories_treeview_size_allocate, None)
 
                 if category_list != None:
                         ##CATEGORIES TREEVIEW
-                        #enumerations.CATEGORY_NAME
                         category_list_filter = category_list.filter_new()
-                        column =  self.__create_icon_column("", False,
-                            enumerations.CATEGORY_ICON, False)
-                        self.w_categories_treeview.append_column(column)
                         enumerations.CATEGORY_NAME_renderer = gtk.CellRendererText()
                         column = gtk.TreeViewColumn(_('Name'),
                             enumerations.CATEGORY_NAME_renderer,
-                            text = enumerations.CATEGORY_NAME)
+                            markup = enumerations.CATEGORY_NAME)
+                        enumerations.CATEGORY_NAME_renderer.set_property("xalign", 0.0)
                         self.w_categories_treeview.append_column(column)
                         #Added selection listener
                         category_selection = self.w_categories_treeview.get_selection()
                         category_selection.set_mode(gtk.SELECTION_SINGLE)
 
                 if self.first_run:
-                        ##SECTION COMBOBOX
-                        #enumerations.SECTION_NAME
-                        cell = gtk.CellRendererText()
-                        self.w_sections_combobox.pack_start(cell, True)
-                        self.w_sections_combobox.add_attribute(cell, 'text',
-                            enumerations.SECTION_NAME)
-                        self.w_sections_combobox.set_row_separator_func(
-                            self.combobox_id_separator)
-                        self.w_sections_combobox.add_attribute( cell,
-                            'sensitive', enumerations.SECTION_ENABLED )
                         ##FILTER COMBOBOX
                         render_pixbuf = gtk.CellRendererPixbuf()
                         self.w_filter_combobox.pack_start(render_pixbuf, expand = True)
@@ -1142,21 +1150,10 @@ class PackageManager:
                         self.category_list = category_list
                         self.category_list_filter = category_list_filter
                         self.w_categories_treeview.set_model(category_list_filter)
-                        if not self.is_all_publishers:
-                                category_list_filter.set_visible_func(
-                                    self.category_filter)
-                                self.__set_categories_visibility(self.set_section)
                         self.a11y_categories_treeview = \
                             self.w_categories_treeview.get_accessible()
                 if application_list != None:
                         if category_list != None:
-                                self.w_sections_combobox.set_model(section_list)
-                                try:
-                                        section = self.repository_category[\
-                                            self.last_visible_publisher]
-                                except KeyError:
-                                        section = self.set_section
-                                self.w_sections_combobox.set_active(section)
                                 self.w_filter_combobox.set_model(self.filter_list)
                                 self.w_filter_combobox.set_active(self.set_show_filter)
                         self.w_application_treeview.set_model(
@@ -1164,14 +1161,15 @@ class PackageManager:
                         if application_list_filter == None:
                                 self.application_list_filter.set_visible_func(
                                     self.__application_filter)
+                if not self.in_search_mode:
+                        if self.last_visible_publisher in self.category_active_paths and \
+                                self.category_active_paths[self.last_visible_publisher]:
+                                self.w_categories_treeview.set_cursor(
+                                    self.category_active_paths[(
+                                    self.last_visible_publisher)])
+                        else:
+                                self.w_categories_treeview.set_cursor(0)
 
-                category_selection = self.w_categories_treeview.get_selection()
-                category_model, category_iter = category_selection.get_selected()
-                self.pylintstub = category_model
-                if not category_iter and not self.in_search_mode:
-                #no category was selected, so select "All"
-                        category_selection.select_path(0)
-                        category_model, category_iter = category_selection.get_selected()
                 if self.first_run:
                         category_selection.connect("changed",
                             self.__on_category_selection_changed, None)
@@ -1179,69 +1177,20 @@ class PackageManager:
                             self.__on_category_row_activated, None)
                         self.w_categories_treeview.connect("focus-in-event",
                             self.__on_category_focus_in, None)
+                        self.w_categories_treeview.connect("button_press_event",
+                            self.__on_categoriestreeview_button_press_event, None)
+                        self.w_categories_treeview.connect("row-collapsed",
+                            self.__on_categoriestreeview_row_collapsed, None)
+                        self.w_categories_treeview.connect("row-expanded",
+                            self.__on_categoriestreeview_row_expanded, None)
                         self.package_selection.set_mode(gtk.SELECTION_SINGLE)
                         self.package_selection.connect("changed",
                             self.__on_package_selection_changed, None)
-
+                if category_list != None and section_list != None:
+                        self.__add_categories_to_tree(category_list, section_list)
                 self.a11y_application_treeview = \
                     self.w_application_treeview.get_accessible()
                 self.process_package_list_end()
-
-        def __categories_treeview_size_allocate(self, widget, allocation, user_data):
-                # We ignore any changes in the size during initialization.
-                if self.categories_treeview_initialized:
-                        if self.categories_status_id == 0:
-                                self.categories_status_id = gobject.idle_add(
-                                    self.__set_accessible_categories_visible_status)
-
-        def __categories_treeview_vadjustment_changed(self, widget, user_data):
-                self.__set_accessible_categories_visible_status()
-
-        def __set_accessible_categories_status(self, model, itr):
-                status = model.get_value(itr, enumerations.CATEGORY_ICON)
-                if status != None:
-                        desc = _("Updates Available")
-                else:
-                        desc = None
-                if desc != None:
-                        obj = self.a11y_categories_treeview.ref_at(
-                            int(model.get_string_from_iter(itr)),
-                            CATEGORIES_STATUS_COLUMN_INDEX)
-                        obj.set_image_description(desc)
-
-        def __set_accessible_categories_visible_status(self):
-                self.categories_status_id = 0
-                if self.a11y_categories_treeview.get_n_accessible_children() == 0:
-                        # accessibility is not enabled
-                        return
-
-                visible_range = self.w_categories_treeview.get_visible_range()
-                if visible_range == None:
-                        return
-                start = visible_range[0][0]
-                end = visible_range[1][0]
-                # We try to minimize the range of accessible objects
-                # on which we set image descriptions
-                if self.categories_treeview_range != None:
-                        old_start = self.categories_treeview_range[0][0]
-                        old_end = self.categories_treeview_range[1][0]
-                         # Old range is the same or smaller than new range
-                         # so do nothing
-                        if start >= old_start and end <= old_end:
-                                return
-                        if start < old_end:
-                                if end < old_end:
-                                        if end >= old_start:
-                                                end = old_start
-                                else:
-                                        start = old_end
-                self.categories_treeview_range = visible_range
-                model = self.category_list_filter
-                itr = model.get_iter_from_string(str(start))
-                while start <= end:
-                        start += 1
-                        self.__set_accessible_categories_status(model, itr)
-                        itr = model.iter_next(itr)
 
         def __application_treeview_column_sorted(self, widget, user_data):
                 self.__set_visible_status(False)
@@ -1404,8 +1353,8 @@ class PackageManager:
                 if orig_model != model:
                         return
 
-                #If doing a search abandon description updates
-                if self.__doing_search():
+                #If doing a search or switching sources abandon description updates
+                if self.__doing_search() or self.in_setup:
                         return
 
                 if debug_descriptions:
@@ -1444,7 +1393,6 @@ class PackageManager:
         def __disconnect_models(self):
                 self.w_application_treeview.set_model(None)
                 self.w_categories_treeview.set_model(None)
-                self.w_sections_combobox.set_model(None)
                 self.w_filter_combobox.set_model(None)
 
         def __disconnect_repository_model(self):
@@ -1466,23 +1414,21 @@ class PackageManager:
 
         @staticmethod
         def __init_sections(section_list):
-                '''This function is for initializing sections combo box, also adds "All"
-                Category. It sets active section combobox entry "All"'''
-                cat_path = None
+                '''This function is for initializing the sections list'''
                 enabled = True
-                # We enable only first section and later we might enable the rest,
-                # depending if there are some packages connected with them
-                section_list.append([0, _('All Categories'), cat_path, enabled ])
-                section_list.append([-1, "", cat_path, enabled ])
+                # Only enable the first section. Later other sections are enabled
+                # in __add_category_to_section() if the section contains any categories
+                # which in turn contain some packages.
+                section_list.append([0, _('All Categories'), enabled ])
                 enabled = False
-                section_list.append([2, _('Meta Packages'), cat_path, enabled ])
-                section_list.append([3, _('Applications'), cat_path, enabled ])
-                section_list.append([4, _('Desktop (GNOME)'), cat_path, enabled ])
-                section_list.append([5, _('Development'), cat_path, enabled ])
-                section_list.append([6, _('Distributions'), cat_path, enabled ])
-                section_list.append([7, _('Drivers'), cat_path, enabled ])
-                section_list.append([8, _('System'), cat_path, enabled ])
-                section_list.append([9, _('Web Services'), cat_path, enabled ])
+                section_list.append([1, _('Meta Packages'), enabled ])
+                section_list.append([2, _('Applications'), enabled ])
+                section_list.append([3, _('Desktop (GNOME)'), enabled ])
+                section_list.append([4, _('Development'), enabled ])
+                section_list.append([5, _('Distributions'), enabled ])
+                section_list.append([6, _('Drivers'), enabled ])
+                section_list.append([7, _('System'), enabled ])
+                section_list.append([8, _('Web Services'), enabled ])
 
         def __init_show_filter(self):
                 max_length = 0
@@ -1560,7 +1506,8 @@ class PackageManager:
                 beadm.Beadmin(self)
 
         def __on_searchentry_changed(self, widget):
-                if widget.get_text_length() > 0:
+                if widget.get_text_length() > 0 and \
+                        self.search_text_style != enumerations.SEARCH_STYLE_PROMPT:
                         if self.entry_embedded_icons_supported:
                                 self.w_searchentry.set_property("secondary-icon-stock", 
                                     gtk.STOCK_CANCEL)
@@ -1593,11 +1540,6 @@ class PackageManager:
                 self.__save_setup_before_search()
                 self.__clear_before_search()
                 self.__update_statusbar_for_search()
-                self.w_searchentry.grab_focus()
-                if self.w_searchentry.get_text_length() > 0:
-                        start, end = self.w_searchentry.get_selection_bounds()
-                        self.w_searchentry.select_region(end, end)
-                        self.pylintstub = start
 
         def __clear_before_search(self):
                 self.in_setup = True
@@ -1614,7 +1556,7 @@ class PackageManager:
                 self.set_busy_cursor()
                 self.w_repository_combobox.set_active(
                     self.saved_repository_combobox_active)
-                self.set_section = self.saved_sections_combobox_active
+                self.set_section = self.saved_section_active
                 if self.saved_category_list == self.category_list:
                         self.__init_tree_views(self.saved_application_list,
                             None, None,
@@ -1632,8 +1574,10 @@ class PackageManager:
                 #Do not save search data models
                 if self.in_search_mode:
                         return
-                self.saved_sections_combobox_active = \
-                        self.w_sections_combobox.get_active()
+                selected_section, selected_category = \
+                        self.__get_active_section_and_category()
+                self.pylintstub = selected_category
+                self.saved_section_active = selected_section
                 self.saved_application_list = self.application_list
                 self.saved_application_list_sort = \
                         self.application_list_sort
@@ -1651,6 +1595,11 @@ class PackageManager:
                 self.search_start = 0
                 if self.w_searchentry.get_text_length() == 0:
                         return
+                if self.w_searchentry.get_text() == "*":
+                        if self.in_search_mode:
+                                self.__unset_search(True)
+                        self.w_categories_treeview.set_cursor(0)
+                        return
                 if not self.is_all_publishers:
                         self.__save_setup_before_search(single_search=True)
                 self.__clear_before_search()
@@ -1662,14 +1611,19 @@ class PackageManager:
                 Thread(target = self.__do_api_search,
                     args = (self.is_all_publishers, )).start()
 
-        def __unselect_category(self):
+        def __get_selection_and_category_path(self):
                 selection = self.w_categories_treeview.get_selection()
+                if not selection:
+                        return None, (0,)
                 model, itr = selection.get_selected()
-                if itr:
-                        cat_path = model.get_string_from_iter(itr)
-                        selected_section = self.w_sections_combobox.get_active()
-                        section_row = self.section_list[selected_section]
-                        section_row[enumerations.SECTION_SUBCATEGORY] = cat_path
+                if not model or not itr:
+                        return None, (0,)
+                return selection, model.get_path(itr)
+
+        def __unselect_category(self):
+                selection, path = self.__get_selection_and_category_path()
+                if selection:
+                        self.category_active_paths[self.last_visible_publisher] = path
                         selection.unselect_all()
 
         def __process_after_search_failure(self):
@@ -1875,9 +1829,10 @@ class PackageManager:
                             self.__set_visible_status)
                 self.categories_treeview_initialized = True
                 self.categories_treeview_range = None
-                if self.categories_status_id == 0:
-                        self.categories_status_id = gobject.idle_add(
-                            self.__set_accessible_categories_visible_status)
+                len_filtered_list = len(self.application_list_filter)
+                if len_filtered_list > 0 and \
+                        self.length_visible_list != len_filtered_list:
+                        self.update_statusbar()
                 return False
 
         def __on_edit_paste(self, widget):
@@ -1909,7 +1864,7 @@ class PackageManager:
                 self.w_searchentry.grab_focus()
 
         def __on_clear_search(self, widget, icon_pos=0, event=None):
-                self.w_searchentry.delete_text(0, -1)
+                self.w_searchentry.set_text("")
                 # Only clear out search results
                 if self.in_search_mode or self.is_all_publishers:
                         self.__clear_before_search()
@@ -2104,6 +2059,7 @@ class PackageManager:
                                 pass
 
         def __on_searchentry_focus_in(self, widget, event):
+                self.__set_search_text_mode(enumerations.SEARCH_STYLE_NORMAL)
                 if self.w_main_clipboard.wait_is_text_available():
                         self.w_paste_menuitem.set_sensitive(True)
                 char_count = widget.get_text_length()
@@ -2123,6 +2079,8 @@ class PackageManager:
                         self.w_deselect_menuitem.set_sensitive(False)
 
         def __on_searchentry_focus_out(self, widget, event):
+                if self.w_searchentry.get_text_length() == 0:
+                        self.__set_search_text_mode(enumerations.SEARCH_STYLE_PROMPT)
                 self.w_paste_menuitem.set_sensitive(False)
                 self.__enable_disable_select_all()
                 self.__enable_disable_deselect()
@@ -2173,7 +2131,6 @@ class PackageManager:
                 if self.w_filter_combobox.get_model():
                         self.w_filter_combobox.set_active(
                             self.saved_filter_combobox_active)
-                self.w_searchentry.delete_text(0, -1)
                 if self.in_search_mode or self.is_all_publishers:
                         self.__unset_search(True)
                         if self.selected == 0:
@@ -2191,23 +2148,58 @@ class PackageManager:
                         self.w_main_view_notebook.set_current_page(
                                 NOTEBOOK_PACKAGE_LIST_PAGE)
 
+        def __on_categoriestreeview_row_collapsed(self, treeview, itr, path, data):
+                self.w_categories_treeview.set_cursor(path)
+                self.category_expanded_paths[(self.last_visible_publisher, path)] = 0
+                self.category_active_paths[self.last_visible_publisher] = path
+                
+        def __on_categoriestreeview_row_expanded(self, treeview, itr, path, data):
+                if self.in_setup and not self.first_run:
+                        return
+                self.w_categories_treeview.set_cursor(path)
+                self.category_expanded_paths[(self.last_visible_publisher, path)] = 1
+                self.category_active_paths[self.last_visible_publisher] = path
+
+        def __on_categoriestreeview_button_press_event(self, treeview, event, data):
+                if event.type != gtk.gdk.BUTTON_PRESS:
+                        return 1
+                x = int(event.x)
+                y = int(event.y)
+                pthinfo = treeview.get_path_at_pos(x, y)
+                if pthinfo is not None:
+                        path = pthinfo[0]
+                        cellx = pthinfo[2]
+                        #Ignore clicks on row toggle icon which is 16 pixels wide
+                        if cellx <= 16:
+                                return
+                        #Collapse expand Top level Sections only
+                        tree_view = self.w_categories_treeview
+                        if path != 0 and len(path) == 1:
+                                if tree_view.row_expanded(path) and \
+                                        self.w_main_view_notebook.get_current_page() == \
+                                        NOTEBOOK_START_PAGE:
+                                        self.__on_category_selection_changed(
+                                            tree_view.get_selection(), None)
+                                elif tree_view.row_expanded(path):
+                                        selection, sel_path = \
+                                                self.__get_selection_and_category_path()
+                                        if selection and sel_path == path:
+                                                tree_view.collapse_row(path)
+                                else:
+                                        tree_view.expand_row(path, False)
+                                self.category_active_paths[self.last_visible_publisher]\
+                                        = path
+
         def __on_category_selection_changed(self, selection, widget):
                 '''This function is for handling category selection changes'''
                 if self.in_setup:
                         return
                 model, itr = selection.get_selected()
                 if itr:
-                        cat_path = model.get_string_from_iter(itr)
-                        if self.is_all_publishers:
-                                selected_section = self.set_section
-                        else:
-                                selected_section = self.w_sections_combobox.get_active()
-                        section_row = self.section_list[selected_section]
-                        section_row[enumerations.SECTION_SUBCATEGORY] = cat_path
-
+                        self.category_active_paths[self.last_visible_publisher] = \
+                                model.get_path(itr)
                 if self.in_search_mode or self.is_all_publishers:
                         return
-                
                 if self.saved_filter_combobox_active != None:
                         self.w_filter_combobox.set_active(
                             self.saved_filter_combobox_active)
@@ -2218,6 +2210,74 @@ class PackageManager:
                 if self.selected == 0:
                         gobject.idle_add(self.__enable_disable_install_remove)
 
+        def __on_applicationtreeview_button_and_key_events(self, treeview, event):
+                if event.type == gtk.gdk.KEY_PRESS:
+                        keyname = gtk.gdk.keyval_name(event.keyval)
+                        if not(event.state == gtk.gdk.SHIFT_MASK and keyname == "F10"):
+                                return
+
+                        selection = self.w_application_treeview.get_selection()
+                        if not selection:
+                                return
+                        model, itr = selection.get_selected()
+                        if not model or not itr:
+                                return
+                        curr_time = event.time
+                        path = model.get_path(itr)
+                        col = treeview.get_column(1) # NAME_COLUMN
+                        treeview.grab_focus()
+                        treeview.set_cursor(path, col, 0)
+
+                        #Calculate popup coordinates
+                        treecell_rect = treeview.get_cell_area(path, col)
+                        rx, ry = treeview.tree_to_widget_coords(treecell_rect[0],
+                            treecell_rect[1])
+                        winx, winy  = treeview.get_bin_window().get_origin()
+                        winx += rx
+                        winy += ry
+                        popup_position = (winx, winy)
+                        self.w_package_menu.popup( None, None,
+                            self.__position_package_popup, gtk.gdk.KEY_PRESS,
+                            curr_time, popup_position)
+                        return
+
+                if event.type != gtk.gdk.BUTTON_PRESS and event.type != 5:
+                        return
+                x = int(event.x)
+                y = int(event.y)
+                pthinfo = treeview.get_path_at_pos(x, y)
+                if pthinfo == None:
+                        return                
+                path = pthinfo[0]
+                col = pthinfo[1]
+
+                #Double click
+                if event.type == GDK_2BUTTON_PRESS: 
+                        self.__active_pane_toggle(None, path, treeview.get_model())
+                        return                          
+                if event.button == GDK_RIGHT_BUTTON: #Right Click
+                        curr_time = event.time
+                        treeview.grab_focus()
+                        treeview.set_cursor( path, col, 0)
+                        self.w_package_menu.popup( None, None, None, event.button,
+                            curr_time)
+                        return
+
+        @staticmethod
+        def __position_package_popup(menu, position):
+                #Positions popup relative to the top left corner of the currently 
+                #selected row's Name cell
+                x, y = position
+                
+                #Offset x by 10 and y by 15 so underlying name is visible
+                return (x+10, y+15, True)
+        
+        @staticmethod
+        def __on_applicationtreeview_motion_notify_event(treeview, event):
+                #TBD - needed for Tooltips in application treeview
+                return
+                
+                
         def __process_package_selection(self):
                 model, itr = self.package_selection.get_selected()
                 if self.show_info_id != 0:
@@ -2261,75 +2321,6 @@ class PackageManager:
                 if self.selected == 0:
                         gobject.idle_add(self.__enable_disable_install_remove)
 
-        def __set_categories_visibility(self, selected_section):
-                self.category_list[0][enumerations.CATEGORY_ICON] = None
-                if selected_section == 0:
-                        for category in self.category_list:
-                                category[enumerations.CATEGORY_VISIBLE] = True
-                else:
-                        for category in self.category_list:
-                                if category[enumerations.CATEGORY_ID] == 0:
-                                        category[enumerations.CATEGORY_VISIBLE] = True
-                                else:
-                                        category_list = \
-                                            category[enumerations.SECTION_LIST_OBJECT]
-                                        if not category_list:
-                                                category[enumerations.CATEGORY_VISIBLE] \
-                                                    = False
-                                        else:
-                                                for section in category_list:
-                                                        if section == selected_section:
-                                                                category[enumerations. \
-                                                                    CATEGORY_VISIBLE] = \
-                                                                    True
-                                                        else:
-                                                                category[enumerations. \
-                                                                    CATEGORY_VISIBLE] = \
-                                                                    False
-
-                # Set category icon for All if a visible category has it
-                for category in self.category_list:
-                        if category[enumerations.CATEGORY_ICON] != None:
-                                self.category_list[0][enumerations.CATEGORY_ICON] = \
-                                    category[enumerations.CATEGORY_ICON]
-                                break
-
-                section_row = self.section_list[selected_section]
-                cat_path = section_row[enumerations.SECTION_SUBCATEGORY]
-                if cat_path != None:
-                        itr = self.category_list_filter.get_iter_from_string(cat_path)
-                        path = self.category_list_filter.get_path(itr)
-                        self.w_categories_treeview.set_cursor(path,
-                            None, start_editing=False)
-
-        def __on_sectionscombobox_changed(self, widget):
-                '''On section combobox changed'''
-                if self.in_setup:
-                        return
-                self.__set_main_view_package_list()
-                self.set_busy_cursor()
-                self.__set_first_category_text()
-                self.__set_categories_visibility(widget.get_active())
-                self.category_list_filter.refilter()
-                if self.in_search_mode or self.is_all_publishers:
-                        self.saved_sections_combobox_active = \
-                            self.w_sections_combobox.get_active()
-                        self.__unset_search(True)
-                        return
-                self.__refilter_on_idle()
-                if self.selected == 0:
-                        gobject.idle_add(self.__enable_disable_install_remove)
-
-        def __set_first_category_text(self):
-                active_section = self.w_sections_combobox.get_active()
-                all_cat_text = _("All")
-                if active_section != 0:
-                        all_cat_text += " " + self.section_list[active_section][1]
-                category_model = self.w_categories_treeview.get_model()
-                if category_model:
-                        list_store = category_model.get_model()
-                        list_store[0][1] = all_cat_text
-
         def __unset_search(self, same_repo):
                 self.w_infosearch_frame.hide()
                 selected_publisher = self.__get_selected_publisher()
@@ -2365,9 +2356,6 @@ class PackageManager:
                         selected_publisher = self.__get_selected_publisher()
                 if selected_publisher == self.last_visible_publisher:
                         return
-                if self.last_visible_publisher:
-                        self.repository_category[self.last_visible_publisher] = \
-                            self.w_sections_combobox.get_active()
                 if index == self.repo_combobox_all_pubs_index:
                         self.__set_all_publishers_mode()
                         return
@@ -2460,8 +2448,7 @@ class PackageManager:
                                 self.__refresh_for_publisher(pub)
                                 self.__add_pkgs_to_lists_from_api(pub,
                                     application_list, category_list, section_list)
-                                category_list.prepend([0, _('All'), None, None, False,
-                                    True, None])
+                                category_list.prepend(None, [0, _('All'), None, None])
                         if self.application_list and self.category_list and \
                             not self.last_visible_publisher_uptodate:
                                 status_str = _("Loading package list")
@@ -2612,7 +2599,7 @@ class PackageManager:
                     main_window = self.w_main_window)
 
         def __on_reload(self, widget):
-                self.w_searchentry.grab_focus()
+                self.w_repository_combobox.grab_focus()
                 if self.description_thread_running:
                         self.cancelled = True
                 if self.in_search_mode or self.is_all_publishers:
@@ -2758,8 +2745,10 @@ class PackageManager:
         def __update_reload_button(self):
                 if self.user_rights:
                         self.w_reload_menuitem.set_sensitive(True)
+                        self.w_reload_button.set_sensitive(True)
                 else:
                         self.w_reload_menuitem.set_sensitive(False)
+                        self.w_reload_button.set_sensitive(False)
 
         def __add_pkg_stem_to_list(self, stem, status):
                 pub = self.__get_selected_publisher()
@@ -3148,36 +3137,64 @@ class PackageManager:
                 return "%s: %s" % \
                     (_(action.name), action.attrs.get(action.key_attr, "???"))
 
+        def __get_active_section_and_category(self):
+                selection = self.w_categories_treeview.get_selection()
+                selected_section = 0
+                selected_category = 0
+                
+                if not selection:
+                        return 0, 0
+                category_model, category_itr = selection.get_selected()
+                if not category_model or not category_itr:
+                        return 0, 0
+
+                selected_category = category_model.get_value(category_itr,
+                    enumerations.CATEGORY_ID)
+                cat_path = list(category_model.get_path(category_itr))
+                        
+                # Top level Section has been selected
+                if len(cat_path) == 1 and selected_category > SECTION_ID_OFFSET:
+                        selected_section = selected_category - SECTION_ID_OFFSET
+                        return selected_section, 0
+                else:
+                        # Subcategory selected need to get categories parent Section
+                        parent_iter = category_model.iter_parent(category_itr)
+                        if not parent_iter:
+                                return selected_section, selected_category
+                        selected_section = category_model.get_value(
+                            parent_iter, enumerations.CATEGORY_ID) - SECTION_ID_OFFSET
+                        return selected_section, selected_category
+
         def __application_filter(self, model, itr):
                 '''This function is used to filter content in the main
                 application view'''
+                selected_category = 0
+                selected_section = 0
+                category = False
+
                 if self.in_setup or self.cancelled:
-                        return False
+                        return category
                 filter_id = self.w_filter_combobox.get_active()
                 if filter_id == enumerations.FILTER_SELECTED:
                         return model.get_value(itr, enumerations.MARK_COLUMN)
-                # XXX Show filter, chenge text to integers
-                selected_category = 0
-                category_selection = self.w_categories_treeview.get_selection()
-                category_model, category_iter = category_selection.get_selected()
-                if category_iter:
-                        selected_category = category_model.get_value(category_iter,
-                            enumerations.CATEGORY_ID)
+
                 category_list = model.get_value(itr, enumerations.CATEGORY_LIST_COLUMN)
-                selected_section = self.w_sections_combobox.get_active()
-                category = False
+                selected_section, selected_category = \
+                        self.__get_active_section_and_category()
+                
                 if selected_section == 0 and selected_category == 0:
-                        #For section "All" and category "All" always true
+                        #Clicked on All Categories
                         category = True
                 elif selected_category != 0:
+                        #Clicked on subcategory
                         if category_list and selected_category in category_list:
                                 category = True
                 elif category_list:
-                        #The selected category is "All" so we need to check
-                        #If the package belongs to one of the visible categories
-                        for visible_category in category_model:
-                                visible_id = visible_category[enumerations.CATEGORY_ID]
-                                if visible_id in category_list:
+                        #Clicked on Top Level section
+                        categories_in_section = \
+                                self.section_categories_list[selected_section]
+                        for cat_id in category_list:
+                                if cat_id in categories_in_section:
                                         category = True
                                         break
                 if (model.get_value(itr, enumerations.IS_VISIBLE_COLUMN) == False):
@@ -3445,8 +3462,6 @@ class PackageManager:
                 if section_list != None:
                         self.__init_sections(section_list)
                 #Imageinfo for categories
-                update_for_category_icon = \
-                    self.get_icon_pixbuf_from_glade_dir("legend_newupdate")
                 imginfo = imageinfo.ImageInfo()
                 sectioninfo = imageinfo.ImageInfo()
                 pubs = [p.prefix for p in self.api_o.get_publishers()]
@@ -3477,7 +3492,6 @@ class PackageManager:
                 pkg_name = None
                 pkg_publisher = None
                 prev_state = None
-                category_icon = None
                 for pkg, state in pkgs_known:
                         if prev_pfmri_str and \
                             prev_pfmri_str == pkg.get_short_fmri() and \
@@ -3493,7 +3507,6 @@ class PackageManager:
                                 self.__add_package_to_list(next_app,
                                     application_list,
                                     pkg_add, pkg_name,
-                                    category_icon,
                                     categories, category_list, pkg_publisher)
                                 pkg_add += 1
                         prev_stem = pkg.get_pkg_stem()
@@ -3503,7 +3516,6 @@ class PackageManager:
                         gobject.idle_add(self.__progress_set_fraction,
                             pkg_count, total_pkg_count)
                         status_icon = None
-                        category_icon = None
                         pkg_name = pkg.get_name()
                         pkg_name = gui_misc.get_pkg_name(pkg_name)
                         pkg_stem = pkg.get_pkg_stem()
@@ -3513,7 +3525,6 @@ class PackageManager:
                                 pkg_state = enumerations.INSTALLED
                                 if state["upgradable"] == True:
                                         status_icon = self.update_available_icon
-                                        category_icon = update_for_category_icon
                                         pkg_state = enumerations.UPDATABLE
                                 else:
                                         status_icon = self.installed_icon
@@ -3534,7 +3545,7 @@ class PackageManager:
 
                 if next_app:
                         self.__add_package_to_list(next_app, application_list, 
-                            pkg_add, pkg_name, category_icon, categories, 
+                            pkg_add, pkg_name, categories, 
                             category_list, pkg_publisher)
                         pkg_add += 1
                 if category_list != None:
@@ -3556,11 +3567,11 @@ class PackageManager:
                         rows = [tuple(r) + (i,) for i, r in enumerate(category_list)]
                         rows.sort(self.__sort)
                         r = []
-                        category_list.reorder([r[-1] for r in rows])
+                        category_list.reorder(None, [r[-1] for r in rows])
                 return
 
         def __add_package_to_list(self, app, application_list, pkg_add,
-            pkg_name, category_icon, categories, category_list, pub):
+            pkg_name, categories, category_list, pub):
                 row_iter = application_list.insert(pkg_add, app)
                 if category_list == None:
                         return
@@ -3569,34 +3580,25 @@ class PackageManager:
                         pkg_categories = cat_pub.get(pkg_name)
                         for pcat in pkg_categories.split(","):
                                 self.__add_package_to_category(_(pcat), None,
-                                    category_icon, row_iter, application_list,
+                                    row_iter, application_list,
                                     category_list)
 
         @staticmethod
         def __add_package_to_category(category_name, category_description,
-            category_icon, package, application_list, category_list):
+            package, application_list, category_list):
                 if not package or category_name == _('All'):
                         return
                 if not category_name:
                         return
                 category_id = None
-                icon_visible = False
-                if category_icon:
-                        icon_visible = True
                 for category in category_list:
                         if category[enumerations.CATEGORY_NAME] == category_name:
                                 category_id = category[enumerations.CATEGORY_ID]
-                                if category_icon:
-                                        category[enumerations.CATEGORY_ICON] = \
-                                            category_icon
-                                        category[enumerations.CATEGORY_ICON_VISIBLE] = \
-                                            icon_visible
                                 break
                 if not category_id:                       # Category not exists
                         category_id = len(category_list) + 1
-                        category_list.append([category_id, category_name,
-                            category_description, category_icon, icon_visible,
-                            True, None])
+                        category_list.append(None, [category_id, category_name,
+                            category_description, None])
                 if application_list.get_value(package,
                     enumerations.CATEGORY_LIST_COLUMN):
                         a = application_list.get_value(package,
@@ -3607,6 +3609,79 @@ class PackageManager:
                         category_list.append(category_id)
                         application_list.set(package,
                             enumerations.CATEGORY_LIST_COLUMN, category_list)
+
+        def __add_categories_to_tree(self, category_list, section_list):
+                category_tree = self.__get_new_category_liststore()
+                cat_iter = category_tree.append(None,
+                            [ 0, _("All Categories"), None, None])
+
+                #Build dic of section ids and categories they contain
+                #section_category_list[<sec_id>] -> cat_ids[cat_id] -> category
+                #Each category row contains a list of sections it belongs to stored in
+                #category[enumerations.SECTION_LIST_OBJECT]
+                for category in category_list:
+                        category_section_ids = \
+                                category[enumerations.SECTION_LIST_OBJECT]
+                        if category_section_ids == None:
+                                continue
+                        for sec_id in category_section_ids:
+                                if sec_id in self.section_categories_list:
+                                        category_ids = \
+                                                self.section_categories_list[sec_id]
+                                        category_ids[category[enumerations.CATEGORY_ID]] \
+                                                = category
+                                else:
+                                        self.section_categories_list[sec_id] = \
+                                                {category[enumerations.CATEGORY_ID]:\
+                                                    category}
+
+                #Build up the Category Tree
+                count = 1
+                visible_default_section_path = None
+                for section in section_list:
+                        sec_id = section[enumerations.SECTION_ID]
+                        #Map self.set_section section_list index to visible section index
+                        if sec_id <= 0 or not section[enumerations.SECTION_ENABLED]:
+                                continue
+                        if self.set_section == sec_id:
+                                visible_default_section_path = (count,)
+                        count += count
+                        
+                        cat_iter = category_tree.append(None,
+                            [ SECTION_ID_OFFSET + section[enumerations.SECTION_ID], 
+                            "<b>" + section[enumerations.SECTION_NAME] + "</b>",
+                            None, None])
+
+                        if not sec_id in self.section_categories_list:
+                                continue
+                        
+                        category_ids = self.section_categories_list[sec_id]
+                        for cat_id in category_ids.keys():
+                                category_tree.append(cat_iter, category_ids[cat_id])
+                                        
+                self.w_categories_treeview.set_model(category_tree)
+                
+                #Initial startup expand default Section if available
+                if visible_default_section_path and self.first_run:
+                        self.w_categories_treeview.expand_row(
+                            visible_default_section_path, False)
+                        return
+
+                #Restore expanded Category state
+                if len(self.category_expanded_paths) > 0:
+                        paths = self.category_expanded_paths.items()
+                        for key, val in paths:
+                                source, path = key
+                                if self.last_visible_publisher == source and val:
+                                        self.w_categories_treeview.expand_row(path, False)
+                #Resotre selected category path
+                if self.last_visible_publisher in self.category_active_paths and \
+                        self.category_active_paths[self.last_visible_publisher]:
+                        self.w_categories_treeview.set_cursor(
+                            self.category_active_paths[self.last_visible_publisher])
+                else:
+                        self.w_categories_treeview.set_cursor(0)
+                return
 
         @staticmethod
         def __add_category_to_section(category_name, section_name, category_list,
@@ -3732,11 +3807,6 @@ class PackageManager:
                     model.get_value(itr, 2) == ""
 
         @staticmethod
-        def category_filter(model, itr):
-                '''This function filters category in the main application view'''
-                return model.get_value(itr, enumerations.CATEGORY_VISIBLE)
-
-        @staticmethod
         def get_datetime(version):
                 dt = None
                 try:
@@ -3817,7 +3887,6 @@ class PackageManager:
 
 
         def process_package_list_end(self):
-                self.__set_first_category_text()
                 self.in_startpage_startup = False
                 if self.update_all_proceed:
                 # TODO: Handle situation where only SUNWipkg/SUNWipg-gui have been updated
@@ -3855,28 +3924,21 @@ class PackageManager:
                 search_text = self.w_searchentry.get_text()
 
                 if not self.in_search_mode:
-                        installed = 0
-                        self.selected = 0
-                        sel = 0
                         if self.application_list == None:
                                 return
+                        self.length_visible_list = len(self.application_list_filter)
+                        self.selected = 0
                         visible_publisher = self.__get_selected_publisher()
                         pkgs = self.selected_pkgs.get(visible_publisher)
                         if pkgs:
                                 self.selected = len(pkgs)
-                        for pkg_row in self.application_list:
-                                if pkg_row[enumerations.STATUS_COLUMN] == \
-                                        enumerations.INSTALLED \
-                                        or pkg_row[enumerations.STATUS_COLUMN] == \
-                                    enumerations.UPDATABLE:
-                                        installed = installed + 1
+                        selected_in_list = 0
+                        for pkg_row in self.application_list_filter:
                                 if pkg_row[enumerations.MARK_COLUMN]:
-                                        sel = sel + 1
-                        listed_str = _('%d listed') % len(self.application_list)
-                        sel_str = _('%d selected') % sel
-                        inst_str = _('%d installed') % installed
-                        status_str = _("%s: %s , %s, %s.") % (visible_publisher,
-                            listed_str, inst_str, sel_str)
+                                        selected_in_list = selected_in_list + 1
+                        status_str = _("Total: %(total)s  Selected: %(selected)s") % \
+                                {"total": self.length_visible_list, 
+                                "selected": selected_in_list}
                         self.__update_statusbar_message(status_str)
                         return
 

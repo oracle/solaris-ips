@@ -40,7 +40,7 @@ try:
 except ImportError:
         nobe = True
 
-CACHE_VERSION = 9
+CACHE_VERSION = 10
 INDEX_HASH_LENGTH = 41
 
 class CacheListStores:
@@ -51,9 +51,6 @@ class CacheListStores:
                 self.update_available_icon = update_available_icon
                 self.installed_icon = installed_icon
                 self.not_installed_icon = not_installed_icon
-                self.category_icon = gui_misc.get_pixbuf_from_path(
-                    os.path.join(application_dir,
-                    "usr/share/package-manager/"), "legend_newupdate")
 
         def check_if_cache_uptodate(self, publisher):
                 try:
@@ -157,10 +154,6 @@ class CacheListStores:
                         cat["id"] = category[enumerations.CATEGORY_ID]
                         cat["name"] = category[enumerations.CATEGORY_NAME]
                         cat["description"] = category[enumerations.CATEGORY_DESCRIPTION]
-                        # Can't store pixbuf :(
-                        # cat["icon"] = category[enumerations.CATEGORY_ICON]
-                        cat["iconvisible"] = category[enumerations.CATEGORY_ICON_VISIBLE]
-                        cat["visible"] = category[enumerations.CATEGORY_VISIBLE]
                         cat["section_list"] = category[enumerations.SECTION_LIST_OBJECT]
                         categories.append(cat)
                 gui_misc.dump_cache_file(os.path.join(cache_dir, 
@@ -197,7 +190,6 @@ class CacheListStores:
                         sec = {}
                         sec["id"] = section[enumerations.SECTION_ID]
                         sec["name"] = section[enumerations.SECTION_NAME]
-                        sec["subcategory"] = section[enumerations.SECTION_SUBCATEGORY]
                         sec["enabled"] = section[enumerations.SECTION_ENABLED]
                         sections.append(sec)
                 gui_misc.dump_cache_file(
@@ -222,18 +214,12 @@ class CacheListStores:
                         cat_id = cat.get("id")
                         name = cat.get("name")
                         description = cat.get("description")
-                        icon = None
-                        icon_visible = cat.get("iconvisible")
-                        if icon_visible:
-                                icon = self.category_icon
-                        visible = cat.get("visible")
                         section_list = cat.get("section_list")               
                         cat = \
                             [
-                                cat_id, name, description, icon, icon_visible,
-                                visible, section_list
+                                cat_id, name, description, section_list
                             ]
-                        category_list.insert(cat_count, cat)
+                        category_list.insert(None, cat_count, cat)
                         cat_count += 1
 
         def load_application_list(self, publisher, application_list, 
@@ -289,11 +275,10 @@ class CacheListStores:
                 for sec in sections:
                         sec_id = sec.get("id")
                         name = sec.get("name")
-                        subcategory = None
                         enabled = sec.get("enabled")
                         section = \
                             [
-                                sec_id, name, subcategory, enabled
+                                sec_id, name, enabled
                             ]
                         section_list.insert(sec_count, section)
                         sec_count += 1

@@ -77,12 +77,13 @@
       <applyto>/apps/packagemanager/preferences/initial_section</applyto>
       <owner>packagemanager</owner>
       <type>int</type>
-      <default>3</default>
+      <default>2</default>
       <locale name="C">
          <short>Initial section value</short>
          <long>
-          An integer which identifies the initial toplevel value to be
-          displayed when packagemanager starts. 0 corresponds to All Categories.
+          An integer which identifies the initial toplevel section to be
+          expanded when packagemanager starts. 
+          0 = "All Categories", 2 = "Applications" (the default)
          </long>
       </locale>
     </schema>

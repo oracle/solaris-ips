@@ -54,19 +54,15 @@ UPDATABLE,
 CATEGORY_ID,
 CATEGORY_NAME,
 CATEGORY_DESCRIPTION,
-CATEGORY_ICON,
-CATEGORY_ICON_VISIBLE,
-CATEGORY_VISIBLE,
 SECTION_LIST_OBJECT,     #List with the sections to which category belongs 
-) = range(7)
+) = range(4)
 
 #Sections
 (
 SECTION_ID,
 SECTION_NAME,
-SECTION_SUBCATEGORY,
 SECTION_ENABLED,
-) = range(4)
+) = range(3)
 
 #Filter
 (
@@ -122,3 +118,8 @@ NO_UPDATES_AVAILABLE,
 UPDATES_UNDETERMINED
 ) = range(3)
 
+# Search Text Style
+(
+SEARCH_STYLE_NORMAL,
+SEARCH_STYLE_PROMPT
+) = range(2)
