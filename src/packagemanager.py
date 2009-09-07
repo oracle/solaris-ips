@@ -4008,6 +4008,19 @@ class PackageManager:
                             self.not_installed_icon
                 row[enumerations.MARK_COLUMN] = False
 
+        def __update_publisher_list(self, pub, full_list, package_list):
+                for row in full_list:
+                        if row[enumerations.NAME_COLUMN] in package_list:
+                                self.__reset_row_status(row)
+
+        @staticmethod
+        def __update_package_list_names(package_list):
+                i = 0
+                while i < len(package_list):
+                        package_list[i] = gui_misc.get_pkg_name(package_list[i])
+                        i +=  1
+                return package_list
+
         def update_package_list(self, update_list):
                 if update_list == None and self.img_timestamp:
                         return
@@ -4020,18 +4033,32 @@ class PackageManager:
                         return
                 self.img_timestamp = self.cache_o.get_index_timestamp()
                 visible_list = update_list.get(visible_publisher)
-                if visible_list:
-                        i = 0
-                        while i < len(visible_list):
-                                visible_list[i] = gui_misc.get_pkg_name(
-                                    visible_list[i])
-                                i +=  1
-                        for row in self.application_list:
-                                if row[enumerations.NAME_COLUMN] in visible_list:
-                                        self.__reset_row_status(row)
-                        self.__dump_datamodels(visible_publisher,
-                                self.application_list, self.category_list,
-                                self.section_list)
+                if self.is_all_publishers:
+                        for pub in self.api_o.get_publishers():
+                                if pub.disabled:
+                                        continue
+                                prefix = pub.prefix
+                                package_list = update_list.get(prefix)
+                                if package_list != None:
+                                        package_list = \
+                                            self.__update_package_list_names(
+                                            package_list)
+                                        self.__update_publisher_list(prefix,
+                                            self.application_list,
+                                            package_list)
+                                        if self.last_visible_publisher == prefix:
+                                                self.__update_publisher_list(prefix,
+                                                        self.saved_application_list,
+                                                        package_list)
+                elif visible_list:
+                        visible_list = self.__update_package_list_names(visible_list)
+                        self.__update_publisher_list(visible_publisher, 
+                                self.application_list, visible_list)
+                        if self.in_search_mode:
+                                self.__update_publisher_list(visible_publisher,
+                                        self.saved_application_list,
+                                        visible_list)
+
                 for pub in update_list:
                         if pub != visible_publisher:
                                 pkg_list = update_list.get(pub)
