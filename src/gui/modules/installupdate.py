@@ -422,6 +422,8 @@ class InstallUpdate(progress.GuiProgressTracker):
                         if e.illegal:
                                 for i in e.illegal:
                                         msg += "\tpkg:\t" + i +"\n"
+                        else:
+                                msg = "%s" % e
                         self.__g_error_stage(msg)
                         return
                 except api_errors.CatalogRefreshException, e:

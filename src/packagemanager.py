@@ -4073,6 +4073,8 @@ class PackageManager:
                                                 if self.info_cache.has_key(pkg_stem):
                                                         del self.info_cache[pkg_stem]
                                                 self.__remove_pkg_stem_from_list(pkg_stem)
+                # We need to reset status descriptions if a11y is enabled
+                self.__set_visible_status(False)
                 self.__process_package_selection()
                 self.__enable_disable_selection_menus()
                 self.__enable_disable_install_remove()
