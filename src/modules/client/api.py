@@ -234,16 +234,11 @@ class ImageInterface(object):
 
                 if exc_type == api_errors.PlanCreationException:
                         self.__set_history_PlanCreationException(exc_value)
-                        self.__reset_unlock()
-                        self.__activity_lock.release()
-                        raise
-                if not log_op_end or exc_type in log_op_end:
+                elif not log_op_end or exc_type in log_op_end:
                         self.log_operation_end(error=exc_value)
-                        self.__reset_unlock()
-                        self.__activity_lock.release()
-                        raise
+                self.__reset_unlock()
+                self.__activity_lock.release()
                 raise
-                # NOTREACHED
 
 
         def plan_install(self, pkg_list, filters, refresh_catalogs=True,
