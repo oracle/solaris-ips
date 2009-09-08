@@ -36,7 +36,7 @@ from pkg.client import global_settings
 from cPickle import UnpicklingError
 
 PKG_CLIENT_NAME = "check_for_updates"
-CACHE_VERSION =  1
+CACHE_VERSION =  2
 CACHE_NAME = ".last_refresh_cache"
 
 def __check_for_updates(image_directory, nice):
@@ -97,6 +97,19 @@ def __check_last_refresh(api_obj):
                 info = gui_misc.read_cache_file(os.path.join(
                     cache_dir, CACHE_NAME + '.cpl'))
                 if info.get("version") != CACHE_VERSION:
+                        if debug:
+                                print "Cache version mismatch:", \
+                                    info.get("version"), CACHE_VERSION
+                        return enumerations.UPDATES_UNDETERMINED
+                if info.get("os_release") != os.uname()[2]:
+                        if debug:
+                                print "OS release mismatch:", \
+                                    info.get("os_release"), os.uname()[2]
+                        return enumerations.UPDATES_UNDETERMINED
+                if info.get("os_version") != os.uname()[3]:
+                        if debug:
+                                print "OS version mismatch:", \
+                                    info.get("os_version"), os.uname()[3]
                         return enumerations.UPDATES_UNDETERMINED
                 old_publishers = info.get("publishers")
                 count = 0
@@ -133,6 +146,8 @@ def __dump_updates_available(api_obj, stuff_to_do):
                 print "publisher_list:", publisher_list
         dump_info = {}
         dump_info["version"] = CACHE_VERSION
+        dump_info["os_release"] = os.uname()[2]
+        dump_info["os_version"] = os.uname()[3]
         dump_info["updates_available"] = stuff_to_do
         dump_info["publishers"] = publisher_list
 
