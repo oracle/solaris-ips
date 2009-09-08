@@ -333,18 +333,18 @@ class PackageManager:
                 self.w_info_notebook = w_tree_main.get_widget("details_notebook")
                 self.w_generalinfo_textview = \
                     w_tree_main.get_widget("generalinfotextview")
-                self.w_generalinfo_textview.set_wrap_mode(gtk.WRAP_WORD)
+                self.w_generalinfo_textview.get_buffer().create_tag(
+                    "bold", weight=pango.WEIGHT_BOLD)
                 self.w_installedfiles_textview = \
                     w_tree_main.get_widget("installedfilestextview")
+                self.w_installedfiles_textview.get_buffer().create_tag(
+                    "bold", weight=pango.WEIGHT_BOLD)
                 self.w_license_textview = \
                     w_tree_main.get_widget("licensetextview")
                 self.w_dependencies_textview = \
                     w_tree_main.get_widget("dependenciestextview")
-                self.w_packagename_label = w_tree_main.get_widget("packagenamelabel")
-                self.w_shortdescription_label = \
-                    w_tree_main.get_widget("shortdescriptionlabel")
-                w_package_hbox = \
-                    w_tree_main.get_widget("package_hbox")
+                self.w_dependencies_textview.get_buffer().create_tag(
+                    "bold", weight=pango.WEIGHT_BOLD)
                 self.w_general_info_label = \
                     w_tree_main.get_widget("general_info_label")
                 self.w_startpage_frame = \
@@ -574,8 +574,6 @@ class PackageManager:
                 gdk_cursor = gtk.gdk.Cursor(gtk.gdk.WATCH)
 
                 self.gdk_window.set_cursor(gdk_cursor)
-                # Until package icons become available hide Package Icon Panel
-                w_package_hbox.hide()
                 if self.show_startpage:
                         self.w_main_view_notebook.set_current_page(NOTEBOOK_START_PAGE)
                 else:
@@ -2841,9 +2839,6 @@ class PackageManager:
                 if self.show_licenses_id != 0:
                         gobject.source_remove(self.show_licenses_id)
                         self.show_licenses_id = 0
-                pkg_name = _("Package Name")
-                self.w_packagename_label.set_markup("<b>" + pkg_name + "</b>")
-                self.w_general_info_label.set_markup("<b>" + pkg_name + "</b>")
                 self.w_installedfiles_textview.get_buffer().set_text("")
                 self.w_dependencies_textview.get_buffer().set_text("")
                 self.w_generalinfo_textview.get_buffer().set_text("")
@@ -2851,16 +2846,10 @@ class PackageManager:
                 return
 
         def __show_fetching_package_info(self, pkg):
-                pkg_name = pkg.get_name()
-                self.w_packagename_label.set_markup("<b>" + pkg_name + "</b>")
-                self.w_general_info_label.set_markup("<b>" + pkg_name + "</b>")
-
                 pkg_stem = pkg.get_pkg_stem()
                 if self.__setting_from_cache(pkg_stem):
                         return
 
-                self.w_shortdescription_label.set_text(
-                    _("Fetching description..."))
                 instbuffer = self.w_installedfiles_textview.get_buffer()
                 depbuffer = self.w_dependencies_textview.get_buffer()
                 infobuffer = self.w_generalinfo_textview.get_buffer()
@@ -2875,17 +2864,101 @@ class PackageManager:
                         self.info_cache = {}
 
                 if self.info_cache.has_key(pkg_stem):
-                        self.w_shortdescription_label.set_text(
-                            self.info_cache[pkg_stem][0])
-                        instbuffer = self.w_installedfiles_textview.get_buffer()
-                        depbuffer = self.w_dependencies_textview.get_buffer()
-                        infobuffer = self.w_generalinfo_textview.get_buffer()
-                        infobuffer.set_text(self.info_cache[pkg_stem][1])
-                        instbuffer.set_text(self.info_cache[pkg_stem][2])
-                        depbuffer.set_text(self.info_cache[pkg_stem][3])
+                        labs = self.info_cache[pkg_stem][1]
+                        text = self.info_cache[pkg_stem][2]
+                        self.__set_generalinfo_text(labs, text)
+                        text = self.info_cache[pkg_stem][3]
+                        self.__set_installedfiles_text(text)
+                        text = self.info_cache[pkg_stem][4]
+                        self.__set_dependencies_text(text)
                         return True
                 else:
                         return False
+
+        def __set_installedfiles_text(self, text):
+                instbuffer = self.w_installedfiles_textview.get_buffer()
+                instbuffer.set_text("")
+                itr = instbuffer.get_start_iter()
+                instbuffer.insert_with_tags_by_name(itr, _("Root: "), "bold")
+                end_itr = instbuffer.get_end_iter()
+                instbuffer.insert(end_itr, "%s" % text)
+
+        def __set_dependencies_text(self, text):
+                depbuffer = self.w_dependencies_textview.get_buffer()
+                depbuffer.set_text("")
+                itr = depbuffer.get_start_iter()
+                depbuffer.insert_with_tags_by_name(itr, _("Dependencies:\n"),
+                    "bold")
+                end_itr = depbuffer.get_end_iter()
+                depbuffer.insert(end_itr, "%s" % text)
+
+        @staticmethod
+        def __add_line_to_generalinfo(text_buffer, index, label, text, 
+            icon = None, font_size = 1):
+                itr = text_buffer.get_iter_at_line(index)
+                text_buffer.insert_with_tags_by_name(itr, label, "bold")
+                end_itr = text_buffer.get_end_iter()
+                if icon == None:
+                        text_buffer.insert(end_itr, "\t%s\n" % text)
+                else:
+                        width = icon.get_width()
+                        height = icon.get_height()
+                        resized_icon = icon.scale_simple(
+                            (font_size * width) / height,
+                            font_size,
+                            gtk.gdk.INTERP_BILINEAR)
+                        text_buffer.insert(end_itr, "\t ")
+                        text_buffer.get_end_iter()
+                        text_buffer.insert_pixbuf(end_itr, resized_icon)
+                        text_buffer.insert(end_itr, " %s\n" % text)
+
+        def __set_generalinfo_text(self, labs, text):
+                max_len = 0
+                for lab in labs:
+                        if len(labs[lab]) > max_len:
+                                max_len = len(labs[lab])
+
+                style = self.w_generalinfo_textview.get_style()
+                font_size_in_pango_unit = style.font_desc.get_size()
+                font_size_in_pixel = font_size_in_pango_unit / pango.SCALE
+                tab_array = pango.TabArray(2, True)
+                tab_array.set_tab(1, pango.TAB_LEFT, max_len * font_size_in_pixel)
+                self.w_generalinfo_textview.set_tabs(tab_array)
+
+                infobuffer = self.w_generalinfo_textview.get_buffer()
+                infobuffer.set_text("")
+                i = 0
+                self.__add_line_to_generalinfo(infobuffer, i, labs["name"], 
+                    text["name"])
+                i += 1
+                self.__add_line_to_generalinfo(infobuffer, i, labs["desc"],
+                    text["desc"])
+                i += 1
+                installed = False
+                if text["ins"] == _("No"):
+                        icon = self.not_installed_icon
+                else: 
+                        icon = self.installed_icon
+                        installed = True
+                self.__add_line_to_generalinfo(infobuffer, i, labs["ins"],
+                    text["ins"], icon, font_size_in_pixel)
+                i += 1
+                if installed and text["available"] != _("No"):
+                        self.__add_line_to_generalinfo(infobuffer, i, 
+                            labs["available"], text["available"],
+                            self.update_available_icon, font_size_in_pixel)
+                else:
+                        self.__add_line_to_generalinfo(infobuffer, i,
+                            labs["available"], text["available"])
+                i += 1
+                self.__add_line_to_generalinfo(infobuffer, i, labs["size"], 
+                    text["size"])
+                i += 1
+                self.__add_line_to_generalinfo(infobuffer, i, labs["cat"], 
+                    text["cat"])
+                i += 1
+                self.__add_line_to_generalinfo(infobuffer, i, labs["repository"], 
+                    text["repository"])
 
         def __update_package_info(self, pkg, local_info, remote_info, info_id):
                 if self.showing_empty_details or (info_id != 
@@ -2893,8 +2966,6 @@ class PackageManager:
                         return
                 pkg_name = pkg.get_name()
                 pkg_stem = pkg.get_pkg_stem()
-                self.w_packagename_label.set_markup("<b>" + pkg_name + "</b>")
-                self.w_general_info_label.set_markup("<b>" + pkg_name + "</b>")
                 installed = True
 
                 if self.__setting_from_cache(pkg_stem):
@@ -2908,9 +2979,6 @@ class PackageManager:
                         network_str = \
                             _("\nThis might be caused by network problem "
                             "while accessing the repository.")
-                        self.w_shortdescription_label.set_text(
-                            _("Description not available for this package...") +
-                            network_str)
                         instbuffer.set_text( \
                             _("Files Details not available for this package...") +
                             network_str)
@@ -2935,9 +3003,8 @@ class PackageManager:
                 #XXX long term need to have something more robust here for multi byte
                 if len(description) > MAX_DESC_LEN:
                         description = description[:MAX_DESC_LEN] + " ..."
-                self.w_shortdescription_label.set_text(description)
-                inst_str = _("Root: %s\n") % self.api_o.root
-                dep_str = _("Dependencies:\n")
+                inst_str = "%s\n" % self.api_o.root
+                dep_str = ""
 
                 if local_info.dependencies:
                         dep_str += ''.join(
@@ -2950,20 +3017,16 @@ class PackageManager:
                         inst_str += ''.join(["\t%s\n" % x for x in local_info.hardlinks])
                 if local_info.links:
                         inst_str += ''.join(["\t%s\n" % x for x in local_info.links])
-                info_str = ""
                 labs = {}
-                labs["sum"] = _("Summary:\t\t")
-                labs["size"] = _("Size:\t\t\t")
-                labs["cat"] = _("Category:\t\t")
-                labs["ins"] = _("Installed Version:\t")
-                labs["lat"] = _("Latest Version:\t")
-                labs["pkg_date"] = _("Packaging Date:\t")
-                labs["fmri"] = _("FMRI:\t\t\t")
-                labs["repository"] = _("Repository:\t\t")
-                max_len = 0
-                for lab in labs:
-                        if len(labs[lab]) > max_len:
-                                max_len = len(labs[lab])
+                labs["name"] = _("Name:")
+                labs["desc"] = _("Description:")
+                labs["size"] = _("Size:")
+                labs["cat"] = _("Category:")
+                labs["ins"] = _("Installed:")
+                labs["available"] = _("Version Available:")
+                labs["lat"] = _("Latest Version:")
+                labs["repository"] = _("Publisher:")
+
                 categories = _("None")
                 if local_info.category_info_list:
                         verbose = len(local_info.category_info_list) > 1
@@ -2972,26 +3035,37 @@ class PackageManager:
                         if len(local_info.category_info_list) > 1:
                                 for ci in local_info.category_info_list[1:]:
                                         categories += ", " + ci.__str__(verbose)
-                summary = _("None")
+                description = _("None")
                 if local_info.summary:
-                        summary = local_info.summary
-                info_str += "  %s %s" % (labs["sum"], summary)
-                info_str += "\n  %s %s" % (labs["size"],
-                    misc.bytes_to_str(local_info.size))
-                info_str += "\n  %s %s" % (labs["cat"], categories)
+                        description = local_info.summary
+
+                text = {}
+                text["name"] = pkg_name
+                text["desc"] = description
                 if installed:
-                        info_str += "\n  %s %s,%s-%s" % (labs["ins"], local_info.version,
-                            local_info.build_release, local_info.branch)
-                info_str += "\n  %s %s,%s-%s" % (labs["lat"], remote_info.version,
-                    remote_info.build_release, remote_info.branch)
-                info_str += "\n  %s %s" % (labs["pkg_date"], local_info.packaging_date)
-                info_str += "\n  %s %s" % (labs["fmri"], local_info.fmri)
-                info_str += "\n  %s %s" % (labs["repository"], local_info.publisher)
-                infobuffer.set_text(info_str)
-                instbuffer.set_text(inst_str)
-                depbuffer.set_text(dep_str)
+                        text["ins"] = _("Yes, %s-%s") % (
+                            local_info.build_release, local_info.branch) 
+                        labs["available"] =  _("Update Available:")
+                        if (local_info.build_release != remote_info.build_release or
+                            local_info.branch != remote_info.branch):
+                                text["available"] = _("Yes, %s-%s") % (
+                                    remote_info.build_release, remote_info.branch)
+                        else:
+                                text["available"] = _("No")
+                else: 
+                        text["ins"] = _("No")
+                        labs["available"] =  _("Version Available:")
+                        text["available"] = "%s-%s" % (
+                            remote_info.build_release, remote_info.branch)
+                text["size"] = misc.bytes_to_str(local_info.size)
+                text["cat"] = categories
+                text["repository"] = local_info.publisher
+                self.__set_generalinfo_text(labs, text)
+
+                self.__set_installedfiles_text(inst_str)
+                self.__set_dependencies_text(dep_str)
                 self.info_cache[pkg_stem] = \
-                    (description, info_str, inst_str, dep_str)
+                    (description, labs, text, inst_str, dep_str)
 
         def __update_package_license(self, licenses, license_id):
                 if self.showing_empty_details or (license_id !=
