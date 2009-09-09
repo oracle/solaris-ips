@@ -535,6 +535,9 @@ cli.t_pkgsend.py TestPkgsendBasics.test_6_help|pass
 cli.t_pkgsend.py TestPkgsendBasics.test_7_create_repo|pass
 cli.t_pkgsend.py TestPkgsendBasics.test_8_bug_7908|pass
 cli.t_pkgsend.py TestPkgsendBasics.test_9_multiple_dirs|pass
+cli.t_pkgsend.py TestPkgsendBasics.test_10_bundle_dir|pass
+cli.t_pkgsend.py TestPkgsendBasics.test_11_bundle_sysv_dir|pass
+cli.t_pkgsend.py TestPkgsendBasics.test_12_bundle_sysv_datastream|pass
 cli.t_setUp.py TestSetUp.test_first_depot_start|pass
 cli.t_setUp.py TestSetUp.test_second_depot_start|pass
 cli.t_variants.py TestPkgVariants.test_old_zones_pkgs|pass

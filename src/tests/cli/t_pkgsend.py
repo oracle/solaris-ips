@@ -279,6 +279,96 @@ class TestPkgsendBasics(testutils.SingleDepotTestCase):
                 self.pkg("verify")
                 self.image_destroy()
 
+        def test_10_bundle_dir(self):
+                rootdir = self.get_test_prefix()
+                dir1 = os.path.join(rootdir, "foo")
+                os.mkdir(dir1)
+                file(os.path.join(dir1, "bar"), "wb").close()
+                url = self.dc.get_depot_url()
+                self.pkgsend_bulk(url,
+                """open foo@1.0
+                import %s
+                close""" % dir1 )
+                self.image_create(url)
+                self.pkg("install foo")
+                self.image_destroy()
+
+        def test_11_bundle_sysv_dir(self):
+                rootdir = self.get_test_prefix()
+                dir1 = os.path.join(rootdir, "foobar")
+                os.mkdir(dir1)
+                file(os.path.join(dir1, "bar"), "wb").close()
+                pkginfopath = os.path.join(rootdir, "pkginfo")
+                pkginfo = file(pkginfopath, "w")
+                pkginfo.write('PKG="nopkg"\n'\
+                              'NAME="No package"\n'\
+                              'ARCH="all"\n'\
+                              'CLASSES="none"\n'\
+                              'CATEGORY="utility"\n'\
+                              'VENDOR="nobody"\n'\
+                              'PSTAMP="7thOct83"\n'\
+                              'ISTATES="S s 1 2 3"\n'\
+                              'RSTATES="S s 1 2 3"\n'\
+                              'BASEDIR="/"')
+                pkginfo.close()
+                prototypepath = os.path.join(rootdir, "Prototype")
+                prototype = file(prototypepath, "w")
+                prototype.write("""i pkginfo
+                d none foobar 0755 nobody nobody
+                f none foobar/bar 0644 nobody nobody""")
+                prototype.close()
+                os.system("pkgmk -o -r %s -d %s -f %s"
+                         % (rootdir, rootdir, prototypepath))
+                url = self.dc.get_depot_url()
+                self.pkgsend_bulk(url,
+                """open nopkg@1.0
+                import %s
+                close""" % (os.path.join(rootdir, "nopkg")) )
+                os.remove(os.path.join(dir1, "bar"))
+                os.rmdir(dir1)
+                self.image_create(url)
+                self.pkg("install nopkg")
+                self.image_destroy()
+
+
+        def test_12_bundle_sysv_datastream(self):
+                rootdir = self.get_test_prefix()
+                dir1 = os.path.join(rootdir, "foobar")
+                os.mkdir(dir1)
+                file(os.path.join(dir1, "bar"), "wb").close()
+                pkginfopath = os.path.join(rootdir, "pkginfo")
+                pkginfo = file(pkginfopath, "w")
+                pkginfo.write('PKG="nopkg"\n'\
+                              'NAME="No package"\n'\
+                              'ARCH="all"\n'\
+                              'CLASSES="none"\n'\
+                              'CATEGORY="utility"\n'\
+                              'VENDOR="nobody"\n'\
+                              'PSTAMP="7thOct83"\n'\
+                              'ISTATES="S s 1 2 3"\n'\
+                              'RSTATES="S s 1 2 3"\n'\
+                              'BASEDIR="/"')
+                pkginfo.close()
+                prototypepath = os.path.join(rootdir, "Prototype")
+                prototype = file(prototypepath, "w")
+                prototype.write("""i pkginfo
+                d none foobar 0755 nobody nobody
+                f none foobar/bar 0644 nobody nobody""")
+                prototype.close()
+                os.system("pkgmk -o -r %s -d %s -f %s"
+                         % (rootdir, rootdir, prototypepath))
+                os.system("pkgtrans -s %s %s nopkg" % (rootdir, \
+                        os.path.join(rootdir, "nopkg.pkg")))
+                url = self.dc.get_depot_url()
+                self.pkgsend_bulk(url,
+                """open nopkg@1.0
+                import %s
+                close""" % os.path.join(rootdir, "nopkg.pkg") )
+                os.remove(os.path.join(dir1, "bar"))
+                os.rmdir(dir1)
+                self.image_create(url)
+                self.pkg("install nopkg")
+                self.image_destroy()
 
 if __name__ == "__main__":
         unittest.main()
