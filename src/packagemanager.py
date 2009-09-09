@@ -280,7 +280,6 @@ class PackageManager:
                 self.length_visible_list = 0
                 self.application_list = None
                 self.a11y_application_treeview = None
-                self.a11y_categories_treeview = None
                 self.application_treeview_range = None
                 self.application_treeview_initialized = False
                 self.categories_treeview_range = None
@@ -328,6 +327,9 @@ class PackageManager:
                     w_tree_main.get_widget("applicationtreeview")
                 self.w_application_treeview.connect('key_press_event',
                     self.__on_applicationtreeview_button_and_key_events)
+                self.w_application_treeview.connect('motion-notify-event',
+                    self.__on_applicationtreeview_motion_events)
+                self.applicationtreeview_tooltips = None
 
                 self.w_categories_treeview = w_tree_main.get_widget("categoriestreeview")
                 self.w_info_notebook = w_tree_main.get_widget("details_notebook")
@@ -1153,8 +1155,6 @@ class PackageManager:
                         self.category_list = category_list
                         self.category_list_filter = category_list_filter
                         self.w_categories_treeview.set_model(category_list_filter)
-                        self.a11y_categories_treeview = \
-                            self.w_categories_treeview.get_accessible()
                 if application_list != None:
                         if category_list != None:
                                 self.w_filter_combobox.set_model(self.filter_list)
@@ -2203,9 +2203,50 @@ class PackageManager:
                 if self.selected == 0:
                         gobject.idle_add(self.__enable_disable_install_remove)
 
+        def __on_applicationtreeview_motion_events(self, treeview, event):
+                if event.state == gtk.gdk.CONTROL_MASK or \
+                        event.state == gtk.gdk.SHIFT_MASK or \
+                        event.state == gtk.gdk.MOD1_MASK or \
+                        event.state == gtk.gdk.BUTTON1_MASK or \
+                        event.state == gtk.gdk.BUTTON2_MASK or \
+                        event.state == gtk.gdk.BUTTON3_MASK:
+                        return
+                info = treeview.get_path_at_pos(int(event.x), int(event.y))
+                if not info:
+                        return 
+                self.__show_app_column_tooltip(treeview, _("Status"), info[0], info[1])
+
+        def __show_app_column_tooltip(self, treeview, col_title, path, col):
+                self.applicationtreeview_tooltips = gtk.Tooltips()
+                tip = ""
+                if path and col:
+                        title = col.get_title() 
+                        if title != col_title:
+                                self.applicationtreeview_tooltips.set_tip(treeview, tip)
+                                self.applicationtreeview_tooltips.disable()
+                                return
+                        row = list(treeview.get_model()[path])
+                        if row:
+                                status = row[enumerations.STATUS_COLUMN]
+                                if status == enumerations.INSTALLED:
+                                        tip = _("Installed")
+                                elif status == enumerations.NOT_INSTALLED:
+                                        tip = _("Not installed")
+                                elif status == enumerations.UPDATABLE:
+                                        tip = _("Updates Available")
+
+                self.applicationtreeview_tooltips.set_tip(treeview, tip)
+                if tip != "":
+                        self.applicationtreeview_tooltips.enable()
+                else:
+                        self.applicationtreeview_tooltips.disable()
+
         def __on_applicationtreeview_button_and_key_events(self, treeview, event):
                 if event.type == gtk.gdk.KEY_PRESS:
                         keyname = gtk.gdk.keyval_name(event.keyval)
+                        if event.state == gtk.gdk.CONTROL_MASK and keyname == "F1":
+                                return True #Disable Tooltip popup using Ctrl-F1
+
                         if not(event.state == gtk.gdk.SHIFT_MASK and keyname == "F10"):
                                 return
 
@@ -2218,7 +2259,6 @@ class PackageManager:
                         curr_time = event.time
                         path = model.get_path(itr)
                         col = treeview.get_column(1) # NAME_COLUMN
-                        treeview.grab_focus()
                         treeview.set_cursor(path, col, 0)
 
                         #Calculate popup coordinates
