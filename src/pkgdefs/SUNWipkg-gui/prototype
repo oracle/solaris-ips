@@ -73,6 +73,7 @@ f none usr/share/package-manager/icons/hicolor/16x16/actions/filter_all.png 444 
 f none usr/share/package-manager/icons/hicolor/16x16/actions/filter_selected.png 444 root other
 f none usr/share/package-manager/icons/hicolor/16x16/actions/progress_blank.png 444 root other
 f none usr/share/package-manager/icons/hicolor/16x16/actions/progress_checkmark.png 444 root other
+f none usr/share/package-manager/icons/hicolor/16x16/actions/selection.png 444 root other
 f none usr/share/package-manager/icons/hicolor/16x16/actions/status_checkmark.png 444 root other
 f none usr/share/package-manager/icons/hicolor/16x16/actions/status_installed.png 444 root other
 f none usr/share/package-manager/icons/hicolor/16x16/actions/status_newupdate.png 444 root other

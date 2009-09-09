@@ -1005,14 +1005,19 @@ class PackageManager:
                             enumerations.STATUS_ICON_COLUMN, self.__status_sort_func)
                 toggle_renderer = gtk.CellRendererToggle()
 
-                column = gtk.TreeViewColumn("", toggle_renderer, \
+                column = gtk.TreeViewColumn("", toggle_renderer,
                     active = enumerations.MARK_COLUMN)
-                column.set_sort_column_id(enumerations.MARK_COLUMN)
-                column.set_sort_indicator(True)
                 column.set_cell_data_func(toggle_renderer, self.cell_data_function, None)
-                column.connect_after('clicked',
-                    self.__application_treeview_column_sorted, None)
+                column.set_clickable(True)
+                column.connect('clicked', self.__select_column_clicked)
                 self.w_application_treeview.append_column(column)
+                image = gtk.Image()
+                image.set_from_pixbuf(gui_misc.get_icon(self.icon_theme, 'selection'))
+                tooltips = gtk.Tooltips()
+                tooltips.set_tip(image, _("Click to toggle selections"))
+                image.show()
+                column.set_widget(image)
+
                 name_renderer = gtk.CellRendererText()
                 column = gtk.TreeViewColumn(_("Name"), name_renderer,
                     text = enumerations.NAME_COLUMN)
@@ -1189,6 +1194,11 @@ class PackageManager:
                 self.a11y_application_treeview = \
                     self.w_application_treeview.get_accessible()
                 self.process_package_list_end()
+
+        def __select_column_clicked(self, data):
+                self.set_busy_cursor()
+                gobject.idle_add(self.__toggle_select_all,
+                    self.w_selectall_menuitem.props.sensitive)
 
         def __application_treeview_column_sorted(self, widget, user_data):
                 self.__set_visible_status(False)
@@ -1897,19 +1907,23 @@ class PackageManager:
                         return True
                 else:
                         return False
-                    
-                    
-        def __on_select_all(self, widget):
+
+        def __toggle_select_all(self, select_all=True):
                 focus_widget = self.w_main_window.get_focus()
                 if self.__is_a_textview(focus_widget):
-                        focus_widget.emit('select-all', True)
+                        focus_widget.emit('select-all', select_all)
                         self.w_selectall_menuitem.set_sensitive(False)
                         self.w_deselect_menuitem.set_sensitive(True)
+                        self.unset_busy_cursor()
                         return
                 elif focus_widget == self.w_searchentry:
-                        focus_widget.select_region(0, -1)
+                        if select_all:
+                                focus_widget.select_region(0, -1)
+                        else:
+                                focus_widget.select_region(0, 0)
                         self.w_selectall_menuitem.set_sensitive(False)
                         self.w_deselect_menuitem.set_sensitive(True)
+                        self.unset_busy_cursor()
                         return
 
                 sort_filt_model = \
@@ -1923,23 +1937,43 @@ class PackageManager:
                         filtered_path = \
                             sort_filt_model.convert_path_to_child_path(sorted_path)
                         path = filt_model.convert_path_to_child_path(filtered_path)
-                        list_of_paths.append(path)
+                        if select_all:
+                                list_of_paths.append(path)
+                        else:
+                                filtered_iter = \
+                                        sort_filt_model.convert_iter_to_child_iter(None,
+                                            iter_next)
+                                app_iter = filt_model.convert_iter_to_child_iter(
+                                    filtered_iter)
+                                if model.get_value(app_iter, enumerations.MARK_COLUMN):
+                                        list_of_paths.append(path)
                         iter_next = sort_filt_model.iter_next(iter_next)
                 for path in list_of_paths:
                         itr = model.get_iter(path)
-                        already_marked = model.get_value(itr, enumerations.MARK_COLUMN)
-                        if not already_marked:
+                        mark_value = model.get_value(itr, enumerations.MARK_COLUMN)
+                        if select_all and not mark_value:
                                 model.set_value(itr, enumerations.MARK_COLUMN, True)
                                 pkg_stem = model.get_value(itr,
                                     enumerations.STEM_COLUMN)
                                 pkg_status = model.get_value(itr,
                                     enumerations.STATUS_COLUMN)
                                 self.__add_pkg_stem_to_list(pkg_stem, pkg_status)
-                self.w_selectall_menuitem.set_sensitive(False)
-                self.w_deselect_menuitem.set_sensitive(True)
+                        elif not select_all and mark_value:
+                                model.set_value(itr, enumerations.MARK_COLUMN, False)
+                                self.__remove_pkg_stem_from_list(model.get_value(itr,
+                                    enumerations.STEM_COLUMN))
+                
+                self.w_selectall_menuitem.set_sensitive(not select_all)
+                self.w_deselect_menuitem.set_sensitive(select_all)
                 self.__enable_disable_selection_menus()
                 self.update_statusbar()
                 self.__enable_disable_install_remove()
+                self.unset_busy_cursor()
+                        
+        def __on_select_all(self, widget):
+                self.set_busy_cursor()
+                gobject.idle_add(self.__toggle_select_all, True)
+                return
 
         def __on_select_updates(self, widget):
                 sort_filt_model = \
@@ -1972,48 +2006,9 @@ class PackageManager:
                 self.__enable_disable_install_remove()
 
         def __on_deselect(self, widget):
-                focus_widget = self.w_main_window.get_focus()
-                if self.__is_a_textview(focus_widget):
-                        focus_widget.emit('select-all', False)
-                        self.w_deselect_menuitem.set_sensitive(False)
-                        self.w_selectall_menuitem.set_sensitive(True)
-                        return
-                elif focus_widget == self.w_searchentry:
-                        focus_widget.select_region(0, 0)
-                        self.w_deselect_menuitem.set_sensitive(False)
-                        self.w_selectall_menuitem.set_sensitive(True)
-                        return
-
-                sort_filt_model = \
-                    self.w_application_treeview.get_model() #gtk.TreeModelSort
-                filt_model = sort_filt_model.get_model() #gtk.TreeModelFilter
-                model = filt_model.get_model() #gtk.ListStore
-                iter_next = sort_filt_model.get_iter_first()
-                list_of_paths = []
-                while iter_next != None:
-                        sorted_path = sort_filt_model.get_path(iter_next)
-                        filtered_iter = sort_filt_model.convert_iter_to_child_iter(None, \
-                            iter_next)
-                        app_iter = filt_model.convert_iter_to_child_iter(filtered_iter)
-                        filtered_path = \
-                            sort_filt_model.convert_path_to_child_path(sorted_path)
-                        path = filt_model.convert_path_to_child_path(filtered_path)
-                        if model.get_value(app_iter, enumerations.MARK_COLUMN):
-                                list_of_paths.append(path)
-                        iter_next = sort_filt_model.iter_next(iter_next)
-                for path in list_of_paths:
-                        itr = model.get_iter(path)
-                        already_deselected = not model.get_value(itr,
-                            enumerations.MARK_COLUMN)
-                        if not already_deselected:
-                                model.set_value(itr, enumerations.MARK_COLUMN, False)
-                                self.__remove_pkg_stem_from_list(model.get_value(itr,
-                                    enumerations.STEM_COLUMN))
-                self.w_selectall_menuitem.set_sensitive(True)
-                self.w_deselect_menuitem.set_sensitive(False)
-                self.__enable_disable_selection_menus()
-                self.update_statusbar()
-                self.__enable_disable_install_remove()
+                self.set_busy_cursor()
+                gobject.idle_add(self.__toggle_select_all, False)
+                return
 
         def __on_preferences(self, widget):
                 self.w_startpage_checkbutton.set_active(self.show_startpage)
@@ -2250,7 +2245,7 @@ class PackageManager:
                 col = pthinfo[1]
 
                 #Double click
-                if event.type == GDK_2BUTTON_PRESS: 
+                if event.type == GDK_2BUTTON_PRESS:
                         self.__active_pane_toggle(None, path, treeview.get_model())
                         return                          
                 if event.button == GDK_RIGHT_BUTTON: #Right Click
@@ -2263,13 +2258,13 @@ class PackageManager:
 
         @staticmethod
         def __position_package_popup(menu, position):
-                #Positions popup relative to the top left corner of the currently 
+                #Positions popup relative to the top left corner of the currently
                 #selected row's Name cell
                 x, y = position
-                
+
                 #Offset x by 10 and y by 15 so underlying name is visible
                 return (x+10, y+15, True)
-        
+
         @staticmethod
         def __on_applicationtreeview_motion_notify_event(treeview, event):
                 #TBD - needed for Tooltips in application treeview
@@ -4055,16 +4050,16 @@ class PackageManager:
                 self.__remove_pkg_stem_from_list(pkg_stem)
                 if self.info_cache.has_key(pkg_stem):
                         del self.info_cache[pkg_stem]
-                package_info = self.__get_version(self.api_o, 
+                package_info = self.__get_version(self.api_o,
                     local = True, pkg = pkg_stem)
                 package_installed =  False
                 if package_info:
                         package_installed =  \
                             (package_info.state == api.PackageInfo.INSTALLED)
                 if package_installed:
-                        package_info = self.__get_version(self.api_o, 
+                        package_info = self.__get_version(self.api_o,
                             local = False, pkg = pkg_stem)
-                        if (package_info and 
+                        if (package_info and
                             package_info.state == api.PackageInfo.INSTALLED):
                                 row[enumerations.STATUS_COLUMN] = \
                                     enumerations.INSTALLED

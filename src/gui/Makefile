@@ -117,6 +117,7 @@ ICONS16 = \
    data/icons/16x16/filter_selected.png \
    data/icons/16x16/progress_blank.png \
    data/icons/16x16/progress_checkmark.png \
+   data/icons/16x16/selection.png \
    data/icons/16x16/status_checkmark.png \
    data/icons/16x16/status_installed.png \
    data/icons/16x16/status_newupdate.png \
