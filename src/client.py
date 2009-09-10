@@ -80,6 +80,14 @@ from pkg.misc import EmptyI, msg, emsg, PipeError
 CLIENT_API_VERSION = 19
 PKG_CLIENT_NAME = "pkg"
 
+JUST_UNKNOWN = 0
+JUST_LEFT = -1
+JUST_RIGHT = 1
+
+valid_special_attrs = ["action.name", "action.key", "action.raw"]
+
+valid_special_prefixes = ["action."]
+
 def error(text, cmd=None):
         """Emit an error message prefixed by the command name """
 
@@ -975,13 +983,33 @@ def __convert_output(a_str, match):
                 return a.attrs.get(a.key_attr), a.name, match
         return match, a.name, a.attrs.get(a.key_attr)
 
-def process_v_1_search(tup, first, return_type, pub):
-        """Transforms the tuples returned by search v1 into the four column
-        output format.
+def produce_matching_token(action, match):
+        """Given an action and a match value (see convert_output for more
+        details on this parameter), return the token which matched the query."""
 
-        The "first" parameter is a boolean stating whether this is the first
-        time this function has been called.  This controls the printing of the
-        header information.
+        if isinstance(action, actions.attribute.AttributeAction):
+                return match
+        if match == "basename":
+                return action.attrs.get("path")
+        r = action.attrs.get(match)
+        if r:
+                return r
+        return action.attrs.get(action.key_attr)
+
+def produce_matching_type(action, match):
+        """Given an action and a match value (see convert_output for more
+        details on this parameter), return the kind of match this was.  For
+        example, if the query matched a portion of a path of an action, this
+        will return 'path'.  If the action is an attribute action, it returns
+        the name set in the action. """
+
+        if not isinstance(action, actions.attribute.AttributeAction):
+                return match
+        return action.attrs.get("name")
+
+def v1_extract_info(tup, return_type, pub):
+        """Given a result from search, massages the information into a form
+        useful for produce_lines.
 
         The "return_type" parameter is an enumeration that describes the type
         of the information that will be converted.
@@ -990,7 +1018,14 @@ def process_v_1_search(tup, first, return_type, pub):
         If "return_type" is action information, "tup" is a three-tuple of the
         fmri name, the match, and a string representation of the action.  In
         the case where "return_type" is package information, "tup" is a one-
-        tuple containing the fmri name."""
+        tuple containing the fmri name.
+
+        The "pub" parameter contains information about the publisher from which
+        the result was obtained."""
+
+        action = None
+        match = None
+        match_type = None
 
         if return_type == api.Query.RETURN_ACTIONS:
                 try:
@@ -999,47 +1034,56 @@ def process_v_1_search(tup, first, return_type, pub):
                         error(_("The server returned a malformed result.\n"
                             "The problematic structure:%r") % (tup,))
                         return False
-                if first:
-                        msg("%-10s %-9s %-25s %s" %
-                            ("INDEX", "ACTION", "VALUE", "PACKAGE"))
                 try:
-                        out1, out2, out3 = __convert_output(action, match)
+                        action = actions.fromstr(action.rstrip())
                 except actions.ActionError, e:
                         error(_("The server returned an invalid action.\n%s") %
                             e)
                         return False
-                msg("%-10s %-9s %-25s %s" %
-                    (out1, out2, out3,
-                    fmri.PkgFmri(str(pfmri)).get_short_fmri()))
+                match_type = produce_matching_type(action, match)
+                match = produce_matching_token(action, match)
         else:
                 pfmri = tup
-                if first:
-                        msg("%s" % ("PACKAGE"))
-                pub_name = ''
-                # If pub is not None, it's either a RepositoryURI or a Publisher
-                # object.  If it's a Publisher, it has a prefix.  Otherwise,
-                # use the uri.
-                if pub is not None and hasattr(pub, "prefix"):
-                        pub_name = " (%s)" % pub.prefix
-                elif pub is not None and hasattr(pub, "uri"):
-                        pub_name = " (%s)" % pub.uri
-                msg("%s%s" %
-                    (fmri.PkgFmri(str(pfmri)).get_short_fmri(), pub_name))
-        return True
+        pfmri = fmri.PkgFmri(str(pfmri))
+        return pfmri, action, pub, match, match_type
 
 def search(img_dir, args):
         """Search for the given query."""
 
-        opts, pargs = getopt.getopt(args, "alprs:I")
+        # Constants which control the paging behavior for search output.
+        page_timeout = .5
+        max_timeout = 5
+        min_page_size = 5
+
+        search_attrs = valid_special_attrs[:]
+        search_attrs.extend(["search.match", "search.match_type"])
+
+        search_prefixes = valid_special_prefixes[:]
+        search_prefixes.extend(["search."])
+
+        opts, pargs = getopt.getopt(args, "Halo:prs:I")
+
+        default_attrs_action = ["search.match_type", "action.name",
+            "search.match", "pkg.shortfmri"]
+
+        default_attrs_package = ["pkg.shortfmri", "pkg.publisher"]
 
         local = remote = case_sensitive = False
         servers = []
+        attrs = []
         return_actions = True
+        display_headers = True
+        use_default_attrs = True
         for opt, arg in opts:
-                if opt == "-a":
+                if opt == "-H":
+                        display_headers = False
+                elif opt == "-a":
                         return_actions = True
                 elif opt == "-l":
                         local = True
+                elif opt == "-o":
+                        attrs.extend(arg.split(","))
+                        use_default_attrs = False
                 elif opt == "-p":
                         return_actions = False
                 elif opt == "-r":
@@ -1064,6 +1108,19 @@ def search(img_dir, args):
                 usage(_("at least one search term must be provided"),
                     cmd="search")
 
+        check_attrs(attrs, "search", reference=search_attrs,
+            prefixes=search_prefixes)
+
+        action_attr = False
+        for a in attrs:
+                if a.startswith("action.") or a.startswith("search.match"):
+                        action_attr = True
+                        if not return_actions:
+                                usage(_("action level options ('%s') to -o "
+                                    "cannot be used with the -p option") % a,
+                                    cmd="search")
+                        break
+
         searches = []
 
         try:
@@ -1079,7 +1136,6 @@ def search(img_dir, args):
                 error(e)
                 return 1
 
-        first = True
         good_res = False
         bad_res = False
 
@@ -1089,24 +1145,97 @@ def search(img_dir, args):
                 if remote:
                         searches.append(api_inst.remote_search(query,
                             servers=servers))
-
                 # By default assume we don't find anything.
                 retcode = 1
 
-                for raw_value in itertools.chain(*searches):
+                # get initial set of results
+                justs = calc_justs(attrs)
+                page_again = True
+                widths = []
+                st = None
+                ssu = None
+                header_attrs = attrs
+                while page_again:
+                        unprocessed_res = []
+                        page_again = False
+                        # Indexless search raises a slow search exception. In
+                        # that case, catch the exception, finish processing the
+                        # results, then propogate the error.
                         try:
-                                query_num, pub, (v, return_type, tmp) = \
-                                    raw_value
-                        except ValueError, e:
-                                error(_("The server returned a malformed "
-                                    "result:%r") % (raw_value,))
-                                bad_res = True
-                                continue
-                        ret = process_v_1_search(tmp, first,
-                            return_type, pub)
-                        good_res |= ret
-                        bad_res |= not ret
-                        first = False
+                                for raw_value in itertools.chain(*searches):
+                                        if not st:
+                                                st = time.time()
+                                        try:
+                                                query_num, pub, \
+                                                    (v, return_type, tmp) = \
+                                                    raw_value
+                                        except ValueError, e:
+                                                error(_("The server returned a "
+                                                    "malformed result:%r") %
+                                                    (raw_value,))
+                                                bad_res = True
+                                                continue
+                                        # This check is necessary since a
+                                        # a pacakge search can be specified
+                                        # using the <> operator.
+                                        if action_attr and \
+                                            return_type != \
+                                            api.Query.RETURN_ACTIONS:
+                                                usage(_("action level options "
+                                                    "to -o cannot be used with "
+                                                    "the queries that return "
+                                                    "packages"), cmd="search")
+                                        if use_default_attrs and not justs:
+                                                if return_type == \
+                                                    api.Query.RETURN_ACTIONS:
+                                                        attrs = \
+                                                            default_attrs_action
+                                                        header_attrs = \
+                                                            ["index", "action",
+                                                            "value", "package"]
+                                                else:
+                                                        attrs = default_attrs_package
+                                                        header_attrs = \
+                                                            ["package",
+                                                            "publisher"]
+                                                justs = calc_justs(attrs)
+                                        ret = v1_extract_info(
+                                            tmp, return_type, pub)
+                                        bad_res |= isinstance(ret, bool)
+                                        if ret:
+                                                good_res = True
+                                                unprocessed_res.append(ret)
+                                        # Check whether the paging timeout
+                                        # should be increased.
+                                        if time.time() - st > page_timeout:
+                                                if len(unprocessed_res) > \
+                                                    min_page_size:
+                                                        page_again = True
+                                                        break
+                                                else:
+                                                        page_timeout = min(
+                                                            page_timeout * 2,
+                                                            max_timeout)
+                        except api_errors.SlowSearchUsed, e:
+                                ssu = e
+                        lines = produce_lines(unprocessed_res, attrs,
+                            show_all=True)
+                        old_widths = widths[:]
+                        widths = calc_widths(lines, attrs, widths)
+                        # If headers are being displayed and the layout of the
+                        # columns have changed, print the headers again using
+                        # the new widths.
+                        if display_headers and old_widths[:-1] != widths[:-1]:
+                                print_headers(header_attrs, widths, justs)
+                        for line in lines:
+                                msg((create_output_format(display_headers,
+                                    widths, justs, line) %
+                                    tuple(line)).rstrip())
+                        st = time.time()
+                if ssu:
+                        raise ssu
+
+
         except (api_errors.IncorrectIndexFileHash,
             api_errors.InconsistentIndexException):
                 error(_("The search index appears corrupted.  Please "
@@ -1129,7 +1258,7 @@ def search(img_dir, args):
                 retcode = 4
         elif bad_res:
                 retcode = 1
-        elif not first:
+        elif good_res:
                 retcode = 0
         return retcode
 
@@ -1271,76 +1400,178 @@ examining the catalogs:"""))
 
         return err
 
-def display_contents_results(actionlist, attrs, sort_attrs, action_types,
-    display_headers):
-        """Print results of a "list" operation """
+def calc_widths(lines, attrs, widths=None):
+        """Given a set of lines and a set of attributes, calculate the minimum
+        width each column needs to hold its contents."""
 
-        # widths is a list of tuples of column width and justification.  Start
-        # with the widths of the column headers.
-        JUST_UNKN = 0
-        JUST_LEFT = -1
-        JUST_RIGHT = 1
-        widths = [ (len(attr) - attr.find(".") - 1, JUST_UNKN)
-            for attr in attrs ]
+        if not widths:
+                widths = [ len(attr) - attr.find(".") - 1 for attr in attrs ]
+        for l in lines:
+                for i, a in enumerate(l):
+                        if len(str(a)) > widths[i]:
+                                widths[i] = len(str(a))
+        return widths
+
+def calc_justs(attrs):
+        """Given a set of output attributes, find any attributes with known
+        justification directions and assign them."""
+
+        def __chose_just(attr):
+                if attr in ["action.name", "action.key", "action.raw",
+                    "pkg.name", "pkg.fmri", "pkg.shortfmri", "pkg.publisher"]:
+                        return JUST_LEFT
+                return JUST_UNKNOWN
+        return [ __chose_just(attr) for attr in attrs ]
+        
+def produce_lines(actionlist, attrs, action_types=None, show_all=False):
+        """Produces a list of n tuples (where n is the length of attrs)
+        containing the relevant information about the actions.
+
+        The "actionlist" parameter is a list of tuples which contain the fmri
+        of the package that's the source of the action, the action, and the
+        publisher the action's package came from. If the actionlist was
+        generated by searching, the last two pieces, "match" and "match_type"
+        contain information about why this action was selected.
+
+        The "attrs" parameter is a list of the attributes of the action that
+        should be displayed.
+
+        The "action_types" parameter may contain a list of the types of actions
+        that should be displayed.
+
+        The "show_all" parameter determines whether an action that lacks one
+        or more of the desired attributes will be displayed or not.
+        """
+
         lines = []
-
-        for manifest, action in actionlist:
+        for pfmri, action, pub, match, match_type in actionlist:
                 if action_types and action.name not in action_types:
                         continue
                 line = []
-                for i, attr in enumerate(attrs):
-                        just = JUST_UNKN
-                        # As a first approximation, numeric attributes
-                        # are right justified, non-numerics left.
-                        try:
-                                int(action.attrs[attr])
-                                just = JUST_RIGHT
-                        # attribute is non-numeric or is something like
-                        # a list.
-                        except (ValueError, TypeError):
-                                just = JUST_LEFT
-                        # attribute isn't in the list, so we don't know
-                        # what it might be
-                        except KeyError:
-                                pass
-
-                        if attr in action.attrs:
+                for attr in attrs:
+                        if action and attr in action.attrs:
                                 a = action.attrs[attr]
                         elif attr == "action.name":
                                 a = action.name
-                                just = JUST_LEFT
                         elif attr == "action.key":
                                 a = action.attrs[action.key_attr]
-                                just = JUST_LEFT
                         elif attr == "action.raw":
                                 a = action
-                                just = JUST_LEFT
                         elif attr == "pkg.name":
-                                a = manifest.fmri.get_name()
-                                just = JUST_LEFT
+                                a = pfmri.get_name()
                         elif attr == "pkg.fmri":
-                                a = manifest.fmri
-                                just = JUST_LEFT
+                                a = pfmri
                         elif attr == "pkg.shortfmri":
-                                a = manifest.fmri.get_short_fmri()
-                                just = JUST_LEFT
+                                a = pfmri.get_short_fmri()
                         elif attr == "pkg.publisher":
-                                a = manifest.fmri.get_publisher()
-                                just = JUST_LEFT
+                                a = pfmri.get_publisher()
+                                if a is None:
+                                        a = pub
+                                        if a is None:
+                                                a = ""
+                        elif attr == "search.match":
+                                a = match
+                        elif attr == "search.match_type":
+                                a = match_type
                         else:
                                 a = ""
 
                         line.append(a)
 
-                        # XXX What to do when a column's justification
-                        # changes?
-                        if just != JUST_UNKN:
-                                widths[i] = \
-                                    (max(widths[i][0], len(str(a))), just)
-
-                if line and [l for l in line if str(l) != ""]:
+                if line and [l for l in line if str(l) != ""] or show_all:
                         lines.append(line)
+        return lines
 
+def default_left(v):
+        """For a given justification "v", use the default of left justification
+        if "v" is JUST_UNKNOWN."""
+
+        if v == JUST_UNKNOWN:
+                return JUST_LEFT
+        return v
+
+def print_headers(attrs, widths, justs):
+        """Print out the headers for the columns in the output.
+
+        The "attrs" parameter provides the headings that should be used.
+
+        The "widths" parameter provides the current estimates of the width
+        for each column. These may be changed due to the length of the headers.
+        This function does modify the values contained in "widths" outside this
+        function.
+
+        The "justs" parameter contains the justifications to use with each
+        header."""
+
+        headers = []
+        for i, attr in enumerate(attrs):
+                headers.append(str(attr.upper()))
+                widths[i] = max(widths[i], len(attr))
+
+        # Now that we know all the widths, multiply them by the
+        # justification values to get positive or negative numbers to
+        # pass to the %-expander.
+        widths = [ e[0] * default_left(e[1]) for e in zip(widths, justs) ]
+        fmt = ("%%%ss " * len(widths)) % tuple(widths)
+
+        msg((fmt % tuple(headers)).rstrip())
+
+def guess_unknown(j, v):
+        """If the justificaton to use for a value is unknown, assume that if
+        it is an integer, the output should be right justified, otherwise it
+        should be left justified."""
+
+        if j != JUST_UNKNOWN:
+                return j
+        try:
+                int(v)
+                return JUST_RIGHT
+        # attribute is non-numeric or is something like
+        # a list.
+        except (ValueError, TypeError):
+                return JUST_LEFT
+
+def create_output_format(display_headers, widths, justs, line):
+        """Produce a format string that can be used to display results.
+
+        The "display_headers" parameter is whether headers have been displayed
+        or not. If they have not, then use a simple tab system. If they
+        have, use the information in the other parameters to control the
+        formatting of the line.
+
+        The "widths" parameter contains the width to use for each column.
+
+        The "justs" parameter contains the justifications to use for each
+        column.
+
+        The "line" parameter contains the information that will be displayed
+        using the resulting format. It's needed so that a choice can be made
+        about columns with unknown justifications.
+        """
+
+        if display_headers:
+                # Now that we know all the widths, multiply them by the
+                # justification values to get positive or negative numbers to
+                # pass to the %-expander.
+                line_widths = [
+                    w * guess_unknown(j, a)
+                    for w, j, a in zip(widths, justs, line)
+                ]
+                fmt = ("%%%ss " * len(line_widths)) % tuple(line_widths)
+
+                return fmt
+        fmt = "%s\t" * len(widths)
+        fmt.rstrip("\t")
+        return fmt
+
+def display_contents_results(actionlist, attrs, sort_attrs, action_types,
+    display_headers):
+        """Print results of a "list" operation """
+
+        justs = calc_justs(attrs)
+        lines = produce_lines(actionlist, attrs, action_types)
+        widths = calc_widths(lines, attrs)
+        
         sortidx = 0
         for i, attr in enumerate(attrs):
                 if attr == sort_attrs[0]:
@@ -1348,7 +1579,7 @@ def display_contents_results(actionlist, attrs, sort_attrs, action_types,
                         break
 
         # Sort numeric columns numerically.
-        if widths[sortidx][1] == JUST_RIGHT:
+        if justs[sortidx] == JUST_RIGHT:
                 def key_extract(x):
                         try:
                                 return int(x[sortidx])
@@ -1358,25 +1589,25 @@ def display_contents_results(actionlist, attrs, sort_attrs, action_types,
                 key_extract = lambda x: x[sortidx]
 
         if display_headers:
-                headers = []
-                for i, attr in enumerate(attrs):
-                        headers.append(str(attr.upper()))
-                        widths[i] = \
-                            (max(widths[i][0], len(attr)), widths[i][1])
-
-                # Now that we know all the widths, multiply them by the
-                # justification values to get positive or negative numbers to
-                # pass to the %-expander.
-                widths = [ e[0] * e[1] for e in widths ]
-                fmt = ("%%%ss " * len(widths)) % tuple(widths)
-
-                msg((fmt % tuple(headers)).rstrip())
-        else:
-                fmt = "%s\t" * len(widths)
-                fmt.rstrip("\t")
+                print_headers(attrs, widths, justs)
 
         for line in sorted(lines, key=key_extract):
-                msg((fmt % tuple(line)).rstrip())
+                msg((create_output_format(display_headers, widths, justs,
+                    line) % tuple(line)).rstrip())
+
+def check_attrs(attrs, cmd, reference=None, prefixes=None):
+        """For a set of output attributes ("attrs") passed to a command ("cmd"),
+        if the attribute lives in a known name space, check whether it is valid.
+        """
+
+        if reference is None:
+                reference=valid_special_attrs
+        if prefixes is None:
+                prefixes=valid_special_prefixes
+        for a in attrs:
+                for p in prefixes:
+                        if a.startswith(p) and not a in reference:
+                                usage(_("Invalid attribute '%s'") % a, cmd)
 
 def list_contents(img, args):
         """List package contents.
@@ -1390,10 +1621,6 @@ def list_contents(img, args):
         # from repository.
 
         opts, pargs = getopt.getopt(args, "Ho:s:t:mfr")
-
-        valid_special_attrs = [ "action.name", "action.key", "action.raw",
-            "pkg.name", "pkg.fmri", "pkg.shortfmri", "pkg.publisher",
-            "pkg.size", "pkg.csize" ]
 
         display_headers = True
         display_raw = False
@@ -1439,12 +1666,7 @@ def list_contents(img, args):
                         usage(_("-m and %s may not be specified at the same "
                             "time") % invalid.pop(), cmd="contents")
 
-        for a in attrs:
-                if a.startswith("action.") and not a in valid_special_attrs:
-                        usage(_("Invalid attribute '%s'") % a, cmd="contents")
-
-                if a.startswith("pkg.") and not a in valid_special_attrs:
-                        usage(_("Invalid attribute '%s'") % a, cmd="contents")
+        check_attrs(attrs, "contents")
 
         img.history.operation_name = "contents"
         img.load_catalogs(progress.QuietProgressTracker())
@@ -1554,7 +1776,7 @@ def list_contents(img, args):
         manifests = ( img.get_manifest(f, all_arch=display_raw) for f in fmris )
 
         actionlist = [
-            (m, a)
+            (m.fmri, a, None, None, None)
             for m in manifests
             for a in m.gen_actions(excludes)
         ]

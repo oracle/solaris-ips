@@ -77,8 +77,8 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
 """
         bogus_fmri = fmri.PkgFmri("bogus_pkg@1.0,5.11-0:20090326T233451Z")
 
-        headers = "INDEX      ACTION    VALUE                     PACKAGE\n"
-        pkg_headers = "PACKAGE\n"
+        headers = "INDEX ACTION VALUE PACKAGE\n"
+        pkg_headers = "PACKAGE PUBLISHER\n"
 
         res_remote_path = set([
             headers,
@@ -230,7 +230,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
 
         res_remote_pkg_ret_pkg = set([
             pkg_headers,
-            "pkg:/example_pkg@1.0-0 (test)\n"
+            "pkg:/example_pkg@1.0-0 test\n"
         ])
 
         res_remote_file = set([
@@ -251,8 +251,31 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
              '820157a2043e3135f342b238129b556aade20347 file      bin/example_path          pkg:/example_pkg@1.0-0\n'
         ])
 
+        o_headers = \
+            "ACTION.NAME ACTION.KEY PKG.NAME " \
+            "PKG.SHORTFMRI SEARCH.MATCH " \
+            "SEARCH.MATCH_TYPE MODE OWNER GROUP " \
+            "ACTION.RAW PKG.PUBLISHER\n"
 
-        
+        o_results_no_pub = \
+            "file bin/example_path example_pkg " \
+            "pkg:/example_pkg@1.0-0 bin/example_path " \
+            "basename 0555 root bin " \
+            "file 820157a2043e3135f342b238129b556aade20347 chash=bfa46fc98d1ca97f1260090797d35a35e76096a3 group=bin mode=0555 owner=root path=bin/example_path pkg.csize=38 pkg.size=18\n"
+
+        o_results = o_results_no_pub.rstrip() + " test\n"
+
+        res_o_options_remote = set([o_headers, o_results])
+
+        res_o_options_local = set([o_headers, o_results_no_pub])
+
+        pkg_headers = "PKG.NAME PKG.SHORTFMRI PKG.PUBLISHER MODE"
+        pkg_results_no_pub = "example_pkg pkg:/example_pkg@1.0-0"
+        pkg_results = pkg_results_no_pub + " test"
+
+        res_pkg_options_remote = set([pkg_headers, pkg_results])
+        res_pkg_options_local = set([pkg_headers, pkg_results_no_pub])
+
         def setUp(self):
                 for p in self.misc_files:
                         f = open(p, "w")
@@ -275,18 +298,22 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
         def _check(self, proposed_answer, correct_answer):
                 if correct_answer == proposed_answer:
                         return True
-                else:
-                        print "Proposed Answer: " + str(proposed_answer)
-                        print "Correct Answer : " + str(correct_answer)
-                        if isinstance(correct_answer, set) and \
-                            isinstance(proposed_answer, set):
-                                print >> sys.stderr, "Missing: " + \
-                                    str(correct_answer - proposed_answer)
-                                print >> sys.stderr, "Extra  : " + \
-                                    str(proposed_answer - correct_answer)
-                        self.assert_(correct_answer == proposed_answer)
+                if len(proposed_answer) == len(correct_answer) and \
+                    sorted([p.strip().split() for p in proposed_answer]) == \
+                    sorted([c.strip().split() for c in correct_answer]):
+                        return True
+                print "Proposed Answer: " + str(proposed_answer)
+                print "Correct Answer : " + str(correct_answer)
+                if isinstance(correct_answer, set) and \
+                    isinstance(proposed_answer, set):
+                        print >> sys.stderr, "Missing: " + \
+                            str(correct_answer - proposed_answer)
+                        print >> sys.stderr, "Extra  : " + \
+                            str(proposed_answer - correct_answer)
+                self.assert_(correct_answer == proposed_answer)
 
-        def _search_op(self, remote, token, test_value, case_sensitive=False):
+        def _search_op(self, remote, token, test_value, case_sensitive=False,
+            return_actions=True):
                 outfile = os.path.join(self.testdata_dir, "res")
                 if remote:
                         token = "-r " + token
@@ -294,7 +321,11 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                         token = "-l " + token
                 if case_sensitive:
                         token = "-I " + token
-                self.pkg("search -a " + token + " > " + outfile)
+                if return_actions:
+                        token = "-a " + token
+                else:
+                        token = "-p " + token
+                self.pkg("search " + token + " > " + outfile)
                 res_list = (open(outfile, "rb")).readlines()
                 self._check(set(res_list), test_value)
 
@@ -472,6 +503,22 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 self.pkg("search -s httP://pkg.opensolaris.org bge")
                 self.pkg("search -s ftp://pkg.opensolaris.org:88 bge", exit=1)
 
+                # Testing interaction of -o and -p options
+                self.pkgsend_bulk(durl, self.example_pkg10)
+                self.pkg("search -o action.name -p pkg", exit=2)
+                self.pkg("search -o action.name '<pkg>'", exit=1)
+                self.pkg("search -o action.name '<example_path>'", exit=2)
+                self.pkg("search -o action.key -p pkg", exit=2)
+                self.pkg("search -o action.key '<pkg>'", exit=1)
+                self.pkg("search -o action.key '<example_path>'", exit=2)
+                self.pkg("search -o search.match -p pkg", exit=2)
+                self.pkg("search -o search.match '<pkg>'", exit=1)
+                self.pkg("search -o search.match '<example_path>'", exit=2)
+                self.pkg("search -o search.match_type -p pkg", exit=2)
+                self.pkg("search -o search.match_type '<pkg>'", exit=1)
+                self.pkg("search -o search.match_type '<example_path>'", exit=2)
+                self.pkg("search -o action.foo pkg", exit=2)
+
         def test_remote(self):
                 """Test remote search."""
                 # Need to retain to check that default search does remote, not
@@ -552,7 +599,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                     set(self.res_bogus_number_result))
 
         def test_bug_7835(self):
-                """Check that installing a package without in a non-empty
+                """Check that installing a package in a non-empty
                 image without an index doesn't build an index."""
                 # This test can't be moved to t_api_search until bug 8497 has
                 # been resolved.
@@ -606,6 +653,54 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                     lambda x: x.code == 400, urllib2.urlopen,
                     "%s/search/1/False_2_None_None_foo%%20%%3Cbar%%3E" % durl)
 
+        def test_bug_10515(self):
+                """Check that -o and -H options work as expected."""
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.example_pkg10)
+                
+                self.image_create(durl)
+
+                o_options = "action.name,action.key,pkg.name,pkg.shortfmri," \
+                    "search.match,search.match_type,mode,owner,group," \
+                    "action.raw,pkg.publisher"
+
+                pkg_options = "-o pkg.name -o pkg.shortfmri -o pkg.publisher " \
+                    "-o mode"
+
+                self._search_op(True, "-o %s example_path" % o_options,
+                    self.res_o_options_remote)
+                self._search_op(True, "-H -o %s example_path" % o_options,
+                    [self.o_results])
+                self._search_op(True, "-s %s -o %s example_path" %
+                    (durl, o_options), self.res_o_options_remote)
+
+                self._search_op(True, "-H -s "
+                    "http://pkg.opensolaris.org/release -o pkg.publisher "
+                    "/usr/bin/pkg", ["http://pkg.opensolaris.org/release/"])
+
+                self._search_op(True, "%s -p example_path" % pkg_options,
+                    self.res_pkg_options_remote)
+                self._search_op(True, "%s '<example_path>'" % pkg_options,
+                    self.res_pkg_options_remote)
+
+                self.pkg("install example_pkg")
+                self._search_op(False, "-o %s example_path" % o_options,
+                    self.res_o_options_local)
+                self._search_op(False, "-H -o %s example_path" % o_options,
+                    [self.o_results_no_pub])
+
+                self._search_op(False, "%s -p example_path" % pkg_options,
+                    self.res_pkg_options_local)
+                self._search_op(False, "%s '<example_path>'" % pkg_options,
+                    self.res_pkg_options_local)
+                
+                id, tid = self._get_index_dirs()
+                shutil.rmtree(id)
+                self._search_op(False, "-o %s example_path" % o_options,
+                    self.res_o_options_local)
+                self._search_op(False, "-H -o %s example_path" % o_options,
+                    [self.o_results_no_pub])
 
 if __name__ == "__main__":
         unittest.main()

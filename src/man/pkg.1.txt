@@ -16,7 +16,7 @@ SYNOPSIS
      /usr/bin/pkg contents [-Hmr] [-o attribute ...] [-s sort_key]
          [-t action_type ... ] [pkg_fmri_pattern ...]
      /usr/bin/pkg list [-Hafsuv] [--no-refresh] [pkg_fmri_pattern ...]
-     /usr/bin/pkg search [-alprI] [-s repo_uri] query
+     /usr/bin/pkg search [-alprHI] [-o attribute ...] [-s repo_uri] query
 
      /usr/bin/pkg refresh [--full] [publisher ...]
 
@@ -245,7 +245,7 @@ SUBCOMMANDS
                                 the package containing the action, such
                                 as "opensolaris.org"
 
-     search [-alprI] [-s repo_uri] query
+     search [-alprHI] [-o attribute ...] [-s repo_uri] query
           Search for matches to the query, and display the results.  
           Which tokens are indexed are action-dependent, but may
           include content hashes and pathnames.
@@ -255,6 +255,18 @@ SUBCOMMANDS
 
           With -l, search the image's installed packages.
 
+          With -o, the columns of the results may be controlled.  The
+          -o option may be specified multiple times, or multiple attributes
+          may be specified as the argument to one -o option by separating
+          the attribute names with commas.  In addition to the "pseudo" 
+          attributes outlined above, more are defined for search results:
+
+          search.match          Corresponds to the string which matched the 
+                                search query.
+
+          search.match_type     Corresponds to the attribute which contained
+                                the string that matched the search query.
+
           With -p, perform the search and display the packages  which contain 
           at least one action which matched the query.  This is equivalent to 
           enclosing the entire query with '<>'.  (For a description of the 
@@ -262,6 +274,8 @@ SUBCOMMANDS
 
           By default, and with -r, search the repositories corresponding 
           to the image's publishers.
+
+          With -H, omit the headers.
 
 	  With -I, use a case-sensitive search.
 

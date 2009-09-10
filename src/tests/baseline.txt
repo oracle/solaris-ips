@@ -499,6 +499,7 @@ cli.t_pkg_refresh.py TestPkgRefreshMulti.test_refresh_cli_options|pass
 cli.t_pkg_refresh.py TestPkgRefreshMulti.test_set_publisher_induces_delayed_full_refresh|pass
 cli.t_pkg_refresh.py TestPkgRefreshMulti.test_set_publisher_induces_full_refresh|pass
 cli.t_pkg_refresh.py TestPkgRefreshMulti.test_specific_refresh|pass
+cli.t_pkg_search.py TestPkgSearchBasics.test_bug_10515|pass
 cli.t_pkg_search.py TestPkgSearchBasics.test_bug_1873|pass
 cli.t_pkg_search.py TestPkgSearchBasics.test_bug_7835|pass
 cli.t_pkg_search.py TestPkgSearchBasics.test_bug_8098|pass
