@@ -1,0 +1,9 @@
+package SUNWvirt-manager
+classification "System/Virtualization"
+import SUNWvirt-manager
+import SUNWvirt-manager-root
+version 0.6.1
+depend SUNWgtk-vnc-python24
+depend SUNWurlgrabber
+depend SUNWvirtinst
+end package

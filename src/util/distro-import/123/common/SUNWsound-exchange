@@ -1,0 +1,5 @@
+package SUNWsound-exchange
+classification "Applications/Sound and Video"
+import SUNWsound-exchange
+version 14.3.0
+end package

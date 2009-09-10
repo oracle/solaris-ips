@@ -1,0 +1,5 @@
+package SUNWflexruntime
+classification "Development/Other Languages"
+import SUNWflexruntime
+version 2.5.35
+end package

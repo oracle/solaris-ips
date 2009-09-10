@@ -1,0 +1,5 @@
+package SUNWgsed
+classification "Applications/System Utilities"
+import SUNWgsed
+version 4.2.1
+end package

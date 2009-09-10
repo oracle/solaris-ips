@@ -1,0 +1,5 @@
+package SUNWlibstdcxx4
+classification "Development/C++"
+import SUNWlibstdcxx4
+version 4.2.1
+end package

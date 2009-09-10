@@ -101,6 +101,7 @@ GLOBAL_CHATTRS_119 = $(GLOBAL_CHATTRS_106)
 GLOBAL_CHATTRS_120 = $(GLOBAL_CHATTRS_106)
 GLOBAL_CHATTRS_121 = $(GLOBAL_CHATTRS_106)
 GLOBAL_CHATTRS_122 = $(GLOBAL_CHATTRS_106)
+GLOBAL_CHATTRS_123 = $(GLOBAL_CHATTRS_106)
 GLOBAL_CHATTRS = $(GLOBAL_CHATTRS_$(BUILDID))
 
 SOLARIS.PY=PYTHONPATH=$(PROTO_AREA)/usr/lib/python2.4/vendor-packages \
@@ -156,6 +157,7 @@ ELIDED_FILES_119 = $(ELIDED_FILES_106)
 ELIDED_FILES_120 = $(ELIDED_FILES_106)
 ELIDED_FILES_121 = $(ELIDED_FILES_106)
 ELIDED_FILES_122 = $(ELIDED_FILES_106)
+ELIDED_FILES_123 = $(ELIDED_FILES_106)
 ELIDED_FILES = $(ELIDED_FILES_$(BUILDID))
 
 #
@@ -231,6 +233,7 @@ CACHED_FILES_119 =
 CACHED_FILES_120 =
 CACHED_FILES_121 =
 CACHED_FILES_122 =
+CACHED_FILES_123 =
 
 CACHED_FILES = $(CACHED_FILES_$(BUILDID))
 
@@ -312,6 +315,7 @@ FIX_FILES_121 =				\
 	shares.desktop			\
 	vi
 FIX_FILES_122 = $(FIX_FILES_121)
+FIX_FILES_123 = $(FIX_FILES_121)
 FIX_FILES = $(FIX_FILES_$(BUILDID))
 
 JDKFILES = LICENSE README.html
@@ -378,7 +382,8 @@ BUILDS=	75a			\
 	119			\
 	120			\
 	121			\
-	122
+	122			\
+	123
 
 #
 # Starting in build 80, filelist.ramdisk began moving between various
@@ -391,7 +396,7 @@ FILELIST_RAMDISK_PKG_74		= SUNWcakr.i
 FILELIST_RAMDISK_PKG_72		= SUNWcakr.i
 FILELIST_RAMDISK_PKG_71		= SUNWcakr.i
 
-default:	122/slim_import
+default:	123/slim_import
 
 cluster.import:	$(WOS_PKGS)/.clustertoc Makefile
 	./clustertoc2import.py $(WOS_PKGS)/.clustertoc | \
@@ -412,7 +417,7 @@ $(BUILDID)/name_to_major:	$(BUILDID)/redist_cluster cluster.import
 	$(BUILDID)/redist_cluster > $@
 
 $(BUILDID)/nsswitch.conf:	Makefile
-	./get_file_from_pkg.py	$(WOS_PKGS)/SUNWcsr etc/nsswitch.files > $@
+	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr etc/nsswitch.files > $@
 
 proto/etc/X11/gdm/custom.conf:	proto Makefile
 	./get_file_from_pkg.py $(WOS_PKGS)/SUNWgnome-display-mgr-root	\
@@ -482,11 +487,11 @@ $(BUILDID)/services.desktop: proto
 # change root's default shell, homedir, password
 #
 $(BUILDID)/passwd:	Makefile
-	(./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr etc/passwd | nawk -F:			\
+	(./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr etc/passwd | nawk -F: \
 	'/^root/{ print "root:x:0:0:Super-User:/root:/usr/bin/bash";continue} {print $$0}') > $@
 
 $(BUILDID)/shadow:	Makefile
-	(./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr etc/shadow | nawk -F:		\
+	(./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr etc/shadow | nawk -F: \
 	'/^root/{ print "root:$$5$$VgppCOxA$$ycFmYW4ObRRHhtsGEygDdexk5bugqgSiaSR9niNCouC:14146::::::";continue} {print $$0}') > $@
 
 $(BUILDID)/sh:	Makefile
@@ -567,6 +572,7 @@ INCLUDE_PATH_119 = 119:$(INCLUDE_PATH_118)
 INCLUDE_PATH_120 = 120:$(INCLUDE_PATH_119)
 INCLUDE_PATH_121 = 121:$(INCLUDE_PATH_120)
 INCLUDE_PATH_122 = 122:$(INCLUDE_PATH_121)
+INCLUDE_PATH_123 = 123:$(INCLUDE_PATH_122)
 
 import:	cluster.import $(FIX_FILES:%=$(BUILDID)/%)
 	$(SOLARIS.PY) -s $(REPO) -w $(WOS_PKGS) $(ELIDED_FILES:%=-D %) \

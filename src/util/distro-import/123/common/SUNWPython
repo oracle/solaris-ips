@@ -1,0 +1,6 @@
+package SUNWPython
+classification "Development/Python"
+import SUNWPython
+import SUNWPython-devel
+version 2.4.6
+end package

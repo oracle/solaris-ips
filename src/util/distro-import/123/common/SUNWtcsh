@@ -1,0 +1,5 @@
+package SUNWtcsh
+classification "System/Shells"
+import SUNWtcsh
+version 6.17.0
+end package

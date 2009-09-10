@@ -1,0 +1,4 @@
+package SUNWttf-mgopen
+classification "System/Fonts"
+import SUNWttf-mgopen
+end package

@@ -1,0 +1,5 @@
+package SUNWlang-pa
+classification "System/Localizations"
+import SUNWlang-pa
+depend SUNWlang-common
+end package

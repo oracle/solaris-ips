@@ -1,0 +1,5 @@
+package SUNWlang-az
+classification "System/Localizations"
+import SUNWlang-az
+depend SUNWlang-common
+end package

@@ -271,6 +271,9 @@ category = Display
 [SUNWatfs]
 category = File System
 
+[SUNWatge]
+category = Networking
+
 [SUNWatheros]
 category = Networking
 
@@ -2098,10 +2101,19 @@ category = X11 (System)
 [SUNWlablgtk]
 category = GNOME and GTK+
 
+[SUNWlang-af]
+category = Localizations (System)
+
 [SUNWlang-ar]
 category = Localizations (System)
 
 [SUNWlang-ar-extra]
+category = Localizations (System)
+
+[SUNWlang-as]
+category = Localizations (System)
+
+[SUNWlang-az]
 category = Localizations (System)
 
 [SUNWlang-be]
@@ -2111,6 +2123,9 @@ category = Localizations (System)
 category = Localizations (System)
 
 [SUNWlang-bg-extra]
+category = Localizations (System)
+
+[SUNWlang-bn]
 category = Localizations (System)
 
 [SUNWlang-ca]
@@ -2191,6 +2206,9 @@ category = Localizations (System)
 [SUNWlang-frFR]
 category = Localizations (System)
 
+[SUNWlang-gu]
+category = Localizations (System)
+
 [SUNWlang-he]
 category = Localizations (System)
 
@@ -2239,10 +2257,16 @@ category = Localizations (System)
 [SUNWlang-kk]
 category = Localizations (System)
 
+[SUNWlang-kn]
+category = Localizations (System)
+
 [SUNWlang-ko]
 category = Localizations (System)
 
 [SUNWlang-ko-extra]
+category = Localizations (System)
+
+[SUNWlang-ky]
 category = Localizations (System)
 
 [SUNWlang-lt]
@@ -2261,6 +2285,12 @@ category = Localizations (System)
 category = Localizations (System)
 
 [SUNWlang-mk-extra]
+category = Localizations (System)
+
+[SUNWlang-ml]
+category = Localizations (System)
+
+[SUNWlang-mr]
 category = Localizations (System)
 
 [SUNWlang-ms]
@@ -2282,6 +2312,12 @@ category = Localizations (System)
 category = Localizations (System)
 
 [SUNWlang-no-extra]
+category = Localizations (System)
+
+[SUNWlang-or]
+category = Localizations (System)
+
+[SUNWlang-pa]
 category = Localizations (System)
 
 [SUNWlang-pl]
@@ -2553,6 +2589,9 @@ category = Libraries (System)
 
 [SUNWlibsoup]
 category = Libraries (System)
+
+[SUNWlibstdcxx4]
+category = C++
 
 [SUNWlibtasn1]
 category = Libraries (System)
@@ -3670,6 +3709,9 @@ category = Core
 [SUNWsongbird]
 category = Sound and Video
 
+[SUNWsound-exchange]
+category = Sound and Video
+
 [SUNWspeex]
 category = Multimedia Libraries
 
@@ -3756,6 +3798,9 @@ category = Other Languages
 
 [SUNWswt]
 category = Libraries
+
+[SUNWsysbench]
+category = System
 
 [SUNWtavor]
 category = Other Peripherals
@@ -3977,6 +4022,9 @@ category = Fonts
 category = Fonts
 
 [SUNWttf-kacst]
+category = Fonts
+
+[SUNWttf-mgopen]
 category = Fonts
 
 [SUNWttf-thai-scalable]
