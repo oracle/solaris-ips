@@ -194,20 +194,27 @@ class TestPkgImageCreateBasics(testutils.ManyDepotTestCase):
                 normally creates version 1 images, and that it will be upgraded
                 correctly when a privileged user uses it."""
 
-                # Publish some sample packages.
-                pkgsend_data = """
-                open quux@1.0
-                close
-                open corge@1.0
-                close
-                """
-                self.pkgsend_bulk(self.durl1, pkgsend_data)
+                # Publish some sample packages (to separate repositories).
+                self.pkgsend_bulk(self.durl1, "open quux@1.0\nclose")
+                self.pkgsend_bulk(self.durl2, "open corge@1.0\nclose")
 
                 # First, create a new image.
                 self.image_create(self.durl1)
 
+                # Add the second repository.
+                self.pkg("set-publisher -O %s test2" % self.durl2)
+
                 # Next, install the packages.
-                self.pkg("install quux corge")
+                self.pkg("install quux")
+                self.pkg("set-publisher -P test2")
+
+                # This is necessary to ensure that packages installed from a
+                # previously preferred publisher also get the correct status.
+                self.pkg("install corge")
+                self.pkg("set-publisher -P test")
+
+                # Next, disable the second repository's publisher.
+                self.pkg("set-publisher -d test2")
 
                 # Next, convert the v1 image to a v0 image.
                 img_root = os.path.join(self.get_img_path(), "var", "pkg")
@@ -245,12 +252,15 @@ class TestPkgImageCreateBasics(testutils.ManyDepotTestCase):
                                     fname))
 
                 # Next, verify that the new client can read v0 images as an
-                # an unprivileged user.
+                # an unprivileged user.  Each must be done with and without
+                # the publisher prefix to test that these are stripped and
+                # read properly (because of the publisher preferred prefix).
                 self.pkg("info pkg://test/quux corge", su_wrap=True)
+                self.pkg("info pkg://test2/corge quux", su_wrap=True)
 
                 # Next, verify that the new client can upgrade v0 images to
                 # v1 images.
-                self.pkg("info quux pkg://test/corge")
+                self.pkg("info quux pkg://test/quux pkg://test2/corge")
 
                 # Finally, verify that the old structures and state information
                 # are gone.

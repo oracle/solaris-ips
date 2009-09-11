@@ -1533,8 +1533,8 @@ class Image(object):
                                 old_pub_cats.append((pub, old_cat))
                                 for f in old_cat.fmris():
                                         nver = newest.get(f.pkg_name, None)
-                                        if not nver or f.version > nver:
-                                                newest[f.pkg_name] = f.version
+                                        newest[f.pkg_name] = max(nver,
+                                            f.version)
 
                         except EnvironmentError, e:
                                 # If a catalog file is just missing, ignore it.
@@ -1598,8 +1598,19 @@ class Image(object):
                         # image catalogs.
                         states = [self.PKG_STATE_INSTALLED]
                         mdata = { "states": states }
-                        if f.version != newest[f.pkg_name]:
+                        # This package may be installed from a publisher that
+                        # is no longer known or has been disabled.
+                        if f.pkg_name in newest and \
+                            f.version != newest[f.pkg_name]:
                                 states.append(self.PKG_STATE_UPGRADABLE)
+
+                        if f.preferred_publisher():
+                                # Strip the PREF_PUB_PFX.
+                                f.set_publisher(f.get_publisher())
+
+                                # Set preferred state.
+                                states.append(self.__PKG_STATE_PREFERRED)
+
                         icat.add_package(f, metadata=mdata)
                         kcat.add_package(f, metadata=mdata)
 
