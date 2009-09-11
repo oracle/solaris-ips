@@ -159,8 +159,10 @@ class ImageState(object):
 
                         # Compare the FMRIs with no publisher information
                         # embedded.
-                        na_current = fmri.get_fmri(anarchy=True)
-                        na_target = target.get_fmri(anarchy=True)
+                        na_current = fmri.get_fmri(anarchy=True,
+                            include_scheme=False)
+                        na_target = target.get_fmri(anarchy=True,
+                            include_scheme=False)
 
                         if na_target == na_current:
                                 # Only provide this information if the fmri for
@@ -173,7 +175,7 @@ class ImageState(object):
                                 if target_pub == current_pub:
                                         # Prevent providing information across
                                         # publishers.
-                                        target_pkg = na_target[len("pkg:/"):]
+                                        target_pkg = na_target
                                 else:
                                         target_pkg = "unknown"
 
@@ -186,7 +188,7 @@ class ImageState(object):
                                         # Prevent providing information across
                                         # publishers.
                                         initial_pkg = initial.get_fmri(
-                                            anarchy=True)[len("pkg:/"):]
+                                            anarchy=True, include_scheme=False)
 
                                         if target_pkg == initial_pkg:
                                                 # Don't bother sending the
@@ -219,7 +221,8 @@ class ImageState(object):
                                                 # publishers must match.
                                                 needed_by_pkg = \
                                                     needed_by.get_fmri(
-                                                    anarchy=True)[len("pkg:/"):]
+                                                    anarchy=True,
+                                                    include_scheme=False)
                                         else:
                                                 # If they didn't match, indicate
                                                 # that the package is needed by
@@ -230,7 +233,8 @@ class ImageState(object):
                         # any target information and is likely for informational
                         # purposes only.  Assume the "initial target" is what is
                         # being retrieved.
-                        initial_pkg = str(fmri)[len("pkg:/"):]
+                        initial_pkg = fmri.get_fmri(anarchy=True,
+                            include_scheme=False)
 
                 prior_version = None
                 if reason != INTENT_INFO:

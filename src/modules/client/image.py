@@ -25,7 +25,6 @@
 # Use is subject to license terms.
 #
 
-import datetime as dt
 import errno
 import os
 import platform
@@ -35,7 +34,7 @@ import time
 import urllib
 
 import pkg.Uuid25
-import pkg.catalog                      as catalog
+import pkg.catalog
 import pkg.client.api_errors            as api_errors
 import pkg.client.constraint            as constraint
 import pkg.client.history               as history
@@ -50,22 +49,20 @@ import pkg.fmri
 import pkg.manifest                     as manifest
 import pkg.misc                         as misc
 import pkg.portable                     as portable
+import pkg.server.catalog
 import pkg.variant                      as variant
 import pkg.version
 
 from pkg.client.debugvalues import DebugValues
-from pkg.client import global_settings
 from pkg.client.imagetypes import IMG_USER, IMG_ENTIRE
 from pkg.misc import CfgCacheError
 from pkg.misc import EmptyI, EmptyDict
 from pkg.misc import msg, emsg
 
-CATALOG_CACHE_FILE = "catalog_cache"
 img_user_prefix = ".org.opensolaris,pkg"
 img_root_prefix = "var/pkg"
 
-PKG_STATE_INSTALLED = "installed"
-PKG_STATE_KNOWN = "known"
+IMG_PUB_DIR = "publisher"
 
 class Image(object):
         """An Image object is a directory tree containing the laid-down contents
@@ -92,18 +89,14 @@ class Image(object):
 
         Directory layout
 
-          $IROOT/catalog
-               Directory containing catalogs for URIs of interest.  Filename is
-               the escaped URI of the catalog.
-
           $IROOT/file
                Directory containing file hashes of installed packages.
 
           $IROOT/pkg
-               Directory containing manifests and states of installed packages.
+               Directory containing manifests.
 
           $IROOT/index
-               Directory containing reverse-index databases.
+               Directory containing search indices.
 
           $IROOT/cfg_cache
                File containing image's cached configuration.
@@ -111,9 +104,8 @@ class Image(object):
           $IROOT/opaque
                File containing image's opaque state.
 
-          $IROOT/state/installed
-               Directory containing files whose names identify the installed
-               packages.
+          $IROOT/publisher
+                Directory containing publisher metadata.
 
         All of these directories and files other than state are considered
         essential for any image to be complete. To add a new essential file or
@@ -139,44 +131,71 @@ class Image(object):
 
         XXX Image file format?  Image file manipulation API?"""
 
-        required_subdirs = [ "catalog", "file", "pkg" ]
-        image_subdirs = required_subdirs + [ "index", "state/installed" ]
+        # Class constants
+        IMG_CATALOG_KNOWN = "known"
+        IMG_CATALOG_INSTALLED = "installed"
+
+        # This state indicates that a package is present in a repository
+        # catalog.
+        PKG_STATE_KNOWN = 0
+
+        # This is a transitory state used to indicate that a package is no
+        # longer present in a repository catalog; it is only used to clear
+        # PKG_STATE_KNOWN.
+        PKG_STATE_UNKNOWN = 1
+
+        # This state indicates that a package is installed.
+        PKG_STATE_INSTALLED = 2
+
+        # This is a transitory state used to indicate that a package is no
+        # longer installed; it is only used to clear PKG_STATE_INSTALLED.
+        PKG_STATE_UNINSTALLED = 3
+        PKG_STATE_UPGRADABLE = 4
+
+        # This is a temporary, private state that is used to indicate that
+        # a package with state PKG_STATE_INSTALLED was installed from a
+        # publisher that was preferred at the time of installation.  It
+        # will be obsolete in the near future when publishers are ranked
+        # instead.
+        __PKG_STATE_PREFERRED = 5
+
+        # Class properties
+        required_subdirs = [ "file", "pkg" ]
+        image_subdirs = required_subdirs + [ "index", IMG_PUB_DIR,
+            "state/installed", "state/known" ]
 
         def __init__(self):
-                self.arch_change = False
-                self.cfg_cache = None
-                self.type = None
-                self.root = None
-                self.history = history.History()
-                self.imgdir = None
-                self.pkgdir = None
-                self.img_prefix = None
-                self.index_dir = None
-                self.repo_uris = []
-                self.filter_tags = {}
                 self.__catalogs = {}
-                self._catalog = {}
-                self.__pkg_states = None
-                self.new_variants = {}
-                self.dl_cache_dir = None
-                self.dl_cache_incoming = None
-                self.is_user_cache_dir = False
-                self.state = imagestate.ImageState(self)
+                self.__upgraded = False
+
+                self.arch_change = False
                 self.attrs = {
                     "Policy-Require-Optional": False,
                     "Policy-Pursue-Latest": True
                 }
-                self.__catalog_cache_mod_time = None
-
-                self.imageplan = None # valid after evaluation succeeds
-
+                self.cfg_cache = None
                 self.constraints = constraint.ConstraintSet()
+                self.dl_cache_dir = None
+                self.dl_cache_incoming = None
+                self.history = history.History()
+                self.imageplan = None # valid after evaluation succeeds
+                self.img_prefix = None
+                self.imgdir = None
+                self.index_dir = None
+                self.is_user_cache_dir = False
+                self.new_variants = {}
+                self.pkgdir = None
+                self.root = None
+
+                # a place to keep info about saved_files; needed by file action
+                self.saved_files = {}
+
+                self.state = imagestate.ImageState(self)
 
                 # Transport operations for this image
                 self.transport = transport.Transport(self)
 
-                # a place to keep info about saved_files; needed by file action
-                self.saved_files = {}
+                self.type = None
 
                 # right now we don't explicitly set dir/file modes everywhere;
                 # set umask to proper value to prevent problems w/ overly
@@ -204,7 +223,7 @@ class Image(object):
                         rv = IMG_ENTIRE
                 return rv
 
-        def find_root(self, d, exact_match=False):
+        def find_root(self, d, exact_match=False, progtrack=None):
                 # Ascend from the given directory d to find first
                 # encountered image. If exact_match is true, if the
                 # image found doesn't match startd, raise an
@@ -222,7 +241,8 @@ class Image(object):
                                     os.path.realpath(d):
                                         raise api_errors.ImageNotFoundException(
                                             exact_match, startd, d)
-                                self.__set_dirs(imgtype=imgtype, root=d)
+                                self.__set_dirs(imgtype=imgtype, root=d,
+                                    progtrack=progtrack)
                                 self.attrs["Build-Release"] = "5.11"
                                 return
                         elif imgtype == IMG_ENTIRE:
@@ -235,7 +255,8 @@ class Image(object):
                                     os.path.realpath(d):
                                         raise api_errors.ImageNotFoundException(
                                             exact_match, startd, d)
-                                self.__set_dirs(imgtype=imgtype, root=d)
+                                self.__set_dirs(imgtype=imgtype, root=d,
+                                    progtrack=progtrack)
                                 self.attrs["Build-Release"] = "5.11"
                                 return
 
@@ -251,7 +272,7 @@ class Image(object):
                                 raise api_errors.ImageNotFoundException(
                                     exact_match, startd, d)
 
-        def load_config(self):
+        def __load_config(self):
                 """Load this image's cached configuration from the default
                 location."""
 
@@ -261,9 +282,13 @@ class Image(object):
                 if self.root == None:
                         raise RuntimeError, "self.root must be set"
 
-                ic = imageconfig.ImageConfig(self.root)
+                ic = imageconfig.ImageConfig(self.root,
+                    self._get_publisher_meta_dir())
                 ic.read(self.imgdir)
                 self.cfg_cache = ic
+
+                for pub in self.gen_publishers(inc_disabled=True):
+                        pub.transport = self.transport
 
         def save_config(self):
                 # First, create the image directories if they haven't been, so
@@ -275,10 +300,18 @@ class Image(object):
         # operation.
         def mkdirs(self):
                 for sd in self.image_subdirs:
-                        if not os.path.isdir(os.path.join(self.imgdir, sd)):
-                                os.makedirs(os.path.join(self.imgdir, sd))
+                        if os.path.isdir(os.path.join(self.imgdir, sd)):
+                                continue
 
-        def __set_dirs(self, imgtype, root):
+                        try:
+                                os.makedirs(os.path.join(self.imgdir, sd))
+                        except EnvironmentError, e:
+                                if e.errno == errno.EACCES:
+                                        raise api_errors.PermissionsException(
+                                            e.filename)
+                                raise
+
+        def __set_dirs(self, imgtype, root, progtrack=None):
                 self.type = imgtype
                 self.root = root
                 if self.type == IMG_USER:
@@ -310,29 +343,83 @@ class Image(object):
                 self.dl_cache_incoming = os.path.normpath(os.path.join(
                     self.dl_cache_dir, "incoming-%d" % os.getpid()))
 
+                if not os.path.exists(os.path.join(self.imgdir,
+                    imageconfig.CFG_FILE)):
+                        # New images inherently use the newest image format.
+                        # This must be set *before* creating the Publisher
+                        # object so that the correct meta_root is set.
+                        self.__upgraded = True
+                else:
+                        self.__upgraded = not os.path.exists(os.path.join(
+                            self.imgdir, "catalog"))
+                        self.__load_config()
+                        self.__check_image(progtrack=progtrack)
+
+        def __check_image(self, progtrack=None):
+                """This does some basic sanity checks on the image structure
+                and attempts to correct any errors it finds."""
+
+                if not self.__upgraded:
+                        self.__upgrade_image(progtrack=progtrack)
+                        return
+
+                # If the image has already been upgraded, first ensure that its
+                # structure is valid.
+                self.mkdirs()
+
+                # Ensure structure for publishers is valid.
+                for pub in self.gen_publishers():
+                        pub.create_meta_root()
+
+                # Once its structure is valid, then ensure state information
+                # is intact.
+                rebuild = False
+                kdir = os.path.join(self.imgdir, "state",
+                    self.IMG_CATALOG_KNOWN)
+                kcattrs = os.path.join(kdir, "catalog.attrs")
+                idir = os.path.join(self.imgdir, "state",
+                    self.IMG_CATALOG_INSTALLED)
+                icattrs = os.path.join(idir, "catalog.attrs")
+                if not os.path.isfile(icattrs):
+                        rebuild = True
+                elif not os.path.isfile(kcattrs) and os.path.isfile(icattrs):
+                        # If the known catalog doesn't exist, but the installed
+                        # catalog does, then copy the installed catalog to the
+                        # known catalog directory so that state information can
+                        # be preserved during the rebuild.
+                        for fname in os.listdir(idir):
+                                portable.copyfile(os.path.join(idir, fname),
+                                    os.path.join(kdir, fname))
+                        rebuild = True
+
+                if rebuild:
+                        self.__rebuild_image_catalogs(progtrack=progtrack)
+
         def set_attrs(self, imgtype, root, is_zone, prefix, pub_url,
             ssl_key=None, ssl_cert=None, variants=EmptyDict,
             refresh_allowed=True, progtrack=None):
 
-                self.__set_dirs(imgtype=imgtype, root=root)
+                self.__set_dirs(imgtype=imgtype, root=root, progtrack=progtrack)
 
-                # Create the publisher object before creating the image...
+                if not os.path.exists(os.path.join(self.imgdir,
+                    imageconfig.CFG_FILE)):
+                        op = "image-create"
+                else:
+                        op = "image-set-attributes"
+
+                # Create the publisher object before creating the image
+                # so that if creation of the Publisher object fails, an
+                # empty, useless image won't be left behind.
                 repo = publisher.Repository()
                 repo.add_origin(pub_url, ssl_cert=ssl_cert, ssl_key=ssl_key)
                 newpub = publisher.Publisher(prefix,
                     meta_root=self._get_publisher_meta_root(prefix),
-                    repositories=[repo])
+                    repositories=[repo], transport=self.transport)
 
                 # Initialize and store the configuration object.
-                self.cfg_cache = imageconfig.ImageConfig(self.root)
-
-                # ...so that if creation of the Publisher object fails, an
-                # empty, useless image won't be left behind.
-                if not os.path.exists(os.path.join(self.imgdir,
-                    imageconfig.CFG_FILE)):
-                        self.history.log_operation_start("image-create")
-                else:
-                        self.history.log_operation_start("image-set-attributes")
+                self.cfg_cache = imageconfig.ImageConfig(self.root,
+                    self._get_publisher_meta_dir())
+                self.history.log_operation_start(op)
 
                 # Determine and add the default variants for the image.
                 if is_zone:
@@ -357,7 +444,6 @@ class Image(object):
 
                 # No need to save configuration as add_publisher will do that
                 # if successful.
-
                 self.history.log_operation_end()
 
         def is_liveroot(self):
@@ -426,10 +512,9 @@ class Image(object):
                         self.history.log_operation_end(error=e)
                         raise e
 
-                self.cfg_cache.remove_publisher(prefix)
+                self.cfg_cache.remove_publisher(pub.prefix)
+                self.remove_publisher_metadata(pub, progtrack=progtrack)
                 self.save_config()
-                self.remove_publisher_metadata(pub)
-                self.load_catalogs(progtrack, force=True)
                 self.history.log_operation_end()
 
         def get_publishers(self):
@@ -446,44 +531,6 @@ class Image(object):
                             pub.selected_repository.has_origin(origin):
                                 return pub
                 raise api_errors.UnknownPublisher(max(prefix, alias, origin))
-
-        def get_publisher_last_update_time(self, prefix, cached=True):
-                """Returns a datetime object (or 'None') representing the last
-                time the catalog for a publisher was updated.
-
-                If the catalog has already been loaded, this reflects the
-                in-memory state of the catalog.
-
-                If the catalog has not already been loaded or 'cached' is False,
-                then the catalog will be temporarily loaded and the most recent
-                information returned."""
-
-                if not cached:
-                        try:
-                                cat = self.__catalogs[prefix]
-                        except KeyError:
-                                pass
-                        else:
-                                update_dt = cat.last_modified()
-                                if update_dt:
-                                        update_dt = catalog.ts_to_datetime(
-                                            update_dt)
-                                return update_dt
-
-                # Temporarily retrieve the catalog object, but don't
-                # cache it as that would interfere with load_catalogs.
-                try:
-                        croot = "%s/catalog/%s" % (self.imgdir, prefix)
-                        cat = catalog.Catalog(croot, publisher=prefix)
-                except (EnvironmentError, catalog.CatalogException):
-                        cat = None
-
-                update_dt = None
-                if cat:
-                        update_dt = cat.last_modified()
-                        if update_dt:
-                                update_dt = catalog.ts_to_datetime(update_dt)
-                return update_dt
 
         def get_preferred_publisher(self):
                 """Returns the prefix of the preferred publisher."""
@@ -550,40 +597,44 @@ class Image(object):
                 it to the image's configuration.
 
                 'progtrack' is an optional ProgressTracker object."""
+
                 self.history.log_operation_start("add-publisher")
+
                 for p in self.cfg_cache.publishers.values():
                         if pub == p or (pub.alias and pub.alias == p.alias):
                                 error = api_errors.DuplicatePublisher(pub)
                                 self.history.log_operation_end(error=error)
                                 raise error
 
+                if not progtrack:
+                        progtrack = progress.QuietProgressTracker()
+
                 # Must assign this first before performing any more operations.
                 pub.meta_root = self._get_publisher_meta_root(pub.prefix)
+                pub.transport = self.transport
                 self.cfg_cache.publishers[pub.prefix] = pub
-
-                # This ensures that if data is leftover from a publisher
-                # with the same prefix as this one that it gets purged
-                # first to prevent usage of stale data.
-                self.remove_publisher_metadata(pub)
 
                 if refresh_allowed:
                         try:
                                 # First, verify that the publisher has a valid
                                 # pkg(5) repository.
                                 self.transport.valid_publisher_test(pub)
-
-                                self.__retrieve_catalogs(full_refresh=True,
-                                    pubs=[pub], progtrack=progtrack)
+                                self.refresh_publishers(pubs=[pub],
+                                    progtrack=progtrack)
                         except Exception, e:
                                 # Remove the newly added publisher since the
                                 # retrieval failed.
-                                del self.cfg_cache.publishers[pub.prefix]
+                                self.cfg_cache.remove_publisher(pub.prefix)
+                                self.remove_publisher_metadata(pub,
+                                    progtrack=progtrack)
                                 self.history.log_operation_end(error=e)
                                 raise
                         except:
                                 # Remove the newly added publisher since the
                                 # retrieval failed.
-                                del self.cfg_cache.publishers[pub.prefix]
+                                self.cfg_cache.remove_publisher(pub.prefix)
+                                self.remove_publisher_metadata(pub,
+                                    progtrack=progtrack)
                                 self.history.log_operation_end(
                                     result=history.RESULT_FAILED_UNKNOWN)
                                 raise
@@ -654,7 +705,7 @@ class Image(object):
                 # changing the architecture variant
                 #
                 if "variant.arch" in variants:
-                        self.arch_change=True
+                        self.arch_change = True
 
                 #
                 # we can't set self.new_variants until after we
@@ -668,7 +719,7 @@ class Image(object):
 
                 for fmri in self.gen_installed_pkgs():
                         m = self.get_manifest(fmri)
-                        m_arch = m.get_variants("variant.arch");
+                        m_arch = m.get_variants("variant.arch")
                         if not m_arch:
                                 # keep packages that don't have an explicit arch
                                 ip.propose_fmri(fmri)
@@ -687,10 +738,10 @@ class Image(object):
                 ic = self.cfg_cache
                 ic.variants.update(self.new_variants)
                 ic.write(self.imgdir)
-                ic = imageconfig.ImageConfig(self.root)
+                ic = imageconfig.ImageConfig(self.root,
+                    self._get_publisher_meta_dir())
                 ic.read(self.imgdir)
                 self.cfg_cache = ic
-
 
         def repair(self, repairs, progtrack):
                 """Repair any actions in the fmri that failed a verify."""
@@ -739,7 +790,7 @@ class Image(object):
 
                 # What is the client currently processing?
                 targets = self.state.get_targets()
-                
+
                 intent = None
                 for entry in targets:
                         target, reason = entry
@@ -751,7 +802,7 @@ class Image(object):
                                 intent = reason
 
                 # If no intent could be found, assume INTENT_INFO.
-                self.state.set_touched_manifest(fmri, 
+                self.state.set_touched_manifest(fmri,
                     max(intent, imagestate.INTENT_INFO))
 
                 return m
@@ -785,7 +836,7 @@ class Image(object):
                                         self.transport.touch_manifest(fmri,
                                             self.state.get_intent_str(fmri))
                                 except (api_errors.UnknownPublisher,
-                                    api_errors.TransportError), e:
+                                    api_errors.TransportError):
                                         # It's not fatal if we can't find
                                         # or reach the publisher.
                                         pass
@@ -814,10 +865,8 @@ class Image(object):
                 for all architectures"""
 
                 # Normally elide other arch variants
-                add_to_cache=True
                 if self.arch_change or all_arch:
                         all_arch = True
-                        add_to_cache = False
                         v = EmptyI
                 else:
                         arch = {"variant.arch": self.get_arch()}
@@ -828,213 +877,158 @@ class Image(object):
                 self.__touch_manifest(fmri)
                 return m
 
-        def installed_file_publisher(self, filepath):
-                """Find the pkg's installed file named by filepath.
-                Return the publisher that installed this package."""
+        def set_pkg_state(self, pfmri, state):
+                """Sets the recorded image state of the specified package.
+                'state' must be one of the following image constants:
 
-                f = file(filepath)
+                    PKG_STATE_INSTALLED
+                        Indicates that the package is installed.
+
+                    PKG_STATE_KNOWN
+                        Indicates that the package is currently present in
+                        a repository catalog.
+
+                    PKG_STATE_UNINSTALLED
+                        Clears the INSTALLED state of the package.
+
+                    PKG_STATE_UNKNOWN
+                        Clears the KNOWN state of the package."""
+
+                kcat = self.get_catalog(self.IMG_CATALOG_KNOWN)
+                entry = kcat.get_entry(pfmri)
+
+                mdata = entry.get("metadata", {})
+                states = set(mdata.get("states", set()))
+                if state == self.PKG_STATE_UNKNOWN:
+                        states.discard(self.PKG_STATE_KNOWN)
+                elif state == self.PKG_STATE_UNINSTALLED:
+                        # XXX This needs to be changed once publisher
+                        # priortisation is implemented.
+                        states.discard(self.PKG_STATE_INSTALLED)
+                        states.discard(self.__PKG_STATE_PREFERRED)
+                elif state == self.PKG_STATE_INSTALLED:
+                        # XXX This needs to be removed once publisher
+                        # priortisation is implemented.
+
+                        # If this package is being marked as 'installed', then
+                        # also mark if it is being installed from a publisher
+                        # that is currently preferred.
+                        if pfmri.publisher == self.get_preferred_publisher():
+                                states.add(self.__PKG_STATE_PREFERRED)
+                        states.add(state)
+                else:
+                        # All other states should simply be added to the
+                        # existing set of states.
+                        states.add(state)
+
+                # To ensure its entry matches the 'known' catalog entry the
+                # installed entry is removed and re-added every time.
+                save_icat = False
+                icat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
                 try:
-                        flines = f.readlines()
-                        version, pub = flines
-                        version = version.strip()
-                        pub = pub.strip()
-                        f.close()
-                except ValueError:
-                        # If we get a ValueError, we've encountered an
-                        # installed file of a previous format.  If we want
-                        # upgrade to work in this situation, it's necessary
-                        # to assume that the package was installed from
-                        # the preferred publisher.  Here, we set up
-                        # the publisher to record that.
-                        if flines:
-                                pub = flines[0]
-                                pub = pub.strip()
-                                newpub = "%s_%s" % (pkg.fmri.PREF_PUB_PFX,
-                                    pub)
-                        else:
-                                newpub = "%s_%s" % (pkg.fmri.PREF_PUB_PFX,
-                                    self.get_preferred_publisher())
+                        icat.remove_package(pfmri)
+                        save_icat = True
+                except api_errors.UnknownCatalogEntry:
+                        pass
 
-                        pub = newpub
+                # After all of the above has succeeded, remove it from the
+                # 'known' catalog (this prevents exceptions above from
+                # leaving the catalog in a bad state in-memory).
+                kcat.remove_package(pfmri)
 
-                        try:
-                                f = file(filepath, "w")
-                                f.writelines(["VERSION_1\n", newpub])
-                                f.close()
-                        except IOError, e:
-                                if e.errno not in (errno.EACCES, errno.EROFS):
-                                        raise
-                assert pub
-
-                return pub
-
-        def _install_file(self, fmri):
-                """Returns the path to the "installed" file for a given fmri."""
-
-                return "%s/pkg/%s/installed" % (self.imgdir,
-                    fmri.get_dir_path())
-
-        def install_file_present(self, fmri):
-                """Returns true if the package named by the fmri is installed
-                on the system.  Otherwise, returns false."""
-
-                return os.path.exists(self._install_file(fmri))
-
-        def add_install_file(self, fmri):
-                """Take an image and fmri. Write a file to disk that
-                indicates that the package named by the fmri has been
-                installed."""
-
-                # XXX This can be removed at some point in the future once we
-                # think this link is available on all systems
-                if not os.path.isdir("%s/state/installed" % self.imgdir):
-                        self.__update_installed_pkgs()
-
-                try:
-                        f = file(self._install_file(fmri), "w")
-                except EnvironmentError:
-                        try:
-                                os.makedirs(os.path.dirname(
-                                    self._install_file(fmri)))
-                        except EnvironmentError, e:
-                                if e.errno == errno.EACCES:
-                                        raise api_errors.PermissionsException(
-                                            e.filename)
-                                if e.errno != errno.EEXIST and \
-                                    not os.path.isdir(e.filename):
-                                        raise
-
-                        f = file(self._install_file(fmri), "w")
-
-                f.writelines(["VERSION_1\n", fmri.get_publisher_str()])
-                f.close()
-
-                fi = file("%s/state/installed/%s" % (self.imgdir,
-                    fmri.get_link_path()), "w")
-                fi.close()
-                self.__pkg_states[urllib.unquote(fmri.get_link_path())] = \
-                    (PKG_STATE_INSTALLED, fmri)
-
-        def remove_install_file(self, fmri):
-                """Take an image and a fmri.  Remove the file from disk
-                that indicates that the package named by the fmri has been
-                installed."""
-
-                # XXX This can be removed at some point in the future once we
-                # think this link is available on all systems
-                if not os.path.isdir("%s/state/installed" % self.imgdir):
-                        self.__update_installed_pkgs()
-
-                os.unlink(self._install_file(fmri))
-                try:
-                        os.unlink("%s/state/installed/%s" % (self.imgdir,
-                            fmri.get_link_path()))
-                except EnvironmentError, e:
-                        if e.errno != errno.ENOENT:
-                                raise
-                self.__pkg_states[urllib.unquote(fmri.get_link_path())] = \
-                    (PKG_STATE_KNOWN, fmri)
-
-        def __update_installed_pkgs(self):
-                """Take the image's record of installed packages from the
-                prototype layout, with an installed file in each
-                $META/pkg/stem/version directory, to the $META/state/installed
-                summary directory form."""
-
-                # If the directory is empty or it doesn't exist, we should
-                # populate it.  The easy test is to try to remove the directory,
-                # which will fail if it's already got entries in it, or doesn't
-                # exist.  Other errors are beyond our capability to handle.
-                statedir = os.path.join(self.imgdir, "state", "installed")
-                try:
-                        os.rmdir(statedir)
-                except EnvironmentError, e:
-                        if e.errno in (errno.EEXIST, errno.ENOTEMPTY):
-                                return
-                        elif e.errno == errno.EACCES:
-                                # The directory may exist and be non-empty
-                                # even though we got EACCES.  Try
-                                # to determine its emptiness another way.
-                                try:
-                                        if os.path.isdir(statedir) and \
-                                            len(os.listdir(statedir)) > 0:
-                                                return
-                                except EnvironmentError:
-                                        # ignore this error, pass on the
-                                        # original access error
-                                        pass
-                                raise api_errors.PermissionsException(
-                                    e.filename)
-                        elif e.errno != errno.ENOENT:
-                                raise
-
-                tmpdir = os.path.join(self.imgdir, "state", "installed.build")
-
-                # Create the link forest in a temporary directory.  We should
-                # only execute this method once (if ever) in the lifetime of an
-                # image, but if the path already exists and makedirs() blows up,
-                # just be quiet if it's already a directory.  If it's not a
-                # directory or something else weird happens, re-raise.
-                try:
-                        os.makedirs(tmpdir)
-                except OSError, e:
-                        if e.errno == errno.EACCES:
-                                raise api_errors.PermissionsException(
-                                    e.filename)
-                        if e.errno != errno.EEXIST or \
-                            not os.path.isdir(tmpdir):
-                                raise
+                if not states:
+                        # Catalog entry is not installed and is no longer
+                        # known, so should be dumped.
+                        kcat.save()
+                        if save_icat:
+                                icat.save()
                         return
 
-                proot = os.path.join(self.imgdir, "pkg")
+                # Catalog format only supports lists.
+                mdata["states"] = list(states)
 
-                for pd, vd in (
-                    (p, v)
-                    for p in sorted(os.listdir(proot))
-                    for v in sorted(os.listdir(os.path.join(proot, p)))
-                    ):
-                        path = os.path.join(proot, pd, vd, "installed")
-                        if not os.path.exists(path):
-                                continue
+                # Now record the package state.
+                kcat.add_package(pfmri, metadata=mdata)
+                if self.PKG_STATE_INSTALLED in states:
+                        save_icat = True
+                        icat.add_package(pfmri, metadata=mdata)
 
-                        fmristr = urllib.unquote("%s@%s" % (pd, vd))
-                        pub = self.installed_file_publisher(path)
-                        f = pkg.fmri.PkgFmri(fmristr, publisher = pub)
-                        fi = file(os.path.join(tmpdir, f.get_link_path()), "w")
-                        fi.close()
+                kcat.save()
+                if save_icat:
+                        # Only save installed catalog if it was changed.
+                        icat.save()
 
-                # Someone may have already created this directory.  Junk the
-                # directory we just populated if that's the case.
+        def get_catalog(self, name):
+                """Returns the requested image catalog.
+
+                'name' must be one of the following image constants:
+                    IMG_CATALOG_KNOWN
+                        The known catalog contains all of packages that are
+                        installed or available from a publisher's repository.
+
+                    IMG_CATALOG_INSTALLED
+                        The installed catalog is a subset of the 'known'
+                        catalog that only contains installed packages."""
+
+                if not self.imgdir:
+                        raise RuntimeError("self.imgdir must be set")
+
                 try:
-                        portable.rename(tmpdir, statedir)
+                        return self.__catalogs[name]
+                except KeyError:
+                        pass
+
+                croot = os.path.join(self.imgdir, "state", name)
+                try:
+                        os.makedirs(croot)
                 except EnvironmentError, e:
-                        if e.errno != errno.EEXIST:
+                        if e.errno == errno.EACCES:
+                                # Allow operations to work for
+                                # unprivileged users.
+                                croot = None
+                        elif e.errno != errno.EEXIST:
                                 raise
-                        shutil.rmtree(tmpdir)
+
+                cat = pkg.catalog.Catalog(meta_root=croot)
+                self.__catalogs[name] = cat
+                return cat
+
+        def remove_catalogs(self):
+                """Removes all image catalogs and their directories."""
+
+                self.__catalogs = {}
+                for name in (self.IMG_CATALOG_KNOWN,
+                    self.IMG_CATALOG_INSTALLED):
+                        shutil.rmtree(os.path.join(self.imgdir, "state", name))
+
+        def remove_catalog(self, name):
+                """Removes the requested image catalog if it exists.
+
+                'name' must be one of the following image constants:
+                    IMG_CATALOG_KNOWN
+                        The known catalog contains all of packages that are
+                        installed or available from a publisher's repository.
+
+                    IMG_CATALOG_INSTALLED
+                        The installed catalog is a subset of the 'known'
+                        catalog that only contains installed packages."""
+
+                if not self.imgdir:
+                        raise RuntimeError("self.imgdir must be set")
+
+                cat = self.__catalogs.pop(name, None)
+                if not cat:
+                        croot = os.path.join(self.imgdir, "state", name)
+                        cat = pkg.catalog.Catalog(meta_root=croot)
+                cat.destroy()
 
         def get_version_installed(self, pfmri):
                 """Returns an fmri of the installed package matching the
                 package stem of the given fmri or None if no match is found."""
 
-                for f in self.gen_installed_pkgs():
-                        if f.is_same_pkg(pfmri):
-                                return f
-                return None
-
-        def get_pkg_state_by_fmri(self, pfmri):
-                """Given pfmri, determine the local state of the package."""
-
-                return self.__pkg_states.get(pfmri.get_fmri(anarchy = True)[5:],
-                    (PKG_STATE_KNOWN, None))[0]
-
-        def get_pkg_pub_by_fmri(self, pfmri):
-                """Return the publisher from which 'pfmri' was installed."""
-
-                f = self.__pkg_states.get(pfmri.get_fmri(anarchy = True)[5:],
-                    (PKG_STATE_KNOWN, None))[1]
-                if f:
-                        # Return the non-preferred-prefixed name
-                        return f.get_publisher()
+                cat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
+                for ver, fmris in cat.fmris_by_version(pfmri.pkg_name):
+                        return fmris[0]
                 return None
 
         def fmri_set_default_publisher(self, fmri):
@@ -1046,38 +1040,15 @@ class Image(object):
 
                 fmri.set_publisher(self.get_preferred_publisher(), True)
 
-        def get_catalog(self, fmri, exception = False):
-                """Given a FMRI, look at the publisher and return the
-                correct catalog for this image."""
-
-                # If FMRI has no publisher, or is default publisher,
-                # then return the catalog for the preferred publisher
-                if not fmri.has_publisher() or fmri.preferred_publisher():
-                        cat = self.__catalogs[self.get_preferred_publisher()]
-                else:
-                        try:
-                                cat = self.__catalogs[fmri.get_publisher()]
-                        except KeyError:
-                                # If the publisher that installed this package
-                                # has vanished, pick the default publisher
-                                # instead.
-                                if exception:
-                                        raise
-                                else:
-                                        cat = self.__catalogs[\
-                                            self.get_preferred_publisher()]
-
-                return cat
-
         def has_version_installed(self, fmri):
                 """Check that the version given in the FMRI or a successor is
                 installed in the current image."""
 
                 v = self.get_version_installed(fmri)
 
-                if v and not fmri.has_publisher():
+                if v and not fmri.publisher:
                         fmri.set_publisher(v.get_publisher_str())
-                elif not fmri.has_publisher():
+                elif not fmri.publisher:
                         fmri.set_publisher(self.get_preferred_publisher(), True)
 
                 if v and v.is_successor(fmri):
@@ -1097,18 +1068,36 @@ class Image(object):
                         return v
                 return None
 
-        def is_installed(self, fmri):
-                """Check that the exact version given in the FMRI is installed
-                in the current image."""
+        def is_pkg_installed(self, pfmri):
+                """Returns a boolean value indicating whether the specified
+                package is installed."""
 
-                # All FMRIs passed to is_installed shall have a publisher
-                assert fmri.has_publisher()
-
-                v = self.get_version_installed(fmri)
-                if not v:
+                cat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
+                try:
+                        cat.get_entry(pfmri)
+                except api_errors.UnknownCatalogEntry:
                         return False
+                return True
 
-                return v == fmri
+        def is_pkg_preferred(self, pfmri):
+                """Compatibility function for use by pkg.client.api only.
+                Should be removed once publishers are ranked by priority.
+
+                Returns a boolean value indicating whether the specified
+                package was installed from a publisher that was preferred at
+                the time of installation, or is from the same publisher as
+                the currently preferred publisher."""
+
+                if pfmri.publisher == self.get_preferred_publisher():
+                        return True
+
+                cat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
+                try:
+                        entry = cat.get_entry(pfmri)
+                except api_errors.UnknownCatalogEntry:
+                        return False
+                states = entry["metadata"]["states"]
+                return self.__PKG_STATE_PREFERRED in states
 
         def list_excludes(self, new_variants=None):
                 """Generate a list of callables that each return True if an
@@ -1168,8 +1157,145 @@ class Image(object):
                                 dependents.extend(self.__req_dependents[f])
                 return dependents
 
+        def __rebuild_image_catalogs(self, progtrack=None):
+                """Rebuilds the image catalogs based on the available publisher
+                catalogs."""
+
+                if not progtrack:
+                        progtrack = progress.QuietProgressTracker()
+
+                progtrack.cache_catalogs_start()
+
+                publist = list(self.gen_publishers())
+                if not publist:
+                        # No publishers, so nothing can be known or installed.
+                        self.remove_catalogs()
+                        progtrack.cache_catalogs_done()
+                        return
+
+                # The image catalogs need to be updated, but this is a bit
+                # tricky as previously known packages must remain known even
+                # if PKG_STATE_KNOWN is no longer true if any other state
+                # information is present.  This is to allow freezing, etc. of
+                # package states on a permanent basis even if the package is
+                # no longer available from a publisher repository.
+                old_kcat = self.get_catalog(self.IMG_CATALOG_KNOWN)
+                old_kcat.batch_mode = True
+
+                # batch_mode is set to False here since without it, catalog
+                # population time is almost doubled (since the catalog is
+                # re-sorted and stats are generated for every operation).
+                kcat = pkg.catalog.Catalog(batch_mode=True)
+
+                # XXX if any of the below fails for any reason, the old 'known'
+                # catalog needs to be re-loaded so the client is in a consistent
+                # state.
+
+                # All enabled publisher catalogs must be processed.
+                pub_cats = [pub.catalog for pub in publist]
+
+                # XXX For backwards compatibility, 'upgradability' of packages
+                # is calculated and stored based on whether a given pkg stem
+                # matches the newest version in the catalog.  This is quite
+                # expensive (due to overhead), but at least the cost is
+                # consolidated here.  This comparison is also cross-publisher,
+                # as it used to be.  In the future, it could likely be improved
+                # by usage of the SAT solver.
+                newest = {}
+                for cat in [old_kcat] + pub_cats:
+                        for f in cat.fmris():
+                                nver = newest.get(f.pkg_name, None)
+                                newest[f.pkg_name] = max(nver, f.version)
+
+                for cat in pub_cats:
+                        for f in cat.fmris():
+                                try:
+                                        entry = old_kcat.get_entry(f)
+                                        old_kcat.remove_package(f)
+                                except api_errors.UnknownCatalogEntry:
+                                        # If the package can't be found in the
+                                        # previous 'known' catalog, then this
+                                        # is a completely new package.
+                                        states = set()
+                                        mdata = { "states": states }
+                                else:
+                                        mdata = entry["metadata"]
+                                        states = set(mdata["states"])
+
+                                states.add(self.PKG_STATE_KNOWN)
+                                if f.version == newest.get(f.pkg_name, None):
+                                        states.discard(self.PKG_STATE_UPGRADABLE)
+                                else:
+                                        states.add(self.PKG_STATE_UPGRADABLE)
+
+                                mdata["states"] = list(states)
+                                kcat.add_package(f, metadata=mdata)
+
+                # Next, add any remaining entries in the previous 'known'
+                # catalog to the new one, but clear PKG_STATE_KNOWN and
+                # drop any entries that have no remaining state information.
+                for f, entry in old_kcat.entries():
+                        mdata = entry["metadata"]
+                        states = set(mdata["states"])
+
+                        try:
+                                states.remove(self.PKG_STATE_KNOWN)
+                        except KeyError:
+                                pass
+
+                        # Since this package is no longer available, it can
+                        # only be considered upgradable if it is installed
+                        # and there is a newer version available.
+                        if f.version == newest.get(f.pkg_name, None) or \
+                            self.PKG_STATE_INSTALLED not in states:
+                                try:
+                                        states.remove(
+                                            self.PKG_STATE_UPGRADABLE)
+                                except KeyError:
+                                        # Nothing to do.
+                                        pass
+                        else:
+                                states.add(self.PKG_STATE_UPGRADABLE)
+
+                        if not states:
+                                # This entry is no longer available and has
+                                # no state information so should be skipped.
+                                # Since the new 'known' catalog will replace
+                                # the old one, it doesn't even need to be
+                                # removed.
+                                continue
+
+                        # The package is either installed, frozen, or is in
+                        # some other state that needs preservation, so add
+                        # it to the new 'known' catalog.
+                        mdata["states"] = list(states)
+                        kcat.add_package(f, metadata=mdata)
+
+                # Next, remove the old image catalogs.
+                self.remove_catalog(self.IMG_CATALOG_KNOWN)
+                self.remove_catalog(self.IMG_CATALOG_INSTALLED)
+
+                # Finally, re-populate the 'installed' catalog based on the
+                # contents of the new, 'known' catalog and save them both.
+                icat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
+                icat.batch_mode = True
+                for f, entry in kcat.entries():
+                        mdata = entry["metadata"]
+                        states = mdata["states"]
+                        if self.PKG_STATE_INSTALLED in states:
+                                icat.add_package(f, metadata=mdata)
+
+                croot = os.path.join(self.imgdir, "state",
+                    self.IMG_CATALOG_KNOWN)
+                kcat.meta_root = croot
+
+                for cat in kcat, icat:
+                        cat.batch_mode = False
+                        cat.save()
+                progtrack.cache_catalogs_done()
+
         def refresh_publishers(self, full_refresh=False, immediate=False,
-            pubs=None, progtrack=None, validate=True):
+            pubs=None, progtrack=None):
                 """Refreshes the metadata (e.g. catalog) for one or more
                 publishers.
 
@@ -1182,18 +1308,11 @@ class Image(object):
                 a refresh should occur now.  If False, a publisher's selected
                 repository will only be checked for updates if the update
                 interval period recorded in the image configuration has been
-                exceeded; ignored when 'full_refresh' is True.
+                exceeded.
 
                 'pubs' is a list of publisher prefixes or publisher objects
                 to refresh.  Passing an empty list or using the default value
-                implies all publishers.
-
-                'validate' is an optional, boolean value indicating whether a
-                connectivity test should be performed before attempting to
-                retrieve publisher metadata."""
-
-                if full_refresh:
-                        immediate = True
+                implies all publishers."""
 
                 if not progtrack:
                         progtrack = progress.QuietProgressTracker()
@@ -1221,767 +1340,332 @@ class Image(object):
                                 e = api_errors.DisabledPublisher(p)
                                 self.history.log_operation_end(error=e)
                                 raise e
-                        if immediate or p.needs_refresh:
-                                pubs_to_refresh.append(p)
+                        pubs_to_refresh.append(p)
 
                 if not pubs_to_refresh:
-                        # Trigger a load of the catalogs if they haven't been
-                        # loaded yet for the sake of our caller.
-                        self.load_catalogs(progtrack)
                         self.history.log_operation_end()
                         return
 
                 try:
-                        if validate:
-                                # Before an attempt is made to retrieve catalogs
-                                # from the publisher repositories, a check needs
-                                # to be done to ensure that the client isn't
-                                # stuck behind a captive portal.
-                                self.transport.captive_portal_test()
+                        # Ensure Image directory structure is valid.
+                        self.mkdirs()
+                except Exception, e:
+                        self.history.log_operation_end(error=e)
+                        raise
 
-                        self.__retrieve_catalogs(full_refresh=full_refresh,
-                            pubs=pubs_to_refresh, progtrack=progtrack)
-                except (api_errors.ApiException, catalog.CatalogException), e:
-                        # Reload catalogs; this picks up any updates and
-                        # ensures the catalog is loaded for callers.
-                        self.load_catalogs(progtrack, force=True)
+                progtrack.refresh_start(len(pubs_to_refresh))
+
+                failed = []
+                total = 0
+                succeeded = set()
+                updated = 0
+                for pub in pubs_to_refresh:
+                        total += 1
+                        progtrack.refresh_progress(pub.prefix)
+                        try:
+                                if pub.refresh(full_refresh=full_refresh,
+                                    immediate=immediate):
+                                        updated += 1
+                        except api_errors.ApiException, e:
+                                failed.append((pub, e))
+                                continue
+                        succeeded.add(pub.prefix)
+                progtrack.refresh_done()
+
+                if updated:
+                        self.__rebuild_image_catalogs(progtrack=progtrack)
+
+                if failed:
+                        e = api_errors.CatalogRefreshException(failed, total,
+                            len(succeeded))
                         self.history.log_operation_end(error=e)
                         raise
                 self.history.log_operation_end()
 
-        def __retrieve_catalogs(self, full_refresh=False, pubs=None,
-            progtrack=None):
-                """Retrieves the catalogs for the specified publishers
-                performing full or incremental updates as needed or indicated.
+        def _get_publisher_meta_dir(self):
+                if self.__upgraded:
+                        return IMG_PUB_DIR
+                return "catalog"
 
-                'full_refresh' is a boolean value indicating whether a full
-                update should be forced for the specified publishers.
+        def _get_publisher_meta_root(self, prefix):
+                return os.path.join(self.imgdir, self._get_publisher_meta_dir(),
+                    prefix)
 
-                'pubs' is an optional list of publisher objects to refresh the
-                metadata for.  If not provided or 'None', all publishers will be
-                refreshed.  Disabled publishers are always ignored regardless of
-                whether this list is provided.
+        def remove_publisher_metadata(self, pub, progtrack=None):
+                """Removes the metadata for the specified publisher object."""
 
-                'progtrack' is an optional ProgressTracker object."""
+                pub.remove_meta_root()
+                self.__rebuild_image_catalogs(progtrack=progtrack)
+
+        def gen_installed_pkg_names(self, anarchy=True):
+                """A generator function that produces FMRI strings as it
+                iterates over the list of installed packages.  This is
+                faster than gen_installed_pkgs when only the FMRI string
+                is needed."""
+
+                cat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
+                for f in cat.fmris(objects=False):
+                        if anarchy:
+                                # Catalog entries always have publisher prefix.
+                                yield "pkg:/%s" % f[6:].split("/", 1)[-1]
+                                continue
+                        yield f
+
+        def gen_installed_pkgs(self):
+                """Return an iteration through the installed packages."""
+
+                cat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
+                for f in cat.fmris():
+                        yield f
+
+        def __upgrade_image(self, progtrack=None):
+                """Transform the existing image structure and its data to
+                the newest format."""
+
+                if self.__upgraded:
+                        return
+
+                assert self.imgdir
+
+                def installed_file_publisher(filepath):
+                        """Find the pkg's installed file named by filepath.
+                        Return the publisher that installed this package."""
+
+                        f = file(filepath)
+                        try:
+                                flines = f.readlines()
+                                version, pub = flines
+                                version = version.strip()
+                                pub = pub.strip()
+                                f.close()
+                        except ValueError:
+                                # If ValueError occurs, the installed file is of
+                                # a previous format.  For upgrades to work, it's
+                                # necessary to assume that the package was
+                                # installed from the preferred publisher.  Here,
+                                # the publisher is setup to record that.
+                                if flines:
+                                        pub = flines[0]
+                                        pub = pub.strip()
+                                        newpub = "%s_%s" % (
+                                            pkg.fmri.PREF_PUB_PFX, pub)
+                                else:
+                                        newpub = "%s_%s" % (
+                                            pkg.fmri.PREF_PUB_PFX,
+                                            self.get_preferred_publisher())
+                                pub = newpub
+                        assert pub
+                        return pub
 
                 if not progtrack:
                         progtrack = progress.QuietProgressTracker()
 
-                failed = []
-                total = 0
-
-                if not pubs:
-                        pubs = list(self.gen_publishers())
-
-                try:
-                        # Ensure Image directory structure is valid.
-                        self.mkdirs()
-
-                        # Load the catalogs, if they haven't been already, so
-                        # incremental updates can be performed.
-                        self.load_catalogs(progtrack)
-                except EnvironmentError, e:
-                        self.history.log_operation_end(error=e)
-                        raise
-
-                progtrack.refresh_start(len(pubs))
-
-                def catalog_changed(prefix, old_ts, old_size):
-                        if not old_ts or not old_size:
-                                # It didn't exist before.
-                                return True
-
-                        croot = "%s/catalog/%s" % (self.imgdir, prefix)
-                        c = catalog.Catalog(croot, publisher=prefix)
-                        if c.last_modified() != old_ts:
-                                return True
-                        if c.size() != old_size:
-                                return True
-                        return False
-
-                updated = 0
-                succeeded = 0
-                for pub in pubs:
-                        if pub.disabled:
-                                continue
-
-                        total += 1
-                        progtrack.refresh_progress(pub.prefix)
-
-                        full_refresh_this_pub = False
-
-                        cat = None
-                        ts = None
-                        size = 0
-                        if pub.prefix in self.__catalogs:
-                                cat = self.__catalogs[pub.prefix]
-                                ts = cat.last_modified()
-                                size = cat.size()
-
-                                # Although we may have a catalog with a
-                                # timestamp, the user may have changed the
-                                # origin URL for the publisher.  If this has
-                                # occurred, we need to perform a full refresh.
-                                repo = pub.selected_repository
-                                if cat.origin() not in repo.origins:
-                                        full_refresh_this_pub = True
-
-                        if full_refresh or full_refresh_this_pub:
-                                # Set timestamp to None in order
-                                # to perform full refresh.
-                                ts = None
-
-                        try:
-                                self.transport.get_catalog(pub, ts)
-                        except api_errors.TransportError, e:
-                                failed.append((pub, e))
-                        else:
-                                if catalog_changed(pub.prefix, ts, size):
-                                        updated += 1
-                                pub.last_refreshed = dt.datetime.utcnow()
-                                succeeded += 1
-
-                if updated > 0:
-                        # If any publisher metadata was changed, then destroy
-                        # the catalog cache, update the installed package list,
-                        # and force a reload of all catalog data.
-                        self.__destroy_catalog_cache()
-                        self.__update_installed_pkgs()
-                        self.load_catalogs(progtrack, force=True)
-
-                progtrack.refresh_done()
-
-                if failed:
-                        raise api_errors.CatalogRefreshException(failed, total,
-                            succeeded)
-
-                return updated > 0
-
-        CATALOG_CACHE_VERSION = 4
-
-        def __cache_catalogs(self, progtrack, pubs=None):
-                """Read in all the catalogs and cache the data.
-
-                'pubs' is a list of publisher objects to include when caching
-                the image's configured publisher metadata.
-                """
-
+                # Not technically 'caching', but close enough ...
                 progtrack.cache_catalogs_start()
-                cache = {}
-                publist = []
 
-                try:
-                        publist = dict(
-                            (p.prefix, p) for p in self.gen_publishers()
-                        )
-                except CfgCacheError:
-                        # No publishers defined.  If the caller hasn't
-                        # supplied publishers to cache, raise the error
-                        if not pubs:
-                                raise
+                # First, load the old package state information.
+                installed_state_dir = "%s/state/installed" % self.imgdir
 
-                if pubs:
-                        # If caller passed publishers, include this in
-                        # the list of publishers to cache.  These might
-                        # be publisher objects that haven't been added
-                        # to the image configuration yet.
-                        for p in pubs:
-                                publist[p.prefix] = p
+                # If the state directory structure has already been created,
+                # loading information from it is fast.  The directory is
+                # populated with files, named by their (url-encoded) FMRI,
+                # which point to the "installed" file in the corresponding
+                # directory under /var/pkg.
+                installed = {}
+                to_remove = set()
+                def add_installed_entry(f):
+                        path = "%s/pkg/%s/installed" % \
+                            (self.imgdir, f.get_dir_path())
+                        pub = installed_file_publisher(path)
+                        f.set_publisher(pub)
+                        to_remove.add(path)
+                        installed[f.pkg_name] = f
 
-                for pub in publist.itervalues():
+                if os.path.isdir(installed_state_dir):
+                        for pl in sorted(os.listdir(installed_state_dir)):
+                                fmristr = "%s" % urllib.unquote(pl)
+                                f = pkg.fmri.PkgFmri(fmristr)
+                                add_installed_entry(f)
+                                # One additional file to remove for this case.
+                                to_remove.add(os.path.join(installed_state_dir,
+                                    pl))
+                else:
+                        # Otherwise, we must iterate through the earlier
+                        # installed state.  One day, this can be removed.
+                        proot = "%s/pkg" % self.imgdir
+                        for pd in sorted(os.listdir(proot)):
+                                for vd in sorted(os.listdir("%s/%s" % \
+                                    (proot, pd))):
+                                        path = "%s/pkg/%s/installed" % \
+                                            (self.imgdir, pd, vd)
+                                        if not os.path.exists(path):
+                                                continue
+
+                                        fmristr = urllib.unquote("%s@%s" % (pd,
+                                            vd))
+                                        f = pkg.fmri.PkgFmri(fmristr)
+                                        add_installed_entry(f)
+
+                # Create the new image catalogs.
+                kcat = self.get_catalog(self.IMG_CATALOG_KNOWN)
+                kcat.batch_mode = True
+                icat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
+                icat.batch_mode = True
+
+                # Neither of these should exist on disk.
+                assert not kcat.exists
+                assert not icat.exists
+
+                # XXX For backwards compatibility, 'upgradability' of packages
+                # is calculated and stored based on whether a given pkg stem
+                # matches the newest version in the catalog.  This is quite
+                # expensive (due to overhead), but at least the cost is
+                # consolidated here.  This comparison is also cross-publisher,
+                # as it used to be.
+                newest = {}
+                old_pub_cats = []
+                for pub in self.gen_publishers():
                         try:
-                                catalog.Catalog.read_catalog(cache,
-                                    pub.meta_root, pub=pub.prefix)
+                                old_cat = pkg.server.catalog.ServerCatalog(
+                                    pub.meta_root, read_only=True,
+                                    publisher=pub.prefix)
+
+                                old_pub_cats.append((pub, old_cat))
+                                for f in old_cat.fmris():
+                                        nver = newest.get(f.pkg_name, None)
+                                        if not nver or f.version > nver:
+                                                newest[f.pkg_name] = f.version
+
                         except EnvironmentError, e:
                                 # If a catalog file is just missing, ignore it.
                                 # If there's a worse error, make sure the user
                                 # knows about it.
-                                if e.errno == errno.ENOENT:
-                                        pass
-                                else:
+                                if e.errno != errno.ENOENT:
                                         raise
 
-                self._catalog = cache
+                # Next, load the existing catalog data and convert it.
+                pub_cats = []
+                for pub, old_cat in old_pub_cats:
+                        new_cat = pub.catalog
+                        new_cat.batch_mode = True
 
-                # Use the current time until the actual file timestamp can be
-                # retrieved at the end.  That way, if an exception is raised
-                # or an early return occurs, it will still be set.
-                self.__catalog_cache_mod_time = int(time.time())
+                        # First convert the old publisher catalog to
+                        # the new format.
+                        for f in old_cat.fmris():
+                                new_cat.add_package(f)
 
-                # Remove old catalog cache files.
-                croot = os.path.join(self.imgdir, "catalog")
-                for fname in ("pkg_names.pkl", "catalog.pkl"):
-                        fpath = os.path.join(croot, fname)
-                        try:
-                                portable.remove(fpath)
-                        except KeyboardInterrupt:
-                                raise
-                        except:
-                                # If for any reason, the file can't be removed,
-                                # it doesn't matter.
-                                pass
+                                # Now populate the image catalogs.
+                                states = [self.PKG_STATE_KNOWN]
+                                mdata = { "states": states }
+                                if f.version != newest[f.pkg_name]:
+                                        states.append(self.PKG_STATE_UPGRADABLE)
+
+                                inst_fmri = installed.get(f.pkg_name, None)
+                                if inst_fmri and \
+                                    inst_fmri.version == f.version and \
+                                    pkg.fmri.is_same_publisher(f.publisher,
+                                    inst_fmri.publisher):
+                                        states.append(self.PKG_STATE_INSTALLED)
+                                        if inst_fmri.preferred_publisher():
+                                                # Strip the PREF_PUB_PFX.
+                                                inst_fmri.set_publisher(
+                                                    inst_fmri.get_publisher())
+                                                states.append(
+                                                    self.__PKG_STATE_PREFERRED)
+                                        icat.add_package(f, metadata=mdata)
+                                        del installed[f.pkg_name]
+                                kcat.add_package(f, metadata=mdata)
+
+                        # Normally, the Catalog's attributes are automatically
+                        # populated as a result of catalog operations.  But in
+                        # this case, the new Catalog's attributes should match
+                        # those of the old catalog.
+                        attrs = new_cat._attrs
+                        old_lm = old_cat.last_modified()
+                        if old_lm:
+                                # Can be None for empty v0 catalogs.
+                                old_lm = pkg.catalog.ts_to_datetime(old_lm)
+                        attrs.last_modified = old_lm
+
+                        # Add to the list of catalogs to save.
+                        pub_cats.append(new_cat)
+
+                # Discard the old catalog objects.
+                old_pub_cats = None
+
+                for f in installed.values():
+                        # Any remaining FMRIs need to be added to all of the
+                        # image catalogs.
+                        states = [self.PKG_STATE_INSTALLED]
+                        mdata = { "states": states }
+                        if f.version != newest[f.pkg_name]:
+                                states.append(self.PKG_STATE_UPGRADABLE)
+                        icat.add_package(f, metadata=mdata)
+                        kcat.add_package(f, metadata=mdata)
+
+                for cat in pub_cats + [kcat, icat]:
+                        cat.batch_mode = False
+                        cat.finalize()
+
+                # Data conversion finished.
+                self.__upgraded = True
 
                 try:
-                        cfd, ctmp = tempfile.mkstemp(dir=croot)
-                        cf = os.fdopen(cfd, "wb")
-                except EnvironmentError:
-                        # If the cache can't be written, it doesn't matter.
+                        # Ensure Image directory structure is valid.
+                        self.mkdirs()
+                except api_errors.PermissionsException, e:
                         progtrack.cache_catalogs_done()
+
+                        # An unprivileged user is attempting to use the
+                        # new client with an old image.  Since none of
+                        # the changes can be saved, warn the user and
+                        # then return.
+
+                        # XXX This awaits a proper messaging framework.
+                        # Raising an exception here would be a decidedly
+                        # bad thing as it would disrupt find_root, etc.
+                        emsg("Package operation performance is currently "
+                            "degraded.\nThis can be resolved by executing "
+                            "'pkg refresh' as a privileged user.\n")
                         return
 
-                def cleanup():
-                        try:
-                                if cf:
-                                        cf.close()
-                        except EnvironmentError:
-                                pass
+                # Assume that since mkdirs succeeded that the remaining data
+                # can be saved and the image structure can be upgraded.
 
-                        try:
-                                portable.remove(ctmp)
-                        except EnvironmentError:
-                                pass
+                # Attempt to save the image catalogs first
+                # before changing structure.
+                for cat in (kcat, icat):
+                        cat.save()
 
-                # First, the list of all publishers is built assigning each
-                # one a sequentially incremented integer as they are discovered.
-                # This number is used as a mapping code for publishers to reduce
-                # the size of the catalog cache.
-                pubs = {}
-                for pkg_name in cache:
-                        vers = cache[pkg_name]
-                        for k, v in vers.iteritems():
-                                if k == "versions":
-                                        continue
-                                for p in v[1]:
-                                        if p not in pubs:
-                                                pubs[p] = str(len(pubs))
-
-                # '|' is used to separate fields of information (such
-                # as fmri name and each version).
-                # '!' is used to separate items within a field (such as
-                # information about a version).
-                # '^' is used to separate item values (such as a publisher and
-                # its index number).
-
-                # First line of file is the version of the catalog cache.
-                try:
-                        cf.write("%s\n" % self.CATALOG_CACHE_VERSION)
-                except EnvironmentError:
-                        # If the cache can't be written, it doesn't matter.
-                        cleanup()
-                        progtrack.cache_catalogs_done()
-                        return
-                except:
-                        cleanup()
-                        raise
-
-                # Second line of the file is the list of publisher prefixes
-                # and their index number used to decode the fmri entries.
-                publine = "!".join([
-                    "^".join((p, pubs[p])) for p in pubs
-                ])
-
-                try:
-                        cf.write("%s\n" % publine)
-                except EnvironmentError:
-                        # If the cache can't be written, it doesn't matter.
-                        cleanup()
-                        progtrack.cache_catalogs_done()
-                        return
-                except:
-                        cleanup()
-                        raise
-
-                # All lines after the first two are made up of a package's
-                # version-specific fmri and the list of publishers that have
-                # it in their catalog, or where it was installed from.
-                for pkg_name in sorted(cache.keys()):
-                        vers = cache[pkg_name]
-
-                        # Iteration has to be performed over versions to retain
-                        # sort order.
-                        first = True
-                        release = None
-                        build_release = None
-                        branch = None
-                        for v in vers["versions"]:
-                                f, fpubs = vers[str(v)]
-                                known = "^".join(
-                                    pubs[p] for p in fpubs
-                                    if fpubs[p]
-                                )
-
-                                unknown = "^".join(
-                                    pubs[p] for p in fpubs
-                                    if not fpubs[p]
-                                )
-
-                                if first:
-                                        # When writing the first entry for a
-                                        # package, write its full fmri.
-                                        first = False
-                                        release = f.version.release
-                                        build_release = f.version.build_release
-                                        branch = f.version.branch
-                                        sfmri = f.get_fmri(anarchy=True,
-                                            include_scheme=False)
-                                else:
-                                        # For successive entries, write only
-                                        # what is not shared by the previous
-                                        # entry.
-                                        rmatch = f.version.release == release
-                                        brmatch = f.version.build_release == \
-                                            build_release
-                                        bmatch = f.version.branch == branch
-
-                                        sver = str(f.version)
-                                        if rmatch and brmatch and bmatch:
-                                                # If release, build_release, and
-                                                # branch match the last entry,
-                                                # they can be omitted.
-                                                sfmri = ":" + sver.split(":")[1]
-                                        elif rmatch and brmatch:
-                                                # If release and build_release
-                                                # match the last entry, they can
-                                                # be omitted.
-                                                sfmri = "-" + sver.split("-")[1]
-                                        elif rmatch:
-                                                # If release matches the last
-                                                # entry, it can be omitted.
-                                                sfmri = "," + sver.split(",")[1]
-                                        else:
-                                                # Nothing matched the previous
-                                                # entry except the name, so the
-                                                # full version must be written.
-                                                sfmri = "@" + sver
-
-                                        release = f.version.release
-                                        build_release = f.version.build_release
-                                        branch = f.version.branch
-
-                                line = sfmri + "|" + known + "!" + unknown
-                                try:
-                                        cf.write(line + "\n")
-                                except EnvironmentError:
-                                        # If the cache can't be written, it
-                                        # doesn't matter.
-                                        progtrack.cache_catalogs_done()
-                                        cleanup()
-                                        return
-                                except:
-                                        cleanup()
-                                        raise
-
-                cfpath = os.path.join(croot, CATALOG_CACHE_FILE)
-                try:
-                        cf.close()
-                        cf = None
-                        os.chmod(ctmp, 0644)
-                        portable.rename(ctmp, cfpath)
-                except EnvironmentError:
-                        # If the cache can't be written, it doesn't matter.
-                        progtrack.cache_catalogs_done()
-                        cleanup()
-                        return
-                except:
-                        cleanup()
-                        raise
-
-                # Update the mod time with the actual timestamp from the file.
-                self.__catalog_cache_mod_time = \
-                    self.__get_catalog_cache_mod_time()
-
-                progtrack.cache_catalogs_done()
-
-        def __get_catalog_cache_mod_time(self):
-                """Internal helper function used to obtain last modification
-                time of the on-disk catalog cache."""
-
-                croot = os.path.join(self.imgdir, "catalog")
-                cache_file = os.path.join(croot, CATALOG_CACHE_FILE)
-                try:
-                        mod_time = os.stat(cache_file).st_mtime
-                except EnvironmentError, e:
-                        if e.errno == errno.EACCES:
-                                raise api_errors.PermissionsException(
-                                    e.filename)
-                        if e.errno != errno.ENOENT:
-                                raise
-                        mod_time = None
-                return mod_time
-
-        def __load_catalog_cache(self, progtrack):
-                """Read in the cached catalog data."""
-
-                progtrack.load_catalog_cache_start()
-                croot = os.path.join(self.imgdir, "catalog")
-                cache_file = os.path.join(croot, CATALOG_CACHE_FILE)
-                mod_time = self.__get_catalog_cache_mod_time()
-                if self._catalog:
-                        if mod_time == self.__catalog_cache_mod_time:
-                                # Cache already loaded and up to date.
-                                progtrack.load_catalog_cache_done()
-                                return
-
-                try:
-                        cf = file(cache_file, "rb")
-                except EnvironmentError, e:
-                        self._catalog = {}
-                        self.__catalog_cache_mod_time = None
-                        if e.errno == errno.EACCES:
-                                raise api_errors.PermissionsException(
-                                    e.filename)
-                        if e.errno == errno.ENOENT:
-                                raise api_errors.CatalogCacheMissing()
-                        raise
-
-                # First line should be version.
-                try:
-                        ver = cf.readline().strip()
-                        ver = int(ver)
-                except ValueError:
-                        ver = None
-
-                # If we don't recognize the version, complain.
-                if ver != self.CATALOG_CACHE_VERSION:
-                        raise api_errors.CatalogCacheBadVersion(
-                            ver, expected=self.CATALOG_CACHE_VERSION)
-
-                # Second line should be the list of publishers.
-                publine = cf.readline().strip()
-                if not publine:
-                        publine = ""
-
-                pubidx = {}
-                for e in publine.split("!"):
-                        try:
-                                p, idx = e.split("^")
-                        except ValueError:
-                                raise api_errors.CatalogCacheInvalid(
-                                    publine, line_number=2)
-                        pubidx[idx] = p
-
-                if not pubidx:
-                        raise api_errors.CatalogCacheInvalid(
-                            publine, line_number=2)
-
-                self._catalog = {}
-
-                # Read until EOF.
-                pkg_name = None
-                sver = None
-                for lnum, line in ((i + 3, l.strip())
-                    for i, l in enumerate(cf)):
-                        # The first of these line for each package is of
-                        # the format:
-                        # fmri|pub1_known^pub2...!pub1_unknown^pub2...
-                        #
-                        # Successive versions of the same package are of
-                        # the format:
-                        # @ver|pub1_known^pub2...!pub1_unknown^pub2...
-                        try:
-                                sfmri, spubs = line.split("|", 1)
-                                sfmri = sfmri.strip()
-                        except (AttributeError, ValueError):
-                                raise api_errors.CatalogCacheInvalid(
-                                    line, line_number=lnum)
-
-                        if sfmri[0] in (":", "-", ",", "@") and \
-                            not pkg_name:
-                                # The previous line should have been a
-                                # full fmri or provided enough info
-                                # to construct one for this entry.
-                                raise api_errors.CatalogCacheInvalid(
-                                    line, line_number=lnum)
-                        elif sfmri[0] == ":":
-                                # Everything but the timestamp is the
-                                # same as the previous entry.
-                                sfmri = "%s@%s%s" % (pkg_name,
-                                    sver.split(":")[0], sfmri)
-                        elif sfmri[0] == "-":
-                                # Everything but the branch is the same
-                                # as the previous entry.
-                                sfmri = "%s@%s%s" % (pkg_name,
-                                    sver.split("-")[0], sfmri)
-                        elif sfmri[0] == ",":
-                                # Everything but the release is the same
-                                # as the previous entry.
-                                sfmri = "%s@%s%s" % (pkg_name,
-                                    sver.split(",")[0], sfmri)
-                        elif sfmri[0] == "@":
-                                # If the entry starts with this, then
-                                # only the package name is shared.
-                                sfmri = pkg_name + sfmri
-
-                        known, unknown = spubs.split("!")
-
-                        # Transform the publisher index numbers into
-                        # their equivalent prefixes.
-                        pubs = {}
-                        for k in known.split("^"):
-                                if k in pubidx:
-                                        pubs[pubidx[k]] = True
-                        for u in unknown.split("^"):
-                                if u in pubidx:
-                                        pubs[pubidx[u]] = False
-
-                        if not pubs:
-                                raise api_errors.CatalogCacheInvalid(
-                                    line, line_number=lnum)
-
-                        # Build the FMRI from the provided string and
-                        # cache the result using the publisher info.
-                        try:
-                                pfmri = pkg.fmri.PkgFmri(sfmri)
-                                pkg_name = pfmri.pkg_name
-                                sver = sfmri.split("@", 1)[1]
-                        except (pkg.fmri.FmriError, IndexError), e:
-                                raise api_errors.CatalogCacheInvalid(
-                                    line, line_number=lnum)
-                        catalog.Catalog.fast_cache_fmri(self._catalog,
-                            pfmri, sver, pubs)
-
-                try:
-                        cf.close()
-                except EnvironmentError:
-                        # All of the data was retrieved, so this error
-                        # doesn't matter.
-                        pass
-
-                # Now that all of the data has been loaded, set the
-                # modification time.
-                self.__catalog_cache_mod_time = mod_time
-
-                progtrack.load_catalog_cache_done()
-
-        def load_catalogs(self, progtrack, force=False):
-                """Load publisher catalog data.
-
-                'progtrack' should be a ProgressTracker object that will be used
-                to provide progress information to clients.
-
-                'force' is an optional, boolean value that, when 'True', will
-                cause the publisher catalog data to be loaded again even if it
-                has been already.  It defaults to 'False', which will cause the
-                catalog data to only be loaded when not already loaded or when
-                the catalog cache has been modified (which should only happen in
-                the case of another process modifying it)."""
-
-                if not force and self.__catalogs and \
-                    self.__pkg_states is not None:
-                        last_mod_time = self.__catalog_cache_mod_time
-                        if last_mod_time:
-                                mod_time = self.__get_catalog_cache_mod_time()
-                                if mod_time == last_mod_time:
-                                        # Don't load the catalogs as they are
-                                        # already loaded and state information
-                                        # is up to date.
-                                        return
-                                elif not mod_time:
-                                        # Don't load the catalogs since no cache
-                                        # exists on-disk but an in-memory one
-                                        # does.  This can happen for
-                                        # unprivileged users, or in a readonly
-                                        # environment such as a Live CD where
-                                        # the cache does not exist for space
-                                        # or other reasons.
-                                        return
-
-                assert progtrack
-
-                # Flush existing catalog data.
-                self.__catalogs = {}
-
+                # Next, reset the publisher meta_roots to reflect the new
+                # directory structure and move each publisher's catalog files
+                # to the new catalog root.
                 for pub in self.gen_publishers():
-                        croot = "%s/catalog/%s" % (self.imgdir, pub.prefix)
-                        progtrack.catalog_start(pub.prefix)
-                        if pub.prefix == self.cfg_cache.preferred_publisher:
-                                pubpfx = "%s_%s" % (pkg.fmri.PREF_PUB_PFX,
-                                    pub.prefix)
-                                c = catalog.Catalog(croot,
-                                    publisher=pubpfx)
-                        else:
-                                c = catalog.Catalog(croot,
-                                    publisher=pub.prefix)
-                        self.__catalogs[pub.prefix] = c
-                        progtrack.catalog_done()
+                        old_root = pub.meta_root
+                        pub.meta_root = self._get_publisher_meta_root(
+                            pub.prefix)
+                        pub.create_meta_root()
+                        for fname in os.listdir(old_root):
+                                src = os.path.join(old_root, fname)
+                                if fname == "last_refreshed":
+                                        dest = os.path.join(pub.meta_root,
+                                            fname)
+                                else:
+                                        dest = os.path.join(pub.catalog_root,
+                                            fname)
+                                portable.rename(src, dest)
 
-                # Load package state information as this will be used during
-                # catalog cache generation.
-                self.__load_pkg_states()
+                # Next, save all of the new publisher catalogs.
+                for cat in pub_cats:
+                        cat.save()
 
-                # Try to load the catalog cache file.  If that fails, call
-                # cache_catalogs so that the data from the canonical text copies
-                # of the catalogs from each publisher will be loaded and the
-                # data cached.
-                #
-                # XXX Given that this is a read operation, should we be writing?
-                try:
-                        self.__load_catalog_cache(progtrack)
-                except api_errors.CatalogCacheError:
-                        # If the load failed because of a bad version,
-                        # corruption, or because it was missing, just try to
-                        # rebuild it automatically.
-                        self.__cache_catalogs(progtrack)
+                # Next, remove all of the old catalog and state files.
+                shutil.rmtree(os.path.join(self.imgdir, "catalog"))
+                for pathname in to_remove:
+                        portable.remove(pathname)
 
-                # Add the packages which are installed, but not in the catalog.
-                # XXX Should we have a different state for these, so we can flag
-                # them to the user?
-                for state, f in self.__pkg_states.values():
-                        if state != PKG_STATE_INSTALLED:
-                                continue
-
-                        # cache_fmri will automatically determine whether the
-                        # fmri is in the catalog and then cache if needed.  The
-                        # fmri (or its version or publisher information) could
-                        # be missing for a number of reasons:
-                        #   * the package's publisher was removed, and no other
-                        #     publisher has a matching catalog entry
-                        #   * the fmri does not exist in the catalogs of any
-                        #     existing publisher, even though the publisher
-                        #     of the installed package has a catalog
-                        #   * the package's publisher was removed or does not
-                        #     exist in the installed package publisher's
-                        #     catalog, but another publisher has a matching
-                        #     catalog entry, so the fmri has been cached with
-                        #     the other publisher's information, and the
-                        #     installed publisher's information is missing
-                        #
-                        # The state of the package itself may be installed, but
-                        # the package is unknown to the publisher (not in its
-                        # catalog).
-                        catalog.Catalog.cache_fmri(self._catalog, f,
-                            f.get_publisher(), known=False)
-
-        def __destroy_catalog_cache(self):
-                croot = os.path.join(self.imgdir, "catalog")
-
-                # Remove catalog cache files (including old ones).
-                croot = os.path.join(self.imgdir, "catalog")
-                for fname in ("pkg_names.pkl", "catalog.pkl", "catalog_cache"):
-                        fpath = os.path.join(croot, fname)
-                        try:
-                                portable.remove(fpath)
-                        except KeyboardInterrupt:
-                                raise
-                        except:
-                                # If for any reason, the file can't be removed,
-                                # it doesn't matter as it will be overwritten.
-                                pass
-
-                # Reset the in-memory cache.
-                self._catalog = {}
-                self.__catalog_cache_mod_time = None
-
-        def _get_publisher_meta_root(self, prefix):
-                return os.path.join(self.imgdir, "catalog", prefix)
-
-        def has_catalog(self, prefix):
-                return os.path.exists(os.path.join(
-                    self._get_publisher_meta_root(prefix), "catalog"))
-
-        def remove_publisher_metadata(self, pub):
-                """Removes the metadata for the specified publisher object."""
-
-                try:
-                        del self.__catalogs[pub.prefix]
-                except KeyError:
-                        # May not have been loaded yet.
-                        pass
-
-                pub.remove_meta_root()
-                self.__destroy_catalog_cache()
-
-        def gen_installed_pkg_names(self):
-                """Generate the string representation of all installed
-                packages. This is faster than going through gen_installed_pkgs
-                when all that will be done is to extract the strings from
-                the result.
-                """
-                if self.__pkg_states is not None:
-                        for i in self.__pkg_states.values():
-                                yield i[1].get_fmri(anarchy=True)
-                else:
-                        installed_state_dir = "%s/state/installed" % \
-                            self.imgdir
-                        if os.path.isdir(installed_state_dir):
-                                for pl in os.listdir(installed_state_dir):
-                                        yield "pkg:/" + urllib.unquote(pl)
-                        else:
-                                proot = "%s/pkg" % self.imgdir
-                                for pd in sorted(os.listdir(proot)):
-                                        for vd in \
-                                            sorted(os.listdir("%s/%s" %
-                                            (proot, pd))):
-                                                path = "%s/%s/%s/installed" % \
-                                                    (proot, pd, vd)
-                                                if not os.path.exists(path):
-                                                        continue
-
-                                                yield urllib.unquote(
-                                                    "pkg:/%s@%s" % (pd, vd))
-
-        # This could simply call self.inventory() (or be replaced by inventory),
-        # but it turns out to be about 20% slower.
-        def gen_installed_pkgs(self):
-                """Return an iteration through the installed packages."""
-                self.__load_pkg_states()
-                return (i[1] for i in self.__pkg_states.values())
-
-        def __load_pkg_states(self):
-                """Build up the package state dictionary.
-
-                This dictionary maps the full fmri string to a tuple of the
-                state, the prefix of the publisher from which it's installed,
-                and the fmri object.
-
-                Note that this dictionary only maps installed packages.  Use
-                get_pkg_state_by_fmri() to retrieve the state for arbitrary
-                packages.
-                """
-
-                if self.__pkg_states is not None:
-                        return
-
-                installed_state_dir = "%s/state/installed" % self.imgdir
-
-                self.__pkg_states = {}
-
-                # If the state directory structure has already been created,
-                # loading information from it is fast.  The directory is
-                # populated with symlinks, named by their (url-encoded) FMRI,
-                # which point to the "installed" file in the corresponding
-                # directory under /var/pkg.
-                if os.path.isdir(installed_state_dir):
-                        for pl in sorted(os.listdir(installed_state_dir)):
-                                fmristr = urllib.unquote(pl)
-                                f = pkg.fmri.PkgFmri(fmristr)
-                                path = self._install_file(f)
-                                pub = self.installed_file_publisher(path)
-                                f.set_publisher(pub)
-
-                                self.__pkg_states[fmristr] = \
-                                    (PKG_STATE_INSTALLED, f)
-
-                        return
-
-                # Otherwise, we must iterate through the earlier installed
-                # state.  One day, this can be removed.
-                proot = "%s/pkg" % self.imgdir
-                for pd in sorted(os.listdir(proot)):
-                        for vd in sorted(os.listdir("%s/%s" % (proot, pd))):
-                                path = "%s/%s/%s/installed" % (proot, pd, vd)
-                                if not os.path.exists(path):
-                                        continue
-
-                                fmristr = urllib.unquote("%s@%s" % (pd, vd))
-                                pub = self.installed_file_publisher(path)
-                                f = pkg.fmri.PkgFmri(fmristr, publisher = pub)
-
-                                self.__pkg_states[fmristr] = \
-                                    (PKG_STATE_INSTALLED, f)
-
-        def clear_pkg_state(self):
-                self.__pkg_states = None
+                # Finally, mark complete.
+                progtrack.cache_catalogs_done()
 
         def strtofmri(self, myfmri):
                 return pkg.fmri.PkgFmri(myfmri, self.attrs["Build-Release"])
@@ -1999,12 +1683,12 @@ class Image(object):
                                 for dep in mfst.gen_actions_by_type("depend",
                                     self.list_excludes()):
                                         progtrack.evaluate_progress()
-                                        f, con = dep.parse(self,
-                                            fmri.get_name())
+                                        con = dep.parse(self,
+                                            fmri.get_name())[1]
                                         self.constraints.update_constraints(con)
                                 self.constraints.finish_loading(fmri)
 
-        def get_installed_unbound_inc_list(self):
+        def __get_installed_unbound_inc_list(self):
                 """Returns list of packages containing incorporation
                 dependencies on which no other pkgs depend."""
 
@@ -2028,7 +1712,8 @@ class Image(object):
                         if a[0] in dependents:
                                 del inc_tuples[i - deletions]
 
-                return list(set([ a[0] for a in inc_tuples ]))
+                for p in set([ a[0] for a in inc_tuples ]):
+                        yield pkg.fmri.PkgFmri(p, self.attrs["Build-Release"])
 
         def get_user_by_name(self, name):
                 return portable.get_user_by_name(name, self.root,
@@ -2068,7 +1753,7 @@ class Image(object):
                 string."""
                 return [
                     (i, pat, pat.tuple()[2],
-                        pat.get_publisher(), pat.get_publisher_str())
+                        pat.publisher, pat.publisher)
                     for i, pat in enumerate(patterns)
                     if matcher(name, pat.tuple()[1])
                 ]
@@ -2107,8 +1792,6 @@ class Image(object):
                 if illegals:
                         raise api_errors.InventoryException(illegal=illegals)
 
-                ppub = self.cfg_cache.preferred_publisher
-
                 # matchingpats is the set of all the patterns which matched a
                 # package in the catalog.  This allows us to return partial
                 # failure if some patterns match and some don't.
@@ -2116,12 +1799,17 @@ class Image(object):
                 # to match -- based on name, version, or publisher.
                 matchingpats = set()
 
-                if ordered:
-                        entries = sorted(self._catalog.keys())
+                if all_known:
+                        cat = self.get_catalog(self.IMG_CATALOG_KNOWN)
                 else:
-                        entries = self._catalog.keys()
+                        cat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
 
-                for name in entries:
+                if ordered:
+                        names = sorted(cat.names())
+                else:
+                        names = cat.names()
+
+                for name in names:
                         # Eliminate all patterns not matching "name".  If there
                         # are no patterns left, go on to the next name, but only
                         # if there were any to start with.
@@ -2129,8 +1817,8 @@ class Image(object):
                         if patterns and not matches:
                                 continue
 
-                        newest = self._catalog[name]["versions"][-1]
-                        for ver in reversed(self._catalog[name]["versions"]):
+                        rversions = reversed(list(cat.entries_by_version(name)))
+                        for ver, entries in rversions:
                                 # If a pattern specified a version and that
                                 # version isn't succeeded by "ver", then record
                                 # the pattern for removal from consideration.
@@ -2158,12 +1846,12 @@ class Image(object):
 
                                 # Like the version skipping above, do the same
                                 # for publishers.
-                                pubstate = self._catalog[name][str(ver)][1]
+                                publist = set([f[0].publisher for f in entries])
 
                                 nomatch = []
                                 for i, match in enumerate(vmatches):
                                         if match[3] and \
-                                            match[3] not in pubstate:
+                                            match[3] not in publist:
                                                 nomatch.append(i)
 
                                 pmatches = [
@@ -2184,59 +1872,44 @@ class Image(object):
                                 aset = set(i[3] for i in pmatches)
                                 if aset and None not in aset:
                                         publist = set(
-                                            m[3:5]
+                                            m[3]
                                             for m in pmatches
-                                            if m[3] in pubstate
+                                            if m[3] in publist
                                         )
-                                else:
-                                        publist = zip(pubstate.keys(),
-                                            pubstate.keys())
 
-                                pfmri = self._catalog[name][str(ver)][0]
+                                matchingpats |= set(i[:2] for i in vmatches)
 
-                                inst_state = self.get_pkg_state_by_fmri(pfmri)
-                                inst_pub = self.get_pkg_pub_by_fmri(pfmri)
-                                state = {
-                                    "upgradable": ver != newest,
-                                    "frozen": False,
-                                    "incorporated": False,
-                                    "excludes": False
-                                }
+                                for f, entry in entries:
+                                        if f.publisher not in publist:
+                                                continue
 
-                                # We yield copies of the fmri objects in the
-                                # catalog because we add the publishers in, and
-                                # don't want to mess up the canonical catalog.
-                                # If a pattern had specified a publisher as
-                                # preferred, be sure to emit an fmri that way,
-                                # too.
-                                yielded = False
-                                if all_known:
-                                        for pub, rpub in publist:
-                                                nfmri = pfmri.copy()
-                                                nfmri.set_publisher(rpub,
-                                                    pub == ppub)
-                                                st = state.copy()
-                                                if pub == inst_pub:
-                                                        st["state"] = \
-                                                            PKG_STATE_INSTALLED
-                                                else:
-                                                        st["state"] = \
-                                                            PKG_STATE_KNOWN
-                                                st["in_catalog"] = pubstate[pub]
-                                                yield nfmri, st
-                                                yielded = True
-                                elif inst_state == PKG_STATE_INSTALLED:
-                                        nfmri = pfmri.copy()
-                                        nfmri.set_publisher(inst_pub,
-                                            inst_pub == ppub)
-                                        state["state"] = inst_state
-                                        state["in_catalog"] = pubstate[inst_pub]
-                                        yield nfmri, state
-                                        yielded = True
+                                        states = entry["metadata"]["states"]
 
-                                if yielded:
-                                        matchingpats |= set(
-                                            i[:2] for i in pmatches)
+                                        known = self.PKG_STATE_KNOWN in states
+                                        st = {
+                                            "frozen": False,
+                                            "in_catalog": known,
+                                            "incorporated": False,
+                                            "excludes": False,
+                                            "upgradable": self.PKG_STATE_UPGRADABLE in states
+                                        }
+
+                                        if self.PKG_STATE_INSTALLED in states:
+                                                st["state"] = \
+                                                    self.PKG_STATE_INSTALLED
+                                        elif known:
+                                                # XXX long-term, a package could
+                                                # be 'frozen' or something else
+                                                # and no longer available (in a
+                                                # catalog).
+                                                st["state"] = \
+                                                    self.PKG_STATE_KNOWN
+                                        else:
+                                                # Must be in some other state;
+                                                # see comment above.
+                                                st["state"] = None
+
+                                        yield f, st
 
                 nonmatchingpats = [
                     opatterns[i]
@@ -2280,16 +1953,14 @@ class Image(object):
                 # non-preferred publishers.  In the current implementation, this
                 # consumes more memory.
                 preferred = kwargs.pop("preferred", False)
-                ppub = self.cfg_cache.preferred_publisher
-
                 if not preferred:
                         for f in self.__inventory(*args, **kwargs):
                                 yield f
                 else:
+                        ppub = self.get_preferred_publisher()
                         nplist = []
-                        firstnp = None
                         for f in self.__inventory(*args, **kwargs):
-                                if f[0].get_publisher() == ppub:
+                                if f[0].publisher == ppub:
                                         yield f
                                 else:
                                         nplist.append(f)
@@ -2363,7 +2034,7 @@ class Image(object):
                 os.close(fd)
                 return name
 
-        def __filter_install_matches(self, matches, names):
+        def __filter_install_matches(self, matches):
                 """Attempts to eliminate redundant matches found during
                 packaging operations:
 
@@ -2380,51 +2051,53 @@ class Image(object):
                       dropped.
 
                 Returns a list of the filtered matches, along with a dict of
-                their unique names and a dict containing package state
-                information."""
+                their unique names."""
 
                 olist = []
                 onames = {}
                 # First eliminate any duplicate matches that are for unknown
                 # publishers (publishers which have been removed from the image
                 # configuration).
-                publist = [p.prefix for p in self.get_publishers().values()]
+                publist = set(p.prefix for p in self.get_publishers().values())
+                for m, st in matches:
+                        if m.publisher in publist:
+                                onames[m.get_pkg_stem()] = False
+                                olist.append((m, st))
 
-                for m in matches:
-                        if m.get_publisher() in publist:
-                                stem = m.get_pkg_stem()
-                                onames[stem] = names[stem]
-                                olist.append(m)
-
-                # Next, if there are still multiple matches, eliminate fmris
-                # belonging to publishers that no longer have the fmri in their
+                # Next, if there are still multiple matches, eliminate matches
+                # belonging to publishers that no longer have the FMRI in their
                 # catalog.
                 found_state = False
                 if len(onames) > 1:
                         mlist = []
                         mnames = {}
-                        for m in olist:
+                        for m, st in olist:
+                                if not st["in_catalog"]:
+                                        continue
                                 stem = m.get_pkg_stem()
-                                st = onames[stem]
-                                if st["in_catalog"]:
-                                        if st["state"] == PKG_STATE_INSTALLED:
-                                                found_state = True
-                                        mnames[stem] = onames[stem]
-                                        mlist.append(m)
+                                if st["state"] == self.PKG_STATE_INSTALLED:
+                                        found_state = True
+                                        # This stem has an installed
+                                        # version.
+                                        mnames[stem] = True
+                                else:
+                                        mnames.setdefault(stem, False)
+                                mlist.append((m, st))
                         olist = mlist
                         onames = mnames
 
-                # Finally, if there are still multiple matches, and a known stem
-                # has been found in the provided state, then eliminate any stems
-                # that do not have the specified state.
+                # Finally, if there are still multiple matches, and an available
+                # stem is installed, then eliminate any stems that do not
+                # have an installed version.
                 if found_state and len(onames) > 1:
                         mlist = []
                         mnames = {}
-                        for m in olist:
+                        for m, st in olist:
                                 stem = m.get_pkg_stem()
-                                if onames[stem]["state"] == PKG_STATE_INSTALLED:
+                                if onames[stem]:
+                                        # This stem has an installed version.
                                         mnames[stem] = onames[stem]
-                                        mlist.append(m)
+                                        mlist.append((m, st))
                         olist = mlist
                         onames = mnames
 
@@ -2450,8 +2123,6 @@ class Image(object):
                 image-update.
                 """
 
-                self.load_catalogs(progtrack)
-
                 if filters is None:
                         filters = []
 
@@ -2470,15 +2141,25 @@ class Image(object):
                 # order package list so that any unbound incorporations are
                 # done first
 
-                inc_list = self.get_installed_unbound_inc_list()
+                inc_list = list(self.__get_installed_unbound_inc_list())
 
                 head = []
                 tail = []
-                for p in pkg_list:
-                        if p in inc_list:
-                                head.append(p)
+                for s in pkg_list:
+                        try:
+                                p = pkg.fmri.PkgFmri(s,
+                                    self.attrs["Build-Release"])
+                        except pkg.fmri.IllegalFmri:
+                                illegal_fmris.append(s)
+                                error = 1
+                                continue
+
+                        for inc in inc_list:
+                                if inc.pkg_name == p.pkg_name:
+                                        head.append((s, p))
+                                        break
                         else:
-                                tail.append(p)
+                                tail.append((s, p))
                 pkg_list = head + tail
 
                 # This approach works only for cases w/ simple
@@ -2486,15 +2167,12 @@ class Image(object):
                 # call below binds the version too quickly.  This
                 # awaits a proper solver.
 
-                for p in pkg_list:
+                # XXX This logic is very inefficient for cases like image-update
+                # where the entire package inventory is matched against each
+                # package (think num_installed * available_pkgs).
+                ppub = self.get_preferred_publisher()
+                for p, conp in pkg_list:
                         progtrack.evaluate_progress()
-                        try:
-                                conp = pkg.fmri.PkgFmri(p,
-                                    self.attrs["Build-Release"])
-                        except pkg.fmri.IllegalFmri:
-                                illegal_fmris.append(p)
-                                error = 1
-                                continue
                         try:
                                 conp = \
                                     self.constraints.apply_constraints_to_fmri(
@@ -2534,12 +2212,12 @@ class Image(object):
                         npnames = {}
                         npmatch = []
                         for m, st in matches:
-                                if m.preferred_publisher():
-                                        pnames[m.get_pkg_stem()] = st
-                                        pmatch.append(m)
+                                if m.publisher == ppub:
+                                        pnames[m.get_pkg_stem()] = None
+                                        pmatch.append((m, st))
                                 else:
-                                        npnames[m.get_pkg_stem()] = st
-                                        npmatch.append(m)
+                                        npnames[m.get_pkg_stem()] = None
+                                        npmatch.append((m, st))
 
                         if len(pnames) > 1:
                                 # There can only be one preferred publisher, so
@@ -2550,8 +2228,7 @@ class Image(object):
                                 continue
                         elif not pnames and len(npnames) > 1:
                                 npmatch, npnames = \
-                                    self.__filter_install_matches(npmatch,
-                                    npnames)
+                                    self.__filter_install_matches(npmatch)
                                 if len(npnames) > 1:
                                         if multimatch_ignore:
                                                 # Caller has requested that this
@@ -2568,9 +2245,12 @@ class Image(object):
                         # matches is a list reverse sorted by version, so take
                         # the first; i.e., the latest.
                         if pmatch:
-                                ip.propose_fmri(pmatch[0])
+                                ip.propose_fmri(pmatch[0][0])
+                        elif npmatch:
+                                ip.propose_fmri(npmatch[0][0])
                         else:
-                                ip.propose_fmri(npmatch[0])
+                                error = 1
+                                unmatched_fmris.append(p)
 
                 if error != 0:
                         raise api_errors.PlanCreationException(unmatched_fmris,
@@ -2583,8 +2263,6 @@ class Image(object):
             progresstracker, check_cancelation, noexecute, verbose=False):
                 ip = imageplan.ImagePlan(self, progresstracker,
                     check_cancelation, recursive_removal, noexecute=noexecute)
-
-                self.load_catalogs(progresstracker)
 
                 err = 0
 
@@ -2601,8 +2279,9 @@ class Image(object):
                                 matches = list(self.inventory([ppat],
                                     ordered=False))
                         except api_errors.InventoryException, e:
-                                assert(not (e.notfound and e.illegal))
-                                if e.notfound:
+                                if e.illegal:
+                                        illegal_fmris.append(ppat)
+                                else:
                                         try:
                                                 list(self.inventory([ppat],
                                                     all_known=True,
@@ -2610,17 +2289,11 @@ class Image(object):
                                                 missing_matches.append(ppat)
                                         except api_errors.InventoryException:
                                                 unmatched_fmris.append(ppat)
-                                elif e.illegal:
-                                        illegal_fmris.append(ppat)
-                                else:
-                                        raise RuntimeError("Caught inventory "
-                                            "exception without unmatched or "
-                                            "illegal fmris set.")
                                 err = 1
                                 continue
 
                         if len(matches) > 1:
-                                matchlist = [m for m, state in matches]
+                                matchlist = [m[0] for m in matches]
                                 multiple_matches.append((ppat, matchlist))
                                 err = 1
                                 continue
@@ -2638,6 +2311,7 @@ class Image(object):
             refresh_allowed=True, progtrack=None):
                 """ Test whether SUNWipkg is updated to the latest version
                     known to be available for this image """
+
                 #
                 # This routine makes the distinction between the "target image",
                 # which will be altered, and the "running image", which is
@@ -2675,8 +2349,7 @@ class Image(object):
                         # not perfect-- we could be in a developer's
                         # workspace, for example.
                         #
-                        newimg.find_root(cmddir)
-                        newimg.load_config()
+                        newimg.find_root(cmddir, progtrack=progtrack)
 
                         if refresh_allowed:
                                 # If refreshing publisher metadata is allowed,
@@ -2689,10 +2362,6 @@ class Image(object):
                                         cre.message = \
                                             _("SUNWipkg update check failed.")
                                         raise
-                        else:
-                                # If refresh wasn't called, the catalogs have to
-                                # be manually loaded.
-                                newimg.load_catalogs(progtrack)
                         img = newimg
 
                 # XXX call to progress tracker that SUNWipkg is being refreshed
@@ -2716,5 +2385,4 @@ class Image(object):
                 except api_errors.InventoryException, e:
                         illegals = e.illegal
                         notfound = e.notfound
-
                 return found, notfound, illegals

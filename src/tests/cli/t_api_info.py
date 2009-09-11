@@ -40,7 +40,7 @@ import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 import pkg.client.progress as progress
 
-API_VERSION = 19
+API_VERSION = 21
 PKG_CLIENT_NAME = "pkg"
 
 class TestApiInfo(testutils.SingleDepotTestCase):
@@ -270,46 +270,6 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                     api_obj.info, ["jade"], local, set([-1]))
                 self.assertRaises(api_errors.UnrecognizedOptionsToInfo,
                     api_obj.info, ["jade"], local, set('a'))
-
-                # Test as part of bug 4886.
-                # Makes sure that the catalog.pkl file is reread when
-                # necessary.
-                self.pkgsend_bulk(durl, pkg3)
-                time.sleep(1)
-                api_obj2 = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progress.NullProgressTracker(), lambda x: False,
-                    PKG_CLIENT_NAME)
-                api_obj2.refresh(immediate=True)
-
-                info_needed = api.PackageInfo.ALL_OPTIONS - \
-                    (frozenset([api.PackageInfo.LICENSES]) |
-                    api.PackageInfo.ACTION_OPTIONS)
-                
-                ret = api_obj.info(["foo"], local, info_needed)
-                pis = ret[api.ImageInterface.INFO_FOUND]
-                self.assert_(len(pis) == 1)
-
-                ret = api_obj.info(["foo"], local, set())
-                pis = ret[api.ImageInterface.INFO_FOUND]
-                self.assert_(len(pis) == 1)
-                res = pis[0]
-                self.assert_(res.pkg_stem is None)
-                self.assert_(res.summary is None)
-                self.assert_(res.category_info_list == [])
-                self.assert_(res.state is None)
-                self.assert_(res.publisher is None)
-                self.assert_(res.preferred_publisher is None)
-                self.assert_(res.version is None)
-                self.assert_(res.build_release is None)
-                self.assert_(res.branch is None)
-                self.assert_(res.packaging_date is None)
-                self.assert_(res.size is None)
-                self.assert_(res.licenses is None)
-                self.assert_(res.links is None)
-                self.assert_(res.hardlinks is None)
-                self.assert_(res.files is None)
-                self.assert_(res.dirs is None)
-                self.assert_(res.dependencies is None)
 
                 self.assertRaises(api_errors.UnrecognizedOptionsToInfo,
                     api_obj.info, ["foo"], local, set([-1]))

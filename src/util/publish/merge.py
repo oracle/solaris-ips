@@ -34,9 +34,9 @@ import shutil
 
 import pkg.fmri
 import pkg.pkgtarfile as ptf
-import pkg.catalog as catalog
 import pkg.actions as actions
 import pkg.manifest as manifest
+import pkg.server.catalog as catalog
 import pkg.version as version
 
 from pkg.misc import versioned_urlopen, gunzip_from_stream, msg, PipeError
@@ -176,7 +176,7 @@ def fetch_catalog(server_url):
 
         # call catalog.recv to pull down catalog
         try:
-                catalog.recv(c, dl_dir)
+                catalog.ServerCatalog.recv(c, dl_dir)
         except: 
                 error(_("Error while reading from: %s") % server_url)
                 sys.exit(1)
@@ -185,7 +185,7 @@ def fetch_catalog(server_url):
         c.close()
 
         # instantiate catalog object
-        cat = catalog.Catalog(dl_dir)
+        cat = catalog.ServerCatalog(dl_dir, read_only=True)
         
         # return (catalog, tmpdir path)
         return cat, dl_dir

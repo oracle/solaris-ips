@@ -39,6 +39,7 @@ import copy
 import datetime as dt
 import errno
 import os
+import pkg.catalog
 import pkg.client.api_errors as api_errors
 import pkg.misc as misc
 import pkg.portable as portable
@@ -697,19 +698,22 @@ class Publisher(object):
         # documentation as private, and for clarity in the property declarations
         # found near the end of the class definition.
         __alias = None
+        __catalog = None
         __client_uuid = None
         __disabled = False
         __meta_root = None
         __prefix = None
         __selected_repository = None
         __repositories = []
+        transport = None
 
         # Used to store the id of the original object this one was copied
         # from during __copy__.
         _source_object_id = None
 
         def __init__(self, prefix, alias=None, client_uuid=None, disabled=False,
-            meta_root=None, repositories=None, selected_repository=None):
+            meta_root=None, repositories=None, selected_repository=None,
+            transport=None):
                 """Initialize a new publisher object."""
 
                 if client_uuid is None:
@@ -725,8 +729,9 @@ class Publisher(object):
                 # the class definition.
                 self.alias = alias
                 self.disabled = disabled
-                self.meta_root = meta_root
                 self.prefix = prefix
+                self.transport = transport
+                self.meta_root = meta_root
 
                 if repositories:
                         for r in repositories:
@@ -760,7 +765,7 @@ class Publisher(object):
                 pub = Publisher(self.__prefix, alias=self.__alias,
                     client_uuid=self.__client_uuid, disabled=self.__disabled,
                     meta_root=self.meta_root, repositories=repositories,
-                    selected_repository=selected)
+                    selected_repository=selected, transport=self.transport)
                 pub._source_object_id = id(self)
                 return pub
 
@@ -892,6 +897,8 @@ class Publisher(object):
                 if pathname:
                         pathname = os.path.abspath(pathname)
                 self.__meta_root = pathname
+                if self.__catalog:
+                        self.__catalog.meta_root = self.catalog_root
 
         def __set_prefix(self, prefix):
                 if not misc.valid_pub_prefix(prefix):
@@ -903,6 +910,7 @@ class Publisher(object):
                     value not in self.repositories:
                         raise api_errors.UnknownRepository(value)
                 self.__selected_repository = value
+                self.__catalog = None
 
         def __set_client_uuid(self, value):
                 self.__client_uuid = value
@@ -927,6 +935,36 @@ class Publisher(object):
                 if len(self.__repositories) == 1:
                         self.selected_repository = repository
 
+        @property
+        def catalog(self):
+                """A reference to the Catalog object for the publisher's
+                selected repository, or None if available."""
+
+                if not self.meta_root:
+                        return None
+
+                if not self.__catalog:
+                        croot = self.catalog_root
+                        if not os.path.isdir(croot):
+                                # Current meta_root structure is likely in
+                                # a state of transition, so don't provide a
+                                # meta_root.  Assume that an empty catalog
+                                # is desired instead.  (This can happen during
+                                # an image format upgrade.)
+                                croot = None
+                        self.__catalog = pkg.catalog.Catalog(
+                            meta_root=croot)
+                return self.__catalog
+
+        @property
+        def catalog_root(self):
+                """The absolute pathname of the directory containing the
+                Catalog data for the publisher, or None if meta_root is
+                not defined."""
+
+                if self.meta_root:
+                        return os.path.join(self.meta_root, "catalog")
+
         def create_meta_root(self):
                 """Create the publisher's meta_root."""
 
@@ -934,16 +972,17 @@ class Publisher(object):
                         raise api_errors.BadPublisherMetaRoot(self.meta_root,
                             operation="create_meta_root")
 
-                try:
-                        os.makedirs(self.meta_root)
-                except EnvironmentError, e:
-                        if e.errno == errno.EACCES:
-                                raise api_errors.PermissionsException(
-                                    e.filename)
-                        elif e.errno != errno.EEXIST:
-                                # If the meta_root already exists, move on.
-                                # Otherwise, raise the exception.
-                                raise
+                for path in (self.meta_root, self.catalog_root):
+                        try:
+                                os.makedirs(path)
+                        except EnvironmentError, e:
+                                if e.errno == errno.EACCES:
+                                        raise api_errors.PermissionsException(
+                                            e.filename)
+                                elif e.errno != errno.EEXIST:
+                                        # If the path already exists, move on.
+                                        # Otherwise, raise the exception.
+                                        raise
 
         def get_repository(self, name=None, origin=None):
                 """Returns the repository object matching the name or that has
@@ -973,11 +1012,6 @@ class Publisher(object):
                         # occur except during publisher initialization.
                         return False
 
-                cfile = os.path.join(self.meta_root, "catalog")
-                if not os.path.exists(cfile):
-                        # If metadata is missing, a refresh is needed.
-                        return True
-
                 lc = self.last_refreshed
                 if not lc:
                         # There is no record of when the publisher metadata was
@@ -1000,6 +1034,130 @@ class Publisher(object):
                         # equals the specified interval.
                         return True
 
+                return False
+
+        def __convert_v0_catalog(self, v0_cat):
+                """Transforms the contents of the provided version 0 Catalog
+                into a version 1 Catalog, replacing the current Catalog."""
+
+                v0_lm = v0_cat.last_modified()
+                if v0_lm:
+                        # last_modified can be none if the catalog is empty.
+                        v0_lm = pkg.catalog.ts_to_datetime(v0_lm)
+
+                v1_cat = self.catalog
+                v1_lm = None
+                if self.catalog.last_modified:
+                        v1_lm = self.catalog.last_modified.isoformat()
+
+                pkg_count = v1_cat.package_version_count
+                if pkg_count:
+                        if v0_lm == v1_lm:
+                                # Already converted.
+                                return
+
+                        # Simply rebuild the entire v1 catalog every time, this
+                        # avoids many of the problems that could happen due to
+                        # deficiencies in the v0 implementation.
+                        v1_cat.destroy()
+
+                # Now populate the v1 Catalog with the v0 Catalog's data.
+                v1_cat.batch_mode = True
+                for f in v0_cat.fmris():
+                        v1_cat.add_package(f)
+
+                # Normally, the Catalog's attributes are automatically
+                # populated as a result of catalog operations.  But in
+                # this case, we want the v1 Catalog's attributes to
+                # match those of the v0 catalog.
+                attrs = v1_cat._attrs
+                attrs.last_modified = v0_lm
+
+                # Finally, save the new Catalog, and replace the old in-memory
+                # catalog.
+                v1_cat.batch_mode = False
+                v1_cat.save()
+                self.__catalog = v1_cat
+
+        def refresh(self, full_refresh=False, immediate=False):
+                """Refreshes the publisher's metadata, returning a boolean
+                value indicating whether any updates to the publisher's
+                metadata occurred.
+
+                'full_refresh' is an optional boolean value indicating whether
+                a full retrieval of publisher metadata (e.g. catalogs) or only
+                an update to the existing metadata should be performed.  When
+                True, 'immediate' is also set to True.
+
+                'immediate' is an optional boolean value indicating whether
+                a refresh should occur now.  If False, a publisher's selected
+                repository will be checked for updates only if needs_refresh
+                is True."""
+
+                assert self.catalog_root
+                assert self.transport
+
+                if full_refresh:
+                        immediate = True
+
+                # Ensure consistent directory structure.
+                self.create_meta_root()
+
+                # XXX Assumes Catalog needs v0 -> v1 transformation as
+                # repositories only offer v0 catalogs currently.
+                import pkg.server.catalog as old_catalog
+                v0_cat = old_catalog.ServerCatalog(self.catalog_root,
+                    read_only=True, publisher=self.prefix)
+
+                new_cat = True
+                v0_lm = None
+                if v0_cat.exists:
+                        repo = self.selected_repository
+                        if full_refresh or v0_cat.origin() not in repo.origins:
+                                try:
+                                        v0_cat.destroy(root=self.catalog_root)
+                                except EnvironmentError, e:
+                                        if e.errno == errno.EACCES:
+                                                raise api_errors.PermissionsException(
+                                                    e.filename)
+                                        raise
+                                immediate = True
+                        else:
+                                new_cat = False
+                                v0_lm = v0_cat.last_modified()
+
+                if not immediate and not self.needs_refresh:
+                        # No refresh needed.
+                        return False
+
+                import pkg.updatelog as old_ulog
+                try:
+                        # Note that this currently retrieves a v0 catalog that
+                        # has to be converted to v1 format.
+                        self.transport.get_catalog(self, v0_lm)
+                except old_ulog.UpdateLogException:
+                        # If an incremental update fails, attempt a full
+                        # catalog retrieval instead.
+                        try:
+                                v0_cat.destroy(root=self.catalog_root)
+                        except EnvironmentError, e:
+                                if e.errno == errno.EACCES:
+                                        raise api_errors.PermissionsException(
+                                            e.filename)
+                                raise
+                        self.transport.get_catalog(self)
+
+                v0_cat = pkg.server.catalog.ServerCatalog(
+                    self.catalog_root, read_only=True,
+                    publisher=self.prefix)
+
+                self.__convert_v0_catalog(v0_cat)
+                self.last_refreshed = dt.datetime.utcnow()
+
+                if new_cat or v0_lm != v0_cat.last_modified():
+                        # If the catalog was rebuilt, or the timestamp of the
+                        # catalog changed, then an update has occurred.
+                        return True
                 return False
 
         def remove_meta_root(self):

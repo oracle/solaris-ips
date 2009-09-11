@@ -25,832 +25,2007 @@
 """Interfaces and implementation for the Catalog object, as well as functions
 that operate on lists of package FMRIs."""
 
-import os
-import re
-import urllib
-import errno
+import copy
+import calendar
 import datetime
-import threading
-import tempfile
+import errno
+import os
+import sha
+import simplejson as json
 import stat
-import bisect
+import tempfile
+import threading
 
+import pkg.client.api_errors as api_errors
 import pkg.fmri as fmri
 import pkg.portable as portable
-import pkg.version as version
+import pkg.version
 
-class CatalogException(Exception):
-        def __init__(self, args=None):
-                self.args = args
+from operator import itemgetter
+
+class _JSONWriter(object):
+        """Private helper class used to serialize catalog data and generate
+        signatures."""
+
+        def __init__(self, data, root=None):
+                self.__data = data
+                self.__fileobj = None
+                self.__sha_1 = sha.new()
+                self.__sha_1_offset = None
+                # sha-1 hex is always 40 characters in length.
+                self.__sha_1_keyword = "sha-1-" + ("*" * 34)
+                self.__root = root
+                self.pathname = None
+
+                if root:
+                        # Create a file to store the data as it is written.
+                        # The caller is responsible for renaming this file
+                        # as desired after save().
+                        try:
+                                tmp_num, tmpfile = tempfile.mkstemp(
+                                    dir=root)
+                        except EnvironmentError, e:
+                                if e.errno == errno.EACCES:
+                                        raise api_errors.PermissionsException(
+                                            e.filename)
+                                raise
+
+                        try:
+                                # use fdopen since a filehandle exists
+                                tfile = os.fdopen(tmp_num, "wb")
+                        except EnvironmentError, e:
+                                portable.remove(tmpfile)
+                                if e.errno == errno.EACCES:
+                                        raise api_errors.PermissionsException(
+                                            e.filename)
+                                raise
+
+                        self.__fileobj = tfile
+                        self.pathname = tmpfile
+
+        def __offsets(self):
+                return { "sha-1": self.__sha_1_offset }
+
+        def signatures(self):
+                """Returns a dictionary mapping digest algorithms to the
+                hex-encoded digest values of the text of the catalog."""
+
+                return { "sha-1": self.__sha_1.hexdigest() }
+
+        def save(self):
+                """Serializes and stores the provided data in JSON format."""
+                self.__data["_SIGNATURE"] = {
+                    "sha-1": self.__sha_1_keyword,
+                }
+
+                # sort_keys is necessary to ensure consistent signature
+                # generation.  It has a minimal performance cost as well (on
+                # on SPARC and x86), so shouldn't be an issue.
+                json.dump(self.__data, self, check_circular=False,
+                    allow_nan=False, separators=(",", ":"), sort_keys=True)
+                self.write("\n")
+
+                # Remove signature stub now that we're done.
+                del self.__data["_SIGNATURE"]
+
+                if self.__fileobj:
+                        self.__fileobj.close()
+                        self.__fileobj = None
+
+                        # Sign the file when the caller is done with it.
+                        sfile = file(self.pathname, "rb+")
+                        sigs = self.signatures()
+                        offs = self.__offsets()
+                        for sig in sigs:
+                                # These values should always be defined.
+                                # If not, write() failed.
+                                assert offs[sig]
+                                assert sigs[sig]
+
+                                sfile.seek(offs[sig])
+                                sfile.write(sigs[sig])
+
+                        sfile.close()
+
+        def write(self, data):
+                """Wrapper function that should not be called by external
+                consumers."""
+                self.__sha_1.update(data)
+                if not self.__fileobj:
+                        return
+
+                f = self.__fileobj
+                if not self.__sha_1_offset:
+                        idx = data.find(self.__sha_1_keyword)
+                        if idx > -1:
+                                self.__sha_1_offset = f.tell() + idx
+                f.write(data)
+
+class CatalogPartBase(object):
+        """A CatalogPartBase object is an abstract class containing core
+        functionality shared between CatalogPart and CatalogAttrs."""
+
+        # The file mode to be used for all catalog files.
+        __file_mode = stat.S_IRUSR|stat.S_IWUSR|stat.S_IRGRP|stat.S_IROTH
+
+        __meta_root = None
+        last_modified = None
+        loaded = False
+        name = None
+        signatures = None
+
+        def __init__(self, name, meta_root=None):
+                """Initializes a CatalogPartBase object."""
+
+                self.meta_root = meta_root
+                self.name = name
+                self.signatures = {}
+
+                if not self.meta_root or not self.exists:
+                        # Operations shouldn't attempt to load the part data
+                        # unless meta_root is defined and the data exists.
+                        self.loaded = True
+                        self.last_modified = datetime.datetime.utcnow()
+                else:
+                        self.last_modified = self.__last_modified()
+
+        @staticmethod
+        def _gen_signatures(data):
+                f = _JSONWriter(data)
+                f.save()
+                return f.signatures()
+
+        def __get_meta_root(self):
+                return self.__meta_root
+
+        def __last_modified(self):
+                """A UTC datetime object representing the time the file used to
+                to store object metadata was modified, or None if it does not
+                exist yet."""
+
+                if not self.exists:
+                        return None
+
+                try:
+                        mod_time = os.stat(self.pathname).st_mtime
+                except EnvironmentError, e:
+                        if e.errno == errno.ENOENT:
+                                return None
+                        raise
+                return datetime.datetime.utcfromtimestamp(mod_time)
+
+        def __set_meta_root(self, path):
+                if path:
+                        path = os.path.abspath(path)
+                self.__meta_root = path
+
+        def destroy(self):
+                """Removes any on-disk files that exist for the catalog and
+                discards all content."""
+
+                if self.pathname:
+                        if os.path.exists(self.pathname):
+                                try:
+                                        portable.remove(self.pathname)
+                                except EnvironmentError, e:
+                                        if e.errno != errno.EACCES:
+                                                raise
+                                        raise api_errors.PermissionsException(
+                                            e.filename)
+                self.signatures = {}
+                self.loaded = False
+                self.last_modified = None
+
+        @property
+        def exists(self):
+                """A boolean value indicating wheher a file for the catalog part
+                exists at <self.meta_root>/<self.name>."""
+
+                if not self.pathname:
+                        return False
+                return os.path.exists(self.pathname)
+
+        def load(self):
+                """Load the serialized data for the catalog part and return the
+                resulting structure."""
+
+                location = os.path.join(self.meta_root, self.name)
+
+                try:
+                        fobj = file(location, "rb")
+                except EnvironmentError, e:
+                        if e.errno == errno.ENOENT:
+                                raise api_errors.RetrievalError(e,
+                                    location=location)
+                        elif e.errno == errno.EACCES:
+                                raise api_errors.PermissionsException(
+                                    e.filename)
+
+                try:
+                        struct = json.load(fobj)
+                except EnvironmentError, e:
+                        raise api_errors.RetrievalError(e)
+                except ValueError, e:
+                        # Not a valid catalog file.
+                        raise api_errors.InvalidCatalogFile(e)
+
+                self.loaded = True
+                if "_SIGNATURE" in struct:
+                        # Signature data, if present, should be removed from
+                        # the struct on load and then stored in the signatures
+                        # object property.
+                        self.signatures = struct.pop("_SIGNATURE")
+                return struct
+
+        @property
+        def pathname(self):
+                """The absolute path of the file used to store the data for
+                this part or None if meta_root or name is not set."""
+
+                if not self.meta_root or not self.name:
+                        return None
+                return os.path.join(self.meta_root, self.name)
+
+        def save(self, data):
+                """Serialize and store the transformed catalog part's 'data' in
+                a file using the pathname <self.meta_root>/<self.name>.
+
+                'data' must be a dict."""
+
+                f = _JSONWriter(data, root=self.meta_root)
+                f.save()
+
+                # Update in-memory copy to reflect stored data.
+                self.signatures = f.signatures()
+
+                # Ensure the permissions on the new file are correct, and then
+                # rename it into place.
+                location = os.path.join(self.meta_root, self.name)
+                try:
+                        os.chmod(f.pathname, self.__file_mode)
+                        portable.rename(f.pathname, location)
+                except EnvironmentError:
+                        portable.remove(f.pathname)
+                        raise
+
+                # Finally, set the file times to match the last catalog change.
+                if self.last_modified:
+                        mtime = calendar.timegm(
+                            self.last_modified.utctimetuple())
+                        os.utime(location, (mtime, mtime))
+
+        meta_root = property(__get_meta_root, __set_meta_root)
 
 
-class CatalogPermissionsException(CatalogException):
-        """Used to indicate the server catalog files do not have the expected
-        permissions."""
+class CatalogPart(CatalogPartBase):
+        """A CatalogPart object is the representation of a subset of the package
+        FMRIs available from a package repository."""
 
-        def __init__(self, files):
-                """files should contain a list object with each entry consisting
-                of a tuple of filename, expected_mode, received_mode."""
-                if not files:
-                        files = []
-                CatalogException.__init__(self, files)
+        __data = None
+        ordered = None
 
-        def __str__(self):
-                msg = _("The following catalog files have incorrect "
-                    "permissions:\n")
-                for f in self.args:
-                        fname, emode, fmode = f
-                        msg += _("\t%(fname)s: expected mode: %(emode)s, found "
-                            "mode: %(fmode)s\n") % ({ "fname": fname,
-                            "emode": emode, "fmode": fmode })
-                return msg
+        def __init__(self, name, meta_root=None, ordered=True):
+                """Initializes a CatalogPart object."""
+
+                self.__data = {}
+                self.ordered = ordered
+                CatalogPartBase.__init__(self, name, meta_root=meta_root)
+
+        def __iter_entries(self):
+                """Private generator function to iterate over catalog
+                entries."""
+
+                self.load()
+                for pub in self.__data:
+                        for stem in self.__data[pub]:
+                                for entry in self.__data[pub][stem]:
+                                        yield pub, stem, entry
+
+        def add(self, pfmri, metadata=None, op_time=None):
+                """Add a catalog entry for a given FMRI.
+
+                'metadata' is an optional dict containing the catalog
+                metadata that should be stored for the specified FMRI.
+
+                The dict representing the entry is returned to callers,
+                but should not be modified.
+                """
+
+                if not pfmri.publisher:
+                        raise api_errors.AnarchicalCatalogFMRI(pfmri.get_fmri())
+
+                self.load()
+                pkg_list = self.__data.setdefault(pfmri.publisher, {})
+
+                ver = str(pfmri.version)
+                ver_list = pkg_list.setdefault(pfmri.pkg_name, [])
+                for entry in ver_list:
+                        if entry["version"] == ver:
+                                raise api_errors.DuplicateCatalogEntry(
+                                    pfmri, operation="add",
+                                    catalog_name=self.pathname)
+
+                if metadata:
+                        entry = metadata
+                else:
+                        entry = {}
+                entry["version"] = ver
+
+                ver_list.append(entry)
+                if self.ordered:
+                        self.sort(pfmri=pfmri)
+
+                if not op_time:
+                        op_time = datetime.datetime.utcnow()
+                self.last_modified = op_time
+                self.signatures = {}
+                return entry
+
+        def entries(self):
+                """A generator function that produces tuples of the form
+                (fmri, entry) as it iterates over the contents of the catalog
+                part (where entry is the related catalog entry for the fmri).
+                Callers should not modify any of the data that is returned.
+
+                Results are always in catalog version order on a per-
+                publisher, per-stem basis.
+                """
+
+                for pub, stem, entry in self.__iter_entries():
+                        yield (fmri.PkgFmri("%s@%s" % (stem, entry["version"]),
+                            publisher=pub), entry)
+                return
+
+        def entries_by_version(self, name):
+                """A generator function that produces tuples of (version,
+                entries), where entries is a list of tuples of the format
+                (fmri, entry) where entry is the catalog entry for the
+                FMRI) as it iterates over the CatalogPart contents."""
+
+                self.load()
+
+                versions = {}
+                entries = {}
+                for pub in self.__data:
+                        ver_list = self.__data[pub].get(name, ())
+                        for entry in ver_list:
+                                sver = entry["version"]
+                                pfmri = fmri.PkgFmri("%s@%s" % (name,
+                                    sver), publisher=pub)
+
+                                versions[sver] = pfmri.version
+                                entries.setdefault(sver, [])
+                                entries[sver].append((pfmri, entry))
+
+                for key, ver in sorted(versions.iteritems(), key=itemgetter(1)):
+                        yield ver, entries[key]
+
+        def fmris(self, objects=True):
+                """A generator function that produces FMRIs as it
+                iterates over the contents of the catalog part.
+
+                'objects' is an optional boolean value indicating whether
+                FMRIs should be returned as FMRI objects or as strings.
+
+                Results are always in catalog version order on a per-
+                publisher, per-stem basis.
+                """
+
+                if objects:
+                        for pub, stem, entry in self.__iter_entries():
+                                yield fmri.PkgFmri("%s@%s" % (stem,
+                                    entry["version"]), publisher=pub)
+                        return
+
+                for pub, stem, entry in self.__iter_entries():
+                        yield "pkg://%s/%s@%s" % (pub,
+                            stem, entry["version"])
+                return
+
+        def fmris_by_version(self, name):
+                """A generator function that produces tuples of (version,
+                fmris), where fmris is a list of the fmris related to the
+                version."""
+
+                self.load()
+
+                versions = {}
+                entries = {}
+                for pub in self.__data:
+                        try:
+                                ver_list = self.__data[pub][name]
+                        except KeyError:
+                                continue
+
+                        for entry in ver_list:
+                                sver = entry["version"]
+                                pfmri = fmri.PkgFmri("%s@%s" % (name,
+                                    sver), publisher=pub)
+
+                                versions[sver] = pfmri.version
+                                entries.setdefault(sver, [])
+                                entries[sver].append(pfmri)
+
+                for key, ver in sorted(versions.iteritems(), key=itemgetter(1)):
+                        yield ver, entries[key]
+
+        def get_entry(self, pfmri):
+                """Returns the catalog entry for the given package FMRI."""
+
+                if not pfmri.publisher:
+                        raise api_errors.AnarchicalCatalogFMRI(pfmri.get_fmri())
+
+                self.load()
+                try:
+                        pkg_list = self.__data[pfmri.publisher]
+                except KeyError:
+                        raise api_errors.UnknownCatalogEntry(pfmri.get_fmri())
+
+                ver = str(pfmri.version)
+                try:
+                        ver_list = pkg_list[pfmri.pkg_name]
+                        for entry in ver_list:
+                                if entry["version"] == ver:
+                                        return entry
+                except KeyError:
+                        pass
+                raise api_errors.UnknownCatalogEntry(pfmri.get_fmri())
+
+        def get_package_counts(self):
+                """Returns a tuple of integer values (package_count,
+                package_version_count).  The first is the number of
+                unique packages (per-publisher), and the second is the
+                number of unique package versions (per-publisher and
+                stem)."""
+
+                self.load()
+                package_count = 0
+                package_version_count = 0
+                for pub in self.__data:
+                        for stem in self.__data[pub]:
+                                package_count += 1
+                                package_version_count += \
+                                    len(self.__data[pub][stem])
+                return (package_count, package_version_count)
+
+        def load(self):
+                """Load and transform the catalog part's data, preparing it
+                for use."""
+
+                if self.loaded:
+                        # Already loaded, or only in-memory.
+                        return
+                self.__data = CatalogPartBase.load(self)
+
+        def names(self):
+                """Returns a set containing the names of all the packages in
+                the CatalogPart."""
+
+                self.load()
+                return set((
+                    stem
+                    for pub in self.__data
+                    for stem in self.__data[pub]
+                ))
+
+        def remove(self, pfmri, op_time=None):
+                """Remove a package and its metadata."""
+
+                if not pfmri.publisher:
+                        raise api_errors.AnarchicalCatalogFMRI(pfmri.get_fmri())
+
+                self.load()
+                try:
+                        pkg_list = self.__data[pfmri.publisher]
+                except KeyError:
+                        raise api_errors.UnknownCatalogEntry(pfmri.get_fmri())
+
+                ver = str(pfmri.version)
+                ver_list = pkg_list.get(pfmri.pkg_name, [])
+                for i, entry in enumerate(ver_list):
+                        if entry["version"] == ver:
+                                # Safe to do this since a 'break' is done
+                                # immediately after removals are performed.
+                                del ver_list[i]
+                                if not ver_list:
+                                        # When all version entries for a
+                                        # package are removed, its stem
+                                        # should be also.
+                                        del pkg_list[pfmri.pkg_name]
+                                if not pkg_list:
+                                        # When all package stems for a
+                                        # publisher have been removed,
+                                        # it should be also.
+                                        del self.__data[pfmri.publisher]
+                                break
+                else:
+                        raise api_errors.UnknownCatalogEntry(pfmri.get_fmri())
+
+                if not op_time:
+                        op_time = datetime.datetime.utcnow()
+                self.last_modified = op_time
+                self.signatures = {}
+
+        def save(self):
+                """Transform and store the catalog part's data in a file using
+                the pathname <self.meta_root>/<self.name>."""
+
+                if not self.meta_root:
+                        # Assume this is in-memory only.
+                        return
+                CatalogPartBase.save(self, self.__data)
+
+        def sort(self, pfmri=None):
+                """Re-sorts the contents of the CatalogPart such that version
+                entries for each package stem are in ascending order.
+
+                'pfmri' is an optional package to restrict the sort to.  This
+                is useful during catalog operations as only entries for the
+                corresponding package stem need to be sorted."""
+
+                def order(a, b):
+                        # XXX version requires build string; 5.11 is not sane.
+                        v1 = pkg.version.Version(a["version"], "5.11")
+                        v2 = pkg.version.Version(b["version"], "5.11")
+                        return cmp(v1, v2)
+
+                self.load()
+                if pfmri:
+                        try:
+                                pkg_list = self.__data[pfmri.publisher]
+                                ver_list = pkg_list[pfmri.pkg_name]
+                        except KeyError:
+                                raise api_errors.UnknownCatalogEntry(
+                                    pfmri.get_fmri())
+                        ver_list.sort(cmp=order)
+                        return
+
+                for pub in self.__data:
+                        for stem in self.__data[pub]:
+                                ver_list = self.__data[pub][stem]
+                                ver_list.sort(cmp=order)
+
+        def validate(self, signatures=None):
+                """Verifies whether the signatures for the contents of the
+                CatalogPart match the specified signature data, or if not
+                provided, the current signature data.  Raises the exception
+                named 'BadCatalogSignatures' on failure."""
+
+                if not self.signatures and not signatures:
+                        # Nothing to validate.
+                        return
+                if not signatures:
+                        signatures = self.signatures
+
+                new_signatures = self._gen_signatures(self.__data)
+                if new_signatures != signatures:
+                        raise api_errors.BadCatalogSignatures(self.pathname)
+
+
+class CatalogUpdate(CatalogPartBase):
+        """A CatalogUpdate object is an augmented representation of a subset
+        of the package data contained within a Catalog."""
+
+        # Properties.
+        __data = None
+        last_modified = None
+
+        # Operation constants.
+        ADD = "add"
+        REMOVE = "remove"
+
+        def __init__(self, name, meta_root=None):
+                """Initializes a CatalogUpdate object."""
+
+                self.__data = {}
+                CatalogPartBase.__init__(self, name, meta_root=meta_root)
+
+        def add(self, pfmri, operation, op_time, metadata=None):
+                """Records the specified catalog operation and any related
+                catalog metadata for the specified package FMRI.
+
+                'operation' must be one of the following constant values
+                provided by the CatalogUpdate class:
+                    ADD
+                    REMOVE
+
+                'op_time' is a UTC datetime object indicating the time
+                the catalog operation was performed.
+
+                'metadata' is an optional dict containing the catalog
+                metadata that should be stored for the specified FMRI
+                indexed by catalog part (e.g. "dependency", "summary",
+                etc.)."""
+
+                if not pfmri.publisher:
+                        raise api_errors.AnarchicalCatalogFMRI(pfmri.get_fmri())
+
+                if operation not in (self.ADD, self.REMOVE):
+                        raise api_errors.UnknownUpdateType(operation)
+
+                self.load()
+                try:
+                        pkg_list = self.__data[pfmri.publisher]
+                except KeyError:
+                        pkg_list = self.__data[pfmri.publisher] = {}
+
+                try:
+                        ver_list = pkg_list[pfmri.pkg_name]
+                except KeyError:
+                        ver_list = pkg_list[pfmri.pkg_name] = []
+
+                if metadata:
+                        entry = metadata
+                else:
+                        entry = {}
+                entry["op-time"] = datetime_to_basic_ts(op_time)
+                entry["op-type"] = operation
+                entry["version"] = str(pfmri.version)
+                ver_list.append(entry)
+
+                # To ensure the update log is viewed as having been updated
+                # at the exact same time as the catalog, the last_modified
+                # time of the update log must match the operation time.
+                self.last_modified = op_time
+                self.signatures = {}
+
+        def load(self):
+                """Load and transform the catalog update's data, preparing it
+                for use."""
+
+                if self.loaded:
+                        # Already loaded, or only in-memory.
+                        return
+                self.__data = CatalogPartBase.load(self)
+
+        def save(self):
+                """Transform and store the catalog update's data in a file using
+                the pathname <self.meta_root>/<self.name>."""
+
+                if not self.meta_root:
+                        # Assume this is in-memory only.
+                        return
+                CatalogPartBase.save(self, self.__data)
+
+        def updates(self):
+                """A generator function that produces tuples of the format
+                (fmri, op_type, op_time, metadata).  Where:
+
+                    * 'fmri' is a PkgFmri object for the package.
+
+                    * 'op_type' is a CatalogUpdate constant indicating
+                      the catalog operation performed.
+
+                    * 'op_time' is a UTC datetime object representing the
+                      time time the catalog operation was performed.
+
+                    * 'metadata' is a dict containing the catalog metadata
+                      for the FMRI indexed by catalog part name.
+
+                Results are always in ascending operation time order on a
+                per-publisher, per-stem basis.
+                """
+
+                self.load()
+
+                def get_update(pub, stem, entry):
+                        mdata = {}
+                        for key in entry:
+                                if key.startswith("catalog."):
+                                        mdata[key] = entry[key]
+                        op_time = basic_ts_to_datetime(entry["op-time"])
+                        pfmri = fmri.PkgFmri("%s@%s" % (stem, entry["version"]),
+                            publisher=pub)
+                        return (pfmri, entry["op-type"], op_time, mdata)
+
+                for pub in self.__data:
+                        for stem in self.__data[pub]:
+                                for entry in self.__data[pub][stem]:
+                                        yield get_update(pub, stem, entry)
+                return
+
+        def validate(self, signatures=None):
+                """Verifies whether the signatures for the contents of the
+                CatalogUpdate match the specified signature data, or if not
+                provided, the current signature data.  Raises the exception
+                named 'BadCatalogSignatures' on failure."""
+
+                if not self.signatures and not signatures:
+                        # Nothing to validate.
+                        return
+
+                if not signatures:
+                        signatures = self.signatures
+
+                new_signatures = self._gen_signatures(self.__data)
+                if new_signatures != signatures:
+                        raise api_errors.BadCatalogSignatures(self.pathname)
+
+
+class CatalogAttrs(CatalogPartBase):
+        """A CatalogAttrs object is the representation of the attributes of a
+        Catalog object."""
+
+        # Properties.
+        __data = None
+
+        def __init__(self, meta_root=None):
+                """Initializes a CatalogAttrs object."""
+
+                self.__data = {}
+                CatalogPartBase.__init__(self, name="catalog.attrs",
+                    meta_root=meta_root)
+
+                if self.loaded:
+                        # If the data is already seen as 'loaded' during init,
+                        # this is actually a new object, so setup some sane
+                        # defaults.
+                        created = self.__data["last-modified"]
+                        self.__data = {
+                            "created": created,
+                            "last-modified": created,
+                            "package-count": 0,
+                            "package-version-count": 0,
+                            "parts": {},
+                            "updates": {},
+                            "version": 1,
+                        }
+                else:
+                        # Assume that the attributes of the catalog can be
+                        # obtained from a file.
+                        self.load()
+
+        def __get_created(self):
+                return self.__data["created"]
+
+        def __get_last_modified(self):
+                return self.__data["last-modified"]
+
+        def __get_package_count(self):
+                return self.__data["package-count"]
+
+        def __get_package_version_count(self):
+                return self.__data["package-version-count"]
+
+        def __get_parts(self):
+                return self.__data["parts"]
+
+        def __get_updates(self):
+                return self.__data["updates"]
+
+        def __get_version(self):
+                return self.__data["version"]
+
+        def __set_created(self, value):
+                self.__data["created"] = value
+                self.signatures = {}
+
+        def __set_last_modified(self, value):
+                self.__data["last-modified"] = value
+                self.signatures = {}
+
+        def __set_package_count(self, value):
+                self.__data["package-count"] = value
+                self.signatures = {}
+
+        def __set_package_version_count(self, value):
+                self.__data["package-version-count"] = value
+                self.signatures = {}
+
+        def __set_parts(self, value):
+                self.__data["parts"] = value
+                self.signatures = {}
+
+        def __set_updates(self, value):
+                self.__data["updates"] = value
+                self.signatures = {}
+
+        def __set_version(self, value):
+                self.__data["version"] = value
+                self.signatures = {}
+
+        def __transform(self):
+                """Duplicate and transform 'self.__data' for saving."""
+
+                # Use a copy to prevent the in-memory version from being
+                # affected by the transformations.
+                struct = copy.deepcopy(self.__data)
+                for key, val in struct.iteritems():
+                        if isinstance(val, datetime.datetime):
+                                # Convert datetime objects to an ISO-8601
+                                # basic format string.
+                                struct[key] = datetime_to_basic_ts(val)
+                                continue
+
+                        if key in ("parts", "updates"):
+                                for e in val:
+                                        lm = val[e].get("last-modified", None)
+                                        if lm:
+                                                lm = datetime_to_basic_ts(lm)
+                                                val[e]["last-modified"] = lm
+                return struct
+
+        def load(self):
+                """Load and transform the catalog attribute data."""
+
+                if self.loaded:
+                        # Already loaded, or only in-memory.
+                        return
+
+                struct = CatalogPartBase.load(self)
+                for key, val in struct.iteritems():
+                        if key in ("created", "last-modified"):
+                                # Convert ISO-8601 basic format strings to
+                                # datetime objects.  These dates can be
+                                # 'null' due to v0 catalog transformations.
+                                if val:
+                                        struct[key] = basic_ts_to_datetime(val)
+                                continue
+
+                        if key in ("parts", "updates"):
+                                for e in val:
+                                        lm = val[e].get("last-modified", None)
+                                        if lm:
+                                                lm = basic_ts_to_datetime(lm)
+                                                val[e]["last-modified"] = lm
+                self.__data = struct
+
+        def save(self):
+                """Transform and store the catalog attribute data in a file
+                using the pathname <self.meta_root>/<self.name>."""
+
+                if not self.meta_root:
+                        # Assume this is in-memory only.
+                        return
+                CatalogPartBase.save(self, self.__transform())
+
+        def validate(self, signatures=None):
+                """Verifies whether the signatures for the contents of the
+                CatalogAttrs match the specified signature data, or if not
+                provided, the current signature data.  Raises the exception
+                named 'BadCatalogSignatures' on failure."""
+
+                if not self.signatures and not signatures:
+                        # Nothing to validate.
+                        return
+
+                if not signatures:
+                        signatures = self.signatures
+
+                new_signatures = self._gen_signatures(self.__transform())
+                if new_signatures != signatures:
+                        raise api_errors.BadCatalogSignatures(self.pathname)
+
+        created = property(__get_created, __set_created)
+
+        last_modified = property(__get_last_modified, __set_last_modified)
+
+        package_count = property(__get_package_count, __set_package_count)
+
+        package_version_count = property(__get_package_version_count,
+            __set_package_version_count)
+
+        parts = property(__get_parts, __set_parts)
+
+        updates = property(__get_updates, __set_updates)
+
+        version = property(__get_version, __set_version)
 
 
 class Catalog(object):
-        """A Catalog is the representation of the package FMRIs available to
-        this client or repository.  Both purposes utilize the same storage
-        format.
+        """A Catalog is the representation of the package FMRIs available from
+        a package repository."""
 
-        The serialized structure of the repository is an unordered list of
-        available package versions, followed by an unordered list of
-        incorporation relationships between packages.  This latter section
-        allows the graph to be topologically sorted by the client.
-
-        S Last-Modified: [timespec]
-
-        XXX A publisher mirror-uri ...
-        XXX ...
-
-        V fmri
-        V fmri
-        ...
-        C fmri
-        C fmri
-        ...
-        I fmri fmri
-        I fmri fmri
-        ...
-
-        In order to improve the time to search the catalog, a cached list
-        of package names is kept in the catalog instance."""
-
-        # The file mode to be used for all catalog files.
-        file_mode = stat.S_IRUSR|stat.S_IWUSR|stat.S_IRGRP|stat.S_IROTH
-
-        # XXX Mirroring records also need to be allowed from client
-        # configuration, and not just catalogs.
-        #
         # XXX It would be nice to include available tags and package sizes,
         # although this could also be calculated from the set of manifests.
-        #
-        # XXX Current code is O(N_packages) O(M_versions), should be
-        # O(1) O(M_versions), and possibly O(1) O(1).
-        #
-        # XXX Initial estimates suggest that the Catalog could be composed of
-        # 1e5 - 1e7 lines.  Catalogs across these magnitudes will need to be
-        # spread out into chunks, and may require a delta-oriented update
-        # interface.
 
-        def __init__(self, cat_root, publisher = None, pkg_root = None,
-            read_only = False, rebuild = True):
-                """Create a catalog.  If the path supplied does not exist,
-                this will create the required directory structure.
-                Otherwise, if the directories are already in place, the
-                existing catalog is opened.  If pkg_root is specified
-                and no catalog is found at cat_root, the catalog will be
-                rebuilt.  publisher names the publisher that
-                is represented by this catalog."""
+        # The file mode to be used for all catalog files.
+        __file_mode = stat.S_IRUSR|stat.S_IWUSR|stat.S_IRGRP|stat.S_IROTH
 
-                self.catalog_root = cat_root
-                self.catalog_file = os.path.normpath(os.path.join(
-                    self.catalog_root, "catalog"))
-                self.attrs = {}
-                self.pub = publisher
-                self.pkg_root = pkg_root
+        # These properties are declared here so that they show up in the pydoc
+        # documentation as private, and for clarity in the property declarations
+        # found near the end of the class definition.
+        _attrs = None
+        __batch_mode = None
+        __lock = None
+        __meta_root = None
+
+        # These are used to cache or store CatalogPart and CatalogUpdate objects
+        # as they are used.  It should not be confused with the CatalogPart
+        # names and CatalogUpdate names stored in the CatalogAttrs object.
+        __parts = None
+        __updates = None
+
+        # Class Constants
+        BASE, DEPENDENCY, SUMMARY = range(3)
+
+        def __init__(self, batch_mode=False, meta_root=None, log_updates=False,
+            read_only=False):
+                """Initializes a Catalog object.
+
+                'batch_mode' is an optional boolean value that indicates that
+                the caller intends to perform multiple modifying operations on
+                catalog before saving.  This is useful for performance reasons
+                as the contents of the catalog will not be sorted after each
+                change, and the package counts will not be updated (except at
+                save()).  By default this value is False.  If this value is
+                True, callers are responsible for calling finalize() to ensure
+                that catalog entries are in the correct order and package counts
+                accurately reflect the catalog contents.
+
+                'meta_root' is an optional absolute pathname of a directory
+                that catalog metadata can be written to and read from, and
+                must already exist.  If no path is supplied, then it is
+                assumed that the catalog object will be used for in-memory
+                operations only.
+
+                'log_updates' is an optional boolean value indicating whether
+                updates to the catalog should be logged.  This enables consumers
+                of the catalog to perform incremental updates.
+
+                'read_only' is an optional boolean value that indicates if
+                operations that modify the catalog are allowed (an assertion
+                error will be raised if one is attempted and this is True)."""
+
+                self.__log_updates = log_updates
+                self.__batch_mode = batch_mode
+                self.__parts = {}
+                self.__updates = {}
+
+                # Must be set after the above.
+                self.meta_root = meta_root
                 self.read_only = read_only
-                self.__size = -1
 
-                assert not (read_only and rebuild)
+                # Must be set after the above.
+                self._attrs = CatalogAttrs(meta_root=self.meta_root)
 
-                # The catalog protects the catalog file from having multiple
-                # threads writing to it at the same time.
-                self.catalog_lock = threading.Lock()
+                if not read_only:
+                        # This lock is used to protect the catalog file from
+                        # multiple threads writing to it at the same time.
+                        self.__lock = threading.Lock()
 
-                self.attrs["npkgs"] = 0
-
-                if not os.path.exists(cat_root):
-                        try:
-                                os.makedirs(cat_root)
-                        except EnvironmentError, e:
-                                if e.errno in (errno.EACCES, errno.EROFS):
-                                        return
-                                raise
-
-                # Rebuild catalog, if we're the depot and it's necessary.
-                if pkg_root is not None and rebuild:
-                        self.build_catalog()
-
-                self.load_attrs()
-                self.check_prefix()
+                # Must be done last.
                 self.__set_perms()
 
-        def __set_perms(self):
-                """Sets permissions on catalog files if not read_only and if the
-                current user can do so; raises CatalogPermissionsException if
-                the permissions are wrong and cannot be corrected."""
+        def __finalize(self, sort=True):
+                """Private finalize method; exposes additional controls for
+                internal callers."""
 
-                apath = os.path.normpath(os.path.join(self.catalog_root,
-                    "attrs"))
-                cpath = os.path.normpath(os.path.join(self.catalog_root,
-                    "catalog"))
+                package_count = 0
+                package_version_count = 0
+
+                part = self.__get_part("catalog.base.C", must_exist=True)
+                if part:
+                        # If the base Catalog didn't exist (in-memory or on-
+                        # disk) that implies there is nothing to sort and
+                        # there are no packages (since the base catalog part
+                        # must always exist for packages to be present).
+                        package_count, package_version_count = \
+                            part.get_package_counts()
+
+                        if sort:
+                                # Some operations don't need this, such as
+                                # remove...
+                                for part in self.__parts.values():
+                                        part.sort()
+
+                self._attrs.package_count = package_count
+                self._attrs.package_version_count = \
+                    package_version_count
+
+        def __get_batch_mode(self):
+                return self.__batch_mode
+
+        def __get_meta_root(self):
+                return self.__meta_root
+
+        def __get_part(self, name, must_exist=False):
+                # First, check if the part has already been cached, and if so,
+                # return it.
+                try:
+                        return self.__parts[name]
+                except KeyError:
+                        if not self.meta_root and must_exist:
+                                return
+
+                # Next, if the part hasn't been cached, create an object for it.
+                part = CatalogPart(name, meta_root=self.meta_root,
+                    ordered=not self.__batch_mode)
+                if self.meta_root and must_exist and not part.exists:
+                        # Part doesn't exist on-disk, so don't return anything.
+                        return
+                self.__parts[name] = part
+                return part
+
+        def __get_update(self, name, cache=True, must_exist=False):
+                # First, check if the update has already been cached,
+                # and if so, return it.
+                try:
+                        return self.__updates[name]
+                except KeyError:
+                        if not self.meta_root and must_exist:
+                                return
+
+                # Next, if the update hasn't been cached,
+                # create an object for it.
+                ulog = CatalogUpdate(name, meta_root=self.meta_root)
+                if self.meta_root and must_exist and not ulog.exists:
+                        # Update doesn't exist on-disk,
+                        # so don't return anything.
+                        return
+                if cache:
+                        self.__updates[name] = ulog
+                return ulog
+
+        def __lock_catalog(self):
+                """Locks the catalog preventing multiple threads or external
+                consumers of the catalog from modifying it during operations.
+                """
+
+                # XXX need filesystem lock too?
+                self.__lock.acquire()
+
+        def __log_update(self, pfmri, operation, op_time, entries=None):
+                """Helper function to log catalog changes."""
+
+                if not self.__batch_mode:
+                        # The catalog.attrs needs to be updated to reflect
+                        # the changes made.
+                        self.__finalize(
+                            sort=(operation != CatalogUpdate.REMOVE))
+
+                # This must be set to exactly the same time as the update logs
+                # so that the changes in the update logs are not marked as
+                # being newer than the catalog or vice versa.
+                attrs = self._attrs
+                attrs.last_modified = op_time
+
+                if not self.__log_updates:
+                        return
+
+                updates = {}
+                for pname in entries:
+                        # The last component of the updatelog filename is the
+                        # related locale.
+                        locale = pname.split(".", 2)[2]
+                        try:
+                                parts = updates[locale]
+                        except KeyError:
+                                parts = updates[locale] = {}
+                        parts[pname] = entries[pname]
+
+                logdate = datetime_to_update_ts(op_time)
+                for locale, metadata in updates.iteritems():
+                        name = "update.%s.%s" % (logdate, locale)
+                        ulog = self.__get_update(name)
+                        ulog.add(pfmri, operation, metadata=metadata,
+                            op_time=op_time)
+                        attrs.updates[name] = {
+                            "last-modified": op_time
+                        }
+
+                for name, part in self.__parts.iteritems():
+                        # Signature data for each part needs to be cleared,
+                        # and will only be available again after save().
+                        attrs.parts[name] = {
+                            "last-modified": part.last_modified
+                        }
+
+        def __save(self):
+                """Private save function.  Caller is responsible for locking
+                the catalog."""
+
+                attrs = self._attrs
+                if self.__log_updates:
+                        for name, ulog in self.__updates.iteritems():
+                                ulog.save()
+
+                                # Replace the existing signature data
+                                # with the new signature data.
+                                entry = attrs.updates[name] = {
+                                    "last-modified": ulog.last_modified
+                                }
+                                for n, v in ulog.signatures.iteritems():
+                                        entry["signature-%s" % n] = v
+
+                # Save any CatalogParts that are currently in-memory,
+                # updating their related information in catalog.attrs
+                # as they are saved.
+                for name, part in self.__parts.iteritems():
+                        # Must save first so that signature data is
+                        # current.
+                        part.save()
+
+                        # Now replace the existing signature data with
+                        # the new signature data.
+                        entry = attrs.parts[name] = {
+                            "last-modified": part.last_modified
+                        }
+                        for n, v in part.signatures.iteritems():
+                                entry["signature-%s" % n] = v
+
+                # Finally, save the catalog attributes.
+                attrs.save()
+
+        def __set_batch_mode(self, value):
+                self.__batch_mode = value
+                for part in self.__parts.values():
+                        part.ordered = not self.__batch_mode
+
+        def __set_meta_root(self, pathname):
+                if pathname:
+                        pathname = os.path.abspath(pathname)
+                self.__meta_root = pathname
+
+                # If the Catalog's meta_root changes, the meta_root of all of
+                # its parts must be changed too.
+                if self._attrs:
+                        self._attrs.meta_root = pathname
+
+                for part in self.__parts.values():
+                        part.meta_root = pathname
+
+                for ulog in self.__updates.values():
+                        ulog.meta_root = pathname
+
+        def __set_perms(self):
+                """Sets permissions on attrs and parts if not read_only and if
+                the current user can do so; raises BadCatalogPermissions if the
+                permissions are wrong and cannot be corrected."""
+
+                if not self.meta_root:
+                        # Nothing to do.
+                        return
+
+                files = [self._attrs.name]
+                files.extend(self._attrs.parts.keys())
+                files.extend(self._attrs.updates.keys())
 
                 # Force file_mode, so that unprivileged users can read these.
                 bad_modes = []
-                for fpath in (apath, cpath):
+                for name in files:
+                        pathname = os.path.join(self.meta_root, name)
                         try:
                                 if self.read_only:
-                                        fmode = stat.S_IMODE(os.lstat(
-                                            fpath).st_mode)
-                                        if fmode != self.file_mode:
-                                                bad_modes.append((fpath,
-                                                    "%o" % self.file_mode,
+                                        fmode = stat.S_IMODE(os.stat(
+                                            pathname).st_mode)
+                                        if fmode != self.__file_mode:
+                                                bad_modes.append((pathname,
+                                                    "%o" % self.__file_mode,
                                                     "%o" % fmode))
                                 else:
-                                        os.chmod(fpath, self.file_mode)
+                                        os.chmod(pathname, self.__file_mode)
                         except EnvironmentError, e:
-                                # If the files don't exist yet, move on.
+                                # If the file doesn't exist yet, move on.
                                 if e.errno == errno.ENOENT:
                                         continue
 
                                 # If the mode change failed for another reason,
                                 # check to see if we actually needed to change
                                 # it, and if so, add it to bad_modes.
-                                fmode = stat.S_IMODE(os.lstat(
-                                    fpath).st_mode)
-                                if fmode != self.file_mode:
-                                        bad_modes.append((fpath,
-                                            "%o" % self.file_mode,
+                                fmode = stat.S_IMODE(os.stat(
+                                    pathname).st_mode)
+                                if fmode != self.__file_mode:
+                                        bad_modes.append((pathname,
+                                            "%o" % self.__file_mode,
                                             "%o" % fmode))
 
                 if bad_modes:
-                        raise CatalogPermissionsException(bad_modes)
+                        raise api_errors.BadCatalogPermissions(bad_modes)
 
-        def add_fmri(self, pfmri, critical = False):
-                """Add a package, named by the fmri, to the catalog.
-                Throws an exception if an identical package is already
-                present.  Throws an exception if package has no version."""
-                if pfmri.version == None:
-                        raise CatalogException, \
-                            "Unversioned FMRI not supported: %s" % pfmri
+        def __unlock_catalog(self):
+                """Unlocks the catalog allowing other catalog consumers to
+                modify it."""
 
-                assert not self.read_only
+                # XXX need filesystem unlock too?
+                self.__lock.release()
 
-                # Callers should verify that the FMRI they're going to add is
-                # valid; however, this check is here in case they're
-                # lackadaisical
-                if not self.valid_new_fmri(pfmri):
-                        raise CatalogException("FMRI %s already exists in "
-                            "the catalog." % pfmri)
+        def add_package(self, pfmri, manifest=None, metadata=None):
+                """Add a package and its related metadata to the catalog and
+                its parts as needed.
 
-                if critical:
-                        pkgstr = "C %s\n" % pfmri.get_fmri(anarchy = True)
-                else:
-                        pkgstr = "V %s\n" % pfmri.get_fmri(anarchy = True)
+                'manifest' is an optional Manifest object that will be used
+                to retrieve the metadata related to the package.
 
+                'metadata' is an optional dict of additional metadata to store
+                with the package's BASE record."""
 
-                self.catalog_lock.acquire()
+                def group_actions(actions):
+                        dep_acts = { "C": [] }
+                        # Summary actions are grouped by locale, since each
+                        # goes to a locale-specific catalog part.
+                        sum_acts = { "C": [] }
+                        for act in actions:
+                                if act.name == "depend":
+                                        dep_acts["C"].append(str(act))
+                                        continue
+
+                                name = act.attrs["name"]
+                                if name.startswith("variant") or \
+                                    name.startswith("facet") or \
+                                    name in ("pkg.obsolete", "pkg.rename"):
+                                        # variant and facet data goes to the
+                                        # dependency catalog part.
+                                        dep_acts["C"].append(str(act))
+                                        continue
+                                elif name == "fmri":
+                                        # Redundant in the case of the catalog.
+                                        continue
+
+                                # All other set actions go to the summary
+                                # catalog parts, grouped by locale.  To
+                                # determine the locale, the set attribute's
+                                # name is split by ':' into its field and
+                                # locale components.  If ':' is not present,
+                                # then the 'C' locale is assumed.
+                                comps = name.split(":")
+                                if len(comps) > 1:
+                                        locale = comps[1]
+                                else:
+                                        locale = "C"
+                                if locale not in sum_acts:
+                                        sum_acts[locale] = []
+                                sum_acts[locale].append(str(act))
+
+                        return {
+                            "dependency": dep_acts,
+                            "summary": sum_acts,
+                        }
+
+                self.__lock_catalog()
                 try:
-                        self.__append_to_catalog(pkgstr)
+                        entries = {}
+                        # Use the same operation time and date for all
+                        # operations so that the last modification times
+                        # of all catalog parts and update logs will be
+                        # synchronized.
+                        op_time = datetime.datetime.utcnow()
 
-                        # Catalog size has changed, force recalculation on
-                        # next send()
-                        self.__size = -1
+                        # Always add packages to the base catalog.
+                        entry = {}
+                        if metadata:
+                                entry["metadata"] = metadata
+                        if manifest:
+                                for k, v in manifest.signatures.iteritems():
+                                        entry["signature-%s" % k] = v
+                        part = self.__get_part("catalog.base.C")
+                        entries[part.name] = part.add(pfmri, metadata=entry,
+                            op_time=op_time)
 
-                        self.attrs["npkgs"] += 1
+                        if manifest:
+                                # Without a manifest, only the base catalog data
+                                # can be populated.
 
-                        ts = datetime.datetime.now()
-                        self.set_time(ts)
+                                # Only dependency and set actions are currently
+                                # used by the remaining catalog parts.
+                                actions = []
+                                for atype in "depend", "set":
+                                        actions += manifest.gen_actions_by_type(
+                                            atype)
+
+                                gacts = group_actions(actions)
+                                for ctype in gacts:
+                                        for locale in gacts[ctype]:
+                                                acts = gacts[ctype][locale]
+                                                if not acts:
+                                                        # Catalog entries only
+                                                        # added if actions are
+                                                        # present for this
+                                                        # ctype.
+                                                        continue
+
+                                                part = self.__get_part("catalog"
+                                                    ".%s.%s" % (ctype, locale))
+                                                entry = { "actions": acts }
+                                                entries[part.name] = part.add(
+                                                    pfmri, metadata=entry,
+                                                    op_time=op_time)
+
+                        self.__log_update(pfmri, CatalogUpdate.ADD,
+                            op_time, entries=entries)
                 finally:
-                        self.catalog_lock.release()
-
-                return ts
-
-        def __append_to_catalog(self, pkgstr):
-                """Write string named pkgstr to the catalog.  This
-                routine handles moving the catalog to a temporary file,
-                appending the new string, and renaming the temporary file
-                on top of the existing catalog."""
-
-                # Create tempfile
-                tmp_num, tmpfile = tempfile.mkstemp(dir=self.catalog_root)
-
-                try:
-                        # use fdopen since we already have a filehandle
-                        tfile = os.fdopen(tmp_num, "w")
-                except OSError:
-                        portable.remove(tmpfile)
-                        raise
-
-                # Try to open catalog file.  If it doesn't exist,
-                # create an empty catalog file, and then open it read only.
-                try:
-                        pfile = file(self.catalog_file, "rb")
-                except IOError, e:
-                        if e.errno == errno.ENOENT:
-                                # Creating an empty file
-                                file(self.catalog_file, "wb").close()
-                                pfile = file(self.catalog_file, "rb")
-                        else:
-                                portable.remove(tmpfile)
-                                raise
-
-                # Make sure we're at the start of the file
-                pfile.seek(0)
-
-                # Write all of the existing entries in the catalog
-                # into the tempfile.  Then append the new lines at the
-                # end.
-                try:
-                        for entry in pfile:
-                                if entry == pkgstr:
-                                        raise CatalogException(
-                                            "Package %s is already in " 
-                                            "the catalog" % pkgstr)
-                                else:
-                                        tfile.write(entry)
-                        tfile.write(pkgstr)
-                except Exception:
-                        portable.remove(tmpfile)
-                        raise
-
-                # Close our open files
-                pfile.close()
-                tfile.close()
-
-                # Set the permissions on the tempfile correctly.
-                # Mkstemp creates files as 600.  Rename the new
-                # cataog on top of the old one.
-                try:
-                        os.chmod(tmpfile, self.file_mode)
-                        portable.rename(tmpfile, self.catalog_file)
-                except EnvironmentError:
-                        portable.remove(tmpfile)
-                        raise
-
-        @staticmethod
-        def fast_cache_fmri(d, pfmri, sversion, pubs):
-                """Store the fmri in a data structure 'd' for fast lookup, but
-                requires the caller to provide all the data pre-sorted and
-                processed.
-
-                'd' is a dict that maps each package name to another dictionary
-
-                'pfmri' is the fmri object to be cached.
-
-                'sversion' is the string representation of pfmri.version.
-
-                'pubs' is a dict of publisher name and boolean value pairs
-                indicating catalog presence.
-
-                The fmri is expected not to have an embedded publisher.  If it
-                does, it will be ignored.
-
-                See cache_fmri() for data structure details."""
-
-                if pfmri.pkg_name not in d:
-                        # This is the simplest representation of the cache data
-                        # structure.
-                        d[pfmri.pkg_name] = {
-                            "versions": [pfmri.version],
-                            sversion: (pfmri, pubs)
-                        }
-                else:
-                        # It's assumed the caller will provide these in
-                        # the correct order for performance reasons.
-                        d[pfmri.pkg_name][sversion] = (pfmri, pubs)
-                        d[pfmri.pkg_name]["versions"].append(pfmri.version)
-
-        @staticmethod
-        def cache_fmri(d, pfmri, pub, known=True):
-                """Store the fmri in a data structure 'd' for fast lookup.
-
-                'd' is a dict that maps each package name to another dictionary,
-                itself mapping:
-                
-                        * each version string, which maps to a tuple of:
-                          -- the fmri object
-                          -- a dict of publisher prefixes with each value
-                             indicating catalog presence
-
-                        * "versions", which maps to a list of version objects,
-                          kept in sorted order
-
-                The structure is as follows:
-                    pkg_name1: {
-                        "versions": [<version1>, <version2>, ... ],
-                        "version1": (
-                            <fmri1>,
-                            { "pub1": known, "pub2": known, ... },
-                        ),
-                        "version2": (
-                            <fmri2>,
-                            { "pub1": known, "pub2": known, ... },
-                        ),
-                        ...
-                    },
-                    pkg_name2: {
-                        ...
-                    },
-                    ...
-
-                (where names in quotes are strings, names in angle brackets are
-                objects, and the rest of the syntax is Pythonic).
-
-                The fmri is expected not to have an embedded publisher.  If it
-                does, it will be ignored."""
-
-                if pfmri.has_publisher():
-                        # Cache entries must not contain the name of the
-                        # publisher, otherwise matching during packaging
-                        # operations may not work correctly.
-                        pfmri = fmri.PkgFmri(pfmri.get_fmri(anarchy=True))
-
-                pversion = str(pfmri.version)
-                if pfmri.pkg_name not in d:
-                        # This is the simplest representation of the cache data
-                        # structure.
-                        d[pfmri.pkg_name] = {
-                            "versions": [pfmri.version],
-                            pversion: (pfmri, { pub: known })
-                        }
-
-                elif pversion not in d[pfmri.pkg_name]:
-                        d[pfmri.pkg_name][pversion] = (pfmri, { pub: known })
-                        bisect.insort(d[pfmri.pkg_name]["versions"],
-                            pfmri.version)
-                elif pub not in d[pfmri.pkg_name][pversion][1]:
-                        d[pfmri.pkg_name][pversion][1][pub] = known
-
-        @staticmethod
-        def read_catalog(catalog, path, pub=None):
-                """Read the catalog file in "path" and combine it with the
-                existing data in "catalog"."""
-
-                catf = file(os.path.join(path, "catalog"))
-                for line in catf:
-                        if not line.startswith("V pkg") and \
-                            not line.startswith("C pkg"):
-                                continue
-
-                        f = fmri.PkgFmri(line[6:].replace(" ", "@"))
-                        Catalog.cache_fmri(catalog, f, pub)
-
-                catf.close()
-
-        def added_prefix(self, p):
-                """Perform any catalog transformations necessary if
-                prefix p is found in the catalog.  Previously, we didn't
-                know how to handle this prefix and now we do.  If we
-                need to transform the entry from server to client form,
-                make sure that happens here."""
-
-                # Nothing to do now.
-                pass
-
-        def attrs_as_lines(self):
-                """Takes the list of in-memory attributes and returns
-                a list of strings, each string naming an attribute."""
-
-                ret = []
-
-                for k, v in self.attrs.items():
-                        s = "S %s: %s\n" % (k, v)
-                        ret.append(s)
-
-                return ret
-
-        def as_lines(self):
-                """Returns a generator function that produces the contents of
-                the catalog as a list of strings."""
-
-                try:
-                        cfile = file(self.catalog_file, "r")
-                except EnvironmentError, e:
-                        # Missing catalog is fine; other errors need to
-                        # be reported.
-                        if e.errno == errno.ENOENT:
-                                return
-                        raise
-
-                for e in cfile:
-                        yield e
-
-                cfile.close()
-
-        @staticmethod
-        def _fmri_from_path(pkg, vers):
-                """Helper method that takes the full path to the package
-                directory and the name of the manifest file, and returns an FMRI
-                constructed from the information in those components."""
-
-                v = version.Version(urllib.unquote(vers), None)
-                f = fmri.PkgFmri(urllib.unquote(os.path.basename(pkg)), None)
-                f.version = v
-                return f
-
-        def check_prefix(self):
-                """If this version of the catalog knows about new prefixes,
-                check the on disk catalog to see if we can perform any
-                transformations based upon previously unknown catalog formats.
-
-                This routine will add a catalog attribute if it doesn't exist,
-                otherwise it checks this attribute against a hard-coded
-                version-specific tuple to see if new methods were added.
-
-                If new methods were added, it will call an additional routine
-                that updates the on-disk catalog, if necessary."""
-
-
-                # If a prefixes attribute doesn't exist, write one and get on
-                # with it.
-                if not "prefix" in self.attrs:
-                        self.attrs["prefix"] = "".join(known_prefixes)
-                        if not self.read_only:
-                                self.save_attrs()
-                        return
-
-                # Prefixes attribute does exist.  Check if it has changed.
-                pfx_set = set(self.attrs["prefix"])
-
-                # Nothing to do if prefixes haven't changed
-                if pfx_set == known_prefixes:
-                        return
-
-                # If known_prefixes contains a prefix not in pfx_set,
-                # add the prefix and perform a catalog transform.
-                new = known_prefixes.difference(pfx_set)
-                if new:
-                        for p in new:
-                                self.added_prefix(p)
-
-                        pfx_set.update(new)
-
-                        # Write out updated prefixes list
-                        self.attrs["prefix"] = "".join(pfx_set)
-                        if not self.read_only:
-                                self.save_attrs()
-
-        def build_catalog(self):
-                """Walk the on-disk package data and build (or rebuild) the
-                package catalog and search database."""
-
-                try:
-                        cat_mtime = os.stat(os.path.join(
-                            self.catalog_root, "catalog")).st_mtime
-                except OSError, e:
-                        if e.errno != errno.ENOENT:
-                                raise
-                        cat_mtime = 0
-
-                # XXX eschew os.walk in favor of another os.listdir here?
-                tree = os.walk(self.pkg_root)
-                for pkg in tree:
-                        if pkg[0] == self.pkg_root:
-                                continue
-
-                        for e in os.listdir(pkg[0]):
-                                ver_mtime = os.stat(os.path.join(
-                                    pkg[0], e)).st_mtime
-
-                                # XXX force a rebuild despite mtimes?
-                                # XXX queue this and fork later?
-                                if ver_mtime > cat_mtime:
-                                        f = self._fmri_from_path(pkg[0], e)
-                                        self.add_fmri(f)
-                                        print f
-
-        # XXX Now this is only used by a handful of tests.
-        def get_matching_fmris(self, patterns):
-                """Wrapper for extract_matching_fmris."""
-
-                if self.attrs["npkgs"] == 0:
-                        return []
-
-                ret = extract_matching_fmris(self.fmris(), patterns)
-
-                return sorted(ret, reverse = True)
-
-        def fmris(self):
-                """A generator function that produces FMRIs as it
-                iterates over the contents of the catalog."""
-
-                try:
-                        pfile = file(os.path.normpath(
-                            os.path.join(self.catalog_root, "catalog")), "r")
-                except IOError, e:
-                        if e.errno == errno.ENOENT:
-                                return
-                        else:
-                                raise
-
-                for entry in pfile:
-                        if not entry[1].isspace() or \
-                            not entry[0] in known_prefixes:
-                                continue
-
-                        try:
-                                if entry[0] not in tuple("CV"):
-                                        continue
-
-                                cv, pkg, cat_name, cat_version = entry.split()
-                                if pkg == "pkg":
-                                        yield fmri.PkgFmri("%s@%s" %
-                                            (cat_name, cat_version),
-                                            publisher = self.pub)
-                        except ValueError:
-                                # Handle old two-column catalog file, mostly in
-                                # use on server.  If *this* doesn't work, we
-                                # have a corrupt catalog.
-                                try:
-                                        cv, cat_fmri = entry.split()
-                                except ValueError:
-                                        raise RuntimeError, \
-                                            "corrupt catalog entry for " \
-                                            "publisher '%s': %s" % \
-                                            (self.pub, entry)
-                                yield fmri.PkgFmri(cat_fmri,
-                                    publisher = self.pub)
-
-                pfile.close()
-
-        def last_modified(self):
-                """Return the time at which the catalog was last modified."""
-
-                return self.attrs.get("Last-Modified", None)
-
-        def load_attrs(self, filenm = "attrs"):
-                """Load attributes from the catalog file into the in-memory
-                attributes dictionary"""
-
-                apath = os.path.normpath(
-                    os.path.join(self.catalog_root, filenm))
-                if not os.path.exists(apath):
-                        return
-
-                afile = file(apath, "r")
-                attrre = re.compile('^S ([^:]*): (.*)')
-
-                for entry in afile:
-                        m = attrre.match(entry)
-                        if m != None:
-                                self.attrs[m.group(1)] = m.group(2)
-
-                afile.close()
-
-                # convert npkgs to integer value
-                if "npkgs" in self.attrs:
-                        self.attrs["npkgs"] = int(self.attrs["npkgs"])
-
-        def npkgs(self):
-                """Returns the number of packages in the catalog."""
-
-                return self.attrs["npkgs"]
-
-        def origin(self):
-                """Returns the URL of the catalog's origin."""
-
-                return self.attrs.get("origin", None)
-
-        @classmethod
-        def recv(cls, filep, path, pub=None):
-                """A static method that takes a file-like object and
-                a path.  This is the other half of catalog.send().  It
-                reads a stream as an incoming catalog and lays it down
-                on disk."""
-
-                bad_fmri = None
-
-                if not os.path.exists(path):
-                        os.makedirs(path)
-
-                afd, attrpath = tempfile.mkstemp(dir=path)
-                cfd, catpath = tempfile.mkstemp(dir=path)
-
-                attrf = os.fdopen(afd, "w")
-                catf = os.fdopen(cfd, "w")
-
-                attrpath_final = os.path.normpath(os.path.join(path, "attrs"))
-                catpath_final = os.path.normpath(os.path.join(path, "catalog"))
-
-                try:
-                        for s in filep:
-                                slen = len(s)
-
-                                # If line is too short, process the next one
-                                if slen < 2:
-                                        continue
-                                # check that line is in the proper format
-                                elif not s[1].isspace():
-                                        continue
-                                elif not s[0] in known_prefixes:
-                                        catf.write(s)
-                                elif s.startswith("S "):
-                                        attrf.write(s)
-                                elif s.startswith("R "):
-                                        catf.write(s)
-                                else:
-                                        # XXX Need to be able to handle old and
-                                        # new format catalogs.
-                                        try:
-                                                f = fmri.PkgFmri(s[2:])
-                                        except fmri.IllegalFmri, e:
-                                                bad_fmri = e
+                        self.__unlock_catalog()
+
+        def apply_updates(self, path):
+                """Apply any CatalogUpdates available to the catalog based on
+                the list returned by get_updates_needed.  The caller must
+                retrieve all of the resources indicated by get_updates_needed
+                and place them in the directory indicated by 'path'."""
+
+                if not self.meta_root:
+                        raise api_errors.CatalogUpdateRequirements()
+
+                # Used to store the original time each part was modified
+                # as a basis for determining whether to apply specific
+                # updates.
+                old_parts = self._attrs.parts
+                def apply_incremental(name):
+                        # Load the CatalogUpdate from the path specified.
+                        # (Which is why __get_update is not used.)
+                        ulog = CatalogUpdate(name, meta_root=path)
+                        for pfmri, op_type, op_time, metadata in ulog.updates():
+                                for pname, pdata in metadata.iteritems():
+                                        part = self.__get_part(pname,
+                                            must_exist=True)
+                                        if not part:
+                                                # Part doesn't exist; skip.
                                                 continue
 
-                                        catf.write("%s %s %s %s\n" %
-                                            (s[0], "pkg", f.pkg_name,
-                                            f.version))
-                except:
-                        # Re-raise all uncaught exceptions after performing
-                        # cleanup.
-                        attrf.close()
-                        catf.close()
-                        os.remove(attrpath)
-                        os.remove(catpath)
-                        raise
+                                        lm = old_parts[pname]["last-modified"]
+                                        if op_time > lm:
+                                                # Only add updates to the part
+                                                # that occurred after the last
+                                                # time it was originally
+                                                # modified.
+                                                part.add(pfmri, metadata=pdata,
+                                                    op_time=op_time)
 
-                # If we got a parse error on FMRIs and transfer
-                # wasn't truncated, raise a FmriFailures error.
-                if bad_fmri:
-                        attrf.close()
-                        catf.close()
-                        os.remove(attrpath)
-                        os.remove(catpath)
-                        raise bad_fmri
+                def apply_full(name):
+                        src = os.path.join(path, name)
+                        dest = os.path.join(self.meta_root, name)
+                        portable.copyfile(src, dest)
 
-                # Write the publisher's origin into our attributes
-                if pub:
-                        origstr = "S origin: %s\n" % pub["origin"]
-                        attrf.write(origstr)
-
-                attrf.close()
-                catf.close()
-
-                # Mkstemp sets mode 600 on these files by default.
-                # Restore them to 644, so that unprivileged users
-                # may read these files.
-                os.chmod(attrpath, cls.file_mode)
-                os.chmod(catpath, cls.file_mode)
-
-                portable.rename(attrpath, attrpath_final)
-                portable.rename(catpath, catpath_final)
-
-        def save_attrs(self, filenm="attrs"):
-                """Save attributes from the in-memory catalog to a file
-                specified by filenm."""
-
-                tmpfile = None
-                assert not self.read_only
-
-                finalpath = os.path.normpath(
-                    os.path.join(self.catalog_root, filenm))
-
+                self.__lock_catalog()
                 try:
-                        tmp_num, tmpfile = tempfile.mkstemp(
-                            dir=self.catalog_root)
+                        old_batch_mode = self.batch_mode
+                        self.batch_mode = True
 
-                        tfile = os.fdopen(tmp_num, "w")
-
-                        for a in self.attrs.keys():
-                                s = "S %s: %s\n" % (a, self.attrs[a])
-                                tfile.write(s)
-
-                        tfile.close()
-                        os.chmod(tmpfile, self.file_mode)
-                        portable.rename(tmpfile, finalpath)
-
-                except EnvironmentError, e:
-                        # This may get called in a situation where
-                        # the user does not have write access to the attrs
-                        # file.
-                        if tmpfile:
-                                portable.remove(tmpfile)
-                        if e.errno == errno.EACCES:
-                                return
-                        else:
-                                raise
-
-                # Recalculate size on next send()
-                self.__size = -1
-
-        def send(self, filep, rspobj=None):
-                """Send the contents of this catalog out to the filep
-                specified as an argument."""
-
-                if rspobj is not None:
-                        rspobj.headers['Content-Length'] = str(self.size())
-
-                def output():
-                        # Send attributes first.
-                        for line in self.attrs_as_lines():
-                                yield line
-
-                        try:
-                                cfile = file(os.path.normpath(
-                                    os.path.join(self.catalog_root, "catalog")),
-                                    "r")
-                        except IOError, e:
-                                # Missing catalog is fine; other errors need to
-                                # be reported.
-                                if e.errno == errno.ENOENT:
-                                        return
+                        for name in self.get_updates_needed(path):
+                                if name.startswith("update."):
+                                        # The provided update is an incremental.
+                                        apply_incremental(name)
                                 else:
-                                        raise
+                                        # The provided update is a full update.
+                                        apply_full(name)
 
-                        for e in cfile:
-                                yield e
+                        # Next, verify that all of the updated parts have a
+                        # signature that matches the new catalog.attrs file.
+                        new_attrs = CatalogAttrs(meta_root=path)
+                        new_sigs = {}
+                        for name, mdata in new_attrs.parts.iteritems():
+                                new_sigs[name] = {}
+                                for key in mdata:
+                                        if not key.startswith("signature-"):
+                                                continue
+                                        sig = key.split("signature-")[1]
+                                        new_sigs[name][sig] = mdata[key]
 
-                        cfile.close()
+                        # This must be done to ensure that the catalog
+                        # signature matches that of the source.
+                        self.batch_mode = old_batch_mode
+                        self.finalize()
 
-                if filep:
-                        for line in output():
-                                filep.write(line)
-                else:
-                        return output()
+                        for name, part in self.__parts.iteritems():
+                                part.validate(signatures=new_sigs[name])
 
-        def set_time(self, ts = None):
-                """Set time to timestamp if supplied by caller.  Otherwise
-                use the system time."""
+                        # Finally, save the catalog, and then copy the new
+                        # catalog attributes file into place and reload it.
+                        self.__save()
+                        apply_full(self._attrs.name)
 
-                assert not self.read_only
+                        self._attrs = CatalogAttrs(meta_root=self.meta_root)
+                        self.__set_perms()
+                finally:
+                        self.__unlock_catalog()
 
-                if ts and isinstance(ts, str):
-                        self.attrs["Last-Modified"] = ts
-                elif ts and isinstance(ts, datetime.datetime):
-                        self.attrs["Last-Modified"] = ts.isoformat()
-                else:
-                        self.attrs["Last-Modified"] = timestamp()
+        @property
+        def created(self):
+                """A UTC datetime object indicating the time the catalog was
+                created."""
+                return self._attrs.created
 
-                self.save_attrs()
+        def destroy(self):
+                """Removes any on-disk files that exist for the catalog and
+                discards all content."""
 
-        def size(self):
-                """Return the size in bytes of the catalog and attributes."""
+                for name in self._attrs.parts:
+                        part = self.__get_part(name)
+                        part.destroy()
 
-                if self.__size < 0:
+                for name in self._attrs.updates:
+                        ulog = self.__get_update(name, cache=False) 
+                        ulog.destroy()
+
+                self._attrs.destroy()
+                self._attrs = CatalogAttrs(meta_root=self.meta_root)
+                self.__parts = {}
+                self.__updates = {}
+
+        def entries(self, info_needed=None, locales=None):
+                """A generator function that produces tuples of the format
+                (fmri, metadata) as it iterates over the contents of the
+                catalog (where 'metadata' is a dict containing the requested
+                information).
+
+                'metadata' always contains the following information at a
+                 minimum:
+
+                        BASE
+                                'metadata' will be populated with Manifest
+                                signature data, if available, using key-value
+                                pairs of the form 'signature-<name>': value.
+
+                'info_needed' is an optional set of one or more catalog
+                constants indicating the types of catalog data that will
+                be returned in 'metadata' in addition to the above:
+
+                        DEPENDENCY
+                                'metadata' will contain depend and set Actions
+                                for package obsoletion, renaming, variants,
+                                and facets stored in a list under the
+                                key 'actions'.
+
+                        SUMMARY
+                                'metadata' will contain any remaining Actions
+                                not listed above, such as pkg.summary,
+                                pkg.description, etc. in a list under the key
+                                'actions'.
+
+                'locales' is an optional set of locale names for which Actions
+                should be returned.  The default is set(('C',)) if not provided.
+                """
+
+                base = self.__get_part("catalog.base.C", must_exist=True)
+                if not base:
+                        # Catalog contains nothing.
+                        return
+
+                if not info_needed:
+                        info_needed = set()
+                if not locales:
+                        locales = set(("C",))
+
+                parts = []
+                if self.DEPENDENCY in info_needed:
+                        part = self.__get_part("catalog.dependency.C",
+                            must_exist=True)
+                        if part:
+                                parts.append(part)
+
+                if self.SUMMARY in info_needed:
+                        for locale in locales:
+                                part = self.__get_part(
+                                    "catalog.summary.%s" % locale,
+                                    must_exist=True)
+                                if not part:
+                                        # Data not available for this
+                                        # locale.
+                                        continue
+                                parts.append(part)
+
+                def merge_entry(src, dest):
+                        for k, v in src.iteritems():
+                                if k == "actions":
+                                        dest[k] += v
+                                elif k != "version":
+                                        dest[k] = v
+
+                def merge_meta(pfmri, meta):
+                        for part in parts:
+                                try:
+                                        entry = part.get_entry(pfmri)
+                                except api_errors.UnknownCatalogEntry:
+                                        # Part doesn't have this FMRI,
+                                        # so skip it.
+                                        continue
+                                merge_entry(entry, meta)
+
+                for f, bentry in base.entries():
+                        mdata = { "actions": [] }
+                        merge_entry(bentry, mdata)
+                        merge_meta(f, mdata)
+                        yield f, mdata
+
+        def entries_by_version(self, name, info_needed=None, locales=None):
+                """A generator function that produces tuples of the format
+                (version, entries) as it iterates over the contents of the
+                the catalog, where entries is a list of tuples of the format
+                (fmri, metadata) and metadata is a dict containing the
+                requested information.
+
+                'metadata' always contains the following information at a
+                 minimum:
+
+                        BASE
+                                'metadata' will be populated with Manifest
+                                signature data, if available, using key-value
+                                pairs of the form 'signature-<name>': value.
+
+                'info_needed' is an optional set of one or more catalog
+                constants indicating the types of catalog data that will
+                be returned in 'metadata' in addition to the above:
+
+                        DEPENDENCY
+                                'metadata' will contain depend and set Actions
+                                for package obsoletion, renaming, variants,
+                                and facets stored in a list under the
+                                key 'actions'.
+
+                        SUMMARY
+                                'metadata' will contain any remaining Actions
+                                not listed above, such as pkg.summary,
+                                pkg.description, etc. in a list under the key
+                                'actions'.
+
+                'locales' is an optional set of locale names for which Actions
+                should be returned.  The default is set(('C',)) if not provided.
+                """
+
+                base = self.__get_part("catalog.base.C", must_exist=True)
+                if not base:
+                        # Catalog contains nothing.
+                        return
+
+                if not info_needed:
+                        info_needed = set()
+                if not locales:
+                        locales = set(("C",))
+
+                parts = []
+                if self.DEPENDENCY in info_needed:
+                        part = self.__get_part("catalog.dependency.C",
+                            must_exist=True)
+                        if part:
+                                parts.append(part)
+
+                if self.SUMMARY in info_needed:
+                        for locale in locales:
+                                part = self.__get_part(
+                                    "catalog.summary.%s" % locale,
+                                    must_exist=True)
+                                if not part:
+                                        # Data not available for this
+                                        # locale.
+                                        continue
+                                parts.append(part)
+
+                def merge_entry(src, dest):
+                        for k, v in src.iteritems():
+                                if k == "actions":
+                                        dest[k] += v
+                                elif k != "version":
+                                        dest[k] = v
+
+                def merge_meta(pfmri, meta):
+                        for part in parts:
+                                try:
+                                        entry = part.get_entry(pfmri)
+                                except api_errors.UnknownCatalogEntry:
+                                        # Part doesn't have this FMRI,
+                                        # so skip it.
+                                        continue
+                                merge_entry(entry, meta)
+
+                for ver, entries in base.entries_by_version(name):
+                        nentries = []
+                        for f, bentry in entries:
+                                mdata = { "actions": [] }
+                                merge_entry(bentry, mdata)
+                                merge_meta(f, mdata)
+                                nentries.append((f, mdata))
+                        yield ver, nentries
+
+        @property
+        def exists(self):
+                """A boolean value indicating whether the Catalog exists
+                on-disk."""
+
+                # If the Catalog attrs file exists on-disk,
+                # then the catalog does.
+                attrs = self._attrs
+                return attrs.exists
+
+        def finalize(self):
+                """This function re-sorts the contents of the Catalog so that
+                version entries are in the correct order and sets the package
+                counts for the Catalog based on its current contents."""
+
+                return self.__finalize()
+
+        def fmris(self, objects=True):
+                """A generator function that produces FMRIs as it iterates
+                over the contents of the catalog.
+
+                'objects' is an optional boolean value indicating whether
+                FMRIs should be returned as FMRI objects or as strings."""
+
+                base = self.__get_part("catalog.base.C", must_exist=True)
+                if not base:
+                        # Catalog contains nothing.
+
+                        # This construction is necessary to get python to
+                        # return no results properly to callers expecting
+                        # a generator function.
+                        return iter(())
+
+                return base.fmris(objects=objects)
+
+        def fmris_by_version(self, name):
+                """A generator function that produces tuples of (version,
+                fmris), where fmris is a of the fmris related to the
+                version, for the given package name."""
+
+                base = self.__get_part("catalog.base.C", must_exist=True)
+                if not base:
+                        # Catalog contains nothing.
+
+                        # This construction is necessary to get python to
+                        # return no results properly to callers expecting
+                        # a generator function.
+                        return iter(())
+
+                return base.fmris_by_version(name)
+
+        def get_entry(self, pfmri, info_needed=None, locales=None):
+                """Returns a dict containing the metadata for the specified
+                FMRI containing the requested information.
+
+                'metadata' always contains the following information at a
+                 minimum:
+
+                        BASE
+                                'metadata' will be populated with Manifest
+                                signature data, if available, using key-value
+                                pairs of the form 'signature-<name>': value.
+
+                'info_needed' is an optional set of one or more catalog
+                constants indicating the types of catalog data that will
+                be returned in 'metadata' in addition to the above:
+
+                        DEPENDENCY
+                                'metadata' will contain depend and set Actions
+                                for package obsoletion, renaming, variants,
+                                and facets stored in a list under the
+                                key 'actions'.
+
+                        SUMMARY
+                                'metadata' will contain any remaining Actions
+                                not listed above, such as pkg.summary,
+                                pkg.description, etc. in a list under the key
+                                'actions'.
+
+                'locales' is an optional set of locale names for which Actions
+                should be returned.  The default is set(('C',)) if not provided.
+                """
+
+                def merge_entry(src, dest):
+                        for k, v in src.iteritems():
+                                if k == "actions":
+                                        dest[k] += v
+                                elif k != "version":
+                                        dest[k] = v
+
+                def merge_meta(pfmri, meta):
+                        for part in parts:
+                                try:
+                                        entry = part.get_entry(pfmri)
+                                except api_errors.UnknownCatalogEntry:
+                                        # Part doesn't have this FMRI,
+                                        # so skip it.
+                                        continue
+                                merge_entry(entry, meta)
+
+                if not info_needed:
+                        info_needed = set()
+
+                parts = []
+                base = self.__get_part("catalog.base.C", must_exist=True)
+                if not base:
+                        # Catalog contains nothing.
+                        raise api_errors.UnknownCatalogEntry(
+                            pfmri.get_fmri())
+
+                if not locales:
+                        locales = set(("C",))
+
+                # Always attempt to retrieve the BASE entry as FMRIs
+                # must be present in the BASE catalog part.
+                mdata = { "actions": [] }
+                bentry = base.get_entry(pfmri)
+                merge_entry(bentry, mdata)
+
+                if self.DEPENDENCY in info_needed:
+                        part = self.__get_part("catalog.dependency.C",
+                            must_exist=True)
+                        if part:
+                                parts.append(part)
+
+                if self.SUMMARY in info_needed:
+                        for locale in locales:
+                                part = self.__get_part(
+                                    "catalog.summary.%s" % locale,
+                                    must_exist=True)
+                                if not part:
+                                        # Data not available for this
+                                        # locale.
+                                        continue
+                                parts.append(part)
+
+                merge_meta(pfmri, mdata)
+
+                return mdata
+
+        def get_updates_needed(self, path):
+                """Returns a list of the catalog files needed to update
+                the existing catalog parts, based on the contents of the
+                catalog.attrs file in the directory indicated by 'path'.
+                """
+
+                new_attrs = CatalogAttrs(meta_root=path)
+                if not new_attrs.exists:
+                        # Assume no updates needed.
+                        return []
+
+                # First, verify that all of the catalog parts the client has
+                # still exist.  If they no longer exist, the catalog is no
+                # longer valid and cannot be updated.
+                parts = {}
+                old_attrs = self._attrs
+                incremental = True
+                for name in old_attrs.parts:
+                        if name not in new_attrs.parts:
+                                raise api_errors.BadCatalogUpdateIdentity(path)
+
+                        old_lm = old_attrs.parts[name]["last-modified"]
+                        new_lm = new_attrs.parts[name]["last-modified"]
+
+                        if new_lm == old_lm:
+                                # Part hasn't changed.
+                                continue
+                        elif new_lm < old_lm:
+                                raise api_errors.ObsoleteCatalogUpdate(path)
+
+                        # The last component of the update name is the locale.
+                        locale = name.split(".", 2)[2]
+
+                        # Now check to see if an update log is still offered for
+                        # the last time this catalog part was updated.  If it
+                        # does not, then an incremental update cannot be safely
+                        # performed since updates may be missing.
+                        logdate = datetime_to_update_ts(old_lm)
+                        logname = "update.%s.%s" % (logdate, locale)
+
+                        if logname not in new_attrs.updates:
+                                incremental = False
+
+                        if locale not in parts:
+                                parts[locale] = set()
+                        parts[locale].add(name)
+
+                if not parts:
+                        # No updates needed.
+                        return []
+                elif not incremental:
+                        # Since an incremental update cannot be performed,
+                        # just return the updated parts for retrieval.
+                        updates = set()
+                        for locale in parts:
+                                updates.update(parts[locale])
+                        return updates
+
+                # Finally, determine the update logs needed based on the catalog
+                # parts that need updating on a per-locale basis.
+                updates = set()
+                for locale in parts:
+                        # Determine the newest catalog part for a given locale,
+                        # this will be used to determine which update logs are
+                        # needed for an incremental update.
+                        last_lm = None
+                        for name in parts[locale]:
+                                lm = old_attrs.parts[name]["last-modified"]
+                                if not last_lm or lm > last_lm:
+                                        last_lm = lm
+
+                        for name, uattrs in new_attrs.updates.iteritems():
+                                up_lm = uattrs["last-modified"]
+
+                                # The last component of the update name is the
+                                # locale.
+                                up_locale = name.split(".", 2)[2]
+
+                                if not up_locale == locale:
+                                        # This update log doesn't apply to the
+                                        # locale being evaluated for updates.
+                                        continue
+
+                                if up_lm <= last_lm:
+                                        # Older or same as newest catalog part
+                                        # for this locale; so skip.
+                                        continue
+
+                                # If this updatelog was changed after the
+                                # newest catalog part for this locale, then
+                                # it is needed to update one or more catalog
+                                # parts for this locale.
+                                updates.add(name)
+
+                # Ensure updates are in chronological ascending order.
+                return sorted(updates)
+
+        @property
+        def last_modified(self):
+                """A UTC datetime object indicating the last time the catalog
+                was modified."""
+                return self._attrs.last_modified
+
+        def names(self):
+                """Returns a set containing the names of all the packages in
+                the Catalog."""
+
+                base = self.__get_part("catalog.base.C", must_exist=True)
+                if not base:
+                        # Catalog contains nothing.
+                        return set()
+                return base.names()
+
+        @property
+        def package_count(self):
+                """The number of unique packages in the catalog."""
+                return self._attrs.package_count
+
+        @property
+        def package_version_count(self):
+                """The number of unique package versions in the catalog."""
+                return self._attrs.package_version_count
+
+        @property
+        def parts(self):
+                """A dict containing the list of CatalogParts that the catalog
+                is composed of along with information about each part."""
+
+                return self._attrs.parts
+
+        def remove_package(self, pfmri):
+                """Remove a package and its metadata."""
+
+                self.__lock_catalog()
+                try:
+                        # The package has to be removed from every known part.
+                        entries = {}
+
+                        # Use the same operation time and date for all
+                        # operations so that the last modification times
+                        # of all catalog parts and update logs will be
+                        # synchronized.
+                        op_time = datetime.datetime.utcnow()
+
+                        for name in self._attrs.parts:
+                                part = self.__get_part(name)
+                                if not part:
+                                        continue
+
+                                try:
+                                        pkg_entry = part.get_entry(pfmri)
+                                except api_errors.UnknownCatalogEntry:
+                                        # Skip; part doesn't have this package.
+                                        continue
+
+                                part.remove(pfmri, op_time=op_time)
+                                if self.__log_updates:
+                                        entries[part.name] = pkg_entry
+
+                        self.__log_update(pfmri, CatalogUpdate.REMOVE, op_time,
+                            entries=entries)
+                finally:
+                        self.__unlock_catalog()
+
+        def save(self):
+                """Finalize current state and save to file if possible."""
+
+                self.__lock_catalog()
+                try:
+                        # Ensure consistent catalog state.
+                        self.finalize()
+                        self.__save()
+                finally:
+                        self.__unlock_catalog()
+
+        @property
+        def signatures(self):
+                """Returns a dict of the files the catalog is composed of along
+                with the last known signatures of each if they are available."""
+
+                attrs = self._attrs
+                sigs = {
+                    attrs.name: attrs.signatures
+                }
+
+                for items in (attrs.parts, attrs.updates):
+                        for name in items:
+                                entry = sigs[name] = {}
+                                for k in items[name]:
+                                        try:
+                                                sig = k.split("signature-")[1]
+                                                entry[sig] = items[name][k]
+                                        except IndexError:
+                                                # Not a signature entry.
+                                                continue
+                return sigs
+
+        @property
+        def updates(self):
+                """A dict containing the list of known updates for the catalog
+                along with information about each update."""
+
+                return self._attrs.updates
+
+        def validate(self):
+                """Verifies whether the signatures for the contents of the
+                catalog match the current signature data.  Raises the
+                exception named 'BadCatalogSignatures' on failure."""
+
+                self._attrs.validate()
+
+                for name in self._attrs.parts:
+                        part = self.__get_part(name)
+                        if not part:
+                                # Part does not exist; no validation needed.
+                                continue
+                        part.validate()
+
+                for name in self._attrs.updates:
                         try:
-                                attr_stat = os.stat(os.path.normpath(
-                                    os.path.join(self.catalog_root, "attrs")))
-                                attr_sz = attr_stat.st_size
-                        except OSError, e:
-                                if e.errno == errno.ENOENT:
-                                        attr_sz = 0
-                                else:
-                                        raise
-                        try:
-                                cat_stat =  os.stat(os.path.normpath(
-                                    os.path.join(self.catalog_root, "catalog")))
-                                cat_sz = cat_stat.st_size
-                        except OSError, e:
-                                if e.errno == errno.ENOENT:
-                                        cat_sz = 0
-                                else:
-                                        raise
+                                ulog = self.__updates[name]
+                        except KeyError:
+                                ulog = CatalogUpdate(name,
+                                    meta_root=self.meta_root)
 
-                        self.__size = attr_sz + cat_sz
+                        if not ulog:
+                                # Update does not exist; no validation needed.
+                                continue
+                        ulog.validate()
 
-                return self.__size
+        batch_mode = property(__get_batch_mode, __set_batch_mode)
+        meta_root = property(__get_meta_root, __set_meta_root)
 
-        def valid_new_fmri(self, pfmri):
-                """Check that the fmri supplied as an argument would be valid
-                to add to the catalog.  This checks to make sure that any past
-                catalog operations (such as a rename or freeze) would not
-                prohibit the caller from adding this FMRI."""
+# Methods used by Catalog classes.
+def datetime_to_ts(dt):
+        """Take datetime object dt, and convert it to a ts in ISO-8601
+        format. """
 
-                if not fmri.is_valid_pkg_name(pfmri.get_name()):
-                        return False
-                return True
+        return dt.isoformat()
 
+def datetime_to_basic_ts(dt):
+        """Take datetime object dt, and convert it to a ts in ISO-8601
+        basic format. """
 
-# In order to avoid a fine from the Department of Redundancy Department,
-# allow these methods to be invoked without explictly naming the Catalog class.
-recv = Catalog.recv
+        val = dt.isoformat()
+        val = val.replace("-", "")
+        val = val.replace(":", "")
 
-# Prefixes that this catalog knows how to handle
-known_prefixes = frozenset("CSVR")
+        if not dt.tzname():
+                # Assume UTC.
+                val += "Z"
+        return val
 
-# Method used by Catalog and UpdateLog.  Since UpdateLog needs to know
-# about Catalog, keep it in Catalog to avoid circular dependency problems.
-def timestamp():
-        """Return an integer timestamp that can be used for comparisons."""
+def datetime_to_update_ts(dt):
+        """Take datetime object dt, and convert it to a ts in ISO-8601
+        basic partial format. """
 
-        tobj = datetime.datetime.now()
-        tstr = tobj.isoformat()
+        val = dt.isoformat()
+        val = val.replace("-", "")
+        # Drop the minutes and seconds portion.
+        val = val.rsplit(":", 2)[0]
+        val = val.replace(":", "")
 
-        return tstr
+        if not dt.tzname():
+                # Assume UTC.
+                val += "Z"
+        return val
+
+def now_to_basic_ts():
+        """Returns the current UTC time as timestamp in ISO-8601 basic
+        format."""
+        return datetime_to_basic_ts(datetime.datetime.utcnow())
+
+def now_to_update_ts():
+        """Returns the current UTC time as timestamp in ISO-8601 basic
+        partial format."""
+        return datetime_to_update_ts(datetime.datetime.utcnow())
 
 def ts_to_datetime(ts):
-        """Take timestamp ts in string isoformat, and convert it to a datetime
-        object."""
+        """Take timestamp ts in ISO-8601 format, and convert it to a
+        datetime object."""
 
         year = int(ts[0:4])
         month = int(ts[5:7])
@@ -863,32 +2038,58 @@ def ts_to_datetime(ts):
                 usec = int(ts[20:26])
         except ValueError:
                 usec = 0
+        return datetime.datetime(year, month, day, hour, minutes, sec, usec)
 
-        dt = datetime.datetime(year, month, day, hour, minutes, sec, usec)
+def basic_ts_to_datetime(ts):
+        """Take timestamp ts in ISO-8601 basic format, and convert it to a
+        datetime object."""
 
-        return dt
+        year = int(ts[0:4])
+        month = int(ts[4:6])
+        day = int(ts[6:8])
+        hour = int(ts[9:11])
+        minutes = int(ts[11:13])
+        sec = int(ts[13:15])
+        # usec is not in the string if 0
+        try:
+                usec = int(ts[16:22])
+        except ValueError:
+                usec = 0
+        return datetime.datetime(year, month, day, hour, minutes, sec, usec)
 
+def update_ts_to_datetime(ts):
+        """Take timestamp ts in ISO-8601 basic partial format, and convert it
+        to a datetime object."""
+
+        year = int(ts[0:4])
+        month = int(ts[4:6])
+        day = int(ts[6:8])
+        hour = int(ts[9:11])
+        return datetime.datetime(year, month, day, hour)
 
 def extract_matching_fmris(pkgs, patterns=None, matcher=None,
-    constraint=None, counthash=None, versions=None):
+    constraint=None, counthash=None, reverse=True, versions=None):
         """Iterate through the given list of PkgFmri objects,
         looking for packages matching 'pattern' in 'patterns', based on the
         function in 'matcher' and the versioning constraint described by
         'constraint'.  If 'matcher' is None, uses fmri subset matching
         as the default.  If 'patterns' is None, 'versions' may be specified,
         and looks for packages matching the patterns specified in 'versions'.
-        When using 'version', the 'constraint' parameter is ignored.
+        When using 'versions', the 'constraint' parameter is ignored.
 
         'versions' should be a list of strings of the format:
-            release,build_release-branch:datetime 
+            release,build_release-branch:datetime
 
         ...with a value of '*' provided for any component to be ignored. '*' or
         '?' may be used within each component value and will act as wildcard
         characters ('*' for one or more characters, '?' for a single character).
 
-        Returns a sorted list of PkgFmri objects, newest versions first.  If
-        'counthash' is a dictionary, instead store the number of matched fmris
-        for each package that matches."""
+        'reverse' is an optional boolean value indicating whether results
+        should be in descending name and version order.  If false, results
+        will be in ascending name, descending version order.
+
+        If 'counthash' is a dictionary, instead store the number of matched
+        fmris for each package that matches."""
 
         if not matcher:
                 matcher = fmri.fmri_match
@@ -901,16 +2102,27 @@ def extract_matching_fmris(pkgs, patterns=None, matcher=None,
         if versions is None:
                 versions = []
         elif not isinstance(versions, list):
-                versions = [ version.MatchingVersion(versions, None) ]
+                versions = [ pkg.version.MatchingVersion(versions, None) ]
         else:
                 for i, ver in enumerate(versions):
-                        versions[i] = version.MatchingVersion(ver, None)
+                        versions[i] = pkg.version.MatchingVersion(ver, None)
 
         # 'pattern' may be a partially or fully decorated fmri; we want
         # to extract its name and version to match separately against
         # the catalog.
         # XXX "5.11" here needs to be saner
         tuples = {}
+
+        if patterns:
+                matched = {
+                    "matcher": set(),
+                    "publisher": set(),
+                    "version": set(),
+                }
+        elif versions:
+                matched = {
+                    "version": set(),
+                }
 
         for pattern in patterns:
                 if isinstance(pattern, fmri.PkgFmri):
@@ -921,28 +2133,39 @@ def extract_matching_fmris(pkgs, patterns=None, matcher=None,
                             fmri.PkgFmri(pattern, "5.11").tuple()
 
         def by_pattern(p):
-                cat_pub, cat_name, cat_version = p.tuple()
+                cat_pub, cat_name = p.tuple()[:2]
                 for pattern in patterns:
                         pat_pub, pat_name, pat_version = tuples[pattern]
-                        if (fmri.is_same_publisher(pat_pub, cat_pub) or not \
-                            pat_pub) and matcher(cat_name, pat_name):
-                                if not pat_version or \
-                                    p.version.is_successor(
-                                    pat_version, constraint) or \
-                                    p.version == pat_version:
-                                        if counthash is not None:
-                                                if pattern in counthash:
-                                                        counthash[pattern] += 1
-                                                else:
-                                                        counthash[pattern] = 1
 
-                                        if pat_pub:
-                                                p.set_publisher(pat_pub)
-                                        return p
+                        if not pat_pub or fmri.is_same_publisher(pat_pub,
+                            cat_pub):
+                                matched["publisher"].add(pattern)
+                        else:
+                                continue
+
+                        if matcher(cat_name, pat_name):
+                                matched["matcher"].add(pattern)
+                        else:
+                                continue
+
+                        if not pat_version or (p.version.is_successor(
+                            pat_version, constraint) or \
+                            p.version == pat_version):
+                                matched["version"].add(pattern)
+                        else:
+                                continue
+
+                        if counthash is not None:
+                                try:
+                                        counthash[pattern] += 1
+                                except KeyError:
+                                        counthash[pattern] = 1
+                        return p
 
         def by_version(p):
                 for ver in versions:
                         if ver == p.version:
+                                matched["version"].add(ver)
                                 if counthash is not None:
                                         sver = str(ver)
                                         if sver in counthash:
@@ -953,15 +2176,57 @@ def extract_matching_fmris(pkgs, patterns=None, matcher=None,
 
         ret = []
         if patterns:
+                unmatched = copy.deepcopy(matched)
+                for pattern in patterns:
+                        for k in unmatched:
+                                unmatched[k].add(pattern)
+
                 for p in pkgs:
                         res = by_pattern(p)
                         if res is not None:
                                 ret.append(res)
         elif versions:
+                unmatched = copy.deepcopy(matched)
+                for ver in versions:
+                        for k in unmatched:
+                                unmatched[k].add(ver)
+
                 for p in pkgs:
                         res = by_version(p)
                         if res is not None:
                                 ret.append(res)
+        else:
+                # No patterns and no versions means that no filtering can be
+                # applied.  It seems silly to call this function in that case,
+                # but the caller will get what it asked for...
+                ret = list(pkgs)
 
-        return sorted(ret, reverse=True)
+        if patterns or versions:
+                match_types = unmatched.keys()
+                for k in match_types:
+                        # The transformation back to list is important as the
+                        # unmatched results will likely be used to raise an
+                        # InventoryException which expects lists.
+                        unmatched[k] = list(unmatched[k] - matched[k])
+                        if not unmatched[k]:
+                                del unmatched[k]
+                                continue
+                if not unmatched:
+                        unmatched = None
+        else:
+                unmatched = None
 
+        if not reverse:
+                def order(a, b):
+                        res = cmp(a.pkg_name, b.pkg_name)
+                        if res != 0:
+                                return res
+                        res = cmp(a.version, b.version) * -1
+                        if res != 0:
+                                return res
+                        return cmp(a.publisher, b.publisher)
+                ret.sort(cmp=order)
+        else:
+                ret.sort(reverse=True)
+
+        return ret, unmatched

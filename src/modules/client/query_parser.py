@@ -185,7 +185,7 @@ class TermQuery(qp.TermQuery):
         def search(self, restriction, fmris, manifest_func, excludes):
                 """This function performs performs local client side search.
                 
-                The "restriction" paramter is a generator over the results that
+                The "restriction" parameter is a generator over the results that
                 another branch of the AST has already found.  If it exists,
                 those results are treated as the domain for search.  If it does
                 not exist, search uses the set of actions from installed

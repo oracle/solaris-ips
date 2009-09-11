@@ -114,6 +114,7 @@ try:
 except ImportError:
         sys.exit(1)
 import pkg.misc as misc
+import pkg.client.image as image
 import pkg.client.progress as progress
 import pkg.client.api_errors as api_errors
 import pkg.client.api as api
@@ -3607,10 +3608,12 @@ class PackageManager:
                             prev_state == state:
                                 pkg_count += 1
                                 continue
+                        # XXX These image constants have to be used for now
+                        # until there is a list api to replace inventory, etc.
                         if prev_stem and \
                             prev_stem == pkg.get_pkg_stem() and \
-                            prev_state["state"] == "known" and \
-                            state["state"] == "installed":
+                            prev_state["state"] == image.Image.PKG_STATE_KNOWN and \
+                            state["state"] == image.Image.PKG_STATE_INSTALLED:
                                 pass
                         elif next_app != None:
                                 self.__add_package_to_list(next_app,
@@ -3630,7 +3633,7 @@ class PackageManager:
                         pkg_stem = pkg.get_pkg_stem()
                         pkg_publisher = pkg.get_publisher()
                         pkg_state = enumerations.NOT_INSTALLED
-                        if state["state"] == "installed":
+                        if state["state"] == image.Image.PKG_STATE_INSTALLED:
                                 pkg_state = enumerations.INSTALLED
                                 if state["upgradable"] == True:
                                         status_icon = self.update_available_icon

@@ -47,7 +47,7 @@ import pkg.indexer as indexer
 import pkg.portable as portable
 import pkg.search_storage as ss
 
-API_VERSION = 19
+API_VERSION = 21
 PKG_CLIENT_NAME = "pkg"
 
 class TestApiSearchBasics(testutils.SingleDepotTestCase):
@@ -214,8 +214,8 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
             ('pkg:/example_pkg@1.0-0', ']', 'set name=weirdness value="] [ * ?"')    
         ])
         
-        local_fmri_string = ('pkg:/example_pkg@1.0-0', 'example_pkg',
-            'set name=fmri value=pkg:/example_pkg@1.0,5.11-0:')
+        local_fmri_string = ('pkg:/example_pkg@1.0-0', 'test/example_pkg',
+            'set name=fmri value=pkg://test/example_pkg@1.0,5.11-0:')
 
         res_local_pkg = set([
                 local_fmri_string
@@ -253,7 +253,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
         ])
 
         res_local_pkg_example11 = set([
-            ("pkg:/example_pkg@1.1-0", "example_pkg", "set name=fmri value=pkg:/example_pkg@1.1,5.11-0:")
+            ("pkg:/example_pkg@1.1-0", "test/example_pkg", "set name=fmri value=pkg://test/example_pkg@1.1,5.11-0:")
         ])
 
         res_local_wildcard_example11 = set([
@@ -294,7 +294,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
 
         res_remote_fat10_star = res_fat10_sparc | res_fat10_i386
 
-        local_fat_10_fmri_string = set([('pkg:/fat@1.0-0', 'fat', 'set name=fmri value=pkg:/fat@1.0,5.11-0:')])
+        local_fat_10_fmri_string = set([('pkg:/fat@1.0-0', 'test/fat', 'set name=fmri value=pkg://test/fat@1.0,5.11-0:')])
         
         res_local_fat10_i386_star = res_fat10_i386.union(set([
             ('pkg:/fat@1.0-0', 'test', 'set name=publisher value=test'),
@@ -444,8 +444,8 @@ close
                 if correct_answer == proposed_answer:
                         return True
                 else:
-                        print "Proposed Answer: " + str(proposed_answer)
-                        print "Correct Answer : " + str(correct_answer)
+                        self.debug("Proposed Answer: " + str(proposed_answer))
+                        self.debug("Correct Answer : " + str(correct_answer))
                         if isinstance(correct_answer, set) and \
                             isinstance(proposed_answer, set):
                                 print >> sys.stderr, "Missing: " + \

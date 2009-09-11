@@ -203,7 +203,6 @@ variant.foo:baz variant.num:three
                 return lines
 
         def check_res(self, expected, seen):
-                import sys
                 seen = seen.strip()
                 expected = expected.strip()
                 if seen == expected:

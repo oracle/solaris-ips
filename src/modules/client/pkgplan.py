@@ -27,8 +27,9 @@ import errno
 import itertools
 import os
 
-import pkg.manifest as manifest
 import pkg.actions.directory as directory
+import pkg.manifest as manifest
+import pkg.client.api_errors as api_errors
 from pkg.misc import msg
 from pkg.misc import get_pkg_otw_size
 from pkg.misc import EmptyI
@@ -77,8 +78,9 @@ class PkgPlan(object):
                 self.origin_fmri = fmri
                 self.__origin_mfst = mfst
 
-                if not self.image.install_file_present(fmri):
-                        raise RuntimeError, "not installed"
+                if not self.image.is_pkg_installed(fmri):
+                        raise api_errors.PlanCreationException(
+                            not_installed=[fmri])
 
         def propose_repair(self, fmri, mfst, actions):
                 self.propose_reinstall(fmri, mfst)
@@ -97,15 +99,17 @@ class PkgPlan(object):
                 self.__destination_mfst = mfst
                 self.__legacy_info["version"] = self.destination_fmri.version
 
-                if self.image.install_file_present(fmri):
-                        raise RuntimeError, "already installed"
+                if self.image.is_pkg_installed(fmri):
+                        raise api_errors.PlanCreationException(
+                            installed=[fmri])
 
         def propose_removal(self, fmri, mfst):
                 self.origin_fmri = fmri
                 self.__origin_mfst = mfst
 
-                if not self.image.install_file_present(fmri):
-                        raise RuntimeError, "not installed"
+                if not self.image.is_pkg_installed(fmri):
+                        raise api_errors.PlanCreationException(
+                            not_installed=[fmri])
 
         def get_actions(self):
                 raise NotImplementedError()
@@ -145,7 +149,7 @@ class PkgPlan(object):
                 # destination ones are.
                 ddups = self.__destination_mfst.duplicates(new_excludes)
                 if ddups:
-                        raise RuntimeError, ["Duplicate actions", ddups]
+                        raise RuntimeError(["Duplicate actions", ddups])
 
                 self.actions = self.__destination_mfst.difference(
                     self.__origin_mfst, old_excludes, new_excludes)
@@ -312,7 +316,8 @@ class PkgPlan(object):
                 # turds from the origin's directory.
                 # XXX should this just go in preexecute?
                 if self.destination_fmri == None or self.origin_fmri != None:
-                        self.image.remove_install_file(self.origin_fmri)
+                        self.image.set_pkg_state(self.origin_fmri,
+                            self.image.PKG_STATE_UNINSTALLED)
 
                         try:
                                 os.unlink("%s/pkg/%s/filters" % (
@@ -323,7 +328,8 @@ class PkgPlan(object):
                                         raise
 
                 if self.destination_fmri != None:
-                        self.image.add_install_file(self.destination_fmri)
+                        self.image.set_pkg_state(self.destination_fmri,
+                            self.image.PKG_STATE_INSTALLED)
 
                         # Save the filters we used to install the package, so
                         # they can be referenced later.

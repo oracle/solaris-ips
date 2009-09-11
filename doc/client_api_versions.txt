@@ -1,3 +1,10 @@
+Version 21:
+Incompatible with clients using version 0-20.
+Changes:
+    The pkg.client.api_errors module has changed as follows:
+        * All CatalogCacheError class exceptions were removed as the
+          catalog cache no longer exists.
+
 Version 20:
 Compatible with clients using version 19.
 Changes:

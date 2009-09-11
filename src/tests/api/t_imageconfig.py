@@ -66,7 +66,7 @@ repo.related_uris:
 sort_policy: priority
 """)
                 f.close()
-                self.ic = imageconfig.ImageConfig(self.sample_dir)
+                self.ic = imageconfig.ImageConfig(self.sample_dir, "publisher")
 
         def tearDown(self):
                 try:
@@ -106,7 +106,7 @@ sort_policy: priority
                 self.ic.properties['name'] = ustr
                 newdir = tempfile.mkdtemp()
                 self.ic.write(newdir)
-                ic2 = imageconfig.ImageConfig(newdir)
+                ic2 = imageconfig.ImageConfig(newdir, "publisher")
                 ic2.read(newdir)
                 ustr2 = ic2.properties['name']
                 shutil.rmtree(newdir)
@@ -126,7 +126,7 @@ sort_policy: priority
                 pub = self.ic.publishers["sfbay.sun.com"]
                 uuid = pub.client_uuid
 
-                ic2 = imageconfig.ImageConfig(self.sample_dir)
+                ic2 = imageconfig.ImageConfig(self.sample_dir, "publisher")
                 ic2.read(self.sample_dir)
                 pub2 = ic2.publishers["sfbay.sun.com"]
                 self.assertEqual(pub2.client_uuid, uuid)

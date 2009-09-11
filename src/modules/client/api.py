@@ -27,11 +27,9 @@
 
 import copy
 import os
-import simplejson as json
 import StringIO
 import sys
 import urllib
-import urllib2
 
 import pkg.client.actuator as actuator
 import pkg.client.api_errors as api_errors
@@ -51,7 +49,7 @@ import pkg.nrlock
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 20
+CURRENT_API_VERSION = 21
 CURRENT_P5I_VERSION = 1
 
 class ImageInterface(object):
@@ -77,18 +75,18 @@ class ImageInterface(object):
         __UNINSTALL = 2
         __IMAGE_UPDATE = 3
 
-        def __init__(self, img_path, version_id, progesstracker,
+        def __init__(self, img_path, version_id, progresstracker,
             cancel_state_callable, pkg_client_name):
                 """Constructs an ImageInterface. img_path should point to an
                 existing image. version_id indicates the version of the api
-                the client is expecting to use. progesstracker is the
+                the client is expecting to use. progresstracker is the
                 progresstracker the client wants the api to use for UI
                 callbacks. cancel_state_callable is a function which the client
                 wishes to have called each time whether the operation can be
                 canceled changes. It can raise VersionException and
                 ImageNotFoundException."""
 
-                compatible_versions = set([19, 20])
+                compatible_versions = set([21])
 
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
@@ -100,13 +98,22 @@ class ImageInterface(object):
                 if global_settings.client_name is None:
                         global_settings.client_name = pkg_client_name
 
-                # Store this for reset().
-                self.__img_path = img_path
+                if isinstance(img_path, basestring):
+                        # Store this for reset().
+                        self.__img_path = img_path
+                        self.__img = image.Image()
+                        self.__img.find_root(img_path,
+                            progtrack=progresstracker)
+                elif isinstance(img_path, image.Image):
+                        # This is a temporary, special case for client.py
+                        # until the image api is complete.
+                        self.__img = img_path
+                        self.__img_path = img_path.get_root()
+                else:
+                        # API consumer passed an unknown type for img_path.
+                        raise TypeError(_("Unknown img_path type."))
 
-                self.__img = image.Image()
-                self.__img.find_root(img_path)
-                self.__img.load_config()
-                self.__progresstracker = progesstracker
+                self.__progresstracker = progresstracker
                 self.__cancel_state_callable = cancel_state_callable
                 self.__plan_type = None
                 self.__plan_desc = None
@@ -163,9 +170,8 @@ class ImageInterface(object):
                                 self.log_operation_end(error=exc_value)
                         raise
 
-        def __load_catalog(self, refresh_catalogs=True, manual_load=True):
-                """Refresh and load catalogs, or load the old on-disk
-                catalogs."""
+        def __refresh_publishers(self):
+                """Refresh publisher metadata."""
 
                 #
                 # Verify validity of certificates before possibly
@@ -173,23 +179,18 @@ class ImageInterface(object):
                 #
                 self.__cert_verify()
 
-                if refresh_catalogs:
-                        try:
-                                self.__img.refresh_publishers(
-                                    progtrack=self.__progresstracker)
-                        except KeyboardInterrupt:
-                                raise
-                        except api_errors.InvalidDepotResponseException:
-                                raise
-                        except:
-                                # Since this is not a refresh
-                                # that was explicitly requested,
-                                # it doesn't matter if it fails.
-                                pass
-                elif manual_load:
-                        # If refresh wasn't called, the catalogs
-                        # have to be manually loaded.
-                        self.__img.load_catalogs(self.__progresstracker)
+                try:
+                        self.__img.refresh_publishers(
+                            progtrack=self.__progresstracker)
+                except KeyboardInterrupt:
+                        raise
+                except api_errors.InvalidDepotResponseException:
+                        raise
+                except:
+                        # Since this is not a refresh
+                        # that was explicitly requested,
+                        # it doesn't matter if it fails.
+                        pass
 
         def __plan_common_start(self, operation):
                 """Start planning an operation.  Aquire locks and log
@@ -259,7 +260,8 @@ class ImageInterface(object):
 
                 self.__plan_common_start("install")
                 try:
-                        self.__load_catalog(refresh_catalogs, manual_load=False)
+                        if refresh_catalogs:
+                                self.__refresh_publishers()
 
                         self.__img.make_install_plan(pkg_list,
                             self.__progresstracker,
@@ -356,7 +358,8 @@ class ImageInterface(object):
                         self.check_be_name(be_name)
                         self.__be_name = be_name
 
-                        self.__load_catalog(refresh_catalogs)
+                        if refresh_catalogs:
+                                self.__refresh_publishers()
 
                         # If we can find SUNWipkg and SUNWcs in the
                         # target image, then we assume this is a valid
@@ -384,16 +387,24 @@ class ImageInterface(object):
                                         # case; so proceed.
                                         pass
 
+                        # XXX For now, strip the publisher prefix from FMRIs for
+                        # packages that were installed from a publisher that was
+                        # preferred at the time of installation.  However, when
+                        # the image starts using prioritised publishers, this
+                        # will have to be removed.  Newer versions of packages
+                        # should only be a valid match if offered the same
+                        # publisher since equivalence cannot be determined by
+                        # package name alone.
+                        ppub = self.__img.get_preferred_publisher()
                         pkg_list = [
-                            ipkg.get_pkg_stem()
-                            for ipkg in self.__img.gen_installed_pkgs()
+                            p.get_pkg_stem(anarchy=self.__img.is_pkg_preferred(
+                                p))
+                            for p in self.__img.gen_installed_pkgs()
                         ]
 
                         self.__img.make_install_plan(pkg_list,
-                            self.__progresstracker,
-                            self.__check_cancelation,
-                            noexecute, verbose=verbose,
-                            multimatch_ignore=True)
+                            self.__progresstracker, self.__check_cancelation,
+                            noexecute, verbose=verbose, multimatch_ignore=True)
 
                         assert self.__img.imageplan
 
@@ -441,7 +452,7 @@ class ImageInterface(object):
                         self.check_be_name(be_name)
                         self.be_name = be_name
 
-                        self.__load_catalog(refresh_catalogs=True)
+                        self.__refresh_publishers()
 
                         self.__img.image_change_variant(variants,
                             self.__progresstracker,
@@ -679,7 +690,7 @@ class ImageInterface(object):
                 # If the end of the operation wasn't already logged
                 # by one of the previous operations, then log it as
                 # ending now.
-                if self.img.history.operation_name:
+                if self.__img.history.operation_name:
                         self.log_operation_end()
                 self.__executed = True
                 try:
@@ -690,21 +701,6 @@ class ImageInterface(object):
                         # is supplied.
                         pass
 
-        def __refresh(self, full_refresh=False, pubs=None, immediate=False,
-            validate=True):
-                """Private refresh method that exposes functionality not
-                suitable for external consumers."""
-
-                self.__activity_lock.acquire()
-                self.__set_can_be_canceled(False)
-                try:
-                        self.__img.refresh_publishers(full_refresh=full_refresh,
-                            immediate=immediate, pubs=pubs,
-                            progtrack=self.__progresstracker, validate=validate)
-                        return self.__img
-                finally:
-                        self.__activity_lock.release()
-
         def refresh(self, full_refresh=False, pubs=None, immediate=False):
                 """Refreshes the metadata (e.g. catalog) for one or more
                 publishers.
@@ -713,22 +709,29 @@ class ImageInterface(object):
                 a full retrieval of publisher metadata (e.g. catalogs) or only
                 an update to the existing metadata should be performed.  When
                 True, 'immediate' is also set to True.
-
+ 
                 'pubs' is a list of publisher prefixes or publisher objects
                 to refresh.  Passing an empty list or using the default value
                 implies all publishers.
 
-                'immediate' is an optional boolean value indicating whether the
+                'immediate' is an optional boolean value indicating whether
                 a refresh should occur now.  If False, a publisher's selected
                 repository will only be checked for updates if the update
                 interval period recorded in the image configuration has been
-                exceeded; ignored when 'full_refresh' is True.
+                exceeded.
 
                 Currently returns an image object, allowing existing code to
                 work while the rest of the API is put into place."""
 
-                return self.__refresh(full_refresh=full_refresh, pubs=pubs,
-                    immediate=immediate)
+                self.__activity_lock.acquire()
+                self.__set_can_be_canceled(False)
+                try:
+                        self.__img.refresh_publishers(full_refresh=full_refresh,
+                            immediate=immediate, pubs=pubs,
+                            progtrack=self.__progresstracker)
+                        return self.__img
+                finally:
+                        self.__activity_lock.release()
 
         def __licenses(self, mfst, local):
                 """Private function. Returns the license info from the
@@ -775,13 +778,13 @@ class ImageInterface(object):
                         raise api_errors.UnrecognizedOptionsToInfo(bad_opts)
 
                 self.log_operation_start("info")
-                self.__img.load_catalogs(self.__progresstracker)
 
                 fmris = []
                 notfound = []
                 multiple_matches = []
                 illegals = []
 
+                ppub = self.__img.get_preferred_publisher()
                 if local:
                         fmris, notfound, illegals = \
                             self.__img.installed_fmris_from_args(fmri_strings)
@@ -816,7 +819,7 @@ class ImageInterface(object):
                                 npnames = {}
                                 npmatch = []
                                 for m, state in matches:
-                                        if m.preferred_publisher():
+                                        if m.get_publisher() == ppub:
                                                 pnames[m.get_pkg_stem()] = 1
                                                 pmatch.append(m)
                                         else:
@@ -843,7 +846,6 @@ class ImageInterface(object):
                                         fmris.append(npmatch[0])
 
                 pis = []
-
                 for f in fmris:
                         pub = name = version = release = None
                         build_release = branch = packaging_date = None
@@ -857,12 +859,10 @@ class ImageInterface(object):
                                     version.get_timestamp().strftime("%c")
                         pref_pub = None
                         if PackageInfo.PREF_PUBLISHER in info_needed:
-                                pref_pub = False
-                                if f.preferred_publisher():
-                                        pref_pub = True
+                                pref_pub = f.get_publisher() == ppub
                         state = None
                         if PackageInfo.STATE in info_needed:
-                                if self.__img.is_installed(f):
+                                if self.__img.is_pkg_installed(f):
                                         state = PackageInfo.INSTALLED
                                 else:
                                         state = PackageInfo.NOT_INSTALLED
@@ -967,11 +967,14 @@ class ImageInterface(object):
 
                 assert self.__activity_lock._is_owned()
 
+                # This needs to be done first so that find_root can use it.
+                self.__progresstracker.reset()
+
                 # Recreate the image object using the path the api
                 # object was created with instead of the current path.
                 self.__img = image.Image()
-                self.__img.find_root(self.__img_path)
-                self.__img.load_config()
+                self.__img.find_root(self.__img_path,
+                    progtrack=self.__progresstracker)
 
                 self.__plan_desc = None
                 self.__plan_type = None
@@ -980,7 +983,6 @@ class ImageInterface(object):
                 self.__be_name = None
                 self.__set_can_be_canceled(False)
                 self.__canceling = False
-                self.__progresstracker.reset()
 
         def __check_cancelation(self):
                 """Private method. Provides a callback method for internal
@@ -1274,18 +1276,23 @@ class ImageInterface(object):
         def get_publisher_last_update_time(self, prefix=None, alias=None):
                 """Returns a datetime object representing the last time the
                 catalog for a publisher was modified or None."""
+
                 if alias:
-                        prefix = self.get_publisher(alias=alias).prefix
+                        pub = self.get_publisher(alias=alias)
+                else:
+                        pub = self.get_publisher(prefix=prefix)
+
+                if pub.disabled:
+                        return None
+
                 dt = None
                 self.__activity_lock.acquire()
                 try:
                         self.__set_can_be_canceled(True)
                         try:
-                                dt = self.__img.get_publisher_last_update_time(
-                                    prefix)
+                                dt = pub.catalog.last_modified
                         except:
                                 self.__reset_unlock()
-                                self.__activity_lock.release()
                                 raise
                 finally:
                         self.__activity_lock.release()
@@ -1377,6 +1384,12 @@ class ImageInterface(object):
                                 updated = True
                                 del publishers[key]
 
+                                # Prepare the new publisher object.
+                                pub.meta_root = \
+                                    self.__img._get_publisher_meta_root(
+                                    pub.prefix)
+                                pub.transport = self.__img.transport
+
                                 # Finally, add the new publisher object.
                                 publishers[pub.prefix] = pub
                                 break
@@ -1405,11 +1418,6 @@ class ImageInterface(object):
                                 # any other case (the origin changing, etc.),
                                 # refresh() will do the right thing.
                                 self.__img.remove_publisher_metadata(pub)
-
-                                # Now reload the catalogs so that in-memory and
-                                # on-disk state will reflect the removal.
-                                self.__img.load_catalogs(self.__progresstracker,
-                                    force=True)
                         elif not pub.disabled and not refresh_catalog:
                                 refresh_catalog = pub.needs_refresh
 
@@ -1420,14 +1428,7 @@ class ImageInterface(object):
                                         # publisher needs to be revalidated.
                                         self.__img.transport.valid_publisher_test(
                                             pub)
-
-                                        # Because the more strict test above
-                                        # was performed, there is no point in
-                                        # having refresh perform additional
-                                        # validation before attempting metadata
-                                        # retrieval.
-                                        self.__refresh(pubs=[pub],
-                                            immediate=True, validate=False)
+                                        self.refresh(pubs=[pub], immediate=True)
                                 else:
                                         # Something has changed (such as a
                                         # repository origin) for the publisher,

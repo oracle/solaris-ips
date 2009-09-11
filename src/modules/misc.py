@@ -55,6 +55,9 @@ from pkg import VERSION
 # Minimum number of days to issue warning before a certificate expires
 MIN_WARN_DAYS = datetime.timedelta(days=30)
 
+# Copied from image.py as image.py can't be imported here (circular reference).
+PKG_STATE_INSTALLED = 2
+
 def get_release_notes_url():
         """Return a release note URL pointing to the correct release notes
            for this version"""
@@ -499,11 +502,12 @@ def get_inventory_list(image, pargs, all_known, all_versions):
         most_recent = {}
         installed = []
         res = image.inventory(pargs, all_known, ordered=not all_versions)
+        ppub = image.get_preferred_publisher()
         # All_Versions reduces the output so that only the most recent
         # version and installed version of packages appear.
         if all_versions:
                 for pfmri, state in res:
-                        if state["state"] == "installed":
+                        if state["state"] == PKG_STATE_INSTALLED:
                                 installed.append((pfmri, state))
                         hv = pfmri.get_pkg_stem(include_scheme=False)
                         if hv in most_recent:
@@ -529,9 +533,9 @@ def get_inventory_list(image, pargs, all_known, all_versions):
                         t = cmp(f2, f1)
                         if t != 0:
                                 return t
-                        if f1.preferred_publisher():
+                        if f1.get_publisher() == ppub:
                                 return -1
-                        if f2.preferred_publisher():
+                        if f2.get_publisher() == ppub:
                                 return 1
                         return cmp(f1.get_publisher(),
                             f2.get_publisher())

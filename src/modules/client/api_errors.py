@@ -141,14 +141,17 @@ class ReadOnlyFileSystemException(PermissionsException):
 class PlanCreationException(ApiException):
         def __init__(self, unmatched_fmris=EmptyI, multiple_matches=EmptyI,
             missing_matches=EmptyI, illegal=EmptyI,
-            constraint_violations=EmptyI, badarch=EmptyI):
+            constraint_violations=EmptyI, badarch=EmptyI, not_installed=EmptyI,
+            installed=EmptyI):
                 ApiException.__init__(self)
-                self.unmatched_fmris       = unmatched_fmris
-                self.multiple_matches      = multiple_matches
-                self.missing_matches       = missing_matches
-                self.illegal               = illegal
+                self.unmatched_fmris = unmatched_fmris
+                self.multiple_matches = multiple_matches
+                self.missing_matches = missing_matches
+                self.illegal = illegal
                 self.constraint_violations = constraint_violations
-                self.badarch               = badarch
+                self.badarch = badarch
+                self.not_installed = not_installed
+                self.installed = installed
 
         def __str__(self):
                 res = []
@@ -184,7 +187,21 @@ Try relaxing the pattern, refreshing and/or examining the catalogs:""")
                             ", ".join(self.badarch[1]))]
                         res += [ a % (self.badarch[2])]
 
-                return '\n'.join(res)
+                if self.not_installed:
+                        s = _("The proposed operation can not be performed for "
+                            "the following package(s) as they are not "
+                            "installed: ")
+                        res += [s]
+                        res += ["\t%s" % p for p in self.not_installed]
+
+                if self.installed:
+                        s = _("The proposed operation can not be performed for "
+                            "the following package(s) as they are already "
+                            "installed: ")
+                        res += [s]
+                        res += ["\t%s" % p for p in self.installed]
+
+                return "\n".join(res)
 
 
 class ActionExecutionError(ApiException):
@@ -225,45 +242,6 @@ class ActionExecutionError(ApiException):
                 return "%s%s" % (errno, msg)
 
 
-class CatalogCacheError(ApiException):
-        """Base class used for all catalog cache errors."""
-
-        def __init__(self, *args, **kwargs):
-                ApiException.__init__(self, *args)
-                if args:
-                        self.data = args[0]
-                else:
-                        self.data = None
-                self.args = kwargs
-
-
-class CatalogCacheBadVersion(CatalogCacheError):
-        """Used to indicate that the catalog cache is invalid or is not of a
-        supported version."""
-
-        def __str__(self):
-                return _("Unsupported catalog cache Version: '%(found)s'; "
-                    "expected: '%(expected)s'") % { "found": self.data,
-                    "expected": self.args["expected"] }
-
-
-class CatalogCacheInvalid(CatalogCacheError):
-        """Used to indicate that the catalog cache is corrupt or otherwise
-        unparseable."""
-
-        def __str__(self):
-                return _("Catalog cache is corrupt or invalid; error "
-                    "encountered while reading:\nline %(lnum)d: '%(data)s'") % {
-                    "lnum": self.args["line_number"], "data": self.data }
-
-
-class CatalogCacheMissing(CatalogCacheError):
-        """Used to indicate that the catalog cache is missing."""
-
-        def __str__(self):
-                return _("Catalog cache is missing.")
-
-
 class CatalogRefreshException(ApiException):
         def __init__(self, failed, total, succeeded, message=None):
                 ApiException.__init__(self)
@@ -273,12 +251,155 @@ class CatalogRefreshException(ApiException):
                 self.message = message
 
 
-class InventoryException(ApiException):
-        def __init__(self, notfound=EmptyI, illegal=EmptyI):
+class CatalogError(ApiException):
+        """Base exception class for all catalog exceptions."""
+
+        def __init__(self, *args, **kwargs):
                 ApiException.__init__(self)
-                self.notfound = notfound
+                if args:
+                        self.data = args[0]
+                else:
+                        self.data = None
+                self.args = kwargs
+
+        def __str__(self):
+                return str(self.data)
+
+
+class AnarchicalCatalogFMRI(CatalogError):
+        """Used to indicate that the specified FMRI is not valid for catalog
+        operations because it is missing publisher information."""
+
+        def __str__(self):
+                return _("The FMRI '%s' does not contain publisher information "
+                    "and cannot be used for catalog operations.") % self.data
+
+
+class BadCatalogMetaRoot(CatalogError):
+        """Used to indicate an operation on the catalog's meta_root failed
+        because the meta_root is invalid."""
+
+        def __str__(self):
+                return _("Catalog meta_root '%(root)s' is invalid; unable "
+                    "to complete operation: '%(op)s'.") % { "root": self.data,
+                    "op": self.args.get("operation", None) }
+
+
+class BadCatalogPermissions(CatalogError):
+        """Used to indicate the server catalog files do not have the expected
+        permissions."""
+
+        def __init__(self, files):
+                """files should contain a list object with each entry consisting
+                of a tuple of filename, expected_mode, received_mode."""
+                if not files:
+                        files = []
+                CatalogError.__init__(self, files)
+
+        def __str__(self):
+                msg = _("The following catalog files have incorrect "
+                    "permissions:\n")
+                for f in self.args:
+                        fname, emode, fmode = f
+                        msg += _("\t%(fname)s: expected mode: %(emode)s, found "
+                            "mode: %(fmode)s\n") % { "fname": fname,
+                            "emode": emode, "fmode": fmode }
+                return msg
+
+
+class BadCatalogSignatures(CatalogError):
+        """Used to indicate that the Catalog signatures are not valid."""
+
+        def __str__(self):
+                return _("The signature data for the '%s' catalog file is not "
+                    "valid.") % self.data
+
+
+class BadCatalogUpdateIdentity(CatalogError):
+        """Used to indicate that the requested catalog updates could not be
+        applied as the new catalog data is significantly different such that
+        the old catalog cannot be updated to match it."""
+
+        def __str__(self):
+                return _("Unable to determine the updates needed for  "
+                    "the current catalog using the provided catalog "
+                    "update data in '%s'.") % self.data
+
+
+class DuplicateCatalogEntry(CatalogError):
+        """Used to indicate that the specified catalog operation could not be
+        performed since it would result in a duplicate catalog entry."""
+
+        def __str__(self):
+                return _("Unable to perform '%(op)s' operation for catalog "
+                    "%(name)s; completion would result in a duplicate entry "
+                    "for package '%(fmri)s'.") % { "op": self.args.get(
+                    "operation", None), "name": self.args.get("catalog_name",
+                    None), "fmri": self.data }
+
+
+class CatalogUpdateRequirements(CatalogError):
+        """Used to indicate that an update request for the catalog could not
+        be performed because update requirements were not satisfied."""
+
+        def __str__(self):
+                return _("Catalog updates can only be applied to an on-disk "
+                    "catalog.")
+
+
+class InvalidCatalogFile(CatalogError):
+        """Used to indicate a Catalog file could not be loaded."""
+
+        def __str__(self):
+                return _("Catalog file '%s' is invalid.") % self.data
+
+
+class ObsoleteCatalogUpdate(CatalogError):
+        """Used to indicate that the specified catalog updates are for an older
+        version of the catalog and cannot be applied."""
+
+        def __str__(self):
+                return _("Unable to determine the updates needed for the "
+                    "catalog using the provided catalog update data in '%s'. "
+                    "The specified catalog updates are for an older version "
+                    "of the catalog and cannot be used.") % self.data
+
+
+class UnknownCatalogEntry(CatalogError):
+        """Used to indicate that an entry for the specified package FMRI or
+        pattern could not be found in the catalog."""
+
+        def __str__(self):
+                return _("'%s' could not be found in the catalog.") % self.data
+
+
+class UnknownUpdateType(CatalogError):
+        """Used to indicate that the specified CatalogUpdate operation is
+        unknown."""
+
+        def __str__(self):
+                return _("Unknown catalog update type '%s'") % self.data
+
+
+class InventoryException(ApiException):
+        """Used to indicate that some of the specified patterns to a catalog
+        matching function did not match any catalog entries."""
+
+        def __init__(self, illegal=EmptyI, matcher=EmptyI, notfound=EmptyI,
+            publisher=EmptyI, version=EmptyI):
+                ApiException.__init__(self)
                 self.illegal = illegal
-                assert(self.notfound or self.illegal)
+                self.matcher = matcher
+                self.notfound = set(notfound)
+                self.publisher = publisher
+                self.version = version
+
+                self.notfound.update(matcher)
+                self.notfound.update(publisher)
+                self.notfound.update(version)
+                self.notfound = list(self.notfound)
+
+                assert self.illegal or self.notfound 
 
         def __str__(self):
                 outstr = ""
@@ -286,14 +407,18 @@ class InventoryException(ApiException):
                         # Illegal FMRIs have their own __str__ method
                         outstr += "%s\n" % x
 
-                if self.notfound:
+                if self.matcher or self.publisher or self.version:
                         outstr += _("No matching package could be found for "
                             "the following FMRIs in any of the catalogs for "
                             "the current publishers:\n")
 
-                        for x in self.notfound:
-                                outstr += "%s\n" % x
-
+                        for x in self.matcher:
+                                outstr += _("%s (pattern did not match)\n") % x
+                        for x in self.publisher:
+                                outstr += _("%s (publisher did not "
+                                    "match)\n") % x
+                        for x in self.version:
+                                outstr += _("%s (version did not match)\n") % x
                 return outstr
 
 
@@ -1080,6 +1205,7 @@ class ServerReturnError(ApiException):
         def __str__(self):
                 return _("Gave a bad response:%s") % self.line
 
+
 class MissingFileArgumentException(ApiException):
         """This exception is used when a file was given as an argument but
         no such file could be found."""
@@ -1089,3 +1215,28 @@ class MissingFileArgumentException(ApiException):
 
         def __str__(self):
                 return _("Could not find %s") % self.path
+
+
+class ManifestError(ApiException):
+        """Base exception class for all manifest exceptions."""
+
+        def __init__(self, *args, **kwargs):
+                ApiException.__init__(self, *args, **kwargs)
+                if args:
+                        self.data = args[0]
+                else:
+                        self.data = None
+                self.args = kwargs
+
+        def __str__(self):
+                return str(self.data)
+
+
+class BadManifestSignatures(ManifestError):
+        """Used to indicate that the Manifest signatures are not valid."""
+
+        def __str__(self):
+                if self.data:
+                        return _("The signature data for the manifest of the "
+                            "'%s' package is not valid.") % self.data
+                return _("The signature data for the manifest is not valid.")

@@ -25,7 +25,6 @@
 # Use is subject to license terms.
 #
 
-import sys
 import os
 import httplib
 import statvfs
@@ -161,7 +160,7 @@ class Transport(object):
                 failures = tx.TransportFailures()
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 header = self.__build_header(uuid=self.__get_uuid(pub))
-                croot = pub.meta_root
+                croot = pub.catalog_root
 
                 # If captive portal test hasn't been executed, run it
                 # prior to this operation.

@@ -53,9 +53,6 @@ default_policies = {
     SEND_UUID: True
 }
 
-# The name of the directory where publisher metadata should be stored.
-PUB_META_DIR = "catalog"
-
 # Assume the repository metadata should be checked no more than once every
 # 4 hours.
 REPO_REFRESH_SECONDS_DEFAULT = 4 * 60 * 60
@@ -75,8 +72,9 @@ class ImageConfig(object):
         # XXX Use of ConfigParser is convenient and at most speculative--and
         # definitely not interface.
 
-        def __init__(self, imgroot):
+        def __init__(self, imgroot, pubdir):
                 self.__imgroot = imgroot
+                self.__pubdir = pubdir
                 self.publishers = {}
                 self.properties = dict((
                     (p, str(v)) 
@@ -118,7 +116,7 @@ class ImageConfig(object):
                 assert r[0] == ccfile
 
                 # The root directory for publisher metadata.
-                pmroot = os.path.join(path, PUB_META_DIR)
+                pmroot = os.path.join(path, self.__pubdir)
 
                 #
                 # Must load filters first, since the value of a filter can
@@ -199,8 +197,8 @@ class ImageConfig(object):
                                     "configuration from %s" % dafile)
                         for s in cp.sections():
                                 if re.match("authority_.*", s):
-                                        k, a, c = self.read_publisher(pmroot, cp,
-                                            s)
+                                        k, a, c = self.read_publisher(pmroot,
+                                            cp, s)
                                         self.publishers[k] = a
                                         changed |= c
 

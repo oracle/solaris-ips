@@ -37,7 +37,6 @@ import pkg.client.pkgplan as pkgplan
 import pkg.client.indexer as indexer
 import pkg.fmri as fmri
 import pkg.search_errors as se
-import pkg.variant as variant
 
 from pkg.client.filter import compile_filter
 from pkg.misc import msg
@@ -288,6 +287,7 @@ class ImagePlan(object):
                 if self.check_cancelation():
                         raise api_errors.CanceledException()
 
+                ppub = self.image.get_preferred_publisher()
                 self.image.fmri_set_default_publisher(pfmri)
 
                 m = self.image.get_manifest(pfmri)
@@ -340,22 +340,22 @@ class ImagePlan(object):
                         # the same publisher as the evaluated fmri, and then
                         # first available.  Callers can override this behavior
                         # by specifying the publisher prefix as part of the FMRI.
-                        matches = list(self.image.inventory([ cf ], all_known=True,
+                        matches = list(self.image.inventory([cf], all_known=True,
                             matcher=fmri.exact_name_match, preferred=True,
                             ordered=False))
 
                         cf = matches[0][0]
                         evalpub = pfmri.get_publisher()
-                        if len(matches) > 1 and not cf.preferred_publisher() \
+                        if len(matches) > 1 and not cf.get_publisher() == ppub \
                             and cf.get_publisher() != evalpub:
                                 # If more than one match was returned, and it
                                 # wasn't for the preferred publisher or for the
                                 # same publisher as the fmri being evaluated,
                                 # then try to find a match that has the same
                                 # publisher as the fmri being evaluated.
-                                for f, st in matches[1:]:
-                                        if f.get_publisher() == evalpub:
-                                                cf = f
+                                for res in matches[1:]:
+                                        if res[0].get_publisher() == evalpub:
+                                                cf = res[0]
                                                 break
 
                         self.propose_fmri(cf)
@@ -370,7 +370,7 @@ class ImagePlan(object):
                     self.check_cancelation)
 
                 if self.old_excludes != self.new_excludes:
-                        if self.image.install_file_present(pfmri):
+                        if self.image.is_pkg_installed(pfmri):
                                 pp.propose_reinstall(pfmri, m)
                         else:
                                 pp.propose_destination(pfmri, m)
@@ -573,12 +573,10 @@ class ImagePlan(object):
                 npkgs = 0
                 nfiles = 0
                 nbytes = 0
-                nactions = 0
                 for p in self.pkg_plans:
                         nf, nb = p.get_xferstats()
                         nbytes += nb
                         nfiles += nf
-                        nactions += p.get_nactions()
 
                         # It's not perfectly accurate but we count a download
                         # even if the package will do zero data transfer.  This
@@ -773,8 +771,6 @@ class ImagePlan(object):
 
                                 # write out variant changes to the image config
                                 self.image.image_config_update()
-
-                                self.image.clear_pkg_state()
                         except EnvironmentError, e:
                                 if e.errno == errno.EACCES or \
                                     e.errno == errno.EPERM:

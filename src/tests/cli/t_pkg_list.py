@@ -31,6 +31,7 @@ if __name__ == "__main__":
 
 import difflib
 import os
+import pkg.catalog as catalog
 import re
 import shutil
 import unittest
@@ -319,7 +320,7 @@ class TestPkgList(testutils.ManyDepotTestCase):
                             ".org.opensolaris,pkg")
                         self.assertTrue(os.path.exists(pkg_path))
 
-                os.remove(os.path.join(pkg_path, "catalog", "test1",
+                os.remove(os.path.join(pkg_path, "publisher", "test1",
                     "last_refreshed"))
 
                 # Package should not exist as an unprivileged user since the
@@ -339,131 +340,7 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 # metadata has been refreshed.
                 self.pkg("list -a | grep newpkg", su_wrap=True)
 
-        def test_list_10_cache(self):
-                """Verify that various alterations or states of the catalog
-                cache won't impair pkg operations such as pkg list."""
-
-                def test_for_expected(expected, su_wrap=False):
-                        self.pkg("list -aHf foo*", su_wrap=su_wrap)
-                        output = self.reduceSpaces(self.output)
-                        self.assertEqualDiff(expected, output)
-
-                def get_file_data(pathname):
-                        f = file(pathname, "rb")
-                        data = f.read()
-                        f.close()
-                        return data
-
-                pkg_list = self.reduceSpaces( 
-                    "foo         1.2.1-0 known ----\n" \
-                    "foo (test2) 1.2.1-0 known ----\n" \
-                    "foo         1.2-0   known u---\n" \
-                    "foo (test2) 1.2-0   known u---\n" \
-                    "foo         1.1-0   known u---\n" \
-                    "foo (test2) 1.1-0   known u---\n" \
-                    "foo         1.0-0   known u---\n" \
-                    "foo (test2) 1.0-0   known u---\n" \
-                    "foo         1-0     known u---\n" \
-                    "foo (test2) 1-0     known u---\n" \
-                    "food        1.2-0   known ----\n" \
-                    "food (test2) 1.2-0  known ----\n")
-
-                # Verify the known list of packages first before abusing the
-                # cache.
-                test_for_expected(pkg_list)
-
-                # Obtain the size of the cache file for later comparison.
-                cache_file = os.path.join(self.get_img_path(), "var", "pkg",
-                    "catalog", "catalog_cache")
-                cache_data = get_file_data(cache_file)
-
-                # Now remove the cache and verify that an unprivileged user can
-                # still get the same results (the unprivileged is important as
-                # they won't have permissions to write a new catalog cache).
-                os.unlink(cache_file)
-                test_for_expected(pkg_list, su_wrap=True)
-
-                # Next, write a cache file with an invalid version and verify
-                # that an unprivileged user does not receive an error.
-                f = file(cache_file, "wb")
-                f.write("INVALID_VERSION")
-                f.close()
-                test_for_expected(pkg_list, su_wrap=True)
-
-                # Next, verify that performing the same operation as a
-                # privileged user will cause the cache to be rewritten correctly
-                # and still produce the expected results.
-                test_for_expected(pkg_list)
-                self.assertEqual(get_file_data(cache_file), cache_data)
-
-                # Next, truncate the cache file after the first line, and then
-                # add invalid publisher data and verify the user does not
-                # receive an error.
-                f = file(cache_file, "wb")
-                f.truncate(1)
-                f.write("\npub1!pub2!pub3\n")
-                f.close()
-                test_for_expected(pkg_list ,su_wrap=True)
-
-                # Next, verify that performing the same operation as a
-                # privileged user will cause the cache to be rewritten correctly
-                # and still produce the expected results.
-                test_for_expected(pkg_list)
-                self.assertEqual(get_file_data(cache_file), cache_data)
-
-                lines = cache_data.splitlines(True)
-                # Next, truncate the cache file after the second line, and then
-                # add invalid fmri data and verify the user does not receive an
-                # error.
-                f = file(cache_file, "wb")
-                # Only the write the first two lines.
-                f.writelines(lines[0:2])
-                # Then write an invalid fmri.
-                f.write("^not_Avalid1.0afmri@a.b.c|test1!test2\n")
-                f.close()
-                test_for_expected(pkg_list, su_wrap=True)
-
-                # Next, verify that performing the same operation as a
-                # privileged user will cause the cache to be rewritten correctly
-                # and still produce the expected results.
-                test_for_expected(pkg_list)
-                self.assertEqual(get_file_data(cache_file), cache_data)
-
-                # Next, truncate the cache file after the second line, and then
-                # write partial fmris without including a full one and verify
-                # that the user does not receive an error.
-                f = file(cache_file, "wb")
-                # Only the write the first two lines.
-                f.writelines(lines[0:2])
-                # Then write a partial fmri.
-                f.write("@1.0|test1!test2")
-                f.close()
-                test_for_expected(pkg_list, su_wrap=True)
-
-                # Next, verify that performing the same operation as a
-                # privileged user will cause the cache to be rewritten correctly
-                # and still produce the expected results.
-                test_for_expected(pkg_list)
-                self.assertEqual(get_file_data(cache_file), cache_data)
-
-                # Next, truncate the cache file after the second line, and then
-                # write newlines and verify that the user does not receive an
-                # error.
-                f = file(cache_file, "wb")
-                # Only the write the first two lines.
-                f.writelines(lines[0:2])
-                # Then write a few newlines.
-                f.writelines(("\n", "\n", "\n"))
-                f.close()
-                test_for_expected(pkg_list, su_wrap=True)
-
-                # Finally, verify that performing the same operation as a
-                # privileged user will cause the cache to be rewritten correctly
-                # and still produce the expected results.
-                test_for_expected(pkg_list)
-                self.assertEqual(get_file_data(cache_file), cache_data)
-
-        def test_list_11_all_known_failed_refresh(self):
+        def test_list_10_all_known_failed_refresh(self):
                 """Verify that a failed implicit refresh will not prevent pkg
                 list from working properly."""
 

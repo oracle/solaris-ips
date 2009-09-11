@@ -39,6 +39,7 @@ import urllib2
 
 import pkg.depotcontroller as dc
 
+import pkg.catalog as catalog
 import pkg.client.query_parser as query_parser
 import pkg.fmri as fmri
 import pkg.portable as portable
@@ -159,7 +160,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
         ])
 
         local_fmri_string = \
-            "fmri       set       example_pkg               pkg:/example_pkg@1.0-0\n"
+            "fmri       set        test/example_pkg              pkg:/example_pkg@1.0-0\n"
 
 
         res_local_pkg = set([
@@ -577,20 +578,23 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                     "pkg", self.bogus_fmri.get_dir_path())
                 os.makedirs(client_pkg_dir)
                 client_manifest_file = os.path.join(client_pkg_dir, "manifest")
-                installed_file_1 = os.path.join(client_pkg_dir, "installed")
-                state_dir = os.path.join(self.img_path, "var", "pkg", "state",
-                    "installed")
-                installed_file_2 = os.path.join(state_dir,
-                    self.bogus_fmri.get_fmri(include_scheme=False))
+
                 fh = open(client_manifest_file, "wb")
                 fh.write(self.bogus_pkg10)
                 fh.close()
-                fh = open(installed_file_1, "wb")
-                fh.write("VERSION_1\n_PRE_%s\n" % "test")
-                fh.close()
-                fh = open(installed_file_2, "wb")
-                fh.write('\n')
-                fh.close()
+
+                # Load the 'installed' catalog and add an entry for the
+                # new package version.
+                istate_dir = os.path.join(self.img_path, "var", "pkg", "state",
+                    "installed")
+                cat = catalog.Catalog(meta_root=istate_dir)
+                # Value of PKG_STATE_INSTALLED in image.py is 2.
+                # Value of __PKG_STATE_PREFERRED in image.py is 5.
+                mdata = { "states": [2, 5] }
+                bfmri = self.bogus_fmri.copy()
+                bfmri.set_publisher("test")
+                cat.add_package(bfmri, metadata=mdata)
+                cat.save()
 
                 self.pkg("rebuild-index")
                 self._search_op(False, "*bogus*",
@@ -599,8 +603,8 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                     set(self.res_bogus_number_result))
 
         def test_bug_7835(self):
-                """Check that installing a package in a non-empty
-                image without an index doesn't build an index."""
+                """Check that installing a package in a non-empty image
+                without an index doesn't build an index."""
                 # This test can't be moved to t_api_search until bug 8497 has
                 # been resolved.
                 durl = self.dc.get_depot_url()

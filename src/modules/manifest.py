@@ -31,8 +31,11 @@ from itertools import groupby, chain, repeat
 from pkg.misc import EmptyI, expanddirs
 
 import pkg.actions as actions
+import pkg.client.api_errors as api_errors
 import pkg.portable as portable
 import pkg.variant as variant
+import sha
+
 from pkg.actions.attribute import AttributeAction
 
 class Manifest(object):
@@ -91,15 +94,18 @@ class Manifest(object):
                         r += "%s\n" % act
                 return r
 
-        def tostr_unsorted(self):
-                r = ""
+        def as_lines(self):
+                """A generator function that returns the unsorted manifest
+                contents as lines of text."""
+
                 if "fmri" not in self.attributes and self.fmri != None:
-                        r += "set name=fmri value=%s\n" % self.fmri
+                        yield "set name=fmri value=%s\n" % self.fmri
 
                 for act in self.actions:
-                        r += "%s\n" % act
-                return r
+                        yield "%s\n" % act
 
+        def tostr_unsorted(self):
+                return "".join((l for l in self.as_lines()))
 
         def difference(self, origin, origin_exclude=EmptyI,
             self_exclude=EmptyI):
@@ -451,6 +457,28 @@ class Manifest(object):
                 file_handle.close()
                 return action_dict
 
+        @property
+        def signatures(self):
+                """A dict structure of signature key and value pairs for the
+                the contents of the Manifest.  The keys are the names of each
+                signature and the values are the signature."""
+
+                # NOTE: The logic here must be identical to that of store() so
+                # that the signature properly reflects the on-disk data.
+                sha_1 = sha.new()
+                for l in self.as_lines():
+                        sha_1.update(l)
+
+                return { "sha-1": sha_1.hexdigest() }
+
+        def validate(self, signatures):
+                """Verifies whether the signatures for the contents of
+                the manifest match the specified signature data.  Raises
+                the 'BadManifestSignatures' exception on failure."""
+
+                if signatures != self.signatures:
+                        raise api_errors.BadManifestSignatures(self.fmri)
+
         def store(self, mfst_path):
                 """Store the manifest contents to disk."""
 
@@ -537,11 +565,12 @@ class CachedManifest(Manifest):
         directories explictly and implicitly referenced by the 
         manifest, tagging each one w/ the appropriate variants/facets."""
 
-        def __file_path(self, file):
+        def __file_path(self, name):
                 return os.path.join(self.__pkgdir,
-                    self.fmri.get_dir_path(), file)
+                    self.fmri.get_dir_path(), name)
 
-        def __init__(self, fmri, pkgdir, preferred_pub, excludes=EmptyI, contents=None):
+        def __init__(self, fmri, pkgdir, preferred_pub, excludes=EmptyI,
+            contents=None):
                 """Raises KeyError exception if cached manifest
                 is not present and contents are None; delays
                 reading of manifest until required if cache file
@@ -662,7 +691,8 @@ class CachedManifest(Manifest):
                 portable.rename(self.__file_path("manifest.dircache.tmp"),
                     self.__file_path("manifest.dircache"))
 
-        def __gen_dirs_to_str(self, dirs):
+        @staticmethod
+        def __gen_dirs_to_str(dirs):
                 """ from a dictionary of paths, generate contents of dircache 
                 file"""
                 for d in dirs:                        
@@ -805,8 +835,6 @@ class CachedManifest(Manifest):
 
         @staticmethod
         def search_dict(file_path, excludes, return_line=False):
-                if not self.loaded:
-                        self.__load()
                 return Manifest.search_dict(file_path, excludes,
                     return_line=return_line)
 
@@ -820,7 +848,8 @@ class CachedManifest(Manifest):
                         self.__load()
                 return Manifest.duplicates(self, excludes=excludes)
 
-        def difference(self, origin, origin_exclude=EmptyI, self_exclude=EmptyI):
+        def difference(self, origin, origin_exclude=EmptyI,
+            self_exclude=EmptyI):
                 if not self.loaded:
                         self.__load()
                 return Manifest.difference(self, origin, 
@@ -851,7 +880,8 @@ class EmptyCachedManifest(Manifest):
                 return ([], [],
                     [(a, None) for a in origin.gen_actions(self_exclude)])
 
-        def get_directories(self, excludes):
+        @staticmethod
+        def get_directories(excludes):
                 return []
 
 NullCachedManifest = EmptyCachedManifest()

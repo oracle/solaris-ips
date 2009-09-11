@@ -387,11 +387,6 @@ class Updatemanager:
 
                 self.api_obj = self.__get_api_obj()
                 image_obj = self.api_obj.img
-                #TODO: This part is required so misc.get_inventory_list
-                #      is returning desired list of packages.
-                #      After the list api (bug #5872) is in place
-                #      this part should be replaced.
-                image_obj.load_catalogs(self.pr)
 
                 count = 0
                 pkg_upgradeable = None
@@ -401,7 +396,8 @@ class Updatemanager:
                         while gtk.events_pending():
                                 gtk.main_iteration(False)
 
-                        if state["upgradable"] and state["state"] == "installed":
+                        if state["upgradable"] and \
+                            state["state"] == image_obj.PKG_STATE_INSTALLED:
                                 pkg_upgradeable = pkg
                         
                         # Allow testing by listing uninstalled packages, -u option

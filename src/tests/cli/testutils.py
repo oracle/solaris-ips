@@ -693,7 +693,7 @@ class SingleDepotTestCase(ManyDepotTestCase):
 class SingleDepotTestCaseCorruptImage(SingleDepotTestCase):
         """ A class which allows manipulation of the image directory that
         SingleDepotTestCase creates. Specifically, it supports removing one
-        or more of the files or subdirectories inside an image (catalog,
+        or more of the files or subdirectories inside an image (publisher,
         cfg_cache, etc...) in a controlled way.
 
         To add a new directory or file to be corrupted, it will be necessary
@@ -774,11 +774,17 @@ class SingleDepotTestCaseCorruptImage(SingleDepotTestCase):
                         # image takes place. A normal image was created
                         # above and this goes in and removes critical
                         # directories and files.
-                        if "catalog_absent" in config or \
-                           "catalog_empty" in config:
-                                shutil.rmtree(os.path.join(tmpDir, "catalog"))
-                        if "catalog_empty" in config:
-                                os.mkdir(os.path.join(tmpDir, "catalog"))
+                        if "publisher_absent" in config or \
+                           "publisher_empty" in config:
+                                shutil.rmtree(os.path.join(tmpDir, "publisher"))
+                        if "known_absent" in config or \
+                           "known_empty" in config:
+                                shutil.rmtree(os.path.join(tmpDir, "state",
+                                    "known"))
+                        if "known_empty" in config:
+                                os.mkdir(os.path.join(tmpDir, "state", "known"))
+                        if "publisher_empty" in config:
+                                os.mkdir(os.path.join(tmpDir, "publisher"))
                         if "cfg_cache_absent" in config:
                                 os.remove(os.path.join(tmpDir, "cfg_cache"))
                         if "file_absent" in config:

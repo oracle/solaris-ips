@@ -77,7 +77,7 @@ from pkg.client.history import (RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
     RESULT_FAILED_OUTOFMEMORY)
 from pkg.misc import EmptyI, msg, emsg, PipeError
 
-CLIENT_API_VERSION = 19
+CLIENT_API_VERSION = 21
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -240,12 +240,13 @@ def list_inventory(img, args):
                 return 1
 
         img.history.operation_name = "list"
-        img.load_catalogs(progress.NullProgressTracker())
 
-        api_inst = api.ImageInterface(img.get_root(), CLIENT_API_VERSION,
-            get_tracker(quiet=True), None, PKG_CLIENT_NAME)
+        api_inst = __api_alloc(img, quiet=True)
+        if api_inst == None:
+                return 1
+
         info_needed = frozenset([api.PackageInfo.SUMMARY])
-
+        ppub = img.get_preferred_publisher()
         seen_one_pkg = False
         found = False
         try:
@@ -300,16 +301,19 @@ def list_inventory(img, args):
                             state["incorporated"] and "i" or "-",
                             state["excludes"] and "x" or "-")
 
-                        if pfmri.preferred_publisher():
+                        if pfmri.publisher == ppub:
                                 pub = ""
                         else:
                                 pub = " (" + pfmri.get_publisher() + ")"
 
+                        st_str = ""
+                        if state["state"] == img.PKG_STATE_KNOWN:
+                                st_str = _("known")
+                        elif state["state"] == img.PKG_STATE_INSTALLED:
+                                st_str = _("installed")
+
                         if verbose:
-                                pf = pfmri.get_fmri(
-                                    img.get_preferred_publisher())
-                                msg("%-64s %-10s %s" % (pf, state["state"],
-                                    ufix))
+                                msg("%-64s %-10s %s" % (pfmri, st_str, ufix))
                         elif summary:
                                 pf = pfmri.get_name() + pub
 
@@ -325,8 +329,8 @@ def list_inventory(img, args):
 
                         else:
                                 pf = pfmri.get_name() + pub
-                                msg(fmt_str % (pf, pfmri.get_version(),
-                                    state["state"], ufix))
+                                msg(fmt_str % (pf, pfmri.get_version(), st_str,
+                                    ufix))
 
                 if not found:
                         if not seen_one_pkg and not all_known:
@@ -362,9 +366,9 @@ def list_inventory(img, args):
                         return 1
 
                 if all_known:
-                        state = image.PKG_STATE_KNOWN
+                        state = _("known")
                 else:
-                        state = image.PKG_STATE_INSTALLED
+                        state = _("installed")
                 for pat in e.notfound:
                         error(_("no packages matching "
                             "'%(pattern)s' %(state)s") %
@@ -385,7 +389,6 @@ def get_tracker(quiet=False):
 
 def fix_image(img, args):
         progresstracker = get_tracker(False)
-        img.load_catalogs(progresstracker)
         fmris, notfound, illegals = img.installed_fmris_from_args(args)
 
         any_errors = False
@@ -455,8 +458,6 @@ def verify_image(img, args):
         if not check_fmri_args(pargs):
                 return 1
 
-        img.load_catalogs(progresstracker)
-
         fmris, notfound, illegals = img.installed_fmris_from_args(pargs)
 
         if illegals:
@@ -521,18 +522,15 @@ installed on the system.\n"""))
                 return 1
         return 0
 
-def __api_prepare(operation, api, verbose=False):
+def __api_prepare(operation, api_inst, verbose=False):
         # Exceptions which happen here are printed in the above level, with
         # or without some extra decoration done here.
         # XXX would be nice to kick the progress tracker.
         try:
-                api.prepare()
+                api_inst.prepare()
         except api_errors.PermissionsException, e:
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
-                error("\n" + str(e))
-                return False
-        except api_errors.FileInUseException, e:
                 error("\n" + str(e))
                 return False
         except api_errors.TransportError, e:
@@ -549,9 +547,9 @@ def __api_prepare(operation, api, verbose=False):
                 raise
         return True
 
-def __api_execute_plan(operation, api, raise_ActionExecutionError=True):
+def __api_execute_plan(operation, api_inst, raise_ActionExecutionError=True):
         try:
-                api.execute_plan()
+                api_inst.execute_plan()
         except RuntimeError, e:
                 error(_("%s failed: %s") % (operation, e))
                 return False
@@ -600,13 +598,12 @@ def __api_execute_plan(operation, api, raise_ActionExecutionError=True):
                 raise
         return True
 
-def __api_alloc(img_dir, quiet):
+def __api_alloc(img, quiet=False):
         progresstracker = get_tracker(quiet)
 
         try:
-                api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
-                    progresstracker, cancel_state_callable=None,
-                    pkg_client_name=PKG_CLIENT_NAME)
+                api_inst = api.ImageInterface(img, CLIENT_API_VERSION,
+                    progresstracker, None, PKG_CLIENT_NAME)
         except api_errors.ImageNotFoundException, e:
                 error(_("No image rooted at '%s'") % e.user_dir)
                 return None
@@ -661,7 +658,7 @@ Cannot remove '%s' due to the following packages that depend on it:"""
         raise
         # NOTREACHED
 
-def change_variant(img_dir, args):
+def change_variant(img, args):
         """Attempt to change a variant associated with an image, updating
         the image contents as necessary."""
 
@@ -686,7 +683,7 @@ def change_variant(img_dir, args):
         if not pargs:
                 usage(_("%s: no variants specified") % op)
 
-        variants = dict();
+        variants = dict()
         for arg in pargs:
                 # '=' is not allowed in variant names or values
                 if (len(arg.split('=')) != 2):
@@ -701,10 +698,10 @@ def change_variant(img_dir, args):
                 # make sure the user didn't specify duplicate variants
                 if name in variants:
                         usage(_("%s: duplicate variant specified: %s") %
-                            (op, name));
+                            (op, name))
                 variants[name] = value
 
-        api_inst = __api_alloc(img_dir, quiet)
+        api_inst = __api_alloc(img, quiet)
         if api_inst == None:
                 return 1
 
@@ -737,7 +734,7 @@ def change_variant(img_dir, args):
 
         return ret_code
 
-def image_update(img_dir, args):
+def image_update(img, args):
         """Attempt to take all installed packages specified to latest
         version."""
 
@@ -775,7 +772,7 @@ def image_update(img_dir, args):
                 usage(_("command does not take operands ('%s')") % \
                     " ".join(pargs), cmd="image-update")
 
-        api_inst = __api_alloc(img_dir, quiet)
+        api_inst = __api_alloc(img, quiet)
         if api_inst == None:
                 return 1
 
@@ -822,7 +819,7 @@ def print_mirror_stats(api_inst):
         for ds in api_inst.img.gen_depot_status():
                 print status_fmt % (ds.prefix, ds.url, ds.good_tx, ds.errors)
 
-def install(img_dir, args):
+def install(img, args):
         """Attempt to take package specified to INSTALLED state.  The operands
         are interpreted as glob patterns."""
 
@@ -860,7 +857,7 @@ def install(img_dir, args):
         pkg_list = [ pat.replace("*", ".*").replace("?", ".")
             for pat in pargs ]
 
-        api_inst = __api_alloc(img_dir, quiet)
+        api_inst = __api_alloc(img, quiet)
         if api_inst == None:
                 return 1
 
@@ -895,7 +892,7 @@ def install(img_dir, args):
         return ret_code
 
 
-def uninstall(img_dir, args):
+def uninstall(img, args):
         """Attempt to take package specified to DELETED state."""
 
         op = "uninstall"
@@ -928,9 +925,10 @@ def uninstall(img_dir, args):
         pkg_list = [ pat.replace("*", ".*").replace("?", ".")
             for pat in pargs ]
 
-        api_inst = __api_alloc(img_dir, quiet)
+        api_inst = __api_alloc(img, quiet)
         if api_inst == None:
                 return 1
+
         try:
                 if not api_inst.plan_uninstall(pkg_list, recursive_removal,
                     noexecute, verbose=verbose, update_index=update_index):
@@ -1047,7 +1045,7 @@ def v1_extract_info(tup, return_type, pub):
         pfmri = fmri.PkgFmri(str(pfmri))
         return pfmri, action, pub, match, match_type
 
-def search(img_dir, args):
+def search(img, args):
         """Search for the given query."""
 
         # Constants which control the paging behavior for search output.
@@ -1123,12 +1121,10 @@ def search(img_dir, args):
 
         searches = []
 
-        try:
-                api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
-                    get_tracker(), None, PKG_CLIENT_NAME)
-        except api_errors.ImageNotFoundException, e:
-                error(_("'%s' is not an install image") % e.user_dir)
+        api_inst = __api_alloc(img)
+        if api_inst == None:
                 return 1
+
         try:
                 query = [api.Query(" ".join(pargs), case_sensitive,
                     return_actions)]
@@ -1262,7 +1258,7 @@ def search(img_dir, args):
                 retcode = 0
         return retcode
 
-def info(img_dir, args):
+def info(img, args):
         """Display information about a package or packages.
         """
 
@@ -1293,8 +1289,9 @@ def info(img_dir, args):
 
         err = 0
 
-        api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
-            get_tracker(quiet=True), None, PKG_CLIENT_NAME)
+        api_inst = __api_alloc(img, quiet=True)
+        if api_inst == None:
+                return 1
 
         try:
                 info_needed = api.PackageInfo.ALL_OPTIONS
@@ -1669,7 +1666,6 @@ def list_contents(img, args):
         check_attrs(attrs, "contents")
 
         img.history.operation_name = "contents"
-        img.load_catalogs(progress.QuietProgressTracker())
 
         err = 0
 
@@ -1704,6 +1700,7 @@ def list_contents(img, args):
 
                 # XXX This loop really needs not to be copied from
                 # Image.make_install_plan()!
+                ppub = img.get_preferred_publisher()
                 for p in pargs:
                         try:
                                 matches = list(img.inventory([ p ],
@@ -1718,7 +1715,7 @@ def list_contents(img, args):
                         npnames = {}
                         npmatch = []
                         for m, state in matches:
-                                if m.preferred_publisher():
+                                if m.get_publisher() == ppub:
                                         pnames[m.get_pkg_stem()] = 1
                                         pmatch.append(m)
                                 else:
@@ -1843,7 +1840,7 @@ def display_catalog_failures(cre):
 
         return succeeded
 
-def publisher_refresh(img_dir, args):
+def publisher_refresh(img, args):
         """Update metadata for the image's publishers."""
 
         # XXX will need to show available content series for each package
@@ -1853,18 +1850,15 @@ def publisher_refresh(img_dir, args):
                 if opt == "--full":
                         full_refresh = True
 
-        try:
-                api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
-                    get_tracker(), None, PKG_CLIENT_NAME)
-        except api_errors.ImageNotFoundException, e:
-                error(_("'%s' is not an install image") % e.user_dir)
+        api_inst = __api_alloc(img)
+        if api_inst == None:
                 return 1
 
         try:
                 # The user explicitly requested this refresh, so set the
                 # refresh to occur immediately.
-                api_inst.refresh(full_refresh=full_refresh, immediate=True,
-                    pubs=pargs)
+                api_inst.refresh(full_refresh=full_refresh,
+                    immediate=True, pubs=pargs)
         except api_errors.PublisherError, e:
                 error(e)
                 error(_("'pkg publisher' will show a list of publishers."))
@@ -1882,7 +1876,7 @@ def publisher_refresh(img_dir, args):
         else:
                 return 0
 
-def publisher_set(img, img_dir, args):
+def publisher_set(img, args):
         """pkg set-publisher [-Ped] [-k ssl_key] [-c ssl_cert] [--reset-uuid]
             [-O origin_url] [-m mirror to add] [-M mirror to remove]
             [--enable] [--disable] [--no-refresh] publisher"""
@@ -1935,12 +1929,8 @@ def publisher_set(img, img_dir, args):
                 usage(_("the -p and -d options may not be combined"),
                     cmd="set-publisher")
 
-        try:
-                api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
-                    get_tracker(), None, PKG_CLIENT_NAME)
-        except api_errors.ImageNotFoundException, e:
-                error(_("'%s' is not an install image") % e.user_dir,
-                    cmd="set-publisher")
+        api_inst = __api_alloc(img)
+        if api_inst == None:
                 return 1
 
         new_pub = False
@@ -2066,18 +2056,15 @@ def publisher_set(img, img_dir, args):
 
         return 0
 
-def publisher_unset(img_dir, args):
+def publisher_unset(img, args):
         """pkg unset-publisher publisher ..."""
 
         if len(args) == 0:
                 usage(_("at least one publisher must be specified"),
                     cmd="unset-publisher")
 
-        try:
-                api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
-                    get_tracker(), None, PKG_CLIENT_NAME)
-        except api_errors.ImageNotFoundException, e:
-                error(_("'%s' is not an install image") % e.user_dir)
+        api_inst = __api_alloc(img)
+        if api_inst == None:
                 return 1
 
         errors = []
@@ -2110,7 +2097,7 @@ def publisher_unset(img_dir, args):
 
         return retcode
 
-def publisher_list(img_dir, args):
+def publisher_list(img, args):
         """pkg publishers"""
         omit_headers = False
         preferred_only = False
@@ -2125,13 +2112,8 @@ def publisher_list(img_dir, args):
                 if opt == "-a":
                         inc_disabled = True
 
-        progresstracker = get_tracker(True)
-
-        try:
-                api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
-                    progresstracker, None, PKG_CLIENT_NAME)
-        except api_errors.ImageNotFoundException, e:
-                error(_("'%s' is not an install image") % e.user_dir)
+        api_inst = __api_alloc(img, quiet=True)
+        if api_inst == None:
                 return 1
 
         cert_cache = {}
@@ -2505,22 +2487,18 @@ def image_create(img, args):
                         return 3
         return 0
 
-def rebuild_index(img_dir, pargs):
+def rebuild_index(img, pargs):
         """pkg rebuild-index
 
         Forcibly rebuild the search indexes. Will remove existing indexes
         and build new ones from scratch."""
-        quiet = False
 
         if pargs:
                 usage(_("command does not take operands ('%s')") % \
                     " ".join(pargs), cmd="rebuild-index")
-        try:
-                api_inst = api.ImageInterface(img_dir, CLIENT_API_VERSION,
-                    get_tracker(quiet), None, PKG_CLIENT_NAME)
-        except api_errors.ImageNotFoundException, e:
-                error(_("'%s' is not an install image") % e.user_dir,
-                    cmd="rebuild-index")
+
+        api_inst = __api_alloc(img)
+        if api_inst == None:
                 return 1
 
         try:
@@ -2761,32 +2739,26 @@ def main_func():
                 return 1
 
         try:
-                img.load_config()
-        except api_errors.ApiException, e:
-                error(_("client configuration error: %s") % e)
-                return 1
-
-        try:
                 if subcommand == "refresh":
-                        return publisher_refresh(mydir, pargs)
+                        return publisher_refresh(img, pargs)
                 elif subcommand == "list":
                         return list_inventory(img, pargs)
                 elif subcommand == "image-update":
-                        return image_update(mydir, pargs)
+                        return image_update(img, pargs)
                 elif subcommand == "change-variant":
-                        return change_variant(mydir, pargs)
+                        return change_variant(img, pargs)
                 elif subcommand == "install":
-                        return install(mydir, pargs)
+                        return install(img, pargs)
                 elif subcommand == "uninstall":
-                        return uninstall(mydir, pargs)
+                        return uninstall(img, pargs)
                 elif subcommand == "freeze":
                         return freeze(img, pargs)
                 elif subcommand == "unfreeze":
                         return unfreeze(img, pargs)
                 elif subcommand == "search":
-                        return search(mydir, pargs)
+                        return search(img, pargs)
                 elif subcommand == "info":
-                        return info(mydir, pargs)
+                        return info(img, pargs)
                 elif subcommand == "contents":
                         return list_contents(img, pargs)
                 elif subcommand == "fix":
@@ -2794,11 +2766,11 @@ def main_func():
                 elif subcommand == "verify":
                         return verify_image(img, pargs)
                 elif subcommand in ("set-authority", "set-publisher"):
-                        return publisher_set(img, mydir, pargs)
+                        return publisher_set(img, pargs)
                 elif subcommand in ("unset-authority", "unset-publisher"):
-                        return publisher_unset(mydir, pargs)
+                        return publisher_unset(img, pargs)
                 elif subcommand in ("authority", "publisher"):
-                        return publisher_list(mydir, pargs)
+                        return publisher_list(img, pargs)
                 elif subcommand == "set-property":
                         return property_set(img, pargs)
                 elif subcommand == "unset-property":
@@ -2813,7 +2785,7 @@ def main_func():
                                 msg(_("History purged."))
                         return ret_code
                 elif subcommand == "rebuild-index":
-                        return rebuild_index(mydir, pargs)
+                        return rebuild_index(img, pargs)
                 else:
                         usage(_("unknown subcommand '%s'") % subcommand)
 
@@ -2927,9 +2899,9 @@ def handle_errors(func, non_wrap_print=True, *args, **kwargs):
         except api_errors.WrapSuccessfulIndexingException, __e:
                 __ret = 0
         except api_errors.WrapIndexingException, __e:
-                def func():
+                def _wrapper():
                         raise __e.wrapped
-                __ret = handle_errors(func, non_wrap_print=False)
+                __ret = handle_errors(_wrapper, non_wrap_print=False)
                 s = ""
                 if __ret == 99:
                         s += _("\n%s%s") % (__e, traceback_str)
@@ -2952,5 +2924,5 @@ def handle_errors(func, non_wrap_print=True, *args, **kwargs):
 if __name__ == "__main__":
         misc.setlocale(locale.LC_ALL, "", error)
         gettext.install("pkg", "/usr/share/locale")
-        __ret = handle_errors(main_func)
-        sys.exit(__ret)
+        __retval = handle_errors(main_func)
+        sys.exit(__retval)

@@ -263,7 +263,7 @@ class TestPkgChangeVariant(testutils.SingleDepotTestCase):
                         pl = []
 
                 # verify the variant settings
-                ic = imageconfig.ImageConfig(self.get_img_path())
+                ic = imageconfig.ImageConfig(self.get_img_path(), "publisher")
                 ic.read(os.path.join(self.get_img_path(), "var/pkg"))
 
                 if "variant.arch" not in ic.variants:

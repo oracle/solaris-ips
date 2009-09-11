@@ -36,13 +36,13 @@ import traceback
 import urllib
 import urlparse
 
-import pkg.catalog as catalog
 import pkg.client.progress as progress
 import pkg.fmri
 import pkg.manifest as manifest
 import pkg.pkgtarfile as ptf
 import pkg.portable as portable
 import pkg.publish.transaction as trans
+import pkg.server.catalog as catalog
 import pkg.server.config as config
 import pkg.server.repository as repo
 import pkg.server.repositoryconfig as rc
@@ -527,14 +527,14 @@ def fetch_catalog(src_uri, tracker):
 
         # Call catalog.recv to retrieve catalog.
         try:
-                catalog.recv(c, cat_dir)
-        except: 
-                abort(err=_("Error while reading from: %s") % src_uri)
+                catalog.ServerCatalog.recv(c, cat_dir)
+        except Exception, e:
+                abort(err=_("Error: %s while reading from: %s") % (e, src_uri))
 
         if hasattr(c, "close"):
                 c.close()
 
-        cat = catalog.Catalog(cat_dir)
+        cat = catalog.ServerCatalog(cat_dir, read_only=True)
 
         d = {}
         fmri_list = []

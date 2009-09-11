@@ -200,15 +200,16 @@ class ServerCatalog(object):
                 self.check_prefix()
                 self.__set_perms()
 
-                searchdb_file = os.path.join(self.repo_root, "search")
-                try:
-                        os.unlink(searchdb_file + ".pag")
-                except OSError:
-                        pass
-                try:
-                        os.unlink(searchdb_file + ".dir")
-                except OSError:
-                        pass
+                if self.repo_root:
+                        searchdb_file = os.path.join(self.repo_root, "search")
+                        try:
+                                os.unlink(searchdb_file + ".pag")
+                        except OSError:
+                                pass
+                        try:
+                                os.unlink(searchdb_file + ".dir")
+                        except OSError:
+                                pass
 
                 if not read_only or has_writable_root:
                         try:
@@ -241,6 +242,18 @@ class ServerCatalog(object):
                                 raise
                 else:
                         self._check_search()
+
+        @staticmethod
+        def destroy(root=None):
+                """Removes the on-disk files for the catalog only."""
+
+                for fname in ("attrs", "catalog"):
+                        path = os.path.normpath(os.path.join(root, fname))
+                        try:
+                                portable.remove(path)
+                        except EnvironmentError, e:
+                                if e.errno != errno.ENOENT:
+                                        raise
 
         @staticmethod
         def whence(cmd):
@@ -596,6 +609,15 @@ class ServerCatalog(object):
                         if not self.read_only:
                                 self.save_attrs()
 
+        @property
+        def exists(self):
+                """A boolean value indicating whether the Catalog exists
+                on-disk."""
+
+                if not self.catalog_file:
+                        return False
+                return os.path.exists(self.catalog_file)
+
         # XXX This is only used by a handful of tests.
         def get_matching_fmris(self, patterns):
                 """Wrapper for extract_matching_fmris."""
@@ -621,32 +643,17 @@ class ServerCatalog(object):
                                 raise
 
                 for entry in pfile:
-                        if not entry[1].isspace() or \
-                            not entry[0] in known_prefixes:
+                        if not entry.startswith("V pkg") and \
+                            not entry.startswith("C pkg"):
                                 continue
 
                         try:
-                                if entry[0] not in tuple("CV"):
-                                        continue
-
-                                cv, pkg, cat_name, cat_version = entry.split()
-                                if pkg == "pkg":
-                                        yield fmri.PkgFmri("%s@%s" %
-                                            (cat_name, cat_version),
-                                            publisher = self.pub)
-                        except ValueError:
-                                # Handle old two-column catalog file, mostly in
-                                # use on server.  If *this* doesn't work, we
-                                # have a corrupt catalog.
-                                try:
-                                        cv, cat_fmri = entry.split()
-                                except ValueError:
-                                        raise RuntimeError, \
-                                            "corrupt catalog entry for " \
-                                            "publisher '%s': %s" % \
-                                            (self.pub, entry)
-                                yield fmri.PkgFmri(cat_fmri,
-                                    publisher = self.pub)
+                                yield self.__parse_entry(entry, self.pub)
+                        except (KeyboardInterrupt, SystemExit):
+                                raise
+                        except Exception, e:
+                                raise RuntimeError("corrupt catalog entry for "
+                                    "publisher '%s': %s" % (self.pub, entry))
 
                 pfile.close()
 
@@ -982,6 +989,9 @@ class ServerCatalog(object):
                         ind.setup()
 
         def _check_search(self):
+                if not self.index_root:
+                        return
+
                 ind = indexer.Indexer(self.index_root,
                     self.get_server_manifest, self.get_manifest_path,
                     log=self.__index_log)
@@ -1126,7 +1136,23 @@ class ServerCatalog(object):
                 return self._search_available or self._check_search()
 
         @staticmethod
-        def read_catalog(cat, path, pub=None):
+        def __parse_entry(line, pub):
+                # This allows the ServerCatalog object to parse both
+                # client and server catalog files which are otherwise
+                # identical.
+                #
+                # Server Format:
+                # C pkg:/foo@0.5.11,5.11-0.111:20090507T161015Z
+                #
+                # Client Format:
+                # V pkg foo 0.5.11,5.11-0.111:20090508T161015Z
+                sfmri = line[2:]
+                if sfmri[:4] == "pkg ":
+                        sfmri = sfmri[4:].replace(" ", "@")
+                return fmri.PkgFmri(sfmri, publisher=pub)
+
+        @classmethod
+        def read_catalog(cls, cat, path, pub=None):
                 """Read the catalog file in "path" and combine it with the
                 existing data in "catalog"."""
 
@@ -1135,8 +1161,7 @@ class ServerCatalog(object):
                         if not line.startswith("V pkg") and \
                             not line.startswith("C pkg"):
                                 continue
-
-                        f = fmri.PkgFmri(line[7:])
+                        f = cls.__parse_entry(line, pub)
                         ServerCatalog.cache_fmri(cat, f, pub)
 
                 catf.close()

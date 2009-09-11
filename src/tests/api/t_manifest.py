@@ -31,6 +31,7 @@ import types
 import itertools
 
 import pkg as pkg
+import pkg.client.api_errors as api_errors
 import pkg.manifest as manifest
 import pkg.actions as actions
 import pkg.fmri as fmri
@@ -63,6 +64,9 @@ file ff555ffe mode=0555 owner=root group=bin path=/kernel/drv/amd64/foo isa=amd6
 file ff555ffd mode=0644 owner=root group=bin path=/kernel/drv/foo.conf
 """
 
+                self.m2_signatures = {
+                    "sha-1": "74995c3722fb2c9f260d49bb2886266fd1cc5a1d"
+                }
 
                 #
                 # Try to keep this up to date with on of
@@ -323,6 +327,17 @@ dir mode=0755 owner=bin group=sys path=usr
 
                 self.assertRaises(actions.ActionError,
                     self.m1.set_content, "file 1234 =")
+
+        def test_validate(self):
+                """Verifies that Manifest validation works as expected."""
+
+                self.m2.set_content(self.m2_contents)
+                self.m2.validate(signatures=self.m2_signatures)
+
+                self.m2.set_content(self.diverse_contents)
+                self.assertRaises(api_errors.BadManifestSignatures,
+                    self.m2.validate, signatures=self.m2_signatures)
+
 
 if __name__ == "__main__":
         unittest.main()

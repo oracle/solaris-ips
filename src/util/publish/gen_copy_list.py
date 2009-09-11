@@ -37,8 +37,8 @@ import tempfile
 import shutil
 
 import pkg.fmri
-import pkg.catalog as catalog
 import pkg.manifest as manifest
+import pkg.server.catalog as catalog
 import pkg.version as version
 
 from pkg.misc import versioned_urlopen, PipeError, hash_file_name
@@ -129,7 +129,7 @@ def fetch_catalog():
 
         # call catalog.recv to pull down catalog
         try:
-                catalog.recv(c, delete_dir)
+                catalog.ServerCatalog.recv(c, delete_dir)
         except: 
                 error("Error while reading from: %s" % server_url)
                 sys.exit(1)
@@ -139,7 +139,7 @@ def fetch_catalog():
 
         d = {}
 
-        cat = catalog.Catalog(delete_dir)
+        cat = catalog.ServerCatalog(delete_dir, read_only=True)
 
         for f in cat.fmris():
                 all_fmris.append(f)
@@ -257,7 +257,10 @@ def main_func():
                         all_timestamps = True
                 elif opt == "-v":
                         all_versions = True
-                        
+
+        if not pargs:
+                usage("no options specified")
+
         server_url = pargs[0]
         fmri_arguments = pargs[1:]
 

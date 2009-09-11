@@ -30,11 +30,14 @@ if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 
 import os
+import pkg.catalog as catalog
+import pkg.fmri as fmri
+import pkg.portable as portable
 import re
+import shutil
 import time
 import unittest
-import shutil
-import pkg.portable as portable
+import urllib
 from stat import *
 
 class TestPkgInstallBasics(testutils.SingleDepotTestCase):
@@ -434,7 +437,7 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
 
                 self.dc.stop()
                 self.pkg("uninstall foo")
-                lr_path = os.path.join(self.img_path, "var","pkg","catalog",
+                lr_path = os.path.join(self.img_path, "var","pkg","publisher",
                     "test", "last_refreshed")
                 os.unlink(lr_path) 
                 self.pkg("install --no-refresh foo")
@@ -496,15 +499,23 @@ class TestPkgInstallAmbiguousPatterns(testutils.SingleDepotTestCase):
                     old_ver[-1]
                 shutil.copytree(os.path.join(foo_dir, old_ver),
                     os.path.join(foo_dir, new_ver))
-                state_dir = os.path.join(self.img_path, "var", "pkg", "state",
+
+                # Load the 'installed' catalog and add an entry for the
+                # new package version.
+                istate_dir = os.path.join(self.img_path, "var", "pkg", "state",
                     "installed")
-                shutil.copy(os.path.join(state_dir, "a%2Ffoo@" + old_ver),
-                    os.path.join(state_dir, "a%2Ffoo@" + new_ver))
-                cat_file = os.path.join(self.img_path, "var", "pkg", "catalog",
-                    "catalog_cache")
-                os.unlink(cat_file)
-                # Installing bar seems necessary to cause uninstall foo to fail.
-                self.pkg("install bar")
+                cat = catalog.Catalog(meta_root=istate_dir)
+
+                # Value of PKG_STATE_INSTALLED in image.py is 2.
+                mdata = { "states": [2] }
+                cat.add_package(
+                    fmri.PkgFmri("a/foo@%s" % urllib.unquote(new_ver),
+                        publisher="test"), metadata=mdata)
+                cat.save()
+
+                known_dir = os.path.join(self.img_path, "var", "pkg", "state",
+                    "known")
+                shutil.rmtree(known_dir)
                 self.pkg("uninstall foo", exit=1)
 
         def test_bug_6874(self):
@@ -2198,17 +2209,7 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
                 self.pkg("list", exit=1)
 
                 # Verify moo can be installed (as only depot1 has it) even though
-                # test2 cannot be reached (and needs a refresh) thanks to the
-                # existing catalog cache.
-                self.pkg("install moo")
-                self.pkg("uninstall moo")
-
-                # Verify moo can be installed (as only depot1 has it) even though
-                # test2 cannot be reached (and needs a refresh) and the catalog
-                # cache is missing.
-                cat_file = os.path.join(self.img_path, "var", "pkg", "catalog",
-                    "catalog_cache")
-                os.unlink(cat_file)
+                # test2 cannot be reached (and needs a refresh).
                 self.pkg("install moo")
                 self.pkg("uninstall moo")
 
@@ -2460,20 +2461,22 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                 self.image_create(durl)
 
                 self.dir = self.corrupt_image_create(durl,
-                    set(["catalog", "cfg_cache", "file", "pkg", "index"]),
+                    set(["publisher", "cfg_cache", "file", "pkg", "index"]),
                     ["var/pkg"])
 
                 self.pkg("install foo@1.1")
 
-        def test_var_pkg_missing_catalog(self):
-                """ Creates bad_dir with only the catalog dir missing. """
+        def test_var_pkg_missing_publisher(self):
+                """ Creates bad_dir with only the publisher and known/state
+                dir missing. """
 
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.foo11)
                 self.image_create(durl)
 
                 self.dir = self.corrupt_image_create(durl,
-                    set(["catalog_absent"]), ["var/pkg"])
+                    set(["publisher_absent", "known_absent"]),
+                    ["var/pkg"])
 
                 self.pkg("install foo@1.1")
 
@@ -2525,9 +2528,9 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
 
                 self.pkg("install foo@1.1")
 
-        def test_var_pkg_missing_catalog_empty(self):
+        def test_var_pkg_missing_publisher_empty(self):
                 """ Creates bad_dir with all dirs and files present, but
-                with an empty catalog dir.
+                with an empty publisher and state/known dir.
                 """
 
                 durl = self.dc.get_depot_url()
@@ -2535,18 +2538,19 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                 self.image_create(durl)
 
                 self.dir = self.corrupt_image_create(durl,
-                    set(["catalog_empty"]), ["var/pkg"])
+                    set(["publisher_empty", "known_empty"]), ["var/pkg"])
 
                 # This is expected to fail because it will see an empty
-                # catalog directory and not rebuild the files as needed
+                # publisher directory and not rebuild the files as needed
                 self.pkg("install --no-refresh foo@1.1", exit=1)
                 self.pkg("install foo@1.1")
 
-        def test_var_pkg_missing_catalog_empty_hit_then_refreshed_then_hit(
+        def test_var_pkg_missing_publisher_empty_hit_then_refreshed_then_hit(
             self):
-                """ Creates bad_dir with all dirs and files present, but
-                with an empty catalog dir. This is to ensure that refresh
-                will work, and that an install after the refresh also works.
+                """ Creates bad_dir with all dirs and files present, but with an
+                with an empty publisher and state/known dir. This is to ensure
+                that refresh will work, and that an install after the refresh
+                also works.
                 """
 
                 durl = self.dc.get_depot_url()
@@ -2554,7 +2558,7 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                 self.image_create(durl)
 
                 self.dir = self.corrupt_image_create(durl,
-                    set(["catalog_empty"]), ["var/pkg"])
+                    set(["publisher_empty", "known_empty"]), ["var/pkg"])
 
                 self.pkg("install --no-refresh foo@1.1", exit=1)
                 self.pkg("refresh")
@@ -2588,21 +2592,22 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                 self.image_create(durl)
 
                 self.dir = self.corrupt_image_create(durl,
-                    set(["catalog", "cfg_cache", "file", "pkg", "index"]),
+                    set(["publisher", "cfg_cache", "file", "pkg", "index"]),
                     [".org.opensolaris,pkg"])
 
                 self.pkg("install foo@1.1")
 
-        def test_ospkg_missing_catalog(self):
-                """ Creates a corrupted image at bad_dir by creating
-                bad_dir with only the catalog dir missing. """
+        def test_ospkg_missing_publisher(self):
+                """ Creates a corrupted image at bad_dir by creating bad_dir
+                with only the publisher and known/state dir missing. """
 
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.foo11)
                 self.image_create(durl)
 
                 self.dir = self.corrupt_image_create(durl,
-                    set(["catalog_absent"]), [".org.opensolaris,pkg"])
+                    set(["publisher_absent", "known_absent"]),
+                        [".org.opensolaris,pkg"])
 
                 self.pkg("install foo@1.1")
 
@@ -2658,24 +2663,26 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
 
                 self.pkg("install foo@1.1")
 
-        def test_ospkg_missing_catalog_empty(self):
-                """ Creates a corrupted image at bad_dir by creating
-                bad_dir with all dirs and files present, but with an empty
-                catalog dir. """
+        def test_ospkg_missing_publisher_empty(self):
+                """ Creates a corrupted image at bad_dir by creating bad_dir
+                with all dirs and files present, but with an empty publisher
+                and known/state dir. """
 
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.foo11)
                 self.image_create(durl)
 
                 self.dir = self.corrupt_image_create(durl,
-                    set(["catalog_empty"]), [".org.opensolaris,pkg"])
+                    set(["publisher_empty", "known_empty"]),
+                    [".org.opensolaris,pkg"])
 
                 self.pkg("install --no-refresh foo@1.1", exit=1)
 
-        def test_ospkg_missing_catalog_empty_hit_then_refreshed_then_hit(self):
-                """ Creates bad_dir with all dirs and files present, but
-                with an empty catalog dir. This is to ensure that refresh
-                will work, and that an install after the refresh also works.
+        def test_ospkg_missing_publisher_empty_hit_then_refreshed_then_hit(self):
+                """ Creates bad_dir with all dirs and files present, but with
+                an empty publisher and known/state dir. This is to ensure that
+                refresh will work, and that an install after the refresh also
+                works.
                 """
 
                 durl = self.dc.get_depot_url()
@@ -2683,7 +2690,8 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                 self.image_create(durl)
 
                 self.dir = self.corrupt_image_create(durl,
-                    set(["catalog_empty"]), [".org.opensolaris,pkg"])
+                    set(["publisher_empty", "known_empty"]),
+                    [".org.opensolaris,pkg"])
 
                 self.pkg("install --no-refresh foo@1.1", exit=1)
                 self.pkg("refresh")
