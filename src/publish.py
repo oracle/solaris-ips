@@ -85,9 +85,10 @@ Packager subcommands:
         pkgsend add action arguments
         pkgsend import [-T file_pattern] bundlefile ...
         pkgsend include [-d basedir] .. [manifest] ...
-        pkgsend close [-A]
+        pkgsend close [-A | --no-index]
         pkgsend publish [-d basedir] ... fmri [manifest] ...
         pkgsend generate [-T file_pattern] bundlefile ....
+        pkgsend refresh-index
 
 Options:
         -s repo_uri     target repository URI
@@ -141,14 +142,17 @@ def trans_open(repo_uri, args):
 def trans_close(repo_uri, args):
         abandon = False
         trans_id = None
+        refresh_index = True
 
-        opts, pargs = getopt.getopt(args, "At:")
+        opts, pargs = getopt.getopt(args, "At:", ["no-index"])
 
         for opt, arg in opts:
                 if opt == "-A":
                         abandon = True
-                if opt == "-t":
+                elif opt == "-t":
                         trans_id = arg
+                elif opt == "--no-index":
+                        refresh_index = False
 
         if trans_id is None:
                 try:
@@ -158,7 +162,7 @@ def trans_close(repo_uri, args):
                             "$PKG_TRANS_ID."), cmd="close")
 
         t = trans.Transaction(repo_uri, trans_id=trans_id)
-        pkg_state, pkg_fmri = t.close(abandon)
+        pkg_state, pkg_fmri = t.close(abandon, refresh_index)
         for val in (pkg_state, pkg_fmri):
                 if val is not None:
                         msg(val)
@@ -205,9 +209,9 @@ def trans_publish(repo_uri, fargs):
                 if opt == "-d":
                         include_opts += [opt, arg]
         if not pargs:
-                usage(_("No fmri argument specified for subcommand"), 
+                usage(_("No fmri argument specified for subcommand"),
                     cmd="publish")
-        
+
         t = trans.Transaction(repo_uri, pkg_name=pargs[0])
         t.open()
         del pargs[0]
@@ -222,7 +226,7 @@ def trans_publish(repo_uri, fargs):
         if abandon:
                 return 1
         return 0
-        
+
 def trans_include(repo_uri, fargs, transaction=None):
         basedirs = []
         error_occurred = False
@@ -315,7 +319,7 @@ def trans_include(repo_uri, fargs, transaction=None):
                         if action.name == "set" and \
                             action.attrs["name"] == "fmri":
                                 continue
-                                
+
                         t.add(action)
         if error_occurred:
                 return 1
@@ -384,6 +388,20 @@ def trans_generate(args):
 
         return 0
 
+def trans_refresh_index(repo_uri, args):
+        """Refreshes the indices at the location indicated by repo_uri."""
+
+        if args:
+                usage(_("command does not take operands"),
+                    cmd="refresh-index")
+
+        try:
+                t = trans.Transaction(repo_uri).refresh_index()
+        except trans.TransactionError, e:
+                error(e, cmd="refresh-index")
+                return 1
+        return 0
+
 def main_func():
 
         # XXX /usr/lib/locale is OpenSolaris-specific.
@@ -434,6 +452,8 @@ def main_func():
                         ret = trans_publish(repo_uri, pargs)
                 elif subcommand == "generate":
                         ret = trans_generate(pargs)
+                elif subcommand == "refresh-index":
+                        ret = trans_refresh_index(repo_uri, pargs)
                 else:
                         usage(_("unknown subcommand '%s'") % subcommand)
         except getopt.GetoptError, e:

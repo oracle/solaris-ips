@@ -182,7 +182,7 @@ class FileTransaction(object):
                 If 'abandon' is omitted or False, the package will be published;
                 otherwise the server will discard the current transaction and
                 its related data.
-                
+
                 If 'refresh_index' is True, the repository will be instructed
                 to update its search indices after publishing.  Has no effect
                 if 'abandon' is True."""
@@ -339,7 +339,7 @@ class HTTPTransaction(object):
                 If 'abandon' is omitted or False, the package will be published;
                 otherwise the server will discard the current transaction and
                 its related data.
-                
+
                 If 'refresh_index' is True, the repository will be instructed
                 to update its search indices after publishing.  Has no effect
                 if 'abandon' is True."""
@@ -413,12 +413,34 @@ class HTTPTransaction(object):
 
                 return self.trans_id
 
-        @staticmethod
-        def refresh_index():
-                """Currently unsupported."""
+        def refresh_index(self):
+                """Instructs the repository to refresh its search indices.
+                Returns nothing."""
 
-                raise TransactionOperationError("refresh_index",
-                        status=httplib.NOT_FOUND)
+                op = "index"
+                subop = "refresh"
+
+                headers = {}
+
+                try:
+                        c, v = versioned_urlopen(self.origin_url, op, [0],
+                            subop, headers=headers)
+                except (httplib.BadStatusLine, RuntimeError), e:
+                        status = httplib.INTERNAL_SERVER_ERROR
+                        msg = str(e)
+                except (urllib2.HTTPError, urllib2.URLError), e:
+                        status, msg = self.__get_urllib_error(e)
+                except RuntimeError, e:
+                        # Assume the server can't perform the operation.
+                        status = httplib.NOT_FOUND
+                        msg = str(e)
+                else:
+                        msg = None
+                        status = c.code
+
+                if status / 100 == 4 or status / 100 == 5:
+                        raise TransactionOperationError(op,
+                            trans_id=self.trans_id, status=status, msg=msg)
 
 
 class NullTransaction(object):

@@ -13,7 +13,8 @@ SYNOPSIS
      /usr/bin/pkgsend import [-T pattern] bundlefile ...
      /usr/bin/pkgsend include [-d basedir] ... [manifest] ...
      /usr/bin/pkgsend publish [-d basedir] ... pkg_fmri [manifest] ...
-     /usr/bin/pkgsend close [-A]
+     /usr/bin/pkgsend close [-A | --no-index]
+     /usr/bin/pkgsend refresh-index
 
 DESCRIPTION
      pkgsend allows the publication of new packages and new package
@@ -89,7 +90,8 @@ SUBCOMMANDS
 
      close [-A]
           Close current transaction.  With -A, abandon the current
-          transaction.
+          transaction.  With --no-index, do not update the repository's
+          search indices.
 
      publish [ -d basedir] ... fmri [manifest] ...
           Combines open, include and publish in a single operation.
@@ -102,6 +104,10 @@ SUBCOMMANDS
           Once obtained, the manifest can be annotated, have dependencies
           analyzed, added, etc before being passed to the publish or import
           subcommands.
+
+     refresh-index
+          Update the repository's search indices.  Should be used after
+          closing one or more transactions using --no-index.
 
 
 ENVIRONMENT VARIABLES

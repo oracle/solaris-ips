@@ -86,7 +86,8 @@ class DepotHTTP(object):
             "abandon",
             "add",
             "p5i",
-            "publisher"
+            "publisher",
+            "index"
         ]
 
         REPO_OPS_READONLY = [
@@ -243,7 +244,7 @@ class DepotHTTP(object):
                 query_args_lst = [str(Query(token, case_sensitive=False,
                     return_type=Query.RETURN_ACTIONS, num_to_return=None,
                     start_point=None))]
-                        
+
                 try:
                         res_list = self.__repo.search(query_args_lst)
                 except repo.RepositorySearchUnavailableError, e:
@@ -277,7 +278,7 @@ class DepotHTTP(object):
 
         search_0._cp_config = { "response.stream": True }
 
-        
+
         def search_1(self, *args, **params):
                 """Based on the request path, return a list of packages that
                 match the specified criteria."""
@@ -335,7 +336,7 @@ class DepotHTTP(object):
                         except StopIteration:
                                 cherrypy.response.status = httplib.NO_CONTENT
                                 return
-                
+
                 def output():
                         # Yield the string used to let the client know it's
                         # talking to a valid search server.
@@ -711,6 +712,25 @@ class DepotHTTP(object):
                 "response.timeout": 3600,
         }
 
+        def index_0(self, *tokens):
+                """Triggers a refresh of the search indices.
+                Returns no output."""
+
+                cmd = tokens[0]
+
+                if cmd == "refresh":
+                        try:
+                                self.__repo.refresh_index()
+                        except repo.RepositoryError, e:
+                                # Assume a bad request was made.  A 404 can't be
+                                # returned here as misc.versioned_urlopen will interpret
+                                # that to mean that the server doesn't support this
+                                # operation.
+                                raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
+                else:
+                        cherrypy.log("Unknown index subcommand: %s" % cmd)
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
+
         @cherrypy.tools.response_headers(headers = \
             [("Content-Type", "text/plain")])
         def info_0(self, *tokens):
@@ -895,7 +915,7 @@ License:
                         ]
 
                 try:
-                        pub = self.__get_publisher() 
+                        pub = self.__get_publisher()
                 except Exception, e:
                         # If the Publisher object creation fails, return a not
                         # found error to the client so it will treat it as an
@@ -950,7 +970,7 @@ class NastyDepotHTTP(DepotHTTP):
 
                 retryable_errors = [httplib.REQUEST_TIMEOUT,
                     httplib.BAD_GATEWAY, httplib.GATEWAY_TIMEOUT]
-         
+
                 # NASTY
                 # emit error code that client should know how to retry
                 if cherrypy.request.app.root.scfg.need_nasty_bonus(bonus):

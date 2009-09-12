@@ -31,6 +31,7 @@ import os
 import shutil
 import tempfile
 import unittest
+import urllib
 
 class TestPkgsendBasics(testutils.SingleDepotTestCase):
         persistent_depot = False
@@ -369,6 +370,53 @@ class TestPkgsendBasics(testutils.SingleDepotTestCase):
                 self.image_create(url)
                 self.pkg("install nopkg")
                 self.image_destroy()
+
+        def test_13_pkgsend_indexcontrol(self):
+                """Verify that "pkgsend close --no-index" suppresses
+                indexing and that "pkgsend refresh-index" triggers
+                indexing."""
+
+                dhurl = self.dc.get_depot_url()
+                dfurl = "file://%s" % urllib.pathname2url(self.dc.get_repodir())
+
+                fd, fpath = tempfile.mkstemp(dir=self.get_test_prefix())
+
+                self.image_create(dhurl)
+
+                self.dc.stop()
+                self.dc.set_readonly()
+
+                self.pkgsend(dfurl, "open file@1.0")
+                self.pkgsend(dfurl, "add file %s %s path=/tmp/f.foo" \
+                    % ( fpath, "mode=0755 owner=root group=bin" ))
+                self.pkgsend(dfurl, "close --no-index")
+
+                self.dc.start()
+                self.pkg("search file:::", exit=1)
+
+                self.dc.stop()
+                self.pkgsend(dfurl, "refresh-index")
+                self.dc.start()
+                self.pkg("search file:::")
+
+                self.dc.stop()
+                self.dc.set_readwrite()
+                self.dc.start()
+
+                self.pkgsend(dhurl, "open http@1.0")
+                self.pkgsend(dhurl, "add file %s %s path=/tmp/f.foo" \
+                    % ( fpath, "mode=0755 owner=root group=bin" ))
+                self.pkgsend(dhurl, "close --no-index")
+
+                self.pkg("search http:::", exit=1)
+
+                self.pkgsend(dhurl, "refresh-index")
+
+                self.pkg("search http:::")
+
+                self.image_destroy()
+                os.close(fd)
+                os.unlink(fpath)
 
 if __name__ == "__main__":
         unittest.main()
