@@ -416,6 +416,34 @@ close
             ('pkg:/bad_pkg@1.0-0', 'basename',
              'dir group=bin mode=0755 owner=root path=badfoo/')
         ])
+
+        fast_add_after_install = set([
+            "VERSION: 2\n",
+            "pkg22@1.0,5.11",
+            "pkg21@1.0,5.11"
+        ])
+
+        fast_remove_after_install = set([
+            "VERSION: 2\n",
+        ])
+
+        fast_add_after_first_update = set([
+            "VERSION: 2\n",
+            "pkg0@2.0,5.11",
+            "pkg22@1.0,5.11",
+            "pkg21@1.0,5.11",
+            "pkg1@2.0,5.11"
+        ])
+
+        fast_remove_after_first_update = set([
+            "VERSION: 2\n",
+            "pkg0@1.0,5.11",
+            "pkg1@1.0,5.11"
+        ])
+
+        fast_add_after_second_update = set(["VERSION: 2\n"])
+
+        fast_remove_after_second_update = set(["VERSION: 2\n"])
         
         debug_features = None
 
@@ -478,6 +506,13 @@ close
                     for query_num, auth, (version, return_type, pkg_name)
                     in it
                 )
+
+        @staticmethod
+        def _get_lines(fp):
+                fh = open(fp, "rb")
+                lines = fh.readlines()
+                fh.close()
+                return lines
 
         def _search_op(self, api_obj, remote, token, test_value,
             case_sensitive=False, return_actions=True, num_to_return=None,
@@ -1725,9 +1760,11 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
                 """Test that installing more than
                 indexer.MAX_ADDED_NUMBER_PACKAGES packages one after another
                 doesn't cause any type of indexing error."""
+                def _remove_extra_info(v):
+                        return v.split("-")[0]                
                 durl = self.dc.get_depot_url()
                 pkg_list = []
-                for i in range(0, indexer.MAX_ADDED_NUMBER_PACKAGES + 1):
+                for i in range(0, indexer.MAX_ADDED_NUMBER_PACKAGES + 3):
                         self.pkgsend_bulk(durl,
                             "open pkg%s@1.0,5.11-0\nclose\n" % i)
                         pkg_list.append("pkg%s" % i)
@@ -1735,8 +1772,57 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
                 progresstracker = progress.NullProgressTracker()
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
                     progresstracker, lambda x: True, PKG_CLIENT_NAME)
+                fast_add_loc = os.path.join(self._get_index_dirs()[0],
+                    "fast_add.v1")
+                fast_remove_loc = os.path.join(self._get_index_dirs()[0],
+                    "fast_remove.v1")
+                api_obj.rebuild_search_index()
                 for p in pkg_list:
                         self._do_install(api_obj, [p])
+                # Test for bug 11104. The fast_add.v1 file was not being updated
+                # correctly by install or image update, it was growing with
+                # each modification.
+                self._check(set((
+                    _remove_extra_info(v)
+                    for v in self._get_lines(fast_add_loc)
+                    )), self.fast_add_after_install)
+                self._check(set((
+                    _remove_extra_info(v)
+                    for v in self._get_lines(fast_remove_loc)
+                    )), self.fast_remove_after_install)
+                # Now check that image update also handles fast_add
+                # appropriately when a small number of packages have changed.
+                for i in range(0, 2):
+                        self.pkgsend_bulk(durl,
+                            "open pkg%s@2.0,5.11-0\nclose\n" % i)
+                        pkg_list.append("pkg%s" % i)
+                api_obj.refresh(immediate=True)
+                self._do_image_update(api_obj)
+                self._check(set((
+                    _remove_extra_info(v)
+                    for v in self._get_lines(fast_add_loc)
+                    )), self.fast_add_after_first_update)
+
+                self._check(set((
+                    _remove_extra_info(v)
+                    for v in self._get_lines(fast_remove_loc)
+                    )), self.fast_remove_after_first_update)
+                # Now check that image update also handles fast_add
+                # appropriately when a large number of packages have changed.
+                for i in range(3, indexer.MAX_ADDED_NUMBER_PACKAGES + 3):
+                        self.pkgsend_bulk(durl,
+                            "open pkg%s@2.0,5.11-0\nclose\n" % i)
+                        pkg_list.append("pkg%s" % i)
+                api_obj.refresh(immediate=True)
+                self._do_image_update(api_obj)
+                self._check(set((
+                    _remove_extra_info(v)
+                    for v in self._get_lines(fast_add_loc)
+                    )), self.fast_add_after_second_update)
+                self._check(set((
+                    _remove_extra_info(v)
+                    for v in self._get_lines(fast_remove_loc)
+                    )), self.fast_remove_after_second_update)
 
         def test_bug_9845_01(self):
                 """Test that a corrupt query doesn't break the server."""

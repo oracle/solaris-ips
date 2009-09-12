@@ -772,6 +772,9 @@ class IndexStoreSet(IndexStoreBase):
         def get_set(self):
                 return self._set
 
+        def clear(self):
+                self._set.clear()
+
         def add_entity(self, entity):
                 self._set.add(entity)
 

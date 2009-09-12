@@ -678,6 +678,8 @@ class Indexer(object):
                                         self._data_main_dict.close_file_handle()
                                         if self._progtrack:
                                                 self._progtrack.index_optimize()
+                                        self._data_fast_add.clear()
+                                        self._data_fast_remove.clear()
                                         self.rebuild_index_from_scratch(
                                             image.gen_installed_pkgs(),
                                             tmp_index_dir)
