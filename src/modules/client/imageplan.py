@@ -769,6 +769,9 @@ class ImagePlan(object):
                                 for p in self.pkg_plans:
                                         p.postexecute()
 
+                                # save package state
+                                self.image.save_pkg_state()
+
                                 # write out variant changes to the image config
                                 self.image.image_config_update()
                         except EnvironmentError, e:

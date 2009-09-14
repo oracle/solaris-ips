@@ -1046,16 +1046,19 @@ class Publisher(object):
                         v0_lm = pkg.catalog.ts_to_datetime(v0_lm)
 
                 v1_cat = self.catalog
-                v1_lm = None
-                if self.catalog.last_modified:
-                        v1_lm = self.catalog.last_modified.isoformat()
 
-                pkg_count = v1_cat.package_version_count
-                if pkg_count:
-                        if v0_lm == v1_lm:
+                # There's no point in signing this catalog since it's simply
+                # a transformation of a v0 catalog.
+                v1_cat.sign = False
+
+                # A check for a previous non-zero package count is made to
+                # determine whether the last_modified date alone can be
+                # relied on.  This works around some oddities with empty
+                # v0 catalogs.
+                if v1_cat.package_version_count:
+                        if v0_lm == self.catalog.last_modified:
                                 # Already converted.
                                 return
-
                         # Simply rebuild the entire v1 catalog every time, this
                         # avoids many of the problems that could happen due to
                         # deficiencies in the v0 implementation.

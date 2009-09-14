@@ -343,6 +343,12 @@ class Image(object):
                 self.dl_cache_incoming = os.path.normpath(os.path.join(
                     self.dl_cache_dir, "incoming-%d" % os.getpid()))
 
+                # Forcibly discard image catalogs so they can be re-loaded
+                # from the new location if they are already loaded.  This
+                # also prevents scribbling on image state information in
+                # the wrong location.
+                self.__catalogs = {}
+
                 if not os.path.exists(os.path.join(self.imgdir,
                     imageconfig.CFG_FILE)):
                         # New images inherently use the newest image format.
@@ -879,6 +885,8 @@ class Image(object):
 
         def set_pkg_state(self, pfmri, state):
                 """Sets the recorded image state of the specified package.
+                The caller is responsible for also calling save_pkg_state
+                after they are finished updating package state information.
                 'state' must be one of the following image constants:
 
                     PKG_STATE_INSTALLED
@@ -923,11 +931,9 @@ class Image(object):
 
                 # To ensure its entry matches the 'known' catalog entry the
                 # installed entry is removed and re-added every time.
-                save_icat = False
                 icat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
                 try:
                         icat.remove_package(pfmri)
-                        save_icat = True
                 except api_errors.UnknownCatalogEntry:
                         pass
 
@@ -938,10 +944,7 @@ class Image(object):
 
                 if not states:
                         # Catalog entry is not installed and is no longer
-                        # known, so should be dumped.
-                        kcat.save()
-                        if save_icat:
-                                icat.save()
+                        # known, so nothing more to do.
                         return
 
                 # Catalog format only supports lists.
@@ -950,13 +953,14 @@ class Image(object):
                 # Now record the package state.
                 kcat.add_package(pfmri, metadata=mdata)
                 if self.PKG_STATE_INSTALLED in states:
-                        save_icat = True
                         icat.add_package(pfmri, metadata=mdata)
 
-                kcat.save()
-                if save_icat:
-                        # Only save installed catalog if it was changed.
-                        icat.save()
+        def save_pkg_state(self):
+                """Saves current package state information."""
+
+                for name in self.IMG_CATALOG_KNOWN, self.IMG_CATALOG_INSTALLED:
+                        cat = self.get_catalog(name)
+                        cat.save()
 
         def get_catalog(self, name):
                 """Returns the requested image catalog.
@@ -989,7 +993,12 @@ class Image(object):
                         elif e.errno != errno.EEXIST:
                                 raise
 
-                cat = pkg.catalog.Catalog(meta_root=croot)
+                # batch_mode is set to True here as any operations that modify
+                # the catalogs (add or remove entries) are only done during an
+                # image upgrade or metadata refresh.  In both cases, the catalog
+                # is resorted and finalized so this is always safe to use.
+                cat = pkg.catalog.Catalog(batch_mode=True,
+                    meta_root=croot, sign=False)
                 self.__catalogs[name] = cat
                 return cat
 
@@ -1019,7 +1028,7 @@ class Image(object):
                 cat = self.__catalogs.pop(name, None)
                 if not cat:
                         croot = os.path.join(self.imgdir, "state", name)
-                        cat = pkg.catalog.Catalog(meta_root=croot)
+                        cat = pkg.catalog.Catalog(meta_root=croot, sign=False)
                 cat.destroy()
 
         def get_version_installed(self, pfmri):
@@ -1180,12 +1189,11 @@ class Image(object):
                 # package states on a permanent basis even if the package is
                 # no longer available from a publisher repository.
                 old_kcat = self.get_catalog(self.IMG_CATALOG_KNOWN)
-                old_kcat.batch_mode = True
 
-                # batch_mode is set to False here since without it, catalog
+                # batch_mode is set to True here since without it, catalog
                 # population time is almost doubled (since the catalog is
                 # re-sorted and stats are generated for every operation).
-                kcat = pkg.catalog.Catalog(batch_mode=True)
+                kcat = pkg.catalog.Catalog(batch_mode=True, sign=False)
 
                 # XXX if any of the below fails for any reason, the old 'known'
                 # catalog needs to be re-loaded so the client is in a consistent
@@ -1278,7 +1286,6 @@ class Image(object):
                 # Finally, re-populate the 'installed' catalog based on the
                 # contents of the new, 'known' catalog and save them both.
                 icat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
-                icat.batch_mode = True
                 for f, entry in kcat.entries():
                         mdata = entry["metadata"]
                         states = mdata["states"]
@@ -1290,7 +1297,6 @@ class Image(object):
                 kcat.meta_root = croot
 
                 for cat in kcat, icat:
-                        cat.batch_mode = False
                         cat.save()
                 progtrack.cache_catalogs_done()
 
@@ -1508,9 +1514,7 @@ class Image(object):
 
                 # Create the new image catalogs.
                 kcat = self.get_catalog(self.IMG_CATALOG_KNOWN)
-                kcat.batch_mode = True
                 icat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
-                icat.batch_mode = True
 
                 # Neither of these should exist on disk.
                 assert not kcat.exists
@@ -1548,6 +1552,7 @@ class Image(object):
                 for pub, old_cat in old_pub_cats:
                         new_cat = pub.catalog
                         new_cat.batch_mode = True
+                        new_cat.sign = False
 
                         # First convert the old publisher catalog to
                         # the new format.
@@ -1588,6 +1593,7 @@ class Image(object):
                         attrs.last_modified = old_lm
 
                         # Add to the list of catalogs to save.
+                        new_cat.batch_mode = False
                         pub_cats.append(new_cat)
 
                 # Discard the old catalog objects.
@@ -1615,7 +1621,6 @@ class Image(object):
                         kcat.add_package(f, metadata=mdata)
 
                 for cat in pub_cats + [kcat, icat]:
-                        cat.batch_mode = False
                         cat.finalize()
 
                 # Data conversion finished.

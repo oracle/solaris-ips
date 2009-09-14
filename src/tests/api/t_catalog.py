@@ -375,6 +375,9 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 # Get a copy of the signature data.
                 old_sigs = c.signatures
 
+                # Verify that a catalog will have signature data after save().
+                self.assertTrue(len(old_sigs) >= 1)
+
                 # Verify that expected entries are present.
                 self.assertTrue("catalog.attrs" in old_sigs)
                 self.assertTrue("catalog.base.C" in old_sigs)
@@ -399,6 +402,12 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 # current signatures match its previous signatures.
                 c.validate()
                 self.assertEqual(old_sigs, c.signatures)
+
+                # Finally, test that a catalog created with sign=False won't
+                # have any signature data after being saved.
+                c = catalog.Catalog(sign=False)
+                c.save()
+                self.assertEqual(c.signatures, { "catalog.attrs": {} })
 
         def test_05_retrieval(self):
                 """Verify that various catalog retrieval methods work as

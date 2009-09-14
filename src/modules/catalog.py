@@ -47,13 +47,16 @@ class _JSONWriter(object):
         """Private helper class used to serialize catalog data and generate
         signatures."""
 
-        def __init__(self, data, root=None):
+        def __init__(self, data, root=None, sign=True):
                 self.__data = data
                 self.__fileobj = None
-                self.__sha_1 = sha.new()
-                self.__sha_1_offset = None
-                # sha-1 hex is always 40 characters in length.
-                self.__sha_1_keyword = "sha-1-" + ("*" * 34)
+
+                if sign:
+                        self.__sha_1 = sha.new()
+                        self.__sha_1_offset = None
+                        # sha-1 hex is always 40 characters in length.
+                        self.__sha_1_keyword = "sha-1-" + ("*" * 34)
+                self.__sign = sign
                 self.__root = root
                 self.pathname = None
 
@@ -84,33 +87,44 @@ class _JSONWriter(object):
                         self.pathname = tmpfile
 
         def __offsets(self):
+                if not self.__sign:
+                        return {}
                 return { "sha-1": self.__sha_1_offset }
 
         def signatures(self):
                 """Returns a dictionary mapping digest algorithms to the
                 hex-encoded digest values of the text of the catalog."""
 
+                if not self.__sign:
+                        return {}
                 return { "sha-1": self.__sha_1.hexdigest() }
 
         def save(self):
                 """Serializes and stores the provided data in JSON format."""
-                self.__data["_SIGNATURE"] = {
-                    "sha-1": self.__sha_1_keyword,
-                }
+
+                if self.__sign:
+                        self.__data["_SIGNATURE"] = {
+                            "sha-1": self.__sha_1_keyword,
+                        }
 
                 # sort_keys is necessary to ensure consistent signature
                 # generation.  It has a minimal performance cost as well (on
-                # on SPARC and x86), so shouldn't be an issue.
+                # on SPARC and x86), so shouldn't be an issue.  However, it
+                # is only needed if the caller has indicated that the content
+                # should be signed.
                 json.dump(self.__data, self, check_circular=False,
-                    allow_nan=False, separators=(",", ":"), sort_keys=True)
+                    allow_nan=False, separators=(",", ":"),
+                    sort_keys=self.__sign)
                 self.write("\n")
 
                 # Remove signature stub now that we're done.
-                del self.__data["_SIGNATURE"]
+                self.__data.pop("_SIGNATURE", None)
 
                 if self.__fileobj:
                         self.__fileobj.close()
                         self.__fileobj = None
+                        if not self.__sign:
+                                return
 
                         # Sign the file when the caller is done with it.
                         sfile = file(self.pathname, "rb+")
@@ -130,12 +144,14 @@ class _JSONWriter(object):
         def write(self, data):
                 """Wrapper function that should not be called by external
                 consumers."""
-                self.__sha_1.update(data)
+
+                if self.__sign:
+                        self.__sha_1.update(data)
                 if not self.__fileobj:
                         return
 
                 f = self.__fileobj
-                if not self.__sha_1_offset:
+                if self.__sign and not self.__sha_1_offset:
                         idx = data.find(self.__sha_1_keyword)
                         if idx > -1:
                                 self.__sha_1_offset = f.tell() + idx
@@ -152,13 +168,15 @@ class CatalogPartBase(object):
         last_modified = None
         loaded = False
         name = None
+        sign = True
         signatures = None
 
-        def __init__(self, name, meta_root=None):
+        def __init__(self, name, meta_root=None, sign=True):
                 """Initializes a CatalogPartBase object."""
 
                 self.meta_root = meta_root
                 self.name = name
+                self.sign = sign
                 self.signatures = {}
 
                 if not self.meta_root or not self.exists:
@@ -250,11 +268,9 @@ class CatalogPartBase(object):
                         raise api_errors.InvalidCatalogFile(e)
 
                 self.loaded = True
-                if "_SIGNATURE" in struct:
-                        # Signature data, if present, should be removed from
-                        # the struct on load and then stored in the signatures
-                        # object property.
-                        self.signatures = struct.pop("_SIGNATURE")
+                # Signature data, if present, should be removed from the struct
+                # on load and then stored in the signatures object property.
+                self.signatures = struct.pop("_SIGNATURE", {})
                 return struct
 
         @property
@@ -272,7 +288,7 @@ class CatalogPartBase(object):
 
                 'data' must be a dict."""
 
-                f = _JSONWriter(data, root=self.meta_root)
+                f = _JSONWriter(data, root=self.meta_root, sign=self.sign)
                 f.save()
 
                 # Update in-memory copy to reflect stored data.
@@ -304,12 +320,13 @@ class CatalogPart(CatalogPartBase):
         __data = None
         ordered = None
 
-        def __init__(self, name, meta_root=None, ordered=True):
+        def __init__(self, name, meta_root=None, ordered=True, sign=True):
                 """Initializes a CatalogPart object."""
 
                 self.__data = {}
                 self.ordered = ordered
-                CatalogPartBase.__init__(self, name, meta_root=meta_root)
+                CatalogPartBase.__init__(self, name, meta_root=meta_root,
+                    sign=sign)
 
         def __iter_entries(self):
                 """Private generator function to iterate over catalog
@@ -749,12 +766,12 @@ class CatalogAttrs(CatalogPartBase):
         # Properties.
         __data = None
 
-        def __init__(self, meta_root=None):
+        def __init__(self, meta_root=None, sign=True):
                 """Initializes a CatalogAttrs object."""
 
                 self.__data = {}
                 CatalogPartBase.__init__(self, name="catalog.attrs",
-                    meta_root=meta_root)
+                    meta_root=meta_root, sign=sign)
 
                 if self.loaded:
                         # If the data is already seen as 'loaded' during init,
@@ -929,6 +946,7 @@ class Catalog(object):
         __batch_mode = None
         __lock = None
         __meta_root = None
+        __sign = None
 
         # These are used to cache or store CatalogPart and CatalogUpdate objects
         # as they are used.  It should not be confused with the CatalogPart
@@ -940,7 +958,7 @@ class Catalog(object):
         BASE, DEPENDENCY, SUMMARY = range(3)
 
         def __init__(self, batch_mode=False, meta_root=None, log_updates=False,
-            read_only=False):
+            read_only=False, sign=True):
                 """Initializes a Catalog object.
 
                 'batch_mode' is an optional boolean value that indicates that
@@ -965,7 +983,13 @@ class Catalog(object):
 
                 'read_only' is an optional boolean value that indicates if
                 operations that modify the catalog are allowed (an assertion
-                error will be raised if one is attempted and this is True)."""
+                error will be raised if one is attempted and this is True).
+
+                'sign' is an optional boolean value that indicates that the
+                the catalog data should have signature data generated and
+                embedded when serialized.  This option is primarily a matter
+                of convenience for callers that wish to trade integrity checks
+                for improved catalog serialization performance."""
 
                 self.__log_updates = log_updates
                 self.__batch_mode = batch_mode
@@ -975,9 +999,10 @@ class Catalog(object):
                 # Must be set after the above.
                 self.meta_root = meta_root
                 self.read_only = read_only
+                self.sign = sign
 
                 # Must be set after the above.
-                self._attrs = CatalogAttrs(meta_root=self.meta_root)
+                self._attrs = CatalogAttrs(meta_root=self.meta_root, sign=sign)
 
                 if not read_only:
                         # This lock is used to protect the catalog file from
@@ -1030,12 +1055,15 @@ class Catalog(object):
 
                 # Next, if the part hasn't been cached, create an object for it.
                 part = CatalogPart(name, meta_root=self.meta_root,
-                    ordered=not self.__batch_mode)
+                    ordered=not self.__batch_mode, sign=self.__sign)
                 if self.meta_root and must_exist and not part.exists:
                         # Part doesn't exist on-disk, so don't return anything.
                         return
                 self.__parts[name] = part
                 return part
+
+        def __get_sign(self):
+                return self.__sign
 
         def __get_update(self, name, cache=True, must_exist=False):
                 # First, check if the update has already been cached,
@@ -1212,6 +1240,17 @@ class Catalog(object):
 
                 if bad_modes:
                         raise api_errors.BadCatalogPermissions(bad_modes)
+
+        def __set_sign(self, value):
+                self.__sign = value
+
+                # If the Catalog's sign property changes, the value of that
+                # property for its attributes and parts must be changed too.
+                if self._attrs:
+                        self._attrs.sign = value
+
+                for part in self.__parts.values():
+                        part.sign = value
 
         def __unlock_catalog(self):
                 """Unlocks the catalog allowing other catalog consumers to
@@ -1427,7 +1466,8 @@ class Catalog(object):
                         ulog.destroy()
 
                 self._attrs.destroy()
-                self._attrs = CatalogAttrs(meta_root=self.meta_root)
+                self._attrs = CatalogAttrs(meta_root=self.meta_root,
+                    sign=self.__sign)
                 self.__parts = {}
                 self.__updates = {}
 
@@ -1977,6 +2017,7 @@ class Catalog(object):
 
         batch_mode = property(__get_batch_mode, __set_batch_mode)
         meta_root = property(__get_meta_root, __set_meta_root)
+        sign = property(__get_sign, __set_sign)
 
 # Methods used by Catalog classes.
 def datetime_to_ts(dt):
