@@ -318,8 +318,8 @@ class TestPkgsendBasics(testutils.SingleDepotTestCase):
                 d none foobar 0755 nobody nobody
                 f none foobar/bar 0644 nobody nobody""")
                 prototype.close()
-                os.system("pkgmk -o -r %s -d %s -f %s"
-                         % (rootdir, rootdir, prototypepath))
+                self.cmdline_run("pkgmk -o -r %s -d %s -f %s" %
+                         (rootdir, rootdir, prototypepath))
                 url = self.dc.get_depot_url()
                 self.pkgsend_bulk(url,
                 """open nopkg@1.0
@@ -356,9 +356,9 @@ class TestPkgsendBasics(testutils.SingleDepotTestCase):
                 d none foobar 0755 nobody nobody
                 f none foobar/bar 0644 nobody nobody""")
                 prototype.close()
-                os.system("pkgmk -o -r %s -d %s -f %s"
-                         % (rootdir, rootdir, prototypepath))
-                os.system("pkgtrans -s %s %s nopkg" % (rootdir, \
+                self.cmdline_run("pkgmk -o -r %s -d %s -f %s" %
+                         (rootdir, rootdir, prototypepath))
+                self.cmdline_run("pkgtrans -s %s %s nopkg" % (rootdir,
                         os.path.join(rootdir, "nopkg.pkg")))
                 url = self.dc.get_depot_url()
                 self.pkgsend_bulk(url,

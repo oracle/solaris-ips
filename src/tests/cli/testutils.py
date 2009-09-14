@@ -542,6 +542,20 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                         raise
                 return plist
 
+        def cmdline_run(self, cmdline, exit=0):
+                p = subprocess.Popen(cmdline,
+                    shell=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT)
+
+                output = p.stdout.read()
+                retcode = p.wait()
+                self.debugresult(retcode, output)
+                if retcode != exit:
+                        raise UnexpectedExitCodeException(cmdline, exit,
+                            retcode, output, debug=self.get_debugbuf())
+
+
         def validate_html_file(self, fname, exit=0, comment="",
             options="-quiet -utf8"):
                 wrapper = ""

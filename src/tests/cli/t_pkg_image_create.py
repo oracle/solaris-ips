@@ -113,7 +113,7 @@ class TestPkgImageCreateBasics(testutils.ManyDepotTestCase):
                 # non-empty directory exists
                 p = os.path.join(self.get_img_path(), "3588_2_image")
                 os.mkdir(p)
-                os.system("touch %s/%s" % (p, "somefile"))
+                self.cmdline_run("touch %s/%s" % (p, "somefile"))
                 self.pkg("image-create -p mydepot=%s %s" % (self.durl1, p),
                     exit=1)
                 self.pkg("image-create -f -p mydepot=%s %s" % (self.durl1, p))
