@@ -1014,12 +1014,13 @@ class PackageManager:
                 column.set_clickable(True)
                 column.connect('clicked', self.__select_column_clicked)
                 self.w_application_treeview.append_column(column)
-                image = gtk.Image()
-                image.set_from_pixbuf(gui_misc.get_icon(self.icon_theme, 'selection'))
+                select_image = gtk.Image()
+                select_image.set_from_pixbuf(gui_misc.get_icon(
+                    self.icon_theme, 'selection'))
                 tooltips = gtk.Tooltips()
-                tooltips.set_tip(image, _("Click to toggle selections"))
-                image.show()
-                column.set_widget(image)
+                tooltips.set_tip(select_image, _("Click to toggle selections"))
+                select_image.show()
+                column.set_widget(select_image)
 
                 name_renderer = gtk.CellRendererText()
                 column = gtk.TreeViewColumn(_("Name"), name_renderer,
@@ -1194,6 +1195,8 @@ class PackageManager:
                         self.__add_categories_to_tree(category_list, section_list)
                 self.a11y_application_treeview = \
                     self.w_application_treeview.get_accessible()
+                obj = self.a11y_application_treeview.get_column_header(0)
+                obj.set_name(_("all selection toggle"))
                 self.process_package_list_end()
 
         def __select_column_clicked(self, data):
