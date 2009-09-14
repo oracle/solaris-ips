@@ -85,8 +85,6 @@ f none usr/share/package-manager/PM_app_48x.png 444 root bin
 f none usr/share/package-manager/PM_package_36x.png 444 root bin
 f none usr/share/package-manager/arrow.png 444 root bin
 f none usr/share/package-manager/install_update24x.png 444 root bin
-f none usr/share/package-manager/legend_installed.png 444 root bin
-f none usr/share/package-manager/legend_newupdate.png 444 root bin
 f none usr/share/package-manager/new_star_24x.png 444 root bin
 f none usr/share/package-manager/packagemanager.glade 444 root bin
 f none usr/share/package-manager/reload24x.png 444 root bin
