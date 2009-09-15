@@ -599,6 +599,9 @@ class AndQuery(BooleanQuery):
 
         def __str__(self):
                 return "( " + str(self.lc) + " AND " + str(self.rc) + " )"
+
+        def __repr__(self):
+                return str(self)
         
 class OrQuery(BooleanQuery):
         """Class representing OR queries in the AST."""
@@ -648,6 +651,9 @@ class OrQuery(BooleanQuery):
         def __str__(self):
                 return "( " + str(self.lc) + " OR " + str(self.rc) + " )"
 
+        def __repr__(self):
+                return str(self)
+
 class PkgConversion(object):
         """Class representing a change from returning actions to returning
         packages in the AST."""
@@ -658,6 +664,9 @@ class PkgConversion(object):
 
         def __str__(self):
                 return "p<%s>" % str(self.query)
+
+        def __repr__(self):
+                return str(self)
 
         def set_info(self, **kwargs):
                 """This function passes information to the terms prior to
@@ -718,8 +727,11 @@ class PhraseQuery(object):
                 if len(str_list) > 1:
                         self.query.add_trailing_wildcard()
 
-        def __str__(self):
+        def __repr__(self):
                 return "Phrase Query:'" + self.full_str + "'"
+
+        def __str__(self):
+                return "'" + self.full_str + "'"
 
         def set_info(self, **kwargs):
                 """This function passes information to the terms prior to
@@ -803,9 +815,12 @@ class FieldQuery(object):
                             re.compile(fnmatch.translate(self.query.pkg_name),
                                 re.I).match
 
-        def __str__(self):
+        def __repr__(self):
                 return "( PN:%s AT:%s ST:%s Q:%s)" % (self.query.pkg_name,
                     self.query.action_type, self.query.key, self.query)
+
+        def __str__(self):
+                return str(self.query)
 
         def set_info(self, **kwargs):
                 """This function passes information to the terms prior to
@@ -842,8 +857,11 @@ class TopQuery(object):
                 self.start_point = 0
                 self.num_to_return = None
 
-        def __str__(self):
+        def __repr__(self):
                 return "TopQuery(" + str(self.query) +  " )"
+
+        def __str__(self):
+                return str(self.query)
 
         def __keep(self, x):
                 """Determines whether the x'th result should be returned."""
@@ -957,8 +975,23 @@ class TermQuery(object):
                 self._data_token_offset = None
                 self._data_main_dict = None
 
-        def __str__(self):
+        def __repr__(self):
                 return "( TermQuery: " + self._term + " )"
+
+        def __str__(self):
+                return ":".join([
+                    self.__wc_to_string(wc, v)
+                    for wc, v in [(self.pkg_name_wildcard, self.pkg_name),
+                        (self.action_type_wildcard, self.action_type),
+                        (self.key_wildcard, self.key), (False, self._term)
+                    ]
+                ])
+
+        @staticmethod
+        def __wc_to_string(wc, v):
+                if wc:
+                        return ""
+                return v
 
         def add_trailing_wildcard(self):
                 """Ensures that the search is a prefix match.  Primarily used

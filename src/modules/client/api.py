@@ -1027,12 +1027,16 @@ class ImageInterface(object):
                 """local_search takes a list of Query objects and performs
                 each query against the installed packages of the image."""
 
+                l = query_p.QueryLexer()
+                l.build()
+                qp = query_p.QueryParser(l)
+                ssu = None
                 for i, q in enumerate(query_lst):
-                        l = query_p.QueryLexer()
-                        l.build()
-                        qp = query_p.QueryParser(l)
                         try:
                                 query = qp.parse(q.encoded_text())
+                                query_rr = qp.parse(q.encoded_text())
+                                if query_rr.remove_root(self.__img.root):
+                                        query.add_or(query_rr)
                         except query_p.BooleanQueryException, e:
                                 raise api_errors.BooleanQueryException(e)
                         except query_p.ParseError, e:
@@ -1059,7 +1063,13 @@ class ImageInterface(object):
                         # i is being inserted to track which query the results
                         # are for.  None is being inserted since there is no
                         # publisher being searched against.
-                        return ((i, None, r) for r in res)
+                        try:
+                                for r in res:
+                                        yield i, None, r
+                        except api_errors.SlowSearchUsed, e:
+                                ssu = e
+                if ssu:
+                        raise ssu
 
         @staticmethod
         def __parse_v_0(line, pub, v):
@@ -1088,15 +1098,16 @@ class ImageInterface(object):
                         raise api_errors.ServerReturnError(line)
                 try:
                         return_type = int(fields[1])
+                        query_num = int(fields[0])
                 except ValueError:
                         raise api_errors.ServerReturnError(line)
                 if return_type == Query.RETURN_ACTIONS:
                         subfields = fields[2].split(None, 2)
-                        return (fields[0], pub, (v, return_type,
+                        return (query_num, pub, (v, return_type,
                             (subfields[0], urllib.unquote(subfields[1]),
                             subfields[2])))
                 elif return_type == Query.RETURN_PACKAGES:
-                        return (fields[0], pub, (v, return_type, fields[2]))
+                        return (query_num, pub, (v, return_type, fields[2]))
                 else:
                         raise api_errors.ServerReturnError(line)
 
@@ -1118,6 +1129,27 @@ class ImageInterface(object):
                 if not servers:
                         servers = self.__img.gen_publishers()
 
+                new_qs = []
+                l = query_p.QueryLexer()
+                l.build()
+                qp = query_p.QueryParser(l)
+                for q in query_str_and_args_lst:
+                        try:
+                                query = qp.parse(q.encoded_text())
+                                query_rr = qp.parse(q.encoded_text())
+                                if query_rr.remove_root(self.__img.root):
+                                        query.add_or(query_rr)
+                                        new_qs.append(query_p.Query(str(query),
+                                            q.case_sensitive, q.return_type,
+                                            q.num_to_return, q.start_point))
+                                else:
+                                        new_qs.append(q)
+                        except query_p.BooleanQueryException, e:
+                                raise api_errors.BooleanQueryException(e)
+                        except query_p.ParseError, e:
+                                raise api_errors.ParseError(e)
+                query_str_and_args_lst = new_qs
+
                 for pub in servers:
                         descriptive_name = None
 
@@ -1135,7 +1167,7 @@ class ImageInterface(object):
 
                         try:
                                 res = self.__img.transport.do_search(pub,
-                                    query_str_and_args_lst) 
+                                    query_str_and_args_lst)
                         except api_errors.NegativeSearchResult:
                                 continue
                         except api_errors.TransportError, e:
@@ -1165,6 +1197,10 @@ class ImageInterface(object):
                 if failed or invalid or unsupported:
                         raise api_errors.ProblematicSearchServers(failed,
                             invalid, unsupported)
+
+        @staticmethod
+        def __unconvert_return_type(v):
+                return v == query_p.Query.RETURN_ACTIONS
 
         def _validate_search(self, query_str_lst):
                 """Called by remote search if server responds that the

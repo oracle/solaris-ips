@@ -141,6 +141,10 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
             ("pkg:/example_pkg@1.0-0", "basename","file 820157a2043e3135f342b238129b556aade20347 chash=bfa46fc98d1ca97f1260090797d35a35e76096a3 group=bin mode=0555 owner=root path=bin/example_path pkg.csize=38 pkg.size=18")
         ])
 
+        res_remote_path_of_example_path = set([
+            ("pkg:/example_pkg@1.0-0", "path","file 820157a2043e3135f342b238129b556aade20347 chash=bfa46fc98d1ca97f1260090797d35a35e76096a3 group=bin mode=0555 owner=root path=bin/example_path pkg.csize=38 pkg.size=18")
+        ])
+
         res_remote_bin = set([
             ("pkg:/example_pkg@1.0-0", "path", "dir group=bin mode=0755 owner=root path=bin")
         ])
@@ -517,13 +521,26 @@ close
         def _search_op(self, api_obj, remote, token, test_value,
             case_sensitive=False, return_actions=True, num_to_return=None,
             start_point=None, servers=None):
+                query = [api.Query(token, case_sensitive, return_actions,
+                    num_to_return, start_point)]
+                self._search_op_common(api_obj, remote, query, test_value,
+                    return_actions, servers)
+
+        def _search_op_multi(self, api_obj, remote, tokens, test_value,
+            case_sensitive=False, return_actions=True, num_to_return=None,
+            start_point=None, servers=None):
+                query = [api.Query(token, case_sensitive, return_actions,
+                    num_to_return, start_point) for token in tokens]
+                self._search_op_common(api_obj, remote, query, test_value,
+                    return_actions, servers)
+
+        def _search_op_common(self, api_obj, remote, query, test_value,
+            return_actions, servers):
                 search_func = api_obj.local_search
                 if remote:
                         search_func = lambda x: api_obj.remote_search(x,
                             servers=servers)
-                query = api.Query(token, case_sensitive, return_actions,
-                    num_to_return, start_point)
-                res = search_func([query])
+                res = search_func(query)
                 if return_actions:
                         res = self._extract_action_from_res(res)
                 else:
@@ -534,12 +551,23 @@ close
         def _search_op_slow(self, api_obj, remote, token, test_value,
             case_sensitive=False, return_actions=True, num_to_return=None,
             start_point=None):
+                query = [api.Query(token, case_sensitive, return_actions,
+                    num_to_return, start_point)]
+                self._search_op_slow_common(api_obj, query, test_value,
+                    return_actions)
+
+        def _search_op_slow_multi(self, api_obj, remote, tokens, test_value,
+            case_sensitive=False, return_actions=True, num_to_return=None,
+            start_point=None):
+                query = [api.Query(token, case_sensitive, return_actions,
+                    num_to_return, start_point) for token in tokens]
+                self._search_op_slow_common(api_obj, query, test_value,
+                    return_actions)
+
+        def _search_op_slow_common(self, api_obj, query, test_value,
+            return_actions):
                 search_func = api_obj.local_search
-                if remote:
-                        search_func = api_obj.remote_search
-                query = api.Query(token, case_sensitive, return_actions,
-                    num_to_return, start_point)
-                tmp = search_func([query])
+                tmp = search_func(query)
                 res = []
                 ssu = False
                 try:
@@ -923,6 +951,53 @@ close
                 # token isn't in the packages.
                 self._search_op_slow(api_obj, False, "a_non_existent_token",
                     set())
+
+        def _run_remove_root_search(self, search_func, remote, api_obj, ip):
+                search_func(api_obj, remote, [ip + "example_pkg"], set())
+                search_func(api_obj, remote, [ip + "bin/example_path"],
+                    self.res_remote_path_of_example_path)
+                search_func(api_obj, remote, ["(%sbin/example_path)" % ip],
+                    self.res_remote_path_of_example_path)
+                search_func(api_obj, remote, ["<%sexam*:::>" % ip],
+                    set(), return_actions=False)
+                search_func(api_obj, remote,
+                    ["::%scom.sun.service.info_url:" % ip], set())
+                search_func(api_obj, remote,
+                    ["%sbin/e* AND %s*path" % (ip, ip)],
+                    self.res_remote_path_of_example_path)
+                search_func(api_obj, remote,
+                    ["(4851433 AND 4725245) OR :file::%sbin/example_path" % ip],
+                    self.res_remote_bug_id |
+                    self.res_remote_path_of_example_path)
+                search_func(api_obj, remote,
+                    [":::%sbin/example_path OR (4851433 AND 4725245)" % ip],
+                    self.res_remote_bug_id |
+                    self.res_remote_path_of_example_path)
+                search_func(api_obj, remote,
+                    ["%sbin/example_path OR %sbin/example_path" % (ip, ip)],
+                    self.res_remote_path_of_example_path)
+                search_func(api_obj, remote,
+                    ["<::path:%sbin/example_path> OR <(a AND b)>" % ip],
+                    self.res_remote_pkg_ret_pkg, return_actions=False)
+                search_func(api_obj, remote,
+                    ["<(a AND b)> OR <%sbin/example_path>" % ip],
+                    self.res_remote_pkg_ret_pkg, return_actions=False)
+                # The tests below here are for testing that multiple queries
+                # to search return the results from both queries (bug 10365)
+                search_func(api_obj, remote,
+                    ["<(a AND b)>",  "example_path"],
+                    self.res_remote_path)
+                search_func(api_obj, remote,
+                    ["example_path", "<(a AND b)>"],
+                    self.res_remote_path)
+                search_func(api_obj, remote,
+                    [":::%sbin/example_path" % ip, "(4851433 AND 4725245)"],
+                    self.res_remote_bug_id |
+                    self.res_remote_path_of_example_path)
+                search_func(api_obj, remote,
+                    ["(4851433 AND 4725245)", ":::%sbin/example_path" % ip],
+                    self.res_remote_bug_id |
+                    self.res_remote_path_of_example_path)
 
         def _run_local_tests_example11_installed(self, api_obj):
                 outfile = os.path.join(self.testdata_dir, "res")
@@ -1365,7 +1440,6 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
 
         def test_120_bug_3046(self):
                 """Checks if directories ending in / break the indexer."""
-                # Need to move to t_api_search
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.bad_pkg10)
                 self.image_create(durl)
@@ -1375,6 +1449,36 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
 
                 self._search_op(api_obj, True, "foo", set())
                 self._search_op(api_obj, True, "/", set())
+
+        def test_130_bug_1059(self):
+                """Checks whether the fallback of removing the image root works.
+                Also tests whether multiple queries submitted via the api work.
+                """
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.example_pkg10)
+                self.image_create(durl)
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+
+                ip = self.get_img_path()
+                if not ip.endswith("/"):
+                        ip += "/"
+
+                # Do remote searches
+                self._run_remove_root_search(self._search_op_multi, True,
+                    api_obj, ip)
+
+                self._do_install(api_obj, ["example_pkg"])
+                # Do local searches
+                self._run_remove_root_search(self._search_op_multi, False,
+                    api_obj, ip)
+
+                index_dir = os.path.join(self.img_path, "var","pkg","index")
+                shutil.rmtree(index_dir)
+                # Do slow local searches
+                self._run_remove_root_search(self._search_op_slow_multi, False,
+                    api_obj, ip)
 
         def test_bug_2849(self):
                 """Checks if things with spaces break the indexer."""

@@ -59,20 +59,56 @@ class QueryParser(qp.QueryParser):
 class Query(qp.Query):
         pass
 
+
 class AndQuery(qp.AndQuery):
-        pass
+        def remove_root(self, img_dir):
+                lcv = self.lc.remove_root(img_dir)
+                rcv = self.rc.remove_root(img_dir)
+                return lcv or rcv
+
+
+class EmptyQuery(object):
+        def __init__(self, return_type):
+                self.return_type = return_type
+        
+        def search(self, *args):
+                return []
+
+        def set_info(self, **kwargs):
+                return
+
+        def __str__(self):
+                if self.return_type == qp.Query.RETURN_ACTIONS:
+                        return "(a AND b)"
+                else:
+                        return "<(a AND b)>"
+
 
 class OrQuery(qp.OrQuery):
-        pass
+        def remove_root(self, img_dir):
+                lcv = self.lc.remove_root(img_dir)
+                if not lcv:
+                        self.lc = EmptyQuery(self.lc.return_type)
+                rcv = self.rc.remove_root(img_dir)
+                if not rcv:
+                        self.rc = EmptyQuery(self.rc.return_type)
+                return lcv or rcv
+
 
 class PkgConversion(qp.PkgConversion):
-        pass
-        
+        def remove_root(self, img_dir):
+                return self.query.remove_root(img_dir)
+
+
 class PhraseQuery(qp.PhraseQuery):
-        pass
+        def remove_root(self, img_dir):
+                return self.query.remove_root(img_dir)
+
 
 class FieldQuery(qp.FieldQuery):
-        pass
+        def remove_root(self, img_dir):
+                return self.query.remove_root(img_dir)
+
 
 class TopQuery(qp.TopQuery):
         """This class handles raising the exception if the search was conducted
@@ -112,6 +148,16 @@ class TopQuery(qp.TopQuery):
                         yield i
                 if self.__use_slow_search:
                         raise api_errors.SlowSearchUsed()
+
+        def remove_root(self, img_dir):
+                return self.query.remove_root(img_dir)
+
+        def add_or(self, rc):
+                lc = self.query
+                if isinstance(rc, TopQuery):
+                        rc = rc.query
+                self.query = OrQuery(lc, rc)
+
 
 class TermQuery(qp.TermQuery):
         """This class handles the client specific search logic for searching
@@ -364,3 +410,18 @@ class TermQuery(qp.TermQuery):
                         return qp.TermQuery._read_pkg_dirs(self, fmris)
                 except se.InconsistentIndexException, e:
                         raise api_errors.InconsistentIndexException(e)
+
+        def remove_root(self, img_root):
+                if (not self.action_type_wildcard and
+                    self.action_type != "file" and
+                    self.action_type != "link" and
+                    self.action_type != "hardlink" and
+                    self.action_type != "directory") or \
+                    (not self.key_wildcard and self.key != "path") or \
+                    (not self._term.startswith(img_root) or img_root == "/"):
+                        return False
+                img_root = img_root.rstrip("/")
+                self._term = self._term[len(img_root):]
+                self.key = "path"
+                self.key_wildcard = False
+                return True
