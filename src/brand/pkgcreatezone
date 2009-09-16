@@ -369,6 +369,11 @@ pkglist="$pkglist SUNWnis SUNWlldap"
 pkglist="$pkglist SUNWnfsc SUNWatfs"
 
 #
+# Get routing daemons.  They're required for useful exclusive stack zones.
+#
+pkglist="$pkglist SUNWroute"
+
+#
 # Get packages for TX zones if appropriate.
 #
 if [ $brand_labeled -ne 0 ]; then
