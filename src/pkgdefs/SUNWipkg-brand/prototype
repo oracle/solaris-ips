@@ -18,4 +18,5 @@ f none usr/lib/brand/ipkg/platform.xml 444 root bin
 f none usr/lib/brand/ipkg/poststate 755 root bin
 f none usr/lib/brand/ipkg/prestate 755 root bin
 f none usr/lib/brand/ipkg/query 755 root bin
+f none usr/lib/brand/ipkg/support 755 root bin
 f none usr/lib/brand/ipkg/uninstall 755 root bin

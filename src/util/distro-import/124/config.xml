@@ -29,7 +29,7 @@
 <!DOCTYPE brand PUBLIC "-//Sun Microsystems Inc//DTD Brands//EN"
     "file:///usr/share/lib/xml/dtd/brand.dtd.1">
 
-<brand name="ipkg">
+<brand name="labeled">
 	<modname></modname>
 
 	<initname>/sbin/init</initname>
@@ -38,7 +38,7 @@
 
 	<!-- We may not be able to do the create in pkg(1) proper. -->
 	<install>/usr/lib/brand/ipkg/pkgcreatezone -z %z -R %R</install>
-	<installopts>a:P:e:c:k:h</installopts>
+	<installopts>a:p:e:h</installopts>
 	<boot></boot>
 	<halt></halt>
 	<verify_cfg>/usr/lib/brand/ipkg/support verify</verify_cfg>
@@ -70,7 +70,6 @@
 	<privilege set="default" name="net_bindmlp" />
 	<privilege set="default" name="net_icmpaccess" />
 	<privilege set="default" name="net_mac_aware" />
-	<privilege set="default" name="net_observability" />
 	<privilege set="default" name="net_privaddr" />
 	<privilege set="default" name="net_rawaccess" ip-type="exclusive" />
 	<privilege set="default" name="proc_chroot" />

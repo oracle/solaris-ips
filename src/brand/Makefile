@@ -58,11 +58,21 @@ ROOTFILES = \
 	$(ROOTBRANDPKG)/poststate \
 	$(ROOTBRANDPKG)/prestate \
 	$(ROOTBRANDPKG)/query \
+	$(ROOTBRANDPKG)/support \
 	$(ROOTBRANDPKG)/uninstall
+
+BIN = \
+	support \
+	fmri_compare
+
+support := LDLIBS = -lzonecfg
 
 all := TARGET = all
 link := TARGET = link
 link-clean := TARGET = link-clean
+
+support: support.c
+	$(LINK.c) -o $@ $@.c $(LDLIBS)
 
 fmri_compare: fmri_compare.py
 	cp $@.py $@
@@ -71,7 +81,7 @@ fmri_compare: fmri_compare.py
 all: fmri_compare
 
 clean:
-	rm -f fmri_compare
+	rm -f $(BIN)
 
 clobber: clean
 	rm -f $(ROOTFILES)
@@ -95,6 +105,7 @@ link:
 	ln -sf $(PWD)/poststate /usr/lib/brand/ipkg/poststate
 	ln -sf $(PWD)/prestate /usr/lib/brand/ipkg/prestate
 	ln -sf $(PWD)/query /usr/lib/brand/ipkg/query
+	ln -sf $(PWD)/support /usr/lib/brand/ipkg/support
 	ln -sf $(PWD)/uninstall /usr/lib/brand/ipkg/uninstall
 	ln -sf $(PWD)/SUNWipkg.xml /etc/zones/SUNWipkg.xml
 
