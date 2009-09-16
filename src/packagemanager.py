@@ -1196,7 +1196,8 @@ class PackageManager:
                 self.a11y_application_treeview = \
                     self.w_application_treeview.get_accessible()
                 obj = self.a11y_application_treeview.get_column_header(0)
-                obj.set_name(_("all selection toggle"))
+                if obj != None:
+                        obj.set_name(_("all selection toggle"))
                 self.process_package_list_end()
 
         def __select_column_clicked(self, data):
