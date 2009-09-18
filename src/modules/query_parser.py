@@ -723,9 +723,11 @@ class PhraseQuery(object):
                 assert str_list
                 self.query = term_query_class(str_list[0])
                 self.full_str = " ".join(str_list)
+                self.compare_str = self.full_str
                 self.return_type = Query.RETURN_ACTIONS
                 if len(str_list) > 1:
                         self.query.add_trailing_wildcard()
+                self._case_sensitive = None
 
         def __repr__(self):
                 return "Phrase Query:'" + self.full_str + "'"
@@ -733,26 +735,32 @@ class PhraseQuery(object):
         def __str__(self):
                 return "'" + self.full_str + "'"
 
-        def set_info(self, **kwargs):
+        def set_info(self, case_sensitive, **kwargs):
                 """This function passes information to the terms prior to
                 search being executed.  It only needs to pass whatever
                 information exists to its child."""
 
-                self.query.set_info(**kwargs)
+                self._case_sensitive = case_sensitive
+                if not case_sensitive:
+                        self.compare_str = self.full_str.lower()
+                self.query.set_info(case_sensitive=case_sensitive, **kwargs)
 
         def filter_res(self, l):
                 """Check to see if the phrase is contained in l, the string of
                 the original action."""
 
-                return self.full_str in l
+                if self._case_sensitive:
+                        return self.compare_str in l
+                return self.compare_str in l.lower()
 
         @staticmethod
-        def combine(fs, fv):
+        def combine(fs, fv, at, case_sensitive):
                 """Checks to see if the phrase being searched for is a subtring
                 of the value which matched the token.  If it is, use the value
                 returned, otherwise use the search phrase."""
 
-                if fs in fv:
+                if at != "set" or fs in fv or \
+                    (not case_sensitive and fs in fv.lower()):
                         return fv
                 else:
                         return fs
@@ -765,7 +773,8 @@ class PhraseQuery(object):
                 function that returns actions within the search domain."""
 
                 it = (
-                    (at, st, pfmri, self.combine(self.full_str, fv), l)
+                    (at, st, pfmri, self.combine(self.compare_str, fv, at,
+                    self._case_sensitive), l)
                     for at, st, pfmri, fv, l
                     in self.query.search(restriction, *args)
                     if self.filter_res(l)

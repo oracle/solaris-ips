@@ -658,6 +658,10 @@ close
                     self.res_remote_openssl)
                 self._search_op(api_obj, True, "OpEnSsL",
                     self.res_remote_openssl)
+                # Test for bug 11235, case insensitive phrase search, and bug
+                # 11354, mangled fields during phrase search.
+                self._search_op(api_obj, True, "'OpEnSsL'",
+                    self.res_remote_openssl)
                 self._search_op(api_obj, True, "OpEnS*",
                     self.res_remote_openssl)
 
@@ -800,6 +804,10 @@ close
                     self.res_local_openssl)
                 self._search_op(api_obj, False, "OpEnSsL",
                     self.res_local_openssl)
+                # Test for bug 11235, case insensitive phrase search, and bug
+                # 11354, mangled fields during phrase search.
+                self._search_op(api_obj, False, "'OpEnSsL'",
+                    self.res_remote_openssl)
                 self._search_op(api_obj, False, "OpEnS*",
                     self.res_local_openssl)
                 # These tests are included because a specific bug
