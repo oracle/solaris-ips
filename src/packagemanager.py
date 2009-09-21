@@ -242,7 +242,7 @@ class PackageManager:
                 self.lang_root = None
                 self.visible_status_id = 0
                 self.categories_status_id = 0
-                self.icon_theme = gtk.IconTheme()
+                self.icon_theme = gtk.icon_theme_get_default()
                 icon_location = os.path.join(self.application_dir, ICON_LOCATION)
                 self.icon_theme.append_search_path(icon_location)
                 self.installed_icon = gui_misc.get_icon(self.icon_theme,
@@ -383,14 +383,21 @@ class PackageManager:
                     w_tree_main.get_widget("install_update_button")
                 self.w_remove_button = w_tree_main.get_widget("remove_button")
                 self.w_updateall_button = w_tree_main.get_widget("update_all_button")
-                self.w_reload_menuitem = w_tree_main.get_widget("file_reload")
                 self.w_repository_combobox = w_tree_main.get_widget("repositorycombobox")
                 self.w_filter_combobox = w_tree_main.get_widget("filtercombobox")
                 self.w_packageicon_image = w_tree_main.get_widget("packageimage")
+                self.w_reload_menuitem = w_tree_main.get_widget("file_reload")
+                self.__set_icon(self.w_reload_button, self.w_reload_menuitem, 'reload')
                 self.w_installupdate_menuitem = \
                     w_tree_main.get_widget("package_install_update")
+                self.__set_icon(self.w_installupdate_button, 
+                    self.w_installupdate_menuitem, 'install_update')
                 self.w_remove_menuitem = w_tree_main.get_widget("package_remove")
+                self.__set_icon(self.w_remove_button, self.w_remove_menuitem, 
+                    'remove_packages')
                 self.w_updateall_menuitem = w_tree_main.get_widget("package_update_all")
+                self.__set_icon(self.w_updateall_button,
+                    self.w_updateall_menuitem, 'update_all')
                 self.w_cut_menuitem = w_tree_main.get_widget("edit_cut")
                 self.w_copy_menuitem = w_tree_main.get_widget("edit_copy")
                 self.w_paste_menuitem = w_tree_main.get_widget("edit_paste")
@@ -584,6 +591,19 @@ class PackageManager:
                 self.api_search_error_dialog.set_transient_for(self.w_main_window)
                 self.__setup_text_signals()
 
+        @staticmethod
+        def __set_icon(button, menuitem, icon_name):
+                icon_source = gtk.IconSource()
+                icon_source.set_icon_name(icon_name)
+                icon_set = gtk.IconSet()
+                icon_set.add_source(icon_source)
+                image_widget = gtk.image_new_from_icon_set(icon_set,
+                    gtk.ICON_SIZE_SMALL_TOOLBAR)
+                button.set_icon_widget(image_widget)
+                image_widget = gtk.image_new_from_icon_set(icon_set,
+                    gtk.ICON_SIZE_MENU)
+                menuitem.set_image(image_widget)
+
         def __set_search_text_mode(self, style):
                 if style == enumerations.SEARCH_STYLE_NORMAL:
                         self.w_searchentry.modify_text(gtk.STATE_NORMAL,
@@ -672,15 +692,6 @@ class PackageManager:
                 else:
                         self.w_copy_menuitem.set_sensitive(False)
                         self.w_deselect_menuitem.set_sensitive(False)
-
-        def __register_iconsets(self, icon_info):
-                factory = gtk.IconFactory()
-                for stock_id, pixbuf, name, description in icon_info:
-                        iconset = gtk.IconSet(pixbuf)
-                        factory.add(stock_id, iconset)
-                        self.pylintstub = name
-                        self.pylintstub = description
-                factory.add_default()
 
         def __set_all_publishers_mode(self):
                 if self.is_all_publishers:

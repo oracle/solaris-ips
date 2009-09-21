@@ -40,6 +40,7 @@ ROOTGCONFSHARE = $(ROOTETC)/gconf/schemas
 ROOTHELPSHARE = $(ROOT)/share/gnome/help/package-manager
 ROOTICON16SHARE = $(ROOTSHARE)/icons/hicolor/16x16/actions
 ROOTICON22SHARE = $(ROOTSHARE)/icons/hicolor/22x22/actions
+ROOTICON24SHARE = $(ROOTSHARE)/icons/hicolor/24x24/actions
 ROOTMIMEICONSHARE = $(ROOT)/share/icons/hicolor/48x48/mimetypes
 ROOTMIMETYPESHARE = $(ROOT)/share/mime/packages
 ROOTPYTHON = $(ROOTUSRLIB)/python2.4
@@ -55,6 +56,8 @@ ROOTDIRS = \
    $(ROOTHELPSHARE) \
    $(ROOTICON16SHARE) \
    $(ROOTICON22SHARE) \
+   $(ROOTICON24SHARE) \
+   $(ROOTICON48SHARE) \
    $(ROOTMIMEICONSHARE) \
    $(ROOTMIMETYPESHARE) \
    $(ROOTPYTHONPKG) \
@@ -77,13 +80,7 @@ GCONF = \
 
 GLADEICONS = \
    data/PM_app_48x.png \
-   data/PM_package_36x.png \
-   data/update_all24x.png \
-   data/remove24x.png \
-   data/reload24x.png \
-   data/install_update24x.png \
-   data/arrow.png \
-   data/new_star_24x.png
+   data/PM_package_36x.png
 
 MIMEICONS = \
    data/gnome-mime-application-vnd.pkg5.info.png
@@ -123,6 +120,12 @@ ICONS16 = \
 
 ICONS22 = \
    data/icons/22x22/search.png
+
+ICONS24 = \
+   data/icons/24x24/install_update.png \
+   data/icons/24x24/reload.png \
+   data/icons/24x24/remove_packages.png \
+   data/icons/24x24/update_all.png
 
 PYMODS = \
    modules/__init__.py \
@@ -188,6 +191,7 @@ ROOTSPFILES = \
 
 ROOTICONS16 = $(ICONS16:data/icons/16x16/%=$(ROOTICON16SHARE)/%)
 ROOTICONS22 = $(ICONS22:data/icons/22x22/%=$(ROOTICON22SHARE)/%)
+ROOTICONS24 = $(ICONS24:data/icons/24x24/%=$(ROOTICON24SHARE)/%)
 
 ROOTPYGLADE = $(ROOTSHARE)/packagemanager.glade
 
@@ -206,6 +210,7 @@ ROOTCOMPONENTS = \
    $(ROOTHELPFILES) \
    $(ROOTICONS16) \
    $(ROOTICONS22) \
+   $(ROOTICONS24) \
    $(ROOTMIMEICONS) \
    $(ROOTMIMETYPE) \
    $(ROOTPYGLADE) \
@@ -248,10 +253,6 @@ help/%/package-manager.xml: help/%/%.mo
 #
 modules/%.pyc: modules/%.py
 	python -m compileall -l $(@D)
-
-# See APPICONS above.
-data/packagemanager.png: data/PM_app_48x.png
-	cp data/PM_app_48x.png data/packagemanager.png
 
 PWD:sh = pwd
 
@@ -323,6 +324,9 @@ $(ROOTICON16SHARE)/%: $(ROOTDIRS) data/icons/16x16/%
 
 $(ROOTICON22SHARE)/%: $(ROOTDIRS) data/icons/22x22/%
 	$(INSTALL) -f $(ROOTICON22SHARE) -m 0644 $<
+
+$(ROOTICON24SHARE)/%: $(ROOTDIRS) data/icons/24x24/%
+	$(INSTALL) -f $(ROOTICON24SHARE) -m 0644 $<
 
 $(ROOTPYTHONPKG)/%: $(ROOTDIRS) modules/%
 	$(INSTALL) -f $(ROOTPYTHONPKG) -m 0644 $<
