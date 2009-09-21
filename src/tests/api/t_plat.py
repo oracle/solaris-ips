@@ -91,10 +91,11 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
                 # create an image, copy an executable into it, 
                 # run the executable, replace the executable
                 tdir1 = tempfile.mkdtemp()
-                img1 = image.Image()
+                img1 = image.Image(tdir1, imgtype=image.IMG_USER,
+                    should_exist=False)
                 img1.history.client_name = "pkg-test"
-                img1.set_attrs(image.IMG_USER, tdir1, False, "test", 
-                    "http://localhost:10000", refresh_allowed=False)
+                img1.set_attrs(False, "test", "http://localhost:10000",
+                    refresh_allowed=False)
                 exefile = os.path.join(tdir1, 'less.com')
                 shutil.copyfile(exefilesrc, exefile)
                 proc = subprocess.Popen([exefile], stdin = subprocess.PIPE)
@@ -133,10 +134,11 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
                 # create an image, copy an executable into it, 
                 # run the executable, remove the executable
                 tdir1 = tempfile.mkdtemp()
-                img1 = image.Image()
+                img1 = image.Image(tdir1, imgtype=image.IMG_USER,
+                    should_exist=False)
                 img1.history.client_name = "pkg-test"
-                img1.set_attrs(image.IMG_USER, tdir1, False, "test", 
-                    "http://localhost:10000", refresh_allowed=False)
+                img1.set_attrs(False, "test",  "http://localhost:10000",
+                    refresh_allowed=False)
                 exefile = os.path.join(tdir1, 'less.com')
                 shutil.copyfile(exefilesrc, exefile)
                 proc = subprocess.Popen([exefile], stdin = subprocess.PIPE)

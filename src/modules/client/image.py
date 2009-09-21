@@ -176,7 +176,13 @@ class Image(object):
         image_subdirs = required_subdirs + [ "index", IMG_PUB_DIR,
             "state/installed", "state/known" ]
 
-        def __init__(self):
+        def __init__(self, root, user_provided_dir=False, progtrack=None,
+            should_exist=True, imgtype=None, force=False):
+                if should_exist:
+                        assert(imgtype is None)
+                        assert(not force)
+                else:
+                        assert(imgtype is not None)
                 self.__catalogs = {}
                 self.__upgraded = False
 
@@ -197,15 +203,27 @@ class Image(object):
                 self.is_user_cache_dir = False
                 self.new_variants = {}
                 self.pkgdir = None
-                self.root = None
+                self.root = root
+
+                # Transport operations for this image
+                self.transport = transport.Transport(self)
+
+                if should_exist:
+                        self.find_root(self.root, user_provided_dir,
+                            progtrack)
+                else:
+                        if not force and self.image_type(self.root) != None:
+                                raise api_errors.ImageAlreadyExists(self.root)
+                        if not force and os.path.exists(self.root) and \
+                            len(os.listdir(self.root)) > 0:
+                                raise api_errors.CreatingImageInNonEmptyDir(self.root)
+                        self.__set_dirs(root=self.root, imgtype=imgtype,
+                            progtrack=progtrack)
 
                 # a place to keep info about saved_files; needed by file action
                 self.saved_files = {}
 
                 self.state = imagestate.ImageState(self)
-
-                # Transport operations for this image
-                self.transport = transport.Transport(self)
 
                 self.type = None
 
@@ -237,9 +255,10 @@ class Image(object):
 
         def find_root(self, d, exact_match=False, progtrack=None):
                 # Ascend from the given directory d to find first
-                # encountered image. If exact_match is true, if the
+                # encountered image.  If exact_match is true, if the
                 # image found doesn't match startd, raise an
                 # ImageNotFoundException.
+
                 startd = d
                 # eliminate problem if relative path such as "." is passed in
                 d = os.path.realpath(d)
@@ -413,11 +432,9 @@ class Image(object):
                 if rebuild:
                         self.__rebuild_image_catalogs(progtrack=progtrack)
 
-        def set_attrs(self, imgtype, root, is_zone, prefix, pub_url,
+        def set_attrs(self, is_zone, prefix, pub_url,
             ssl_key=None, ssl_cert=None, variants=EmptyDict,
             refresh_allowed=True, progtrack=None):
-
-                self.__set_dirs(imgtype=imgtype, root=root, progtrack=progtrack)
 
                 if not os.path.exists(os.path.join(self.imgdir,
                     imageconfig.CFG_FILE)):
@@ -2410,7 +2427,6 @@ class Image(object):
                 img = self
 
                 if not img.is_liveroot():
-                        newimg = Image()
                         cmdpath = os.path.join(os.getcwd(), actual_cmd)
                         cmdpath = os.path.realpath(cmdpath)
                         cmddir = os.path.dirname(os.path.realpath(cmdpath))
@@ -2420,7 +2436,7 @@ class Image(object):
                         # not perfect-- we could be in a developer's
                         # workspace, for example.
                         #
-                        newimg.find_root(cmddir, progtrack=progtrack)
+                        newimg = Image(cmddir, progtrack=progtrack)
 
                         if refresh_allowed:
                                 # If refreshing publisher metadata is allowed,

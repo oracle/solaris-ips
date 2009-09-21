@@ -2338,7 +2338,7 @@ def property_list(img, args):
 
         return 0
 
-def image_create(img, args):
+def image_create(args):
         """Create an image of the requested kind, at the given path.  Load
         catalog for initial publisher for convenience.
 
@@ -2437,24 +2437,15 @@ def image_create(img, args):
                     cmd="image-create")
                 return 1
 
-        # Bail if there is already an image there
-        if img.image_type(image_dir) != None and not force:
-                error(_("there is already an image at: %s.\nTo override, use "
-                    "the -f (force) option.") % image_dir, cmd="image-create")
-                return 1
-
-        # Bail if the directory exists but isn't empty
-        if os.path.exists(image_dir) and \
-            len(os.listdir(image_dir)) > 0 and not force:
-                error(_("the specified image path is not empty: %s.\nTo "
-                    "override, use the -f (force) option.") % image_dir,
-                    cmd="image-create")
-                return 1
-
+        global __img
+        
         try:
-                img.set_attrs(imgtype, image_dir, is_zone, pub_name, pub_url,
+                progtrack = get_tracker()
+                __img = img = image.Image(root=image_dir, imgtype=imgtype,
+                    should_exist=False, progtrack=progtrack, force=force)
+                img.set_attrs(is_zone, pub_name, pub_url,
                     ssl_key=ssl_key, ssl_cert=ssl_cert, variants=variants,
-                    refresh_allowed=refresh_catalogs, progtrack=get_tracker())
+                    refresh_allowed=refresh_catalogs, progtrack=progtrack)
         except OSError, e:
                 # Ensure messages are displayed after the spinner.
                 emsg("\n")
@@ -2485,6 +2476,9 @@ def image_create(img, args):
                         return 1
                 else:
                         return 3
+        except api_errors.ImageCreationException, e:
+                error(e, cmd="image-create")
+                return 1
         return 0
 
 def rebuild_index(img, pargs):
@@ -2639,7 +2633,6 @@ def main_func():
         global_settings.client_name = PKG_CLIENT_NAME
 
         global __img
-        __img = img = image.Image()
 
         try:
                 opts, pargs = getopt.getopt(sys.argv[1:], "R:D:?",
@@ -2685,7 +2678,7 @@ def main_func():
                         usage(_("-R not allowed for %s subcommand") %
                               subcommand)
                 try:
-                        ret = image_create(img, pargs)
+                        ret = image_create(pargs)
                 except getopt.GetoptError, e:
                         if e.opt in ("help", "?"):
                                 usage(full=True)
@@ -2727,7 +2720,7 @@ def main_func():
                 return 1
 
         try:
-                img.find_root(mydir, provided_image_dir)
+                __img = img = image.Image(mydir, provided_image_dir)
         except api_errors.ImageNotFoundException, e:
                 if e.user_specified:
                         m = "No image rooted at '%s'"

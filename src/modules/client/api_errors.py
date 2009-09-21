@@ -1254,3 +1254,23 @@ class BadManifestSignatures(ManifestError):
                         return _("The signature data for the manifest of the "
                             "'%s' package is not valid.") % self.data
                 return _("The signature data for the manifest is not valid.")
+
+# Image creation exceptions
+class ImageCreationException(ApiException):
+        def __init__(self, path):
+                self.path = path
+
+        def __str__(self):
+                raise NotImplementedError()
+
+
+class ImageAlreadyExists(ImageCreationException):
+        def __str__(self):
+                return _("there is already an image at: %s.\nTo override, use "
+                    "the -f (force) option.") % self.path
+
+
+class CreatingImageInNonEmptyDir(ImageCreationException):
+        def __str__(self):
+                return _("the specified image path is not empty: %s.\nTo "
+                    "override, use the -f (force) option.") % self.path

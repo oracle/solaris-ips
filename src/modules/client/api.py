@@ -101,8 +101,7 @@ class ImageInterface(object):
                 if isinstance(img_path, basestring):
                         # Store this for reset().
                         self.__img_path = img_path
-                        self.__img = image.Image()
-                        self.__img.find_root(img_path,
+                        self.__img = image.Image(img_path,
                             progtrack=progresstracker)
                 elif isinstance(img_path, image.Image):
                         # This is a temporary, special case for client.py
@@ -972,8 +971,7 @@ class ImageInterface(object):
 
                 # Recreate the image object using the path the api
                 # object was created with instead of the current path.
-                self.__img = image.Image()
-                self.__img.find_root(self.__img_path,
+                self.__img = image.Image(self.__img_path,
                     progtrack=self.__progresstracker)
 
                 self.__plan_desc = None

@@ -151,9 +151,8 @@ def get_trashdir(path):
                     if path.startswith(iroot):
                             return itrash
 
-            img = image.Image()
             try:
-                    img.find_root(os.path.dirname(path))
+                    img = image.Image(os.path.dirname(path))
             except ImageNotFoundException:
                     # path is not within an image, no trash dir
                     return None
