@@ -290,11 +290,11 @@ class ImagePlan(object):
                 ppub = self.image.get_preferred_publisher()
                 self.image.fmri_set_default_publisher(pfmri)
 
-                m = self.image.get_manifest(pfmri)
+                cat = self.image.get_catalog(self.image.IMG_CATALOG_KNOWN)
 
                 # check to make sure package is not tagged as being only
                 # for other architecture(s)
-                supported = m.get_variants("variant.arch")
+                supported = cat.get_entry_variants(pfmri, "variant.arch")
                 if supported and self.image.get_arch() not in supported:
                         raise api_errors.PlanCreationException(badarch=(pfmri,
                             supported, self.image.get_arch()))
@@ -302,7 +302,9 @@ class ImagePlan(object):
                 # build list of (action, fmri, constraint) of dependencies
                 a_list = [
                     (a,) + a.parse(self.image, pfmri.get_name())
-                    for a in m.gen_actions_by_type("depend", self.new_excludes)
+                    for a in cat.get_entry_actions(pfmri, [cat.DEPENDENCY],
+                    excludes=self.new_excludes)
+                    if a.name == "depend"
                 ]
 
                 # Update constraints first to avoid problems w/ depth first

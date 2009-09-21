@@ -9,8 +9,11 @@ api.t_catalog.py TestCatalog.test_04_store_and_validate|pass
 api.t_catalog.py TestCatalog.test_05_retrieval|pass
 api.t_catalog.py TestCatalog.test_06_operations|pass
 api.t_catalog.py TestCatalog.test_07_updates|pass
+api.t_catalog.py TestCatalog.test_08_append|pass
+api.t_catalog.py TestCatalog.test_09_actions|pass
 api.t_catalog.py TestEmptyCatalog.test_01_attrs|pass
 api.t_catalog.py TestEmptyCatalog.test_02_extract_matching_fmris|pass
+api.t_catalog.py TestEmptyCatalog.test_03_actions|pass
 api.t_dependencies.py TestDependencyAnalyzer.test_ext_elf|pass
 api.t_dependencies.py TestDependencyAnalyzer.test_ext_hardlink|pass
 api.t_dependencies.py TestDependencyAnalyzer.test_ext_pb|pass

@@ -1073,8 +1073,12 @@ class Publisher(object):
                 # populated as a result of catalog operations.  But in
                 # this case, we want the v1 Catalog's attributes to
                 # match those of the v0 catalog.
-                attrs = v1_cat._attrs
-                attrs.last_modified = v0_lm
+                v1_cat.last_modified = v0_lm
+
+                # While this is a v1 catalog format-wise, v0 data is stored.
+                # This allows consumers to be aware that certain data won't be
+                # available in this catalog (such as dependencies, etc.).
+                v1_cat.version = 0
 
                 # Finally, save the new Catalog, and replace the old in-memory
                 # catalog.

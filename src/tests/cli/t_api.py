@@ -115,9 +115,9 @@ class TestPkgApi(testutils.SingleDepotTestCase):
                         self.debug("wrote %s" % fpath)
 
         def tearDown(self):
-                testutils.SingleDepotTestCase.tearDown(self)
                 for p in self.misc_files:
                         os.remove(os.path.join(self.get_test_prefix(), p))
+                testutils.SingleDepotTestCase.tearDown(self)
 
         def __try_bad_installs(self, api_obj):
 

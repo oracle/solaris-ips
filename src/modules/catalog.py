@@ -36,12 +36,14 @@ import stat
 import tempfile
 import threading
 
+import pkg.actions
 import pkg.client.api_errors as api_errors
 import pkg.fmri as fmri
 import pkg.portable as portable
 import pkg.version
 
 from operator import itemgetter
+from pkg.misc import EmptyI
 
 class _JSONWriter(object):
         """Private helper class used to serialize catalog data and generate
@@ -156,6 +158,7 @@ class _JSONWriter(object):
                         if idx > -1:
                                 self.__sha_1_offset = f.tell() + idx
                 f.write(data)
+
 
 class CatalogPartBase(object):
         """A CatalogPartBase object is an abstract class containing core
@@ -479,13 +482,10 @@ class CatalogPart(CatalogPartBase):
                         raise api_errors.UnknownCatalogEntry(pfmri.get_fmri())
 
                 ver = str(pfmri.version)
-                try:
-                        ver_list = pkg_list[pfmri.pkg_name]
-                        for entry in ver_list:
-                                if entry["version"] == ver:
-                                        return entry
-                except KeyError:
-                        pass
+                ver_list = pkg_list.get(pfmri.pkg_name, ())
+                for entry in ver_list:
+                        if entry["version"] == ver:
+                                return entry
                 raise api_errors.UnknownCatalogEntry(pfmri.get_fmri())
 
         def get_package_counts(self):
@@ -945,6 +945,7 @@ class Catalog(object):
         _attrs = None
         __batch_mode = None
         __lock = None
+        __manifest_cb = None
         __meta_root = None
         __sign = None
 
@@ -955,10 +956,10 @@ class Catalog(object):
         __updates = None
 
         # Class Constants
-        BASE, DEPENDENCY, SUMMARY = range(3)
+        DEPENDENCY, SUMMARY = range(2)
 
         def __init__(self, batch_mode=False, meta_root=None, log_updates=False,
-            read_only=False, sign=True):
+            manifest_cb=None, read_only=False, sign=True):
                 """Initializes a Catalog object.
 
                 'batch_mode' is an optional boolean value that indicates that
@@ -981,6 +982,10 @@ class Catalog(object):
                 updates to the catalog should be logged.  This enables consumers
                 of the catalog to perform incremental updates.
 
+                'manifest_cb' is an optional callback used by actions() and
+                get_entry_actions() to lazy-load Manifest Actions if the catalog
+                does not have the actions data for a requested package entry.
+
                 'read_only' is an optional boolean value that indicates if
                 operations that modify the catalog are allowed (an assertion
                 error will be raised if one is attempted and this is True).
@@ -993,6 +998,7 @@ class Catalog(object):
 
                 self.__log_updates = log_updates
                 self.__batch_mode = batch_mode
+                self.__manifest_cb = manifest_cb
                 self.__parts = {}
                 self.__updates = {}
 
@@ -1019,7 +1025,7 @@ class Catalog(object):
                 package_count = 0
                 package_version_count = 0
 
-                part = self.__get_part("catalog.base.C", must_exist=True)
+                part = self.get_part("catalog.base.C", must_exist=True)
                 if part:
                         # If the base Catalog didn't exist (in-memory or on-
                         # disk) that implies there is nothing to sort and
@@ -1038,29 +1044,68 @@ class Catalog(object):
                 self._attrs.package_version_count = \
                     package_version_count
 
+        @staticmethod
+        def __gen_actions(actions, excludes=EmptyI):
+                for astr in actions:
+                        a = pkg.actions.fromstr(astr)
+                        if a.include_this(excludes):
+                                yield a
+
+        def __gen_lazy_actions(self, f, info_needed, locales=EmptyI,
+            excludes=EmptyI):
+                # Note that the logic below must be kept in sync with
+                # group_actions found in add_package.
+                m = self.__manifest_cb(f)
+                if Catalog.DEPENDENCY in info_needed:
+                        atypes = ("depend", "set")
+                elif Catalog.SUMMARY in info_needed:
+                        atypes = ("set",)
+                else:
+                        raise RuntimeError(_("Unknown info_needed "
+                            "type: %s" % info_needed))
+
+                for a, attr_name in self.__gen_manifest_actions(m, atypes,
+                    excludes):
+                        if (a.name == "depend" or \
+                            attr_name.startswith("variant") or \
+                            attr_name.startswith("facet") or \
+                            attr_name in ("pkg.obsolete",
+                                "pkg.rename")):
+                                if Catalog.DEPENDENCY in info_needed:
+                                        yield a
+                        elif Catalog.SUMMARY in info_needed and a.name == "set":
+                                if attr_name in ("fmri", "pkg.fmri"):
+                                        continue
+
+                                comps = attr_name.split(":")
+                                if len(comps) > 1:
+                                        # 'set' is locale-specific.
+                                        if comps[1] not in locales:
+                                                continue
+                                yield a
+
+        @staticmethod
+        def __gen_manifest_actions(m, atypes, excludes):
+                """Private helper function to iterate over a Manifest's actions
+                by action type, returning tuples of (action, attr_name)."""
+                for atype in atypes:
+                        for a in m.gen_actions_by_type(atype):
+                                if not a.include_this(excludes):
+                                        continue
+
+                                if atype == "set":
+                                        yield a, a.attrs["name"]
+                                else:
+                                        yield a, None
+
         def __get_batch_mode(self):
                 return self.__batch_mode
 
+        def __get_last_modified(self):
+                return self._attrs.last_modified
+
         def __get_meta_root(self):
                 return self.__meta_root
-
-        def __get_part(self, name, must_exist=False):
-                # First, check if the part has already been cached, and if so,
-                # return it.
-                try:
-                        return self.__parts[name]
-                except KeyError:
-                        if not self.meta_root and must_exist:
-                                return
-
-                # Next, if the part hasn't been cached, create an object for it.
-                part = CatalogPart(name, meta_root=self.meta_root,
-                    ordered=not self.__batch_mode, sign=self.__sign)
-                if self.meta_root and must_exist and not part.exists:
-                        # Part doesn't exist on-disk, so don't return anything.
-                        return
-                self.__parts[name] = part
-                return part
 
         def __get_sign(self):
                 return self.__sign
@@ -1084,6 +1129,9 @@ class Catalog(object):
                 if cache:
                         self.__updates[name] = ulog
                 return ulog
+
+        def __get_version(self):
+                return self._attrs.version
 
         def __lock_catalog(self):
                 """Locks the catalog preventing multiple threads or external
@@ -1180,6 +1228,9 @@ class Catalog(object):
                 for part in self.__parts.values():
                         part.ordered = not self.__batch_mode
 
+        def __set_last_modified(self, value):
+                self._attrs.last_modified = value
+
         def __set_meta_root(self, pathname):
                 if pathname:
                         pathname = os.path.abspath(pathname)
@@ -1252,12 +1303,62 @@ class Catalog(object):
                 for part in self.__parts.values():
                         part.sign = value
 
+        def __set_version(self, value):
+                self._attrs.version = value
+
         def __unlock_catalog(self):
                 """Unlocks the catalog allowing other catalog consumers to
                 modify it."""
 
                 # XXX need filesystem unlock too?
                 self.__lock.release()
+
+        def actions(self, info_needed, excludes=EmptyI, locales=None):
+                """A generator function that produces tuples of the format
+                (fmri, actions) as it iterates over the contents of the
+                catalog (where 'actions' is a generator that returns the
+                Actions corresponding to the requested information).  If
+                the catalog doesn't contain any action data for the package
+                entry, and manifest_cb was defined at Catalog creation time,
+                the action data will be lazy-loaded by the actions generator;
+                otherwise it will return an empty iterator.
+
+                'excludes' is a list of variants which will be used to determine
+                what should be allowed by the actions generator in addition to
+                what is specified by 'info_needed'.  If not provided, only
+                'info_needed' will determine what actions are returned.
+
+                'info_needed' is a set of one or more catalog constants
+                indicating the types of catalog data that will be returned
+                in 'actions' in addition to the above:
+
+                        DEPENDENCY
+                                Depend and set Actions for package obsoletion,
+                                renaming, variants.
+
+                        SUMMARY
+                                Any remaining set Actions not listed above, such
+                                as pkg.summary, pkg.description, etc.
+
+                'locales' is an optional set of locale names for which Actions
+                should be returned.  The default is set(('C',)) if not provided.
+
+                'pfmri' is an optional FMRI to limit the returned results to."""
+
+                assert info_needed
+                if not locales:
+                        locales = set(("C",))
+
+                for f, entry in self.entries(info_needed=info_needed,
+                    locales=locales):
+                        if "actions" in entry:
+                                yield f, self.__gen_actions(entry["actions"],
+                                    excludes)
+                        elif self.__manifest_cb:
+                                yield f, self.__gen_lazy_actions(f, info_needed,
+                                    locales, excludes)
+                        else:
+                                yield f, EmptyI
 
         def add_package(self, pfmri, manifest=None, metadata=None):
                 """Add a package and its related metadata to the catalog and
@@ -1268,6 +1369,8 @@ class Catalog(object):
 
                 'metadata' is an optional dict of additional metadata to store
                 with the package's BASE record."""
+
+                assert not self.read_only
 
                 def group_actions(actions):
                         dep_acts = { "C": [] }
@@ -1287,7 +1390,7 @@ class Catalog(object):
                                         # dependency catalog part.
                                         dep_acts["C"].append(str(act))
                                         continue
-                                elif name == "fmri":
+                                elif name in ("fmri", "pkg.fmri"):
                                         # Redundant in the case of the catalog.
                                         continue
 
@@ -1327,7 +1430,7 @@ class Catalog(object):
                         if manifest:
                                 for k, v in manifest.signatures.iteritems():
                                         entry["signature-%s" % k] = v
-                        part = self.__get_part("catalog.base.C")
+                        part = self.get_part("catalog.base.C")
                         entries[part.name] = part.add(pfmri, metadata=entry,
                             op_time=op_time)
 
@@ -1353,7 +1456,7 @@ class Catalog(object):
                                                         # ctype.
                                                         continue
 
-                                                part = self.__get_part("catalog"
+                                                part = self.get_part("catalog"
                                                     ".%s.%s" % (ctype, locale))
                                                 entry = { "actions": acts }
                                                 entries[part.name] = part.add(
@@ -1364,6 +1467,111 @@ class Catalog(object):
                             op_time, entries=entries)
                 finally:
                         self.__unlock_catalog()
+
+        def append(self, src, cb=None, pfmri=None):
+                """Appends the entries in the specified 'src' catalog to that
+                of the current catalog.  The caller is responsible for ensuring
+                that no duplicates exist, and for calling finalize() or save()
+                after the append to ensure consistent catalog state.  Cannot
+                be used when log_updates or read_only is enabled.
+
+                'cb' is an optional callback function that must accept src,
+                an FMRI, and entry.  Where 'src' is the source catalog the
+                FMRI's entry is being copied from, and entry is the source
+                catalog entry.  It must return a tuple of the form (append,
+                metadata), where 'append' is a boolean value indicating if
+                the specified package should be appended, and 'metadata' is
+                a dict of additional metadata to store with the package's
+                BASE record.
+
+                'pfmri' is an optional FMRI of a package to append.  If not
+                provided, all FMRIs in the 'src' catalog will be appended."""
+
+                assert not self.__log_updates and not self.read_only
+
+                base = self.get_part("catalog.base.C")
+                src_base = src.get_part("catalog.base.C", must_exist=True)
+                if not src_base:
+                        if pfmri:
+                                raise api_errors.UnknownCatalogEntry(pfmri)
+                        # Nothing to do
+                        return
+
+                old_bmode = self.batch_mode
+                self.batch_mode = True
+
+                # Use the same operation time and date for all operations so
+                # that the last modification times will be synchronized.  This
+                # also has the benefit of avoiding extra datetime object
+                # instantiations.
+                op_time = datetime.datetime.utcnow()
+
+                # For each entry in the 'src' catalog, add its BASE entry to the
+                # current catalog along and then add it to the 'd'iscard dict if
+                # 'cb' is defined and returns False.
+                if pfmri:
+                        entries = [(pfmri, src_base.get_entry(pfmri))]
+                else:
+                        entries = src_base.entries()
+
+                d = {}
+                for f, entry in entries:
+                        nentry = copy.deepcopy(entry)
+                        if cb:
+                                merge, mdata = cb(src, f, entry)
+                                if not merge:
+                                        pub = d.setdefault(f.publisher, {})
+                                        plist = pub.setdefault(f.pkg_name,
+                                            set())
+                                        plist.add(f.version)
+                                        continue
+
+                                if mdata:
+                                        if "metadata" in nentry:
+                                                nentry["metadata"].update(mdata)
+                                        else:
+                                                nentry["metadata"] = mdata
+                        base.add(f, metadata=nentry, op_time=op_time)
+
+                if d and pfmri:
+                        # If the 'd'iscards dict is populated and pfmri is
+                        # defined, then there is nothing more to do.
+                        return
+
+                # Finally, merge any catalog part entries that exist unless the
+                # FMRI is found in the 'd'iscard dict.
+                for name in src.parts.keys():
+                        if name == "catalog.base.C":
+                                continue
+
+                        part = src.get_part(name, must_exist=True)
+                        if not part:
+                                # Part doesn't exist in-memory or on-disk, so
+                                # skip it.
+                                continue
+
+                        if pfmri:
+                                try:
+                                        entries = [(pfmri,
+                                            part.get_entry(pfmri))]
+                                except api_errors.UnknownCatalogEntry:
+                                        # Package isn't in this part; skip it.
+                                        continue
+                        else:
+                                entries = part.entries()
+
+                        for f, entry in entries:
+                                if f.publisher in d and \
+                                    f.pkg_name in d[f.publisher] and \
+                                    f.version in d[f.publisher][f.pkg_name]:
+                                        # Skip this package.
+                                        continue
+
+                                npart = self.get_part(part)
+                                nentry = copy.deepcopy(entry)
+                                npart.add(f, metadata=nentry, op_time=op_time)
+
+                self.batch_mode = old_bmode
 
         def apply_updates(self, path):
                 """Apply any CatalogUpdates available to the catalog based on
@@ -1384,7 +1592,7 @@ class Catalog(object):
                         ulog = CatalogUpdate(name, meta_root=path)
                         for pfmri, op_type, op_time, metadata in ulog.updates():
                                 for pname, pdata in metadata.iteritems():
-                                        part = self.__get_part(pname,
+                                        part = self.get_part(pname,
                                             must_exist=True)
                                         if not part:
                                                 # Part doesn't exist; skip.
@@ -1458,11 +1666,11 @@ class Catalog(object):
                 discards all content."""
 
                 for name in self._attrs.parts:
-                        part = self.__get_part(name)
+                        part = self.get_part(name)
                         part.destroy()
 
                 for name in self._attrs.updates:
-                        ulog = self.__get_update(name, cache=False) 
+                        ulog = self.__get_update(name, cache=False)
                         ulog.destroy()
 
                 self._attrs.destroy()
@@ -1503,9 +1711,10 @@ class Catalog(object):
 
                 'locales' is an optional set of locale names for which Actions
                 should be returned.  The default is set(('C',)) if not provided.
-                """
+                Note that unlike actions(), catalog entries will not lazy-load
+                action data if it is missing from the catalog."""
 
-                base = self.__get_part("catalog.base.C", must_exist=True)
+                base = self.get_part("catalog.base.C", must_exist=True)
                 if not base:
                         # Catalog contains nothing.
                         return
@@ -1517,14 +1726,14 @@ class Catalog(object):
 
                 parts = []
                 if self.DEPENDENCY in info_needed:
-                        part = self.__get_part("catalog.dependency.C",
+                        part = self.get_part("catalog.dependency.C",
                             must_exist=True)
                         if part:
                                 parts.append(part)
 
                 if self.SUMMARY in info_needed:
                         for locale in locales:
-                                part = self.__get_part(
+                                part = self.get_part(
                                     "catalog.summary.%s" % locale,
                                     must_exist=True)
                                 if not part:
@@ -1536,6 +1745,7 @@ class Catalog(object):
                 def merge_entry(src, dest):
                         for k, v in src.iteritems():
                                 if k == "actions":
+                                        dest.setdefault(k, [])
                                         dest[k] += v
                                 elif k != "version":
                                         dest[k] = v
@@ -1551,7 +1761,7 @@ class Catalog(object):
                                 merge_entry(entry, meta)
 
                 for f, bentry in base.entries():
-                        mdata = { "actions": [] }
+                        mdata = {}
                         merge_entry(bentry, mdata)
                         merge_meta(f, mdata)
                         yield f, mdata
@@ -1591,7 +1801,8 @@ class Catalog(object):
                 should be returned.  The default is set(('C',)) if not provided.
                 """
 
-                base = self.__get_part("catalog.base.C", must_exist=True)
+
+                base = self.get_part("catalog.base.C", must_exist=True)
                 if not base:
                         # Catalog contains nothing.
                         return
@@ -1603,14 +1814,14 @@ class Catalog(object):
 
                 parts = []
                 if self.DEPENDENCY in info_needed:
-                        part = self.__get_part("catalog.dependency.C",
+                        part = self.get_part("catalog.dependency.C",
                             must_exist=True)
                         if part:
                                 parts.append(part)
 
                 if self.SUMMARY in info_needed:
                         for locale in locales:
-                                part = self.__get_part(
+                                part = self.get_part(
                                     "catalog.summary.%s" % locale,
                                     must_exist=True)
                                 if not part:
@@ -1622,6 +1833,7 @@ class Catalog(object):
                 def merge_entry(src, dest):
                         for k, v in src.iteritems():
                                 if k == "actions":
+                                        dest.setdefault(k, [])
                                         dest[k] += v
                                 elif k != "version":
                                         dest[k] = v
@@ -1639,7 +1851,7 @@ class Catalog(object):
                 for ver, entries in base.entries_by_version(name):
                         nentries = []
                         for f, bentry in entries:
-                                mdata = { "actions": [] }
+                                mdata = {}
                                 merge_entry(bentry, mdata)
                                 merge_meta(f, mdata)
                                 nentries.append((f, mdata))
@@ -1669,7 +1881,7 @@ class Catalog(object):
                 'objects' is an optional boolean value indicating whether
                 FMRIs should be returned as FMRI objects or as strings."""
 
-                base = self.__get_part("catalog.base.C", must_exist=True)
+                base = self.get_part("catalog.base.C", must_exist=True)
                 if not base:
                         # Catalog contains nothing.
 
@@ -1685,7 +1897,7 @@ class Catalog(object):
                 fmris), where fmris is a of the fmris related to the
                 version, for the given package name."""
 
-                base = self.__get_part("catalog.base.C", must_exist=True)
+                base = self.get_part("catalog.base.C", must_exist=True)
                 if not base:
                         # Catalog contains nothing.
 
@@ -1731,6 +1943,7 @@ class Catalog(object):
                 def merge_entry(src, dest):
                         for k, v in src.iteritems():
                                 if k == "actions":
+                                        dest.setdefault(k, [])
                                         dest[k] += v
                                 elif k != "version":
                                         dest[k] = v
@@ -1749,7 +1962,7 @@ class Catalog(object):
                         info_needed = set()
 
                 parts = []
-                base = self.__get_part("catalog.base.C", must_exist=True)
+                base = self.get_part("catalog.base.C", must_exist=True)
                 if not base:
                         # Catalog contains nothing.
                         raise api_errors.UnknownCatalogEntry(
@@ -1760,19 +1973,19 @@ class Catalog(object):
 
                 # Always attempt to retrieve the BASE entry as FMRIs
                 # must be present in the BASE catalog part.
-                mdata = { "actions": [] }
+                mdata = {}
                 bentry = base.get_entry(pfmri)
                 merge_entry(bentry, mdata)
 
                 if self.DEPENDENCY in info_needed:
-                        part = self.__get_part("catalog.dependency.C",
+                        part = self.get_part("catalog.dependency.C",
                             must_exist=True)
                         if part:
                                 parts.append(part)
 
                 if self.SUMMARY in info_needed:
                         for locale in locales:
-                                part = self.__get_part(
+                                part = self.get_part(
                                     "catalog.summary.%s" % locale,
                                     must_exist=True)
                                 if not part:
@@ -1782,8 +1995,115 @@ class Catalog(object):
                                 parts.append(part)
 
                 merge_meta(pfmri, mdata)
-
                 return mdata
+
+        def get_entry_actions(self, pfmri, info_needed, excludes=EmptyI,
+            locales=None):
+                """A generator function that produces Actions as it iterates
+                over the catalog entry of the specified FMRI corresponding to
+                the requested information).  If the catalog doesn't contain
+                any action data for the package entry, and manifest_cb was
+                defined at Catalog creation time, the action data will be
+                lazy-loaded by the actions generator; otherwise it will
+                return an empty iterator.
+
+                'excludes' is a list of variants which will be used to determine
+                what should be allowed by the actions generator in addition to
+                what is specified by 'info_needed'.  If not provided, only
+                'info_needed' will determine what actions are returned.
+
+                'info_needed' is a set of one or more catalog constants
+                indicating the types of catalog data that will be returned
+                in 'actions' in addition to the above:
+
+                        DEPENDENCY
+                                Depend and set Actions for package obsoletion,
+                                renaming, variants.
+
+                        SUMMARY
+                                Any remaining set Actions not listed above, such
+                                as pkg.summary, pkg.description, etc.
+
+                'locales' is an optional set of locale names for which Actions
+                should be returned.  The default is set(('C',)) if not provided.
+                """
+
+                assert info_needed
+                if not locales:
+                        locales = set(("C",))
+
+                entry = self.get_entry(pfmri, info_needed=info_needed,
+                    locales=locales)
+
+                if "actions" in entry:
+                        return self.__gen_actions(entry["actions"], excludes)
+                elif self.__manifest_cb:
+                        return self.__gen_lazy_actions(pfmri, info_needed,
+                            locales, excludes)
+                else:
+                        return EmptyI
+
+        def get_entry_all_variants(self, pfmri):
+                """A generator function that yields tuples of the format
+                (var_name, variants); where var_name is the name of the
+                variant and variants is a list of the variants for that
+                name."""
+
+                info_needed = [self.DEPENDENCY]
+                entry = self.get_entry(pfmri, info_needed=info_needed)
+
+                if "actions" in entry:
+                        actions = self.__gen_actions(entry["actions"])
+                elif self.__manifest_cb:
+                        actions = self.__gen_lazy_actions(pfmri,
+                            info_needed)
+                else:
+                        return
+
+                for a in actions:
+                        if a.name != "set":
+                                continue
+
+                        attr_name = a.attrs["name"]
+                        if not attr_name.startswith("variant"):
+                                continue
+                        yield attr_name, a.attrs["value"]
+
+        def get_entry_variants(self, pfmri, name):
+                """A generator function that returns the variants for the
+                specified variant name.  If no variants exist for the
+                specified name, None will be returned."""
+
+                for var_name, values in self.get_entry_all_variants(pfmri):
+                        if var_name == name:
+                                # A package can only have one set of values
+                                # for a single variant name, so return it.
+                                return values
+                return None
+
+        def get_part(self, name, must_exist=False):
+                """Returns the CatalogPart object for the named catalog part.
+
+                'must_exist' is an optional boolean value that indicates that
+                the catalog part must already exist in-memory or on-disk, if
+                not a value of None will be returned."""
+
+                # First, check if the part has already been cached, and if so,
+                # return it.
+                try:
+                        return self.__parts[name]
+                except KeyError:
+                        if not self.meta_root and must_exist:
+                                return
+
+                # Next, if the part hasn't been cached, create an object for it.
+                part = CatalogPart(name, meta_root=self.meta_root,
+                    ordered=not self.__batch_mode, sign=self.__sign)
+                if self.meta_root and must_exist and not part.exists:
+                        # Part doesn't exist on-disk, so don't return anything.
+                        return
+                self.__parts[name] = part
+                return part
 
         def get_updates_needed(self, path):
                 """Returns a list of the catalog files needed to update
@@ -1882,17 +2202,11 @@ class Catalog(object):
                 # Ensure updates are in chronological ascending order.
                 return sorted(updates)
 
-        @property
-        def last_modified(self):
-                """A UTC datetime object indicating the last time the catalog
-                was modified."""
-                return self._attrs.last_modified
-
         def names(self):
                 """Returns a set containing the names of all the packages in
                 the Catalog."""
 
-                base = self.__get_part("catalog.base.C", must_exist=True)
+                base = self.get_part("catalog.base.C", must_exist=True)
                 if not base:
                         # Catalog contains nothing.
                         return set()
@@ -1918,6 +2232,8 @@ class Catalog(object):
         def remove_package(self, pfmri):
                 """Remove a package and its metadata."""
 
+                assert not self.read_only
+
                 self.__lock_catalog()
                 try:
                         # The package has to be removed from every known part.
@@ -1930,7 +2246,7 @@ class Catalog(object):
                         op_time = datetime.datetime.utcnow()
 
                         for name in self._attrs.parts:
-                                part = self.__get_part(name)
+                                part = self.get_part(name)
                                 if not part:
                                         continue
 
@@ -1989,6 +2305,32 @@ class Catalog(object):
 
                 return self._attrs.updates
 
+        def update_entry(self, pfmri, metadata):
+                """Updates the metadata stored in a package's BASE catalog
+                record for the specified FMRI.  Cannot be used when read_only
+                or log_updates is enabled; should never be used with a Catalog
+                intended for incremental update usage.
+
+                'pfmri' is the FMRI of the package to update the entry for.
+
+                'metadata' must be a dict of additional metadata to store with
+                the package's BASE record."""
+
+                assert not self.__log_updates and not self.read_only
+
+                base = self.get_part("catalog.base.C", must_exist=True)
+                if not base:
+                        raise api_errors.UnknownCatalogEntry(pfmri.get_fmri())
+
+                # get_entry returns the actual catalog entry, so updating it
+                # simply requires reassignment.
+                entry = base.get_entry(pfmri)
+                if metadata is None:
+                        if "metadata" in entry:
+                                del entry["metadata"]
+                        return
+                entry["metadata"] = metadata
+
         def validate(self):
                 """Verifies whether the signatures for the contents of the
                 catalog match the current signature data.  Raises the
@@ -1997,7 +2339,7 @@ class Catalog(object):
                 self._attrs.validate()
 
                 for name in self._attrs.parts:
-                        part = self.__get_part(name)
+                        part = self.get_part(name)
                         if not part:
                                 # Part does not exist; no validation needed.
                                 continue
@@ -2016,8 +2358,12 @@ class Catalog(object):
                         ulog.validate()
 
         batch_mode = property(__get_batch_mode, __set_batch_mode)
+        last_modified = property(__get_last_modified, __set_last_modified,
+            doc="A UTC datetime object indicating the last time the catalog "
+            "was modified.")
         meta_root = property(__get_meta_root, __set_meta_root)
         sign = property(__get_sign, __set_sign)
+        version = property(__get_version, __set_version)
 
 # Methods used by Catalog classes.
 def datetime_to_ts(dt):

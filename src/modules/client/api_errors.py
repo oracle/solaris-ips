@@ -76,6 +76,20 @@ class ImageplanStateException(ApiException):
                 ApiException.__init__(self)
                 self.state = state
 
+
+class ImagePkgStateError(Exception):
+
+        def __init__(self, fmri, states):
+                ApiException.__init__(self)
+                self.fmri = fmri
+                self.states = states
+
+        def __str__(self):
+                return _("Invalid package state change attempted '%(states)s' "
+                    "for package '%(fmri)s'." % { "states": self.states,
+                    "fmri": self.fmri })
+
+
 class IpkgOutOfDateException(ApiException):
         pass
 

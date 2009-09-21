@@ -1,4 +1,5 @@
 #!/usr/bin/python2.4
+# -*- coding: utf-8 -*-
 #
 # CDDL HEADER START
 #
@@ -39,11 +40,13 @@ sys.path.insert(0, path_to_parent)
 
 import pkg5unittest
 
+import pkg.actions
 import pkg.fmri as fmri
 import pkg.catalog as catalog
 import pkg.client.api_errors as api_errors
 import pkg.manifest as manifest
 import pkg.portable as portable
+import pkg.variant as variant
 
 from pkg.misc import EmptyI
 
@@ -103,6 +106,183 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                         if e.errno != errno.EEXIST:
                                 raise e
                 return os.path.abspath(target)
+
+        def __test_catalog_actions(self, nc, pkg_src_list):
+                def expected_dependency():
+                        return [
+                            "depend fmri=foo@1.0 type=require",
+                            "set name=facet.devel value=true",
+                            "set name=variant.arch value=i386 value=sparc",
+                            "set name=pkg.obsolete value=true",
+                        ]
+
+                def expected_summary(f):
+                        return [
+                            "set name=pkg.summary value=\"Summary %s\"" % f,
+                            "set name=pkg.description value=\"Desc %s\"" % f,
+                        ]
+
+                def expected_all_variant_summary(f):
+                        return [
+                            "set name=pkg.summary value=\"Summary %s\"" % f,
+                            ("set name=pkg.summary value=\"Sparc Summary %s\""
+                            " variant.arch=sparc" % f),
+                            "set name=pkg.description value=\"Desc %s\"" % f,
+                        ]
+
+                def expected_all_locale_summary(f):
+                        # The comparison has to be sorted for this case.
+                        return sorted([
+                            "set name=pkg.summary value=\"Summary %s\"" % f,
+                            "set name=pkg.description value=\"Desc %s\"" % f,
+                            "set name=pkg.summary:th value=\"ซอฟต์แวร์ %s\"" % f,
+                        ])
+
+                # Next, ensure its populated.
+                self.assertEqual([f for f in nc.fmris()], pkg_src_list)
+
+                # This case should raise an AssertionError.
+                try:
+                        for f, actions in nc.actions([]):
+                                break
+                except AssertionError:
+                        pass
+                else:
+                        raise RuntimeError("actions() did not raise expected "
+                            "exception")
+
+                variants = variant.Variants()
+                variants["variant.arch"] = "i386"
+                excludes = [variants.allow_action]
+                locales = set(("C", "th"))
+
+                # This case should only return the dependency-related actions.
+                for f, actions in nc.actions([nc.DEPENDENCY]):
+                        returned = []
+                        for a in actions:
+                                self.assertTrue(isinstance(a,
+                                    pkg.actions.generic.Action))
+                                returned.append(str(a))
+
+                        var = nc.get_entry_variants(f, "variant.arch")
+                        vars = nc.get_entry_all_variants(f)
+                        if f.pkg_name == "apkg":
+                                # No actions should be returned for this case,
+                                # as the callback will return an empty manifest.
+                                self.assertEqual(returned, [])
+                                self.assertEqual(var, None)
+                                self.assertEqual([v for v in vars], [])
+                                continue
+
+                        expected = expected_dependency() 
+                        self.assertEqual(returned, expected)
+                        self.assertEqual(var, ["i386", "sparc"])
+                        self.assertEqual([(n, vs) for n, vs in vars],
+                            [("variant.arch", ["i386", "sparc"])])
+
+                # This case should only return the summary-related actions (but
+                # for all variants).
+                for f, actions in nc.actions([nc.SUMMARY]):
+                        returned = []
+                        for a in actions:
+                                self.assertTrue(isinstance(a,
+                                    pkg.actions.generic.Action))
+                                returned.append(str(a))
+
+                        if f.pkg_name == "apkg":
+                                # No actions should be returned for this case,
+                                # as the callback will return an empty manifest.
+                                self.assertEqual(returned, [])
+                                continue
+
+                        expected = expected_all_variant_summary(f) 
+                        self.assertEqual(returned, expected)
+
+                # This case should only return the summary-related actions (but
+                # for 'C' and 'th' locales and without sparc variants).
+                for f, actions in nc.actions([nc.SUMMARY], excludes=excludes,
+                    locales=locales):
+                        returned = []
+                        for a in actions:
+                                self.assertTrue(isinstance(a,
+                                    pkg.actions.generic.Action))
+                                returned.append(str(a))
+
+                        if f.pkg_name == "apkg":
+                                # No actions should be returned for this case,
+                                # as the callback will return an empty manifest.
+                                self.assertEqual(returned, [])
+                                continue
+
+                        returned.sort()
+                        expected = expected_all_locale_summary(f) 
+                        self.assertEqual(returned, expected)
+
+                # This case should only return the summary-related actions (but
+                # without sparc variants).
+                for f, actions in nc.actions([nc.SUMMARY], excludes=excludes):
+                        returned = []
+                        for a in actions:
+                                self.assertTrue(isinstance(a,
+                                    pkg.actions.generic.Action))
+                                returned.append(str(a))
+
+                        if f.pkg_name == "apkg":
+                                # No actions should be returned for this case,
+                                # as the callback will return an empty manifest.
+                                self.assertEqual(returned, [])
+                                continue
+
+                        expected = expected_summary(f) 
+                        self.assertEqual(returned, expected)
+
+                # Verify that retrieving a single entry's actions works as well.
+                f = pkg_src_list[0]
+                try:
+                        for a in nc.get_entry_actions(f, []):
+                                break
+                except AssertionError:
+                        pass
+                else:
+                        raise RuntimeError("get_entry_actions() did not raise "
+                            "expected exception")
+
+                # This case should only return the dependency-related actions.
+                returned = [
+                    str(a)
+                    for a in nc.get_entry_actions(f, [nc.DEPENDENCY])
+                ]
+                expected = expected_dependency() 
+                self.assertEqual(returned, expected)
+
+                # This case should only return the summary-related actions (but
+                # for all variants).
+                returned = [
+                    str(a)
+                    for a in nc.get_entry_actions(f, [nc.SUMMARY])
+                ]
+                expected = expected_all_variant_summary(f) 
+                self.assertEqual(returned, expected)
+
+                # This case should only return the summary-related actions (but
+                # for 'C' and 'th' locales and without sparc variants).
+                returned = sorted([
+                    str(a)
+                    for a in nc.get_entry_actions(f, [nc.SUMMARY], 
+                    excludes=excludes, locales=locales)
+                ])
+                expected = expected_all_locale_summary(f) 
+                self.assertEqual(returned, expected)
+
+                # This case should only return the summary-related actions (but
+                # without sparc variants).
+                returned = [
+                    str(a)
+                    for a in nc.get_entry_actions(f, [nc.SUMMARY],
+                    excludes=excludes)
+                ]
+                expected = expected_summary(f) 
+                self.assertEqual(returned, expected)
 
         def test_01_attrs(self):
                 self.assertEqual(self.npkgs, self.c.package_count)
@@ -309,7 +489,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
 
                 # Catalog files should have this mode.
                 mode = stat.S_IRUSR|stat.S_IWUSR|stat.S_IRGRP|stat.S_IROTH
-                # Windows doesn't have group or other permissions, so they 
+                # Windows doesn't have group or other permissions, so they
                 # are set to be the same as for the owner
                 if portable.ostype == "windows":
                         mode |= stat.S_IWGRP|stat.S_IWOTH
@@ -557,6 +737,138 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 self.assertEqual([f for f in dup1.fmris()],
                     [f for f in orig.fmris()])
 
+        def test_08_append(self):
+                """Verify that append functionality works as expected."""
+
+                # First, test that basic append functionality works.
+                c = self.c
+                nc = catalog.Catalog()
+                nc.append(c)
+                nc.finalize()
+
+                self.assertEqual([f for f in c.fmris()],
+                    [f for f in nc.fmris()])
+                self.assertEqual(c.package_version_count,
+                    nc.package_version_count)
+
+                for f, entry in nc.entries():
+                        self.assertTrue("metadata" not in entry)
+
+                # Next, test that callbacks work as expected.
+                pkg_list = []
+                for f in c.fmris():
+                        if f.pkg_name == "apkg":
+                                continue
+                        pkg_list.append(f)
+
+                def append_cb(cat, f, entry):
+                        if f.pkg_name == "apkg":
+                                return False, None
+                        return True, { "states": [] }
+
+                nc = catalog.Catalog()
+                nc.append(c, cb=append_cb)
+                nc.finalize()
+
+                for f, entry in nc.entries():
+                        self.assertNotEqual(f.pkg_name, "apkg")
+                        self.assertTrue("states" in entry["metadata"])
+
+                # Next, check that an append for a single FMRI works with a
+                # callback.
+                def cb_true(x, y, z):
+                        return True, None
+
+                def cb_false(x, y, z):
+                        return False, None
+
+                for f in c.fmris():
+                        if f.pkg_name == "apkg":
+                                nc.append(c, cb=cb_false, pfmri=f)
+                                break
+                nc.finalize()
+
+                for f, entry in nc.entries():
+                        self.assertNotEqual(f.pkg_name, "apkg")
+                        self.assertTrue("states" in entry["metadata"])
+
+                for f in c.fmris():
+                        if f.pkg_name == "apkg":
+                                nc.append(c, cb=cb_true, pfmri=f)
+                                break
+                nc.finalize()
+
+                self.assertEqual([f for f in c.fmris()],
+                    [f for f in nc.fmris()])
+                self.assertEqual(c.package_version_count,
+                    nc.package_version_count)
+
+        def test_09_actions(self):
+                """Verify that the actions functions work as expected."""
+
+                def ret_man(f):
+                        m = manifest.Manifest()
+                        if f.pkg_name == "apkg":
+                                return m
+
+                        m.set_content(
+                            "depend fmri=foo@1.0 type=require\n"
+                            "set name=facet.devel value=true\n"
+                            "set name=variant.arch value=i386 value=sparc\n"
+                            "set name=pkg.obsolete value=true\n"
+                            "set name=pkg.fmri value=\"%s\"\n"
+                            "set name=pkg.summary value=\"Summary %s\"\n"
+                            "set name=pkg.summary value=\"Sparc Summary %s\""
+                            " variant.arch=sparc\n"
+                            "set name=pkg.summary:th value=\"ซอฟต์แวร์ %s\"\n"
+                            "set name=pkg.description value=\"Desc %s\"\n" % \
+                            (f, f, f, f, f))
+                        return m
+
+                pkg_src_list = [
+                    fmri.PkgFmri("pkg://opensolaris.org/"
+                        "test@1.0,5.11-1:20000101T120010Z"),
+                    fmri.PkgFmri("pkg://opensolaris.org/"
+                        "test@1.0,5.11-1.1:20000101T120020Z"),
+                    fmri.PkgFmri("pkg://opensolaris.org/"
+                        "apkg@1.0,5.11-1:20000101T120040Z"),
+                ]
+
+                # First, create a catalog (with callback) and populate it
+                # using only FMRIs.
+                nc = catalog.Catalog(manifest_cb=ret_man)
+                for f in pkg_src_list:
+                        nc.add_package(f)
+                self.__test_catalog_actions(nc, pkg_src_list)
+
+                # Second, create a catalog (without callback) and populate it
+                # using FMRIs and Manifests.
+                nc = catalog.Catalog()
+                for f in pkg_src_list:
+                        nc.add_package(f, manifest=ret_man(f))
+                self.__test_catalog_actions(nc, pkg_src_list)
+
+                # Third, create a catalog (with callback), but populate it
+                # using FMRIs and Manifests.
+                nc = catalog.Catalog(manifest_cb=ret_man)
+                for f in pkg_src_list:
+                        nc.add_package(f, manifest=ret_man(f))
+                self.__test_catalog_actions(nc, pkg_src_list)
+
+                # Fourth, create a catalog (no callback) and populate it
+                # using only FMRIs.
+                nc = catalog.Catalog()
+                for f in pkg_src_list:
+                        nc.add_package(f)
+
+                # These cases should not return any actions.
+                for f, actions in nc.actions([nc.DEPENDENCY]):
+                        returned = [a for a in actions]
+                        self.assertEqual(returned, [])
+
+                returned = nc.get_entry_actions(f, [nc.DEPENDENCY])
+                self.assertEqual(list(returned), [])
+
 
 class TestEmptyCatalog(pkg5unittest.Pkg5TestCase):
         def setUp(self):
@@ -571,6 +883,13 @@ class TestEmptyCatalog(pkg5unittest.Pkg5TestCase):
                 cl = catalog.extract_matching_fmris(self.c.fmris(),
                     patterns=[cf])[0]
                 self.assertEqual(len(cl), 0)
+
+        def test_03_actions(self):
+                returned = [
+                    (f, actions)
+                    for f, actions in self.c.actions([self.c.DEPENDENCY])
+                ]
+                self.assertEqual(returned, [])
 
 
 if __name__ == "__main__":
