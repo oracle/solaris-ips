@@ -2339,6 +2339,7 @@ class PackageManager:
                         self.selected_model = None
                         self.selected_path = None
                         self.selected_pkgstem = None
+                        self.__enable_disable_install_remove()
 
         def __on_package_selection_changed(self, selection, widget):
                 '''This function is for handling package selection changes'''
@@ -2779,6 +2780,7 @@ class PackageManager:
                                 self.__add_pkg_stem_to_list(pkg_stem, pkg_status)
                         self.update_statusbar()
                         self.__enable_disable_selection_menus()
+                        self.__enable_disable_install_remove()
 
         def __update_reload_button(self):
                 if self.user_rights:
@@ -4039,15 +4041,15 @@ class PackageManager:
                         self.statusbar_message_id = 0
                 search_text = self.w_searchentry.get_text()
 
+                self.selected = 0
+                visible_publisher = self.__get_selected_publisher()
+                pkgs = self.selected_pkgs.get(visible_publisher)
+                if pkgs:
+                        self.selected = len(pkgs)
                 if not self.in_search_mode:
                         if self.application_list == None:
                                 return
                         self.length_visible_list = len(self.application_list_filter)
-                        self.selected = 0
-                        visible_publisher = self.__get_selected_publisher()
-                        pkgs = self.selected_pkgs.get(visible_publisher)
-                        if pkgs:
-                                self.selected = len(pkgs)
                         selected_in_list = 0
                         for pkg_row in self.application_list_filter:
                                 if pkg_row[enumerations.MARK_COLUMN]:
