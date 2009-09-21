@@ -370,6 +370,7 @@
               <widget class="GtkToolButton" id="reload_button">
                 <property name="visible">True</property>
                 <property name="tooltip" translatable="yes">Refresh list of packages and package status</property>
+                <property name="is_important">True</property>
                 <property name="label" translatable="yes">Refresh</property>
                 <property name="use_underline">True</property>
                 <property name="icon">reload24x.png</property>
