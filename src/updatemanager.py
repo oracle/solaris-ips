@@ -33,7 +33,6 @@ import locale
 import gettext
 import pango
 from threading import Thread
-from threading import Timer
 
 try:
         import gnome
@@ -46,7 +45,6 @@ try:
 except ImportError:
         sys.exit(1)
 
-import pkg.client.api as api
 import pkg.portable as portable
 import pkg.client.progress as progress
 import pkg.gui.beadmin as beadm
@@ -67,10 +65,12 @@ PKG_ICON_LOCATION = "usr/share/package-manager/icons"
 ICON_LOCATION = "usr/share/update-manager/icons"
 CHECK_FOR_UPDATES = "/usr/lib/pm-checkforupdates"
 PKG_CLIENT_NAME = "updatemanager" # API client name
-SELECTION_CHANGE_LIMIT = 0.5    # Time limit in seconds to cancel selection updates
-IND_DELAY = 0.05                # Time delay for printing index progress
+SHOW_INFO_DELAY = 500           # Delay in milliseconds before showing selected
+                                # package information
 UPDATES_FETCH_DELAY = 200       # Time to wait before fetching updates, allows gtk main
                                 # loop time to start and display main UI
+MAX_INFO_CACHE_LIMIT = 100      # Max numger of package descriptions to cache
+
 #UM Row Model
 (
 UM_ID,
@@ -108,15 +108,15 @@ class Updatemanager:
                         gtk.gdk.Pixbuf,           # UM_REBOOT
                         gobject.TYPE_STRING,      # UM_LATEST_VER
                         gobject.TYPE_STRING,      # UM_SIZE
-                        gobject.TYPE_STRING,      # UM_STEM                        
+                        gobject.TYPE_STRING,      # UM_STEM
                         )
                 self.progress_stop_thread = False
                 self.last_select_time = 0
                 self.user_rights = portable.is_admin()
-                self.fmri_description = None
                 self.image_dir_arg = None
                 self.toggle_counter = 0
-                self.selection_timer = None
+                self.last_show_info_id = 0
+                self.show_info_id = 0
                 self.package_selection = None
                 self.update_all_proceed = False
                 self.ua_be_name = None
@@ -124,6 +124,12 @@ class Updatemanager:
                 self.icon_theme = gtk.IconTheme()
                 pkg_icon_location = os.path.join(self.application_dir, PKG_ICON_LOCATION)
                 self.icon_theme.append_search_path(pkg_icon_location)
+                self.pkg_installed_icon = gui_misc.get_icon(self.icon_theme,
+                    'status_installed')
+                self.pkg_not_installed_icon = gui_misc.get_icon(self.icon_theme,
+                    'status_installed')
+                self.pkg_update_available_icon = gui_misc.get_icon(self.icon_theme,
+                    'status_newupdate')
                 icon_location = os.path.join(self.application_dir, ICON_LOCATION)
                 self.icon_theme.append_search_path(icon_location)
                 self.ua_start = 0
@@ -373,7 +379,7 @@ class Updatemanager:
                         gtk.gdk.Pixbuf,           # UM_REBOOT
                         gobject.TYPE_STRING,      # UM_LATEST_VER
                         gobject.TYPE_STRING,      # UM_SIZE
-                        gobject.TYPE_STRING,      # UM_STEM                        
+                        gobject.TYPE_STRING,      # UM_STEM
                         )
 
                 # Use check_for_updates to determine whether updates
@@ -462,66 +468,6 @@ class Updatemanager:
                 self.w_um_dialog.present()
                 self.w_um_dialog.resize(420, 100)
                 
-        def __get_info_from_name(self, name, local):
-                if self.fmri_description != name:
-                        return None
-                if self.__get_api_obj() == None:
-                        return None
-                        
-                ret = self.__get_api_obj().info([name], local,
-                    (api.PackageInfo.ALL_OPTIONS -
-                    frozenset([api.PackageInfo.LICENSES])) -
-                    api.PackageInfo.ACTION_OPTIONS)
-                
-                pis = ret[api.ImageInterface.INFO_FOUND]
-                if len(pis) == 1:
-                        return pis[0]
-                else:
-                        return None
-
-        def __get_details_from_name(self, name):                        
-                info = self.__get_info_from_name(name, False)
-                if info is not None:
-                        return self.__update_details_from_info(name, info)
-                else:
-                        return None
-                        
-        def __update_details_from_info(self, name, info):
-                local_info = self.__get_info_from_name(name, True)
-                categories = _("None")
-                if info.category_info_list:
-                        verbose = len(info.category_info_list) > 1
-                        categories = ""
-                        categories += info.category_info_list[0].__str__(verbose)
-                        if len(info.category_info_list) > 1:
-                                for ci in info.category_info_list[1:]:
-                                        categories += ", " + ci.__str__(verbose)
-                try:
-                        installed_ver = "%s-%s" % (local_info.version, local_info.branch)
-                except AttributeError:
-                        installed_ver = ""
-
-                ver = "%s-%s" % (info.version, info.branch)
-                summary = _("None")
-                if info.summary:
-                        summary = info.summary
- 
-                str_details = _(
-                    '\nSummary:\t\t\t%s'
-                    '\nSize:       \t\t\t%s'
-                    '\nCategory:\t\t\t%s'
-                    '\nLatest Version:\t\t%s'
-                    '\nInstalled Version:\t%s'
-                    '\nPackaging Date:\t%s'
-                    '\nFMRI:       \t\t\t%s'
-                    '\nRepository:       \t\t%s'
-                    '\n') \
-                    % (summary, misc.bytes_to_str(info.size), 
-                    categories, ver, installed_ver,
-                    info.packaging_date, info.fmri, info.publisher)
-                self.details_cache[name] = str_details
-                return str_details
-
         @staticmethod
         def __removed_filter(model, itr):
                 '''This function filters category in the main application view'''
@@ -530,56 +476,75 @@ class Updatemanager:
         def __on_package_selection_changed(self, selection, widget):
                 '''This function is for handling package selection changes'''
                 model, itr = selection.get_selected()
+                if self.show_info_id != 0:
+                        gobject.source_remove(self.show_info_id)
+                        self.show_info_id = 0
                 if itr:                        
                         fmri = model.get_value(itr, UM_STEM)
+                        if self.__setting_from_cache(fmri):
+                                return
                         pkg_name =  model.get_value(itr, UM_NAME)
-                        delta = time.time() - self.last_select_time
-                        if delta < SELECTION_CHANGE_LIMIT:
-                                if self.selection_timer is not None:
-                                        self.selection_timer.cancel()
-                                        self.selection_timer = None
-                        
-                        self.fmri_description = fmri
-                        self.last_select_time = time.time()
+                        infobuffer = self.w_um_textview.get_buffer()
+                        infobuffer.set_text(
+                            _("\nFetching details for %s ...") % pkg_name)
+                        self.last_show_info_id = self.show_info_id = \
+                            gobject.timeout_add(SHOW_INFO_DELAY,
+                            self.__show_info, model, model.get_path(itr))
 
-                        if self.details_cache.has_key(fmri):
-                                if self.selection_timer is not None:
-                                        self.selection_timer.cancel()  
-                                        self.selection_timer = None
-                                infobuffer = self.w_um_textview.get_buffer()
-                                infobuffer.set_text("")
-                                textiter = infobuffer.get_end_iter()
-                                infobuffer.insert_with_tags_by_name(textiter,
-                                    "\n%s" % pkg_name, "bold")
-                                infobuffer.insert(textiter, self.details_cache[fmri])
-                        else:
-                                infobuffer = self.w_um_textview.get_buffer()
-                                infobuffer.set_text(
-                                    _("\nFetching details for %s ...") % pkg_name)
-                                self.selection_timer = Timer(SELECTION_CHANGE_LIMIT,
-                                    self.__show_package_info_thread,
-                                    args=(fmri, pkg_name )).start()
+        def __setting_from_cache(self, fmri):
+                if len(self.details_cache) > MAX_INFO_CACHE_LIMIT:
+                        self.details_cache = {}
 
-        def __show_package_info_thread(self, fmri, pkg_name):
+                if self.details_cache.has_key(fmri):
+                        labs = self.details_cache[fmri][0]
+                        text = self.details_cache[fmri][1]
+                        gui_misc.set_package_details_text(labs, text,
+                            self.w_um_textview, self.pkg_installed_icon,
+                            self.pkg_not_installed_icon, 
+                            self.pkg_update_available_icon)
+                        return True
+                else:
+                        return False
+
+        def __show_info(self, model, path):
+                self.show_info_id = 0
+
+                itr = model.get_iter(path)
+                fmri = model.get_value(itr, UM_STEM)
+                pkg_name =  model.get_value(itr, UM_NAME)
                 Thread(target = self.__show_package_info,
-                    args = (fmri, pkg_name)).start()
+                    args=(fmri, pkg_name, self.last_show_info_id)).start()
 
-        def __show_package_info(self, fmri, pkg_name):
-                details = self.__get_details_from_name(fmri)
-                if self.fmri_description == fmri and details != None:
+        def __show_package_info(self, fmri, pkg_name, info_id):
+                local_info = None
+                remote_info = None
+                if info_id == self.last_show_info_id:
+                        local_info = gui_misc.get_pkg_info(self.__get_api_obj(),
+                            fmri, True) 
+                if info_id == self.last_show_info_id:
+                        remote_info = gui_misc.get_pkg_info(self.__get_api_obj(),
+                            fmri, False) 
+                if info_id == self.last_show_info_id:
+                        gobject.idle_add(self.__update_package_info, fmri,
+                            pkg_name, local_info, remote_info, info_id)
+                return 
+ 
+        def  __update_package_info(self, fmri, pkg_name, local_info, remote_info,
+            info_id):
+                if info_id != self.last_show_info_id:
+                        return
+
+                if not local_info and not remote_info:
                         infobuffer = self.w_um_textview.get_buffer()
                         infobuffer.set_text("")
                         textiter = infobuffer.get_end_iter()
                         infobuffer.insert_with_tags_by_name(textiter,
-                            "\n%s" % pkg_name, "bold")
-                        infobuffer.insert(textiter, details)
-                elif self.fmri_description == fmri and details == None:
-                        infobuffer = self.w_um_textview.get_buffer()
-                        infobuffer.set_text("")
-                        textiter = infobuffer.get_end_iter()
-                        if textiter != None: #Gtk race condition seems to cause this
-                                infobuffer.insert_with_tags_by_name(textiter,
-                                        _("\nNo details available"), "bold")
+                            _("\nNo details available"), "bold")
+                        return
+                labs, text = gui_misc.set_package_details(pkg_name, local_info,
+                    remote_info, self.w_um_textview, self.pkg_installed_icon,
+                    self.pkg_not_installed_icon, self.pkg_update_available_icon)
+                self.details_cache[fmri] = (labs, text)
 
         def __on_um_completed_linkbutton_clicked(self, widget):
                 try:

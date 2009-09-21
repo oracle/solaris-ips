@@ -23,14 +23,13 @@
 # Use is subject to license terms.
 #
 
-MAX_DESC_LEN = 60                         # Max length of the description
 MAX_INFO_CACHE_LIMIT = 100                # Max number of package descriptions to cache
 NOTEBOOK_PACKAGE_LIST_PAGE = 0            # Main Package List page index
 NOTEBOOK_START_PAGE = 1                   # Main View Start page index
 INFO_NOTEBOOK_LICENSE_PAGE = 3            # License Tab index
 PUBLISHER_ADD = 0                         # Index for "Add..." string
 PUBLISHER_ALL = 1                         # Index for "All Sources" string
-SHOW_INFO_DELAY = 600       # Delay before showing selected pacakge information
+SHOW_INFO_DELAY = 600       # Delay before showing selected package information
 SHOW_LICENSE_DELAY = 600    # Delay before showing license information
 SEARCH_STR_FORMAT = "<%s>"
 MIN_APP_WIDTH = 750                       # Minimum application width
@@ -2906,12 +2905,15 @@ class PackageManager:
                         self.info_cache = {}
 
                 if self.info_cache.has_key(pkg_stem):
-                        labs = self.info_cache[pkg_stem][1]
+                        labs = self.info_cache[pkg_stem][0]
+                        text = self.info_cache[pkg_stem][1]
+                        gui_misc.set_package_details_text(labs, text,
+                            self.w_generalinfo_textview,
+                            self.installed_icon, self.not_installed_icon,
+                            self.update_available_icon)
                         text = self.info_cache[pkg_stem][2]
-                        self.__set_generalinfo_text(labs, text)
-                        text = self.info_cache[pkg_stem][3]
                         self.__set_installedfiles_text(text)
-                        text = self.info_cache[pkg_stem][4]
+                        text = self.info_cache[pkg_stem][3]
                         self.__set_dependencies_text(text)
                         return True
                 else:
@@ -2934,81 +2936,11 @@ class PackageManager:
                 end_itr = depbuffer.get_end_iter()
                 depbuffer.insert(end_itr, "%s" % text)
 
-        @staticmethod
-        def __add_line_to_generalinfo(text_buffer, index, label, text, 
-            icon = None, font_size = 1):
-                itr = text_buffer.get_iter_at_line(index)
-                text_buffer.insert_with_tags_by_name(itr, label, "bold")
-                end_itr = text_buffer.get_end_iter()
-                if icon == None:
-                        text_buffer.insert(end_itr, "\t%s\n" % text)
-                else:
-                        width = icon.get_width()
-                        height = icon.get_height()
-                        resized_icon = icon.scale_simple(
-                            (font_size * width) / height,
-                            font_size,
-                            gtk.gdk.INTERP_BILINEAR)
-                        text_buffer.insert(end_itr, "\t ")
-                        text_buffer.get_end_iter()
-                        text_buffer.insert_pixbuf(end_itr, resized_icon)
-                        text_buffer.insert(end_itr, " %s\n" % text)
-
-        def __set_generalinfo_text(self, labs, text):
-                max_len = 0
-                for lab in labs:
-                        if len(labs[lab]) > max_len:
-                                max_len = len(labs[lab])
-
-                style = self.w_generalinfo_textview.get_style()
-                font_size_in_pango_unit = style.font_desc.get_size()
-                font_size_in_pixel = font_size_in_pango_unit / pango.SCALE
-                tab_array = pango.TabArray(2, True)
-                tab_array.set_tab(1, pango.TAB_LEFT, max_len * font_size_in_pixel)
-                self.w_generalinfo_textview.set_tabs(tab_array)
-
-                infobuffer = self.w_generalinfo_textview.get_buffer()
-                infobuffer.set_text("")
-                i = 0
-                self.__add_line_to_generalinfo(infobuffer, i, labs["name"], 
-                    text["name"])
-                i += 1
-                self.__add_line_to_generalinfo(infobuffer, i, labs["desc"],
-                    text["desc"])
-                i += 1
-                installed = False
-                if text["ins"] == _("No"):
-                        icon = self.not_installed_icon
-                else: 
-                        icon = self.installed_icon
-                        installed = True
-                self.__add_line_to_generalinfo(infobuffer, i, labs["ins"],
-                    text["ins"], icon, font_size_in_pixel)
-                i += 1
-                if installed and text["available"] != _("No"):
-                        self.__add_line_to_generalinfo(infobuffer, i, 
-                            labs["available"], text["available"],
-                            self.update_available_icon, font_size_in_pixel)
-                else:
-                        self.__add_line_to_generalinfo(infobuffer, i,
-                            labs["available"], text["available"])
-                i += 1
-                self.__add_line_to_generalinfo(infobuffer, i, labs["size"], 
-                    text["size"])
-                i += 1
-                self.__add_line_to_generalinfo(infobuffer, i, labs["cat"], 
-                    text["cat"])
-                i += 1
-                self.__add_line_to_generalinfo(infobuffer, i, labs["repository"], 
-                    text["repository"])
-
         def __update_package_info(self, pkg, local_info, remote_info, info_id):
                 if self.showing_empty_details or (info_id != 
                     self.last_show_info_id):
                         return
-                pkg_name = pkg.get_name()
                 pkg_stem = pkg.get_pkg_stem()
-                installed = True
 
                 if self.__setting_from_cache(pkg_stem):
                         return
@@ -3032,19 +2964,17 @@ class PackageManager:
                             network_str)
                         return
 
+                labs, text = gui_misc.set_package_details(pkg.get_name(), local_info,
+                    remote_info, self.w_generalinfo_textview,
+                    self.installed_icon, self.not_installed_icon,
+                    self.update_available_icon)
                 if not local_info:
                         # Package is not installed
                         local_info = remote_info
-                        installed = False
 
                 if not remote_info:
                         remote_info = local_info
-                        installed = True
 
-                description = local_info.summary
-                #XXX long term need to have something more robust here for multi byte
-                if len(description) > MAX_DESC_LEN:
-                        description = description[:MAX_DESC_LEN] + " ..."
                 inst_str = "%s\n" % self.api_o.root
                 dep_str = ""
 
@@ -3059,55 +2989,9 @@ class PackageManager:
                         inst_str += ''.join(["\t%s\n" % x for x in local_info.hardlinks])
                 if local_info.links:
                         inst_str += ''.join(["\t%s\n" % x for x in local_info.links])
-                labs = {}
-                labs["name"] = _("Name:")
-                labs["desc"] = _("Description:")
-                labs["size"] = _("Size:")
-                labs["cat"] = _("Category:")
-                labs["ins"] = _("Installed:")
-                labs["available"] = _("Version Available:")
-                labs["lat"] = _("Latest Version:")
-                labs["repository"] = _("Publisher:")
-
-                categories = _("None")
-                if local_info.category_info_list:
-                        verbose = len(local_info.category_info_list) > 1
-                        categories = ""
-                        categories += local_info.category_info_list[0].__str__(verbose)
-                        if len(local_info.category_info_list) > 1:
-                                for ci in local_info.category_info_list[1:]:
-                                        categories += ", " + ci.__str__(verbose)
-                description = _("None")
-                if local_info.summary:
-                        description = local_info.summary
-
-                text = {}
-                text["name"] = pkg_name
-                text["desc"] = description
-                if installed:
-                        text["ins"] = _("Yes, %s-%s") % (
-                            local_info.build_release, local_info.branch) 
-                        labs["available"] =  _("Update Available:")
-                        if (local_info.build_release != remote_info.build_release or
-                            local_info.branch != remote_info.branch):
-                                text["available"] = _("Yes, %s-%s") % (
-                                    remote_info.build_release, remote_info.branch)
-                        else:
-                                text["available"] = _("No")
-                else: 
-                        text["ins"] = _("No")
-                        labs["available"] =  _("Version Available:")
-                        text["available"] = "%s-%s" % (
-                            remote_info.build_release, remote_info.branch)
-                text["size"] = misc.bytes_to_str(local_info.size)
-                text["cat"] = categories
-                text["repository"] = local_info.publisher
-                self.__set_generalinfo_text(labs, text)
-
                 self.__set_installedfiles_text(inst_str)
                 self.__set_dependencies_text(dep_str)
-                self.info_cache[pkg_stem] = \
-                    (description, labs, text, inst_str, dep_str)
+                self.info_cache[pkg_stem] = (labs, text, inst_str, dep_str)
 
         def __update_package_license(self, licenses, license_id):
                 if self.showing_empty_details or (license_id !=
@@ -3177,25 +3061,6 @@ class PackageManager:
                         gobject.idle_add(self.__update_package_license,
                             package_info.licenses, license_id)
 
-        def __get_pkg_info(self, pkg_stem, local):
-                info = None
-                try:
-                        info = self.api_o.info([pkg_stem], local,
-                            api.PackageInfo.ALL_OPTIONS -
-                            frozenset([api.PackageInfo.LICENSES]))
-                except (api_errors.TransportError):
-                        return info
-                pkgs_info = None
-                package_info = None
-                if info:
-                        pkgs_info = info[0]
-                if pkgs_info:
-                        package_info = pkgs_info[0]
-                if package_info:
-                        return package_info
-                else:
-                        return None
-
         def __show_info(self, model, path):
                 self.show_info_id = 0
                 if self.catalog_loaded == False:
@@ -3232,12 +3097,14 @@ class PackageManager:
                     self.last_show_info_id) and (pkg_status ==
                     enumerations.INSTALLED or pkg_status ==
                     enumerations.UPDATABLE):
-                        local_info = self.__get_pkg_info(pkg_stem, True)
+                        local_info = gui_misc.get_pkg_info(self.api_o, pkg_stem,
+                            True)
                 if not self.showing_empty_details and (info_id ==
                     self.last_show_info_id) and (pkg_status ==
                     enumerations.NOT_INSTALLED or pkg_status ==
                     enumerations.UPDATABLE):
-                        remote_info = self.__get_pkg_info(pkg_stem, False)
+                        remote_info = gui_misc.get_pkg_info(self.api_o, pkg_stem,
+                            False)
                 if not self.showing_empty_details and (info_id ==
                     self.last_show_info_id):
                         gobject.idle_add(self.__update_package_info, pkg,

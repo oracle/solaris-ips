@@ -31,7 +31,7 @@ except ImportError:
         sys.exit(1)
 from threading import Thread
 import pkg.gui.enumerations as enumerations
-import pkg.gui.misc as gui_misc
+import pkg.gui.misc_non_gui as gui_misc
 
 nobe = False
 
