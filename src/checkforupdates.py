@@ -27,11 +27,14 @@ import os
 import sys
 import time
 import getopt
+import gettext
+import locale
 
 import pkg.client.progress as progress
 import pkg.client.api_errors as api_errors
 import pkg.gui.misc_non_gui as gui_misc
 import pkg.gui.enumerations as enumerations
+import pkg.misc as misc
 from pkg.client import global_settings
 from cPickle import UnpicklingError
 
@@ -49,13 +52,13 @@ def __check_for_updates(image_directory, nice):
         try:
                 api_obj = gui_misc.get_api_object(image_directory, pr)
         except api_errors.VersionException, e:
-                message = _("Version mismatch: expected version %d, got version %d") % \
+                message = "Version mismatch: expected version %d, got version %d" % \
                     (e.expected_version, e.received_version)
         except api_errors.ImageNotFoundException, e:
-                message = _("%s is not an install image") % e.user_dir
+                message = "%s is not an install image" % e.user_dir
         if message != None:
                 if debug:
-                        print "Failed to get Api object: %s", message
+                        print "Failed to get Api object: %s" % message
                 return enumerations.UPDATES_UNDETERMINED
 
         if api_obj == None:
@@ -169,6 +172,8 @@ def main(image_directory, nice):
         return __check_for_updates(image_directory, nice)
 
 if __name__ == '__main__':
+        misc.setlocale(locale.LC_ALL, "")
+        gettext.install("pkg", "/usr/share/locale")
         debug = False
         set_nice = False
         try:
