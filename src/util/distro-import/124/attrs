@@ -1,0 +1,20 @@
+chattr_glob etc/security/auth_attr path=etc/security/auth_attr.d/$(PKGNAME) \
+	restart_fmri=svc:/system/rbac
+chattr_glob etc/security/exec_attr path=etc/security/exec_attr.d/$(PKGNAME) \
+	restart_fmri=svc:/system/rbac
+chattr_glob etc/security/prof_attr path=etc/security/prof_attr.d/$(PKGNAME) \
+	restart_fmri=svc:/system/rbac
+chattr_glob etc/user_attr path=etc/user_attr.d/$(PKGNAME) \
+	restart_fmri=svc:/system/rbac
+#
+# SUNWcsr specific entries to restore the "base" versions of these
+# files.  The time stamp of these "base" files is set to the epoch in
+# order ensure they are rebuilt by the system/rbac smf(5) service.
+#
+chattr_glob etc/security/auth_attr.SUNWcsr path=etc/security/auth_attr \
+	timestamp=19700101T000000Z
+chattr_glob etc/security/exec_attr.SUNWcsr path=etc/security/exec_attr \
+	timestamp=19700101T000000Z
+chattr_glob etc/security/prof_attr.SUNWcsr path=etc/security/prof_attr \
+	timestamp=19700101T000000Z
+chattr_glob etc/user_attr.SUNWcsr path=etc/user_attr timestamp=19700101T000000Z
