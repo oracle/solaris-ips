@@ -37,6 +37,7 @@ MIN_APP_HEIGHT = 500                      # Minimum application height
 SECTION_ID_OFFSET = 10000                 # Offset to allow Sections to be identified 
                                           # in category tree
 IMAGE_DIRECTORY_DEFAULT = "/"             # Image default directory
+PACKAGEMANAGER_PREFERENCES = "/apps/packagemanager/preferences"
 MAX_SEARCH_COMPLETION_PREFERENCES = \
         "/apps/packagemanager/preferences/max_search_completion"
 INITIAL_APP_WIDTH_PREFERENCES = "/apps/packagemanager/preferences/initial_app_width"
@@ -46,6 +47,8 @@ INITIAL_APP_VPOS_PREFERENCES = "/apps/packagemanager/preferences/initial_app_vpo
 INITIAL_SHOW_FILTER_PREFERENCES = "/apps/packagemanager/preferences/initial_show_filter"
 INITIAL_SECTION_PREFERENCES = "/apps/packagemanager/preferences/initial_section"
 SHOW_STARTPAGE_PREFERENCES = "/apps/packagemanager/preferences/show_startpage"
+SAVE_STATE_PREFERENCES = "/apps/packagemanager/preferences/save_state"
+LASTSOURCE_PREFERENCES = "/apps/packagemanager/preferences/lastsource"
 API_SEARCH_ERROR_PREFERENCES = "/apps/packagemanager/preferences/api_search_error"
 CATEGORIES_STATUS_COLUMN_INDEX = 0   # Index of Status Column in Categories TreeView
 STATUS_COLUMN_INDEX = 2   # Index of Status Column in Application TreeView
@@ -53,7 +56,7 @@ SEARCH_TXT_GREY_STYLE = "#757575" #Close to DimGrey
 SEARCH_TXT_BLACK_STYLE = "#000000"
 GDK_2BUTTON_PRESS = 5     # gtk.gdk._2BUTTON_PRESS causes pylint warning
 GDK_RIGHT_BUTTON = 3      # normally button 3 = right click
-
+ALL_PUBLISHERS = "All Publishers"
 
 PKG_CLIENT_NAME = "packagemanager"
 CHECK_FOR_UPDATES = "usr/lib/pm-checkforupdates"
@@ -162,6 +165,10 @@ class PackageManager:
                             self.client.get_int(INITIAL_SECTION_PREFERENCES)
                         self.show_startpage = \
                             self.client.get_bool(SHOW_STARTPAGE_PREFERENCES)
+                        self.save_state = \
+                            self.client.get_bool(SAVE_STATE_PREFERENCES)
+                        self.lastsource = \
+                            self.client.get_string(LASTSOURCE_PREFERENCES)
                         self.gconf_not_show_repos = \
                             self.client.get_string(API_SEARCH_ERROR_PREFERENCES)
                         self.initial_app_width = \
@@ -172,6 +179,10 @@ class PackageManager:
                             self.client.get_int(INITIAL_APP_HPOS_PREFERENCES)
                         self.initial_app_vpos = \
                             self.client.get_int(INITIAL_APP_VPOS_PREFERENCES)
+                        self.client.add_dir(PACKAGEMANAGER_PREFERENCES,
+                            gconf.CLIENT_PRELOAD_NONE)
+                        self.client.notify_add(SAVE_STATE_PREFERENCES,
+                            self.__save_state_changed)
                 except GError:
                         # Default values - the same as in the 
                         # packagemanager-preferences.schemas
@@ -179,10 +190,21 @@ class PackageManager:
                         self.initial_show_filter = 0
                         self.initial_section = 2
                         self.show_startpage = True
+                        self.save_state = True
+                        self.lastsource = ""
                         self.gconf_not_show_repos = ""
                         self.initial_app_width = 800
                         self.initial_app_height = 600
                         self.initial_app_hpos = 200
+                        self.initial_app_vpos = 320
+
+                if self.initial_app_width == -1:
+                        self.initial_app_width = 800
+                if self.initial_app_height == -1:
+                        self.initial_app_height = 600
+                if self.initial_app_hpos == -1:
+                        self.initial_app_hpos = 200
+                if self.initial_app_vpos == -1:
                         self.initial_app_vpos = 320
 
                 if not self.gconf_not_show_repos:
@@ -306,6 +328,8 @@ class PackageManager:
                     w_tree_preferences.get_widget("preferencesdialog")
                 self.w_startpage_checkbutton = \
                     w_tree_preferences.get_widget("startpage_checkbutton")
+                self.w_exit_checkbutton = \
+                    w_tree_preferences.get_widget("exit_checkbutton")
                 self.api_search_error_dialog = \
                     w_tree_api_search_error.get_widget("api_search_error")
                 self.api_search_error_textview = \
@@ -415,7 +439,7 @@ class PackageManager:
                 self.is_all_publishers = False
                 self.search_image.set_from_pixbuf(gui_misc.get_icon(self.icon_theme,
                     'search', 20))
-                self.saved_repository_combobox_active = 0
+                self.saved_repository_combobox_active = -1
                 self.saved_section_active = 0
                 self.saved_application_list = None
                 self.saved_application_list_filter = None
@@ -521,6 +545,8 @@ class PackageManager:
                             {
                                 "on_startpage_checkbutton_toggled": \
                                     self.__on_startpage_checkbutton_toggled,
+                                "on_exit_checkbutton_toggled": \
+                                    self.__on_exit_checkbutton_toggled,
                                 "on_preferenceshelp_clicked": \
                                     self.__on_preferenceshelp_clicked,
                                 "on_preferencesclose_clicked": \
@@ -1130,6 +1156,7 @@ class PackageManager:
                         self.w_application_treeview.connect('size-allocate',
                             self.__application_treeview_size_allocate, None)
 
+                category_selection = self.w_categories_treeview.get_selection()
                 if category_list != None:
                         ##CATEGORIES TREEVIEW
                         category_list_filter = category_list.filter_new()
@@ -1140,7 +1167,6 @@ class PackageManager:
                         enumerations.CATEGORY_NAME_renderer.set_property("xalign", 0.0)
                         self.w_categories_treeview.append_column(column)
                         #Added selection listener
-                        category_selection = self.w_categories_treeview.get_selection()
                         category_selection.set_mode(gtk.SELECTION_SINGLE)
 
                 if self.first_run:
@@ -1160,6 +1186,8 @@ class PackageManager:
                             self.filter_cell_data_function, enumerations.FILTER_NAME)
                         self.w_filter_combobox.set_row_separator_func(
                             self.combobox_filter_id_separator)
+                        self.w_filter_combobox.set_model(self.filter_list)
+                        self.w_filter_combobox.set_active(self.set_show_filter)
 
                 if section_list != None:
                         self.section_list = section_list
@@ -1168,9 +1196,6 @@ class PackageManager:
                         self.category_list_filter = category_list_filter
                         self.w_categories_treeview.set_model(category_list_filter)
                 if application_list != None:
-                        if category_list != None:
-                                self.w_filter_combobox.set_model(self.filter_list)
-                                self.w_filter_combobox.set_active(self.set_show_filter)
                         self.w_application_treeview.set_model(
                             self.application_list_sort)
                         if application_list_filter == None:
@@ -1183,7 +1208,8 @@ class PackageManager:
                                     self.category_active_paths[(
                                     self.last_visible_publisher)])
                         else:
-                                self.w_categories_treeview.set_cursor(0)
+                                if self.w_categories_treeview.get_model() != None:
+                                        self.w_categories_treeview.set_cursor(0)
 
                 if self.first_run:
                         category_selection.connect("changed",
@@ -1416,7 +1442,7 @@ class PackageManager:
         def __disconnect_models(self):
                 self.w_application_treeview.set_model(None)
                 self.w_categories_treeview.set_model(None)
-                self.w_filter_combobox.set_model(None)
+                #self.w_filter_combobox.set_model(None)
 
         def __disconnect_repository_model(self):
                 self.w_repository_combobox.set_model(None)
@@ -2025,8 +2051,12 @@ class PackageManager:
                 gobject.idle_add(self.__toggle_select_all, False)
                 return
 
+        def __save_state_changed(self, client, connection_id, entry, arguments):
+                self.save_state = entry.get_value().get_bool()
+
         def __on_preferences(self, widget):
                 self.w_startpage_checkbutton.set_active(self.show_startpage)
+                self.w_exit_checkbutton.set_active(self.save_state)
                 self.w_preferencesdialog.show()
 
         def __on_preferencesclose_clicked(self, widget):
@@ -2041,6 +2071,14 @@ class PackageManager:
                 try:
                         self.client.set_bool(SHOW_STARTPAGE_PREFERENCES,
                             self.show_startpage)
+                except GError:
+                        pass
+
+        def __on_exit_checkbutton_toggled(self, widget):
+                self.save_state = self.w_exit_checkbutton.get_active()
+                try:
+                        self.client.set_bool(SAVE_STATE_PREFERENCES,
+                            self.save_state)
                 except GError:
                         pass
 
@@ -2136,6 +2174,9 @@ class PackageManager:
 
         def __on_category_row_activated(self, view, path, col, user):
                 '''This function is for handling category double click activations'''
+                if self.category_list == None:
+                        self.__set_main_view_package_list()
+                        return
                 if self.w_filter_combobox.get_model():
                         self.w_filter_combobox.set_active(
                             self.saved_filter_combobox_active)
@@ -2675,10 +2716,26 @@ class PackageManager:
                 if self.in_setup:
                         return
 
-                width, height = self.w_main_window.get_size()
-                hpos = self.w_main_hpaned.get_position()
-                vpos = self.w_main_vpaned.get_position()
+                save_width, save_height = self.w_main_window.get_size()
+                save_hpos = self.w_main_hpaned.get_position()
+                save_vpos = self.w_main_vpaned.get_position()
+
+                self.w_main_window.hide()
+                pub = ""
+                width = height = hpos = vpos = -1
+                if self.save_state:
+                        if self.is_all_publishers:
+                                pub = ALL_PUBLISHERS
+                        else:
+                                sel_pub = self.__get_selected_publisher()
+                                if sel_pub != None:
+                                        pub = sel_pub
+                        width = save_width
+                        height = save_height
+                        hpos = save_hpos
+                        vpos = save_vpos
                 try:
+                        self.client.set_string(LASTSOURCE_PREFERENCES, pub)
                         self.client.set_int(INITIAL_APP_WIDTH_PREFERENCES, width)
                         self.client.set_int(INITIAL_APP_HEIGHT_PREFERENCES, height)
                         self.client.set_int(INITIAL_APP_HPOS_PREFERENCES, hpos)
@@ -2686,7 +2743,6 @@ class PackageManager:
                 except GError:
                         pass
 
-                self.w_main_window.hide()
                 if be_name:
                         if self.image_dir_arg:
                                 gobject.spawn_async([self.application_path, "-R",
@@ -2765,7 +2821,21 @@ class PackageManager:
                 for pkg_stem in pkgs_to_remove:
                         self.__remove_pkg_stem_from_list(pkg_stem)
                 self.w_repository_combobox.set_model(repositories_list)
-                if self.default_publisher:
+                selected_id = -1
+                if self.first_run:
+                        if self.lastsource == ALL_PUBLISHERS:
+                                selected_id = self.repo_combobox_all_pubs_index 
+                        else:
+                                for repo in repositories_list:
+                                        if (repo[enumerations.REPOSITORY_NAME] == \
+                                            self.lastsource and
+                                            repo[enumerations.REPOSITORY_ID] != -1):
+                                                selected_id = \
+                                                   repo[enumerations.REPOSITORY_ID]
+                                                break
+                if selected_id != -1:
+                        self.w_repository_combobox.set_active(selected_id)
+                elif self.default_publisher:
                         self.w_repository_combobox.set_active(active)
                 else:
                         self.w_repository_combobox.set_active(0)
@@ -3235,8 +3305,9 @@ class PackageManager:
         def __enable_disable_select_all(self):
                 if self.in_setup:
                         return
-                if len(self.w_application_treeview.get_model()) > 0:
-                        for row in self.w_application_treeview.get_model():
+                model =  self.w_application_treeview.get_model()
+                if model != None and len(model) > 0:
+                        for row in model:
                                 if not row[enumerations.MARK_COLUMN]:
                                         self.w_selectall_menuitem.set_sensitive(True)
                                         return
@@ -3297,7 +3368,10 @@ class PackageManager:
                 return sensitive
 
         def __enable_disable_select_updates(self):
-                for row in self.w_application_treeview.get_model():
+                model = self.w_application_treeview.get_model()
+                if model == None:
+                        return
+                for row in model:
                         if row[enumerations.STATUS_COLUMN] == enumerations.UPDATABLE:
                                 if not row[enumerations.MARK_COLUMN]:
                                         self.w_selectupdates_menuitem. \

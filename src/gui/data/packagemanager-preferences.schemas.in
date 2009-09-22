@@ -155,5 +155,36 @@
          </long>
       </locale>
     </schema>
+    <schema>
+      <key>/schemas/apps/packagemanager/preferences/save_state</key>
+      <applyto>/apps/packagemanager/preferences/save_state</applyto>
+      <owner>packagemanager</owner>
+      <type>bool</type>
+      <default>True</default>
+      <locale name="C">
+         <short>Display selected publisher at startup</short>
+         <long>
+          A boolean which determines whether Package Manager should save
+          its state on exit and use it on restart. The state is the 
+          selected publisher and the size and position of horizontal and
+          vertical dividers.
+         </long>
+      </locale>
+    </schema>
+    <schema>
+      <key>/schemas/apps/packagemanager/preferences/lastsource</key>
+      <applyto>/apps/packagemanager/preferences/lastsource</applyto>
+      <owner>packagemanager</owner>
+      <type>str</type>
+      <default>""</default>
+      <locale name="C">
+         <short>Last publisher used by package manager</short>
+         <long>
+          A string which stores the last publisher used by package
+          manager. "All Publishers" will be stored if restarting in search
+          mode.
+         </long>
+      </locale>
+    </schema>
   </schemalist>  
 </gconfschemafile>
