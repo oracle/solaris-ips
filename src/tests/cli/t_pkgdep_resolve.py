@@ -73,6 +73,11 @@ set name=fmri value=pkg:/footest@0.5.11,5.11-0.117
 file NOHASH group=bin mode=0444 owner=root path=usr/lib/python2.4/v-p/pkg/misc.py
 """
 
+        simp_manf = """\
+set name=variant.foo value=bar value=baz
+depend fmri=__TBD pkg.debug.depend.file=var/log/syslog pkg.debug.depend.reason=usr/bar pkg.debug.depend.type=hardlink type=require
+"""
+
         simple_variant_deps = """\
 set name=variant.foo value=bar value=baz
 depend fmri=__TBD pkg.debug.depend.file=var/log/authlog pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require
@@ -146,6 +151,12 @@ file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.foo=baz 
                 self.inst_pkg = """\
 open example2_pkg@1.0,5.11-0
 add file %(foo)s mode=0555 owner=root group=bin path=/usr/bin/python2.4
+close""" % { "foo": os.path.join(self.testdata_dir, "foo") }
+
+                self.var_pkg = """\
+open variant_pkg@1.0,5.11-0
+add set name=variant.foo value=bar value=baz
+add file %(foo)s group=sys mode=0644 owner=root path=var/log/syslog
 close""" % { "foo": os.path.join(self.testdata_dir, "foo") }
 
         def tearDown(self):
@@ -406,3 +417,36 @@ close""" % { "foo": os.path.join(self.testdata_dir, "foo") }
                                 portable.remove(m3_path)
                         if m4_path:
                                 portable.remove(m4_path)
+
+        def test_bug_11518(self):
+                """Test that resolving against an installed, cached, manifest
+                works with variants."""
+
+                self.make_image()
+
+                self.pkgsend_bulk(self.durl, self.var_pkg)
+                self.api_obj.refresh(immediate=True)
+                self._do_install(self.api_obj, ["variant_pkg"])
+
+                m1_path = None
+                try:
+                        m1_path = self.make_manifest(self.simp_manf)
+                        p2_name = "pkg:/variant_pkg@1.0,5.11-0"
+
+                        pkg_deps, errs = dependencies.resolve_deps(
+                            [m1_path], self.api_obj)
+                        self.assertEqual(len(pkg_deps), 1)
+                        self.assertEqual(len(pkg_deps[m1_path]), 1)
+                        self.assertEqual(len(errs), 0)
+                        for d in pkg_deps[m1_path]:
+                                if d.attrs["fmri"].startswith(p2_name):
+                                        self.assertEqual(
+                                            d.attrs["%s.file" % self.depend_dp],
+                                            "var/log/syslog")
+                                else:
+                                        raise RuntimeError("Got expected fmri "
+                                            "%s for in dependency %s" %
+                                            (d.attrs["fmri"], d))
+                finally:
+                        if m1_path:
+                                portable.remove(m1_path)

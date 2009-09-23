@@ -586,7 +586,7 @@ class CachedManifest(Manifest):
                 mpath = self.__file_path("manifest")
 
                 # Do we have a cached copy?
-                if not os.path.exists(mpath): 
+                if not os.path.exists(mpath):
                         if not contents:
                                 raise KeyError, fmri
                         # we have no cached copy; save one
@@ -832,6 +832,11 @@ class CachedManifest(Manifest):
                 if not self.loaded and not self.__load_attributes():
                         self.__load()
                 return Manifest.get_variants(self, name)
+
+        def get_all_variants(self):
+                if not self.loaded and not self.__load_attributes():
+                        self.__load()
+                return Manifest.get_all_variants(self)
 
         @staticmethod
         def search_dict(file_path, excludes, return_line=False):
