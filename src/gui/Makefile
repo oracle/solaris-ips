@@ -231,7 +231,7 @@ all: $(DESKTOP) $(GCONF) $(PYCMODS) $(BUILDHELPFILES)
 install: all $(ROOTCOMPONENTS) $(ROOTDIRS)
 
 clean:
-	rm -f $(PYCMODS) $(DESKTOP) $(GCONF) $(APPICONS)
+	rm -f $(PYCMODS) $(DESKTOP) $(GCONF)
 	rm -f $(BUILDHELPFILES)
 	rm -f ../po/.intltool-merge-cache
 

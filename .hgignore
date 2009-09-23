@@ -18,7 +18,6 @@
 ^src/gui/data/addmoresoftware.desktop$
 ^src/gui/data/packagemanager-preferences.schemas$
 ^src/gui/data/packagemanager.desktop$
-^src/gui/data/packagemanager.png$
 ^src/gui/help/.*/package-manager.xml$
 ^src/gui/data/packagemanager-info.xml$
 ^src/man/packagemanager.1$
