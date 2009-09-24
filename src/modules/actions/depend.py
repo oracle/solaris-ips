@@ -36,7 +36,6 @@ import generic
 import pkg.fmri as fmri
 import pkg.version
 import pkg.client.constraint as constraint
-from pkg.client.imageconfig import REQUIRE_OPTIONAL
 
 class DependencyAction(generic.Action):
         """Class representing a dependency packaging object.  The fmri attribute
@@ -202,6 +201,9 @@ class DependencyAction(generic.Action):
                         presence = constraint.Constraint.MAYBE
                         max_ver = min_ver
                 elif ctype == "optional":
+                        # Must be done here to avoid circular dependency
+                        # problems during import.
+                        from pkg.client.imageconfig import REQUIRE_OPTIONAL
                         if image.cfg_cache.get_policy(REQUIRE_OPTIONAL):
                                 presence = constraint.Constraint.ALWAYS
                         else:
