@@ -133,7 +133,7 @@
       <key>/schemas/apps/packagemanager/preferences/api_search_error</key>
       <applyto>/apps/packagemanager/preferences/api_search_error</applyto>
       <owner>packagemanager</owner>
-      <type>str</type>
+      <type>string</type>
       <default>""</default>
       <locale name="C">
          <short>Comma separated list of repositories which we show if there are API errors when searching them</short>
@@ -175,7 +175,7 @@
       <key>/schemas/apps/packagemanager/preferences/lastsource</key>
       <applyto>/apps/packagemanager/preferences/lastsource</applyto>
       <owner>packagemanager</owner>
-      <type>str</type>
+      <type>string</type>
       <default>""</default>
       <locale name="C">
          <short>Last publisher used by package manager</short>
