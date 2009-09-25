@@ -1,0 +1,5 @@
+package SUNWtrove
+classification "Development/Java"
+import SUNWtrove
+version 2.0.4
+end package

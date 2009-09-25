@@ -1,0 +1,4 @@
+package SUNWtack
+classification "Applications/System Utilities"
+import SUNWtack
+end package

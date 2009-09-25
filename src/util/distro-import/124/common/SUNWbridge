@@ -1,0 +1,7 @@
+package SUNWbridge
+classification "System/Core"
+import SUNWbridger
+import SUNWbridgeu
+add driver name=bridge clone_perms="0666 root sys" \
+	policy="read_priv_set=net_rawaccess write_priv_set=net_rawaccess"
+end package

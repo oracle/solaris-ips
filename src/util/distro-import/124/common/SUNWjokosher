@@ -1,0 +1,10 @@
+package SUNWjokosher
+classification "Applications/Sound and Video"
+import SUNWjokosher
+depend SUNWdbus-python26
+depend SUNWgnome-media
+depend SUNWgnome-python26-libs
+depend SUNWgnonlin
+depend SUNWgst-python26
+depend SUNWpython26-setuptools
+end package

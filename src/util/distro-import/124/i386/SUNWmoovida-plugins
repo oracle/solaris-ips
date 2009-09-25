@@ -1,0 +1,4 @@
+package SUNWmoovida-plugins
+classification "Applications/Sound and Video"
+import SUNWmoovida-plugins
+end package

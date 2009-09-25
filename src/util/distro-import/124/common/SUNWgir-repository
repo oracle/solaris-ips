@@ -1,0 +1,4 @@
+package SUNWgir-repository
+classification "Development/GNOME and GTK+"
+import SUNWgir-repository
+end package

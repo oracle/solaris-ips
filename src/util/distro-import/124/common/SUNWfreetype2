@@ -1,0 +1,10 @@
+package SUNWfreetype2
+classification "System/Libraries"
+import SUNWfreetype2
+version 2.3.9
+#
+# the following link was removed in snv_103 but due to bug 2369, we
+# continue to instantiate it so it does not get removed on update
+#
+add link path=usr/lib/64 target=$(ARCH64)
+end package

@@ -1,0 +1,9 @@
+package SUNWxscreensaver-hacks-gl
+classification "System/X11"
+import SUNWxscreensaver-hacks-gl
+#
+# the following link was removed in snv_122 but due to bug 2369, we
+# continue to instantiate it so it does not get removed on update
+#
+add link path=usr/X11/man target=share/man
+end package

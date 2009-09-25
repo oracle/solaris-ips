@@ -92,6 +92,7 @@ include common/SUNWcheese
 include common/SUNWcimserver
 include common/SUNWclisp
 include common/SUNWcmake
+include common/SUNWcmdassist
 include common/SUNWcns
 include common/SUNWcommons-collections
 include common/SUNWconflict
@@ -105,9 +106,6 @@ include common/SUNWcups-manager
 include common/SUNWcvs
 include common/SUNWdbus-python26
 include common/SUNWdcaf
-include common/SUNWdesktop-search
-include common/SUNWdesktop-search-firefox
-include common/SUNWdesktop-search-thunderbird
 include common/SUNWdhcm
 include common/SUNWdhcs
 include common/SUNWdhcsb
@@ -140,7 +138,6 @@ include common/SUNWfetchmail
 include common/SUNWfftw2
 include common/SUNWfftw3
 include common/SUNWfilebench
-include common/SUNWfirefox-apoc-adapter
 include common/SUNWflexlex
 include common/SUNWfoomatic-db
 include common/SUNWfoomatic-db-engine
@@ -154,6 +151,7 @@ include common/SUNWgdb
 include common/SUNWgegl
 include common/SUNWgftp
 include common/SUNWgimpprint
+include common/SUNWgir-repository
 include common/SUNWgit
 include common/SUNWgkrellm
 include common/SUNWgm4
@@ -162,7 +160,6 @@ include common/SUNWgnome-a11y-dasher
 include common/SUNWgnome-a11y-libs-python26
 include common/SUNWgnome-a11y-mousetweaks
 include common/SUNWgnome-a11y-poke
-include common/SUNWgnome-a11y-speech-freetts
 include common/SUNWgnome-base-libs
 include common/SUNWgnome-base-libs-java
 include common/SUNWgnome-camera-img-editor-plugin
@@ -182,12 +179,14 @@ include common/SUNWgnome-img-editor
 include common/SUNWgnome-img-editor-help
 include common/SUNWgnome-meeting
 include common/SUNWgnome-nettool
+include common/SUNWgnome-python26-desktop
 include common/SUNWgnome-python26-extras
 include common/SUNWgnome-sound-recorder
 include common/SUNWgnome-terminal-java
 include common/SUNWgnome-themes-hires
 include common/SUNWgnome-ui-designer
 include common/SUNWgnome-xml
+include common/SUNWgnonlin
 include common/SUNWgnu-automake-110
 include common/SUNWgnu-automake-19
 include common/SUNWgnu-dbm
@@ -202,6 +201,7 @@ include common/SUNWgnu-mc
 include common/SUNWgnu-mpfr
 include common/SUNWgnu-readline
 include common/SUNWgobby
+include common/SUNWgobject-introspection
 include common/SUNWgocr
 include common/SUNWgqview
 include common/SUNWgrails
@@ -264,6 +264,8 @@ include common/SUNWjedit
 include common/SUNWjettison
 include common/SUNWjhrt
 include common/SUNWjodatime
+include common/SUNWjokosher
+include common/SUNWjrexx
 include common/SUNWjruby
 include common/SUNWjunit
 include common/SUNWjxl
@@ -274,11 +276,7 @@ include common/SUNWlftp
 include common/SUNWlibconfuse
 include common/SUNWlibdatrie
 include common/SUNWlibevent
-include common/SUNWlibffi
-include common/SUNWlibgc
-include common/SUNWlibgmime
 include common/SUNWlibgoffice
-include common/SUNWlibgsf
 include common/SUNWlibmcrypt
 include common/SUNWlibmemcached
 include common/SUNWlibmikmod
@@ -425,6 +423,7 @@ include common/SUNWpython26-zope-interface
 include common/SUNWpywbem
 include common/SUNWpyyaml25
 include common/SUNWpyyaml26
+include common/SUNWqdox
 include common/SUNWqos
 include common/SUNWqosu
 include common/SUNWquagga
@@ -468,7 +467,6 @@ include common/SUNWscsip
 include common/SUNWseahorse
 include common/SUNWser
 include common/SUNWserweb
-include common/SUNWsfwhea
 include common/SUNWsg3utils
 include common/SUNWshmux
 include common/SUNWsimplewbem
@@ -501,6 +499,7 @@ include common/SUNWsvn-python
 include common/SUNWswig
 include common/SUNWswt
 include common/SUNWsysbench
+include common/SUNWtack
 include common/SUNWtcat
 include common/SUNWtcltls
 include common/SUNWtcpdS
@@ -521,6 +520,7 @@ include common/SUNWtnfd
 include common/SUNWtor
 include common/SUNWtransmission
 include common/SUNWtree
+include common/SUNWtrove
 include common/SUNWts
 include common/SUNWtsclient
 include common/SUNWtsg
@@ -539,7 +539,6 @@ include common/SUNWvts
 include common/SUNWvtsmn
 include common/SUNWvtss
 include common/SUNWvtsts
-include common/SUNWw3m
 include common/SUNWwebalizer
 include common/SUNWwebmin
 include common/SUNWwireshark
@@ -741,17 +740,17 @@ $(i386_ONLY)include i386/NVDAcg
 $(i386_ONLY)include i386/SUNWagph
 $(i386_ONLY)include i386/SUNWavant
 $(i386_ONLY)include i386/SUNWclutter
-$(i386_ONLY)include i386/SUNWclutter-cairo
 $(i386_ONLY)include i386/SUNWclutter-gst
 $(i386_ONLY)include i386/SUNWclutter-gtk
 $(i386_ONLY)include i386/SUNWdrivel
-$(i386_ONLY)include i386/SUNWgnome-media-center
 $(i386_ONLY)include i386/SUNWgrubS
 $(i386_ONLY)include i386/SUNWlibpigment
 $(i386_ONLY)include i386/SUNWlibpigment-python24
 $(i386_ONLY)include i386/SUNWlibpigment-python25
 $(i386_ONLY)include i386/SUNWlibpigment-python26
 $(i386_ONLY)include i386/SUNWlibvirt
+$(i386_ONLY)include i386/SUNWmoovida
+$(i386_ONLY)include i386/SUNWmoovida-plugins
 $(i386_ONLY)include i386/SUNWpsh
 $(i386_ONLY)include i386/SUNWurlgrabber
 $(i386_ONLY)include i386/SUNWvdisk
@@ -797,10 +796,14 @@ include common/SUNWcedu
 $(i386_ONLY)include common/SUNWciu8
 $(i386_ONLY)include common/SUNWcsmauth
 include common/SUNWdbus-bindings
+include common/SUNWdesktop-search-firefox
+include common/SUNWdesktop-search-thunderbird
 include common/SUNWdfbh
 $(i386_ONLY)include common/SUNWdistro-license
 $(i386_ONLY)include common/SUNWeuxwe
+include common/SUNWfirefox-apoc-adapter
 $(i386_ONLY)include common/SUNWgnome-a11y-poke-root
+include common/SUNWgnome-a11y-speech-freetts
 include common/SUNWgnome-dtstart
 $(i386_ONLY)include common/SUNWgnome-freedb-libs
 $(i386_ONLY)include common/SUNWgnome-keyring-manager
@@ -856,7 +859,11 @@ $(i386_ONLY)include common/SUNWscn-base
 $(i386_ONLY)include common/SUNWscnprm
 $(i386_ONLY)include common/SUNWscnsom
 $(i386_ONLY)include common/SUNWsensor
+include common/SUNWsfdoc
+include common/SUNWsfinf
+include common/SUNWsfman
 include common/SUNWsfwdemo
+include common/SUNWsfwhea
 include common/SUNWsmagt
 include common/SUNWsmbfskr
 include common/SUNWsmcmd
@@ -1002,7 +1009,9 @@ $(i386_ONLY)include common/loc/SUNWweuow
 $(i386_ONLY)include i386/SUNWbrasero
 $(i386_ONLY)include i386/SUNWcakrx
 $(i386_ONLY)include i386/SUNWcarx
+$(i386_ONLY)include i386/SUNWclutter-cairo
 $(i386_ONLY)include i386/SUNWdfb
+$(i386_ONLY)include i386/SUNWgnome-media-center
 $(i386_ONLY)include i386/SUNWrmodr
 $(i386_ONLY)include i386/SUNWxvmhvm
 $(sparc_ONLY)include sparc/SUNWafb
@@ -1167,6 +1176,7 @@ depend SUNWbison
 depend SUNWbluefish
 depend SUNWbnu
 depend SUNWbonnieplus
+depend SUNWbridge
 depend SUNWbrltty
 depend SUNWbs
 depend SUNWbtool
@@ -1196,15 +1206,15 @@ depend SUNWcimserver
 depend SUNWckr
 depend SUNWclisp
 $(i386_ONLY)depend SUNWclutter
-$(i386_ONLY)depend SUNWclutter-cairo
 $(i386_ONLY)depend SUNWclutter-gst
 $(i386_ONLY)depend SUNWclutter-gtk
 depend SUNWcmake
+depend SUNWcmdassist
 depend SUNWcnetr
 depend SUNWcns
 depend SUNWcodeina
 depend SUNWcommons-collections
-$(i386_ONLY)depend SUNWcompiz
+depend SUNWcompiz
 $(i386_ONLY)depend SUNWcompiz-fusion-extra
 $(i386_ONLY)depend SUNWcompiz-fusion-main
 $(i386_ONLY)depend SUNWcompizconfig-gconf
@@ -1266,8 +1276,6 @@ depend SUNWdesktop-other-l10n-zhCN
 depend SUNWdesktop-other-l10n-zhHK
 depend SUNWdesktop-other-l10n-zhTW
 depend SUNWdesktop-search
-depend SUNWdesktop-search-firefox
-depend SUNWdesktop-search-thunderbird
 depend SUNWdesktop-startup
 depend SUNWdexwsvr
 depend SUNWdhcm
@@ -1343,7 +1351,6 @@ depend SUNWfftw3
 depend SUNWfilebench
 $(i386_ONLY)depend SUNWfipe
 depend SUNWfirefox
-depend SUNWfirefox-apoc-adapter
 depend SUNWfirefox-bookmark
 depend SUNWfirefoxl10n-de-DE
 depend SUNWfirefoxl10n-es-ES
@@ -1409,6 +1416,7 @@ depend SUNWgftp
 depend SUNWggrp
 depend SUNWghostscript
 depend SUNWgimpprint
+depend SUNWgir-repository
 depend SUNWgit
 depend SUNWgkrellm
 depend SUNWgksu
@@ -1426,7 +1434,6 @@ depend SUNWgnome-a11y-poke
 depend SUNWgnome-a11y-reader
 depend SUNWgnome-a11y-speech
 depend SUNWgnome-a11y-speech-espeak
-depend SUNWgnome-a11y-speech-freetts
 depend SUNWgnome-applets
 depend SUNWgnome-archive-mgr
 depend SUNWgnome-audio
@@ -1518,7 +1525,6 @@ depend SUNWgnome-libs
 depend SUNWgnome-log-viewer
 depend SUNWgnome-media
 depend SUNWgnome-media-apps
-$(i386_ONLY)depend SUNWgnome-media-center
 depend SUNWgnome-media-player
 depend SUNWgnome-meeting
 depend SUNWgnome-menu-editor
@@ -1533,6 +1539,7 @@ depend SUNWgnome-ps-viewer
 depend SUNWgnome-python-desktop
 depend SUNWgnome-python-extras
 depend SUNWgnome-python-libs
+depend SUNWgnome-python26-desktop
 depend SUNWgnome-python26-extras
 depend SUNWgnome-python26-libs
 depend SUNWgnome-remote-desktop
@@ -1555,6 +1562,7 @@ depend SUNWgnome-utility-applets
 depend SUNWgnome-vfs
 depend SUNWgnome-wm
 depend SUNWgnome-xml
+depend SUNWgnonlin
 depend SUNWgnu-automake-110
 depend SUNWgnu-automake-19
 depend SUNWgnu-coreutils
@@ -1577,6 +1585,7 @@ depend SUNWgnu-readline
 depend SUNWgnu-which
 depend SUNWgnutls
 depend SUNWgobby
+depend SUNWgobject-introspection
 depend SUNWgocr
 depend SUNWgpch
 depend SUNWgqview
@@ -1720,9 +1729,11 @@ depend SUNWjedit
 depend SUNWjettison
 depend SUNWjhrt
 depend SUNWjodatime
+depend SUNWjokosher
 depend SUNWjos
 depend SUNWjpg
 depend SUNWjre-config-plugin
+depend SUNWjrexx
 depend SUNWjruby
 depend SUNWjss
 depend SUNWjunit
@@ -1958,6 +1969,8 @@ depend SUNWmibii
 depend SUNWmkcd
 depend SUNWmlib
 depend SUNWmms
+$(i386_ONLY)depend SUNWmoovida
+$(i386_ONLY)depend SUNWmoovida-plugins
 depend SUNWmp
 depend SUNWmpapi
 depend SUNWmpathadm
@@ -2174,6 +2187,7 @@ depend SUNWpywbem
 depend SUNWpyyaml24
 depend SUNWpyyaml25
 depend SUNWpyyaml26
+depend SUNWqdox
 $(sparc_ONLY)depend SUNWqfed
 depend SUNWqlc
 depend SUNWqlcu
@@ -2182,6 +2196,7 @@ depend SUNWqosu
 depend SUNWquagga
 depend SUNWquilt
 $(i386_ONLY)depend SUNWralink
+depend SUNWraptor
 depend SUNWrcap
 depend SUNWrcmdc
 depend SUNWrcmds
@@ -2248,12 +2263,8 @@ depend SUNWservicetag
 depend SUNWserweb
 depend SUNWses
 $(i386_ONLY)depend SUNWsexy-python
-depend SUNWsfdoc
 $(sparc_ONLY)depend SUNWsfdr
 depend SUNWsfe
-depend SUNWsfinf
-depend SUNWsfman
-depend SUNWsfwhea
 depend SUNWsg3utils
 depend SUNWshmux
 $(i386_ONLY)depend SUNWsi3124
@@ -2307,6 +2318,7 @@ depend SUNWsvxwsvr
 depend SUNWswig
 depend SUNWswt
 depend SUNWsysbench
+depend SUNWtack
 depend SUNWtavor
 depend SUNWtcat
 depend SUNWtcltls
@@ -2367,6 +2379,7 @@ depend SUNWtotem-pl-parser
 depend SUNWtpm
 depend SUNWtransmission
 depend SUNWtree
+depend SUNWtrove
 depend SUNWts
 depend SUNWtsclient
 depend SUNWtsg
@@ -2595,18 +2608,24 @@ $(i386_ONLY)depend SUNWbrasero
 $(i386_ONLY)depend SUNWcakrx
 $(i386_ONLY)depend SUNWcarx
 depend SUNWcedu
+$(i386_ONLY)depend SUNWclutter-cairo
 depend SUNWdbus-bindings
+depend SUNWdesktop-search-firefox
+depend SUNWdesktop-search-thunderbird
 $(i386_ONLY)depend SUNWdfb
 depend SUNWdfbh
 $(sparc_ONLY)depend SUNWffb
 $(sparc_ONLY)depend SUNWffbcf
 $(sparc_ONLY)depend SUNWffbw
+depend SUNWfirefox-apoc-adapter
 $(sparc_ONLY)depend SUNWgfb
 $(sparc_ONLY)depend SUNWgfbcf
 $(sparc_ONLY)depend SUNWgfbw
+depend SUNWgnome-a11y-speech-freetts
 depend SUNWgnome-dtstart
 $(i386_ONLY)depend SUNWgnome-freedb-libs
 $(i386_ONLY)depend SUNWgnome-keyring-manager
+$(i386_ONLY)depend SUNWgnome-media-center
 $(i386_ONLY)depend SUNWgnome-sys-suspend
 $(i386_ONLY)depend SUNWgscr
 $(i386_ONLY)depend SUNWicdc
@@ -2652,7 +2671,11 @@ depend SUNWpostgr-tcl
 depend SUNWpostgr-upgrade
 $(i386_ONLY)depend SUNWrmodr
 depend SUNWrmodu
+depend SUNWsfdoc
+depend SUNWsfinf
+depend SUNWsfman
 depend SUNWsfwdemo
+depend SUNWsfwhea
 depend SUNWsmagt
 depend SUNWsmbfskr
 depend SUNWsmcmd

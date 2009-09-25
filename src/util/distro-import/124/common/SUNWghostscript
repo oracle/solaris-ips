@@ -1,0 +1,6 @@
+package SUNWghostscript
+classification "Applications/System Utilities"
+import SUNWghostscriptr
+import SUNWghostscriptu
+version 8.64
+end package

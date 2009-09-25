@@ -1,0 +1,4 @@
+package SUNWcmdassist
+classification "Desktop (GNOME)/Documentation"
+import SUNWcmdassist
+end package

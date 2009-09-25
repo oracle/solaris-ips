@@ -301,6 +301,12 @@ category = Media
 [SUNWaudiohd]
 category = Media
 
+[SUNWaudiols]
+category = Media
+
+[SUNWaudiop16x]
+category = Media
+
 [SUNWaudiovia97]
 category = Media
 
@@ -384,6 +390,9 @@ category = Services
 
 [SUNWbonnieplus]
 category = System
+
+[SUNWbridge]
+category = Core
 
 [SUNWbrltty]
 category = Universal Access
@@ -472,9 +481,6 @@ category = Other Languages
 [SUNWclutter]
 category = Multimedia Libraries
 
-[SUNWclutter-cairo]
-category = Multimedia Libraries
-
 [SUNWclutter-gst]
 category = Multimedia Libraries
 
@@ -483,6 +489,9 @@ category = Multimedia Libraries
 
 [SUNWcmake]
 category = Distribution Tools
+
+[SUNWcmdassist]
+category = Documentation
 
 [SUNWcnetr]
 category = Core
@@ -681,12 +690,6 @@ category = Localizations (Desktop)
 
 [SUNWdesktop-search]
 category = System Utilities
-
-[SUNWdesktop-search-firefox]
-category = Plug-ins and Run-times
-
-[SUNWdesktop-search-thunderbird]
-category = Plug-ins and Run-times
 
 [SUNWdesktop-startup]
 category = Scripts
@@ -913,9 +916,6 @@ category = Hardware
 [SUNWfirefox]
 category = Internet
 
-[SUNWfirefox-apoc-adapter]
-category = Internet
-
 [SUNWfirefox-bookmark]
 category = Internet
 
@@ -1111,6 +1111,9 @@ category = System Utilities
 [SUNWgimpprint]
 category = Other Peripherals
 
+[SUNWgir-repository]
+category = GNOME and GTK+
+
 [SUNWgit]
 category = Source Code Management
 
@@ -1160,9 +1163,6 @@ category = Universal Access
 category = Universal Access
 
 [SUNWgnome-a11y-speech-espeak]
-category = Universal Access
-
-[SUNWgnome-a11y-speech-freetts]
 category = Universal Access
 
 [SUNWgnome-applets]
@@ -1438,9 +1438,6 @@ category = Multimedia Libraries
 [SUNWgnome-media-apps]
 category = Sound and Video
 
-[SUNWgnome-media-center]
-category = Sound and Video
-
 [SUNWgnome-media-player]
 category = Sound and Video
 
@@ -1481,6 +1478,9 @@ category = Python
 category = Python
 
 [SUNWgnome-python-libs]
+category = Python
+
+[SUNWgnome-python26-desktop]
 category = Python
 
 [SUNWgnome-python26-extras]
@@ -1549,6 +1549,9 @@ category = Window Managers
 [SUNWgnome-xml]
 category = Documentation
 
+[SUNWgnonlin]
+category = Multimedia Libraries
+
 [SUNWgnu-automake-110]
 category = GNU
 
@@ -1614,6 +1617,9 @@ category = Libraries (System)
 
 [SUNWgobby]
 category = Text Tools
+
+[SUNWgobject-introspection]
+category = GNOME and GTK+
 
 [SUNWgocr]
 category = Graphics and Imaging
@@ -2041,6 +2047,9 @@ category = Documentation
 [SUNWjodatime]
 category = Java
 
+[SUNWjokosher]
+category = Sound and Video
+
 [SUNWjos]
 category = Localizations (System)
 
@@ -2049,6 +2058,9 @@ category = Multimedia Libraries
 
 [SUNWjre-config-plugin]
 category = Plug-ins and Run-times
+
+[SUNWjrexx]
+category = Java
 
 [SUNWjruby]
 category = Ruby
@@ -2755,6 +2767,12 @@ category = Libraries (System)
 [SUNWmms]
 category = Media
 
+[SUNWmoovida]
+category = Sound and Video
+
+[SUNWmoovida-plugins]
+category = Sound and Video
+
 [SUNWmp]
 category = Printing
 
@@ -3403,6 +3421,9 @@ category = Python
 [SUNWpyyaml26]
 category = Python
 
+[SUNWqdox]
+category = Java
+
 [SUNWqfed]
 category = Networking
 
@@ -3426,6 +3447,9 @@ category = Source Code Management
 
 [SUNWralink]
 category = Networking
+
+[SUNWraptor]
+category = Libraries (System)
 
 [SUNWrcap]
 category = Core
@@ -3625,23 +3649,11 @@ category = Ports
 [SUNWsexy-python]
 category = Python
 
-[SUNWsfdoc]
-category = GNU
-
 [SUNWsfdr]
 category = Enterprise Management
 
 [SUNWsfe]
 category = Networking
-
-[SUNWsfinf]
-category = GNU
-
-[SUNWsfman]
-category = GNU
-
-[SUNWsfwhea]
-category = System
 
 [SUNWsg3utils]
 category = System Utilities
@@ -3801,6 +3813,9 @@ category = Libraries
 
 [SUNWsysbench]
 category = System
+
+[SUNWtack]
+category = System Utilities
 
 [SUNWtavor]
 category = Other Peripherals
@@ -3981,6 +3996,9 @@ category = Internet
 
 [SUNWtree]
 category = System Utilities
+
+[SUNWtrove]
+category = Java
 
 [SUNWts]
 category = Trusted
@@ -4365,6 +4383,9 @@ category = X11
 
 [SUNWxwxft]
 category = X11 (System)
+
+[SUNWyge]
+category = Networking
 
 [SUNWyp]
 category = Administration and Configuration

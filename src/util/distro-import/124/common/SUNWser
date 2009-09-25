@@ -1,0 +1,16 @@
+package SUNWser
+classification "System/Services"
+import SUNWseru
+import SUNWserr
+add dir path=usr/sbin mode=0755 owner=root group=bin
+add link path=usr/sbin/ser target=../sfw/sbin/ser
+add link path=usr/sbin/serctl target=../sfw/sbin/serctl
+add dir path=usr/share mode=0755 owner=root group=sys
+add dir path=usr/share/man mode=0755 owner=root group=bin
+add dir path=usr/share/man/man5 mode=0755 owner=root group=bin
+add link path=usr/share/man/man5/ser.cfg.5 \
+	target=../../../sfw/share/man/man5/ser.cfg.5
+add dir path=usr/share/man/man8 mode=0755 owner=root group=bin
+add link path=usr/share/man/man8/ser.8 target=../../../sfw/share/man/man8/ser.8
+version 0.8.12
+end package

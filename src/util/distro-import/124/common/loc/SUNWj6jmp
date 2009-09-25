@@ -1,0 +1,6 @@
+package SUNWj6jmp
+classification "Development/Java"
+import SUNWj6jmp
+depend SUNWj6man
+add license DLJ/LICENSE license=SUNWj6jmp.DLJ
+end package

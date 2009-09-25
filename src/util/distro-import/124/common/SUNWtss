@@ -1,0 +1,6 @@
+package SUNWtss
+classification "System/Security"
+import SUNWtss
+import SUNWtss-root
+version 0.3.2
+end package
