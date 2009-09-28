@@ -1041,7 +1041,13 @@ class PackageManager:
                         application_list_sort.set_sort_column_id(
                             application_sort_column, gtk.SORT_ASCENDING)
                         application_list_sort.set_sort_func(
-                            enumerations.STATUS_ICON_COLUMN, self.__status_sort_func)
+                            enumerations.STATUS_ICON_COLUMN, 
+                            self.__column_sort_func, 
+                            enumerations.STATUS_ICON_COLUMN)
+                        application_list_sort.set_sort_func(
+                            enumerations.DESCRIPTION_COLUMN, 
+                            self.__column_sort_func, 
+                            enumerations.DESCRIPTION_COLUMN)
                 toggle_renderer = gtk.CellRendererToggle()
 
                 column = gtk.TreeViewColumn("", toggle_renderer,
@@ -1089,6 +1095,10 @@ class PackageManager:
                         column.connect_after('clicked',
                             self.__application_treeview_column_sorted, None)
                         self.w_application_treeview.append_column(column)
+                        application_list_sort.set_sort_func(
+                            enumerations.AUTHORITY_COLUMN, 
+                            self.__column_sort_func, 
+                            enumerations.AUTHORITY_COLUMN)
                 description_renderer = gtk.CellRendererText()
                 column = gtk.TreeViewColumn(_('Description'),
                     description_renderer,
@@ -1448,11 +1458,17 @@ class PackageManager:
                 self.w_repository_combobox.set_model(None)
 
         @staticmethod
-        def __status_sort_func(treemodel, iter1, iter2, user_data=None):
+        def __column_sort_func(treemodel, iter1, iter2, column):
                 get_val = treemodel.get_value
-                status1 = get_val(iter1, enumerations.STATUS_COLUMN)
-                status2 = get_val(iter2, enumerations.STATUS_COLUMN)
-                return cmp(status1, status2)
+                get_val = treemodel.get_value
+                status1 = get_val(iter1, column)
+                status2 = get_val(iter2, column)
+                ret = cmp(status1, status2)
+                if ret != 0:
+                        return ret
+                name1 = get_val(iter1, enumerations.NAME_COLUMN)
+                name2 = get_val(iter2, enumerations.NAME_COLUMN)
+                return cmp(name1, name2)
 
         @staticmethod
         def __remove_treeview_columns(treeview):
