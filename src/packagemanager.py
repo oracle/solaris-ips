@@ -1851,7 +1851,7 @@ class PackageManager:
                         # This can happen if load_catalogs has not been run
                         err = _("Unable to get status for search results.\n"
                             "The catalogs have not been loaded.\n"
-                            "Please try after few seconds.\n")
+                            "Please try again after a few seconds.\n")
                         gobject.idle_add(self.error_occurred, err)
                         return
                 return self.__add_pkgs_to_lists(pkgs_known, application_list,
