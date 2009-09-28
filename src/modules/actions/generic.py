@@ -195,7 +195,7 @@ class Action(object):
                         out += " " + self.hash
 
                 def q(s):
-                        if " " in s:
+                        if " " in s or s == "":
                                 return '"%s"' % s
                         else:
                                 return s
@@ -208,7 +208,7 @@ class Action(object):
                                 out += " " + " ".join([
                                     "%s=%s" % (k, q(lmt)) for lmt in v
                                 ])
-                        elif " " in v:
+                        elif " " in v or v == "":
                                 out += " " + k + "=\"" + v + "\""
                         else:
                                 out += " " + k + "=" + v

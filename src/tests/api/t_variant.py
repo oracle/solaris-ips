@@ -66,6 +66,10 @@ class TestVariants(pkg5unittest.Pkg5TestCase):
                 self.assertEqual(v1.issubset(v1_v2_merge), True)
                 self.assertEqual(v1.issubset(v1_v3_merge), True)
                 self.assertEqual(v1.difference(v3), dict([(3, set(["b"]))]))
+                # Test for bug 11507, computing a difference when the sets
+                # are not totally overlapping.
+                self.assertEqual(v1.difference(v4),
+                    dict([(1, set(["a"])), (3, set(["b"]))]))
                 self.assertEqual(v1.difference(v1_v3_merge), {})
 
                 self.assertEqual(v1.intersects(v2), False)

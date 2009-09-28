@@ -132,7 +132,8 @@ def process_elf_dependencies(action, proto_dir, pkg_vars, **kwargs):
                 rp = []
 
         rp = [
-            os.path.normpath(p.replace("$ORIGIN", os.path.join("/")))
+            os.path.normpath(p.replace("$ORIGIN",
+                os.path.join("/", os.path.dirname(installed_path))))
             for p in rp
         ]
 

@@ -137,6 +137,18 @@ Incorrect attribute list.
                 self.assertAttributes(a, ["alias", "class", "name"])
                 self.assertAttributeValue(a, "alias", ["pci1234,56", "pci4567,89"])
 
+                # An action with an empty value.
+                a = action.fromstr('set name=foo value=""')
+                self.assertAttributes(a, ["name", "value"])
+                self.assertAttributeValue(a, "name", "foo")
+                self.assertAttributeValue(a, "value", "")
+
+                # An action with an empty value as part of a list.
+                a = action.fromstr('set name=foo value=ab value="" value=c')
+                self.assertAttributes(a, ["name", "value"])
+                self.assertAttributeValue(a, "name", "foo")
+                self.assertAttributeValue(a, "value", ["ab", "c", ""])
+
         def test_action_tostr(self):
                 str(action.fromstr("file 12345 name=foo path=/tmp/foo"))
                 str(action.fromstr("file 12345 name=foo attr=bar path=/tmp/foo"))
@@ -168,6 +180,12 @@ Incorrect attribute list.
                 str(action.fromstr("file 12345 name=foo\tvalue=bar path=/tmp/foo"))
 
                 str(action.fromstr("driver alias=pci1234,56 alias=pci4567,89 class=scsi name=lsimega"))
+
+                a = 'set name=foo value=""'
+                self.assertEqual(str(action.fromstr(a)), a)
+
+                a = 'set name=foo value=ab value="" value=c'
+                self.assertEqual(str(action.fromstr(a)), a)
 
         def assertMalformed(self, text):
                 malformed = False

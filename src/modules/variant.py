@@ -131,7 +131,7 @@ class VariantSets(Variants):
                 """Returns the variants in self and not in var."""
                 res = VariantSets()
                 for k in self:
-                        tmp = self[k] - var.get(k, [])
+                        tmp = self[k] - var.get(k, set())
                         if tmp:
                                 res[k] = tmp
                 return res
