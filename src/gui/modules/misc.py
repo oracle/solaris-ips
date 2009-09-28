@@ -187,20 +187,28 @@ def set_package_details(pkg_name, local_info, remote_info, textview,
         text["name"] = pkg_name
         text["desc"] = description
         if installed:
-                text["ins"] = _("Yes, %s-%s") % (
-                    local_info.build_release, local_info.branch)
+                yes_text = _("Yes, %(version)s (Build %(build)s-%(branch)s)")
+                text["ins"] = yes_text % \
+                    {"version": local_info.version,
+                    "build": local_info.build_release,
+                    "branch": local_info.branch}
                 labs["available"] =  _("Update Available:")
                 if (local_info.build_release != remote_info.build_release or
                     local_info.branch != remote_info.branch):
-                        text["available"] = _("Yes, %s-%s") % (
-                            remote_info.build_release, remote_info.branch)
+                        text["available"] = yes_text % \
+                            {"version": remote_info.version,
+                            "build": remote_info.build_release,
+                            "branch": remote_info.branch}
                 else:
                         text["available"] = _("No")
         else:
                 text["ins"] = _("No")
                 labs["available"] =  _("Version Available:")
-                text["available"] = "%s-%s" % (
-                    remote_info.build_release, remote_info.branch)
+                text["available"] = _(
+                    "%(version)s (Build %(build)s-%(branch)s)") % \
+                    {"version": remote_info.version,
+                    "build": remote_info.build_release,
+                    "branch": remote_info.branch}
         text["size"] = misc.bytes_to_str(local_info.size)
         categories = _("None")
         if local_info.category_info_list:
