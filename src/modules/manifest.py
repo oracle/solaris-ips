@@ -27,6 +27,7 @@
 
 import os
 import errno
+import tempfile
 from itertools import groupby, chain, repeat
 from pkg.misc import EmptyI, expanddirs
 
@@ -482,16 +483,14 @@ class Manifest(object):
         def store(self, mfst_path):
                 """Store the manifest contents to disk."""
 
-                tmp_path = mfst_path + ".tmp"
-                try:
-                        mfile = file(tmp_path, "w")
-                except IOError:
-                        try:
-                                os.makedirs(os.path.dirname(mfst_path))
-                        except OSError, e:
-                                if e.errno != errno.EEXIST:
-                                        raise
-                        mfile = file(tmp_path, "w")
+                t_dir = os.path.dirname(mfst_path)
+                t_prefix = os.path.basename(mfst_path) + "."
+
+                if not os.path.exists(t_dir):
+                        os.makedirs(t_dir)
+
+                fd, fn = tempfile.mkstemp(dir=t_dir, prefix=t_prefix)
+                mfile = os.fdopen(fd, "wb")
 
                 #
                 # We specifically avoid sorting manifests before writing
@@ -500,7 +499,8 @@ class Manifest(object):
                 #
                 mfile.write(self.tostr_unsorted())
                 mfile.close()
-                portable.rename(tmp_path, mfst_path)
+                os.chmod(fn, 0644)
+                portable.rename(fn, mfst_path)
 
         def get_variants(self, name):
                 if name not in self.attributes:
@@ -566,8 +566,11 @@ class CachedManifest(Manifest):
         manifest, tagging each one w/ the appropriate variants/facets."""
 
         def __file_path(self, name):
+                return os.path.join(self.__file_dir(), name)
+
+        def __file_dir(self):
                 return os.path.join(self.__pkgdir,
-                    self.fmri.get_dir_path(), name)
+                    self.fmri.get_dir_path())
 
         def __init__(self, fmri, pkgdir, preferred_pub, excludes=EmptyI,
             contents=None):
@@ -669,27 +672,34 @@ class CachedManifest(Manifest):
 
                 assert self.loaded
 
+                t_dir = self.__file_dir()
+
                 # create per-action type cache; use rename to avoid
                 # corrupt files if ^C'd in the middle 
-                # XXX consider use of per-process tmp file names
                 for n in self.actions_bytype.keys():
-                        f = file(self.__file_path("manifest.%s.tmp" % n), 
-                            "w")
+                        t_prefix = "manifest.%s." % n
+
+                        fd, fn = tempfile.mkstemp(dir=t_dir, prefix=t_prefix)
+                        f = os.fdopen(fd, "wb")
+
                         for a in self.actions_bytype[n]:
                                 f.write("%s\n" % a)
                         f.close()
-                        portable.rename(self.__file_path("manifest.%s.tmp" % n),
-                            self.__file_path("manifest.%s" % n))
+                        os.chmod(fn, 0644)
+                        portable.rename(fn, self.__file_path("manifest.%s" % n))
+
                 # create dircache
-                f = file(self.__file_path("manifest.dircache.tmp"), "w")
+                fd, fn = tempfile.mkstemp(dir=t_dir,
+                    prefix="manifest.dircache.")
+                f = os.fdopen(fd, "wb")
                 dirs = self.__actions_to_dirs()
 
                 for s in self.__gen_dirs_to_str(dirs):
                         f.write(s)
 
                 f.close()
-                portable.rename(self.__file_path("manifest.dircache.tmp"),
-                    self.__file_path("manifest.dircache"))
+                os.chmod(fn, 0644)
+                portable.rename(fn, self.__file_path("manifest.dircache"))
 
         @staticmethod
         def __gen_dirs_to_str(dirs):
