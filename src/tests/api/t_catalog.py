@@ -107,6 +107,22 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                                 raise e
                 return os.path.abspath(target)
 
+        def __gen_manifest(self, f):
+                m = manifest.Manifest()
+                m.set_content(
+                    "depend fmri=foo@1.0 type=require\n"
+                    "set name=facet.devel value=true\n"
+                    "set name=variant.arch value=i386 value=sparc\n"
+                    "set name=pkg.obsolete value=true\n"
+                    "set name=pkg.fmri value=\"%s\"\n"
+                    "set name=pkg.summary value=\"Summary %s\"\n"
+                    "set name=pkg.summary value=\"Sparc Summary %s\""
+                    " variant.arch=sparc\n"
+                    "set name=pkg.summary:th value=\"ซอฟต์แวร์ %s\"\n"
+                    "set name=pkg.description value=\"Desc %s\"\n" % \
+                    (f, f, f, f, f))
+                return m
+
         def __test_catalog_actions(self, nc, pkg_src_list):
                 def expected_dependency():
                         return [
@@ -740,8 +756,13 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
         def test_08_append(self):
                 """Verify that append functionality works as expected."""
 
-                # First, test that basic append functionality works.
-                c = self.c
+                # First, populate a new catalog with the entries from the test
+                # base one using synthesized manifest data.
+                c = catalog.Catalog()
+                for f in self.c.fmris():
+                        c.add_package(f, manifest=self.__gen_manifest(f))
+
+                # Next, test that basic append functionality works.
                 nc = catalog.Catalog()
                 nc.append(c)
                 nc.finalize()
@@ -751,8 +772,17 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 self.assertEqual(c.package_version_count,
                     nc.package_version_count)
 
-                for f, entry in nc.entries():
+                for f, entry in nc.entries(info_needed=[nc.DEPENDENCY,
+                    nc.SUMMARY], locales=set(("C", "th"))):
                         self.assertTrue("metadata" not in entry)
+
+                        m = self.__gen_manifest(f)
+                        expected = sorted(
+                            s.strip() for s in m.as_lines()
+                            if not s.startswith("set name=pkg.fmri")
+                        )
+                        returned = sorted(entry["actions"])
+                        self.assertEqual(expected, returned)
 
                 # Next, test that callbacks work as expected.
                 pkg_list = []
@@ -806,25 +836,6 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
         def test_09_actions(self):
                 """Verify that the actions functions work as expected."""
 
-                def ret_man(f):
-                        m = manifest.Manifest()
-                        if f.pkg_name == "apkg":
-                                return m
-
-                        m.set_content(
-                            "depend fmri=foo@1.0 type=require\n"
-                            "set name=facet.devel value=true\n"
-                            "set name=variant.arch value=i386 value=sparc\n"
-                            "set name=pkg.obsolete value=true\n"
-                            "set name=pkg.fmri value=\"%s\"\n"
-                            "set name=pkg.summary value=\"Summary %s\"\n"
-                            "set name=pkg.summary value=\"Sparc Summary %s\""
-                            " variant.arch=sparc\n"
-                            "set name=pkg.summary:th value=\"ซอฟต์แวร์ %s\"\n"
-                            "set name=pkg.description value=\"Desc %s\"\n" % \
-                            (f, f, f, f, f))
-                        return m
-
                 pkg_src_list = [
                     fmri.PkgFmri("pkg://opensolaris.org/"
                         "test@1.0,5.11-1:20000101T120010Z"),
@@ -833,6 +844,11 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                     fmri.PkgFmri("pkg://opensolaris.org/"
                         "apkg@1.0,5.11-1:20000101T120040Z"),
                 ]
+
+                def ret_man(f):
+                        if f.pkg_name == "apkg":
+                                return manifest.Manifest()
+                        return self.__gen_manifest(f)
 
                 # First, create a catalog (with callback) and populate it
                 # using only FMRIs.

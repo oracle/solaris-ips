@@ -1560,6 +1560,7 @@ class Catalog(object):
                         else:
                                 entries = part.entries()
 
+                        npart = self.get_part(name)
                         for f, entry in entries:
                                 if f.publisher in d and \
                                     f.pkg_name in d[f.publisher] and \
@@ -1567,7 +1568,6 @@ class Catalog(object):
                                         # Skip this package.
                                         continue
 
-                                npart = self.get_part(part)
                                 nentry = copy.deepcopy(entry)
                                 npart.add(f, metadata=nentry, op_time=op_time)
 
@@ -2103,6 +2103,14 @@ class Catalog(object):
                         # Part doesn't exist on-disk, so don't return anything.
                         return
                 self.__parts[name] = part
+
+                aparts = self._attrs.parts
+                if name not in aparts:
+                        # Add a new entry to the catalog attributes for this new
+                        # part since it didn't exist previously.
+                        aparts[name] = {
+                            "last-modified": part.last_modified
+                        }
                 return part
 
         def get_updates_needed(self, path):
