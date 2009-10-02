@@ -49,7 +49,7 @@ import pkg.nrlock
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 21
+CURRENT_API_VERSION = 22
 CURRENT_P5I_VERSION = 1
 
 class ImageInterface(object):
@@ -86,7 +86,7 @@ class ImageInterface(object):
                 canceled changes. It can raise VersionException and
                 ImageNotFoundException."""
 
-                compatible_versions = set([21])
+                compatible_versions = set([21, 22])
 
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
@@ -866,10 +866,12 @@ class ImageInterface(object):
                                 else:
                                         state = PackageInfo.NOT_INSTALLED
                         links = hardlinks = files = dirs = dependencies = None
-                        summary = size = licenses = cat_info = None
+                        summary = size = licenses = cat_info = description = \
+                            None
 
                         if (frozenset([PackageInfo.SIZE, PackageInfo.LICENSES,
-                            PackageInfo.SUMMARY, PackageInfo.CATEGORIES]) |
+                            PackageInfo.SUMMARY, PackageInfo.CATEGORIES,
+                            PackageInfo.DESCRIPTION]) |
                             PackageInfo.ACTION_OPTIONS) & info_needed:
                                 mfst = self.__img.get_manifest(f)
                                 excludes = self.__img.list_excludes()
@@ -880,6 +882,9 @@ class ImageInterface(object):
                                 if PackageInfo.SUMMARY in info_needed:
                                         summary = mfst.get("pkg.summary",
                                             mfst.get("description", ""))
+                                if PackageInfo.DESCRIPTION in info_needed:
+                                        description = \
+                                            mfst.get("pkg.description", "")
 
                                 if PackageInfo.ACTION_OPTIONS & info_needed:
                                         if PackageInfo.LINKS in info_needed:
@@ -921,7 +926,8 @@ class ImageInterface(object):
                             branch=branch, packaging_date=packaging_date,
                             size=size, pfmri=str(f), licenses=licenses,
                             links=links, hardlinks=hardlinks, files=files,
-                            dirs=dirs, dependencies=dependencies))
+                            dirs=dirs, dependencies=dependencies,
+                            description=description))
                 if pis:
                         self.log_operation_end()
                 elif illegals or multiple_matches:
@@ -1644,9 +1650,10 @@ class PackageInfo(object):
         INSTALLED = 1
         NOT_INSTALLED = 2
 
-        __NUM_PROPS = 12
+        __NUM_PROPS = 13
         IDENTITY, SUMMARY, CATEGORIES, STATE, PREF_PUBLISHER, SIZE, LICENSES, \
-            LINKS, HARDLINKS, FILES, DIRS, DEPENDENCIES = range(__NUM_PROPS)
+            LINKS, HARDLINKS, FILES, DIRS, DEPENDENCIES, DESCRIPTION = \
+            range(__NUM_PROPS)
         ALL_OPTIONS = frozenset(range(__NUM_PROPS))
         ACTION_OPTIONS = frozenset([LINKS, HARDLINKS, FILES, DIRS,
             DEPENDENCIES])
@@ -1656,7 +1663,7 @@ class PackageInfo(object):
             preferred_publisher=None, version=None, build_release=None,
             branch=None, packaging_date=None, size=None, licenses=None,
             links=None, hardlinks=None, files=None, dirs=None,
-            dependencies=None):
+            dependencies=None, description=None):
                 self.pkg_stem = pkg_stem
                 self.summary = summary
                 if category_info_list is None:
@@ -1677,6 +1684,7 @@ class PackageInfo(object):
                 self.files = files
                 self.dirs = dirs
                 self.dependencies = dependencies
+                self.description = description
 
         def __str__(self):
                 return self.fmri

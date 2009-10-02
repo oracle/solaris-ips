@@ -98,12 +98,14 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                     add set description='FOOO bAr O OO OOO'
                     add license /tmp/copyright1 license=copyright
                     add set name=info.classification value=org.opensolaris.category.2008:System/Security/Foo/bar/Baz
+                    add set pkg.description="DESCRIPTION 1"
                     close """
 
                 pkg5 = """
                     open example_pkg5@1.0,5.11-0
                     add dir mode=0755 owner=root group=bin path=/bin
                     add set pkg.summary='SUMMARY: Example Package 5'
+                    add set pkg.description="DESCRIPTION 2"
                     close
                 """
 
@@ -112,6 +114,7 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                     add dir mode=0755 owner=root group=bin path=/bin
                     add set description='DESCRIPTION: Example Package 6'
                     add set pkg.summary='SUMMARY: Example Package 6'
+                    add set pkg.description="DESCRIPTION 3"
                     close
                 """
 
@@ -212,6 +215,9 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                 self.assert_(res.files is not None)
                 self.assert_(res.dirs is not None)
                 self.assert_(res.dependencies is not None)
+                # A test for bug 8868 which ensures the pkg.description field
+                # is as exected.
+                self.assertEqual(res.description, "DESCRIPTION 1")
 
                 ret = api_obj.info(["emerald"], local, info_needed)
                 pis = ret[api.ImageInterface.INFO_FOUND]
@@ -285,6 +291,9 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                 self.assert_(len(pis) == 1)
                 res = pis[0]
                 self.assert_(res.summary == "SUMMARY: Example Package 5")
+                # A test for bug 8868 which ensures the pkg.description field
+                # is as exected.
+                self.assertEqual(res.description, "DESCRIPTION 2")
 
                 # Test if the package summary has been correctly set if both
                 # a pkg.summary and a description had been set in the package.
@@ -295,6 +304,9 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                 self.assert_(len(pis) == 1)
                 res = pis[0]
                 self.assert_(res.summary == "SUMMARY: Example Package 6")
+                # A test for bug 8868 which ensures the pkg.description field
+                # is as exected.
+                self.assertEqual(res.description, "DESCRIPTION 3")
 
 
 if __name__ == "__main__":

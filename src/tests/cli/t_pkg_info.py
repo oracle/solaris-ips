@@ -139,6 +139,14 @@ class TestPkgInfoBasics(testutils.SingleDepotTestCase):
                     open turquoise@1.0,5.11-0
                     add dir mode=0755 owner=root group=bin path=/bin
                     add set name=info.classification value=org.opensolaris.category.2008:System/Security/Foo/bar/Baz
+                    add set pkg.description="Short desc"
+                    close
+                """
+
+                pkg3 = """
+                    open copper@1.0,5.11-0
+                    add dir mode=0755 owner=root group=bin path=/bin
+                    add set pkg.description="This package constrains package versions to those for build 123.  WARNING: Proper system update and correct package selection depend on the presence of this incorporation.  Removing this package will result in an unsupported system."
                     close
                 """
 
@@ -146,6 +154,7 @@ class TestPkgInfoBasics(testutils.SingleDepotTestCase):
 
                 self.pkgsend_bulk(durl, pkg1)
                 self.pkgsend_bulk(durl, pkg2)
+                self.pkgsend_bulk(durl, pkg3)
 
                 self.image_create(durl)
 
@@ -157,6 +166,7 @@ class TestPkgInfoBasics(testutils.SingleDepotTestCase):
                 self.pkg("info jade | grep 'State: Installed'")
                 self.pkg("info jade | grep '      Category: Applications/Sound and Video'")
                 self.pkg("info jade | grep '      Category: Applications/Sound and Video (org.opensolaris.category.2008)'", exit=1)
+                self.pkg("info jade | grep 'Description:'", exit=1)
                 self.pkg("info turquoise 2>&1 | grep 'no packages matching'")
                 self.pkg("info emerald", exit=1)
                 self.pkg("info emerald 2>&1 | grep 'no packages matching'")
@@ -170,6 +180,21 @@ class TestPkgInfoBasics(testutils.SingleDepotTestCase):
                 self.pkg("info -r turquoise | grep 'State: Not installed'")
                 self.pkg("info -r turquoise | grep '      Category: System/Security/Foo/bar/Baz'")
                 self.pkg("info -r turquoise | grep '      Category: System/Security/Foo/bar/Baz (org.opensolaris.category.2008)'", exit=1)
+#                 self.pkg("info -r turquoise | grep '   Description: Short desc'")
+                self.pkg("info -r turquoise")
+                lines = self.output.split("\n")
+                self.assertEqual(lines[2], "   Description: Short desc")
+                self.assertEqual(lines[3],
+                    "      Category: System/Security/Foo/bar/Baz")
+                self.pkg("info -r copper")
+                lines = self.output.split("\n")
+                self.assertEqual(lines[2],
+                   "   Description: This package constrains package versions to those for build 123.")
+
+                self.assertEqual(lines[3], "                WARNING: Proper system update and correct package selection")
+                self.assertEqual(lines[4], "                depend on the presence of this incorporation.  Removing this")
+                self.assertEqual(lines[5], "                package will result in an unsupported system.")
+                self.assertEqual(lines[6], "         State: Not installed")
                 self.pkg("info -r emerald", exit=1)
                 self.pkg("info -r emerald 2>&1 | grep 'no packages matching'")
 

@@ -1,3 +1,8 @@
+Version 22:
+Compatible with clients using version 21.
+Changes:
+	Adds the description field to the PackageInfo class.
+
 Version 21:
 Incompatible with clients using version 0-20.
 Changes:

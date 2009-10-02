@@ -52,6 +52,7 @@ import locale
 import os
 import socket
 import sys
+import textwrap
 import time
 import traceback
 import urllib2
@@ -77,7 +78,7 @@ from pkg.client.history import (RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
     RESULT_FAILED_OUTOFMEMORY)
 from pkg.misc import EmptyI, msg, emsg, PipeError
 
-CLIENT_API_VERSION = 21
+CLIENT_API_VERSION = 22
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -1338,6 +1339,15 @@ def info(img, args):
                 name_str = _("          Name:")
                 msg(name_str, pi.pkg_stem)
                 msg(_("       Summary:"), pi.summary)
+                if pi.description:
+                        desc_label = _("   Description:")
+                        start_loc = len(desc_label) + 1
+                        end_loc = 80
+                        res = textwrap.wrap(pi.description,
+                            width=end_loc - start_loc)
+                        pad = "\n" + " " * start_loc
+                        res = pad.join(res)
+                        msg(desc_label, res)
                 if pi.category_info_list:
                         verbose = len(pi.category_info_list) > 1
                         msg(_("      Category:"),
