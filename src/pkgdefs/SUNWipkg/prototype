@@ -164,6 +164,8 @@ f none usr/lib/python2.4/vendor-packages/pkg/pkgtarfile.pyc 444 root bin
 d none usr/lib/python2.4/vendor-packages/pkg/portable 755 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/portable/__init__.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/portable/__init__.pyc 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/portable/os_aix.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/portable/os_aix.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/portable/os_darwin.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/portable/os_darwin.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/portable/os_sunos.py 444 root bin
