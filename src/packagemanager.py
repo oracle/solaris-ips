@@ -3662,6 +3662,9 @@ class PackageManager:
                 if category_list == None:
                         return
                 cat_pub = categories.get(pub)
+                fmri = app[enumerations.FMRI_COLUMN]
+                if fmri:
+                        pkg_name = fmri.get_name()
                 if pkg_name in cat_pub:
                         pkg_categories = cat_pub.get(pkg_name)
                         for pcat in pkg_categories.split(","):
