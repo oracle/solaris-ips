@@ -613,7 +613,8 @@ def install_ldtp(swname, swdir, swidir):
                 print "installing %s" % swname
                 args_config = ['./configure',
                     '--prefix=/usr',
-                    '--bindir=/usr/bin'
+                    '--bindir=/usr/bin',
+                    'PYTHONPATH=""',
                        ]
                 args_make_install = ['make', 'install', 
                     'DESTDIR=%s' % root_dir
