@@ -1,0 +1,11 @@
+--- find-python-path.py.orig	2009-09-30 13:52:05.871915809 +0100
++++ find-python-path.py	2009-09-30 13:52:18.469972626 +0100
+@@ -7,7 +7,7 @@
+     for path in sys.path:
+ 	(head, tail) = split (path)
+         # Forcing python path to be used as /usr/lib instead of /usr/local/lib
+-	if (tail == 'site-packages' or tail == 'dist-packages') and \
++	if (tail == 'vendor-packages' or tail == 'dist-packages') and \
+                 path.find ('local') == -1:
+ 	    base = basename (head)
+ 	    print path

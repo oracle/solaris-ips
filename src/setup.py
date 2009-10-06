@@ -78,6 +78,17 @@ FLURL = 'http://darcs.idyll.org/~t/projects/%s' % FLARC
 # No hash, since we always fetch the latest
 FLHASH = None
 
+LDTP = 'ldtp'
+LDTPIDIR = 'ldtp'
+LDTPVER = '1.7.1'
+LDTPMINORVER = '1.7.x'
+LDTPMAJORVER = '1.x'
+LDTPARC = '%s-%s.tar.gz' % (LDTP, LDTPVER)
+LDTPDIR = '%s-%s' % (LDTP, LDTPVER)
+LDTPURL = 'http://download.freedesktop.org/ldtp/%s/%s/%s' % \
+    (LDTPMAJORVER, LDTPMINORVER, LDTPARC)
+LDTPHASH = 'd31213d2b1449a0dadcace723b9ff7041169f7ce'
+
 MAKO = 'Mako'
 MAKOIDIR = 'mako'
 MAKOVER = '0.2.2'
@@ -301,8 +312,9 @@ class cov_func(Command):
                 pass
         def run(self):
                 if not os.path.isdir(FLDIR):
-                        install_sw(FL, FLVER, FLARC, FLDIR, FLURL, FLIDIR,
+                        prep_sw(FL, FLARC, FLDIR, FLURL,
                             FLHASH)
+                        install_sw(FL, FLDIR, FLIDIR)
                 # Run the test suite with coverage enabled
                 os.putenv('PYEXE', sys.executable)
                 os.chdir(os.path.join(pwd, "tests"))
@@ -434,7 +446,17 @@ class install_func(_install):
                 # proto-area-relative cacert_install_dir
                 install_cacerts()
 
-                install_sw(CP, CPVER, CPARC, CPDIR, CPURL, CPIDIR, CPHASH)
+                prep_sw(CP, CPARC, CPDIR, CPURL, CPHASH)
+                install_sw(CP, CPDIR, CPIDIR)
+		if osname == "sunos":
+                        prep_sw(LDTP, LDTPARC, LDTPDIR, LDTPURL,
+                            LDTPHASH)
+                        saveenv = os.environ.copy()
+                        os.environ["LDFLAGS"] = os.environ.get("LDFLAGS", "") + \
+                            " -lsocket -lnsl"
+                        install_ldtp(LDTP, LDTPDIR, LDTPIDIR)
+                        os.environ = saveenv
+
 		if "BUILD_PYOPENSSL" in os.environ and \
                     os.environ["BUILD_PYOPENSSL"] != "":
                         #
@@ -449,14 +471,18 @@ class install_func(_install):
                                 os.environ["LDFLAGS"] = \
                                     "-L/usr/sfw/lib -R/usr/sfw/lib " + \
                                     os.environ.get("LDFLAGS", "")
-                        install_sw(PO, POVER, POARC, PODIR, POURL, POIDIR,
+                        prep_sw(PO, POARC, PODIR, POURL,
                             POHASH)
+                        install_sw(PO, PODIR, POIDIR)
                         os.environ = saveenv
-                install_sw(MAKO, MAKOVER, MAKOARC, MAKODIR, MAKOURL, MAKOIDIR,
+                prep_sw(MAKO, MAKOARC, MAKODIR, MAKOURL,
                     MAKOHASH)
-                install_sw(PLY, PLYVER, PLYARC, PLYDIR, PLYURL, PLYIDIR,
+                install_sw(MAKO, MAKODIR, MAKOIDIR)
+                prep_sw(PLY, PLYARC, PLYDIR, PLYURL,
                     PLYHASH)
-                install_sw(PC, PCVER, PCARC, PCDIR, PCURL, PCIDIR, PCHASH)
+                install_sw(PLY, PLYDIR, PLYIDIR)
+                prep_sw(PC, PCARC, PCDIR, PCURL, PCHASH)
+                install_sw(PC, PCDIR, PCIDIR)
 
                 # Remove some bits that we're not going to package, but be sure
                 # not to complain if we try to remove them twice.
@@ -527,7 +553,7 @@ def install_cacerts():
                 else:
                         file_util.copy_file(srcname, hashpath)
 
-def install_sw(swname, swver, swarc, swdir, swurl, swidir, swhash):
+def prep_sw(swname, swarc, swdir, swurl, swhash):
         swarc = os.path.join(extern_dir, swarc)
         swdir = os.path.join(extern_dir, swdir)
         if not os.path.exists(extern_dir):
@@ -580,6 +606,23 @@ def install_sw(swname, swver, swarc, swdir, swurl, swidir, swhash):
                                 sys.exit(1)
                 file(already_patched, "w").close()
 
+def install_ldtp(swname, swdir, swidir):
+        swdir = os.path.join(extern_dir, swdir)
+        swinst_file = os.path.join(root_dir, py_install_dir, swidir + ".py")
+        if not os.path.exists(swinst_file):
+                print "installing %s" % swname
+                args_config = ['./configure',
+                    '--prefix=/usr',
+                    '--bindir=/usr/bin'
+                       ]
+                args_make_install = ['make', 'install', 
+                    'DESTDIR=%s' % root_dir
+                       ]
+                run_cmd(args_config, swdir)
+                run_cmd(args_make_install, swdir)
+
+def install_sw(swname, swdir, swidir):
+        swdir = os.path.join(extern_dir, swdir)
         swinst_dir = os.path.join(root_dir, py_install_dir, swidir)
         if not os.path.exists(swinst_dir):
                 print "installing %s" % swname
@@ -587,6 +630,9 @@ def install_sw(swname, swver, swarc, swdir, swurl, swidir, swhash):
                     '--root=%s' % root_dir,
                     '--install-lib=%s' % py_install_dir,
                     '--install-data=%s' % py_install_dir]
+                run_cmd(args, swdir)
+
+def run_cmd(args, swdir):
                 ret = subprocess.Popen(args, cwd = swdir).wait()
                 if ret != 0:
                         print >> sys.stderr, \
@@ -594,7 +640,6 @@ def install_sw(swname, swver, swarc, swdir, swurl, swidir, swhash):
                         print >> sys.stderr, \
                             "Command was: %s" % " ".join(args)
                         sys.exit(1)
-
 
 def remove_sw(swname):
         print("deleting %s" % swname)
