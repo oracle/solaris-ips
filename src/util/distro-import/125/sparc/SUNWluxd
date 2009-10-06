@@ -1,0 +1,6 @@
+package SUNWluxd
+classification "Drivers/Storage"
+import SUNWluxd.u
+
+add driver name=sf
+end package

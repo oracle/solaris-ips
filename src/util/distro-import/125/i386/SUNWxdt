@@ -1,0 +1,6 @@
+package SUNWxdt
+classification "Development/System"
+import SUNWxdt
+
+add driver name=xdt
+end package

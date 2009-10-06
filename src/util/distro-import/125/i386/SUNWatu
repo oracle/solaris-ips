@@ -1,0 +1,9 @@
+package SUNWatu
+classification "Drivers/Networking"
+import SUNWatu
+
+add driver name=atu \
+    perms="* 0666 root sys" \
+    clone_perms="0666 root sys" \
+    alias="usb1915,2233"
+end package

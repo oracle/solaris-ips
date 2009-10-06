@@ -1,0 +1,8 @@
+package SUNWstc
+classification "System/Core"
+import SUNWstc.u
+
+add driver name=scmi2c \
+    alias="i2c-scm001" \
+    alias="card-reader"
+end package

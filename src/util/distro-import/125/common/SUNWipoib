@@ -1,0 +1,9 @@
+package SUNWipoib
+classification "System/Hardware"
+import SUNWipoib
+
+add driver name=ibd \
+    perms="* 0666 root sys" \
+    clone_perms="0666 root sys" \
+    alias="ib.ipib"
+end package

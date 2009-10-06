@@ -1,0 +1,13 @@
+package SUNWamr
+classification "Drivers/Ports"
+import SUNWamr
+
+add driver name=amr \
+    class=scsi \
+    alias="pci1000,532" \
+    alias="pci1028,e" \
+    alias="pci1028,f" \
+    alias="pci1028,493" \
+    alias="pci1028,518" \
+    alias="pci1028,520"
+end package

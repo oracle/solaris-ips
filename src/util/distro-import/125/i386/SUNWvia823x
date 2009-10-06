@@ -1,0 +1,7 @@
+package SUNWvia823x
+classification "Drivers/Media"
+import SUNWvia823x
+
+add driver name=audiovia823x \
+    alias="pci1106,3059"
+end package

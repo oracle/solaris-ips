@@ -1,0 +1,12 @@
+package SUNWsdcard
+classification "Drivers/Storage"
+import SUNWsdcard
+
+add driver name=sdcard \
+    perms="* 0644 root root"
+
+add driver name=sdhost \
+    perms="* 0644 root root" \
+    alias="pciclass,080500" \
+    alias="pciclass,080501"
+end package

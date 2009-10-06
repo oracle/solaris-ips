@@ -1,0 +1,7 @@
+package SUNWxvmpv
+classification "System/Virtualization"
+import SUNWxvmpv
+
+add driver name=xpv \
+    alias="pci5853,1.1"
+end package

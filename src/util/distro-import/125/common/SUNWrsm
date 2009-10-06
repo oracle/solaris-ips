@@ -1,0 +1,7 @@
+package SUNWrsm
+classification "System/Core"
+import SUNWrsm
+
+add driver name=rsm \
+    perms="* 0666 root sys"
+end package

@@ -1,0 +1,7 @@
+package SUNWluxl
+classification "Drivers/Storage"
+import SUNWluxl
+
+add driver name=socal \
+    alias=SUNW,socal
+end package

@@ -1,0 +1,16 @@
+package SUNWiscsi
+classification "System/Hardware"
+import SUNWiscsiu
+import SUNWiscsir
+#
+# network/iscsi_initiator was renamed in snv_112.  In order to
+# work-around 6859248, deliver a replacement service method which exits
+# with an equivalent of SMF_EXIT_OK.
+#
+add link path=lib/svc/method/iscsid \
+    target=../../../usr/bin/true
+
+add driver name=iscsi \
+    perms="* 0600 root sys" \
+    class=scsi-self-identify
+end package

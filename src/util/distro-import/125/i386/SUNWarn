@@ -1,0 +1,10 @@
+package SUNWarn
+classification "Drivers/Networking"
+import SUNWarn
+
+add driver name=arn \
+    perms="* 0666 root sys" \
+    clone_perms="0666 root sys" \
+    alias="pciex168c,2a" \
+    alias="pciex168c,2b"
+end package

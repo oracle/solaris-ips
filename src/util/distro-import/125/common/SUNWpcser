@@ -1,0 +1,11 @@
+package SUNWpcser
+classification "Drivers/Other Peripherals"
+import SUNWpcser
+
+add driver name=pcser \
+    perms="* 0666 uucp uucp" \
+    alias="pccard,serial" \
+    alias="pccard102,5" \
+    alias="pccard102,2" \
+    alias="pccard,Intel_MODEM_2400+_iNC110US_A-"
+end package

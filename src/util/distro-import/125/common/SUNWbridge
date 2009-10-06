@@ -1,0 +1,5 @@
+package SUNWbridge
+classification "System/Core"
+import SUNWbridger
+import SUNWbridgeu
+end package

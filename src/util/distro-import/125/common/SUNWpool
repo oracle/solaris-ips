@@ -1,0 +1,9 @@
+package SUNWpool
+classification "System/Core"
+import SUNWpool
+import SUNWpoolr
+
+add driver name=pool \
+    perms="pool 0666 root sys" \
+    perms="poolctl 0666 root sys"
+end package

@@ -1,0 +1,9 @@
+package SUNWged
+classification "Drivers/Networking"
+import SUNWged
+
+add driver name=ge \
+    perms="* 0600 root sys" \
+    alias="pci108e,2bad" \
+    alias="SUNW,sbus-gem"
+end package

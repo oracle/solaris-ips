@@ -1,0 +1,9 @@
+package SUNWaudiocmi
+classification "Drivers/Media"
+import SUNWaudiocmi
+
+add driver name=audiocmi \
+    alias="pci13f6,111" \
+    alias="pci13f6,100" \
+    alias="pci13f6,101"
+end package

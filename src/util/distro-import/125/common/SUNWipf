@@ -1,0 +1,9 @@
+package SUNWipf
+classification "Applications/System Utilities"
+import SUNWipfu
+import SUNWipfr
+
+add driver name=ipf \
+    perms="* 0666 root sys" \
+    policy="read_priv_set=sys_ip_config write_priv_set=sys_ip_config"
+end package

@@ -1,0 +1,7 @@
+package SUNWrpcib
+classification "System/Hardware"
+import SUNWrpcib
+
+add driver name=rpcib \
+    perms="* 0644 root sys"
+end package

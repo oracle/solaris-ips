@@ -1,0 +1,24 @@
+package SUNWarcmsr
+classification "Drivers/Storage"
+import SUNWarcmsr
+
+add driver name=arcmsr \
+    perms="* 0600 root sys" \
+    class=scsi \
+    alias="pci17d3,1110" \
+    alias="pci17d3,1120" \
+    alias="pci17d3,1130" \
+    alias="pci17d3,1160" \
+    alias="pci17d3,1170" \
+    alias="pci17d3,1201" \
+    alias="pci17d3,1210" \
+    alias="pci17d3,1220" \
+    alias="pci17d3,1230" \
+    alias="pci17d3,1260" \
+    alias="pci17d3,1270" \
+    alias="pci17d3,1280" \
+    alias="pci17d3,1380" \
+    alias="pci17d3,1381" \
+    alias="pci17d3,1680" \
+    alias="pci17d3,1681"
+end package

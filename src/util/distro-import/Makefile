@@ -320,6 +320,16 @@ FIX_FILES_121 =				\
 FIX_FILES_122 = $(FIX_FILES_121)
 FIX_FILES_123 = $(FIX_FILES_121)
 FIX_FILES_124 = $(FIX_FILES_121)
+FIX_FILES_125 =				\
+	ksh				\
+	nsswitch.conf			\
+	pam.conf			\
+	passwd				\
+	services.desktop		\
+	sh				\
+	shadow				\
+	shares.desktop			\
+	vi
 FIX_FILES = $(FIX_FILES_$(BUILDID))
 
 JDKFILES = LICENSE README.html

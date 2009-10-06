@@ -1,0 +1,7 @@
+package SUNWib
+classification "System/Hardware"
+import SUNWib
+
+add driver name=ib \
+    perms="* 0644 root sys"
+end package

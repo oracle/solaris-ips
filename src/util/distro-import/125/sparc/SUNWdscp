@@ -1,0 +1,9 @@
+package SUNWdscp
+classification "System/Core"
+import SUNWdscpr.u
+import SUNWdscpu.u
+
+add driver name=dm2s
+
+add driver name=oplkmdrv
+end package

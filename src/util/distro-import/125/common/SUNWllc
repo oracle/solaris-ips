@@ -1,0 +1,11 @@
+package SUNWllc
+classification "Drivers/Networking"
+import SUNWllc
+# BEGIN NON-REDISTRIBUTABLE
+drop usr/include/sys/llc2.h
+# END NON-REDISTRIBUTABLE
+import SUNWllcr
+
+add driver name=llc2 \
+    perms="* 0666 root sys"
+end package

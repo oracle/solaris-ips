@@ -1,0 +1,15 @@
+package BRCMbnx
+classification "Drivers/Networking"
+import BRCMbnx
+
+add driver name=bnx \
+    perms="* 0644 root sys" \
+    alias="pci14e4,164a" \
+    alias="pci14e4,16aa" \
+    alias="pci14e4,164c" \
+    alias="pci14e4,16ac" \
+    alias="pci14e4,1639" \
+    alias="pci14e4,163a" \
+    alias="pci14e4,163b" \
+    alias="pci14e4,163c"
+end package

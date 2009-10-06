@@ -1,0 +1,14 @@
+package SUNWtpm
+classification "Drivers/Other Peripherals"
+import SUNWtpm
+
+$(i386_ONLY)add driver name=tpm \
+$(i386_ONLY)    perms="* 0600 root sys" \
+$(i386_ONLY)    devlink="type=ddi_pseudo;name=tpm\t\D"
+
+$(sparc_ONLY)add driver name=tpm \
+$(sparc_ONLY)    perms="* 0600 root sys" \
+$(sparc_ONLY)    alias="SUNW,sun4v-ptpm" \
+$(sparc_ONLY)    devlink="type=ddi_pseudo;name=tpm\t\D"
+
+end package

@@ -1,0 +1,7 @@
+package SUNWfcp
+classification "Drivers/Storage"
+import SUNWfcp
+
+add driver name=fcp \
+    perms="* 0600 root sys"
+end package

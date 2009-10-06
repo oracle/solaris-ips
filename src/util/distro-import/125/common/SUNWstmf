@@ -1,0 +1,17 @@
+package SUNWstmf
+classification "System/Hardware"
+import SUNWstmf
+import SUNWstmfu
+
+add driver name=fct \
+    perms="* 0666 root sys"
+
+add driver name=qlt \
+    perms="* 0666 root sys"
+
+add driver name=stmf \
+    perms="* 0666 root sys"
+
+add driver name=stmf_sbd \
+    perms="* 0666 root sys"
+end package

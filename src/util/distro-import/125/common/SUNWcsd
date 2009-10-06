@@ -1,0 +1,22 @@
+package SUNWcsd
+classification "System/Core"
+import SUNWcsd
+drop etc/driver_aliases
+drop etc/driver_classes
+drop etc/minor_perm
+drop etc/name_to_major
+drop etc/security/device_policy
+drop etc/security/extra_privs
+add file /dev/null path=etc/driver_aliases \
+    mode=0644 owner=root group=sys preserve=true opensolaris.zone=global
+add file /dev/null path=etc/driver_classes \
+    mode=0644 owner=root group=sys preserve=true opensolaris.zone=global
+add file /dev/null path=etc/minor_perm \
+    mode=0644 owner=root group=sys preserve=true opensolaris.zone=global
+add file name_to_major path=etc/name_to_major \
+    mode=0644 owner=root group=sys preserve=true opensolaris.zone=global
+add file device_policy path=etc/security/device_policy \
+    mode=0644 owner=root group=sys preserve=true opensolaris.zone=global
+add file extra_privs path=etc/security/extra_privs \
+    mode=0644 owner=root group=sys preserve=true opensolaris.zone=global
+end package

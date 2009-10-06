@@ -1,0 +1,7 @@
+package SUNWcg6
+classification "Drivers/Display"
+import SUNWcg6.u
+
+add driver name=cgsix \
+    perms="* 0666 root sys"
+end package

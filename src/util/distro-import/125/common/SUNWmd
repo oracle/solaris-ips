@@ -1,0 +1,10 @@
+package SUNWmd
+classification "System/Core"
+import SUNWmdu
+import SUNWmdr
+
+add driver name=md \
+    perms="* 0640 root sys" \
+    perms="admin 0644 root sys" \
+    policy="admin write_priv_set=sys_config"
+end package

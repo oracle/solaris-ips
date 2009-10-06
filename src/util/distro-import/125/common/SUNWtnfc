@@ -1,0 +1,8 @@
+package SUNWtnfc
+classification "Development/System"
+import SUNWtnfc
+
+add driver name=tnf \
+    perms="tnfctl 0600 root sys" \
+    perms="tnfmap 0600 root sys"
+end package

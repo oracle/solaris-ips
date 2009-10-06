@@ -1,0 +1,13 @@
+package SUNWrdc
+classification "System/Hardware"
+import SUNWrdcu
+import SUNWrdcr
+depend SUNWspsv
+
+add driver name=rdc \
+    perms="* 0666 root sys" \
+    privs=sys_devices \
+    privs=sys_config \
+    devlink="type=ddi_pseudo;name=rdc\t\D"
+
+end package

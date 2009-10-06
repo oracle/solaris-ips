@@ -1,0 +1,9 @@
+package SUNWdcopy
+classification "Drivers/Other Peripherals"
+import SUNWdcopy
+
+add driver name=ioat \
+    alias="pciex8086,1a38" \
+    alias="pciex8086,360b" \
+    alias="pciex8086,402f"
+end package

@@ -1,0 +1,10 @@
+package SUNWpppd
+classification "Drivers/Networking"
+import SUNWpppd
+import SUNWpppdu
+import SUNWpppdr
+
+add driver name=sppp
+
+add driver name=sppptun
+end package

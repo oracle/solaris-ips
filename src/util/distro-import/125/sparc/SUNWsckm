@@ -1,0 +1,9 @@
+package SUNWsckm
+classification "System/Enterprise Management"
+import SUNWsckm.u
+import SUNWsckmr
+import SUNWsckmu.u
+
+add driver name=sckmdrv \
+    perms="* 0600 root sys"
+end package

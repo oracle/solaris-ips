@@ -1,0 +1,11 @@
+package SUNWpsdir
+classification "Drivers/Other Peripherals"
+import SUNWpsdir
+
+add driver name=ata \
+    class=dada \
+    class=scsi \
+    alias="ide"
+
+add driver name=pci-ide
+end package

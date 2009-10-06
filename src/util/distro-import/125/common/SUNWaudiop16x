@@ -1,0 +1,7 @@
+package SUNWaudiop16x
+classification "Drivers/Media"
+import SUNWaudiop16x
+
+add driver name=audiop16x \
+    alias="pci1102,6"
+end package

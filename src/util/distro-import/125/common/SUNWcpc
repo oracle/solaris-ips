@@ -1,0 +1,9 @@
+package SUNWcpc
+classification "System/Core"
+$(i386_ONLY)import SUNWcpc.i
+$(sparc_ONLY)import SUNWcpc.u
+$(sparc_ONLY)import SUNWcpc.v
+
+add driver name=cpc \
+    perms="shared 0666 root sys"
+end package

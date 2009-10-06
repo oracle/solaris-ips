@@ -1,0 +1,10 @@
+package SUNWefc
+classification "System/Administration and Configuration"
+import SUNWefc.u
+import SUNWefck
+import SUNWefcl
+import SUNWefcr
+import SUNWefcu
+
+add driver name=fcode
+end package

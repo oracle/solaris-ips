@@ -1,0 +1,12 @@
+package SUNWuath
+classification "Drivers/Networking"
+import SUNWuath
+
+add driver name=uath \
+    perms="* 0666 root sys" \
+    clone_perms="0666 root sys" \
+    alias="usbcf3,2" \
+    alias="usbcf3,3" \
+    alias="usb1385,4251" \
+    alias="usb1385,4252"
+end package
