@@ -102,8 +102,9 @@ class Beadmin:
                     "usr/share/package-manager/packagemanager.glade")
                 w_tree_beadmin = gtk.glade.XML(gladefile, "beadmin")
                 w_tree_progress = gtk.glade.XML(gladefile, "progressdialog")
+                # Dialog reused in the repository.py
                 w_tree_beconfirmation = gtk.glade.XML(gladefile,
-                    "beconfirmationdialog")
+                    "confirmationdialog")
                 self.w_beadmin_dialog = w_tree_beadmin.get_widget("beadmin")
                 self.w_be_treeview = w_tree_beadmin.get_widget("betreeview")
                 self.w_cancel_button = w_tree_beadmin.get_widget("cancelbebutton")
@@ -115,10 +116,10 @@ class Beadmin:
                 progress_button = w_tree_progress.get_widget("progresscancel")
                 self.w_progressbar = w_tree_progress.get_widget("progressbar")
                 self.w_beconfirmation_dialog =  \
-                    w_tree_beconfirmation.get_widget("beconfirmationdialog")
+                    w_tree_beconfirmation.get_widget("confirmationdialog")
                 self.w_beconfirmation_textview = \
-                    w_tree_beconfirmation.get_widget("beconfirmtext")
-                self.w_cancelbe_button = w_tree_beconfirmation.get_widget("cancel_be")
+                    w_tree_beconfirmation.get_widget("confirmtext")
+                self.w_cancelbe_button = w_tree_beconfirmation.get_widget("cancel_conf")
                 self.w_ok_button.set_sensitive(False)
                 progress_button.hide()
                 self.w_progressbar.set_pulse_step(0.1)
@@ -144,11 +145,11 @@ class Beadmin:
                             }
                         dic_conf = \
                             {
-                                "on_cancel_be_conf_clicked": \
+                                "on_cancel_conf_clicked": \
                                     self.__on_cancel_be_conf_clicked,
-                                "on_ok_be_conf_clicked": \
+                                "on_ok_conf_clicked": \
                                     self.__on_ok_be_conf_clicked,
-                                "on_beconfirmationdialog_delete_event": \
+                                "on_confirmationdialog_delete_event": \
                                     self.__on_beconfirmationdialog_delete_event,
                             }            
                         w_tree_beadmin.signal_autoconnect(dic)
@@ -162,6 +163,8 @@ class Beadmin:
                 sel = self.w_be_treeview.get_selection()
                 self.w_cancel_button.grab_focus()
                 sel.set_mode(gtk.SELECTION_SINGLE)
+                self.w_beconfirmation_dialog.set_title(
+                    _("Boot Environment Confirmation"))
                 self.w_beadmin_dialog.show_all()
                 self.w_progress_dialog.set_title(
                     _("Loading Boot Environment Information"))

@@ -41,18 +41,22 @@ class GuiProgressTracker(NullProgressTracker):
                 self.ind_started = None
 
         def cat_output_start(self):
+                self.update_details_text(_("Retrieving catalog '%s'...\n") % \
+                    self.cat_cur_catalog)
                 return
 
         def cat_output_done(self):
                 return
 
         def cache_cats_output_start(self):
+                self.update_details_text(_("Caching catalogs ...\n"))
                 return
 
         def cache_cats_output_done(self):
                 return
 
         def load_cat_cache_output_start(self):
+                self.update_details_text(_("Loading catalog cache ...\n"))
                 return
 
         def load_cat_cache_output_done(self):
@@ -62,9 +66,13 @@ class GuiProgressTracker(NullProgressTracker):
                 return
 
         def refresh_output_progress(self):
+                self.update_details_text(
+                    _("Refreshing catalog %s\n") % self.refresh_cur_pub)
                 return
 
         def refresh_output_done(self):
+                self.update_details_text(
+                    _("Finished refreshing catalog %s\n") % self.refresh_cur_pub)
                 return
 
         def eval_output_start(self):

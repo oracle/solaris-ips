@@ -280,7 +280,9 @@ class Webinstall:
                         repo = pub.selected_repository
                         print("\tURL: %s" % repo.origins[0].uri)
                         
-                repo_gui = repository.Repository(self, True)
+                repo_gui = repository.Repository(self, self.image_dir,
+                    webinstall_new=True, main_window = self.w_webinstall_dialog)
+
                 repo = pub.selected_repository
                 if repo and len(repo.origins) > 0:
                         repo_gui.webinstall_new_pub(self.w_webinstall_dialog, pub)
@@ -297,6 +299,8 @@ class Webinstall:
                         self.__add_new_pub()
                         return
                 elif len(self.pkg_install_tasks) > 0:
+                        self.api_o = gui_misc.get_api_object(self.image_dir, self.pr,
+                            self.w_webinstall_dialog)
                         self.__install_pkgs()
                 else:
                         self.__exit_app()

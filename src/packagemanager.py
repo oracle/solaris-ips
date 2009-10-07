@@ -502,8 +502,10 @@ class PackageManager:
                                 "on_file_be_activate":self.__on_file_be_activate,
                                 "on_package_install_update_activate": \
                                     self.__on_install_update,
-                                "on_settings_edit_repositories_activate": \
-                                    self.__on_edit_repositories_activate,
+                                "on_file_manage_publishers_activate": \
+                                    self.__on_file_manage_publishers,
+                                "on_file_add_publisher_activate": \
+                                    self.__on_file_add_publisher,
                                 "on_package_remove_activate":self.__on_remove,
                                 "on_help_about_activate":self.__on_help_about,
                                 "on_help_help_activate":self.__on_help_help,
@@ -1562,9 +1564,17 @@ class PackageManager:
                 self.w_ua_completed_dialog.hide()
                 self.__on_mainwindow_delete_event(None, None)
 
-        def __on_edit_repositories_activate(self, widget):
-                ''' handler for repository menu event '''
-                repository.Repository(self)
+        def __on_file_manage_publishers(self, widget):
+                ''' handler for manage publishers menu event '''
+                repository.Repository(self, self.image_directory,
+                    action=enumerations.MANAGE_PUBLISHERS,
+                    main_window = self.w_main_window)
+
+        def __on_file_add_publisher(self, widget):
+                ''' handler for add publisher menu event '''
+                repository.Repository(self, self.image_directory,
+                    action=enumerations.ADD_PUBLISHER,
+                    main_window = self.w_main_window)
 
         def __on_file_be_activate(self, widget):
                 ''' handler for be menu event '''
@@ -2452,7 +2462,7 @@ class PackageManager:
                         if index == self.repo_combobox_add_index:
                                 self.w_repository_combobox.set_active(
                                     self.repo_combobox_all_pubs_index)
-                                self.__on_edit_repositories_activate(None)
+                                self.__on_file_add_publisher(None)
                                 return
                         same_repo = self.saved_repository_combobox_active == index
                         self.__unset_search(same_repo)
@@ -2474,7 +2484,7 @@ class PackageManager:
                                         index = entry[0]
                                         break
                         self.w_repository_combobox.set_active(index)
-                        self.__on_edit_repositories_activate(None)
+                        self.__on_file_add_publisher(None)
                         return
                 self.cancelled = True
                 self.in_setup = True
@@ -3532,7 +3542,7 @@ class PackageManager:
                 except api_errors.InventoryException:
                         # This can happen if the repository does not
                         # contain any packages
-                        err = _("Selected package source does not contain any packages.")
+                        err = _("Selected publisher does not contain any packages.")
                         gobject.idle_add(self.error_occurred, err, None,
                             gtk.MESSAGE_INFO)
                         self.unset_busy_cursor()
