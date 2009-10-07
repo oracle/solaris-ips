@@ -448,7 +448,7 @@ class install_func(_install):
 
                 prep_sw(CP, CPARC, CPDIR, CPURL, CPHASH)
                 install_sw(CP, CPDIR, CPIDIR)
-		if osname == "sunos":
+		if osname == "sunos" and platform.uname()[2] == "5.11":
                         prep_sw(LDTP, LDTPARC, LDTPDIR, LDTPURL,
                             LDTPHASH)
                         saveenv = os.environ.copy()
