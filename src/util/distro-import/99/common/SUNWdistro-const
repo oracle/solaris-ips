@@ -1,4 +1,5 @@
 package SUNWdistro-const
 classification "System/Core"
 import SUNWdistro-const
+depend SUNWinstall
 end package
