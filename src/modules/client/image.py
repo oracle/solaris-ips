@@ -29,6 +29,7 @@ import errno
 import os
 import platform
 import shutil
+import stat
 import tempfile
 import time
 import urllib
@@ -360,6 +361,9 @@ class Image(object):
                         # The specified root may have been a relative path.
                         self.root = os.getcwd()
 
+                if not os.path.isabs(self.root):
+                        self.root = os.path.abspath(self.root)
+
                 self.imgdir = os.path.join(self.root, self.img_prefix)
                 self.pkgdir = os.path.join(self.imgdir, "pkg")
                 self.history.root_dir = self.imgdir
@@ -649,6 +653,10 @@ class Image(object):
                 pub.transport = self.transport
                 self.cfg_cache.publishers[pub.prefix] = pub
 
+                # Ensure that if the publisher's meta directory already exists
+                # for some reason that the data within is not used.
+                pub.remove_meta_root()
+
                 if refresh_allowed:
                         try:
                                 # First, verify that the publisher has a valid
@@ -660,16 +668,12 @@ class Image(object):
                                 # Remove the newly added publisher since the
                                 # retrieval failed.
                                 self.cfg_cache.remove_publisher(pub.prefix)
-                                self.remove_publisher_metadata(pub,
-                                    progtrack=progtrack)
                                 self.history.log_operation_end(error=e)
                                 raise
                         except:
                                 # Remove the newly added publisher since the
                                 # retrieval failed.
                                 self.cfg_cache.remove_publisher(pub.prefix)
-                                self.remove_publisher_metadata(pub,
-                                    progtrack=progtrack)
                                 self.history.log_operation_end(
                                     result=history.RESULT_FAILED_UNKNOWN)
                                 raise
@@ -1059,27 +1063,6 @@ class Image(object):
                     self.IMG_CATALOG_INSTALLED):
                         shutil.rmtree(os.path.join(self.imgdir, "state", name))
 
-        def remove_catalog(self, name):
-                """Removes the requested image catalog if it exists.
-
-                'name' must be one of the following image constants:
-                    IMG_CATALOG_KNOWN
-                        The known catalog contains all of packages that are
-                        installed or available from a publisher's repository.
-
-                    IMG_CATALOG_INSTALLED
-                        The installed catalog is a subset of the 'known'
-                        catalog that only contains installed packages."""
-
-                if not self.imgdir:
-                        raise RuntimeError("self.imgdir must be set")
-
-                cat = self.__catalogs.pop(name, None)
-                if not cat:
-                        croot = os.path.join(self.imgdir, "state", name)
-                        cat = pkg.catalog.Catalog(meta_root=croot, sign=False)
-                cat.destroy()
-
         def get_version_installed(self, pfmri):
                 """Returns an fmri of the installed package matching the
                 package stem of the given fmri or None if no match is found."""
@@ -1222,7 +1205,7 @@ class Image(object):
 
                 if not progtrack:
                         progtrack = progress.QuietProgressTracker()
-
+                
                 progtrack.cache_catalogs_start()
 
                 publist = list(self.gen_publishers())
@@ -1231,6 +1214,8 @@ class Image(object):
                         self.remove_catalogs()
                         progtrack.cache_catalogs_done()
                         return
+
+                self.history.log_operation_start("rebuild-image-catalogs")
 
                 # The image catalogs need to be updated, but this is a bit
                 # tricky as previously known packages must remain known even
@@ -1243,7 +1228,21 @@ class Image(object):
                 # batch_mode is set to True here since without it, catalog
                 # population time is almost doubled (since the catalog is
                 # re-sorted and stats are generated for every operation).
-                kcat = pkg.catalog.Catalog(batch_mode=True, sign=False)
+                # In addition, the new catalog is first created in a new
+                # temporary directory so that it can be moved into place
+                # at the very end of this process (to minimize the chance
+                # that failure or interruption will cause the image to be
+                # left in an inconsistent state).
+                tmp_state_root = self.temporary_dir()
+
+                # Force modes on temporary state directory so it will be
+                # correct once renamed into place.
+                root_mode = 0755
+                os.chmod(tmp_state_root, root_mode)
+
+                kcat = pkg.catalog.Catalog(batch_mode=True,
+                    meta_root=os.path.join(tmp_state_root,
+                    self.IMG_CATALOG_KNOWN), sign=False)
 
                 # XXX if any of the below fails for any reason, the old 'known'
                 # catalog needs to be re-loaded so the client is in a consistent
@@ -1341,10 +1340,6 @@ class Image(object):
 
                 kcat.append(old_kcat, cb=old_append_cb)
 
-                # Next, remove the old image catalogs.
-                self.remove_catalog(self.IMG_CATALOG_KNOWN)
-                self.remove_catalog(self.IMG_CATALOG_INSTALLED)
-
                 # Finally, re-populate the 'installed' catalog based on the
                 # contents of the new, 'known' catalog and save them both.
                 def installed_append_cb(src_cat, f, entry):
@@ -1353,16 +1348,29 @@ class Image(object):
                                 return True, None
                         return False, None
 
-                icat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
+                # Create the new installed catalog in a temporary location.
+                icat = pkg.catalog.Catalog(batch_mode=True,
+                    meta_root=os.path.join(tmp_state_root,
+                    self.IMG_CATALOG_INSTALLED), sign=False)
                 icat.append(kcat, cb=installed_append_cb)
 
-                croot = os.path.join(self.imgdir, "state",
-                    self.IMG_CATALOG_KNOWN)
-                kcat.meta_root = croot
-
+                # Save the new catalogs.
                 for cat in kcat, icat:
+                        os.makedirs(cat.meta_root, mode=root_mode)
                         cat.save()
+
+                # Next, preserve the old installed state dir, rename the
+                # new one into place, and then remove the old one.
+                state_root = os.path.join(self.imgdir, "state")
+                orig_state_root = self.__salvagedir(state_root)
+                portable.rename(tmp_state_root, state_root)
+                shutil.rmtree(orig_state_root, True)
+
+                # Ensure in-memory catalogs get reloaded.
+                self.__catalogs = {}
+
                 progtrack.cache_catalogs_done()
+                self.history.log_operation_end()
 
         def refresh_publishers(self, full_refresh=False, immediate=False,
             pubs=None, progtrack=None):
@@ -1532,6 +1540,7 @@ class Image(object):
 
                 # Not technically 'caching', but close enough ...
                 progtrack.cache_catalogs_start()
+                self.history.log_operation_start("upgrade-image")
 
                 # First, load the old package state information.
                 installed_state_dir = "%s/state/installed" % self.imgdir
@@ -1542,13 +1551,11 @@ class Image(object):
                 # which point to the "installed" file in the corresponding
                 # directory under /var/pkg.
                 installed = {}
-                to_remove = set()
                 def add_installed_entry(f):
                         path = "%s/pkg/%s/installed" % \
                             (self.imgdir, f.get_dir_path())
                         pub = installed_file_publisher(path)
                         f.set_publisher(pub)
-                        to_remove.add(path)
                         installed[f.pkg_name] = f
 
                 if os.path.isdir(installed_state_dir):
@@ -1556,9 +1563,6 @@ class Image(object):
                                 fmristr = "%s" % urllib.unquote(pl)
                                 f = pkg.fmri.PkgFmri(fmristr)
                                 add_installed_entry(f)
-                                # One additional file to remove for this case.
-                                to_remove.add(os.path.join(installed_state_dir,
-                                    pl))
                 else:
                         # Otherwise, we must iterate through the earlier
                         # installed state.  One day, this can be removed.
@@ -1577,12 +1581,8 @@ class Image(object):
                                         add_installed_entry(f)
 
                 # Create the new image catalogs.
-                kcat = self.get_catalog(self.IMG_CATALOG_KNOWN)
-                icat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
-
-                # Neither of these should exist on disk.
-                assert not kcat.exists
-                assert not icat.exists
+                kcat = pkg.catalog.Catalog(batch_mode=True, sign=False)
+                icat = pkg.catalog.Catalog(batch_mode=True, sign=False)
 
                 # XXX For backwards compatibility, 'upgradability' of packages
                 # is calculated and stored based on whether a given pkg stem
@@ -1617,6 +1617,8 @@ class Image(object):
                         new_cat = pub.catalog
                         new_cat.batch_mode = True
                         new_cat.sign = False
+                        if new_cat.exists:
+                                new_cat.destroy()
 
                         # First convert the old publisher catalog to
                         # the new format.
@@ -1702,20 +1704,41 @@ class Image(object):
                         # the changes can be saved, warn the user and
                         # then return.
 
+                        # Because the new image catalogs couldn't be saved,
+                        # store them in the image's internal cache so that
+                        # operations can function as expected.
+                        self.__catalogs[self.IMG_CATALOG_KNOWN] = kcat
+                        self.__catalogs[self.IMG_CATALOG_INSTALLED] = icat
+
                         # XXX This awaits a proper messaging framework.
                         # Raising an exception here would be a decidedly
                         # bad thing as it would disrupt find_root, etc.
                         emsg("Package operation performance is currently "
                             "degraded.\nThis can be resolved by executing "
                             "'pkg refresh' as a privileged user.\n")
+                        self.history.log_operation_end()
                         return
 
-                # Assume that since mkdirs succeeded that the remaining data
-                # can be saved and the image structure can be upgraded.
+                # This has to be done after the permissions check above.
+                tmp_state_root = self.temporary_dir()
 
-                # Attempt to save the image catalogs first
-                # before changing structure.
-                for cat in (kcat, icat):
+                # Force modes on temporary state directory so that it will
+                # be correct once renamed into place.
+                root_mode = 0755
+                os.chmod(tmp_state_root, root_mode)
+
+                # Create new image catalogs.
+                kcat.meta_root = os.path.join(tmp_state_root,
+                    self.IMG_CATALOG_KNOWN)
+                icat.meta_root = os.path.join(tmp_state_root,
+                    self.IMG_CATALOG_INSTALLED)
+
+                # Assume that since mkdirs succeeded that the remaining data
+                # can be saved and the image structure can be upgraded.  But
+                # first, attempt to save the image catalogs before changing
+                # structure.
+                for cat in icat, kcat:
+                        os.makedirs(cat.meta_root, mode=root_mode)
                         cat.save()
 
                 # Next, reset the publisher meta_roots to reflect the new
@@ -1740,13 +1763,25 @@ class Image(object):
                 for cat in pub_cats:
                         cat.save()
 
-                # Next, remove all of the old catalog and state files.
-                shutil.rmtree(os.path.join(self.imgdir, "catalog"))
-                for pathname in to_remove:
-                        portable.remove(pathname)
+                # Next, preserve the old catalog and state directories.
+                # Then, rename the new state directory into place, and then
+                # remove the old catalog and state directories.
+                cat_root = os.path.join(self.imgdir, "catalog")
+                orig_cat_root = self.__salvagedir(cat_root)
 
-                # Finally, mark complete.
+                state_root = os.path.join(self.imgdir, "state")
+                orig_state_root = self.__salvagedir(state_root)
+
+                portable.rename(tmp_state_root, state_root)
+
+                # Ensure in-memory catalogs get reloaded.
+                self.__catalogs = {}
+
+                # Finally, dump the old, unused dirs and mark complete.
+                shutil.rmtree(orig_cat_root, True)
+                shutil.rmtree(orig_state_root, True)
                 progtrack.cache_catalogs_done()
+                self.history.log_operation_end()
 
         def strtofmri(self, myfmri):
                 return pkg.fmri.PkgFmri(myfmri, self.attrs["Build-Release"])
@@ -2094,32 +2129,56 @@ class Image(object):
                         msg("Deleting content cache")
                         shutil.rmtree(self.dl_cache_dir, True)
 
+        def __salvagedir(self, path):
+                sdir = os.path.normpath(
+                    os.path.join(self.imgdir, "lost+found",
+                    path + "-" + time.strftime("%Y%m%dT%H%M%SZ")))
+
+                parent = os.path.dirname(sdir)
+                if not os.path.exists(parent):
+                        os.makedirs(parent)
+                shutil.move(os.path.normpath(os.path.join(self.root, path)),
+                    sdir)
+                return sdir
+
         def salvagedir(self, path):
                 """Called when directory contains something and it's not
                 supposed to because it's being deleted. XXX Need to work out a
                 better error passback mechanism. Path is rooted in /...."""
 
-                salvagedir = os.path.normpath(
-                    os.path.join(self.imgdir, "lost+found",
-                    path + "-" + time.strftime("%Y%m%dT%H%M%SZ")))
-
-                parent = os.path.dirname(salvagedir)
-                if not os.path.exists(parent):
-                        os.makedirs(parent)
-                shutil.move(os.path.normpath(os.path.join(self.root, path)),
-                    salvagedir)
+                sdir = self.__salvagedir(path)
                 # XXX need a better way to do this.
                 emsg("\nWarning - directory %s not empty - contents preserved "
-                        "in %s" % (path, salvagedir))
+                        "in %s" % (path, sdir))
+
+        def temporary_dir(self):
+                """create a temp directory under image directory for various
+                purposes"""
+                tempdir = os.path.normpath(os.path.join(self.imgdir, "tmp"))
+                try:
+                        if not os.path.exists(tempdir):
+                                os.makedirs(tempdir)
+                        return tempfile.mkdtemp(dir=tempdir)
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES:
+                                raise api_errors.PermissionsException(
+                                    e.filename)
+                        raise
 
         def temporary_file(self):
                 """create a temp file under image directory for various
                 purposes"""
                 tempdir = os.path.normpath(os.path.join(self.imgdir, "tmp"))
-                if not os.path.exists(tempdir):
-                        os.makedirs(tempdir)
-                fd, name = tempfile.mkstemp(dir=tempdir)
-                os.close(fd)
+                try:
+                        if not os.path.exists(tempdir):
+                                os.makedirs(tempdir)
+                        fd, name = tempfile.mkstemp(dir=tempdir)
+                        os.close(fd)
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES:
+                                raise api_errors.PermissionsException(
+                                    e.filename)
+                        raise
                 return name
 
         def __filter_install_matches(self, matches):
