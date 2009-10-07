@@ -2,5 +2,6 @@ package SUNWnet-snmp-core
 classification "System/Enterprise Management"
 import SUNWnet-snmp-core
 import SUNWnet-snmp-mgr
+depend SUNWnet-snmp-utils
 version 5.4.1
 end package

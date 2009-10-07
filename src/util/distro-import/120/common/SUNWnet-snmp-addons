@@ -2,4 +2,5 @@ package SUNWnet-snmp-addons
 classification "System/Enterprise Management"
 import SUNWnet-snmp-addons
 version 5.4.1
+depend SUNWnet-snmp-core
 end package
