@@ -1,5 +1,6 @@
 package SUNWdhcm
 classification "System/Services"
 import SUNWdhcm
+depend SUNWj6rt
 add link path=usr/sbin/dhcpmgr target=../sadm/admin/bin/dhcpmgr
 end package
