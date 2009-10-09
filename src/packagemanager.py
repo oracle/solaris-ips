@@ -75,6 +75,12 @@ PM_ACTION = 'pm-action'          # Action field for StartPage url's
 ACTION_INTERNAL = 'internal'   # Internal Action value: pm-action=internal
 INTERNAL_URI = 'uri'           # Internal field: uri to navigate to in StartPage
                                # without protocol scheme specified
+INTERNAL_SEARCH = 'search'     # Internal field: search support page action
+INTERNAL_SEARCH_VIEW_PUB ="view_pub_packages" # Internal field: view publishers packages
+INTERNAL_SEARCH_VIEW_ALL = "view_all_packages_filter" # Internal field: change to View 
+                                                      # All Packages
+INTERNAL_SEARCH_ALL_PUBS = "search_all_publishers" #Internal field: search all publishers
+INTERNAL_SEARCH_HELP = "search_help" # Internal field: display search help
 
 # External Example: <a href="pm?pm-action=external&uri=www.opensolaris.com">
 ACTION_EXTERNAL = 'external'   # External Action value: pm-action=external
@@ -83,6 +89,10 @@ EXTERNAL_URI = 'uri'           # External field: uri to navigate to in external
 EXTERNAL_PROTOCOL = 'protocol' # External field: optional protocol scheme,
                                # defaults to http
 DEFAULT_PROTOCOL = 'http'
+INFORMATION_PAGE_HEADER = (
+            "<table border='0' cellpadding='3' style='table-layout:fixed' >"
+            "<TR><TD><IMG SRC = 'dialog-information.png' style='border-style: none' "
+            )                  
 
 import getopt
 import pwd
@@ -97,6 +107,8 @@ import urlparse
 import socket
 import gettext
 import signal
+import re
+from xml.sax import saxutils
 from threading import Thread
 from threading import Lock
 from cPickle import UnpicklingError
@@ -290,7 +302,7 @@ class PackageManager:
                     ]
                 self.publisher_options = { 
                     PUBLISHER_ADD : _("Add..."),
-                    PUBLISHER_ALL : _("All Sources (Search Only)")}
+                    PUBLISHER_ALL : _("All Publishers (Search)")}
                 self.last_visible_publisher = None
                 self.last_visible_publisher_uptodate = False
                 self.publisher_changed = True
@@ -381,6 +393,12 @@ class PackageManager:
                     gtk.gdk.color_parse("white"))
 
                 self.w_main_statusbar = w_tree_main.get_widget("statusbar")
+                #Allow markup in StatusBar
+                self.w_main_statusbar_label = \
+                        self.__get_statusbar_label(self.w_main_statusbar)
+                if self.w_main_statusbar_label != None:
+                        self.w_main_statusbar_label.set_use_markup(True) 
+    
                 self.w_statusbar_hbox = w_tree_main.get_widget("statusbar_hbox")
                 self.w_infosearch_frame = w_tree_main.get_widget("infosearch_frame")
                 self.w_infosearch_button = w_tree_main.get_widget("infosearch_button")
@@ -632,6 +650,21 @@ class PackageManager:
                     gtk.ICON_SIZE_MENU)
                 menuitem.set_image(image_widget)
 
+        @staticmethod
+        def __get_statusbar_label(statusbar):
+                sb_frame = None
+                sb_label = None
+                children = statusbar.get_children()
+                if len(children) > 0:
+                        sb_frame = children[0]
+                if sb_frame and isinstance(sb_frame, gtk.Frame):
+                        children = sb_frame.get_children()
+                        if len(children) > 0:
+                                sb_label = children[0]
+                        if sb_label and isinstance(sb_label, gtk.Label):
+                                return sb_label
+                return None
+
         def __set_search_text_mode(self, style):
                 if style == enumerations.SEARCH_STYLE_NORMAL:
                         self.w_searchentry.modify_text(gtk.STATE_NORMAL,
@@ -747,8 +780,16 @@ class PackageManager:
                 if self.lang == None or self.lang == "":
                         self.lang = "C"
                 self.lang_root = self.lang.split('_')[0]
+                # Load Start Page to setup base URL to allow loading images in other pages
+                self.__load_startpage()
                 if show_startpage:
-                        self.__load_startpage()
+                        self.w_main_view_notebook.set_current_page(
+                                NOTEBOOK_START_PAGE)
+                else:
+                        if self.lastsource == ALL_PUBLISHERS:
+                                self.document.clear()
+                        self.w_main_view_notebook.set_current_page(
+                                NOTEBOOK_PACKAGE_LIST_PAGE)
                 self.w_startpage_frame.add(self.view)
 
         # Stub handler required by GtkHtml widget
@@ -761,7 +802,6 @@ class PackageManager:
                 if self.__load_startpage_locale(START_PAGE_LANG_BASE):
                         return                        
                 self.__handle_startpage_load_error(self.start_page_url)
-
 
         def __load_startpage_locale(self, start_page_lang_base):
                 self.start_page_url = os.path.join(self.application_dir,
@@ -912,6 +952,30 @@ class PackageManager:
                     % (PM_ACTION, START_PAGE_HOME, link)))
                 self.document.close_stream()
 
+        def __get_publisher_combobox_index(self, pub_name):
+                index = -1
+                model = self.w_repository_combobox.get_model()
+                for entry in model:
+                        if entry[enumerations.REPOSITORY_NAME] == pub_name:
+                                index = entry[enumerations.REPOSITORY_ID]
+                                break
+                return index
+
+        def __handle_browse_publisher(self, index):
+                if index == -1:
+                        return
+                self.saved_repository_combobox_active = index
+                self.__set_searchentry_to_prompt()
+                self.__restore_setup_for_browse()
+                self.w_repository_combobox.grab_focus()
+
+        def __handle_search_all_publishers(self, term):
+                self.__set_search_start()
+                self.w_repository_combobox.set_active(self.repo_combobox_all_pubs_index)
+                self.__set_search_text_mode(enumerations.SEARCH_STYLE_NORMAL)
+                self.w_searchentry.set_text(term)
+                gobject.idle_add(self.__do_search)
+
         def __handle_link(self, document, link, handle_what = CLICK_LINK):
                 query_dict = self.__urlparse_qs(link)
 
@@ -922,6 +986,52 @@ class PackageManager:
                         return link
                 ext_uri = ""
                 protocol = None
+
+                search_action = None
+                if action == ACTION_INTERNAL:
+                        if query_dict.has_key(INTERNAL_SEARCH):
+                                search_action = query_dict[INTERNAL_SEARCH][0]
+                
+                if self.w_main_statusbar_label:
+                        s1 = "<b>"
+                        e1 = "</b>"
+                else:
+                        s1 = e1 = '"'
+
+                # Browse a Publisher
+                if search_action and search_action.find(INTERNAL_SEARCH_VIEW_PUB) > -1:
+                        if self.in_search_mode:
+                                return
+                        pub = re.findall(r'<b>(.*)<\/b>', search_action)[0]
+                        if handle_what == DISPLAY_LINK:
+                                return _("View packages in %(s1)s%(pub)s%(e1)s") % \
+                                        {"s1": s1, "pub": pub, "e1": e1}
+                        index = self.__get_publisher_combobox_index(pub)
+                        gobject.idle_add(self.__handle_browse_publisher, index)
+                        return
+                # Search in All Publishers
+                if search_action and search_action == INTERNAL_SEARCH_ALL_PUBS:
+                        if handle_what == DISPLAY_LINK:
+                                return _("Search within %(s1)sAll Publishers%(e1)s") % \
+                                        {"s1": s1, "e1": e1}
+                        self.__handle_search_all_publishers(self.w_searchentry.get_text())
+                        return
+                # Change View to All Packages
+                if search_action and search_action == INTERNAL_SEARCH_VIEW_ALL:
+                        if handle_what == DISPLAY_LINK:
+                                return _("Change View to %(s1)sAll Packages%(e1)s") % \
+                                        {"s1": s1, "e1": e1}
+                        self.w_filter_combobox.set_active(enumerations.FILTER_ALL)
+                        self.w_filter_combobox.grab_focus()
+                        return                        
+                # Launch Search Help
+                if search_action and search_action == INTERNAL_SEARCH_HELP:
+                        if handle_what == DISPLAY_LINK:
+                                return _("Display %(s1)sSearch Help%(e1)s") % \
+                                        {"s1": s1, "e1": e1}
+                        #TBD: Launch search help, need Search Help target
+                        gui_misc.display_help()
+                        return
 
                 # Internal Browse
                 if action == ACTION_INTERNAL:
@@ -965,13 +1075,18 @@ class PackageManager:
                                 self.__link_load_error(link)
                 # Handle empty and unsupported actions
                 elif action == "":
-                        self.__link_load_error(_("Empty Action not supported"
-                            % action))
+                        self.__link_load_error(_("Empty Action not supported"))
                         return
                 elif action != None:
-                        self.__link_load_error(_("Action not supported: %s"
-                            % action))
+                        self.__link_load_error(_("Action not supported: %s") % action)
                         return
+
+        def __link_load_page(self, text =""):
+                self.document.clear()
+                self.document.open_stream('text/html')
+                display = "<html><head></head><body>%s</body></html>" % text
+                self.document.write_stream(display)
+                self.document.close_stream()
 
         @staticmethod
         def __urlparse_qs(url, keep_blank_values=0, strict_parsing=0):
@@ -1086,7 +1201,7 @@ class PackageManager:
                 self.w_application_treeview.append_column(column)
                 if self.is_all_publishers:
                         repository_renderer = gtk.CellRendererText()
-                        column = gtk.TreeViewColumn(_('Repository'),
+                        column = gtk.TreeViewColumn(_('Publisher'),
                             repository_renderer,
                             text = enumerations.AUTHORITY_COLUMN)
                         column.set_sort_column_id(enumerations.AUTHORITY_COLUMN)
@@ -1181,26 +1296,6 @@ class PackageManager:
                         #Added selection listener
                         category_selection.set_mode(gtk.SELECTION_SINGLE)
 
-                if self.first_run:
-                        ##FILTER COMBOBOX
-                        render_pixbuf = gtk.CellRendererPixbuf()
-                        self.w_filter_combobox.pack_start(render_pixbuf, expand = True)
-                        self.w_filter_combobox.add_attribute(render_pixbuf, "pixbuf", 
-                            enumerations.FILTER_ICON)
-                        self.w_filter_combobox.set_cell_data_func(render_pixbuf,
-                            self.filter_cell_data_function, enumerations.FILTER_ICON)
-                        
-                        cell = gtk.CellRendererText()
-                        self.w_filter_combobox.pack_start(cell, True)
-                        self.w_filter_combobox.add_attribute(cell, 'text',
-                            enumerations.FILTER_NAME)
-                        self.w_filter_combobox.set_cell_data_func(cell,
-                            self.filter_cell_data_function, enumerations.FILTER_NAME)
-                        self.w_filter_combobox.set_row_separator_func(
-                            self.combobox_filter_id_separator)
-                        self.w_filter_combobox.set_model(self.filter_list)
-                        self.w_filter_combobox.set_active(self.set_show_filter)
-
                 if section_list != None:
                         self.section_list = section_list
                 if category_list != None:
@@ -1247,6 +1342,25 @@ class PackageManager:
                 if obj != None:
                         obj.set_name(_("all selection toggle"))
                 self.process_package_list_end()
+
+        def __setup_filter_combobox(self):
+                render_pixbuf = gtk.CellRendererPixbuf()
+                self.w_filter_combobox.pack_start(render_pixbuf, expand = True)
+                self.w_filter_combobox.add_attribute(render_pixbuf, "pixbuf", 
+                    enumerations.FILTER_ICON)
+                self.w_filter_combobox.set_cell_data_func(render_pixbuf,
+                    self.filter_cell_data_function, enumerations.FILTER_ICON)
+
+                cell = gtk.CellRendererText()
+                self.w_filter_combobox.pack_start(cell, True)
+                self.w_filter_combobox.add_attribute(cell, 'text',
+                    enumerations.FILTER_NAME)
+                self.w_filter_combobox.set_cell_data_func(cell,
+                    self.filter_cell_data_function, enumerations.FILTER_NAME)
+                self.w_filter_combobox.set_row_separator_func(
+                    self.combobox_filter_id_separator)
+                self.w_filter_combobox.set_model(self.filter_list)
+                self.w_filter_combobox.set_active(self.set_show_filter)
 
         def __select_column_clicked(self, data):
                 self.set_busy_cursor()
@@ -1454,7 +1568,6 @@ class PackageManager:
         def __disconnect_models(self):
                 self.w_application_treeview.set_model(None)
                 self.w_categories_treeview.set_model(None)
-                #self.w_filter_combobox.set_model(None)
 
         def __disconnect_repository_model(self):
                 self.w_repository_combobox.set_model(None)
@@ -1598,29 +1711,163 @@ class PackageManager:
 
         def __update_statusbar_for_search(self):
                 if self.is_all_publishers:
-                        self.__update_statusbar_message(_("Search all sources"))
+                        self.__update_statusbar_message(_("Search all publishers"))
                 else:
-                        self.__update_statusbar_message(_("Search current source"))
+                        self.__update_statusbar_message(_("Search current publisher"))
 
         def __update_statusbar_message(self, message):
                 if self.statusbar_message_id > 0:
                         self.w_main_statusbar.remove(0, self.statusbar_message_id)
                         self.statusbar_message_id = 0
                 self.statusbar_message_id = self.w_main_statusbar.push(0, message)
+                if self.w_main_statusbar_label:
+                        self.w_main_statusbar_label.set_markup(message)
 
         def __setup_before_all_publishers_mode(self):
                 self.is_all_publishers = True
                 self.w_infosearch_frame.hide()
-
+                self.__set_searchentry_to_prompt()
+                
                 self.__save_setup_before_search()
-                self.__clear_before_search()
+                setup = self.in_setup
+                self.__clear_before_search(False)
+                # Only show the Search all page if not showing the Start Page on startup
+                show_search_all_page = not setup or (setup and not self.show_startpage)
+                if show_search_all_page:
+                        gobject.idle_add(self.__setup_search_all_page)
+                elif self.show_startpage:
+                        gobject.idle_add(self.w_main_view_notebook.set_current_page,
+                            NOTEBOOK_START_PAGE)
                 self.__update_statusbar_for_search()
+                
+        def __set_searchentry_to_prompt(self):
+                if not self.first_run and self.search_text_style != \
+                        enumerations.SEARCH_STYLE_PROMPT:
+                        self.__set_search_text_mode(enumerations.SEARCH_STYLE_PROMPT)
+  
+        def __setup_search_all_page(self):
+                header = INFORMATION_PAGE_HEADER
+                header += _("alt='[Information]' title='Information' ALIGN='bottom'></TD>"
+                    "<TD><h3><b>Search All Publishers</b></h3><TD></TD></TR>"
+                    "<TR><TD></TD><TD> Use the Search field to search for packages "
+                    "within the following Publishers:</TD></TR>"
+                    )
+                body = "<TR><TD></TD><TD>"
+                pub_browse_list = ""
+                model = self.w_repository_combobox.get_model()
+                for pub in model:
+                        pub_name = pub[enumerations.REPOSITORY_NAME]
+                        if (pub_name and pub_name not in self.publisher_options.values()):
+                                body += "<li style='padding-left:7px'>%s</li>" % pub_name 
+                                pub_browse_list += "<li style='padding-left:7px'><a href="
+                                pub_browse_list += "'pm?pm-action=internal&search=%s" % \
+                                        INTERNAL_SEARCH_VIEW_PUB
+                                pub_browse_list += " <b>%s</b>'>%s</a></li>" % \
+                                        (pub_name, pub_name)
+                body += "<TD></TD></TR>"
+                body += _("<TR><TD></TD><TD></TD></TR>"
+                    "<TR><TD></TD><TD>Click on the Publishers below to view their list "
+                    "of packages:</TD></TR>"
+                    )
+                body += "<TR><TD></TD><TD>"
+                body += pub_browse_list
+                body += "<TD></TD></TR>"
+                footer = "</table>"
+                self.__link_load_page(header + body + footer)
+                self.w_main_view_notebook.set_current_page(NOTEBOOK_START_PAGE)
+                    
+        def __setup_search_zero_filtered_results_page(self, text):
+                header = INFORMATION_PAGE_HEADER
+                active_filter = self.w_filter_combobox.get_active()
+                header += _("alt='[Information]' title='Information' ALIGN='bottom'></TD>"
+                    "<TD><h3><b>Search Results</b></h3><TD></TD></TR><TR><TD></TD><TD>"
+                    "View setting <b>%(filter)s</b> is hiding packages found matching <b>"
+                    "%(text)s</b></TD></TR>") \
+                    % {"filter": self.__get_filter_combobox_description(active_filter),
+                        "text": text}
 
-        def __clear_before_search(self):
+                body = _("<TR><TD></TD><TD<TD></TD></TR><TR><TD></TD><TD<TD></TD></TR>"
+                    "<TR><TD></TD><TD<TD><b>Suggestions:</b><br></TD></TR>"
+                    "<TR><TD></TD><TD<TD>"
+                    )
+                body += _("<li style='padding-left:7px'>"
+                    "Click to change View to <a href='pm?pm-action=internal&"
+                    "search=%s'>All Packages</a></li>") % INTERNAL_SEARCH_VIEW_ALL
+                footer = "</TD></TR></table>"
+                self.__link_load_page(header + body + footer)
+                self.w_main_view_notebook.set_current_page(NOTEBOOK_START_PAGE)
+                self.__set_focus_on_searchentry()
+
+        def __get_filter_combobox_description(self, index):
+                description = None
+                model = self.w_filter_combobox.get_model()
+                for entry in model:
+                        if entry[enumerations.FILTER_ID] == index:
+                                description = entry[enumerations.FILTER_NAME]
+                                break
+                return description
+                
+        def __setup_search_zero_results_page(self, pub, text):
+                header = INFORMATION_PAGE_HEADER
+                header += _("alt='[Information]' title='Information' ALIGN='bottom'></TD>"
+                    "<TD><h3><b>Search Results</b></h3><TD></TD></TR>"
+                    "<TR><TD></TD><TD>No packages found in <b>%(pub)s</b> "
+                    "matching <b>%(text)s</b></TD></TR>") % {"pub": pub, "text": text}
+
+                body = _("<TR><TD></TD><TD<TD></TD></TR><TR><TD></TD><TD<TD></TD></TR>"
+                    "<TR><TD></TD><TD<TD><b>Suggestions:</b><br></TD></TR>"
+                    "<TR><TD></TD><TD<TD>"
+                    "<li style='padding-left:7px'>Check your spelling</li>"
+                    "<li style='padding-left:7px'>Try new search terms</li>"
+                    )
+                if not self.is_all_publishers:
+                        body += _("<li style='padding-left:7px'>Search for <b>%(text)s"
+                            "</b> within <a href='pm?pm-action=internal&search="
+                            "%(all_pubs)s'>All Publishers</a></li>")  % \
+                            {"text": text, "all_pubs": INTERNAL_SEARCH_ALL_PUBS}
+
+                body += _("<li style='padding-left:7px'>"
+                    "See <a href='pm?pm-action=internal&search="
+                    "%s'>Search Help</a></li></TD></TR>") % INTERNAL_SEARCH_HELP
+                footer = "</table>"
+                self.__link_load_page(header + body + footer)
+                self.w_main_view_notebook.set_current_page(NOTEBOOK_START_PAGE)
+                self.__set_focus_on_searchentry()
+
+        def __set_focus_on_searchentry(self):
+                self.w_searchentry.grab_focus()
+                if self.w_searchentry.get_text() > 0:
+                        start, end = self.w_searchentry.get_selection_bounds()
+                        self.w_searchentry.select_region(end, end)
+                        self.pylintstub = start
+                
+        def __setup_search_wildcard_page(self):
+                header = _(
+                    "<table border='0' cellpadding='3' style='table-layout:fixed' >"
+                    "<TR><TD><IMG SRC = 'dialog-warning.png' style='border-style: "
+                    "none' alt='[Warning]' title='Warning' ALIGN='bottom'></TD>"
+                    "<TD><h3><b>Search Warning</b></h3><TD></TD></TR>"
+                    "<TR><TD></TD><TD>Search using <b>*</b> only is not supported in " 
+                    "All Publishers</TD></TR>"
+                    )
+                body = _("<TR><TD></TD><TD<TD></TD></TR><TR><TD></TD><TD<TD></TD></TR>"
+                    "<TR><TD></TD><TD<TD><b>Suggestions:</b><br></TD></TR>"
+                    "<TR><TD></TD><TD<TD>"
+                    "<li style='padding-left:7px'>Try new search terms</li>"
+                    )
+                body += _("<li style='padding-left:7px'>"
+                    "See <a href='pm?pm-action=internal&search="
+                    "%s'>Search Help</a></li></TD></TR>") % INTERNAL_SEARCH_HELP
+                footer = "</table>"
+                self.__link_load_page(header + body + footer)
+                self.w_main_view_notebook.set_current_page(NOTEBOOK_START_PAGE)
+                self.__set_focus_on_searchentry()
+
+        def __clear_before_search(self, show_list=True):
                 self.in_setup = True
                 application_list = self.__get_new_application_liststore()
                 self.__set_empty_details_panel()
-                self.__set_main_view_package_list()
+                self.__set_main_view_package_list(show_list)
                 self.__init_tree_views(application_list, None, None)
                 self.__unselect_category()
 
@@ -1667,22 +1914,39 @@ class PackageManager:
                         self.saved_repository_combobox_active = pub_index
 
         def __do_search(self, widget=None, ev=None):
-                self.search_start = 0
-                if self.w_searchentry.get_text_length() == 0:
+                self.__reset_search_start()
+                if self.search_text_style == enumerations.SEARCH_STYLE_PROMPT or \
+                        self.w_searchentry.get_text_length() == 0:
                         return
-                if self.w_searchentry.get_text() == "*":
-                        if self.in_search_mode:
-                                self.__unset_search(True)
-                        self.w_categories_treeview.set_cursor(0)
+
+                txt = self.w_searchentry.get_text()
+                if len(txt.strip()) == 0:
+                        self.w_searchentry.set_text("")
+                        return
+                contains_asterix = txt.count("*") > 0
+                contains_asterix_only = False
+                if contains_asterix:
+                        contains_asterix_only = len(txt.replace("*", " ").strip()) == 0
+                if contains_asterix_only:
+                        self.w_searchentry.set_text("*")
+                        self.__set_focus_on_searchentry()
+                        if self.is_all_publishers:
+                                gobject.idle_add(self.__setup_search_wildcard_page)
+                        else:
+                                if self.in_search_mode:
+                                        self.__unset_search(True)
+                                if self.w_categories_treeview.get_model() != None:
+                                        self.w_categories_treeview.set_cursor(0)
                         return
                 if not self.is_all_publishers:
                         self.__save_setup_before_search(single_search=True)
                 self.__clear_before_search()
+                self.__set_focus_on_searchentry()
                 self.set_busy_cursor()
                 self.in_search_mode = True
                         
                 self.w_infosearch_frame.hide()
-                self.__update_statusbar_message(_("Searching..."))
+                gobject.idle_add(self.__set_main_view_package_list)
                 Thread(target = self.__do_api_search,
                     args = (self.is_all_publishers, )).start()
 
@@ -1702,7 +1966,7 @@ class PackageManager:
                         selection.unselect_all()
 
         def __process_after_search_failure(self):
-                self.search_start = 0
+                self.__reset_search_start()
                 self.search_time_sec = 0
                 self.application_list = []
                 self.update_statusbar()
@@ -1726,7 +1990,8 @@ class PackageManager:
 
 
         def __do_api_search(self, search_all = True):
-                self.search_start = time.time()
+                self.__set_search_start()
+                gobject.idle_add(self.update_statusbar)
                 self.search_time_sec = 0
                 text = self.w_searchentry.get_text()
                 # Here we call the search API to get the results
@@ -1738,6 +2003,7 @@ class PackageManager:
                 pargs.append(search_str)
                 if search_all:
                         servers = None
+                        pub_prefix = self.api_o.get_preferred_publisher()
                 else:
                         pub_prefix = self.__get_selected_publisher()
                         if pub_prefix != None:
@@ -1760,7 +2026,7 @@ class PackageManager:
                                 ("".join(pargs), case_sensitive, return_actions)
 
                 last_name = ""
-                self.search_all_pub_being_searched = None
+                self.search_all_pub_being_searched = pub_prefix
 
                 # Sorting results by Name gives best overall appearance and flow
                 sort_col = enumerations.NAME_COLUMN
@@ -1796,7 +2062,12 @@ class PackageManager:
                         self.__process_api_search_error(ex)
                         gobject.idle_add(self.__handle_api_search_error)
                         if len(result) == 0:
-                                self.__process_after_search_with_zero_results()
+                                if search_all:
+                                        self.__process_after_search_with_zero_results(
+                                                _("All Publishers"), text)
+                                else:
+                                        self.__process_after_search_with_zero_results(
+                                                pub_prefix, text)
                                 return
                 except api_errors.CanceledException:
                         # TBD. Currently search is not cancelable
@@ -1813,7 +2084,12 @@ class PackageManager:
                 if len(result) == 0:
                         if debug:
                                 print "No search results"
-                        self.__process_after_search_with_zero_results()
+                        if search_all:
+                                self.__process_after_search_with_zero_results(
+                                        _("All Publishers"), text)
+                        else:
+                                self.__process_after_search_with_zero_results(
+                                        pub_prefix, text)
                         return
                 # We cannot get status of the packages if catalogs have not
                 # been loaded so we pause for up to 5 seconds here to
@@ -1828,23 +2104,41 @@ class PackageManager:
                 #Now fetch full result set with Status
                 self.in_setup = True
                 application_list = self.__get_full_list_from_search(result)
-                gobject.idle_add(self.__init_tree_views, application_list, None, None, \
-                    None, None, sort_col)
-
                 if self.search_start > 0:
                         self.search_time_sec = int(time.time() - self.search_start)
                         if debug:
                                 print "Search time: %d (sec)" % self.search_time_sec
-                self.search_start = 0
+                self.__reset_search_start()
+                gobject.idle_add(self.__init_tree_views, application_list, None, None, \
+                    None, None, sort_col)
+                if self.w_filter_combobox.get_active() == enumerations.FILTER_ALL:
+                        return
 
-        def __process_after_search_with_zero_results(self):
+                if search_all:
+                        gobject.idle_add(self.__check_zero_results_afterfilter, text)
+                else:
+                        gobject.idle_add(self.__check_zero_results_afterfilter, text)
+
+        def __check_zero_results_afterfilter(self, text):
+                if self.length_visible_list != 0:
+                        return
+                self.__setup_search_zero_filtered_results_page(text)
+                self.update_statusbar()
+
+        def __set_search_start(self):
+                self.search_start = time.time()
+                
+        def __reset_search_start(self):
+                self.search_start = 0
+                
+        def __process_after_search_with_zero_results(self, pub, text):
                 if self.search_start > 0:
                         self.search_time_sec = int(time.time() - self.search_start)
-                self.search_start = 0
+                self.__reset_search_start()
+                gobject.idle_add(self.__setup_search_zero_results_page, pub, text)
                 self.in_setup = True
                 application_list = self.__get_new_application_liststore()
                 gobject.idle_add(self.__set_empty_details_panel)
-                gobject.idle_add(self.__set_main_view_package_list)
                 gobject.idle_add(self.__init_tree_views, application_list, None, None)
 
         def __get_min_list_from_search(self, search_result):
@@ -1932,8 +2226,12 @@ class PackageManager:
                 self.w_paste_menuitem.set_sensitive(True)
 
         def __on_goto_list_clicked(self, widget):
-                self.__set_main_view_package_list()
-                self.w_application_treeview.grab_focus()
+                if self.w_main_view_notebook.get_current_page() == NOTEBOOK_START_PAGE:
+                        if self.view:
+                                self.view.grab_focus()
+                else:
+                        self.__set_main_view_package_list()
+                        self.w_application_treeview.grab_focus()
 
         def __on_edit_search_clicked(self, widget):
                 self.w_searchentry.grab_focus()
@@ -1944,6 +2242,12 @@ class PackageManager:
                 if self.in_search_mode or self.is_all_publishers:
                         self.__clear_before_search()
                         self.__update_statusbar_message(_("Search cleared"))
+                if self.is_all_publishers:
+                        if self.w_main_view_notebook.get_current_page() \
+                                != NOTEBOOK_START_PAGE:
+                                gobject.idle_add(self.__setup_search_all_page)
+                else:
+                        self.__unset_search()
                 return
 
         def __on_progress_cancel_clicked(self, widget):
@@ -2217,11 +2521,16 @@ class PackageManager:
                 if self.selected == 0:
                         gobject.idle_add(self.__enable_disable_install_remove)
 
-        def __set_main_view_package_list(self):
+        def __set_main_view_package_list(self, show_list=True):
                 # Only switch from Start Page View to List view if we are not in startup
-                if not self.in_startpage_startup:
+                if self.in_startpage_startup:
+                        return
+                if show_list:
                         self.w_main_view_notebook.set_current_page(
                                 NOTEBOOK_PACKAGE_LIST_PAGE)
+                else:
+                        self.w_main_view_notebook.set_current_page(
+                                NOTEBOOK_START_PAGE)
 
         def __on_categoriestreeview_row_collapsed(self, treeview, itr, path, data):
                 self.w_categories_treeview.set_cursor(path)
@@ -2426,7 +2735,7 @@ class PackageManager:
 
         def __on_filtercombobox_changed(self, widget):
                 '''On filter combobox changed'''
-                if self.in_setup:
+                if self.first_run or self.in_setup:
                         return
                 active = self.w_filter_combobox.get_active()
                 if active != enumerations.FILTER_SELECTED:
@@ -2467,6 +2776,7 @@ class PackageManager:
                         same_repo = self.saved_repository_combobox_active == index
                         self.__unset_search(same_repo)
                         if same_repo:
+                                self.__set_searchentry_to_prompt()
                                 return
                         self.w_repository_combobox.set_active(index)
                         selected_publisher = self.__get_selected_publisher()
@@ -2477,12 +2787,8 @@ class PackageManager:
                         return
                         
                 if index == self.repo_combobox_add_index:
-                        index = -1
-                        model = self.w_repository_combobox.get_model()
-                        for entry in model:
-                                if entry[1] == self.last_visible_publisher:
-                                        index = entry[0]
-                                        break
+                        index = self.__get_publisher_combobox_index(
+                            self.last_visible_publisher)
                         self.w_repository_combobox.set_active(index)
                         self.__on_file_add_publisher(None)
                         return
@@ -2496,6 +2802,7 @@ class PackageManager:
                 pub = [selected_publisher, ]
                 self.set_show_filter = self.initial_show_filter
                 self.set_section = self.initial_section
+                self.__set_searchentry_to_prompt()
                 Thread(target = self.__setup_publisher, args = [pub]).start()
                 self.__set_main_view_package_list()
 
@@ -3966,6 +4273,8 @@ class PackageManager:
                             self.application_dir, self.api_o)
                         self.img_timestamp = self.cache_o.get_index_timestamp()
                         self.__setup_search_completion()
+                if self.first_run:
+                        self.__setup_filter_combobox()
                 self.repositories_list = self.__get_new_repositories_liststore()
                 self.__setup_repositories_combobox(self.api_o, self.repositories_list)
 
@@ -4000,7 +4309,8 @@ class PackageManager:
                     self.set_show_filter != enumerations.FILTER_ALL:
                         self.__application_refilter()
                 else:
-                        self.unset_busy_cursor()
+                        if not self.__doing_search():
+                                self.unset_busy_cursor()
                 
                 if self.user_rights and (self.first_run or self.in_reload):
                         Thread(target = self.__enable_disable_update_all,
@@ -4042,37 +4352,34 @@ class PackageManager:
                         return
 
                 # In Search Mode
-                active = ""
-                if self.is_all_publishers:
-                        if self.__doing_search():
-                                if self.search_all_pub_being_searched != None:
-                                        active = "(" + \
-                                            self.search_all_pub_being_searched + ") "
-                                opt_str = _('Searching... '
-                                    '%(active)sfor "%(search_text)s"') % \
-                                        {"active": active, "search_text": search_text}
-                        else:
-                                opt_str = _('Searched All for "%s"') % (search_text)
+                if self.w_main_statusbar_label:
+                        search_text = saxutils.escape(search_text)
+                if self.w_main_statusbar_label:
+                        s1 = "<b>"
+                        e1 = "</b>"
                 else:
-                        search_str = _("Searched")
-                        if self.__doing_search():
-                                search_str = _("Searching...")
-                        visible_publisher = self.__get_selected_publisher()
-                        if visible_publisher != None:
-                                active = "(" + visible_publisher + ") "
-                        opt_str = \
-                                _('%(search)s %(last_active)sfor "%(search_text)s"') \
-                                % {"search": search_str, "last_active" : active,
-                                    "search_text" : search_text}
-                fmt_str = _("%(option_str)s:  %(number)d found %(time)s")
-                time_str = ""
-                if self.search_time_sec == 1:
-                        time_str = _("in 1 second")
-                elif self.search_time_sec > 1:
-                        time_str = _("in %d seconds") % self.search_time_sec
-                        
-                status_str = fmt_str % {"option_str" : opt_str, "number" :
-                    len(self.application_list), "time" : time_str}
+                        s1 = e1 = '"'
+
+                if self.__doing_search():
+                        active_pub = self.search_all_pub_being_searched
+                        status_str  = ""
+                        if active_pub != None and active_pub != "":
+                                status_str = \
+                                        _("Searching %(s1)s%(active_pub)s%(e1)s"
+                                        " for %(s1)s%(search_text)s%(e1)s ...") % \
+                                        {"s1": s1, "active_pub": active_pub, "e1": e1,
+                                        "search_text": search_text}
+                        else:
+                                status_str = \
+                                        _("Searching for %(s1)s%(search_text)s%(e1)s "
+                                        "...") % \
+                                        {"s1": s1, "search_text": search_text, "e1": e1}
+                else:
+                        status_str = \
+                                _("%(number)d packages found matching %(s1)s"
+                                "%(search_text)s%(e1)s") % \
+                                {"number": len(self.application_list),
+                                    "s1": s1, "search_text": search_text, "e1": e1, }
                 self.__update_statusbar_message(status_str)
 
         def __reset_row_status(self, row):
