@@ -602,7 +602,6 @@ class PackageManager:
                             % error
 
                 self.package_selection = None
-                self.category_list_filter = None
                 self.application_list_filter = None
                 self.application_list_sort = None
                 self.application_refilter_id = 0
@@ -1286,7 +1285,6 @@ class PackageManager:
                 category_selection = self.w_categories_treeview.get_selection()
                 if category_list != None:
                         ##CATEGORIES TREEVIEW
-                        category_list_filter = category_list.filter_new()
                         enumerations.CATEGORY_NAME_renderer = gtk.CellRendererText()
                         column = gtk.TreeViewColumn(_('Name'),
                             enumerations.CATEGORY_NAME_renderer,
@@ -1300,23 +1298,13 @@ class PackageManager:
                         self.section_list = section_list
                 if category_list != None:
                         self.category_list = category_list
-                        self.category_list_filter = category_list_filter
-                        self.w_categories_treeview.set_model(category_list_filter)
+
                 if application_list != None:
                         self.w_application_treeview.set_model(
                             self.application_list_sort)
                         if application_list_filter == None:
                                 self.application_list_filter.set_visible_func(
                                     self.__application_filter)
-                if not self.in_search_mode:
-                        if self.last_visible_publisher in self.category_active_paths and \
-                                self.category_active_paths[self.last_visible_publisher]:
-                                self.w_categories_treeview.set_cursor(
-                                    self.category_active_paths[(
-                                    self.last_visible_publisher)])
-                        else:
-                                if self.w_categories_treeview.get_model() != None:
-                                        self.w_categories_treeview.set_cursor(0)
 
                 if self.first_run:
                         category_selection.connect("changed",
@@ -4021,6 +4009,7 @@ class PackageManager:
                 cat_iter = category_tree.append(None,
                             [ 0, _("All Categories"), None, None])
 
+                self.section_categories_list = {}
                 #Build dic of section ids and categories they contain
                 #section_category_list[<sec_id>] -> cat_ids[cat_id] -> category
                 #Each category row contains a list of sections it belongs to stored in
@@ -4064,7 +4053,7 @@ class PackageManager:
                         category_ids = self.section_categories_list[sec_id]
                         for cat_id in category_ids.keys():
                                 category_tree.append(cat_iter, category_ids[cat_id])
-                                        
+
                 self.w_categories_treeview.set_model(category_tree)
                 
                 #Initial startup expand default Section if available
