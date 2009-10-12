@@ -5,5 +5,4 @@ import SUNWdhcsr
 depend SUNWdhcm
 depend SUNWbip
 depend SUNWj6rt
-depend SUNWwbcou 
 end package

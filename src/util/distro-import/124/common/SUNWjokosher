@@ -7,4 +7,5 @@ depend SUNWgnome-python26-libs
 depend SUNWgnonlin
 depend SUNWgst-python26
 depend SUNWpython26-setuptools
+depend SUNWpython26-xdg
 end package

@@ -76,6 +76,9 @@ category = System
 [SUNWDTraceToolkit]
 category = System
 
+[SUNWGParted]
+category = Administration and Configuration
+
 [SUNWGlib]
 category = Libraries (System)
 
@@ -305,6 +308,9 @@ category = Media
 category = Media
 
 [SUNWaudiop16x]
+category = Media
+
+[SUNWaudiosolo]
 category = Media
 
 [SUNWaudiovia97]
@@ -920,43 +926,43 @@ category = Internet
 category = Internet
 
 [SUNWfirefoxl10n-de-DE]
-category = Localizations (Desktop)
+category = Internet
 
 [SUNWfirefoxl10n-es-ES]
-category = Localizations (Desktop)
+category = Internet
 
 [SUNWfirefoxl10n-extra]
-category = Localizations (Desktop)
+category = Internet
 
 [SUNWfirefoxl10n-fr-FR]
-category = Localizations (Desktop)
+category = Internet
 
 [SUNWfirefoxl10n-it-IT]
-category = Localizations (Desktop)
+category = Internet
 
 [SUNWfirefoxl10n-ja-JP]
-category = Localizations (Desktop)
+category = Internet
 
 [SUNWfirefoxl10n-ko-KR]
-category = Localizations (Desktop)
+category = Internet
 
 [SUNWfirefoxl10n-pl-PL]
-category = Localizations (Desktop)
+category = Internet
 
 [SUNWfirefoxl10n-pt-BR]
-category = Localizations (Desktop)
+category = Internet
 
 [SUNWfirefoxl10n-ru-RU]
-category = Localizations (Desktop)
+category = Internet
 
 [SUNWfirefoxl10n-sv-SE]
-category = Localizations (Desktop)
+category = Internet
 
 [SUNWfirefoxl10n-zh-CN]
-category = Localizations (Desktop)
+category = Internet
 
 [SUNWfirefoxl10n-zh-TW]
-category = Localizations (Desktop)
+category = Internet
 
 [SUNWflac]
 category = Multimedia Libraries
@@ -1771,6 +1777,54 @@ category = Hardware
 [SUNWibsdpu]
 category = Hardware
 
+[SUNWibus]
+category = Internationalization
+
+[SUNWibus-anthy]
+category = Internationalization
+
+[SUNWibus-chewing]
+category = Internationalization
+
+[SUNWibus-hangul]
+category = Internationalization
+
+[SUNWibus-m17n]
+category = Internationalization
+
+[SUNWibus-pinyin]
+category = Internationalization
+
+[SUNWibus-table]
+category = Internationalization
+
+[SUNWibus-table-data-array30]
+category = Internationalization
+
+[SUNWibus-table-data-cangjie]
+category = Internationalization
+
+[SUNWibus-table-data-erbi]
+category = Internationalization
+
+[SUNWibus-table-data-quick]
+category = Internationalization
+
+[SUNWibus-table-data-translit]
+category = Internationalization
+
+[SUNWibus-table-data-wubi]
+category = Internationalization
+
+[SUNWibus-table-data-xinhua]
+category = Internationalization
+
+[SUNWibus-table-data-yong]
+category = Internationalization
+
+[SUNWibus-table-data-zhengma]
+category = Internationalization
+
 [SUNWiconv-extra]
 category = Internationalization
 
@@ -1801,6 +1855,9 @@ category = Internationalization
 [SUNWidnu]
 category = Internationalization
 
+[SUNWidzebra]
+category = Text Tools
+
 [SUNWiftop]
 category = System Utilities
 
@@ -1814,37 +1871,37 @@ category = Enterprise Management
 category = Internationalization
 
 [SUNWiiimf-ja-anthy]
-category = Localizations (System)
+category = Internationalization
 
 [SUNWiiimf-ko-hangul]
-category = Localizations (System)
+category = Internationalization
 
 [SUNWiiimf-th-thaile]
-category = Localizations (System)
+category = Internationalization
 
 [SUNWiiimf-zhCN-cle-core]
-category = Localizations (System)
+category = Internationalization
 
 [SUNWiiimf-zhCN-cle-open]
-category = Localizations (System)
+category = Internationalization
 
 [SUNWiiimf-zhCN-cle-sunpinyin]
-category = Localizations (System)
+category = Internationalization
 
 [SUNWiiimf-zhHK-hkle-core]
-category = Localizations (System)
+category = Internationalization
 
 [SUNWiiimf-zhHK-hkle-open]
-category = Localizations (System)
+category = Internationalization
 
 [SUNWiiimf-zhTW-twle-chewing]
-category = Localizations (System)
+category = Internationalization
 
 [SUNWiiimf-zhTW-twle-core]
-category = Localizations (System)
+category = Internationalization
 
 [SUNWiiimf-zhTW-twle-open]
-category = Localizations (System)
+category = Internationalization
 
 [SUNWilmbase]
 category = Libraries (System)
@@ -2242,6 +2299,9 @@ category = Localizations (System)
 [SUNWlang-hu-extra]
 category = Localizations (System)
 
+[SUNWlang-hy]
+category = Localizations (System)
+
 [SUNWlang-id]
 category = Localizations (System)
 
@@ -2276,6 +2336,12 @@ category = Localizations (System)
 category = Localizations (System)
 
 [SUNWlang-ko-extra]
+category = Localizations (System)
+
+[SUNWlang-ks]
+category = Localizations (System)
+
+[SUNWlang-ku]
 category = Localizations (System)
 
 [SUNWlang-ky]
@@ -2362,6 +2428,9 @@ category = Localizations (System)
 [SUNWlang-ru-extra]
 category = Localizations (System)
 
+[SUNWlang-sa]
+category = Localizations (System)
+
 [SUNWlang-sh]
 category = Localizations (System)
 
@@ -2428,17 +2497,26 @@ category = Localizations (System)
 [SUNWlang-zhHK-extra]
 category = Localizations (System)
 
+[SUNWlang-zhSG]
+category = Localizations (System)
+
 [SUNWlang-zhTW]
 category = Localizations (System)
 
 [SUNWlang-zhTW-extra]
 category = Localizations (System)
 
+[SUNWlatencytop]
+category = System Utilities
+
 [SUNWlcms]
 category = Administration and Configuration
 
 [SUNWldom]
 category = Administration and Configuration
+
+[SUNWldtp]
+category = Distribution Tools
 
 [SUNWless]
 category = GNU
@@ -3013,6 +3091,9 @@ category = Core
 [SUNWp7zip]
 category = Core
 
+[SUNWpacket]
+category = Networking
+
 [SUNWpampkcs11]
 category = Security
 
@@ -3566,43 +3647,43 @@ category = Hardware
 category = Internationalization
 
 [SUNWscim-anthy]
-category = Localizations (System)
+category = Internationalization
 
 [SUNWscim-chewing]
-category = Localizations (System)
+category = Internationalization
 
 [SUNWscim-hangul]
-category = Localizations (System)
+category = Internationalization
 
 [SUNWscim-m17n]
 category = Internationalization
 
 [SUNWscim-pinyin]
-category = Text Tools
+category = Internationalization
 
 [SUNWscim-sunpinyin]
-category = Text Tools
+category = Internationalization
 
 [SUNWscim-tables]
 category = Internationalization
 
 [SUNWscim-tables-chinese]
-category = Localizations (System)
+category = Internationalization
 
 [SUNWscim-tables-extra]
-category = Localizations (System)
+category = Internationalization
 
 [SUNWscim-tables-india]
-category = Localizations (System)
+category = Internationalization
 
 [SUNWscim-tables-japanese]
-category = Localizations (System)
+category = Internationalization
 
 [SUNWscim-tables-korean]
-category = Localizations (System)
+category = Internationalization
 
 [SUNWscim-thai]
-category = Localizations (System)
+category = Internationalization
 
 [SUNWsckm]
 category = Enterprise Management
@@ -3810,6 +3891,9 @@ category = Other Languages
 
 [SUNWswt]
 category = Libraries
+
+[SUNWsynergy]
+category = X11 (System)
 
 [SUNWsysbench]
 category = System
@@ -4021,6 +4105,9 @@ category = Fonts
 [SUNWttf-arphic-uming]
 category = Fonts
 
+[SUNWttf-bpg-georgian]
+category = Fonts
+
 [SUNWttf-gentium]
 category = Fonts
 
@@ -4043,6 +4130,9 @@ category = Fonts
 category = Fonts
 
 [SUNWttf-mgopen]
+category = Fonts
+
+[SUNWttf-sil]
 category = Fonts
 
 [SUNWttf-thai-scalable]
@@ -4257,6 +4347,9 @@ category = System Utilities
 
 [SUNWxdg-utils]
 category = System Utilities
+
+[SUNWxdm]
+category = X11 (System)
 
 [SUNWxdt]
 category = System

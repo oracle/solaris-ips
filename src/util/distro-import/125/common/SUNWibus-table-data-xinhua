@@ -1,0 +1,5 @@
+package SUNWibus-table-data-xinhua
+classification "System/Internationalization"
+import SUNWibus-table-data-xinhua
+version 1.1.0
+end package

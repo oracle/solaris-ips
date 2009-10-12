@@ -23,7 +23,7 @@
 #
 
 PKG="SUNWpython-mako"
-NAME="Mako"
+NAME="Template library written in Python"
 DESC="Mako is an embedded Python (i.e. Python Server Page) templating language"
 ARCH="ISA"
 VERSION="0.2.2"

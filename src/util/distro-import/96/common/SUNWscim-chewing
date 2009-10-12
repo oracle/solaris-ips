@@ -1,5 +1,5 @@
 package SUNWscim-chewing
-classification "System/Localizations"
+classification "System/Internationalization"
 import SUNWscim-chewing
 version 0.3.1
 end package

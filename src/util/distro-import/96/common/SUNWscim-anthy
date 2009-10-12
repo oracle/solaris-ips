@@ -1,5 +1,5 @@
 package SUNWscim-anthy
-classification "System/Localizations"
+classification "System/Internationalization"
 import SUNWscim-anthy
 version 1.2.4
 end package

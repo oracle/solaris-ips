@@ -1,0 +1,47 @@
+package SUNWxwopt
+classification "System/X11"
+import SUNWxwopt exclude usr/openwin
+# Obsolete - replaced by /usr/openwin -> X11 symlink
+drop usr/openwin/bin
+drop usr/openwin/bin/appres
+drop usr/openwin/bin/atobm
+drop usr/openwin/bin/bitmap
+drop usr/openwin/bin/bmtoa
+drop usr/openwin/bin/editres
+drop usr/openwin/bin/imake
+drop usr/openwin/bin/listres
+drop usr/openwin/bin/makedepend
+drop usr/openwin/bin/mkdirhier
+drop usr/openwin/bin/oclock
+drop usr/openwin/bin/resize
+drop usr/openwin/bin/rgb
+drop usr/openwin/bin/sessreg
+drop usr/openwin/bin/twm
+drop usr/openwin/bin/viewres
+drop usr/openwin/bin/xbiff
+drop usr/openwin/bin/xclipboard
+drop usr/openwin/bin/xclock
+drop usr/openwin/bin/xcmsdb
+drop usr/openwin/bin/xcolor
+drop usr/openwin/bin/xconsole
+drop usr/openwin/bin/xcutsel
+drop usr/openwin/bin/xditview
+drop usr/openwin/bin/xedit
+drop usr/openwin/bin/xfontsel
+drop usr/openwin/bin/xkill
+drop usr/openwin/bin/xload
+drop usr/openwin/bin/xman
+drop usr/openwin/bin/xmkmf
+drop usr/openwin/bin/xterm
+drop usr/openwin/lib
+drop usr/openwin/lib/X11
+drop usr/openwin/lib/X11/config
+drop usr/openwin/lib/app-defaults/Viewres
+drop usr/openwin/lib/app-defaults/XFontSel
+drop usr/openwin/lib/app-defaults/XLoad
+drop usr/openwin/lib/app-defaults/Xditview
+drop usr/openwin/lib/app-defaults/Xman
+drop usr/openwin/lib/config
+# Not yet confirmed redistributable
+drop usr/openwin/bin/pswrap
+end package

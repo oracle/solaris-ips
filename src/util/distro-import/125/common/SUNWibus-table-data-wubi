@@ -1,0 +1,5 @@
+package SUNWibus-table-data-wubi
+classification "System/Internationalization"
+import SUNWibus-table-data-wubi
+version 1.1.0
+end package

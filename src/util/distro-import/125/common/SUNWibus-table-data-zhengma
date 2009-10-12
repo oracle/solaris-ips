@@ -1,0 +1,5 @@
+package SUNWibus-table-data-zhengma
+classification "System/Internationalization"
+import SUNWibus-table-data-zhengma
+version 1.1.0
+end package

@@ -3,5 +3,5 @@ classification "Drivers/Networking"
 import SUNWbfe
 
 add driver name=bfe \
-    alias="pci14e4,970c"
+    alias="pci14e4,170c"
 end package

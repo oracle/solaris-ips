@@ -23,7 +23,8 @@
 #
 
 PKG="SUNWpython-ply"
-NAME="Ply"
+NAME="Lex and yacc parsing tools for Python"
+DESC="PLY is an implementation of lex and yacc parsing tools for Python"
 ARCH="ISA"
 VERSION="3.1"
 SUNW_PKGVERS="1.0"

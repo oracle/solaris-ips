@@ -1,0 +1,4 @@
+package SUNWiiimf-zhCN-cle-sunpinyin
+classification "System/Internationalization"
+import SUNWiiimf-zhCN-cle-sunpinyin
+end package

@@ -1,5 +1,5 @@
 package SUNWscim-hangul
-classification "System/Localizations"
+classification "System/Internationalization"
 import SUNWscim-hangul
 version 0.3.2
 end package

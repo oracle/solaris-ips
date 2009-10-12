@@ -21,16 +21,6 @@ drop usr/bin/view
 drop usr/bin/pfsh
 add link path=usr/bin/pfsh \
     target=../has/bin/sh
-from SUNWman import
-usr/share/man/man1/ex.1
-usr/share/man/man1/sh.1
-usr/share/man/man1/vi.1
-usr/share/man/man1/view.1
-end import
-chattr usr/share/man/man1/ex.1 path=usr/has/man/man1/ex.1
-chattr usr/share/man/man1/sh.1 path=usr/has/man/man1/sh.1
-chattr usr/share/man/man1/vi.1 path=usr/has/man/man1/vi.1
-chattr usr/share/man/man1/view.1 path=usr/has/man/man1/view.1
 import SUNWcsr
 drop etc/inet/hosts
 drop etc/nsswitch.conf
@@ -197,8 +187,10 @@ from SUNWwbcor import
 etc/security/exec_attr
 etc/security/prof_attr
 end import
-chattr etc/security/exec_attr path=etc/security/exec_attr.d/SUNWwbcor 	restart_fmri=svc:/system/rbac
-chattr etc/security/prof_attr path=etc/security/prof_attr.d/SUNWwbcor 	restart_fmri=svc:/system/rbac
+chattr etc/security/exec_attr path=etc/security/exec_attr.d/SUNWwbcor \
+    restart_fmri=svc:/system/rbac:default
+chattr etc/security/prof_attr path=etc/security/prof_attr.d/SUNWwbcor \
+    restart_fmri=svc:/system/rbac:default
 depend SUNWperl584core
 
 add driver name=dump \

@@ -15,4 +15,5 @@ depend SUNWpython26-setuptools
 depend SUNWpython26-simplejson
 depend SUNWpython26-twisted
 depend SUNWpython26-twisted-web2 
+depend SUNWpython26-xdg
 end package

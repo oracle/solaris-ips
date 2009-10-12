@@ -1,0 +1,5 @@
+package SUNWibus-table-data-array30
+classification "System/Internationalization"
+import SUNWibus-table-data-array30
+version 1.1.0
+end package

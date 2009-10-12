@@ -1,5 +1,5 @@
 package SUNWscim-tables-korean
-classification "System/Localizations"
+classification "System/Internationalization"
 import SUNWscim-tables-korean
 version 0.5.7
 end package

@@ -1,11 +1,11 @@
 chattr_glob etc/security/auth_attr path=etc/security/auth_attr.d/$(PKGNAME) \
-	restart_fmri=svc:/system/rbac
+	restart_fmri=svc:/system/rbac:default
 chattr_glob etc/security/exec_attr path=etc/security/exec_attr.d/$(PKGNAME) \
-	restart_fmri=svc:/system/rbac
+	restart_fmri=svc:/system/rbac:default
 chattr_glob etc/security/prof_attr path=etc/security/prof_attr.d/$(PKGNAME) \
-	restart_fmri=svc:/system/rbac
+	restart_fmri=svc:/system/rbac:default
 chattr_glob etc/user_attr path=etc/user_attr.d/$(PKGNAME) \
-	restart_fmri=svc:/system/rbac
+	restart_fmri=svc:/system/rbac:default
 #
 # SUNWcsr specific entries to restore the "base" versions of these
 # files.  The time stamp of these "base" files is set to the epoch in

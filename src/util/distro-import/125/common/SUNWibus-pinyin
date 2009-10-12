@@ -1,0 +1,6 @@
+package SUNWibus-pinyin
+classification "System/Internationalization"
+import SUNWibus-pinyin
+depend SUNWibus
+version 1.1.0
+end package

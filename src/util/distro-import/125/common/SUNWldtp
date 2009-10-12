@@ -1,0 +1,5 @@
+package SUNWldtp
+classification "Development/Distribution Tools"
+import SUNWldtp
+version 1.7.1
+end package

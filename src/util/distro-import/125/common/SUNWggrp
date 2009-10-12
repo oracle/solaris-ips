@@ -1,0 +1,5 @@
+package SUNWggrp
+classification "Applications/System Utilities"
+import SUNWggrp
+version 2.5.4
+end package

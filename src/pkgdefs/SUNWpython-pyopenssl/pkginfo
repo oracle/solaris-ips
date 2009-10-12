@@ -23,7 +23,7 @@
 #
 
 PKG="SUNWpython-pyopenssl"
-NAME="pyOpenSSL"
+NAME="Python interface to the OpenSSL library"
 DESC="Python bindings for OpenSSL"
 ARCH="ISA"
 VERSION="0.7"

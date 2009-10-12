@@ -1,0 +1,5 @@
+package SUNWibus-table-data-quick
+classification "System/Internationalization"
+import SUNWibus-table-data-quick
+version 1.1.0
+end package

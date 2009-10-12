@@ -23,7 +23,8 @@
 #
 
 PKG="SUNWipkg-brand"
-NAME="ipkg brand"
+NAME="Image Packaging System branded zone"
+DESC="A branded zone whose software is managed using the Image Packaging System"
 ARCH="ISA"
 VERSION="0.0.0"
 SUNW_PKGVERS="1.0"

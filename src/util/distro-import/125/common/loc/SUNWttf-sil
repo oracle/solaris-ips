@@ -1,0 +1,4 @@
+package SUNWttf-sil
+classification "System/Fonts"
+import SUNWttf-sil
+end package

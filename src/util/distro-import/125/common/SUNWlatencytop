@@ -1,0 +1,4 @@
+package SUNWlatencytop
+classification "Applications/System Utilities"
+import SUNWlatencytop
+end package

@@ -1,5 +1,5 @@
 package SUNWscim-sunpinyin
-classification "System/Text Tools"
+classification "System/Internationalization"
 import SUNWscim-sunpinyin
 version 1.0
 end package

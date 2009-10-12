@@ -1,0 +1,5 @@
+package SUNWidzebra
+classification "System/Text Tools"
+import SUNWidzebra
+version 2.0.40
+end package

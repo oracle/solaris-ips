@@ -3,7 +3,7 @@ classification "Drivers/Networking"
 import SUNWintgige
 
 add driver name=e1000g \
-    perms="* 0666 root root" \
+    perms="* 0666 root sys" \
     clone_perms="0666 root sys" \
     alias="pci8086,1000" \
     alias="pci8086,1001" \
@@ -87,8 +87,15 @@ add driver name=e1000g \
     alias="pci8086,10de" \
     alias="pci8086,10df" \
     alias="pci8086,10e5" \
+    alias="pci8086,10ea" \
+    alias="pci8086,10eb" \
+    alias="pci8086,10ef" \
+    alias="pci8086,10f0" \
     alias="pci8086,10f5" \
+    alias="pci8086,10f6" \
+    alias="pci8086,150c" \
     alias="pci8086,294c" \
+    alias="pci8086,f0fe" \
     alias="pciex8086,1049" \
     alias="pciex8086,104a" \
     alias="pciex8086,104b" \
@@ -129,6 +136,13 @@ add driver name=e1000g \
     alias="pciex8086,10de" \
     alias="pciex8086,10df" \
     alias="pciex8086,10e5" \
+    alias="pciex8086,10ea" \
+    alias="pciex8086,10eb" \
+    alias="pciex8086,10ef" \
+    alias="pciex8086,10f0" \
     alias="pciex8086,10f5" \
-    alias="pciex8086,294c"
+    alias="pciex8086,10f6" \
+    alias="pciex8086,150c" \
+    alias="pciex8086,294c" \
+    alias="pciex8086,f0fe"
 end package

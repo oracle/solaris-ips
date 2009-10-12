@@ -1,5 +1,5 @@
 package SUNWscim-tables-japanese
-classification "System/Localizations"
+classification "System/Internationalization"
 import SUNWscim-tables-japanese
 version 0.5.7
 end package

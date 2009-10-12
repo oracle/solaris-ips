@@ -1,0 +1,4 @@
+package SUNWiiimf-ja-anthy
+classification "System/Internationalization"
+import SUNWiiimf-ja-anthy
+end package

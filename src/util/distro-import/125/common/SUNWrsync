@@ -1,0 +1,5 @@
+package SUNWrsync
+classification "Applications/System Utilities"
+import SUNWrsync
+version 3.0.6
+end package

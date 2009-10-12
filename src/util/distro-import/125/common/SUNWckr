@@ -129,7 +129,8 @@ $(i386_ONLY)    alias="pci8086,4003" \
 $(i386_ONLY)    alias="pci8086,65c0"
 
 $(i386_ONLY)add driver name=intel_nhm \
-$(i386_ONLY)    alias="pci8086,3423"
+$(i386_ONLY)    alias="pci8086,3423" \
+$(i386_ONLY)    alias="pci8086,372a"
 
 add driver name=ip \
     perms="ip 0666 root sys" \
@@ -152,6 +153,11 @@ add driver name=ipsecah \
 add driver name=ipsecesp \
     perms="ipsecesp 0666 root sys" \
     policy="read_priv_set=sys_ip_config write_priv_set=sys_ip_config"
+
+add driver name=iptun
+
+add driver name=iptunq \
+    perms="* 0640 root sys"
 
 add driver name=iwscn
 
