@@ -1,0 +1,10 @@
+--- src/Makefile.in.orig	Thu Aug 13 21:35:03 2009
++++ src/Makefile.in	Sun Oct 11 11:38:12 2009
+@@ -554,7 +554,6 @@
+ 	mostlyclean-generic pdf pdf-am ps ps-am tags uninstall \
+ 	uninstall-am uninstall-binPROGRAMS
+ 
+-@GCC_CMD_TRUE@	AM_CFLAGS = -Wall -Wunused -Wmissing-prototypes -Wmissing-declarations
+ # Tell versions [3.59,3.63) of GNU make to not export all variables.
+ # Otherwise a system limit (for SysV at least) may be exceeded.
+ .NOEXPORT:

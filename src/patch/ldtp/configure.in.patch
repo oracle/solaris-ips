@@ -1,0 +1,15 @@
+--- configure.in.orig	2009-08-14 05:34:22.000000000 +0100
++++ configure.in	2009-10-08 15:45:13.232704749 +0100
+@@ -89,6 +89,12 @@
+ AC_SUBST(CSPI_1_0_CFLAGS)
+ AC_SUBST(CSPI_1_0_LIBS)
+ 
++dnl *********************************
++dnl Check for -lsocket -lnsl
++dnl *********************************
++AC_CHECK_FUNC(gethostent, , AC_CHECK_LIB(nsl, gethostent))
++AC_CHECK_FUNC(setsockopt, , AC_CHECK_LIB(socket, setsockopt))
++
+ LOCALIZATION_LIB=""
+ dnl **************************************************
+ dnl Localization support.
