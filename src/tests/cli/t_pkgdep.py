@@ -168,6 +168,19 @@ depend fmri=pkg:/s-v-bar pkg.debug.depend.file=var/log/file2 pkg.debug.depend.re
 variant.foo:baz variant.num:three
 """
 
+        usage_msg = """\
+Usage:
+        pkgdep [options] command [cmd_options] [operands]
+
+Subcommands:
+        pkgdep generate [-IMm] manifest proto_dir
+        pkgdep [options] resolve [-dMos] manifest ...
+
+Options:
+        -R dir
+        --help or -?
+Environment:
+        PKG_IMAGE"""
         
         @staticmethod
         def make_manifest(str):
@@ -435,3 +448,58 @@ variant.foo:baz variant.num:three
                                 portable.remove(m3_path)
                         if m4_path:
                                 portable.remove(m4_path)
+
+        def test_bug_10518(self):
+
+                m_path = None
+
+                try:
+                        m_path = self.make_manifest(self.test_manf_1)
+
+                        self.pkgdep("generate / %s " % m_path,
+                            use_proto=False, exit=1)
+                        self.check_res(self.usage_msg, self.errout)
+
+                        self.pkgdep("resolve -o / ", use_proto=False, exit=2)
+                        self.check_res(self.usage_msg, self.errout)
+                finally:
+                        if m_path:
+                                portable.remove(m_path)
+
+        def test_bug_11517(self):
+
+                m_path = None
+                ill_usage = 'pkgdep: illegal global option -- M\n'
+                try:
+                        m_path = self.make_manifest(self.test_manf_1)
+
+                        self.pkgdep("resolve -M -o %s " % m_path,
+                            use_proto=False, exit=2)
+                        self.check_res(ill_usage + self.usage_msg,
+                            self.errout)
+                finally:
+                        if m_path:
+                                portable.remove(m_path)
+
+        def test_bug_11829(self):
+
+                m_path = None
+                nonsense = "This is a nonsense manifest"
+                try:
+                        m_path = self.make_manifest(nonsense)
+                        
+                        self.pkgdep("generate %s /" % m_path,
+                            use_proto=False, exit=1)
+                        self.check_res('pkgdep: Could not parse manifest ' + 
+                            '%s because of the following line:\n' % m_path +
+                            nonsense, self.errout)
+
+                        self.pkgdep("resolve -o %s " % m_path, 
+                            use_proto=False, exit=1)
+                        self.check_res("pkgdep: Could not parse one or more " +
+                            "manifests because of the following line:\n" +
+                            nonsense, self.errout)
+                finally:
+                        if m_path:
+                                portable.remove(m_path)
+

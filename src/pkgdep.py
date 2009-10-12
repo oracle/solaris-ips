@@ -121,14 +121,22 @@ def generate(args):
         manf = pargs[0]
         proto_dir = pargs[1]
 
+        if (not os.path.isdir(proto_dir)) or (not os.path.isfile(manf)):
+            usage(retcode=1)
+
         try:
                 ds, es, ms = dependencies.list_implicit_deps(manf, proto_dir,
                     remove_internal_deps)
         except IOError, e:
                 if e.errno == errno.ENOENT:
-                        error("Could not find manifest file %s" % manf)
+                        error(_("Could not find manifest file %s") % manf)
                         return 1
                 raise
+        except actions.MalformedActionError, e:
+                error(_("Could not parse manifest %(manifest)s because of the "
+                    "following line:\n%(line)s") % { 'manifest': manf ,
+                    'line': e.actionstr})
+                return 1
 
         if echo_manf:
                 fh = open(manf, "rb")
@@ -156,7 +164,10 @@ def resolve(args, img_dir):
         echo_manifest = False
         output_to_screen = False
         suffix = None
-        opts, pargs = getopt.getopt(args, "d:mos:")
+        try:
+            opts, pargs = getopt.getopt(args, "d:mos:")
+        except getopt.GetoptError, e:
+            usage(_("illegal global option -- %s") % e.opt)
         for opt, arg in opts:
                 if opt == "-d":
                         out_dir = arg
@@ -172,8 +183,14 @@ def resolve(args, img_dir):
 
         manifest_paths = [os.path.abspath(fp) for fp in pargs]
 
+        for manifest in manifest_paths:
+            if not os.path.isfile(manifest):
+                usage()
+
         if out_dir:
                 out_dir = os.path.abspath(out_dir)
+                if not os.path.isdir(out_dir):
+                    usage()
 
         if img_dir is None:
                 try:
@@ -203,8 +220,15 @@ def resolve(args, img_dir):
                     progress.QuietProgressTracker(), None, PKG_CLIENT_NAME)
         except api_errors.ImageNotFoundException, e:
                 error(_("'%s' is not an install image") % e.user_dir)
-                return 1                
-        pkg_deps, errs = dependencies.resolve_deps(manifest_paths, api_inst)
+                return 1
+
+        try:
+            pkg_deps, errs = dependencies.resolve_deps(manifest_paths, api_inst)
+        except actions.MalformedActionError, e:
+            error(_("Could not parse one or more manifests because of the " +
+                "following line:\n%s") % e.actionstr)
+            return 1
+
         ret_code = 0
         
         if output_to_screen:

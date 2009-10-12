@@ -508,6 +508,9 @@ cli.t_pkg_version.py TestPkgVersion.test_pkg_version_bad_opts|pass
 cli.t_pkgdep.py TestPkgdepBasics.test_opts|pass
 cli.t_pkgdep.py TestPkgdepBasics.test_output|pass
 cli.t_pkgdep.py TestPkgdepBasics.test_resolve_screen_out|pass
+cli.t_pkgdep.py TestPkgdepBasics.test_bug_10518|pass
+cli.t_pkgdep.py TestPkgdepBasics.test_bug_11517|pass
+cli.t_pkgdep.py TestPkgdepBasics.test_bug_11829|pass
 cli.t_pkgdep_resolve.py TestApiDependencies.test_bug_11518|pass
 cli.t_pkgdep_resolve.py TestApiDependencies.test_resolve_cross_package|pass
 cli.t_pkgdep_resolve.py TestApiDependencies.test_resolve_mix|pass
