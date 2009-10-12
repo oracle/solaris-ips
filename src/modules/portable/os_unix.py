@@ -37,6 +37,7 @@ import errno
 import os
 import platform
 import shutil
+import stat
 import sys
 import util as os_util
 # used to cache contents of passwd and group files
@@ -239,6 +240,14 @@ def split_path(path):
 
 def get_root(path):
         return '/'
+
+def assert_mode(path, mode):
+        fmode = stat.S_IMODE(os.lstat(path).st_mode)
+        if mode != fmode:
+                ae = AssertionError("mode mismatch for %s, has %o, want %o" % 
+                    (path, fmode, mode))
+                ae.mode = fmode;
+                raise ae
 
 def copyfile(src, dst):
         shutil.copyfile(src, dst)

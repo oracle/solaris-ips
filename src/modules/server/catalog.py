@@ -294,12 +294,13 @@ class ServerCatalog(object):
                 for fpath in (apath, cpath):
                         try:
                                 if self.read_only:
-                                        fmode = stat.S_IMODE(os.lstat(
-                                            fpath).st_mode)
-                                        if fmode != self.file_mode:
+                                        try:
+                                                portable.assert_mode(fpath,
+                                                    self.file_mode)
+                                        except AssertionError, ae:
                                                 bad_modes.append((fpath,
                                                     "%o" % self.file_mode,
-                                                    "%o" % fmode))
+                                                    "%o" % ae.mode))
                                 else:
                                         os.chmod(fpath, self.file_mode)
                         except EnvironmentError, e:
@@ -310,13 +311,14 @@ class ServerCatalog(object):
                                 # If the mode change failed for another reason,
                                 # check to see if we actually needed to change
                                 # it, and if so, add it to bad_modes.
-                                fmode = stat.S_IMODE(os.lstat(
-                                    fpath).st_mode)
-                                if fmode != self.file_mode:
+                                try:
+                                        portable.assert_mode(fpath,
+                                            self.file_mode)
+                                except AssertionError, ae:
                                         bad_modes.append((fpath,
                                             "%o" % self.file_mode,
-                                            "%o" % fmode))
-
+                                            "%o" % ae.mode))
+ 
                 if bad_modes:
                         raise CatalogPermissionsException(bad_modes)
 

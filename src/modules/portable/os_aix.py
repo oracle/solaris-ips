@@ -33,7 +33,7 @@ import errno
 from os_unix import \
     get_isainfo, get_release, get_platform, get_group_by_name, \
     get_user_by_name, get_name_by_gid, get_name_by_uid, is_admin, get_userid, \
-    get_username, rename, remove, link, split_path, get_root, copyfile
+    get_username, rename, remove, link, split_path, get_root, assert_mode, copyfile
 
 def chown(path, owner, group):
         # The "nobody" user on AIX has uid -2, which is an invalid UID on NFS

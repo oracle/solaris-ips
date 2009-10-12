@@ -380,7 +380,7 @@ class Manifest(object):
                 if log is None:
                         log = lambda x: None
 
-                file_handle = file(file_path)
+                file_handle = file(file_path, "rb")
                 cur_pos = 0
                 line = file_handle.readline()
                 action_dict = {}

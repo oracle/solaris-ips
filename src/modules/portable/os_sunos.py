@@ -36,7 +36,7 @@ import tempfile
 from os_unix import \
     get_group_by_name, get_user_by_name, get_name_by_gid, get_name_by_uid, \
     is_admin, get_userid, get_username, chown, rename, remove, link, \
-    copyfile, split_path, get_root
+    copyfile, split_path, get_root, assert_mode
 from pkg.portable import ELF, EXEC, UNFOUND
 import pkg.arch as arch
 

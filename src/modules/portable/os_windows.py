@@ -36,6 +36,7 @@ import getpass
 import shutil
 import os
 import errno
+import stat
 import tempfile
 import threading
 import util as os_util
@@ -222,6 +223,15 @@ def get_root(path):
                 return os.path.sep
         else:
                 return drivepath[0] + '\\'
+
+def assert_mode(path, mode):
+        # only compare user's permission bits on Windows
+        fmode = stat.S_IMODE(os.lstat(path).st_mode)
+        if (mode & stat.S_IRWXU) != (fmode & stat.S_IRWXU):
+                ae = AssertionError("mode mismatch for %s, has %o, want %o" % 
+                    (path, fmode, mode))
+                ae.mode = fmode;
+                raise ae
 
 def copyfile(src, dst):
         shutil.copyfile(src, dst)

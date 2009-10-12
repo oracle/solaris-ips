@@ -521,16 +521,16 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 c.save()
 
                 for fname in c.signatures:
-                        fs = os.lstat(os.path.join(c.meta_root, fname))
-                        self.assert_(stat.S_IMODE(fs.st_mode) == mode)
+                        fn = os.path.join(c.meta_root, fname)
+                        portable.assert_mode(fn, mode)
 
                 # Now test old catalog case.
                 for fname in c.signatures:
                         os.chmod(os.path.join(c.meta_root, fname), bad_mode)
                 c = catalog.Catalog(meta_root=cpath, log_updates=True)
                 for fname in c.signatures:
-                        fs = os.lstat(os.path.join(c.meta_root, fname))
-                        self.assert_(stat.S_IMODE(fs.st_mode) == mode)
+                        fn = os.path.join(c.meta_root, fname)
+                        portable.assert_mode(fn, mode)
 
                 # Need to add an fmri to it and then re-test the permissions
                 # since this causes the catalog file to be re-created.
@@ -539,8 +539,8 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 c.save()
 
                 for fname in c.signatures:
-                        fs = os.lstat(os.path.join(c.meta_root, fname))
-                        self.assert_(stat.S_IMODE(fs.st_mode) == mode)
+                        fn = os.path.join(c.meta_root, fname)
+                        portable.assert_mode(fn, mode)
 
                 # Finally, test read_only old catalog case.
                 for fname in c.signatures:

@@ -198,6 +198,14 @@ def get_root(path):
         often leads to ambiguity in cross-platform code)."""
         raise NotImplementedError
 
+def assert_mode(path, mode):
+        """ Checks that the file identified by path has the given mode to
+        the extent possible by the host operating system.  Otherwise raises
+        an AssertionError where the mode attribute of the assertion is the 
+        mode of the file."""
+        raise NotImplementedError
+
+
 # File type constants
 # -------------------
 ELF, EXEC, UNFOUND = range(0, 3)

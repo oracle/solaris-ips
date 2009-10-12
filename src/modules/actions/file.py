@@ -57,8 +57,7 @@ class FileAction(generic.Action):
                 self.hash = "NOHASH"
                 self.replace_required = False
                 if "path" in self.attrs:
-                        self.attrs["path"] = self.attrs["path"].lstrip(
-                            os.path.sep)
+                        self.attrs["path"] = self.attrs["path"].lstrip("/")
                         if not self.attrs["path"]:
                                 raise pkg.actions.InvalidActionError(
                                     str(self), _("Empty path attribute"))
