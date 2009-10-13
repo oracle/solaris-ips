@@ -2188,9 +2188,6 @@ class PackageManager:
                 self.w_application_treeview.set_model(None)
                 self.application_list_filter.refilter()
                 self.w_application_treeview.set_model(model)
-                gobject.idle_add(self.__set_empty_details_panel)
-                gobject.idle_add(self.__enable_disable_selection_menus)
-                gobject.idle_add(self.__enable_disable_install_remove)
                 self.application_treeview_initialized = True
                 self.application_treeview_range = None
                 if self.visible_status_id == 0:
@@ -2202,6 +2199,9 @@ class PackageManager:
                 if len_filtered_list > 0 and \
                         self.length_visible_list != len_filtered_list:
                         self.update_statusbar()
+                self.__set_empty_details_panel()
+                self.__enable_disable_selection_menus()
+                self.__enable_disable_install_remove()
                 return False
 
         def __on_edit_paste(self, widget):
@@ -2512,14 +2512,10 @@ class PackageManager:
                             self.saved_filter_combobox_active)
                 if self.in_search_mode or self.is_all_publishers:
                         self.__unset_search(True)
-                        if self.selected == 0:
-                                gobject.idle_add(self.__enable_disable_install_remove)
                         return
                 self.__set_main_view_package_list()
                 self.set_busy_cursor()
                 self.__refilter_on_idle()
-                if self.selected == 0:
-                        gobject.idle_add(self.__enable_disable_install_remove)
 
         def __set_main_view_package_list(self, show_list=True):
                 # Only switch from Start Page View to List view if we are not in startup
@@ -2591,8 +2587,6 @@ class PackageManager:
 
                 self.set_busy_cursor()
                 self.__refilter_on_idle()
-                if self.selected == 0:
-                        gobject.idle_add(self.__enable_disable_install_remove)
 
         def __on_applicationtreeview_motion_events(self, treeview, event):
                 if event.state == gtk.gdk.CONTROL_MASK or \
@@ -2708,7 +2702,6 @@ class PackageManager:
                         gobject.source_remove(self.show_info_id)
                         self.show_info_id = 0
                 if itr:
-                        self.__enable_disable_install_remove()
                         self.selected_pkgstem = \
                                model.get_value(itr, enumerations.STEM_COLUMN)
                         pkg = model.get_value(itr, enumerations.FMRI_COLUMN)
@@ -2725,7 +2718,6 @@ class PackageManager:
                         self.selected_model = None
                         self.selected_path = None
                         self.selected_pkgstem = None
-                        self.__enable_disable_install_remove()
 
         def __on_package_selection_changed(self, selection, widget):
                 '''This function is for handling package selection changes'''
@@ -2743,8 +2735,6 @@ class PackageManager:
                 self.__set_main_view_package_list()
                 self.set_busy_cursor()
                 self.__refilter_on_idle()
-                if self.selected == 0:
-                        gobject.idle_add(self.__enable_disable_install_remove)
 
         def __unset_search(self, same_repo):
                 self.w_infosearch_frame.hide()
@@ -2938,12 +2928,7 @@ class PackageManager:
         def __on_install_update(self, widget):
                 self.api_o.reset()
                 install_update = []
-                if self.selected == 0:
-                        model, itr = self.package_selection.get_selected()
-                        if itr:
-                                install_update.append(
-                                    model.get_value(itr, enumerations.STEM_COLUMN))
-                else:
+                if self.selected > 0:
                         visible_publisher = self.__get_selected_publisher()
                         pkgs = self.selected_pkgs.get(visible_publisher)
                         if pkgs:
@@ -2997,12 +2982,7 @@ class PackageManager:
         def __on_remove(self, widget):
                 self.api_o.reset()
                 remove_list = []
-                if self.selected == 0:
-                        model, itr = self.package_selection.get_selected()
-                        if itr:
-                                remove_list.append(
-                                    model.get_value(itr, enumerations.STEM_COLUMN))
-                else:
+                if self.selected > 0:
                         visible_publisher = self.__get_selected_publisher()
                         pkgs = self.selected_pkgs.get(visible_publisher)
                         if pkgs:
@@ -3742,30 +3722,8 @@ class PackageManager:
                         self.w_remove_button.set_sensitive(False)
                         self.w_remove_menuitem.set_sensitive(False)
                         return
-                selected_removal = self.__enable_if_selected_for_removal()
-                selected_install_update = self.__enable_if_selected_for_install_update()
-                if selected_removal or selected_install_update:
-                        return
-                remove = False
-                install = False
-                if self.selected == 0:
-                        model, itr = self.package_selection.get_selected()
-                        if itr:
-                                status = \
-                                       model.get_value(itr, enumerations.STATUS_COLUMN)
-                                if status == enumerations.NOT_INSTALLED:
-                                        remove = False
-                                        install = True
-                                elif status == enumerations.UPDATABLE:
-                                        remove = True
-                                        install = True
-                                elif status == enumerations.INSTALLED:
-                                        remove = True
-                                        install = False
-                                self.w_installupdate_button.set_sensitive(install)
-                                self.w_installupdate_menuitem.set_sensitive(install)
-                                self.w_remove_button.set_sensitive(remove)
-                                self.w_remove_menuitem.set_sensitive(remove)
+                self.__enable_if_selected_for_removal()
+                self.__enable_if_selected_for_install_update()
 
         def __enable_if_selected_for_removal(self):
                 sensitive = False
