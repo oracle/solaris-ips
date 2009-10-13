@@ -176,7 +176,7 @@ class CacheListStores:
                         app["is_visible"] = application[enumerations.IS_VISIBLE_COLUMN]
                         app["category_list"] = \
                             application[enumerations.CATEGORY_LIST_COLUMN]
-                        app["pkg_authority"] = application[enumerations.AUTHORITY_COLUMN]
+                        app["pkg_authority"] = application[enumerations.PUBLISHER_COLUMN]
                         apps.append(app)
                 gui_misc.dump_cache_file(
                     os.path.join(cache_dir, publisher+"_packages.cpl"), apps)

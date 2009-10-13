@@ -1114,7 +1114,7 @@ class PackageManager:
                         gobject.TYPE_STRING,      # enumerations.DISPLAY_NAME_COLUMN
                         gobject.TYPE_BOOLEAN,     # enumerations.IS_VISIBLE_COLUMN
                         gobject.TYPE_PYOBJECT,    # enumerations.CATEGORY_LIST_COLUMN
-                        gobject.TYPE_STRING       # enumerations.REPOSITORY_COLUMN
+                        gobject.TYPE_STRING       # enumerations.PUBLISHER_COLUMN
                         )
 
         @staticmethod
@@ -1206,8 +1206,8 @@ class PackageManager:
                         repository_renderer = gtk.CellRendererText()
                         column = gtk.TreeViewColumn(_('Publisher'),
                             repository_renderer,
-                            text = enumerations.AUTHORITY_COLUMN)
-                        column.set_sort_column_id(enumerations.AUTHORITY_COLUMN)
+                            text = enumerations.PUBLISHER_COLUMN)
+                        column.set_sort_column_id(enumerations.PUBLISHER_COLUMN)
                         column.set_resizable(True)
                         column.set_sort_indicator(True)
                         column.set_cell_data_func(repository_renderer,
@@ -1216,9 +1216,9 @@ class PackageManager:
                             self.__application_treeview_column_sorted, None)
                         self.w_application_treeview.append_column(column)
                         application_list_sort.set_sort_func(
-                            enumerations.AUTHORITY_COLUMN, 
+                            enumerations.PUBLISHER_COLUMN, 
                             self.__column_sort_func, 
-                            enumerations.AUTHORITY_COLUMN)
+                            enumerations.PUBLISHER_COLUMN)
                 description_renderer = gtk.CellRendererText()
                 column = gtk.TreeViewColumn(_('Description'),
                     description_renderer,
@@ -1877,6 +1877,18 @@ class PackageManager:
                 self.w_repository_combobox.set_active(
                     self.saved_repository_combobox_active)
                 self.set_section = self.saved_section_active
+                # Reset MARK_COLUMN        
+                for pkg in self.saved_application_list:
+                        pub = pkg[enumerations.PUBLISHER_COLUMN]
+                        stem = pkg[enumerations.STEM_COLUMN]
+                        marked = False
+                        pkgs = None
+                        if self.selected_pkgs != None:
+                                pkgs = self.selected_pkgs.get(pub)
+                        if pkgs != None:
+                                if stem in pkgs:
+                                        marked = True
+                        pkg[enumerations.MARK_COLUMN] = marked
                 if self.saved_category_list == self.category_list:
                         self.__init_tree_views(self.saved_application_list,
                             None, None,
@@ -1887,7 +1899,7 @@ class PackageManager:
                             self.saved_category_list, self.saved_section_list,
                             self.saved_application_list_filter,
                             self.saved_application_list_sort)
-                        
+
                 self.__set_main_view_package_list()
 
         def __save_setup_before_search(self, single_search=False):
@@ -2328,11 +2340,15 @@ class PackageManager:
                                     enumerations.STEM_COLUMN)
                                 pkg_status = model.get_value(itr,
                                     enumerations.STATUS_COLUMN)
-                                self.__add_pkg_stem_to_list(pkg_stem, pkg_status)
+                                pkg_publisher = model.get_value(itr,
+                                    enumerations.PUBLISHER_COLUMN)
+                                self.__add_pkg_stem_to_list(pkg_stem, 
+                                    pkg_status, pkg_publisher)
                         elif not select_all and mark_value:
                                 model.set_value(itr, enumerations.MARK_COLUMN, False)
-                                self.__remove_pkg_stem_from_list(model.get_value(itr,
-                                    enumerations.STEM_COLUMN))
+                                pkg_stem = model.get_value(itr,
+                                    enumerations.STEM_COLUMN)
+                                self.__remove_pkg_stem_from_list(pkg_stem)
                 
                 self.w_selectall_menuitem.set_sensitive(not select_all)
                 self.w_deselect_menuitem.set_sensitive(select_all)
@@ -2371,7 +2387,9 @@ class PackageManager:
                         model.set_value(itr, enumerations.MARK_COLUMN, True)
                         pkg_stem = model.get_value(itr, enumerations.STEM_COLUMN)
                         pkg_status = model.get_value(itr, enumerations.STATUS_COLUMN)
-                        self.__add_pkg_stem_to_list(pkg_stem, pkg_status)
+                        pkg_publisher = model.get_value(itr,
+                            enumerations.PUBLISHER_COLUMN)
+                        self.__add_pkg_stem_to_list(pkg_stem, pkg_status, pkg_publisher)
                 self.__enable_disable_selection_menus()
                 self.update_statusbar()
                 self.__enable_disable_install_remove()
@@ -2738,13 +2756,6 @@ class PackageManager:
 
         def __unset_search(self, same_repo):
                 self.w_infosearch_frame.hide()
-                selected_publisher = self.__get_selected_publisher()
-                if selected_publisher in self.selected_pkgs:
-                        self.selected_pkgs.pop(selected_publisher)
-                if selected_publisher in self.to_install_update:
-                        self.to_install_update.pop(selected_publisher)
-                if selected_publisher in self.to_remove:
-                        self.to_remove.pop(selected_publisher)
                 self.__update_tooltips()
                 self.in_search_mode = False
                 self.is_all_publishers = False
@@ -2895,7 +2906,7 @@ class PackageManager:
                         return
                 try:
                         app_pub = self.application_list[0]\
-                                [enumerations.AUTHORITY_COLUMN]
+                                [enumerations.PUBLISHER_COLUMN]
                 except (IndexError, ValueError):
                         #Empty application list nothing to dump
                         return
@@ -3177,7 +3188,10 @@ class PackageManager:
                         if modified:
                                 self.__remove_pkg_stem_from_list(pkg_stem)
                         else:
-                                self.__add_pkg_stem_to_list(pkg_stem, pkg_status)
+                                pkg_publisher = filterModel.get_value(itr, 
+                                    enumerations.PUBLISHER_COLUMN)
+                                self.__add_pkg_stem_to_list(pkg_stem, pkg_status,
+                                    pkg_publisher)
                         self.update_statusbar()
                         self.__enable_disable_selection_menus()
                         self.__enable_disable_install_remove()
@@ -3190,8 +3204,7 @@ class PackageManager:
                         self.w_reload_menuitem.set_sensitive(False)
                         self.w_reload_button.set_sensitive(False)
 
-        def __add_pkg_stem_to_list(self, stem, status):
-                pub = self.__get_selected_publisher()
+        def __add_pkg_stem_to_list(self, stem, status, pub):
                 if self.selected_pkgs.get(pub) == None:
                         self.selected_pkgs[pub] = {}
                 self.selected_pkgs.get(pub)[stem] = status
@@ -3263,7 +3276,7 @@ class PackageManager:
                 self.__update_tooltips()
 
         def __clear_pkg_selections(self):
-                # We clear the selections as the preffered repository was changed
+                # We clear the selections as the preferred repository was changed
                 # and pkg stems are not valid.
                 remove_pub = []
                 for pub in self.selected_pkgs:
@@ -3981,11 +3994,10 @@ class PackageManager:
                         else:
                                 status_icon = self.not_installed_icon
                         marked = False
-                        if not self.is_all_publishers:
-                                pkgs = self.selected_pkgs.get(pkg_publisher)
-                                if pkgs != None:
-                                        if pkg_stem in pkgs:
-                                                marked = True
+                        pkgs = self.selected_pkgs.get(pkg_publisher)
+                        if pkgs != None:
+                                if pkg_stem in pkgs:
+                                        marked = True
                         next_app = \
                             [
                                 marked, status_icon, pkg_name, '...', pkg_state,
@@ -4026,9 +4038,9 @@ class PackageManager:
                 if category_list == None:
                         return
                 cat_pub = categories.get(pub)
-                fmri = app[enumerations.FMRI_COLUMN]
-                if fmri:
-                        pkg_name = fmri.get_name()
+                pkg_fmri = app[enumerations.FMRI_COLUMN]
+                if pkg_fmri:
+                        pkg_name = pkg_fmri.get_name()
                 if pkg_name in cat_pub:
                         pkg_categories = cat_pub.get(pkg_name)
                         for pcat in pkg_categories.split(","):

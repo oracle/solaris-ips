@@ -39,7 +39,7 @@ STEM_COLUMN,
 DISPLAY_NAME_COLUMN,
 IS_VISIBLE_COLUMN,       # True indicates that the package is visible in ui
 CATEGORY_LIST_COLUMN,    # list of categories to which package belongs
-AUTHORITY_COLUMN,        # Authority for this package
+PUBLISHER_COLUMN,        # Publisher for this package
 ) = range(11)
 
 #For the STATUS_COLUMN
