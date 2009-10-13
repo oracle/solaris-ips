@@ -107,6 +107,7 @@ import urlparse
 import socket
 import gettext
 import signal
+import threading
 import re
 from xml.sax import saxutils
 from threading import Thread
@@ -260,6 +261,7 @@ class PackageManager:
                 self.application_path = None
                 self.default_publisher = None
                 self.current_repos_with_search_errors = []
+                self.exiting = False
                 self.first_run = True
                 self.in_reload = False
                 self.selected_pkgstem = None
@@ -848,6 +850,8 @@ class PackageManager:
                 self.__handle_api_search_error(True)
 
         def __handle_api_search_error(self, show_all=False):
+                if self.exiting:
+                        return
                 if len(self.current_repos_with_search_errors) == 0:
                         self.w_infosearch_frame.hide()
                         return
@@ -1241,6 +1245,8 @@ class PackageManager:
             application_sort_column = enumerations.NAME_COLUMN):
                 '''This function connects treeviews with their models and also applies
                 filters'''
+                if self.exiting:
+                        return
                 if category_list == None:
                         self.w_application_treeview.set_model(None)
                         self.__remove_treeview_columns(self.w_application_treeview)
@@ -1505,6 +1511,8 @@ class PackageManager:
                     pkg_descriptions_for_update, orig_model)
 
         def __update_description_from_iter(self, pkg_descriptions_for_update, orig_model):
+                if self.exiting:
+                        return
                 sort_filt_model = \
                     self.w_application_treeview.get_model() #gtk.TreeModelSort
                 if not sort_filt_model:
@@ -1704,6 +1712,8 @@ class PackageManager:
                         self.__update_statusbar_message(_("Search current publisher"))
 
         def __update_statusbar_message(self, message):
+                if self.exiting:
+                        return
                 if self.statusbar_message_id > 0:
                         self.w_main_statusbar.remove(0, self.statusbar_message_id)
                         self.statusbar_message_id = 0
@@ -2090,6 +2100,8 @@ class PackageManager:
                         times -= 1
 
                 #Now fetch full result set with Status
+                if self.exiting:
+                        return
                 self.in_setup = True
                 application_list = self.__get_full_list_from_search(result)
                 if self.search_start > 0:
@@ -3028,14 +3040,16 @@ class PackageManager:
                 Thread(target = self.__catalog_refresh).start()
 
         def __catalog_refresh_done(self):
-                gobject.idle_add(self.process_package_list_start,
-                    self.image_directory)
+                if not self.exiting:
+                        gobject.idle_add(self.process_package_list_start,
+                            self.image_directory)
+
 
         def __main_application_quit(self, be_name = None):
                 '''quits the main gtk loop'''
                 self.cancelled = True
-                if self.in_setup:
-                        return
+                self.exiting = True
+                self.__progress_pulse_stop()
 
                 save_width, save_height = self.w_main_window.get_size()
                 save_hpos = self.w_main_hpaned.get_position()
@@ -3088,10 +3102,15 @@ class PackageManager:
                 if len(self.search_completion) > 0 and self.cache_o != None:
                         self.cache_o.dump_search_completion_info(self.search_completion)
 
-                while gtk.events_pending():
-                        gtk.main_iteration(False)
-                gtk.main_quit()
-                sys.exit(0)
+                self.__do_exit()
+                gobject.timeout_add(1000, self.__do_exit)
+                return True
+
+        @staticmethod
+        def __do_exit():
+                if threading.activeCount() == 1:
+                        gtk.main_quit()
+                        sys.exit(0)
                 return True
 
         def __check_if_something_was_changed(self):
@@ -3716,7 +3735,9 @@ class PackageManager:
                 gobject.idle_add(self.w_updateall_button.set_sensitive, False)
                 gobject.idle_add(self.w_updateall_menuitem.set_sensitive, False)
                 update_available = self.__check_if_updates_available(refresh_done)
-                gobject.idle_add(self.__g_enable_disable_update_all, update_available)
+                if not self.exiting:
+                        gobject.idle_add(self.__g_enable_disable_update_all, 
+                            update_available)
                 return False
 
         def __show_info_after_catalog_load(self):
@@ -4244,7 +4265,8 @@ class PackageManager:
                         self.gdk_window.show()
                         self.w_main_window.get_accessible().emit('state-change',
                             'busy', True)
-                self.__progress_pulse_start()
+                if not self.exiting:
+                        self.__progress_pulse_start()
 
         def unset_busy_cursor(self):
                 self.__progress_pulse_stop()
