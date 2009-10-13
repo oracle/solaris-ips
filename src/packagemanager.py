@@ -3326,16 +3326,22 @@ class PackageManager:
                         self.info_cache = {}
 
                 if self.info_cache.has_key(pkg_stem):
-                        labs = self.info_cache[pkg_stem][0]
-                        text = self.info_cache[pkg_stem][1]
+                        labs = self.info_cache[pkg_stem][
+                            enumerations.INFO_GENERAL_LABELS]
+                        text = self.info_cache[pkg_stem][
+                            enumerations.INFO_GENERAL_TEXT]
                         gui_misc.set_package_details_text(labs, text,
                             self.w_generalinfo_textview,
                             self.installed_icon, self.not_installed_icon,
                             self.update_available_icon)
-                        text = self.info_cache[pkg_stem][2]
+                        text = self.info_cache[pkg_stem][
+                            enumerations.INFO_INSTALLED_TEXT]
                         self.__set_installedfiles_text(text)
-                        text = self.info_cache[pkg_stem][3]
-                        self.__set_dependencies_text(text)
+                        local_info = self.info_cache[pkg_stem][
+                            enumerations.INFO_DEPEND_INFO]
+                        dep_info = self.info_cache[pkg_stem][
+                            enumerations.INFO_DEPEND_DEPEND_INFO]
+                        self.__set_dependencies_text(local_info, dep_info)
                         return True
                 else:
                         return False
@@ -3348,16 +3354,81 @@ class PackageManager:
                 end_itr = instbuffer.get_end_iter()
                 instbuffer.insert(end_itr, "%s" % text)
 
-        def __set_dependencies_text(self, text):
+        def __set_dependencies_text(self, info, dep_info):
+                names = []
+                versions = []
+                states = None
+                if dep_info != None and len(dep_info.get(0)) >= 0:
+                        states = dep_info[0]
+                version_fmt = _("%(version)s (Build %(build)s-%(branch)s)")
+                i = 0
+                for x in info.dependencies:
+                        if states != None:
+                                split_names = x.split('@', 1)
+                                names.append(split_names[0])
+                                versions.append(version_fmt % \
+                                    {"version": states[i].version,
+                                    "build": states[i].build_release,
+                                    "branch": states[i].branch})
+                        else:
+                                names.append(x)
+                        i += 1
+
                 depbuffer = self.w_dependencies_textview.get_buffer()
                 depbuffer.set_text("")
-                itr = depbuffer.get_start_iter()
-                depbuffer.insert_with_tags_by_name(itr, _("Dependencies:\n"),
-                    "bold")
-                end_itr = depbuffer.get_end_iter()
-                depbuffer.insert(end_itr, "%s" % text)
+                if states == None:
+                        for i in  range(0, len(names)):
+                                itr = depbuffer.get_iter_at_line(i)
+                                dep_str = "%s\n" % (names[i]) 
+                                depbuffer.insert(itr, dep_str)
+                        return
+                max_name_len = 0
+                for name in names:
+                        if len(name) > max_name_len:
+                                max_name_len = len(name)
+                max_version_len = 0
+                for version in versions:
+                        if len(version) > max_version_len:
+                                max_version_len = len(version)
+                style = self.w_dependencies_textview.get_style()
+                font_size_in_pango_unit = style.font_desc.get_size()
+                font_size_in_pixel = font_size_in_pango_unit / pango.SCALE
+                tab_array = pango.TabArray(3, True)
+                i = 1
+                tab_array.set_tab(i, pango.TAB_LEFT,
+                    max_name_len * font_size_in_pixel + 1)
+                i += 1
+                tab_array.set_tab(i, pango.TAB_LEFT,
+                    (max_name_len + max_version_len) * 
+                    font_size_in_pixel + 2)
+                self.w_dependencies_textview.set_tabs(tab_array)
 
-        def __update_package_info(self, pkg, local_info, remote_info, info_id):
+                installed_icon = None
+                not_installed_icon = None
+                for i in  range(0, len(names)):
+                        if states[i].state == api.PackageInfo.INSTALLED:
+                                if installed_icon == None:
+                                        installed_icon = gui_misc.resize_icon(
+                                            self.installed_icon,
+                                            font_size_in_pixel)
+                                installed_str = _("(installed)")
+                                icon = installed_icon
+                        else:
+                                if not_installed_icon == None:
+                                        not_installed_icon = gui_misc.resize_icon(
+                                            self.not_installed_icon,
+                                            font_size_in_pixel)
+                                installed_str = _("(not installed)")
+                                icon = not_installed_icon
+                        itr = depbuffer.get_iter_at_line(i)
+                        dep_str = "%s\t%s\t" % (names[i], versions[i])
+                        depbuffer.insert(itr, dep_str)
+                        end_itr = depbuffer.get_end_iter()
+                        depbuffer.insert_pixbuf(end_itr, icon)
+                        depbuffer.insert(end_itr, " %s\n" % installed_str)
+
+        def __update_package_info(self, pkg, local_info, remote_info, dep_info,
+            info_id):
                 if self.showing_empty_details or (info_id != 
                     self.last_show_info_id):
                         return
@@ -3397,11 +3468,6 @@ class PackageManager:
                         remote_info = local_info
 
                 inst_str = "%s\n" % self.api_o.root
-                dep_str = ""
-
-                if local_info.dependencies:
-                        dep_str += ''.join(
-                            ["\t%s\n" % x for x in local_info.dependencies])
                 if local_info.dirs:
                         inst_str += ''.join(["\t%s\n" % x for x in local_info.dirs])
                 if local_info.files:
@@ -3411,8 +3477,8 @@ class PackageManager:
                 if local_info.links:
                         inst_str += ''.join(["\t%s\n" % x for x in local_info.links])
                 self.__set_installedfiles_text(inst_str)
-                self.__set_dependencies_text(dep_str)
-                self.info_cache[pkg_stem] = (labs, text, inst_str, dep_str)
+                self.__set_dependencies_text(local_info, dep_info)
+                self.info_cache[pkg_stem] = (labs, text, inst_str, local_info, dep_info)
 
         def __update_package_license(self, licenses, license_id):
                 if self.showing_empty_details or (license_id !=
@@ -3528,8 +3594,22 @@ class PackageManager:
                             False)
                 if not self.showing_empty_details and (info_id ==
                     self.last_show_info_id):
+                        if local_info:
+                                info = local_info
+                        else:
+                                info = remote_info
+                        dep_info = None
+                        if info and info.dependencies:
+                                try:
+                                        temp_info = info.dependencies[:]
+                                        dep_info = self.api_o.info(temp_info,
+                                            False,
+                                            frozenset([api.PackageInfo.STATE,
+                                            api.PackageInfo.IDENTITY]))
+                                except (api_errors.TransportError):
+                                        pass
                         gobject.idle_add(self.__update_package_info, pkg,
-                            local_info, remote_info, info_id)
+                            local_info, remote_info, dep_info, info_id)
                 self.api_o.log_operation_end()
                 return
 

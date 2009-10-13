@@ -279,16 +279,19 @@ def __add_line_to_generalinfo(text_buffer, index, label, text,
         if icon == None:
                 text_buffer.insert(end_itr, "\t%s\n" % text)
         else:
-                width = icon.get_width()
-                height = icon.get_height()
-                resized_icon = icon.scale_simple(
-                    (font_size * width) / height,
-                    font_size,
-                    gtk.gdk.INTERP_BILINEAR)
+                resized_icon = resize_icon(icon, font_size)
                 text_buffer.insert(end_itr, "\t ")
                 text_buffer.get_end_iter()
                 text_buffer.insert_pixbuf(end_itr, resized_icon)
                 text_buffer.insert(end_itr, " %s\n" % text)
+
+def resize_icon(icon, font_size):
+        width = icon.get_width()
+        height = icon.get_height()
+        return icon.scale_simple(
+            (font_size * width) / height,
+            font_size,
+            gtk.gdk.INTERP_BILINEAR)
 
 def get_pkg_info(api_o, pkg_stem, local):
         info = None
