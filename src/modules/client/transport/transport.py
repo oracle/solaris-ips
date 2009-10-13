@@ -30,6 +30,7 @@ import httplib
 import statvfs
 import errno
 import zlib
+import threading
 
 import pkg.fmri
 
@@ -63,6 +64,7 @@ class Transport(object):
                 self.__cadir = None
                 self.__portal_test_executed = False
                 self.__repo_cache = None
+                self.__lock = threading.Lock()
                 self.stats = tstats.RepoChooser()
 
         def __setup(self):
@@ -94,6 +96,18 @@ class Transport(object):
                 that contains the search results.  Callers need to catch
                 transport exceptions that this object may generate."""
 
+                self.__lock.acquire()
+                try:
+                       fobj = self._do_search(pub, data)
+                finally:
+                        self.__lock.release()
+
+                return fobj
+
+        def _do_search(self, pub, data):
+                """Implementation of do_search, which is wrapper for this
+                method."""
+
                 failures = tx.TransportFailures()
                 fobj = None
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
@@ -104,7 +118,7 @@ class Transport(object):
 
                 # If captive portal test hasn't been executed, run it
                 # prior to this operation.
-                self.captive_portal_test()
+                self._captive_portal_test()
 
                 for d in self.__gen_origins(pub, retry_count):
 
@@ -157,6 +171,18 @@ class Transport(object):
                 ts is defined, request only changes newer than timestamp
                 ts."""
 
+                self.__lock.acquire()
+                try:
+                        resp = self._get_catalog(pub, ts)
+                finally:
+                        self.__lock.release()
+
+                return resp
+
+        def _get_catalog(self, pub, ts=None):
+                """Get catalog.  This is the implementation of get_catalog,
+                a wrapper for this function."""
+
                 failures = tx.TransportFailures()
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 header = self.__build_header(uuid=self.__get_uuid(pub))
@@ -164,7 +190,7 @@ class Transport(object):
 
                 # If captive portal test hasn't been executed, run it
                 # prior to this operation.
-                self.captive_portal_test()
+                self._captive_portal_test()
 
                 for d in self.__gen_origins(pub, retry_count):
 
@@ -216,6 +242,17 @@ class Transport(object):
                 of having the transport manage it, the caller must catch
                 TransportError and perform any retry logic that is desired.
                 """
+                self.__lock.acquire()
+                try:
+                        resp = self._get_datastream(fmri, fhash)
+                finally:
+                        self.__lock.release()
+
+                return resp
+
+        def _get_datastream(self, fmri, fhash):
+                """This is the implementation for get_datastream, which
+                is a wrapper around this function."""
 
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 failures = tx.TransportFailures()
@@ -241,6 +278,16 @@ class Transport(object):
                 return the manifest's content.  The FMRI is given
                 as fmri.  An optional intent string may be supplied
                 as intent."""
+
+                self.__lock.acquire()
+                try:
+                        self._touch_manifest(fmri, intent)
+                finally:
+                        self.__lock.release()
+
+        def _touch_manifest(self, fmri, intent=None):
+                """Implementation of touch_manifest, which is a wrapper
+                around this function."""
 
                 failures = tx.TransportFailures()
                 pub_prefix = fmri.get_publisher()
@@ -271,6 +318,18 @@ class Transport(object):
                 """Given a fmri, and optional excludes, return a manifest
                 object."""
 
+                self.__lock.acquire()
+                try:
+                        m = self._get_manifest(fmri, excludes, intent)
+                finally:
+                        self.__lock.release()
+
+                return m
+
+        def _get_manifest(self, fmri, excludes=misc.EmptyI, intent=None):
+                """This is the implementation of get_manifest.  The
+                get_manifest function wraps this."""
+
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 failures = tx.TransportFailures()
                 pub_prefix = fmri.get_publisher()
@@ -282,7 +341,7 @@ class Transport(object):
 
                 # If captive portal test hasn't been executed, run it
                 # prior to this operation.
-                self.captive_portal_test()
+                self._captive_portal_test()
 
                 for d in self.__gen_origins(pub, retry_count):
 
@@ -364,6 +423,17 @@ class Transport(object):
                 A mfile object contains information about the multiple-file
                 request that will be performed."""
 
+                self.__lock.acquire()
+                try:
+                        self._get_files_impl(mfile)
+                finally:
+                        self.__lock.release()
+
+        def _get_files_impl(self, mfile):
+                """The implementation of _get_files.  The _get_files function
+                wraps this, in order to simplify lock release after
+                exceptions."""
+
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 failures = []
                 filelist = mfile.keys()
@@ -378,7 +448,7 @@ class Transport(object):
 
                 # If captive portal test hasn't been executed, run it
                 # prior to this operation.
-                self.captive_portal_test()
+                self._captive_portal_test()
 
                 # Check if the download_dir exists.  If it doesn't create
                 # the directories.
@@ -475,6 +545,17 @@ class Transport(object):
                 """Query the publisher's origin servers for versions
                 information.  Return a dictionary of "name":"versions" """
 
+                self.__lock.acquire()
+                try:
+                        v = self._get_versions(pub)
+                finally:
+                        self.__lock.release()
+
+                return v
+
+        def _get_versions(self, pub):
+                """Implementation of get_versions"""
+
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 failures = tx.TransportFailures()
                 verlines = None
@@ -482,7 +563,7 @@ class Transport(object):
 
                 # If captive portal test hasn't been executed, run it
                 # prior to this operation.
-                self.captive_portal_test()
+                self._captive_portal_test()
 
                 for d in self.__gen_origins(pub, retry_count):
 
@@ -549,8 +630,19 @@ class Transport(object):
                 """Test that the publisher supplied in pub actually
                 points to a valid packaging server."""
 
+                self.__lock.acquire()
                 try:
-                        vd = self.get_versions(pub)
+                        val = self._valid_publisher_test(pub)
+                finally:
+                        self.__lock.release()
+
+                return val
+
+        def _valid_publisher_test(self, pub):
+                """Implementation of valid_publisher_test."""
+
+                try:
+                        vd = self._get_versions(pub)
                 except tx.TransportException, e:
                         # Failure when contacting server.  Report
                         # this as an error.
@@ -570,6 +662,15 @@ class Transport(object):
                 to see a special web page, usually for authentication
                 purposes.  (http://en.wikipedia.org/wiki/Captive_portal)."""
 
+                self.__lock.acquire()
+                try:
+                        self._captive_portal_test()
+                finally:
+                        self.__lock.release()
+
+        def _captive_portal_test(self):
+                """Implementation of captive_portal_test."""
+
                 if self.__portal_test_executed:
                         return
 
@@ -578,7 +679,7 @@ class Transport(object):
 
                 for pub in self.__img.gen_publishers():
                         try:
-                                vd = self.get_versions(pub)
+                                vd = self._get_versions(pub)
                         except tx.TransportException:
                                 # Encountered a transport error while
                                 # trying to contact this publisher.
