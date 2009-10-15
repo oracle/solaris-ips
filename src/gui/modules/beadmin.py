@@ -493,7 +493,7 @@ class Beadmin:
                 if error_code != None and error_code == 0:
                         be_list_loop = be_list[1]
                 elif error_code != None and error_code != 0:
-                        msg = _("The <b>libbe</b> library couldn't  "
+                        msg = _("The <b>libbe</b> library couldn't "
                             "prepare list of Boot Environments."
                             "\nAll functions for managing Boot Environments are disabled")
                         self.__error_occurred(msg, False)

@@ -667,7 +667,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                     "Please let the developers know about this problem by\n"
                     "filing a bug together with the error details listed below at:\n"
                     ) % self.current_stage_name
-                msg_2 = _("http://defect.opensolaris.org\n\n")
+                msg_2 = "http://defect.opensolaris.org\n\n"
                 self.update_details_text(_("\nError:\n"), "bold")
                 self.update_details_text("%s" % msg_1, "level1")
                 self.update_details_text("%s" % msg_2, "bold", "level2")

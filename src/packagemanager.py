@@ -599,7 +599,7 @@ class PackageManager:
                             dic_api_search_error)
                 except AttributeError, error:
                         print _(
-                            "GUI will not respond to any event! %s."
+                            "GUI will not respond to any event! %s. "
                             "Check declare_signals()") \
                             % error
 
@@ -828,8 +828,8 @@ class PackageManager:
                     "<html><head></head><body><H2>Welcome to"
                     "PackageManager!</H2><br>"
                     "<font color='#0000FF'>Warning: Unable to "
-                    "load Start Page:<br>%s</font></body></html>"
-                    % (start_page_url)))
+                    "load Start Page:<br>%s</font></body></html>")
+                    % (start_page_url))
                 self.document.close_stream()
 
         def __process_api_search_error(self, error):
@@ -918,7 +918,7 @@ class PackageManager:
                 pass
 
         def __load_uri(self, document, link):
-                self.__update_statusbar_message(_("Loading... " + link))
+                self.__update_statusbar_message(_("Loading... %s") % link)
                 try:
                         f = self.__open_url(link)
                 except  (IOError, OSError), err:
@@ -951,8 +951,8 @@ class PackageManager:
                     <IMG SRC = 'startpage_star.png' \
                     style='border-style: none'></a> <br><br>\
                     <h2><font color='#0000FF'>Warning: Unable to \
-                    load URL</font></h2><br>%s</body></html>"
-                    % (PM_ACTION, START_PAGE_HOME, link)))
+                    load URL</font></h2><br>%s</body></html>")
+                    % (PM_ACTION, START_PAGE_HOME, link))
                 self.document.close_stream()
 
         def __get_publisher_combobox_index(self, pub_name):
@@ -4554,8 +4554,8 @@ class PackageManager:
                 succeeded = cre.succeeded
                 ermsg = _("Network problem.\n\n")
                 ermsg += _("Details:\n")
-                ermsg += "%s/%s" % (succeeded, total)
-                ermsg += _(" catalogs successfully updated:\n")
+                ermsg += _("%s/%s catalogs successfully updated:\n") % (
+                    succeeded, total)
                 for pub, err in cre.failed:
                         ermsg += "%s: %s\n" % (pub["origin"], str(err))
                 gobject.idle_add(self.error_occurred, ermsg,
