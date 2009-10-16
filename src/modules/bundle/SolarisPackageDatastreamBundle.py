@@ -83,7 +83,9 @@ class SolarisPackageDatastreamBundle(object):
                    package map.
                 """
                 for p in self.pkg.datastream:
-                        yield self.action(self.pkgmap, p, p.name)
+                        act = self.action(self.pkgmap, p, p.name)
+                        if act:
+                                yield act
 
                 # for some reason, some packages may have directories specified
                 # in the pkgmap that don't exist in the archive.  They need to
@@ -99,8 +101,10 @@ class SolarisPackageDatastreamBundle(object):
                                 dir = "reloc/"
                         if p.type == "d" and \
                             dir + p.pathname not in self.pkg.datastream:
-                                yield self.action(self.pkgmap, None,
+                                act = self.action(self.pkgmap, None,
                                     dir + p.pathname)
+                                if act:
+                                        yield act
                         if p.type in "ls":
                                 yield self.action(self.pkgmap, None,
                                     dir + p.pathname)
@@ -111,6 +115,13 @@ class SolarisPackageDatastreamBundle(object):
                 except KeyError:
                         # XXX Return an unknown instead of a missing, for now.
                         return unknown.UnknownAction(path=path)
+
+                # If any one of the mode, owner, or group is "?", then we're
+                # clearly not capable of delivering the object correctly, so
+                # ignore it.
+                if mapline.type in "fevdx" and (mapline.mode == "?" or
+                    mapline.owner == "?" or mapline.group == "?"):
+                        return None
 
                 if mapline.type in "fev":
                         return file.FileAction(ci.extractfile(),

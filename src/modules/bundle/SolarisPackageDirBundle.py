@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -51,7 +51,9 @@ class SolarisPackageDirBundle(object):
 
                 if not self.data:
                         for p in self.pkg.manifest:
-                                yield self.action(p, None)
+                                act = self.action(p, None)
+                                if act:
+                                        yield act
                         return
 
                 def j(path):
@@ -69,8 +71,10 @@ class SolarisPackageDirBundle(object):
                         
                         for ci in cf:
                                 faspac_contents.add(j(ci.name))
-                                yield self.action(pkgmap[j(ci.name)],
+                                act = self.action(pkgmap[j(ci.name)],
                                     ci.extractfile())
+                                if act:
+                                        yield act
 
                 # Remove BASEDIR from the path.  The extra work is because if
                 # BASEDIR is not empty (non-"/"), then we probably need to strip
@@ -97,8 +101,10 @@ class SolarisPackageDirBundle(object):
 
                         # These are the only valid file types in SysV packages
                         if p.type in "fevbcdxpls":
-                                yield self.action(p, os.path.join(self.filename,
+                                act = self.action(p, os.path.join(self.filename,
                                     "reloc", r(p.pathname, p.type)))
+                                if act:
+                                        yield act
 			elif p.type == "i":
 				yield self.action(p, os.path.join(self.filename,
 				    "install", r(p.pathname, p.type)))
@@ -110,6 +116,14 @@ class SolarisPackageDirBundle(object):
                             "preserve": "true",
                             "svmpreserve": "true"
                         }
+
+                # If any one of the mode, owner, or group is "?", then we're
+                # clearly not capable of delivering the object correctly, so
+                # ignore it.
+                if mapline.type in "fevdx" and (mapline.mode == "?" or
+                    mapline.owner == "?" or mapline.group == "?"):
+                        return None
+
                 if mapline.type in "f":
                         a = file.FileAction(data, mode=mapline.mode,
                             owner=mapline.owner, group=mapline.group,

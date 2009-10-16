@@ -34,6 +34,8 @@ empty."""
 
 import os
 import errno
+import time
+
 from stat import *
 import generic
 
@@ -64,22 +66,29 @@ class LegacyAction(generic.Action):
                 if not os.path.isfile(pkginfo):
                         legacy_info = pkgplan.get_legacy_info()
                         svr4attrs = {
-                            "pkg": self.attrs["pkg"],
-                            "name": legacy_info["description"],
                             "arch": pkgplan.image.get_arch(),
-                            "version": legacy_info["version"],
+                            "basedir": "/",
                             "category": "system",
-                            "vendor": None, 
-                            "desc": None, 
-                            "hotline": None
-                            }
+                            "desc": None,
+                            "hotline": None,
+                            "name": legacy_info["description"],
+                            "pkg": self.attrs["pkg"],
+                            "pkginst": self.attrs["pkg"],
+                            "pstamp": None,
+                            "sunw_prodvers": None,
+                            "vendor": None,
+                            "version": legacy_info["version"],
+                        }
 
-                        attrs = (
+                        attrs = [
                             (a.upper(), b)
                             for a in svr4attrs
                             for b in ( self.attrs.get(a, svr4attrs[a]), )
                             if b
-                            )
+                        ]
+                        # Always overwrite installation timestamp
+                        attrs.append(("INSTDATE",
+                            time.strftime("%b %d %Y %H:%M")))
 
                         pfile = file(pkginfo, "w")
                         for k, v in attrs:
