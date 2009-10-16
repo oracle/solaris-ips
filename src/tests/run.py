@@ -70,9 +70,11 @@ ostype = os.name
 if ostype == '':
         ostype = 'unknown'
 
-def find_tests(testdir, testpat):
+def find_tests(testdir, testpat, startatpat=False):
         # Test pattern to match against
         pat = re.compile("%s" % testpat, re.IGNORECASE)
+        startatpat = re.compile("%s" % startattest, re.IGNORECASE)
+        seen = False
 
         def _istest(obj):
                 if (isinstance(obj, type) and 
@@ -122,6 +124,10 @@ def find_tests(testdir, testpat):
                                     filename, cname, attrname)
                                 # Remove this function from our class obj if
                                 # it doesn't match the test pattern
+                                if re.search(startatpat, full):
+                                        seen = True
+                                if not seen:
+                                        delattr(classobj, attrname)
                                 if not re.search(pat, full):
                                         delattr(classobj, attrname)
                         testclasses.append(classobj)
@@ -133,21 +139,25 @@ def find_tests(testdir, testpat):
         return suite
 
 def usage():
-        print >> sys.stderr, "Usage: %s [-ghptv] [-b filename] [-o regexp]" % \
-            sys.argv[0]
+        print >> sys.stderr, "Usage: %s [-ghptv] [-b filename] [-o regexp]" \
+                % sys.argv[0]
+        print >> sys.stderr, "       %s [-hptvx] [-b filename] [-s regexp] "\
+                "[-o regexp]" % sys.argv[0]
         print >> sys.stderr, "   -g             Generate result baseline"
         print >> sys.stderr, "   -h             This help message"
         print >> sys.stderr, "   -p             Parseable output format"
         print >> sys.stderr, "   -t             Generate timing info file"
         print >> sys.stderr, "   -v             Verbose output"
+        print >> sys.stderr, "   -x             Stop after the first failure"
         print >> sys.stderr, "   -b <filename>  Baseline filename"
         print >> sys.stderr, "   -o <regexp>    Run only tests that match regexp"
+        print >> sys.stderr, "   -s <regexp>    Run tests starting at regexp"
         print >> sys.stderr, ""
         sys.exit(1)
 
 if __name__ == "__main__":
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "ghptvb:o:",
+                opts, pargs = getopt.getopt(sys.argv[1:], "ghptvxb:os:",
                     ["generate-baseline", "parseable", "timing", "verbose",
                     "baseline-file", "only"])
         except getopt.GetoptError, e:
@@ -158,6 +168,8 @@ if __name__ == "__main__":
         generate = False
         onlyval = ""
         output = pkg5unittest.OUTPUT_DOTS
+        bailonfail = False
+        startattest = ""
         timing_file = False
         for opt, arg in opts:
                 if opt == "-v":
@@ -170,10 +182,16 @@ if __name__ == "__main__":
                         bfile = arg
                 if opt == "-o":
                         onlyval = arg
+                if opt == "-x":
+                        bailonfail = True
                 if opt == "-t":
                         timing_file = True
+                if opt == "-s":
+                        startattest = arg
                 if opt == "-h":
 			usage()
+        if (bailonfail or startattest) and generate:
+                usage()
 
         import pkg.portable
 
@@ -190,9 +208,9 @@ if __name__ == "__main__":
                             ppriv, "-s", "A-sys_linkdir", str(os.getpid())
                         ])
 
-        api_suite = find_tests("api", onlyval)
-        cli_suite = find_tests("cli", onlyval)
-        gui_suite = find_tests("gui", onlyval)
+        api_suite = find_tests("api", onlyval, startattest)
+        cli_suite = find_tests("cli", onlyval, startattest)
+        gui_suite = find_tests("gui", onlyval, startattest)
 
         suites = []
         suites.append(api_suite)
@@ -222,10 +240,15 @@ if __name__ == "__main__":
         
         # Run the python test suites
         runner = pkg5unittest.Pkg5TestRunner(baseline, output=output,
-            timing_file=timing_file)
+            timing_file=timing_file, bailonfail=bailonfail)
         exitval = 0
         for x in suites:
-                res = runner.run(x)
+                try:
+                    res = runner.run(x)
+                except pkg5unittest.Pkg5TestCase.failureException, e:
+                    exitval = 1
+                    print >> sys.stderr, e
+                    break
                 if res.failures:
                         exitval = 1
 

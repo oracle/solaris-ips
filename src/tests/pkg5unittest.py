@@ -109,12 +109,13 @@ class Pkg5TestCase(unittest.TestCase):
 class _Pkg5TestResult(unittest._TextTestResult):
         baseline = None
         machsep = "|"
-        def __init__(self, stream, output, baseline):
+        def __init__(self, stream, output, baseline, bailonfail=False):
                 unittest.TestResult.__init__(self)
                 self.stream = stream
                 self.output = output
                 self.baseline = baseline
                 self.success = []
+                self.bailonfail = bailonfail
 
         def addSuccess(self, test):
                 unittest.TestResult.addSuccess(self, test)
@@ -163,6 +164,12 @@ class _Pkg5TestResult(unittest._TextTestResult):
                                 self.stream.write('f')
                         else:
                                 self.stream.write('F')
+                if self.bailonfail:
+                    tdf = test.getTeardownFunc()[1]
+                    tdf()
+                    if test.persistent_depot:
+                        test.dc.kill()
+                    raise
 
         def getDescription(self, test):
                 return str(test)
@@ -199,7 +206,7 @@ class Pkg5TestRunner(unittest.TextTestRunner):
         sep2 = '-' * 70
 
         def __init__(self, baseline, stream=sys.stderr, output=OUTPUT_DOTS,
-            timing_file=None):
+            timing_file=None, bailonfail=False):
                 """Set up the runner, creating a baseline object that has
                 a name of 'suite'_baseline.pkl, where suite is 'cli', 'api',
                 etc."""
@@ -208,9 +215,11 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                 self.baseline = baseline
                 self.output = output
                 self.timing_file = timing_file
+                self.bailonfail = bailonfail
 
         def _makeResult(self):
-                return _Pkg5TestResult(self.stream, self.output, self.baseline)
+                return _Pkg5TestResult(self.stream, self.output, self.baseline,
+                    bailonfail=self.bailonfail)
 
         def run(self, test):
                 "Run the given test case or test suite."
