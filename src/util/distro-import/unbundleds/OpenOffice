@@ -63,7 +63,7 @@ depend openoffice
 end package
 
 package openoffice-de
-classification "Desktop (GNOME)/Localizations"
+classification "Applications/Office"
 summary "German localization of OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-de
@@ -81,7 +81,7 @@ depend openoffice
 end package
 
 package openoffice-es
-classification "Desktop (GNOME)/Localizations"
+classification "Applications/Office"
 summary "Spanish localization for OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-es
@@ -99,7 +99,7 @@ depend openoffice
 end package
 
 package openoffice-fr
-classification "Desktop (GNOME)/Localizations"
+classification "Applications/Office"
 summary "French localization for OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-fr
@@ -117,7 +117,7 @@ depend openoffice
 end package
 
 package openoffice-hu
-classification "Desktop (GNOME)/Localizations"
+classification "Applications/Office"
 summary "Hungarian localization for OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-hu
@@ -135,7 +135,7 @@ depend openoffice
 end package
 
 package openoffice-it
-classification "Desktop (GNOME)/Localizations"
+classification "Applications/Office"
 summary "Italian localization for OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-it
@@ -153,7 +153,7 @@ depend openoffice
 end package
 
 package openoffice-ja
-classification "Desktop (GNOME)/Localizations"
+classification "Applications/Office"
 summary "Japanese localization for OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-ja
@@ -171,7 +171,7 @@ depend openoffice
 end package
 
 package openoffice-ko
-classification "Desktop (GNOME)/Localizations"
+classification "Applications/Office"
 summary "Korean localization for OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-ko
@@ -189,7 +189,7 @@ depend openoffice
 end package
 
 package openoffice-nl
-classification "Desktop (GNOME)/Localizations"
+classification "Applications/Office"
 summary "Dutch localization for OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-nl
@@ -207,7 +207,7 @@ depend openoffice
 end package
 
 package openoffice-pl
-classification "Desktop (GNOME)/Localizations"
+classification "Applications/Office"
 summary "Polish localization for OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-pl
@@ -225,7 +225,7 @@ depend openoffice
 end package
 
 package openoffice-pt
-classification "Desktop (GNOME)/Localizations"
+classification "Applications/Office"
 summary "Portuguese localization for OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-pt
@@ -243,7 +243,7 @@ depend openoffice
 end package
 
 package openoffice-pt-BR
-classification "Desktop (GNOME)/Localizations"
+classification "Applications/Office"
 summary "Portuguese Brazilian localization for OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-pt-BR
@@ -261,7 +261,7 @@ depend openoffice
 end package
 
 package openoffice-ru
-classification "Desktop (GNOME)/Localizations"
+classification "Applications/Office"
 summary "Russian localization for OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-ru
@@ -279,7 +279,7 @@ depend openoffice
 end package
 
 package openoffice-sv
-classification "Desktop (GNOME)/Localizations"
+classification "Applications/Office"
 summary "Swedish localization for OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-sv
@@ -297,7 +297,7 @@ depend openoffice
 end package
 
 package openoffice-zh-CN
-classification "Desktop (GNOME)/Localizations"
+classification "Applications/Office"
 summary "Simplified Chinese localization for OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-zh-CN
@@ -315,7 +315,7 @@ depend openoffice
 end package
 
 package openoffice-zh-TW
-classification "Desktop (GNOME)/Localizations"
+classification "Applications/Office"
 summary "Traditional Chinese localization for OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-zh-TW
