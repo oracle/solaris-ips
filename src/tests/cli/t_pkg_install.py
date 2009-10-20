@@ -52,6 +52,7 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
             open foo@1.1,5.11-0
             add dir mode=0755 owner=root group=bin path=/lib
             add file /tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1 timestamp="20080731T024051Z"
+            add signature pkg.sig_bit1=sig_bit_val1 pkg.sig_bit2=sig_bit_val2
             close """
         foo11_timestamp = 1217472051
 

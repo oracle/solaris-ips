@@ -45,6 +45,8 @@ f none usr/lib/python2.4/vendor-packages/pkg/actions/license.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/actions/license.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/actions/link.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/actions/link.pyc 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/actions/signature.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/actions/signature.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/actions/unknown.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/actions/unknown.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/actions/user.py 444 root bin

@@ -65,6 +65,7 @@ class TestApiSearchBasics(testutils.SingleDepotTestCase):
             add set name=com.sun.service.info_url value=http://service.opensolaris.com/xml/pkg/SUNWcsu@0.5.11,5.11-1:20080514I120000Z
             add set description='FOOO bAr O OO OOO'
             add set name='weirdness' value='] [ * ?'
+            add signature pkg.sig_bit1=sig_bit_val1 pkg.sig_bit2=sig_bit_val2
             close """
 
         example_pkg11 = """

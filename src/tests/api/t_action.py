@@ -81,6 +81,8 @@ Incorrect attribute list.
                 action.fromstr("file 12345 name=foo  value=\"bar\" path=/tmp/foo")
                 action.fromstr("file 12345 name=\"foo\"  value=bar path=/tmp/foo")
 
+                action.fromstr("signature 12345 name=foo  value=bar")
+
                 # Single quoted value
                 a = action.fromstr("file 12345 name='foo' value=bar path=/tmp/foo")
                 self.assertAttributes(a, ["name", "value", "path"])
@@ -180,6 +182,8 @@ Incorrect attribute list.
                 str(action.fromstr("file 12345 name=foo\tvalue=bar path=/tmp/foo"))
 
                 str(action.fromstr("driver alias=pci1234,56 alias=pci4567,89 class=scsi name=lsimega"))
+
+                str(action.fromstr("signature foo=v bar=y"))
 
                 a = 'set name=foo value=""'
                 self.assertEqual(str(action.fromstr(a)), a)

@@ -86,7 +86,8 @@ class Action(object):
                         "link",
                         "driver",
                         "unknown",
-                        "legacy"
+                        "legacy",
+                        "signature"
                         ]
                 self.orderdict.update(dict((
                     (pkg.actions.types[t], i) for i, t in enumerate(ol)

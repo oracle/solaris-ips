@@ -210,7 +210,6 @@ if __name__ == "__main__":
 
         api_suite = find_tests("api", onlyval, startattest)
         cli_suite = find_tests("cli", onlyval, startattest)
-        gui_suite = find_tests("gui", onlyval, startattest)
 
         suites = []
         suites.append(api_suite)
@@ -221,6 +220,7 @@ if __name__ == "__main__":
                 elif not gui.testutils.check_if_a11y_enabled():
                         print "Accessibility not enabled, GUI tests disabled."
                 else:
+                        gui_suite = find_tests("gui", onlyval, startattest)
                         suites.append(gui_suite)
 
         # Initialize the baseline results and load them
