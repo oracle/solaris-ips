@@ -4060,6 +4060,9 @@ Specify the location of these files.</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="enable_search">False</property>
+                                <accessibility>
+                                  <atkproperty name="AtkObject::accessible-name">Publishers</atkproperty>
+                                </accessibility>
                               </widget>
                             </child>
                           </widget>
@@ -4580,6 +4583,9 @@ Specify the location of these files.</property>
                       <widget class="GtkTreeView" id="modify_pub_repos_treeview">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
+                        <accessibility>
+                          <atkproperty name="AtkObject::accessible-name">Repositories</atkproperty>
+                        </accessibility>
                       </widget>
                     </child>
                   </widget>
