@@ -157,7 +157,7 @@ def usage():
 
 if __name__ == "__main__":
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "ghptvxb:os:",
+                opts, pargs = getopt.getopt(sys.argv[1:], "ghptvxb:o:s:",
                     ["generate-baseline", "parseable", "timing", "verbose",
                     "baseline-file", "only"])
         except getopt.GetoptError, e:
