@@ -50,7 +50,6 @@ SHOW_STARTPAGE_PREFERENCES = "/apps/packagemanager/preferences/show_startpage"
 SAVE_STATE_PREFERENCES = "/apps/packagemanager/preferences/save_state"
 LASTSOURCE_PREFERENCES = "/apps/packagemanager/preferences/lastsource"
 API_SEARCH_ERROR_PREFERENCES = "/apps/packagemanager/preferences/api_search_error"
-CATEGORIES_STATUS_COLUMN_INDEX = 0   # Index of Status Column in Categories TreeView
 STATUS_COLUMN_INDEX = 2   # Index of Status Column in Application TreeView
 SEARCH_TXT_GREY_STYLE = "#757575" #Close to DimGrey
 SEARCH_TXT_BLACK_STYLE = "#000000"
@@ -277,7 +276,8 @@ class PackageManager:
                 self.lang = None
                 self.lang_root = None
                 self.visible_status_id = 0
-                self.categories_status_id = 0
+                self.same_publisher_on_setup = False
+                self.force_reload_packages = True
                 self.icon_theme = gtk.icon_theme_get_default()
                 icon_location = os.path.join(self.application_dir, ICON_LOCATION)
                 self.icon_theme.append_search_path(icon_location)
@@ -1562,8 +1562,10 @@ class PackageManager:
                 return column
 
         def __disconnect_models(self):
-                self.w_application_treeview.set_model(None)
-                self.w_categories_treeview.set_model(None)
+                if self.w_application_treeview:
+                        self.w_application_treeview.set_model(None)
+                if self.w_categories_treeview:
+                        self.w_categories_treeview.set_model(None)
 
         def __disconnect_repository_model(self):
                 self.w_repository_combobox.set_model(None)
@@ -1874,8 +1876,10 @@ class PackageManager:
                 self.is_all_publishers = False
                 self.w_infosearch_frame.hide()
                 self.set_busy_cursor()
-                self.w_repository_combobox.set_active(
-                    self.saved_repository_combobox_active)
+                if (self.w_repository_combobox.get_active() != 
+                    self.saved_repository_combobox_active):
+                        self.w_repository_combobox.set_active(
+                            self.saved_repository_combobox_active)
                 self.set_section = self.saved_section_active
                 # Reset MARK_COLUMN        
                 for pkg in self.saved_application_list:
@@ -1888,7 +1892,10 @@ class PackageManager:
                         if pkgs != None:
                                 if stem in pkgs:
                                         marked = True
-                        pkg[enumerations.MARK_COLUMN] = marked
+                        # When switching after Manage Repository dialog
+                        # this assignment can cause bogus refilter
+                        if pkg[enumerations.MARK_COLUMN] != marked:
+                                pkg[enumerations.MARK_COLUMN] = marked
                 if self.saved_category_list == self.category_list:
                         self.__init_tree_views(self.saved_application_list,
                             None, None,
@@ -2250,6 +2257,9 @@ class PackageManager:
 
         def __on_clear_search(self, widget, icon_pos=0, event=None):
                 self.w_searchentry.set_text("")
+                self.__clear_search_results()
+
+        def __clear_search_results(self):
                 # Only clear out search results
                 if self.in_search_mode or self.is_all_publishers:
                         self.__clear_before_search()
@@ -2764,6 +2774,12 @@ class PackageManager:
 
         def __on_repositorycombobox_changed(self, widget):
                 '''On repository combobox changed'''
+                if self.same_publisher_on_setup:
+                        if self.is_all_publishers:
+                                self.__clear_search_results()
+                        self.same_publisher_on_setup = False
+                        self.unset_busy_cursor()
+                        return
                 selected_publisher = self.__get_selected_publisher()
                 index =  self.w_repository_combobox.get_active()
                 if self.is_all_publishers:
@@ -2804,6 +2820,7 @@ class PackageManager:
                 self.set_show_filter = self.initial_show_filter
                 self.set_section = self.initial_section
                 self.__set_searchentry_to_prompt()
+                self.__disconnect_models()
                 Thread(target = self.__setup_publisher, args = [pub]).start()
                 self.__set_main_view_package_list()
 
@@ -3013,10 +3030,15 @@ class PackageManager:
                     main_window = self.w_main_window)
 
         def __on_reload(self, widget):
+                self.force_reload_packages = True
+                self.__do_reload(widget)
+
+        def __do_reload(self, widget):
                 self.w_repository_combobox.grab_focus()
                 if self.description_thread_running:
                         self.cancelled = True
-                if self.in_search_mode or self.is_all_publishers:
+                if self.force_reload_packages and (self.in_search_mode 
+                    or self.is_all_publishers):
                         self.__unset_search(False)
                 self.__set_empty_details_panel()
                 self.in_setup = True
@@ -3026,7 +3048,6 @@ class PackageManager:
                 self.set_busy_cursor()
                 status_str = _("Refreshing package catalog information")
                 self.__update_statusbar_message(status_str)
-                self.__disconnect_models()
                 self.in_reload = True
                 Thread(target = self.__catalog_refresh).start()
 
@@ -3034,7 +3055,6 @@ class PackageManager:
                 if not self.exiting:
                         gobject.idle_add(self.process_package_list_start,
                             self.image_directory)
-
 
         def __main_application_quit(self, be_name = None):
                 '''quits the main gtk loop'''
@@ -3113,8 +3133,19 @@ class PackageManager:
                                         return True
                 return False
 
-        def __setup_repositories_combobox(self, api_o, repositories_list):
+        def __setup_repositories_combobox(self, api_o):
+                previous_publisher = None
+                previous_saved_name = None
+                if not self.first_run and not self.force_reload_packages:
+                        previous_publisher = self.__get_selected_publisher()
+                        if self.saved_repository_combobox_active != -1:
+                                itr = self.repositories_list.iter_nth_child(None,
+                                    self.saved_repository_combobox_active)
+                                previous_saved_name = \
+                                   self.repositories_list.get_value(itr, 
+                                   enumerations.REPOSITORY_NAME)
                 self.__disconnect_repository_model()
+                self.repositories_list = self.__get_new_repositories_liststore()
                 default_pub = api_o.get_preferred_publisher().prefix
                 if self.default_publisher != default_pub:
                         self.__clear_pkg_selections()
@@ -3131,17 +3162,17 @@ class PackageManager:
                         prefix = pub.prefix
                         if cmp(prefix, self.default_publisher) == 0:
                                 active = i
-                        repositories_list.append([i, prefix, ])
+                        self.repositories_list.append([i, prefix, ])
                         enabled_repos.append(prefix)
                         i = i + 1
                 self.repo_combobox_all_pubs_index = i
-                repositories_list.append([self.repo_combobox_all_pubs_index, 
+                self.repositories_list.append([self.repo_combobox_all_pubs_index, 
                     self.publisher_options[PUBLISHER_ALL], ])
                 i = i + 1
-                repositories_list.append([-1, "", ])
+                self.repositories_list.append([-1, "", ])
                 i = i + 1
                 self.repo_combobox_add_index = i
-                repositories_list.append([-1,
+                self.repositories_list.append([-1,
                     self.publisher_options[PUBLISHER_ADD], ])
                 pkgs_to_remove = []
                 for repo_name in selected_repos:
@@ -3151,19 +3182,42 @@ class PackageManager:
                                         pkgs_to_remove.append(pkg_stem)
                 for pkg_stem in pkgs_to_remove:
                         self.__remove_pkg_stem_from_list(pkg_stem)
-                self.w_repository_combobox.set_model(repositories_list)
+                self.w_repository_combobox.set_model(self.repositories_list)
                 selected_id = -1
+                self.same_publisher_on_setup = False
                 if self.first_run:
                         if self.lastsource == ALL_PUBLISHERS:
                                 selected_id = self.repo_combobox_all_pubs_index 
                         else:
-                                for repo in repositories_list:
+                                for repo in self.repositories_list:
                                         if (repo[enumerations.REPOSITORY_NAME] == \
                                             self.lastsource and
                                             repo[enumerations.REPOSITORY_ID] != -1):
                                                 selected_id = \
                                                    repo[enumerations.REPOSITORY_ID]
                                                 break
+                else:
+                        for repo in self.repositories_list:
+                                if (repo[enumerations.REPOSITORY_NAME] ==
+                                    previous_publisher and
+                                    repo[enumerations.REPOSITORY_ID] != -1):
+                                        selected_id = \
+                                           repo[enumerations.REPOSITORY_ID]
+                                        if not self.force_reload_packages:
+                                                self.same_publisher_on_setup = True
+                                        break
+                        if self.saved_repository_combobox_active != -1:
+                                self.saved_repository_combobox_active = -1
+                                for repo in self.repositories_list:
+                                        if (repo[enumerations.REPOSITORY_NAME] ==
+                                            previous_saved_name):
+                                                self.saved_repository_combobox_active = \
+                                                   repo[enumerations.REPOSITORY_ID]
+                                                break
+                                # Previous publisher no longer enabled
+                                if self.saved_repository_combobox_active == -1:
+                                        selected_id = -1
+                                        self.same_publisher_on_setup = False
                 if selected_id != -1:
                         self.w_repository_combobox.set_active(selected_id)
                 elif self.default_publisher:
@@ -4305,7 +4359,8 @@ class PackageManager:
                     self.pr, self.w_main_window)
                 self.cache_o = self.__get_cache_obj(self.icon_theme, 
                     self.application_dir, self.api_o)
-                self.__on_reload(None)
+                self.force_reload_packages = False
+                self.__do_reload(None)
 
         def is_busy_cursor_set(self):
                 return self.gdk_window.is_visible()
@@ -4336,8 +4391,7 @@ class PackageManager:
                         self.__setup_search_completion()
                 if self.first_run:
                         self.__setup_filter_combobox()
-                self.repositories_list = self.__get_new_repositories_liststore()
-                self.__setup_repositories_combobox(self.api_o, self.repositories_list)
+                self.__setup_repositories_combobox(self.api_o)
 
         def __get_cache_obj(self, icon_theme, application_dir, api_o):
                 cache_o = cache.CacheListStores(icon_theme, application_dir,
