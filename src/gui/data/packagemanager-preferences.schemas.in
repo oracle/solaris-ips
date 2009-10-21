@@ -172,6 +172,20 @@
       </locale>
     </schema>
     <schema>
+      <key>/schemas/apps/packagemanager/preferences/start_insearch</key>
+      <applyto>/apps/packagemanager/preferences/start_insearch</applyto>
+      <owner>packagemanager</owner>
+      <type>bool</type>
+      <default>False</default>
+      <locale name="C">
+         <short>Start in serach mode</short>
+         <long>
+          A boolean which determines whether Package Manager should start
+          in search mode.
+         </long>
+      </locale>
+    </schema>
+    <schema>
       <key>/schemas/apps/packagemanager/preferences/lastsource</key>
       <applyto>/apps/packagemanager/preferences/lastsource</applyto>
       <owner>packagemanager</owner>
@@ -181,8 +195,7 @@
          <short>Last publisher used by package manager</short>
          <long>
           A string which stores the last publisher used by package
-          manager. "All Publishers" will be stored if restarting in search
-          mode.
+          manager.
          </long>
       </locale>
     </schema>

@@ -48,6 +48,7 @@ INITIAL_SHOW_FILTER_PREFERENCES = "/apps/packagemanager/preferences/initial_show
 INITIAL_SECTION_PREFERENCES = "/apps/packagemanager/preferences/initial_section"
 SHOW_STARTPAGE_PREFERENCES = "/apps/packagemanager/preferences/show_startpage"
 SAVE_STATE_PREFERENCES = "/apps/packagemanager/preferences/save_state"
+START_INSEARCH_PREFERENCES = "/apps/packagemanager/preferences/start_insearch"
 LASTSOURCE_PREFERENCES = "/apps/packagemanager/preferences/lastsource"
 API_SEARCH_ERROR_PREFERENCES = "/apps/packagemanager/preferences/api_search_error"
 STATUS_COLUMN_INDEX = 2   # Index of Status Column in Application TreeView
@@ -55,7 +56,6 @@ SEARCH_TXT_GREY_STYLE = "#757575" #Close to DimGrey
 SEARCH_TXT_BLACK_STYLE = "#000000"
 GDK_2BUTTON_PRESS = 5     # gtk.gdk._2BUTTON_PRESS causes pylint warning
 GDK_RIGHT_BUTTON = 3      # normally button 3 = right click
-ALL_PUBLISHERS = "All Publishers"
 
 PKG_CLIENT_NAME = "packagemanager"
 CHECK_FOR_UPDATES = "usr/lib/pm-checkforupdates"
@@ -179,6 +179,8 @@ class PackageManager:
                             self.client.get_bool(SHOW_STARTPAGE_PREFERENCES)
                         self.save_state = \
                             self.client.get_bool(SAVE_STATE_PREFERENCES)
+                        self.start_insearch = \
+                            self.client.get_bool(START_INSEARCH_PREFERENCES)
                         self.lastsource = \
                             self.client.get_string(LASTSOURCE_PREFERENCES)
                         self.gconf_not_show_repos = \
@@ -203,6 +205,7 @@ class PackageManager:
                         self.initial_section = 2
                         self.show_startpage = True
                         self.save_state = True
+                        self.start_insearch = False
                         self.lastsource = ""
                         self.gconf_not_show_repos = ""
                         self.initial_app_width = 800
@@ -787,7 +790,7 @@ class PackageManager:
                         self.w_main_view_notebook.set_current_page(
                                 NOTEBOOK_START_PAGE)
                 else:
-                        if self.lastsource == ALL_PUBLISHERS:
+                        if self.start_insearch:
                                 self.document.clear()
                         self.w_main_view_notebook.set_current_page(
                                 NOTEBOOK_PACKAGE_LIST_PAGE)
@@ -1729,10 +1732,11 @@ class PackageManager:
                 self.__set_searchentry_to_prompt()
                 
                 self.__save_setup_before_search()
-                setup = self.in_setup
+                first_run = self.first_run
                 self.__clear_before_search(False)
-                # Only show the Search all page if not showing the Start Page on startup
-                show_search_all_page = not setup or (setup and not self.show_startpage)
+                # Show the Search all page if not showing the Start Page on startup
+                show_search_all_page = not first_run or (first_run 
+                    and not self.show_startpage)
                 if show_search_all_page:
                         gobject.idle_add(self.__setup_search_all_page)
                 elif self.show_startpage:
@@ -3056,6 +3060,15 @@ class PackageManager:
                         gobject.idle_add(self.process_package_list_start,
                             self.image_directory)
 
+        def __get_publisher_name_from_index(self, index):
+                name = None
+                if index != -1:
+                        itr = self.repositories_list.iter_nth_child(None,
+                            index)
+                        name = self.repositories_list.get_value(itr,
+                            enumerations.REPOSITORY_NAME)
+                return name
+
         def __main_application_quit(self, be_name = None):
                 '''quits the main gtk loop'''
                 self.cancelled = True
@@ -3068,20 +3081,25 @@ class PackageManager:
 
                 self.w_main_window.hide()
                 pub = ""
+                start_insearch = False
                 width = height = hpos = vpos = -1
                 if self.save_state:
                         if self.is_all_publishers:
-                                pub = ALL_PUBLISHERS
+                                start_insearch = True
+                                sel_pub = self.__get_publisher_name_from_index(
+                                    self.saved_repository_combobox_active)
                         else:
                                 sel_pub = self.__get_selected_publisher()
-                                if sel_pub != None:
-                                        pub = sel_pub
+                        if sel_pub != None:
+                                pub = sel_pub
                         width = save_width
                         height = save_height
                         hpos = save_hpos
                         vpos = save_vpos
                 try:
                         self.client.set_string(LASTSOURCE_PREFERENCES, pub)
+                        self.client.set_bool(START_INSEARCH_PREFERENCES,
+                            start_insearch)
                         self.client.set_int(INITIAL_APP_WIDTH_PREFERENCES, width)
                         self.client.set_int(INITIAL_APP_HEIGHT_PREFERENCES, height)
                         self.client.set_int(INITIAL_APP_HPOS_PREFERENCES, hpos)
@@ -3098,9 +3116,10 @@ class PackageManager:
                                     "-U", be_name])
                 else:
                         if self.is_all_publishers:
-                                self.w_repository_combobox.set_active(
+                                pub = self.__get_publisher_name_from_index(
                                     self.saved_repository_combobox_active)
-                        pub = self.__get_selected_publisher()
+                        else:
+                                pub = self.__get_selected_publisher()
                         if self.in_search_mode:
                                 self.__dump_datamodels(pub,
                                     self.saved_application_list, self.category_list,
@@ -3186,16 +3205,13 @@ class PackageManager:
                 selected_id = -1
                 self.same_publisher_on_setup = False
                 if self.first_run:
-                        if self.lastsource == ALL_PUBLISHERS:
-                                selected_id = self.repo_combobox_all_pubs_index 
-                        else:
-                                for repo in self.repositories_list:
-                                        if (repo[enumerations.REPOSITORY_NAME] == \
-                                            self.lastsource and
-                                            repo[enumerations.REPOSITORY_ID] != -1):
-                                                selected_id = \
-                                                   repo[enumerations.REPOSITORY_ID]
-                                                break
+                        for repo in self.repositories_list:
+                                if (repo[enumerations.REPOSITORY_NAME] == \
+                                    self.lastsource and
+                                    repo[enumerations.REPOSITORY_ID] != -1):
+                                        selected_id = \
+                                           repo[enumerations.REPOSITORY_ID]
+                                        break
                 else:
                         for repo in self.repositories_list:
                                 if (repo[enumerations.REPOSITORY_NAME] ==
@@ -4431,8 +4447,12 @@ class PackageManager:
                         Thread(target = self.__enable_disable_update_all,
                             args = (self.catalog_refresh_done,)).start()
                 self.catalog_refresh_done = False
-                self.first_run = False
                 self.in_reload = False
+                if self.first_run:
+                        if self.start_insearch:
+                                self.w_repository_combobox.set_active(
+                                    self.repo_combobox_all_pubs_index)
+                        self.first_run = False
 
         def get_icon_pixbuf_from_glade_dir(self, icon_name):
                 return gui_misc.get_pixbuf_from_path(
