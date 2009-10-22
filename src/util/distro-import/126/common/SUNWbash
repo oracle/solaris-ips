@@ -1,0 +1,6 @@
+package SUNWbash
+classification "System/Shells"
+import SUNWbash
+import SUNWbashr
+version 4.0.28
+end package

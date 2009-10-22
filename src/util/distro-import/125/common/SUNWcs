@@ -38,17 +38,9 @@ add link path=sbin/pfsh \
     target=../usr/has/bin/sh
 add link path=sbin/sh \
     target=../usr/bin/$(ARCH32)/ksh93
-add file hosts \
-    path=etc/inet/hosts \
-    mode=0444 \
-    owner=root \
-    group=sys \
+add file hosts path=etc/inet/hosts mode=0644 owner=root group=sys \
     preserve=true
-add file services \
-    path=etc/inet/services \
-    mode=0444 \
-    owner=root \
-    group=sys \
+add file services path=etc/inet/services mode=0644 owner=root group=sys \
     preserve=true
 add file mailcap \
     path=etc/mailcap \

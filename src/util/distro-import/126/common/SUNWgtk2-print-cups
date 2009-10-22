@@ -1,0 +1,4 @@
+package SUNWgtk2-print-cups
+classification "Desktop (GNOME)/Libraries"
+import SUNWgtk2-print-cups
+end package

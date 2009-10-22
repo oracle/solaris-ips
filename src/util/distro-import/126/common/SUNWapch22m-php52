@@ -1,0 +1,7 @@
+package SUNWapch22m-php52
+classification "Web Services/Application and Web Servers"
+import SUNWapch22m-php52
+import SUNWapch22r-php52
+depend SUNWphp52
+version 5.2.11
+end package

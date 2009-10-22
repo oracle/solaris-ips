@@ -1,0 +1,7 @@
+package SUNWphp52-mysql
+classification "Development/PHP"
+import SUNWphp52r-mysql
+import SUNWphp52u-mysql
+depend SUNWphp52
+version 5.2.11
+end package

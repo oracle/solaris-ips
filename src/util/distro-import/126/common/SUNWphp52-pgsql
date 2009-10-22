@@ -1,0 +1,7 @@
+package SUNWphp52-pgsql
+classification "Development/PHP"
+import SUNWphp52r-pgsql
+import SUNWphp52u-pgsql
+depend SUNWphp52
+version 5.2.11
+end package

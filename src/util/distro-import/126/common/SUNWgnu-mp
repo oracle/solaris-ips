@@ -1,0 +1,5 @@
+package SUNWgnu-mp
+classification "Development/High Performance Computing"
+import SUNWgnu-mp
+version 4.3.1
+end package

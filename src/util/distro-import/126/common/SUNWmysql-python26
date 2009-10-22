@@ -1,0 +1,5 @@
+package SUNWmysql-python26
+classification "Development/Databases"
+import SUNWmysql-python26
+depend SUNWmysql51
+end package

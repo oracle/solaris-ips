@@ -1,0 +1,4 @@
+package SUNWgtk2-print-papi
+classification "Desktop (GNOME)/Libraries"
+import SUNWgtk2-print-papi
+end package

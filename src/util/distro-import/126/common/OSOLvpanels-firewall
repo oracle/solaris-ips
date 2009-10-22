@@ -1,0 +1,6 @@
+package OSOLvpanels-firewall
+classification "Applications/Configuration and Preferences"
+import OSOLvpin-firewall
+depend OSOLvpanels
+depend SUNWipf
+end package

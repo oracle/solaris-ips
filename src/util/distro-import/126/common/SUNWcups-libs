@@ -1,0 +1,15 @@
+package SUNWcups-libs
+classification "System/Printing"
+summary "CUPS (Runtime Libraries)"
+from SUNWcupsu import
+usr/lib/$(ARCH64)/libcups.so
+usr/lib/$(ARCH64)/libcups.so.2
+usr/lib/$(ARCH64)/libcupsimage.so
+usr/lib/$(ARCH64)/libcupsimage.so.2
+usr/lib/libcups.so
+usr/lib/libcups.so.2
+usr/lib/libcupsimage.so
+usr/lib/libcupsimage.so.2
+end import
+version 1.4.1
+end package

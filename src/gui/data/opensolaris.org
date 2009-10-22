@@ -58,6 +58,12 @@ category = Configuration and Preferences
 [OSOLvpanels-apache]
 category = Configuration and Preferences
 
+[OSOLvpanels-firewall]
+category = Configuration and Preferences
+
+[OSOLvpanels-hypervisor]
+category = Configuration and Preferences,Virtualization
+
 [OSOLvpanels-mysql]
 category = Configuration and Preferences
 
@@ -856,6 +862,9 @@ category = Internet
 [SUNWexpect]
 category = System Utilities
 
+[SUNWfakeroot]
+category = System Utilities
+
 [SUNWfbc]
 category = Display
 
@@ -1289,40 +1298,40 @@ category = Internet
 category = Graphics and Imaging
 
 [SUNWgnome-img-editor-help]
-category = Documentation
+category = Graphics and Imaging
 
 [SUNWgnome-img-editor-help-cs]
-category = Localizations (Desktop)
+category = Graphics and Imaging
 
 [SUNWgnome-img-editor-help-de]
-category = Localizations (Desktop)
+category = Graphics and Imaging
 
 [SUNWgnome-img-editor-help-es]
-category = Localizations (Desktop)
+category = Graphics and Imaging
 
 [SUNWgnome-img-editor-help-extra]
-category = Localizations (Desktop)
+category = Graphics and Imaging
 
 [SUNWgnome-img-editor-help-fr]
-category = Localizations (Desktop)
+category = Graphics and Imaging
 
 [SUNWgnome-img-editor-help-it]
-category = Localizations (Desktop)
+category = Graphics and Imaging
 
 [SUNWgnome-img-editor-help-ko]
-category = Localizations (Desktop)
+category = Graphics and Imaging
 
 [SUNWgnome-img-editor-help-pl]
-category = Localizations (Desktop)
+category = Graphics and Imaging
 
 [SUNWgnome-img-editor-help-ru]
-category = Localizations (Desktop)
+category = Graphics and Imaging
 
 [SUNWgnome-img-editor-help-sv]
-category = Localizations (Desktop)
+category = Graphics and Imaging
 
 [SUNWgnome-img-editor-help-zhCN]
-category = Localizations (Desktop)
+category = Graphics and Imaging
 
 [SUNWgnome-img-organizer]
 category = Graphics and Imaging
@@ -1336,6 +1345,9 @@ category = Panels and Applets
 [SUNWgnome-intranet-applets]
 category = Panels and Applets
 
+[SUNWgnome-l10ndocument-cs]
+category = Localizations (Desktop)
+
 [SUNWgnome-l10ndocument-de]
 category = Localizations (Desktop)
 
@@ -1348,6 +1360,9 @@ category = Localizations (Desktop)
 [SUNWgnome-l10ndocument-fr]
 category = Localizations (Desktop)
 
+[SUNWgnome-l10ndocument-hu]
+category = Localizations (Desktop)
+
 [SUNWgnome-l10ndocument-it]
 category = Localizations (Desktop)
 
@@ -1358,6 +1373,9 @@ category = Localizations (Desktop)
 category = Localizations (Desktop)
 
 [SUNWgnome-l10ndocument-noinst]
+category = Localizations (Desktop)
+
+[SUNWgnome-l10ndocument-pl]
 category = Localizations (Desktop)
 
 [SUNWgnome-l10ndocument-ptBR]
@@ -1691,6 +1709,12 @@ category = GNOME and GTK+
 category = GNOME and GTK+
 
 [SUNWgtk2]
+category = Libraries
+
+[SUNWgtk2-print-cups]
+category = Libraries
+
+[SUNWgtk2-print-papi]
 category = Libraries
 
 [SUNWgtkmm]
@@ -2890,6 +2914,9 @@ category = Ports
 [SUNWmvel]
 category = Java
 
+[SUNWmwl]
+category = Networking
+
 [SUNWmxfe]
 category = Networking
 
@@ -2942,6 +2969,9 @@ category = Databases (System)
 category = Databases (System)
 
 [SUNWmysql-python]
+category = Databases
+
+[SUNWmysql-python26]
 category = Databases
 
 [SUNWmysql5]
@@ -3231,6 +3261,9 @@ category = X11 (System)
 
 [SUNWpm]
 category = Administration and Configuration
+
+[SUNWpmcs]
+category = Storage
 
 [SUNWpmdbdpg]
 category = Perl
@@ -3828,9 +3861,6 @@ category = Databases
 
 [SUNWsquid]
 category = Application and Web Servers
-
-[SUNWsra]
-category = Libraries (System)
 
 [SUNWsrpt]
 category = Storage
@@ -4805,52 +4835,52 @@ category = Java
 category = Office
 
 [openoffice-de]
-category = Localizations (Desktop)
+category = Office
 
 [openoffice-es]
-category = Localizations (Desktop)
+category = Office
 
 [openoffice-fr]
-category = Localizations (Desktop)
+category = Office
 
 [openoffice-hu]
-category = Localizations (Desktop)
+category = Office
 
 [openoffice-it]
-category = Localizations (Desktop)
+category = Office
 
 [openoffice-ja]
-category = Localizations (Desktop)
+category = Office
 
 [openoffice-ko]
-category = Localizations (Desktop)
+category = Office
 
 [openoffice-nl]
-category = Localizations (Desktop)
+category = Office
 
 [openoffice-pl]
-category = Localizations (Desktop)
+category = Office
 
 [openoffice-pt]
-category = Localizations (Desktop)
+category = Office
 
 [openoffice-pt-BR]
-category = Localizations (Desktop)
+category = Office
 
 [openoffice-ru]
-category = Localizations (Desktop)
+category = Office
 
 [openoffice-sdk]
 category = Office
 
 [openoffice-sv]
-category = Localizations (Desktop)
+category = Office
 
 [openoffice-zh-CN]
-category = Localizations (Desktop)
+category = Office
 
 [openoffice-zh-TW]
-category = Localizations (Desktop)
+category = Office
 
 [ruby-dev]
 category = Ruby

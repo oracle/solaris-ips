@@ -1,0 +1,5 @@
+package SUNWfakeroot
+classification "Applications/System Utilities"
+import SUNWfakeroot
+version 1.11
+end package

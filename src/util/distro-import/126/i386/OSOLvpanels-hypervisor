@@ -1,0 +1,8 @@
+package OSOLvpanels-hypervisor
+classification "Applications/Configuration and Preferences"
+classification "System/Virtualization"
+import OSOLvpin-hypervisor
+depend OSOLvpanels
+depend SUNWxvm
+depend_path /usr/bin/virsh
+end package

@@ -1,0 +1,10 @@
+package SUNWpmcs
+classification "Drivers/Storage"
+import SUNWpmcsr
+import SUNWpmcsu
+
+add driver name=pmcs \
+    perms="* 0600 root sys" \
+    class=scsi-self-identifying \
+    alias="pciex11f8,8001"
+end package
