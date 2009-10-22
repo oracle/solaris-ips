@@ -111,6 +111,7 @@ import re
 from xml.sax import saxutils
 from threading import Thread
 from threading import Lock
+from collections import deque
 from cPickle import UnpicklingError
 
 try:
@@ -252,8 +253,9 @@ class PackageManager:
                 self.gdk_window = None
                 self.user_rights = portable.is_admin()
                 self.cancelled = False                    # For background processes
+                self.description_queue = deque()
+                self.description_thread_running = False
                 self.image_directory = None
-                self.description_thread_running = False   # For background processes
                 gtk.rc_parse('~/.gtkrc-1.2-gnome2')       # Load gtk theme
                 self.progress_stop_thread = True
                 self.catalog_loaded = False
@@ -611,6 +613,7 @@ class PackageManager:
                 self.application_list_sort = None
                 self.application_refilter_id = 0
                 self.application_refilter_idle_id = 0
+                self.last_status_id = 0
                 self.last_show_info_id = 0
                 self.show_info_id = 0
                 self.last_show_licenses_id = 0
@@ -1415,11 +1418,16 @@ class PackageManager:
                 visible_range = self.w_application_treeview.get_visible_range()
                 if visible_range == None:
                         return
-                start = visible_range[0][0]
-                end = visible_range[1][0]
+                a11y_start = start = visible_range[0][0]
+                a11y_end = end = visible_range[1][0]
                 if debug_descriptions:
                         print "Range Start: %d End: %d" % (start, end)
 
+                # We use check_range only for accessibility purposes to
+                # reduce the amount of processing to be done in that case.
+                # We do not use it when getting descriptions as we may discard
+                # description requests so we need a description request to
+                # be for everything that is currently visible.
                 # Switching Publishers need to use default range
                 if self.publisher_changed:
                         check_range = False
@@ -1428,19 +1436,21 @@ class PackageManager:
                         check_range = False
                 
                 if self.application_treeview_range != None:
-                        if check_range:
+                        if check_range and a11y_enabled:
                                 old_start = self.application_treeview_range[0][0]
                                 old_end = self.application_treeview_range[1][0]
                                  # Old range is the same or smaller than new range
                                  # so do nothing
-                                if start >= old_start and end <= old_end:
-                                        return
-                                if start < old_end:
-                                        if end < old_end:
-                                                if end >= old_start:
-                                                        end = old_start
-                                        else:
-                                                start = old_end
+                                if (a11y_start >= old_start and 
+                                    a11y_end <= old_end):
+                                        a11y_end =  a11y_start - 1
+                                else:
+                                        if a11y_start < old_end:
+                                                if a11y_end < old_end:
+                                                        if a11y_end >= old_start:
+                                                                a11y_end = old_start
+                                                else:
+                                                        a11y_start = old_end
                 if debug_descriptions:
                         print "Adjusted Range Start: %d End: %d" % (start, end)
                 self.application_treeview_range = visible_range
@@ -1468,24 +1478,48 @@ class PackageManager:
                                             include_scheme = True)
                                         pkg_stems_and_itr_to_fetch[pkg_stem] = \
                                             model.get_string_from_iter(app_itr)
-                        if a11y_enabled:
-                                self.__set_accessible_status(sort_filt_model, sf_itr)
                         start += 1
                         sf_itr = sort_filt_model.iter_next(sf_itr)
+                if a11y_enabled:
+                        sf_itr = sort_filt_model.get_iter_from_string(
+                            str(a11y_start))                
+                        while a11y_start <= a11y_end:
+                                self.__set_accessible_status(sort_filt_model, sf_itr)
+                                a11y_start += 1
+                                sf_itr = sort_filt_model.iter_next(sf_itr)
 
                 if debug_descriptions:
                         print "PKGS to FETCH: \n%s" % pkg_stems_and_itr_to_fetch
                 if len(pkg_stems_and_itr_to_fetch) > 0:
+                        self.last_status_id += 1
+                        self.description_queue.append((pkg_stems_and_itr_to_fetch,
+                             model, self.last_status_id))
+                        self.__start_description_thread()
+
+        def __start_description_thread(self):
+                if not self.description_thread_running:
+                        status_id = -1
+                        model = None
+                        stems = None
+                        # Discard description requests except for the last two
+                        while status_id + 1 < self.last_status_id:
+                                try:
+                                        stems, model, status_id = \
+                                                self.description_queue.pop()
+                                except IndexError:
+                                        return
                         Thread(target = self.__get_pkg_descriptions,
-                            args = [pkg_stems_and_itr_to_fetch, model]).start() 
+                            args = [stems, model, status_id]).start() 
+                        self.description_thread_running = True
                     
         def __doing_search(self):
                 return self.search_start > 0
                 
-        def __get_pkg_descriptions(self, pkg_stems_and_itr_to_fetch, orig_model):
-                # Note: no need to aquire lock even though this can be called from
-                # multiple threads, it is just creating an update job and dispatching it
-                # to the idle handler, not modifying any global state
+        def __get_pkg_descriptions(self, pkg_stems_and_itr_to_fetch, 
+            orig_model, last_status_id):
+                # Note: no need to aquire lock even though this is called
+                # from a thread, it just creates an update job and dispatches it
+                # to the idle handler; it does not modify any global state.
                 info = None
                 if not self.__doing_search():
                         gobject.idle_add(self.__update_statusbar_message,
@@ -1511,10 +1545,15 @@ class PackageManager:
                 if debug_descriptions:
                         print "FETCHED PKGS: \n%s" % pkg_descriptions_for_update
                 gobject.idle_add(self.__update_description_from_iter,
-                    pkg_descriptions_for_update, orig_model)
+                    pkg_descriptions_for_update, orig_model, last_status_id)
 
-        def __update_description_from_iter(self, pkg_descriptions_for_update, orig_model):
+        def __update_description_from_iter(self, pkg_descriptions_for_update, 
+            orig_model, last_status_id):
                 if self.exiting:
+                        return
+                self.description_thread_running = False
+                self.__start_description_thread()
+                if self.last_status_id > last_status_id + 1:
                         return
                 sort_filt_model = \
                     self.w_application_treeview.get_model() #gtk.TreeModelSort
@@ -3039,8 +3078,6 @@ class PackageManager:
 
         def __do_reload(self, widget):
                 self.w_repository_combobox.grab_focus()
-                if self.description_thread_running:
-                        self.cancelled = True
                 if self.force_reload_packages and (self.in_search_mode 
                     or self.is_all_publishers):
                         self.__unset_search(False)
