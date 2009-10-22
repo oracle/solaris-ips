@@ -164,7 +164,7 @@ class _Pkg5TestResult(unittest._TextTestResult):
                                 self.stream.write('f')
                         else:
                                 self.stream.write('F')
-                if self.bailonfail:
+                if self.bailonfail and not bresult:
                     tdf = test.getTeardownFunc()[1]
                     tdf()
                     if test.persistent_depot:
