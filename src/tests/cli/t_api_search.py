@@ -130,13 +130,20 @@ add set name=description value="sparc variant" variant.arch=sparc
 close """
 
         bogus_pkg10 = """
-set name=fmri value=pkg:/bogus_pkg@1.0,5.11-0:20090326T233451Z
+set name=pkg.fmri value=pkg:/bogus_pkg@1.0,5.11-0:20090326T233451Z
 set name=description value=""validation with simple chains of constraints ""
 set name=pkg.description value="pseudo-hashes as arrays tied to a "type" (list of fields)"
 depend fmri=XML-Atom-Entry
 set name=com.sun.service.incorporated_changes value="6556919 6627937"
 """
         bogus_fmri = fmri.PkgFmri("bogus_pkg@1.0,5.11-0:20090326T233451Z")
+
+        remote_fmri_string = ('pkg:/example_pkg@1.0-0', 'test/example_pkg',
+            'set name=pkg.fmri value=pkg://test/example_pkg@1.0,5.11-0:')
+
+        res_remote_pkg = set([
+            remote_fmri_string
+        ])
 
         res_remote_path = set([
             ("pkg:/example_pkg@1.0-0", "basename","file 820157a2043e3135f342b238129b556aade20347 chash=bfa46fc98d1ca97f1260090797d35a35e76096a3 group=bin mode=0555 owner=root path=bin/example_path pkg.csize=38 pkg.size=18")
@@ -185,15 +192,16 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
         ])
 
         res_remote_wildcard = res_remote_path.union(set([
+            remote_fmri_string,
             ('pkg:/example_pkg@1.0-0', 'basename', 'dir group=bin mode=0755 owner=root path=bin/example_dir')
         ]))
 
         res_remote_glob = set([
+            remote_fmri_string,
             ('pkg:/example_pkg@1.0-0', 'path', 'dir group=bin mode=0755 owner=root path=bin/example_dir'),
             ('pkg:/example_pkg@1.0-0', 'basename', 'dir group=bin mode=0755 owner=root path=bin/example_dir'),
             ('pkg:/example_pkg@1.0-0', 'path', 'file 820157a2043e3135f342b238129b556aade20347 chash=bfa46fc98d1ca97f1260090797d35a35e76096a3 group=bin mode=0555 owner=root path=bin/example_path pkg.csize=38 pkg.size=18')
         ]) | res_remote_path
-                                
 
         res_remote_foo = set([
             ('pkg:/example_pkg@1.0-0', 'FOOO', 'set name=description value="FOOO bAr O OO OOO"')
@@ -216,11 +224,11 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
         ])
 
         res_remote_right_brace = set([
-            ('pkg:/example_pkg@1.0-0', ']', 'set name=weirdness value="] [ * ?"')    
+            ('pkg:/example_pkg@1.0-0', ']', 'set name=weirdness value="] [ * ?"')
         ])
-        
+
         local_fmri_string = ('pkg:/example_pkg@1.0-0', 'test/example_pkg',
-            'set name=fmri value=pkg://test/example_pkg@1.0,5.11-0:')
+            'set name=pkg.fmri value=pkg://test/example_pkg@1.0,5.11-0:')
 
         res_local_pkg = set([
                 local_fmri_string
@@ -248,7 +256,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
         res_local_bar = copy.copy(res_remote_bar)
 
         res_local_openssl = copy.copy(res_remote_openssl)
-        
+
         res_local_path_example11 = set([
             ("pkg:/example_pkg@1.1-0", "basename", "file 820157a2043e3135f342b238129b556aade20347 chash=bfa46fc98d1ca97f1260090797d35a35e76096a3 group=bin mode=0555 owner=root path=bin/example_path11 pkg.csize=38 pkg.size=18")
         ])
@@ -258,7 +266,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
         ])
 
         res_local_pkg_example11 = set([
-            ("pkg:/example_pkg@1.1-0", "test/example_pkg", "set name=fmri value=pkg://test/example_pkg@1.1,5.11-0:")
+            ("pkg:/example_pkg@1.1-0", "test/example_pkg", "set name=pkg.fmri value=pkg://test/example_pkg@1.1,5.11-0:")
         ])
 
         res_local_wildcard_example11 = set([
@@ -297,20 +305,18 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
             ('pkg:/fat@1.0-0', 'variant', 'set name=description value="sparc variant" variant.arch=sparc')
         ])
 
-        res_remote_fat10_star = res_fat10_sparc | res_fat10_i386
+        fat_10_fmri_string = set([('pkg:/fat@1.0-0', 'test/fat', 'set name=pkg.fmri value=pkg://test/fat@1.0,5.11-0:')])
 
-        local_fat_10_fmri_string = set([('pkg:/fat@1.0-0', 'test/fat', 'set name=fmri value=pkg://test/fat@1.0,5.11-0:')])
-        
+        res_remote_fat10_star = fat_10_fmri_string | res_fat10_sparc | res_fat10_i386
+
         res_local_fat10_i386_star = res_fat10_i386.union(set([
-            ('pkg:/fat@1.0-0', 'test', 'set name=publisher value=test'),
             ('pkg:/fat@1.0-0', 'sparc', 'set name=variant.arch value=sparc value=i386')
-        ])).union(local_fat_10_fmri_string)
+        ])).union(fat_10_fmri_string)
 
         res_local_fat10_sparc_star = res_fat10_sparc.union(set([
-            ('pkg:/fat@1.0-0', 'test', 'set name=publisher value=test'),
             ('pkg:/fat@1.0-0', 'i386', 'set name=variant.arch value=sparc value=i386')
-        ])).union(local_fat_10_fmri_string)
-        
+        ])).union(fat_10_fmri_string)
+
         res_space_with_star = set([
             ('pkg:/space_pkg@1.0-0', 'basename', 'file 820157a2043e3135f342b238129b556aade20347 chash=bfa46fc98d1ca97f1260090797d35a35e76096a3 group=sys mode=0444 owner=nobody path="unique/with a space" pkg.csize=38 pkg.size=18')
         ])
@@ -398,7 +404,7 @@ close
              '820157a2043e3135f342b238129b556aade20347',
              'file 820157a2043e3135f342b238129b556aade20347 chash=bfa46fc98d1ca97f1260090797d35a35e76096a3 group=bin mode=0555 owner=root path=bin/example_path pkg.csize=38 pkg.size=18')
         ]) | res_remote_path
-        
+
         res_remote_url = set([
             ('pkg:/example_pkg@1.0-0',
             'http://service.opensolaris.com/xml/pkg/SUNWcsu@0.5.11,5.11-1:20080514I120000Z',
@@ -449,8 +455,8 @@ close
         fast_add_after_second_update = set(["VERSION: 2\n"])
 
         fast_remove_after_second_update = set(["VERSION: 2\n"])
-        
-        debug_features = None
+
+        debug_features = []
 
         def setUp(self):
                 for p in self.misc_files:
@@ -489,11 +495,11 @@ close
 
         @staticmethod
         def _replace_act(act):
-                if act.startswith('set name=fmri'):
+                if act.startswith('set name=pkg.fmri'):
                         return act.strip().rsplit(":", 1)[0] + ":"
                 else:
                         return act.strip()
-                        
+
         @staticmethod
         def _extract_action_from_res(it):
                 return (
@@ -585,11 +591,8 @@ close
                 self._check(set(res), test_value)
 
         def _run_full_remote_tests(self, api_obj):
-                # Set to 1 since searches can't currently be performed
-                # package name unless it's set inside the
-                # manifest which happens at install time on
-                # the client side.
-                self._search_op(api_obj, True, "example_pkg", set())
+                self._search_op(api_obj, True, "example_pkg",
+                    self.res_remote_pkg)
                 self._search_op(api_obj, True, "example_path",
                     self.res_remote_path)
                 self._search_op(api_obj, True, "(example_path)",
@@ -683,11 +686,8 @@ close
                     self._search_op, api_obj, True, "e* OR <e*>", set())
 
         def _run_remote_tests(self, api_obj):
-                # Set to 1 since searches can't currently be performed
-                # package name unless it's set inside the
-                # manifest which happens at install time on
-                # the client side.
-                self._search_op(api_obj, True, "example_pkg", set())
+                self._search_op(api_obj, True, "example_pkg",
+                    self.res_remote_pkg)
                 self._search_op(api_obj, True, "example_path",
                     self.res_remote_path)
                 self._search_op(api_obj, True, "::com.sun.service.info_url:",
@@ -1176,12 +1176,12 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
         def __init__(self, *args, **kwargs):
                 TestApiSearchBasics.__init__(self, *args, **kwargs)
                 self.sent_pkgs = set()
-        
+
         def pkgsend_bulk(self, durl, pkg, optional=True):
                 if pkg not in self.sent_pkgs or optional == False:
                         self.sent_pkgs.add(pkg)
                         TestApiSearchBasics.pkgsend_bulk(self, durl, pkg)
-        
+
         def test_010_remote(self):
                 """Test remote search."""
                 durl = self.dc.get_depot_url()
@@ -1277,11 +1277,11 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
                     progresstracker, lambda x: False, PKG_CLIENT_NAME)
                 self._do_install(api_obj, ["example_pkg"])
-                
+
                 index_dir = os.path.join(self.img_path, "var","pkg","index")
 
                 first = True
-                
+
                 for d in query_parser.TermQuery._global_data_dict.values():
                         orig_fn = d.get_file_name()
                         orig_path = os.path.join(index_dir, orig_fn)
@@ -1311,7 +1311,7 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
                     progresstracker, lambda x: False, PKG_CLIENT_NAME)
                 self._do_install(api_obj, ["example_pkg"])
-                
+
                 index_dir = os.path.join(self.img_path, "var","pkg","index")
 
                 first = True
@@ -1431,7 +1431,7 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
                 """Install one package, and run the search suite."""
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.fat_pkg10)
-                
+
                 self.image_create(durl,
                     additional_args="--variant variant.arch=sparc")
                 progresstracker = progress.NullProgressTracker()
@@ -1590,7 +1590,7 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
                         index_dir, index_dir_tmp = self._get_index_dirs()
 
                         shutil.copytree(index_dir, index_dir_tmp)
-                
+
                         self._do_install(api_obj, ["example_pkg"])
 
                         f(index_dir, index_dir_tmp)
@@ -1616,7 +1616,7 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
                         self._do_install(api_obj, ["example_pkg"])
 
                         index_dir, index_dir_tmp = self._get_index_dirs()
-                
+
                         shutil.copytree(index_dir, index_dir_tmp)
 
                         self._do_install(api_obj, ["another_pkg"])
@@ -1628,14 +1628,14 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
                             self._do_uninstall, api_obj, ["another_pkg"])
 
                         self.image_destroy()
-                
+
         def test_bug_2989_3(self):
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.example_pkg10)
                 self.pkgsend_bulk(durl, self.example_pkg11)
 
                 for f in self._dir_restore_functions:
-                
+
                         self.image_create(durl)
                         progresstracker = progress.NullProgressTracker()
                         api_obj = api.ImageInterface(self.get_img_path(),
@@ -1664,16 +1664,16 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
                 self.pkgsend_bulk(durl, self.example_pkg11)
 
                 for f in self._dir_restore_functions:
-                
+
                         self.image_create(durl)
                         progresstracker = progress.NullProgressTracker()
                         api_obj = api.ImageInterface(self.get_img_path(),
                             API_VERSION, progresstracker, lambda x: False,
                             PKG_CLIENT_NAME)
                         self._do_install(api_obj, ["another_pkg"])
-                
+
                         index_dir, index_dir_tmp = self._get_index_dirs()
-                        
+
                         shutil.copytree(index_dir, index_dir_tmp)
 
                         self._do_install(api_obj, ["example_pkg@1.0,5.11-0"])
@@ -1796,8 +1796,11 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
                 main_2 = fh.readlines()
                 new_main_len = len(main_2)
                 fh.close()
-                self.assert_(new_tok_len == tok_len)
-                self.assert_(new_main_len == main_len)
+                # Since the server now adds a set action for the FMRI to
+                # manifests during publication, there should be one
+                # additional line for the token file.
+                self.assertEqual(new_tok_len, tok_len + 1)
+                self.assertEqual(new_main_len, main_len + 1)
 
         def test_bug_983(self):
                 """Test for known bug 983."""
@@ -1845,7 +1848,7 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
                     query_parser.TermQuery._global_data_dict.values()[0].\
                     get_file_name())
                 dest_fn = orig_fn + "TMP"
-                
+
                 self._do_install(api_obj, ["example_pkg"])
                 api_obj.rebuild_search_index()
 
@@ -1874,7 +1877,7 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
                 indexer.MAX_ADDED_NUMBER_PACKAGES packages one after another
                 doesn't cause any type of indexing error."""
                 def _remove_extra_info(v):
-                        return v.split("-")[0]                
+                        return v.split("-")[0]
                 durl = self.dc.get_depot_url()
                 pkg_list = []
                 for i in range(0, indexer.MAX_ADDED_NUMBER_PACKAGES + 3):
@@ -1967,7 +1970,7 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
                         expected_code),
                     urllib2.urlopen, durl + "/search/1/" + q_str)
 
-        def test_bug_9845_03(self): 
+        def test_bug_9845_03(self):
                 """Test that a corrupt return_type value doesn't break the "
                 server."""
                 durl = self.dc.get_depot_url()
@@ -2099,7 +2102,7 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
                     urllib2.urlopen, durl + "/search/1/" + q_str)
 
 
-class TestApiSearchBasicsRestartingDepot(TestApiSearchBasics):        
+class TestApiSearchBasicsRestartingDepot(TestApiSearchBasics):
         def setUp(self):
                 self.debug_features = ["headers"]
                 TestApiSearchBasics.setUp(self)
@@ -2227,7 +2230,7 @@ class TestApiSearchBasicsRestartingDepot(TestApiSearchBasics):
                     "writ_root")
                 writ_dir = os.path.join(writable_root, "index")
                 self.dc.set_writable_root(writable_root)
-                
+
                 self.image_create(durl)
                 progresstracker = progress.NullProgressTracker()
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
@@ -2243,13 +2246,13 @@ class TestApiSearchBasicsRestartingDepot(TestApiSearchBasics):
 
                 self.pkgsend_bulk(durl, self.example_pkg10)
                 self.__wait_for_indexing(os.path.join(writ_dir, "TMP"))
-                
+
                 # Check when depot contains a package.
                 self.__corrupt_depot(writ_dir)
                 self.__wait_for_indexing(os.path.join(writ_dir, "TMP"))
                 self.assert_(not os.path.isdir(ind_dir))
                 self._run_remote_tests(api_obj)
-                
+
         def test_bug_8318(self):
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.example_pkg10)
@@ -2260,14 +2263,14 @@ class TestApiSearchBasicsRestartingDepot(TestApiSearchBasics):
                 uuids = []
                 for p in api_obj.img.gen_publishers():
                         uuids.append(p.client_uuid)
-                
+
                 self._search_op(api_obj, True, "example_path",
                     self.res_remote_path)
                 self._search_op(api_obj, True, "example_path",
                     self.res_remote_path, servers=[{"origin": durl}])
                 lfh = file(self.dc.get_logpath(), "rb")
                 found = 0
-                num_expected = 6
+                num_expected = 8
                 for line in lfh:
                         if "X-IPKG-UUID:" in line:
                                 tmp = line.split()
@@ -2290,19 +2293,20 @@ class TestApiSearchMulti(testutils.ManyDepotTestCase):
             close """
 
         res_alternate_server_local = set([
-            ('pkg:/example_pkg@1.0-0', 'test2/example_pkg', 'set name=fmri value=pkg://test2/example_pkg@1.0,5.11-0:')
+            ('pkg:/example_pkg@1.0-0', 'test2/example_pkg',
+            'set name=pkg.fmri value=pkg://test2/example_pkg@1.0,5.11-0:')
         ])
 
         def setUp(self):
-                testutils.ManyDepotTestCase.setUp(self, 3,
-                    debug_features=["headers"])
+                testutils.ManyDepotTestCase.setUp(self, ["test1", "test2",
+                    "test3"], debug_features=["headers"])
 
                 self.durl1 = self.dcs[1].get_depot_url()
                 self.durl2 = self.dcs[2].get_depot_url()
                 self.durl3 = self.dcs[3].get_depot_url()
                 self.pkgsend_bulk(self.durl2, self.example_pkg10)
 
-                self.image_create(self.durl1, prefix = "test1")
+                self.image_create(self.durl1, prefix="test1")
                 self.pkg("set-publisher -O " + self.durl2 + " test2")
 
         def _check(self, proposed_answer, correct_answer):
@@ -2364,14 +2368,14 @@ class TestApiSearchMulti(testutils.ManyDepotTestCase):
                 progresstracker = progress.NullProgressTracker()
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
                     progresstracker, lambda x: True, PKG_CLIENT_NAME)
-                
+
                 self._search_op(api_obj, True,
                     "this_should_not_match_any_token", set())
                 self._search_op(api_obj, True, "example_path",
                     set(), servers=[{"origin": self.durl1}])
                 self._search_op(api_obj, True, "example_path",
                     set(), servers=[{"origin": self.durl3}])
-                num_expected = { 1: 7, 2: 3, 3: 0 }
+                num_expected = { 1: 7, 2: 4, 3: 0 }
                 for d in range(1,(len(self.dcs) + 1)):
                         try:
                                 pub = api_obj.img.get_publisher(

@@ -30,6 +30,7 @@
 
 import cherrypy
 from cherrypy.lib.static import serve_file
+import copy
 import cStringIO
 import datetime
 import httplib
@@ -40,11 +41,10 @@ import urllib
 import xml.dom.minidom as xmini
 
 from pkg.misc import get_rel_path
-import pkg.server.catalog as catalog
-import pkg.fmri as fmri
+import pkg.catalog as catalog
 import pkg.Uuid25 as uuid
 
-MIME_TYPE = 'application/atom+xml'
+MIME_TYPE = "application/atom+xml"
 CACHE_FILENAME = "feed.xml"
 RFC3339_FMT = "%Y-%m-%dT%H:%M:%SZ"
 
@@ -54,65 +54,39 @@ def dt_to_rfc3339_str(ts):
         """
         return ts.strftime(RFC3339_FMT)
 
-def rfc3339_str_to_ts(ts_str):
-        """Returns a timestamp representing 'ts_str', which should be in the
-        format specified by RFC 3339.
-        """
-        return time.mktime(time.strptime(ts_str, RFC3339_FMT))
-
 def rfc3339_str_to_dt(ts_str):
         """Returns a datetime object representing 'ts_str', which should be in
         the format specified by RFC 3339.
         """
         return datetime.datetime(*time.strptime(ts_str, RFC3339_FMT)[0:6])
 
-def ults_to_ts(ts_str):
-        """Returns a timestamp representing 'ts_str', which should be in
-        updatelog format.
-        """
-        # Python doesn't support fractional seconds for strptime.
-        ts_str = ts_str.split('.')[0]
-        # Currently, updatelog entries are in local time, not UTC.
-        return time.mktime(time.strptime(ts_str, "%Y-%m-%dT%H:%M:%S"))
-
-def ults_to_rfc3339_str(ts_str):
-        """Returns a timestamp representing 'ts_str', which should be in
-        updatelog format.
-        """
-        ltime = ults_to_ts(ts_str)
-        # Currently, updatelog entries are in local time, not UTC.
-        return dt_to_rfc3339_str(datetime.datetime(
-            *time.gmtime(ltime)[0:6]))
-
-def fmri_to_taguri(rcfg, f):
+def fmri_to_taguri(f):
         """Generates a 'tag' uri compliant with RFC 4151.  Visit
         http://www.taguri.org/ for more information.
         """
-        pfx = rcfg.get_attribute("publisher", "prefix")
-        if not pfx:
-                pfx = "unknown"
-        return "tag:%s,%s:%s" % (pfx, f.get_timestamp().strftime("%Y-%m-%d"),
+        return "tag:%s,%s:%s" % (f.publisher,
+            f.get_timestamp().strftime("%Y-%m-%d"),
             urllib.unquote(f.get_url_path()))
 
-def init(scfg, rcfg):
+def init(repo):
         """This function performs general initialization work that is needed
         for feeds to work correctly.
         """
 
-        if not scfg.feed_cache_read_only():
+        if not (repo.read_only and not repo.writable_root):
                 # RSS/Atom feeds require a unique identifier, so
                 # generate one if isn't defined already.  This
                 # needs to be a persistent value, so we only
                 # generate this if we can save the configuration.
-                fid = rcfg.get_attribute("feed", "id")
+                fid = repo.cfg.get_property("feed", "id")
                 if not fid:
                         # Create a random UUID (type 4).
-                        rcfg._set_attribute("feed", "id", uuid.uuid4())
+                        repo.cfg._set_property("feed", "id", uuid.uuid4())
 
                 # Ensure any configuration changes are reflected in the feed.
-                __clear_cache(scfg)
+                __clear_cache(repo)
 
-def set_title(request, rcfg, doc, feed, update_ts):
+def set_title(repo, doc, feed, update_ts):
         """This function attaches the necessary RSS/Atom feed elements needed
         to provide title, author and contact information to the provided
         xmini document object using the provided feed object and update
@@ -121,7 +95,7 @@ def set_title(request, rcfg, doc, feed, update_ts):
 
         t = doc.createElement("title")
         ti = xmini.Text()
-        ti.replaceWholeText(rcfg.get_attribute("feed", "name"))
+        ti.replaceWholeText(repo.cfg.get_property("feed", "name"))
         t.appendChild(ti)
         feed.appendChild(t)
 
@@ -134,7 +108,8 @@ def set_title(request, rcfg, doc, feed, update_ts):
         # identifier.
         i = doc.createElement("id")
         it = xmini.Text()
-        it.replaceWholeText("urn:uuid:%s" % rcfg.get_attribute("feed", "id"))
+        it.replaceWholeText("urn:uuid:%s" % repo.cfg.get_property("feed",
+            "id"))
         i.appendChild(it)
         feed.appendChild(i)
 
@@ -148,18 +123,18 @@ def set_title(request, rcfg, doc, feed, update_ts):
         # Add our icon.
         i = doc.createElement("icon")
         it = xmini.Text()
-        it.replaceWholeText(rcfg.get_attribute("feed", "icon"))
+        it.replaceWholeText(repo.cfg.get_property("feed", "icon"))
         i.appendChild(it)
         feed.appendChild(i)
 
         # Add our logo.
         l = doc.createElement("logo")
         lt = xmini.Text()
-        lt.replaceWholeText(rcfg.get_attribute("feed", "logo"))
+        lt.replaceWholeText(repo.cfg.get_property("feed", "logo"))
         l.appendChild(lt)
         feed.appendChild(l)
 
-        maintainer = rcfg.get_attribute("repository", "maintainer")
+        maintainer = repo.cfg.get_property("repository", "maintainer")
         # The author information isn't required, but can be useful.
         if maintainer:
                 name, email = rfc822.AddressList(maintainer).addresslist[0]
@@ -194,60 +169,50 @@ def set_title(request, rcfg, doc, feed, update_ts):
                 # Done with the author.
                 feed.appendChild(a)
 
-operations = {
-        "+": ["Added", "%s was added to the repository."],
-        "-": ["Removed", "%s was removed from the repository."],
-        "U": ["Updated", "%s, an update to an existing package, was added to "
-            "the repository."]
-}
+add_op = ("Added", "%s was added to the repository.")
+remove_op = ("Removed", "%s was removed from the repository.")
+update_op = ("Updated", "%s, a new version of an existing package, was added "
+    "to the repository.")
 
-def add_transaction(request, scfg, rcfg, doc, feed, txn, fmris):
+def add_transaction(request, doc, feed, entry, first):
         """Each transaction is an entry.  We have non-trivial content, so we
         can omit summary elements.
         """
 
         e = doc.createElement("entry")
 
-        tag, fmri_str = txn["catalog"].split()
-        f = fmri.PkgFmri(fmri_str)
+        pfmri, op_type, op_time, metadata = entry
  
         # Generate a 'tag' uri, to uniquely identify the entry, using the fmri.
         i = xmini.Text()
-        i.replaceWholeText(fmri_to_taguri(rcfg, f))
+        i.replaceWholeText(fmri_to_taguri(pfmri))
         eid = doc.createElement("id")
         eid.appendChild(i)
         e.appendChild(eid)
 
         # Attempt to determine the operation that was performed and generate
         # the entry title and content.
-        if txn["operation"] in operations:
-                op_title, op_content = operations[txn["operation"]]
+        if op_type == catalog.CatalogUpdate.ADD:
+                if pfmri != first:
+                        # XXX renaming, obsoletion?
+                        # If this fmri is not the same as the oldest one
+                        # for the FMRI's package stem, assume this is a
+                        # newer version of that package.
+                        op_title, op_content = update_op
+                else:
+                        op_title, op_content = add_op
+        elif op_type == catalog.CatalogUpdate.REMOVE:
+                op_title, op_content = add_op
         else:
                 # XXX Better way to reflect an error?  (Aborting will make a
                 # non-well-formed document.)
                 op_title = "Unknown Operation"
                 op_content = "%s was changed in the repository."
 
-        if txn["operation"] == "+":
-                # Get all FMRIs matching the current FMRI's package name.
-                matches = fmris[f.pkg_name]
-                if len(matches["versions"]) > 1:
-                        # Get the oldest fmri.
-                        of = matches[str(matches["versions"][0])][0]
-
-                        # If the current fmri isn't the oldest one, then this
-                        # is an update to the package.
-                        if f != of:
-                                # If there is more than one matching FMRI, and
-                                # it isn't the same version as the oldest one,
-                                # we can assume that this is an update to an
-                                # existing package.
-                                op_title, op_content = operations["U"]
-
         # Now add a title for our entry.
         etitle = doc.createElement("title")
         ti = xmini.Text()
-        ti.replaceWholeText(" ".join([op_title, fmri_str]))
+        ti.replaceWholeText(" ".join([op_title, pfmri.get_pkg_stem()]))
         etitle.appendChild(ti)
         e.appendChild(etitle)
 
@@ -255,12 +220,12 @@ def add_transaction(request, scfg, rcfg, doc, feed, txn, fmris):
         # package was added).
         eu = doc.createElement("updated")
         ut = xmini.Text()
-        ut.replaceWholeText(ults_to_rfc3339_str(txn["timestamp"]))
+        ut.replaceWholeText(dt_to_rfc3339_str(op_time))
         eu.appendChild(ut)
         e.appendChild(eu)
 
         # Link to the info output for the given package FMRI.
-        e_uri = get_rel_path(request, 'info/0/%s' % f.get_url_path())
+        e_uri = get_rel_path(request, "info/0/%s" % urllib.quote(str(pfmri)))
 
         l = doc.createElement("link")
         l.setAttribute("rel", "alternate")
@@ -269,9 +234,7 @@ def add_transaction(request, scfg, rcfg, doc, feed, txn, fmris):
 
         # Using the description for the operation performed, add the FMRI and
         # tag information.
-        content_text = op_content % fmri_str
-        if tag == "C":
-                content_text += "  This version is tagged as critical."
+        content_text = op_content % pfmri
 
         co = xmini.Text()
         co.replaceWholeText(content_text)
@@ -281,50 +244,112 @@ def add_transaction(request, scfg, rcfg, doc, feed, txn, fmris):
 
         feed.appendChild(e)
 
-def update(request, scfg, rcfg, t, cf):
+def get_updates_needed(repo, ts):
+        """Returns a list of the CatalogUpdate files that contain the changes
+        that have been made to the catalog since the specified UTC datetime
+        object 'ts'."""
+
+        c = repo.catalog
+        if c.last_modified <= ts:
+                # No updates needed.
+                return set()
+
+        updates = set()
+        for name, mdata in c.updates.iteritems():
+
+                # The last component of the update name is the locale.
+                locale = name.split(".", 2)[2]
+
+                # For now, only look at CatalogUpdates that for the 'C'
+                # locale.  Any other CatalogUpdates just contain localized
+                # catalog data, so aren't currently interesting.
+                if locale != "C":
+                        continue
+
+                ulog_lm = mdata["last-modified"]
+                if ulog_lm <= ts:
+                        # CatalogUpdate hasn't changed since 'ts'.
+                        continue
+                updates.add(name)
+
+        if not updates: 
+                # No updates needed.
+                return set()
+
+        # Ensure updates are in chronological ascending order.
+        return sorted(updates)
+
+def update(request, repo, last, cf):
         """Generate new Atom document for current updates.  The cached feed
-        file is written to scfg.feed_cache_root/CACHE_FILENAME.
+        file is written to repo.feed_cache_root/CACHE_FILENAME.
         """
 
-        # Our configuration is stored in hours, convert it to seconds.
-        window_seconds = rcfg.get_attribute("feed", "window") * 60 * 60
-        feed_ts = datetime.datetime.fromtimestamp(t - window_seconds)
+        # Our configuration is stored in hours, convert it to days and seconds.
+        hours = repo.cfg.get_property("feed", "window")
+        days, hours = divmod(hours, 24)
+        seconds = hours * 60 * 60
+        feed_ts = last - datetime.timedelta(days=days, seconds=seconds)
 
         d = xmini.Document()
 
         feed = d.createElementNS("http://www.w3.org/2005/Atom", "feed")
         feed.setAttribute("xmlns", "http://www.w3.org/2005/Atom")
 
-        set_title(request, rcfg, d, feed, scfg.updatelog.last_update)
+        set_title(repo, d, feed, repo.catalog.last_modified)
 
         d.appendChild(feed)
 
-        # The feed should be presented in reverse chronological order.
-        def compare_ul_entries(a, b):
-                return cmp(ults_to_ts(a["timestamp"]),
-                    ults_to_ts(b["timestamp"]))
+        # Cache the first entry in the catalog for any given package stem found
+        # in the list of updates so that it can be used to quickly determine if
+        # the fmri in the update is a 'new' package or an update to an existing
+        # package.
+        c = repo.catalog
 
-        # Get the entire catalog in the format returned by catalog.cache_fmri,
-        # so that we don't have to keep looking for possible matches.
-        fmris = {}
-        catalog.ServerCatalog.read_catalog(fmris,
-            scfg.updatelog.catalog.catalog_root)
+        first = {}
+        def get_first(f):
+                stem = f.get_pkg_stem()
+                if stem in first:
+                        return first[stem]
 
-        for txn in sorted(scfg.updatelog.gen_updates_as_dictionaries(feed_ts),
-            cmp=compare_ul_entries, reverse=True):
-                add_transaction(request, scfg, rcfg, d, feed, txn, fmris)
+                for v, entries in c.entries_by_version(f.pkg_name):
+                        # The first version returned is the oldest version.
+                        # Add all of the unique package stems for that version
+                        # to the list.
+                        for efmri, edata in entries:
+                                first[efmri.get_pkg_stem()] = efmri
+                        break
+
+                if stem not in first:
+                        # A value of None is used to denote that no previous
+                        # version exists for this particular stem.  This could
+                        # happen when a prior version exists for a different
+                        # publisher, or no prior version exists at all.
+                        first[stem] = None
+                return first[stem]
+
+        # Updates should be presented in reverse chronological order.
+        for name in reversed(get_updates_needed(repo, feed_ts)):
+                ulog = catalog.CatalogUpdate(name, meta_root=c.meta_root)
+                for entry in ulog.updates():
+                        pfmri = entry[0]
+                        op_time = entry[2]
+                        if op_time <= feed_ts:
+                                # Exclude this particular update.
+                                continue
+                        add_transaction(request, d, feed, entry,
+                            get_first(pfmri))
 
         d.writexml(cf)
 
-def __get_cache_pathname(scfg):
-        return os.path.join(scfg.feed_cache_root, CACHE_FILENAME)
+def __get_cache_pathname(repo):
+        return os.path.join(repo.feed_cache_root, CACHE_FILENAME)
 
-def __clear_cache(scfg):
-        if scfg.feed_cache_read_only():
-                # Ignore the request due to server configuration.
+def __clear_cache(repo):
+        if repo.read_only and repo.writable_root:
+                # Ignore the request due to repository configuration.
                 return
 
-        pathname = __get_cache_pathname(scfg)
+        pathname = __get_cache_pathname(repo)
         try:
                 if os.path.exists(pathname):
                         os.remove(pathname)
@@ -333,13 +358,13 @@ def __clear_cache(scfg):
                     httplib.INTERNAL_SERVER_ERROR,
                     "Unable to clear feed cache.")
 
-def __cache_needs_update(scfg):
+def __cache_needs_update(repo):
         """Checks to see if the feed cache file exists and if it is still
         valid.  Returns False, None if the cache is valid or True, last
         where last is a timestamp representing when the cache was
         generated.
         """
-        cfpath = __get_cache_pathname(scfg)
+        cfpath = __get_cache_pathname(repo)
         last = None
         need_update = True
         if os.path.isfile(cfpath):
@@ -349,7 +374,7 @@ def __cache_needs_update(scfg):
                         d = xmini.parse(cfpath)
                 except Exception:
                         d = None
-                        __clear_cache(scfg)
+                        __clear_cache(repo)
 
                 # Get the feed element and attempt to get the time we last
                 # generated the feed to determine whether we need to regenerate
@@ -367,49 +392,46 @@ def __cache_needs_update(scfg):
                                         break
 
                         if utn:
-                                last_ts = rfc3339_str_to_dt(utn.nodeValue)
+                                last = rfc3339_str_to_dt(utn.nodeValue)
 
                                 # Since our feed cache and updatelog might have
                                 # been created within the same second, we need
                                 # to ignore small variances when determining
                                 # whether to update the feed cache.
-                                update_ts = scfg.updatelog.last_update.replace(
-                                    microsecond=0)
-
-                                if last_ts >= update_ts:
+                                up_ts = copy.copy(repo.catalog.last_modified)
+                                up_ts.replace(microsecond=0)
+                                if last >= up_ts:
                                         need_update = False
-                                else:
-                                        last = rfc3339_str_to_ts(utn.nodeValue)
                         else:
-                                __clear_cache(scfg)
+                                __clear_cache(repo)
                 else:
-                        __clear_cache(scfg)
+                        __clear_cache(repo)
 
         return need_update, last
 
-def handle(scfg, rcfg, request, response):
+def handle(repo, request, response):
         """If there have been package updates since we last generated the feed,
         update the feed and send it to the client.  Otherwise, send them the
         cached copy if it is available.
         """
 
-        cfpath = __get_cache_pathname(scfg)
+        cfpath = __get_cache_pathname(repo)
 
         # First check to see if we already have a valid cache of the feed.
-        need_update, last = __cache_needs_update(scfg)
+        need_update, last = __cache_needs_update(repo)
 
         if need_update:
                 # Update always looks at feed.window seconds before the last
                 # update until "now."  If last is none, we want it to use "now"
                 # as its starting point.
                 if last is None:
-                        last = time.time()
+                        last = datetime.datetime.utcnow()
 
-                if scfg.feed_cache_read_only():
+                if repo.read_only and not repo.writable_root:
                         # If the server is operating in readonly mode, the
                         # feed will have to be generated every time.
                         cf = cStringIO.StringIO()
-                        update(request, scfg, rcfg, last, cf)
+                        update(request, repo, last, cf)
                         cf.seek(0)
                         buf = cf.read()
                         cf.close()
@@ -427,7 +449,7 @@ def handle(scfg, rcfg, request, response):
                         # If the server isn't operating in readonly mode, the
                         # feed can be generated and cached in inst_dir.
                         cf = file(cfpath, "w")
-                        update(request, scfg, rcfg, last, cf)
+                        update(request, repo, last, cf)
                         cf.close()
 
         return serve_file(cfpath, MIME_TYPE)

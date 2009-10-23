@@ -26,11 +26,10 @@
 
 import cherrypy
 import cherrypy.lib.static
-import errno
 import httplib
 import os
 import pkg.server.api as api
-import pkg.server.api_errors as api_errors
+import pkg.server.api_errors as sae
 import pkg.server.feed
 import sys
 import urllib
@@ -45,30 +44,28 @@ except ImportError:
         sys.exit(2)
 
 tlookup = None
-def init(scfg, rcfg):
-        """Ensure that the BUI is properly initialized.
-        """
+def init(repo, web_root):
+        """Ensure that the BUI is properly initialized."""
         global tlookup
-        pkg.server.feed.init(scfg, rcfg)
-        tlookup = mako.lookup.TemplateLookup(directories=[
-            scfg.web_root
-            ])
+        pkg.server.feed.init(repo)
+        tlookup = mako.lookup.TemplateLookup(directories=[web_root])
 
-def feed(scfg, rcfg, request, response):
-        if scfg.is_mirror():
+def feed(repo, request, response):
+        if repo.mirror:
                 raise cherrypy.HTTPError(httplib.NOT_FOUND,
                     "Operation not supported in current server mode.")
-        if not scfg.updatelog.last_update:
+        if not repo.catalog.updates:
                 raise cherrypy.HTTPError(httplib.SERVICE_UNAVAILABLE,
                     "No update history; unable to generate feed.")
-        return pkg.server.feed.handle(scfg, rcfg, request, response)
+        return pkg.server.feed.handle(repo, request, response)
 
-def __render_template(request, scfg, rcfg, path):
+def __render_template(repo, content_root, web_root, request, path):
         template = tlookup.get_template(path)
-        base = api.BaseInterface(request, scfg, rcfg)
+        base = api.BaseInterface(request, repo, content_root=content_root,
+            web_root=web_root)
         return template.render_unicode(g_vars={ "base": base })
 
-def __handle_error(request, path, error):
+def __handle_error(path, error):
         # All errors are treated as a 404 since reverse proxies such as Apache
         # don't handle 500 errors in a desirable way.  For any error but a 404,
         # an error is logged.
@@ -78,36 +75,44 @@ def __handle_error(request, path, error):
 
         raise cherrypy.NotFound()
 
-def respond(scfg, rcfg, request, response, *tokens, **params):
+def respond(repo, content_root, web_root, request, response):
         path = request.path_info.strip("/")
         if path == "":
                 path = "index.shtml"
         elif path.split("/")[0] == "feed":
-                return feed(scfg, rcfg, request, response)
+                return feed(repo, request, response)
 
         if not path.endswith(".shtml"):
                 spath = urllib.unquote(path)
-                fname = os.path.join(scfg.web_root, spath)
-                if not os.path.normpath(fname).startswith(os.path.normpath(
-                    scfg.web_root)):
+                fname = os.path.join(web_root, spath)
+                if not os.path.normpath(fname).startswith(
+                    os.path.normpath(web_root)):
                         # Ignore requests for files outside of the web root.
-                        return __handle_error(request, path, httplib.NOT_FOUND)
+                        return __handle_error(path, httplib.NOT_FOUND)
                 else:
                         return cherrypy.lib.static.serve_file(os.path.join(
-                            scfg.web_root, spath))
+                            web_root, spath))
 
         try:
-                return __render_template(request, scfg, rcfg, path)
+                return __render_template(repo, content_root, web_root, request,
+                    path)
+        except sae.VersionException, e:
+                # The user shouldn't see why we can't render a template, but
+                # the reason should be logged (cleanly).
+                cherrypy.log("Template '%(path)s' is incompatible with current "
+                    "server api: %(error)s" % { "path": path,
+                    "error": str(e) })
+                cherrypy.log("Ensure that the correct --content-root has been "
+                    "provided to pkg.depotd.")
+                return __handle_error(request.path_info, httplib.NOT_FOUND)
         except IOError, e:
-                return __handle_error(request, path,
-                    httplib.INTERNAL_SERVER_ERROR)
+                return __handle_error(path, httplib.INTERNAL_SERVER_ERROR)
         except mako.exceptions.TemplateLookupException, e:
                 # The above exception indicates that mako could not locate the
                 # template (in most cases, Mako doesn't seem to always clearly
                 # differentiate).
-                return __handle_error(request, path, httplib.NOT_FOUND)
-        except api_errors.RedirectException, e:
+                return __handle_error(path, httplib.NOT_FOUND)
+        except sae.RedirectException, e:
                 raise cherrypy.HTTPRedirect(e.data)
         except:
-                return __handle_error(request, path,
-                    httplib.INTERNAL_SERVER_ERROR)
+                return __handle_error(path, httplib.INTERNAL_SERVER_ERROR)

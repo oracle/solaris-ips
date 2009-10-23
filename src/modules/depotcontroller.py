@@ -44,22 +44,24 @@ class DepotController(object):
         RUNNING = 2
 
         def __init__(self):
+                self.__auto_port = True
+                self.__cfg_file = None
+                self.__debug_features = {}
+                self.__depot_handle = None
                 self.__depot_path = "/usr/lib/pkg.depotd"
                 self.__depot_content_root = None
-                self.__auto_port = True
-                self.__port = -1
                 self.__dir = None
+                self.__disable_ops = None
+                self.__logpath = "/tmp/depot.log"
+                self.__mirror = False
+                self.__output = None
+                self.__port = -1
+                self.__props = {}
                 self.__readonly = False
                 self.__rebuild = False
                 self.__refresh_index = False
-                self.__mirror = False
-                self.__logpath = "/tmp/depot.log"
-                self.__output = None
-                self.__depot_handle = None
-                self.__cfg_file = None
-                self.__writable_root = None
                 self.__state = self.HALTED
-                self.__debug_features = {}
+                self.__writable_root = None
                 return
 
         def set_depotd_path(self, path):
@@ -80,6 +82,16 @@ class DepotController(object):
 
         def get_port(self):
                 return self.__port
+
+        def clear_property(self, section, prop):
+                del self.__props[section][prop]
+
+        def set_property(self, section, prop, value):
+                self.__props.setdefault(section, {})
+                self.__props[section][prop] = value
+
+        def get_property(self, section, prop):
+                return self.__props.get(section, {}).get(prop)
 
         def set_repodir(self, repodir):
                 self.__dir = repodir
@@ -141,9 +153,15 @@ class DepotController(object):
         def unset_debug_feature(self, feature):
                 del self.__debug_features[feature]
 
+        def set_disable_ops(self, ops):
+                self.__disable_ops = ops
+
+        def unset_disable_ops(self):
+                self.__disable_ops = None
+
         def __network_ping(self):
                 try:
-                        c, v = versioned_urlopen(self.get_depot_url(),
+                        versioned_urlopen(self.get_depot_url(),
                             "versions", [0])
                 except urllib2.HTTPError, e:
                         # Server returns NOT_MODIFIED if catalog is up
@@ -199,33 +217,46 @@ class DepotController(object):
                 if self.__debug_features:
                         args.append("--debug=%s" % ",".join(
                             self.__debug_features))
+                if self.__disable_ops:
+                        args.append("--disable-ops=%s" % ",".join(
+                            self.__disable_ops))
+                for section in self.__props:
+                        for prop, val in self.__props[section].iteritems():
+                                args.append("--set-property=%s.%s=%s" %
+                                    (section, prop, val))
                 if self.__writable_root:
                         args.append("--writable-root=%s" % self.__writable_root)
+
+                # Always log access and error information.
+                args.append("--log-access=stdout")
+                args.append("--log-errors=stderr")
+
                 return args
 
         def __initial_start(self):
                 if self.__state != self.HALTED:
-                        raise DepotStateException("Depot already starting or running")
+                        raise DepotStateException("Depot already starting or "
+                            "running")
 
                 # XXX what about stdin and stdout redirection?
                 args = self.get_args()
 
-		if self.__network_ping():
-			raise DepotStateException("A depot (or some " +
-			    "other network process) seems to be " +
-			    "running on port %d already!" % self.__port)
+                if self.__network_ping():
+                        raise DepotStateException("A depot (or some " +
+                            "other network process) seems to be " +
+                            "running on port %d already!" % self.__port)
 
-		self.__state = self.STARTING
+                self.__state = self.STARTING
 
-		self.__output = open(self.__logpath, "w", 0)
+                self.__output = open(self.__logpath, "w", 0)
 
-		self.__depot_handle = subprocess.Popen(args = args,
-                    stdin = subprocess.PIPE,
-		    stdout = self.__output,
-                    stderr = self.__output,
+                self.__depot_handle = subprocess.Popen(args=args,
+                    stdin=subprocess.PIPE,
+                    stdout=self.__output,
+                    stderr=self.__output,
                     close_fds=True)
-		if self.__depot_handle == None:
-			raise DepotStateException("Could not start Depot")
+                if self.__depot_handle == None:
+                        raise DepotStateException("Could not start Depot")
                 
         def start(self):
                 self.__initial_start()
@@ -233,8 +264,8 @@ class DepotController(object):
                 if self.__refresh_index:
                         return
                 
-		sleeptime = 0.05
-		contact = False
+                sleeptime = 0.05
+                contact = False
                 while sleeptime <= 40.0:
                         rc = self.__depot_handle.poll()
                         if rc is not None:
@@ -242,34 +273,34 @@ class DepotController(object):
                                     "unexpectedly while starting "
                                     "(exit code %d)" % rc)
 
-			if self.is_alive():
-				contact = True
-				break
-			time.sleep(sleeptime)
-			sleeptime *= 2
-		
-		if contact == False:
-			self.kill()
-			self.__state = self.HALTED
-			raise DepotStateException("Depot did not respond to "
+                        if self.is_alive():
+                                contact = True
+                                break
+                        time.sleep(sleeptime)
+                        sleeptime *= 2
+                
+                if contact == False:
+                        self.kill()
+                        self.__state = self.HALTED
+                        raise DepotStateException("Depot did not respond to "
                             "repeated attempts to make contact")
 
-		self.__state = self.RUNNING
+                self.__state = self.RUNNING
 
         def start_expected_fail(self):
                 self.__initial_start()
-		
-		sleeptime = 0.05
-		died = False
+                
+                sleeptime = 0.05
+                died = False
                 rc = None
-		while sleeptime <= 10.0:
+                while sleeptime <= 10.0:
 
                         rc = self.__depot_handle.poll()
                         if rc is not None:
-				died = True
-				break
-			time.sleep(sleeptime)
-			sleeptime *= 2
+                                died = True
+                                break
+                        time.sleep(sleeptime)
+                        sleeptime *= 2
                 
                 if died and rc == 2:
                         self.__state = self.HALTED
@@ -297,7 +328,7 @@ class DepotController(object):
                 status = -1
                 #
                 # With sleeptime doubling every loop iter, and capped at
-		# 10.0 secs, the cumulative time waited will be 10 secs.
+                # 10.0 secs, the cumulative time waited will be 10 secs.
                 #
                 sleeptime = 0.05
                 firsttime = True
@@ -305,21 +336,21 @@ class DepotController(object):
                 while sleeptime <= 10.0:
                         status = self.__depot_handle.poll()
                         if status is not None:
-				break
+                                break
 
-			#
-			# No status, Depot process seems to be running
-			# XXX could also check liveness with a kill.
-			#
-			if firsttime:
-				# XXX porting issue
-				os.kill(self.__depot_handle.pid, signal.SIGTERM)
-				firsttime = False
+                        #
+                        # No status, Depot process seems to be running
+                        # XXX could also check liveness with a kill.
+                        #
+                        if firsttime:
+                                # XXX porting issue
+                                os.kill(self.__depot_handle.pid, signal.SIGTERM)
+                                firsttime = False
 
-			time.sleep(sleeptime)
-			sleeptime *= 2
-		else:
-			assert status is None
+                        time.sleep(sleeptime)
+                        sleeptime *= 2
+                else:
+                        assert status is None
                         print >> sys.stderr, \
                             "Depot did not shut down, trying kill -9 %d" % \
                             self.__depot_handle.pid
@@ -377,11 +408,11 @@ def test_func(testdir):
                         raise
 
 if __name__ == "__main__":
-        testdir = "/tmp/depotcontrollertest.%d" % os.getpid()
+        __testdir = "/tmp/depotcontrollertest.%d" % os.getpid()
         try:
-                test_func(testdir)
+                test_func(__testdir)
         except KeyboardInterrupt:
                 pass
-        os.system("rm -fr %s" % testdir)
+        os.system("rm -fr %s" % __testdir)
         print "\nDone"
 

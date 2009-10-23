@@ -27,7 +27,7 @@
         import pkg.server.api as api
         import pkg.server.api_errors as api_errors
 
-        CLIENT_API_VERSION = 4
+        CLIENT_API_VERSION = 6
 %>\
 <%page args="g_vars"/>\
 <%

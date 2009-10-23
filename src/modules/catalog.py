@@ -33,7 +33,6 @@ import os
 import sha
 import simplejson as json
 import stat
-import tempfile
 import threading
 
 import pkg.actions
@@ -49,7 +48,7 @@ class _JSONWriter(object):
         """Private helper class used to serialize catalog data and generate
         signatures."""
 
-        def __init__(self, data, root=None, sign=True):
+        def __init__(self, data, pathname=None, sign=True):
                 self.__data = data
                 self.__fileobj = None
 
@@ -59,34 +58,22 @@ class _JSONWriter(object):
                         # sha-1 hex is always 40 characters in length.
                         self.__sha_1_keyword = "sha-1-" + ("*" * 34)
                 self.__sign = sign
-                self.__root = root
-                self.pathname = None
+                self.pathname = pathname
 
-                if root:
-                        # Create a file to store the data as it is written.
-                        # The caller is responsible for renaming this file
-                        # as desired after save().
-                        try:
-                                tmp_num, tmpfile = tempfile.mkstemp(
-                                    dir=root)
-                        except EnvironmentError, e:
-                                if e.errno == errno.EACCES:
-                                        raise api_errors.PermissionsException(
-                                            e.filename)
-                                raise
+                if not pathname:
+                        return
 
-                        try:
-                                # use fdopen since a filehandle exists
-                                tfile = os.fdopen(tmp_num, "wb")
-                        except EnvironmentError, e:
-                                portable.remove(tmpfile)
-                                if e.errno == errno.EACCES:
-                                        raise api_errors.PermissionsException(
-                                            e.filename)
-                                raise
-
-                        self.__fileobj = tfile
-                        self.pathname = tmpfile
+                try:
+                        tfile = open(pathname, "wb")
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES:
+                                raise api_errors.PermissionsException(
+                                    e.filename)
+                        if e.errno == errno.EROFS:
+                                raise api_errors.ReadOnlyFileSystemException(
+                                    e.filename)
+                        raise
+                self.__fileobj = tfile
 
         def __offsets(self):
                 if not self.__sign:
@@ -221,7 +208,7 @@ class CatalogPartBase(object):
                 self.__meta_root = path
 
         def destroy(self):
-                """Removes any on-disk files that exist for the catalog and
+                """Removes any on-disk files that exist for the catalog part and
                 discards all content."""
 
                 if self.pathname:
@@ -229,10 +216,13 @@ class CatalogPartBase(object):
                                 try:
                                         portable.remove(self.pathname)
                                 except EnvironmentError, e:
-                                        if e.errno != errno.EACCES:
-                                                raise
-                                        raise api_errors.PermissionsException(
-                                            e.filename)
+                                        if e.errno == errno.EACCES:
+                                                raise api_errors.PermissionsException(
+                                                    e.filename)
+                                        if e.errno == errno.EROFS:
+                                                raise api_errors.ReadOnlyFileSystemException(
+                                                    e.filename)
+                                        raise
                 self.signatures = {}
                 self.loaded = False
                 self.last_modified = None
@@ -258,9 +248,13 @@ class CatalogPartBase(object):
                         if e.errno == errno.ENOENT:
                                 raise api_errors.RetrievalError(e,
                                     location=location)
-                        elif e.errno == errno.EACCES:
+                        if e.errno == errno.EROFS:
+                                raise api_errors.ReadOnlyFileSystemException(
+                                    e.filename)
+                        if e.errno == errno.EACCES:
                                 raise api_errors.PermissionsException(
                                     e.filename)
+                        raise
 
                 try:
                         struct = json.load(fobj)
@@ -291,27 +285,29 @@ class CatalogPartBase(object):
 
                 'data' must be a dict."""
 
-                f = _JSONWriter(data, root=self.meta_root, sign=self.sign)
+                f = _JSONWriter(data, pathname=self.pathname, sign=self.sign)
                 f.save()
 
                 # Update in-memory copy to reflect stored data.
                 self.signatures = f.signatures()
 
-                # Ensure the permissions on the new file are correct, and then
-                # rename it into place.
-                location = os.path.join(self.meta_root, self.name)
+                # Ensure the permissions on the new file are correct.
                 try:
-                        os.chmod(f.pathname, self.__file_mode)
-                        portable.rename(f.pathname, location)
-                except EnvironmentError:
-                        portable.remove(f.pathname)
+                        os.chmod(self.pathname, self.__file_mode)
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES:
+                                raise api_errors.PermissionsException(
+                                    e.filename)
+                        if e.errno == errno.EROFS:
+                                raise api_errors.ReadOnlyFileSystemException(
+                                    e.filename)
                         raise
 
                 # Finally, set the file times to match the last catalog change.
                 if self.last_modified:
                         mtime = calendar.timegm(
                             self.last_modified.utctimetuple())
-                        os.utime(location, (mtime, mtime))
+                        os.utime(self.pathname, (mtime, mtime))
 
         meta_root = property(__get_meta_root, __set_meta_root)
 
@@ -336,7 +332,7 @@ class CatalogPart(CatalogPartBase):
                 entries."""
 
                 self.load()
-                for pub in self.__data:
+                for pub in self.publishers():
                         for stem in self.__data[pub]:
                                 for entry in self.__data[pub][stem]:
                                         yield pub, stem, entry
@@ -406,7 +402,7 @@ class CatalogPart(CatalogPartBase):
 
                 versions = {}
                 entries = {}
-                for pub in self.__data:
+                for pub in self.publishers():
                         ver_list = self.__data[pub].get(name, ())
                         for entry in ver_list:
                                 sver = entry["version"]
@@ -451,7 +447,7 @@ class CatalogPart(CatalogPartBase):
 
                 versions = {}
                 entries = {}
-                for pub in self.__data:
+                for pub in self.publishers():
                         try:
                                 ver_list = self.__data[pub][name]
                         except KeyError:
@@ -498,7 +494,7 @@ class CatalogPart(CatalogPartBase):
                 self.load()
                 package_count = 0
                 package_version_count = 0
-                for pub in self.__data:
+                for pub in self.publishers():
                         for stem in self.__data[pub]:
                                 package_count += 1
                                 package_version_count += \
@@ -521,9 +517,20 @@ class CatalogPart(CatalogPartBase):
                 self.load()
                 return set((
                     stem
-                    for pub in self.__data
+                    for pub in self.publishers()
                     for stem in self.__data[pub]
                 ))
+
+        def publishers(self):
+                """A generator function that returns publisher prefixes as it
+                iterates over the package data in the CatalogPart."""
+
+                self.load()
+                for pub in self.__data:
+                        # Any entries starting with "__" are part of the
+                        # reserved catalog namespace.
+                        if not pub[:2] == "__":
+                                yield pub
 
         def remove(self, pfmri, op_time=None):
                 """Remove a package and its metadata."""
@@ -597,10 +604,29 @@ class CatalogPart(CatalogPartBase):
                         ver_list.sort(cmp=order)
                         return
 
-                for pub in self.__data:
+                for pub in self.publishers():
                         for stem in self.__data[pub]:
                                 ver_list = self.__data[pub][stem]
                                 ver_list.sort(cmp=order)
+
+        def tuples(self):
+                """A generator function that produces FMRI tuples as it iterates
+                over the contents of the catalog part."""
+
+                self.load()
+
+                # Results have to be sorted by stem first, and by
+                # publisher prefix second.
+                pkg_list = [
+                        "%s!%s" % (stem, pub)
+                        for pub in self.publishers()
+                        for stem in self.__data[pub]
+                ]
+
+                for entry in sorted(pkg_list):
+                        stem, pub = entry.split("!", 1)
+                        for entry in self.__data[pub][stem]:
+                                yield pub, stem, entry["version"]
 
         def validate(self, signatures=None):
                 """Verifies whether the signatures for the contents of the
@@ -631,11 +657,12 @@ class CatalogUpdate(CatalogPartBase):
         ADD = "add"
         REMOVE = "remove"
 
-        def __init__(self, name, meta_root=None):
+        def __init__(self, name, meta_root=None, sign=True):
                 """Initializes a CatalogUpdate object."""
 
                 self.__data = {}
-                CatalogPartBase.__init__(self, name, meta_root=meta_root)
+                CatalogPartBase.__init__(self, name, meta_root=meta_root,
+                    sign=sign)
 
         def add(self, pfmri, operation, op_time, metadata=None):
                 """Records the specified catalog operation and any related
@@ -695,6 +722,17 @@ class CatalogUpdate(CatalogPartBase):
                         return
                 self.__data = CatalogPartBase.load(self)
 
+        def publishers(self):
+                """A generator function that returns publisher prefixes as it
+                iterates over the package data in the CatalogUpdate."""
+
+                self.load()
+                for pub in self.__data:
+                        # Any entries starting with "__" are part of the
+                        # reserved catalog namespace.
+                        if not pub[:2] == "__":
+                                yield pub
+
         def save(self):
                 """Transform and store the catalog update's data in a file using
                 the pathname <self.meta_root>/<self.name>."""
@@ -735,7 +773,7 @@ class CatalogUpdate(CatalogPartBase):
                             publisher=pub)
                         return (pfmri, entry["op-type"], op_time, mdata)
 
-                for pub in self.__data:
+                for pub in self.publishers():
                         for stem in self.__data[pub]:
                                 for entry in self.__data[pub][stem]:
                                         yield get_update(pub, stem, entry)
@@ -933,8 +971,9 @@ class Catalog(object):
         """A Catalog is the representation of the package FMRIs available from
         a package repository."""
 
-        # XXX It would be nice to include available tags and package sizes,
-        # although this could also be calculated from the set of manifests.
+        __BASE_PART = "catalog.base.C"
+        __DEPS_PART = "catalog.dependency.C"
+        __SUMM_PART_PFX = "catalog.summary"
 
         # The file mode to be used for all catalog files.
         __file_mode = stat.S_IRUSR|stat.S_IWUSR|stat.S_IRGRP|stat.S_IROTH
@@ -996,13 +1035,13 @@ class Catalog(object):
                 of convenience for callers that wish to trade integrity checks
                 for improved catalog serialization performance."""
 
-                self.__log_updates = log_updates
                 self.__batch_mode = batch_mode
                 self.__manifest_cb = manifest_cb
                 self.__parts = {}
                 self.__updates = {}
 
                 # Must be set after the above.
+                self.log_updates = log_updates
                 self.meta_root = meta_root
                 self.read_only = read_only
                 self.sign = sign
@@ -1010,10 +1049,9 @@ class Catalog(object):
                 # Must be set after the above.
                 self._attrs = CatalogAttrs(meta_root=self.meta_root, sign=sign)
 
-                if not read_only:
-                        # This lock is used to protect the catalog file from
-                        # multiple threads writing to it at the same time.
-                        self.__lock = threading.Lock()
+                # This lock is used to protect the catalog file from multiple
+                # threads writing to it at the same time.
+                self.__lock = threading.Lock()
 
                 # Must be done last.
                 self.__set_perms()
@@ -1025,7 +1063,7 @@ class Catalog(object):
                 package_count = 0
                 package_version_count = 0
 
-                part = self.get_part("catalog.base.C", must_exist=True)
+                part = self.get_part(self.__BASE_PART, must_exist=True)
                 if part:
                         # If the base Catalog didn't exist (in-memory or on-
                         # disk) that implies there is nothing to sort and
@@ -1055,7 +1093,12 @@ class Catalog(object):
             excludes=EmptyI):
                 # Note that the logic below must be kept in sync with
                 # group_actions found in add_package.
-                m = self.__manifest_cb(f)
+                m = self.__manifest_cb(self, f)
+                if not m:
+                        # If the manifest callback returns None, then
+                        # assume there is no action data to yield.
+                        return
+
                 if Catalog.DEPENDENCY in info_needed:
                         atypes = ("depend", "set")
                 elif Catalog.SUMMARY in info_needed:
@@ -1121,7 +1164,8 @@ class Catalog(object):
 
                 # Next, if the update hasn't been cached,
                 # create an object for it.
-                ulog = CatalogUpdate(name, meta_root=self.meta_root)
+                ulog = CatalogUpdate(name, meta_root=self.meta_root,
+                    sign=self.__sign)
                 if self.meta_root and must_exist and not ulog.exists:
                         # Update doesn't exist on-disk,
                         # so don't return anything.
@@ -1156,7 +1200,7 @@ class Catalog(object):
                 attrs = self._attrs
                 attrs.last_modified = op_time
 
-                if not self.__log_updates:
+                if not self.log_updates:
                         return
 
                 updates = {}
@@ -1192,7 +1236,7 @@ class Catalog(object):
                 the catalog."""
 
                 attrs = self._attrs
-                if self.__log_updates:
+                if self.log_updates:
                         for name, ulog in self.__updates.iteritems():
                                 ulog.save()
 
@@ -1296,12 +1340,15 @@ class Catalog(object):
                 self.__sign = value
 
                 # If the Catalog's sign property changes, the value of that
-                # property for its attributes and parts must be changed too.
+                # property for its attributes, etc. must be changed too.
                 if self._attrs:
                         self._attrs.sign = value
 
                 for part in self.__parts.values():
                         part.sign = value
+
+                for ulog in self.__updates.values():
+                        ulog.sign = value
 
         def __set_version(self, value):
                 self._attrs.version = value
@@ -1317,11 +1364,18 @@ class Catalog(object):
                 """A generator function that produces tuples of the format
                 (fmri, actions) as it iterates over the contents of the
                 catalog (where 'actions' is a generator that returns the
-                Actions corresponding to the requested information).  If
-                the catalog doesn't contain any action data for the package
+                Actions corresponding to the requested information).
+                
+                If the catalog doesn't contain any action data for the package
                 entry, and manifest_cb was defined at Catalog creation time,
                 the action data will be lazy-loaded by the actions generator;
-                otherwise it will return an empty iterator.
+                otherwise it will return an empty iterator.  This means that
+                the manifest_cb will be executed even for packages that don't
+                actually have any actions corresponding to info_needed.  For
+                example, if a package doesn't have any dependencies, the
+                manifest_cb will still be executed.  This was considered a
+                reasonable compromise as packages are generally expected to
+                have DEPENDENCY and SUMMARY information.
 
                 'excludes' is a list of variants which will be used to determine
                 what should be allowed by the actions generator in addition to
@@ -1348,6 +1402,8 @@ class Catalog(object):
                 assert info_needed
                 if not locales:
                         locales = set(("C",))
+                else:
+                        locales = set(locales)
 
                 for f, entry in self.entries(info_needed=info_needed,
                     locales=locales):
@@ -1430,7 +1486,7 @@ class Catalog(object):
                         if manifest:
                                 for k, v in manifest.signatures.iteritems():
                                         entry["signature-%s" % k] = v
-                        part = self.get_part("catalog.base.C")
+                        part = self.get_part(self.__BASE_PART)
                         entries[part.name] = part.add(pfmri, metadata=entry,
                             op_time=op_time)
 
@@ -1468,7 +1524,7 @@ class Catalog(object):
                 finally:
                         self.__unlock_catalog()
 
-        def append(self, src, cb=None, pfmri=None):
+        def append(self, src, cb=None, pfmri=None, pubs=EmptyI):
                 """Appends the entries in the specified 'src' catalog to that
                 of the current catalog.  The caller is responsible for ensuring
                 that no duplicates exist, and for calling finalize() or save()
@@ -1485,12 +1541,20 @@ class Catalog(object):
                 BASE record.
 
                 'pfmri' is an optional FMRI of a package to append.  If not
-                provided, all FMRIs in the 'src' catalog will be appended."""
+                provided, all FMRIs in the 'src' catalog will be appended.
+                This filtering is applied before any provided callback.
 
-                assert not self.__log_updates and not self.read_only
+                'pubs' is an optional list of publisher prefixes to restrict
+                the append operation to.  FRMIs that have a publisher not in
+                the list will be skipped.  This filtering is applied before
+                any provided callback.  If not provided, no publisher
+                filtering will be applied.
+                """
 
-                base = self.get_part("catalog.base.C")
-                src_base = src.get_part("catalog.base.C", must_exist=True)
+                assert not self.log_updates and not self.read_only
+
+                base = self.get_part(self.__BASE_PART)
+                src_base = src.get_part(self.__BASE_PART, must_exist=True)
                 if not src_base:
                         if pfmri:
                                 raise api_errors.UnknownCatalogEntry(pfmri)
@@ -1516,6 +1580,9 @@ class Catalog(object):
 
                 d = {}
                 for f, entry in entries:
+                        if pubs and f.publisher not in pubs:
+                                continue
+
                         nentry = copy.deepcopy(entry)
                         if cb:
                                 merge, mdata = cb(src, f, entry)
@@ -1541,7 +1608,7 @@ class Catalog(object):
                 # Finally, merge any catalog part entries that exist unless the
                 # FMRI is found in the 'd'iscard dict.
                 for name in src.parts.keys():
-                        if name == "catalog.base.C":
+                        if name == self.__BASE_PART:
                                 continue
 
                         part = src.get_part(name, must_exist=True)
@@ -1562,6 +1629,8 @@ class Catalog(object):
 
                         npart = self.get_part(name)
                         for f, entry in entries:
+                                if pubs and f.publisher not in pubs:
+                                        continue
                                 if f.publisher in d and \
                                     f.pkg_name in d[f.publisher] and \
                                     f.version in d[f.publisher][f.pkg_name]:
@@ -1599,13 +1668,22 @@ class Catalog(object):
                                                 continue
 
                                         lm = old_parts[pname]["last-modified"]
-                                        if op_time > lm:
+                                        if op_time <= lm:
                                                 # Only add updates to the part
                                                 # that occurred after the last
                                                 # time it was originally
                                                 # modified.
+                                                continue
+
+                                        if op_type == CatalogUpdate.ADD:
                                                 part.add(pfmri, metadata=pdata,
                                                     op_time=op_time)
+                                        elif op_type == CatalogUpdate.REMOVE:
+                                                part.remove(pfmri,
+                                                    op_time=op_time)
+                                        else:
+                                                raise api_errors.UnknownUpdateType(
+                                                    op_type)
 
                 def apply_full(name):
                         src = os.path.join(path, name)
@@ -1617,7 +1695,12 @@ class Catalog(object):
                         old_batch_mode = self.batch_mode
                         self.batch_mode = True
 
-                        for name in self.get_updates_needed(path):
+                        updates = self.get_updates_needed(path)
+                        if updates == None:
+                                # Nothing has changed, so nothing to do.
+                                return
+
+                        for name in updates:
                                 if name.startswith("update."):
                                         # The provided update is an incremental.
                                         apply_incremental(name)
@@ -1653,6 +1736,7 @@ class Catalog(object):
                         self._attrs = CatalogAttrs(meta_root=self.meta_root)
                         self.__set_perms()
                 finally:
+                        self.batch_mode = old_batch_mode
                         self.__unlock_catalog()
 
         @property
@@ -1679,7 +1763,7 @@ class Catalog(object):
                 self.__parts = {}
                 self.__updates = {}
 
-        def entries(self, info_needed=None, locales=None):
+        def entries(self, info_needed=EmptyI, locales=None):
                 """A generator function that produces tuples of the format
                 (fmri, metadata) as it iterates over the contents of the
                 catalog (where 'metadata' is a dict containing the requested
@@ -1693,7 +1777,7 @@ class Catalog(object):
                                 signature data, if available, using key-value
                                 pairs of the form 'signature-<name>': value.
 
-                'info_needed' is an optional set of one or more catalog
+                'info_needed' is an optional list of one or more catalog
                 constants indicating the types of catalog data that will
                 be returned in 'metadata' in addition to the above:
 
@@ -1714,27 +1798,26 @@ class Catalog(object):
                 Note that unlike actions(), catalog entries will not lazy-load
                 action data if it is missing from the catalog."""
 
-                base = self.get_part("catalog.base.C", must_exist=True)
+                base = self.get_part(self.__BASE_PART, must_exist=True)
                 if not base:
                         # Catalog contains nothing.
                         return
 
-                if not info_needed:
-                        info_needed = set()
                 if not locales:
                         locales = set(("C",))
+                else:
+                        locales = set(locales)
 
                 parts = []
                 if self.DEPENDENCY in info_needed:
-                        part = self.get_part("catalog.dependency.C",
-                            must_exist=True)
+                        part = self.get_part(self.__DEPS_PART, must_exist=True)
                         if part:
                                 parts.append(part)
 
                 if self.SUMMARY in info_needed:
                         for locale in locales:
                                 part = self.get_part(
-                                    "catalog.summary.%s" % locale,
+                                    "%s.%s" % (self.__SUMM_PART_PFX, locale),
                                     must_exist=True)
                                 if not part:
                                         # Data not available for this
@@ -1766,7 +1849,7 @@ class Catalog(object):
                         merge_meta(f, mdata)
                         yield f, mdata
 
-        def entries_by_version(self, name, info_needed=None, locales=None):
+        def entries_by_version(self, name, info_needed=EmptyI, locales=None):
                 """A generator function that produces tuples of the format
                 (version, entries) as it iterates over the contents of the
                 the catalog, where entries is a list of tuples of the format
@@ -1781,7 +1864,7 @@ class Catalog(object):
                                 signature data, if available, using key-value
                                 pairs of the form 'signature-<name>': value.
 
-                'info_needed' is an optional set of one or more catalog
+                'info_needed' is an optional list of one or more catalog
                 constants indicating the types of catalog data that will
                 be returned in 'metadata' in addition to the above:
 
@@ -1801,28 +1884,26 @@ class Catalog(object):
                 should be returned.  The default is set(('C',)) if not provided.
                 """
 
-
-                base = self.get_part("catalog.base.C", must_exist=True)
+                base = self.get_part(self.__BASE_PART, must_exist=True)
                 if not base:
                         # Catalog contains nothing.
                         return
 
-                if not info_needed:
-                        info_needed = set()
                 if not locales:
                         locales = set(("C",))
+                else:
+                        locales = set(locales)
 
                 parts = []
                 if self.DEPENDENCY in info_needed:
-                        part = self.get_part("catalog.dependency.C",
-                            must_exist=True)
+                        part = self.get_part(self.__DEPS_PART, must_exist=True)
                         if part:
                                 parts.append(part)
 
                 if self.SUMMARY in info_needed:
                         for locale in locales:
                                 part = self.get_part(
-                                    "catalog.summary.%s" % locale,
+                                    "%s.%s" % (self.__SUMM_PART_PFX, locale),
                                     must_exist=True)
                                 if not part:
                                         # Data not available for this
@@ -1881,7 +1962,7 @@ class Catalog(object):
                 'objects' is an optional boolean value indicating whether
                 FMRIs should be returned as FMRI objects or as strings."""
 
-                base = self.get_part("catalog.base.C", must_exist=True)
+                base = self.get_part(self.__BASE_PART, must_exist=True)
                 if not base:
                         # Catalog contains nothing.
 
@@ -1889,7 +1970,6 @@ class Catalog(object):
                         # return no results properly to callers expecting
                         # a generator function.
                         return iter(())
-
                 return base.fmris(objects=objects)
 
         def fmris_by_version(self, name):
@@ -1897,7 +1977,7 @@ class Catalog(object):
                 fmris), where fmris is a of the fmris related to the
                 version, for the given package name."""
 
-                base = self.get_part("catalog.base.C", must_exist=True)
+                base = self.get_part(self.__BASE_PART, must_exist=True)
                 if not base:
                         # Catalog contains nothing.
 
@@ -1905,10 +1985,9 @@ class Catalog(object):
                         # return no results properly to callers expecting
                         # a generator function.
                         return iter(())
-
                 return base.fmris_by_version(name)
 
-        def get_entry(self, pfmri, info_needed=None, locales=None):
+        def get_entry(self, pfmri, info_needed=EmptyI, locales=None):
                 """Returns a dict containing the metadata for the specified
                 FMRI containing the requested information.
 
@@ -1920,7 +1999,7 @@ class Catalog(object):
                                 signature data, if available, using key-value
                                 pairs of the form 'signature-<name>': value.
 
-                'info_needed' is an optional set of one or more catalog
+                'info_needed' is an optional list of one or more catalog
                 constants indicating the types of catalog data that will
                 be returned in 'metadata' in addition to the above:
 
@@ -1958,11 +2037,8 @@ class Catalog(object):
                                         continue
                                 merge_entry(entry, meta)
 
-                if not info_needed:
-                        info_needed = set()
-
                 parts = []
-                base = self.get_part("catalog.base.C", must_exist=True)
+                base = self.get_part(self.__BASE_PART, must_exist=True)
                 if not base:
                         # Catalog contains nothing.
                         raise api_errors.UnknownCatalogEntry(
@@ -1970,6 +2046,8 @@ class Catalog(object):
 
                 if not locales:
                         locales = set(("C",))
+                else:
+                        locales = set(locales)
 
                 # Always attempt to retrieve the BASE entry as FMRIs
                 # must be present in the BASE catalog part.
@@ -1978,7 +2056,7 @@ class Catalog(object):
                 merge_entry(bentry, mdata)
 
                 if self.DEPENDENCY in info_needed:
-                        part = self.get_part("catalog.dependency.C",
+                        part = self.get_part(self.__DEPS_PART,
                             must_exist=True)
                         if part:
                                 parts.append(part)
@@ -1986,7 +2064,7 @@ class Catalog(object):
                 if self.SUMMARY in info_needed:
                         for locale in locales:
                                 part = self.get_part(
-                                    "catalog.summary.%s" % locale,
+                                    "%s.%s" % (self.__SUMM_PART_PFX, locale),
                                     must_exist=True)
                                 if not part:
                                         # Data not available for this
@@ -2031,6 +2109,8 @@ class Catalog(object):
                 assert info_needed
                 if not locales:
                         locales = set(("C",))
+                else:
+                        locales = set(locales)
 
                 entry = self.get_entry(pfmri, info_needed=info_needed,
                     locales=locales)
@@ -2068,6 +2148,20 @@ class Catalog(object):
                         if not attr_name.startswith("variant"):
                                 continue
                         yield attr_name, a.attrs["value"]
+
+        def get_entry_signatures(self, pfmri):
+                """A generator function that yields tuples of the form (sig,
+                value) where 'sig' is the name of the signature, and 'value' is
+                the raw catalog value for the signature.  Please note that the
+                data type of 'value' is dependent on the signature, so it may
+                be a string, list, dict, etc."""
+
+                entry = self.get_entry(pfmri)
+                return (
+                    (k.split("signature-")[1], v)
+                    for k, v in entry.iteritems()
+                    if k.startswith("signature-")
+                )
 
         def get_entry_variants(self, pfmri, name):
                 """A generator function that returns the variants for the
@@ -2117,18 +2211,31 @@ class Catalog(object):
                 """Returns a list of the catalog files needed to update
                 the existing catalog parts, based on the contents of the
                 catalog.attrs file in the directory indicated by 'path'.
-                """
+                A value of None will be returned if the the catalog has
+                not been modified, while an empty list will be returned
+                if no catalog parts need to be updated, but the catalog
+                itself has changed."""
 
                 new_attrs = CatalogAttrs(meta_root=path)
                 if not new_attrs.exists:
-                        # Assume no updates needed.
-                        return []
+                        # No updates needed (not even to attrs), so return None.
+                        return None
+
+                old_attrs = self._attrs
+                if old_attrs.created != new_attrs.created:
+                        # It's very likely that the catalog has been recreated
+                        # or this is a completely different catalog than was
+                        # expected.  In either case, an update isn't possible.
+                        raise api_errors.BadCatalogUpdateIdentity(path)
+
+                if new_attrs.last_modified == old_attrs.last_modified:
+                        # No updates needed (not even to attrs), so return None.
+                        return None
 
                 # First, verify that all of the catalog parts the client has
                 # still exist.  If they no longer exist, the catalog is no
                 # longer valid and cannot be updated.
                 parts = {}
-                old_attrs = self._attrs
                 incremental = True
                 for name in old_attrs.parts:
                         if name not in new_attrs.parts:
@@ -2156,12 +2263,44 @@ class Catalog(object):
                         if logname not in new_attrs.updates:
                                 incremental = False
 
-                        if locale not in parts:
-                                parts[locale] = set()
+                        parts.setdefault(locale, set())
                         parts[locale].add(name)
 
+                # XXX in future, add current locale to this.  For now, just
+                # ensure that all of the locales of parts that were changed
+                # and exist on-disk are included.
+                locales = set(("C",))
+                locales.update(set(parts.keys()))
+
+                # Now determine if there are any new parts for this locale that
+                # this version of the API knows how to use that the client
+                # doesn't already have.
+                for name in new_attrs.parts:
+                        if name in parts or name in old_attrs.parts:
+                                continue
+
+                        # The last component of the name is the locale.
+                        locale = name.split(".", 2)[2]
+                        if locale not in locales:
+                                continue
+
+                        # Currently, only these parts are used by the client,
+                        # so only they need to be retrieved.
+                        if name == self.__BASE_PART or \
+                            name == self.__DEPS_PART or \
+                            name.startswith(self.__SUMM_PART_PFX):
+                                incremental = False
+
+                                # If a new part has been added for the current
+                                # locale, then incremental updates can't be
+                                # performed since updates for this locale can
+                                # only be applied to parts that already exist.
+                                parts.setdefault(locale, set())
+                                parts[locale].add(name)
+
                 if not parts:
-                        # No updates needed.
+                        # No updates needed to catalog parts on-disk, but
+                        # catalog has changed.
                         return []
                 elif not incremental:
                         # Since an incremental update cannot be performed,
@@ -2180,6 +2319,9 @@ class Catalog(object):
                         # needed for an incremental update.
                         last_lm = None
                         for name in parts[locale]:
+                                if name not in old_attrs.parts:
+                                        continue
+
                                 lm = old_attrs.parts[name]["last-modified"]
                                 if not last_lm or lm > last_lm:
                                         last_lm = lm
@@ -2214,7 +2356,7 @@ class Catalog(object):
                 """Returns a set containing the names of all the packages in
                 the Catalog."""
 
-                base = self.get_part("catalog.base.C", must_exist=True)
+                base = self.get_part(self.__BASE_PART, must_exist=True)
                 if not base:
                         # Catalog contains nothing.
                         return set()
@@ -2236,6 +2378,16 @@ class Catalog(object):
                 is composed of along with information about each part."""
 
                 return self._attrs.parts
+
+        def publishers(self):
+                """Returns a set containing the prefixes of all the publishers
+                in the Catalog."""
+
+                base = self.get_part(self.__BASE_PART, must_exist=True)
+                if not base:
+                        # Catalog contains nothing.
+                        return set()
+                return set(p for p in base.publishers())
 
         def remove_package(self, pfmri):
                 """Remove a package and its metadata."""
@@ -2261,11 +2413,16 @@ class Catalog(object):
                                 try:
                                         pkg_entry = part.get_entry(pfmri)
                                 except api_errors.UnknownCatalogEntry:
-                                        # Skip; part doesn't have this package.
+                                        if name == self.__BASE_PART:
+                                                # Entry should exist in at least
+                                                # the base part.
+                                                raise
+                                        # Skip; package's presence is optional
+                                        # in other parts.
                                         continue
 
                                 part.remove(pfmri, op_time=op_time)
-                                if self.__log_updates:
+                                if self.log_updates:
                                         entries[part.name] = pkg_entry
 
                         self.__log_update(pfmri, CatalogUpdate.REMOVE, op_time,
@@ -2306,6 +2463,20 @@ class Catalog(object):
                                                 continue
                 return sigs
 
+        def tuples(self):
+                """A generator function that produces FMRI tuples as it iterates
+                over the contents of the catalog."""
+
+                base = self.get_part(self.__BASE_PART, must_exist=True)
+                if not base:
+                        # Catalog contains nothing.
+
+                        # This construction is necessary to get python to
+                        # return no results properly to callers expecting
+                        # a generator function.
+                        return iter(())
+                return base.tuples()
+
         @property
         def updates(self):
                 """A dict containing the list of known updates for the catalog
@@ -2324,9 +2495,9 @@ class Catalog(object):
                 'metadata' must be a dict of additional metadata to store with
                 the package's BASE record."""
 
-                assert not self.__log_updates and not self.read_only
+                assert not self.log_updates and not self.read_only
 
-                base = self.get_part("catalog.base.C", must_exist=True)
+                base = self.get_part(self.__BASE_PART, must_exist=True)
                 if not base:
                         raise api_errors.UnknownCatalogEntry(pfmri.get_fmri())
 
@@ -2372,6 +2543,32 @@ class Catalog(object):
         meta_root = property(__get_meta_root, __set_meta_root)
         sign = property(__get_sign, __set_sign)
         version = property(__get_version, __set_version)
+
+
+# Methods used by external callers
+def verify(filename):
+        """Convert the catalog part named by filename into the correct
+        type of Catalog object and then call its validate method to ensure
+        that is contents are self-consistent."""
+
+        path, fn = os.path.split(filename)
+        catobj = None
+
+        if fn.startswith("catalog"):
+                if fn.endswith("attrs"):
+                        catobj = CatalogAttrs(meta_root=path)
+                else:
+                        catobj = CatalogPart(fn, meta_root=path)
+        elif fn.startswith("update"):
+                catobj = CatalogUpdate(fn, meta_root=path)
+        else:
+                # Unrecognized.
+                raise api_errors.UnrecognizedCatalogPart(fn) 
+
+        # With the else case above, this should never be None.
+        assert catobj
+
+        catobj.validate()
 
 # Methods used by Catalog classes.
 def datetime_to_ts(dt):

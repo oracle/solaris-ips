@@ -41,6 +41,7 @@ path_to_parent = os.path.join(os.path.dirname(__file__), "..")
 sys.path.insert(0, path_to_parent)
 
 import pkg5unittest
+from pkg.misc import EmptyI
 
 g_proto_area=""
 
@@ -534,7 +535,7 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                                         continue
                                 retcode, published = self.pkgsend(depot_url, line, exit=exit)
                                 if retcode == 0 and published:
-                                        plist.append(published[len("pkg:/"):])
+                                        plist.append(published)
 
                 except (TracebackException, UnexpectedExitCodeException):
                         if os.environ.get("PKG_TRANS_ID", None):
@@ -555,6 +556,50 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                         raise UnexpectedExitCodeException(cmdline, exit,
                             retcode, output, debug=self.get_debugbuf())
 
+        def copy_repository(self, src, src_pub, dest, dest_pub):
+                """Copies the packages from the src repository to a new
+                destination repository that will be created at dest.  In
+                addition, any packages from the src_pub will be assigned
+                to the dest_pub during the copy.  The new repository will
+                not have a catalog or search indices, so a depot server
+                pointed at the new repository must be started with the
+                --rebuild option."""
+
+                shutil.rmtree(dest, True)
+                os.makedirs(dest, mode=0755)
+
+                for entry in os.listdir(src):
+                        spath = os.path.join(src, entry)
+
+                        # Skip the catalog, index, and pkg directories
+                        # as they will be copied manually.  Also skip
+                        # any unknown files in the repository directory.
+                        if entry in ("catalog", "index", "pkg") or \
+                            not os.path.isdir(spath):
+                                continue
+                        shutil.copytree(spath, os.path.join(dest, entry))
+
+                # Now copy each manifest and replace any references to the old
+                # publisher with that of the new publisher as they are copied.
+                pkg_root = os.path.join(src, "pkg")
+                for stem in os.listdir(pkg_root):
+                        pkg_path = os.path.join(pkg_root, stem)
+                        for mname in os.listdir(pkg_path):
+                                # Ensure destination manifest directory exists.
+                                dmdpath = os.path.join(dest, "pkg", stem)
+                                if not os.path.isdir(dmdpath):
+                                        os.makedirs(dmdpath, mode=0755)
+
+                                msrc = open(os.path.join(pkg_path, mname), "rb")
+                                mdest = open(os.path.join(dmdpath, mname), "wb")
+                                for l in msrc:
+                                        if l.find("pkg://") > -1:
+                                                mdest.write(l.replace(src_pub,
+                                                    dest_pub))
+                                        else:
+                                                mdest.write(l)
+                                msrc.close()
+                                mdest.close()
 
         def validate_html_file(self, fname, exit=0, comment="",
             options="-quiet -utf8"):
@@ -586,7 +631,7 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                 return retcode
 
         def start_depot(self, port, depotdir, logpath, refresh_index=False,
-            debug_features=None):
+            debug_features=EmptyI, properties=EmptyI):
                 """ Convenience routine to help subclasses start
                     depots.  Returns a depotcontroller. """
 
@@ -601,12 +646,14 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                 dc = depotcontroller.DepotController()
                 dc.set_depotd_path(g_proto_area + "/usr/lib/pkg.depotd")
                 dc.set_depotd_content_root(g_proto_area + "/usr/share/lib/pkg")
-                if debug_features:
-                        for f in debug_features:
-                                dc.set_debug_feature(f)
+                for f in debug_features:
+                        dc.set_debug_feature(f)
                 dc.set_repodir(depotdir)
                 dc.set_logpath(logpath)
                 dc.set_port(port)
+                for section in properties:
+                        for prop, val in properties[section].iteritems():
+                                dc.set_property(section, prop, val)
                 if refresh_index:
                         dc.set_refresh_index()
                 dc.start()
@@ -615,18 +662,17 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
 
 class ManyDepotTestCase(CliTestCase):
 
-        def setUp(self, ndepots, debug_features=None):
-                # Note that this must be deferred until after PYTHONPATH
-                # is set up.
-                import pkg.depotcontroller as depotcontroller
-
+        def setUp(self, publishers, debug_features=EmptyI):
                 CliTestCase.setUp(self)
 
                 self.debug("setup: %s" % self.id())
-                self.debug("starting %d depot(s)" % ndepots)
+                self.debug("starting %d depot(s)" % len(publishers))
+                self.debug("publishers: %s" % publishers)
+                self.debug("debug_features: %s" % list(debug_features))
                 self.dcs = {}
 
-                for i in range(1, ndepots + 1):
+                for n, pub in enumerate(publishers):
+                        i = n + 1
                         testdir = os.path.join(self.get_test_prefix(),
                             self.id())
 
@@ -645,9 +691,11 @@ class ManyDepotTestCase(CliTestCase):
                         depot_logfile = os.path.join(testdir,
                             "depot_logfile%d" % i)
 
+                        props = { "publisher": { "prefix": pub } }
                         self.dcs[i] = self.start_depot(12000 + i,
                             depotdir, depot_logfile,
-                            debug_features=debug_features)
+                            debug_features=debug_features,
+                            properties=props)
 
         def check_traceback(self, logpath):
                 """ Scan logpath looking for tracebacks.
@@ -689,20 +737,18 @@ class ManyDepotTestCase(CliTestCase):
                         result = self.defaultTestResult()
                 CliTestCase.run(self, result)
 
+
 class SingleDepotTestCase(ManyDepotTestCase):
 
-        def setUp(self, debug_features=None):
-
-                # Note that this must be deferred until after PYTHONPATH
-                # is set up.
-                import pkg.depotcontroller as depotcontroller
-
-                ManyDepotTestCase.setUp(self, 1, debug_features=debug_features)
+        def setUp(self, debug_features=EmptyI, publisher="test"):
+                ManyDepotTestCase.setUp(self, [publisher],
+                    debug_features=debug_features)
                 self.dc = self.dcs[1]
 
         def tearDown(self):
                 ManyDepotTestCase.tearDown(self)
                 self.dc = None
+
 
 class SingleDepotTestCaseCorruptImage(SingleDepotTestCase):
         """ A class which allows manipulation of the image directory that
@@ -716,9 +762,10 @@ class SingleDepotTestCaseCorruptImage(SingleDepotTestCase):
         for example).
         """
 
-        def setUp(self):
+        def setUp(self, debug_features=EmptyI, publisher="test"):
                 self.backup_img_path = None
-                SingleDepotTestCase.setUp(self)
+                SingleDepotTestCase.setUp(self, debug_features=debug_features,
+                    publisher=publisher)
 
         def tearDown(self):
                 self.__uncorrupt_img_path()

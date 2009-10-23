@@ -49,6 +49,7 @@ import getopt
 import gettext
 import itertools
 import locale
+import logging
 import os
 import socket
 import sys
@@ -76,7 +77,7 @@ from pkg.client.debugvalues import DebugValues
 from pkg.client.history import (RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
     RESULT_FAILED_CONFIGURATION, RESULT_FAILED_TRANSPORT, RESULT_FAILED_UNKNOWN,
     RESULT_FAILED_OUTOFMEMORY)
-from pkg.misc import EmptyI, msg, emsg, PipeError
+from pkg.misc import EmptyI, msg, PipeError
 
 CLIENT_API_VERSION = 22
 PKG_CLIENT_NAME = "pkg"
@@ -84,6 +85,8 @@ PKG_CLIENT_NAME = "pkg"
 JUST_UNKNOWN = 0
 JUST_LEFT = -1
 JUST_RIGHT = 1
+
+logger = global_settings.logger
 
 valid_special_attrs = ["action.name", "action.key", "action.raw"]
 
@@ -109,7 +112,7 @@ def error(text, cmd=None):
 
         # This has to be a constant value as we can't reliably get our actual
         # program name on all platforms.
-        emsg(ws + pkg_cmd + text_nows)
+        logger.error(ws + pkg_cmd + text_nows)
 
 def usage(usage_error=None, cmd=None, retcode=2, full=False):
         """Emit a usage message and optionally prefix it with a more
@@ -120,10 +123,10 @@ def usage(usage_error=None, cmd=None, retcode=2, full=False):
 
         if not full:
                 # The full usage message isn't desired.
-                emsg(_("Try `pkg --help or -?' for more information."))
+                logger.error(_("Try `pkg --help or -?' for more information."))
                 sys.exit(retcode)
 
-        emsg(_("""\
+        logger.error(_("""\
 Usage:
         pkg [options] command [cmd_options] [operands]
 
@@ -319,8 +322,8 @@ def list_inventory(img, args):
                                 pf = pfmri.get_name() + pub
 
                                 try:
-                                        ret = api_inst.info([pfmri], False,
-                                            info_needed)
+                                        ret = api_inst.info([pfmri],
+                                            not all_known, info_needed)
                                         pis = ret[api.ImageInterface.INFO_FOUND]
                                 except api_errors.ApiException, e:
                                         error(e)
@@ -335,18 +338,18 @@ def list_inventory(img, args):
 
                 if not found:
                         if not seen_one_pkg and not all_known:
-                                emsg(_("no packages installed"))
+                                logger.error(_("no packages installed"))
                                 img.history.operation_result = \
                                     history.RESULT_NOTHING_TO_DO
                                 return 1
 
                         if upgradable_only:
                                 if pargs:
-                                        emsg(_("No specified packages have " \
-                                            "available updates"))
+                                        logger.error(_("No specified packages "
+                                            "have available updates"))
                                 else:
-                                        emsg(_("No installed packages have " \
-                                            "available updates"))
+                                        logger.error(_("No installed packages "
+                                            "have available updates"))
                                 img.history.operation_result = \
                                     history.RESULT_NOTHING_TO_DO
                                 return 1
@@ -422,10 +425,11 @@ def fix_image(img, args):
                 try:
                         success = img.repair(repairs, progresstracker)
                 except api_errors.RebootNeededOnLiveImageException:
-                        error(_("Requested \"fix\" operation would affect files that cannot be "
-                                "modified in live image.\n"
-                                "Please retry this operation on an alternate boot environment."))
-                	success = False
+                        error(_("Requested \"fix\" operation would affect "
+                            "files that cannot be modified in live image.\n"
+                            "Please retry this operation on an alternate boot "
+                            "environment."))
+                        success = False
 
                 if not success:
                         progresstracker.verify_done()
@@ -463,7 +467,7 @@ def verify_image(img, args):
 
         if illegals:
                 for i in illegals:
-                        emsg(str(i))
+                        logger.error(str(i))
                 return 1
 
         any_errors = False
@@ -504,19 +508,19 @@ def verify_image(img, args):
 
         if notfound:
                 if fmris:
-                        emsg()
-                emsg(_("""\
+                        logger.error("")
+                logger.error(_("""\
 pkg: no packages matching the following patterns you specified are
 installed on the system.\n"""))
                 for p in notfound:
-                        emsg("        %s" % p)
+                        logger.error("        %s" % p)
                 if fmris:
                         if any_errors:
                                 msg2 = "See above for\nverification failures."
                         else:
                                 msg2 = "No packages failed\nverification."
-                        emsg(_("\nAll other patterns matched installed "
-                            "packages.  %s" % msg2))
+                        logger.error(_("\nAll other patterns matched "
+                            "installed packages.  %s" % msg2))
                 any_errors = True
 
         if any_errors:
@@ -569,6 +573,9 @@ def __api_execute_plan(operation, api_inst, raise_ActionExecutionError=True):
         except api_errors.ProblematicPermissionsIndexException, e:
                 error(str(e) + PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE)
                 return False
+        except api_errors.ReadOnlyFileSystemException, e:
+                error(e)
+                raise
         except api_errors.PermissionsException, e:
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
@@ -589,9 +596,6 @@ def __api_execute_plan(operation, api_inst, raise_ActionExecutionError=True):
                         return False
                 error(_("An unexpected error happened during " \
                     "%s: %s") % (operation, e))
-                raise
-        except api_errors.ReadOnlyFileSystemException, e:
-                error(e)
                 raise
         except Exception, e:
                 error(_("An unexpected error happened during " \
@@ -632,7 +636,7 @@ SUNWipkg' and then retry the %s."""
 Cannot remove '%s' due to the following packages that depend on it:"""
                     ) % e[0])
                 for d in e[1]:
-                        emsg("  %s" % d)
+                        logger.error("  %s" % d)
                 return False
         if e_type == api_errors.CatalogRefreshException:
                 if display_catalog_failures(e) != 0:
@@ -1299,6 +1303,8 @@ def info(img, args):
                 if not display_license:
                         info_needed = api.PackageInfo.ALL_OPTIONS - \
                             frozenset([api.PackageInfo.LICENSES])
+                info_needed -= api.PackageInfo.ACTION_OPTIONS
+
                 try:
                         ret = api_inst.info(pargs, info_local, info_needed)
                 except api_errors.UnrecognizedOptionsToInfo, e:
@@ -1372,38 +1378,38 @@ def info(img, args):
         if notfound:
                 err = 1
                 if pis:
-                        emsg()
+                        logger.error("")
                 if info_local:
-                        emsg(_("""\
+                        logger.error(_("""\
 pkg: info: no packages matching the following patterns you specified are
 installed on the system.  Try specifying -r to query remotely:"""))
                 elif info_remote:
-                        emsg(_("""\
+                        logger.error(_("""\
 pkg: info: no packages matching the following patterns you specified were
 found in the catalog.  Try relaxing the patterns, refreshing, and/or
 examining the catalogs:"""))
-                emsg()
+                logger.error("")
                 for p in notfound:
-                        emsg("        %s" % p)
+                        logger.error("        %s" % p)
 
         if illegals:
                 err = 1
                 for i in illegals:
-                        emsg(str(i))
+                        logger.error(str(i))
 
         if multi_match:
                 err = 1
                 for pfmri, matches in multi_match:
                         error(_("'%s' matches multiple packages") % pfmri)
                         for k in matches:
-                                emsg("\t%s" % k)
+                                logger.error("\t%s" % k)
 
         if no_licenses:
                 err = 1
                 error(_("no license information could be found for the "
                     "following packages:"))
                 for pfmri in no_licenses:
-                        emsg("\t%s" % pfmri)
+                        logger.error("\t%s" % pfmri)
 
         return err
 
@@ -1608,9 +1614,9 @@ def check_attrs(attrs, cmd, reference=None, prefixes=None):
         """
 
         if reference is None:
-                reference=valid_special_attrs
+                reference = valid_special_attrs
         if prefixes is None:
-                prefixes=valid_special_prefixes
+                prefixes = valid_special_prefixes
         for a in attrs:
                 for p in prefixes:
                         if a.startswith(p) and not a in reference:
@@ -1685,7 +1691,7 @@ def list_contents(img, args):
 
                 if illegals:
                         for i in illegals:
-                                emsg(i)
+                                logger.error(i)
                         img.history.operation_result = \
                             history.RESULT_FAILED_BAD_REQUEST
                         return 1
@@ -1795,19 +1801,19 @@ def list_contents(img, args):
         if notfound:
                 err = 1
                 if fmris:
-                        emsg()
+                        logger.error("")
                 if local:
-                        emsg(_("""\
+                        logger.error(_("""\
 pkg: contents: no packages matching the following patterns you specified are
 installed on the system.  Try specifying -r to query remotely:"""))
                 elif remote:
-                        emsg(_("""\
+                        logger.error(_("""\
 pkg: contents: no packages matching the following patterns you specified were
 found in the catalog.  Try relaxing the patterns, refreshing, and/or
 examining the catalogs:"""))
-                emsg()
+                logger.error("")
                 for p in notfound:
-                        emsg("        %s" % p)
+                        logger.error("        %s" % p)
                 img.history.operation_result = history.RESULT_NOTHING_TO_DO
         else:
                 img.history.operation_result = history.RESULT_SUCCEEDED
@@ -1821,32 +1827,32 @@ def display_catalog_failures(cre):
             total)
         if cre.failed:
                 # This ensures that the text gets printed before the errors.
-                emsg(txt)
+                logger.error(txt)
         else:
                 msg(txt)
 
         for pub, err in cre.failed:
                 if isinstance(err, urllib2.HTTPError):
-                        emsg("   %s: %s - %s" % \
+                        logger.error("   %s: %s - %s" % \
                             (err.filename, err.code, err.msg))
                 elif isinstance(err, urllib2.URLError):
                         if err.args[0][0] == 8:
-                                emsg("    %s: %s" % \
+                                logger.error("    %s: %s" % \
                                     (urlparse.urlsplit(
                                         pub["origin"])[1].split(":")[0],
                                     err.args[0][1]))
                         else:
                                 if isinstance(err.args[0], socket.timeout):
-                                        emsg("    %s: %s" % \
+                                        logger.error("    %s: %s" % \
                                             (pub["origin"], "timeout"))
                                 else:
-                                        emsg("    %s: %s" % \
+                                        logger.error("    %s: %s" % \
                                             (pub["origin"], err.args[0][1]))
                 else:
-                        emsg("   ", err)
+                        logger.error("   ", err)
 
         if cre.message:
-                emsg(cre.message)
+                logger.error(cre.message)
 
         return succeeded
 
@@ -2212,7 +2218,7 @@ def publisher_list(img, args):
                                 retcode = 1
 
                         for e in c["errors"]:
-                                emsg("\n" + str(e) + "\n")
+                                logger.error("\n" + str(e) + "\n")
 
                         if c["valid"]:
                                 msg(_(" Cert. Effective Date:"),
@@ -2458,19 +2464,19 @@ def image_create(args):
                     refresh_allowed=refresh_catalogs, progtrack=progtrack)
         except OSError, e:
                 # Ensure messages are displayed after the spinner.
-                emsg("\n")
+                logger.error("\n")
                 error(_("cannot create image at %(image_dir)s: %(reason)s") %
                     { "image_dir": image_dir, "reason": e.args[1] },
                     cmd="image-create")
                 return 1
         except api_errors.PermissionsException, e:
                 # Ensure messages are displayed after the spinner.
-                emsg("")
+                logger.error("")
                 error(e, cmd="image-create")
                 return 1
         except api_errors.InvalidDepotResponseException, e:
                 # Ensure messages are displayed after the spinner.
-                emsg("\n")
+                logger.error("\n")
                 error(_("The URI '%(pub_url)s' does not appear to point to a "
                     "valid pkg server.\nPlease check the server's "
                     "address and client's network configuration."
@@ -2628,12 +2634,12 @@ def print_proxy_config():
         if not http_proxy and not https_proxy:
                 return
 
-        emsg(_("\nThe following proxy configuration is set in the"
+        logger.error(_("\nThe following proxy configuration is set in the"
             " environment:\n"))
         if http_proxy:
-                emsg(_("http_proxy: %s\n") % http_proxy)
+                logger.error(_("http_proxy: %s\n") % http_proxy)
         if https_proxy:
-                emsg(_("https_proxy: %s\n") % https_proxy)
+                logger.error(_("https_proxy: %s\n") % https_proxy)
 
 
 # To allow exception handler access to the image.
@@ -2845,20 +2851,21 @@ def handle_errors(func, non_wrap_print=True, *args, **kwargs):
         except api_errors.TransportError, __e:
                 if __img:
                         __img.history.abort(RESULT_FAILED_TRANSPORT)
-                emsg(_("\nErrors were encountered while attempting to retrieve"
-                    " package or file data for\nthe requested operation."))
-                emsg(_("Details follow:\n\n%s") % __e)
+                logger.error(_("\nErrors were encountered while attempting "
+                    "to retrieve package or file data for\nthe requested "
+                    "operation."))
+                logger.error(_("Details follow:\n\n%s") % __e)
                 print_proxy_config()
                 __ret = 1
         except api_errors.InvalidDepotResponseException, __e:
                 if __img:
                         __img.history.abort(RESULT_FAILED_TRANSPORT)
-                emsg(_("\nUnable to contact a valid package depot. "
+                logger.error(_("\nUnable to contact a valid package depot. "
                     "This may be due to a problem with the server, "
                     "network misconfiguration, or an incorrect pkg client "
                     "configuration.  Please check your network settings and "
                     "attempt to contact the server using a web browser."))
-                emsg(_("\nAdditional details:\n\n%s") % __e)
+                logger.error(_("\nAdditional details:\n\n%s") % __e)
                 print_proxy_config()
                 __ret = 1
         except history.HistoryLoadException, __e:
@@ -2928,4 +2935,5 @@ if __name__ == "__main__":
         misc.setlocale(locale.LC_ALL, "", error)
         gettext.install("pkg", "/usr/share/locale")
         __retval = handle_errors(main_func)
+        logging.shutdown()
         sys.exit(__retval)

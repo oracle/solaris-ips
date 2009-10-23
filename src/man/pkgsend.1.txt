@@ -8,6 +8,7 @@ SYNOPSIS
      /usr/bin/pkgsend [options] command [cmd_options] [operands]
 
      /usr/bin/pkgsend create-repository
+         --set-property <section.property>=<value> ...
      /usr/bin/pkgsend open [-en] pkg_fmri
      /usr/bin/pkgsend add action arguments
      /usr/bin/pkgsend import [-T pattern] bundlefile ...
@@ -40,6 +41,11 @@ SUBCOMMANDS
           Creates a new repository at the provided location if it does
           not already exist.  Only supported for 'file://' repository
           locations at this time.
+
+          Initial repository configuration values can be provided
+          using the --set-property option.  It may also be specified
+          multiple times.  See pkg.depotd(1M) for a full list of
+          repository properties.
 
      open [-en] pkg_fmri
           Begin a transaction on the package and version specified by
@@ -213,7 +219,8 @@ EXAMPLES
      Example 2:  Create a new repository suitable for use with pkgsend
          or with a pkg(5) depot server.
 
-     $ pkgsend -s file:///tmp/example_repo create-repository
+     $ pkgsend -s file:///tmp/example_repo create-repository \
+         --set-property publisher.prefix=opensolaris.org
 
 EXIT STATUS
      The following exit values are returned:

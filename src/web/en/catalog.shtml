@@ -120,7 +120,7 @@
         if selected_val and selected_match:
                 ver = selected_match
                 pattern = "*,%s-%s" % (ver.build_release, ver.branch)
-                flist = catalog.get_matching_version_fmris(pattern)
+                flist, unmatched = catalog.get_matching_version_fmris(pattern)
         else:
                 flist = [f for f in catalog.fmris()]
                 flist.sort(reverse=True)
@@ -147,7 +147,7 @@
 
                 # Start FMRI entry
                 phref = self.shared.rpath(g_vars, "info/0/%s" % (
-                    urllib.quote(str(pfmri)[len("pkg:/"):], "")))
+                    urllib.quote(str(pfmri), "")))
                 # XXX the .p5i extension is a bogus hack because
                 # packagemanager requires it and shouldn't.
                 p5ihref = self.shared.rpath(g_vars, "p5i/0/%s.p5i" % (

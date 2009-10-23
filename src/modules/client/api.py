@@ -52,6 +52,8 @@ from pkg.client import global_settings
 CURRENT_API_VERSION = 22
 CURRENT_P5I_VERSION = 1
 
+logger = global_settings.logger
+
 class ImageInterface(object):
         """This class presents an interface to images that clients may use.
         There is a specific order of methods which must be used to install
@@ -162,7 +164,7 @@ class ImageInterface(object):
                 try:
                         self.__img.check_cert_validity()
                 except api_errors.ExpiringCertificate, e:
-                        misc.emsg(e)
+                        logger.error(e)
                 except:
                         exc_type, exc_value, exc_traceback = sys.exc_info()
                         if exc_type in log_op_end:
@@ -844,6 +846,60 @@ class ImageInterface(object):
                                 else:
                                         fmris.append(npmatch[0])
 
+                if local:
+                        img_cat = self.__img.get_catalog(
+                            self.__img.IMG_CATALOG_INSTALLED)
+                else:
+                        img_cat = self.__img.get_catalog(
+                            self.__img.IMG_CATALOG_KNOWN)
+                excludes = self.__img.list_excludes()
+
+                # Set of summary-related options that are in catalog data.
+                summ_opts = frozenset([PackageInfo.SUMMARY,
+                    PackageInfo.CATEGORIES, PackageInfo.DESCRIPTION])
+
+                # Set of all options that are in catalog data.
+                cat_opts = summ_opts | frozenset([PackageInfo.DEPENDENCIES])
+
+                # Set of options that require manifest retrieval.
+                act_opts = PackageInfo.ACTION_OPTIONS - \
+                    frozenset([PackageInfo.DEPENDENCIES])
+
+                def get_pkg_cat_data(f):
+                        # XXX this doesn't handle locale.
+                        get_summ = summ = desc = cat_info = deps = None
+                        cat_data = []
+                        if summ_opts & info_needed:
+                                cat_data.append(img_cat.SUMMARY)
+                                get_summ = PackageInfo.SUMMARY in info_needed
+                        if PackageInfo.CATEGORIES in info_needed:
+                                cat_info = []
+                        if PackageInfo.DEPENDENCIES in info_needed:
+                                cat_data.append(img_cat.DEPENDENCY)
+                                deps = []
+
+                        for a in img_cat.get_entry_actions(f, cat_data,
+                            excludes=excludes):
+                                if a.name == "depend":
+                                        deps.append(a.attrs.get(a.key_attr))
+                                elif a.attrs["name"] == "pkg.summary":
+                                        if get_summ:
+                                                summ = a.attrs["value"]
+                                elif a.attrs["name"] in ("description",
+                                    "pkg.description"):
+                                        desc = a.attrs["value"]
+                                elif cat_info != None and a.has_category_info():
+                                        cat_info.extend(
+                                            PackageCategory(scheme, cat)
+                                            for scheme, cat
+                                            in a.parse_category_info())
+
+                        if get_summ and summ == None:
+                                summ = desc
+                        if not PackageInfo.DESCRIPTION in info_needed:
+                                desc = None
+                        return summ, desc, cat_info, deps
+
                 pis = []
                 for f in fmris:
                         pub = name = version = release = None
@@ -869,24 +925,23 @@ class ImageInterface(object):
                         summary = size = licenses = cat_info = description = \
                             None
 
-                        if (frozenset([PackageInfo.SIZE, PackageInfo.LICENSES,
-                            PackageInfo.SUMMARY, PackageInfo.CATEGORIES,
-                            PackageInfo.DESCRIPTION]) |
-                            PackageInfo.ACTION_OPTIONS) & info_needed:
+                        if frozenset([PackageInfo.SUMMARY,
+                            PackageInfo.CATEGORIES,
+                            PackageInfo.DESCRIPTION,
+                            PackageInfo.DEPENDENCIES]) & info_needed:
+                                summary, description, cat_info, dependencies = \
+                                    get_pkg_cat_data(f)
+
+                        if (frozenset([PackageInfo.SIZE,
+                            PackageInfo.LICENSES]) | act_opts) & info_needed:
                                 mfst = self.__img.get_manifest(f)
-                                excludes = self.__img.list_excludes()
-                                if PackageInfo.SIZE in info_needed:
-                                        size = mfst.get_size(excludes=excludes)
                                 if PackageInfo.LICENSES in info_needed:
                                         licenses = self.__licenses(mfst, local)
-                                if PackageInfo.SUMMARY in info_needed:
-                                        summary = mfst.get("pkg.summary",
-                                            mfst.get("description", ""))
-                                if PackageInfo.DESCRIPTION in info_needed:
-                                        description = \
-                                            mfst.get("pkg.description", "")
 
-                                if PackageInfo.ACTION_OPTIONS & info_needed:
+                                if PackageInfo.SIZE in info_needed:
+                                        size = mfst.get_size(excludes=excludes)
+
+                                if act_opts & info_needed:
                                         if PackageInfo.LINKS in info_needed:
                                                 links = list(
                                                     mfst.gen_key_attribute_value_by_type(
@@ -903,21 +958,6 @@ class ImageInterface(object):
                                                 dirs = list(
                                                     mfst.gen_key_attribute_value_by_type(
                                                     "dir", excludes))
-                                        if PackageInfo.DEPENDENCIES in \
-                                            info_needed:
-                                                dependencies = list(
-                                                    mfst.gen_key_attribute_value_by_type(
-                                                    "depend", excludes))
-
-                                if PackageInfo.CATEGORIES in info_needed:
-                                        cat_info = [
-                                            PackageCategory(scheme, cat)
-                                            for ca
-                                            in mfst.gen_actions_by_type("set")
-                                            if ca.has_category_info()
-                                            for scheme, cat
-                                            in ca.parse_category_info()
-                                        ]
 
                         pis.append(PackageInfo(pkg_stem=name, summary=summary,
                             category_info_list=cat_info, state=state,

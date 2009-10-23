@@ -29,6 +29,9 @@ import os
 import errno
 import traceback
 
+from pkg.client import global_settings
+logger = global_settings.logger
+
 import pkg.actions
 import pkg.client.actuator as actuator
 import pkg.client.api_errors as api_errors
@@ -39,7 +42,6 @@ import pkg.fmri as fmri
 import pkg.search_errors as se
 
 from pkg.client.filter import compile_filter
-from pkg.misc import msg
 
 UNEVALUATED       = 0 # nothing done yet
 EVALUATED_PKGS    = 1 # established fmri changes
@@ -143,8 +145,8 @@ class ImagePlan(object):
 
         def display(self):
                 for pp in self.pkg_plans:
-                        msg("%s -> %s" % (pp.origin_fmri, pp.destination_fmri))
-                msg("Actuators:\n%s" % self.actuators)
+                        logger.info("%s -> %s" % (pp.origin_fmri, pp.destination_fmri))
+                logger.info("Actuators:\n%s" % self.actuators)
 
         def is_proposed_fmri(self, pfmri):
                 for pf in self.target_fmris:
@@ -282,7 +284,6 @@ class ImagePlan(object):
 
         def evaluate_fmri(self, pfmri):
                 self.progtrack.evaluate_progress(pfmri)
-                self.image.state.set_target(pfmri, self.__intent)
 
                 if self.check_cancelation():
                         raise api_errors.CanceledException()
@@ -363,8 +364,6 @@ class ImagePlan(object):
                         self.propose_fmri(cf)
                         self.evaluate_fmri(cf)
 
-                self.image.state.set_target()
-
         def add_pkg_plan(self, pfmri):
                 """add a pkg plan to imageplan for fully evaluated frmi"""
                 m = self.image.get_manifest(pfmri)
@@ -380,7 +379,7 @@ class ImagePlan(object):
                         try:
                                 pp.propose_destination(pfmri, m)
                         except RuntimeError:
-                                msg("pkg: %s already installed" % pfmri)
+                                logger.info("pkg: %s already installed" % pfmri)
                                 return
 
                 pp.evaluate(self.old_excludes, self.new_excludes)
@@ -419,7 +418,7 @@ class ImagePlan(object):
                         pp.propose_removal(pfmri, m)
                 except RuntimeError:
                         self.image.state.set_target()
-                        msg("pkg %s not installed" % pfmri)
+                        logger.info("pkg %s not installed" % pfmri)
                         return
 
                 pp.evaluate([], self.old_excludes)
@@ -661,6 +660,9 @@ class ImagePlan(object):
                         except EnvironmentError, e:
                                 if e.errno == errno.EACCES:
                                         raise api_errors.PermissionsException(
+                                            e.filename)
+                                if e.errno == errno.EROFS:
+                                        raise api_errors.ReadOnlyFileSystemException(
                                             e.filename)
                                 raise
 

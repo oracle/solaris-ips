@@ -7,14 +7,16 @@ NAME
 SYNOPSIS
      /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
          [-t socket_timeout] [--cfg-file] [--content-root] [--debug]
-         [--log-access] [--log-errors] [--mirror] [--proxy-base url]
-         [--readonly] [--rebuild] [--ssl-cert-file] [--ssl-dialog]
-         [--ssl-key-file] [--writable-root]
+         [--disable-ops=<op[/1]>[,...]] [--log-access] [--log-errors]
+         [--mirror] [--set-property <section.property>=<value> ...]
+         [--proxy-base url] [--readonly] [--rebuild] [--ssl-cert-file]
+         [--ssl-dialog] [--ssl-key-file] [--writable-root]
 
 DESCRIPTION
      pkg.depotd is the depot server for the image packaging system.
-     pkg(1), the retrieval client, makes requests of the depot server
-     for catalogs and packages.  pkgsend(1), the publication client,
+     It provides clients access to the data contained within a package
+     repository.  pkg(1), the retrieval client, makes requests of the depot
+     server for catalogs and packages.  pkgsend(1), the publication client,
      sends new versions of packages to the depot server.  pkg.depotd is
      typically run as a service on the system.  Package and software
      developers may wish to run private copies for various testing
@@ -152,8 +154,14 @@ OPTIONS
      --cfg-file cfg_file        Overrides pkg/cfg_file with the value
                                 given by cfg_file.
 
-     --content-root root_dir    Overrides pkg/content_root with the value
-                                given by root_dir.
+     --content-root root_dir    Overrides pkg/content_root with the
+                                value given by root_dir.
+
+     --disable-ops              Select operations that should be
+                                disabled in the depot server.
+                                Operations are given as <operation>[
+                                /<version>] (e.g. catalog, catalog_1)
+                                in a comma-separated list.
 
      --debug features           Overrides pkg/debug with the value given
                                 by features.
@@ -164,30 +172,38 @@ OPTIONS
      --log-errors dest          Overrides pkg/log_errors with the value
                                 given by dest.
 
-     --mirror                   Overrides pkg/mirror and sets it to be true.
+     --mirror                   Overrides pkg/mirror and sets it to be
+                                true.
+
+     --set-property             Used to specify initial repository
+                                configuration property values or to
+                                update existing ones; can be specified
+                                multiple times.  If used with --readonly
+                                this acts as a temporary override.
 
      --proxy-base url           Overrides pkg/proxy_base with the value
                                 given by url.  Ignored if empty value is
                                 provided.
 
-     --readonly                 Overrides pkg/readonly and sets it to be true.
+     --readonly                 Overrides pkg/readonly and sets it to be
+                                true.
 
      --rebuild                  Any existing repository catalog will be
                                 destroyed and then recreated on startup.
                                 This option may not be combined with the
                                 --mirror or --readonly options.
 
-     --ssl-cert-file source     Overrides pkg/ssl_cert_file with the value
-                                given by source.
+     --ssl-cert-file source     Overrides pkg/ssl_cert_file with the
+                                value given by source.
 
-     --ssl-dialog type          Overrides pkg/ssl_dialog with the value given
-                                by type.
+     --ssl-dialog type          Overrides pkg/ssl_dialog with the value
+                                given by type.
 
-     --ssl-key-file source      Overrides pkg/ssl_key_file with the value
-                                given by source.
+     --ssl-key-file source      Overrides pkg/ssl_key_file with the
+                                value given by source.
 
-     --writable-root path       Overrides pkg/writable_root with the value
-                                given by path.
+     --writable-root path       Overrides pkg/writable_root with the
+                                value given by path.
 
 EXAMPLES
      Example 1:  Enabling the depot server.
@@ -207,6 +223,98 @@ ENVIRONMENT VARIABLES
                                 in this directory, although their content
                                 may differ from the supplied default
                                 content.
+
+REPOSITORY CONFIGURATION PROPERTIES
+    A package repository has the following configuration properties.  They
+    are categorized by section depending on their usage by the repository
+    and can be set using the --set-property option.
+
+        Section     Property            Description
+        ==========  ==========          ===============
+        feed        description         A descriptive paragraph for the
+                                        feed.
+
+                    icon                A filename of a small image that
+                                        is used to visually represent
+                                        the feed.
+
+                    logo                A filename of a large image that
+                                        is used to visually brand or
+                                        identify the feed.
+
+                    name                A short, descriptive name for
+                                        RSS/Atom feeds generated by the
+                                        depot serving the repository.
+
+                    window              A numeric value representing the
+                                        number of hours, before the feed
+                                        for the repository was last
+                                        generated, to include when
+                                        generating the feed for the
+                                        repository.
+
+        publisher   alias               An alternative name for the
+                                        default publisher of the
+                                        packages in the repository.
+
+                    prefix              The name of the default
+                                        publisher for packages;
+                                        required.
+
+        repository  collection_type     A string value indicating the
+                                        type of packages in the
+                                        repository.  See the pydoc for
+                                        pkg.client.publisher.Repository
+                                        for details.
+
+                    description         A string value containing a
+                                        descriptive paragraph for the
+                                        repository.
+
+                    detailed_url        A comma-separated list of URIs
+                                        where more information about the
+                                        repository can be found.
+
+                    legal_uris          A comma-separated list of URIs
+                                        where licensing, legal, and
+                                        terms of service information
+                                        for the repository can be found.
+
+                    maintainer          A human readable string
+                                        describing the entity
+                                        maintaining the repository.  For
+                                        an individual, this string is
+                                        expected to be their name or
+                                        name and email.
+
+                    maintainer_url      A URI associated with the entity
+                                        maintaining the repository.
+
+                    mirrors             A comma-separated list of URIs
+                                        where package content can be
+                                        retrieved.
+
+                    name                A short, descriptive name for
+                                        the repository.
+
+                    origins             A comma-separated list of URIs
+                                        where package metadata can be
+                                        retrieved.
+
+                    refresh_seconds     An integer value indicating the
+                                        number of seconds clients should
+                                        wait before refreshing cached
+                                        repository catalog or repository
+                                        metadata information.
+
+                    registration_uri    A URI indicating a location
+                                        clients can use to register or
+                                        obtain credentials needed to
+                                        access the repository.
+
+                    related_uris        A comma-separated list of URIs
+                                        of related repositories that a
+                                        client may be interested in.
 
 EXIT STATUS
      The following exit values are returned:

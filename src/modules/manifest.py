@@ -88,8 +88,8 @@ class Manifest(object):
 
         def __str__(self):
                 r = ""
-                if "fmri" not in self.attributes and self.fmri != None:
-                        r += "set name=fmri value=%s\n" % self.fmri
+                if "pkg.fmri" not in self.attributes and self.fmri != None:
+                        r += "set name=pkg.fmri value=%s\n" % self.fmri
 
                 for act in sorted(self.actions):
                         r += "%s\n" % act
@@ -99,8 +99,8 @@ class Manifest(object):
                 """A generator function that returns the unsorted manifest
                 contents as lines of text."""
 
-                if "fmri" not in self.attributes and self.fmri != None:
-                        yield "set name=fmri value=%s\n" % self.fmri
+                if "pkg.fmri" not in self.attributes and self.fmri != None:
+                        yield "set name=pkg.fmri value=%s\n" % self.fmri
 
                 for act in self.actions:
                         yield "%s\n" % act
@@ -357,13 +357,14 @@ class Manifest(object):
                 """Fill attribute array w/ set action contents."""
                 try:
                         keyvalue = action.attrs["name"]
+                        if keyvalue == "fmri":
+                                keyvalue = "pkg.fmri"
                         if keyvalue not in self.attributes:
                                 self.attributes[keyvalue] = \
                                     action.attrs["value"]
                 except KeyError: # ignore broken set actions
                         pass
 
-                
         @staticmethod
         def search_dict(file_path, excludes, return_line=False,
             log=None):
@@ -638,16 +639,6 @@ class CachedManifest(Manifest):
                 """Finish loading.... this part of initialization is common 
                 to multiple code paths"""
                 self.loaded = True
-                # this needs to change; we should not modify on-disk manifest
-                if self.fmri and "publisher" not in self.attributes:
-                        if not self.fmri.has_publisher():
-                                pub = self.__pub
-                        else:
-                                pub = self.fmri.get_publisher()
-
-                        # This shouldn't be set unless available.
-                        if pub:
-                                Manifest.__setitem__(self, "publisher", pub)
 
         def __storeback(self):
                 """ store the current action set; also create per-type

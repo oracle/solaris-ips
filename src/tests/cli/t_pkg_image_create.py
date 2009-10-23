@@ -41,7 +41,7 @@ class TestPkgImageCreateBasics(testutils.ManyDepotTestCase):
         persistent_depot = True
 
         def setUp(self):
-                testutils.ManyDepotTestCase.setUp(self, 2)
+                testutils.ManyDepotTestCase.setUp(self, ["test1", "test2"])
 
                 self.durl1 = self.dcs[1].get_depot_url()
                 self.durl2 = self.dcs[2].get_depot_url()
@@ -49,7 +49,7 @@ class TestPkgImageCreateBasics(testutils.ManyDepotTestCase):
         def test_basic(self):
                 """ Create an image, verify it. """
 
-                self.image_create(self.durl1)
+                self.image_create(self.durl1, prefix="test1")
                 self.pkg("verify")
 
         def test_image_create_bad_opts(self):
@@ -77,6 +77,24 @@ class TestPkgImageCreateBasics(testutils.ManyDepotTestCase):
                     fmri.get_link_path()), "w")
                 fi.close()
 
+        @staticmethod
+        def __transform_v1_v0(v1_cat, v0_dest):
+                name = os.path.join(v0_dest, "attrs")
+                f = open(name, "wb")
+                f.write("S "
+                    "Last-Modified: %s\n" % v1_cat.last_modified.isoformat())
+                f.write("S prefix: CRSV\n")
+                f.write("S npkgs: %s\n" % v1_cat.package_version_count)
+                f.close()
+
+                name = os.path.join(v0_dest, "catalog")
+                f = open(name, "wb")
+                # Now write each FMRI in the catalog in the v0 format:
+                # V pkg:/SUNWdvdrw@5.21.4.10.8,5.11-0.86:20080426T173208Z
+                for pub, stem, ver in v1_cat.tuples():
+                        f.write("V pkg:/%s@%s\n" % (stem, ver))
+                f.close()
+
         def test_766(self):
                 """Bug 766: image-create without publisher prefix specified."""
 
@@ -87,7 +105,7 @@ class TestPkgImageCreateBasics(testutils.ManyDepotTestCase):
                 self.pkgsend_bulk(self.durl1, pkgsend_data)
 
                 self.assertRaises(testutils.UnexpectedExitCodeException,
-                    self.image_create, self.durl1, "")
+                    self.image_create, self.durl1, prefix="")
 
         def test_3588(self):
                 """Ensure that image creation works as expected when an image
@@ -97,16 +115,16 @@ class TestPkgImageCreateBasics(testutils.ManyDepotTestCase):
                 #
                 # Bug 3588: Make sure we can't create an image where one
                 # already exists
-                self.pkg("image-create -p mydepot=%s %s/3588_image" % (
+                self.pkg("image-create -p test1=%s %s/3588_image" % (
                     self.durl1, self.get_img_path()))
-                self.pkg("image-create -p mydepot=%s %s/3588_image" % (
+                self.pkg("image-create -p test1=%s %s/3588_image" % (
                     self.durl1, self.get_img_path()), exit=1)
 
                 # Make sure we can create an image where one
                 # already exists with the -f (force) flag
-                self.pkg("image-create -p mydepot=%s %s/3588_image_1" % (
+                self.pkg("image-create -p test1=%s %s/3588_image_1" % (
                     self.durl1, self.get_img_path()))
-                self.pkg("image-create -f -p mydepot=%s %s/3588_image_1" %
+                self.pkg("image-create -f -p test1=%s %s/3588_image_1" %
                          (self.durl1, self.get_img_path()))
 
                 # Bug 3588: Make sure we can't create an image where a
@@ -114,9 +132,9 @@ class TestPkgImageCreateBasics(testutils.ManyDepotTestCase):
                 p = os.path.join(self.get_img_path(), "3588_2_image")
                 os.mkdir(p)
                 self.cmdline_run("touch %s/%s" % (p, "somefile"))
-                self.pkg("image-create -p mydepot=%s %s" % (self.durl1, p),
+                self.pkg("image-create -p test1=%s %s" % (self.durl1, p),
                     exit=1)
-                self.pkg("image-create -f -p mydepot=%s %s" % (self.durl1, p))
+                self.pkg("image-create -f -p test1=%s %s" % (self.durl1, p))
 
         def test_4_options(self):
                 """Verify that all of the options for specifying publisher
@@ -124,7 +142,7 @@ class TestPkgImageCreateBasics(testutils.ManyDepotTestCase):
 
                 img_path = os.path.join(self.get_test_prefix(), "test_4_img")
                 for opt in ("-a", "-p", "--publisher"):
-                        self.pkg("image-create %s mydepot=%s %s" % (opt,
+                        self.pkg("image-create %s test1=%s %s" % (opt,
                             self.durl1, img_path))
                         shutil.rmtree(img_path)
 
@@ -149,7 +167,7 @@ class TestPkgImageCreateBasics(testutils.ManyDepotTestCase):
                 # specified image root if the specified root doesn't already
                 # exist.
                 os.chdir(self.get_test_prefix())
-                self.pkg("image-create -p mydepot=%s %s" % (self.durl1,
+                self.pkg("image-create -p test1=%s %s" % (self.durl1,
                     img_path))
                 os.chdir(pwd)
                 self.assertFalse(os.path.exists(os.path.join(abs_img_path,
@@ -160,7 +178,7 @@ class TestPkgImageCreateBasics(testutils.ManyDepotTestCase):
                 # specified image root if the specified root already exists.
                 os.chdir(self.get_test_prefix())
                 os.mkdir(img_path)
-                self.pkg("image-create -p mydepot=%s %s" % (self.durl1,
+                self.pkg("image-create -p test1=%s %s" % (self.durl1,
                     img_path))
                 os.chdir(pwd)
                 self.assertFalse(os.path.exists(os.path.join(abs_img_path,
@@ -179,14 +197,14 @@ class TestPkgImageCreateBasics(testutils.ManyDepotTestCase):
 
                 # First, check to be certain that an image-create --no-refresh
                 # will succeed.
-                self.image_create(self.durl2, prefix="norefresh",
+                self.image_create(self.durl2, prefix="test1",
                     additional_args="--no-refresh")
                 self.pkg("list --no-refresh -a | grep baz", exit=1)
 
                 # Finally, verify that using set-publisher will cause a refresh
                 # which in turn should cause 'baz' to be listed *if* the origin
                 # has changed (setting it to the same value again won't work).
-                self.pkg("set-publisher -O %s norefresh" % self.durl1)
+                self.pkg("set-publisher -O %s test1" % self.durl1)
                 self.pkg("list --no-refresh -a | grep baz")
 
         def test_8_image_upgrade(self):
@@ -199,7 +217,7 @@ class TestPkgImageCreateBasics(testutils.ManyDepotTestCase):
                 self.pkgsend_bulk(self.durl2, "open corge@1.0\nclose")
 
                 # First, create a new image.
-                self.image_create(self.durl1)
+                self.image_create(self.durl1, prefix="test1")
 
                 # Add the second repository.
                 self.pkg("set-publisher -O %s test2" % self.durl2)
@@ -211,7 +229,7 @@ class TestPkgImageCreateBasics(testutils.ManyDepotTestCase):
                 # This is necessary to ensure that packages installed from a
                 # previously preferred publisher also get the correct status.
                 self.pkg("install corge")
-                self.pkg("set-publisher -P test")
+                self.pkg("set-publisher -P test1")
 
                 # Next, disable the second repository's publisher.
                 self.pkg("set-publisher -d test2")
@@ -220,16 +238,15 @@ class TestPkgImageCreateBasics(testutils.ManyDepotTestCase):
                 img_root = os.path.join(self.get_img_path(), "var", "pkg")
                 cat_path = os.path.join(img_root, "catalog")
                 pub_path = os.path.join(img_root, "publisher")
-                v1_cat_path = os.path.join(pub_path, "test", "catalog")
-                v0_cat_path = os.path.join(cat_path, "test")
 
-                # For conversion, the v0 catalogs need to be moved to the
-                # v0 location.
+                v1_cat = pkg.catalog.Catalog(meta_root=os.path.join(pub_path,
+                    "test1", "catalog"), read_only=True)
+                v0_cat_path = os.path.join(cat_path, "test1")
+
+                # For conversion, the v0 catalogs need to be generated in
+                # the v0 location.
                 os.makedirs(v0_cat_path)
-                for fname in ("catalog", "attrs"):
-                        src = os.path.join(v1_cat_path, fname)
-                        dest = os.path.join(v0_cat_path, fname)
-                        pkg.portable.rename(src, dest)
+                self.__transform_v1_v0(v1_cat, v0_cat_path)
 
                 # The existing installed state has to be converted to v0.
                 state_dir = os.path.join(img_root, "state")
@@ -255,12 +272,12 @@ class TestPkgImageCreateBasics(testutils.ManyDepotTestCase):
                 # an unprivileged user.  Each must be done with and without
                 # the publisher prefix to test that these are stripped and
                 # read properly (because of the publisher preferred prefix).
-                self.pkg("info pkg://test/quux corge", su_wrap=True)
+                self.pkg("info pkg://test1/quux corge", su_wrap=True)
                 self.pkg("info pkg://test2/corge quux", su_wrap=True)
 
                 # Next, verify that the new client can upgrade v0 images to
                 # v1 images.
-                self.pkg("info quux pkg://test/quux pkg://test2/corge")
+                self.pkg("info quux pkg://test1/quux pkg://test2/corge")
 
                 # Finally, verify that the old structures and state information
                 # are gone.

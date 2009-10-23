@@ -395,6 +395,15 @@ class UnknownUpdateType(CatalogError):
                 return _("Unknown catalog update type '%s'") % self.data
 
 
+class UnrecognizedCatalogPart(CatalogError):
+        """Raised when the catalog finds a CatalogPart that is unrecognized
+        or invalid."""
+
+        def __str__(self):
+                return _("Unrecognized, unknown, or invalid CatalogPart '%s'") \
+                    % self.data
+
+
 class InventoryException(ApiException):
         """Used to indicate that some of the specified patterns to a catalog
         matching function did not match any catalog entries."""
@@ -1019,6 +1028,20 @@ class UnknownRepositoryMirror(PublisherError):
         def __str__(self):
                 return _("Unknown repository mirror '%s'.") % self.data
 
+class UnsupportedRepositoryOperation(PublisherError):
+        """The publisher has no active repositories that support the
+        requested operation."""
+
+        def __init__(self, pub, operation):
+                ApiException.__init__(self)
+                self.data = None
+                self.kwargs = None
+                self.pub = pub
+                self.op = operation
+
+        def __str__(self):
+                return _("Publisher '%s' has no repositories that support the"
+                    " '%s' operation.") % (self.pub.prefix, self.op)
 
 class UnknownRepositoryOrigin(PublisherError):
         """Used to indicate that a repository URI could not be found in the

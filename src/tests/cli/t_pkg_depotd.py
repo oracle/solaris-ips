@@ -30,6 +30,7 @@ if __name__ == "__main__":
 import httplib
 import os
 import pkg.depotcontroller as dc
+import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.p5i as p5i
 import pkg.server.repositoryconfig as rcfg
@@ -244,43 +245,6 @@ class TestPkgDepot(testutils.SingleDepotTestCase):
                 self.pkg("install bar")
                 self.pkg("verify")
 
-        def test_bug_8010(self):
-                """Publish stuff to the depot, get a full version of the
-                catalog.  Extract the Last-Modified timestamp from the
-                catalog and request an incremental update with the Last-Modified
-                timestamp.  Server should return a HTTP 304.  Fail if this
-                is not the case."""
-
-                depot_url = self.dc.get_depot_url()
-                self.pkgsend_bulk(depot_url, self.update10)
-                c, v = misc.versioned_urlopen(depot_url, "catalog", [0])
-                lm = c.info().getheader("Last-Modified", None)
-                self.assert_(lm)
-                hdr = {"If-Modified-Since": lm}
-                got304 = False
-
-                try:
-                        c, v = misc.versioned_urlopen(depot_url, "catalog",
-                            [0], headers=hdr)
-                except urllib2.HTTPError, e:
-                        # Server returns NOT_MODIFIED if catalog is up
-                        # to date
-                        if e.code == httplib.NOT_MODIFIED:
-                                got304 = True
-                        else:
-                                raise
-                # 200 OK won't raise an exception, but it's still a failure.
-                self.assert_(got304)
-
-                # Now send another package and verify that we get an
-                # incremental update
-                self.pkgsend_bulk(depot_url, self.update11)
-                c, v = misc.versioned_urlopen(depot_url, "catalog",
-                    [0], headers=hdr)
-
-                update_type = c.info().getheader("X-Catalog-Type", None)
-                self.assert_(update_type == "incremental")
-
         def test_face_root(self):
                 """Verify that files outside of the package content web root
                 cannot be accessed, and that files inside can be."""
@@ -359,6 +323,7 @@ class TestDepotController(testutils.CliTestCase):
 
                 self.__dc = dc.DepotController()
                 self.__pid = os.getpid()
+                self.__dc.set_property("publisher", "prefix", "test")
                 self.__dc.set_depotd_path(testutils.g_proto_area + \
                     "/usr/lib/pkg.depotd")
                 self.__dc.set_depotd_content_root(testutils.g_proto_area + \
@@ -382,7 +347,6 @@ class TestDepotController(testutils.CliTestCase):
                 shutil.rmtree(self.__dc.get_repodir())
                 os.remove(self.__dc.get_logpath())
 
-
         def testStartStop(self):
                 self.__dc.set_port(12000)
                 for i in range(0, 5):
@@ -391,14 +355,12 @@ class TestDepotController(testutils.CliTestCase):
                         self.__dc.stop()
                         self.assert_(not self.__dc.is_alive())
 
-
         def test_cfg_file(self):
                 cfg_file = os.path.join(self.get_test_prefix(), "cfg2")
                 fh = open(cfg_file, "w")
                 fh.close()
                 self.__dc.set_port(12000)
                 self.__dc.set_cfg_file(cfg_file)
-
                 self.__dc.start()
 
         def test_writable_root(self):
@@ -521,6 +483,50 @@ class TestDepotController(testutils.CliTestCase):
 
                 self.assert_(self.__dc.start_expected_fail())
 
+        def test_disable_ops(self):
+                """Verify that disable-ops works as expected."""
+
+                # For this disabled case, /catalog/1/ should return
+                # a NOT_FOUND error.
+                self.__dc.set_disable_ops(["catalog/1"])
+                self.__dc.set_port(12000)
+                self.__dc.start()
+                durl = self.__dc.get_depot_url()
+                try:
+                        urllib2.urlopen("%s/catalog/1/" % durl)
+                except urllib2.HTTPError, e:
+                        self.assertEqual(e.code, httplib.NOT_FOUND)
+                self.__dc.stop()
+
+                # For this disabled case, all /catalog/ operations should return
+                # a NOT_FOUND error.
+                self.__dc.set_disable_ops(["catalog"])
+                self.__dc.set_port(12000)
+                self.__dc.start()
+                durl = self.__dc.get_depot_url()
+                for ver in (0, 1):
+                        try:
+                                urllib2.urlopen("%s/catalog/%d/" % (durl, ver))
+                        except urllib2.HTTPError, e:
+                                self.assertEqual(e.code, httplib.NOT_FOUND)
+                self.__dc.stop()
+
+                # In the normal case, /catalog/1/ should return
+                # a FORBIDDEN error.
+                self.__dc.unset_disable_ops()
+                self.__dc.start()
+                durl = self.__dc.get_depot_url()
+                try:
+                        urllib2.urlopen("%s/catalog/1/" % durl)
+                except urllib2.HTTPError, e:
+                        self.assertEqual(e.code, httplib.FORBIDDEN)
+                self.__dc.stop()
+
+                # A bogus operation should prevent the depot from starting.
+                self.__dc.set_disable_ops(["no_such_op/0"])
+                self.__dc.start_expected_fail()
+                self.assertFalse(self.__dc.is_alive())
+
 
 class TestDepotOutput(testutils.SingleDepotTestCase):
         # Since these tests are output sensitive, the depots should be purged
@@ -584,6 +590,10 @@ class TestDepotOutput(testutils.SingleDepotTestCase):
                 # All of the tests will start depot if needed.
                 self.dc.stop()
 
+                # Prevent override of custom configuration;
+                # tests will set as needed.
+                self.dc.clear_property("publisher", "prefix")
+
                 self.tpath = tempfile.mkdtemp()
 
         def tearDown(self):
@@ -593,6 +603,8 @@ class TestDepotOutput(testutils.SingleDepotTestCase):
         def test_0_depot_bui_output(self):
                 """Verify that a non-error response and valid HTML is returned
                 for each known BUI page in every available depot mode."""
+
+                self.dc.set_property("publisher", "prefix", "test")
 
                 # A list of tuples containing the name of the method used to set
                 # the mode, and then the method needed to unset that mode.
@@ -666,9 +678,9 @@ class TestDepotOutput(testutils.SingleDepotTestCase):
                 # Update the configuration with our sample data.
                 cfg = self.repo_cfg
                 for section in cfg:
-                        for attr in cfg[section]:
-                                rc.set_attribute(section, attr,
-                                    cfg[section][attr])
+                        for prop in cfg[section]:
+                                rc.set_property(section, prop,
+                                    cfg[section][prop])
 
                 # Save it.
                 rc.write(rcpath)
@@ -689,15 +701,15 @@ class TestDepotOutput(testutils.SingleDepotTestCase):
 
                 # Now verify that the parsed response has the expected data.
                 cfg = self.repo_cfg
-                for attr in cfg["publisher"]:
-                        self.assertEqual(getattr(pub, attr),
-                            cfg["publisher"][attr])
+                for prop in cfg["publisher"]:
+                        self.assertEqual(getattr(pub, prop),
+                            cfg["publisher"][prop])
 
                 repo = pub.selected_repository
-                for attr in cfg["repository"]:
-                        returned = getattr(repo, attr)
-                        expected = cfg["repository"][attr]
-                        if attr.endswith("uris") or attr == "origins":
+                for prop in cfg["repository"]:
+                        returned = getattr(repo, prop)
+                        expected = cfg["repository"][prop]
+                        if prop.endswith("uris") or prop == "origins":
                                 uris = []
                                 for u in returned:
                                         uris.append(u.uri)
@@ -725,11 +737,16 @@ class TestDepotOutput(testutils.SingleDepotTestCase):
                 for p in plist:
                         purl = urlparse.urljoin(durl, "p5i/0/%s" % p)
                         pub, pkglist = p5i.parse(location=purl)[0]
-                        self.assertEqual(pkglist, [p])
+
+                        # p5i files contain non-qualified FMRIs as the FMRIs
+                        # are already grouped by publisher.
+                        nq_p = fmri.PkgFmri(p).get_fmri(anarchy=True,
+                            include_scheme=False)
+                        self.assertEqual(pkglist, [nq_p])
 
                 # Try again, but only using package stems.
                 for p in plist:
-                        stem = p.split("@", 1)[0]
+                        stem = fmri.PkgFmri(p).pkg_name
                         purl = urlparse.urljoin(durl, "p5i/0/%s" % stem)
                         pub, pkglist = p5i.parse(location=purl)[0]
                         self.assertEqual(pkglist, [stem])

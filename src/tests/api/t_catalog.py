@@ -667,22 +667,35 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 # Populate the catalog and then verify the Manifest signatures
                 # for each entry are correct.
                 cat.add_package(p1_fmri, manifest=p1_man)
-                entry = cat.get_entry(p1_fmri)
                 sigs = p1_man.signatures
-                for k, v in sigs.iteritems():
-                        self.assertEqual(entry["signature-%s" % k], sigs[k])
+                cat_sigs = dict(
+                    (s, v)
+                    for s, v in cat.get_entry_signatures(p1_fmri)
+                )
+                self.assertEqual(sigs, cat_sigs)
 
                 cat.add_package(p2_fmri, manifest=p2_man)
-                entry = cat.get_entry(p2_fmri)
                 sigs = p2_man.signatures
-                for k, v in sigs.iteritems():
-                        self.assertEqual(entry["signature-%s" % k], sigs[k])
+                cat_sigs = dict(
+                    (s, v)
+                    for s, v in cat.get_entry_signatures(p2_fmri)
+                )
+                self.assertEqual(sigs, cat_sigs)
 
                 cat.add_package(p3_fmri, manifest=p3_man)
-                entry = cat.get_entry(p3_fmri)
                 sigs = p3_man.signatures
-                for k, v in sigs.iteritems():
-                        self.assertEqual(entry["signature-%s" % k], sigs[k])
+                cat_sigs = dict(
+                    (s, v)
+                    for s, v in cat.get_entry_signatures(p3_fmri)
+                )
+                self.assertEqual(sigs, cat_sigs)
+
+                # Next, verify that removal of an FMRI not in the catalog will
+                # raise the expected exception.  Do this by removing an FMRI
+                # and then attempting to remove it again.
+                cat.remove_package(p3_fmri)
+                self.assertRaises(api_errors.UnknownCatalogEntry,
+                        cat.remove_package, p3_fmri)
 
         def test_07_updates(self):
                 """Verify that catalog updates are applied as expected."""
@@ -698,6 +711,9 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 dup1 = catalog.Catalog(meta_root=dup1_path)
                 dup1.validate()
 
+                # No catalog updates should be needed.
+                self.assertEqual(dup1.get_updates_needed(orig.meta_root), None)
+
                 # Add some packages to the original.
                 pkg_src_list = [
                     fmri.PkgFmri("pkg://opensolaris.org/"
@@ -712,15 +728,33 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 self.assertEqual(orig.package_version_count, 1)
                 self.assertEqual(dup1.package_version_count, 0)
 
-                # Since no catalog parts exist for the duplicate, there should
-                # be no updates needed.
+                # Only the new catalog parts should be listed as updates.
                 updates = dup1.get_updates_needed(orig.meta_root)
-                self.assertEqual(updates, [])
+                self.assertEqual(updates, set(["catalog.base.C"]))
 
                 # Now copy the existing catalog so that a baseline exists for
                 # incremental update testing.
                 shutil.rmtree(dup1_path)
                 shutil.copytree(cpath, dup1_path)
+
+                def apply_updates(src, dest):
+                        # Next, determine the updates that could be made to the
+                        # duplicate based on the original.
+                        updates = dest.get_updates_needed(src.meta_root)
+
+                        # Verify that the updates available to the original
+                        # catalog are the same as the updated needed to update
+                        # the duplicate.
+                        self.assertEqual(src.updates.keys(), updates)
+
+                        # Apply original catalog's updates to the duplicate.
+                        dest.apply_updates(src.meta_root)
+
+                        # Verify the contents.
+                        self.assertEqual(dest.package_version_count,
+                            src.package_version_count)
+                        self.assertEqual([f for f in dest.fmris()],
+                            [f for f in src.fmris()])
 
                 # Add some packages to the original.
                 pkg_src_list = [
@@ -734,24 +768,46 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                         orig.add_package(f)
                 orig.save()
 
-                # Next, determine the updates that could be made to the
-                # duplicate based on the original.
+                # Load the duplicate and ensure it contains the expected data.
                 dup1 = catalog.Catalog(meta_root=dup1_path)
                 self.assertEqual(dup1.package_version_count, 1)
                 dup1.validate()
-                updates = dup1.get_updates_needed(orig.meta_root)
 
-                # Verify that the updates available to the original catalog
-                # are the same as the updated needed to update the duplicate.
-                self.assertEqual(orig.updates.keys(), updates)
+                # Apply the updates and verify.
+                apply_updates(orig, dup1)
 
-                # Apply original catalog's updates to the duplicate.
-                dup1.apply_updates(orig.meta_root)
+                # Now remove the packages that were added during the last
+                # update.
+                for f in pkg_src_list:
+                        orig.remove_package(f)
+                orig.save()
 
-                # Verify the contents.
-                self.assertEqual(dup1.package_version_count, 3)
-                self.assertEqual([f for f in dup1.fmris()],
-                    [f for f in orig.fmris()])
+                # Apply the updates and verify.
+                self.assertEqual(orig.package_version_count, 1)
+                apply_updates(orig, dup1)
+
+                # Now add back one of the packages removed.
+                for f in pkg_src_list:
+                        orig.add_package(f)
+                        break
+                orig.save()
+
+                # Apply the updates and verify.
+                self.assertEqual(orig.package_version_count, 2)
+                apply_updates(orig, dup1)
+
+                # Now remove the package we just added and add back both
+                # packages we first removed and attempt to update.
+                for f in pkg_src_list:
+                        orig.remove_package(f)
+                        break
+                for f in pkg_src_list:
+                        orig.add_package(f)
+                orig.save()
+
+                # Apply the updates and verify.
+                self.assertEqual(orig.package_version_count, 3)
+                apply_updates(orig, dup1)
 
         def test_08_append(self):
                 """Verify that append functionality works as expected."""
@@ -845,14 +901,17 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                         "apkg@1.0,5.11-1:20000101T120040Z"),
                 ]
 
-                def ret_man(f):
+                def manifest_cb(cat, f):
                         if f.pkg_name == "apkg":
                                 return manifest.Manifest()
                         return self.__gen_manifest(f)
 
+                def ret_man(f):
+                        return manifest_cb(None, f)
+
                 # First, create a catalog (with callback) and populate it
                 # using only FMRIs.
-                nc = catalog.Catalog(manifest_cb=ret_man)
+                nc = catalog.Catalog(manifest_cb=manifest_cb)
                 for f in pkg_src_list:
                         nc.add_package(f)
                 self.__test_catalog_actions(nc, pkg_src_list)
@@ -866,7 +925,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
 
                 # Third, create a catalog (with callback), but populate it
                 # using FMRIs and Manifests.
-                nc = catalog.Catalog(manifest_cb=ret_man)
+                nc = catalog.Catalog(manifest_cb=manifest_cb)
                 for f in pkg_src_list:
                         nc.add_package(f, manifest=ret_man(f))
                 self.__test_catalog_actions(nc, pkg_src_list)

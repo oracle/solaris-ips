@@ -53,7 +53,7 @@ class TestPkgHistory(testutils.ManyDepotTestCase):
             close """
 
         def setUp(self):
-                testutils.ManyDepotTestCase.setUp(self, 2)
+                testutils.ManyDepotTestCase.setUp(self, ["test1", "test2"])
 
                 durl1 = self.dcs[1].get_depot_url()
                 self.pkgsend_bulk(durl1, self.foo1)
@@ -63,11 +63,12 @@ class TestPkgHistory(testutils.ManyDepotTestCase):
                 self.dcs[2].stop()
                 d1dir = self.dcs[1].get_repodir()
                 d2dir = self.dcs[2].get_repodir()
-                shutil.rmtree(d2dir)
-                shutil.copytree(d1dir, d2dir)
+                self.copy_repository(d1dir, "test1", d2dir, "test2")
+                self.dcs[2].set_rebuild()
                 self.dcs[2].start()
+                self.dcs[2].set_norebuild()
 
-                self.image_create(durl1, prefix = "test1")
+                self.image_create(durl1, prefix="test1")
 
         def tearDown(self):
                 testutils.ManyDepotTestCase.tearDown(self)

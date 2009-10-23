@@ -80,7 +80,7 @@ Usage:
         pkgsend [options] command [cmd_options] [operands]
 
 Packager subcommands:
-        pkgsend create-repository
+        pkgsend create-repository --set-property <section.property>=<value>
         pkgsend open [-en] pkg_fmri
         pkgsend add action arguments
         pkgsend import [-T file_pattern] bundlefile ...
@@ -101,12 +101,29 @@ Environment:
 def trans_create_repository(repo_uri, args):
         """Creates a new repository at the location indicated by repo_uri."""
 
-        if args:
-                usage(_("command does not take operands"),
-                    cmd="create-repository")
+        repo_props = {}
+        opts, pargs = getopt.getopt(args, "", ["set-property="])
+        for opt, arg in opts:
+                if opt == "--set-property":
+                        try:
+                                prop, p_value = arg.split("=", 1)
+                                p_sec, p_name = prop.split(".", 1)
+                        except ValueError:
+                                usage(_("property arguments must be of "
+                                    "the form '<section.property>="
+                                    "<value>'."), cmd="create-repository")
+                        repo_props.setdefault(p_sec, {})
+                        repo_props[p_sec][p_name] = p_value
 
         try:
-                trans.Transaction(repo_uri, create_repo=True)
+                trans.Transaction(repo_uri, create_repo=True,
+                    repo_props=repo_props)
+        except trans.TransactionRepositoryConfigError, e:
+                error(e, cmd="create-repository")
+                emsg(_("Invalid repository configuration values were "
+                    "specified using --set-property or required values are "
+                    "missing.  Please provide the correct and/or required "
+                    "values using the --set-property option."))
         except trans.TransactionError, e:
                 error(e, cmd="create-repository")
                 return 1
@@ -317,7 +334,7 @@ def trans_include(repo_uri, fargs, transaction=None):
                                         action.attrs["path"].lstrip("/")
                         # omit set name=fmri actions
                         if action.name == "set" and \
-                            action.attrs["name"] == "fmri":
+                            action.attrs["name"] in ("fmri", "pkg.fmri"):
                                 continue
 
                         t.add(action)

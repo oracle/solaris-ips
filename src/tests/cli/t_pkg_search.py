@@ -71,7 +71,7 @@ add set name=description value="sparc variant" variant.arch=sparc
 close """
 
         bogus_pkg10 = """
-set name=fmri value=pkg:/bogus_pkg@1.0,5.11-0:20090326T233451Z
+set name=pkg.fmri value=pkg:/bogus_pkg@1.0,5.11-0:20090326T233451Z
 set name=description value=""validation with simple chains of constraints ""
 set name=pkg.description value="pseudo-hashes as arrays tied to a "type" (list of fields)"
 depend fmri=XML-Atom-Entry
@@ -125,7 +125,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
             headers,
             "com.sun.service.random_test set       79                        pkg:/example_pkg@1.0-0\n"
         ])
-        
+
         res_remote_keywords = set([
             headers,
             "com.sun.service.keywords set       separator                 pkg:/example_pkg@1.0-0\n"
@@ -139,7 +139,8 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
         res_remote_wildcard = set([
             headers,
             "basename   file      bin/example_path          pkg:/example_pkg@1.0-0\n",
-            "basename   dir       bin/example_dir           pkg:/example_pkg@1.0-0\n"
+            "basename   dir       bin/example_dir           pkg:/example_pkg@1.0-0\n",
+            "pkg.fmri   set       test/example_pkg          pkg:/example_pkg@1.0-0\n"
         ])
 
         res_remote_glob = set([
@@ -147,7 +148,8 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
             "basename   file      bin/example_path          pkg:/example_pkg@1.0-0\n",
             "basename   dir       bin/example_dir           pkg:/example_pkg@1.0-0\n",
             "path       file      bin/example_path          pkg:/example_pkg@1.0-0\n",
-            "path       dir       bin/example_dir           pkg:/example_pkg@1.0-0\n"
+            "path       dir       bin/example_dir           pkg:/example_pkg@1.0-0\n",
+            "pkg.fmri   set       test/example_pkg          pkg:/example_pkg@1.0-0\n"
         ])
 
         res_remote_foo = set([
@@ -160,14 +162,10 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
             "description set       bAr                       pkg:/example_pkg@1.0-0\n"
         ])
 
-        local_fmri_string = \
-            "fmri       set        test/example_pkg              pkg:/example_pkg@1.0-0\n"
-
-
         res_local_pkg = set([
-                headers,
-                local_fmri_string
-                ])
+            headers,
+            "pkg.fmri       set        test/example_pkg              pkg:/example_pkg@1.0-0\n"
+        ])
 
         res_local_path = copy.copy(res_remote_path)
 
@@ -183,10 +181,8 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
         res_local_keywords = copy.copy(res_remote_keywords)
 
         res_local_wildcard = copy.copy(res_remote_wildcard)
-        res_local_wildcard.add(local_fmri_string)
 
         res_local_glob = copy.copy(res_remote_glob)
-        res_local_glob.add(local_fmri_string)
 
         res_local_foo = copy.copy(res_remote_foo)
         res_local_bar = copy.copy(res_remote_bar)
@@ -215,7 +211,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
 
         res_bogus_name_result = set([
             headers,
-            'fmri       set       bogus_pkg                 pkg:/bogus_pkg@1.0-0\n'
+            'pkg.fmri       set       bogus_pkg                 pkg:/bogus_pkg@1.0-0\n'
         ])
 
         res_bogus_number_result = set([
@@ -304,8 +300,8 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                     sorted([p.strip().split() for p in proposed_answer]) == \
                     sorted([c.strip().split() for c in correct_answer]):
                         return True
-                print "Proposed Answer: " + str(proposed_answer)
-                print "Correct Answer : " + str(correct_answer)
+                self.debug("Proposed Answer: " + str(proposed_answer))
+                self.debug("Correct Answer : " + str(correct_answer))
                 if isinstance(correct_answer, set) and \
                     isinstance(proposed_answer, set):
                         print >> sys.stderr, "Missing: " + \
@@ -315,7 +311,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 self.assert_(correct_answer == proposed_answer)
 
         def _search_op(self, remote, token, test_value, case_sensitive=False,
-            return_actions=True):
+            return_actions=True, exit=0):
                 outfile = os.path.join(self.testdata_dir, "res")
                 if remote:
                         token = "-r " + token
@@ -327,16 +323,14 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                         token = "-a " + token
                 else:
                         token = "-p " + token
-                self.pkg("search " + token + " > " + outfile)
+                self.pkg("search " + token + " > " + outfile, exit=exit)
                 res_list = (open(outfile, "rb")).readlines()
                 self._check(set(res_list), test_value)
 
         def _run_remote_tests(self):
-                # Set to 1 since searches can't currently be performed
-                # package name unless it's set inside the
-                # manifest which happens at install time on
-                # the client side.
-                self.pkg("search -a -r example_pkg", exit=1)
+                # This should be possible now that the server automatically adds
+                # FMRIs to manifests (during publication).
+                self.pkg("search -a -r example_pkg")
 
                 self._search_op(True, "example_path", self.res_remote_path)
                 self._search_op(True, "'(example_path)'", self.res_remote_path)
@@ -401,7 +395,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 self.pkg("search -a -r 'e* AND <e*>'", exit=1)
                 self.pkg("search -a -r '<e*> OR e*'", exit=1)
                 self.pkg("search -a -r 'e* OR <e*>'", exit=1)
-                
+
         def _run_local_tests(self):
                 outfile = os.path.join(self.testdata_dir, "res")
 
@@ -535,13 +529,13 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 self.pkg("search -r '*'")
                 self.pkg("search -s %s '*'" % durl)
                 self.pkg("search -l '*'", exit=1)
-                
+
         def test_local_0(self):
                 """Install one package, and run the search suite."""
                 # Need to retain that -l works as expected
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.example_pkg10)
-                
+
                 self.image_create(durl)
 
                 self.pkg("install example_pkg")
@@ -569,10 +563,12 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 self.dc.set_rebuild()
                 self.dc.start()
 
-                self._search_op(True, "*bogus*",
-                    set(self.res_bogus_name_result))
-                self._search_op(True, "6627937",
-                    set(self.res_bogus_number_result))
+                # Should return nothing, as the server can't build catalog
+                # data for the package since the manifest is unparseable.
+                self._search_op(True, "*bogus*", set(), exit=1)
+                self._search_op(True, "6627937", set(), exit=1)
+
+                # Should fail since the bogus_pkg isn't even in the catalog.
                 self.pkg("install bogus_pkg", exit=1)
 
                 client_pkg_dir = os.path.join(self.img_path, "var", "pkg",
@@ -611,7 +607,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.fat_pkg10)
                 self.pkgsend_bulk(durl, self.example_pkg10)
-                
+
                 self.image_create(durl)
 
                 self.pkg("install fat")
@@ -636,7 +632,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
 
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.example_pkg10)
-                
+
                 self.image_create(durl)
 
                 self.pkg("install example_pkg")
@@ -663,7 +659,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
 
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.example_pkg10)
-                
+
                 self.image_create(durl)
 
                 o_options = "action.name,action.key,pkg.name,pkg.shortfmri," \
@@ -699,7 +695,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                     self.res_pkg_options_local)
                 self._search_op(False, "%s '<example_path>'" % pkg_options,
                     self.res_pkg_options_local)
-                
+
                 id, tid = self._get_index_dirs()
                 shutil.rmtree(id)
                 self._search_op(False, "-o %s example_path" % o_options,

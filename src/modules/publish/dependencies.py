@@ -192,7 +192,7 @@ def choose_name(fp, mfst):
 
         if mfst is None:
                 return urllib.unquote(os.path.basename(fp))
-        name = mfst.get("fmri", None)
+        name = mfst.get("pkg.fmri", mfst.get("fmri", None))
         if name is not None:
                 return name
         return urllib.unquote(os.path.basename(fp))

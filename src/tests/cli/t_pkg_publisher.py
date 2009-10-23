@@ -150,12 +150,14 @@ class TestPkgPublisherBasics(testutils.SingleDepotTestCase):
                 self.pkg("set-publisher --no-refresh -k %s test1" % key_path)
                 os.close(key_fh)
                 os.unlink(key_path)
-                self.pkg("set-publisher --no-refresh -k %s test2" % key_path, exit=1)
+                self.pkg("set-publisher --no-refresh -k %s test2" % key_path,
+                    exit=1)
 
                 self.pkg("set-publisher --no-refresh -c %s test1" % cert_path)
                 os.close(cert_fh)
                 os.unlink(cert_path)
-                self.pkg("set-publisher --no-refresh -c %s test2" % cert_path, exit=1)
+                self.pkg("set-publisher --no-refresh -c %s test2" % cert_path,
+                    exit=1)
 
                 self.pkg("publisher test1")
                 self.pkg("publisher test3", exit=1)
@@ -171,7 +173,7 @@ class TestPkgPublisherBasics(testutils.SingleDepotTestCase):
         def test_publisher_validation(self):
                 """Verify that we catch poorly formed auth prefixes and URL"""
                 durl = self.dc.get_depot_url()
-                self.image_create(durl)
+                self.image_create(durl, prefix="test")
 
                 self.pkg("set-publisher -O http://%s1 test1" % self.bogus_url,
                     exit=1)
@@ -191,38 +193,36 @@ class TestPkgPublisherBasics(testutils.SingleDepotTestCase):
         def test_mirror(self):
                 """Test set-mirror and unset-mirror."""
                 durl = self.dc.get_depot_url()
-                pfx = "mtest"
-                self.image_create(durl, prefix = pfx)
+                self.image_create(durl, prefix="test")
 
-                self.pkg("set-publisher -m http://%s1 mtest" % self.bogus_url)
-                self.pkg("set-publisher -m http://%s2 mtest" %
+                self.pkg("set-publisher -m http://%s1 test" % self.bogus_url)
+                self.pkg("set-publisher -m http://%s2 test" %
                     self.bogus_url)
                 self.pkg("set-publisher -m http://%s5" % self.bogus_url, exit=2)
-                self.pkg("set-publisher -m mtest", exit=2)
-                self.pkg("set-publisher -m http://%s1 mtest" % self.bogus_url,
+                self.pkg("set-publisher -m test", exit=2)
+                self.pkg("set-publisher -m http://%s1 test" % self.bogus_url,
                     exit=1)
-                self.pkg("set-publisher -m http://%s5 test" % self.bogus_url,
+                self.pkg("set-publisher -m http://%s5 test1" % self.bogus_url,
                     exit=1)
-                self.pkg("set-publisher -m %s7 mtest" % self.bogus_url, exit=1)
+                self.pkg("set-publisher -m %s7 test" % self.bogus_url, exit=1)
 
-                self.pkg("set-publisher -M http://%s1 mtest" % self.bogus_url)
-                self.pkg("set-publisher -M http://%s2 mtest" %
+                self.pkg("set-publisher -M http://%s1 test" % self.bogus_url)
+                self.pkg("set-publisher -M http://%s2 test" %
                     self.bogus_url)
-                self.pkg("set-publisher -M mtest http://%s2 http://%s4" %
+                self.pkg("set-publisher -M test1 http://%s2 http://%s4" %
                     (self.bogus_url, self.bogus_url), exit=2)
                 self.pkg("set-publisher -M http://%s5" % self.bogus_url, exit=2)
-                self.pkg("set-publisher -M mtest", exit=2)
-                self.pkg("set-publisher -M http://%s5 test" % self.bogus_url,
+                self.pkg("set-publisher -M test", exit=2)
+                self.pkg("set-publisher -M http://%s5 test1" % self.bogus_url,
                     exit=1)
-                self.pkg("set-publisher -M http://%s6 mtest" % self.bogus_url,
+                self.pkg("set-publisher -M http://%s6 test" % self.bogus_url,
                     exit=1)
-                self.pkg("set-publisher -M %s7 mtest" % self.bogus_url, exit=1)
+                self.pkg("set-publisher -M %s7 test" % self.bogus_url, exit=1)
 
         def test_missing_perms(self):
                 """Bug 2393"""
                 durl = self.dc.get_depot_url()
-                pfx = "mtest"
-                self.image_create(durl, prefix=pfx)
+                self.image_create(durl, prefix="test")
 
                 self.pkg("set-publisher --no-refresh -O http://%s1 test1" %
                     self.bogus_url, su_wrap=True, exit=1)
@@ -234,20 +234,21 @@ class TestPkgPublisherBasics(testutils.SingleDepotTestCase):
                 self.pkg("unset-publisher foo", su_wrap=True, exit=1)
                 self.pkg("unset-publisher foo")
 
-                self.pkg("set-publisher -m http://%s1 mtest" % self.bogus_url, \
+                self.pkg("set-publisher -m http://%s1 test" % self.bogus_url, \
                     su_wrap=True, exit=1)
-                self.pkg("set-publisher -m http://%s2 mtest" %
+                self.pkg("set-publisher -m http://%s2 test" %
                     self.bogus_url)
 
-                self.pkg("set-publisher -M http://%s2 mtest" %
+                self.pkg("set-publisher -M http://%s2 test" %
                     self.bogus_url, su_wrap=True, exit=1)
-                self.pkg("set-publisher -M http://%s2 mtest" %
+                self.pkg("set-publisher -M http://%s2 test" %
                     self.bogus_url)
 
                 # Now change the first publisher to a https URL so that
                 # certificate failure cases can be tested.
                 key_fh, key_path = tempfile.mkstemp(dir=self.get_test_prefix())
-                cert_fh, cert_path = tempfile.mkstemp(dir=self.get_test_prefix())
+                cert_fh, cert_path = tempfile.mkstemp(
+                    dir=self.get_test_prefix())
 
                 self.pkg("set-publisher --no-refresh -O https://%s1 test1" %
                     self.bogus_url)
@@ -269,37 +270,36 @@ class TestPkgPublisherBasics(testutils.SingleDepotTestCase):
         def test_mirror_longopt(self):
                 """Test set-mirror and unset-mirror."""
                 durl = self.dc.get_depot_url()
-                pfx = "mtest"
-                self.image_create(durl, prefix = pfx)
+                self.image_create(durl, prefix="test")
 
-                self.pkg("set-publisher --add-mirror=http://%s1 mtest" %
+                self.pkg("set-publisher --add-mirror=http://%s1 test" %
                     self.bogus_url)
-                self.pkg("set-publisher --add-mirror=http://%s2 mtest" %
+                self.pkg("set-publisher --add-mirror=http://%s2 test" %
                     self.bogus_url)
                 self.pkg("set-publisher --add-mirror=http://%s5" %
                     self.bogus_url, exit=2)
-                self.pkg("set-publisher --add-mirror=mtest", exit=2)
-                self.pkg("set-publisher --add-mirror=http://%s1 mtest" %
+                self.pkg("set-publisher --add-mirror=test", exit=2)
+                self.pkg("set-publisher --add-mirror=http://%s1 test" %
                     self.bogus_url, exit=1)
-                self.pkg("set-publisher --add-mirror=http://%s5 test" %
+                self.pkg("set-publisher --add-mirror=http://%s5 test1" %
                     self.bogus_url, exit=1)
-                self.pkg("set-publisher --add-mirror=%s7 mtest" %
+                self.pkg("set-publisher --add-mirror=%s7 test" %
                     self.bogus_url, exit=1)
 
-                self.pkg("set-publisher --remove-mirror=http://%s1 mtest" %
+                self.pkg("set-publisher --remove-mirror=http://%s1 test" %
                     self.bogus_url)
-                self.pkg("set-publisher --remove-mirror=http://%s2 mtest" %
+                self.pkg("set-publisher --remove-mirror=http://%s2 test" %
                     self.bogus_url)
-                self.pkg("set-publisher --remove-mirror=mtest http://%s2 http://%s4" %
+                self.pkg("set-publisher --remove-mirror=test http://%s2 http://%s4" %
                     (self.bogus_url, self.bogus_url), exit=2)
                 self.pkg("set-publisher --remove-mirror=http://%s5" %
                     self.bogus_url, exit=2)
-                self.pkg("set-publisher --remove-mirror=mtest", exit=2)
-                self.pkg("set-publisher --remove-mirror=http://%s5 test" %
+                self.pkg("set-publisher --remove-mirror=test", exit=2)
+                self.pkg("set-publisher --remove-mirror=http://%s5 test1" %
                     self.bogus_url, exit=1)
-                self.pkg("set-publisher --remove-mirror=http://%s6 mtest" %
+                self.pkg("set-publisher --remove-mirror=http://%s6 test" %
                     self.bogus_url, exit=1)
-                self.pkg("set-publisher --remove-mirror=%s7 mtest" %
+                self.pkg("set-publisher --remove-mirror=%s7 test" %
                     self.bogus_url, exit=1)
 
 
@@ -316,7 +316,7 @@ class TestPkgPublisherMany(testutils.ManyDepotTestCase):
             close """
 
         def setUp(self):
-                testutils.ManyDepotTestCase.setUp(self, 2)
+                testutils.ManyDepotTestCase.setUp(self, ["test1", "test2"])
 
                 durl1 = self.dcs[1].get_depot_url()
                 self.pkgsend_bulk(durl1, self.foo1)
@@ -324,7 +324,7 @@ class TestPkgPublisherMany(testutils.ManyDepotTestCase):
                 durl2 = self.dcs[2].get_depot_url()
                 self.pkgsend_bulk(durl2, self.bar1)
 
-                self.image_create(durl1, prefix = "test1")
+                self.image_create(durl1, prefix="test1")
                 self.pkg("set-publisher -O " + durl2 + " test2")
 
         def tearDown(self):

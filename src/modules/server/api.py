@@ -26,14 +26,14 @@
 
 import cherrypy
 import itertools
-import pkg.server.catalog
+import pkg.catalog
 import pkg.fmri
-import pkg.version
 import pkg.server.api_errors as api_errors
+import pkg.server.repository as srepo
 import pkg.server.query_parser as qp
 import pkg.version as version
 
-CURRENT_API_VERSION = 5
+CURRENT_API_VERSION = 6
 
 class BaseInterface(object):
         """This class represents a base API object that is provided by the
@@ -43,61 +43,63 @@ class BaseInterface(object):
         needed by interfaces to provide functionality to clients.
         """
 
-        # A semi-private reference to a cherrypy request object.
-        _request = None
-        # A semi-private reference to a SvrConfig object.
-        _svrconfig = None
-        # A semi-private reference to a RepositoryConfig object.
-        _rcconfig = None
+        def __init__(self, request, repo, content_root=None, web_root=None):
+                # A protected reference to a pkg.server.repository object.
+                self._repo = repo
 
-        def __init__(self, request, svrconfig, rcconfig):
+                # A protected reference to a cherrypy request object.
                 self._request = request
-                self._svrconfig = svrconfig
-                self._rcconfig = rcconfig
+
+                # BUI-specific paths.
+                self._content_root = content_root
+                self._web_root = web_root
 
 class _Interface(object):
         """Private base class used for api interface objects.
         """
         def __init__(self, version_id, base):
-                compatible_versions = set([3, 4, 5])
+                compatible_versions = set([6])
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
                             version_id)
+
+                self._repo = base._repo
+                self._request = base._request
+                self._content_root = base._content_root
+                self._web_root = base._web_root
 
 class CatalogInterface(_Interface):
         """This class presents an interface to server catalog objects that
         clients may use.
         """
 
-        def __init__(self, version_id, base):
-                _Interface.__init__(self, version_id, base)
-                catalog = None
-                if not base._svrconfig.is_mirror():
-                        catalog = base._svrconfig.catalog
-                self.__catalog = catalog
-
         def fmris(self):
-                """Returns a list of FMRIs as it iterates over the contents of
-                the server's catalog.  Returns an empty list if the catalog is
-                not available.
-                """
-                if not self.__catalog:
-                        return []
-                return self.__catalog.fmris()
+                """A generator function that produces FMRIs as it iterates
+                over the contents of the server's catalog."""
+                try:
+                        c = self._repo.catalog
+                except srepo.RepositoryMirrorError:
+                        return iter(())
+                return self._repo.catalog.fmris()
 
         def get_matching_pattern_fmris(self, patterns):
-                """Returns a sorted list of PkgFmri objects, newest versions
-                first, for packages matching those found in the 'patterns' list.
+                """Returns a tuple of a sorted list of PkgFmri objects, newest
+                versions first, for packages matching those found in the
+                'patterns' list, and a dict of unmatched patterns indexed by
+                match criteria.
                 """
-                c = self.__catalog
-                if not c:
-                        return []
-                return pkg.server.catalog.extract_matching_fmris(c.fmris(),
+                try:
+                        c = self._repo.catalog
+                except srepo.RepositoryMirrorError:
+                        return tuple(), {}
+                return pkg.catalog.extract_matching_fmris(c.fmris(),
                     patterns=patterns)
 
         def get_matching_version_fmris(self, versions):
-                """Returns a sorted list of PkgFmri objects, newest versions
-                first, for packages matching those found in the 'versions' list.
+                """Returns a tuple of a sorted list of PkgFmri objects, newest
+                versions first, for packages matching those found in the
+                'versions' list, and a dict of unmatched versions indexed by
+                match criteria.
 
                 'versions' should be a list of strings of the format:
                     release,build_release-branch:datetime
@@ -107,11 +109,11 @@ class CatalogInterface(_Interface):
                 as wildcard characters ('*' for one or more characters, '?' for
                 a single character).
                 """
-                c = self.__catalog
-                if not c:
-                        return []
-
-                return pkg.server.catalog.extract_matching_fmris(c.fmris(),
+                try:
+                        c = self._repo.catalog
+                except srepo.RepositoryMirrorError:
+                        return tuple(), {}
+                return pkg.catalog.extract_matching_fmris(c.fmris(),
                     versions=versions)
 
         @property
@@ -120,21 +122,33 @@ class CatalogInterface(_Interface):
                 which the catalog was last modified.  Returns None if not
                 available.
                 """
-                if not self.__catalog:
+                try:
+                        c = self._repo.catalog
+                except srepo.RepositoryMirrorError:
                         return None
-                lm = self.__catalog.last_modified()
-                if not lm:
-                        return None
-                return pkg.server.catalog.ts_to_datetime(lm)
+                return c.last_modified
 
         @property
         def package_count(self):
                 """The total number of packages in the catalog.  Returns None
                 if the catalog is not available.
                 """
-                if not self.__catalog:
+                try:
+                        c = self._repo.catalog
+                except srepo.RepositoryMirrorError:
                         return None
-                return self.__catalog.npkgs()
+                return c.package_count
+
+        @property
+        def package_version_count(self):
+                """The total number of package versions in the catalog.  Returns
+                None if the catalog is not available.
+                """
+                try:
+                        c = self._repo.catalog
+                except srepo.RepositoryMirrorError:
+                        return None
+                return c.package_version_count
 
         def search(self, tokens, case_sensitive=False,
             return_type=qp.Query.RETURN_PACKAGES, start_point=None,
@@ -249,22 +263,25 @@ class CatalogInterface(_Interface):
                         # can be immediately raised.
                         query = qp.Query(" ".join(tokens), case_sensitive,
                             return_type, None, None)
-                        results = self.__catalog.search(query)
+                        res_list = self._repo.search([str(query)])
+                        if not res_list:
+                                return
 
-                        return filtered_search(results, mver)
+                        return filtered_search(res_list[0], mver)
 
                 query = qp.Query(" ".join(tokens), case_sensitive,
                     return_type, num_to_return, start_point)
-                return self.__catalog.search(query)
+                res_list = self._repo.search([str(query)])
+                if not res_list:
+                        return
+                return res_list[0]
 
         @property
         def search_available(self):
                 """Returns a Boolean value indicating whether search
                 functionality is available for the catalog.
                 """
-                if not self.__catalog:
-                        return False
-                return self.__catalog.search_available()
+                return self._repo.search_available
 
 
 class ConfigInterface(_Interface):
@@ -272,96 +289,90 @@ class ConfigInterface(_Interface):
         information and statistics about the depot that clients may use.
         """
 
-        def __init__(self, version_id, base):
-                _Interface.__init__(self, version_id, base)
-                self.__svrconfig = base._svrconfig
-                self.__rcconfig = base._rcconfig
-
         @property
         def catalog_requests(self):
                 """The number of /catalog operation requests that have occurred
                 during the current server session.
                 """
-                return self.__svrconfig.catalog_requests
+                return self._repo.catalog_requests
 
         @property
         def content_root(self):
                 """The file system path where the server's content and web
                 directories are located.
                 """
-                return self.__svrconfig.content_root
+                return self._content_root
 
         @property
         def file_requests(self):
                 """The number of /file operation requests that have occurred
                 during the current server session.
                 """
-                return self.__svrconfig.file_requests
+                return self._repo.file_requests
 
         @property
         def filelist_requests(self):
                 """The number of /filelist operation requests that have occurred
                 during the current server session.
                 """
-                return self.__svrconfig.flist_requests
+                return self._repo.flist_requests
 
         @property
         def filelist_file_requests(self):
                 """The number of files served by /filelist operations requested
                 during the current server session.
                 """
-                return self.__svrconfig.flist_files
+                return self._repo.flist_files
 
         @property
         def in_flight_transactions(self):
                 """The number of package transactions awaiting completion.
                 """
-                return len(self.__svrconfig.in_flight_trans)
+                return self._repo.in_flight_transactions
 
         @property
         def manifest_requests(self):
                 """The number of /manifest operation requests that have occurred
                 during the current server session.
                 """
-                return self.__svrconfig.manifest_requests
+                return self._repo.manifest_requests
 
         @property
         def mirror(self):
                 """A Boolean value indicating whether the server is currently
                 operating in mirror mode.
                 """
-                return self.__svrconfig.mirror
+                return self._repo.mirror
 
         @property
         def readonly(self):
                 """A Boolean value indicating whether the server is currently
                 operating in readonly mode.
                 """
-                return self.__svrconfig.read_only
+                return self._repo.read_only
 
         @property
         def rename_requests(self):
                 """The number of /rename operation requests that have occurred
                 during the current server session.
                 """
-                return self.__svrconfig.pkgs_renamed
+                return self._repo.pkgs_renamed
 
         @property
         def web_root(self):
                 """The file system path where the server's web content is
                 located.
                 """
-                return self.__svrconfig.web_root
+                return self._web_root
 
-
-        def get_repo_attrs(self):
+        def get_repo_properties(self):
                 """Returns a dictionary of repository configuration
-                attributes organized by section, with each section's keys
+                properties organized by section, with each section's keys
                 as a list.
 
-                Available attributes are as follows:
+                Available properties are as follows:
 
-                Section     Attribute           Description
+                Section     Property            Description
                 ==========  ==========          ===============
                 publisher   alias               An alternative name for the
                                                 publisher of the packages in
@@ -436,11 +447,6 @@ class ConfigInterface(_Interface):
                             description         A descriptive paragraph for the
                                                 feed.
 
-                            publisher           A fully-qualified domain name or
-                                                email address that is used to
-                                                generate a unique identifier for
-                                                each entry in the feed.
-
                             icon                A filename of a small image that
                                                 is used to visually represent
                                                 the feed.
@@ -457,22 +463,19 @@ class ConfigInterface(_Interface):
                                                 creating the feed for the
                                                 repository updatelog.
                 """
-                return self.__rcconfig.get_attributes()
+                return self._repo.cfg.get_properties()
 
-        def get_repo_attr_value(self, section, attr):
+        def get_repo_property_value(self, section, prop):
                 """Returns the current value of a repository configuration
-                attribute for the specified section.
+                property for the specified section.
                 """
-                return self.__rcconfig.get_attribute(section, attr)
+                return self._repo.cfg.get_property(section, prop)
+
 
 class RequestInterface(_Interface):
         """This class presents an interface to server request objects that
         clients may use.
         """
-
-        def __init__(self, version_id, base):
-                _Interface.__init__(self, version_id, base)
-                self.__request = base._request
 
         def get_accepted_languages(self):
                 """Returns a list of the languages accepted by the client
@@ -480,7 +483,7 @@ class RequestInterface(_Interface):
                 Accept-Language header provided by the client.
                 """
                 alist = []
-                for entry in self.__request.headers.elements("Accept-Language"):
+                for entry in self._request.headers.elements("Accept-Language"):
                         alist.append(str(entry).split(";")[0])
 
                 return alist
@@ -488,7 +491,7 @@ class RequestInterface(_Interface):
         def get_rel_path(self, uri):
                 """Returns uri relative to the current request path.
                 """
-                return pkg.misc.get_rel_path(self.__request, uri)
+                return pkg.misc.get_rel_path(self._request, uri)
 
         def log(self, msg):
                 """Instruct the server to log the provided message to its error
@@ -501,14 +504,14 @@ class RequestInterface(_Interface):
                 """A dict containing the parameters sent in the request, either
                 in the query string or in the request body.
                 """
-                return self.__request.params
+                return self._request.params
 
         @property
         def path_info(self):
                 """A string containing the "path_info" portion of the requested
                 URL.
                 """
-                return self.__request.path_info
+                return self._request.path_info
 
         @property
         def query_string(self):

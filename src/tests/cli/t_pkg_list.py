@@ -29,11 +29,12 @@ import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 
+import calendar
 import difflib
 import os
-import pkg.catalog as catalog
 import re
 import shutil
+import simplejson as json
 import unittest
 
 class TestPkgList(testutils.ManyDepotTestCase):
@@ -69,7 +70,8 @@ class TestPkgList(testutils.ManyDepotTestCase):
             close """
 
         def setUp(self):
-                testutils.ManyDepotTestCase.setUp(self, 3)
+                testutils.ManyDepotTestCase.setUp(self, ["test1", "test2",
+                    "test3"])
 
                 durl1 = self.dcs[1].get_depot_url()
                 self.pkgsend_bulk(durl1, self.foo1 + self.foo10 + self.foo11 + \
@@ -84,15 +86,19 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 self.dcs[2].stop()
                 d1dir = self.dcs[1].get_repodir()
                 d2dir = self.dcs[2].get_repodir()
-                shutil.rmtree(d2dir)
-                shutil.copytree(d1dir, d2dir)
+                self.copy_repository(d1dir, "test1", d2dir, "test2")
+
+                # The new repository won't have a catalog, so set the depot
+                # server to rebuild it.
+                self.dcs[2].set_rebuild()
                 self.dcs[2].start()
+                self.dcs[2].set_norebuild()
 
                 # The third repository should remain empty and not be
                 # published to.
 
-                self.image_create(durl1, prefix = "test1")
-
+                # Next, create the image and configure publishers.
+                self.image_create(durl1, prefix="test1")
                 self.pkg("set-publisher -O " + durl2 + " test2")
 
         def reduceSpaces(self, string):
@@ -240,7 +246,6 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 publisher, and verify that list still shows the package
                 as installed."""
 
-                durl1 = self.dcs[1].get_depot_url()
                 durl2 = self.dcs[2].get_depot_url()
                 durl3 = self.dcs[3].get_depot_url()
 
@@ -275,15 +280,15 @@ class TestPkgList(testutils.ManyDepotTestCase):
 
                 # With the publisher of an installed package unknown, add a new
                 # publisher using the repository the package was originally
-                # installed from.  The should be shown as known for test1,
-                # installed for test2, and known for test3.
+                # installed from.  The pkg should be shown as known for test1,
+                # installed for test2, and test3 shouldn't be listed since the
+                # packages in the specified repository are for publisher test2.
                 self.pkg("unset-publisher test2")
                 self.pkg("set-publisher -O %s test3" % durl2)
                 self.pkg("list -aH foo@1.0")
                 expected = \
                     "foo 1.0-0 known u---\n" + \
-                    "foo (test2) 1.0-0 installed u---\n" + \
-                    "foo (test3) 1.0-0 known u---\n"
+                    "foo (test2) 1.0-0 installed u---\n"
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
                 self.pkg("unset-publisher test3")

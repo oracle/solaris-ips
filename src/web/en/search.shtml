@@ -64,6 +64,13 @@
                 except ValueError:
                         val = default
 
+                # Force boolean type for these parameters.
+                if name in ("cs", "sav"):
+                        if val:
+                                val = True
+                        else:
+                                val = False
+
                 criteria[name] = val
 
         return criteria

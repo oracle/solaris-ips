@@ -34,6 +34,7 @@ import threading
 
 import pkg.fmri
 
+import pkg.catalog as catalog
 import pkg.client.api_errors as apx
 import pkg.client.imageconfig as imageconfig
 import pkg.client.publisher as publisher
@@ -98,7 +99,7 @@ class Transport(object):
 
                 self.__lock.acquire()
                 try:
-                       fobj = self._do_search(pub, data)
+                        fobj = self._do_search(pub, data)
                 finally:
                         self.__lock.release()
 
@@ -233,6 +234,194 @@ class Transport(object):
                                     e, e))
                  
                 raise failures
+
+        @staticmethod
+        def _verify_catalog(filename, dirname):
+                """A wrapper for catalog.verify() that catches
+                BadCatalogSignatures exceptions and translates them to
+                the appropriate InvalidContentException that the transport
+                uses for content verification."""
+
+                filepath = os.path.join(dirname, filename)
+
+                try:
+                        catalog.verify(filepath)
+                except (apx.BadCatalogSignatures, apx.InvalidCatalogFile), e:
+                        os.remove(filepath)
+                        te = tx.InvalidContentException(filepath,
+                            "CatalogPart failed validation: %s" % e)
+                        te.request = filename
+                        raise te
+                return
+
+        def get_catalog1(self, pub, flist, ts=None, path=None):
+                """Get the catalog1 files from publisher 'pub' that
+                are given as a list in 'flist'.  If the caller supplies
+                an optional timestamp argument, only get the files that
+                have been modified since the timestamp.  At the moment,
+                this interface only supports supplying a timestamp
+                if the length of flist is 1.
+
+                The timestamp, 'ts', should be provided as a floating
+                point value of seconds since the epoch in UTC.  If callers
+                have a datetime object, they should use something like:
+
+                time.mktime(dtobj.timetuple()) -> float
+
+                If the caller has a UTC datetime object, the following
+                should be used instead:
+
+                calendar.timegm(dtobj.utctimetuple()) -> float
+
+                The examples above convert the object to the appropriate format
+                for get_catalog1.
+
+                If the caller wants the completed download to be placed
+                in an alternate directory (pub.catalog_root is standard),
+                set a directory path in 'path'."""
+
+                self.__lock.acquire()
+                try:
+                        self._get_catalog1(pub, flist, ts=ts, path=path)
+                finally:
+                        self.__lock.release()
+
+        def _get_catalog1(self, pub, flist, ts=None, path=None):
+                """This is the implementation of get_catalog1.  The
+                other function is a wrapper for this one."""
+
+                retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
+                failures = []
+                repo_found = False
+                header = self.__build_header(uuid=self.__get_uuid(pub))
+
+                # Ensure that caller only passed one item, if ts was
+                # used.
+                if ts and len(flist) > 1:
+                        raise ValueError("Ts may only be used with a single"
+                            " item flist.")
+
+                # download_dir is temporary download path.  Completed_dir
+                # is the cache where valid content lives.
+                if path:
+                        completed_dir = path
+                else:
+                        completed_dir = pub.catalog_root
+                download_dir = self.__img.incoming_download_dir()
+
+                # If captive portal test hasn't been executed, run it
+                # prior to this operation.
+                self._captive_portal_test()
+
+                # Check if the download_dir exists.  If it doesn't, create
+                # the directories.
+                self._makedirs(download_dir)
+                self._makedirs(completed_dir)
+
+                # Call setup if the transport isn't configured yet.
+                if not self.__engine:
+                        self.__setup()
+
+                # Call statvfs to find the blocksize of download_dir's
+                # filesystem.
+                try:
+                        destvfs = os.statvfs(download_dir)
+                        # Set the file buffer size to the blocksize of our
+                        # filesystem.
+                        self.__engine.set_file_bufsz(destvfs[statvfs.F_BSIZE])
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES:
+                                raise apx.PermissionsException(e.filename)
+                        else:
+                                raise tx.TransportOperationError(
+                                    "Unable to stat VFS: %s" % e)
+                except AttributeError, e:
+                        # os.statvfs is not available on Windows
+                        pass
+
+                for d in self.__gen_origins_byversion(pub, retry_count,
+                    "catalog", 1):
+
+                        failedreqs = []
+                        repostats = self.stats[d.get_url()]
+                        repo_found = True
+
+                        # This returns a list of transient errors
+                        # that occurred during the transport operation.
+                        # An exception handler here isn't necessary
+                        # unless we want to supress a permanent failure.
+                        try:
+                                errlist = d.get_catalog1(flist, download_dir,
+                                    header, ts)
+                        except tx.TransportProtoError, e:
+                                # If we've performed a conditional
+                                # request, and it returned 304, raise a
+                                # CatalogNotModified exception here.
+                                if e.code == httplib.NOT_MODIFIED:
+                                        raise apx.CatalogNotModified(e.url)
+                                else:
+                                        raise
+
+                        for e in errlist:
+                                # General case: Fish the request information
+                                # out of the exception, so the transport
+                                # can retry the request at another host.
+                                req = getattr(e, "request", None)
+                                if req:
+                                        failedreqs.append(req)
+                                        failures.append(e)
+                                else:
+                                        raise e
+
+                        if not failedreqs:
+                                success = flist
+                                flist = None
+                        else:
+                                success = [
+                                    x for x in flist
+                                    if x not in failedreqs
+                                ]
+                                flist = failedreqs
+
+                        for s in success:
+                                dl_path = os.path.join(download_dir, s)
+
+                                try:
+                                        self._verify_catalog(s, download_dir)
+                                except tx.InvalidContentException, e:
+                                        repostats.record_error()
+                                        failedreqs.append(e.request)
+                                        failures.append(e)
+                                        if not flist:
+                                                flist = failedreqs
+                                        continue
+
+                                final_path = os.path.normpath(
+                                    os.path.join(completed_dir, s))
+                                    
+                                finaldir = os.path.dirname(final_path)
+
+                                self._makedirs(finaldir)
+                                portable.rename(dl_path, final_path)
+
+                        # Return if everything was successful
+                        if not flist and not errlist:
+                                return
+
+                if not repo_found:
+                        raise apx.UnsupportedRepositoryOperation(pub,
+                            "catalog/1")
+
+                if failedreqs and failures:
+                        failures = [
+                            x for x in failures
+                            if x.request in failedreqs
+                        ]
+                        tfailurex = tx.TransportFailures()
+                        for f in failures:
+                                tfailurex.append(f)
+                        raise tfailurex
+               
 
         def get_datastream(self, fmri, fhash):
                 """Given a fmri, and fhash, return a data stream for the remote
@@ -410,13 +599,14 @@ class Transport(object):
                         try:
                                 os.makedirs(newdir)
                         except EnvironmentError, e:
-                                if e.errno == errno.EACCES or \
-                                    e.errno == errno.EROFS:
+                                if e.errno == errno.EACCES:
                                         raise apx.PermissionsException(
                                             e.filename)
-                                else:
-                                        raise tx.TransportOperationError(
-                                            "Unable to make directory: %s" % e)
+                                if e.errno == errno.EROFS:
+                                        raise apx.ReadOnlyFileSystemException(
+                                            e.filename)
+                                raise tx.TransportOperationError("Unable to "
+                                    "make directory: %s" % e)
 
         def _get_files(self, mfile):
                 """Perform an operation that gets multiple files at once.
@@ -462,7 +652,8 @@ class Transport(object):
                 # filesystem.
                 try:
                         destvfs = os.statvfs(download_dir)
-                        # set the file buffer size to the blocksize of our filesystem
+                        # Set the file buffer size to the blocksize of our
+                        # filesystem.
                         self.__engine.set_file_bufsz(destvfs[statvfs.F_BSIZE])
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES:
@@ -536,6 +727,11 @@ class Transport(object):
                 if len(failedreqs) > 0 and len(failures) > 0:
                         failures = filter(lambda x: x.request in failedreqs,
                             failures)
+
+                        failures = [
+                            x for x in failures
+                            if x.request in failedreqs
+                        ]
                         tfailurex = tx.TransportFailures()
                         for f in failures:
                                 tfailurex.append(f)
@@ -558,7 +754,6 @@ class Transport(object):
 
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 failures = tx.TransportFailures()
-                verlines = None
                 header = self.__build_header(uuid=self.__get_uuid(pub))
 
                 # If captive portal test hasn't been executed, run it
@@ -571,18 +766,13 @@ class Transport(object):
                         # save it if it's retryable, otherwise
                         # raise the error to a higher-level handler.
                         try:
-                                resp = d.get_versions(header)
-                                verlines = resp.readlines()
-
-                                return dict(
-                                    s.split(None, 1)
-                                    for s in (l.strip() for l in verlines)
-                                )
-         
+                                vers = self.__get_version(d, header)        
+                                # Save this information for later use, too.
+                                self.__populate_repo_versions(d, vers)
+                                return vers 
                         except tx.TransportException, e:
                                 if e.retryable:
                                         failures.append(e)
-                                        verlines = None
                                 else:
                                         raise
                         except ValueError:
@@ -591,6 +781,55 @@ class Transport(object):
                                     "Unable to parse server response")
 
                 raise failures
+
+        @staticmethod
+        def __get_version(repo, header=None):
+                """An internal method that returns a versions dictionary
+                given a transport repo object."""
+
+                resp = repo.get_versions(header)
+                verlines = resp.readlines()
+
+                return dict(
+                    s.split(None, 1)
+                    for s in (l.strip() for l in verlines)
+                )
+
+        def __populate_repo_versions(self, repo, vers=None):
+                """Download versions information for the transport
+                repository object and store that information inside
+                of it."""
+
+                # Call __get_version to get the version dictionary
+                # from the repo.
+                
+                if not vers:
+                        try:
+                                vers = self.__get_version(repo)
+                        except ValueError:
+                                raise tx.PkgProtoError(repo.get_url(),
+                                    "versions", 0,
+                                    "VaueError while parsing response")
+
+                for key, val in vers.items():
+                        # Don't turn this line into a list of versions.
+                        if key == "pkg-server":
+                                continue
+
+                        try:
+                                versids = [
+                                    int(v)
+                                    for v in val.split()
+                                ]
+                        except ValueError:
+                                raise tx.PkgProtoError(repo.get_url(),
+                                    "versions", 0,
+                                    "Unable to parse version ids.")
+
+                        # Insert the list back into the dictionary.
+                        vers[key] = versids
+
+                repo.add_version_data(vers)
 
         def __gen_origins(self, pub, count):
                 """The pub argument may either be a Publisher or a
@@ -611,6 +850,37 @@ class Transport(object):
                         rslist = self.stats.get_repostats(origins)
                         for rs, ruri in rslist:
                                 yield self.__repo_cache.new_repo(rs, ruri)
+
+        def __gen_origins_byversion(self, pub, count, operation, version):
+                """Return origin repos for publisher pub, that support
+                the operation specified as a string in the 'operation'
+                argument.  The operation must support the version
+                given in as an integer to the 'version' argument."""
+
+                if not self.__engine:
+                        self.__setup()
+
+                if isinstance(pub, publisher.Publisher):
+                        origins = pub.selected_repository.origins
+                else:
+                        # If search was invoked with -s option, we'll have
+                        # a RepoURI instead of a publisher.  Convert
+                        # this to a repo uri
+                        origins = [pub]
+
+                for i in xrange(count):
+                        rslist = self.stats.get_repostats(origins)
+                        for rs, ruri in rslist:
+                                repo = self.__repo_cache.new_repo(rs, ruri)
+                                if not repo.has_version_data():
+                                        try:
+                                                self.__populate_repo_versions(
+                                                    repo)
+                                        except tx.TransportException:
+                                                continue
+
+                                if repo.supports_version(operation, version):
+                                        yield repo
 
         def __gen_repos(self, pub, count):
 

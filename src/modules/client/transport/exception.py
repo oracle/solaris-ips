@@ -305,3 +305,40 @@ class InvalidContentException(TransportException):
                         return r
                 return cmp(self.reason, other.reason)
 
+class PkgProtoError(TransportException):
+        """Raised when the pkg protocol doesn't behave according to
+        specification.  This is different than TransportProtoError, which
+        deals with the L7 protocols that we can use to perform a pkg(5)
+        transport operation.  Although it doesn't exist, this is essentially
+        a L8 error, since our pkg protocol is built on top of application
+        level protocols.  The Framework errors deal with L3-6 errors."""
+
+        def __init__(self, url, operation=None, version=None, reason=None):
+                TransportException.__init__(self)
+                self.url = url
+                self.reason = reason
+                self.operation = operation
+                self.version = version
+        
+        def __str__(self):
+                s = "Invalid pkg(5) response from %s" % self.url
+                if self.operation:
+                        s += ": Attempting operation %s" % self.operation
+                if self.version:
+                        s += " version %s" % self.version
+                if self.reason:
+                        s += ":\n%s" % self.reason
+
+        def __cmp__(self, other):
+                if not isinstance(other, PkgProtoError):
+                        return -1
+                r = cmp(self.url, other.url)
+                if r != 0:
+                        return r
+                r = cmp(self.operation, other.operation)
+                if r != 0:
+                        return r
+                r = cmp(self.version, other.version)
+                if r != 0:
+                        return r
+                return cmp(self.reason, other.reason) 

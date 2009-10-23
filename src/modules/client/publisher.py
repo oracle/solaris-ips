@@ -39,14 +39,20 @@ import copy
 import datetime as dt
 import errno
 import os
+import shutil
+import tempfile
+import time
+import urlparse
+
+from pkg.client import global_settings
+logger = global_settings.logger
+
 import pkg.catalog
 import pkg.client.api_errors as api_errors
 import pkg.misc as misc
 import pkg.portable as portable
+import pkg.server.catalog as old_catalog
 import pkg.Uuid25
-import shutil
-import time
-import urlparse
 
 # The "core" type indicates that a repository contains all of the dependencies
 # declared by packages in the repository.  It is primarily used for operating
@@ -918,6 +924,56 @@ class Publisher(object):
         def __str__(self):
                 return self.prefix
 
+        def __validate_metadata(self):
+                """Private helper function to check the publisher's metadata
+                for configuration or other issues and log appropriate warnings
+                or errors.  Currently only checks catalog metadata."""
+
+                c = self.catalog
+                if not c.exists:
+                        # Nothing to validate.
+                        return
+                if not c.version > 0:
+                        # Validation doesn't apply.
+                        return
+                if not c.package_count:
+                        # Nothing to do.
+                        return
+
+                # XXX For now, perform this check using the catalog data.
+                # In the future, it should be done using the output of the
+                # publisher/0 operation.
+                pubs = self.catalog.publishers()
+
+                if self.prefix not in pubs:
+                        origin = self.selected_repository.origins[0]
+                        logger.warning(_("\nThe catalog retrieved for "
+                            "publisher '%(prefix)s' only contains package data "
+                            "for these publisher(s): %(pubs)s.  To resolve "
+                            "this issue, update this publisher to use the "
+                            "correct repository origin, or add one of the "
+                            "listed publishers using this publisher's "
+                            "repository origin."
+                            "\n\n"
+                            "To correct the repository origin, execute the "
+                            "following command as a privileged user:"
+                            "\n\n"
+                            "pkg set-publisher -O <url> %(prefix)s"
+                            "\n\n"
+                            "To add a new publisher using this publisher's "
+                            "repository origin, execute the following command "
+                            "as a privileged user:"
+                            "\n\n"
+                            "pkg set-publisher -O %(origin)s <publisher>"
+                            "\n\n"
+                            "After the new publisher has been added, this one "
+                            "should be removed by executing the following "
+                            "command as a privileged user:"
+                            "\n\n"
+                            "pkg unset-publisher %(prefix)s\n") % {
+                            "origin": origin, "prefix": self.prefix,
+                            "pubs": ", ".join(pubs) })
+
         def add_repository(self, repository):
                 """Adds the provided repository object to the publisher and
                 sets it as the selected one if no repositories exist."""
@@ -978,6 +1034,9 @@ class Publisher(object):
                         except EnvironmentError, e:
                                 if e.errno == errno.EACCES:
                                         raise api_errors.PermissionsException(
+                                            e.filename)
+                                if e.errno == errno.EROFS:
+                                        raise api_errors.ReadOnlyFileSystemException(
                                             e.filename)
                                 elif e.errno != errno.EEXIST:
                                         # If the path already exists, move on.
@@ -1086,33 +1145,16 @@ class Publisher(object):
                 v1_cat.save()
                 self.__catalog = v1_cat
 
-        def refresh(self, full_refresh=False, immediate=False):
-                """Refreshes the publisher's metadata, returning a boolean
-                value indicating whether any updates to the publisher's
-                metadata occurred.
-
-                'full_refresh' is an optional boolean value indicating whether
-                a full retrieval of publisher metadata (e.g. catalogs) or only
-                an update to the existing metadata should be performed.  When
-                True, 'immediate' is also set to True.
-
-                'immediate' is an optional boolean value indicating whether
-                a refresh should occur now.  If False, a publisher's selected
-                repository will be checked for updates only if needs_refresh
-                is True."""
-
-                assert self.catalog_root
-                assert self.transport
+        def __refresh_v0(self, full_refresh, immediate):
+                """The method to refresh the publisher's metadata against
+                a catalog/0 source.  If the more recent catalog/1 version
+                isn't supported, this routine gets invoked as a fallback."""
 
                 if full_refresh:
                         immediate = True
 
-                # Ensure consistent directory structure.
-                self.create_meta_root()
-
-                # XXX Assumes Catalog needs v0 -> v1 transformation as
-                # repositories only offer v0 catalogs currently.
-                import pkg.server.catalog as old_catalog
+                # Catalog needs v0 -> v1 transformation if repository only
+                # offers v0 catalog.
                 v0_cat = old_catalog.ServerCatalog(self.catalog_root,
                     read_only=True, publisher=self.prefix)
 
@@ -1126,6 +1168,9 @@ class Publisher(object):
                                 except EnvironmentError, e:
                                         if e.errno == errno.EACCES:
                                                 raise api_errors.PermissionsException(
+                                                    e.filename)
+                                        if e.errno == errno.EROFS:
+                                                raise api_errors.ReadOnlyFileSystemException(
                                                     e.filename)
                                         raise
                                 immediate = True
@@ -1151,6 +1196,9 @@ class Publisher(object):
                                 if e.errno == errno.EACCES:
                                         raise api_errors.PermissionsException(
                                             e.filename)
+                                if e.errno == errno.EROFS:
+                                        raise api_errors.ReadOnlyFileSystemException(
+                                            e.filename)
                                 raise
                         self.transport.get_catalog(self)
 
@@ -1167,6 +1215,193 @@ class Publisher(object):
                         return True
                 return False
 
+        def __refresh_v1(self, tempdir, full_refresh, immediate):
+                """The method to refresh the publisher's metadata against
+                a catalog/1 source.  If the more recent catalog/1 version
+                isn't supported, __refresh_v0 is invoked as a fallback."""
+
+                try:
+                        self.transport.get_catalog1(self, ["catalog.attrs"],
+                            path=tempdir)
+                except api_errors.UnsupportedRepositoryOperation:
+                        # No v1 catalogs available.
+                        return self.__refresh_v0(full_refresh, immediate)
+
+                # If this succeeded, we now have a catalog.attrs file.  Parse
+                # this to determine what other constituent parts need to be
+                # downloaded.
+                flist = []
+                if not full_refresh and self.catalog.exists:
+                        flist = self.catalog.get_updates_needed(tempdir)
+                        if flist == None:
+                                # Catalog has not changed.
+                                self.last_refreshed = dt.datetime.utcnow()
+                                return False
+                else:
+                        attrs = pkg.catalog.CatalogAttrs(meta_root=tempdir)
+                        for name in attrs.parts:
+                                locale = name.split(".", 2)[2]
+                                # XXX Skip parts that aren't in the C locale for
+                                # now.
+                                if locale != "C":
+                                        continue
+                                flist.append(name)
+
+                if flist:
+                        # More catalog files to retrieve.
+                        try:
+                                self.transport.get_catalog1(self, flist,
+                                    path=tempdir)
+                        except api_errors.UnsupportedRepositoryOperation:
+                                # Couldn't find a v1 catalog after getting one
+                                # before.  This would be a bizzare error, but we
+                                # can try for a v0 catalog anyway.
+                                return self.__refresh_v0(full_refresh,
+                                    immediate)
+
+                # At this point the client should have a set of the constituent
+                # pieces that are necessary to construct a catalog.  If a v0
+                # catalog is present, remove it before proceeding.
+                v0_cat = old_catalog.ServerCatalog(self.catalog_root,
+                    read_only=True, publisher=self.prefix)
+
+                if v0_cat.exists:
+                        v0_cat.destroy(root=self.catalog_root)
+
+                # If a catalog already exists, call apply_updates.  Otherwise,
+                # move the files to the appropriate location.
+                revalidate = False
+                if not full_refresh and self.catalog.exists:
+                        self.catalog.apply_updates(tempdir)
+                else:
+
+                        if self.catalog.exists:
+                                # This is a full refresh.  Destroy
+                                # the existing catalog.
+                                self.catalog.destroy()
+                        for fn in os.listdir(tempdir):
+                                srcpath = os.path.join(tempdir, fn)
+                                dstpath = os.path.join(self.catalog_root, fn)
+                                pkg.portable.rename(srcpath, dstpath)
+
+                        # Apply_updates validates the newly constructed catalog.
+                        # If refresh didn't call apply_updates, arrange to
+                        # have the new catalog validated.
+                        revalidate = True
+
+                # Update refresh time.
+                self.last_refreshed = dt.datetime.utcnow()
+
+                # Clear __catalog, so we'll read in the new catalog.
+                self.__catalog = None
+
+                if revalidate:
+                        self.catalog.validate()
+
+                return True
+
+        def __refresh(self, full_refresh, immediate):
+                """The method to handle the overall refresh process.  It
+                determines if a refresh is actually needed, and then calls
+                the first version-specific refresh method in the chain."""
+
+                assert self.catalog_root
+                assert self.transport
+
+                if full_refresh:
+                        immediate = True
+
+                # Ensure consistent directory structure.
+                self.create_meta_root()
+
+                # Check if we already have a v1 catalog on disk.
+                if not full_refresh and self.catalog.exists:
+                        # If catalog is on disk, check if refresh is necessary.
+                        if not immediate and not self.needs_refresh:
+                                # No refresh needed.
+                                return False
+
+                # Create temporary directory for assembly of catalog pieces.
+                try:
+                        tempdir = tempfile.mkdtemp(dir=self.catalog_root)
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES:
+                                raise api_errors.PermissionsException(
+                                    e.filename)
+                        if e.errno == errno.EROFS:
+                                raise api_errors.ReadOnlyFileSystemException(
+                                    e.filename)
+                        raise
+
+                # Ensure that the temporary directory gets removed regardless
+                # of success or failure.
+                try:
+                        rval = self.__refresh_v1(tempdir, full_refresh,
+                            immediate)
+
+                        # Perform publisher metadata sanity checks.
+                        self.__validate_metadata()
+
+                        return rval
+                finally:
+                        # Cleanup tempdir.
+                        shutil.rmtree(tempdir, True)
+
+        def refresh(self, full_refresh=False, immediate=False):
+                """Refreshes the publisher's metadata, returning a boolean
+                value indicating whether any updates to the publisher's
+                metadata occurred.
+
+                'full_refresh' is an optional boolean value indicating whether
+                a full retrieval of publisher metadata (e.g. catalogs) or only
+                an update to the existing metadata should be performed.  When
+                True, 'immediate' is also set to True.
+
+                'immediate' is an optional boolean value indicating whether
+                a refresh should occur now.  If False, a publisher's selected
+                repository will be checked for updates only if needs_refresh
+                is True."""
+
+                try:
+                        return self.__refresh(full_refresh, immediate)
+                except (api_errors.BadCatalogUpdateIdentity,
+                    api_errors.DuplicateCatalogEntry,
+                    api_errors.ObsoleteCatalogUpdate,
+                    api_errors.UnknownUpdateType):
+                        if full_refresh:
+                                # Completely unexpected failure.
+                                # These exceptions should never
+                                # be raised for a full refresh
+                                # case anyway, so the error should
+                                # definitely be raised.
+                                raise
+
+                        # The incremental update likely failed for one or
+                        # more of the following reasons:
+                        #
+                        # * The origin for the publisher has changed.
+                        #
+                        # * The catalog that the publisher is offering
+                        #   is now completely different (due to a restore
+                        #   from backup or --rebuild possibly).
+                        #
+                        # * The catalog that the publisher is offering
+                        #   has been restored to an older version, and
+                        #   packages that already exist in this client's
+                        #   copy of the catalog have been re-addded.
+                        #
+                        # * The type of incremental update operation that
+                        #   that was performed on the catalog isn't supported
+                        #   by this version of the client, so a full retrieval
+                        #   is required.
+                        #
+                        return self.__refresh(True, True)
+                except (api_errors.BadCatalogSignatures,
+                    api_errors.InvalidCatalogFile):
+                        # Assembly of the catalog failed, but this could be due
+                        # to a transient error.  So, retry at least once more.
+                        return self.__refresh(True, True)
+
         def remove_meta_root(self):
                 """Removes the publisher's meta_root."""
 
@@ -1179,6 +1414,9 @@ class Publisher(object):
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES:
                                 raise api_errors.PermissionsException(
+                                    e.filename)
+                        if e.errno == errno.EROFS:
+                                raise api_errors.ReadOnlyFileSystemException(
                                     e.filename)
                         if e.errno not in (errno.ENOENT, errno.ESRCH):
                                 raise

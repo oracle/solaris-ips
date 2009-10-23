@@ -35,14 +35,10 @@
 # particular--such that the pkg(1) pull client can operately accurately with
 # only a basic HTTP/HTTPS server in place.
 
-# XXX We should support simple "last-modified" operations via HEAD queries.
-
 # XXX Although we pushed the evaluation of next-version, etc. to the pull
 # client, we should probably provide a query API to do same on the server, for
 # dumb clients (like a notification service).
 
-# The default authority for the depot.
-AUTH_DEFAULT = "opensolaris.org"
 # The default repository path.
 REPO_PATH_DEFAULT = "/var/pkg/repo"
 # The default path for static and other web content.
@@ -100,14 +96,14 @@ except ImportError:
         sys.exit(2)
 
 from pkg.misc import port_available, msg, emsg, setlocale
+import pkg.client.api_errors as api_errors
 import pkg.portable.util as os_util
 import pkg.search_errors as search_errors
-import pkg.server.catalog as catalog
-import pkg.server.config as config
-import pkg.server.depot as depot
+import pkg.server.depot as ds
 import pkg.server.depotresponse as dr
-import pkg.server.errors as errors
+import pkg.server.repository as sr
 import pkg.server.repositoryconfig as rc
+
 
 class LogSink(object):
         """This is a dummy object that we can use to discard log entries
@@ -121,14 +117,17 @@ class LogSink(object):
                 """Discard the bits."""
                 pass
 
+
 def usage(text):
         if text:
                 emsg(text)
 
         print """\
 Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
-           [-t socket_timeout] [--cfg-file] [--content-root] [--debug]
-           [--log-access dest] [--log-errors dest] [--mirror] [--nasty]
+           [-t socket_timeout] [--cfg-file] [--content-root]
+           [--disable-ops op[/1][,...]] [--debug] [--log-access dest]
+           [--log-errors dest] [--mirror] [--nasty]
+           [--set-property <section.property>=<value>]
            [--proxy-base url] [--readonly] [--rebuild] [--ssl-cert-file]
            [--ssl-dialog] [--ssl-key-file] [--writable-root dir]
 
@@ -138,6 +137,11 @@ Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
                         the static and other web content used by the depot's
                         browser user interface.  The default value is
                         '/usr/share/lib/pkg'.
+        --disable-ops   A comma separated list of operations that the depot
+                        should not configure.  If, for example, you wanted
+                        to omit loading search v1, 'search/1' should be
+                        provided as an argument, or to disable all search
+                        operations, simply 'search'.
         --debug         The name of a debug feature to enable; or a whitespace
                         or comma separated list of features to enable.  Possible
                         values are: headers.
@@ -164,6 +168,10 @@ Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
                         Cannot be used with --mirror or --rebuild.
         --rebuild       Re-build the catalog from pkgs in depot.  Cannot be
                         used with --mirror or --readonly.
+        --set-property  Used to specify initial repository configuration
+                        property values or to update existing ones; can
+                        be specified multiple times.  If used with --readonly
+                        this acts as a temporary override.
         --ssl-cert-file The absolute pathname to a PEM-encoded Certificate file.
                         This option must be used with --ssl-key-file.  Usage of
                         this option will cause the depot to only respond to SSL
@@ -198,6 +206,7 @@ if __name__ == "__main__":
         debug_features = {
             "headers": False,
         }
+        disable_ops = {}
         port = PORT_DEFAULT
         port_provided = False
         threads = THREADS_DEFAULT
@@ -243,11 +252,13 @@ if __name__ == "__main__":
                 log_routes["access"] = "stdout"
 
         opt = None
+        repo_props = {}
         try:
-                long_opts = ["cfg-file=", "content-root=", "debug=", "mirror",
-                    "nasty=", "proxy-base=", "readonly", "rebuild",
-                    "refresh-index", "ssl-cert-file=", "ssl-dialog=",
-                    "ssl-key-file=", "writable-root="]
+                long_opts = ["cfg-file=", "content-root=", "debug=",
+                    "disable-ops=", "mirror", "nasty=", "set-property=",
+                    "proxy-base=", "readonly", "rebuild", "refresh-index",
+                    "ssl-cert-file=", "ssl-dialog=", "ssl-key-file=",
+                    "writable-root="]
                 for opt in log_opts:
                         long_opts.append("%s=" % opt.lstrip('--'))
                 opts, pargs = getopt.getopt(sys.argv[1:], "d:np:s:t:",
@@ -295,6 +306,27 @@ if __name__ == "__main__":
                                                     "Invalid debug feature: " \
                                                     "%s." % f
                                         debug_features[f] = True
+                        elif opt == "--disable-ops":
+                                if arg is None or arg == "":
+                                        raise OptionError, \
+                                            "An argument must be specified."
+
+                                disableops = arg.split(",")
+                                for s in disableops:
+                                        if "/" in s:
+                                                op, ver = s.rsplit("/", 1)
+                                        else:
+                                                op = s
+                                                ver = "*"
+
+                                        if op not in \
+                                            ds.DepotHTTP.REPO_OPS_DEFAULT:
+                                                raise OptionError(
+                                                    "Invalid operation "
+                                                    "'%s'." % s)
+
+                                        disable_ops.setdefault(op, [])
+                                        disable_ops[op].append(ver)
                         elif opt in log_opts:
                                 if arg is None or arg == "":
                                         raise OptionError, \
@@ -316,6 +348,16 @@ if __name__ == "__main__":
                                             "for nasty option.\n Please " \
                                             "choose a value between 1 and 100."
                                 nasty = True
+                        elif opt == "--set-property":
+                                try:
+                                        prop, p_value = arg.split("=", 1)
+                                        p_sec, p_name = prop.split(".", 1)
+                                except ValueError:
+                                        usage(_("property arguments must be of "
+                                            "the form '<section.property>="
+                                            "<value>'."))
+                                repo_props.setdefault(p_sec, {})
+                                repo_props[p_sec][p_name] = p_value
                         elif opt == "--proxy-base":
                                 # Attempt to decompose the url provided into
                                 # its base parts.  This is done so we can
@@ -461,33 +503,6 @@ if __name__ == "__main__":
                 # Not applicable for reindexing operations.
                 content_root = None
 
-        fork_allowed = not reindex
-                
-        if nasty:
-                scfg = config.NastySvrConfig(repo_path, content_root,
-                    AUTH_DEFAULT, auto_create=not readonly,
-                    fork_allowed=fork_allowed, writable_root=writable_root)
-                scfg.set_nasty(nasty_value)
-        else:
-                scfg = config.SvrConfig(repo_path, content_root, AUTH_DEFAULT,
-                    auto_create=not readonly, fork_allowed=fork_allowed,
-                    writable_root=writable_root)
-
-        if readonly:
-                scfg.set_read_only()
-
-        if mirror:
-                scfg.set_mirror()
-
-
-        try:
-                scfg.init_dirs()
-        except (errors.SvrConfigError, EnvironmentError), _e:
-                print "pkg.depotd: an error occurred while trying to " \
-                    "initialize the depot repository directory " \
-                    "structures:\n%s" % _e
-                sys.exit(1)
-
         key_data = None
         if not reindex and ssl_cert_file and ssl_key_file and \
             ssl_dialog != "builtin":
@@ -597,22 +612,64 @@ if __name__ == "__main__":
                         # Since we've replaced cherrypy's log handler with our
                         # own, we don't want the output directed to a file.
                         dest = ""
-
                 gconf[log_type_map[log_type]["param"]] = dest
 
         cherrypy.config.update(gconf)
 
         # Now that our logging, etc. has been setup, it's safe to perform any
         # remaining preparation.
+
+        # Initialize repository state.
+        fork_allowed = not reindex
+        try:
+                repo = sr.Repository(auto_create=not readonly,
+                    cfgpathname=repo_config_file, fork_allowed=fork_allowed,
+                    log_obj=cherrypy, mirror=mirror, properties=repo_props,
+                    read_only=readonly, repo_root=repo_path,
+                    writable_root=writable_root)
+        except sr.RepositoryError, _e:
+                emsg("pkg.depotd: %s" % _e)
+                sys.exit(1)
+        except rc.RequiredPropertyValueError, _e:
+                emsg("pkg.depotd: repository configuration error: %s" % _e)
+                emsg("Please use the --set-property option to provide a value, "
+                    "or update the cfg_cache file for the repository to "
+                    "correct this.")
+                sys.exit(1)
+        except rc.PropertyError, _e:
+                emsg("pkg.depotd: repository configuration error: %s" % _e)
+                sys.exit(1)
+        except (search_errors.IndexingException,
+            api_errors.PermissionsException), _e:
+                emsg(str(_e), "INDEX")
+                sys.exit(1)
+
         if reindex:
-                try:
-                        scfg.acquire_catalog(rebuild=False, verbose=True)
-                except (search_errors.IndexingException,
-                    catalog.CatalogPermissionsException,
-                    errors.SvrConfigError), e:
-                        cherrypy.log(str(e), "INDEX")
-                        sys.exit(1)
+                # Initializing the repository above updated search indices
+                # as needed; nothing left to do, so exit.
                 sys.exit(0)
+
+        if nasty:
+                repo.cfg.set_nasty(nasty_value)
+
+        if rebuild:
+                try:
+                        repo.rebuild()
+                except sr.RepositoryError, e:
+                        emsg(str(e), "REBUILD")
+                        sys.exit(1)
+                except (search_errors.IndexingException,
+                    api_errors.PermissionsException), e:
+                        emsg(str(e), "INDEX")
+                        sys.exit(1)
+
+        # Next, initialize depot.
+        if nasty:
+                depot = ds.NastyDepotHTTP(repo, content_root,
+                    disable_ops=disable_ops)
+        else:
+                depot = ds.DepotHTTP(repo, content_root,
+                    disable_ops=disable_ops)
 
         # Now build our site configuration.
         conf = {
@@ -624,7 +681,7 @@ if __name__ == "__main__":
             },
             "/robots.txt": {
                 "tools.staticfile.on": True,
-                "tools.staticfile.filename": os.path.join(scfg.web_root,
+                "tools.staticfile.filename": os.path.join(depot.web_root,
                     "robots.txt")
             },
         }
@@ -647,25 +704,8 @@ if __name__ == "__main__":
                 for entry in proxy_conf:
                         conf["/"][entry] = proxy_conf[entry]
 
-        scfg.acquire_in_flight()
         try:
-                scfg.acquire_catalog(rebuild=rebuild, verbose=True)
-        except (catalog.CatalogPermissionsException, errors.SvrConfigError), _e:
-                emsg("pkg.depotd: %s" % _e)
-                sys.exit(1)
-
-        try:
-                if nasty:
-                        root = cherrypy.Application(depot.NastyDepotHTTP(scfg,
-                            repo_config_file))
-                else:
-                        root = cherrypy.Application(depot.DepotHTTP(scfg,
-                            repo_config_file))
-        except rc.InvalidAttributeValueError, _e:
-                emsg("pkg.depotd: repository.conf error: %s" % _e)
-                sys.exit(1)
-
-        try:
+                root = cherrypy.Application(depot)
                 cherrypy.quickstart(root, config=conf)
         except Exception, _e:
                 emsg("pkg.depotd: unknown error starting depot server, " \

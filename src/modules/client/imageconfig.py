@@ -29,13 +29,14 @@ import os.path
 import platform
 import re
 
+from pkg.client import global_settings
+logger = global_settings.logger
+
 import pkg.client.api_errors as api_errors
 import pkg.client.publisher as publisher
 import pkg.fmri as fmri
 import pkg.portable as portable
 import pkg.variant as variant
-
-from pkg.misc import emsg
 
 # The default_policies dictionary defines the policies that are supported by 
 # pkg(5) and their default values. Calls to the ImageConfig.get_policy method
@@ -319,6 +320,9 @@ class ImageConfig(object):
                                 if e.errno == errno.EACCES:
                                         raise api_errors.PermissionsException(
                                             e.filename)
+                                if e.errno == errno.EROFS:
+                                        raise api_errors.ReadOnlyFileSystemException(
+                                            e.filename)
                                 raise
                         acp.write(f)
 
@@ -463,9 +467,8 @@ class ImageConfig(object):
                         else:
                                 ssl_key = os.path.abspath(ssl_key)
                         if not os.path.exists(ssl_key):
-                                # XXX need client messaging framework
-                                emsg(api_errors.NoSuchKey(ssl_key, uri=origin,
-                                    publisher=prefix))
+                                logger.error(api_errors.NoSuchKey(ssl_key,
+                                    uri=origin, publisher=prefix))
                                 ssl_key = None
 
                 if ssl_cert:
@@ -475,9 +478,8 @@ class ImageConfig(object):
                         else:
                                 ssl_cert = os.path.abspath(ssl_cert)
                         if not os.path.exists(ssl_cert):
-                                # XXX need client messaging framework
-                                emsg(api_errors.NoSuchCertificate(ssl_cert,
-                                    uri=origin, publisher=prefix))
+                                logger.error(api_errors.NoSuchCertificate(
+                                    ssl_cert, uri=origin, publisher=prefix))
                                 ssl_cert = None
 
                 r = publisher.Repository(**repo_data)

@@ -29,10 +29,12 @@ import errno
 import os
 import platform
 import shutil
-import stat
 import tempfile
 import time
 import urllib
+
+from pkg.client import global_settings
+logger = global_settings.logger
 
 import pkg.Uuid25
 import pkg.catalog
@@ -56,9 +58,7 @@ import pkg.version
 
 from pkg.client.debugvalues import DebugValues
 from pkg.client.imagetypes import IMG_USER, IMG_ENTIRE
-from pkg.misc import CfgCacheError
-from pkg.misc import EmptyI, EmptyDict
-from pkg.misc import msg, emsg
+from pkg.misc import CfgCacheError, EmptyI, EmptyDict
 
 img_user_prefix = ".org.opensolaris,pkg"
 img_root_prefix = "var/pkg"
@@ -217,7 +217,8 @@ class Image(object):
                                 raise api_errors.ImageAlreadyExists(self.root)
                         if not force and os.path.exists(self.root) and \
                             len(os.listdir(self.root)) > 0:
-                                raise api_errors.CreatingImageInNonEmptyDir(self.root)
+                                raise api_errors.CreatingImageInNonEmptyDir(
+                                    self.root)
                         self.__set_dirs(root=self.root, imgtype=imgtype,
                             progtrack=progtrack)
 
@@ -238,6 +239,13 @@ class Image(object):
                         if not os.path.isdir(os.path.join(sub_d, prefix, n)):
                                 return False
                 return True
+
+        def __catalog_loaded(self, name):
+                """Returns a boolean value indicating whether the named catalog
+                has already been loaded.  This is intended to be used as an
+                optimization function to determine which catalog to request."""
+
+                return name in self.__catalogs
 
         def image_type(self, d):
                 """Returns the type of image at directory: d; or None"""
@@ -341,6 +349,9 @@ class Image(object):
                                 if e.errno == errno.EACCES:
                                         raise api_errors.PermissionsException(
                                             e.filename)
+                                if e.errno == errno.EROFS:
+                                        raise api_errors.ReadOnlyFileSystemException(
+                                            e.filename)
                                 raise
 
         def __set_dirs(self, imgtype, root, progtrack=None):
@@ -414,16 +425,13 @@ class Image(object):
 
                 # Once its structure is valid, then ensure state information
                 # is intact.
-                rebuild = False
                 kdir = os.path.join(self.imgdir, "state",
                     self.IMG_CATALOG_KNOWN)
                 kcattrs = os.path.join(kdir, "catalog.attrs")
                 idir = os.path.join(self.imgdir, "state",
                     self.IMG_CATALOG_INSTALLED)
                 icattrs = os.path.join(idir, "catalog.attrs")
-                if not os.path.isfile(icattrs):
-                        rebuild = True
-                elif not os.path.isfile(kcattrs) and os.path.isfile(icattrs):
+                if not os.path.isfile(kcattrs) and os.path.isfile(icattrs):
                         # If the known catalog doesn't exist, but the installed
                         # catalog does, then copy the installed catalog to the
                         # known catalog directory so that state information can
@@ -431,9 +439,6 @@ class Image(object):
                         for fname in os.listdir(idir):
                                 portable.copyfile(os.path.join(idir, fname),
                                     os.path.join(kdir, fname))
-                        rebuild = True
-
-                if rebuild:
                         self.__rebuild_image_catalogs(progtrack=progtrack)
 
         def set_attrs(self, is_zone, prefix, pub_url,
@@ -486,7 +491,8 @@ class Image(object):
                 self.history.log_operation_end()
 
         def is_liveroot(self):
-                return bool(self.root == "/" or DebugValues.get_value("simulate_live_root"))
+                return bool(self.root == "/" or
+                    DebugValues.get_value("simulate_live_root"))
 
         def is_zone(self):
                 return self.cfg_cache.variants[
@@ -698,8 +704,8 @@ class Image(object):
 
         def __call_imageplan_evaluate(self, ip, verbose=False):
                 if verbose:
-                        msg(_("Before evaluation:"))
-                        msg(ip)
+                        logger.info(_("Before evaluation:"))
+                        logger.info(ip)
 
                 # A plan can be requested without actually performing an
                 # operation on the image.
@@ -719,7 +725,7 @@ class Image(object):
                             ip.get_plan(full=False)
 
                 if verbose:
-                        msg(_("After evaluation:"))
+                        logger.info(_("After evaluation:"))
                         ip.display()
 
         def image_change_variant(self, variants, progtrack, check_cancelation,
@@ -736,7 +742,7 @@ class Image(object):
 
                 if not variants:
                         self.__call_imageplan_evaluate(ip, verbose)
-                        msg("No variant changes.")
+                        logger.info("No variant changes.")
                         return
 
                 #
@@ -789,7 +795,7 @@ class Image(object):
                 # api::__check_cancelation() function.
                 pps = []
                 for fmri, actions in repairs:
-                        msg("Repairing: %-50s" % fmri.get_pkg_stem())
+                        logger.info("Repairing: %-50s" % fmri.get_pkg_stem())
                         m = self.get_manifest(fmri)
                         pp = pkgplan.PkgPlan(self, progtrack, lambda: False)
                         pp.propose_repair(fmri, m, actions)
@@ -1036,15 +1042,22 @@ class Image(object):
                 try:
                         os.makedirs(croot)
                 except EnvironmentError, e:
-                        if e.errno == errno.EACCES:
+                        if e.errno in (errno.EACCES, errno.EROFS):
                                 # Allow operations to work for
                                 # unprivileged users.
                                 croot = None
                         elif e.errno != errno.EEXIST:
                                 raise
 
-                def manifest_cb(f):
-                        return self.get_manifest(f, all_arch=True)
+                def manifest_cb(cat, f):
+                        # Only allow lazy-load for packages from v0 sources.
+                        # Assume entries for other sources have all data
+                        # required in catalog.
+                        entry = cat.get_entry(f)
+                        states = entry["metadata"]["states"]
+                        if self.PKG_STATE_V0 in states:
+                                return self.get_manifest(f, all_arch=True)
+                        return None
 
                 # batch_mode is set to True here as any operations that modify
                 # the catalogs (add or remove entries) are only done during an
@@ -1113,12 +1126,21 @@ class Image(object):
                 """Returns a boolean value indicating whether the specified
                 package is installed."""
 
-                cat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
+                # Avoid loading the installed catalog if the known catalog
+                # is already loaded.  This is safe since the installed
+                # catalog is a subset of the known, and a specific entry
+                # is being retrieved.
+                if not self.__catalog_loaded(self.IMG_CATALOG_KNOWN):
+                        cat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
+                else:
+                        cat = self.get_catalog(self.IMG_CATALOG_KNOWN)
+
                 try:
-                        cat.get_entry(pfmri)
+                        entry = cat.get_entry(pfmri)
                 except api_errors.UnknownCatalogEntry:
                         return False
-                return True
+                states = entry["metadata"]["states"]
+                return self.PKG_STATE_INSTALLED in states
 
         def is_pkg_preferred(self, pfmri):
                 """Compatibility function for use by pkg.client.api only.
@@ -1132,7 +1154,15 @@ class Image(object):
                 if pfmri.publisher == self.get_preferred_publisher():
                         return True
 
-                cat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
+                # Avoid loading the installed catalog if the known catalog
+                # is already loaded.  This is safe since the installed
+                # catalog is a subset of the known, and a specific entry
+                # is being retrieved.
+                if not self.__catalog_loaded(self.IMG_CATALOG_KNOWN):
+                        cat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
+                else:
+                        cat = self.get_catalog(self.IMG_CATALOG_KNOWN)
+
                 try:
                         entry = cat.get_entry(pfmri)
                 except api_errors.UnknownCatalogEntry:
@@ -1249,7 +1279,7 @@ class Image(object):
                 # state.
 
                 # All enabled publisher catalogs must be processed.
-                pub_cats = [pub.catalog for pub in publist]
+                pub_cats = [(pub.prefix, pub.catalog) for pub in publist]
 
                 # XXX For backwards compatibility, 'upgradability' of packages
                 # is calculated and stored based on whether a given pkg stem
@@ -1259,7 +1289,7 @@ class Image(object):
                 # as it used to be.  In the future, it could likely be improved
                 # by usage of the SAT solver.
                 newest = {}
-                for cat in [old_kcat] + pub_cats:
+                for pfx, cat in [(None, old_kcat)] + pub_cats:
                         for f in cat.fmris():
                                 nver = newest.get(f.pkg_name, None)
                                 newest[f.pkg_name] = max(nver, f.version)
@@ -1299,8 +1329,9 @@ class Image(object):
                         mdata["states"] = list(states)
                         return True, mdata
 
-                for cat in pub_cats:
-                        kcat.append(cat, cb=pub_append_cb)
+                for pfx, cat in pub_cats:
+                        kcat.append(cat, cb=pub_append_cb, pubs=[pfx])
+                pub_cats = None
 
                 # Next, add any remaining entries in the previous 'known'
                 # catalog to the new one, but clear PKG_STATE_KNOWN and
@@ -1402,8 +1433,7 @@ class Image(object):
                 try:
                         self.check_cert_validity()
                 except api_errors.ExpiringCertificate, e:
-                        # XXX need client messaging framework
-                        misc.emsg(e)
+                        logger.error(str(e))
 
                 pubs_to_refresh = []
 
@@ -1710,12 +1740,11 @@ class Image(object):
                         self.__catalogs[self.IMG_CATALOG_KNOWN] = kcat
                         self.__catalogs[self.IMG_CATALOG_INSTALLED] = icat
 
-                        # XXX This awaits a proper messaging framework.
                         # Raising an exception here would be a decidedly
                         # bad thing as it would disrupt find_root, etc.
-                        emsg("Package operation performance is currently "
-                            "degraded.\nThis can be resolved by executing "
-                            "'pkg refresh' as a privileged user.\n")
+                        logger.warning("Package operation performance is "
+                            "currently degraded.\nThis can be resolved by "
+                            "executing 'pkg refresh' as a privileged user.\n")
                         self.history.log_operation_end()
                         return
 
@@ -2126,7 +2155,7 @@ class Image(object):
 
                 if not self.is_user_cache_dir and \
                     self.cfg_cache.get_policy(imageconfig.FLUSH_CONTENT_CACHE):
-                        msg("Deleting content cache")
+                        logger.info("Deleting content cache")
                         shutil.rmtree(self.dl_cache_dir, True)
 
         def __salvagedir(self, path):
@@ -2147,9 +2176,8 @@ class Image(object):
                 better error passback mechanism. Path is rooted in /...."""
 
                 sdir = self.__salvagedir(path)
-                # XXX need a better way to do this.
-                emsg("\nWarning - directory %s not empty - contents preserved "
-                        "in %s" % (path, sdir))
+                logger.warning("\nWarning - directory %s not empty - contents "
+                    "preserved in %s" % (path, sdir))
 
         def temporary_dir(self):
                 """create a temp directory under image directory for various
@@ -2162,6 +2190,9 @@ class Image(object):
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES:
                                 raise api_errors.PermissionsException(
+                                    e.filename)
+                        if e.errno == errno.EROFS:
+                                raise api_errors.ReadOnlyFileSystemException(
                                     e.filename)
                         raise
 
@@ -2177,6 +2208,9 @@ class Image(object):
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES:
                                 raise api_errors.PermissionsException(
+                                    e.filename)
+                        if e.errno == errno.EROFS:
+                                raise api_errors.ReadOnlyFileSystemException(
                                     e.filename)
                         raise
                 return name

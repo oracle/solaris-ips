@@ -99,13 +99,22 @@ class TestImageUpdate(testutils.ManyDepotTestCase):
             close """
 
         def setUp(self):
-                testutils.ManyDepotTestCase.setUp(self, 3)
+                testutils.ManyDepotTestCase.setUp(self, ["test1", "test2",
+                    "test3", "test4", "test5"])
                 durl1 = self.dcs[1].get_depot_url()
                 durl2 = self.dcs[2].get_depot_url()
+                durl4 = self.dcs[2].get_depot_url()
+                durl5 = self.dcs[2].get_depot_url()
                 self.pkgsend_bulk(durl1, self.foo10 + self.foo11 + \
                     self.baz11 + self.qux10 + self.qux11 + self.quux10 + \
                     self.quux11 + self.corge11)
                 self.pkgsend_bulk(durl2, self.foo10 + self.bar10 + \
+                    self.bar11 + self.baz10 + self.qux10 + self.qux11 + \
+                    self.quux10 + self.quux11 + self.corge10)
+                self.pkgsend_bulk(durl4, self.foo10 + self.bar10 + \
+                    self.bar11 + self.baz10 + self.qux10 + self.qux11 + \
+                    self.quux10 + self.quux11 + self.corge10)
+                self.pkgsend_bulk(durl5, self.foo10 + self.bar10 + \
                     self.bar11 + self.baz10 + self.qux10 + self.qux11 + \
                     self.quux10 + self.quux11 + self.corge10)
 
@@ -113,7 +122,7 @@ class TestImageUpdate(testutils.ManyDepotTestCase):
                 """Test image-update with bad options."""
 
                 durl1 = self.dcs[1].get_depot_url()
-                self.image_create(durl1)
+                self.image_create(durl1, prefix="test1")
 
                 self.pkg("image-update -@", exit=2)
                 self.pkg("image-update -vq", exit=2)
@@ -127,7 +136,9 @@ class TestImageUpdate(testutils.ManyDepotTestCase):
                 durl1 = self.dcs[1].get_depot_url()
                 durl2 = self.dcs[2].get_depot_url()
                 durl3 = self.dcs[3].get_depot_url()
-                self.image_create(durl1)
+                durl4 = self.dcs[4].get_depot_url()
+                durl5 = self.dcs[5].get_depot_url()
+                self.image_create(durl1, prefix="test1")
 
                 # Install a package from the preferred publisher.
                 self.pkg("install foo@1.0")
@@ -143,31 +154,22 @@ class TestImageUpdate(testutils.ManyDepotTestCase):
                 self.pkg("set-publisher -O %s test2" % durl3)
                 self.pkg("image-update -nv")
 
-                # Add two publishers using the removed publisher's repository,
+                # Add two publishers with the same packages as a removed one;
                 # an image-update should be possible despite the conflict (as
                 # the newer versions will simply be ignored).
-                self.pkg("set-publisher -O %s test3" % durl2)
-                self.pkg("set-publisher -O %s test4" % durl2)
-                self.pkg("image-update -nv")
-                self.pkg("unset-publisher test4")
-                self.pkg("unset-publisher test3")
-
-                # With the publisher of an installed package unknown, add a new
-                # publisher using the repository the package was originally
-                # installed from.  An image-update should still be possible (see
-                # bug 6856).
-                self.pkg("set-publisher -O %s test3" % durl2)
-                self.pkg("image-update -nv")
-
-                # Remove the publisher of an installed package, then add the
-                # publisher back, but with an empty catalog.  Then add a new
-                # publisher using the repository the package was originally
-                # installed from.  An image-update should still be possible (see
-                # bug 6856).
                 self.pkg("unset-publisher test2")
-                self.pkg("set-publisher -O %s test2" % durl3)
-                self.pkg("set-publisher -O %s test3" % durl2)
+                self.pkg("set-publisher -O %s test4" % durl4)
+                self.pkg("set-publisher -O %s test5" % durl5)
                 self.pkg("image-update -nv")
+
+                # Remove one of the conflicting publishers. An image-update
+                # should still be possible even though the conflicts no longer
+                # exist and the original publisher is unknown (see bug 6856).
+                self.pkg("unset-publisher test4")
+                self.pkg("image-update -nv")
+
+                # Remove the remaining test publisher.
+                self.pkg("unset-publisher test5")
 
         def test_02_update_multi_publisher(self):
                 """Verify that image-updates work as expected when different

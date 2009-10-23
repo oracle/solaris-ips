@@ -31,6 +31,7 @@ import sha
 import shutil
 import urllib
 
+import pkg.actions as actions
 import pkg.fmri as fmri
 import pkg.misc as misc
 from pkg.pkggzip import PkgGzipFile
@@ -86,6 +87,12 @@ class TransactionOperationError(TransactionError):
                 elif "valid_new_fmri" in self.args:
                         return _("The specified FMRI, '%s', already exists or "
                             "has been restricted.") % self.args.get("pfmri", "")
+                elif "publisher_required" in self.args:
+                        return _("The specified FMRI, '%s', must include the "
+                            "publisher prefix as the repository contains "
+                            "package data for more than one publisher or "
+                            "a default publisher has not been defined.") % \
+                            self.args.get("pfmri", "")
                 elif "pfmri" in self.args:
                         return _("The specified FMRI, '%s', is invalid.") % \
                             self.args["pfmri"]
@@ -110,8 +117,7 @@ class Transaction(object):
                 self.open_time = None
                 self.pkg_name = ""
                 self.esc_pkg_name = ""
-                self.critical = False
-                self.cfg = None
+                self.repo = None
                 self.client_release = ""
                 self.fmri = None
                 self.dir = ""
@@ -124,9 +130,9 @@ class Transaction(object):
                     (calendar.timegm(self.open_time.utctimetuple()),
                     urllib.quote(str(self.fmri), ""))
 
-        def open(self, cfg, client_release, pfmri):
+        def open(self, repo, client_release, pfmri):
                 # XXX needs to be done in __init__
-                self.cfg = cfg
+                self.repo = repo
 
                 if client_release is None:
                         raise TransactionOperationError(client_release=None,
@@ -145,10 +151,35 @@ class Transaction(object):
                 except fmri.FmriError, e:
                         raise TransactionOperationError(e)
 
-                # We must have a version supplied for publication.
+                # Version is required for publication.
                 if self.fmri.version is None:
                         raise TransactionOperationError(fmri_version=None,
                             pfmri=pfmri)
+
+                # Ensure that the FMRI has been fully qualified with publisher
+                # information or apply the default if appropriate.
+                if not self.fmri.publisher:
+                        c = repo.catalog
+                        pubs = c.publishers()
+                        default_pub = repo.cfg.get_property("publisher",
+                            "prefix")
+
+                        if len(pubs) > 1 or not default_pub:
+                                # A publisher is required if the repository
+                                # contains package data for more than one
+                                # publisher or no default has been defined.
+                                raise TransactionOperationError(
+                                    publisher_required=True, pfmri=pfmri)
+
+                        self.fmri.publisher = default_pub
+                        pkg_name = self.pkg_name
+                        pub_string = "pkg://%s/" % default_pub
+                        if not pkg_name.startswith("pkg:/"):
+                                pkg_name = pub_string + pkg_name
+                        else:
+                                pkg_name = pkg_name.replace("pkg:/", pub_string)
+                        self.pkg_name = pkg_name
+                        self.esc_pkg_name = urllib.quote(pkg_name, "")
 
                 # record transaction metadata: opening_time, package, user
                 # XXX publishing with a custom timestamp may require
@@ -167,12 +198,12 @@ class Transaction(object):
                 # Check that the new FMRI's version is valid.  In other words,
                 # the package has not been renamed or frozen for the new
                 # version.
-                if not cfg.catalog.valid_new_fmri(self.fmri):
+                if not repo.valid_new_fmri(self.fmri):
                         raise TransactionOperationError(valid_new_fmri=False,
                             pfmri=pfmri)
 
                 trans_basename = self.get_basename()
-                self.dir = "%s/%s" % (cfg.trans_root, trans_basename)
+                self.dir = "%s/%s" % (repo.trans_root, trans_basename)
 
                 try:
                         os.makedirs(self.dir)
@@ -186,8 +217,13 @@ class Transaction(object):
                 # always create a minimal manifest
                 #
                 tfile = file("%s/manifest" % self.dir, "ab")
-                print >> tfile,  "# %s, client release %s" % (self.pkg_name,
-                    self.client_release)
+
+                # Build a set action containing the fully qualified FMRI and add
+                # it to the manifest.  While it may seem inefficient to create
+                # an action string, convert it to an action, and then back, it
+                # does ensure that the server is adding a valid action.
+                fact = actions.fromstr("set name=pkg.fmri value=%s" % self.fmri)
+                print >> tfile, str(fact)
                 tfile.close()
 
                 # XXX:
@@ -203,11 +239,11 @@ class Transaction(object):
                 # if not found, create package
                 # set package state to TRANSACTING
 
-        def reopen(self, cfg, trans_dir):
+        def reopen(self, repo, trans_dir):
                 """The reopen() method is invoked on server restart, to
                 reestablish the status of inflight transactions."""
 
-                self.cfg = cfg
+                self.repo = repo
                 open_time_str, self.esc_pkg_name = \
                     os.path.basename(trans_dir).split("_", 1)
                 self.open_time = \
@@ -218,7 +254,7 @@ class Transaction(object):
                 # client release on the initial open of the transaction.
                 self.fmri = fmri.PkgFmri(self.pkg_name, None)
 
-                self.dir = "%s/%s" % (self.cfg.trans_root, self.get_basename())
+                self.dir = "%s/%s" % (repo.trans_root, self.get_basename())
 
         def close(self, refresh_index=True):
                 """Closes an open transaction, returning the published FMRI for
@@ -239,7 +275,7 @@ class Transaction(object):
 
                 # Discard the in-flight transaction data.
                 try:
-                        shutil.rmtree(os.path.join(self.cfg.trans_root,
+                        shutil.rmtree(os.path.join(self.repo.trans_root,
                             trans_id))
                 except EnvironmentError, e:
                         # Ensure that the error goes to stderr, and then drive
@@ -251,7 +287,7 @@ class Transaction(object):
         def abandon(self):
                 trans_id = self.get_basename()
                 # state transition from TRANSACTING to ABANDONED
-                shutil.rmtree("%s/%s" % (self.cfg.trans_root, trans_id))
+                shutil.rmtree("%s/%s" % (self.repo.trans_root, trans_id))
                 return "ABANDONED"
 
         def add_content(self, action):
@@ -308,7 +344,7 @@ class Transaction(object):
                         # to work right.
                         #
                         fpath = misc.hash_file_name(fname)
-                        dst_path = "%s/%s" % (self.cfg.file_root, fpath)
+                        dst_path = "%s/%s" % (self.repo.file_root, fpath)
                         fileneeded = True
                         if os.path.exists(dst_path):
                                 if PkgGzipFile.test_is_pkggzipfile(dst_path):
@@ -370,10 +406,9 @@ class Transaction(object):
                 # our response with any other packages that moved to
                 # PUBLISHED due to the package's arrival.
                 self.publish_package()
-                self.cfg.updatelog.add_package(self.fmri, self.critical)
-
+                self.repo.add_package(self.fmri)
                 if refresh_index:
-                        self.cfg.catalog.refresh_index()
+                        self.repo.refresh_index()
 
                 return (str(self.fmri), "PUBLISHED")
 
@@ -382,13 +417,13 @@ class Transaction(object):
 
                 It moves the files associated with the transaction into the
                 appropriate position in the server repository.  Callers
-                shall supply a fmri, config, and transaction in fmri, cfg,
-                and trans, respectively."""
+                shall supply a fmri, repository, and transaction in fmri,
+                repo, and trans, respectively."""
 
-                cfg = self.cfg
+                repo = self.repo
 
                 pkg_name = self.fmri.pkg_name
-                pkgdir = os.path.join(cfg.pkg_root, urllib.quote(pkg_name, ""))
+                pkgdir = os.path.join(repo.pkg_root, urllib.quote(pkg_name, ""))
 
                 # If the directory isn't there, create it.
                 if not os.path.exists(pkgdir):
@@ -406,7 +441,7 @@ class Transaction(object):
                 for f in os.listdir(self.dir):
                         path = misc.hash_file_name(f)
                         src_path = os.path.join(self.dir, f)
-                        dst_path = os.path.join(cfg.file_root, path)
+                        dst_path = os.path.join(repo.file_root, path)
                         try:
                                 portable.rename(src_path, dst_path)
                         except OSError, e:

@@ -26,100 +26,104 @@
 import ConfigParser
 import pkg.misc as misc
 import pkg.Uuid25 as uuid
+import random
 
-ATTR_TYPE_STR = 0
-ATTR_TYPE_INT = 1
-ATTR_TYPE_FLOAT = 2
-ATTR_TYPE_BOOL = 3
-ATTR_TYPE_UUID = 4
-ATTR_TYPE_URI = 5
-ATTR_TYPE_URI_LIST = 6
-ATTR_TYPE_PUB_ALIAS = 7
-ATTR_TYPE_PUB_PREFIX = 8
-ATTR_TYPE_REPO_COLL_TYPE = 9
+PROP_TYPE_STR = 0
+PROP_TYPE_INT = 1
+PROP_TYPE_FLOAT = 2
+PROP_TYPE_BOOL = 3
+PROP_TYPE_UUID = 4
+PROP_TYPE_URI = 5
+PROP_TYPE_URI_LIST = 6
+PROP_TYPE_PUB_ALIAS = 7
+PROP_TYPE_PUB_PREFIX = 8
+PROP_TYPE_REPO_COLL_TYPE = 9
 
-class InvalidAttributeError(Exception):
-        """Exception class used to indicate an invalid attribute.
-        """
+class PropertyError(Exception):
+        """Base exception class for property errors."""
+
         def __init__(self, *args):
-                """Standard init override for Exception class."""
                 Exception.__init__(self, *args)
 
-class InvalidAttributeValueError(Exception):
-        """Exception class used to indicate an invalid attribute value.
-        """
-        def __init__(self, *args):
-                """Standard init override for Exception class."""
-                Exception.__init__(self, *args)
 
-class ReadOnlyAttributeError(Exception):
+class InvalidPropertyError(PropertyError):
+        """Exception class used to indicate an invalid property."""
+
+
+class InvalidPropertyValueError(PropertyError):
+        """Exception class used to indicate an invalid property value."""
+
+
+class RequiredPropertyValueError(PropertyError):
+        """Exception class used to indicate a required property value is
+        missing."""
+
+
+class ReadOnlyPropertyError(PropertyError):
         """Exception class used to indicate when an attempt to set a read-only
-        value was made.
-        """
-        def __init__(self, *args):
-                """Standard init override for Exception class."""
-                Exception.__init__(self, *args)
+        value was made."""
+
 
 class RepositoryConfig(object):
         """A RepositoryConfig object is a collection of configuration
         information and metadata for a repository.
         """
 
-        # This data structure defines the list of possible attributes for a
-        # repository along with two optional attributes: default and readonly.
-        _attrs = {
+        # This data structure defines the list of possible properties for a
+        # repository along with two optional properties: default and readonly.
+        _props = {
             "publisher": {
                 "alias": {
-                    "type": ATTR_TYPE_PUB_ALIAS,
+                    "type": PROP_TYPE_PUB_ALIAS,
                 },
                 "prefix": {
-                    "type": ATTR_TYPE_PUB_PREFIX,
+                    "type": PROP_TYPE_PUB_PREFIX,
                 },
             },
             "repository": {
                 "collection_type": {
-                    "type": ATTR_TYPE_REPO_COLL_TYPE,
+                    "type": PROP_TYPE_REPO_COLL_TYPE,
                     "default": "core",
                 },
                 "description": {},
                 "detailed_url": {
-                    "type": ATTR_TYPE_URI,
+                    "type": PROP_TYPE_URI,
                     "default": "http://www.opensolaris.com"
                 },
                 "legal_uris": {
-                    "type": ATTR_TYPE_URI_LIST
+                    "type": PROP_TYPE_URI_LIST
                 },
                 "maintainer": {
                     "default":
                         "Project Indiana <indiana-discuss@opensolaris.org>"
                 },
                 "maintainer_url": {
-                    "type": ATTR_TYPE_URI,
+                    "type": PROP_TYPE_URI,
                     "default": "http://www.opensolaris.org/os/project/indiana/"
                 },
                 "mirrors": {
-                    "type": ATTR_TYPE_URI_LIST
+                    "type": PROP_TYPE_URI_LIST
                 },
                 "name": {
                     "default": "package repository"
                 },
                 "origins": {
-                    "type": ATTR_TYPE_URI_LIST
+                    "type": PROP_TYPE_URI_LIST
                 },
                 "refresh_seconds": {
-                    "type": ATTR_TYPE_INT,
+                    "type": PROP_TYPE_INT,
                     "default": 4 * 60 * 60, # default is 4 hours
                 },
                 "registration_uri": {
-                    "type": ATTR_TYPE_URI,
+                    "type": PROP_TYPE_URI,
                 },
                 "related_uris": {
-                    "type": ATTR_TYPE_URI_LIST
+                    "type": PROP_TYPE_URI_LIST
                 },
             },
             "feed": {
                 "id": {
-                    "type": ATTR_TYPE_UUID,
+                    "type": PROP_TYPE_UUID,
                     "readonly": True,
                 },
                 "name": {
@@ -133,25 +137,28 @@ class RepositoryConfig(object):
                     "default": "web/_themes/pkg-block-logo.png"
                 },
                 "window": {
-                    "type": ATTR_TYPE_INT,
+                    "type": PROP_TYPE_INT,
                     "default": 24
                 },
             },
         }
 
-        def __init__(self, pathname=None):
+        def __init__(self, pathname=None, properties=misc.EmptyDict):
                 """Initializes a RepositoryConfig object.
 
                 Will read existing configuration data from pathname, if
                 specified.
                 """
 
+                self.cfg_cache = {}
+                self.nasty = 0
+
                 if pathname:
                         # If a pathname was provided, read the data in.
-                        self.read(pathname)
+                        self.read(pathname, overrides=properties)
                 else:
                         # Otherwise, initialize to default state.
-                        self.__reset()
+                        self.__reset(overrides=properties)
 
         def __str__(self):
                 """Returns a string representation of the configuration
@@ -159,79 +166,82 @@ class RepositoryConfig(object):
                 """
                 return "%s" % self.cfg_cache
 
-        def __reset(self):
+        def __reset(self, overrides=misc.EmptyDict):
                 """Returns the configuration object to its default state.
                 """
+
                 self.cfg_cache = {}
-                for section in self._attrs:
-                        sattrs = self._attrs[section]
-                        for attr in sattrs:
-                                info = sattrs[attr]
+                for section in self._props:
+                        sprops = self._props[section]
+                        for prop in sprops:
+                                info = sprops[prop]
                                 default = info.get("default", None)
 
-                                atype = self.get_attribute_type(section, attr)
+                                if section in overrides and \
+                                    prop in overrides[section]:
+                                        default = overrides[section][prop]
+
+                                ptype = self.get_property_type(section, prop)
                                 if default is None and \
-                                    atype == ATTR_TYPE_URI_LIST:
+                                    ptype == PROP_TYPE_URI_LIST:
                                         default = []
 
-                                if section not in self.cfg_cache:
-                                        self.cfg_cache[section] = {}
-
-                                self.cfg_cache[section][attr] = default
+                                self.cfg_cache.setdefault(section, {})
+                                self.cfg_cache[section][prop] = default
 
         @classmethod
-        def is_valid_attribute(cls, section, attr, raise_error=False):
-                """Returns a boolean indicating whether the given attribute
+        def is_valid_property(cls, section, prop, raise_error=False):
+                """Returns a boolean indicating whether the given property
                 is valid for the specified section.
 
                 This function will raise an exception instead of returning a
                 boolean is raise_error=True is specified.
                 """
-                if section not in cls._attrs:
+                if section not in cls._props:
                         if raise_error:
-                                raise InvalidAttributeError("Invalid "
-                                    " attribute. Unknown section: %s." % \
+                                raise InvalidPropertyError("Invalid "
+                                    " property. Unknown section: %s." % \
                                     (section))
                         else:
                                 return False
-                if attr not in cls._attrs[section]:
+                if prop not in cls._props[section]:
                         if raise_error:
-                                raise InvalidAttributeError("Invalid "
-                                    "attribute %s.%s." % \
-                                    (section, attr))
+                                raise InvalidPropertyError("Invalid "
+                                    "property %s.%s." % \
+                                    (section, prop))
                         else:
                                 return False
                 return True
 
         @classmethod
-        def get_attribute_type(cls, section, attr):
+        def get_property_type(cls, section, prop):
                 """Returns a numeric value indicating the data type of the
-                given attribute for the specified section.
+                given property for the specified section.
 
                 The return value corresponds to one of the following module
                 constants which matches a Python data type:
-                    ATTR_TYPE_STR               str
-                    ATTR_TYPE_INT               int
-                    ATTR_TYPE_FLOAT             float
-                    ATTR_TYPE_BOOL              boolean
-                    ATTR_TYPE_UUID              str
-                    ATTR_TYPE_URI               str
-                    ATTR_TYPE_URI_LIST          list of str
-                    ATTR_TYPE_PUB_ALIAS         str
-                    ATTR_TYPE_PUB_PREFIX        str
-                    ATTR_TYPE_REPO_COLL_TYPE    str
+                    PROP_TYPE_STR               str
+                    PROP_TYPE_INT               int
+                    PROP_TYPE_FLOAT             float
+                    PROP_TYPE_BOOL              boolean
+                    PROP_TYPE_UUID              str
+                    PROP_TYPE_URI               str
+                    PROP_TYPE_URI_LIST          list of str
+                    PROP_TYPE_PUB_ALIAS         str
+                    PROP_TYPE_PUB_PREFIX        str
+                    PROP_TYPE_REPO_COLL_TYPE    str
                 """
-                if cls.is_valid_attribute(section, attr, raise_error=True):
-                        info = cls._attrs[section][attr]
-                        return info.get("type", ATTR_TYPE_STR)
+                if cls.is_valid_property(section, prop, raise_error=True):
+                        info = cls._props[section][prop]
+                        return info.get("type", PROP_TYPE_STR)
                 else:
                         return False
 
         @classmethod
-        def is_valid_attribute_value(cls, section, attr, value,
+        def is_valid_property_value(cls, section, prop, value,
             raise_error=False):
-                """Returns a boolean indicating whether the given attribute
-                value is valid for the specified section and attribute.
+                """Returns a boolean indicating whether the given property
+                value is valid for the specified section and property.
 
                 This function will raise an exception instead of returning a
                 boolean is raise_error=True is specified.
@@ -248,42 +258,43 @@ class RepositoryConfig(object):
                         if not valid:
                                 raise ValueError()
 
-                if cls.is_valid_attribute(section, attr,
+                if cls.is_valid_property(section, prop,
                     raise_error=raise_error):
-                        atype = cls.get_attribute_type(section, attr)
+                        ptype = cls.get_property_type(section, prop)
                         # If the type is string, we always assume it is valid.
                         # For all other types, we attempt a forced conversion
                         # of the value; if it fails, we know the value isn't
                         # valid for the given type.
                         try:
-                                if atype == ATTR_TYPE_STR:
+                                if ptype == PROP_TYPE_STR:
                                         return True
-                                elif atype == ATTR_TYPE_INT:
+                                elif ptype == PROP_TYPE_INT:
                                         int(value)
-                                elif atype == ATTR_TYPE_FLOAT:
+                                elif ptype == PROP_TYPE_FLOAT:
                                         float(value)
-                                elif atype == ATTR_TYPE_BOOL:
+                                elif ptype == PROP_TYPE_BOOL:
                                         if str(value) not in ("True", "False"):
                                                 raise TypeError
-                                elif atype == ATTR_TYPE_UUID:
-                                        # None is valid for configuration
-                                        # purposes, even though UUID would
-                                        # fail.
-                                        if value is not None:
+                                elif ptype == PROP_TYPE_UUID:
+                                        # None and '' are valid for
+                                        # configuration purposes, even though
+                                        # UUID would fail.
+                                        if value not in (None, ""):
                                                 uuid.UUID(hex=str(value))
-                                elif atype == ATTR_TYPE_URI:
+                                elif ptype == PROP_TYPE_URI:
                                         if value in (None, ""):
                                                 return True
                                         validate_uri(value)
-                                elif atype == ATTR_TYPE_URI_LIST:
+                                elif ptype == PROP_TYPE_URI_LIST:
                                         if not isinstance(value, list):
                                                 raise TypeError
                                         for u in value:
                                                 validate_uri(u)
-                                elif atype in (ATTR_TYPE_PUB_ALIAS,
-                                    ATTR_TYPE_PUB_PREFIX):
-                                        # For now, values are not required.
-                                        if value in (None, ""):
+                                elif ptype in (PROP_TYPE_PUB_ALIAS,
+                                    PROP_TYPE_PUB_PREFIX):
+                                        # For now, alias is not required.
+                                        if ptype == PROP_TYPE_PUB_ALIAS and \
+                                            value in (None, ""):
                                                 return True
 
                                         # The same rules that apply to publisher
@@ -291,19 +302,23 @@ class RepositoryConfig(object):
                                         # now).
                                         if not misc.valid_pub_prefix(value):
                                                 raise ValueError()
-                                elif atype == ATTR_TYPE_REPO_COLL_TYPE:
+                                elif ptype == PROP_TYPE_REPO_COLL_TYPE:
                                         if str(value) not in ("core",
                                             "supplemental"):
                                                 raise TypeError
                                 else:
                                         raise RuntimeError(
-                                            "Unknown attribute type: %s" % \
-                                            atype)
+                                            "Unknown property type: %s" % \
+                                            ptype)
                         except (TypeError, ValueError, OverflowError):
                                 if raise_error:
-                                        raise InvalidAttributeValueError(
-                                            "Invalid value for %s.%s." % \
-                                            (section, attr))
+                                        if value in (None, ""):
+                                                raise RequiredPropertyValueError(
+                                                    "%s.%s is required." % \
+                                                    (section, prop))
+                                        raise InvalidPropertyValueError(
+                                            "Invalid value '%s' for %s.%s." % \
+                                            (value, section, prop))
                                 else:
                                         return False
                 else:
@@ -311,69 +326,69 @@ class RepositoryConfig(object):
                 return True
 
         @classmethod
-        def is_readonly_attribute(cls, section, attr):
-                """Returns a boolean indicating whether the given attribute
+        def is_readonly_property(cls, section, prop):
+                """Returns a boolean indicating whether the given property
                 is read-only.
                 """
-                if cls.is_valid_attribute(section, attr, raise_error=True):
-                        info = cls._attrs[section][attr]
+                if cls.is_valid_property(section, prop, raise_error=True):
+                        info = cls._props[section][prop]
                         return info.get("readonly", False)
 
         @classmethod
-        def get_attributes(cls):
-                """Returns a dictionary of all attribute sections with each
-                section's attributes as a list.
+        def get_properties(cls):
+                """Returns a dictionary of all property sections with each
+                section's properties as a list.
                 """
                 return dict(
-                    (section, [attr for attr in cls._attrs[section]])
-                        for section in cls._attrs
+                    (section, [prop for prop in cls._props[section]])
+                        for section in cls._props
                 )
 
-        def get_attribute(self, section, attr):
-                """Returns the value of the specified attribute for the given
+        def get_property(self, section, prop):
+                """Returns the value of the specified property for the given
                 section.
                 """
-                if self.is_valid_attribute(section, attr, raise_error=True):
-                        return self.cfg_cache[section][attr]
+                if self.is_valid_property(section, prop, raise_error=True):
+                        return self.cfg_cache[section][prop]
 
-        def _set_attribute(self, section, attr, value):
-                """Sets the value of a given configuration attribute for the
+        def _set_property(self, section, prop, value):
+                """Sets the value of a given configuration property for the
                 specified section.
 
-                This method does not check the read-only status of an attribute
+                This method does not check the read-only status of an property
                 and is intended for internal use.
                 """
-                self.is_valid_attribute_value(section, attr, value,
+                self.is_valid_property_value(section, prop, value,
                     raise_error=True)
 
-                atype = self.get_attribute_type(section, attr)
-                if atype == ATTR_TYPE_INT:
-                        self.cfg_cache[section][attr] = int(value)
-                elif atype == ATTR_TYPE_FLOAT:
-                        self.cfg_cache[section][attr] = float(value)
-                elif atype == ATTR_TYPE_BOOL:
+                ptype = self.get_property_type(section, prop)
+                if ptype == PROP_TYPE_INT:
+                        self.cfg_cache[section][prop] = int(value)
+                elif ptype == PROP_TYPE_FLOAT:
+                        self.cfg_cache[section][prop] = float(value)
+                elif ptype == PROP_TYPE_BOOL:
                         if str(value) == "True":
-                                self.cfg_cache[section][attr] = True
+                                self.cfg_cache[section][prop] = True
                         else:
-                                self.cfg_cache[section][attr] = False
+                                self.cfg_cache[section][prop] = False
                 else:
                         # Treat all remaining types as a simple value.
-                        self.cfg_cache[section][attr] = value
+                        self.cfg_cache[section][prop] = value
 
-        def set_attribute(self, section, attr, value):
-                """Sets a given configuration attribute to the specified
+        def set_property(self, section, prop, value):
+                """Sets a given configuration property to the specified
                 value for the specified section.
 
                 This function will raise an exception if the specified
-                attribute is read-only.
+                property is read-only.
                 """
-                if not self.is_readonly_attribute(section, attr):
-                        return self._set_attribute(section, attr, value)
+                if not self.is_readonly_property(section, prop):
+                        return self._set_property(section, prop, value)
                 else:
-                        raise ReadOnlyAttributeError("%s.%s is read-only." % \
-                            (attr, section))
+                        raise ReadOnlyPropertyError("%s.%s is read-only." % \
+                            (prop, section))
 
-        def read(self, pathname):
+        def read(self, pathname, overrides=misc.EmptyDict):
                 """Reads the specified pathname and populates the configuration
                 object based on the data contained within.  The file is
                 expected to be in a ConfigParser-compatible format.
@@ -393,44 +408,49 @@ class RepositoryConfig(object):
                             "'%s'.") % pathname)
 
                 assert r[0] == pathname
-                for section in self._attrs:
-                        for attr in self._attrs[section]:
-                                atype = self.get_attribute_type(section, attr)
+                for section in self._props:
+                        for prop in self._props[section]:
+                                ptype = self.get_property_type(section, prop)
                                 try:
+                                        if section in overrides and \
+                                            prop in overrides[section]:
+                                                val = overrides[section][prop]
+                                                cp.set(section, prop, str(val))
+
                                         # Retrieve the value as a string first
                                         # to prevent ConfigParser from causing
                                         # an exception.
-                                        value = cp.get(section, attr)
+                                        value = cp.get(section, prop)
 
                                         # The list types are special in that
                                         # they must be converted first before
                                         # validation.
-                                        if atype == ATTR_TYPE_URI_LIST:
+                                        if ptype == PROP_TYPE_URI_LIST:
                                                 uris = []
                                                 for u in value.split(","):
                                                         if u:
                                                                 uris.append(u)
                                                 value = uris
 
-                                        self.is_valid_attribute_value(
-                                            section, attr, value,
+                                        self.is_valid_property_value(
+                                            section, prop, value,
                                             raise_error=True)
 
-                                        if atype == ATTR_TYPE_INT:
+                                        if ptype == PROP_TYPE_INT:
                                                 value = cp.getint(section,
-                                                    attr)
-                                        elif atype == ATTR_TYPE_FLOAT:
+                                                    prop)
+                                        elif ptype == PROP_TYPE_FLOAT:
                                                 value = cp.getfloat(section,
-                                                    attr)
-                                        elif atype == ATTR_TYPE_BOOL:
+                                                    prop)
+                                        elif ptype == PROP_TYPE_BOOL:
                                                 value = cp.getboolean(section,
-                                                    attr)
+                                                    prop)
 
-                                        self.cfg_cache[section][attr] = value
+                                        self.cfg_cache[section][prop] = value
 
                                 except (ConfigParser.NoSectionError,
                                     ConfigParser.NoOptionError):
-                                        # Skip any missing attributes.
+                                        # Skip any missing properties.
                                         continue
 
         def write(self, pathname):
@@ -439,20 +459,20 @@ class RepositoryConfig(object):
                 """
                 cp = ConfigParser.SafeConfigParser()
 
-                for section in self._attrs:
+                for section in self._props:
                         cp.add_section(section)
-                        for attr in self._attrs[section]:
-                                value = self.cfg_cache[section][attr]
+                        for prop in self._props[section]:
+                                value = self.cfg_cache[section][prop]
 
-                                atype = self.get_attribute_type(section, attr)
-                                if atype == ATTR_TYPE_URI_LIST:
+                                ptype = self.get_property_type(section, prop)
+                                if ptype == PROP_TYPE_URI_LIST:
                                         value = ",".join(value)
 
                                 if value is not None:
-                                        cp.set(section, attr, str(value))
+                                        cp.set(section, prop, str(value))
                                 else:
                                         # Force None to be an empty string.
-                                        cp.set(section, attr, "")
+                                        cp.set(section, prop, "")
 
                 try:
                         f = open(pathname, "w")
@@ -461,3 +481,61 @@ class RepositoryConfig(object):
                             "%s" % (pathname, strerror))
                 cp.write(f)
 
+        def validate(self):
+                """Verify that the in-memory contents of the configuration
+                satisfy validation requirements (such as required fields)."""
+
+                for section in self._props:
+                        for prop in self._props[section]:
+                                value = self.cfg_cache.get(section,
+                                    {}).get(prop)
+                                ptype = self.get_property_type(section, prop)
+                                self.is_valid_property_value(
+                                    section, prop, value,
+                                    raise_error=True)
+
+        def set_nasty(self, level):
+                """Set the nasty level using an integer."""
+
+                self.nasty = level
+
+        def is_nasty(self):
+                """Returns true if nasty has been enabled."""
+
+                if self.nasty > 0:
+                        return True
+                return False
+
+        def need_nasty(self):
+                """Randomly returns true when the server should misbehave."""
+
+                if random.randint(1, 100) <= self.nasty:
+                        return True
+                return False
+
+        def need_nasty_bonus(self, bonus=0):
+                """Used to temporarily apply extra nastiness to an operation."""
+
+                if self.nasty + bonus > 95:
+                        nasty = 95
+                else:
+                        nasty = self.nasty + bonus
+
+                if random.randint(1, 100) <= nasty:
+                        return True
+                return False
+
+        def need_nasty_occasionally(self):
+                if random.randint(1, 500) <= self.nasty:
+                        return True
+                return False
+
+        def need_nasty_infrequently(self):
+                if random.randint(1, 2000) <= self.nasty:
+                        return True
+                return False
+
+        def need_nasty_rarely(self):
+                if random.randint(1, 20000) <= self.nasty:
+                        return True
+                return False

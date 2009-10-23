@@ -83,7 +83,7 @@ class AttributeAction(generic.Action):
                             (self.name, self.attrs["name"], w, None)
                             for w in self.attrs["value"].split()
                         ]
-                elif self.attrs["name"] == "fmri":
+                elif self.attrs["name"] in ("fmri", "pkg.fmri"):
                         fmri_obj = fmri.PkgFmri(self.attrs["value"])
 
                         return [

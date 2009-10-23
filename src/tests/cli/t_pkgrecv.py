@@ -35,7 +35,6 @@ import pkg.catalog as catalog
 import pkg.fmri as fmri
 import pkg.manifest as manifest
 import pkg.misc as misc
-import pkg.server.config as config
 import pkg.server.repository as repo
 import pkg.server.repositoryconfig as rc
 import re
@@ -109,13 +108,13 @@ class TestPkgrecvMulti(testutils.ManyDepotTestCase):
                     "/tmp/copyright2", "/tmp/copyright3",
                     "/tmp/libc.so.1", "/tmp/sh"]
 
-        def setUp(self, ndepots=2, debug_features=None):
+        def setUp(self):
                 """ Start two depots.
                     depot 1 gets foo and moo, depot 2 gets foo and bar
                     depot1 is mapped to publisher test1 (preferred)
                     depot2 is mapped to publisher test2 """
 
-                testutils.ManyDepotTestCase.setUp(self, 2)
+                testutils.ManyDepotTestCase.setUp(self, ["test1", "test2"])
 
                 for p in self.misc_files:
                         f = open(p, "w")
@@ -152,26 +151,13 @@ class TestPkgrecvMulti(testutils.ManyDepotTestCase):
                 parts = urlparse.urlparse(uri, "file", allow_fragments=0)
                 path = urllib.url2pathname(parts[2])
 
-                scfg = config.SvrConfig(path, None, None)
                 try:
-                        scfg.init_dirs()
-                except (config.SvrConfigError, EnvironmentError), e:
-                        raise repo.RepositoryError(_("An error occurred while "
-                            "trying to initialize the repository directory "
-                            "structures:\n%s") % e)
-
-                scfg.acquire_in_flight()
-
-                try:
-                        scfg.acquire_catalog()
-                except catalog.CatalogPermissionsException, e:
-                        raise repo.RepositoryError(str(e))
-
-                try:
-                        return repo.Repository(scfg)
-                except rc.InvalidAttributeValueError, e:
-                        raise repo.RepositoryError(_("The specified repository's "
-                            "configuration data is not valid:\n%s") % e)
+                        return repo.Repository(auto_create=False,
+                            fork_allowed=False, repo_root=path)
+                except rc.PropertyError, e:
+                        raise repo.RepositoryError(_("The specified "
+                            "repository's configuration data is not "
+                            "valid:\n%s") % e)
 
         @staticmethod
         def reduceSpaces(string):
@@ -200,15 +186,20 @@ class TestPkgrecvMulti(testutils.ManyDepotTestCase):
                 # Test help.
                 self.pkgrecv(command="-h", exit=0)
 
+                # Verify that a non-existent repository results in failure.
+                npath = os.path.join(self.get_test_prefix(), "nochance")
+                self.pkgrecv(self.durl1, "-d file://%s foo" % npath,  exit=1)
+
                 # Test list newest.
                 self.pkgrecv(self.durl1, "-n")
                 output = self.reduceSpaces(self.output)
 
-                # The latest version of amber and bronze should be listed.
-                amber = "pkg:/" + self.published[1]
-                scheme = "pkg:/" + self.published[6]
-                bronze = "pkg:/" + self.published[4]
-                tree = "pkg:/" + self.published[5]
+                # The latest version of amber and bronze should be listed
+                # (sans publisher prefix currently).
+                amber = self.published[1].replace("pkg://test1/", "pkg:/")
+                scheme = self.published[6].replace("pkg://test1/", "pkg:/")
+                bronze = self.published[4].replace("pkg://test1/", "pkg:/")
+                tree = self.published[5].replace("pkg://test1/", "pkg:/")
                 expected = "\n".join((amber, scheme, tree, bronze)) + "\n"
                 self.assertEqualDiff(expected, output)
 
@@ -290,6 +281,8 @@ class TestPkgrecvMulti(testutils.ManyDepotTestCase):
 
                 # Second, pkgrecv to the pkg to a file repository.
                 npath = tempfile.mkdtemp(dir=self.get_test_prefix())
+                self.pkgsend("file://%s" % npath,
+                    "create-repository --set-property publisher.prefix=test1")
                 self.pkgrecv(self.durl1, "-d file://%s %s" % (npath, f))
 
                 # Next, compare the manifests (this will also only succeed if
@@ -298,6 +291,8 @@ class TestPkgrecvMulti(testutils.ManyDepotTestCase):
                 old = orepo.manifest(f)
                 new = nrepo.manifest(f)
 
+                self.debug(old)
+                self.debug(new)
                 self.assertEqual(misc.get_data_digest(old),
                     misc.get_data_digest(new))
 
@@ -351,13 +346,15 @@ class TestPkgrecvMulti(testutils.ManyDepotTestCase):
 
                 # Fourth, create an image and verify that the sent package is
                 # seen by the client.
-                self.image_create(self.durl2)
+                self.image_create(self.durl2, prefix="test1")
                 self.pkg("info -r bronze@2.0")
 
                 # Fifth, pkgrecv the pkg to a file repository and compare the
                 # manifest of a package published with the scheme (pkg:/) given.
                 f = fmri.PkgFmri(self.published[6], None)
                 npath = tempfile.mkdtemp(dir=self.get_test_prefix())
+                self.pkgsend("file://%s" % npath,
+                    "create-repository --set-property publisher.prefix=test1")
                 self.pkgrecv(self.durl1, "-d file://%s %s" % (npath, f))
 
                 # Next, compare the manifests (this will also only succeed if

@@ -27,13 +27,13 @@ import errno
 import itertools
 import os
 
+from pkg.client import global_settings
+logger = global_settings.logger
+
 import pkg.actions.directory as directory
 import pkg.manifest as manifest
 import pkg.client.api_errors as api_errors
-from pkg.misc import msg
-from pkg.misc import get_pkg_otw_size
-from pkg.misc import EmptyI
-from pkg.misc import expanddirs
+from pkg.misc import expanddirs, get_pkg_otw_size, EmptyI
 
 class PkgPlan(object):
         """A package plan takes two package FMRIs and an Image, and produces the
@@ -270,8 +270,8 @@ class PkgPlan(object):
                 try:
                         dest.install(self, src)
                 except Exception, e:
-                        msg("Action install failed for '%s' (%s):\n  %s: %s" % \
-                            (dest.attrs.get(dest.key_attr, id(dest)),
+                        logger.error("Action install failed for '%s' (%s):\n  "
+                            "%s: %s" % (dest.attrs.get(dest.key_attr, id(dest)),
                              self.destination_fmri.get_pkg_stem(),
                              e.__class__.__name__, e))
                         raise
@@ -281,8 +281,8 @@ class PkgPlan(object):
                 try:
                         dest.install(self, src)
                 except Exception, e:
-                        msg("Action upgrade failed for '%s' (%s):\n %s: %s" % \
-                             (dest.attrs.get(dest.key_attr, id(dest)),
+                        logger.error("Action upgrade failed for '%s' (%s):\n "
+                            "%s: %s" % (dest.attrs.get(dest.key_attr, id(dest)),
                              self.destination_fmri.get_pkg_stem(),
                              e.__class__.__name__, e))
                         raise
@@ -292,8 +292,8 @@ class PkgPlan(object):
                 try:
                         src.remove(self)
                 except Exception, e:
-                        msg("Action removal failed for '%s' (%s):\n  %s: %s" % \
-                            (src.attrs.get(src.key_attr, id(src)),
+                        logger.error("Action removal failed for '%s' (%s):\n "
+                            "%s: %s" % (src.attrs.get(src.key_attr, id(src)),
                              self.origin_fmri.get_pkg_stem(),
                              e.__class__.__name__, e))
                         raise

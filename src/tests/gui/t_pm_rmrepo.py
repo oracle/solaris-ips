@@ -45,8 +45,8 @@ class TestPkgGuiRmRepoBasics(testutils.ManyDepotTestCase):
             open bar@1,5.11-0
             close """
 
-        def setUp(self, ndepots, debug_features=None):
-                testutils.ManyDepotTestCase.setUp(self, 2)
+        def setUp(self):
+                testutils.ManyDepotTestCase.setUp(self, ["test1", "test2"])
 
                 durl1 = self.dcs[1].get_depot_url()
                 self.pkgsend_bulk(durl1, self.foo1)
@@ -54,7 +54,7 @@ class TestPkgGuiRmRepoBasics(testutils.ManyDepotTestCase):
                 durl2 = self.dcs[2].get_depot_url()
                 self.pkgsend_bulk(durl2, self.bar1)
 
-                self.image_create(durl1, prefix = "test1")
+                self.image_create(durl1, prefix="test1")
                 self.pkg("set-publisher -O " + durl2 + " test2")
 
         def tearDown(self):

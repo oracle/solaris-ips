@@ -106,7 +106,8 @@ class CurlTransportEngine(TransportEngine):
                 return ret
 
         def add_url(self, url, filepath=None, writefunc=None, header=None,
-            progtrack=None, sslcert=None, sslkey=None, repourl=None):
+            progtrack=None, sslcert=None, sslkey=None, repourl=None,
+            compressible=False):
                 """Add a URL to the transport engine.  Caller must supply
                 either a filepath where the file should be downloaded,
                 or a callback to a function that will peform the write.
@@ -116,7 +117,8 @@ class CurlTransportEngine(TransportEngine):
 
                 t = TransportRequest(url, filepath=filepath,
                     writefunc=writefunc, header=header, progtrack=progtrack,
-                    sslcert=sslcert, sslkey=sslkey, repourl=repourl)
+                    sslcert=sslcert, sslkey=sslkey, repourl=repourl,
+                    compressible=compressible)
 
                 self.__req_q.appendleft(t)
 
@@ -330,7 +332,7 @@ class CurlTransportEngine(TransportEngine):
                                 timeout = timeout / 1000.0
 
                         if timeout:
-                               self.__mhandle.select(timeout)
+                                self.__mhandle.select(timeout)
 
                 while self.__freehandles and self.__req_q:
                         t = self.__req_q.pop()
@@ -500,7 +502,11 @@ class CurlTransportEngine(TransportEngine):
                                 if e.errno == errno.EACCES:
                                         raise api_errors.PermissionsException(
                                             e.filename)
+                                if e.errno == errno.EROFS:
+                                        raise api_errors.ReadOnlyFileSystemException(
+                                            e.filename)
                                 # Raise OperationError if it's not EACCES
+                                # or EROFS.
                                 raise tx.TransportOperationError(
                                     "Unable to open file: %s" % e)
          

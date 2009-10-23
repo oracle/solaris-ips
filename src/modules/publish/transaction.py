@@ -34,11 +34,9 @@ import urllib
 import urllib2
 import urlparse
 
-from pkg.misc import versioned_urlopen
+from pkg.misc import versioned_urlopen, EmptyDict
 import pkg.portable.util as os_util
-import pkg.server.catalog as catalog
-import pkg.server.config as config
-import pkg.server.repository as repo
+import pkg.server.repository as sr
 import pkg.server.repositoryconfig as rc
 
 class TransactionError(Exception):
@@ -52,6 +50,11 @@ class TransactionError(Exception):
 
         def __str__(self):
                 return str(self.data)
+
+
+class TransactionRepositoryConfigError(TransactionError):
+        """Used to indicate that the configuration information for the
+        destination repository is invalid or is missing required values."""
 
 
 class TransactionRepositoryURLError(TransactionError):
@@ -102,6 +105,11 @@ class TransactionOperationError(TransactionError):
                     self.args.get("msg", "")
 
 
+class TransactionRepositoryInvalidError(TransactionError):
+        """Used to indicate that the specified repository is not valid or can
+        not be found at the requested location."""
+
+
 class UnsupportedRepoTypeOperationError(TransactionError):
         """Used to indicate that a requested operation is not supported for the
         type of repository being operated on (http, file, etc.)."""
@@ -120,7 +128,7 @@ class FileTransaction(object):
         __repo_cache = {}
 
         def __init__(self, origin_url, create_repo=False, pkg_name=None,
-            trans_id=None):
+            repo_props=EmptyDict, trans_id=None):
                 scheme, netloc, path, params, query, fragment = \
                     urlparse.urlparse(origin_url, "file", allow_fragments=0)
                 path = urllib.url2pathname(path)
@@ -132,37 +140,27 @@ class FileTransaction(object):
                             msg=_("Not an absolute path."))
 
                 if origin_url not in repo_cache:
-                        scfg = config.SvrConfig(path, None, None,
-                            auto_create=create_repo)
                         try:
-                                scfg.init_dirs()
-                        except (config.SvrConfigError, EnvironmentError), e:
+                                repo = sr.Repository(auto_create=create_repo,
+                                    properties=repo_props, repo_root=path)
+                        except EnvironmentError, e:
                                 raise TransactionOperationError(None, msg=_(
                                     "An error occurred while trying to "
                                     "initialize the repository directory "
                                     "structures:\n%s") % e)
-
-                        scfg.acquire_in_flight()
-
-                        try:
-                                scfg.acquire_catalog()
-                        except catalog.CatalogPermissionsException, e:
+                        except rc.PropertyError, e:
+                                raise TransactionRepositoryConfigError(str(e))
+                        except sr.RepositoryInvalidError, e:
+                                raise TransactionRepositoryInvalidError(str(e))
+                        except sr.RepositoryError, e:
                                 raise TransactionOperationError(None,
-                                    origin_url, msg=str(e))
-
-                        try:
-                                repo_cache[origin_url] = repo.Repository(scfg)
-                        except rc.InvalidAttributeValueError, e:
-                                raise TransactionOperationError(None,
-                                    msg=_("The specified repository's "
-                                    "configuration data is not "
-                                    "valid:\n%s") % e)
+                                    msg=str(e))
+                        repo_cache[origin_url] = repo
 
                 self.__repo = repo_cache[origin_url]
                 self.origin_url = origin_url
                 self.pkg_name = pkg_name
                 self.trans_id = trans_id
-                return
 
         def add(self, action):
                 """Adds an action and its related content to an in-flight
@@ -170,7 +168,7 @@ class FileTransaction(object):
 
                 try:
                         self.__repo.add(self.trans_id, action)
-                except repo.RepositoryError, e:
+                except sr.RepositoryError, e:
                         raise TransactionOperationError("add",
                             trans_id=self.trans_id, msg=str(e))
 
@@ -191,14 +189,14 @@ class FileTransaction(object):
                         try:
                                 pkg_fmri = None
                                 pkg_state = self.__repo.abandon(self.trans_id)
-                        except repo.RepositoryError, e:
+                        except sr.RepositoryError, e:
                                 raise TransactionOperationError("abandon",
                                     trans_id=self.trans_id, msg=str(e))
                 else:
                         try:
                                 pkg_fmri, pkg_state = self.__repo.close(
                                     self.trans_id, refresh_index=refresh_index)
-                        except repo.RepositoryError, e:
+                        except sr.RepositoryError, e:
                                 raise TransactionOperationError("close",
                                     trans_id=self.trans_id, msg=str(e))
                 return pkg_fmri, pkg_state
@@ -210,7 +208,7 @@ class FileTransaction(object):
                 try:
                         self.trans_id = self.__repo.open(
                             os_util.get_os_release(), self.pkg_name)
-                except repo.RepositoryError, e:
+                except sr.RepositoryError, e:
                         raise TransactionOperationError("open",
                             trans_id=self.trans_id, msg=str(e))
                 return self.trans_id
@@ -221,7 +219,7 @@ class FileTransaction(object):
 
                 try:
                         self.__repo.refresh_index()
-                except repo.RepositoryError, e:
+                except sr.RepositoryError, e:
                         raise TransactionOperationError("refresh_index",
                             msg=str(e))
 
@@ -230,7 +228,7 @@ class HTTPTransaction(object):
         """Provides a publishing interface for HTTP(S)-based repositories."""
 
         def __init__(self, origin_url, create_repo=False, pkg_name=None,
-            trans_id=None):
+            repo_props=EmptyDict, trans_id=None):
 
                 if create_repo:
                         scheme, netloc, path, params, query, fragment = \
@@ -242,7 +240,6 @@ class HTTPTransaction(object):
                 self.origin_url = origin_url
                 self.pkg_name = pkg_name
                 self.trans_id = trans_id
-                return
 
         @staticmethod
         def __get_urllib_error(e):
@@ -448,12 +445,11 @@ class NullTransaction(object):
         purposes."""
 
         def __init__(self, origin_url, create_repo=False, pkg_name=None,
-            trans_id=None):
+            repo_props=EmptyDict, trans_id=None):
                 self.create_repo = create_repo
                 self.origin_url = origin_url
                 self.pkg_name = pkg_name
                 self.trans_id = trans_id
-                return
 
         @staticmethod
         def add(action):
@@ -520,7 +516,7 @@ class Transaction(object):
         }
 
         def __new__(cls, origin_url, create_repo=False, pkg_name=None,
-            trans_id=None, noexecute=False):
+            repo_props=EmptyDict, trans_id=None, noexecute=False):
                 scheme, netloc, path, params, query, fragment = \
                     urlparse.urlparse(origin_url, "http", allow_fragments=0)
                 scheme = scheme.lower()
@@ -540,4 +536,4 @@ class Transaction(object):
 
                 return cls.__schemes[scheme](origin_url,
                     create_repo=create_repo, pkg_name=pkg_name,
-                    trans_id=trans_id)
+                    repo_props=repo_props, trans_id=trans_id)

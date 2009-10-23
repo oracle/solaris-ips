@@ -201,14 +201,10 @@ f none usr/lib/python2.4/vendor-packages/pkg/server/api_errors.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/server/api_errors.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/server/catalog.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/server/catalog.pyc 444 root bin
-f none usr/lib/python2.4/vendor-packages/pkg/server/config.py 444 root bin
-f none usr/lib/python2.4/vendor-packages/pkg/server/config.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/server/depot.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/server/depot.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/server/depotresponse.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/server/depotresponse.pyc 444 root bin
-f none usr/lib/python2.4/vendor-packages/pkg/server/errors.py 444 root bin
-f none usr/lib/python2.4/vendor-packages/pkg/server/errors.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/server/face.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/server/face.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/server/feed.py 444 root bin

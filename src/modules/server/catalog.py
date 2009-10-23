@@ -51,7 +51,6 @@ import threading
 import urllib
 
 from pkg.misc import EmptyI
-from pkg.server.errors import SvrConfigError
 
 class CatalogException(Exception):
         def __init__(self, args=None):
@@ -231,12 +230,12 @@ class ServerCatalog(object):
                         except EnvironmentError, e:
                                 if e.errno == errno.EACCES:
                                         if has_writable_root:
-                                                raise SvrConfigError(
+                                                raise RuntimeError(
                                                     _("writable root not "
                                                     "writable by current user "
                                                     "id or group."))
                                         else:
-                                                raise SvrConfigError(
+                                                raise RuntimeError(
                                                     _("unable to write to "
                                                     "index directory."))
                                 raise
@@ -811,7 +810,7 @@ class ServerCatalog(object):
                         # file.
                         if tmpfile:
                                 portable.remove(tmpfile)
-                        if e.errno == errno.EACCES:
+                        if e.errno in (errno.EACCES, errno.EROFS):
                                 return
                         else:
                                 raise

@@ -204,7 +204,8 @@ class TestPkgsendBasics(testutils.SingleDepotTestCase):
 
                 self.dc.stop()
                 rpath = os.path.join(self.get_test_prefix(), "example_repo")
-                self.pkgsend("file://%s" % rpath, "create-repository")
+                self.pkgsend("file://%s" % rpath,
+                    "create-repository --set-property publisher.prefix=test")
 
                 # Now verify that the repository was created by starting the
                 # depot server in readonly mode using the target repository.
@@ -219,10 +220,6 @@ class TestPkgsendBasics(testutils.SingleDepotTestCase):
                 # schemes execpt file://.
                 self.pkgsend("http://invalid.test1", "create-repository", exit=1)
                 self.pkgsend("https://invalid.test2", "create-repository", exit=1)
-
-                # Finally, verify that specifying extra operands to
-                # create-repository fails as expected.
-                self.pkgsend("https://invalid.test2", "create-repository bobcat", exit=2)
 
         def test_8_bug_7908(self):
                 """Verify that when provided the name of a symbolic link to a

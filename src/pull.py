@@ -36,15 +36,17 @@ import traceback
 import urllib
 import urlparse
 
+import pkg.catalog as catalog
 import pkg.client.progress as progress
 import pkg.fmri
 import pkg.manifest as manifest
+import pkg.client.api_errors as api_errors
 import pkg.pkgtarfile as ptf
 import pkg.portable as portable
 import pkg.publish.transaction as trans
-import pkg.server.catalog as catalog
-import pkg.server.config as config
-import pkg.server.repository as repo
+import pkg.search_errors as search_errors
+import pkg.server.catalog as sc
+import pkg.server.repository as sr
 import pkg.server.repositoryconfig as rc
 import pkg.version as version
 
@@ -193,29 +195,25 @@ def get_repo(uri):
         parts = urlparse.urlparse(uri, "file", allow_fragments=0)
         path = urllib.url2pathname(parts[2])
 
-        scfg = config.SvrConfig(path, None, None)
-        scfg.set_read_only()
         try:
-                scfg.init_dirs()
-        except (config.SvrConfigError, EnvironmentError), e:
-                raise repo.RepositoryError(_("An error occurred while "
-                    "trying to initialize the repository directory "
-                    "structures:\n%s") % e)
-
-        scfg.acquire_in_flight()
-
-        try:
-                scfg.acquire_catalog()
-        except catalog.CatalogPermissionsException, e:
-                raise repo.RepositoryError(str(e))
-
-        try:
-                repo_cache[uri] = repo.Repository(scfg)
-        except rc.InvalidAttributeValueError, e:
-                raise repo.RepositoryError(_("The specified repository's "
-                    "configuration data is not valid:\n%s") % e)
-
-        return repo_cache[uri]
+                repo = sr.Repository(read_only=True, repo_root=path)
+        except EnvironmentError, _e:
+                error("an error occurred while trying to " \
+                    "initialize the repository directory " \
+                    "structures:\n%s" % _e)
+                sys.exit(1)
+        except sr.RepositoryError, _e:
+                error(_e)
+                sys.exit(1)
+        except rc.PropertyError, _e:
+                error("repository configuration error: %s" % _e)
+                sys.exit(1)
+        except (search_errors.IndexingException,
+            api_errors.PermissionsException), _e:
+                emsg(str(_e), "INDEX")
+                sys.exit(1)
+        repo_cache[uri] = repo
+        return repo
 
 def fetch_manifest(src_uri, pfmri):
         """Return the manifest data for package-fmri 'fmri' from the repository
@@ -225,7 +223,7 @@ def fetch_manifest(src_uri, pfmri):
                 try:
                         r = get_repo(src_uri)
                         m = file(r.manifest(pfmri), "rb")
-                except (EnvironmentError, repo.RepositoryError), e:
+                except (EnvironmentError, sr.RepositoryError), e:
                         abort(err=e)
         else:
                 # Request manifest from repository.
@@ -274,20 +272,28 @@ def expand_matching_fmris(fmri_list, pfmri_strings):
         except pkg.fmri.FmriError, e:
                 abort(err=e)
 
-        matches = catalog.extract_matching_fmris(fmri_list,
-            patterns=patterns, constraint=version.CONSTRAINT_AUTO,
-            counthash=counthash, matcher=pkg.fmri.glob_match)
-
-        bail = False
-
+        # XXX publisher prefixes have to be stripped for catalog matching
+        # for now; awaits v1 client support, etc.
+        pattern_pubs = {}
         for f in patterns:
-                if f not in counthash:
-                        emsg(_("No match found for %s") % f.pkg_name)
-                        bail = True
+                if f.publisher:
+                        pattern_pubs[f.get_fmri(anarchy=True)] = f.publisher
+                        f.publisher = None
 
-        if bail:
+        matches, unmatched = catalog.extract_matching_fmris(fmri_list,
+            patterns=patterns, constraint=version.CONSTRAINT_AUTO,
+            matcher=pkg.fmri.glob_match)
+
+        if unmatched:
+                match_err = api_errors.InventoryException(**unmatched)
+                emsg(match_err)
                 abort()
 
+        # XXX restore stripped publisher information.
+        for m in matches:
+                pub = pattern_pubs.pop(str(m), None)
+                if pub:
+                        m.publisher = pub
         return matches
 
 def get_dependencies(src_uri, fmri_list, basedir, tracker):
@@ -386,7 +392,7 @@ def fetch_files_byhash(src_uri, cshashes, destdir, keep_compressed, tracker):
         if src_uri.startswith("file://"):
                 try:
                         r = get_repo(src_uri)
-                except repo.RepositoryError, e:
+                except sr.RepositoryError, e:
                         abort(err=e)
 
                 for h in cshashes.keys():
@@ -405,8 +411,7 @@ def fetch_files_byhash(src_uri, cshashes, destdir, keep_compressed, tracker):
                                         outfile = open(dest, "wb")
                                         gunzip_from_stream(src, outfile)
                                         outfile.close()
-                        except (EnvironmentError,
-                            repo.RepositoryError), e:
+                        except (EnvironmentError, sr.RepositoryError), e:
                                 try:
                                         portable.remove(dest)
                                 except:
@@ -509,8 +514,8 @@ def fetch_catalog(src_uri, tracker):
         if src_uri.startswith("file://"):
                 try:
                         r = get_repo(src_uri)
-                        c = r.catalog()
-                except repo.RepositoryError, e:
+                        c = r.catalog_0()
+                except sr.RepositoryError, e:
                         error(e)
                         abort()
         else:
@@ -527,14 +532,14 @@ def fetch_catalog(src_uri, tracker):
 
         # Call catalog.recv to retrieve catalog.
         try:
-                catalog.ServerCatalog.recv(c, cat_dir)
+                sc.ServerCatalog.recv(c, cat_dir)
         except Exception, e:
                 abort(err=_("Error: %s while reading from: %s") % (e, src_uri))
 
         if hasattr(c, "close"):
                 c.close()
 
-        cat = catalog.ServerCatalog(cat_dir, read_only=True)
+        cat = sc.ServerCatalog(cat_dir, read_only=True)
 
         d = {}
         fmri_list = []
@@ -605,12 +610,6 @@ def main_func():
         if pargs == None or len(pargs) == 0:
                 usage(_("must specify at least one pkgfmri"))
 
-        all_fmris = fetch_catalog(src_uri, tracker)
-        fmri_arguments = pargs
-        fmri_list = prune(list(set(expand_matching_fmris(all_fmris,
-            fmri_arguments))), all_versions, all_timestamps)
-
-        create_repo = False
         defer_refresh = False
         republish = False
 
@@ -623,14 +622,30 @@ def main_func():
 
                 # Files have to be decompressed for republishing.
                 keep_compressed = False
-
-                # Automatically create repository at target location if it
-                # doesn't exist.
                 if target.startswith("file://"):
-                        create_repo = True
                         # For efficiency, and publishing speed, don't update
                         # indexes until all file publishing is finished.
                         defer_refresh = True
+
+                        # Check to see if the repository exists first.
+                        try:
+                                t = trans.Transaction(target)
+                        except trans.TransactionRepositoryInvalidError, e:
+                                txt = str(e) + "\n\n"
+                                txt += _("To create a repository, use the "
+                                    "pkgsend command.")
+                                abort(err=msg)
+                        except trans.TransactionRepositoryConfigError, e:
+                                txt = str(e) + "\n\n"
+                                txt += _("The repository configuration for "
+                                    "the repository located at '%s' is not "
+                                    "valid or the specified path does not "
+                                    "exist.  Please correct the configuration "
+                                    "of the repository or create a new "
+                                    "one.") % target
+                                abort(err=txt)
+                        except trans.TransactionError, e:
+                                abort(err=e)
         else:
                 basedir = target
                 if not os.path.exists(basedir):
@@ -640,6 +655,11 @@ def main_func():
                                 error(_("Unable to create basedir '%s'.") % \
                                     basedir)
                                 return 1
+
+        all_fmris = fetch_catalog(src_uri, tracker)
+        fmri_arguments = pargs
+        fmri_list = prune(list(set(expand_matching_fmris(all_fmris,
+            fmri_arguments))), all_versions, all_timestamps)
 
         if recursive:
                 msg(_("Retrieving manifests for dependency evaluation ..."))
@@ -721,8 +741,8 @@ def main_func():
                 trans_id = get_basename(f)
 
                 try:
-                        t = trans.Transaction(target, create_repo=create_repo,
-                            pkg_name=pkg_name, trans_id=trans_id)
+                        t = trans.Transaction(target, pkg_name=pkg_name,
+                            trans_id=trans_id)
 
                         # Remove any previous failed attempt to
                         # to republish this package.
@@ -735,7 +755,8 @@ def main_func():
                         t.open()
                         for a in m.gen_actions():
                                 if a.name == "set" and \
-                                    a.attrs.get("name", "") == "fmri":
+                                    a.attrs.get("name", "") in ("fmri",
+                                    "pkg.fmri"):
                                         # To be consistent with the server,
                                         # the fmri can't be added to the
                                         # manifest.

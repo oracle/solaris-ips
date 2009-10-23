@@ -100,7 +100,7 @@ class TestPkgApi(testutils.SingleDepotTestCase):
         misc_files = [ "libc.so.1" ]
 
         def setUp(self):
-                testutils.SingleDepotTestCase.setUp(self)
+                testutils.SingleDepotTestCase.setUp(self, publisher="bobcat")
 
                 self.foo12 = self.foo12.replace("$test_prefix",
                     self.get_test_prefix())
@@ -157,7 +157,7 @@ class TestPkgApi(testutils.SingleDepotTestCase):
         def test_bad_orderings(self):
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.foo10)
-                self.image_create(durl)
+                self.image_create(durl, prefix="bobcat")
 
                 progresstracker = progress.NullProgressTracker()
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
@@ -201,7 +201,7 @@ class TestPkgApi(testutils.SingleDepotTestCase):
 
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.foo10)
-                self.image_create(durl)
+                self.image_create(durl, prefix="bobcat")
 
                 progresstracker = progress.NullProgressTracker()
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
@@ -274,7 +274,7 @@ class TestPkgApi(testutils.SingleDepotTestCase):
                 accessible and return expected values."""
 
                 durl = self.dc.get_depot_url()
-                self.image_create(durl)
+                self.image_create(durl, prefix="bobcat")
 
                 progresstracker = progress.NullProgressTracker()
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
@@ -377,10 +377,12 @@ class TestPkgApi(testutils.SingleDepotTestCase):
                 ffoo = fmri.PkgFmri(plist[0])
                 sfoo = str(ffoo).replace(":%s" % ffoo.version.timestr, "")
                 ffoo = fmri.PkgFmri(sfoo)
+                sfoo = ffoo.get_fmri(anarchy=True)
 
                 fbar = fmri.PkgFmri(plist[1])
                 sbar = str(fbar).replace(":%s" % fbar.version.timestr, "")
                 fbar = fmri.PkgFmri(sbar)
+                sbar = fbar.get_fmri(anarchy=True)
 
                 # Build a simple list of packages.
                 pnames = {

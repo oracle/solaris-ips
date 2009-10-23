@@ -54,7 +54,7 @@ def usage(usage_error = None):
 Usage:
         %s -r [-d dir] [-n] -v varname,url -v varname,url [-v varname,url ...] variant_type  pkgname [pkgname ...]
 
-        example: 
+        example:
 
         %s -r -d /tmp/merge -n -v sparc,http://server1 -v i386,http://server2 arch entire
         """ % (pname(), pname()))
@@ -177,7 +177,7 @@ def fetch_catalog(server_url):
         # call catalog.recv to pull down catalog
         try:
                 catalog.ServerCatalog.recv(c, dl_dir)
-        except: 
+        except:
                 error(_("Error while reading from: %s") % server_url)
                 sys.exit(1)
 
@@ -186,7 +186,7 @@ def fetch_catalog(server_url):
 
         # instantiate catalog object
         cat = catalog.ServerCatalog(dl_dir, read_only=True)
-        
+
         # return (catalog, tmpdir path)
         return cat, dl_dir
 
@@ -201,7 +201,7 @@ def load_catalog(server_url):
                         d[f.pkg_name] = [f]
                 for k in d.keys():
                         d[k].sort(reverse = True)
-                catalog_dict[server_url] = d        
+        catalog_dict[server_url] = d
 
 def expand_fmri(server_url, fmri_string, constraint=version.CONSTRAINT_AUTO):
         """ from specified server, find matching fmri using CONSTRAINT_AUTO
@@ -209,7 +209,7 @@ def expand_fmri(server_url, fmri_string, constraint=version.CONSTRAINT_AUTO):
         if server_url not in catalog_dict:
                 load_catalog(server_url)
 
-        fmri = pkg.fmri.PkgFmri(fmri_string, "5.11")        
+        fmri = pkg.fmri.PkgFmri(fmri_string, "5.11")
 
         for f in catalog_dict[server_url].get(fmri.pkg_name, []):
                 if not fmri.version or f.version.is_successor(fmri.version, constraint):
@@ -239,7 +239,7 @@ def _get_dependencies(s, server_url, fmri):
                                 _get_dependencies(s, server_url, new_fmri)
         return s
 
-        
+
 def main_func():
 
         basedir = None
@@ -253,7 +253,7 @@ def main_func():
         try:
                opts, pargs = getopt.getopt(sys.argv[1:], "d:nrv:")
         except getopt.GetoptError, e:
-                usage(_("Illegal option -- %s") % e.opt) 
+                usage(_("Illegal option -- %s") % e.opt)
 
         varlist = []
         recursive = False
@@ -268,19 +268,19 @@ def main_func():
                         recursive = True
                 if opt == "-n":
                         get_files = False
-                
-                
+
+
         if len(varlist) < 2:
                 usage(_("at least two -v arguments needed to merge"))
-        
+
         if not basedir:
                 basedir = os.getcwd()
 
         server_list = [
-                v.split(",", 1)[1]
-                for v in varlist
-                ]                
-        
+            v.split(",", 1)[1]
+            for v in varlist
+        ]
+
         if len(pargs) == 1:
                 recursive = False
                 overall_set = set()
@@ -291,6 +291,9 @@ def main_func():
 
         else:
                 fmri_arguments = pargs[1:]
+
+        if not pargs:
+                usage(_("you must specify a variant"))
 
         variant = "variant.%s" % pargs[0]
 
@@ -310,7 +313,7 @@ def main_func():
                                         q = str(d).rsplit(":", 1)[0]
                                         overall_set.add(q)
                 fmri_arguments = list(overall_set)
-        
+
         fmri_arguments.sort()
         print "Processing %d packages" % len(fmri_arguments)
 
@@ -340,20 +343,21 @@ def main_func():
                         error("No package of name %s in specified catalogs %s; ignoring." %\
                                       (fmri, server_list))
                         continue
-                        
+
                 merge_fmris(server_list, fmri_list, variant_list, variant, basedir, basename, get_files)
         cleanup_catalogs()
 
         return 0
 
-def merge_fmris(server_list, fmri_list, variant_list, variant, basedir, basename, get_files):
+def merge_fmris(server_list, fmri_list, variant_list, variant, basedir,
+    basename, get_files):
 
         manifest_list = [
                 get_manifest(s, f)
                 for s, f in zip(server_list, fmri_list)
                 ]
 
-        # remove variant tags and package variant metadata 
+        # remove variant tags and package variant metadata
         # from manifests since we're reassigning...
         # this allows merging pre-tagged packages
         for m in manifest_list:
@@ -365,13 +369,34 @@ def merge_fmris(server_list, fmri_list, variant_list, variant, basedir, basename
 
         action_lists = manifest.Manifest.comm(*tuple(manifest_list))
 
+        # set fmri actions require special merge logic.
+        set_fmris = []
+        for l in action_lists:
+                for i, a in enumerate(l):
+                        if not (a.name == "set" and
+                            a.attrs["name"] == "pkg.fmri"):
+                                continue
+
+                        set_fmris.append(a)
+                        del l[i]
+
+        # If set fmris are present, then only the most recent one
+        # and add it back to the last action list.
+        if set_fmris:
+                def order(a, b):
+                        f1 = pkg.fmri.PkgFmri(a.attrs["value"], "5.11")
+                        f2 = pkg.fmri.PkgFmri(b.attrs["value"], "5.11")
+                        return cmp(f1, f2)
+                set_fmris.sort(cmp=order)
+                action_lists[-1].insert(0, set_fmris[-1])
+
         for a_list, v in zip(action_lists[0:-1], variant_list):
                 for a in a_list:
                         a.attrs[variant] = v
 
         # combine actions into single list
         allactions = reduce(lambda a,b:a + b, action_lists)
-        
+
         # figure out which variants are actually there for this pkg
         actual_variant_list = [
                 v
@@ -387,15 +412,15 @@ def merge_fmris(server_list, fmri_list, variant_list, variant, basedir, basename
                       ]))))
 
         allactions.sort()
-                                                              
+
         m = manifest.Manifest()
         m.actions = allactions
-        
+
         # urlquote to avoid problems w/ fmris w/ '/' character in name
         basedir = os.path.join(basedir, urllib.quote(basename, ""))
         if not os.path.exists(basedir):
                 os.makedirs(basedir)
-                
+
         m_file = file(os.path.join(basedir, "manifest"), "w")
         m_file.write(m.tostr_unsorted())
         m_file.close()
@@ -408,7 +433,7 @@ def merge_fmris(server_list, fmri_list, variant_list, variant, basedir, basename
         f_file.write(fmri)
         f_file.close()
 
-                
+
         if get_files:
                 # generate list of hashes for each server; last is commom
                 already_seen = {}
@@ -430,7 +455,7 @@ def merge_fmris(server_list, fmri_list, variant_list, variant, basedir, basename
                         for action_list in action_lists
                         ]
                 # remove duplicate files (save time)
-                
+
                 for server, hash_set in zip(server_list + [server_list[0]], hash_sets):
                         if len(hash_set) > 0:
                                 fetch_files_byhash(server, hash_set, basedir)

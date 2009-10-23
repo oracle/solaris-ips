@@ -1,3 +1,22 @@
+Version 6:
+Incompatible with clients using versions 0-5.
+    CatalogInterface:
+        * get_matching_pattern_fmris() and get_matching_version_fmris()
+          now return a tuple of (fmris, unmatched).  Where 'fmris' is
+          a list of matching FMRIs, and 'unmatched' is a dict of
+          unmatched patterns or versions indexed by match criteria.
+
+        * package_count now returns the number of unique packages in the
+          catalog instead of the unique number of package versions.
+
+        * package_version_count, a new property, was added that contains
+          the number of unique package versions in the catalog.
+
+     ConfigInterface:
+        * get_repo_attrs was renamed to get_repo_properties
+
+        * get_repo_attr_value was renamed to get_repo_property_value
+
 Version 5:
 Compatible with clients using Versions 3-4.
     ConfigInterface.get_repo_attr_value() has changed as follows:

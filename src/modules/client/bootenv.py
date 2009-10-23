@@ -26,9 +26,11 @@
 import os
 import tempfile
 
+from pkg.client import global_settings
+logger = global_settings.logger
+
 import pkg.client.api_errors as api_errors
 import pkg.pkgsubprocess as subprocess
-from pkg.misc import msg, emsg
 
 # Since pkg(1) may be installed without libbe installed
 # check for libbe and import it if it exists.
@@ -129,7 +131,7 @@ class BootEnv(object):
                         if err == 0:
                                 self.snapshot_name = snapshot_name
                         else:
-                                emsg(_("pkg: unable to create an auto "
+                                logger.error(_("pkg: unable to create an auto "
                                     "snapshot. pkg recovery is disabled."))
                                 raise RuntimeError, "recoveryDisabled"
                         self.is_valid = True
@@ -262,14 +264,14 @@ class BootEnv(object):
                                     stdout = file("/dev/null"),
                                     stderr = subprocess.STDOUT)
                         except OSError, e:
-                                emsg(_("pkg: A system error %(e)s was caught "
-                                    "executing %(cmd)s") %
-                                    { "e": e, "cmd": " ".join(cmd) })
+                                logger.error(_("pkg: A system error %(e)s was "
+                                    "caught executing %(cmd)s") % { "e": e,
+                                    "cmd": " ".join(cmd) })
 
                         if ret != 0:
-                                emsg(_("pkg: '%(cmd)s' failed. \nwith a "
-                                    "return code of %(ret)d.") %
-                                    { "cmd": " ".join(cmd), "ret": ret })
+                                logger.error(_("pkg: '%(cmd)s' failed. \nwith "
+                                    "a return code of %(ret)d.") % {
+                                    "cmd": " ".join(cmd), "ret": ret })
                                 return
 
                 def activate_live_be(cmd):
@@ -279,7 +281,7 @@ class BootEnv(object):
                         exec_cmd(cmd)
 
                         if be.beActivate(self.be_name_clone) != 0:
-                                emsg(_("pkg: unable to activate %s") \
+                                logger.error(_("pkg: unable to activate %s") \
                                     % self.be_name_clone)
                                 return
 
@@ -289,13 +291,13 @@ class BootEnv(object):
                         self.img.history.log_operation_end()
 
                         if be.beUnmount(self.be_name_clone) != 0:
-                                emsg(_("pkg: unable to unmount %s") \
+                                logger.error(_("pkg: unable to unmount %s") \
                                     % self.clone_dir)
                                 return
 
                         os.rmdir(self.clone_dir)
 
-                        msg(_("""
+                        logger.info(_("""
 A clone of %s exists and has been updated and activated.
 On the next boot the Boot Environment %s will be mounted on '/'.
 Reboot when ready to switch to this updated BE.
@@ -309,7 +311,7 @@ Reboot when ready to switch to this updated BE.
                         cmd += [self.root]
                         exec_cmd(cmd)
 
-                        msg(_("%s has been updated successfully") % \
+                        logger.info(_("%s has been updated successfully") % \
                                 (self.be_name))
 
                         os.rmdir(self.clone_dir)
@@ -341,18 +343,20 @@ Reboot when ready to switch to this updated BE.
                 # Leave the clone around for debugging purposes if we're
                 # operating on the live BE.
                 if self.is_live_BE:
-                        emsg(_(" The running system has not been modified. "
-                            "Modifications were only made to a clone of the "
-                            "running system.  This clone is mounted at %s "
-                            "should you wish to inspect it.") % self.clone_dir)
+                        logger.error(_(" The running system has not been "
+                            "modified. Modifications were only made to a clone "
+                            "of the running system.  This clone is mounted at "
+                            "%s should you wish to inspect it.") % \
+                            self.clone_dir)
 
                 else:
                         # Rollback and destroy the snapshot.
                         try:
                                 if be.beRollback(self.be_name,
                                     self.snapshot_name) != 0:
-                                        emsg(_("pkg: unable to rollback BE %s "
-                                            "and restore image") % self.be_name)
+                                        logger.error(_("pkg: unable to "
+                                            "rollback BE %s and restore "
+                                            "image") % self.be_name)
 
                                 self.destroy_snapshot()
                                 os.rmdir(self.clone_dir)
@@ -360,8 +364,9 @@ Reboot when ready to switch to this updated BE.
                                 self.img.history.log_operation_error(error=e)
                                 raise e
 
-                        msg(_("%s failed to be updated. No changes have been "
-                            "made to %s.") % (self.be_name, self.be_name))
+                        logger.error(_("%s failed to be updated. No changes "
+                            "have been made to %s.") % (self.be_name,
+                            self.be_name))
 
         def destroy_snapshot(self):
 
@@ -372,8 +377,8 @@ Reboot when ready to switch to this updated BE.
                         BootEnv to manage multiple snapshots."""
 
                 if be.beDestroySnapshot(self.be_name, self.snapshot_name) != 0:
-                        emsg(_("pkg: unable to destroy snapshot %s") % \
-                            self.snapshot_name)
+                        logger.error(_("pkg: unable to destroy snapshot "
+                            "%s") % self.snapshot_name)
 
         def restore_install_uninstall(self):
 
@@ -401,37 +406,36 @@ Reboot when ready to switch to this updated BE.
                                     be.beCopy(self.be_name_clone, \
                                     self.be_name, self.snapshot_name)
                                 if ret != 0:
-                                        emsg(_("pkg: unable to create BE %s") \
-                                           % self.be_name_clone)
+                                        logger.error(_("pkg: unable to create "
+                                            "BE %s") % self.be_name_clone)
                                         return
 
                         if be.beMount(self.be_name_clone, self.clone_dir) != 0:
-                                emsg(_("pkg: unable to mount BE %(name)s "
-                                    "on %(clone_dir)s") %
-                                    { "name": self.be_name_clone,
-                                      "clone_dir": self.clone_dir })
+                                logger.error(_("pkg: unable to mount BE "
+                                    "%(name)s on %(clone_dir)s") % {
+                                    "name": self.be_name_clone,
+                                    "clone_dir": self.clone_dir })
                                 return
 
-                        emsg(_("The Boot Environment %(name)s failed to be "
-                            "updated. A snapshot was taken before the failed "
-                            "attempt and is mounted here %(clone_dir)s. Use "
-                            "'beadm unmount %(clone_name)s' and then 'beadm "
-                            "activate %(clone_name)s' if you wish to boot "
-                            "to this BE.") %
-                            { "name": self.be_name,
-                              "clone_dir": self.clone_dir,
-                              "clone_name": self.be_name_clone })
+                        logger.error(_("The Boot Environment %(name)s failed "
+                            "to be updated. A snapshot was taken before the "
+                            "failed attempt and is mounted here %(clone_dir)s. "
+                            "Use 'beadm unmount %(clone_name)s' and then "
+                            "'beadm activate %(clone_name)s' if you wish to "
+                            "boot to this BE.") % { "name": self.be_name,
+                            "clone_dir": self.clone_dir,
+                            "clone_name": self.be_name_clone })
                 else:
                         if be.beRollback(self.be_name, self.snapshot_name) != 0:
-                                emsg("pkg: unable to rollback BE %s" % \
-                                    self.be_name)
+                                logger.error("pkg: unable to rollback BE "
+                                    "%s" % self.be_name)
 
                         self.destroy_snapshot()
 
-                        emsg(_("The Boot Environment %s failed to be updated. "
-                          "A snapshot was taken before the failed attempt "
-                          "and has been restored so no changes have been "
-                          "made to %s.") % (self.be_name, self.be_name))
+                        logger.error(_("The Boot Environment %s failed to be "
+                            "updated. A snapshot was taken before the failed "
+                            "attempt and has been restored so no changes have "
+                            "been made to %s.") % (self.be_name, self.be_name))
 
         def activate_install_uninstall(self):
                 """Activate an install/uninstall attempt. Which just means

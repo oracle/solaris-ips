@@ -31,6 +31,8 @@ import urllib
 
 import pkg.client.transport.exception as tx
 
+from email.Utils import formatdate
+
 class TransportRepo(object):
         """The TransportRepo class handles transport requests.
         It represents a repo, and provides the same interfaces as
@@ -93,11 +95,13 @@ class HTTPRepo(TransportRepo):
                 self._url = repostats.url
                 self._repouri = repouri
                 self._engine = engine
+                self._verdata = None
 
         def _add_file_url(self, url, filepath=None, progtrack=None,
-            header=None):
+            header=None, compress=False):
                 self._engine.add_url(url, filepath=filepath,
-                    progtrack=progtrack, repourl=self._url, header=header)
+                    progtrack=progtrack, repourl=self._url, header=header,
+                    compressible=compress)
 
         def _fetch_url(self, url, header=None, compress=False):
                 return self._engine.get_url(url, header, repourl=self._url,
@@ -110,6 +114,12 @@ class HTTPRepo(TransportRepo):
         def _post_url(self, url, data, header=None):
                 return self._engine.send_data(url, data, header,
                     repourl=self._url)
+
+        def add_version_data(self, verdict):
+                """Cache the information about what versions a repository
+                supports."""
+
+                self._verdata = verdict
 
         def do_search(self, data, header=None):
                 """Perform a remote search against origin repos."""
@@ -151,6 +161,62 @@ class HTTPRepo(TransportRepo):
                                 header["If-Modified-Since"] = ts
 
                 return self._fetch_url(requesturl, header, compress=True)
+
+        def get_catalog1(self, filelist, destloc, header=None, ts=None):
+                """Get the files that make up the catalog components
+                that are listed in 'filelist'.  Download the files to
+                the directory specified in 'destloc'.  The caller
+                may optionally specify a dictionary with header
+                elements in 'header'.  If a conditional get is
+                to be performed, 'ts' should contain a floating point
+                value of seconds since the epoch."""
+
+                methodstr = "catalog/1/"
+                urllist = []
+
+                if ts:
+                        # Convert date to RFC 1123 compliant string
+                        tsstr = formatdate(timeval=ts, localtime=False,
+                            usegmt=True)
+                        if not header:
+                                header = {"If-Modified-Since": tsstr}
+                        else:
+                                header["If-Modified-Since"] = tsstr
+
+                # create URL for requests
+                baseurl = urlparse.urljoin(self._repouri.uri, methodstr)
+
+                for f in filelist:
+                        url = urlparse.urljoin(baseurl, f)
+                        urllist.append(url)
+                        fn = os.path.join(destloc, f)
+                        self._add_file_url(url, filepath=fn, header=header,
+                            compress=True)
+
+                while self._engine.pending:
+                        self._engine.run()
+
+                errors = self._engine.check_status(urllist)
+
+                # Transient errors are part of standard control flow.
+                # The repo's caller will look at these and decide whether
+                # to throw them or not.  Permanent failures are raised
+                # by the transport engine as soon as they occur.
+                #
+                # This adds an attribute that describes the request to the
+                # exception, if we were able to figure it out.
+
+                for e in errors:
+                        # When check_status is supplied with a list,
+                        # all exceptions returned will have a url.
+                        # If we didn't do this, we'd need a getattr check.
+                        eurl = e.url
+                        utup = urlparse.urlsplit(eurl)
+                        req = utup[2]
+                        req = os.path.basename(req)
+                        e.request = req
+
+                return errors
 
         def get_datastream(self, fhash, header=None):
                 """Get a datastream from a repo.  The name of the
@@ -230,10 +296,19 @@ class HTTPRepo(TransportRepo):
                 Returns a fileobject."""
 
                 requesturl = urlparse.urljoin(self._repouri.uri, "versions/0/")
+                return self._fetch_url(requesturl, header)
 
-                resp = self._fetch_url(requesturl, header)
+        def has_version_data(self):
+                """Returns true if this repo knows its version information."""
 
-                return resp
+                return self._verdata is not None
+
+        def supports_version(self, op, ver):
+                """Returns true if operation named in string 'op'
+                supports integer version in 'ver' argument."""
+
+                return self.has_version_data() and \
+                    (op in self._verdata and ver in self._verdata[op])
 
         def touch_manifest(self, mfst, header=None):
                 """Invoke HTTP HEAD to send manifest intent data."""
@@ -264,11 +339,11 @@ class HTTPSRepo(HTTPRepo):
 
         # override the download functions to use ssl cert/key
         def _add_file_url(self, url, filepath=None, progtrack=None,
-            header=None):
+            header=None, compress=False):
                 self._engine.add_url(url, filepath=filepath,
                     progtrack=progtrack, sslcert=self._repouri.ssl_cert,
                     sslkey=self._repouri.ssl_key, repourl=self._url,
-                    header=header)
+                    header=header, compressible=compress)
 
         def _fetch_url(self, url, header=None, compress=False):
                 return self._engine.get_url(url, header=header,

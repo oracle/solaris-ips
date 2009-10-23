@@ -2090,14 +2090,17 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
             close"""
 
         def setUp(self):
-                """ Start two depots.
+                """ Start four depots.
                     depot 1 gets foo and moo, depot 2 gets foo and bar,
-                    depot 3 is empty
+                    depot 3 is empty, depot 4 gets upgrade_np@1.1
                     depot1 is mapped to publisher test1 (preferred)
                     depot2 is mapped to publisher test2
-                    depot3 is not mapped to a publisher"""
+                    depot3 is not mapped during setUp
+                    depot4 is not mapped during setUp"""
 
-                testutils.ManyDepotTestCase.setUp(self, 3)
+                # Two depots are intentionally started for test2.
+                testutils.ManyDepotTestCase.setUp(self, ["test1", "test2",
+                    "test3", "test2"])
 
                 durl1 = self.dcs[1].get_depot_url()
                 self.pkgsend_bulk(durl1, self.foo10 + self.moo10 + \
@@ -2109,6 +2112,9 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
                 durl2 = self.dcs[2].get_depot_url()
                 self.pkgsend_bulk(durl2, self.foo10 + self.bar10 + \
                     self.upgrade_p11 + self.upgrade_np10 + self.corge10)
+
+                durl4 = self.dcs[4].get_depot_url()
+                self.pkgsend_bulk(durl4, self.upgrade_np11)
 
                 # Create image and hence primary publisher
                 self.image_create(durl1, prefix="test1")
@@ -2225,10 +2231,10 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
                 # Set test1 to point to an unreachable URI.
                 self.pkg("set-publisher --no-refresh -O http://test.invalid7 test1")
 
-                # Set test2 to point to test1's repository so that the
-                # image-update can happen (see bug 8613).
-                durl1 = self.dcs[1].get_depot_url()
-                self.pkg("set-publisher -O %s test2" % durl1)
+                # Set test2 so that upgrade-np has a new version available
+                # even though test1's repository is not accessible.
+                durl4 = self.dcs[4].get_depot_url()
+                self.pkg("set-publisher -O %s test2" % durl4)
 
                 # Verify image-update works even though test1 is unreachable
                 # since upgrade-np@1.1 is available from test2.
@@ -2236,6 +2242,7 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
 
                 # Now reset everything for the next test.
                 self.pkg("uninstall upgrade-np")
+                durl1 = self.dcs[1].get_depot_url()
                 self.pkg("set-publisher --no-refresh -O %s test1" % durl1)
                 self.pkg("set-publisher -O %s test2" % durl2)
 
@@ -2272,6 +2279,7 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
                 self.pkg("set-publisher -O %s test1" % \
                     self.dcs[3].get_depot_url())
                 self.pkg("install quux@1.0")
+                self.pkg("info quux@1.0")
                 self.pkg("unset-publisher test1")
 
                 # Add a new publisher, using the installed package publisher's

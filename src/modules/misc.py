@@ -691,6 +691,8 @@ def build_cert(path, uri=None, pub=None):
                             publisher=pub)
                 if e.errno == errno.EACCES:
                         raise api_errors.PermissionsException(e.filename)
+                if e.errno == errno.EROFS:
+                        raise api_errors.ReadOnlyFileSystemException(e.filename)
                 raise
 
         try:

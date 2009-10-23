@@ -540,6 +540,40 @@ class TestPkgApiInstall(testutils.SingleDepotTestCase):
                 testutils.eval_assert_raises(api_errors.PlanCreationException,
                     check_illegal, api_obj.plan_install, ["/foo"], [])
 
+        def test_catalog_v0(self):
+                """Test install from a publisher's repository that only supports
+                catalog v0, and then the transition from v0 to v1."""
+
+                self.dc.stop()
+                self.dc.set_disable_ops(["catalog/1"])
+                self.dc.start()
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.foo10)
+                self.image_create(durl)
+
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                self.__do_install(api_obj, ["foo"])
+
+                api_obj.reset()
+                self.__do_uninstall(api_obj, ["foo"])
+ 
+                api_obj.reset()
+                self.__do_install(api_obj, ["pkg://test/foo"])
+
+                self.pkgsend_bulk(durl, self.bar10)
+                self.dc.stop()
+                self.dc.unset_disable_ops()
+                self.dc.start()
+
+                api_obj.reset()
+                api_obj.refresh(immediate=True)
+
+                api_obj.reset()
+                self.__do_install(api_obj, ["pkg://test/bar@1.0"])
+
 
 if __name__ == "__main__":
         unittest.main()

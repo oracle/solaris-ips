@@ -32,6 +32,7 @@ try:
         os.SEEK_SET
 except AttributeError:
         os.SEEK_SET, os.SEEK_CUR, os.SEEK_END = range(3)
+import random
 import re
 import time
 import tempfile
@@ -208,7 +209,7 @@ class UpdateLog(object):
                 # Then append the new line.
                 try:
                         for entry in lfile:
-                               tfile.write(entry)
+                                tfile.write(entry)
                         tfile.write(logstr)
                 except Exception:
                         portable.remove(tmpfile)
@@ -266,10 +267,12 @@ class UpdateLog(object):
                         else:
                                 catalog.ServerCatalog.recv(c, path, pub)
                 except EnvironmentError, e:
-                        if isinstance(e, EnvironmentError):
-                                if e.errno == errno.EACCES:
-                                        raise api_errors.PermissionsException(
-                                            e.filename)
+                        if e.errno == errno.EACCES:
+                                raise api_errors.PermissionsException(
+                                    e.filename)
+                        if e.errno == errno.EROFS:
+                                raise api_errors.ReadOnlyFileSystemException(
+                                    e.filename)
                         raise
 
         @staticmethod
@@ -359,7 +362,7 @@ class UpdateLog(object):
                         if e.errno == errno.ENOENT:
                                 # Creating an empty file
                                 file(catpath, "wb").close()
-                                pfile = file(self.catalog_file, "rb")
+                                pfile = file(catpath, "rb")
                         else:
                                 tfile.close()
                                 portable.remove(tmpfile)
