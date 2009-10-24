@@ -1,0 +1,77 @@
+
+Getting directory permissions correct and consistent 
+between packages is a common problem in distributions;
+it's often made worse by sets of packages that attempt
+to be installable across multiple versions of the OS.
+
+This is a resolvable problem in the small, but getting
+all packages consistent everywhere is clearly untenable,
+esp. if directory permissions change over time.
+
+Several ways of dealing w/ this problem suggest themselves:
+
+0) continue as we have been
+
+   Pro - easy to do 
+   Con - annoying verification errors, inconsistent
+         results depending on order of package installation.
+
+1) Fail package installation if new package has different
+   permissions than existing (already installed) directories.
+
+   Pro - easy, solves consistency problem
+   Con - pushes problem onto user of package, since 
+         problem is caught at install time.  Makes changes
+	 very hard.
+
+2) Define a directory permission in just one package, 
+   and make all packages that install into that directory
+   depend on that package.
+
+   Pro - easy to understand.
+   Con - difficult to manage, leads to a lot of packages
+         if granularity of directory installations is fine.
+         ISV implementation more difficult.
+
+Another approach that we're considering is the following:
+
+*) Use a directory of template files (identified by pkg name)
+   that define default directory permissions, uid & gid.
+
+   In this file, both explicit specifications and matching
+   rules are permitted.
+
+   For example:
+
+   /etc/dirperms.d/SUNWcs might contain:
+
+   /*	user=root group=bin mode=755
+   /usr user=root group=sys mode=755
+   /var user=root group=sys mode=755
+   /var/pkg/* user=root group=root mode=755
+
+   Explicit matches are always favored, and the
+   longest possible match is preferred as well.
+
+   We anticipate that few packages will actually deliver such
+   files; the default one in SUNWcs should do for most.  Conflicting
+   permissions in templates cause error messages.
+   
+*) The default directory permissions would be applied to
+
+   * directories w/o explicit permissions
+   * directories where package manifests explicitly 
+     conflict in directory permissions
+
+We anticipate that this mechanism should greatly reduce the 
+difficulty of getting directory permissions correct, as most
+packages can simply not specify them.
+
+Possible problem is that different packages could deliver 
+conflicting template specifications.  In this case, the
+effect is undefined, and pkg verify will complain about
+this situation.
+
+
+
+

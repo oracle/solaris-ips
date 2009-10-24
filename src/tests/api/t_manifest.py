@@ -56,7 +56,8 @@ file fff555fff mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
 set com.sun,test=false
 set com.sun,data=true
 depend type=require fmri=pkg:/library/libc
-file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
+file fff555ff9 mode=0555 owner=sch group=staff \
+ path=/usr/bin/i386/sort isa=i386
 file eeeaaaeee mode=0555 owner=sch group=staff path=/usr/bin/amd64/sort isa=amd64
 
 file ff555fff mode=0555 owner=root group=bin path=/kernel/drv/foo isa=i386
@@ -77,7 +78,8 @@ set com.sun,test=false
 depend type=require fmri=pkg:/library/libc
 file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
 dir owner=root path=usr/bin group=bin mode=0755
-link path=usr/lib/amd64/libjpeg.so target=libjpeg.so.62.0.0
+link path=usr/lib/amd64/libjpeg.so \
+target=libjpeg.so.62.0.0
 hardlink path=usr/bin/amd64/rksh93 target=ksh93 variant.opensolaris.zone=global
 group groupname=testgroup gid=10
 """
@@ -86,7 +88,8 @@ group groupname=testgroup gid=10
 set com.sun,test=false
 set com.sun,data=true
 depend type=require fmri=pkg:/library/libc
-file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort isa=i386
+file fff555ff9 mode=0555 owner=sch group=staff path=/usr/bin/i386/sort \
+isa=i386
 """
 
                 self.m5_contents = """\

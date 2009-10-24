@@ -27,17 +27,23 @@ import fnmatch
 import getopt
 import gettext
 import os
-import pkg.depotcontroller as depotcontroller
+import pkg.depotcontroller     as depotcontroller
 import pkg.fmri
+import pkg.manifest            as manifest
 import pkg.publish.transaction as trans
+import pkg.server.catalog      as catalog
+import pkg.variant             as variant
+import pkg.version             as version
+import platform
 import re
 import shlex
 import sys
+import tempfile
 import urllib
 import urlparse
 
 from datetime import datetime
-from pkg import actions, elf
+from pkg      import actions, elf
 from pkg.bundle.SolarisPackageDirBundle import SolarisPackageDirBundle
 from pkg.misc import versioned_urlopen
 from tempfile import mkstemp
@@ -797,6 +803,123 @@ def gen_file_depend_actions(action, fname):
                     (fn, path, " ".join("importer.path=%s" % p for p in pathlist))))
         return return_actions
 
+manifest_cache={}
+null_manifest = manifest.Manifest()
+
+def get_manifest(server_url, fmri):
+        if not fmri: # no matching fmri
+                return null_manifest
+
+        return manifest_cache.setdefault((server_url, fmri), 
+            fetch_manifest(server_url, fmri))
+
+def fetch_manifest(server_url, fmri):
+        """Fetch the manifest for package-fmri 'fmri' from the server
+        in 'server_url'... return as Manifest object.... needs
+        exact fmri"""
+        # Request manifest from server
+
+        try:
+                m, v = versioned_urlopen(server_url, "manifest", [0],
+                    fmri.get_url_path())
+        except:
+                error(_("Unable to download manifest %s from %s") %
+                    (fmri.get_url_path(), server_url))
+                sys.exit(1)
+
+        # Read from server, write to file
+        try:
+                mfst_str = m.read()
+        except:
+                error(_("Error occurred while reading from: %s") % server_url)
+                sys.exit(1)
+
+        m = manifest.Manifest()
+        m.set_content(mfst_str)
+
+        return m
+
+catalog_cache = {}
+
+def get_catalog(server_url):
+        return catalog_cache.get(server_url, fetch_catalog(server_url))[0] 
+
+def cleanup_catalogs():
+        for c, d in catalog_cache.values():
+                shutil.rmtree(d)
+        catalog_cache.clear()
+
+def fetch_catalog(server_url):
+        """Fetch the catalog from the server_url."""
+
+        # open connection for catalog
+        try:
+                c, v = versioned_urlopen(server_url, "catalog", [0])
+        except:
+                error(_("Unable to download catalog from: %s") % server_url)
+                sys.exit(1)
+
+        # make a tempdir for catalog
+        dl_dir = tempfile.mkdtemp()
+
+        # call catalog.recv to pull down catalog
+        try:
+                catalog.ServerCatalog.recv(c, dl_dir)
+        except: 
+                error(_("Error while reading from: %s") % server_url)
+                sys.exit(1)
+
+        # close connection to server
+        c.close()
+
+        # instantiate catalog object
+        cat = catalog.ServerCatalog(dl_dir, read_only=True)
+        
+        # return (catalog, tmpdir path)
+        return cat, dl_dir
+
+catalog_dict = {}
+def load_catalog(server_url):
+        c = get_catalog(server_url)
+        d = {}
+        for f in c.fmris():
+                d.setdefault(f.pkg_name, []).append(f)
+
+        for k in d:
+                d[k].sort(reverse=True)
+
+        catalog_dict[server_url] = d        
+
+def expand_fmri(server_url, fmri_string, constraint=version.CONSTRAINT_AUTO):
+        """ from specified server, find matching fmri using CONSTRAINT_AUTO
+        cache for performance.  Returns None if no matching fmri is found """
+        if server_url not in catalog_dict:
+                load_catalog(server_url)
+
+        fmri = pkg.fmri.PkgFmri(fmri_string, "5.11")        
+
+        for f in catalog_dict[server_url].get(fmri.pkg_name, []):
+                if not fmri.version or f.version.is_successor(fmri.version, constraint):
+                        return f
+        return None
+
+
+def get_dependencies(server_url, fmri_list):
+        s = set()
+        for f in fmri_list:
+                fmri = expand_fmri(server_url, f)
+                _get_dependencies(s, server_url, fmri)
+        return s
+
+def _get_dependencies(s, server_url, fmri):
+        """ recursive incorp expansion"""
+        s.add(fmri)
+        for a in get_manifest(server_url, fmri).gen_actions_by_type("depend"):
+                if a.attrs["type"] == "incorporate":
+                        new_fmri = expand_fmri(server_url, a.attrs["fmri"]) 
+                        if new_fmri and new_fmri not in s: # ignore missing, already planned
+                                _get_dependencies(s, server_url, new_fmri)
+
 def zap_strings(instr, strings):
         """takes an input string and a list of strings to be removed, ignoring
         case"""
@@ -813,34 +936,14 @@ def zap_strings(instr, strings):
 def get_branch(name):
         return branch_dict.get(name, def_branch)
 
-def get_fmri_from_uri(uri):
-        # uris are of form http://depohost/...@SUNWfoo@1.2
-        return pkg.fmri.PkgFmri(uri.split("@",1)[1], "5.11")
-
-def get_server_from_uri(uri):
-        # uris are of form http://depohost/...@SUNWfoo@1.2
-        return uri.split("@",1)[0]
-
-def get_manifest_from_uri(uri):
-        assert 0,  "Not yet implemented"
-        return get_manifest(get_server_from_uri(uri), get_fmri)
-
-def get_expanded_uris(uri_list):
-        assert 0,  "Not yet implemented"
-        new_list = []
-        for uri in uri_list:
-                new_list.extend(expand_fmri(get_server_from_uri(uri), get_fmri_from_uri(uri)))
-        for server in server_dict.keys():
-                server_dict[server] = get_dependent_fmris(server, fmri_list)
-
-
 def set_macro(key, value):
         macro_definitions.update([("$(%s)" % key, value)])
 
 def clear_macro(key):
         del macro_definitions["$(%s)" % key]
 
-
+def get_arch(): # use value of arch macro or platform 
+        return macro_definitions.get("$ARCH", platform.processor())
 
 def read_full_line(lexer, continuation='\\'):
         """Read a complete line, allowing for the possibility of it being
@@ -1181,18 +1284,25 @@ def main_func():
                 sys.exit(1)
         print "packages being published are self consistent"
         if reference_uris:
-                print "downloading and checking external dependencies"
-                reference_uris = get_expanded_uris(reference_uris)
+                print "downloading and checking external references"
+                excludes = [variant.Variants({"variant.arch": get_arch()}).allow_action]
                 for uri in reference_uris:
-                        pfmri = get_fmri_from_uri(uri)
-                        if pfmri.get_name() in pkgdict:
-                                continue # ignore pkgs already seen
-                        fmridict[pfmri.get_name()] = str(pfmri);
-                        for action in get_manifest_from_uri(uri):
-                                action.attrs["importer.ipspkg"] = pfmri.get_name()
-                                if action.name in ["file", "link", "hardlink"]:
-                                        basename_dict.setdefault(os.path.basename(action.attrs["path"]), []).append(action)
-                                        pkgpath_dict.setdefault(action.attrs["path"],[]).append(action.attr["importer.ipspkg"])
+                        server, fmri_string = uri.split("@", 1)
+                        for pfmri in get_dependencies(server, [fmri_string]):
+                                if pfmri.get_name() in pkgdict:
+                                        continue # ignore pkgs already seen
+                                pfmri_str = "%s@%s" % (pfmri.get_name(), pfmri.get_version())
+                                fmridict[pfmri.get_name()] = pfmri_str
+                                for action in get_manifest(server, pfmri).gen_actions(excludes):
+                                        if "path" not in action.attrs:
+                                                continue
+                                        action.attrs["importer.ipspkg"] = pfmri_str
+                                        path_dict.setdefault(action.attrs["path"],[]).append(action)
+                                        if action.name in ["file", "link", "hardlink"]:
+                                                basename_dict.setdefault(os.path.basename(
+                                                    action.attrs["path"]), []).append(action)
+                                                pkgpath_dict.setdefault(action.attrs["path"],
+                                                    []).append(action.attrs["importer.ipspkg"])
                 errors = check_pathdict_actions(path_dict)
                 if errors:
                         for e in errors:

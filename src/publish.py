@@ -273,10 +273,18 @@ def trans_include(repo_uri, fargs, transaction=None):
                         return 1
 
         for filename, f in filelist:
+                accumulate = ""
                 for lineno, line in enumerate(f):
                         line = line.strip()
+                        if line.endswith("\\"):
+                                accumulate += line[0:-1]
+                                continue
+                        elif accumulate:
+                                line = accumulate + line
+                                accumulate = ""
                         if not line or line[0] == '#':
                                 continue
+ 
                         args = line.split()
                         if args[0] in ("file", "license"):
                                 if args[1] == "NOHASH":

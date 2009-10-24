@@ -302,11 +302,19 @@ class Manifest(object):
                 # can't be in a manifest twice.  (The problem of having the same
                 # action more than once in packages that can be installed
                 # together has to be solved somewhere else, though.)
+                accumulate = ""
                 for l in content.splitlines():
                         l = l.lstrip()
-                        if not l or l[0] == "#":
+                        if l.endswith("\\"):          # allow continuation chars
+                                accumulate += l[0:-1] # elide backslash
                                 continue
+                        elif accumulate:
+                                l = accumulate + l
+                                accumulate = ""
 
+                        if not l or l[0] == "#":  # ignore blank lines & comments
+                                continue
+ 
                         try:
                                 action = actions.fromstr(l)
                         except actions.ActionError, e:

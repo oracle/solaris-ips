@@ -1,0 +1,106 @@
+			Manifest signing
+			----------------
+
+Manifests in IPS contain all the packaging metadata - file
+permissions, ownership, content hashes, etc, and are stored and
+transmitted as a simple text file with one line per action.  During
+download or when a system is checked for compliance, the manifest
+contents are compared to the files to determine whether or not a
+package is correctly received/installed.  Given their importance,
+verifying that all manifests are correct and reflect the original
+publisher's intent is an important part of system validation.
+Cryptographic signatures protecting the integrity of all actions form
+a Merkle hash tree that includes the delivered binaries such that
+complete verification of the installed software is possible.  There
+are other uses for manifest signing beyond validation; signatures can
+also be used to indicate approval by other organizations or parties.
+For example, the internal QA organization could sign manifests of
+Sun-delivered packages once they had be determined to be qualified for
+production use; policy settings could mandate such approvals prior to
+installation.
+
+As a result, it is a useful characteristic for signatures to be
+independent of other signatures in a manifest; it should be possible
+to add (or remove) signatures (but not other actions ) in a manifest
+without invalidating the other signatures that are present.  This
+features also facilitates production handoffs, with signatures used
+along the path to indicate completion along the way; subsequent steps
+can optionally remove previous signatures at any time w/o ill-effect.
+
+The need to treat signatures differently during hash computation
+suggests that the signature itself should be easily distinguished from
+other sorts of package metadata; this leads us to a new signature
+action, of the form:
+
+signature type=x.509 hashtype=sha-256 sigtype=rsa-pkcs public_key=<hash> [public_key=<hash>] ... value=<hash> ...
+
+where the public_key attribute(s) represent the packaging hash of the
+pem file(s) containing the x.509 certificate(s) downloadable from the
+originating repository; the value is the signed (SHA-256 in this case)
+hash of the manifest's message test, prepared as discussed below.  The
+certificate(s) so presented need to form a certificate path that leads
+to the trust anchor(s) that was established as part of the original
+repository configuration.  
+
+For testing and process verification purposes, a signature of type
+"identity" is also supported; this presents the unsigned hash as
+the value directly:
+
+signature type=identity hashtype=sha256 value=<hash>
+
+Additional signature types (pgp, for example) may be added in the future.
+
+Additional metadata can be added to a signature if desired, as with any
+other action.
+
+Policy constraints regarding required signatures on pkgs will specify
+a public key that must appear in the certificate path of a valid signature
+on a manifest to enable installation; such policy constraints may be
+applied to all repos or just one.
+
+Computing the manifest's message text:
+--------------------------------------
+
+Manifests have an interesting property: the lines in a manifest may be
+reordered without affecting the meaning of the manifest.  As a result,
+manifest order is not preserved and subject to change during package
+publication processing.  It is thus necessary for our manifest signing
+to be independent of presented line order, or the action ordering
+algorithm used for installation, as that may change over time.
+
+Straightforward C-locale alphabetical sorting of attributes within
+actions and across actions can be used to enforce a consistent
+ordering for signature purposes and is not subject to change
+for a given manifest.
+
+In order to allow other signatures to be added or removed from a
+manifest, computation of the manifest message test does not include
+other signatures; in order to protect metadata on the signature
+itself, the signature being produced or verified is included in the
+message text at the end, aside of course from the actual signature
+value itself.
+
+Verification of merged signatures
+----------------------------------
+
+We produce "fat" packages (containing variants such as different
+architectures, debug vs non-debug kernel, etc) by producing manifests
+for each variant, and then merging them.  Actions that are the same
+between variants being merge are left unmodified; those that are
+different receive a variant tag (see facets.txt). If it is considered
+useful to have signatures persist and be useful across such merges,
+some additional steps are required to verify such signatures after
+merging.
+
+Generally, signatures will be unique to their variant, thus they will
+be tagged with variant tags after merging.  To verify signatures
+post-merge, the evaluation process is a little different: any variant
+tags present on the signature are assumed to have added afterwards.
+Thus, to verify the signature those variants are applied to the entire
+manifest, and then the message text is generated, with the key step of
+removing all those variant tags from each action, if present.
+
+
+
+
+
