@@ -1487,7 +1487,7 @@ class Image(object):
                         e = api_errors.CatalogRefreshException(failed, total,
                             len(succeeded))
                         self.history.log_operation_end(error=e)
-                        raise
+                        raise e
                 self.history.log_operation_end()
 
         def _get_publisher_meta_dir(self):
