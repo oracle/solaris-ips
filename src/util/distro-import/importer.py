@@ -1067,6 +1067,7 @@ def SolarisParse(mf):
                                 except Exception, e:
                                         print "Error(import): %s: in file %s, line %d" % (
                                                 e, mf, lexer.lineno)
+                                        raise
 
                 elif token == "from":
                         # slurp up all import lines
