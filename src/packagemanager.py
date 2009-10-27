@@ -3441,9 +3441,7 @@ class PackageManager:
                 instbuffer = self.w_installedfiles_textview.get_buffer()
                 instbuffer.set_text("")
                 itr = instbuffer.get_start_iter()
-                instbuffer.insert_with_tags_by_name(itr, _("Root: "), "bold")
-                end_itr = instbuffer.get_end_iter()
-                instbuffer.insert(end_itr, "%s" % text)
+                instbuffer.insert(itr, text)
 
         def __set_dependencies_text(self, info, dep_info):
                 names = []
@@ -3558,15 +3556,23 @@ class PackageManager:
                 if not remote_info:
                         remote_info = local_info
 
-                inst_str = "%s\n" % self.api_o.root
+                inst_str = ""
                 if local_info.dirs:
-                        inst_str += ''.join(["\t%s\n" % x for x in local_info.dirs])
+                        for x in local_info.dirs:
+                                inst_str += ''.join("%s%s\n" % (
+                                    self.api_o.root, x))
                 if local_info.files:
-                        inst_str += ''.join(["\t%s\n" % x for x in local_info.files])
+                        for x in local_info.files:
+                                inst_str += ''.join("%s%s\n" % (
+                                    self.api_o.root, x))
                 if local_info.hardlinks:
-                        inst_str += ''.join(["\t%s\n" % x for x in local_info.hardlinks])
+                        for x in local_info.hardlinks:
+                                inst_str += ''.join("%s%s\n" % (
+                                    self.api_o.root, x))
                 if local_info.links:
-                        inst_str += ''.join(["\t%s\n" % x for x in local_info.links])
+                        for x in local_info.links:
+                                inst_str += ''.join("%s%s\n" % (
+                                    self.api_o.root, x))
                 self.__set_installedfiles_text(inst_str)
                 self.__set_dependencies_text(local_info, dep_info)
                 self.info_cache[pkg_stem] = (labs, text, inst_str, local_info, dep_info)
