@@ -3838,8 +3838,16 @@ class PackageManager:
 
         def __enable_if_selected_for_removal(self):
                 sensitive = False
-                visible_publisher = self.__get_selected_publisher()
-                selected = self.to_remove.get(visible_publisher)
+                selected = 0
+                if self.is_all_publishers:
+                        for repo in self.repositories_list:
+                                pub = repo[enumerations.REPOSITORY_NAME]
+                                selected = self.to_remove.get(pub)
+                                if selected > 0:
+                                        break
+                else:
+                        visible_publisher = self.__get_selected_publisher()
+                        selected = self.to_remove.get(visible_publisher)
                 if selected > 0:
                         sensitive = True
                 self.w_remove_button.set_sensitive(sensitive)
@@ -3848,8 +3856,15 @@ class PackageManager:
 
         def __enable_if_selected_for_install_update(self):
                 sensitive = False
-                visible_publisher = self.__get_selected_publisher()
-                selected = self.to_install_update.get(visible_publisher)
+                if self.is_all_publishers:
+                        for repo in self.repositories_list:
+                                pub = repo[enumerations.REPOSITORY_NAME]
+                                selected = self.to_install_update.get(pub)
+                                if selected > 0:
+                                        break
+                else:
+                        visible_publisher = self.__get_selected_publisher()
+                        selected = self.to_install_update.get(visible_publisher)
                 if selected > 0:
                         sensitive = True
                 self.w_installupdate_button.set_sensitive(sensitive)
