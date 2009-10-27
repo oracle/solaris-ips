@@ -209,7 +209,10 @@ def set_package_details(pkg_name, local_info, remote_info, textview,
                     {"version": remote_info.version,
                     "build": remote_info.build_release,
                     "branch": remote_info.branch}
-        text["size"] = misc.bytes_to_str(local_info.size)
+        if local_info.size != 0:
+                text["size"] = misc.bytes_to_str(local_info.size)
+        else:
+                text["size"] = "0"
         categories = _("None")
         if local_info.category_info_list:
                 verbose = len(local_info.category_info_list) > 1
@@ -264,8 +267,9 @@ def set_package_details_text(labs, text, textview, installed_icon,
                 __add_line_to_generalinfo(infobuffer, i,
                     labs["available"], text["available"])
         i += 1
-        __add_line_to_generalinfo(infobuffer, i, labs["size"], text["size"])
-        i += 1
+        if text["size"] != "0":
+                __add_line_to_generalinfo(infobuffer, i, labs["size"], text["size"])
+                i += 1
         __add_line_to_generalinfo(infobuffer, i, labs["cat"], text["cat"])
         i += 1
         __add_line_to_generalinfo(infobuffer, i, labs["repository"],
