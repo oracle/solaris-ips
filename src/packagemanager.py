@@ -225,7 +225,6 @@ class PackageManager:
 
                 if not self.gconf_not_show_repos:
                         self.gconf_not_show_repos = ""
-                self.set_show_filter = 0
                 self.set_section = 0
                 self.in_search_mode = False
 
@@ -1356,7 +1355,7 @@ class PackageManager:
                 self.w_filter_combobox.set_row_separator_func(
                     self.combobox_filter_id_separator)
                 self.w_filter_combobox.set_model(self.filter_list)
-                self.w_filter_combobox.set_active(self.set_show_filter)
+                self.w_filter_combobox.set_active(self.initial_show_filter)
 
         def __select_column_clicked(self, data):
                 self.set_busy_cursor()
@@ -2854,7 +2853,6 @@ class PackageManager:
                         self.__unset_search(False)
 
                 pub = [selected_publisher, ]
-                self.set_show_filter = self.initial_show_filter
                 self.set_section = self.initial_section
                 self.__set_searchentry_to_prompt()
                 self.__disconnect_models()
@@ -4468,8 +4466,9 @@ class PackageManager:
                 self.update_statusbar()
                 self.in_setup = False
                 self.cancelled = False
+                active_filter = self.w_filter_combobox.get_active()
                 if self.set_section != 0 or \
-                    self.set_show_filter != enumerations.FILTER_ALL:
+                    active_filter != enumerations.FILTER_ALL:
                         self.__application_refilter()
                 else:
                         if not self.__doing_search():
