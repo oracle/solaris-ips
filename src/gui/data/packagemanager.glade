@@ -3047,7 +3047,7 @@ Update All creates a new boot environment (BE) as a means of archiving the curre
                                 <child>
                                   <widget class="GtkLabel" id="label19">
                                     <property name="visible">True</property>
-                                    <property name="label" translatable="yes">The folllowing will be added to your system</property>
+                                    <property name="label" translatable="yes">The following will be added to your system</property>
                                     <property name="use_markup">True</property>
                                   </widget>
                                 </child>

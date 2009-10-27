@@ -73,6 +73,7 @@ class Webinstall:
                 self.icon_theme.append_search_path(icon_location)
                 self.param = None
                 self.preferred = None
+                self.any_pub_disabled = False
                 
                 # Webinstall Dialog
                 self.gladefile = os.path.join(self.application_dir,
@@ -127,10 +128,10 @@ class Webinstall:
                         return                                        
                 if num_tasks == 1:
                         infobuffer.insert_with_tags_by_name(textiter,
-                            _("\n Add New Repository\n"), "bold")
+                            _("\n Add New Publisher\n"), "bold")
                 else:
                         infobuffer.insert_with_tags_by_name(textiter,
-                            _("\n Add New Repositories\n"), "bold")
+                            _("\n Add New Publishers\n"), "bold")
                 self.__output_pub_tasks(infobuffer, textiter, self.pub_new_tasks)
 
         def __nothing_todo(self, infobuffer, textiter):
@@ -139,9 +140,11 @@ class Webinstall:
                 self.w_webinstall_info_label.hide()
                 self.w_webinstall_close.show()
                 self.w_webinstall_close.grab_focus()
+                if self.any_pub_disabled:
+                        return
 
                 infobuffer.insert(textiter,
-                    _("\n All specified repositories and packages are already on the "
+                    _("\n All specified publishers and packages are already on the "
                     "system.\n"))
 
         @staticmethod
@@ -230,16 +233,21 @@ class Webinstall:
                 self.pub_new_tasks = []
                 self.pkg_install_tasks = []
                 for entry in self.pub_pkg_list:
+                        pub_disabled = False
                         pub_info = entry[0]
                         packages = entry[1]
                         if not pub_info:
-                                # TBD: For nowe we are skipping p5i files which contains
+                                # TBD: For now we are skipping p5i files which contains
                                 # only pkg names and not publisher information
                                 continue
 
                         repo = pub_info.repositories
 
-                        if not self.__is_publisher_registered(pub_info.prefix):
+                        pub_registered = self.__is_publisher_registered(pub_info.prefix)
+                        if pub_registered:
+                                pub_disabled = \
+                                        self.__is_publisher_disabled(pub_info.prefix)
+                        if not pub_registered and not pub_disabled:
                                 if len(repo) > 0 and repo[0].origins[0] != None and \
                                     repo[0].origins[0].scheme == "https":
                                         #TBD: check for registration uri as well as scheme
@@ -247,10 +255,32 @@ class Webinstall:
                                         pub_new_reg_ssl_tasks.append(pub_info)
                                 else:
                                         self.pub_new_tasks.append(pub_info)
-                        if packages != None and len(packages) > 0:
+                        if not pub_disabled and packages != None and len(packages) > 0:
                                 self.pkg_install_tasks.append((pub_info, packages))
                 self.pub_new_tasks = pub_new_reg_ssl_tasks + self.pub_new_tasks
                         
+        def __is_publisher_disabled(self, name):
+                try:
+                        if self.api_o != None:
+                                pub = None
+                                try:
+                                        pub = self.api_o.get_publisher(name)
+                                except api_errors.UnknownPublisher:
+                                        return False
+                                if pub != None and pub.disabled:
+                                        gobject.idle_add(gui_misc.error_occurred,
+                                            self.w_webinstall_dialog,
+                                            api_errors.DisabledPublisher(pub),
+                                            _("Publisher Error"))
+                                        self.any_pub_disabled = True
+                                        return True
+                except api_errors.PublisherError, ex:
+                        gobject.idle_add(gui_misc.error_occurred,
+                            self.w_webinstall_dialog,
+                            str(ex),
+                            _("Publisher Error"))
+                        return False
+
         def __is_publisher_registered(self, name):
                 try:
                         if self.api_o != None and self.api_o.has_publisher(name):
@@ -258,7 +288,7 @@ class Webinstall:
                 except api_errors.PublisherError, ex:
                         gobject.idle_add(gui_misc.error_occurred, 
                             self.w_webinstall_dialog, 
-                            str(ex), _("Repository Error"))
+                            str(ex), _("Publisher Error"))
                 return False
 
         def __on_proceed_button_clicked(self, widget):
@@ -291,7 +321,7 @@ class Webinstall:
                         msg += _("No URI specified")
                         gui_misc.error_occurred( 
                                     self.w_webinstall_dialog,
-                                    msg, gtk.MESSAGE_ERROR, _("Repository Error"))
+                                    msg, _("Publisher Error"))
 
         # Publisher Callback - invoked at end of adding publisher
         def reload_packages(self):
@@ -360,6 +390,6 @@ class Webinstall:
                         self.w_webinstall_proceed.set_sensitive(False)
                         gui_misc.error_occurred( 
                             self.w_webinstall_dialog,
-                            str(ex), _("Repository Error"))
+                            str(ex), _("Publisher Error"))
                         sys.exit(1)
                         return None
