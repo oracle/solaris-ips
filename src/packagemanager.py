@@ -1948,6 +1948,7 @@ class PackageManager:
                             None, None,
                             self.saved_application_list_filter,
                             self.saved_application_list_sort)
+                        self.__restore_category_state()
                 else:
                         self.__init_tree_views(self.saved_application_list,
                             self.saved_category_list, self.saved_section_list,
@@ -2316,7 +2317,7 @@ class PackageManager:
                                 != NOTEBOOK_START_PAGE:
                                 gobject.idle_add(self.__setup_search_all_page)
                 else:
-                        self.__unset_search()
+                        self.__unset_search(self.in_search_mode)
                 return
 
         def __on_progress_cancel_clicked(self, widget):
@@ -4231,7 +4232,9 @@ class PackageManager:
                         self.w_categories_treeview.expand_row(
                             visible_default_section_path, False)
                         return
+                self.__restore_category_state()
 
+        def __restore_category_state(self):
                 #Restore expanded Category state
                 if len(self.category_expanded_paths) > 0:
                         paths = self.category_expanded_paths.items()
@@ -4239,7 +4242,7 @@ class PackageManager:
                                 source, path = key
                                 if self.last_visible_publisher == source and val:
                                         self.w_categories_treeview.expand_row(path, False)
-                #Resotre selected category path
+                #Restore selected category path
                 if self.last_visible_publisher in self.category_active_paths and \
                         self.category_active_paths[self.last_visible_publisher]:
                         self.w_categories_treeview.set_cursor(
