@@ -147,7 +147,7 @@ install: all $(ROOTCOMPONENTS) $(ROOTDIRS)
 	#  done;
 
 clean:
-	rm -f $(AUTOSTART) $(DESKTOP) $(GCONF) $(APPICONS)
+	rm -f $(AUTOSTART) $(DESKTOP) $(GCONF)
 
 clobber: clean
 	rm -f $(ROOTCOMPONENTS)
