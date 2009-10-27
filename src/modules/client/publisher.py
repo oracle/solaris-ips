@@ -1225,9 +1225,20 @@ class Publisher(object):
                             path=tempdir)
                 except api_errors.UnsupportedRepositoryOperation:
                         # No v1 catalogs available.
+                        if self.catalog.exists:
+                                # Ensure v1 -> v0 transition works right.
+                                self.catalog.destroy()
+                                self.__catalog = None
                         return self.__refresh_v0(full_refresh, immediate)
 
-                # If this succeeded, we now have a catalog.attrs file.  Parse
+                # If a v0 catalog is present, remove it before proceeding to
+                # ensure transitions between catalog versions work correctly.
+                v0_cat = old_catalog.ServerCatalog(self.catalog_root,
+                    read_only=True, publisher=self.prefix)
+                if v0_cat.exists:
+                        v0_cat.destroy(root=self.catalog_root)
+
+                # If above succeeded, we now have a catalog.attrs file.  Parse
                 # this to determine what other constituent parts need to be
                 # downloaded.
                 flist = []
@@ -1260,15 +1271,8 @@ class Publisher(object):
                                     immediate)
 
                 # At this point the client should have a set of the constituent
-                # pieces that are necessary to construct a catalog.  If a v0
-                # catalog is present, remove it before proceeding.
-                v0_cat = old_catalog.ServerCatalog(self.catalog_root,
-                    read_only=True, publisher=self.prefix)
-
-                if v0_cat.exists:
-                        v0_cat.destroy(root=self.catalog_root)
-
-                # If a catalog already exists, call apply_updates.  Otherwise,
+                # pieces that are necessary to construct a catalog.  If a
+                # catalog already exists, call apply_updates.  Otherwise,
                 # move the files to the appropriate location.
                 revalidate = False
                 if not full_refresh and self.catalog.exists:

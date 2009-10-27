@@ -1050,12 +1050,15 @@ class Image(object):
                                 raise
 
                 def manifest_cb(cat, f):
-                        # Only allow lazy-load for packages from v0 sources.
+                        # Only allow lazy-load for packages from non-v1 sources.
                         # Assume entries for other sources have all data
-                        # required in catalog.
+                        # required in catalog.  This prevents manifest retrieval
+                        # for packages that don't have any related action data
+                        # in the catalog because they don't have any related
+                        # action data in their manifest.
                         entry = cat.get_entry(f)
                         states = entry["metadata"]["states"]
-                        if self.PKG_STATE_V0 in states:
+                        if self.PKG_STATE_V1 not in states:
                                 return self.get_manifest(f, all_arch=True)
                         return None
 
@@ -1316,9 +1319,11 @@ class Image(object):
 
                         if src_cat.version == 0:
                                 states.add(self.PKG_STATE_V0)
+                                states.discard(self.PKG_STATE_V1)
                         else:
                                 # Assume V1 catalog source.
                                 states.add(self.PKG_STATE_V1)
+                                states.discard(self.PKG_STATE_V0)
 
                         states.add(self.PKG_STATE_KNOWN)
                         nver = newest.get(f.pkg_name, None)

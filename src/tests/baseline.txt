@@ -227,6 +227,7 @@ cli.t_actuators.py TestPkgActuators.test_actuators|pass
 cli.t_api.py TestPkgApi.test_bad_orderings|pass
 cli.t_api.py TestPkgApi.test_properties|pass
 cli.t_api.py TestPkgApi.test_publisher_apis|pass
+cli.t_api.py TestPkgApi.test_refresh_transition|pass
 cli.t_api.py TestPkgApi.test_reset|pass
 cli.t_api_info.py TestApiInfo.test_info_local_remote|pass
 cli.t_api_search.py TestApiSearchBasicsPersistentDepot.test_010_remote|pass

@@ -44,8 +44,7 @@ API_VERSION = 21
 PKG_CLIENT_NAME = "pkg"
 
 class TestPkgApi(testutils.SingleDepotTestCase):
-
-        # Only start/stop the depot once (instead of for every test)
+        # restart the depot for every test
         persistent_depot = False
 
         foo10 = """
@@ -268,6 +267,58 @@ class TestPkgApi(testutils.SingleDepotTestCase):
                 self.assert_(api_obj.describe() is None)
 
                 self.pkg("verify")
+
+        def test_refresh_transition(self):
+                """Verify that refresh works for a v0 catalog source and that
+                if the client transitions from v0 to v1 or back that the correct
+                state information is recorded in the image catalog."""
+
+                # First create the image and get v1 catalog.
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.foo10)
+                self.image_create(durl, prefix="bobcat")
+
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                img = api_obj.img
+                cat = img.get_catalog(img.IMG_CATALOG_KNOWN)
+                entry = [e for f, e in cat.entries()][0]
+                states = entry["metadata"]["states"]
+                self.assert_(img.PKG_STATE_V1 in states)
+                self.assert_(img.PKG_STATE_V0 not in states)
+
+                # Next, disable v1 catalog for the depot and force a client
+                # refresh.  Only v0 state should be present.
+                self.dc.set_disable_ops(["catalog/1"])
+                self.dc.stop()
+                self.dc.start()
+                api_obj.refresh(immediate=True)
+
+                cat = img.get_catalog(img.IMG_CATALOG_KNOWN)
+                entry = [e for f, e in cat.entries()][0]
+                states = entry["metadata"]["states"]
+                self.assert_(img.PKG_STATE_V1 not in states)
+                self.assert_(img.PKG_STATE_V0 in states)
+
+                # Finally, transition back to v1 catalog.  This requires
+                # creating a new api object since transport will think that
+                # v1 catalogs are still unsupported.
+                self.dc.unset_disable_ops()
+                self.dc.stop()
+                self.dc.start()
+
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                api_obj.refresh(immediate=True)
+                img = api_obj.img
+
+                cat = img.get_catalog(img.IMG_CATALOG_KNOWN)
+                entry = [e for f, e in cat.entries()][0]
+                states = entry["metadata"]["states"]
+                self.assert_(img.PKG_STATE_V1 in states)
+                self.assert_(img.PKG_STATE_V0 not in states)
 
         def test_properties(self):
                 """Verify that properties of the ImageInterface api object are
