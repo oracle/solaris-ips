@@ -481,6 +481,12 @@ class InstallUpdate(progress.GuiProgressTracker):
                             "\noperation can't be performed.")
                         self.__g_error_stage(msg)
                         return
+                except api_errors.RebootNeededOnLiveImageException:
+                        msg = _("The requested operation would affect files that cannot"
+                        "be modified in the Live Image.\n"
+                        "Please retry this operation on an alternate boot environment.")
+                        self.__g_error_stage(msg)
+                        return
                 except api_errors.PlanMissingException:
                         msg = _("There was an error during installation.\n"
                             "The Plan of the operation is missing and the operation\n"
