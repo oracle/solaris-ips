@@ -40,6 +40,7 @@ ROOTDESKTOPSHARE = $(ROOT)/share/applications
 ROOTGCONFSHARE = $(ROOTETC)/gconf/schemas
 ROOTICON24SHARE = $(ROOTSHARE)/icons/hicolor/24x24/actions
 ROOTICON36SHARE = $(ROOTSHARE)/icons/hicolor/36x36/actions
+ROOTICON48SHARE = $(ROOTSHARE)/icons/hicolor/48x48/actions
 ROOTPYTHON = $(ROOTUSRLIB)/python2.4
 ROOTPYTHONPKG = $(ROOTPYTHONVENDOR)/pkg/um
 ROOTPYTHONVENDOR = $(ROOTPYTHON)/vendor-packages
@@ -53,6 +54,7 @@ ROOTDIRS = \
    $(ROOTGCONFSHARE) \
    $(ROOTICON24SHARE) \
    $(ROOTICON36SHARE) \
+   $(ROOTICON48SHARE) \
    $(ROOTPYTHONPKG) \
    $(ROOTSCRIPTSSHARE) \
    $(ROOTSHARE) \
@@ -70,14 +72,14 @@ DESKTOP = \
 GCONF = \
    data/updatemanager-preferences.schemas
 
-GLADEICONS = \
-   data/UM_app_48x.png
-
 ICONS24 = \
    data/icons/24x24/notify_update.png
 
 ICONS36 = \
    data/icons/36x36/UM_package.png
+
+ICONS48 = \
+   data/icons/48x48/UM_app.png
 
 PYGLADE = \
    data/updatemanager.glade
@@ -99,10 +101,9 @@ ROOTDESKTOP = $(DESKTOP:data/%=$(ROOTDESKTOPSHARE)/%)
 
 ROOTGCONF = $(GCONF:data/%=$(ROOTGCONFSHARE)/%)
 
-ROOTGLADEICONS = $(GLADEICONS:data/%=$(ROOTSHARE)/%)
-
 ROOTICONS24 = $(ICONS24:data/icons/24x24/%=$(ROOTICON24SHARE)/%)
 ROOTICONS36 = $(ICONS36:data/icons/36x36/%=$(ROOTICON36SHARE)/%)
+ROOTICONS48 = $(ICONS48:data/icons/48x48/%=$(ROOTICON48SHARE)/%)
 
 ROOTPYGLADE = $(PYGLADE:data/%=$(ROOTSHARE)/%)
 
@@ -115,9 +116,9 @@ ROOTCOMPONENTS = \
    $(ROOTAUTOSTART) \
    $(ROOTDESKTOP) \
    $(ROOTGCONF) \
-   $(ROOTGLADEICONS) \
    $(ROOTICONS24) \
    $(ROOTICONS36) \
+   $(ROOTICONS48) \
    $(ROOTPYGLADE) \
    $(ROOTSCRIPTS) \
    $(ROOTSVC)
@@ -150,10 +151,6 @@ clean:
 
 clobber: clean
 	rm -f $(ROOTCOMPONENTS)
-
-# See APPICONS above.
-data/updatemanager.png: data/UM_app_48x.png
-	cp data/UM_app_48x.png data/updatemanager.png
 
 PWD:sh = pwd
 
@@ -199,6 +196,9 @@ $(ROOTICON24SHARE)/%: $(ROOTDIRS) data/icons/24x24/%
 
 $(ROOTICON36SHARE)/%: $(ROOTDIRS) data/icons/36x36/%
 	$(INSTALL) -f $(ROOTICON36SHARE) -m 0644 $<
+
+$(ROOTICON48SHARE)/%: $(ROOTDIRS) data/icons/48x48/%
+	$(INSTALL) -f $(ROOTICON48SHARE) -m 0644 $<
 
 $(ROOTPYTHONPKG)/%: $(ROOTDIRS) modules/%
 	$(INSTALL) -f $(ROOTPYTHONPKG) -m 0644 $<

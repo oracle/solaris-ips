@@ -10,7 +10,6 @@
     <property name="window_position">center</property>
     <property name="default_width">800</property>
     <property name="default_height">615</property>
-    <property name="icon">PM_app_48x.png</property>
     <signal name="key_press_event" handler="on_mainwindow_key_press_event"/>
     <signal name="check_resize" handler="on_mainwindow_check_resize"/>
     <signal name="delete_event" handler="on_mainwindow_delete_event"/>
@@ -1131,7 +1130,6 @@
     <property name="resizable">False</property>
     <property name="modal">True</property>
     <property name="window_position">center-on-parent</property>
-    <property name="icon">PM_app_48x.png</property>
     <property name="type_hint">dialog</property>
     <property name="deletable">False</property>
     <property name="transient_for">mainwindow</property>
@@ -1400,7 +1398,6 @@
     <property name="resizable">False</property>
     <property name="modal">True</property>
     <property name="window_position">center-on-parent</property>
-    <property name="icon">PM_app_48x.png</property>
     <property name="type_hint">dialog</property>
     <property name="deletable">False</property>
     <property name="transient_for">mainwindow</property>
@@ -1483,7 +1480,6 @@
     <property name="title" translatable="yes">Manage Boot Environments</property>
     <property name="modal">True</property>
     <property name="window_position">center-on-parent</property>
-    <property name="icon">PM_app_48x.png</property>
     <property name="type_hint">dialog</property>
     <property name="transient_for">mainwindow</property>
     <property name="has_separator">False</property>
@@ -1647,7 +1643,6 @@
     <property name="title" translatable="yes">Confirmation</property>
     <property name="modal">True</property>
     <property name="window_position">center-on-parent</property>
-    <property name="icon">PM_app_48x.png</property>
     <property name="type_hint">dialog</property>
     <property name="deletable">False</property>
     <property name="transient_for">beadmin</property>
@@ -1798,7 +1793,6 @@
     <property name="resizable">False</property>
     <property name="modal">True</property>
     <property name="window_position">center-on-parent</property>
-    <property name="icon">PM_app_48x.png</property>
     <property name="type_hint">dialog</property>
     <property name="deletable">False</property>
     <property name="transient_for">mainwindow</property>
@@ -2026,7 +2020,6 @@ Update All creates a new boot environment (BE) as a means of archiving the curre
     <property name="title" translatable="yes">Remove Confirmation</property>
     <property name="modal">True</property>
     <property name="window_position">center-on-parent</property>
-    <property name="icon">PM_app_48x.png</property>
     <property name="type_hint">dialog</property>
     <property name="deletable">False</property>
     <property name="transient_for">mainwindow</property>
@@ -2232,7 +2225,6 @@ Update All creates a new boot environment (BE) as a means of archiving the curre
     <property name="resizable">False</property>
     <property name="modal">True</property>
     <property name="window_position">center-on-parent</property>
-    <property name="icon">PM_app_48x.png</property>
     <property name="type_hint">dialog</property>
     <property name="transient_for">repository</property>
     <property name="has_separator">False</property>
@@ -2603,11 +2595,10 @@ Update All creates a new boot environment (BE) as a means of archiving the curre
                             <property name="xscale">0</property>
                             <property name="yscale">0</property>
                             <child>
-                              <widget class="GtkImage" id="image4">
+                              <widget class="GtkImage" id="pkgimage">
                                 <property name="visible">True</property>
                                 <property name="xalign">0</property>
                                 <property name="yalign">0</property>
-                                <property name="pixbuf">PM_app_48x.png</property>
                                 <property name="icon-size">10</property>
                               </widget>
                             </child>
@@ -3143,7 +3134,6 @@ Update All creates a new boot environment (BE) as a means of archiving the curre
     <property name="resizable">False</property>
     <property name="modal">True</property>
     <property name="window_position">center-on-parent</property>
-    <property name="icon">PM_app_48x.png</property>
     <property name="type_hint">dialog</property>
     <property name="transient_for">mainwindow</property>
     <property name="has_separator">False</property>
@@ -3602,7 +3592,6 @@ Specify the location of these files.</property>
     <property name="title" translatable="yes">Manage Publishers</property>
     <property name="modal">True</property>
     <property name="window_position">center-on-parent</property>
-    <property name="icon">PM_app_48x.png</property>
     <property name="type_hint">dialog</property>
     <property name="transient_for">mainwindow</property>
     <property name="has_separator">False</property>
@@ -3951,7 +3940,6 @@ Specify the location of these files.</property>
     <property name="title" translatable="yes">Modify Publisher</property>
     <property name="modal">True</property>
     <property name="window_position">center-on-parent</property>
-    <property name="icon">PM_app_48x.png</property>
     <property name="type_hint">dialog</property>
     <property name="transient_for">manage_publishers</property>
     <property name="has_separator">False</property>
@@ -4339,7 +4327,6 @@ Specify the location of these files.</property>
     <property name="title" translatable="yes">Applying Changes</property>
     <property name="resizable">False</property>
     <property name="window_position">center-on-parent</property>
-    <property name="icon">PM_app_48x.png</property>
     <property name="type_hint">dialog</property>
     <property name="transient_for">mainwindow</property>
     <property name="has_separator">False</property>
@@ -4468,7 +4455,6 @@ Specify the location of these files.</property>
     <property name="title" translatable="yes">About Glade</property>
     <property name="resizable">False</property>
     <property name="window_position">center-on-parent</property>
-    <property name="icon">PM_app_48x.png</property>
     <property name="type_hint">dialog</property>
     <property name="program_name">Package Manager</property>
     <property name="version">2009.06</property>
@@ -4852,7 +4838,6 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
     <property name="resizable">False</property>
     <property name="modal">True</property>
     <property name="window_position">center-on-parent</property>
-    <property name="icon">PM_app_48x.png</property>
     <property name="type_hint">dialog</property>
     <property name="transient_for">modify_publisher</property>
     <property name="has_separator">False</property>
@@ -5510,7 +5495,6 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
     <property name="resizable">False</property>
     <property name="modal">True</property>
     <property name="window_position">center-on-parent</property>
-    <property name="icon">PM_app_48x.png</property>
     <property name="type_hint">dialog</property>
     <property name="transient_for">mainwindow</property>
     <property name="has_separator">False</property>

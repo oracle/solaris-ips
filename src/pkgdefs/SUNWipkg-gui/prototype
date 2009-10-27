@@ -87,6 +87,10 @@ f none usr/share/package-manager/icons/hicolor/24x24/actions/install_update.png 
 f none usr/share/package-manager/icons/hicolor/24x24/actions/reload.png 444 root other
 f none usr/share/package-manager/icons/hicolor/24x24/actions/remove_packages.png 444 root other
 f none usr/share/package-manager/icons/hicolor/24x24/actions/update_all.png 444 root other
-f none usr/share/package-manager/PM_app_48x.png 444 root bin
-f none usr/share/package-manager/PM_package_36x.png 444 root bin
+d none usr/share/package-manager/icons/hicolor/36x36 755 root bin
+d none usr/share/package-manager/icons/hicolor/36x36/actions 755 root bin
+f none usr/share/package-manager/icons/hicolor/36x36/actions/PM_package.png 444 root other
+d none usr/share/package-manager/icons/hicolor/48x48 755 root bin
+d none usr/share/package-manager/icons/hicolor/48x48/actions 755 root bin
+f none usr/share/package-manager/icons/hicolor/48x48/actions/packagemanager.png 444 root other
 f none usr/share/package-manager/packagemanager.glade 444 root bin

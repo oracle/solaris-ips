@@ -90,6 +90,7 @@ class Repository(progress.GuiProgressTracker):
                     "confirmationdialog")
                 self.w_confirmation_dialog =  \
                     w_tree_confirmation.get_widget("confirmationdialog")
+                self.w_confirmation_dialog.set_icon(self.parent.window_icon)
                 self.w_confirmation_textview = \
                     w_tree_confirmation.get_widget("confirmtext")
                 self.w_confirm_cancel_btn = w_tree_confirmation.get_widget("cancel_conf")
@@ -102,6 +103,7 @@ class Repository(progress.GuiProgressTracker):
                     w_tree_manage_publishers.get_widget("publishers_treeview")
                 self.w_add_publisher_dialog = \
                     w_tree_add_publisher.get_widget("add_publisher")
+                self.w_add_publisher_dialog.set_icon(self.parent.window_icon)
                 self.w_add_error_label = \
                     w_tree_add_publisher.get_widget("add_error_label")
                 self.w_add_sslerror_label = \
@@ -125,6 +127,7 @@ class Repository(progress.GuiProgressTracker):
                 self.w_publisher_add_button.set_sensitive(False)
                 self.w_add_publisher_comp_dialog = \
                     w_tree_add_publisher_complete.get_widget("add_publisher_complete")
+                self.w_add_publisher_comp_dialog.set_icon(self.parent.window_icon)
                 self.w_add_publisher_c_name = \
                     w_tree_add_publisher_complete.get_widget("add_publisher_name")
                 self.w_add_publisher_c_url = \
@@ -139,6 +142,7 @@ class Repository(progress.GuiProgressTracker):
                     w_tree_add_publisher.get_widget("registration_button")
                 self.w_modify_repository_dialog = \
                     w_tree_modify_repository.get_widget("modify_repository")
+                self.w_modify_repository_dialog.set_icon(self.parent.window_icon)
                 self.w_addmirror_entry = \
                     w_tree_modify_repository.get_widget("addmirror_entry")
                 self.w_addmirror_button = \
@@ -179,6 +183,7 @@ class Repository(progress.GuiProgressTracker):
                     "modcertentry")   
                 self.w_modify_publisher_dialog = \
                     w_tree_modify_publisher.get_widget("modify_publisher")
+                self.w_modify_publisher_dialog.set_icon(self.parent.window_icon)
                 self.w_modify_pub_label = \
                     w_tree_modify_publisher.get_widget("modify_pub_label")
                 self.w_modify_pub_alias = \
@@ -197,6 +202,7 @@ class Repository(progress.GuiProgressTracker):
                     w_tree_modify_publisher.get_widget("modifypub_details")
                 self.w_manage_publishers_dialog = \
                     w_tree_manage_publishers.get_widget("manage_publishers")
+                self.w_manage_publishers_dialog.set_icon(self.parent.window_icon)
                 w_priorities_label = \
                     w_tree_manage_publishers.get_widget("priorities_label")
                 # TODO: The priorities are not supported yet.
@@ -216,6 +222,7 @@ class Repository(progress.GuiProgressTracker):
                     w_tree_manage_publishers.get_widget("manage_modify")
                 self.publishers_apply = \
                     w_tree_publishers_apply.get_widget("publishers_apply")
+                self.publishers_apply.set_icon(self.parent.window_icon)
                 self.publishers_apply_expander = \
                     w_tree_publishers_apply.get_widget("apply_expander")
                 self.publishers_apply_textview = \

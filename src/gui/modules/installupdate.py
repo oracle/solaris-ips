@@ -112,6 +112,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.w_details_textview = w_tree_dialog.get_widget("createplantextview")
                 self.w_removeconfirm_dialog = \
                     w_tree_removeconfirm.get_widget("removeconfirmation")
+                self.w_removeconfirm_dialog.set_icon(self.parent.window_icon)
                 w_removeproceed_button = w_tree_removeconfirm.get_widget("remove_proceed")
                 w_remove_treeview = w_tree_removeconfirm.get_widget("removetreeview")
                 w_stage2 = w_tree_dialog.get_widget("stage2")
@@ -142,6 +143,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 infobuffer.create_tag("level1", left_margin=30, right_margin=10)
                 infobuffer.create_tag("level2", left_margin=50, right_margin=10)
                 self.w_ua_dialog = w_tree_uaconfirm.get_widget("ua_confirm_dialog")
+                self.w_ua_dialog.set_icon(self.parent.window_icon)
                 self.w_ua_error_label = w_tree_uaconfirm.get_widget(
                     "ua_confirm_error_label")
                 self.w_ua_proceed_button = w_tree_uaconfirm.get_widget(
@@ -192,6 +194,9 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.w_ua_dialog.set_transient_for(self.w_main_window)
                 if self.icon_confirm_dialog != None:
                         self.w_ua_dialog.set_icon(self.icon_confirm_dialog)
+                else:
+                        self.w_ua_dialog.set_icon(
+                            self.parent.w_main_window.get_icon())
 
                 if self.action == enumerations.REMOVE:
                         #We are not showing the download stage in the main stage list

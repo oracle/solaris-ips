@@ -41,6 +41,8 @@ ROOTHELPSHARE = $(ROOT)/share/gnome/help/package-manager
 ROOTICON16SHARE = $(ROOTSHARE)/icons/hicolor/16x16/actions
 ROOTICON22SHARE = $(ROOTSHARE)/icons/hicolor/22x22/actions
 ROOTICON24SHARE = $(ROOTSHARE)/icons/hicolor/24x24/actions
+ROOTICON36SHARE = $(ROOTSHARE)/icons/hicolor/36x36/actions
+ROOTICON48SHARE = $(ROOTSHARE)/icons/hicolor/48x48/actions
 ROOTMIMEICONSHARE = $(ROOT)/share/icons/hicolor/48x48/mimetypes
 ROOTMIMETYPESHARE = $(ROOT)/share/mime/packages
 ROOTPYTHON = $(ROOTUSRLIB)/python2.4
@@ -57,6 +59,7 @@ ROOTDIRS = \
    $(ROOTICON16SHARE) \
    $(ROOTICON22SHARE) \
    $(ROOTICON24SHARE) \
+   $(ROOTICON36SHARE) \
    $(ROOTICON48SHARE) \
    $(ROOTMIMEICONSHARE) \
    $(ROOTMIMETYPESHARE) \
@@ -77,10 +80,6 @@ DESKTOP = \
 
 GCONF = \
    data/packagemanager-preferences.schemas
-
-GLADEICONS = \
-   data/PM_app_48x.png \
-   data/PM_package_36x.png
 
 MIMEICONS = \
    data/gnome-mime-application-vnd.pkg5.info.png
@@ -127,6 +126,12 @@ ICONS24 = \
    data/icons/24x24/remove_packages.png \
    data/icons/24x24/update_all.png
 
+ICONS36 = \
+   data/icons/36x36/PM_package.png
+
+ICONS48 = \
+   data/icons/48x48/packagemanager.png
+
 PYMODS = \
    modules/__init__.py \
    modules/beadmin.py \
@@ -171,8 +176,6 @@ ROOTDESKTOP = $(DESKTOP:data/%=$(ROOTDESKTOPSHARE)/%)
 
 ROOTGCONF = $(GCONF:data/%=$(ROOTGCONFSHARE)/%)
 
-ROOTGLADEICONS = $(GLADEICONS:data/%=$(ROOTSHARE)/%)
-
 ROOTHELPDIRS = \
 	$(HELP_LOCALES:%=$(ROOTHELPSHARE)/%) \
 	$(C_ONLY_HELP_LOCALES:%=$(ROOTHELPSHARE)/%/figures) \
@@ -194,6 +197,8 @@ ROOTSPFILES = \
 ROOTICONS16 = $(ICONS16:data/icons/16x16/%=$(ROOTICON16SHARE)/%)
 ROOTICONS22 = $(ICONS22:data/icons/22x22/%=$(ROOTICON22SHARE)/%)
 ROOTICONS24 = $(ICONS24:data/icons/24x24/%=$(ROOTICON24SHARE)/%)
+ROOTICONS36 = $(ICONS36:data/icons/36x36/%=$(ROOTICON36SHARE)/%)
+ROOTICONS48 = $(ICONS48:data/icons/48x48/%=$(ROOTICON48SHARE)/%)
 
 ROOTPYGLADE = $(ROOTSHARE)/packagemanager.glade
 
@@ -208,11 +213,12 @@ ROOTCOMPONENTS = \
    $(ROOTCATALOG) \
    $(ROOTDESKTOP) \
    $(ROOTGCONF) \
-   $(ROOTGLADEICONS) \
    $(ROOTHELPFILES) \
    $(ROOTICONS16) \
    $(ROOTICONS22) \
    $(ROOTICONS24) \
+   $(ROOTICONS36) \
+   $(ROOTICONS48) \
    $(ROOTMIMEICONS) \
    $(ROOTMIMETYPE) \
    $(ROOTPYGLADE) \
@@ -329,6 +335,12 @@ $(ROOTICON22SHARE)/%: $(ROOTDIRS) data/icons/22x22/%
 
 $(ROOTICON24SHARE)/%: $(ROOTDIRS) data/icons/24x24/%
 	$(INSTALL) -f $(ROOTICON24SHARE) -m 0644 $<
+
+$(ROOTICON36SHARE)/%: $(ROOTDIRS) data/icons/36x36/%
+	$(INSTALL) -f $(ROOTICON36SHARE) -m 0644 $<
+
+$(ROOTICON48SHARE)/%: $(ROOTDIRS) data/icons/48x48/%
+	$(INSTALL) -f $(ROOTICON48SHARE) -m 0644 $<
 
 $(ROOTPYTHONPKG)/%: $(ROOTDIRS) modules/%
 	$(INSTALL) -f $(ROOTPYTHONPKG) -m 0644 $<

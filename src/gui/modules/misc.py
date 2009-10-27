@@ -42,10 +42,6 @@ import pkg.client.api_errors as api_errors
 import pkg.client.api as api
 from pkg.gui.misc_non_gui import get_api_object as ngao
 
-def get_app_pixbuf(application_dir, icon_name):
-        return get_pixbuf_from_path(os.path.join(application_dir,
-            "usr/share/package-manager"), icon_name)
-
 def get_icon_pixbuf(application_dir, icon_name):
         return get_pixbuf_from_path(os.path.join(application_dir,
             "usr/share/icons/package-manager"), icon_name)

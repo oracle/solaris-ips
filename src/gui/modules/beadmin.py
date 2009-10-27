@@ -106,17 +106,20 @@ class Beadmin:
                 w_tree_beconfirmation = gtk.glade.XML(gladefile,
                     "confirmationdialog")
                 self.w_beadmin_dialog = w_tree_beadmin.get_widget("beadmin")
+                self.w_beadmin_dialog.set_icon(self.parent.window_icon)
                 self.w_be_treeview = w_tree_beadmin.get_widget("betreeview")
                 self.w_cancel_button = w_tree_beadmin.get_widget("cancelbebutton")
                 self.w_ok_button = w_tree_beadmin.get_widget("okbebutton")
                 w_active_gtkimage = w_tree_beadmin.get_widget("activebeimage")
                 self.w_progress_dialog = w_tree_progress.get_widget("progressdialog")
                 self.w_progress_dialog.connect('delete-event', lambda stub1, stub2: True)
+                self.w_progress_dialog.set_icon(self.parent.window_icon)
                 self.w_progressinfo_label = w_tree_progress.get_widget("progressinfo")
                 progress_button = w_tree_progress.get_widget("progresscancel")
                 self.w_progressbar = w_tree_progress.get_widget("progressbar")
                 self.w_beconfirmation_dialog =  \
                     w_tree_beconfirmation.get_widget("confirmationdialog")
+                self.w_beconfirmation_dialog.set_icon(self.parent.window_icon)
                 self.w_beconfirmation_textview = \
                     w_tree_beconfirmation.get_widget("confirmtext")
                 self.w_cancelbe_button = w_tree_beconfirmation.get_widget("cancel_conf")

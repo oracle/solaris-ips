@@ -90,6 +90,10 @@ class Webinstall:
                         w_xmltree_webinstall.get_widget("close_button")
                 self.w_webinstall_proceed_label = \
                         w_xmltree_webinstall.get_widget("proceed_new_repo_label")
+                self.w_webinstall_image = \
+                        w_xmltree_webinstall.get_widget("pkgimage")
+                pkg_pixbuf = gui_misc.get_icon(self.icon_theme,'packagemanager', 48)
+                self.w_webinstall_image.set_from_pixbuf(pkg_pixbuf)
                 self.w_webinstall_info_label = \
                         w_xmltree_webinstall.get_widget("label19")
 
@@ -118,8 +122,7 @@ class Webinstall:
                             "Check webinstall.py signals") % error
  
                 self.w_webinstall_dialog.show_all()
-                self.w_webinstall_dialog.set_icon(
-                    gui_misc.get_app_pixbuf(self.application_dir,"PM_app_48x"))
+                self.w_webinstall_dialog.set_icon(pkg_pixbuf)
                 self.api_o = gui_misc.get_api_object(self.image_dir, self.pr,
                     self.w_webinstall_dialog)
         
@@ -357,8 +360,8 @@ class Webinstall:
                     action = enumerations.INSTALL_UPDATE,
                     parent_name = _("Package Manager"),
                     main_window = self.w_webinstall_dialog,
-                    icon_confirm_dialog = gui_misc.get_app_pixbuf(
-                        self.application_dir,"PM_package_36x"),
+                    icon_confirm_dialog = gui_misc.get_icon(
+                        self.icon_theme,'PM_package', 36),
                     web_install = True)
 
         def process_pkg_stems(self, pub_info, packages):

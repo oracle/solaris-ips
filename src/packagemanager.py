@@ -291,6 +291,7 @@ class PackageManager:
                     'status_notinstalled')
                 self.update_available_icon = gui_misc.get_icon(self.icon_theme,
                     'status_newupdate')
+                self.window_icon = gui_misc.get_icon(self.icon_theme, 'packagemanager', 48)
                 self.filter_options = [
                     (enumerations.FILTER_ALL,
                     gui_misc.get_icon(self.icon_theme, 'filter_all'),
@@ -344,6 +345,7 @@ class PackageManager:
                     "api_search_error")
                 self.w_preferencesdialog = \
                     w_tree_preferences.get_widget("preferencesdialog")
+                self.w_preferencesdialog.set_icon(self.window_icon)
                 self.w_startpage_checkbutton = \
                     w_tree_preferences.get_widget("startpage_checkbutton")
                 self.w_exit_checkbutton = \
@@ -360,6 +362,7 @@ class PackageManager:
                 infobuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)
 
                 self.w_main_window = w_tree_main.get_widget("mainwindow")
+                self.w_main_window.set_icon(self.window_icon)
                 self.w_main_hpaned = \
                     w_tree_main.get_widget("main_hpaned")
                 self.w_main_vpaned = \
@@ -3034,6 +3037,7 @@ class PackageManager:
         def __on_help_about(self, widget):
                 wTreePlan = gtk.glade.XML(self.gladefile, "aboutdialog")
                 aboutdialog = wTreePlan.get_widget("aboutdialog")
+                aboutdialog.set_icon(self.window_icon)
                 aboutdialog.connect("response", lambda x = None, \
                     y = None: aboutdialog.destroy())
                 aboutdialog.run()

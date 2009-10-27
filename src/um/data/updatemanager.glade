@@ -320,7 +320,6 @@
                     <child>
                       <widget class="GtkImage" id="pm_image">
                         <property name="visible">True</property>
-                        <property name="pixbuf">UM_app_48x.png</property>
                         <property name="icon_size">12</property>
                       </widget>
                       <packing>

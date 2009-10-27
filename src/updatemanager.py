@@ -172,6 +172,9 @@ class Updatemanager:
                 self.w_um_install_button = w_xmltree_um.get_widget("um_install_button")
                 self.w_um_updateall_button = \
                     w_xmltree_um.get_widget("um_updateall_button")
+                self.pm_image = \
+                    w_xmltree_um.get_widget("pm_image")
+                self.pm_image.set_from_pixbuf(self.__get_icon_pixbuf('UM_app', 48))
                 self.w_um_expander = w_xmltree_um.get_widget("um_expander")
                 self.w_um_expander.set_expanded(True)
 
