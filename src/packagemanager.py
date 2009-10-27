@@ -370,9 +370,6 @@ class PackageManager:
                     w_tree_main.get_widget("applicationtreeview")
                 self.w_application_treeview.connect('key_press_event',
                     self.__on_applicationtreeview_button_and_key_events)
-                self.w_application_treeview.connect('motion-notify-event',
-                    self.__on_applicationtreeview_motion_events)
-                self.applicationtreeview_tooltips = None
 
                 self.w_categories_treeview = w_tree_main.get_widget("categoriestreeview")
                 self.w_info_notebook = w_tree_main.get_widget("details_notebook")
@@ -477,8 +474,6 @@ class PackageManager:
                 toolbar =  w_tree_main.get_widget("toolbutton2")
                 toolbar.set_expand(True)
                 self.__init_repository_tree_view()
-                self.install_button_tooltip = gtk.Tooltips()
-                self.remove_button_tooltip = gtk.Tooltips()
                 self.__update_reload_button()
                 self.w_main_window.set_title(self.main_window_title)
                 self.w_repository_combobox.grab_focus()
@@ -567,6 +562,8 @@ class PackageManager:
                                     self.__on_infosearch_button_clicked,
                                 "on_applicationtreeview_button_press_event": \
                                     self.__on_applicationtreeview_button_and_key_events,
+                                "on_applicationtreeview_query_tooltip": \
+                                    self.__on_applicationtreeview_query_tooltip,
                             }
                         dic_preferences = \
                             {
@@ -1185,8 +1182,7 @@ class PackageManager:
                 select_image = gtk.Image()
                 select_image.set_from_pixbuf(gui_misc.get_icon(
                     self.icon_theme, 'selection'))
-                tooltips = gtk.Tooltips()
-                tooltips.set_tip(select_image, _("Click to toggle selections"))
+                select_image.set_tooltip_text(_("Click to toggle selections"))
                 select_image.show()
                 column.set_widget(select_image)
 
@@ -1755,12 +1751,20 @@ class PackageManager:
                 else:
                         self.__update_statusbar_message(_("Search current publisher"))
 
+        def __remove_statusbar_message(self):
+                if self.statusbar_message_id > 0:
+                        try:
+                                self.w_main_statusbar.remove_message(0,
+                                    self.statusbar_message_id)
+                        except AttributeError:
+                                self.w_main_statusbar.remove(0,
+                                    self.statusbar_message_id)
+                        self.statusbar_message_id = 0
+        
         def __update_statusbar_message(self, message):
                 if self.exiting:
                         return
-                if self.statusbar_message_id > 0:
-                        self.w_main_statusbar.remove(0, self.statusbar_message_id)
-                        self.statusbar_message_id = 0
+                self.__remove_statusbar_message()
                 self.statusbar_message_id = self.w_main_statusbar.push(0, message)
                 if self.w_main_statusbar_label:
                         self.w_main_statusbar_label.set_markup(message)
@@ -2659,28 +2663,22 @@ class PackageManager:
                 self.set_busy_cursor()
                 self.__refilter_on_idle()
 
-        def __on_applicationtreeview_motion_events(self, treeview, event):
-                if event.state == gtk.gdk.CONTROL_MASK or \
-                        event.state == gtk.gdk.SHIFT_MASK or \
-                        event.state == gtk.gdk.MOD1_MASK or \
-                        event.state == gtk.gdk.BUTTON1_MASK or \
-                        event.state == gtk.gdk.BUTTON2_MASK or \
-                        event.state == gtk.gdk.BUTTON3_MASK:
-                        return
-                info = treeview.get_path_at_pos(int(event.x), int(event.y))
+        def __on_applicationtreeview_query_tooltip(self, treeview, x, y, 
+            keyboard_mode, tooltip):
+                treex, treey = treeview.convert_widget_to_bin_window_coords(x, y)
+                info = treeview.get_path_at_pos(treex, treey)
                 if not info:
-                        return 
-                self.__show_app_column_tooltip(treeview, _("Status"), info[0], info[1])
+                        return False
+                return self.__show_app_column_tooltip(treeview, _("Status"), 
+                    info[0], info[1], tooltip)
 
-        def __show_app_column_tooltip(self, treeview, col_title, path, col):
-                self.applicationtreeview_tooltips = gtk.Tooltips()
+        @staticmethod
+        def __show_app_column_tooltip(treeview, col_title, path, col, tooltip):
                 tip = ""
                 if path and col:
                         title = col.get_title() 
                         if title != col_title:
-                                self.applicationtreeview_tooltips.set_tip(treeview, tip)
-                                self.applicationtreeview_tooltips.disable()
-                                return
+                                return False
                         row = list(treeview.get_model()[path])
                         if row:
                                 status = row[enumerations.STATUS_COLUMN]
@@ -2691,11 +2689,12 @@ class PackageManager:
                                 elif status == enumerations.UPDATABLE:
                                         tip = _("Updates Available")
 
-                self.applicationtreeview_tooltips.set_tip(treeview, tip)
                 if tip != "":
-                        self.applicationtreeview_tooltips.enable()
+                        treeview.set_tooltip_cell(tooltip, path, col, None)
+                        tooltip.set_text(tip)
+                        return True
                 else:
-                        self.applicationtreeview_tooltips.disable()
+                        return False
 
         def __on_applicationtreeview_button_and_key_events(self, treeview, event):
                 if event.type == gtk.gdk.KEY_PRESS:
@@ -2761,12 +2760,6 @@ class PackageManager:
                 #Offset x by 10 and y by 15 so underlying name is visible
                 return (x+10, y+15, True)
 
-        @staticmethod
-        def __on_applicationtreeview_motion_notify_event(treeview, event):
-                #TBD - needed for Tooltips in application treeview
-                return
-                
-                
         def __process_package_selection(self):
                 model, itr = self.package_selection.get_selected()
                 if self.show_info_id != 0:
@@ -3350,12 +3343,11 @@ class PackageManager:
                 if not to_install:
                         to_install = _("Select packages by marking the checkbox "
                             "and click to Install/Update.")
-                self.w_installupdate_button.set_tooltip(self.install_button_tooltip,
-                    to_install)
+                self.w_installupdate_button.set_tooltip_text(to_install)
                 if not to_remove:
                         to_remove = _("Select packages by marking the checkbox "
                             "and click to Remove selected.")
-                self.w_remove_button.set_tooltip(self.remove_button_tooltip, to_remove)
+                self.w_remove_button.set_tooltip_text(to_remove)
 
         def __remove_pkg_stem_from_list(self, stem):
                 remove_pub = []
@@ -4499,9 +4491,7 @@ class PackageManager:
 
         def update_statusbar(self):
                 '''Function which updates statusbar'''
-                if self.statusbar_message_id > 0:
-                        self.w_main_statusbar.remove(0, self.statusbar_message_id)
-                        self.statusbar_message_id = 0
+                self.__remove_statusbar_message()
                 search_text = self.w_searchentry.get_text()
 
                 self.selected = 0
