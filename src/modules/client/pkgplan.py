@@ -242,7 +242,7 @@ class PkgPlan(object):
                 mfile = self.image.transport.multi_file(self.destination_fmri,
                     self.__progtrack, self.check_cancelation)
 
-                if not mfile:
+                if mfile is None:
                         self.__progtrack.download_end_pkg()
                         return
 

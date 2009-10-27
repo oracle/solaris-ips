@@ -193,8 +193,23 @@ class HTTPRepo(TransportRepo):
                         self._add_file_url(url, filepath=fn, header=header,
                             compress=True)
 
-                while self._engine.pending:
-                        self._engine.run()
+                try:
+                        while self._engine.pending:
+                                self._engine.run()
+                except tx.ExcessiveTransientFailure, e:
+                        # Attach a list of failed and successful
+                        # requests to this exception.
+                        errors, success = self._engine.check_status(urllist,
+                            True)
+
+                        errors = self._annotate_exceptions(errors)
+                        success = self._url_to_request(success)
+                        e.failures = errors
+                        e.success = success
+
+                        # Reset the engine before propagating exception.
+                        self._engine.reset()
+                        raise
 
                 errors = self._engine.check_status(urllist)
 
@@ -206,17 +221,7 @@ class HTTPRepo(TransportRepo):
                 # This adds an attribute that describes the request to the
                 # exception, if we were able to figure it out.
 
-                for e in errors:
-                        # When check_status is supplied with a list,
-                        # all exceptions returned will have a url.
-                        # If we didn't do this, we'd need a getattr check.
-                        eurl = e.url
-                        utup = urlparse.urlsplit(eurl)
-                        req = utup[2]
-                        req = os.path.basename(req)
-                        e.request = req
-
-                return errors
+                return self._annotate_exceptions(errors)
 
         def get_datastream(self, fhash, header=None):
                 """Get a datastream from a repo.  The name of the
@@ -240,6 +245,36 @@ class HTTPRepo(TransportRepo):
 
                 return self._fetch_url(requesturl, header, compress=True)
 
+        @staticmethod
+        def _annotate_exceptions(errors):
+                """Walk a list of transport errors, examine the
+                url, and add a field that names the request.  This request
+                information is derived from the URL."""
+
+                for e in errors:
+                        eurl = e.url
+                        utup = urlparse.urlsplit(eurl)
+                        req = utup[2]
+                        req = os.path.basename(req)
+                        e.request = req
+
+                return errors
+
+        @staticmethod
+        def _url_to_request(urllist):
+                """Take a list of urls and remove the protocol information,
+                leaving just the information about the request."""
+
+                reqlist = []
+
+                for u in urllist:
+                        utup = urlparse.urlsplit(u)
+                        req = utup[2]
+                        req = os.path.basename(req)
+                        reqlist.append(req)
+
+                return reqlist
+
         def get_files(self, filelist, dest, progtrack, header=None):
                 """Get multiple files from the repo at once.
                 The files are named by hash and supplied in filelist.
@@ -261,8 +296,23 @@ class HTTPRepo(TransportRepo):
                         self._add_file_url(url, filepath=fn,
                             progtrack=progtrack, header=header)
 
-                while self._engine.pending:
-                        self._engine.run()
+                try:
+                        while self._engine.pending:
+                                self._engine.run()
+                except tx.ExcessiveTransientFailure, e:
+                        # Attach a list of failed and successful
+                        # requests to this exception.
+                        errors, success = self._engine.check_status(urllist,
+                            True)
+
+                        errors = self._annotate_exceptions(errors)
+                        success = self._url_to_request(success)
+                        e.failures = errors
+                        e.success = success
+
+                        # Reset the engine before propagating exception.
+                        self._engine.reset()
+                        raise
 
                 errors = self._engine.check_status(urllist)
 
@@ -274,17 +324,7 @@ class HTTPRepo(TransportRepo):
                 # This adds an attribute that describes the request to the
                 # exception, if we were able to figure it out.
 
-                for e in errors:
-                        # when check_status is supplied with a list,
-                        # all exceptions returned will have a url.
-                        # If we didn't do this, we'd need a getattr check.
-                        eurl = e.url
-                        utup = urlparse.urlsplit(eurl)
-                        req = utup[2]
-                        req = os.path.basename(req)
-                        e.request = req
-
-                return errors
+                return self._annotate_exceptions(errors)
 
         def get_url(self):
                 """Returns the repo's url."""

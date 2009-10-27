@@ -33,6 +33,10 @@ import pkg.client.api_errors as api_errors
 retryable_http_errors = set((httplib.REQUEST_TIMEOUT, httplib.BAD_GATEWAY,
         httplib.GATEWAY_TIMEOUT, httplib.NOT_FOUND))
 
+# Errors that stats.py may include in a decay-able error rate
+decayable_http_errors = set((httplib.NOT_FOUND,))
+decayable_pycurl_errors = set((pycurl.E_OPERATION_TIMEOUTED,))
+
 # Different protocols may have different retryable errors.  Map proto
 # to set of retryable errors.
 
@@ -41,7 +45,8 @@ retryable_proto_errors = { "http" : retryable_http_errors,
 
 retryable_pycurl_errors = set((pycurl.E_COULDNT_CONNECT, pycurl.E_PARTIAL_FILE,
         pycurl.E_OPERATION_TIMEOUTED, pycurl.E_GOT_NOTHING, pycurl.E_SEND_ERROR,
-        pycurl.E_RECV_ERROR, pycurl.E_COULDNT_RESOLVE_HOST))
+        pycurl.E_RECV_ERROR, pycurl.E_COULDNT_RESOLVE_HOST,
+        pycurl.E_TOO_MANY_REDIRECTS))
 
 class TransportException(api_errors.TransportError):
         """Base class for various exceptions thrown by code in transport
@@ -284,17 +289,20 @@ class TransferContentException(TransportException):
 class InvalidContentException(TransportException):
         """Raised when the content's hash/chash doesn't verify, or the
         content is received in an unreadable format."""
-        def __init__(self, path, reason, size=0):
+        def __init__(self, path, reason, size=0, url=None):
                 TransportException.__init__(self)
                 self.path = path
                 self.reason = reason
                 self.size = size
                 self.retryable = True
+                self.url = url
 
         def __str__(self):
                 s = "Invalid content for action with path %s" % self.path
                 if self.reason:
                         s += ": %s." % self.reason
+                if self.url:
+                        s += "\nURL: %s" % self.url
                 return s
 
         def __cmp__(self, other):
@@ -303,7 +311,11 @@ class InvalidContentException(TransportException):
                 r = cmp(self.path, other.path)
                 if r != 0:
                         return r
-                return cmp(self.reason, other.reason)
+                r = cmp(self.reason, other.reason)
+                if r != 0:
+                        return r
+                return cmp(self.url, other.url)
+
 
 class PkgProtoError(TransportException):
         """Raised when the pkg protocol doesn't behave according to
@@ -342,3 +354,32 @@ class PkgProtoError(TransportException):
                 if r != 0:
                         return r
                 return cmp(self.reason, other.reason) 
+
+
+class ExcessiveTransientFailure(TransportException):
+        """Raised when the transport encounters too many retryable errors
+        at a single endpoint."""
+
+        def __init__(self, url, count):
+                TransportException.__init__(self)
+                self.url = url
+                self.count = count
+                self.retryable = True
+                self.failures = None
+                self.success = None
+
+        def __str__(self):
+                s = "Too many retryable errors encountered during transfer.\n"
+                if self.url:
+                        s += "URL: %s " % self.url
+                if self.count:
+                        s += "Count: %s " % self.count
+                return s
+                
+        def __cmp__(self, other):
+                if not isinstance(other, ExcessiveTransientFailure):
+                        return -1
+                r = cmp(self.url, other.url)
+                if r != 0:
+                        return r
+                return cmp(self.count, other.count)

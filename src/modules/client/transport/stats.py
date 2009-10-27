@@ -25,12 +25,20 @@
 # Use is subject to license terms.
 #
 
+import os
+import datetime
+import random
+import urlparse
 import pkg.misc as misc
 
 class RepoChooser(object):
         """An object that contains repo statistics.  It applies algorithms
         to choose an optimal set of repos for a given publisher, based
-        upon the observed repo statistics."""
+        upon the observed repo statistics.
+
+        The RepoChooser object is a container for RepoStats objects.
+        It's used to return the RepoStats in an ordered list, which
+        helps the transport pick the best performing destination."""
 
         def __init__(self):
                 self.__rsobj = {}
@@ -44,24 +52,73 @@ class RepoChooser(object):
         def dump(self):
                 """Write the repo statistics to stdout."""
 
-                fmt = "%-30s %-8s %-8s %-12s %-4s %-4s"
-                print fmt % ("URL", "Good Tx", "Errors", "Speed", "Prio",
-                    "Used")
+                hfmt = "%-21s %-6s %-4s %-4s %-8s %-10s %-5s %-7s %-4s"
+                dfmt = "%-21s %-6s %-4s %-4s %-8s %-10s %-5s %-6f %-4s"
+                misc.msg(hfmt % ("URL", "Good", "Err", "Conn", "Speed", "Size",
+                    "Used", "CSpeed", "Qual"))
 
                 for ds in self.__rsobj.values():
 
                         speedstr = misc.bytes_to_str(ds.transfer_speed,
-                            "%(num).0f %(unit)s/sec")
+                            "%(num).0f %(unit)s/s")
 
-                        print fmt % (ds.url, ds.success, ds.failures,
-                            speedstr, ds.priority, ds.used)
+                        sizestr = misc.bytes_to_str(ds.bytes_xfr)
 
-        def get_repostats(self, repouri_list):
+                        url_tup = urlparse.urlsplit(ds.url)
+
+                        misc.msg(dfmt % (url_tup[1], ds.success, ds.failures,
+                            ds.num_connect, speedstr, sizestr, ds.used,
+                            ds.connect_time, ds.quality))
+
+        def get_num_visited(self, repouri_list):
+                """Walk a list of repository uris and return the number
+                that have been visited as an integer.  If a repository
+                is in the list, but we don't know about it yet, create a
+                stats object to keep track of it, and include it in
+                the visited count."""
+
+                found_rs = []
+
+                for ruri in repouri_list:
+                        url = ruri.uri.rstrip("/")
+                        if url in self.__rsobj:
+                                rs = self.__rsobj[url]
+                        else:
+                                rs = RepoStats(ruri)
+                                self.__rsobj[rs.url] = rs
+                        found_rs.append((rs, ruri))
+
+                return len([x for x in found_rs if x[0].used])
+
+        def get_repostats(self, repouri_list, origin_list=misc.EmptyI):
                 """Walk a list of repo uris and return a sorted list of
                 status objects.  The better choices should be at the
                 beginning of the list."""
 
                 found_rs = []
+                origin_speed = 0
+                origin_count = 0
+                origin_avg_speed = 0
+                origin_cspeed = 0
+                origin_ccount = 0
+                origin_avg_cspeed = 0
+
+                for ouri in origin_list:
+                        url = ouri.uri.rstrip("/")
+                        if url in self.__rsobj:
+                                rs = self.__rsobj[url]
+                                origin_speed += rs.transfer_speed
+                                origin_count += 1
+                                origin_cspeed += rs.connect_time
+                                origin_ccount += 1
+                        else:
+                                rs = RepoStats(ouri)
+                                self.__rsobj[rs.url] = rs
+
+                if origin_count > 0:
+                        origin_avg_speed = origin_speed / origin_count
+                if origin_ccount > 0:
+                        origin_avg_cspeed = origin_cspeed / origin_ccount
 
                 # Walk the list of repouris that we were provided.
                 # If they're already in the dictionary, copy a reference
@@ -70,27 +127,47 @@ class RepoChooser(object):
                 for ruri in repouri_list:
                         url = ruri.uri.rstrip("/")
                         if url in self.__rsobj:
-                                found_rs.append((self.__rsobj[url], ruri))
+                                rs = self.__rsobj[url]
                         else:
                                 rs = RepoStats(ruri)
                                 self.__rsobj[rs.url] = rs
-                                found_rs.append((rs, ruri))
+                        found_rs.append((rs, ruri))
 
-                # XXX This is the existing sort algorithm for mirror
-                # selection.  We should switch this to a positive definite
-                # quality function, where each RepoStats object is capable
-                # of generating its own quality number.
+                        if origin_count > 0:
+                                rs.origin_speed = origin_avg_speed
+                        if origin_ccount > 0:
+                                rs.origin_cspeed = origin_avg_cspeed
 
-                found_rs.sort(key=lambda x: (x[0].failures, x[0].success))
+                        # Decay error rate for transient errors.
+                        # Reduce the error penalty by 10% each iteration.
+                        # In other words, keep 90% of the current value.
+                        rs._err_decay *= 0.9
+
+                found_rs.sort(key=lambda x: x[0].quality, reverse=True)
 
                 # list of tuples, (repostatus, repouri)
                 return found_rs
+
+        def clear(self):
+                """Clear all statistics count."""
+
+                self.__rsobj = {}
+
+        def reset(self):
+                """reset each stats object"""
+
+                for v in self.__rsobj.values():
+                        v.reset()
 
 
 class RepoStats(object):
         """An object for keeping track of observed statistics for a particular
         RepoURI.  This includes things like observed performance, availability,
-        successful and unsuccessful transaction rates, etc."""
+        successful and unsuccessful transaction rates, etc.
+
+        There's one RepoStats object per transport destination.
+        This allows the transport to keep statistics about each
+        host that it visits."""
 
         def __init__(self, repouri):
                 """Initialize a RepoStats object.  Pass a RepositoryURI object
@@ -100,21 +177,57 @@ class RepoStats(object):
                 self.__url = repouri.uri.rstrip("/")
                 self.__priority = repouri.priority
 
+                self._err_decay = 0
                 self.__failed_tx = 0
+                self.__content_err = 0
+                self.__decayable_err = 0
                 self.__total_tx = 0
+                self.__consecutive_errors = 0
+
+                self.__connections = 0
+                self.__connect_time = 0.0
 
                 self.__used = False
 
                 self.__bytes_xfr = 0.0
                 self.__seconds_xfr = 0.0
+                self.origin_speed = 0.0
+                self.origin_cspeed = 0.0
 
-        def record_error(self):
+        def clear_consecutive_errors(self):
+                """Set the count of consecutive errors to zero.  This is
+                done once we know a transaction has been successfully
+                completed."""
+
+                self.__consecutive_errors = 0
+
+        def record_connection(self, time):
+                """Record amount of time spent connecting."""
+
+                self.__connections += 1
+                self.__connect_time += time
+
+        def record_error(self, decayable=False, content=False):
                 """Record that an operation to the RepositoryURI represented
-                by this RepoStats object failed with an error."""
+                by this RepoStats object failed with an error.
+
+                Set decayable to true if the error is a transient
+                error that may be decayed by the stats framework.
+
+                Set content to true if the error is caused by
+                corrupted or invalid content."""
 
                 if not self.__used:
                         self.__used = True
-                self.__failed_tx += 1
+
+                self.__consecutive_errors += 1
+                if decayable:
+                        self.__decayable_err += 1
+                        self._err_decay += 1
+                elif content:
+                        self.__content_err += 1
+                else:
+                        self.__failed_tx += 1
 
         def record_progress(self, bytes, seconds):
                 """Record time and size of a network operation to a
@@ -136,6 +249,17 @@ class RepoStats(object):
                         self.__used = True
                 self.__total_tx += 1
 
+        def reset(self):
+                self.__bytes_xfr = 0.0
+                self.__seconds_xfr = 0.0
+                self.__failed_tx = 0
+                self.__content_err = 0
+                self.__decayable_err = 0
+                self._err_decay = 0
+                self.__total_tx = 0
+                self.__consecutive_errors = 0
+                self.origin_speed = 0.0
+
         @property
         def bytes_xfr(self):
                 """Return the number of bytes transferred."""
@@ -143,11 +267,36 @@ class RepoStats(object):
                 return self.__bytes_xfr
 
         @property
+        def connect_time(self):
+                """The average connection time for this host."""
+
+                if self.__connections == 0:
+                        return 0
+
+                return self.__connect_time / self.__connections
+
+        @property
+        def consecutive_errors(self):
+                """Return the number of successive errors this endpoint
+                has encountered."""
+
+                return self.__consecutive_errors
+
+        @property
         def failures(self):
                 """Return the number of failures that the client has encountered
                    while trying to perform operations on this repository."""
 
-                return self.__failed_tx
+                return self.__failed_tx + self.__content_err + \
+                    self.__decayable_err
+
+        @property
+        def num_connect(self):
+                """Return the number of times that the host has had a
+                connection established.  This is less than or equal to the
+                number of transactions."""
+
+                return self.__connections
 
         @property
         def priority(self):
@@ -157,6 +306,87 @@ class RepoStats(object):
                         return 0
 
                 return self.__priority
+
+        @property
+        def quality(self):
+                """Return the quality, as an integer value, of the
+                repository.  A higher value means better quality.
+
+                This particular implementation of quality() contains
+                a random term.  Two successive calls to this function
+                may return different values."""
+
+                Nused = 20
+                Cused = 10
+
+                Cspeed = 100
+                Cconn_speed = 66
+                Cerror = 20
+                Ccontent_err = 200
+                Crand_max = 20
+                Cospeed_none = 100000
+
+                if self.origin_speed > 0:
+                        ospeed = self.origin_speed
+                else:
+                        ospeed = Cospeed_none
+
+                if self.origin_cspeed > 0:
+                        ocspeed = self.origin_cspeed
+                else:
+                        ocspeed = 1
+
+                def H_used(self):
+                        tx = 0
+
+                        tx = self.__total_tx - self.failures
+
+                        if tx < 0:
+                                return 0
+
+                        if tx < Nused:
+                                return Cused * (Nused - tx)**2
+       
+                        return 0
+
+                #
+                # Quality function:
+                #
+                # This function presents the quality of a repository as an
+                # integer value.  The quality is determined by observing
+                # different aspects of the repository's performance.  This
+                # includes how often it has been used, the transfer speed, the
+                # connect speed, and the number of errors classified by type.
+                #
+                # The equation is currently defined as:
+                #
+                # Q = Unused_bonus() + Cspeed * ((bytes/1+seconds) /
+                # origin_speed)^2 + random_bonus(Crand_max) - Cconn_speed *
+                # (connect_speed / origin_connect_speed)^2 - 
+                # Ccontent_error * (content_errors)^2 - Cerror *
+                # (non_decayable_errors + value_of_decayed_errors)^2
+                #
+                # Unused_bonus = Cused * (MaxUsed - total tx)^2 if total_tx
+                # is less than MaxUsed, otherwise return 0.
+                #
+                # random_bonus is a gaussian distribution where random_max is
+                # set as the argument for the stddev.  Most numbers generated
+                # will fall between 0 and -/+ random_max, but some will fall
+                # outside of the first standard deviation.
+                #
+                # The constants were derived by live testing, and using
+                # a simulated environment.
+                #
+                
+                q = H_used(self) + \
+                    (Cspeed * ((self.__bytes_xfr / (1 + self.__seconds_xfr))
+                    / ospeed)**2) + \
+                    int(random.gauss(0, Crand_max)) - \
+                    (Cconn_speed * (self.connect_time / ocspeed)**2) - \
+                    (Ccontent_err * (self.__content_err)**2) - \
+                    (Cerror * (self.__failed_tx + self._err_decay)**2)
+
+                return int(q)
 
         @property
         def seconds_xfr(self):
@@ -170,7 +400,9 @@ class RepoStats(object):
                 """Return the number of successful transaction that this client
                    has performed while communicating with this repository."""
 
-                return self.__total_tx - self.__failed_tx
+                return self.__total_tx - (self.__failed_tx +
+                    self.__content_err +  self.__decayable_err)
+
 
         @property
         def transfer_speed(self):

@@ -68,6 +68,8 @@ class CurlTransportEngine(TransportEngine):
                 self.__req_q = deque()
                 # List of failures
                 self.__failures = []
+                # List of URLs successfully transferred
+                self.__success = []
                 # Set default file buffer size at 128k, callers override
                 # this setting after looking at VFS block size.
                 self.__file_bufsz = 131072
@@ -129,25 +131,32 @@ class CurlTransportEngine(TransportEngine):
 
                 count, good, bad = self.__mhandle.info_read()
                 failures = self.__failures
+                success = self.__success
                 done_handles = []
                 ex_to_raise = None
+                visited_repos = set()
+                errors_seen = 0
 
                 for h, en, em in bad:
 
                         # Get statistics for each handle.
                         repostats = self.__xport.stats[h.repourl]
+                        visited_repos.add(repostats)
                         repostats.record_tx()
                         bytes = h.getinfo(pycurl.SIZE_DOWNLOAD)
-                        seconds = h.getinfo(pycurl.TOTAL_TIME)
+                        seconds = h.getinfo(pycurl.TOTAL_TIME) - \
+                            h.getinfo(pycurl.PRETRANSFER_TIME)
+                        conn_count = h.getinfo(pycurl.NUM_CONNECTS)
+
                         repostats.record_progress(bytes, seconds)
+                        if conn_count > 0:
+                                conn_time = h.getinfo(pycurl.CONNECT_TIME)
+                                repostats.record_connection(conn_time)
 
                         httpcode = h.getinfo(pycurl.RESPONSE_CODE)
                         url = h.url
                         urlstem = h.repourl
                         proto = urlparse.urlsplit(url)[0]
-
-                        # All of these are errors
-                        repostats.record_error()
 
                         # If we were cancelled, raise an API error.
                         # Otherwise fall through to transport's exception
@@ -156,9 +165,15 @@ class CurlTransportEngine(TransportEngine):
                                 ex = None
                                 ex_to_raise = api_errors.CanceledException
                         elif en == pycurl.E_HTTP_RETURNED_ERROR:
+                                decay = httpcode in tx.decayable_http_errors
+                                repostats.record_error(decayable=decay)
+                                errors_seen += 1
                                 ex = tx.TransportProtoError(proto, httpcode,
                                     url, repourl=urlstem)
                         else:
+                                decay = en in tx.decayable_pycurl_errors
+                                repostats.record_error(decayable=decay)
+                                errors_seen += 1
                                 ex = tx.TransportFrameworkError(en, url, em,
                                     repourl=urlstem)
 
@@ -172,11 +187,18 @@ class CurlTransportEngine(TransportEngine):
                 for h in good:
                         # Get statistics for each handle.
                         repostats = self.__xport.stats[h.repourl]
+                        visited_repos.add(repostats)
                         repostats.record_tx()
                         bytes = h.getinfo(pycurl.SIZE_DOWNLOAD)
-                        seconds = h.getinfo(pycurl.TOTAL_TIME)
+                        seconds = h.getinfo(pycurl.TOTAL_TIME) - \
+                            h.getinfo(pycurl.PRETRANSFER_TIME)
+                        conn_count = h.getinfo(pycurl.NUM_CONNECTS)
                         h.filetime = h.getinfo(pycurl.INFO_FILETIME)
+
                         repostats.record_progress(bytes, seconds)
+                        if conn_count > 0:
+                                conn_time = h.getinfo(pycurl.CONNECT_TIME)
+                                repostats.record_connection(conn_time)
 
                         httpcode = h.getinfo(pycurl.RESPONSE_CODE)
                         url = h.url
@@ -185,6 +207,8 @@ class CurlTransportEngine(TransportEngine):
 
                         if httpcode == httplib.OK:
                                 h.success = True
+                                repostats.clear_consecutive_errors()
+                                success.append(url)
                         else:
                                 ex = tx.TransportProtoError(proto,
                                     httpcode, url, repourl=urlstem)
@@ -193,11 +217,16 @@ class CurlTransportEngine(TransportEngine):
                                 # Handlers above the engine get to decide
                                 # for 200/300 codes that aren't OK
                                 if httpcode >= 400: 
-                                        repostats.record_error()
+                                        decay = httpcode in \
+                                            tx.decayable_http_errors
+                                        repostats.record_error(decayable=decay)
+                                        errors_seen += 1
                                 # If code == 0, libcurl failed to read
                                 # any HTTP status.  Response is almost
                                 # certainly corrupted.
                                 elif httpcode == 0:
+                                        repostats.record_error()
+                                        errors_seen += 1
                                         reason = "Invalid HTTP status code " \
                                             "from server" 
                                         ex = tx.TransportProtoError(proto,
@@ -222,11 +251,32 @@ class CurlTransportEngine(TransportEngine):
                         self.__freehandles.append(h)
 
                 self.__failures = failures
+                self.__success = success
 
                 if ex_to_raise:
                         raise ex_to_raise
 
-        def check_status(self, urllist=None):
+                # Don't bother to check the transient error count if no errors
+                # were encountered in this transaction.
+                if errors_seen == 0:
+                        return
+
+                # If errors were encountered, but no exception raised,
+                # check if the maximum number of transient failures has
+                # been exceeded at any of the endpoints that were visited
+                # during this transaction.
+                for rs in visited_repos:
+                        numce = rs.consecutive_errors
+                        if numce >= \
+                            global_settings.PKG_CLIENT_MAX_CONSECUTIVE_ERROR:
+                                # Reset consecutive error count before raising
+                                # this exception.
+                                rs.clear_consecutive_errors()
+                                raise tx.ExcessiveTransientFailure(rs.url,
+                                    numce)
+
+
+        def check_status(self, urllist=None, good_reqs=False):
                 """Return information about retryable failures that occured
                 during the request.
 
@@ -240,12 +290,24 @@ class CurlTransportEngine(TransportEngine):
                 Transient errors are part of standard control flow.
                 The caller will look at these and decide whether
                 to throw them or not.  Permanent failures are raised
-                by the transport engine as soon as they occur."""
+                by the transport engine as soon as they occur.
+
+                If good_reqs is set to true, then check_stats will
+                return a tuple of lists, the first list contains the
+                transient errors that were encountered, the second list
+                contains successfully transferred urls.  Because the
+                list of successfully transferred URLs may be long,
+                it is discarded if not requested by the caller."""
 
                 # if list not specified, return all failures
                 if not urllist:
                         rf = self.__failures
+                        rs = self.__success
                         self.__failures = []
+                        self.__success = []
+
+                        if good_reqs:
+                                return rf, rs
 
                         return rf
 
@@ -262,7 +324,20 @@ class CurlTransportEngine(TransportEngine):
                 for f in rf:
                         self.__failures.remove(f)
 
-                return rf
+                if not good_reqs:
+                        self.__success = []
+                        return rf
+
+                rs = []
+
+                for ts in self.__success:
+                        if ts in urllist:
+                                rs.append(ts)
+
+                for s in rs:
+                        self.__success.remove(s)
+
+                return rf, rs
 
         def get_url(self, url, header=None, sslcert=None, sslkey=None,
             repourl=None, compressible=False):
@@ -307,7 +382,7 @@ class CurlTransportEngine(TransportEngine):
                 """Returns true if the engine still has outstanding
                 work to perform, false otherwise."""
 
-                return len(self.__req_q) > 0 or self.__active_handles > 0
+                return bool(self.__req_q) or self.__active_handles > 0
 
         def run(self):
                 """Run the transport engine.  This polls the underlying
@@ -356,6 +431,7 @@ class CurlTransportEngine(TransportEngine):
                         if h.url == url and h not in self.__freehandles:
                                 self.__mhandle.remove_handle(h)
                                 self.__teardown_handle(h)
+                                self.__freehandles.append(h)
                                 return
 
                 for i, t in enumerate(self.__req_q):
@@ -366,6 +442,11 @@ class CurlTransportEngine(TransportEngine):
                 for ex in self.__failures:
                         if ex.url == url:
                                 self.__failures.remove(ex)
+                                return
+
+                for s in self.__success:
+                        if s == url:
+                                self.__success.remove(s)
                                 return
 
         def reset(self):
@@ -380,6 +461,8 @@ class CurlTransportEngine(TransportEngine):
                 self.__active_handles = 0
                 self.__freehandles = self.__chandles[:]
                 self.__req_q = deque()
+                self.__failures = []
+                self.__success = []
 
         def send_data(self, url, data, header=None, sslcert=None, sslkey=None,
             repourl=None):
@@ -458,6 +541,9 @@ class CurlTransportEngine(TransportEngine):
 
                 # Follow redirects
                 hdl.setopt(pycurl.FOLLOWLOCATION, True)
+                # Set limit on maximum number of redirects
+                hdl.setopt(pycurl.MAXREDIRS,
+                    global_settings.PKG_CLIENT_MAX_REDIRECT)
 
                 # Make sure that we don't use a proxy if the destination
                 # is localhost.
@@ -469,9 +555,7 @@ class CurlTransportEngine(TransportEngine):
 
                 # Take header dictionaries and convert them into lists
                 # of header strings.
-                if len(self.__common_header) > 0 or \
-                    (treq.header and len(treq.header) > 0):
-
+                if self.__common_header or treq.header:
                         headerlist = []
 
                         # Headers common to all requests

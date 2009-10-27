@@ -47,7 +47,7 @@ import pkg.misc as misc
 import pkg.portable as portable
 import pkg.updatelog as updatelog
 
-from pkg.actions import MalformedActionError
+from pkg.actions import ActionError
 from pkg.client import global_settings
 
 class Transport(object):
@@ -345,6 +345,7 @@ class Transport(object):
                         failedreqs = []
                         repostats = self.stats[d.get_url()]
                         repo_found = True
+                        gave_up = False
 
                         # This returns a list of transient errors
                         # that occurred during the transport operation.
@@ -361,6 +362,13 @@ class Transport(object):
                                         raise apx.CatalogNotModified(e.url)
                                 else:
                                         raise
+                        except tx.ExcessiveTransientFailure, ex:
+                                # If an endpoint experienced so many failures
+                                # that the client just gave up, make a note
+                                # of this condition and try another host.
+                                gave_up = True
+                                errlist = ex.failures
+                                success = ex.success
 
                         for e in errlist:
                                 # General case: Fish the request information
@@ -373,15 +381,31 @@ class Transport(object):
                                 else:
                                         raise e
 
-                        if not failedreqs:
-                                success = flist
-                                flist = None
-                        else:
+
+                        if gave_up:
+                                # If the transport gave up due to excessive
+                                # consecutive errors, the caller is returned a
+                                # list of successful requests, and a list of
+                                # failures.  We need to consider the requests
+                                # that were not attempted because we gave up
+                                # early.  In this situation, they're failed
+                                # requests, even though no exception was
+                                # returned.  Filter the flist to remove the
+                                # successful requests.  Everything else failed.
+                                failedreqs = [
+                                    x for x in flist
+                                    if x not in success
+                                ]
+                                flist = failedreqs
+                        elif failedreqs:
                                 success = [
                                     x for x in flist
                                     if x not in failedreqs
                                 ]
                                 flist = failedreqs
+                        else:
+                                success = flist
+                                flist = None
 
                         for s in success:
                                 dl_path = os.path.join(download_dir, s)
@@ -553,8 +577,8 @@ class Transport(object):
                                 else:
                                         raise
  
-                        except MalformedActionError, e:
-                                repostats.record_error()
+                        except ActionError, e:
+                                repostats.record_error(content=True)
                                 te = tx.TransferContentException(
                                     d.get_url(), reason=str(e))
                                 failures.append(te)
@@ -576,7 +600,7 @@ class Transport(object):
                 if uuid:
                         header["X-IPkg-UUID"] = uuid
 
-                if len(header) == 0:
+                if not header:
                         return None
 
                 return header
@@ -608,25 +632,16 @@ class Transport(object):
                                 raise tx.TransportOperationError("Unable to "
                                     "make directory: %s" % e)
 
-        def _get_files(self, mfile):
-                """Perform an operation that gets multiple files at once.
-                A mfile object contains information about the multiple-file
-                request that will be performed."""
-
-                self.__lock.acquire()
-                try:
-                        self._get_files_impl(mfile)
-                finally:
-                        self.__lock.release()
-
-        def _get_files_impl(self, mfile):
-                """The implementation of _get_files.  The _get_files function
-                wraps this, in order to simplify lock release after
-                exceptions."""
+        def _get_files_list(self, mfile, flist):
+                """Download the files given in argument 'flist'.  This
+                allows us to break up download operations into multiple
+                chunks.  Since we re-evaluate our host selection after
+                each chunk, this gives us a better way of reacting to
+                changing conditions in the network."""
 
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 failures = []
-                filelist = mfile.keys()
+                filelist = flist
                 pub = mfile.get_publisher()
                 progtrack = mfile.get_progtrack()
                 header = self.__build_header(uuid=self.__get_uuid(pub))
@@ -635,6 +650,110 @@ class Transport(object):
                 # is the cache where valid content lives.
                 completed_dir = self.__img.cached_download_dir()
                 download_dir = self.__img.incoming_download_dir()
+
+                for d in self.__gen_repos(pub, retry_count):
+
+                        failedreqs = []
+                        repostats = self.stats[d.get_url()]
+                        gave_up = False
+
+                        # This returns a list of transient errors
+                        # that occurred during the transport operation.
+                        # An exception handler here isn't necessary
+                        # unless we want to supress a permanant failure.
+                        try:
+                                errlist = d.get_files(filelist, download_dir,
+                                    progtrack, header)
+                        except tx.ExcessiveTransientFailure, ex:
+                                # If an endpoint experienced so many failures
+                                # that we just gave up, record this for later
+                                # and try a different host.
+                                gave_up = True
+                                errlist = ex.failures
+                                success = ex.success
+
+                        for e in errlist:
+                                req = getattr(e, "request", None)
+                                if req:
+                                        failedreqs.append(req)
+                                        failures.append(e)
+                                else:
+                                        raise e
+
+                        if gave_up:
+                                # If the transport gave up due to excessive
+                                # consecutive errors, the caller is returned a
+                                # list of successful requests, and a list of
+                                # failures.  We need to consider the requests
+                                # that were not attempted because we gave up
+                                # early.  In this situation, they're failed
+                                # requests, even though no exception was
+                                # returned.  Filter the flist to remove the
+                                # successful requests.  Everything else failed.
+                                failedreqs = [
+                                    x for x in filelist
+                                    if x not in success
+                                ]
+                                filelist = failedreqs
+                        elif failedreqs:
+                                success = [
+                                    x for x in filelist
+                                    if x not in failedreqs
+                                ]
+                                filelist = failedreqs
+                        else:
+                                success = filelist
+                                filelist = None
+
+                        for s in success:
+
+                                dl_path = os.path.join(download_dir, s)
+
+                                try:
+                                        self._verify_content(mfile[s][0],
+                                            dl_path)
+                                except tx.InvalidContentException, e:
+                                        mfile.subtract_progress(e.size)
+                                        e.request = s
+                                        repostats.record_error(content=True)
+                                        failedreqs.append(s)
+                                        failures.append(e)
+                                        if not filelist:
+                                                filelist = failedreqs
+                                        continue
+
+                                final_path = os.path.normpath(
+                                    os.path.join(completed_dir,
+                                    misc.hash_file_name(s)))
+                                finaldir = os.path.dirname(final_path)
+
+                                self._makedirs(finaldir)
+                                portable.rename(dl_path, final_path)
+
+                                mfile.make_openers(s, final_path)
+                                mfile.del_hash(s)
+
+                        # Return if everything was successful
+                        if not filelist and not errlist:
+                                return
+
+                if failedreqs and failures:
+                        failures = [
+                            x for x in failures
+                            if x.request in failedreqs
+                        ]
+                        tfailurex = tx.TransportFailures()
+                        for f in failures:
+                                tfailurex.append(f)
+                        raise tfailurex
+
+        def _get_files_impl(self, mfile):
+                """The implementation of _get_files.  The _get_files
+                function is a wrapper around this function, mainly for
+                locking purposes."""
+
+                download_dir = self.__img.incoming_download_dir()
+                pub = mfile.get_publisher()
 
                 # If captive portal test hasn't been executed, run it
                 # prior to this operation.
@@ -652,8 +771,8 @@ class Transport(object):
                 # filesystem.
                 try:
                         destvfs = os.statvfs(download_dir)
-                        # Set the file buffer size to the blocksize of our
-                        # filesystem.
+                        # set the file buffer size to the blocksize of
+                        # our filesystem
                         self.__engine.set_file_bufsz(destvfs[statvfs.F_BSIZE])
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES:
@@ -665,77 +784,28 @@ class Transport(object):
                         # os.statvfs is not available on Windows
                         pass
 
-                for d in self.__gen_repos(pub, retry_count):
+                while mfile:
 
-                        failedreqs = []
-                        repostats = self.stats[d.get_url()]
+                        filelist = []
+                        chunksz = self.__chunk_size(pub)
 
-                        # This returns a list of transient errors
-                        # that occurred during the transport operation.
-                        # An exception handler here isn't necessary
-                        # unless we want to supress a permanant failure.
-                        errlist = d.get_files(filelist, download_dir,
-                            progtrack, header)
+                        for i, v in enumerate(mfile):
+                                if i >= chunksz:
+                                        break
+                                filelist.append(v)
 
-                        for e in errlist:
-                                req = getattr(e, "request", None)
-                                if req:
-                                        failedreqs.append(req)
-                                        failures.append(e)
-                                else:
-                                        raise e
+                        self._get_files_list(mfile, filelist)
 
-                        if len(failedreqs) > 0:
-                                success = filter(lambda x: x not in failedreqs,
-                                    filelist)
-                                filelist = failedreqs
-                        else:
-                                success = filelist
-                                filelist = None
+        def _get_files(self, mfile):
+                """Perform an operation that gets multiple files at once.
+                A mfile object contains information about the multiple-file
+                request that will be performed."""
 
-                        for s in success:
-
-                                dl_path = os.path.join(download_dir, s)
-
-                                try:
-                                        self._verify_content(mfile[s][0],
-                                            dl_path)
-                                except tx.InvalidContentException, e:
-                                        mfile.subtract_progress(e.size)
-                                        e.request = s
-                                        repostats.record_error()
-                                        failedreqs.append(s)
-                                        failures.append(e)
-                                        if not filelist:
-                                                filelist = failedreqs
-                                        continue
-
-                                final_path = os.path.normpath(
-                                    os.path.join(completed_dir,
-                                    misc.hash_file_name(s)))
-                                finaldir = os.path.dirname(final_path)
-
-                                self._makedirs(finaldir)
-                                portable.rename(dl_path, final_path)
-
-                                mfile.make_openers(s, final_path)
-
-                        # Return if everything was successful
-                        if not filelist and len(errlist) == 0:
-                                return
-
-                if len(failedreqs) > 0 and len(failures) > 0:
-                        failures = filter(lambda x: x.request in failedreqs,
-                            failures)
-
-                        failures = [
-                            x for x in failures
-                            if x.request in failedreqs
-                        ]
-                        tfailurex = tx.TransportFailures()
-                        for f in failures:
-                                tfailurex.append(f)
-                        raise tfailurex
+                self.__lock.acquire()
+                try:
+                        self._get_files_impl(mfile)
+                finally:
+                        self.__lock.release()
 
         def get_versions(self, pub):
                 """Query the publisher's origin servers for versions
@@ -847,7 +917,7 @@ class Transport(object):
                         origins = [pub]
 
                 for i in xrange(count):
-                        rslist = self.stats.get_repostats(origins)
+                        rslist = self.stats.get_repostats(origins, origins)
                         for rs, ruri in rslist:
                                 yield self.__repo_cache.new_repo(rs, ruri)
 
@@ -889,12 +959,34 @@ class Transport(object):
 
                 for i in xrange(count):
                         repo = pub.selected_repository
-                        rslist = self.stats.get_repostats(repo.mirrors)
+                        repolist = repo.mirrors[:]
+                        repolist.extend(repo.origins)
+                        rslist = self.stats.get_repostats(repolist,
+                            repo.origins)
                         for rs, ruri in rslist:
                                 yield self.__repo_cache.new_repo(rs, ruri)
-                        rslist = self.stats.get_repostats(repo.origins)
-                        for rs, ruri in rslist:
-                                yield self.__repo_cache.new_repo(rs, ruri)
+
+        def __chunk_size(self, pub):
+                """Determine the chunk size based upon how many of the known
+                mirrors have been visited.  If not all mirrors have been
+                visited, choose a small size so that if it ends up being
+                a poor choice, the client doesn't transfer too much data."""
+
+                CHUNK_SMALL = 10
+                CHUNK_LARGE = 100
+
+                if not self.__engine:
+                        self.__setup()
+
+                repo = pub.selected_repository
+                repolist = repo.mirrors[:]
+                repolist.extend(repo.origins)
+
+                n = len(repolist)
+                m = self.stats.get_num_visited(repolist)
+                if m < n:
+                        return CHUNK_SMALL
+                return CHUNK_LARGE
 
         def valid_publisher_test(self, pub):
                 """Test that the publisher supplied in pub actually
@@ -1108,11 +1200,21 @@ class MultiFile(object):
                 self._progtrack.check_cancelation = ccancel
                 self._fhash = { }
 
+        def __contains__(self, key):
+                return key in self._fhash
+
         def __getitem__(self, key):
                 return self._fhash[key]
 
-        def __contains__(self, key):
-                return key in self._fhash
+        def __iter__(self):
+                for v in self._fhash:
+                        yield v
+
+        def __len__(self):
+                return len(self._fhash)
+
+        def __nonzero__(self):
+                return bool(self._fhash)
 
         def add_action(self, action):
                 """The multiple file retrieval operation is asynchronous.
@@ -1209,6 +1311,6 @@ class MultiFile(object):
                 """Wait for outstanding file retrieval operations to
                 complete."""
 
-                if len(self._fhash) > 0:
+                if self._fhash:
                         self._transport._get_files(self)
 

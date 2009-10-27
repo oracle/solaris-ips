@@ -650,6 +650,10 @@ class ImagePlan(object):
                                         e, traceback.format_exc(),
                                         traceback.format_stack())
 
+                # Remove history about manifest/catalog transactions.  This
+                # helps the stats engine by only considering the performance of
+                # bulk downloads.
+                self.image.transport.stats.reset()
                 try:
                         try:
                                 for p in self.pkg_plans:

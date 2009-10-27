@@ -227,12 +227,17 @@ class StreamingFileObj(object):
 
                 engine = self.__engine
 
+                if not engine:
+                        return False
+
                 while 1:
-                        if not engine.pending:
+                        if self.__done:
+                                return False
+                        elif not engine.pending:
                                 # nothing pending means no more transfer
                                 self.__done = True
                                 s = engine.check_status([self.__url])
-                                if len(s) > 0:
+                                if s:
                                         # Cleanup prior to raising exception
                                         self.close()
                                         raise s[0]
