@@ -476,9 +476,7 @@ class PackageManager:
                 toolbar =  w_tree_main.get_widget("toolbutton2")
                 toolbar.set_expand(True)
                 self.__init_repository_tree_view()
-                self.__update_reload_button()
                 self.w_main_window.set_title(self.main_window_title)
-                self.w_repository_combobox.grab_focus()
 
                 # Update All Completed Dialog
                 w_xmltree_ua_completed = gtk.glade.XML(self.gladefile,
@@ -4463,6 +4461,9 @@ class PackageManager:
                 if self.first_run:
                         self.__setup_filter_combobox()
                 self.__setup_repositories_combobox(self.api_o)
+                if self.first_run:
+                        self.__update_reload_button()
+                        self.w_repository_combobox.grab_focus()
 
         def __get_cache_obj(self, icon_theme, application_dir, api_o):
                 cache_o = cache.CacheListStores(icon_theme, application_dir,
