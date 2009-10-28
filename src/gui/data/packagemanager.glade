@@ -34,7 +34,6 @@
                     <child>
                       <widget class="GtkMenuItem" id="file_add_publisher">
                         <property name="visible">True</property>
-                        <property name="tooltip" translatable="yes">Add Publisher</property>
                         <property name="label" translatable="yes">_Add Publisher...</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_file_add_publisher_activate"/>
@@ -43,7 +42,6 @@
                     <child>
                       <widget class="GtkMenuItem" id="file_manage_publishers">
                         <property name="visible">True</property>
-                        <property name="tooltip" translatable="yes">Manage Publishers</property>
                         <property name="label" translatable="yes">_Manage Publishers...</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_file_manage_publishers_activate"/>
@@ -52,7 +50,6 @@
                     <child>
                       <widget class="GtkMenuItem" id="file_be">
                         <property name="visible">True</property>
-                        <property name="tooltip" translatable="yes">Manage Boot Environments</property>
                         <property name="label" translatable="yes">Manage _Boot Environments...</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_file_be_activate"/>
@@ -68,7 +65,6 @@
                         <property name="label">gtk-quit</property>
                         <property name="visible">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                        <property name="tooltip" translatable="yes">Quit application</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <signal name="activate" handler="on_file_quit_activate"/>
@@ -95,7 +91,6 @@
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                        <property name="tooltip" translatable="yes">Cut action</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <signal name="activate" handler="on_edit_cut_activate"/>
@@ -108,7 +103,6 @@
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                        <property name="tooltip" translatable="yes">Copy</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <signal name="activate" handler="on_edit_copy_activate"/>
@@ -121,7 +115,6 @@
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                        <property name="tooltip" translatable="yes">Paste</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <signal name="activate" handler="on_edit_paste_activate"/>
@@ -134,7 +127,6 @@
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                        <property name="tooltip" translatable="yes">Delete</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <signal name="activate" handler="on_edit_delete_activate"/>
@@ -152,7 +144,6 @@
                         <property name="label">gtk-select-all</property>
                         <property name="visible">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                        <property name="tooltip" translatable="yes">Select All Items</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <signal name="activate" handler="on_edit_select_all_activate"/>
@@ -163,7 +154,6 @@
                       <widget class="GtkMenuItem" id="edit_select_updates">
                         <property name="visible">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                        <property name="tooltip" translatable="yes">Select Updates</property>
                         <property name="label" translatable="yes">Select _Updates</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_edit_select_updates_activate"/>
@@ -173,7 +163,6 @@
                       <widget class="GtkMenuItem" id="edit_deselect">
                         <property name="visible">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                        <property name="tooltip" translatable="yes">Deselect selected packages</property>
                         <property name="label" translatable="yes">D_eselect All</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_edit_deselect_activate"/>
@@ -189,7 +178,6 @@
                       <widget class="GtkImageMenuItem" id="search">
                         <property name="label" translatable="yes">_Search</property>
                         <property name="visible">True</property>
-                        <property name="tooltip" translatable="yes">Search</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">False</property>
                         <signal name="activate" handler="on_edit_search_activate"/>
@@ -205,7 +193,6 @@
                     <child>
                       <widget class="GtkMenuItem" id="gotolist">
                         <property name="visible">True</property>
-                        <property name="tooltip" translatable="yes">Go to package list</property>
                         <property name="label" translatable="yes">Go to package _list</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_goto_list_activate"/>
@@ -217,7 +204,6 @@
                         <property name="label" translatable="yes">C_lear Search</property>
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
-                        <property name="tooltip" translatable="yes">Clear Search</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">False</property>
                         <signal name="activate" handler="on_clear_search_activate"/>
@@ -238,7 +224,6 @@
                       <widget class="GtkImageMenuItem" id="edit_preferences">
                         <property name="label">gtk-preferences</property>
                         <property name="visible">True</property>
-                        <property name="tooltip" translatable="yes">Package Manager Preferences</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <signal name="activate" handler="on_edit_preferences_activate"/>
@@ -259,7 +244,6 @@
                     <child>
                       <widget class="GtkMenuItem" id="start_page">
                         <property name="visible">True</property>
-                        <property name="tooltip" translatable="yes">Start Page</property>
                         <property name="label" translatable="yes">Start _Page</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_help_start_page_activate"/>
@@ -286,7 +270,6 @@
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                        <property name="tooltip" translatable="yes">Install or Update selected packages</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">False</property>
                         <signal name="activate" handler="on_package_install_update_activate"/>
@@ -303,7 +286,6 @@
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                        <property name="tooltip" translatable="yes">Remove selected packages</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">False</property>
                         <signal name="activate" handler="on_package_remove_activate"/>
@@ -325,7 +307,6 @@
                         <property name="label" translatable="yes">_Update All</property>
                         <property name="visible">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                        <property name="tooltip" translatable="yes">Update all packages</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">False</property>
                         <signal name="activate" handler="on_package_update_all_activate"/>
@@ -340,7 +321,6 @@
                       <widget class="GtkImageMenuItem" id="file_reload">
                         <property name="label" translatable="yes">Re_fresh</property>
                         <property name="visible">True</property>
-                        <property name="tooltip" translatable="yes">Refresh list of packages and package status</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">False</property>
                         <signal name="activate" handler="on_reload_button_clicked" after="yes"/>
@@ -369,7 +349,6 @@
                       <widget class="GtkImageMenuItem" id="online_help">
                         <property name="label" translatable="yes">_Contents</property>
                         <property name="visible">True</property>
-                        <property name="tooltip" translatable="yes">Help</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">False</property>
                         <signal name="activate" handler="on_help_help_activate"/>
@@ -378,6 +357,7 @@
                           <widget class="GtkImage" id="image1">
                             <property name="visible">True</property>
                             <property name="stock">gtk-help</property>
+                            <property name="icon-size">1</property>
                           </widget>
                         </child>
                       </widget>
@@ -392,7 +372,6 @@
                       <widget class="GtkImageMenuItem" id="help_about">
                         <property name="label">gtk-about</property>
                         <property name="visible">True</property>
-                        <property name="tooltip" translatable="yes">About</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <signal name="activate" handler="on_help_about_activate"/>
@@ -2227,7 +2206,6 @@ Update All creates a new boot environment (BE) as a means of archiving the curre
     <property name="modal">True</property>
     <property name="window_position">center-on-parent</property>
     <property name="type_hint">dialog</property>
-    <property name="transient_for">repository</property>
     <property name="has_separator">False</property>
     <child internal-child="vbox">
       <widget class="GtkVBox" id="dialog-vbox14">
