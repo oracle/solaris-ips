@@ -103,11 +103,6 @@ def expanddirs(dirs):
                         p = os.path.dirname(p)
         return out
 
-def hash_file_name(f):
-        """Return the two-level path fragment for the given filename, which is
-        assumed to be a content hash of at least 8 distinct characters."""
-        return os.path.join("%s" % f[0:2], "%s" % f[2:8], "%s" % f)
-
 def url_affix_trailing_slash(u):
         if u[-1] != '/':
                 u = u + '/'

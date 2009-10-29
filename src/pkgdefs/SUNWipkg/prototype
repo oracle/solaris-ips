@@ -130,6 +130,13 @@ f none usr/lib/python2.4/vendor-packages/pkg/dependency.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/depotcontroller.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/depotcontroller.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/elf.so 755 root bin
+d none usr/lib/python2.4/vendor-packages/pkg/file_layout 755 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/file_layout/__init__.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/file_layout/__init__.pyc 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/file_layout/layout.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/file_layout/layout.pyc 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/file_layout/file_manager.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/file_layout/file_manager.pyc 444 root bin
 d none usr/lib/python2.4/vendor-packages/pkg/flavor 755 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/flavor/__init__.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/flavor/__init__.pyc 444 root bin

@@ -29,6 +29,7 @@ api.t_dependencies.py TestDependencyAnalyzer.test_variants_3|pass
 api.t_elf.py TestElf.test_get_dynamic|pass
 api.t_elf.py TestElf.test_get_info|pass
 api.t_elf.py TestElf.test_is_elf_object|pass
+api.t_file_manager.py TestFileManager.test_1|pass
 api.t_filter.py TestFilter.test_01_debug_i386|pass
 api.t_filter.py TestFilter.test_02_nondebug_i386|pass
 api.t_filter.py TestFilter.test_03_i386|pass
@@ -130,7 +131,6 @@ api.t_manifest.py TestManifest.test_errors|pass
 api.t_manifest.py TestManifest.test_set_content1|pass
 api.t_manifest.py TestManifest.test_validate|pass
 api.t_misc.py TestMisc.testMakedirs|pass
-api.t_misc.py TestMisc.test_hash_file_name|pass
 api.t_misc.py TestMisc.test_pub_prefix|pass
 api.t_misc.py TestMisc.test_pub_url|pass
 api.t_p5i.py TestP5I.test_parse_write|pass

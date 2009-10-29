@@ -508,12 +508,10 @@ class DepotHTTP(object):
                             self._tar_stream_close, failsafe = True)
 
                         for v in params.values():
-                                filepath = os.path.normpath(os.path.join(
-                                    self._repo.file_root,
-                                    misc.hash_file_name(v)))
+                                filepath = self._repo.cache_store.lookup(v)
 
                                 # If file isn't here, skip it
-                                if not os.path.exists(filepath):
+                                if not filepath:
                                         continue
 
                                 tar_stream.add(filepath, v, False)
@@ -814,10 +812,7 @@ class DepotHTTP(object):
                 for i, entry in enumerate(m.gen_actions_by_type("license")):
                         if i > 0:
                                 lsummary.write("\n")
-
-                        lpath = os.path.normpath(os.path.join(
-                            self._repo.file_root,
-                            misc.hash_file_name(entry.hash)))
+                        lpath = self._repo.cache_store.lookup(entry.hash)
 
                         lfile = file(lpath, "rb")
                         misc.gunzip_from_stream(lfile, lsummary)
@@ -1163,9 +1158,7 @@ class NastyDepotHTTP(DepotHTTP):
                                         # Take a nap
                                         time.sleep(35)
 
-                                filepath = os.path.normpath(os.path.join(
-                                    self._repo.file_root,
-                                    misc.hash_file_name(v)))
+                                filepath = self._repo.cache_store.lookup(v)
 
                                 # If file isn't here, skip it
                                 if not os.path.exists(filepath):
@@ -1177,9 +1170,7 @@ class NastyDepotHTTP(DepotHTTP):
                                         pick = random.randint(0,
                                             len(self.requested_files) - 1)
                                         badfn = self.requested_files[pick]
-                                        badpath = os.path.normpath(
-                                            os.path.join(self._repo.file_root,
-                                            misc.hash_file_name(badfn)))
+                                        badpath = self.__get_bad_path(badfn)
 
                                         tar_stream.add(badpath, v, False)
                                 else:
@@ -1198,9 +1189,8 @@ class NastyDepotHTTP(DepotHTTP):
                                 pick = random.randint(0,
                                     len(self.requested_files) - 1)
                                 extrafn = self.requested_files[pick]
-                                extrapath = os.path.normpath(
-                                    os.path.join(self._repo.file_root,
-                                    misc.hash_file_name(extrafn)))
+                                extrapath = self._repo.cache_store.lookup(
+                                    extrafn)
 
                                 tar_stream.add(extrapath, extrafn, False)
 
@@ -1230,6 +1220,10 @@ class NastyDepotHTTP(DepotHTTP):
                 "tools.response_headers.headers": [("Content-Type",
                 "application/data")]
         }
+
+        def __get_bad_path(self, v):
+                return os.path.join(self._repo.cache_store.root,
+                    self._repo.cache_store.layouts[0].lookup(v))
 
         def file_0(self, *tokens):
                 """Outputs the contents of the file, named by the SHA-1 hash
@@ -1275,8 +1269,7 @@ class NastyDepotHTTP(DepotHTTP):
                 if self._repo.cfg.need_nasty_rarely():
                         pick = random.randint(0, len(self.requested_files) - 1)
                         badfn = self.requested_files[pick]
-                        badpath = os.path.normpath(os.path.join(
-                            self._repo.file_root, misc.hash_file_name(badfn)))
+                        badpath = self.__get_bad_path(badfn)
 
                         return serve_file(badpath, "application/data")
 

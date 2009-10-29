@@ -40,10 +40,6 @@ import pkg5unittest
 
 class TestMisc(pkg5unittest.Pkg5TestCase):
 
-        def test_hash_file_name(self):
-                fn = misc.hash_file_name("abcdefghijklmnopqrstuvwxyz")
-                self.assertEqual(fn, os.path.join("ab", "cdefgh", "abcdefghijklmnopqrstuvwxyz"))
-
         def testMakedirs(self):
                 tmpdir = tempfile.mkdtemp()
                 # make the parent directory read-write

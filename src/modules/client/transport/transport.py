@@ -42,6 +42,7 @@ import pkg.client.transport.engine as engine
 import pkg.client.transport.exception as tx
 import pkg.client.transport.repo as trepo
 import pkg.client.transport.stats as tstats
+import pkg.file_layout.file_manager as file_manager
 import pkg.manifest as manifest
 import pkg.misc as misc
 import pkg.portable as portable
@@ -67,6 +68,7 @@ class Transport(object):
                 self.__repo_cache = None
                 self.__lock = threading.Lock()
                 self.stats = tstats.RepoChooser()
+                self.cache_store = None
 
         def __setup(self):
                 self.__engine = engine.CurlTransportEngine(self)
@@ -77,6 +79,9 @@ class Transport(object):
                 self.__engine.set_user_agent(ua)
 
                 self.__repo_cache = trepo.RepoCache(self.__engine)
+
+                self.cache_store = file_manager.FileManager(
+                    self.__img.cached_download_dir(), False)
 
         def reset(self):
                 """Resets the transport.  This needs to be done
@@ -646,9 +651,7 @@ class Transport(object):
                 progtrack = mfile.get_progtrack()
                 header = self.__build_header(uuid=self.__get_uuid(pub))
 
-                # download_dir is temporary download path.  Completed_dir
-                # is the cache where valid content lives.
-                completed_dir = self.__img.cached_download_dir()
+                # download_dir is temporary download path.
                 download_dir = self.__img.incoming_download_dir()
 
                 for d in self.__gen_repos(pub, retry_count):
@@ -722,15 +725,12 @@ class Transport(object):
                                                 filelist = failedreqs
                                         continue
 
-                                final_path = os.path.normpath(
-                                    os.path.join(completed_dir,
-                                    misc.hash_file_name(s)))
-                                finaldir = os.path.dirname(final_path)
-
-                                self._makedirs(finaldir)
-                                portable.rename(dl_path, final_path)
-
-                                mfile.make_openers(s, final_path)
+                                try:
+                                        self.cache_store.insert(s, dl_path)
+                                except file_manager.FMPermissionsException, e:
+                                        raise apx.PermissionsException(
+                                            e.filename)
+                                mfile.make_openers(s)
                                 mfile.del_hash(s)
 
                         # Return if everything was successful
@@ -1108,6 +1108,10 @@ class Transport(object):
                 if not fmri:
                         return None
 
+                # Call setup if the transport isn't configured yet.
+                if not self.__engine:
+                        self.__setup()
+                
                 publisher = self.__img.get_publisher(fmri.get_publisher())
                 mfile = MultiFile(publisher, self, progtrack, ccancel)
 
@@ -1121,12 +1125,10 @@ class Transport(object):
 
                 hashval = action.hash
 
-                cache_path = os.path.normpath(os.path.join(
-                    self.__img.cached_download_dir(),
-                    misc.hash_file_name(hashval)))
+                cache_path = self.cache_store.lookup(hashval)
 
                 try:
-                        if os.path.exists(cache_path):
+                        if cache_path:
                                 self._verify_content(action, cache_path)
                                 return cache_path
                 except tx.InvalidContentException:
@@ -1224,7 +1226,8 @@ class MultiFile(object):
 
                 cachedpath = self._transport._action_cached(action)
                 if cachedpath:
-                        action.data = self._make_opener(cachedpath)
+                        action.data = self._make_opener(cachedpath,
+                            self._transport.cache_store)
                         filesz = int(misc.get_pkg_otw_size(action))
                         self._progtrack.download_add_progress(1, filesz)
                         return
@@ -1264,24 +1267,26 @@ class MultiFile(object):
                 return self._fhash.keys()
 
         @staticmethod
-        def _make_opener(filepath):
+        def _make_opener(hashval, cache_store):
                 def opener():
-                        f = open(filepath, "rb")
+                        f = open(cache_store.lookup(hashval), "rb")
                         return f
                 return opener                                
 
-        def make_openers(self, hashval, path):
+        def make_openers(self, hashval):
                 """Find each action associated with the hash value hashval.
-                Create an opener that points to the file at path for the
+                Create an opener that points to the file for hashval for the
                 action's data method."""
 
                 totalsz = 0
                 nactions = 0
 
-                filesz = os.stat(path).st_size
+                filesz = os.stat(
+                    self._transport.cache_store.lookup(hashval)).st_size
 
                 for action in self._fhash[hashval]:
-                        action.data = self._make_opener(path)
+                        action.data = self._make_opener(hashval,
+                            self._transport.cache_store)
                         nactions += 1
                         totalsz += misc.get_pkg_otw_size(action)
 

@@ -343,10 +343,9 @@ class Transaction(object):
                         # properly formed files for chash/csize properties
                         # to work right.
                         #
-                        fpath = misc.hash_file_name(fname)
-                        dst_path = "%s/%s" % (self.repo.file_root, fpath)
+                        dst_path = self.repo.cache_store.lookup(fname)
                         fileneeded = True
-                        if os.path.exists(dst_path):
+                        if dst_path:
                                 if PkgGzipFile.test_is_pkggzipfile(dst_path):
                                         fileneeded = False
                                         opath = dst_path
@@ -439,26 +438,5 @@ class Transaction(object):
                 # Move each file to file_root, with appropriate directory
                 # structure.
                 for f in os.listdir(self.dir):
-                        path = misc.hash_file_name(f)
                         src_path = os.path.join(self.dir, f)
-                        dst_path = os.path.join(repo.file_root, path)
-                        try:
-                                portable.rename(src_path, dst_path)
-                        except OSError, e:
-                                # XXX We might want to be more careful with this
-                                # exception, and only try makedirs() if rename()
-                                # failed because the directory didn't exist.
-                                #
-                                # I'm not sure it matters too much, except that
-                                # if makedirs() fails, we'll see that exception,
-                                # rather than the original one from rename().
-                                #
-                                # Interestingly, rename() failing due to missing
-                                # path component fails with ENOENT, not ENOTDIR
-                                # like rename(2) suggests (6578404).
-                                try:
-                                        os.makedirs(os.path.dirname(dst_path))
-                                except OSError, e:
-                                        if e.errno != errno.EEXIST:
-                                                raise
-                                portable.rename(src_path, dst_path)
+                        self.repo.cache_store.insert(f, src_path)

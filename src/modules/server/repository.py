@@ -37,6 +37,7 @@ import urllib
 import pkg.actions as actions
 import pkg.catalog as catalog
 import pkg.client.api_errors as api_errors
+import pkg.file_layout.file_manager as file_manager
 import pkg.fmri as fmri
 import pkg.indexer as indexer
 import pkg.manifest as manifest
@@ -202,8 +203,8 @@ class Repository(object):
                         self.trans_root = trans_root
                 
                 # Must be set before writable_root.
-                self.__required_dirs = [self.trans_root, self.file_root,
-                    self.pkg_root, self.catalog_root]
+                self.__required_dirs = [self.trans_root, self.pkg_root,
+                    self.catalog_root]
 
                 # Ideally, callers would just specify overrides for the feed
                 # cache root, index_root, etc.  But this must be set after all
@@ -853,7 +854,8 @@ class Repository(object):
                 self.__tmp_root = os.path.join(root, "tmp")
                 self.catalog_root = os.path.join(root, "catalog")
                 self.feed_cache_root = root
-                self.file_root = os.path.join(root, "file")
+                self.cache_store = file_manager.FileManager(
+                    os.path.join(root, "file"), self.read_only)
                 self.index_root = os.path.join(root, "index")
                 self.pkg_root = os.path.join(root, "pkg")
                 self.trans_root = os.path.join(root, "trans")
@@ -1069,14 +1071,11 @@ class Repository(object):
                 if fhash is None:
                         raise RepositoryFileNotFoundError(fhash)
 
-                try:
-                        return os.path.normpath(os.path.join(
-                            self.file_root, misc.hash_file_name(fhash)))
-                except EnvironmentError, e:
-                        if e.errno == errno.ENOENT:
-                                raise RepositoryFileNotFoundError(fhash)
-                        raise
-
+                fp = self.cache_store.lookup(fhash)
+                if fp is not None:
+                        return fp
+                raise RepositoryFileNotFoundError(fhash)
+                
         @property
         def in_flight_transactions(self):
                 """The number of transactions awaiting completion."""

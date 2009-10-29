@@ -247,6 +247,7 @@ packages = [
         'pkg.bundle',
         'pkg.client',
         'pkg.client.transport',
+        'pkg.file_layout',
         'pkg.flavor',
         'pkg.portable',
         'pkg.publish',
