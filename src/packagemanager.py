@@ -258,7 +258,6 @@ class PackageManager:
                 gtk.rc_parse('~/.gtkrc-1.2-gnome2')       # Load gtk theme
                 self.progress_stop_thread = True
                 self.catalog_loaded = False
-                self.image_dir_arg = None
                 self.update_all_proceed = False
                 self.ua_be_name = None
                 self.application_path = None
@@ -291,7 +290,8 @@ class PackageManager:
                     'status_notinstalled')
                 self.update_available_icon = gui_misc.get_icon(self.icon_theme,
                     'status_newupdate')
-                self.window_icon = gui_misc.get_icon(self.icon_theme, 'packagemanager', 48)
+                self.window_icon = gui_misc.get_icon(self.icon_theme,
+                    'packagemanager', 48)
                 self.filter_options = [
                     (enumerations.FILTER_ALL,
                     gui_misc.get_icon(self.icon_theme, 'filter_all'),
@@ -3088,8 +3088,7 @@ class PackageManager:
 
         def __catalog_refresh_done(self):
                 if not self.exiting:
-                        gobject.idle_add(self.process_package_list_start,
-                            self.image_directory)
+                        gobject.idle_add(self.process_package_list_start)
 
         def __get_publisher_name_from_index(self, index):
                 name = None
@@ -3139,12 +3138,8 @@ class PackageManager:
                         pass
 
                 if be_name:
-                        if self.image_dir_arg:
-                                gobject.spawn_async([self.application_path, "-R",
-                                    self.image_dir_arg, "-U", be_name])
-                        else:
-                                gobject.spawn_async([self.application_path,
-                                    "-U", be_name])
+                        gobject.spawn_async([self.application_path, "-R",
+                            self.image_directory, "-U", be_name])
                 else:
                         if self.is_all_publishers:
                                 pub = self.__get_publisher_name_from_index(
@@ -4330,7 +4325,7 @@ class PackageManager:
         def __progress_pulse(self):
                 gobject.idle_add(self.w_progress_frame.show)
                 while not self.progress_stop_thread:
-                        if self.api_o.can_be_canceled():
+                        if self.api_o != None and self.api_o.can_be_canceled():
                                 gobject.idle_add(self.progress_cancel.show)
                         else:
                                 gobject.idle_add(self.progress_cancel.hide)
@@ -4449,15 +4444,7 @@ class PackageManager:
                         self.w_main_window.get_accessible().emit('state-change',
                             'busy', False)
 
-        def process_package_list_start(self, image_directory):
-                self.image_directory = image_directory
-                if not self.api_o:
-                        self.api_o = gui_misc.get_api_object(image_directory, 
-                            self.pr, self.w_main_window)
-                        self.cache_o = self.__get_cache_obj(self.icon_theme,
-                            self.application_dir, self.api_o)
-                        self.img_timestamp = self.cache_o.get_index_timestamp()
-                        self.__setup_search_completion()
+        def process_package_list_start(self):
                 if self.first_run:
                         self.__setup_filter_combobox()
                 self.__setup_repositories_combobox(self.api_o)
@@ -4725,6 +4712,22 @@ class PackageManager:
                 self.w_ua_completed_dialog.set_title(_("Update All Complete"))
                 self.w_ua_completed_dialog.show()
 
+        def __get_api_object(self):
+                self.api_o = gui_misc.get_api_object(self.image_directory, 
+                    self.pr, self.w_main_window)
+                self.cache_o = self.__get_cache_obj(self.icon_theme,
+                    self.application_dir, self.api_o)
+                self.img_timestamp = self.cache_o.get_index_timestamp()
+                self.__setup_search_completion()
+                gobject.idle_add(self.__got_api_object)
+
+        def __got_api_object(self):
+                self.process_package_list_start()
+                
+        def start(self):
+                self.set_busy_cursor()
+                Thread(target = self.__get_api_object).start() 
+
 ###############################################################################
 #-----------------------------------------------------------------------------#
 # Main
@@ -4799,7 +4802,7 @@ Use -U (--update-all) to proceed with Update All"""
         # Setup packagemanager
         packagemanager = PackageManager()
         packagemanager.application_path = app_path
-        packagemanager.image_dir_arg = image_dir
+        packagemanager.image_directory = image_dir
         packagemanager.update_all_proceed = update_all_proceed
         packagemanager.ua_be_name = ua_be_name
 
@@ -4808,6 +4811,6 @@ Use -U (--update-all) to proceed with Update All"""
 
         max_filter_length = packagemanager.init_show_filter()
 
-        packagemanager.process_package_list_start(image_dir)
+        gobject.idle_add(packagemanager.start)
 
         main()
