@@ -2050,7 +2050,7 @@ class PackageManager:
                 self.search_time_sec = 0
                 self.application_list = []
                 gobject.idle_add(self.update_statusbar)
-                self.unset_busy_cursor()
+                gobject.idle_add(self.unset_busy_cursor)
                 self.in_setup = False
 
         @staticmethod
@@ -2153,7 +2153,7 @@ class PackageManager:
                         # TBD. Currently search is not cancelable
                         # so this should not happen, but the logic is in place
                         # to support cancelable search.
-                        self.unset_busy_cursor()
+                        gobject.idle_add(self.unset_busy_cursor)
                         return
                 except Exception, ex:
                         # We are not interested in this error
@@ -4049,7 +4049,7 @@ class PackageManager:
                         err = _("Selected publisher does not contain any packages.")
                         gobject.idle_add(self.error_occurred, err, None,
                             gtk.MESSAGE_INFO)
-                        self.unset_busy_cursor()
+                        gobject.idle_add(self.unset_busy_cursor)
                         pkgs_known = []
 
                 return self.__add_pkgs_to_lists(pkgs_known, application_list,
