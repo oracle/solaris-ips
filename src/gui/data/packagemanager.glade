@@ -3278,7 +3278,7 @@ Update All creates a new boot environment (BE) as a means of archiving the curre
                             <property name="visible">True</property>
                             <property name="xpad">4</property>
                             <property name="ypad">4</property>
-                            <property name="label" translatable="yes">This is a secure repository. Refer to the posted</property>
+                            <property name="label" translatable="yes">This is a secure repository.</property>
                           </widget>
                         </child>
                       </widget>
@@ -3295,7 +3295,7 @@ Update All creates a new boot environment (BE) as a means of archiving the curre
                         <property name="top_padding">3</property>
                         <child>
                           <widget class="GtkLinkButton" id="registration_button">
-                            <property name="label" translatable="yes">_Instructions</property>
+                            <property name="label" translatable="yes">_Registration Details</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>

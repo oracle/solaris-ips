@@ -92,8 +92,8 @@ class Webinstall:
                         w_xmltree_webinstall.get_widget("proceed_new_repo_label")
                 self.w_webinstall_image = \
                         w_xmltree_webinstall.get_widget("pkgimage")
-                pkg_pixbuf = gui_misc.get_icon(self.icon_theme,'packagemanager', 48)
-                self.w_webinstall_image.set_from_pixbuf(pkg_pixbuf)
+                self.window_icon = gui_misc.get_icon(self.icon_theme,'packagemanager', 48)
+                self.w_webinstall_image.set_from_pixbuf(self.window_icon)
                 self.w_webinstall_info_label = \
                         w_xmltree_webinstall.get_widget("label19")
 
@@ -122,7 +122,7 @@ class Webinstall:
                             "Check webinstall.py signals") % error
  
                 self.w_webinstall_dialog.show_all()
-                self.w_webinstall_dialog.set_icon(pkg_pixbuf)
+                self.w_webinstall_dialog.set_icon(self.window_icon)
                 self.api_o = gui_misc.get_api_object(self.image_dir, self.pr,
                     self.w_webinstall_dialog)
         
