@@ -113,6 +113,7 @@ from threading import Thread
 from threading import Lock
 from collections import deque
 from cPickle import UnpicklingError
+from gettext import ngettext
 
 try:
         import gobject
@@ -1036,6 +1037,9 @@ class PackageManager:
                                 return _("Display %(s1)sSearch Help%(e1)s") % \
                                         {"s1": s1, "e1": e1}
                         #TBD: Launch search help, need Search Help target
+                        self.__update_statusbar_message(
+                            _("Loading %(s1)sSearch Help%(e1)s ...") %
+                            {"s1": s1, "e1": e1})
                         gui_misc.display_help()
                         return
 
@@ -1838,15 +1842,19 @@ class PackageManager:
                 self.__link_load_page(header + body + footer)
                 self.w_main_view_notebook.set_current_page(NOTEBOOK_START_PAGE)
                     
-        def __setup_search_zero_filtered_results_page(self, text):
+        def __setup_search_zero_filtered_results_page(self, text, num):
                 header = INFORMATION_PAGE_HEADER
                 active_filter = self.w_filter_combobox.get_active()
                 header += _("alt='[Information]' title='Information' ALIGN='bottom'></TD>"
-                    "<TD><h3><b>Search Results</b></h3><TD></TD></TR><TR><TD></TD><TD>"
-                    "View setting <b>%(filter)s</b> is hiding packages found matching <b>"
-                    "%(text)s</b></TD></TR>") \
-                    % {"filter": self.__get_filter_combobox_description(active_filter),
-                        "text": text}
+                    "<TD><h3><b>Search Results</b></h3><TD></TD></TR><TR><TD></TD><TD>")
+                header += ngettext(
+                    "Found <b>%(num)s</b> package matching <b>%(text)s</b> "
+                    "in All Packages, however it is not listed in the "
+                    "<b>%(filter)s</b> View.",
+                    "Found <b>%(num)s</b> packages matching <b>%(text)s</b> "
+                    "in All Packages, however they are not listed in the "
+                    "<b>%(filter)s</b> View.", num) % {"num": num, "text": text,
+                    "filter": self.__get_filter_combobox_description(active_filter)}
 
                 body = _("<TR><TD></TD><TD<TD></TD></TR><TR><TD></TD><TD<TD></TD></TR>"
                     "<TR><TD></TD><TD<TD><b>Suggestions:</b><br></TD></TR>"
@@ -1909,8 +1917,8 @@ class PackageManager:
                     "<TR><TD><IMG SRC = 'dialog-warning.png' style='border-style: "
                     "none' alt='[Warning]' title='Warning' ALIGN='bottom'></TD>"
                     "<TD><h3><b>Search Warning</b></h3><TD></TD></TR>"
-                    "<TR><TD></TD><TD>Search using <b>*</b> only is not supported in " 
-                    "All Publishers</TD></TR>"
+                    "<TR><TD></TD><TD>Search using only the wildcard character, "
+                    "<b>*</b>, is not supported in All Publishers</TD></TR>"
                     )
                 body = _("<TR><TD></TD><TD<TD></TD></TR><TR><TD></TD><TD<TD></TD></TR>"
                     "<TR><TD></TD><TD<TD><b>Suggestions:</b><br></TD></TR>"
@@ -2197,14 +2205,16 @@ class PackageManager:
                         return
 
                 if search_all:
-                        gobject.idle_add(self.__check_zero_results_afterfilter, text)
+                        gobject.idle_add(self.__check_zero_results_afterfilter, text,
+                            len(application_list))
                 else:
-                        gobject.idle_add(self.__check_zero_results_afterfilter, text)
+                        gobject.idle_add(self.__check_zero_results_afterfilter, text,
+                            len(application_list))
 
-        def __check_zero_results_afterfilter(self, text):
+        def __check_zero_results_afterfilter(self, text, num):
                 if self.length_visible_list != 0:
                         return
-                self.__setup_search_zero_filtered_results_page(text)
+                self.__setup_search_zero_filtered_results_page(text, num)
                 self.update_statusbar()
 
         def __set_search_start(self):
