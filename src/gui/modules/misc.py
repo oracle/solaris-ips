@@ -280,7 +280,7 @@ def __add_line_to_generalinfo(text_buffer, index, label, text,
                 text_buffer.insert(end_itr, "\t%s\n" % text)
         else:
                 resized_icon = resize_icon(icon, font_size)
-                text_buffer.insert(end_itr, "\t ")
+                text_buffer.insert(end_itr, "\t")
                 text_buffer.get_end_iter()
                 text_buffer.insert_pixbuf(end_itr, resized_icon)
                 text_buffer.insert(end_itr, " %s\n" % text)

@@ -121,16 +121,20 @@ ICONS22 = \
    data/icons/22x22/search.png
 
 ICONS24 = \
-   data/icons/24x24/install_update.png \
-   data/icons/24x24/reload.png \
-   data/icons/24x24/remove_packages.png \
-   data/icons/24x24/update_all.png
+   data/icons/24x24/pm-install_update.png \
+   data/icons/24x24/pm-refresh.png \
+   data/icons/24x24/pm-remove.png \
+   data/icons/24x24/pm-update_all.png
 
 ICONS36 = \
    data/icons/36x36/PM_package.png
 
 ICONS48 = \
-   data/icons/48x48/packagemanager.png
+   data/icons/48x48/packagemanager.png \
+   data/icons/48x48/pm-install_update.png \
+   data/icons/48x48/pm-refresh.png \
+   data/icons/48x48/pm-remove.png \
+   data/icons/48x48/pm-update_all.png
 
 PYMODS = \
    modules/__init__.py \

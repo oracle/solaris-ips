@@ -435,17 +435,17 @@ class PackageManager:
                 self.w_filter_combobox = w_tree_main.get_widget("filtercombobox")
                 self.w_packageicon_image = w_tree_main.get_widget("packageimage")
                 self.w_reload_menuitem = w_tree_main.get_widget("file_reload")
-                self.__set_icon(self.w_reload_button, self.w_reload_menuitem, 'reload')
+                self.__set_icon(self.w_reload_button, self.w_reload_menuitem, 'pm-refresh')
                 self.w_installupdate_menuitem = \
                     w_tree_main.get_widget("package_install_update")
                 self.__set_icon(self.w_installupdate_button, 
-                    self.w_installupdate_menuitem, 'install_update')
+                    self.w_installupdate_menuitem, 'pm-install_update')
                 self.w_remove_menuitem = w_tree_main.get_widget("package_remove")
                 self.__set_icon(self.w_remove_button, self.w_remove_menuitem, 
-                    'remove_packages')
+                    'pm-remove')
                 self.w_updateall_menuitem = w_tree_main.get_widget("package_update_all")
                 self.__set_icon(self.w_updateall_button,
-                    self.w_updateall_menuitem, 'update_all')
+                    self.w_updateall_menuitem, 'pm-update_all')
                 self.w_cut_menuitem = w_tree_main.get_widget("edit_cut")
                 self.w_copy_menuitem = w_tree_main.get_widget("edit_copy")
                 self.w_paste_menuitem = w_tree_main.get_widget("edit_paste")
