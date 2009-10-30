@@ -301,6 +301,9 @@ def get_pkg_info(api_o, pkg_stem, local):
                     frozenset([api.PackageInfo.LICENSES]))
         except (api_errors.TransportError):
                 return info
+        except (api_errors.InvalidDepotResponseException):
+                return info
+ 
         pkgs_info = None
         package_info = None
         if info:

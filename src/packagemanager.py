@@ -1524,11 +1524,22 @@ class PackageManager:
                         info = self.api_o.info(pkg_stems_and_itr_to_fetch.keys(), False,
                                 frozenset([api.PackageInfo.IDENTITY,
                                     api.PackageInfo.SUMMARY]))
-                except api_errors.TransportError:
-                        self.update_statusbar()
+                except api_errors.TransportError, ex:
+                        gobject.idle_add(self.update_statusbar)
+                        err = str(ex)
+                        gobject.idle_add(self.error_occurred, err,
+                            None, gtk.MESSAGE_INFO)
+                        gobject.idle_add(self.__restart_description_thread)
+                        return
+                except api_errors.InvalidDepotResponseException, ex:
+                        gobject.idle_add(self.update_statusbar)
+                        err = str(ex)
+                        gobject.idle_add(self.error_occurred, err,
+                            None, gtk.MESSAGE_INFO)
+                        gobject.idle_add(self.__restart_description_thread)
                         return
                 if info and len(info.get(0)) == 0:
-                        self.update_statusbar()
+                        gobject.idle_add(self.update_statusbar)
                         return
                 pkg_infos = info.get(0)
                 pkg_descriptions_for_update = []
@@ -1543,12 +1554,16 @@ class PackageManager:
                 gobject.idle_add(self.__update_description_from_iter,
                     pkg_descriptions_for_update, orig_model, last_status_id)
 
+        def __restart_description_thread(self):
+                self.description_thread_running = False
+                self.__start_description_thread()
+                return
+
         def __update_description_from_iter(self, pkg_descriptions_for_update, 
             orig_model, last_status_id):
                 if self.exiting:
                         return
-                self.description_thread_running = False
-                self.__start_description_thread()
+                self.__restart_description_thread()
                 if self.last_status_id > last_status_id + 1:
                         return
                 sort_filt_model = \
@@ -2034,7 +2049,7 @@ class PackageManager:
                 self.__reset_search_start()
                 self.search_time_sec = 0
                 self.application_list = []
-                self.update_statusbar()
+                gobject.idle_add(self.update_statusbar)
                 self.unset_busy_cursor()
                 self.in_setup = False
 
@@ -3612,6 +3627,8 @@ class PackageManager:
                             True, frozenset([api.PackageInfo.LICENSES]))
                 except (api_errors.TransportError):
                         pass
+                except (api_errors.InvalidDepotResponseException):
+                        pass
                 if self.showing_empty_details or (license_id != 
                     self.last_show_licenses_id):
                         return
@@ -3621,6 +3638,8 @@ class PackageManager:
                                 info = self.api_o.info([selected_pkgstem],
                                     False, frozenset([api.PackageInfo.LICENSES]))
                         except (api_errors.TransportError):
+                                pass
+                        except (api_errors.InvalidDepotResponseException):
                                 pass
                 if self.showing_empty_details or (license_id != 
                     self.last_show_licenses_id):
@@ -3701,6 +3720,8 @@ class PackageManager:
                                             frozenset([api.PackageInfo.STATE,
                                             api.PackageInfo.IDENTITY]))
                                 except (api_errors.TransportError):
+                                        pass
+                                except (api_errors.InvalidDepotResponseException):
                                         pass
                         gobject.idle_add(self.__update_package_info, pkg,
                             local_info, remote_info, dep_info, info_id)
