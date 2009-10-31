@@ -320,7 +320,7 @@ def trans_include(repo_uri, fargs, transaction=None):
 
                                 if not os.path.isfile(data):
                                         error(_("line %s: File %s not found") %
-                                            (lineno + 1, args[1]),
+                                            (lineno + 1, filepath),
                                             cmd="include")
                                         error_occurred = True
                                         continue
