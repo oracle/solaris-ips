@@ -172,6 +172,9 @@ class Image(object):
         PKG_STATE_V0 = 6
         PKG_STATE_V1 = 7
 
+        PKG_STATE_OBSOLETE = 8
+        PKG_STATE_RENAMED = 9
+
         # Class properties
         required_subdirs = [ "file", "pkg" ]
         image_subdirs = required_subdirs + [ "index", IMG_PUB_DIR,
@@ -1125,6 +1128,16 @@ class Image(object):
                         return v
                 return None
 
+        def get_pkg_state(self, pfmri):
+                """Returns the list of states a package is in for this image."""
+
+                cat = self.get_catalog(self.IMG_CATALOG_KNOWN)
+                try:
+                        entry = cat.get_entry(pfmri)
+                except api_errors.UnknownCatalogEntry:
+                        return []
+                return entry["metadata"]["states"]
+
         def is_pkg_installed(self, pfmri):
                 """Returns a boolean value indicating whether the specified
                 package is installed."""
@@ -1331,6 +1344,23 @@ class Image(object):
                                 states.discard(self.PKG_STATE_UPGRADABLE)
                         elif nver:
                                 states.add(self.PKG_STATE_UPGRADABLE)
+
+                        dp = src_cat.get_part("catalog.dependency.C",
+                            must_exist=True)
+                        try:
+                                dpent = dp.get_entry(f)
+                        except (api_errors.UnknownCatalogEntry, AttributeError):
+                                dpent = None
+                        states.discard(self.PKG_STATE_OBSOLETE)
+                        states.discard(self.PKG_STATE_RENAMED)
+                        if dpent:
+                                mfst = pkg.manifest.Manifest()
+                                mfst.set_content("\n".join(dpent["actions"]))
+                                if mfst.getbool("pkg.obsolete", "false"):
+                                        states.add(self.PKG_STATE_OBSOLETE)
+                                elif mfst.getbool("pkg.renamed", "false"):
+                                        states.add(self.PKG_STATE_RENAMED)
+
                         mdata["states"] = list(states)
                         return True, mdata
 
@@ -1902,7 +1932,7 @@ class Image(object):
                                 raise
 
         @staticmethod
-        def __multimatch(name, patterns, matcher):
+        def __multimatch(name, patterns):
                 """Applies a matcher to a name across a list of patterns.
                 Returns all tuples of patterns which match the name.  Each tuple
                 contains the index into the original list, the pattern itself,
@@ -1911,8 +1941,8 @@ class Image(object):
                 return [
                     (i, pat, pat.tuple()[2],
                         pat.publisher, pat.publisher)
-                    for i, pat in enumerate(patterns)
-                    if matcher(name, pat.tuple()[1])
+                    for i, (pat, m) in enumerate(patterns)
+                    if m(name, pat.tuple()[1])
                 ]
 
         def __inventory(self, patterns=None, all_known=False, matcher=None,
@@ -1930,19 +1960,30 @@ class Image(object):
                 # messages.
                 opatterns = patterns[:]
 
+                # Match the matching function with the pattern so that we can
+                # change it per-pattern, depending on whether it has glob
+                # characters or nails down the pattern with a leading pkg:/.
+                patterns = [ (i, matcher) for i in patterns ]
+
                 illegals = []
-                for i, pat in enumerate(patterns):
+                for i, (pat, m) in enumerate(patterns):
                         if not isinstance(pat, pkg.fmri.PkgFmri):
                                 try:
                                         if "*" in pat or "?" in pat:
-                                                matcher = pkg.fmri.glob_match
-                                                patterns[i] = \
+                                                patterns[i] = (
                                                     pkg.fmri.MatchingPkgFmri(
-                                                        pat, "5.11")
-                                        else:
-                                                patterns[i] = \
+                                                        pat, "5.11"),
+                                                    pkg.fmri.glob_match)
+                                        elif pat.startswith("pkg:/"):
+                                                patterns[i] = (
                                                     pkg.fmri.PkgFmri(pat,
-                                                    "5.11")
+                                                        "5.11"),
+                                                    pkg.fmri.exact_name_match)
+                                        else:
+                                                patterns[i] = (
+                                                    pkg.fmri.PkgFmri(pat,
+                                                        "5.11"),
+                                                    pkg.fmri.fmri_match)
                                 except pkg.fmri.IllegalFmri, e:
                                         illegals.append(e)
 
@@ -1970,7 +2011,7 @@ class Image(object):
                         # Eliminate all patterns not matching "name".  If there
                         # are no patterns left, go on to the next name, but only
                         # if there were any to start with.
-                        matches = self.__multimatch(name, patterns, matcher)
+                        matches = self.__multimatch(name, patterns)
                         if patterns and not matches:
                                 continue
 
@@ -2048,7 +2089,9 @@ class Image(object):
                                             "in_catalog": known,
                                             "incorporated": False,
                                             "excludes": False,
-                                            "upgradable": self.PKG_STATE_UPGRADABLE in states
+                                            "upgradable": self.PKG_STATE_UPGRADABLE in states,
+                                            "obsolete": self.PKG_STATE_OBSOLETE in states,
+                                            "renamed": self.PKG_STATE_RENAMED in states
                                         }
 
                                         if self.PKG_STATE_INSTALLED in states:
@@ -2070,7 +2113,7 @@ class Image(object):
 
                 nonmatchingpats = [
                     opatterns[i]
-                    for i, f in set(enumerate(patterns)) - matchingpats
+                    for i, f in set(enumerate((p[0] for p in patterns))) - matchingpats
                 ]
 
                 if nonmatchingpats:
@@ -2240,14 +2283,15 @@ class Image(object):
                 their unique names."""
 
                 olist = []
-                onames = {}
+                onames = set()
+
                 # First eliminate any duplicate matches that are for unknown
                 # publishers (publishers which have been removed from the image
                 # configuration).
                 publist = set(p.prefix for p in self.get_publishers().values())
                 for m, st in matches:
                         if m.publisher in publist:
-                                onames[m.get_pkg_stem()] = False
+                                onames.add(m.get_pkg_stem())
                                 olist.append((m, st))
 
                 # Next, if there are still multiple matches, eliminate matches
@@ -2256,33 +2300,26 @@ class Image(object):
                 found_state = False
                 if len(onames) > 1:
                         mlist = []
-                        mnames = {}
+                        mnames = set()
                         for m, st in olist:
                                 if not st["in_catalog"]:
                                         continue
-                                stem = m.get_pkg_stem()
                                 if st["state"] == self.PKG_STATE_INSTALLED:
                                         found_state = True
-                                        # This stem has an installed
-                                        # version.
-                                        mnames[stem] = True
-                                else:
-                                        mnames.setdefault(stem, False)
+                                mnames.add(m.get_pkg_stem())
                                 mlist.append((m, st))
                         olist = mlist
                         onames = mnames
 
-                # Finally, if there are still multiple matches, and an available
+                # Finally, if there are still multiple matches, and a known
                 # stem is installed, then eliminate any stems that do not
                 # have an installed version.
                 if found_state and len(onames) > 1:
                         mlist = []
-                        mnames = {}
+                        mnames = set()
                         for m, st in olist:
-                                stem = m.get_pkg_stem()
-                                if onames[stem]:
-                                        # This stem has an installed version.
-                                        mnames[stem] = onames[stem]
+                                if st["state"] == PKG_STATE_INSTALLED:
+                                        mnames.add(m.get_pkg_stem())
                                         mlist.append((m, st))
                         olist = mlist
                         onames = mnames
@@ -2393,29 +2430,62 @@ class Image(object):
                                         illegal_fmris.append(p)
                                 continue
 
-                        pnames = {}
+                        pnames = set()
                         pmatch = []
-                        npnames = {}
+                        npnames = set()
                         npmatch = []
                         for m, st in matches:
                                 if m.publisher == ppub:
-                                        pnames[m.get_pkg_stem()] = None
+                                        pnames.add(m.get_pkg_stem())
                                         pmatch.append((m, st))
                                 else:
-                                        npnames[m.get_pkg_stem()] = None
+                                        npnames.add(m.get_pkg_stem())
                                         npmatch.append((m, st))
 
+                        pfmri = None
+                        # If we have more than one possible match from the
+                        # preferred publisher, try to narrow it down to one
+                        # non-obsolete package.
                         if len(pnames) > 1:
-                                # There can only be one preferred publisher, so
-                                # filtering is pointless and these are truly
-                                # ambiguous matches.
-                                multiple_matches.append((p, pnames.keys()))
-                                error = 1
-                                continue
-                        elif not pnames and len(npnames) > 1:
+                                # Filter out packages whose newest version is
+                                # obsolete.  If there's more than one package
+                                # left, then there's still a conflict, but if
+                                # there's only one, we can assume that's the one
+                                # we want.  If there are none, we'll try again
+                                # with the non-preferred publisher.
+                                d = {}
+                                for m, st in pmatch:
+                                        d.setdefault(m.get_pkg_stem(), (m, st))
+                                nonobs = [
+                                    (m, st)
+                                    for stem, (m, st) in d.iteritems()
+                                    if not st["obsolete"] and not st["renamed"]
+                                ]
+                                if len(nonobs) > 1:
+                                        # There can only be one preferred publisher, so
+                                        # filtering is pointless and these are truly
+                                        # ambiguous matches.
+                                        multiple_matches.append((p, pnames))
+                                        error = 1
+                                        continue
+                                if nonobs:
+                                        pfmri, status = nonobs[0]
+
+                        # If we couldn't find exactly one non-obsolete match
+                        # from the preferred publisher, try to find one from the
+                        # non-preferred publishers, if any matches exist.
+                        if not pfmri and len(npnames) > 1:
                                 npmatch, npnames = \
                                     self.__filter_install_matches(npmatch)
-                                if len(npnames) > 1:
+                                d = {}
+                                for m, st in npmatch:
+                                        d.setdefault(m.get_pkg_stem(), (m, st))
+                                nonobs = [
+                                    (m, st)
+                                    for stem, (m, st) in d.iteritems()
+                                    if not st["obsolete"] and not st["renamed"]
+                                ]
+                                if len(nonobs) > 1:
                                         if multimatch_ignore:
                                                 # Caller has requested that this
                                                 # package be skipped if multiple
@@ -2423,20 +2493,39 @@ class Image(object):
                                                 continue
                                         # If there are still multiple matches
                                         # after filtering, fail.
-                                        multiple_matches.append((p,
-                                            npnames.keys()))
+                                        multiple_matches.append((p, npnames))
                                         error = 1
                                         continue
+                                if nonobs:
+                                        pfmri, status = nonobs[0]
 
-                        # matches is a list reverse sorted by version, so take
-                        # the first; i.e., the latest.
-                        if pmatch:
-                                ip.propose_fmri(pmatch[0][0])
-                        elif npmatch:
-                                ip.propose_fmri(npmatch[0][0])
+
+                        # At this point, either there's exactly one preferred or
+                        # non-preferred match, or all possible matches are
+                        # obsolete, so it doesn't really matter what we choose,
+                        # nothing will actually get installed.  So choose the
+                        # latest.
+                        #
+                        # Although looking at what's already installed in the
+                        # procedure above is incredibly complicated, here's an
+                        # instance where it would give us better results.  If we
+                        # chose something already installed, then it would get
+                        # removed, rather than nothing happening.  If things
+                        # were still ambiguous, we could error out.
+                        if not pfmri:
+                                if pmatch:
+                                        pfmri, status = pmatch[0]
+                                else:
+                                        pfmri, status = npmatch[0]
+
+                        if status["obsolete"]:
+                                vi = self.get_version_installed(pfmri)
+                                if vi:
+                                        ip.propose_fmri_removal(vi)
                         else:
-                                error = 1
-                                unmatched_fmris.append(p)
+                                # Take this fork for a renamed package, since
+                                # the rename will happen as part of the eval.
+                                ip.propose_fmri(pfmri)
 
                 if error != 0:
                         raise api_errors.PlanCreationException(unmatched_fmris,

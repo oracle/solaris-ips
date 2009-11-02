@@ -181,8 +181,8 @@ class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
                 self.pkg("list -aH pkg:/foo")
 
                 expected = \
-                    "foo 1.0-0 known u---\n" + \
-                    "foo (test2) 1.2-0 known ----\n"
+                    "foo 1.0-0 known u----\n" + \
+                    "foo (test2) 1.2-0 known -----\n"
                 self.checkAnswer(expected, self.output)
 
         def test_specific_refresh(self):
@@ -202,7 +202,7 @@ class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
                 self.pkg("list -aH pkg:/foo@1,5.11-0")
 
                 expected = \
-                    "foo 1.0-0 known ----\n"
+                    "foo 1.0-0 known -----\n"
                 self.checkAnswer(expected, self.output)
 
                 # This should succeed since a refresh is explicitly performed,
@@ -210,15 +210,15 @@ class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
                 self.pkg("refresh test2")
                 self.pkg("list -aH pkg:/foo")
                 expected = \
-                    "foo 1.0-0 known u---\n" + \
-                    "foo (test2) 1.2-0 known ----\n"
+                    "foo 1.0-0 known u----\n" + \
+                    "foo (test2) 1.2-0 known -----\n"
                 self.checkAnswer(expected, self.output)
                 self.pkg("refresh unknownAuth", exit=1)
                 self.pkg("set-publisher -P test2")
                 self.pkg("list -aH pkg:/foo")
                 expected = \
-                    "foo (test1) 1.0-0 known u---\n" + \
-                    "foo 1.2-0 known ----\n"
+                    "foo (test1) 1.0-0 known u----\n" + \
+                    "foo 1.2-0 known -----\n"
                 self.pkgsend_bulk(self.durl1, self.foo11)
                 self.pkgsend_bulk(self.durl2, self.foo11)
 
@@ -227,10 +227,10 @@ class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
                 self.pkg("refresh test1 test2")
                 self.pkg("list -aHf pkg:/foo")
                 expected = \
-                    "foo (test1) 1.0-0 known u---\n" + \
-                    "foo (test1) 1.1-0 known u---\n" + \
-                    "foo 1.1-0 known u---\n" + \
-                    "foo 1.2-0 known ----\n"
+                    "foo (test1) 1.0-0 known u----\n" + \
+                    "foo (test1) 1.1-0 known u----\n" + \
+                    "foo 1.1-0 known u----\n" + \
+                    "foo 1.2-0 known -----\n"
                 self.checkAnswer(expected, self.output)
 
         def test_set_publisher_induces_full_refresh(self):
@@ -241,7 +241,7 @@ class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
                 self.image_create(self.durl1, prefix="test1")
                 self.pkg("list -aH pkg:/foo")
                 expected = \
-                    "foo 1.0-0 known ----\n"
+                    "foo 1.0-0 known -----\n"
                 self.checkAnswer(expected, self.output)
 
                 # If a privileged user requests this, it should fail since
@@ -258,8 +258,8 @@ class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
                 self.pkg("set-publisher -O " + self.durl3 + " test1")
                 self.pkg("list --no-refresh -afH pkg:/foo")
                 expected = \
-                    "foo 1.0-0 known u---\n" \
-                    "foo 1.1-0 known ----\n"
+                    "foo 1.0-0 known u----\n" \
+                    "foo 1.1-0 known -----\n"
                 self.checkAnswer(expected, self.output)
 
                 self.pkg("set-publisher --no-refresh -O " +
@@ -267,8 +267,8 @@ class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
                 self.pkg("set-publisher -O " + self.durl1 + " test2")
                 self.pkg("list --no-refresh -aH pkg:/foo")
                 expected = \
-                    "foo 1.1-0 known ----\n" \
-                    "foo (test2) 1.0-0 known ----\n"
+                    "foo 1.1-0 known -----\n" \
+                    "foo (test2) 1.0-0 known -----\n"
 
         def test_set_publisher_induces_delayed_full_refresh(self):
                 self.pkgsend_bulk(self.durl3, self.foo11)
@@ -277,7 +277,7 @@ class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
                 self.image_create(self.durl1, prefix="test1")
                 self.pkg("list -aH pkg:/foo")
                 expected = \
-                    "foo 1.0-0 known ----\n"
+                    "foo 1.0-0 known -----\n"
                 self.checkAnswer(expected, self.output)
                 self.dcs[2].stop()
                 self.pkg("set-publisher --no-refresh -O " + self.durl3 + " test1")
@@ -298,7 +298,7 @@ class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
                 # package data for the publisher.
                 self.pkg("list -aH pkg:/foo@1.1")
                 expected = \
-                    "foo 1.1-0 known ----\n"
+                    "foo 1.1-0 known -----\n"
                 self.checkAnswer(expected, self.output)
 
                 # This should fail when listing all known packages, and

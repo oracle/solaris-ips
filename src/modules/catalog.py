@@ -1441,7 +1441,7 @@ class Catalog(object):
                                 name = act.attrs["name"]
                                 if name.startswith("variant") or \
                                     name.startswith("facet") or \
-                                    name in ("pkg.obsolete", "pkg.rename"):
+                                    name in ("pkg.obsolete", "pkg.renamed"):
                                         # variant and facet data goes to the
                                         # dependency catalog part.
                                         dep_acts["C"].append(str(act))

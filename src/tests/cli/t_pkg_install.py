@@ -2773,5 +2773,697 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                 self.pkg("install foo@1.1")
 
 
+class TestPkgInstallObsolete(testutils.SingleDepotTestCase):
+        """Test cases for obsolete packages."""
+
+        persistent_depot = True
+
+        def setUp(self):
+                testutils.SingleDepotTestCase.setUp(self)
+
+        def test_basic(self):
+                foo1 = """
+                    open foo@1
+                    add dir path=usr mode=0755 owner=root group=root
+                    close
+                """
+                # Obsolete packages can have metadata
+                foo2 = """
+                    open foo@2
+                    add set name=pkg.obsolete value=true
+                    add set name=pkg.summary value="A test package"
+                    close
+                """
+
+                fbar = """
+                    open fbar@1
+                    add depend type=require fmri=foo@2
+                    close
+                """
+
+                qbar = """
+                    open qbar@1
+                    add depend type=require fmri=qux@2
+                    close
+                """
+
+                qux1 = """
+                    open qux@1
+                    add dir path=usr mode=0755 owner=root group=root
+                    close
+                """
+
+                qux2 = """
+                    open qux@2
+                    add set name=pkg.renamed value=true
+                    add depend type=require fmri=foo@1
+                    close
+                """
+
+                fred = """
+                    open fred@1
+                    add depend type=require fmri=foo
+                    close
+                """
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, foo1)
+                self.pkgsend_bulk(durl, foo2)
+                self.pkgsend_bulk(durl, fbar)
+                self.pkgsend_bulk(durl, qbar)
+                self.pkgsend_bulk(durl, qux1)
+                self.pkgsend_bulk(durl, qux2)
+                self.pkgsend_bulk(durl, fred)
+
+                self.image_create(durl)
+
+                # First install the non-obsolete version of foo
+                self.pkg("install foo@1")
+                self.pkg("list foo@1")
+
+                # Now install the obsolete version, and ensure it disappears (5)
+                self.pkg("install foo")
+                self.pkg("list foo", exit=1)
+
+                # Explicitly installing an obsolete package succeeds, but
+                # results in nothing on the system. (1)
+                self.pkg("install foo@2")
+                self.pkg("list foo", exit=1)
+
+                # Installing a package with a dependency on an obsolete package
+                # fails. (2)
+                self.pkg("install fbar", exit=1)
+
+                # Installing a package with a dependency on a renamed package
+                # succeeds, leaving the first package and the renamed package on
+                # the system, as well as the empty, pre-renamed package. (3)
+                self.pkg("install qbar")
+                self.pkg("list qbar")
+                self.pkg("list foo@1")
+                self.pkg("list qux | grep -- --r--")
+
+                # A simple rename test: First install the pre-renamed version of
+                # qux.  Then install the renamed version, and see that the new
+                # package is installed, and the renamed package is installed,
+                # but marked renamed.  (4)
+                self.pkg("install qux@1")
+                self.pkg("install qux")
+                self.pkg("list foo@1")
+                self.pkg("list qux | grep -- --r--")
+
+                # Install a package that's going to be obsoleted and a package
+                # that depends on it.  Update the package to its obsolete
+                # version and see that it fails.  (6, sorta)
+                self.pkg("install foo@1 fred")
+                self.pkg("install foo", exit=1)
+
+        def test_basic_7a(self):
+                """Upgrade a package to a version with a dependency on a renamed
+                package.  A => A' (-> Br (-> C))"""
+
+                t7ap1_1 = """
+                    open t7ap1@1
+                    close
+                """
+
+                t7ap1_2 = """
+                    open t7ap1@2
+                    add depend type=require fmri=t7ap2
+                    close
+                """
+
+                t7ap2_1 = """
+                    open t7ap2@1
+                    add set name=pkg.renamed value=true
+                    add depend type=require fmri=t7ap3
+                    close
+                """
+
+                t7ap3_1 = """
+                    open t7ap3@1
+                    close
+                """
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, t7ap1_1)
+                self.image_create(durl)
+
+                self.pkg("install t7ap1")
+
+                self.pkgsend_bulk(durl, t7ap1_2)
+                self.pkgsend_bulk(durl, t7ap2_1)
+                self.pkgsend_bulk(durl, t7ap3_1)
+
+                self.pkg("refresh")
+                self.pkg("image-update")
+                self.pkg("list -af")
+                self.pkg("list t7ap2 | grep -- --r--")
+                self.pkg("list t7ap3")
+
+        def test_basic_7b(self):
+                """Upgrade a package to a version with a dependency on a renamed
+                package.  Like 7a except package A starts off depending on B.
+
+                A (-> B) => A' (-> Br (-> C))"""
+
+                t7bp1_1 = """
+                    open t7bp1@1
+                    add depend type=require fmri=t7bp2
+                    close
+                """
+
+                t7bp1_2 = """
+                    open t7bp1@2
+                    add depend type=require fmri=t7bp2
+                    close
+                """
+
+                t7bp2_1 = """
+                    open t7bp2@1
+                    close
+                """
+
+                t7bp2_2 = """
+                    open t7bp2@1
+                    add set name=pkg.renamed value=true
+                    add depend type=require fmri=t7bp3
+                    close
+                """
+
+                t7bp3_1 = """
+                    open t7bp3@1
+                    close
+                """
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, t7bp1_1)
+                self.pkgsend_bulk(durl, t7bp2_1)
+                self.image_create(durl)
+
+                self.pkg("install t7bp1")
+
+                self.pkgsend_bulk(durl, t7bp1_2)
+                self.pkgsend_bulk(durl, t7bp2_2)
+                self.pkgsend_bulk(durl, t7bp3_1)
+
+                self.pkg("refresh")
+                self.pkg("image-update")
+                self.pkg("list t7bp2 | grep -- --r--")
+                self.pkg("list t7bp3")
+
+        def test_basic_7c(self):
+                """Upgrade a package to a version with a dependency on a renamed
+                package.  Like 7b, except package A doesn't change.
+
+                A (-> B) => A (-> Br (-> C))"""
+
+                t7cp1_1 = """
+                    open t7cp1@1
+                    add depend type=require fmri=t7cp2
+                    close
+                """
+
+                t7cp2_1 = """
+                    open t7cp2@1
+                    close
+                """
+
+                t7cp2_2 = """
+                    open t7cp2@2
+                    add set name=pkg.renamed value=true
+                    add depend type=require fmri=t7cp3
+                    close
+                """
+
+                t7cp3_1 = """
+                    open t7cp3@1
+                    close
+                """
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, t7cp1_1)
+                self.pkgsend_bulk(durl, t7cp2_1)
+                self.image_create(durl)
+
+                self.pkg("install t7cp1")
+
+                self.pkgsend_bulk(durl, t7cp2_2)
+                self.pkgsend_bulk(durl, t7cp3_1)
+
+                self.pkg("refresh")
+                self.pkg("image-update")
+
+                self.pkg("list t7cp2 | grep -- --r--")
+                self.pkg("list t7cp3")
+
+        def test_basic_6a(self):
+                """Upgrade a package to a version with a dependency on an
+                obsolete package.  This version is unlikely to happen in real
+                life."""
+
+                t6ap1_1 = """
+                    open t6ap1@1
+                    close
+                """
+
+                t6ap1_2 = """
+                    open t6ap1@2
+                    add depend type=require fmri=t6ap2
+                    close
+                """
+
+                t6ap2_1 = """
+                    open t6ap2@1
+                    add set name=pkg.obsolete value=true
+                    close
+                """
+
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, t6ap1_1)
+                self.image_create(durl)
+
+                self.pkg("install t6ap1")
+
+                self.pkgsend_bulk(durl, t6ap1_2)
+                self.pkgsend_bulk(durl, t6ap2_1)
+
+                self.pkg("refresh")
+                self.pkg("image-update", exit=1)
+
+        def test_basic_6b(self):
+                """Install a package with a dependency, and image-update after
+                publishing updated packages for both, but where the dependency
+                has become obsolete."""
+
+                t6ap1_1 = """
+                    open t6ap1@1
+                    add depend type=require fmri=t6ap2
+                    close
+                """
+
+                t6ap1_2 = """
+                    open t6ap1@2
+                    add depend type=require fmri=t6ap2
+                    close
+                """
+
+                t6ap2_1 = """
+                    open t6ap2@1
+                    close
+                """
+
+                t6ap2_2 = """
+                    open t6ap2@2
+                    add set name=pkg.obsolete value=true
+                    close
+                """
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, t6ap1_1)
+                self.pkgsend_bulk(durl, t6ap2_1)
+                self.image_create(durl)
+
+                self.pkg("install t6ap1")
+
+                self.pkgsend_bulk(durl, t6ap1_2)
+                self.pkgsend_bulk(durl, t6ap2_2)
+
+                self.pkg("refresh")
+                self.pkg("image-update", exit=1)
+
+        def test_basic_8a(self):
+                """Upgrade a package to an obsolete leaf version when another
+                depends on it."""
+
+                t8ap1_1 = """
+                    open t8ap1@1
+                    close
+                """
+
+                t8ap1_2 = """
+                    open t8ap1@2
+                    add set name=pkg.obsolete value=true
+                    close
+                """
+
+                t8ap2_1 = """
+                    open t8ap2@1
+                    add depend type=require fmri=t8ap1
+                    close
+                """
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, t8ap1_1)
+                self.pkgsend_bulk(durl, t8ap2_1)
+                self.image_create(durl)
+
+                self.pkg("install t8ap2")
+
+                self.pkgsend_bulk(durl, t8ap1_2)
+
+                self.pkg("refresh")
+                self.pkg("image-update", exit=1)
+
+        def test_basic_13a(self):
+                """Publish an package with a dependency, then publish both as
+                obsolete, image-update, and see that both packages have gotten
+                removed."""
+
+                t13ap1_1 = """
+                    open t13ap1@1
+                    add depend type=require fmri=t13ap2
+                    close
+                """
+
+                t13ap1_2 = """
+                    open t13ap1@2
+                    add set name=pkg.obsolete value=true
+                    close
+                """
+
+                t13ap2_1 = """
+                    open t13ap2@1
+                    close
+                """
+
+                t13ap2_2 = """
+                    open t13ap2@2
+                    add set name=pkg.obsolete value=true
+                    close
+                """
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, t13ap1_1)
+                self.pkgsend_bulk(durl, t13ap2_1)
+                self.image_create(durl)
+
+                self.pkg("install t13ap1")
+
+                self.pkgsend_bulk(durl, t13ap1_2)
+                self.pkgsend_bulk(durl, t13ap2_2)
+
+                self.pkg("refresh")
+                self.pkg("image-update")
+                self.pkg("list", exit=1)
+
+        def test_basic_11(self):
+                """Install a package with an ambiguous name, where only one
+                match is non-obsolete."""
+
+                t11p1 = """
+                    open netbeans@1
+                    add set name=pkg.obsolete value=true
+                    close
+                """
+
+                t11p2 = """
+                    open developer/netbeans@1
+                    close
+                """
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, t11p1)
+                self.pkgsend_bulk(durl, t11p2)
+                self.image_create(durl)
+
+                self.pkg("install netbeans")
+                self.pkg("list pkg:/developer/netbeans")
+                self.pkg("list pkg:/netbeans", exit=1)
+
+        def test_basic_11a(self):
+                """Install a package using an ambiguous name where only one
+                match is non-renamed."""
+
+                t11p1 = """
+                    open netbonze@1
+                    add set name=pkg.renamed value=true
+                    add depend type=require fmri=SUNWnetbonze
+                    close
+                """
+
+                t11p2 = """
+                    open developer/netbonze@1
+                    close
+                """
+
+                t11p3 = """
+                    open SUNWnetbonze@1
+                    close
+                """
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, t11p1)
+                self.pkgsend_bulk(durl, t11p2)
+                self.pkgsend_bulk(durl, t11p3)
+                self.image_create(durl)
+
+                self.pkg("install netbonze")
+                self.pkg("list pkg:/developer/netbonze")
+                self.pkg("list pkg:/netbonze", exit=1)
+
+        def test_basic_11b(self):
+                """Install a package using an ambiguous name where only one
+                match is non-renamed, and the renamed match is renamed to the
+                other."""
+
+                t11p1 = """
+                    open netbooze@1
+                    add set name=pkg.renamed value=true
+                    add depend type=require fmri=developer/netbooze
+                    close
+                """
+
+                t11p2 = """
+                    open developer/netbooze@1
+                    close
+                """
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, t11p1)
+                self.pkgsend_bulk(durl, t11p2)
+                self.image_create(durl)
+
+                self.pkg("install netbooze")
+                self.pkg("list pkg:/developer/netbooze")
+                self.pkg("list pkg:/netbooze", exit=1)
+
+        def test_basic_12(self):
+                """Upgrade a package across a rename to an ambiguous name."""
+
+                t12p1_1 = """
+                    open netbeenz@1
+                    close
+                """
+
+                t12p1_2 = """
+                    open netbeenz@2
+                    add set name=pkg.renamed value=true
+                    add depend type=require fmri=pkg:/developer/netbeenz
+                    close
+                """
+
+                t12p2_1 = """
+                    open developer/netbeenz@1
+                    close
+                """
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, t12p1_1)
+                self.image_create(durl)
+
+                self.pkg("install netbeenz")
+
+                self.pkgsend_bulk(durl, t12p1_2)
+                self.pkgsend_bulk(durl, t12p2_1)
+
+                self.pkg("refresh")
+                self.pkg("image-update -v")
+                self.pkg("list pkg:/developer/netbeenz | grep -- -----")
+                self.pkg("list pkg:/netbeenz | grep -- --r--")
+
+        def test_remove_renamed(self):
+                """If a renamed package has nothing depending on it, it should
+                be removed."""
+
+                p1_1 = """
+                    open remrenA@1
+                    close
+                """
+
+                p1_2 = """
+                    open remrenA@2
+                    add set name=pkg.renamed value=true
+                    add depend type=require fmri=pkg:/remrenB
+                    close
+                """
+
+                p2_1 = """
+                    open remrenB@1
+                    close
+                """
+
+                p3_1 = """
+                    open remrenC@1
+                    add depend type=require fmri=pkg:/remrenA
+                    close
+                """
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, p1_1)
+                self.image_create(durl)
+
+                self.pkg("install remrenA")
+
+                self.pkgsend_bulk(durl, p1_2)
+                self.pkgsend_bulk(durl, p2_1)
+                self.pkgsend_bulk(durl, p3_1)
+
+                self.pkg("refresh")
+                self.pkg("image-update")
+                self.pkg("list remrenA", exit=1)
+
+                # But if there is something depending on the renamed package, it
+                # can't be removed.
+                self.pkg("pkg uninstall remrenB")
+
+                self.pkg("install remrenA@1 remrenC")
+                self.pkg("image-update")
+                self.pkg("list remrenA")
+
+        def test_incorp_1(self):
+                """We should be able to incorporate an obsolete package."""
+
+                p1_1 = """
+                    open inc1p1@1
+                    add depend type=incorporate fmri=inc1p2@1
+                    close
+                """
+
+                p2_1 = """
+                    open inc1p2@1
+                    add set name=pkg.obsolete value=true
+                    close
+                """
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, p1_1)
+                self.pkgsend_bulk(durl, p2_1)
+                self.image_create(durl)
+
+                self.pkg("install inc1p1")
+                self.pkg("install inc1p2")
+
+                self.pkg("list inc1p2", exit=1)
+
+        def test_incorp_2(self):
+                """We should be able to continue incorporating a package when it
+                becomes obsolete on upgrade."""
+
+                p1_1 = """
+                    open inc2p1@1
+                    add depend type=incorporate fmri=inc2p2@1
+                    close
+                """
+
+                p1_2 = """
+                    open inc2p1@2
+                    add depend type=incorporate fmri=inc2p2@2
+                    close
+                """
+
+                p2_1 = """
+                    open inc2p2@1
+                    close
+                """
+
+                p2_2 = """
+                    open inc2p2@2
+                    add set name=pkg.obsolete value=true
+                    close
+                """
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, p1_1)
+                self.pkgsend_bulk(durl, p2_1)
+                self.image_create(durl)
+
+                self.pkg("install inc2p1 inc2p2")
+
+                self.pkgsend_bulk(durl, p1_2)
+                self.pkgsend_bulk(durl, p2_2)
+
+                self.pkg("refresh")
+                self.pkg("list -afv")
+                self.pkg("image-update -v")
+                self.pkg("list inc2p2", exit=1)
+
+
+class TestPkgInstallMultiObsolete(testutils.ManyDepotTestCase):
+        """Tests involving obsolete packages and multiple publishers."""
+
+        obs = """
+            open stem@1
+            add set name=pkg.obsolete value=true
+            close
+        """
+
+        nonobs = """
+            open stem@1
+            close
+        """
+
+        persistent_depot = True
+
+        def setUp(self):
+                testutils.ManyDepotTestCase.setUp(self, ["test1", "test2"])
+
+        def test_01(self):
+                """If an obsolete package is found in a preferred publisher and
+                a non-obsolete package of the same name is found in a
+                non-preferred publisher, then we should choose the package from
+                the preferred publisher, even though it's obsolete."""
+
+                durl1 = self.dcs[1].get_depot_url()
+                durl2 = self.dcs[2].get_depot_url()
+
+                self.pkgsend_bulk(durl1, self.obs)
+                self.pkgsend_bulk(durl2, self.nonobs)
+
+                self.image_create(durl1, prefix="test1")
+                self.pkg("set-publisher -O " + durl2 + " test2")
+
+                self.pkg("install stem")
+                # We should choose the obsolete package, which means nothing
+                # gets installed.
+                self.pkg("list", exit=1)
+
+        def test_02(self):
+                """Same as test_01, but now we have ambiguity in the package
+                names.  While at first blush we might follow the same rule as in
+                test_01 (choose the preferred publisher), in this case, we can't
+                figure out which package from the preferred publisher we want,
+                so the choice already isn't as straightforward, so we choose the
+                non-obsolete package."""
+
+                lobs = """
+                    open some/stem@1
+                    add set name=pkg.obsolete value=true
+                    close
+                """
+
+                durl1 = self.dcs[1].get_depot_url()
+                durl2 = self.dcs[2].get_depot_url()
+
+                self.pkgsend_bulk(durl1, self.obs + lobs)
+                self.pkgsend_bulk(durl2, self.nonobs + lobs)
+
+                self.image_create(durl1, prefix="test1")
+                self.pkg("set-publisher -O " + durl2 + " test2")
+
+                self.pkg("install stem")
+                self.pkg("list pkg://test2/stem")
+
+
 if __name__ == "__main__":
         unittest.main()

@@ -348,6 +348,7 @@ class ImagePlan(object):
                             ordered=False))
 
                         cf = matches[0][0]
+                        cs = matches[0][1]
                         evalpub = pfmri.get_publisher()
                         if len(matches) > 1 and not cf.get_publisher() == ppub \
                             and cf.get_publisher() != evalpub:
@@ -356,13 +357,26 @@ class ImagePlan(object):
                                 # same publisher as the fmri being evaluated,
                                 # then try to find a match that has the same
                                 # publisher as the fmri being evaluated.
-                                for res in matches[1:]:
-                                        if res[0].get_publisher() == evalpub:
-                                                cf = res[0]
+                                for f, st in matches[1:]:
+                                        if f.get_publisher() == evalpub:
+                                                cf = f
+                                                cs = st
                                                 break
 
-                        self.propose_fmri(cf)
-                        self.evaluate_fmri(cf)
+                        if cs["obsolete"]:
+                                # Depending on an obsolete package is an error,
+                                # unless the dependency is just there to move
+                                # the package forward.
+                                if constraint.presence == constraint.ALWAYS:
+                                        raise api_errors.PlanCreationException(
+                                            obsolete=((pfmri, cf),))
+
+                                vi = self.image.get_version_installed(cf)
+                                if vi:
+                                        self.evaluate_fmri_removal(vi)
+                        else:
+                                self.propose_fmri(cf)
+                                self.evaluate_fmri(cf)
 
         def add_pkg_plan(self, pfmri):
                 """add a pkg plan to imageplan for fully evaluated frmi"""

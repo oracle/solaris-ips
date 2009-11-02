@@ -415,5 +415,99 @@ class TestPkgsendBasics(testutils.SingleDepotTestCase):
                 os.close(fd)
                 os.unlink(fpath)
 
+        def test_14_obsolete(self):
+                """Obsolete and renamed packages can only have very specific
+                content."""
+
+                # Obsolete packages can't have contents
+                badobs1 = """
+                    open badobs@<ver>
+                    add dir path=usr mode=0755 owner=root group=root
+                    add set name=pkg.obsolete value=true
+                    close
+                """
+
+                # Obsolete packages can't have contents (reordered)
+                badobs2 = """
+                    open badobs@<ver>
+                    add set name=pkg.obsolete value=true
+                    add dir path=usr mode=0755 owner=root group=root
+                    close
+                """
+
+                # Renamed packages can't have contents
+                badren1 = """
+                    open badren@<ver>
+                    add set name=pkg.renamed value=true
+                    add dir path=usr mode=0755 owner=root group=root
+                    add depend fmri=otherpkg type=require
+                    close
+                """
+
+                # Renamed packages must have dependencies
+                badren2 = """
+                    open badren@<ver>
+                    add set name=pkg.renamed value=true
+                    close
+                """
+
+                # A package can't be marked both obsolete and renamed
+                badrenobs1 = """
+                    open badrenobs@<ver>
+                    add set name=pkg.obsolete value=true
+                    add set name=pkg.renamed value=true
+                    close
+                """
+
+                # Obsolete packages can have metadata
+                bob = """
+                    open bobsyeruncle@<ver>
+                    add set name=pkg.obsolete value=true
+                    add set name=pkg.summary value="A test package"
+                    close
+                """
+
+                # Package contents and line number where it should fail.
+                pkgs = [
+                    (badobs1, 3),
+                    (badobs2, 3),
+                    (badren1, 3),
+                    (badren2, 3),
+                    (badrenobs1, 3),
+                    (bob, -1)
+                ]
+                dhurl = self.dc.get_depot_url()
+                junk_repo = os.path.join(self.get_test_prefix(), "obs-junkrepo")
+                dfurl = "file://" + junk_repo
+                self.pkgsend(dfurl,
+                    "create-repository --set-property publisher.prefix=test")
+
+                ver = 0
+                for p, line in pkgs:
+                        for url in (dhurl, dfurl):
+                                # Try a bulk pkgsend first
+                                exit = int(line >= 0)
+                                # We publish fast enough that we can end up
+                                # publishing the same package version twice
+                                # within the same second, so force the version
+                                # to be incremented.
+                                p2 = p.replace("<ver>", str(ver))
+                                self.pkgsend_bulk(url, p2, exit=exit)
+                                if exit:
+                                        self.pkgsend(url, "close -A")
+
+                                # Then do it line-by-line
+                                for i, l in enumerate(p.splitlines()):
+                                        if not l.strip():
+                                                continue
+                                        exit = int(i == line)
+                                        l = l.replace("<ver>", str(ver + 1))
+                                        self.pkgsend(url, l.strip(), exit=exit)
+                                        if exit:
+                                                self.pkgsend(url, "close -A")
+                                                break
+                                ver += 2
+
+
 if __name__ == "__main__":
         unittest.main()

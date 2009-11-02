@@ -1,3 +1,10 @@
+Version 23:
+Incompatible with clients using version 0-22.
+    The pkg.client.api module has changed as follows:
+        * PackageInfo objects no longer take a "state" parameter, but a
+	  "states" parameter, and the corresponding "state" member is now
+	  "states", and is a list of states, rather than a single value.
+
 Version 22:
 Compatible with clients using version 21.
 Changes:

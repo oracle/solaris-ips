@@ -40,7 +40,7 @@ import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 import pkg.client.progress as progress
 
-API_VERSION = 21
+API_VERSION = 23
 PKG_CLIENT_NAME = "pkg"
 
 class TestApiInfo(testutils.SingleDepotTestCase):
@@ -153,7 +153,7 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                 notfound = ret[api.ImageInterface.INFO_MISSING]
                 illegals = ret[api.ImageInterface.INFO_ILLEGALS]
                 self.assert_(len(pis) == 1)
-                self.assert_(pis[0].state == api.PackageInfo.INSTALLED)
+                self.assert_(api.PackageInfo.INSTALLED in pis[0].states)
                 self.assert_(pis[0].pkg_stem == 'jade')
                 self.assert_(len(notfound) == 2)
                 self.assert_(len(illegals) == 0)
@@ -178,7 +178,7 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                 notfound = ret[api.ImageInterface.INFO_MISSING]
                 illegals = ret[api.ImageInterface.INFO_ILLEGALS]
                 self.assert_(len(pis) == 1)
-                self.assert_(pis[0].state == api.PackageInfo.INSTALLED)
+                self.assert_(api.PackageInfo.INSTALLED in pis[0].states)
                 self.assert_(len(pis[0].category_info_list) == 1)
 
                 ret = api_obj.info(["turquoise"], local, info_needed)
@@ -186,7 +186,7 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                 notfound = ret[api.ImageInterface.INFO_MISSING]
                 illegals = ret[api.ImageInterface.INFO_ILLEGALS]
                 self.assert_(len(pis) == 1)
-                self.assert_(pis[0].state == api.PackageInfo.NOT_INSTALLED)
+                self.assert_(api.PackageInfo.NOT_INSTALLED in pis[0].states)
                 self.assert_(len(pis[0].category_info_list) == 1)
 
                 ret = api_obj.info(["example_pkg"], local,
@@ -194,7 +194,7 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                 pis = ret[api.ImageInterface.INFO_FOUND]
                 self.assert_(len(pis) == 1)
                 res = pis[0]
-                self.assert_(res.state == api.PackageInfo.NOT_INSTALLED)
+                self.assert_(api.PackageInfo.NOT_INSTALLED in res.states)
                 self.assert_(len(res.category_info_list) == 1)
 
                 self.assert_(res.pkg_stem is not None)
@@ -247,7 +247,7 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                 self.assert_(res.pkg_stem is None)
                 self.assert_(res.summary is None)
                 self.assert_(res.category_info_list == [])
-                self.assert_(res.state is None)
+                self.assert_(res.states == [])
                 self.assert_(res.publisher is None)
                 self.assert_(res.preferred_publisher is None)
                 self.assert_(res.version is None)

@@ -209,8 +209,8 @@ class TracebackException(pkg5unittest.Pkg5TestCase.failureException):
                 return str
 
 class UnexpectedExitCodeException(pkg5unittest.Pkg5TestCase.failureException):
-        def __init__(self, command, expected, got, output = None,
-            comment = None, debug = None):
+        def __init__(self, command, expected, got, output=None, comment=None,
+            debug=None):
                 Exception.__init__(self)
                 self.__command = command
                 self.__output = output
@@ -233,6 +233,10 @@ class UnexpectedExitCodeException(pkg5unittest.Pkg5TestCase.failureException):
                 if self.__debug is not None and self.__debug != "":
                         str += format_debug(self.__debug)
                 return str
+
+        @property
+        def exitcode(self):
+                return self.__got
 
 
 class PkgSendOpenException(pkg5unittest.Pkg5TestCase.failureException):
@@ -522,8 +526,11 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
         def pkgsend_bulk(self, depot_url, commands, exit=0, comment=""):
                 """ Send a series of packaging commands; useful for quickly
                     doing a bulk-load of stuff into the repo.  All commands are
-                    expected to work; if not, the transaction is abandoned.  A
-                    list containing the fmris of any packages that were
+                    expected to work; if not, the transaction is abandoned.  If
+                    'exit' is set, then if none of the actions triggers that
+                    exit code, an UnexpectedExitCodeException is raised.
+
+                    A list containing the fmris of any packages that were
                     published as a result of the commands executed will be
                     returned; it will be empty if none were. """
 
@@ -533,14 +540,23 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                                 line = line.strip()
                                 if line == "":
                                         continue
-                                retcode, published = self.pkgsend(depot_url, line, exit=exit)
+                                retcode, published = self.pkgsend(depot_url, line)
                                 if retcode == 0 and published:
                                         plist.append(published)
 
-                except (TracebackException, UnexpectedExitCodeException):
+                except TracebackException:
                         if os.environ.get("PKG_TRANS_ID", None):
                                 self.pkgsend(depot_url, "close -A", exit=0)
                         raise
+                except UnexpectedExitCodeException, e:
+                        if e.exitcode != exit:
+                                raise
+                        retcode = e.exitcode
+
+                if retcode != exit:
+                        raise UnexpectedExitCodeException(line, exit, retcode,
+                            debug=self.get_debugbuf())
+
                 return plist
 
         def cmdline_run(self, cmdline, exit=0):

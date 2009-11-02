@@ -341,11 +341,9 @@ class Manifest(object):
                                 continue
 
                         self.actions.append(action)
+                        self.actions_bytype.setdefault(action.name, []). \
+                            append(action)
 
-                        if action.name not in self.actions_bytype:
-                                self.actions_bytype[action.name] = [ action ]
-                        else:
-                                self.actions_bytype[action.name].append(action)
                         # add any set actions to attributes
                         if action.name == "set":
                                 self.fill_attributes(action)
@@ -533,6 +531,18 @@ class Manifest(object):
                 except KeyError:
                         return default
 
+        def getbool(self, key, default):
+                """Returns the boolean of the value of the attribute 'key'."""
+
+                ret = self.get(key, default).lower()
+                if ret == "true":
+                        return True
+                elif ret == "false":
+                        return False
+                else:
+                        raise ValueError(_("Attribute value '%s' not 'true' or "
+                            "'false'" % ret))
+
         def get_size(self, excludes=EmptyI):
                 """Returns an integer representing the total size, in bytes, of
                 the Manifest's data payload.
@@ -561,6 +571,7 @@ class Manifest(object):
 
                 new_attr = AttributeAction(None, name=key, value=value)
                 self.actions.append(new_attr)
+                self.actions_bytype.setdefault("set", []).append(new_attr)
 
         def __contains__(self, key):
                 return key in self.attributes

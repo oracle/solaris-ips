@@ -246,38 +246,38 @@ SUBCOMMANDS
                                 as "opensolaris.org"
 
      search [-alprHI] [-o attribute ...] [-s repo_uri] query
-          Search for matches to the query, and display the results.  
+          Search for matches to the query, and display the results.
           Which tokens are indexed are action-dependent, but may
           include content hashes and pathnames.
 
-          By default, and with -a, perform the search and display information 
-          about the matching actions.  
+          By default, and with -a, perform the search and display information
+          about the matching actions.
 
           With -l, search the image's installed packages.
 
           With -o, the columns of the results may be controlled.  The
           -o option may be specified multiple times, or multiple attributes
           may be specified as the argument to one -o option by separating
-          the attribute names with commas.  In addition to the "pseudo" 
+          the attribute names with commas.  In addition to the "pseudo"
           attributes outlined above, more are defined for search results:
 
-          search.match          Corresponds to the string which matched the 
+          search.match          Corresponds to the string which matched the
                                 search query.
 
           search.match_type     Corresponds to the attribute which contained
                                 the string that matched the search query.
 
-          With -p, perform the search and display the packages  which contain 
-          at least one action which matched the query.  This is equivalent to 
-          enclosing the entire query with '<>'.  (For a description of the 
+          With -p, perform the search and display the packages  which contain
+          at least one action which matched the query.  This is equivalent to
+          enclosing the entire query with '<>'.  (For a description of the
           '<>' operator, please see below.)
 
-          By default, and with -r, search the repositories corresponding 
+          By default, and with -r, search the repositories corresponding
           to the image's publishers.
 
           With -H, omit the headers.
 
-	  With -I, use a case-sensitive search.
+          With -I, use a case-sensitive search.
 
           With -s, search the pkg(5) repository located at the given URI.
           This may be specified multiple times.
@@ -287,26 +287,55 @@ SUBCOMMANDS
 
           In addition to simple token matching and wildcard search, a more
           complicated query language is supported.  Phrases may be searched for
-          by using ' or ".  Note: Please make sure to take your shell into 
-          account so that pkg actually sees the ' or ".  
+          by using ' or ".  Note: Please make sure to take your shell into
+          account so that pkg actually sees the ' or ".
 
-          Boolean search using AND and OR is supported.  Field, or structured, 
-          queries are supported. The syntax for these is 
-          pkg_name:action_type:key:token.  Missing fields are implictly 
-          wildcarded.  A search for :basename:pkg would match all actions 
+          Boolean search using AND and OR is supported.  Field, or structured,
+          queries are supported. The syntax for these is
+          pkg_name:action_type:key:token.  Missing fields are implictly
+          wildcarded.  A search for :basename:pkg would match all actions
           types in all packages with a key of basename and which matched
           the token 'pkg'.  Explict wildcards are supported in the pkg_name and
-          token fields, action_type and key must match exactly.  
+          token fields, action_type and key must match exactly.
 
-          To convert actions to the packages which contain those actions, 
-          use '<>'.  With the -a option, Searching for 'token' results in 
+          To convert actions to the packages which contain those actions,
+          use '<>'.  With the -a option, Searching for 'token' results in
           information about the actions matching token, while searching for
           '<token>' results in a list of packages containing actions which
           matched token.
 
      list [-Hafsuv] [--no-refresh] [pkg_fmri_pattern ...]
           Display a list of packages in the current image, including state
-          and other information.
+          and other information.  The usual output is in four columns:
+
+              NAME (PUBLISHER)                  VERSION          STATE      UFOXI
+              SUNWcs                            0.5.11-0.126     installed  -----
+              web/firefox/plugin/flash (extra)  10.0.32.18-0.111 installed  -----
+
+          The first column contains the name of the package.  If the publisher
+          from which it is installed (or available, if not installed) is not
+          the preferred publisher, then the publisher name is listed in
+          parentheses after the package name.  The second column contains the
+          release and branch versions of the package (see pkg(5)).  The third
+          column contains the state of the package as it exists on the system.
+          Possible values are "installed" and "known".  The last column
+          contains a set of flags that show how the package relates to other
+          packages:
+
+              - a "u" in the "U" column shows that it can be upgraded;
+
+              - an "f" in the "F" column shows that this version has been
+                frozen (not implemented);
+
+              - an "o" in the "O" column shows that it is obsolete, while an
+                "r" shows that it has been renamed (a form of obsoletion);
+
+              - an "x" in the "X" column shows that it is prevented from being
+                installed because some other package has excluded it (not
+                implemented); and
+
+              - an "i" in the "I" column shows that it has been constrained by
+                an incorporation (not implemented).
 
           With -H, omit the headers from the listing.
 
@@ -322,7 +351,8 @@ SUBCOMMANDS
 
           With -u, report only packages with newer versions available.
 
-          With -v, report full package FMRIs.
+          With -v, report full package FMRIs, including publisher and complete
+          version, all in the first column (the VERSION column disappears).
 
           With --no-refresh, do not attempt to contact the repositories for
           the image's publishers to retrieve publisher metadata (e.g.

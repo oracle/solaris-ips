@@ -79,7 +79,7 @@ from pkg.client.history import (RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
     RESULT_FAILED_OUTOFMEMORY)
 from pkg.misc import EmptyI, msg, PipeError
 
-CLIENT_API_VERSION = 22
+CLIENT_API_VERSION = 23
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -289,7 +289,7 @@ def list_inventory(img, args):
                                 if display_headers:
                                         if verbose:
                                                 msg(fmt_str % \
-                                                    ("FMRI", "STATE", "UFIX"))
+                                                    ("FMRI", "STATE", "UFOXI"))
                                         elif summary:
                                                 msg(fmt_str % \
                                                     ("NAME (PUBLISHER)",
@@ -297,13 +297,15 @@ def list_inventory(img, args):
                                         else:
                                                 msg(fmt_str % \
                                                     ("NAME (PUBLISHER)",
-                                                    "VERSION", "STATE", "UFIX"))
+                                                    "VERSION", "STATE", "UFOXI"))
                                 found = True
-                        ufix = "%c%c%c%c" % \
+                        ufix = "%c%c%c%c%c" % \
                             (state["upgradable"] and "u" or "-",
                             state["frozen"] and "f" or "-",
-                            state["incorporated"] and "i" or "-",
-                            state["excludes"] and "x" or "-")
+                            state["obsolete"] and "o" or
+                                (state["renamed"] and "r" or "-"),
+                            state["excludes"] and "x" or "-",
+                            state["incorporated"] and "i" or "-")
 
                         if pfmri.publisher == ppub:
                                 pub = ""
@@ -1304,6 +1306,7 @@ def info(img, args):
                         info_needed = api.PackageInfo.ALL_OPTIONS - \
                             frozenset([api.PackageInfo.LICENSES])
                 info_needed -= api.PackageInfo.ACTION_OPTIONS
+                info_needed |= frozenset([api.PackageInfo.DEPENDENCIES])
 
                 try:
                         ret = api_inst.info(pargs, info_local, info_needed)
@@ -1335,13 +1338,22 @@ def info(img, args):
                                         msg(lic)
                         continue
 
-                if pi.state == api.PackageInfo.INSTALLED:
-                        state = _("Installed")
-                elif pi.state == api.PackageInfo.NOT_INSTALLED:
-                        state = _("Not installed")
+                state = ""
+                if api.PackageInfo.OBSOLETE in pi.states:
+                        state = _("Obsolete")
+                elif api.PackageInfo.RENAMED in pi.states:
+                        state = _("Renamed")
+
+                if state:
+                        fmt = "%%s (%s)" % state
                 else:
-                        raise RuntimeError("Encountered unknown package "
-                            "information state: %d" % pi.state )
+                        fmt = "%s"
+
+                if api.PackageInfo.INSTALLED in pi.states:
+                        state = fmt % _("Installed")
+                elif api.PackageInfo.NOT_INSTALLED in pi.states:
+                        state = fmt % _("Not installed")
+
                 name_str = _("          Name:")
                 msg(name_str, pi.pkg_stem)
                 msg(_("       Summary:"), pi.summary)
@@ -1364,6 +1376,11 @@ def info(img, args):
                                             ci.__str__(verbose))
 
                 msg(_("         State:"), state)
+
+                if api.PackageInfo.RENAMED in pi.states:
+                        msg(_("    Renamed to:"), pi.dependencies[0])
+                        for dep in pi.dependencies[1:]:
+                                msg(" " * len(name_str), dep)
 
                 # XXX even more info on the publisher would be nice?
                 msg(_("     Publisher:"), pi.publisher)

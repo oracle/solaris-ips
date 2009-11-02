@@ -49,7 +49,7 @@ import pkg.nrlock
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 22
+CURRENT_API_VERSION = 23
 CURRENT_P5I_VERSION = 1
 
 logger = global_settings.logger
@@ -88,7 +88,7 @@ class ImageInterface(object):
                 canceled changes. It can raise VersionException and
                 ImageNotFoundException."""
 
-                compatible_versions = set([21, 22])
+                compatible_versions = set([23])
 
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
@@ -902,7 +902,7 @@ class ImageInterface(object):
 
                 pis = []
                 for f in fmris:
-                        pub = name = version = release = None
+                        pub = name = version = release = states = None
                         build_release = branch = packaging_date = None
                         if PackageInfo.IDENTITY in info_needed:
                                 pub, name, version = f.tuple()
@@ -917,10 +917,7 @@ class ImageInterface(object):
                                 pref_pub = f.get_publisher() == ppub
                         state = None
                         if PackageInfo.STATE in info_needed:
-                                if self.__img.is_pkg_installed(f):
-                                        state = PackageInfo.INSTALLED
-                                else:
-                                        state = PackageInfo.NOT_INSTALLED
+                                states = self.__img.get_pkg_state(f)
                         links = hardlinks = files = dirs = dependencies = None
                         summary = size = licenses = cat_info = description = \
                             None
@@ -960,7 +957,7 @@ class ImageInterface(object):
                                                     "dir", excludes))
 
                         pis.append(PackageInfo(pkg_stem=name, summary=summary,
-                            category_info_list=cat_info, state=state,
+                            category_info_list=cat_info, states=states,
                             publisher=pub, preferred_publisher=pref_pub,
                             version=release, build_release=build_release,
                             branch=branch, packaging_date=packaging_date,
@@ -1689,6 +1686,8 @@ class PackageInfo(object):
         # Possible package installation states
         INSTALLED = 1
         NOT_INSTALLED = 2
+        OBSOLETE = 3
+        RENAMED = 4
 
         __NUM_PROPS = 13
         IDENTITY, SUMMARY, CATEGORIES, STATE, PREF_PUBLISHER, SIZE, LICENSES, \
@@ -1699,7 +1698,7 @@ class PackageInfo(object):
             DEPENDENCIES])
 
         def __init__(self, pfmri, pkg_stem=None, summary=None,
-            category_info_list=None, state=None, publisher=None,
+            category_info_list=None, states=None, publisher=None,
             preferred_publisher=None, version=None, build_release=None,
             branch=None, packaging_date=None, size=None, licenses=None,
             links=None, hardlinks=None, files=None, dirs=None,
@@ -1709,7 +1708,6 @@ class PackageInfo(object):
                 if category_info_list is None:
                         category_info_list = []
                 self.category_info_list = category_info_list
-                self.state = state
                 self.publisher = publisher
                 self.preferred_publisher = preferred_publisher
                 self.version = version
@@ -1725,9 +1723,31 @@ class PackageInfo(object):
                 self.dirs = dirs
                 self.dependencies = dependencies
                 self.description = description
+                self.states = self.__map_states(states)
 
         def __str__(self):
                 return self.fmri
+
+        @classmethod
+        def __map_states(cls, states):
+                d = {
+                    0: cls.NOT_INSTALLED,
+                    2: cls.INSTALLED,
+                    8: cls.OBSOLETE,
+                    9: cls.RENAMED
+                }
+
+                if not states:
+                        return []
+
+                return [
+                    t
+                    for t in (
+                        d.get(s, -1)
+                        for s in states
+                    )
+                    if t != -1
+                ]
 
         @staticmethod
         def build_from_fmri(f):

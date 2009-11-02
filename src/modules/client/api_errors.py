@@ -156,7 +156,7 @@ class PlanCreationException(ApiException):
         def __init__(self, unmatched_fmris=EmptyI, multiple_matches=EmptyI,
             missing_matches=EmptyI, illegal=EmptyI,
             constraint_violations=EmptyI, badarch=EmptyI, not_installed=EmptyI,
-            installed=EmptyI):
+            installed=EmptyI, obsolete=EmptyI):
                 ApiException.__init__(self)
                 self.unmatched_fmris = unmatched_fmris
                 self.multiple_matches = multiple_matches
@@ -166,6 +166,7 @@ class PlanCreationException(ApiException):
                 self.badarch = badarch
                 self.not_installed = not_installed
                 self.installed = installed
+                self.obsolete = obsolete
 
         def __str__(self):
                 res = []
@@ -200,6 +201,9 @@ Try relaxing the pattern, refreshing and/or examining the catalogs:""")
                         res += [ s % (self.badarch[0],
                             ", ".join(self.badarch[1]))]
                         res += [ a % (self.badarch[2])]
+
+                s = _("'%(p)s' depends on obsolete package '%(op)s'")
+                res += [ s % {"p": p, "op": op} for p, op in self.obsolete ]
 
                 if self.not_installed:
                         s = _("The proposed operation can not be performed for "

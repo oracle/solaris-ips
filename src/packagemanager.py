@@ -4600,12 +4600,12 @@ class PackageManager:
                 package_installed =  False
                 if package_info:
                         package_installed =  \
-                            (package_info.state == api.PackageInfo.INSTALLED)
+                            (api.PackageInfo.INSTALLED in package_info.states)
                 if package_installed:
                         package_info = self.__get_version(self.api_o,
                             local = False, pkg = pkg_stem)
                         if (package_info and
-                            package_info.state == api.PackageInfo.INSTALLED):
+                            api.PackageInfo.INSTALLED in package_info.states):
                                 row[enumerations.STATUS_COLUMN] = \
                                     enumerations.INSTALLED
                                 row[enumerations.STATUS_ICON_COLUMN] = \

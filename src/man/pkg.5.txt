@@ -274,14 +274,43 @@ DESCRIPTION
     The 'pkg' attribute is the key attribute for the legacy action.
 
   Set actions
-     The 'set' action represents a package-level attribute, such as the
-     package description.
+     The 'set' action represents a package-level attribute, or metadata,
+     such as the package description.
 
      The following attributes are recognized:
 
      name   The name of the attribute.
 
      value  The value given to the attribute.
+
+     The set action can deliver any metadata the package author chooses;
+     however, there are a number of well-defined attribute names which have
+     specific meaning to the packaging system.
+
+     info.classification   One or more tokens which a pkg(5) client may use
+                           to classify the package.  The value should have
+                           a scheme (such as "org.opensolaris.category.2008"
+                           or "org.acm.class.1998") and the actual
+                           classification, such as "Applications/Games",
+                           separated by a colon (:).
+
+     pkg.description       A detailed description of the contents and
+                           functionality of the package, typically a
+                           paragraph or so in length.
+
+     pkg.obsolete          When "true", the package is marked obsolete.  An
+                           obsolete package may have no actions other than
+                           more set actions, and must not be marked renamed.
+
+     pkg.renamed           When "true", the package has been renamed.
+                           There must be one or more "depend" actions in
+                           the package as well which point to the package
+                           versions to which this package has been renamed.
+                           A package may not be marked both renamed and
+                           obsolete, but otherwise may have any number of
+                           set actions.
+
+     pkg.summary           A short, one-line description of the package.
 
   Group actions
      The 'group' action define a unix group as defined in group(4).  No support
@@ -290,6 +319,7 @@ DESCRIPTION
      attributes are recognized:
 
      groupname   The value for the name of the group.
+
      gid         The groups unique numerical id.  The default value is the first
                  free group under 100.
 
@@ -302,8 +332,8 @@ DESCRIPTION
 
      username    The unique name of the user
 
-     password    The encryped password of the user.  Default value is '*LK*'. See
-                 shadow(4).
+     password    The encrypted password of the user.  Default value is '*LK*'.
+                 See shadow(4).
 
      uid         The unique uid of the user. Default value is first free value
                  under 100.

@@ -47,7 +47,7 @@ import pkg.indexer as indexer
 import pkg.portable as portable
 import pkg.search_storage as ss
 
-API_VERSION = 21
+API_VERSION = 23
 PKG_CLIENT_NAME = "pkg"
 
 class TestApiSearchBasics(testutils.SingleDepotTestCase):

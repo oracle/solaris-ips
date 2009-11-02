@@ -33,6 +33,7 @@ import urllib
 
 import pkg.actions as actions
 import pkg.fmri as fmri
+import pkg.manifest
 import pkg.misc as misc
 from pkg.pkggzip import PkgGzipFile
 import pkg.portable as portable
@@ -121,6 +122,10 @@ class Transaction(object):
                 self.client_release = ""
                 self.fmri = None
                 self.dir = ""
+                self.obsolete = False
+                self.renamed = False
+                self.has_reqdeps = False
+                self.types_found = set()
                 return
 
         def get_basename(self):
@@ -255,6 +260,21 @@ class Transaction(object):
                 self.fmri = fmri.PkgFmri(self.pkg_name, None)
 
                 self.dir = "%s/%s" % (repo.trans_root, self.get_basename())
+
+                # Find out if the package is renamed or obsolete.
+                try:
+                        tfile = file("%s/manifest" % self.dir, "rb")
+                except IOError, e:
+                        if e.errno == errno.ENOENT:
+                                return
+                        raise
+                m = pkg.manifest.Manifest()
+                m.set_content(tfile.read())
+                self.obsolete = m.getbool("pkg.obsolete", "false")
+                self.renamed = m.getbool("pkg.renamed", "false")
+                self.types_found = set((
+                    action.name for action in m.gen_actions()
+                ))
 
         def close(self, refresh_index=True):
                 """Closes an open transaction, returning the published FMRI for
@@ -391,15 +411,65 @@ class Transaction(object):
                         action.attrs["chash"] = chash.hexdigest()
                         cdata = None
 
+                # Do some sanity checking on packages marked or being marked
+                # obsolete or renamed.
+                if action.name == "set" and \
+                    action.attrs["name"] == "pkg.obsolete" and \
+                    action.attrs["value"] == "true":
+                        self.obsolete = True
+                        if self.types_found.difference(set(("set",))):
+                                raise TransactionOperationError(_("An obsolete "
+                                    "package cannot contain actions other than "
+                                    "'set'."))
+                elif action.name == "set" and \
+                    action.attrs["name"] == "pkg.renamed" and \
+                    action.attrs["value"] == "true":
+                        self.renamed = True
+                        if self.types_found.difference(set(("set", "depend"))):
+                                raise TransactionOperationError(_("A renamed "
+                                    "package cannot contain actions other than "
+                                    "'set' and 'depend'."))
+
+                if not self.has_reqdeps and action.name == "depend" and \
+                    action.attrs["type"] == "require":
+                        self.has_reqdeps = True
+
+                if self.obsolete and self.renamed:
+                        # Reset either obsolete or renamed, depending on which
+                        # action this was.
+                        if action.attrs["name"] == "pkg.obsolete":
+                                self.obsolete = False
+                        else:
+                                self.renamed = False
+                        raise TransactionOperationError(_("A package may not "
+                            " be marked for both obsoletion and renaming."))
+                elif self.obsolete and action.name != "set":
+                        raise TransactionOperationError(_("A '%s' action cannot"
+                            " be present in an obsolete package: %s") % 
+                            (action.name, action))
+                elif self.renamed and action.name not in ("set", "depend"):
+                        raise TransactionOperationError(_("A '%s' action cannot"
+                            " be present in a renamed package: %s") % 
+                            (action.name, action))
+
+                # Now that the action is known to be sane, we can add it to the
+                # manifest.
                 tfile = file("%s/manifest" % self.dir, "a")
                 print >> tfile, action
                 tfile.close()
+
+                self.types_found.add(action.name)
 
                 return
 
         def accept_publish(self, refresh_index=True):
                 """Transaction meets consistency criteria, and can be published.
                 Publish, making appropriate catalog entries."""
+
+                # Ensure that a renamed package has at least one dependency
+                if self.renamed and not self.has_reqdeps:
+                        raise TransactionOperationError(_("A renamed package "
+                            "must contain at least one 'depend' action."))
 
                 # XXX If we are going to publish, then we should augment
                 # our response with any other packages that moved to
