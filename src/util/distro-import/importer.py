@@ -27,7 +27,6 @@ import fnmatch
 import getopt
 import gettext
 import os
-import pkg.depotcontroller     as depotcontroller
 import pkg.fmri
 import pkg.manifest            as manifest
 import pkg.publish.transaction as trans
@@ -37,15 +36,15 @@ import pkg.version             as version
 import platform
 import re
 import shlex
+import shutil
 import sys
 import tempfile
 import urllib
-import urlparse
 
 from datetime import datetime
 from pkg      import actions, elf
 from pkg.bundle.SolarisPackageDirBundle import SolarisPackageDirBundle
-from pkg.misc import versioned_urlopen
+from pkg.misc import versioned_urlopen, emsg
 from tempfile import mkstemp
 
 gettext.install("import", "/usr/lib/locale")
@@ -79,12 +78,11 @@ pkgpath_dict = {}    # mapping of paths to ips pkg
 print_pkg_names = False # jusr print package names seen
 reference_uris = []  # list of url@pkg specs to compute dependencies against
 show_debug = False   # print voluminous debug output
-summary_detritus = [", (usr)", ", (root)", " (usr)", " (root)", " (/usr)",\
+summary_detritus = [", (usr)", ", (root)", " (usr)", " (root)", " (/usr)", \
     " - / filesystem", ",root(/)"] # remove from summaries
 svr4pkgsseen = {}    #svr4 pkgs seen - pkgs indexed by name
 timestamp_files = [] # patterns of files that retain timestamps from svr4 pkgs
 wos_path = []        # list of search pathes for svr4 packages
-
 
 class Package(object):
         def __init__(self, name):
@@ -229,7 +227,7 @@ class Package(object):
                                             action.attrs["path"],
                                             action.attrs["importer.svr4pkgname"],
                                             k,
-                                            actions.attrs[k]
+                                            action.attrs[k]
                                             )
 
         def chattr(self, fname, line):
@@ -275,7 +273,7 @@ class Package(object):
 
                 if args[0] == "type": # we care about type
                         args.pop(0)
-                        type= args.pop(0)
+                        type = args.pop(0)
                         line = " ".join(args)
                 else:
                         type = None
@@ -471,7 +469,7 @@ def end_package(pkg):
 def publish_action(t, pkg, a):
         # remove any temp attributes
         if show_debug:
-                        print "%s: %s" % (pkg.name, a)
+                print "%s: %s" % (pkg.name, a)
 
         for k in a.attrs.keys():
                 if k.startswith("importer."):
@@ -803,8 +801,30 @@ def gen_file_depend_actions(action, fname):
                     (fn, path, " ".join("importer.path=%s" % p for p in pathlist))))
         return return_actions
 
-manifest_cache={}
+manifest_cache = {}
 null_manifest = manifest.Manifest()
+
+def error(text, cmd=None):
+        """Emit an error message prefixed by the command name."""
+
+        if cmd:
+                text = "%s: %s" % (cmd, text)
+                pkg_cmd = "importer "
+        else:
+                pkg_cmd = "importer: "
+
+                # If we get passed something like an Exception, we can convert
+                # it down to a string.
+                text = str(text)
+
+        # If the message starts with whitespace, assume that it should come
+        # *before* the command-name prefix.
+        text_nows = text.lstrip()
+        ws = text[:len(text) - len(text_nows)]
+
+        # This has to be a constant value as we can't reliably get our actual
+        # program name on all platforms.
+        emsg(ws + pkg_cmd + text_nows)
 
 def get_manifest(server_url, fmri):
         if not fmri: # no matching fmri
@@ -1011,7 +1031,6 @@ class tokenlexer(shlex.shlex):
 
 def SolarisParse(mf):
         global curpkg
-        global in_multiline_import
 
         lexer = tokenlexer(file(mf), mf, True)
         lexer.whitespace_split = True
@@ -1274,10 +1293,10 @@ def main_func():
                 for action in pkg.actions:
                         if "path" not in action.attrs:
                                 continue
-                        path_dict.setdefault(action.attrs["path"],[]).append(action)
+                        path_dict.setdefault(action.attrs["path"], []).append(action)
                         if action.name in ["file", "link", "hardlink"]:
                                 basename_dict.setdefault(os.path.basename(action.attrs["path"]), []).append(action)
-                                pkgpath_dict.setdefault(action.attrs["path"],[]).append(action.attrs["importer.ipspkg"])
+                                pkgpath_dict.setdefault(action.attrs["path"], []).append(action.attrs["importer.ipspkg"])
         errors = check_pathdict_actions(path_dict)
         if errors:
                 for e in errors:
@@ -1298,7 +1317,7 @@ def main_func():
                                         if "path" not in action.attrs:
                                                 continue
                                         action.attrs["importer.ipspkg"] = pfmri_str
-                                        path_dict.setdefault(action.attrs["path"],[]).append(action)
+                                        path_dict.setdefault(action.attrs["path"], []).append(action)
                                         if action.name in ["file", "link", "hardlink"]:
                                                 basename_dict.setdefault(os.path.basename(
                                                     action.attrs["path"]), []).append(action)
@@ -1320,14 +1339,6 @@ def main_func():
                               )
         else:
                 newpkgs = set(pkgdict.values())
-
-        # Indicates whether local publishing is active.
-        local_publish = False
-        if def_repo.startswith("file:"):
-                # If publishing to disk, the feed cache will have to be
-                # generated by starting the depot server using the provided path
-                # and then accessing it.
-                local_publish = True
 
         processed = 0
         total = len(newpkgs)
@@ -1353,37 +1364,6 @@ def main_func():
                     error_count * 100.0 / total)
                 sys.exit(1)
 
-        # Ensure that the feed is updated and cached to reflect changes.
-        if not nopublish:
-                print "Caching RSS/Atom feed..."
-                dc = None
-                durl = def_repo
-                if local_publish:
-                        # The depot server isn't already running, so will have to be
-                        # temporarily started to allow proper feed cache generation.
-                        dc = depotcontroller.DepotController()
-                        dc.set_depotd_path(g_proto_area + "/usr/lib/pkg.depotd")
-                        dc.set_depotd_content_root(g_proto_area + "/usr/share/lib/pkg")
-
-                        _scheme, _netloc, _path, _params, _query, _fragment = \
-                            urlparse.urlparse(def_repo, "file", allow_fragments=0)
-
-                        dc.set_repodir(_path)
-
-                        # XXX There must be a better way...
-                        dc.set_port(29083)
-
-                        # Start the depot
-                        dc.start()
-
-                        durl = "http://localhost:29083"
-
-                _f = urllib.urlopen("%s/feed" % durl)
-                _f.close()
-
-                if dc:
-                        dc.stop()
-                        dc = None
         print "%d/%d packages processed; %.2f%% complete" % (processed, total,
              processed * 100.0 / total)
         print "Done:", datetime.now()
