@@ -30,14 +30,21 @@ import calendar
 import datetime
 import errno
 import os
+try:
+        # Some versions of python don't have these constants.
+        os.SEEK_SET
+except AttributeError:
+        os.SEEK_SET, os.SEEK_CUR, os.SEEK_END = range(3)
 import sha
 import simplejson as json
 import stat
+import statvfs
 import threading
 
 import pkg.actions
 import pkg.client.api_errors as api_errors
 import pkg.fmri as fmri
+import pkg.misc as misc
 import pkg.portable as portable
 import pkg.version
 
@@ -52,19 +59,38 @@ class _JSONWriter(object):
                 self.__data = data
                 self.__fileobj = None
 
+                # Default to a 32K buffer.
+                self.__bufsz = 32 * 1024 
+
                 if sign:
-                        self.__sha_1 = sha.new()
-                        self.__sha_1_offset = None
-                        # sha-1 hex is always 40 characters in length.
-                        self.__sha_1_keyword = "sha-1-" + ("*" * 34)
+                        if not pathname:
+                                # Only needed if not writing to __fileobj.
+                                self.__sha_1 = sha.new()
+                        self.__sha_1_value = None
+
                 self.__sign = sign
                 self.pathname = pathname
 
                 if not pathname:
                         return
 
+                # Call statvfs to find optimal blocksize for destination.
+                dest_dir = os.path.dirname(self.pathname)
                 try:
-                        tfile = open(pathname, "wb")
+                        destvfs = os.statvfs(dest_dir)
+                        # Set the file buffer size to the blocksize of our
+                        # filesystem.
+                        self.__bufsz = destvfs[statvfs.F_BSIZE]
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES:
+                                raise api_errors.PermissionsException(
+                                    e.filename)
+                except AttributeError, e:
+                        # os.statvfs is not available on some platforms.
+                        pass
+
+                try:
+                        tfile = open(pathname, "wb", self.__bufsz)
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES:
                                 raise api_errors.PermissionsException(
@@ -75,60 +101,66 @@ class _JSONWriter(object):
                         raise
                 self.__fileobj = tfile
 
-        def __offsets(self):
-                if not self.__sign:
-                        return {}
-                return { "sha-1": self.__sha_1_offset }
-
         def signatures(self):
                 """Returns a dictionary mapping digest algorithms to the
                 hex-encoded digest values of the text of the catalog."""
 
                 if not self.__sign:
                         return {}
-                return { "sha-1": self.__sha_1.hexdigest() }
+                return { "sha-1": self.__sha_1_value }
 
         def save(self):
                 """Serializes and stores the provided data in JSON format."""
-
-                if self.__sign:
-                        self.__data["_SIGNATURE"] = {
-                            "sha-1": self.__sha_1_keyword,
-                        }
 
                 # sort_keys is necessary to ensure consistent signature
                 # generation.  It has a minimal performance cost as well (on
                 # on SPARC and x86), so shouldn't be an issue.  However, it
                 # is only needed if the caller has indicated that the content
                 # should be signed.
-                json.dump(self.__data, self, check_circular=False,
-                    allow_nan=False, separators=(",", ":"),
-                    sort_keys=self.__sign)
-                self.write("\n")
 
-                # Remove signature stub now that we're done.
-                self.__data.pop("_SIGNATURE", None)
+                # Whenever possible, avoid using the write wrapper (self) as
+                # this can greatly increase write times.
+                out = self.__fileobj
+                if not out:
+                        out = self
+
+                json.dump(self.__data, out, check_circular=False,
+                    separators=(",", ":"), sort_keys=self.__sign)
+                out.write("\n")
 
                 if self.__fileobj:
                         self.__fileobj.close()
+
+                if not self.__sign or not self.__fileobj:
+                        # Can't sign unless a file object is provided.  And if
+                        # one is provided, but no signing is to be done, then
+                        # ensure the fileobject is discarded.
                         self.__fileobj = None
-                        if not self.__sign:
-                                return
+                        if self.__sign:
+                                self.__sha_1_value = self.__sha_1.hexdigest()
+                        return
 
-                        # Sign the file when the caller is done with it.
-                        sfile = file(self.pathname, "rb+")
-                        sigs = self.signatures()
-                        offs = self.__offsets()
-                        for sig in sigs:
-                                # These values should always be defined.
-                                # If not, write() failed.
-                                assert offs[sig]
-                                assert sigs[sig]
+                # Ensure file object goes out of scope.
+                self.__fileobj = None
 
-                                sfile.seek(offs[sig])
-                                sfile.write(sigs[sig])
+                # Calculating sha-1 this way is much faster than intercepting
+                # write calls because of the excessive number of write calls
+                # that json.dump() triggers (1M+ for /dev catalog files).
+                self.__sha_1_value = misc.get_data_digest(self.pathname)[0]
 
-                        sfile.close()
+                # Open the JSON file so that the signature data can be added.
+                sfile = file(self.pathname, "rb+", self.__bufsz)
+
+                # The last bytes should be "}\n", which is where the signature
+                # data structure needs to be appended.
+                sfile.seek(-2, os.SEEK_END)
+
+                # Add the signature data and close.
+                sfile.write(',"_SIGNATURE":')
+                json.dump(self.signatures(), sfile, check_circular=False,
+                    separators=(",", ":"))
+                sfile.write("}\n")
+                sfile.close()
 
         def write(self, data):
                 """Wrapper function that should not be called by external
@@ -136,15 +168,9 @@ class _JSONWriter(object):
 
                 if self.__sign:
                         self.__sha_1.update(data)
-                if not self.__fileobj:
+                if self.__fileobj:
+                        self.__fileobj.write(data)
                         return
-
-                f = self.__fileobj
-                if self.__sign and not self.__sha_1_offset:
-                        idx = data.find(self.__sha_1_keyword)
-                        if idx > -1:
-                                self.__sha_1_offset = f.tell() + idx
-                f.write(data)
 
 
 class CatalogPartBase(object):
@@ -369,7 +395,7 @@ class CatalogPart(CatalogPartBase):
 
                 ver_list.append(entry)
                 if self.ordered:
-                        self.sort(pfmri=pfmri)
+                        self.sort(pfmris=set([pfmri]))
 
                 if not op_time:
                         op_time = datetime.datetime.utcnow()
@@ -521,15 +547,18 @@ class CatalogPart(CatalogPartBase):
                     for stem in self.__data[pub]
                 ))
 
-        def publishers(self):
+        def publishers(self, pubs=EmptyI):
                 """A generator function that returns publisher prefixes as it
-                iterates over the package data in the CatalogPart."""
+                iterates over the package data in the CatalogPart.
+
+                'pubs' is an optional list that contains the prefixes of the
+                publishers to restrict the results to."""
 
                 self.load()
                 for pub in self.__data:
-                        # Any entries starting with "__" are part of the
+                        # Any entries starting with "_" are part of the
                         # reserved catalog namespace.
-                        if not pub[:2] == "__":
+                        if not pub[0] == "_" and (not pubs or pub in pubs):
                                 yield pub
 
         def remove(self, pfmri, op_time=None):
@@ -579,13 +608,22 @@ class CatalogPart(CatalogPartBase):
                         return
                 CatalogPartBase.save(self, self.__data)
 
-        def sort(self, pfmri=None):
+        def sort(self, pfmris=None, pubs=None):
                 """Re-sorts the contents of the CatalogPart such that version
                 entries for each package stem are in ascending order.
 
-                'pfmri' is an optional package to restrict the sort to.  This
-                is useful during catalog operations as only entries for the
-                corresponding package stem need to be sorted."""
+                'pfmris' is an optional set of FMRIs to restrict the sort to.
+                This is useful during catalog operations as only entries for
+                the corresponding package stem(s) need to be sorted.
+
+                'pubs' is an optional set of publisher prefixes to restrict
+                the sort to.  This is useful during catalog operations as only
+                entries for the corresponding publisher stem(s) need to be
+                sorted.  This option has no effect if 'pfmris' is also
+                provided.
+
+                If neither 'pfmris' or 'pubs' is provided, all entries will be
+                sorted."""
 
                 def order(a, b):
                         # XXX version requires build string; 5.11 is not sane.
@@ -594,20 +632,28 @@ class CatalogPart(CatalogPartBase):
                         return cmp(v1, v2)
 
                 self.load()
-                if pfmri:
-                        try:
-                                pkg_list = self.__data[pfmri.publisher]
-                                ver_list = pkg_list[pfmri.pkg_name]
-                        except KeyError:
-                                raise api_errors.UnknownCatalogEntry(
-                                    pfmri.get_fmri())
-                        ver_list.sort(cmp=order)
+                if pfmris is not None:
+                        processed = set()
+                        for f in pfmris:
+                                pkg_stem = f.get_pkg_stem()
+                                if pkg_stem in processed:
+                                        continue
+                                processed.add(pkg_stem)
+
+                                # The specified FMRI may not exist in this
+                                # CatalogPart, so continue if it does not
+                                # exist.
+                                pkg_list = self.__data.get(f.publisher, None)
+                                if pkg_list is not None:
+                                        ver_list = pkg_list.get(f.pkg_name,
+                                            None)
+                                        if ver_list is not None:
+                                                ver_list.sort(cmp=order)
                         return
 
-                for pub in self.publishers():
+                for pub in self.publishers(pubs=pubs):
                         for stem in self.__data[pub]:
-                                ver_list = self.__data[pub][stem]
-                                ver_list.sort(cmp=order)
+                                self.__data[pub][stem].sort(cmp=order)
 
         def tuples(self):
                 """A generator function that produces FMRI tuples as it iterates
@@ -728,9 +774,9 @@ class CatalogUpdate(CatalogPartBase):
 
                 self.load()
                 for pub in self.__data:
-                        # Any entries starting with "__" are part of the
+                        # Any entries starting with "_" are part of the
                         # reserved catalog namespace.
-                        if not pub[:2] == "__":
+                        if not pub[0] == "_":
                                 yield pub
 
         def save(self):
@@ -1056,7 +1102,94 @@ class Catalog(object):
                 # Must be done last.
                 self.__set_perms()
 
-        def __finalize(self, sort=True):
+        def __append(self, src, cb=None, pfmri=None, pubs=EmptyI):
+                """Private version; caller responsible for locking."""
+
+                base = self.get_part(self.__BASE_PART)
+                src_base = src.get_part(self.__BASE_PART, must_exist=True)
+                if not src_base:
+                        if pfmri:
+                                raise api_errors.UnknownCatalogEntry(pfmri)
+                        # Nothing to do
+                        return
+
+                # Use the same operation time and date for all operations so
+                # that the last modification times will be synchronized.  This
+                # also has the benefit of avoiding extra datetime object
+                # instantiations.
+                op_time = datetime.datetime.utcnow()
+
+                # For each entry in the 'src' catalog, add its BASE entry to the
+                # current catalog along and then add it to the 'd'iscard dict if
+                # 'cb' is defined and returns False.
+                if pfmri:
+                        entries = [(pfmri, src_base.get_entry(pfmri))]
+                else:
+                        entries = src_base.entries()
+
+                d = {}
+                for f, entry in entries:
+                        if pubs and f.publisher not in pubs:
+                                continue
+
+                        nentry = copy.deepcopy(entry)
+                        if cb:
+                                merge, mdata = cb(src, f, entry)
+                                if not merge:
+                                        pub = d.setdefault(f.publisher, {})
+                                        plist = pub.setdefault(f.pkg_name,
+                                            set())
+                                        plist.add(f.version)
+                                        continue
+
+                                if mdata:
+                                        if "metadata" in nentry:
+                                                nentry["metadata"].update(mdata)
+                                        else:
+                                                nentry["metadata"] = mdata
+                        base.add(f, metadata=nentry, op_time=op_time)
+
+                if d and pfmri:
+                        # If the 'd'iscards dict is populated and pfmri is
+                        # defined, then there is nothing more to do.
+                        return
+
+                # Finally, merge any catalog part entries that exist unless the
+                # FMRI is found in the 'd'iscard dict.
+                for name in src.parts.keys():
+                        if name == self.__BASE_PART:
+                                continue
+
+                        part = src.get_part(name, must_exist=True)
+                        if not part:
+                                # Part doesn't exist in-memory or on-disk, so
+                                # skip it.
+                                continue
+
+                        if pfmri:
+                                try:
+                                        entries = [(pfmri,
+                                            part.get_entry(pfmri))]
+                                except api_errors.UnknownCatalogEntry:
+                                        # Package isn't in this part; skip it.
+                                        continue
+                        else:
+                                entries = part.entries()
+
+                        npart = self.get_part(name)
+                        for f, entry in entries:
+                                if pubs and f.publisher not in pubs:
+                                        continue
+                                if f.publisher in d and \
+                                    f.pkg_name in d[f.publisher] and \
+                                    f.version in d[f.publisher][f.pkg_name]:
+                                        # Skip this package.
+                                        continue
+
+                                nentry = copy.deepcopy(entry)
+                                npart.add(f, metadata=nentry, op_time=op_time)
+
+        def __finalize(self, pfmris=None, pubs=None, sort=True):
                 """Private finalize method; exposes additional controls for
                 internal callers."""
 
@@ -1076,7 +1209,7 @@ class Catalog(object):
                                 # Some operations don't need this, such as
                                 # remove...
                                 for part in self.__parts.values():
-                                        part.sort()
+                                        part.sort(pfmris=pfmris, pubs=pubs)
 
                 self._attrs.package_count = package_count
                 self._attrs.package_version_count = \
@@ -1190,9 +1323,10 @@ class Catalog(object):
 
                 if not self.__batch_mode:
                         # The catalog.attrs needs to be updated to reflect
-                        # the changes made.
-                        self.__finalize(
-                            sort=(operation != CatalogUpdate.REMOVE))
+                        # the changes made.  A sort doesn't need to be done
+                        # here as the individual parts will automatically do
+                        # that as needed in this case.
+                        self.__finalize(sort=False)
 
                 # This must be set to exactly the same time as the update logs
                 # so that the changes in the update logs are not marked as
@@ -1519,17 +1653,17 @@ class Catalog(object):
                                                     pfmri, metadata=entry,
                                                     op_time=op_time)
 
-                        self.__log_update(pfmri, CatalogUpdate.ADD,
-                            op_time, entries=entries)
+                        self.__log_update(pfmri, CatalogUpdate.ADD, op_time,
+                            entries=entries)
                 finally:
                         self.__unlock_catalog()
 
         def append(self, src, cb=None, pfmri=None, pubs=EmptyI):
                 """Appends the entries in the specified 'src' catalog to that
                 of the current catalog.  The caller is responsible for ensuring
-                that no duplicates exist, and for calling finalize() or save()
-                after the append to ensure consistent catalog state.  Cannot
-                be used when log_updates or read_only is enabled.
+                that no duplicates exist and must call finalize() afterwards to
+                to ensure consistent catalog state.  This function cannot be
+                used when log_updates or read_only is enabled.
 
                 'cb' is an optional callback function that must accept src,
                 an FMRI, and entry.  Where 'src' is the source catalog the
@@ -1548,99 +1682,25 @@ class Catalog(object):
                 the append operation to.  FRMIs that have a publisher not in
                 the list will be skipped.  This filtering is applied before
                 any provided callback.  If not provided, no publisher
-                filtering will be applied.
-                """
+                filtering will be applied."""
 
                 assert not self.log_updates and not self.read_only
 
-                base = self.get_part(self.__BASE_PART)
-                src_base = src.get_part(self.__BASE_PART, must_exist=True)
-                if not src_base:
-                        if pfmri:
-                                raise api_errors.UnknownCatalogEntry(pfmri)
-                        # Nothing to do
-                        return
+                self.__lock_catalog()
+                try:
+                        # Append operations are much slower if batch mode is
+                        # not enabled.  This ensures that the current state
+                        # is stored and then reset on completion or failure.
+                        # Since append() is never used as part of the
+                        # publication process (log_updates == True),
+                        # this is safe.
+                        old_batch_mode = self.batch_mode
+                        self.batch_mode = True
 
-                old_bmode = self.batch_mode
-                self.batch_mode = True
-
-                # Use the same operation time and date for all operations so
-                # that the last modification times will be synchronized.  This
-                # also has the benefit of avoiding extra datetime object
-                # instantiations.
-                op_time = datetime.datetime.utcnow()
-
-                # For each entry in the 'src' catalog, add its BASE entry to the
-                # current catalog along and then add it to the 'd'iscard dict if
-                # 'cb' is defined and returns False.
-                if pfmri:
-                        entries = [(pfmri, src_base.get_entry(pfmri))]
-                else:
-                        entries = src_base.entries()
-
-                d = {}
-                for f, entry in entries:
-                        if pubs and f.publisher not in pubs:
-                                continue
-
-                        nentry = copy.deepcopy(entry)
-                        if cb:
-                                merge, mdata = cb(src, f, entry)
-                                if not merge:
-                                        pub = d.setdefault(f.publisher, {})
-                                        plist = pub.setdefault(f.pkg_name,
-                                            set())
-                                        plist.add(f.version)
-                                        continue
-
-                                if mdata:
-                                        if "metadata" in nentry:
-                                                nentry["metadata"].update(mdata)
-                                        else:
-                                                nentry["metadata"] = mdata
-                        base.add(f, metadata=nentry, op_time=op_time)
-
-                if d and pfmri:
-                        # If the 'd'iscards dict is populated and pfmri is
-                        # defined, then there is nothing more to do.
-                        return
-
-                # Finally, merge any catalog part entries that exist unless the
-                # FMRI is found in the 'd'iscard dict.
-                for name in src.parts.keys():
-                        if name == self.__BASE_PART:
-                                continue
-
-                        part = src.get_part(name, must_exist=True)
-                        if not part:
-                                # Part doesn't exist in-memory or on-disk, so
-                                # skip it.
-                                continue
-
-                        if pfmri:
-                                try:
-                                        entries = [(pfmri,
-                                            part.get_entry(pfmri))]
-                                except api_errors.UnknownCatalogEntry:
-                                        # Package isn't in this part; skip it.
-                                        continue
-                        else:
-                                entries = part.entries()
-
-                        npart = self.get_part(name)
-                        for f, entry in entries:
-                                if pubs and f.publisher not in pubs:
-                                        continue
-                                if f.publisher in d and \
-                                    f.pkg_name in d[f.publisher] and \
-                                    f.version in d[f.publisher][f.pkg_name]:
-                                        # Skip this package.
-                                        continue
-
-                                nentry = copy.deepcopy(entry)
-                                npart.add(f, metadata=nentry, op_time=op_time)
-
-                self.batch_mode = old_bmode
+                        self.__append(src, cb=cb, pfmri=pfmri, pubs=pubs)
+                finally:
+                        self.batch_mode = old_batch_mode
+                        self.__unlock_catalog()
 
         def apply_updates(self, path):
                 """Apply any CatalogUpdates available to the catalog based on
@@ -1948,12 +2008,21 @@ class Catalog(object):
                 attrs = self._attrs
                 return attrs.exists
 
-        def finalize(self):
+        def finalize(self, pfmris=None, pubs=None):
                 """This function re-sorts the contents of the Catalog so that
                 version entries are in the correct order and sets the package
-                counts for the Catalog based on its current contents."""
+                counts for the Catalog based on its current contents.
 
-                return self.__finalize()
+                'pfmris' is an optional set of FMRIs that indicate what package
+                entries have been changed since this function was last called.
+                It is used to optimize the finalization process.
+
+                'pubs' is an optional set of publisher prefixes that indicate
+                what publisher has had package entries changed.  It is used
+                to optimize the finalization process.  This option has no effect
+                if 'pfmris' is also provided."""
+
+                return self.__finalize(pfmris=pfmris, pubs=pubs)
 
         def fmris(self, objects=True):
                 """A generator function that produces FMRIs as it iterates
@@ -2436,7 +2505,6 @@ class Catalog(object):
                 self.__lock_catalog()
                 try:
                         # Ensure consistent catalog state.
-                        self.finalize()
                         self.__save()
                 finally:
                         self.__unlock_catalog()

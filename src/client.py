@@ -1866,7 +1866,8 @@ def display_catalog_failures(cre):
                                         logger.error("    %s: %s" % \
                                             (pub["origin"], err.args[0][1]))
                 else:
-                        logger.error("   ", err)
+                        logger.error("   ")
+                        logger.error(str(err))
 
         if cre.message:
                 logger.error(cre.message)

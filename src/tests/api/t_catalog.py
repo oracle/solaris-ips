@@ -821,7 +821,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 # Next, test that basic append functionality works.
                 nc = catalog.Catalog()
                 nc.append(c)
-                nc.finalize()
+                nc.finalize(pfmris=set([f for f in c.fmris()]))
 
                 self.assertEqual([f for f in c.fmris()],
                     [f for f in nc.fmris()])

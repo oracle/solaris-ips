@@ -423,8 +423,7 @@ class Repository(object):
                 # be rebuilt.
                 self.__log(_("Upgrading repository; this process will "
                     "take some time."))
-                self.__rebuild(default_pub=self.cfg.get_property(
-                    "publisher", "prefix"), lm=v0_lm)
+                self.__rebuild(lm=v0_lm)
 
                 if not self.read_only:
                         v0_cat = os.path.join(self.repo_root, "catalog",
@@ -613,9 +612,11 @@ class Repository(object):
                         self.log_obj.log(msg=msg, context=context,
                             severity=severity)
 
-        def __rebuild(self, default_pub=None, lm=None):
+        def __rebuild(self, lm=None):
                 """Private version; caller responsible for repository
                 locking."""
+
+                default_pub = self.cfg.get_property("publisher", "prefix")
 
                 if self.read_only:
                         # Temporarily mark catalog as not read-only so that it
@@ -633,7 +634,7 @@ class Repository(object):
                         m = self._get_manifest(f)
                         if "pkg.fmri" in m:
                                 f = fmri.PkgFmri(m["pkg.fmri"])
-                        elif default_pub and not f.publisher:
+                        if default_pub and not f.publisher:
                                 f.publisher = default_pub
                         self.__log(str(f))
                         self.__add_package(f, manifest=m)
@@ -660,6 +661,7 @@ class Repository(object):
                 self.catalog.batch_mode = False
                 self.catalog.log_updates = True
                 self.catalog.read_only = self.read_only
+                self.catalog.finalize()
                 self.__save_catalog(lm=lm)
 
         def __refresh_index(self):

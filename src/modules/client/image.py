@@ -187,7 +187,8 @@ class Image(object):
                         assert(not force)
                 else:
                         assert(imgtype is not None)
-                self.__catalogs = {}
+
+                self.__init_catalogs()
                 self.__upgraded = False
 
                 self.arch_change = False
@@ -249,6 +250,17 @@ class Image(object):
                 optimization function to determine which catalog to request."""
 
                 return name in self.__catalogs
+
+        def __init_catalogs(self):
+                """Initializes default catalog state.  Actual data is provided
+                on demand via get_catalog()"""
+
+                # This is used to cache image catalogs.
+                self.__catalogs = {}
+
+                # This is used to keep track of what packages have been added
+                # to IMG_CATALOG_KNOWN by set_pkg_state().
+                self.__catalog_new_installs = set()
 
         def image_type(self, d):
                 """Returns the type of image at directory: d; or None"""
@@ -396,7 +408,7 @@ class Image(object):
                 # from the new location if they are already loaded.  This
                 # also prevents scribbling on image state information in
                 # the wrong location.
-                self.__catalogs = {}
+                self.__init_catalogs()
 
                 if not os.path.exists(os.path.join(self.imgdir,
                     imageconfig.CFG_FILE)):
@@ -1007,6 +1019,7 @@ class Image(object):
                         # and should be added.
                         icat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
                         icat.append(kcat, pfmri=pfmri)
+                        self.__catalog_new_installs.add(pfmri)
                 elif self.PKG_STATE_INSTALLED in states:
                         # If some other state has been changed and the package
                         # is still marked as installed, then simply update the
@@ -1017,9 +1030,40 @@ class Image(object):
         def save_pkg_state(self):
                 """Saves current package state information."""
 
-                for name in self.IMG_CATALOG_KNOWN, self.IMG_CATALOG_INSTALLED:
-                        cat = self.get_catalog(name)
-                        cat.save()
+                # Temporarily redirect the catalogs to a different location,
+                # so that if the save is interrupted, the image won't be left
+                # with invalid state, and then save them.
+                tmp_state_root = self.temporary_dir()
+
+                try:
+                        for name in (self.IMG_CATALOG_KNOWN,
+                            self.IMG_CATALOG_INSTALLED):
+                                cpath = os.path.join(tmp_state_root, name)
+
+                                # Must copy the old catalog data to the new
+                                # destination as only changed files will be
+                                # written.
+                                cat = self.get_catalog(name)
+                                shutil.copytree(cat.meta_root, cpath)
+                                cat.meta_root = cpath
+                                cat.finalize(pfmris=self.__catalog_new_installs)
+                                cat.save()
+
+                        # Next, preserve the old installed state dir, rename the
+                        # new one into place, and then remove the old one.
+                        state_root = os.path.join(self.imgdir, "state")
+                        orig_state_root = self.__salvagedir(state_root)
+                        portable.rename(tmp_state_root, state_root)
+                        shutil.rmtree(orig_state_root, True)
+                finally:
+                        # Regardless of success, the following must happen.
+                        for name in (self.IMG_CATALOG_KNOWN,
+                            self.IMG_CATALOG_INSTALLED):
+                                cat = self.get_catalog(name)
+                                cat.meta_root = os.path.join(self.imgdir,
+                                    "state", name)
+                        if os.path.exists(tmp_state_root):
+                                shutil.rmtree(tmp_state_root, True)
 
         def get_catalog(self, name):
                 """Returns the requested image catalog.
@@ -1077,7 +1121,7 @@ class Image(object):
         def remove_catalogs(self):
                 """Removes all image catalogs and their directories."""
 
-                self.__catalogs = {}
+                self.__init_catalogs()
                 for name in (self.IMG_CATALOG_KNOWN,
                     self.IMG_CATALOG_INSTALLED):
                         shutil.rmtree(os.path.join(self.imgdir, "state", name))
@@ -1281,11 +1325,6 @@ class Image(object):
                 # left in an inconsistent state).
                 tmp_state_root = self.temporary_dir()
 
-                # Force modes on temporary state directory so it will be
-                # correct once renamed into place.
-                root_mode = 0755
-                os.chmod(tmp_state_root, root_mode)
-
                 kcat = pkg.catalog.Catalog(batch_mode=True,
                     meta_root=os.path.join(tmp_state_root,
                     self.IMG_CATALOG_KNOWN), sign=False)
@@ -1366,6 +1405,18 @@ class Image(object):
 
                 for pfx, cat in pub_cats:
                         kcat.append(cat, cb=pub_append_cb, pubs=[pfx])
+
+                # Determine what publishers actually need sorting.  This
+                # information can be passed on to catalog finalize() to
+                # improve catalog write performance.
+                final_pubs = set([p for p in kcat.publishers()])
+
+                # Remove any publishers that have a v1 catalog and don't have
+                # packages that are not present in the current v1 catalog.
+                final_pubs.difference_update(set([
+                    pfx for pfx, cat in pub_cats
+                    if cat.version == 1 and pfx not in old_kcat.publishers()
+                ]))
                 pub_cats = None
 
                 # Next, add any remaining entries in the previous 'known'
@@ -1421,8 +1472,10 @@ class Image(object):
                 icat.append(kcat, cb=installed_append_cb)
 
                 # Save the new catalogs.
+                root_mode = 0755
                 for cat in kcat, icat:
                         os.makedirs(cat.meta_root, mode=root_mode)
+                        cat.finalize(pubs=final_pubs)
                         cat.save()
 
                 # Next, preserve the old installed state dir, rename the
@@ -1433,7 +1486,7 @@ class Image(object):
                 shutil.rmtree(orig_state_root, True)
 
                 # Ensure in-memory catalogs get reloaded.
-                self.__catalogs = {}
+                self.__init_catalogs()
 
                 progtrack.cache_catalogs_done()
                 self.history.log_operation_end()
@@ -1786,11 +1839,6 @@ class Image(object):
                 # This has to be done after the permissions check above.
                 tmp_state_root = self.temporary_dir()
 
-                # Force modes on temporary state directory so that it will
-                # be correct once renamed into place.
-                root_mode = 0755
-                os.chmod(tmp_state_root, root_mode)
-
                 # Create new image catalogs.
                 kcat.meta_root = os.path.join(tmp_state_root,
                     self.IMG_CATALOG_KNOWN)
@@ -1801,6 +1849,7 @@ class Image(object):
                 # can be saved and the image structure can be upgraded.  But
                 # first, attempt to save the image catalogs before changing
                 # structure.
+                root_mode = 0755
                 for cat in icat, kcat:
                         os.makedirs(cat.meta_root, mode=root_mode)
                         cat.save()
@@ -1839,7 +1888,7 @@ class Image(object):
                 portable.rename(tmp_state_root, state_root)
 
                 # Ensure in-memory catalogs get reloaded.
-                self.__catalogs = {}
+                self.__init_catalogs()
 
                 # Finally, dump the old, unused dirs and mark complete.
                 shutil.rmtree(orig_cat_root, True)
@@ -2234,7 +2283,12 @@ class Image(object):
                 try:
                         if not os.path.exists(tempdir):
                                 os.makedirs(tempdir)
-                        return tempfile.mkdtemp(dir=tempdir)
+                        rval = tempfile.mkdtemp(dir=tempdir)
+
+                        # Force standard mode.
+                        root_mode = 0755
+                        os.chmod(rval, root_mode)
+                        return rval
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES:
                                 raise api_errors.PermissionsException(
@@ -2318,7 +2372,7 @@ class Image(object):
                         mlist = []
                         mnames = set()
                         for m, st in olist:
-                                if st["state"] == PKG_STATE_INSTALLED:
+                                if st["state"] == self.PKG_STATE_INSTALLED:
                                         mnames.add(m.get_pkg_stem())
                                         mlist.append((m, st))
                         olist = mlist
