@@ -436,7 +436,8 @@ class PackageManager:
                 self.w_filter_combobox = w_tree_main.get_widget("filtercombobox")
                 self.w_packageicon_image = w_tree_main.get_widget("packageimage")
                 self.w_reload_menuitem = w_tree_main.get_widget("file_reload")
-                self.__set_icon(self.w_reload_button, self.w_reload_menuitem, 'pm-refresh')
+                self.__set_icon(self.w_reload_button, self.w_reload_menuitem,
+                    'pm-refresh')
                 self.w_installupdate_menuitem = \
                     w_tree_main.get_widget("package_install_update")
                 self.__set_icon(self.w_installupdate_button, 
@@ -3517,7 +3518,7 @@ class PackageManager:
                 installed_icon = None
                 not_installed_icon = None
                 for i in  range(0, len(names)):
-                        if states[i].state == api.PackageInfo.INSTALLED:
+                        if api.PackageInfo.INSTALLED in states[i].states:
                                 if installed_icon == None:
                                         installed_icon = gui_misc.resize_icon(
                                             self.installed_icon,
