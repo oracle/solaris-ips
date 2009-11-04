@@ -45,6 +45,7 @@ import pkg.gui.installupdate as installupdate
 import pkg.gui.enumerations as enumerations
 import pkg.gui.repository as repository
 from pkg.client import global_settings
+from gettext import ngettext
         
 debug = False
 
@@ -73,8 +74,9 @@ class Webinstall:
                 self.icon_theme.append_search_path(icon_location)
                 self.param = None
                 self.preferred = None
-                self.any_pub_disabled = False
-                
+                self.disabled_pubs = {}
+                self.repo_gui = None
+
                 # Webinstall Dialog
                 self.gladefile = os.path.join(self.application_dir,
                         "usr/share/package-manager/packagemanager.glade")
@@ -90,9 +92,14 @@ class Webinstall:
                         w_xmltree_webinstall.get_widget("close_button")
                 self.w_webinstall_proceed_label = \
                         w_xmltree_webinstall.get_widget("proceed_new_repo_label")
+                self.w_webinstall_toplabel = \
+                        w_xmltree_webinstall.get_widget("webinstall_toplabel")
+                self.w_webinstall_scrolledwindow = \
+                        w_xmltree_webinstall.get_widget("webinstall_scrolledwindow")
                 self.w_webinstall_image = \
                         w_xmltree_webinstall.get_widget("pkgimage")
-                self.window_icon = gui_misc.get_icon(self.icon_theme,'packagemanager', 48)
+                self.window_icon = gui_misc.get_icon(self.icon_theme, 
+                    'packagemanager', 48)
                 self.w_webinstall_image.set_from_pixbuf(self.window_icon)
                 self.w_webinstall_info_label = \
                         w_xmltree_webinstall.get_widget("label19")
@@ -121,7 +128,6 @@ class Webinstall:
                         print _("GUI will not respond to any event! %s. "
                             "Check webinstall.py signals") % error
  
-                self.w_webinstall_dialog.show_all()
                 self.w_webinstall_dialog.set_icon(self.window_icon)
                 self.api_o = gui_misc.get_api_object(self.image_dir, self.pr,
                     self.w_webinstall_dialog)
@@ -140,15 +146,11 @@ class Webinstall:
         def __nothing_todo(self, infobuffer, textiter):
                 self.w_webinstall_proceed.hide()
                 self.w_webinstall_cancel.hide()
-                self.w_webinstall_info_label.hide()
+                self.w_webinstall_scrolledwindow.hide()
+                self.w_webinstall_toplabel.set_text(
+                    _("All specified publishers are already on the system."))
                 self.w_webinstall_close.show()
                 self.w_webinstall_close.grab_focus()
-                if self.any_pub_disabled:
-                        return
-
-                infobuffer.insert(textiter,
-                    _("\n All specified publishers and packages are already on the "
-                    "system.\n"))
 
         @staticmethod
         def __output_pub_tasks(infobuffer, textiter, pub_tasks):
@@ -196,7 +198,12 @@ class Webinstall:
                 textiter = infobuffer.get_end_iter()
                 if num_new_pub == 0 and num_install_tasks == 0:
                         self.__nothing_todo(infobuffer, textiter)
+                        self.w_webinstall_dialog.present()
+                        self.w_webinstall_dialog.resize(450, 100)
                         return
+                else:
+                        self.w_webinstall_dialog.show_all()
+                        self.w_webinstall_dialog.resize(450, 370)
                         
                 self.__output_new_pub_tasks(infobuffer, textiter, num_new_pub)
                 self.__output_pkg_install_tasks(infobuffer, textiter, num_install_tasks)
@@ -208,12 +215,11 @@ class Webinstall:
                 if num_new_pub == 0:
                         self.w_webinstall_proceed_label.hide()
                 else:
-                        if num_new_pub == 1:
-                                self.w_webinstall_proceed_label.set_text(
-                                    _("Proceed only if you trust this new repository "))
-                        else:
-                                self.w_webinstall_proceed_label.set_text(
-                                    _("Proceed only if you trust these new repositories"))
+                        msg = ngettext(
+                            _("Proceed <b>only</b> if you trust this new Publisher "),
+                            _("Proceed <b>only</b> if you trust these new Publishers "),
+                            num_new_pub)
+                        self.w_webinstall_proceed_label.set_markup(msg)
 
         def __on_webinstall_dialog_close(self, widget, param=None):
                 self.__exit_app()
@@ -236,7 +242,6 @@ class Webinstall:
                 self.pub_new_tasks = []
                 self.pkg_install_tasks = []
                 for entry in self.pub_pkg_list:
-                        pub_disabled = False
                         pub_info = entry[0]
                         packages = entry[1]
                         if not pub_info:
@@ -247,10 +252,10 @@ class Webinstall:
                         repo = pub_info.repositories
 
                         pub_registered = self.__is_publisher_registered(pub_info.prefix)
-                        if pub_registered:
-                                pub_disabled = \
-                                        self.__is_publisher_disabled(pub_info.prefix)
-                        if not pub_registered and not pub_disabled:
+                        if pub_registered and packages != None and len(packages) > 0:
+                                self.__check_publisher_disabled(pub_info.prefix)
+
+                        if not pub_registered:
                                 if len(repo) > 0 and repo[0].origins[0] != None and \
                                     repo[0].origins[0].scheme == "https":
                                         #TBD: check for registration uri as well as scheme
@@ -258,31 +263,58 @@ class Webinstall:
                                         pub_new_reg_ssl_tasks.append(pub_info)
                                 else:
                                         self.pub_new_tasks.append(pub_info)
-                        if not pub_disabled and packages != None and len(packages) > 0:
+                        if packages != None and len(packages) > 0:
                                 self.pkg_install_tasks.append((pub_info, packages))
                 self.pub_new_tasks = pub_new_reg_ssl_tasks + self.pub_new_tasks
-                        
-        def __is_publisher_disabled(self, name):
+                gobject.idle_add(self.__disabled_pubs_info, self.disabled_pubs)
+                if len(self.pub_new_tasks) > 0 or len(self.disabled_pubs) > 0:
+                        self.repo_gui = repository.Repository(self, self.image_dir,
+                            webinstall_new=True, main_window = self.w_webinstall_dialog)
+                            
+        def __check_publisher_disabled(self, name):
                 try:
-                        if self.api_o != None:
-                                pub = None
-                                try:
-                                        pub = self.api_o.get_publisher(name)
-                                except api_errors.UnknownPublisher:
-                                        return False
+                        if self.api_o == None:
+                                return
+                        try:
+                                pub = self.api_o.get_publisher(name)
                                 if pub != None and pub.disabled:
-                                        gobject.idle_add(gui_misc.error_occurred,
-                                            self.w_webinstall_dialog,
-                                            api_errors.DisabledPublisher(pub),
-                                            _("Publisher Error"))
-                                        self.any_pub_disabled = True
-                                        return True
+                                        self.disabled_pubs[name] = True
+                        except api_errors.UnknownPublisher:
+                                return
                 except api_errors.PublisherError, ex:
                         gobject.idle_add(gui_misc.error_occurred,
                             self.w_webinstall_dialog,
                             str(ex),
                             _("Publisher Error"))
-                        return False
+
+        def __disabled_pubs_info(self, disabled_pubs):
+                if len(disabled_pubs) == 0:
+                        return
+                num = len(disabled_pubs)       
+                msg = ngettext(
+                    "The following Publisher is disabled:\n",
+                    "The following Publishers are disabled:\n", num)
+                        
+                for pub in disabled_pubs:
+                        msg += _("\t<b>%s</b>\n") % pub
+                        
+                msg += ngettext(
+                    "\nClicking <b>Proceed</b> will enable it "
+                    "for install.\nOn completion it will be disabled again.",
+                    "\nClicking <b>Proceed</b> will enable them "
+                    "for install.\nOn completion they will be disabled again.",
+                    num)
+                        
+                msgbox = gtk.MessageDialog(
+                    parent = self.w_webinstall_dialog,
+                    buttons = gtk.BUTTONS_CLOSE,
+                    flags = gtk.DIALOG_MODAL, type = gtk.MESSAGE_INFO,
+                    message_format = None)
+                msgbox.set_markup(msg)
+                msgbox.set_title(_("Information"))
+                msgbox.run()
+                msgbox.destroy()
+                return
 
         def __is_publisher_registered(self, name):
                 try:
@@ -295,8 +327,11 @@ class Webinstall:
                 return False
 
         def __on_proceed_button_clicked(self, widget):
-                self.w_webinstall_proceed.set_sensitive(False)
-                self.__create_task_lists()
+                if len(self.disabled_pubs) > 0 and self.repo_gui:
+                        self.repo_gui.webinstall_enable_disable_pubs(
+                            self.w_webinstall_dialog, self.disabled_pubs, True)
+                        return
+
                 if len(self.pub_new_tasks) > 0:
                         self.__add_new_pub()
                         return
@@ -313,12 +348,9 @@ class Webinstall:
                         repo = pub.selected_repository
                         print("\tURL: %s" % repo.origins[0].uri)
                         
-                repo_gui = repository.Repository(self, self.image_dir,
-                    webinstall_new=True, main_window = self.w_webinstall_dialog)
-
                 repo = pub.selected_repository
-                if repo and len(repo.origins) > 0:
-                        repo_gui.webinstall_new_pub(self.w_webinstall_dialog, pub)
+                if repo and len(repo.origins) > 0 and self.repo_gui:
+                        self.repo_gui.webinstall_new_pub(self.w_webinstall_dialog, pub)
                 else:
                         msg = _("Failed to add %s.\n") % pub
                         msg += _("No URI specified")
@@ -378,6 +410,10 @@ class Webinstall:
        
         # Install Callback - invoked at end of installing packages
         def update_package_list(self, update_list):
+                if len(self.disabled_pubs) > 0 and self.repo_gui:
+                        gobject.idle_add(self.repo_gui.webinstall_enable_disable_pubs,
+                            self.w_webinstall_dialog, self.disabled_pubs, False)
+                        return
                 self.__exit_app()
 
         def api_parse_publisher_info(self):

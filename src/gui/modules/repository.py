@@ -28,6 +28,7 @@ import sys
 import os
 import pango
 from threading import Thread
+from gettext import ngettext
 
 try:
         import gobject
@@ -746,7 +747,7 @@ class Repository(progress.GuiProgressTracker):
             ssl_cert=None, pub=None):
                 errors = []
                 if pub == None:
-                        pub, repo, new_pub = self.__get_or_create_pub_with_url(self.api_o, 
+                        pub, repo, new_pub = self.__get_or_create_pub_with_url(self.api_o,
                             name, origin_url)
                 else:
                         repo = pub.selected_repository
@@ -869,6 +870,35 @@ class Repository(progress.GuiProgressTracker):
                 self.w_confirm_cancel_btn.grab_focus()
                 self.w_confirmation_dialog.show_all()
 
+        def __proceed_enable_disable(self, pub_names, to_enable):
+                errors = []
+
+                gobject.idle_add(self.publishers_apply_expander.set_expanded, True)
+                for name in pub_names.keys():
+                        try:
+                                pub = self.api_o.get_publisher(name,
+                                    duplicate = True)
+                                pub.disabled = not to_enable
+                                self.no_changes += 1
+                                enable_text = _("Disabling")
+                                if to_enable:
+                                        enable_text = _("Enabling")
+
+                                details_text = \
+                                        _("%(enable)s publisher %(name)s\n")
+                                self.__g_update_details_text(details_text %
+                                    {"enable" : enable_text, "name" : name})
+                                self.api_o.update_publisher(pub)
+                        except (api_errors.PermissionsException,
+                            api_errors.PublisherError), e:
+                                errors.append(pub, e)
+                self.progress_stop_thread = True
+                gobject.idle_add(self.publishers_apply_expander.set_expanded, False)
+                if len(errors) > 0:
+                        gobject.idle_add(self.__show_errors, errors)
+                else:
+                        gobject.idle_add(self.parent.reload_packages)
+
         def __proceed_after_confirmation(self):
                 errors = []
                 for row in self.publishers_list:
@@ -893,7 +923,8 @@ class Repository(progress.GuiProgressTracker):
                                         if to_enable:
                                                 enable_text = _("Enabling")
 
-                                        details_text = _("%(enable)s publisher %(name)s")
+                                        details_text = \
+                                                _("%(enable)s publisher %(name)s\n")
                                         self.__g_update_details_text(details_text % 
                                             {"enable" : enable_text, "name" : name})
                                         self.api_o.update_publisher(pub)
@@ -1642,6 +1673,9 @@ class Repository(progress.GuiProgressTracker):
                 repo = pub.selected_repository
                 origin_uri = repo.origins[0].uri
                 if origin_uri != None and origin_uri.startswith("https"):
+                        self.__set_modal_and_transient(self.w_add_publisher_dialog, 
+                            parent)
+                        self.main_window = self.w_add_publisher_dialog
                         self.__on_manage_add_clicked(None)
                         self.w_add_publisher_url.set_text(origin_uri)
                         self.w_add_publisher_name.set_text(pub.prefix)
@@ -1659,8 +1693,22 @@ class Repository(progress.GuiProgressTracker):
                             w_ssl_key=self.w_key_entry, w_ssl_cert=self.w_cert_entry)
                         self.w_add_error_label.hide()
                 else:
+                        self.main_window = parent
                         self.w_ssl_box.hide()
                         self.__do_add_repository()
+
+        def webinstall_enable_disable_pubs(self, parent, pub_names, to_enable):
+                if pub_names == None:
+                        return
+                num = len(pub_names)
+                if to_enable:
+                        msg = ngettext("Enabling Publisher", "Enabling Publishers", num)
+                else:
+                        msg = ngettext("Disabling Publisher", "Disabling Publishers", num)
+                self.publishers_apply.set_title(msg)
+
+                self.__run_with_prog_in_thread(self.__proceed_enable_disable,
+                    parent, None, pub_names, to_enable)
 
         def update_label_text(self, markup_text):
                 self.__g_update_details_text(markup_text)

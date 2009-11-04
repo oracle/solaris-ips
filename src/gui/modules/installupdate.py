@@ -812,6 +812,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.__stages_label_set_markup(done_txt)
                 self.__update_details_text("\n"+ done_txt, "bold")
                 self.w_cancel_button.set_label("gtk-close")
+                self.w_cancel_button.grab_focus()
                 self.w_progressbar.hide()
                 self.stop_bouncing_progress()
                 self.operations_done = True
