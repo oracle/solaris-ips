@@ -135,6 +135,7 @@ secinfo=""
 # for the system, set that as the default.
 #
 propagate_secinfo=
+propagate_extra=
 if [[ -z $pub_and_url ]]; then
 	if [[ $keyfile != "None" ]]; then
 		fail_usage "Key file not allowed without -P"
@@ -142,9 +143,8 @@ if [[ -z $pub_and_url ]]; then
 	if [[ $certfile != "None" ]]; then
 		fail_usage "Cert file not allowed without -P"
 	fi
-	#
+
 	# We look for a preferred online origin.
-	#
 	tpub_and_url=`LC_ALL=C $PKG publisher -PH | \
 	    awk '$2 == "origin" && $3 == "online" \
 	    {printf "%s=%s\n", $1, $4; exit 0;}'`
@@ -153,14 +153,35 @@ if [[ -z $pub_and_url ]]; then
 
 	# Note that later we need to propagate key & cert.
 	propagate_secinfo=1
-fi
 
-#
-# In the unlikely event that we were not able to get the system's
-# preferred publisher, and that the user didn't give us a publisher, we
-# prompt the user to provide it.
-#
+	#
+	# since the user didn't specify a publisher, propagate all the
+	# publishers that don't have a key.
+	#
+	propagate_extra=1
+fi
 [[ -z $pub_and_url ]] && fail_usage "$f_no_pref_publisher"
+
+# find the remaining publishers in the global zone
+publishers_extra=""
+if [[ -n $propagate_extra ]]; then
+	LC_ALL=C $PKG publisher -H | awk '
+		$2 == "origin" && $3 == "online" {printf "%s=%s\n", $1, $4}
+		END {exit(0)}
+	' | while IFS== read publisher publisherurl; do
+		[[ "$publisher=$publisherurl" = "$pub_and_url" ]] && continue
+
+		# skip extra publishers that need a key
+		[[ "`get_pub_secinfo $publisher`" != "None None" ]] && continue
+
+		if [[ -z "$publishers_extra" ]]; then
+			publishers_extra="$publisher=$publisherurl"
+		else
+			publishers_extra=`printf "%s\n%s" \
+			    "$publisher=$publisherurl" "$publishers_extra"`
+		fi
+	done
+fi
 
 #
 # Crack pub=url into two pieces.
@@ -259,8 +280,12 @@ fi
 #
 # Done setting up the zone's datasets.
 #
-printf "$m_publisher" $publisher $publisherurl
-printf "\n$m_image\n" $zoneroot
+printf "$m_publisher\n" $publisher $publisherurl
+echo "$publishers_extra" | while IFS== read publisher publisherurl; do
+	[ -z "$publisher" ] && break
+	printf "$m_publisher\n" $publisher $publisherurl
+done
+printf "$m_image\n" $zoneroot
 
 #
 # We copy the credentials from the global zone into the new image
@@ -298,6 +323,14 @@ $PKG image-create -f --zone --full -p "$pub_and_url" $secinfo $zoneroot || \
 
 PKG_IMAGE="$zoneroot"
 export PKG_IMAGE
+
+# add extra publishers
+echo "$publishers_extra" | while IFS== read publisher publisherurl; do
+	[ -z "$publisher" ] && break
+	$PKG set-publisher -O $publisherurl $publisher ||
+		fail_incomplete "$f_img"
+done
+
 if [ -d /var/pkg/download ]; then
 	PKG_CACHEDIR=/var/pkg/download
 	export PKG_CACHEDIR
@@ -316,6 +349,7 @@ fi
 # the system, we can't do this test without first configuring the image.
 #
 printf "$m_incorp\n"
+echo $pub_and_url | IFS== read publisher publisherurl
 $PKG list -a pkg://$publisher/$entire_fmri > /dev/null 2>&1
 if [[ $? -ne 0 ]]; then
 	fail_fatal "$f_no_entire_in_pref" $entire_fmri $publisher
