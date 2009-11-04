@@ -1,0 +1,5 @@
+package SUNWpostgr-84-tests
+classification "Development/Databases"
+import SUNWpostgr-84-tests
+version 8.4.1
+end package

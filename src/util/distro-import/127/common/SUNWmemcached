@@ -1,0 +1,6 @@
+package SUNWmemcached
+classification "Web Services/Application and Web Servers"
+import SUNWmemcached
+import SUNWmemcachedr
+version 1.4.1
+end package

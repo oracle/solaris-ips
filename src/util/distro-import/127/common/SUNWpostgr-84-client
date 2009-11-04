@@ -1,0 +1,5 @@
+package SUNWpostgr-84-client
+classification "System/Databases"
+import SUNWpostgr-84-client
+version 8.4.1
+end package

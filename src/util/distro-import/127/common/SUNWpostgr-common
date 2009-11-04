@@ -1,0 +1,6 @@
+package SUNWpostgr-common
+classification "System/Databases"
+import SUNWpostgr-common
+import SUNWpostgr-common-root
+version 8.4.1
+end package

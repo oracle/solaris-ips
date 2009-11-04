@@ -1,0 +1,5 @@
+package SUNWpython26-lxml
+classification "Development/Python"
+import SUNWpython26-lxml
+version 2.1.2
+end package

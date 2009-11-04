@@ -1,0 +1,12 @@
+#
+# As there isn't currently a way to rename packages on upgrade, create an
+# empty package which will cause the previous contents of the package to
+# be deleted when the empty version is installed and declare a dependency
+# on the package with the new name.
+#
+# SUNWgimpprint was EOFed in snv_127.
+#
+package SUNWgimpprint
+depend SUNWgutenprint
+version 4.2.6
+end package

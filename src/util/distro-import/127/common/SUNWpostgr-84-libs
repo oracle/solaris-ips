@@ -1,0 +1,5 @@
+package SUNWpostgr-84-libs
+classification "Development/Databases"
+import SUNWpostgr-84-libs
+version 8.4.1
+end package

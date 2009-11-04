@@ -142,6 +142,9 @@ category = Application and Web Servers
 [SUNWaconf]
 category = GNU
 
+[SUNWacpidump]
+category = Administration and Configuration
+
 [SUNWactivation]
 category = Java
 
@@ -1123,9 +1126,6 @@ category = System Utilities
 [SUNWghostscript]
 category = System Utilities
 
-[SUNWgimpprint]
-category = Other Peripherals
-
 [SUNWgir-repository]
 category = GNOME and GTK+
 
@@ -1731,6 +1731,9 @@ category = Administration and Configuration
 
 [SUNWguile]
 category = Other Languages
+
+[SUNWgutenprint]
+category = Printing
 
 [SUNWgvim]
 category = Editors
@@ -2662,12 +2665,6 @@ category = Libraries (System)
 [SUNWlibpigment]
 category = Multimedia Libraries
 
-[SUNWlibpigment-python24]
-category = Multimedia Libraries
-
-[SUNWlibpigment-python25]
-category = Multimedia Libraries
-
 [SUNWlibpigment-python26]
 category = Multimedia Libraries
 
@@ -3340,8 +3337,41 @@ category = Databases (System)
 [SUNWpostgr-83-tcl]
 category = Databases
 
+[SUNWpostgr-84-client]
+category = Databases (System)
+
+[SUNWpostgr-84-contrib]
+category = Databases (System)
+
+[SUNWpostgr-84-devel]
+category = Databases
+
+[SUNWpostgr-84-docs]
+category = Databases (System)
+
+[SUNWpostgr-84-libs]
+category = Databases
+
+[SUNWpostgr-84-pl]
+category = Databases
+
+[SUNWpostgr-84-server]
+category = Databases (System)
+
+[SUNWpostgr-84-tests]
+category = Databases
+
+[SUNWpostgr-common]
+category = Databases (System)
+
 [SUNWpostgr-jdbc]
 category = Databases (System)
+
+[SUNWpostgr-libpqxx]
+category = Databases
+
+[SUNWpostgr-tcl]
+category = Databases
 
 [SUNWpostgr-upgrade]
 category = Databases (System)
@@ -3472,16 +3502,10 @@ category = Python
 [SUNWpython-zope-interface]
 category = Python
 
-[SUNWpython24-cssutils]
-category = Python
-
 [SUNWpython24-ctypes]
 category = Python
 
 [SUNWpython24-simplejson]
-category = Python
-
-[SUNWpython25-cssutils]
 category = Python
 
 [SUNWpython25-simplejson]
@@ -3497,6 +3521,9 @@ category = Python
 category = Python
 
 [SUNWpython26-imaging]
+category = Python
+
+[SUNWpython26-lxml]
 category = Python
 
 [SUNWpython26-notify]
@@ -3654,6 +3681,9 @@ category = Networking
 
 [SUNWrwn]
 category = Networking
+
+[SUNWs10brand]
+category = Virtualization
 
 [SUNWsaaj]
 category = Java
@@ -4317,9 +4347,6 @@ category = Hardware
 
 [SUNWw3m]
 category = Internet
-
-[SUNWwbsd]
-category = Storage
 
 [SUNWwbsup]
 category = Core

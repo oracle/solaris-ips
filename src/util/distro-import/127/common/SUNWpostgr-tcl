@@ -1,0 +1,5 @@
+package SUNWpostgr-tcl
+classification "Development/Databases"
+import SUNWpostgr-tcl
+version 1.7
+end package

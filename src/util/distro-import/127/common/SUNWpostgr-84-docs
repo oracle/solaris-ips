@@ -1,0 +1,5 @@
+package SUNWpostgr-84-docs
+classification "System/Databases"
+import SUNWpostgr-84-docs
+version 8.4.1
+end package
