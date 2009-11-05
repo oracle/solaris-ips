@@ -9,4 +9,6 @@ add file config.xml path=usr/lib/brand/labeled/config.xml mode=0444 \
 	owner=root group=bin
 add file platform.xml path=usr/lib/brand/labeled/platform.xml mode=0444 \
 	owner=root group=bin
+depend SUNWzfs
+depend SUNWzone
 end package
