@@ -6,4 +6,5 @@
 # SUNWsfman was EOFed in snv_124.
 #
 package SUNWsfman
+consolidation "sfw"
 end package

@@ -1,4 +1,5 @@
 package SUNWonbld
+consolidation "osnet"
 classification "Development/Distribution Tools"
 import SUNWonbld
 end package

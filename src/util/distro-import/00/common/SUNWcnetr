@@ -1,4 +1,5 @@
 package SUNWcnetr
+consolidation "osnet"
 classification "System/Core"
 import SUNWcnetr
 end package

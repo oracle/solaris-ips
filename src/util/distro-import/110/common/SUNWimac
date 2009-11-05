@@ -1,4 +1,5 @@
 package SUNWimac
+consolidation "osnet"
 classification "System/Libraries"
 import SUNWimac
 import SUNWimacr

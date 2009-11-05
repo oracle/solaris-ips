@@ -1,4 +1,5 @@
 package SUNWcompizconfig-python
+consolidation "gnome"
 classification "Desktop (GNOME)/Libraries"
 import SUNWcompizconfig-python
 import SUNWcompizconfig-python-devel

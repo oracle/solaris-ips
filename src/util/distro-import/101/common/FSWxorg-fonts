@@ -5,6 +5,7 @@
 # on the package with the new name.
 #
 package FSWxorg-fonts
+consolidation "X"
 depend FSWxorg-fonts-core
 depend FSWxorg-fonts-cyrillic
 depend FSWxorg-fonts-daewoo

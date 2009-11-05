@@ -1,4 +1,5 @@
 package SUNWgnutls
+consolidation "gnome"
 classification "System/Libraries"
 import SUNWgnutls
 import SUNWgnutls-devel

@@ -1,4 +1,5 @@
 package SUNWn2cp
+consolidation "osnet"
 classification "System/Hardware"
 import SUNWn2cp.v
 

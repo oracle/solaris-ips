@@ -1,4 +1,5 @@
 package SUNWejabberd
+consolidation "sfw"
 classification "Web Services/Communications"
 import SUNWejabberdr
 import SUNWejabberdu

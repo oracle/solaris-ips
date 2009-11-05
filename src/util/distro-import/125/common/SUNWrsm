@@ -1,4 +1,5 @@
 package SUNWrsm
+consolidation "osnet"
 classification "System/Core"
 import SUNWrsm
 

@@ -1,4 +1,5 @@
 package SUNWcpp
+consolidation "sunpro"
 classification "Development/C"
 import SUNWcpp
 end package

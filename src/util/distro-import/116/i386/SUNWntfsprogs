@@ -1,4 +1,5 @@
 package SUNWntfsprogs
+consolidation "osnet"
 classification "System/Administration and Configuration"
 import SUNWntfsprogs
 version 2.0.0

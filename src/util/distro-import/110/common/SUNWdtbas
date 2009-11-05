@@ -1,4 +1,5 @@
 package SUNWdtbas
+consolidation "cde"
 classification "System/X11"
 summary "CDE application basic runtime environment"
 # Import only non-EOF compatibility libraries

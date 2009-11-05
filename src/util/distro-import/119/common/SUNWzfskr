@@ -5,5 +5,6 @@
 # on the package with the new name.
 #
 package SUNWzfskr
+consolidation "osnet"
 depend SUNWzfs
 end package

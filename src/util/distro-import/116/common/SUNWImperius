@@ -1,4 +1,5 @@
 package SUNWImperius
+consolidation "sfw"
 classification "Development/Other Languages"
 import SUNWImperius
 depend SUNWSblimCimClient

@@ -1,4 +1,5 @@
 package SUNWtnetc
+consolidation "osnet"
 classification "Applications/System Utilities"
 import SUNWtnetc
 end package

@@ -1,4 +1,5 @@
 package SUNWahci
+consolidation "osnet"
 classification "Drivers/Ports"
 import SUNWahci
 

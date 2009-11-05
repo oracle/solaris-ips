@@ -1,4 +1,5 @@
 package SUNWrcmds
+consolidation "osnet"
 classification "System/Core"
 import SUNWrcmds
 import SUNWrcmdr

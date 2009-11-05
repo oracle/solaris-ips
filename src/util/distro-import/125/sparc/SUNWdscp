@@ -1,4 +1,5 @@
 package SUNWdscp
+consolidation "osnet"
 classification "System/Core"
 import SUNWdscpr.u
 import SUNWdscpu.u

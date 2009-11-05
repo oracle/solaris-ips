@@ -1,4 +1,5 @@
 package SUNWniumx
+consolidation "osnet"
 classification "System/Core"
 import SUNWniumx.v
 

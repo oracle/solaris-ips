@@ -1,4 +1,5 @@
 package SUNWbridge
+consolidation "osnet"
 classification "System/Core"
 import SUNWbridger
 import SUNWbridgeu

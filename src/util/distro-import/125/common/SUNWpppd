@@ -1,4 +1,5 @@
 package SUNWpppd
+consolidation "osnet"
 classification "Drivers/Networking"
 import SUNWpppd
 import SUNWpppdu

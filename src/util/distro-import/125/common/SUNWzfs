@@ -1,4 +1,5 @@
 package SUNWzfs
+consolidation "osnet"
 classification "System/File System"
 import SUNWzfsu
 import SUNWzfsr

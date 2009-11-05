@@ -1,4 +1,5 @@
 package SUNWvinagre
+consolidation "gnome"
 classification "Applications/Internet"
 import SUNWvinagre
 import SUNWvinagre-devel

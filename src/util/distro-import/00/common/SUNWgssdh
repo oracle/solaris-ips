@@ -1,4 +1,5 @@
 package SUNWgssdh
+consolidation "osnet"
 classification "System/Security"
 import SUNWgssdh
 end package

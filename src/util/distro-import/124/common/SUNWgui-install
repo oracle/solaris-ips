@@ -1,4 +1,5 @@
 package SUNWgui-install
+consolidation "install"
 classification "System/Administration and Configuration"
 import SUNWgui-install
 add file exec_attr.SUNWgui-install path=etc/security/exec_attr mode=0644 \

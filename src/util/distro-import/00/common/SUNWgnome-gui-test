@@ -1,4 +1,5 @@
 package SUNWgnome-gui-test
+consolidation "gnome"
 classification "Development/X11"
 import SUNWgnome-gui-test
 depend SUNWgnome-python-libs

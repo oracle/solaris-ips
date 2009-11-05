@@ -1,4 +1,5 @@
 package SUNWstmf
+consolidation "osnet"
 classification "System/Hardware"
 import SUNWstmf
 import SUNWstmfu

@@ -1,4 +1,5 @@
 package SUNWiwk
+consolidation "osnet"
 classification "Drivers/Networking"
 import SUNWiwk
 

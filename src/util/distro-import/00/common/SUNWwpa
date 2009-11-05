@@ -1,4 +1,5 @@
 package SUNWwpa
+consolidation "osnet"
 classification "System/Hardware"
 import SUNWwpau
 import SUNWwpar

@@ -1,4 +1,5 @@
 package SUNWmysql51test
+consolidation "sfw"
 classification "Development/Databases"
 import SUNWmysql51test
 chattr usr/mysql/5.1/mysql-test/std_data/corrupt_t1.P.p1.MYI \

@@ -1,4 +1,5 @@
 package SUNWimagick
+consolidation "sfw"
 classification "System/Multimedia Libraries"
 import SUNWimagick
 version 6.3.4.2

@@ -1,4 +1,5 @@
 package SUNWirssi
+consolidation "gnome"
 classification "Applications/Internet"
 import SUNWirssi
 end package

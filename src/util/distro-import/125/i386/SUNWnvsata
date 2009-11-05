@@ -1,4 +1,5 @@
 package SUNWnvsata
+consolidation "osnet"
 classification "Drivers/Ports"
 import SUNWnvsata
 

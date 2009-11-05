@@ -1,4 +1,5 @@
 package SUNWgnome-img-editor-help-de
+consolidation "gnome_l10n"
 classification "Applications/Graphics and Imaging"
 import SUNWgnome-img-editor-help-de
 end package

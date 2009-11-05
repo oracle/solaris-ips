@@ -1,4 +1,5 @@
 package SUNWfcoe
+consolidation "osnet"
 classification "Drivers/Storage"
 import SUNWfcoe
 

@@ -1,4 +1,5 @@
 package SUNWlxml
+consolidation "sfw"
 classification "System/Libraries"
 import SUNWlxml
 import SUNWlxml-devel

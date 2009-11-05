@@ -1,4 +1,5 @@
 package SUNWlibrsvg
+consolidation "gnome"
 classification "System/Multimedia Libraries"
 import SUNWlibrsvg
 import SUNWlibrsvg-devel

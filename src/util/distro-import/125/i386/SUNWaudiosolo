@@ -1,4 +1,5 @@
 package SUNWaudiosolo
+consolidation "osnet"
 classification "Drivers/Media"
 import SUNWaudiosolo
 

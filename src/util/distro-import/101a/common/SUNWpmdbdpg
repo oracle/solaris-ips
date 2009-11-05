@@ -1,4 +1,5 @@
 package SUNWpmdbdpg
+consolidation "sfw"
 classification "Development/Perl"
 import SUNWpmdbdpg
 version 1.49

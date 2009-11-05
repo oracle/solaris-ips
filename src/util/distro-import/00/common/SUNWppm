@@ -1,4 +1,5 @@
 package SUNWppm
+consolidation "osnet"
 classification "System/Printing"
 import SUNWppm
 end package

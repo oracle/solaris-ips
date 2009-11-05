@@ -1,4 +1,5 @@
 package SUNWautogen
+consolidation "sfw"
 classification "Development/Other Languages"
 import SUNWautogen
 version 5.9

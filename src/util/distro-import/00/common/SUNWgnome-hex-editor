@@ -1,4 +1,5 @@
 package SUNWgnome-hex-editor
+consolidation "gnome"
 classification "Applications/Accessories"
 import SUNWgnome-hex-editor
 import SUNWgnome-hex-editor-devel

@@ -1,4 +1,5 @@
 package SUNWdrcr
+consolidation "osnet"
 classification "System/Enterprise Management"
 import SUNWdrcr.u
 end package

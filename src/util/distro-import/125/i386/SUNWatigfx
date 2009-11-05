@@ -1,4 +1,5 @@
 package SUNWatigfx
+consolidation "osnet"
 classification "Drivers/Display"
 import SUNWatigfx
 

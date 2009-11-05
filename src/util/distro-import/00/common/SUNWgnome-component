@@ -1,4 +1,5 @@
 package SUNWgnome-component
+consolidation "gnome"
 classification "Desktop (GNOME)/Libraries"
 import SUNWgnome-component
 import SUNWgnome-component-devel

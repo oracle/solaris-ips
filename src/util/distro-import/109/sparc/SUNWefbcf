@@ -1,4 +1,5 @@
 package SUNWefbcf
+consolidation "smcc"
 classification "Drivers/Display"
 import SUNWefbcf
 end package

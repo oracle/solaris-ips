@@ -1,4 +1,5 @@
 package SUNWjavamail
+consolidation "sfw"
 classification "Development/Java"
 import SUNWjavamail
 version 1.4.1

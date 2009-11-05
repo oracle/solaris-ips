@@ -1,4 +1,5 @@
 package SUNWgnu-mp
+consolidation "sfw"
 classification "Development/High Performance Computing"
 import SUNWgnu-mp
 version 4.3.1

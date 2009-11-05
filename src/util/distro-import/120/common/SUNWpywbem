@@ -1,4 +1,5 @@
 package SUNWpywbem
+consolidation "sfw"
 classification "Development/Python"
 import SUNWpywbem
 version 0.7.0

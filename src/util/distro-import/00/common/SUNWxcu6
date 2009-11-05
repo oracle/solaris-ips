@@ -1,4 +1,5 @@
 package SUNWxcu6
+consolidation "osnet"
 classification "Applications/System Utilities"
 import SUNWxcu6
 end package

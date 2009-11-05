@@ -1,4 +1,5 @@
 package SUNWlibsasl
+consolidation "osnet"
 classification "System/Libraries"
 import SUNWlibsasl
 end package

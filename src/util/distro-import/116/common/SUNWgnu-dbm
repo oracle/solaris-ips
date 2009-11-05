@@ -1,4 +1,5 @@
 package SUNWgnu-dbm
+consolidation "sfw"
 classification "Development/Databases"
 import SUNWgnu-dbm
 version 1.8.3

@@ -1,4 +1,5 @@
 package SUNWaudiohd
+consolidation "osnet"
 classification "Drivers/Media"
 import SUNWaudiohd
 

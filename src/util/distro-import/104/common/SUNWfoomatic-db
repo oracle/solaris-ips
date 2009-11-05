@@ -1,4 +1,5 @@
 package SUNWfoomatic-db
+consolidation "sfw"
 classification "System/Printing"
 import SUNWfoomatic-db
 version 0.20080903

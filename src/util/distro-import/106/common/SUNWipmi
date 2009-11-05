@@ -1,4 +1,5 @@
 package SUNWipmi
+consolidation "sfw"
 classification "System/Hardware"
 import SUNWipmi
 import SUNWipmir

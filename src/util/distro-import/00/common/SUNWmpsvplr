@@ -1,4 +1,5 @@
 package SUNWmpsvplr
+consolidation "osnet"
 classification "System/Hardware"
 import SUNWmpsvplr
 end package

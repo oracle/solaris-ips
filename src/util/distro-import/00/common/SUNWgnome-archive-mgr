@@ -1,4 +1,5 @@
 package SUNWgnome-archive-mgr
+consolidation "gnome"
 classification "Applications/Accessories"
 import SUNWgnome-archive-mgr
 import SUNWgnome-archive-mgr-root

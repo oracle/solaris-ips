@@ -1,4 +1,5 @@
 package SUNWman
+consolidation "man"
 classification "System/Text Tools"
 import SUNWman
 # Replace BSD vi with vim

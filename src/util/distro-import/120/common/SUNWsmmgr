@@ -7,6 +7,7 @@
 # SUNWsmmgr was EOFed in snv_120.
 #
 package SUNWsmmgr
+consolidation "sfw"
 depend SUNWnet-snmp-core
 version 5.0.9
 #

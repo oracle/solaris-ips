@@ -1,4 +1,5 @@
 package SUNWefc
+consolidation "osnet"
 classification "System/Administration and Configuration"
 import SUNWefc.u
 import SUNWefck

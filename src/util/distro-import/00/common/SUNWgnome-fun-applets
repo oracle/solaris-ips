@@ -1,4 +1,5 @@
 package SUNWgnome-fun-applets
+consolidation "gnome"
 classification "Applications/Panels and Applets"
 import SUNWgnome-fun-applets
 import SUNWgnome-fun-applets-root

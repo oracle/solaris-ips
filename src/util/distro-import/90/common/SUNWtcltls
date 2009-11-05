@@ -1,4 +1,5 @@
 package SUNWtcltls
+consolidation "sfw"
 classification "Development/Other Languages"
 import SUNWtcltls
 version 1.6

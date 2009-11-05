@@ -1,4 +1,5 @@
 package SUNWfcsm
+consolidation "osnet"
 classification "Drivers/Storage"
 import SUNWfcsm
 

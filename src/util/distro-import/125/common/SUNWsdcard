@@ -1,4 +1,5 @@
 package SUNWsdcard
+consolidation "osnet"
 classification "Drivers/Storage"
 import SUNWsdcard
 

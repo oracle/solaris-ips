@@ -1,4 +1,5 @@
 package SUNWfwdc
+consolidation "osnet"
 classification "Drivers/Media"
 import SUNWfwdc
 

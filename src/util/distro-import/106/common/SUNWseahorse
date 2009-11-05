@@ -1,4 +1,5 @@
 package SUNWseahorse
+consolidation "gnome"
 classification "System/Security"
 import SUNWseahorse
 import SUNWseahorse-devel

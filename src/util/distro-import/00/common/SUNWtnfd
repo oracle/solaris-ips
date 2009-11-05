@@ -1,4 +1,5 @@
 package SUNWtnfd
+consolidation "osnet"
 classification "Development/System"
 import SUNWtnfd
 end package

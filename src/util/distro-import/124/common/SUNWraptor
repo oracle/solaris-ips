@@ -1,4 +1,5 @@
 package SUNWraptor
+consolidation "gnome"
 classification "System/Libraries"
 import SUNWraptor
 import SUNWraptor-devel

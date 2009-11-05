@@ -1,4 +1,5 @@
 package SUNWsprot
+consolidation "sunpro"
 classification "System/Core"
 import SUNWsprot
 end package

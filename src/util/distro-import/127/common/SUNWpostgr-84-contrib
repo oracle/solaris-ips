@@ -1,4 +1,5 @@
 package SUNWpostgr-84-contrib
+consolidation "sfw"
 classification "System/Databases"
 import SUNWpostgr-84-contrib
 version 8.4.1

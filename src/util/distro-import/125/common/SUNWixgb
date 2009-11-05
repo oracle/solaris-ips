@@ -1,4 +1,5 @@
 package SUNWixgb
+consolidation "osnet"
 classification "Drivers/Networking"
 import SUNWixgb
 

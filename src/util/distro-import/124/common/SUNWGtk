@@ -1,4 +1,5 @@
 package SUNWGtk
+consolidation "sfw"
 classification "Applications/Graphics and Imaging"
 import SUNWGtku
 import SUNWGtkr

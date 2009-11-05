@@ -1,4 +1,5 @@
 package SUNWatge
+consolidation "osnet"
 classification "Drivers/Networking"
 import SUNWatge
 

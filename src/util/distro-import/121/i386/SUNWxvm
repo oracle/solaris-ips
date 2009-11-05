@@ -1,4 +1,5 @@
 package SUNWxvm
+consolidation "osnet"
 classification "System/Virtualization"
 import SUNWxvmh
 import SUNWxvmhvm

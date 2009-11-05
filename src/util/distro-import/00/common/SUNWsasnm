@@ -1,4 +1,5 @@
 package SUNWsasnm
+consolidation "osnet"
 classification "System/Enterprise Management"
 import SUNWsasnm
 end package

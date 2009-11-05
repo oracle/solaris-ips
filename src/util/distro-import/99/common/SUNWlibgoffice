@@ -1,4 +1,5 @@
 package SUNWlibgoffice
+consolidation "gnome"
 classification "Development/System"
 import SUNWlibgoffice
 import SUNWlibgoffice-devel

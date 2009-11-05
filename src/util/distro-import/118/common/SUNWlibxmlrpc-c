@@ -1,4 +1,5 @@
 package SUNWlibxmlrpc-c
+consolidation "sfw"
 classification "System/Libraries"
 import SUNWlibxmlrpc-c
 version 1.6.32

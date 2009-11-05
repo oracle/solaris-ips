@@ -1,4 +1,5 @@
 package SUNWopenexr
+consolidation "sfw"
 classification "System/Libraries"
 import SUNWopenexr
 version 1.6.1

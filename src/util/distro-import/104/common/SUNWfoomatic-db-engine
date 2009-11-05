@@ -1,4 +1,5 @@
 package SUNWfoomatic-db-engine
+consolidation "sfw"
 classification "System/Printing"
 import SUNWfoomatic-db-enginer
 import SUNWfoomatic-db-engineu

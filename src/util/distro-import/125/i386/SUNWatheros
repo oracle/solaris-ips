@@ -1,4 +1,5 @@
 package SUNWatheros
+consolidation "osnet"
 classification "Drivers/Networking"
 import SUNWatheros
 

@@ -1,4 +1,5 @@
 package SUNWlua
+consolidation "sfw"
 classification "Development/Other Languages"
 import SUNWlua
 version 5.1.4

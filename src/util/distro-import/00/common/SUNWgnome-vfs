@@ -1,4 +1,5 @@
 package SUNWgnome-vfs
+consolidation "gnome"
 classification "Desktop (GNOME)/Libraries"
 import SUNWgnome-vfs
 import SUNWgnome-vfs-devel

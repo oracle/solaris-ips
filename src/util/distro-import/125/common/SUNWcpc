@@ -1,4 +1,5 @@
 package SUNWcpc
+consolidation "osnet"
 classification "System/Core"
 $(i386_ONLY)import SUNWcpc.i
 $(sparc_ONLY)import SUNWcpc.u

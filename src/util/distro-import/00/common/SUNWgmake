@@ -1,4 +1,5 @@
 package SUNWgmake
+consolidation "sfw"
 classification "Development/GNU"
 import SUNWgmake
 version 3.81

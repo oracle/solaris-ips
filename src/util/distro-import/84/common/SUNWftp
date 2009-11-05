@@ -1,4 +1,5 @@
 package SUNWftp
+consolidation "osnet"
 classification "System/Core"
 import SUNWftpu
 # base package will deliver etc/ftpd/ftpusers

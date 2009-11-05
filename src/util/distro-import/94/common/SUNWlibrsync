@@ -1,4 +1,5 @@
 package SUNWlibrsync
+consolidation "sfw"
 classification "System/Libraries"
 import SUNWlibrsync
 version 0.9.7

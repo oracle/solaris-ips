@@ -1,4 +1,5 @@
 package SUNWopenwsman
+consolidation "sfw"
 classification "Web Services/Application and Web Servers"
 import SUNWopenwsmanr
 import SUNWopenwsmanu

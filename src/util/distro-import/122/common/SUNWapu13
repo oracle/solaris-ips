@@ -1,4 +1,5 @@
 package SUNWapu13
+consolidation "sfw"
 classification "Web Services/Application and Web Servers"
 import SUNWapu13dev
 import SUNWapu13lib

@@ -1,4 +1,5 @@
 package SUNWpython-zope-interface
+consolidation "gnome"
 classification "Development/Python"
 import SUNWpython-zope-interface
 end package

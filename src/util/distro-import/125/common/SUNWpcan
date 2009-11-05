@@ -1,4 +1,5 @@
 package SUNWpcan
+consolidation "osnet"
 classification "Drivers/Networking"
 import SUNWpcan
 

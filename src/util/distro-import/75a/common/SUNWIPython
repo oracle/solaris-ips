@@ -1,4 +1,5 @@
 package SUNWIPython
+consolidation "gnome"
 classification "Development/Python"
 import SUNWIPython
 end package

@@ -1,4 +1,5 @@
 package SUNWukspfw
+consolidation "osnet"
 classification "System/Hardware"
 import SUNWukspfw
 end package

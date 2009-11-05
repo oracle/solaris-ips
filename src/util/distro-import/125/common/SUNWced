@@ -1,4 +1,5 @@
 package SUNWced
+consolidation "nspg"
 classification "Drivers/Networking"
 import SUNWced
 $(i386_ONLY)import SUNWcedu

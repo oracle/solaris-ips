@@ -1,4 +1,5 @@
 package SUNWgnome-cd
+consolidation "gnome"
 classification "Applications/Sound and Video"
 import SUNWgnome-cd
 import SUNWgnome-cd-root

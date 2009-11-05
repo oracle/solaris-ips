@@ -1,4 +1,5 @@
 package SUNWlibexif
+consolidation "gnome"
 classification "System/Multimedia Libraries"
 import SUNWlibexif
 import SUNWlibexif-devel

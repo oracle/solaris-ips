@@ -1,4 +1,5 @@
 package SUNWuedg
+consolidation "osnet"
 classification "Drivers/Ports"
 import SUNWuedg
 

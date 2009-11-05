@@ -1,4 +1,5 @@
 package SUNWopenldap
+consolidation "sfw"
 classification "System/Libraries"
 import SUNWopenldapr
 drop var/run/openldap

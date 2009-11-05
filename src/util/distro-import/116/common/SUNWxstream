@@ -1,4 +1,5 @@
 package SUNWxstream
+consolidation "sfw"
 classification "Development/Java"
 import SUNWxstream
 depend SUNWcglib

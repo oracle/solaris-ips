@@ -6,4 +6,5 @@
 # SUNWsolaris-devel-docs was EOFed in snv_92.
 #
 package SUNWsolaris-devel-docs
+consolidation "gnome"
 end package

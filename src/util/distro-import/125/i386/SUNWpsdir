@@ -1,4 +1,5 @@
 package SUNWpsdir
+consolidation "osnet"
 classification "Drivers/Other Peripherals"
 import SUNWpsdir
 

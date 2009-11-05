@@ -1,4 +1,5 @@
 package SUNWpostgr-upgrade
+consolidation "sfw"
 classification "System/Databases"
 import SUNWpostgr-upgrade
 end package

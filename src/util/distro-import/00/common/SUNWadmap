@@ -1,4 +1,5 @@
 package SUNWadmap
+consolidation "install"
 classification "System/Administration and Configuration"
 import SUNWadmap
 end package

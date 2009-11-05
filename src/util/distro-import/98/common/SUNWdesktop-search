@@ -1,4 +1,5 @@
 package SUNWdesktop-search
+consolidation "gnome"
 classification "Applications/System Utilities"
 import SUNWdesktop-search
 import SUNWdesktop-search-devel

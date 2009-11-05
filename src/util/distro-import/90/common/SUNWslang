@@ -1,4 +1,5 @@
 package SUNWslang
+consolidation "sfw"
 classification "Development/Other Languages"
 import SUNWslang
 import SUNWslangr

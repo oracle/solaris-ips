@@ -1,4 +1,5 @@
 package SUNWsnort
+consolidation "sfw"
 classification "Applications/Internet"
 import SUNWsnortr
 import SUNWsnortu

@@ -1,4 +1,5 @@
 package SUNWunzip
+consolidation "sfw"
 classification "Applications/System Utilities"
 import SUNWunzip
 version 5.53.7

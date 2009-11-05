@@ -1,4 +1,5 @@
 package SUNWlogrotate
+consolidation "sfw"
 classification "System/Administration and Configuration"
 import SUNWlogrotater
 import SUNWlogrotateu

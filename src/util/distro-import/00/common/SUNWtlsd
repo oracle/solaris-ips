@@ -1,4 +1,5 @@
 package SUNWtlsd
+consolidation "sic_team"
 classification "System/Security"
 import SUNWtlsd
 end package

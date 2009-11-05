@@ -1,4 +1,5 @@
 package SUNWkvm
+consolidation "osnet"
 classification "System/Core"
 $(i386_ONLY)import SUNWkvm.i
 $(sparc_ONLY)import SUNWkvm.u

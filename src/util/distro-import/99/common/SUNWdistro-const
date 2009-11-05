@@ -1,4 +1,5 @@
 package SUNWdistro-const
+consolidation "install"
 classification "System/Core"
 import SUNWdistro-const
 depend SUNWinstall

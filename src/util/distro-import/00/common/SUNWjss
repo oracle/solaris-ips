@@ -1,4 +1,5 @@
 package SUNWjss
+consolidation "sic_team"
 classification "System/Services"
 import SUNWjss
 end package

@@ -1,4 +1,5 @@
 package SUNWiopc
+consolidation "osnet"
 classification "System/Core"
 import SUNWiopc.u
 import SUNWiopc.v

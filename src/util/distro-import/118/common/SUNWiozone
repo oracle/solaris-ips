@@ -1,4 +1,5 @@
 package SUNWiozone
+consolidation "sfw"
 classification "Development/System"
 import SUNWiozone
 version 3.323

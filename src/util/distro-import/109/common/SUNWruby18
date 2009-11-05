@@ -1,4 +1,5 @@
 package SUNWruby18
+consolidation "sfw"
 classification "Development/Ruby"
 import SUNWruby18u
 import SUNWruby18r

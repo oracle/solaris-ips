@@ -1,4 +1,5 @@
 package SUNWlpr-cmds
+consolidation "osnet"
 classification "System/Printing"
 import SUNWlpr-cmds
 end package

@@ -1,4 +1,5 @@
 package SUNWadixp
+consolidation "osnet"
 classification "Drivers/Media"
 import SUNWadixp
 

@@ -1,4 +1,5 @@
 package SUNWsane-backend
+consolidation "sfw"
 classification "System/Libraries"
 import SUNWsane-backendu
 import SUNWsane-backendr

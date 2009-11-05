@@ -1,4 +1,5 @@
 package SUNWcfpl
+consolidation "osnet"
 classification "System/Libraries"
 import SUNWcfpl
 import SUNWcfplr

@@ -1,4 +1,5 @@
 package SUNWpppdt
+consolidation "osnet"
 classification "System/Core"
 import SUNWpppdt
 end package

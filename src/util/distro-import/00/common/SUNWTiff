@@ -1,4 +1,5 @@
 package SUNWTiff
+consolidation "gnome"
 classification "System/Multimedia Libraries"
 import SUNWTiff
 import SUNWTiff-devel

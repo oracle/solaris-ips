@@ -1,4 +1,5 @@
 package SUNWobjectasm
+consolidation "sfw"
 classification "Development/Java"
 import SUNWobjectasm
 version 3.1

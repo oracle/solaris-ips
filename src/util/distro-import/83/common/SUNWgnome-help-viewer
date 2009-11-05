@@ -1,4 +1,5 @@
 package SUNWgnome-help-viewer
+consolidation "gnome"
 classification "Desktop (GNOME)/Documentation"
 import SUNWgnome-help-viewer
 import SUNWgnome-help-viewer-root

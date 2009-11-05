@@ -1,4 +1,5 @@
 package SUNWdesktop-other-l10n-fr
+consolidation "gnome_l10n"
 classification "Desktop (GNOME)/Localizations"
 import SUNWdesktop-other-l10n-fr
 end package

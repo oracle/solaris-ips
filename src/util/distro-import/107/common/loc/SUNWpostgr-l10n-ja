@@ -6,4 +6,5 @@
 # SUNWpostgr-l10n-ja was EOFed in snv_107.
 #
 package SUNWpostgr-l10n-ja
+consolidation "l10n"
 end package

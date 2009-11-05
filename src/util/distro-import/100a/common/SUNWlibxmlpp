@@ -1,4 +1,5 @@
 package SUNWlibxmlpp
+consolidation "gnome"
 classification "Development/C++"
 import SUNWlibxmlpp
 import SUNWlibxmlpp-devel

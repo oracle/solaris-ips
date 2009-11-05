@@ -1,4 +1,5 @@
 package OSOLvpanels-sharemgr
+consolidation "vpanels"
 classification "Applications/Configuration and Preferences"
 import OSOLvpin-sharemgr
 depend OSOLvpanels

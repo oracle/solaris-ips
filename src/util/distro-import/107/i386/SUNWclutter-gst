@@ -1,4 +1,5 @@
 package SUNWclutter-gst
+consolidation "gnome"
 classification "System/Multimedia Libraries"
 import SUNWclutter-gst
 import SUNWclutter-gst-devel

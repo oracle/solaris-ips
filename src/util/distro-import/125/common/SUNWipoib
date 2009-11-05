@@ -1,4 +1,5 @@
 package SUNWipoib
+consolidation "osnet"
 classification "System/Hardware"
 import SUNWipoib
 

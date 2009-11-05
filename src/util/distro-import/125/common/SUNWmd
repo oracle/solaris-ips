@@ -1,4 +1,5 @@
 package SUNWmd
+consolidation "osnet"
 classification "System/Core"
 import SUNWmdu
 import SUNWmdr

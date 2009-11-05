@@ -1,4 +1,5 @@
 package SUNWrwd
+consolidation "osnet"
 classification "Drivers/Networking"
 import SUNWrwd
 

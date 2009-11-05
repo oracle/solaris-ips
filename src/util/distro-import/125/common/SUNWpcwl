@@ -1,4 +1,5 @@
 package SUNWpcwl
+consolidation "osnet"
 classification "Drivers/Networking"
 import SUNWpcwl
 

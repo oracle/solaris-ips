@@ -1,4 +1,5 @@
 package SUNWfcprt
+consolidation "osnet"
 classification "System/Hardware"
 import SUNWfcprt
 import SUNWfcprtr

@@ -1,4 +1,5 @@
 package SUNWsnack
+consolidation "sfw"
 classification "Development/Other Languages"
 import SUNWsnack
 version 2.2.10

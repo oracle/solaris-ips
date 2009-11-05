@@ -1,4 +1,5 @@
 package SUNWatu
+consolidation "osnet"
 classification "Drivers/Networking"
 import SUNWatu
 

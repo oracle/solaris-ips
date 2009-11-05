@@ -1,4 +1,5 @@
 package SUNWpapi
+consolidation "osnet"
 classification "System/Printing"
 import SUNWpapi
 end package

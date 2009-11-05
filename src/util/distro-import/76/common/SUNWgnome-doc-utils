@@ -1,4 +1,5 @@
 package SUNWgnome-doc-utils
+consolidation "gnome"
 classification "Development/GNOME and GTK+"
 import SUNWgnome-doc-utils
 depend SUNWlxml

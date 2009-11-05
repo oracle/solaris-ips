@@ -1,4 +1,5 @@
 package SUNWpdu
+consolidation "osnet"
 classification "System/Hardware"
 import SUNWpdu
 # BEGIN NON-REDISTRIBUTABLE

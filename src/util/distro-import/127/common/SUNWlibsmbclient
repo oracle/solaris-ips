@@ -1,4 +1,5 @@
 package SUNWlibsmbclient
+consolidation "sfw"
 classification "System/Libraries"
 summary "A library that permits applications to manipulate CIFS/SMB network resources"
 add dir path=usr/sfw mode=0755 owner=root group=bin

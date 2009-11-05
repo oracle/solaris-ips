@@ -1,4 +1,5 @@
 package SUNWpangomm
+consolidation "gnome"
 classification "Desktop (GNOME)/Libraries"
 import SUNWpangomm
 import SUNWpangomm-devel

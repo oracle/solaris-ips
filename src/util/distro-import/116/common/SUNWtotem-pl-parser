@@ -1,4 +1,5 @@
 package SUNWtotem-pl-parser
+consolidation "gnome"
 classification "Desktop (GNOME)/Libraries"
 import SUNWtotem-pl-parser
 import SUNWtotem-pl-parser-devel

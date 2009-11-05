@@ -1,4 +1,5 @@
 package SUNWgnome-text-editor
+consolidation "gnome"
 classification "Applications/Accessories"
 import SUNWgnome-text-editor
 import SUNWgnome-text-editor-devel

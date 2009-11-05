@@ -1,4 +1,5 @@
 package SUNWfontconfig
+consolidation "X"
 classification "System/Libraries"
 import SUNWfontconfig
 import SUNWfontconfig-root

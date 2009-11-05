@@ -1,4 +1,5 @@
 package SUNWgnonlin
+consolidation "gnome"
 classification "System/Multimedia Libraries"
 import SUNWgnonlin
 import SUNWgnonlin-devel

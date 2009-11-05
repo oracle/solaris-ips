@@ -1,4 +1,5 @@
 package SUNWbluefish
+consolidation "gnome"
 classification "Applications/Internet"
 import SUNWbluefish
 end package

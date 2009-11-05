@@ -1,4 +1,5 @@
 package SUNWippl
+consolidation "osnet"
 classification "System/Printing"
 import SUNWipplu
 import SUNWipplr

@@ -1,4 +1,5 @@
 package SUNWxvnc
+consolidation "X"
 classification "System/X11"
 import SUNWxvnc
 version 4.1.3

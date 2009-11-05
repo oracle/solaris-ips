@@ -1,4 +1,5 @@
 package SUNWgnu-emacs-el
+consolidation "sfw"
 classification "Development/Editors"
 import SUNWgnu-emacs-el
 version 22.1

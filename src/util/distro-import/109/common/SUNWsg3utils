@@ -1,4 +1,5 @@
 package SUNWsg3utils
+consolidation "sfw"
 classification "Applications/System Utilities"
 import SUNWsg3utilsr
 import SUNWsg3utilsu

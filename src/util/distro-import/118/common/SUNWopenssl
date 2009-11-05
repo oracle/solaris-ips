@@ -1,4 +1,5 @@
 package SUNWopenssl
+consolidation "sfw"
 classification "System/Security"
 import SUNWopenssl-commands
 import SUNWopenssl-include

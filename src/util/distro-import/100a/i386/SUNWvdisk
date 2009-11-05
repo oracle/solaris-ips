@@ -1,4 +1,5 @@
 package SUNWvdisk
+consolidation "osnet"
 classification "Applications/System Utilities"
 import SUNWvdisk
 end package

@@ -1,4 +1,5 @@
 package SUNWpython-xdg
+consolidation "gnome"
 classification "Development/Python"
 import SUNWpython-xdg
 end package

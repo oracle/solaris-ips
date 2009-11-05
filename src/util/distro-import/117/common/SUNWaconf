@@ -1,4 +1,5 @@
 package SUNWaconf
+consolidation "sfw"
 classification "Development/GNU"
 import SUNWaconf
 depend SUNWgm4

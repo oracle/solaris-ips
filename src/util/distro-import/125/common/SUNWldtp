@@ -1,4 +1,5 @@
 package SUNWldtp
+consolidation "ips"
 classification "Development/Distribution Tools"
 import SUNWldtp
 version 1.7.1

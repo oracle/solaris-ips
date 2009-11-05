@@ -1,4 +1,5 @@
 package SUNWmysql5
+consolidation "sfw"
 classification "System/Databases"
 import SUNWmysql5u
 import SUNWmysql5r

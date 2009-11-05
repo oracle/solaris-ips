@@ -1,4 +1,5 @@
 package SUNWstc
+consolidation "osnet"
 classification "System/Core"
 import SUNWstc.u
 

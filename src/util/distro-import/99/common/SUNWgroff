@@ -1,4 +1,5 @@
 package SUNWgroff
+consolidation "gnome"
 classification "System/Text Tools"
 import SUNWgroff
 end package

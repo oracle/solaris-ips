@@ -1,4 +1,5 @@
 package SUNWcglib
+consolidation "sfw"
 classification "Development/Java"
 import SUNWcglib
 depend SUNWjarjar

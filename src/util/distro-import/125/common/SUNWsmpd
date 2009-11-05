@@ -1,4 +1,5 @@
 package SUNWsmpd
+consolidation "osnet"
 classification "Drivers/Storage"
 import SUNWsmpd
 

@@ -7,6 +7,7 @@
 # SUNWsmdoc was EOFed in snv_120.
 #
 package SUNWsmdoc
+consolidation "sfw"
 depend SUNWnet-snmp-doc
 version 5.0.9
 end package

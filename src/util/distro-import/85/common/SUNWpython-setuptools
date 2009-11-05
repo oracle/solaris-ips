@@ -1,4 +1,5 @@
 package SUNWpython-setuptools
+consolidation "gnome"
 classification "Development/Python"
 import SUNWpython-setuptools
 end package

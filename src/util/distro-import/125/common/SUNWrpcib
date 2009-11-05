@@ -1,4 +1,5 @@
 package SUNWrpcib
+consolidation "osnet"
 classification "System/Hardware"
 import SUNWrpcib
 

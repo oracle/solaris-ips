@@ -1,4 +1,5 @@
 package SUNWnet6
+consolidation "gnome"
 classification "Development/System"
 import SUNWnet6
 import SUNWnet6-devel

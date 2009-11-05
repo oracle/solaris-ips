@@ -1,4 +1,5 @@
 package SUNWjxl
+consolidation "sfw"
 classification "Development/Java"
 import SUNWjxl
 depend SUNWlog4j

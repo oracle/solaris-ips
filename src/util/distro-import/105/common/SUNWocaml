@@ -1,4 +1,5 @@
 package SUNWocaml
+consolidation "sfw"
 classification "Development/Other Languages"
 import SUNWocaml
 version 3.10.2

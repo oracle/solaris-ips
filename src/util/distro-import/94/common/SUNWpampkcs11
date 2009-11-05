@@ -1,4 +1,5 @@
 package SUNWpampkcs11
+consolidation "sfw"
 classification "System/Security"
 import SUNWpampkcs11-docs
 import SUNWpampkcs11r

@@ -1,4 +1,5 @@
 package SUNWust
+consolidation "osnet"
 classification "System/Core"
 import SUNWust1.v
 import SUNWust2.v

@@ -1,4 +1,5 @@
 package FSWxorg-fonts-daewoo
+consolidation "X"
 classification "System/Fonts"
 import FSWxorg-fonts-daewoo
 add link path=etc/X11/fontpath.d/75dpi:pri=75 \

@@ -1,4 +1,5 @@
 package SUNWopenjade
+consolidation "gnome"
 classification "System/Text Tools"
 import SUNWopenjade
 import SUNWopenjade-devel

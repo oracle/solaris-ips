@@ -1,4 +1,5 @@
 package SUNWjaxb
+consolidation "sfw"
 classification "Development/Java"
 import SUNWjaxb
 depend SUNWactivation

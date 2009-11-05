@@ -7,5 +7,6 @@
 # SUNWrmodu (sparc) was EOFed in snv_113.
 #
 package SUNWrmodu
+consolidation "osnet"
 $(i386_ONLY)depend SUNWrmod
 end package

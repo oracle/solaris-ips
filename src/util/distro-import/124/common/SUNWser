@@ -1,4 +1,5 @@
 package SUNWser
+consolidation "sfw"
 classification "System/Services"
 import SUNWseru
 import SUNWserr

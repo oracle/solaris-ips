@@ -1,4 +1,5 @@
 package SUNWgksu
+consolidation "gnome"
 classification "Applications/System Utilities"
 import SUNWgksu
 import SUNWgksu-devel

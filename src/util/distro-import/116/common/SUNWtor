@@ -1,4 +1,5 @@
 package SUNWtor
+consolidation "sfw"
 classification "Applications/Internet"
 import SUNWtor
 import SUNWtor-root

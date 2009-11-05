@@ -1,4 +1,5 @@
 package SUNWllc
+consolidation "osnet"
 classification "Drivers/Networking"
 import SUNWllc
 # BEGIN NON-REDISTRIBUTABLE

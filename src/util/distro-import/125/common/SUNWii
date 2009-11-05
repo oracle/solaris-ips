@@ -1,4 +1,5 @@
 package SUNWii
+consolidation "osnet"
 classification "System/Enterprise Management"
 import SUNWiiu
 import SUNWiir

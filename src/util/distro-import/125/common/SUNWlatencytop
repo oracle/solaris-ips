@@ -1,4 +1,5 @@
 package SUNWlatencytop
+consolidation "osnet"
 classification "Applications/System Utilities"
 import SUNWlatencytop
 end package

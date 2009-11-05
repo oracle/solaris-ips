@@ -1,4 +1,5 @@
 package SUNWlibffi
+consolidation "gnome"
 classification "System/Libraries"
 import SUNWlibffi
 import SUNWlibffi-devel

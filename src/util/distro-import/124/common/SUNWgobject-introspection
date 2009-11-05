@@ -1,4 +1,5 @@
 package SUNWgobject-introspection
+consolidation "gnome"
 classification "Development/GNOME and GTK+"
 import SUNWgobject-introspection
 import SUNWgobject-introspection-devel

@@ -1,4 +1,5 @@
 package SUNWgnu-emacs-nox
+consolidation "sfw"
 classification "Development/Editors"
 import SUNWgnu-emacs-nox
 version 22.1

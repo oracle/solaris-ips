@@ -1,4 +1,5 @@
 package SUNWusbccid
+consolidation "sfw"
 classification "System/Hardware"
 import SUNWusbccid
 end package

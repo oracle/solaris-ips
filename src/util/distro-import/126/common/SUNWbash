@@ -1,4 +1,5 @@
 package SUNWbash
+consolidation "sfw"
 classification "System/Shells"
 import SUNWbash
 import SUNWbashr

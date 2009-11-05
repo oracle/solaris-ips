@@ -1,4 +1,5 @@
 package SUNWclutter-gtk
+consolidation "gnome"
 classification "System/Multimedia Libraries"
 import SUNWclutter-gtk
 import SUNWclutter-gtk-devel

@@ -1,4 +1,5 @@
 package SUNWgtar
+consolidation "sfw"
 classification "Development/GNU"
 import SUNWgtar
 version 1.22

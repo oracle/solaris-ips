@@ -1,4 +1,5 @@
 package SUNWsane-frontend
+consolidation "sfw"
 classification "Applications/Graphics and Imaging"
 import SUNWsane-frontend
 version 1.0.14

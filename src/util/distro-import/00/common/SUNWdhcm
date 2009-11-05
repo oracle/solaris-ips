@@ -1,4 +1,5 @@
 package SUNWdhcm
+consolidation "osnet"
 classification "System/Services"
 import SUNWdhcm
 depend SUNWj6rt

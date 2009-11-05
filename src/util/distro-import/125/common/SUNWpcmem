@@ -1,4 +1,5 @@
 package SUNWpcmem
+consolidation "osnet"
 classification "Drivers/Storage"
 import SUNWpcmem
 

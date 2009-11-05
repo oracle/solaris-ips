@@ -1,4 +1,5 @@
 package SUNWpython-pycurl
+consolidation "ips"
 classification "Development/Python"
 import SUNWpython-pycurl
 version 7.19.0.1

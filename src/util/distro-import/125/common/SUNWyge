@@ -1,4 +1,5 @@
 package SUNWyge
+consolidation "osnet"
 classification "Drivers/Networking"
 import SUNWyge
 

@@ -13,8 +13,10 @@ depend SUNWflexlex
 depend SUNWgcc
 depend SUNWgnome-base-libs
 depend SUNWgnome-vfs
+depend SUNWgnome-xml
 depend SUNWgnu-gettext
 depend SUNWhea
+depend SUNWiscsitgt
 depend SUNWj6dev
 depend SUNWjsnmp
 depend SUNWlibm

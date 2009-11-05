@@ -1,4 +1,5 @@
 package SUNWcar
+consolidation "osnet"
 classification "System/Core"
 $(i386_ONLY)import SUNWcar.i
 $(i386_ONLY)import SUNWcarx.i

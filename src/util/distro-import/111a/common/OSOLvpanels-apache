@@ -1,4 +1,5 @@
 package OSOLvpanels-apache
+consolidation "vpanels"
 classification "Applications/Configuration and Preferences"
 import OSOLvpin-apache
 depend OSOLvpanels

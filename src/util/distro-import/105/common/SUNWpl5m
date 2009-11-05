@@ -6,5 +6,6 @@
 # SUNWpl5m was EOFed in snv_105.
 #
 package SUNWpl5m
+consolidation "man"
 version 5.6.1
 end package

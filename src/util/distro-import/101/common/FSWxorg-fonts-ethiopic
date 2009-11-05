@@ -1,4 +1,5 @@
 package FSWxorg-fonts-ethiopic
+consolidation "X"
 classification "System/Fonts"
 import FSWxorg-fonts-ethiopic
 add link path=etc/X11/fontpath.d/ethiopic:pri=60 \

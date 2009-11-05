@@ -1,4 +1,5 @@
 package SUNWphp52-pear
+consolidation "sfw"
 classification "Development/PHP"
 import SUNWphp52r-pear
 import SUNWphp52u-pear

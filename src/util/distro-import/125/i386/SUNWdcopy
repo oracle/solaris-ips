@@ -1,4 +1,5 @@
 package SUNWdcopy
+consolidation "osnet"
 classification "Drivers/Other Peripherals"
 import SUNWdcopy
 

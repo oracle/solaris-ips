@@ -1,4 +1,5 @@
 package SUNWural
+consolidation "osnet"
 classification "Drivers/Networking"
 import SUNWural
 

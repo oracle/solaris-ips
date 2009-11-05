@@ -1,4 +1,5 @@
 package SUNW1394
+consolidation "osnet"
 classification "System/Hardware"
 import SUNW1394
 

@@ -1,4 +1,5 @@
 package SUNWpoold
+consolidation "osnet"
 classification "System/Core"
 import SUNWpoold
 depend SUNWj6rt

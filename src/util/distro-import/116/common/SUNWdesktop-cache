@@ -1,4 +1,5 @@
 package SUNWdesktop-cache
+consolidation "gnome"
 classification "System/Services"
 import SUNWdesktop-cache
 import SUNWdesktop-cache-root

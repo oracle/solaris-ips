@@ -1,4 +1,5 @@
 package SUNWlang-pa
+consolidation "l10n"
 classification "System/Localizations"
 import SUNWlang-pa
 depend SUNWlang-common

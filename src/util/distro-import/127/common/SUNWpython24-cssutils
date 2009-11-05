@@ -6,4 +6,5 @@
 # SUNWpython24-cssutils was EOFed in snv_127.
 #
 package SUNWpython24-cssutils
+consolidation "gnome"
 end package

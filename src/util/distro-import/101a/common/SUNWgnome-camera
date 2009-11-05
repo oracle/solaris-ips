@@ -1,4 +1,5 @@
 package SUNWgnome-camera
+consolidation "gnome"
 classification "Applications/Graphics and Imaging"
 import SUNWgnome-camera exclude \
 	usr/lib/gimp/2.0/plug-ins \

@@ -1,4 +1,5 @@
 package SUNWlang-sk
+consolidation "l10n"
 classification "System/Localizations"
 import SUNWlang-sk
 depend SUNWlang-common

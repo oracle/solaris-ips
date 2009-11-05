@@ -1,4 +1,5 @@
 package SUNWxvmipa
+consolidation "osnet"
 classification "System/Virtualization"
 import SUNWxvmipar
 import SUNWxvmipau

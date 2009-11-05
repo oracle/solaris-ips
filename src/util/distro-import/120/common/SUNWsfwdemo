@@ -7,5 +7,6 @@
 # SUNWsfwdemo was EOFed in snv_120.
 #
 package SUNWsfwdemo
+consolidation "sfw"
 depend SUNWnet-snmp-doc
 end package

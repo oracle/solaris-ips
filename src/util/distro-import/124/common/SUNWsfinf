@@ -6,4 +6,5 @@
 # SUNWsfinf was EOFed in snv_124.
 #
 package SUNWsfinf
+consolidation "sfw"
 end package

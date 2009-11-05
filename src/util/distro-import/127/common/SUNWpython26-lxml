@@ -1,4 +1,5 @@
 package SUNWpython26-lxml
+consolidation "install"
 classification "Development/Python"
 import SUNWpython26-lxml
 version 2.1.2

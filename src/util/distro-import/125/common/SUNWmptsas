@@ -1,4 +1,5 @@
 package SUNWmptsas
+consolidation "osnet"
 classification "Drivers/Storage"
 import SUNWmptsas
 

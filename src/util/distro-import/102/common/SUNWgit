@@ -1,4 +1,5 @@
 package SUNWgit
+consolidation "sfw"
 classification "Development/Source Code Management"
 import SUNWgit
 $(i386_ONLY)chattr usr/perl5/vendor_perl/5.8.4/i86pc-solaris-64int/Error.pm \

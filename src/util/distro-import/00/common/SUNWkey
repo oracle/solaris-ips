@@ -1,4 +1,5 @@
 package SUNWkey
+consolidation "osnet"
 classification "System/Hardware"
 import SUNWkey
 end package

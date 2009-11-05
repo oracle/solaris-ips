@@ -1,4 +1,5 @@
 package SUNWfilebench
+consolidation "osnet"
 classification "Development/System"
 import SUNWfilebench
 end package

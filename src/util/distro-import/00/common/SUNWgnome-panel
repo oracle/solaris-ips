@@ -1,4 +1,5 @@
 package SUNWgnome-panel
+consolidation "gnome"
 classification "Applications/Panels and Applets"
 import SUNWgnome-panel
 import SUNWgnome-panel-devel

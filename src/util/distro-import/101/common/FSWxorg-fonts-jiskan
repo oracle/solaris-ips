@@ -1,4 +1,5 @@
 package FSWxorg-fonts-jiskan
+consolidation "X"
 classification "System/Fonts"
 import FSWxorg-fonts-jiskan
 add link path=etc/X11/fontpath.d/jiskan:pri=84 \

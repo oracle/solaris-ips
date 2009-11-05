@@ -1,4 +1,5 @@
 package SUNWpython25-twisted
+consolidation "gnome"
 classification "Development/Python"
 import SUNWpython25-twisted
 end package

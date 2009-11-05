@@ -1,4 +1,5 @@
 package SUNWcups-libs
+consolidation "sfw"
 classification "System/Printing"
 summary "CUPS (Runtime Libraries)"
 from SUNWcupsu import

@@ -6,4 +6,5 @@
 # SUNWgnome-sys-suspend was EOFed in snv_105.
 #
 package SUNWgnome-sys-suspend
+consolidation "gnome"
 end package

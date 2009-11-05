@@ -1,4 +1,5 @@
 package SUNWged
+consolidation "nspg"
 classification "Drivers/Networking"
 import SUNWged
 

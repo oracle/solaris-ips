@@ -1,4 +1,5 @@
 package SUNWlibsndfile
+consolidation "sfw"
 classification "System/Libraries"
 import SUNWlibsndfile
 version 1.0.17

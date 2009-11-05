@@ -1,4 +1,5 @@
 package SUNWgccruntime
+consolidation "sfw"
 classification "Development/C"
 import SUNWgccruntime exclude \
 	usr/sfw/lib/$(ARCH64)/libfrtbegin.a \

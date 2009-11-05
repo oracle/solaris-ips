@@ -1,4 +1,5 @@
 package SUNWpng
+consolidation "gnome"
 classification "System/Multimedia Libraries"
 import SUNWpng
 import SUNWpng-devel

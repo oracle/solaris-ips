@@ -1,4 +1,5 @@
 package SUNWucbt
+consolidation "osnet"
 classification "Development/System"
 import SUNWucbt
 end package

@@ -1,4 +1,5 @@
 package SUNWcea
+consolidation "nspg"
 classification "Drivers/Networking"
 import SUNWcea
 end package

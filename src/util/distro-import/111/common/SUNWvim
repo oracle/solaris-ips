@@ -1,4 +1,5 @@
 package SUNWvim
+consolidation "sfw"
 classification "System/Text Tools"
 import SUNWvim
 version 7.2.141

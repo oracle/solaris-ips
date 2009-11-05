@@ -1,4 +1,5 @@
 package SUNWaclg
+consolidation "sic_team"
 classification "Web Services/Application and Web Servers"
 import SUNWaclg
 end package

@@ -1,4 +1,5 @@
 package SUNWinstall-libs
+consolidation "install"
 classification "System/Libraries"
 import SUNWinstall-libs
 end package

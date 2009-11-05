@@ -1,4 +1,5 @@
 package SUNWncurses
+consolidation "gnome"
 classification "System/Libraries"
 import SUNWncurses
 import SUNWncurses-devel

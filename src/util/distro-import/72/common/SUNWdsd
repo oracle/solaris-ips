@@ -1,4 +1,5 @@
 package SUNWdsd
+consolidation "osnet"
 classification "System/Services"
 import SUNWdsdr
 import SUNWdsdu

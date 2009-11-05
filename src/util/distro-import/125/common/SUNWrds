@@ -1,4 +1,5 @@
 package SUNWrds
+consolidation "osnet"
 classification "System/Hardware"
 import SUNWrds
 

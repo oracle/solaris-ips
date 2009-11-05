@@ -1,4 +1,5 @@
 package SUNWhttping
+consolidation "sfw"
 classification "Applications/Internet"
 import SUNWhttping
 version 1.3.0

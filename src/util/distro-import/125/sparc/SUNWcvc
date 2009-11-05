@@ -1,4 +1,5 @@
 package SUNWcvc
+consolidation "osnet"
 classification "System/Core"
 import SUNWcvc.u
 import SUNWcvcr.u

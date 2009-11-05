@@ -1,4 +1,5 @@
 package SUNWPython26-extra
+consolidation "gnome"
 classification "Development/Python"
 import SUNWPython26-extra
 end package

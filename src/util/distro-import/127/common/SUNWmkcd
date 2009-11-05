@@ -1,4 +1,5 @@
 package SUNWmkcd
+consolidation "sfw"
 classification "System/Hardware"
 import SUNWmkcd
 import SUNWmkcdr

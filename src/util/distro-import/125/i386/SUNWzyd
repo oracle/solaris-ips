@@ -1,4 +1,5 @@
 package SUNWzyd
+consolidation "osnet"
 classification "Drivers/Networking"
 import SUNWzyd
 

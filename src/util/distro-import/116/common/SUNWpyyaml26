@@ -1,4 +1,5 @@
 package SUNWpyyaml26
+consolidation "gnome"
 classification "Development/Python"
 import SUNWpyyaml26
 end package

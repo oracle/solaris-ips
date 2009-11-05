@@ -1,4 +1,5 @@
 package SUNWgnu-findutils
+consolidation "gnome"
 classification "Applications/System Utilities"
 import SUNWgnu-findutils
 end package

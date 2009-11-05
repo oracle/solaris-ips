@@ -1,4 +1,5 @@
 package SUNWqfed
+consolidation "osnet"
 classification "Drivers/Networking"
 import SUNWqfed
 

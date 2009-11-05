@@ -1,4 +1,5 @@
 package SUNWtnetd
+consolidation "osnet"
 classification "System/Services"
 import SUNWtnetd
 import SUNWtnetr

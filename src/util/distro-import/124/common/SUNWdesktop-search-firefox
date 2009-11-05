@@ -6,4 +6,5 @@
 # SUNWdesktop-search-firefox was EOFed in snv_124.
 #
 package SUNWdesktop-search-firefox
+consolidation "gnome"
 end package

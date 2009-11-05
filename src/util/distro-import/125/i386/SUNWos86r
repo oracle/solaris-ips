@@ -1,4 +1,5 @@
 package SUNWos86r
+consolidation "osnet"
 classification "System/Core"
 import SUNWos86r
 # BEGIN NON-REDISTRIBUTABLE

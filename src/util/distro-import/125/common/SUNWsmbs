@@ -1,4 +1,5 @@
 package SUNWsmbs
+consolidation "osnet"
 classification "System/File System"
 import SUNWsmbsu
 import SUNWsmbsr

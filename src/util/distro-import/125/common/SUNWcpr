@@ -1,4 +1,5 @@
 package SUNWcpr
+consolidation "osnet"
 classification "System/Hardware"
 $(i386_ONLY)import SUNWcpr.i
 $(sparc_ONLY)import SUNWcpr.u

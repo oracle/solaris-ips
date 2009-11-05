@@ -1,4 +1,5 @@
 package SUNWxge
+consolidation "osnet"
 classification "Drivers/Networking"
 import SUNWxge
 

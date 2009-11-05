@@ -1,4 +1,5 @@
 package SUNWilmbase
+consolidation "sfw"
 classification "System/Libraries"
 import SUNWilmbase
 version 1.0.1

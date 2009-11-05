@@ -1,4 +1,5 @@
 package SUNWpcelx
+consolidation "osnet"
 classification "Drivers/Networking"
 import SUNWpcelx
 

@@ -1,4 +1,5 @@
 package SUNWmpathadm
+consolidation "osnet"
 classification "Applications/System Utilities"
 import SUNWmpathadm
 end package

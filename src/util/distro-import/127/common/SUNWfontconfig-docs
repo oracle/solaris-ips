@@ -1,4 +1,5 @@
 package SUNWfontconfig-docs
+consolidation "X"
 classification "Development/X11"
 import SUNWfontconfig-docs
 version 2.7.3

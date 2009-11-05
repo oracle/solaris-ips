@@ -1,4 +1,5 @@
 package SUNWpython26-imaging
+consolidation "gnome"
 classification "Development/Python"
 import SUNWpython26-imaging
 end package

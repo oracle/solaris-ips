@@ -1,4 +1,5 @@
 package SUNWgnu-emacs-gtk
+consolidation "sfw"
 classification "Development/Editors"
 import SUNWgnu-emacs-gtk
 version 22.1

@@ -1,4 +1,5 @@
 package SUNWbtool
+consolidation "osnet"
 classification "System/Core"
 import SUNWbtool
 depend SUNWcpp

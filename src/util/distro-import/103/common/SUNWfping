@@ -1,4 +1,5 @@
 package SUNWfping
+consolidation "sfw"
 classification "Applications/System Utilities"
 import SUNWfping
 import SUNWfpingr

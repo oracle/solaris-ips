@@ -1,4 +1,5 @@
 package SUNWgnome-media-center
+consolidation "gnome"
 classification "Applications/Sound and Video"
 import SUNWgnome-media-center
 depend SUNWdbus-bindings

@@ -1,4 +1,5 @@
 package SUNWgnu-gperf
+consolidation "sfw"
 classification "Development/GNU"
 import SUNWgnu-gperf
 version 3.0.3

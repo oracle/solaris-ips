@@ -1,4 +1,5 @@
 package SUNWcg6h
+consolidation "osnet"
 classification "Drivers/Display"
 import SUNWcg6h
 end package

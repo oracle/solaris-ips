@@ -1,4 +1,5 @@
 package SUNWwireshark
+consolidation "sfw"
 classification "Applications/Internet"
 import SUNWwireshark
 import SUNWwiresharkr

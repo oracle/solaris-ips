@@ -1,4 +1,5 @@
 package SUNWpython-ply
+consolidation "ips"
 classification "Development/Python"
 import SUNWpython-ply
 version 3.1

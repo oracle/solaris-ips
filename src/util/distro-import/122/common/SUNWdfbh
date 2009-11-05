@@ -6,4 +6,5 @@
 # SUNWdfbh was EOFed in snv_122.
 #
 package SUNWdfbh
+consolidation "osnet"
 end package

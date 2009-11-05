@@ -6,4 +6,5 @@
 # SUNWxorg-cfg was EOFed in snv_116.
 #
 package SUNWxorg-cfg
+consolidation "X"
 end package

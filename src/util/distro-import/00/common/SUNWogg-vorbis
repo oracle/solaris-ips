@@ -1,4 +1,5 @@
 package SUNWogg-vorbis
+consolidation "gnome"
 classification "System/Multimedia Libraries"
 import SUNWogg-vorbis
 import SUNWogg-vorbis-devel

@@ -1,4 +1,5 @@
 package SUNWquilt
+consolidation "sfw"
 classification "Development/Source Code Management"
 import SUNWquiltr
 import SUNWquiltu

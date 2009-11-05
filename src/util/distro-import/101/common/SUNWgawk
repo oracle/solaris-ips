@@ -1,4 +1,5 @@
 package SUNWgawk
+consolidation "sfw"
 classification "Applications/System Utilities"
 import SUNWgawk
 version 3.1.5

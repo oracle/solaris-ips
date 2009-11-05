@@ -1,4 +1,5 @@
 package SUNWgnome-a11y-reader
+consolidation "gnome"
 classification "Applications/Universal Access"
 import SUNWgnome-a11y-reader
 depend SUNWgnome-a11y-libs-python24

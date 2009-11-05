@@ -1,4 +1,5 @@
 package SUNWscp
+consolidation "osnet"
 classification "System/Core"
 import SUNWscpu exclude usr/ucb/ex usr/ucb/vi usr/ucb/view
 import SUNWscpr

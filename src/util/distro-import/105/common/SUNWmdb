@@ -1,4 +1,5 @@
 package SUNWmdb
+consolidation "osnet"
 classification "Development/System"
 import SUNWmdb
 import SUNWmdbr

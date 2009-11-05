@@ -1,4 +1,5 @@
 package SUNWswig
+consolidation "sfw"
 classification "Development/Other Languages"
 import SUNWswig
 version 1.3.35

@@ -1,4 +1,5 @@
 package SUNWipkg-um
+consolidation "ips"
 classification "System/Packaging"
 import SUNWipkg-um
 end package

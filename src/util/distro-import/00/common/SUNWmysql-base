@@ -1,4 +1,5 @@
 package SUNWmysql-base
+consolidation "sfw"
 classification "System/Databases"
 summary "MySQL Database Management System (Base)"
 add group groupname=mysql gid=70

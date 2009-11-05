@@ -1,4 +1,5 @@
 package SUNWdom4j
+consolidation "sfw"
 classification "Development/Java"
 import SUNWdom4j
 depend SUNWjaxen-core

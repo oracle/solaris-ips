@@ -1,4 +1,5 @@
 package SUNWxom
+consolidation "sfw"
 classification "Development/Java"
 import SUNWxom
 depend SUNWjaxen-core

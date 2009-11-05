@@ -1,4 +1,5 @@
 package SUNWuftdi
+consolidation "osnet"
 classification "Drivers/Ports"
 import SUNWuftdi
 

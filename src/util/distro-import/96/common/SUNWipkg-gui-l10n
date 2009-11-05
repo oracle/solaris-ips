@@ -4,4 +4,5 @@
 # be deleted when the newer package is installed.
 #
 package SUNWipkg-gui-l10n
+consolidation "ips"
 end package

@@ -1,4 +1,5 @@
 package SUNWrsgk
+consolidation "osnet"
 classification "System/Core"
 import SUNWrsgk
 end package

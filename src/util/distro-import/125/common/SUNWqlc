@@ -1,4 +1,5 @@
 package SUNWqlc
+consolidation "osnet"
 classification "Drivers/Storage"
 import SUNWqlc
 

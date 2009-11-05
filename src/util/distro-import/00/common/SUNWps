@@ -1,4 +1,5 @@
 package SUNWps
+consolidation "osnet"
 classification "System/Printing"
 import SUNWpsu
 import SUNWpsr

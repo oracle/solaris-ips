@@ -1,4 +1,5 @@
 package SUNWarn
+consolidation "osnet"
 classification "Drivers/Networking"
 import SUNWarn
 

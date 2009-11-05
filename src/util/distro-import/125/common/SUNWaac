@@ -1,4 +1,5 @@
 package SUNWaac
+consolidation "osnet"
 classification "Drivers/Ports"
 import SUNWaac
 

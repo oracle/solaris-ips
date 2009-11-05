@@ -1,4 +1,5 @@
 package SUNWDTraceToolkit
+consolidation "install"
 classification "Development/System"
 import SUNWDTraceToolkit
 end package

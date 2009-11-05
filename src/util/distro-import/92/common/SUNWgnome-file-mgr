@@ -1,4 +1,5 @@
 package SUNWgnome-file-mgr
+consolidation "gnome"
 classification "Desktop (GNOME)/File Managers"
 import SUNWgnome-file-mgr
 import SUNWgnome-file-mgr-devel

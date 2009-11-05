@@ -1,4 +1,5 @@
 package SUNWibsdpib
+consolidation "osnet"
 classification "System/Hardware"
 import SUNWibsdpib
 

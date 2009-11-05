@@ -1,4 +1,5 @@
 package SUNWid3lib
+consolidation "gnome"
 classification "System/Libraries"
 import SUNWid3lib
 import SUNWid3lib-devel

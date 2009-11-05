@@ -1,4 +1,5 @@
 package SUNWmpapi
+consolidation "osnet"
 classification "System/Libraries"
 import SUNWmpapi
 import SUNWmpapir

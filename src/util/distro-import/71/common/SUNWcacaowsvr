@@ -1,4 +1,5 @@
 package SUNWcacaowsvr
+consolidation "cacao"
 classification "Web Services/Application and Web Servers"
 import SUNWcacaowsvr
 depend SUNWaclg

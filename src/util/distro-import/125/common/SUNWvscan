@@ -1,4 +1,5 @@
 package SUNWvscan
+consolidation "osnet"
 classification "System/Services"
 import SUNWvscankr
 import SUNWvscanu

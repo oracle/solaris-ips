@@ -1,4 +1,5 @@
 package NVDAgraphics
+consolidation "X"
 classification "Drivers/Display"
 import NVDAgraphics
 import NVDAgraphicsr

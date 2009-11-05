@@ -1,4 +1,5 @@
 package SUNWuath
+consolidation "osnet"
 classification "Drivers/Networking"
 import SUNWuath
 

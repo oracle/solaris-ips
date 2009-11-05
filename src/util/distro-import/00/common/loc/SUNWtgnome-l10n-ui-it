@@ -1,4 +1,5 @@
 package SUNWtgnome-l10n-ui-it
+consolidation "gnome_l10n"
 classification "Desktop (GNOME)/Trusted Extensions"
 import SUNWtgnome-l10n-ui-it
 end package

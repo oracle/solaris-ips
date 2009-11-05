@@ -1,4 +1,5 @@
 package SUNWgnome-spell
+consolidation "gnome"
 classification "Applications/Accessories"
 import SUNWgnome-spell
 import SUNWgnome-spell-devel

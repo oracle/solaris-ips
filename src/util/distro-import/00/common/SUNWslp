@@ -1,4 +1,5 @@
 package SUNWslp
+consolidation "osnet"
 classification "System/Services"
 import SUNWslpu
 import SUNWslpr

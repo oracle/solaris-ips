@@ -1,4 +1,5 @@
 package SUNWpull-parser
+consolidation "sfw"
 classification "Development/Java"
 import SUNWpull-parser
 version 2.1.10

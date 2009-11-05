@@ -1,4 +1,5 @@
 package SUNWrdc
+consolidation "osnet"
 classification "System/Hardware"
 import SUNWrdcu
 import SUNWrdcr

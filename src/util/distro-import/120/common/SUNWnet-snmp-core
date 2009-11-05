@@ -1,4 +1,5 @@
 package SUNWnet-snmp-core
+consolidation "sfw"
 classification "System/Enterprise Management"
 import SUNWnet-snmp-core
 import SUNWnet-snmp-mgr

@@ -1,4 +1,5 @@
 package SUNWo3read
+consolidation "gnome"
 classification "Applications/Office"
 import SUNWo3read
 end package

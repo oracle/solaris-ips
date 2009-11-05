@@ -1,4 +1,5 @@
 package SUNWauto-install
+consolidation "install"
 classification "System/Administration and Configuration"
 import SUNWauto-install
 depend SUNWauto-install-common

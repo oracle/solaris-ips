@@ -6,4 +6,5 @@
 # SUNWgnome-a11y-speech-freetts was EOFed in snv_124.
 #
 package SUNWgnome-a11y-speech-freetts
+consolidation "gnome"
 end package

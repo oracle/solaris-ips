@@ -6,5 +6,6 @@
 # SUNWpl5u was EOFed in snv_105.
 #
 package SUNWpl5u
+consolidation "osnet"
 version 5.6.1
 end package

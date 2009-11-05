@@ -1,4 +1,5 @@
 package SUNWperl-xml-parser
+consolidation "gnome"
 classification "Development/Perl"
 import SUNWperl-xml-parser
 end package

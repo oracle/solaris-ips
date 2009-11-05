@@ -1,4 +1,5 @@
 package SUNWnxge
+consolidation "osnet"
 classification "Drivers/Networking"
 $(i386_ONLY)import SUNWnxge
 $(sparc_ONLY)import SUNWnxge.u

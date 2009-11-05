@@ -1,4 +1,5 @@
 package SUNWddu
+consolidation "hcts"
 classification "System/Hardware"
 import SUNWddu
 end package

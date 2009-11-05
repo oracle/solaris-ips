@@ -1,4 +1,5 @@
 package SUNWcti2
+consolidation "osnet"
 classification "System/Core"
 import SUNWcti2.u
 

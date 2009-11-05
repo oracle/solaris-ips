@@ -1,4 +1,5 @@
 package SUNWapu13dbd-pgsql
+consolidation "sfw"
 classification "Web Services/Application and Web Servers"
 import SUNWapu13dbd-pgsql
 version 1.3.9

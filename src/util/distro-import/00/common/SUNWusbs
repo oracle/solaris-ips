@@ -1,4 +1,5 @@
 package SUNWusbs
+consolidation "osnet"
 classification "System/Hardware"
 import SUNWusbs
 end package

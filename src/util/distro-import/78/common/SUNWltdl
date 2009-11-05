@@ -1,4 +1,5 @@
 package SUNWltdl
+consolidation "sfw"
 classification "Development/GNU"
 import SUNWltdl
 version 1.5.22

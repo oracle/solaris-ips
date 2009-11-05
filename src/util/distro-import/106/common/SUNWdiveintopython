@@ -1,4 +1,5 @@
 package SUNWdiveintopython
+consolidation "gnome"
 classification "Development/Python"
 import SUNWdiveintopython
 end package

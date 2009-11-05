@@ -7,6 +7,7 @@
 # SUNWxorg-devel-docs was EOFed in snv_116.
 #
 package SUNWxorg-devel-docs
+consolidation "X"
 depend SUNWxwpmn
 #
 # the following link was removed in snv_116 but due to bug 2369, we

@@ -1,4 +1,5 @@
 package SUNWpython26-pyopenssl
+consolidation "sfw"
 classification "Development/Python"
 import SUNWpython26-pyopenssl
 version 0.8

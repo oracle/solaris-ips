@@ -1,4 +1,5 @@
 package SUNWservicetag
+consolidation "cns"
 classification "System/Services"
 import SUNWservicetagu
 import SUNWservicetagr

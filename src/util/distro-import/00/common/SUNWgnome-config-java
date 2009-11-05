@@ -1,4 +1,5 @@
 package SUNWgnome-config-java
+consolidation "gnome"
 classification "Development/Java"
 import SUNWgnome-config-java
 import SUNWgnome-config-java-devel

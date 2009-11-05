@@ -1,4 +1,5 @@
 package SUNWpcre
+consolidation "sfw"
 classification "Development/Perl"
 import SUNWpcre
 version 7.8

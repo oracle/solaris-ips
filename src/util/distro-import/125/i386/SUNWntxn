@@ -1,4 +1,5 @@
 package SUNWntxn
+consolidation "osnet"
 classification "Drivers/Networking"
 import SUNWntxn
 

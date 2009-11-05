@@ -1,4 +1,5 @@
 package SUNWmysql51lib
+consolidation "sfw"
 classification "System/Databases"
 import SUNWmysql51lib
 version 5.1.30

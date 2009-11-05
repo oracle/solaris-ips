@@ -6,4 +6,5 @@
 # SUNWsfdoc was EOFed in snv_124.
 #
 package SUNWsfdoc
+consolidation "sfw"
 end package

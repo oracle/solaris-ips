@@ -1,4 +1,5 @@
 package SUNWmxfe
+consolidation "osnet"
 classification "Drivers/Networking"
 import SUNWmxfe
 

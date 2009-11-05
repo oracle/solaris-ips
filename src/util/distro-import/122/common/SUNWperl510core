@@ -1,4 +1,5 @@
 package SUNWperl510core
+consolidation "sfw"
 classification "Development/Perl"
 import SUNWperl510core
 version 5.10.0

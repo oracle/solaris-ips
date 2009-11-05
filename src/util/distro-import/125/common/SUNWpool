@@ -1,4 +1,5 @@
 package SUNWpool
+consolidation "osnet"
 classification "System/Core"
 import SUNWpool
 import SUNWpoolr

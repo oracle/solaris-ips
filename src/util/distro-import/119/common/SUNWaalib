@@ -1,4 +1,5 @@
 package SUNWaalib
+consolidation "sfw"
 classification "System/Libraries"
 import SUNWaalib
 version 1.4.5

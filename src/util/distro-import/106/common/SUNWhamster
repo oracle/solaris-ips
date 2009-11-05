@@ -1,4 +1,5 @@
 package SUNWhamster
+consolidation "gnome"
 classification "Applications/Panels and Applets"
 import SUNWhamster
 import SUNWhamster-root

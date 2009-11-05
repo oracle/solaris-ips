@@ -1,4 +1,5 @@
 package SUNWlibtool
+consolidation "sfw"
 classification "Development/GNU"
 import SUNWlibtool
 depend SUNWbash

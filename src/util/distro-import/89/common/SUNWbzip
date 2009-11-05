@@ -1,4 +1,5 @@
 package SUNWbzip
+consolidation "sfw"
 classification "Applications/System Utilities"
 import SUNWbzip
 version 1.0.5

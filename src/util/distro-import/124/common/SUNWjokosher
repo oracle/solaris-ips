@@ -1,4 +1,5 @@
 package SUNWjokosher
+consolidation "gnome"
 classification "Applications/Sound and Video"
 import SUNWjokosher
 depend SUNWdbus-python26

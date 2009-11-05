@@ -1,4 +1,5 @@
 package SUNWibsdpu
+consolidation "osnet"
 classification "System/Hardware"
 import SUNWibsdpu
 end package

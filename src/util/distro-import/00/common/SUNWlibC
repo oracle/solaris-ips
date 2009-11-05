@@ -1,4 +1,5 @@
 package SUNWlibC
+consolidation "sunpro"
 classification "Development/C++"
 import SUNWlibC
 end package

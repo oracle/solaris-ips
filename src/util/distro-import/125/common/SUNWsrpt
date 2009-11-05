@@ -1,4 +1,5 @@
 package SUNWsrpt
+consolidation "osnet"
 classification "Drivers/Storage"
 import SUNWsrptr
 import SUNWsrptu

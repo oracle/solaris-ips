@@ -1,4 +1,5 @@
 package SUNWsqlite3
+consolidation "sfw"
 classification "System/Databases"
 import SUNWsqlite3
 version 3.6.17

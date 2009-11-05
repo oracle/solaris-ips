@@ -1,4 +1,5 @@
 package SUNWlibevent
+consolidation "sfw"
 classification "System/Libraries"
 import SUNWlibevent
 version 1.3.5

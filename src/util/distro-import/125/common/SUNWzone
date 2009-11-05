@@ -1,4 +1,5 @@
 package SUNWzone
+consolidation "osnet"
 classification "System/Core"
 import SUNWzoneu
 import SUNWzoner

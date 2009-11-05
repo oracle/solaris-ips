@@ -1,4 +1,5 @@
 package SUNWsmba
+consolidation "sfw"
 classification "System/File System"
 import SUNWsmbau exclude \
 	usr/sfw/include/libsmbclient.h \

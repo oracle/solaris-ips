@@ -1,4 +1,5 @@
 package SUNWsblimwbemcli
+consolidation "sfw"
 classification "System/Enterprise Management"
 import SUNWsblimwbemcli
 version 1.6.0

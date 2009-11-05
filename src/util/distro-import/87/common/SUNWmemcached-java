@@ -1,4 +1,5 @@
 package SUNWmemcached-java
+consolidation "sfw"
 classification "Development/Java"
 import SUNWmemcached-java
 version 2.0.1

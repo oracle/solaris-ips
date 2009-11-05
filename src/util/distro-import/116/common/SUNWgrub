@@ -1,4 +1,5 @@
 package SUNWgrub
+consolidation "osnet"
 classification "System/Core"
 $(i386_ONLY)import SUNWgrub
 import SUNWgrubr

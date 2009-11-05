@@ -1,4 +1,5 @@
 package BRCMbnx
+consolidation "osnet"
 classification "Drivers/Networking"
 import BRCMbnx
 

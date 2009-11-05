@@ -1,4 +1,5 @@
 package SUNWurtw
+consolidation "osnet"
 classification "Drivers/Networking"
 import SUNWurtw
 

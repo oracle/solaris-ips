@@ -1,4 +1,5 @@
 package SUNWadpu320
+consolidation "osnet"
 classification "Drivers/Ports"
 import SUNWadpu320
 

@@ -1,4 +1,5 @@
 package SUNWcstl
+consolidation "osnet"
 classification "Development/System"
 import SUNWcstl
 end package

@@ -6,4 +6,5 @@
 # SUNWsra was EOFed in snv_126.
 #
 package SUNWsra
+consolidation "osnet"
 end package

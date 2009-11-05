@@ -1,4 +1,5 @@
 package SUNWlibgsf
+consolidation "gnome"
 classification "Desktop (GNOME)/Libraries"
 import SUNWlibgsf
 import SUNWlibgsf-devel

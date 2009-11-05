@@ -1,4 +1,5 @@
 package SUNWpylint
+consolidation "sfw"
 classification "Development/Python"
 import SUNWpylint
 depend SUNWlogilab-astng

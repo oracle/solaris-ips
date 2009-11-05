@@ -1,4 +1,5 @@
 package SUNWlibgcrypt
+consolidation "gnome"
 classification "System/Libraries"
 import SUNWlibgcrypt
 import SUNWlibgcrypt-devel

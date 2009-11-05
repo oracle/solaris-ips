@@ -1,4 +1,5 @@
 package SUNWsexy-python
+consolidation "gnome"
 classification "Development/Python"
 import SUNWsexy-python
 end package

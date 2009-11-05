@@ -6,4 +6,5 @@
 # SUNWxwpft was EOFed in snv_120.
 #
 package SUNWxwpft
+consolidation "X"
 end package

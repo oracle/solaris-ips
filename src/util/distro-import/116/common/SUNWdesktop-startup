@@ -1,4 +1,5 @@
 package SUNWdesktop-startup
+consolidation "gnome"
 classification "Desktop (GNOME)/Scripts"
 import SUNWdesktop-startup
 import SUNWdesktop-startup-root

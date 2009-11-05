@@ -1,4 +1,5 @@
 package SUNWhea
+consolidation "osnet"
 classification "System/Core"
 import SUNWhea
 # BEGIN NON-REDISTRIBUTABLE

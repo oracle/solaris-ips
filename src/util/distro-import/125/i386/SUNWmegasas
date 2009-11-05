@@ -1,4 +1,5 @@
 package SUNWmegasas
+consolidation "osnet"
 classification "Drivers/Storage"
 import SUNWmegasas
 

@@ -1,4 +1,5 @@
 package SUNWnet-snmp-utils
+consolidation "sfw"
 classification "System/Enterprise Management"
 import SUNWnet-snmp-utils
 version 5.4.1

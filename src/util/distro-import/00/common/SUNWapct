@@ -1,4 +1,5 @@
 package SUNWapct
+consolidation "osnet"
 classification "System/Software Management"
 import SUNWapct
 end package

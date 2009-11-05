@@ -1,4 +1,5 @@
 package SUNWmyri10ge
+consolidation "osnet"
 classification "Drivers/Networking"
 import SUNWmyri10ge
 

@@ -1,4 +1,5 @@
 package SUNWmysql5test
+consolidation "sfw"
 classification "Development/Databases"
 import SUNWmysql5test
 depend SUNWmysql5

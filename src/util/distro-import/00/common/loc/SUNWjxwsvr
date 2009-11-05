@@ -1,4 +1,5 @@
 package SUNWjxwsvr
+consolidation "l10n"
 classification "System/X11"
 import SUNWjxwsvr
 end package

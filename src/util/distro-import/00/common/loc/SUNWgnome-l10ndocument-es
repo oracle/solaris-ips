@@ -1,4 +1,5 @@
 package SUNWgnome-l10ndocument-es
+consolidation "gnome_l10n"
 classification "Desktop (GNOME)/Localizations"
 import SUNWgnome-l10ndocument-es
 end package

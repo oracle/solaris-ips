@@ -1,4 +1,5 @@
 package SUNWlibgmime
+consolidation "gnome"
 classification "System/Libraries"
 import SUNWlibgmime
 import SUNWlibgmime-devel

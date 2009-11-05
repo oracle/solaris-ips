@@ -1,4 +1,5 @@
 package SUNWpostgr-tcl
+consolidation "sfw"
 classification "Development/Databases"
 import SUNWpostgr-tcl
 version 1.7

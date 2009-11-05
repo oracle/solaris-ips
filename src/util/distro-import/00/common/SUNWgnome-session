@@ -1,4 +1,5 @@
 package SUNWgnome-session
+consolidation "gnome"
 classification "Desktop (GNOME)/Sessions"
 import SUNWgnome-session
 import SUNWgnome-session-root

@@ -1,4 +1,5 @@
 package SUNWiso-codes
+consolidation "gnome"
 classification "Desktop (GNOME)/Theming"
 import SUNWiso-codes
 import SUNWiso-codes-devel

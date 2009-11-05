@@ -1,4 +1,5 @@
 package SUNWlibcanberra
+consolidation "gnome"
 classification "System/Multimedia Libraries"
 import SUNWlibcanberra
 import SUNWlibcanberra-devel

@@ -6,4 +6,5 @@
 # SUNWdesktop-search-thunderbird was EOFed in snv_124.
 #
 package SUNWdesktop-search-thunderbird
+consolidation "gnome"
 end package

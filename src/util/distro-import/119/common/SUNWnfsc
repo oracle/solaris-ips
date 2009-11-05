@@ -1,4 +1,5 @@
 package SUNWnfsc
+consolidation "osnet"
 classification "System/File System"
 import SUNWnfscu
 import SUNWnfscr

@@ -1,4 +1,5 @@
 package SUNWcups
+consolidation "sfw"
 classification "System/Printing"
 import SUNWcupsu
 drop usr/lib/$(ARCH64)/libcups.so

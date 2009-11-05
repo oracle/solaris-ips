@@ -1,4 +1,5 @@
 package SUNWcimserver
+consolidation "sfw"
 classification "System/Enterprise Management"
 import SUNWcimserverr
 import SUNWcimserveru

@@ -6,4 +6,5 @@
 # SUNWwbsd was EOFed in snv_127.
 #
 package SUNWwbsd
+consolidation "osnet"
 end package

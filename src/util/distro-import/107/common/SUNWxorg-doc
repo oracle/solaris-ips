@@ -5,6 +5,7 @@
 # on the package with the new name.
 #
 package SUNWxorg-doc
+consolidation "X"
 depend SUNWxorg-graphics-ddx
 depend SUNWxorg-server
 end package

@@ -1,4 +1,5 @@
 package SUNWbnu
+consolidation "osnet"
 classification "System/Services"
 import SUNWbnuu
 import SUNWbnur

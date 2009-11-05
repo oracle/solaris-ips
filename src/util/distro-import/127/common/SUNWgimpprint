@@ -7,6 +7,7 @@
 # SUNWgimpprint was EOFed in snv_127.
 #
 package SUNWgimpprint
+consolidation "sfw"
 depend SUNWgutenprint
 version 4.2.6
 end package

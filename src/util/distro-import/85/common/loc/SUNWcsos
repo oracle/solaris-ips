@@ -1,4 +1,5 @@
 package SUNWcsos
+consolidation "l10n"
 classification "System/Localizations"
 import SUNWcsos
 end package

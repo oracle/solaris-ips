@@ -1,4 +1,5 @@
 package SUNWatfs
+consolidation "osnet"
 classification "System/File System"
 import SUNWatfsu
 import SUNWatfsr

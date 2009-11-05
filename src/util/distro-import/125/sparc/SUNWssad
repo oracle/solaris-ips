@@ -1,4 +1,5 @@
 package SUNWssad
+consolidation "osnet"
 classification "Drivers/Storage"
 import SUNWssad
 

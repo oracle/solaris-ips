@@ -6,5 +6,6 @@
 # SUNWpostgr-server was EOFed in snv_110.
 #
 package SUNWpostgr-server
+consolidation "sfw"
 version 8.1.11
 end package

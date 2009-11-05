@@ -1,4 +1,5 @@
 package SUNWgnu-idn
+consolidation "sfw"
 classification "System/Libraries"
 import SUNWgnu-idn
 version 1.9

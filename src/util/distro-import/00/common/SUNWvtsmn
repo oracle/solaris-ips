@@ -1,4 +1,5 @@
 package SUNWvtsmn
+consolidation "SunVTS"
 classification "System/Hardware"
 import SUNWvtsmn
 end package

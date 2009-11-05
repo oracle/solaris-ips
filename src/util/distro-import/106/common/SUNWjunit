@@ -1,4 +1,5 @@
 package SUNWjunit
+consolidation "sfw"
 classification "Development/Java"
 import SUNWjunit
 version 4.5

@@ -1,4 +1,5 @@
 package SUNWtlsu
+consolidation "sic_team"
 classification "System/Security"
 import SUNWtlsu
 add link path=usr/bin/addbuiltin target=../sfw/bin/addbuiltin

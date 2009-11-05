@@ -1,4 +1,5 @@
 package SUNWcheese
+consolidation "gnome"
 classification "Applications/Graphics and Imaging"
 import SUNWcheese
 import SUNWcheese-root

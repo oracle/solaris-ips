@@ -1,4 +1,5 @@
 package SUNWcmake
+consolidation "sfw"
 classification "Development/Distribution Tools"
 import SUNWcmake
 version 2.6.2

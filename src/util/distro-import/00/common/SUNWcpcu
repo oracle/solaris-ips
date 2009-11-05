@@ -1,4 +1,5 @@
 package SUNWcpcu
+consolidation "osnet"
 classification "System/Core"
 import SUNWcpcu
 end package

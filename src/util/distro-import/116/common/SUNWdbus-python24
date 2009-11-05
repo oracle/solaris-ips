@@ -1,4 +1,5 @@
 package SUNWdbus-python24
+consolidation "gnome"
 classification "System/Libraries"
 import SUNWdbus-python24
 import SUNWdbus-python24-devel

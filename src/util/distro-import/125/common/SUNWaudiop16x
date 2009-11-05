@@ -1,4 +1,5 @@
 package SUNWaudiop16x
+consolidation "osnet"
 classification "Drivers/Media"
 import SUNWaudiop16x
 

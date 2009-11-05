@@ -1,4 +1,5 @@
 package SUNWad810
+consolidation "osnet"
 classification "Drivers/Media"
 import SUNWad810
 add set name=info.keyword value=audioi810

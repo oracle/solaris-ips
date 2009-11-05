@@ -1,4 +1,5 @@
 package SUNWvirt-manager
+consolidation "gnome"
 classification "System/Virtualization"
 import SUNWvirt-manager
 import SUNWvirt-manager-root

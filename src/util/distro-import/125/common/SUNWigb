@@ -1,4 +1,5 @@
 package SUNWigb
+consolidation "osnet"
 classification "Drivers/Networking"
 import SUNWigb
 

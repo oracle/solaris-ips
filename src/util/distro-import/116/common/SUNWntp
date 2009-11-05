@@ -1,4 +1,5 @@
 package SUNWntp
+consolidation "sfw"
 classification "System/Services"
 import SUNWntpu
 import SUNWntpr

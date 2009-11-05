@@ -1,4 +1,5 @@
 package SUNWiscsi
+consolidation "osnet"
 classification "System/Hardware"
 import SUNWiscsiu
 import SUNWiscsir

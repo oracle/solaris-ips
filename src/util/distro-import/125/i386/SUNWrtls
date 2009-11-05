@@ -1,4 +1,5 @@
 package SUNWrtls
+consolidation "osnet"
 classification "System/Hardware"
 import SUNWrtls
 

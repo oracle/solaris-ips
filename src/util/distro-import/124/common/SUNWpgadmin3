@@ -1,4 +1,5 @@
 package SUNWpgadmin3
+consolidation "sfw"
 classification "System/Databases"
 import SUNWpgadmin3
 version 1.10.0

@@ -1,4 +1,5 @@
 package SUNWlsimega
+consolidation "osnet"
 classification "Drivers/Storage"
 import SUNWlsimega
 

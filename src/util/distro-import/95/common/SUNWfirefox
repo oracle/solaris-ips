@@ -1,4 +1,5 @@
 package SUNWfirefox
+consolidation "gnome"
 classification "Applications/Internet"
 import SUNWfirefox
 import SUNWfirefox-devel

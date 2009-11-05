@@ -1,4 +1,5 @@
 package SUNWpacket
+consolidation "osnet"
 classification "Drivers/Networking"
 import SUNWpacketu exclude usr
 import SUNWpacketh

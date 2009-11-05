@@ -1,4 +1,5 @@
 package SUNWlibpigment
+consolidation "gnome"
 classification "System/Multimedia Libraries"
 import SUNWlibpigment
 import SUNWlibpigment-devel

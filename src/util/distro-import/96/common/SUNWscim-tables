@@ -1,4 +1,5 @@
 package SUNWscim-tables
+consolidation "l10n"
 classification "System/Internationalization"
 import SUNWscim-tables
 version 0.5.7

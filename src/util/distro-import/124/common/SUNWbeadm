@@ -1,4 +1,5 @@
 package SUNWbeadm
+consolidation "install"
 classification "System/Core"
 import SUNWbeadm
 add file exec_attr.SUNWbeadm path=etc/security/exec_attr mode=0644 \

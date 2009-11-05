@@ -1,4 +1,5 @@
 package SUNWmddr
+consolidation "osnet"
 classification "System/Libraries"
 import SUNWmddr
 end package

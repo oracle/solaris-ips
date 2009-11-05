@@ -1,4 +1,5 @@
 package SUNWdcraw
+consolidation "gnome"
 classification "System/Media"
 import SUNWdcraw
 version 8.81

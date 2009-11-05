@@ -1,4 +1,5 @@
 package SUNWzlib
+consolidation "sfw"
 classification "System/Libraries"
 import SUNWzlib
 import SUNWzlibr

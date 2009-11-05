@@ -1,4 +1,5 @@
 package SUNWmemcached
+consolidation "sfw"
 classification "Web Services/Application and Web Servers"
 import SUNWmemcached
 import SUNWmemcachedr

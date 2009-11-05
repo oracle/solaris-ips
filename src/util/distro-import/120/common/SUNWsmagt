@@ -7,6 +7,7 @@
 # SUNWsmagt was EOFed in snv_120.
 #
 package SUNWsmagt
+consolidation "sfw"
 depend SUNWnet-snmp-addons
 depend SUNWnet-snmp-core
 version 5.0.9

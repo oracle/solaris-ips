@@ -1,4 +1,5 @@
 package SUNWantlr
+consolidation "sfw"
 classification "Development/Other Languages"
 import SUNWantlr
 depend SUNWstringtemplate

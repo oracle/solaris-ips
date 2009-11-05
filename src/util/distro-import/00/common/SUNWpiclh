@@ -1,4 +1,5 @@
 package SUNWpiclh
+consolidation "osnet"
 classification "System/Core"
 import SUNWpiclh
 end package

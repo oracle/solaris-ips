@@ -1,4 +1,5 @@
 package SUNWsshd
+consolidation "osnet"
 classification "System/Security"
 import SUNWsshdu
 import SUNWsshdr

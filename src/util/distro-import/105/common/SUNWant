@@ -1,4 +1,5 @@
 package SUNWant
+consolidation "sfw"
 classification "Development/Distribution Tools"
 import SUNWant
 depend SUNWj6dev

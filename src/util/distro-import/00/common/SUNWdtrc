@@ -1,4 +1,5 @@
 package SUNWdtrc
+consolidation "osnet"
 classification "Development/System"
 import SUNWdtrc
 end package

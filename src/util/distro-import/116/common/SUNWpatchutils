@@ -1,4 +1,5 @@
 package SUNWpatchutils
+consolidation "sfw"
 classification "System/Text Tools"
 import SUNWpatchutils
 depend_path /usr/bin/gdiff

@@ -1,4 +1,5 @@
 package SUNWepydoc
+consolidation "sfw"
 classification "Development/Distribution Tools"
 import SUNWepydoc
 version 3.0.1

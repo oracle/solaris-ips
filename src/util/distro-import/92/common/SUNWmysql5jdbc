@@ -1,4 +1,5 @@
 package SUNWmysql5jdbc
+consolidation "sfw"
 classification "System/Databases"
 import SUNWmysql5jdbc
 version 5.1.5

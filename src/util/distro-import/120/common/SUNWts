@@ -1,4 +1,5 @@
 package SUNWts
+consolidation "osnet"
 classification "System/Trusted"
 import SUNWtsu
 drop usr/sbin/txzonemgr

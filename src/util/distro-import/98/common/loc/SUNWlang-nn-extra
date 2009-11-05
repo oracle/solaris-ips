@@ -6,4 +6,5 @@
 # SUNWlang-nn-extra was EOFed in snv_98.
 #
 package SUNWlang-nn-extra
+consolidation "l10n"
 end package

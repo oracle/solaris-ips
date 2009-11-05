@@ -1,4 +1,5 @@
 package SUNWerid
+consolidation "osnet"
 classification "Drivers/Networking"
 import SUNWerid
 

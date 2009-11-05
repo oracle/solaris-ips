@@ -4,4 +4,5 @@
 # be deleted when the newer package is installed.
 #
 package SUNWsrh
+consolidation "osnet"
 end package

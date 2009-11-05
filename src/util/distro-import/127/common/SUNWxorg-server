@@ -1,4 +1,5 @@
 package SUNWxorg-server
+consolidation "X"
 classification "System/X11"
 import SUNWxorg-server
 depend_path /usr/share/X11/xkb/rules/base

@@ -1,4 +1,5 @@
 package SUNWfsexam
+consolidation "gnome_l10n"
 classification "Applications/System Utilities"
 import SUNWfsexam
 import SUNWfsexam-root

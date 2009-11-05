@@ -6,4 +6,5 @@
 # SUNWfirefox-apoc-adapter was EOFed in snv_124.
 #
 package SUNWfirefox-apoc-adapter
+consolidation "gnome"
 end package

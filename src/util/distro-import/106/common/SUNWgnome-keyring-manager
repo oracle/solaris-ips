@@ -6,4 +6,5 @@
 # SUNWgnome-keyring-manager was EOFed in snv_106.
 #
 package SUNWgnome-keyring-manager
+consolidation "gnome"
 end package

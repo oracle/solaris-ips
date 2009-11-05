@@ -1,4 +1,5 @@
 package SUNWtltk
+consolidation "cde"
 classification "System/Libraries"
 import SUNWtltk exclude usr/openwin/share/include
 import SUNWtltkd

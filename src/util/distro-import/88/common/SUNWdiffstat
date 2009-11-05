@@ -1,4 +1,5 @@
 package SUNWdiffstat
+consolidation "sfw"
 classification "System/Text Tools"
 import SUNWdiffstat
 version 1.45

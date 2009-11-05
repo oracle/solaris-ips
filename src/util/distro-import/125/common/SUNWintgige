@@ -1,4 +1,5 @@
 package SUNWintgige
+consolidation "osnet"
 classification "Drivers/Networking"
 import SUNWintgige
 

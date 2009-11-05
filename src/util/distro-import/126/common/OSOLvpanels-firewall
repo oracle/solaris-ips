@@ -1,4 +1,5 @@
 package OSOLvpanels-firewall
+consolidation "vpanels"
 classification "Applications/Configuration and Preferences"
 import OSOLvpin-firewall
 depend OSOLvpanels

@@ -1,4 +1,5 @@
 package SUNWopensolaris-welcome
+consolidation "gnome"
 classification "System/Text Tools"
 import SUNWopensolaris-welcome
 end package

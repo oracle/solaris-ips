@@ -1,4 +1,5 @@
 package SUNWdrivel
+consolidation "gnome"
 classification "Applications/Internet"
 import SUNWdrivel
 import SUNWdrivel-root

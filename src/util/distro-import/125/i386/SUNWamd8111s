@@ -1,4 +1,5 @@
 package SUNWamd8111s
+consolidation "osnet"
 classification "Drivers/Networking"
 import SUNWamd8111s
 

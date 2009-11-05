@@ -1,4 +1,5 @@
 package SUNWbeanshell
+consolidation "sfw"
 classification "Development/Java"
 import SUNWbeanshell
 version 2.0

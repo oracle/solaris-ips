@@ -1,4 +1,5 @@
 package SUNWudf
+consolidation "osnet"
 classification "System/Media"
 import SUNWudf
 import SUNWudfr

@@ -1,4 +1,5 @@
 package SUNWjarjar
+consolidation "sfw"
 classification "Development/Java"
 import SUNWjarjar
 depend SUNWobjectasm

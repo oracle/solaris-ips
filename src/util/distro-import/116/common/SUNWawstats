@@ -1,4 +1,5 @@
 package SUNWawstats
+consolidation "sfw"
 classification "Web Services/Application and Web Servers"
 import SUNWawstats
 version 6.9

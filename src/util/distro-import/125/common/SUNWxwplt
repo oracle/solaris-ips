@@ -1,4 +1,5 @@
 package SUNWxwplt
+consolidation "X"
 classification "System/X11"
 import SUNWxwplt exclude usr/openwin
 # X libraries not yet included

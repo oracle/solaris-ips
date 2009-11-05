@@ -1,4 +1,5 @@
 package SUNWdcaf
+consolidation "osnet"
 classification "System/Hardware"
 import SUNWdcaf
 import SUNWdcar

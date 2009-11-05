@@ -1,4 +1,5 @@
 package SUNWtgnome-tsoljdsselmgr
+consolidation "gnome"
 classification "Desktop (GNOME)/Trusted Extensions"
 import SUNWtgnome-tsoljdsselmgr
 end package

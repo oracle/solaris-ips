@@ -1,4 +1,5 @@
 package SUNWnca
+consolidation "osnet"
 classification "System/Core"
 import SUNWncau
 import SUNWncar

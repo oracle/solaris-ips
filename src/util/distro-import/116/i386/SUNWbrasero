@@ -6,4 +6,5 @@
 # SUNWbrasero was EOFed in snv_115.
 #
 package SUNWbrasero
+consolidation "gnome"
 end package

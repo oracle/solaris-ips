@@ -1,4 +1,5 @@
 package SUNWgd2
+consolidation "sfw"
 classification "System/Libraries"
 import SUNWgd2
 version 2.0.34

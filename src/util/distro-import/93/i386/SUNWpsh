@@ -1,4 +1,5 @@
 package SUNWpsh
+consolidation "osnet"
 classification "Drivers/Other Peripherals"
 import SUNWpsh
 end package

@@ -1,4 +1,5 @@
 package SUNWlxsl
+consolidation "sfw"
 classification "System/Libraries"
 import SUNWlxsl
 import SUNWlxsl-devel

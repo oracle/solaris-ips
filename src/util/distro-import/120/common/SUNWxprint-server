@@ -6,4 +6,5 @@
 # SUNWxprint-server was EOFed in snv_120.
 #
 package SUNWxprint-server
+consolidation "X"
 end package

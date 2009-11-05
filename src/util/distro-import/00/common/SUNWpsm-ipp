@@ -1,4 +1,5 @@
 package SUNWpsm-ipp
+consolidation "osnet"
 classification "System/Printing"
 import SUNWpsm-ipp
 end package

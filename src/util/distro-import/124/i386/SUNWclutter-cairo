@@ -6,4 +6,5 @@
 # SUNWclutter-cairo was EOFed in snv_124.
 #
 package SUNWclutter-cairo
+consolidation "gnome"
 end package

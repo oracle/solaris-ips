@@ -1,4 +1,5 @@
 package SUNWftdu
+consolidation "osnet"
 classification "Development/System"
 import SUNWftduu
 import SUNWftdur

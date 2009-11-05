@@ -1,4 +1,5 @@
 package SUNWgetting-started-l10n-sv
+consolidation "gnome"
 classification "System/Localizations"
 import SUNWgetting-started-l10n-sv
 end package

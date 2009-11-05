@@ -1,4 +1,5 @@
 package SUNWlibvirt
+consolidation "osnet"
 classification "System/Libraries"
 import SUNWlibvirt
 import SUNWlibvirtr

@@ -1,4 +1,5 @@
 package SUNWsquid
+consolidation "sfw"
 classification "Web Services/Application and Web Servers"
 import SUNWsquidu
 import SUNWsquidr

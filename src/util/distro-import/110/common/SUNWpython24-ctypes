@@ -1,4 +1,5 @@
 package SUNWpython24-ctypes
+consolidation "gnome"
 classification "Development/Python"
 import SUNWpython24-ctypes
 end package

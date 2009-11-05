@@ -1,4 +1,5 @@
 package SUNWpowertop
+consolidation "osnet"
 classification "Applications/System Utilities"
 import SUNWpowertop
 end package

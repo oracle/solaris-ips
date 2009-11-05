@@ -1,4 +1,5 @@
 package SUNWstringtemplate
+consolidation "sfw"
 classification "Development/Java"
 import SUNWstringtemplate
 depend SUNWantlr2

@@ -1,4 +1,5 @@
 package SUNWlibical
+consolidation "gnome"
 classification "Desktop (GNOME)/Libraries"
 import SUNWlibical
 import SUNWlibical-devel

@@ -1,4 +1,5 @@
 package SUNWstunnel
+consolidation "sfw"
 classification "System/Security"
 import SUNWstunnelr
 import SUNWstunnelu

@@ -4,4 +4,5 @@
 # be deleted when the empty version is installed.
 #
 package SUNWm64cf
+consolidation "smcc"
 end package

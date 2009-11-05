@@ -1,4 +1,5 @@
 package SUNWbabl
+consolidation "gnome"
 classification "System/Multimedia Libraries"
 import SUNWbabl
 import SUNWbabl-devel

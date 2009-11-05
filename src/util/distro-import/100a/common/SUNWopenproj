@@ -1,4 +1,5 @@
 package SUNWopenproj
+consolidation "gnome"
 classification "Applications/Office"
 import SUNWopenproj
 end package

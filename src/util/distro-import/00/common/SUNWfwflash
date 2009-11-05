@@ -1,4 +1,5 @@
 package SUNWfwflash
+consolidation "osnet"
 classification "System/Core"
 import SUNWfwflash
 end package

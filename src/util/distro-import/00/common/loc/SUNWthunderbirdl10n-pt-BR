@@ -1,4 +1,5 @@
 package SUNWthunderbirdl10n-pt-BR
+consolidation "gnome_l10n"
 classification "Applications/Internet"
 import SUNWthunderbirdl10n-pt-BR
 end package

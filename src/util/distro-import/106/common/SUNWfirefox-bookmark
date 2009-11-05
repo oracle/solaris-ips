@@ -1,4 +1,5 @@
 package SUNWfirefox-bookmark
+consolidation "gnome"
 classification "Applications/Internet"
 import SUNWfirefox-bookmark
 end package

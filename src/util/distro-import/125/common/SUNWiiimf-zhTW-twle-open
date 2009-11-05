@@ -1,4 +1,5 @@
 package SUNWiiimf-zhTW-twle-open
+consolidation "l10n"
 classification "System/Internationalization"
 import SUNWiiimf-zhTW-twle-open
 end package

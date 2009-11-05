@@ -1,4 +1,5 @@
 package SUNWxchat
+consolidation "gnome"
 classification "Applications/Internet"
 import SUNWxchat
 import SUNWxchat-root

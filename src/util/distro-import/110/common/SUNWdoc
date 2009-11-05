@@ -1,4 +1,5 @@
 package SUNWdoc
+consolidation "osnet"
 classification "System/Text Tools"
 import SUNWdoc
 # BEGIN NON-REDISTRIBUTABLE

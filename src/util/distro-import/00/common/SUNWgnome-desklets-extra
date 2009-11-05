@@ -1,4 +1,5 @@
 package SUNWgnome-desklets-extra
+consolidation "gnome"
 classification "Applications/Panels and Applets"
 import SUNWgnome-desklets-extra
 end package

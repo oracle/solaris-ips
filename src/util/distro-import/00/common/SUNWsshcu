@@ -1,4 +1,5 @@
 package SUNWsshcu
+consolidation "osnet"
 classification "System/Security"
 import SUNWsshcu
 end package

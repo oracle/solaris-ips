@@ -5,6 +5,7 @@
 # on the package with the new name.
 #
 package SUNWphp524core
+consolidation "sfw"
 version 5.2.4
 depend SUNWphp52
 end package

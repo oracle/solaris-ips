@@ -1,4 +1,5 @@
 package FSWxorg-fonts-vera
+consolidation "X"
 classification "System/Fonts"
 import FSWxorg-fonts-vera
 add link path=etc/X11/fontpath.d/vera:pri=42 \

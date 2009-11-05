@@ -1,4 +1,5 @@
 package SUNWtecla
+consolidation "osnet"
 classification "System/Libraries"
 import SUNWtecla
 version 1.6.0

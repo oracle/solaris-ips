@@ -1,4 +1,5 @@
 package SUNWemlxs
+consolidation "osnet"
 classification "Drivers/Storage"
 import SUNWemlxs
 import SUNWemlxu

@@ -1,4 +1,5 @@
 package SUNWjodatime
+consolidation "sfw"
 classification "Development/Java"
 import SUNWjodatime
 version 1.5.1

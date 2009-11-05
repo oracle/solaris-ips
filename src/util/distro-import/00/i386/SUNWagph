@@ -1,4 +1,5 @@
 package SUNWagph
+consolidation "osnet"
 classification "Development/System"
 import SUNWagph
 end package

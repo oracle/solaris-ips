@@ -1,4 +1,5 @@
 package SUNWvncviewer
+consolidation "X"
 classification "Applications/Internet"
 import SUNWvncviewer
 version 4.1.3

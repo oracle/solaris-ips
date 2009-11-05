@@ -57,6 +57,7 @@ gettext.install("import", "/usr/lib/locale")
 
 basename_dict = {}   # basenames to action lists
 branch_dict = {}     # 
+cons_dict = {}       # consolidation incorporation dictionaries
 create_repo = False  #
 curpkg = None        # which IPS package we're currently importing
 def_branch = ""      # default branch
@@ -98,6 +99,7 @@ class Package(object):
                 self.desc = ""
                 self.summary = ""
                 self.version = ""
+                self.consolidation = ""
                 self.imppkg = None
                 self.actions = []
 
@@ -1116,6 +1118,21 @@ def SolarisParse(mf):
                 elif token == "description":
                         curpkg.desc = lexer.get_token()
 
+                elif token == "consolidation":
+			# Add to consolidation incorporation and
+			# include the org.opensolaris.consolidation
+			# package property.
+                        curpkg.consolidation = lexer.get_token()
+                        if not curpkg.consolidation in cons_dict:
+                                cons_dict[curpkg.consolidation] = []
+                        cons_dict[curpkg.consolidation].append(curpkg.name)
+
+                        action = actions.fromstr("set " \
+                            "name=org.opensolaris.consolidation value=%s" %
+                            curpkg.consolidation)
+                        action.attrs["importer.source"] = token
+                        curpkg.actions.append(action)
+
                 elif token == "summary":
                         curpkg.summary = lexer.get_token()
 
@@ -1331,6 +1348,26 @@ def main_func():
                 print "external packages checked for conflicts"
 
         print "Third pass: dependency id, resolution and publication", datetime.now()
+
+        # Generate consolidation incorporations
+        for cons in cons_dict.keys():
+                curpkg = start_package("consolidation/%s/%s-incorporation" %
+                        (cons, cons))
+                curpkg.summary = "%s consolidation incorporation" % cons
+                curpkg.desc = "This incorporation constrains packages " \
+                        "from the %s consolidation." % cons
+
+                for depend in cons_dict[cons]:
+                        action = actions.fromstr(
+                            "depend fmri=%s type=incorporate" % depend)
+                        action.attrs["importer.source"] = "depend"
+                        curpkg.actions.append(action)
+                action = actions.fromstr("set " \
+                    "name=org.opensolaris.consolidation value=%s" % cons)
+                action.attrs["importer.source"] = "add"
+                curpkg.actions.append(action)
+                end_package(curpkg)
+                curpkg = None
 
         if just_these_pkgs:
                 newpkgs = set(pkgdict[name]

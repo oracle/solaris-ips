@@ -1,4 +1,5 @@
 package SUNWkfbw
+consolidation "smcc"
 classification "Drivers/Display"
 import SUNWkfbw exclude \
 	usr/openwin \

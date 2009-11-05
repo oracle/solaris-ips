@@ -1,4 +1,5 @@
 package SUNWlftp
+consolidation "sfw"
 classification "Applications/System Utilities"
 import SUNWlftpr
 import SUNWlftpu

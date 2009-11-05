@@ -1,4 +1,5 @@
 package SUNWffilters
+consolidation "sfw"
 classification "System/Printing"
 import SUNWffiltersu
 import SUNWffiltersr

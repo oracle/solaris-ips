@@ -1,4 +1,5 @@
 package SUNWgnu-mpfr
+consolidation "sfw"
 classification "Development/High Performance Computing"
 import SUNWgnu-mpfr
 version 2.4.1

@@ -1,4 +1,5 @@
 package SUNWpr
+consolidation "sic_team"
 classification "System/Libraries"
 import SUNWpr
 end package

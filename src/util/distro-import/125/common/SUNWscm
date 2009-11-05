@@ -1,4 +1,5 @@
 package SUNWscm
+consolidation "osnet"
 classification "System/Enterprise Management"
 import SUNWscmu
 import SUNWscmr

@@ -1,4 +1,5 @@
 package SUNWbcmsata
+consolidation "osnet"
 classification "Drivers/Storage"
 import SUNWbcmsata
 

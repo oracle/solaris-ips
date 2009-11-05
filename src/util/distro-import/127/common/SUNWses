@@ -1,4 +1,5 @@
 package SUNWses
+consolidation "osnet"
 classification "Drivers/Ports"
 import SUNWses
 

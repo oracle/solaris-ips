@@ -1,4 +1,5 @@
 package SUNWima
+consolidation "osnet"
 classification "Applications/Plug-ins and Run-times"
 import SUNWima
 import SUNWimar

@@ -5,5 +5,6 @@
 # on the package with the new name.
 #
 package SUNWpfb
+consolidation "smcc"
 depend SUNWefb
 end package

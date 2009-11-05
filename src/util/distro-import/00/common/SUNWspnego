@@ -1,4 +1,5 @@
 package SUNWspnego
+consolidation "osnet"
 classification "System/Security"
 import SUNWspnego
 end package

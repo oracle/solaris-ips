@@ -1,4 +1,5 @@
 package SUNWlablgtk
+consolidation "sfw"
 classification "Development/GNOME and GTK+"
 import SUNWlablgtk
 version 2.10.1

@@ -1,4 +1,5 @@
 package SUNWlibstdcxx4
+consolidation "sfw"
 classification "Development/C++"
 import SUNWlibstdcxx4
 version 4.2.1

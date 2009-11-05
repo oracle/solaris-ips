@@ -1,4 +1,5 @@
 package SUNWcommons-collections
+consolidation "sfw"
 classification "Development/Java"
 import SUNWcommons-collections
 depend SUNWjunit

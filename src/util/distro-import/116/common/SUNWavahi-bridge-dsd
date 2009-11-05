@@ -1,4 +1,5 @@
 package SUNWavahi-bridge-dsd
+consolidation "gnome"
 classification "Applications/Internet"
 import SUNWavahi-bridge-dsd
 import SUNWavahi-bridge-dsd-devel

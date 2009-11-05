@@ -1,4 +1,5 @@
 package SUNWpostgr-82-server
+consolidation "sfw"
 classification "System/Databases"
 import SUNWpostgr-82-server
 import SUNWpostgr-82-server-data-root

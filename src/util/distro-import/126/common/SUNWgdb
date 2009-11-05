@@ -1,4 +1,5 @@
 package SUNWgdb
+consolidation "sfw"
 classification "Development/System"
 import SUNWgdb
 version 6.8

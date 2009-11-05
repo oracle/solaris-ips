@@ -1,4 +1,5 @@
 package SUNWfirefoxl10n-zh-CN
+consolidation "gnome_l10n"
 classification "Applications/Internet"
 import SUNWfirefoxl10n-zh-CN
 end package

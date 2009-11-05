@@ -1,4 +1,5 @@
 package SUNWus
+consolidation "osnet"
 classification "System/Core"
 import SUNWus.u
 

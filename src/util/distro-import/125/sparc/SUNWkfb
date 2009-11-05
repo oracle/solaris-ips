@@ -1,4 +1,5 @@
 package SUNWkfb
+consolidation "smcc"
 classification "Drivers/Display"
 import SUNWkfb
 import SUNWkfbr

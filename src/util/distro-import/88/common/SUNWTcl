@@ -1,4 +1,5 @@
 package SUNWTcl
+consolidation "sfw"
 classification "Development/Other Languages"
 import SUNWTcl
 version 8.4.18

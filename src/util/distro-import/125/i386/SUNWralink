@@ -1,4 +1,5 @@
 package SUNWralink
+consolidation "osnet"
 classification "Drivers/Networking"
 import SUNWralink
 

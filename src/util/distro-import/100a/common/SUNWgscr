@@ -5,6 +5,7 @@
 # on the package with the new name.
 #
 package SUNWgscr
+consolidation "sfw"
 version 8.15.1
 depend SUNWghostscript
 end package

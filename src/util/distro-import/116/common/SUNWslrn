@@ -1,4 +1,5 @@
 package SUNWslrn
+consolidation "sfw"
 classification "Applications/Internet"
 import SUNWslrn
 version 0.9.9.1

@@ -1,4 +1,5 @@
 package SUNWgnome-calculator
+consolidation "gnome"
 classification "Applications/Accessories"
 import SUNWgnome-calculator
 import SUNWgnome-calculator-root

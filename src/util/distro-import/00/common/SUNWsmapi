@@ -1,4 +1,5 @@
 package SUNWsmapi
+consolidation "osnet"
 classification "System/Enterprise Management"
 import SUNWsmapi
 end package

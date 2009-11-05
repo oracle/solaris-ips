@@ -1,4 +1,5 @@
 package SUNWphp52-mysql
+consolidation "sfw"
 classification "Development/PHP"
 import SUNWphp52r-mysql
 import SUNWphp52u-mysql

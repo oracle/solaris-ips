@@ -1,4 +1,5 @@
 package SUNWib
+consolidation "osnet"
 classification "System/Hardware"
 import SUNWib
 

@@ -1,4 +1,5 @@
 package SUNWgnome-dictionary
+consolidation "gnome"
 classification "Applications/Accessories"
 import SUNWgnome-dictionary
 import SUNWgnome-dictionary-root

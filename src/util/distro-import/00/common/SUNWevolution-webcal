@@ -1,4 +1,5 @@
 package SUNWevolution-webcal
+consolidation "gnome"
 classification "Applications/Internet"
 import SUNWevolution-webcal
 import SUNWevolution-webcal-root

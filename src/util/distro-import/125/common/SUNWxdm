@@ -1,4 +1,5 @@
 package SUNWxdm
+consolidation "X"
 classification "System/X11"
 import SUNWxdm exclude usr/openwin
 import SUNWxdm-root

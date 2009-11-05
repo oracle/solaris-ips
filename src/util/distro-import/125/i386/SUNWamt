@@ -1,4 +1,5 @@
 package SUNWamt
+consolidation "osnet"
 classification "System/Enterprise Management"
 import SUNWamt
 import SUNWamt-lms

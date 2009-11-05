@@ -1,4 +1,5 @@
 package SUNWfipe
+consolidation "osnet"
 classification "System/Hardware"
 import SUNWfipe
 

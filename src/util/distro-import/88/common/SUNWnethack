@@ -1,4 +1,5 @@
 package SUNWnethack
+consolidation "sfw"
 classification "Applications/Games"
 import SUNWnethack
 import SUNWnethackr

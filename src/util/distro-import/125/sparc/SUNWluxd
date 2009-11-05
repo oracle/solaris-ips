@@ -1,4 +1,5 @@
 package SUNWluxd
+consolidation "osnet"
 classification "Drivers/Storage"
 import SUNWluxd.u
 

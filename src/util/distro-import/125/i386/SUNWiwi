@@ -1,4 +1,5 @@
 package SUNWiwi
+consolidation "osnet"
 classification "Drivers/Networking"
 import SUNWiwi
 

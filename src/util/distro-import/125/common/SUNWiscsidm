@@ -1,4 +1,5 @@
 package SUNWiscsidm
+consolidation "osnet"
 classification "System/Hardware"
 import SUNWiscsidmr
 import SUNWiscsidmu

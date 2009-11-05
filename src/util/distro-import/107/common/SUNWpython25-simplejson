@@ -1,4 +1,5 @@
 package SUNWpython25-simplejson
+consolidation "gnome"
 classification "Development/Python"
 import SUNWpython25-simplejson
 end package

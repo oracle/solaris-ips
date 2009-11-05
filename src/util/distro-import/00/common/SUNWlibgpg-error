@@ -1,4 +1,5 @@
 package SUNWlibgpg-error
+consolidation "gnome"
 classification "System/Libraries"
 import SUNWlibgpg-error
 import SUNWlibgpg-error-devel

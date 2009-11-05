@@ -1,4 +1,5 @@
 package SUNWwxwidgets
+consolidation "sfw"
 classification "Desktop (GNOME)/Libraries"
 import SUNWwxwidgets
 import SUNWwxwidgets-devel

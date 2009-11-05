@@ -1,4 +1,5 @@
 package FSWxorg-fonts-iso8859-13
+consolidation "X"
 classification "System/Fonts"
 import FSWxorg-fonts-iso8859-13
 add link path=etc/X11/fontpath.d/100dpi-ISO8859-13:pri=91 \

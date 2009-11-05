@@ -1,4 +1,5 @@
 package SUNWgobby
+consolidation "gnome"
 classification "System/Text Tools"
 import SUNWgobby
 end package

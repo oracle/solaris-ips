@@ -1,4 +1,5 @@
 package SUNWsongbird
+consolidation "gnome"
 classification "Applications/Sound and Video"
 import SUNWsongbird
 end package

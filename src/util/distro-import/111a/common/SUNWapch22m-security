@@ -1,4 +1,5 @@
 package SUNWapch22m-security
+consolidation "sfw"
 classification "Web Services/Application and Web Servers"
 import SUNWapch22m-security
 import SUNWapch22r-security

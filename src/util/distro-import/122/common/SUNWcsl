@@ -1,4 +1,5 @@
 package SUNWcsl
+consolidation "osnet"
 classification "System/Core"
 import SUNWcsl
 import SUNWcslr

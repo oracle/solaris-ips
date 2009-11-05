@@ -1,4 +1,5 @@
 package SUNWhmdu
+consolidation "osnet"
 classification "Drivers/Networking"
 import SUNWhmdu
 end package

@@ -1,4 +1,5 @@
 package SUNWunixodbc
+consolidation "sfw"
 classification "Development/Databases"
 import SUNWunixodbc
 import SUNWunixodbcr

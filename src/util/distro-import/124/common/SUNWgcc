@@ -1,4 +1,5 @@
 package SUNWgcc
+consolidation "sfw"
 classification "Development/C"
 import SUNWgcc
 from SUNWgccruntime import

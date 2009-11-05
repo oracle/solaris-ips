@@ -1,4 +1,5 @@
 package SUNWbs
+consolidation "osnet"
 classification "System/Core"
 import SUNWbsu
 import SUNWbsr

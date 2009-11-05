@@ -1,4 +1,5 @@
 package SUNWgqview
+consolidation "gnome"
 classification "Applications/Graphics and Imaging"
 import SUNWgqview
 end package

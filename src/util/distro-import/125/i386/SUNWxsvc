@@ -1,4 +1,5 @@
 package SUNWxsvc
+consolidation "osnet"
 classification "System/X11"
 import SUNWxsvc
 

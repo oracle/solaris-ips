@@ -1,4 +1,5 @@
 package SUNWmms
+consolidation "osnet"
 classification "System/Media"
 import SUNWmmsr
 import SUNWmmsu

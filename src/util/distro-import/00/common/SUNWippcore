@@ -1,4 +1,5 @@
 package SUNWippcore
+consolidation "osnet"
 classification "System/Printing"
 import SUNWippcore
 end package

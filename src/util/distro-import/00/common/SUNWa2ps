@@ -1,4 +1,5 @@
 package SUNWa2ps
+consolidation "sfw"
 classification "System/Printing"
 import SUNWa2psu
 import SUNWa2psr

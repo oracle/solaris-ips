@@ -1,4 +1,5 @@
 package SUNWpmcs
+consolidation "osnet"
 classification "Drivers/Storage"
 import SUNWpmcsr
 import SUNWpmcsu

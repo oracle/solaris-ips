@@ -1,4 +1,5 @@
 package SUNWtoo
+consolidation "osnet"
 classification "Development/System"
 import SUNWtoo
 end package

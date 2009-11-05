@@ -1,4 +1,5 @@
 package SUNWgnome-a11y-libs-python24
+consolidation "gnome"
 classification "Applications/Universal Access"
 import SUNWgnome-a11y-libs-python24
 depend SUNWgnome-a11y-libs

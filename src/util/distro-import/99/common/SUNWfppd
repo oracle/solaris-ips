@@ -1,4 +1,5 @@
 package SUNWfppd
+consolidation "sfw"
 classification "System/Printing"
 import SUNWfppd
 version 0.2008.8.18

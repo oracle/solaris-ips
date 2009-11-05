@@ -1,4 +1,5 @@
 package SUNWrmwb
+consolidation "osnet"
 classification "System/Administration and Configuration"
 import SUNWrmwbu
 import SUNWrmwbr

@@ -1,4 +1,5 @@
 package SUNWlibms
+consolidation "sunpro"
 classification "System/Libraries"
 import SUNWlibms
 import SUNWlibmsr

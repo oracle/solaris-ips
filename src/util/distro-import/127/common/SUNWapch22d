@@ -1,4 +1,5 @@
 package SUNWapch22d
+consolidation "sfw"
 classification "Web Services/Application and Web Servers"
 import SUNWapch22d
 version 2.2.14

@@ -1,4 +1,5 @@
 package SUNWcsd
+consolidation "osnet"
 classification "System/Core"
 import SUNWcsd
 #

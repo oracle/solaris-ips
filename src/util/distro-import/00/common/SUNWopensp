@@ -1,4 +1,5 @@
 package SUNWopensp
+consolidation "gnome"
 classification "System/Text Tools"
 import SUNWopensp
 import SUNWopensp-devel

@@ -1,4 +1,5 @@
 package SUNWrmod
+consolidation "osnet"
 classification "System/Core"
 import SUNWrmodr
 chattr boot/solaris/bootenv.rc original_name=SUNWrmodr:boot/solaris/bootenv.rc

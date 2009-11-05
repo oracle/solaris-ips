@@ -1,4 +1,5 @@
 package SUNWipfh
+consolidation "osnet"
 classification "Development/System"
 import SUNWipfh
 end package

@@ -1,4 +1,5 @@
 package SUNWrdesktop
+consolidation "gnome"
 classification "Applications/Internet"
 import SUNWrdesktop
 end package

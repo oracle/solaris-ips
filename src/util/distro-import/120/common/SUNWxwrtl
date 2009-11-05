@@ -1,4 +1,5 @@
 package SUNWxwrtl
+consolidation "X"
 classification "System/X11"
 import SUNWxwrtl exclude usr/openwin
 chattr_glob * edit target openwin X11

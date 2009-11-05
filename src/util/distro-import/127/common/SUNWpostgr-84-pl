@@ -1,4 +1,5 @@
 package SUNWpostgr-84-pl
+consolidation "sfw"
 classification "Development/Databases"
 import SUNWpostgr-84-pl
 version 8.4.1

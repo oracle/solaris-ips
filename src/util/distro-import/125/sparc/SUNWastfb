@@ -1,4 +1,5 @@
 package SUNWastfb
+consolidation "smcc"
 classification "Drivers/Display"
 import SUNWastfb
 

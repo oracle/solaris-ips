@@ -1,4 +1,5 @@
 package SUNWarcmsr
+consolidation "osnet"
 classification "Drivers/Storage"
 import SUNWarcmsr
 

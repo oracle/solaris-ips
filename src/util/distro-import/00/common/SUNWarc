@@ -1,4 +1,5 @@
 package SUNWarc
+consolidation "osnet"
 classification "Development/C"
 import SUNWarc
 import SUNWarcr

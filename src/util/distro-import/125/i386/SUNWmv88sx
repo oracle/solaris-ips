@@ -1,4 +1,5 @@
 package SUNWmv88sx
+consolidation "osnet"
 classification "Drivers/Ports"
 import SUNWmv88sx
 

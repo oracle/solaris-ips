@@ -1,4 +1,5 @@
 package SUNWpsutils
+consolidation "sfw"
 classification "System/Printing"
 import SUNWpsutils
 end package

@@ -1,4 +1,5 @@
 package SUNWgnome-img-editor-help
+consolidation "gnome"
 classification "Applications/Graphics and Imaging"
 import SUNWgnome-img-editor-help
 end package
