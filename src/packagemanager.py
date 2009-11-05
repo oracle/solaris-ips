@@ -2279,7 +2279,10 @@ class PackageManager:
                 self.application_refilter_idle_id = 0
                 model = self.w_application_treeview.get_model()
                 self.w_application_treeview.set_model(None)
+                id, order = self.application_list_sort.get_sort_column_id()
+                self.application_list_sort.reset_default_sort_func()
                 self.application_list_filter.refilter()
+                self.application_list_sort.set_sort_column_id(id, order)
                 self.w_application_treeview.set_model(model)
                 self.application_treeview_initialized = True
                 self.application_treeview_range = None
