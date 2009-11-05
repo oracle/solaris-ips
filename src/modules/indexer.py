@@ -48,7 +48,6 @@ MAX_ADDED_NUMBER_PACKAGES = 20
 
 SORT_FILE_PREFIX = "sort."
 
-# Set max sort file as 128M, which is a tell position of that value.
 SORT_FILE_MAX_SIZE = 128 * 1024 * 1024
 
 class Indexer(object):
@@ -59,7 +58,8 @@ class Indexer(object):
         file_version_string = "VERSION: "
 
         def __init__(self, index_dir, get_manifest_func, get_manifest_path_func,
-            progtrack=None, excludes=EmptyI, log=None):
+            progtrack=None, excludes=EmptyI, log=None, 
+            sort_file_max_size=SORT_FILE_MAX_SIZE):
                 self._num_keys = 0
                 self._num_manifests = 0
                 self._num_entries = 0
@@ -67,7 +67,7 @@ class Indexer(object):
                 self.get_manifest_path_func = get_manifest_path_func
                 self.excludes = excludes
                 self.__log = log
-                
+                self.sort_file_max_size = sort_file_max_size
                 # This structure was used to gather all index files into one
                 # location. If a new index structure is needed, the files can
                 # be added (or removed) from here. Providing a list or
@@ -223,7 +223,8 @@ class Indexer(object):
                             list(new_dict[tok_tup]))])])])]
                         s = ss.IndexStoreMainDict.transform_main_dict_line(tok,
                             lst)
-                        if len(s) + self._sort_file_bytes >= SORT_FILE_MAX_SIZE:
+                        if len(s) + self._sort_file_bytes >= \
+                            self.sort_file_max_size:
                                 self.__close_sort_fh()
                                 self._sort_fh = open(os.path.join(self._tmp_dir,
                                     SORT_FILE_PREFIX +

@@ -129,7 +129,8 @@ Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
            [--log-errors dest] [--mirror] [--nasty]
            [--set-property <section.property>=<value>]
            [--proxy-base url] [--readonly] [--rebuild] [--ssl-cert-file]
-           [--ssl-dialog] [--ssl-key-file] [--writable-root dir]
+           [--ssl-dialog] [--ssl-key-file] [--sort-file-max-size size]
+           [--writable-root dir]
 
         --cfg-file      The pathname of the file from which to read and to
                         write configuration information.
@@ -185,6 +186,10 @@ Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
                         This option must be used with --ssl-cert-file.  Usage of
                         this option will cause the depot to only respond to SSL
                         requests on the provided port.
+        --sort-file-max-size
+                        The maximum size of the indexer sort file. Used to
+                        limit the amount of RAM the depot uses for indexing,
+                        or increase it for speed.
         --writable-root The path to a directory to which the program has write
                         access.  Used with --readonly to allow server to
                         create needed files, such as search indices, without
@@ -219,6 +224,7 @@ if __name__ == "__main__":
         nasty = False
         nasty_value = 0
         repo_config_file = None
+        sort_file_max_size = None
         ssl_cert_file = None
         ssl_key_file = None
         ssl_dialog = "builtin"
@@ -258,7 +264,8 @@ if __name__ == "__main__":
                     "disable-ops=", "mirror", "nasty=", "set-property=",
                     "proxy-base=", "readonly", "rebuild", "refresh-index",
                     "ssl-cert-file=", "ssl-dialog=", "ssl-key-file=",
-                    "writable-root="]
+                    "sort-file-max-size=", "writable-root="]
+
                 for opt in log_opts:
                         long_opts.append("%s=" % opt.lstrip('--'))
                 opts, pargs = getopt.getopt(sys.argv[1:], "d:np:s:t:",
@@ -459,6 +466,11 @@ if __name__ == "__main__":
                                         f = "exec:%s" % f
 
                                 ssl_dialog = f
+                        elif opt == "--sort-file-max-size":
+                                if arg == "":
+                                        raise OptionError, "You must specify " \
+                                            "a maximum sort file size."
+                                sort_file_max_size = arg
                         elif opt == "--writable-root":
                                 if arg == "":
                                         raise OptionError, "You must specify " \
@@ -626,6 +638,7 @@ if __name__ == "__main__":
                     cfgpathname=repo_config_file, fork_allowed=fork_allowed,
                     log_obj=cherrypy, mirror=mirror, properties=repo_props,
                     read_only=readonly, repo_root=repo_path,
+                    sort_file_max_size=sort_file_max_size,
                     writable_root=writable_root)
         except sr.RepositoryError, _e:
                 emsg("pkg.depotd: %s" % _e)

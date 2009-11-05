@@ -116,6 +116,8 @@ api.t_imageconfig.py TestImageConfig.test_0_read|pass
 api.t_imageconfig.py TestImageConfig.test_1_unicode|pass
 api.t_imageconfig.py TestImageConfig.test_2_missing_conffile|pass
 api.t_imageconfig.py TestImageConfig.test_3_reread|pass
+api.t_indexer.py TestIndexer.test_indexworkingsize|pass
+api.t_indexer.py TestIndexer.test_indexworkingsize0|pass
 api.t_manifest.py TestManifest.test_diffs1|pass
 api.t_manifest.py TestManifest.test_diffs10|pass
 api.t_manifest.py TestManifest.test_diffs2|pass

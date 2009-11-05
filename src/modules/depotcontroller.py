@@ -62,6 +62,7 @@ class DepotController(object):
                 self.__refresh_index = False
                 self.__state = self.HALTED
                 self.__writable_root = None
+                self.__sort_file_max_size = None
                 return
 
         def set_depotd_path(self, path):
@@ -147,6 +148,12 @@ class DepotController(object):
         def get_writable_root(self):
                 return self.__writable_root
 
+        def set_sort_file_max_size(self, sort):
+                self.__sort_file_max_size = sort 
+
+        def get_sort_file_max_size(self):
+                return self.__sort_file_max_size
+
         def set_debug_feature(self, feature):
                 self.__debug_features[feature] = True
 
@@ -226,6 +233,9 @@ class DepotController(object):
                                     (section, prop, val))
                 if self.__writable_root:
                         args.append("--writable-root=%s" % self.__writable_root)
+
+                if self.__sort_file_max_size:
+                        args.append("--sort-file-max-size=%s" % self.__sort_file_max_size)
 
                 # Always log access and error information.
                 args.append("--log-access=stdout")

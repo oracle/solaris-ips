@@ -170,7 +170,8 @@ class Repository(object):
         def __init__(self, auto_create=False, catalog_root=None, 
             cfgpathname=None, fork_allowed=False, index_root=None, log_obj=None,
             mirror=False, pkg_root=None, properties=EmptyDict, read_only=False,
-            repo_root=None, trans_root=None, writable_root=None):
+            repo_root=None, trans_root=None,
+            sort_file_max_size=indexer.SORT_FILE_MAX_SIZE, writable_root=None):
                 """Prepare the repository for use."""
 
                 # This lock is used to protect the repository from multiple
@@ -184,6 +185,7 @@ class Repository(object):
                 self.log_obj = log_obj
                 self.mirror = mirror
                 self.read_only = read_only
+                self.__sort_file_max_size = sort_file_max_size
                 self.__tmp_root = None
 
                 # Must be set before other roots.
@@ -452,7 +454,8 @@ class Repository(object):
 
                 ind = indexer.Indexer(self.index_root,
                     self._get_manifest, self.manifest,
-                    log=self.__index_log)
+                    log=self.__index_log,
+                    sort_file_max_size=self.__sort_file_max_size)
                 cie = False
                 try:
                         cie = ind.check_index_existence()
@@ -722,7 +725,8 @@ class Repository(object):
                                 ind = indexer.Indexer(self.index_root,
                                     self._get_manifest,
                                     self.manifest,
-                                    log=self.__index_log)
+                                    log=self.__index_log,
+                                    sort_file_max_size=self.__sort_file_max_size)
                                 ind.setup()
                                 if not self.__search_available:
                                         self.__index_log("Search Available")
@@ -889,7 +893,8 @@ class Repository(object):
                 if fmris:
                         index_inst = indexer.Indexer(self.index_root,
                             self._get_manifest, self.manifest,
-                            log=self.__index_log)
+                            log=self.__index_log,
+                            sort_file_max_size=self.__sort_file_max_size)
                         index_inst.server_update_index(fmris)
 
         @staticmethod
@@ -1206,7 +1211,8 @@ class Repository(object):
                 else:
                         ind = indexer.Indexer(self.index_root,
                             self._get_manifest, self.manifest,
-                            log=self.__index_log)
+                            log=self.__index_log,
+                            sort_file_max_size=self.__sort_file_max_size)
                         ind.setup()
 
         def search(self, queries):

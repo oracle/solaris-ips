@@ -47,10 +47,12 @@ case "$1" in
 	# short_option_props are properties which are communicated to the depot
 	# via a long option flag which takes an argument.
 	long_option_props="cfg_file content_root debug log_access log_errors \
-	    proxy_base ssl_cert_file ssl_dialog ssl_key_file writable_root"
+	    proxy_base sort_file_max_size ssl_cert_file ssl_dialog ssl_key_file \
+	    writable_root"
+
 	set -A long_option_cmd_line "cfg-file" "content-root" "debug" \
-	    "log-access" "log-errors" "proxy-base" "ssl-cert-file" \
-	    "ssl-dialog" "ssl-key-file" "writable-root"
+	    "log-access" "log-errors" "proxy-base" "sort-file-max-size" \
+	    "ssl-cert-file" "ssl-dialog" "ssl-key-file" "writable-root"
 
 	bool_ops=""
 	option_props=""
