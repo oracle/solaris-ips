@@ -314,3 +314,8 @@ def get_pkg_info(api_o, pkg_stem, local):
                 return package_info
         else:
                 return None
+
+def set_modal_and_transient(top_window, parent_window = None):
+        if parent_window:
+                top_window.set_transient_for(parent_window)
+        top_window.set_modal(True)

@@ -364,7 +364,7 @@ class Repository(progress.GuiProgressTracker):
                 self.__init_repos_tree_views(self.modify_pub_repos_treeview)
 
                 if self.action == enumerations.ADD_PUBLISHER:
-                        self.__set_modal_and_transient(self.w_add_publisher_dialog)
+                        gui_misc.set_modal_and_transient(self.w_add_publisher_dialog)
                         self.__on_manage_add_clicked(None)
                         return
                 elif self.action == enumerations.MANAGE_PUBLISHERS:
@@ -383,7 +383,7 @@ class Repository(progress.GuiProgressTracker):
                         mirrors_selection.set_mode(gtk.SELECTION_SINGLE)
                         mirrors_selection.connect("changed",
                             self.__on_mirror_selection_changed, None)
-                        self.__set_modal_and_transient(self.w_add_publisher_dialog,
+                        gui_misc.set_modal_and_transient(self.w_add_publisher_dialog,
                             self.w_manage_publishers_dialog)
                         self.w_manage_publishers_dialog.show_all()
                         return
@@ -566,7 +566,7 @@ class Repository(progress.GuiProgressTracker):
                 self.__update_publisher_dialog(pub)
                 self.__update_publisher_details(pub,
                     self.w_modifypub_details)
-                self.__set_modal_and_transient(self.w_modify_publisher_dialog,
+                gui_misc.set_modal_and_transient(self.w_modify_publisher_dialog,
                     self.w_manage_publishers_dialog)
                 self.w_modify_publisher_dialog.show_all()
 
@@ -608,7 +608,7 @@ class Repository(progress.GuiProgressTracker):
                     self.api_o.get_publisher(prefix=pub.prefix,
                         alias=pub.prefix, duplicate=True)
                 self.__update_repository_dialog(repository)
-                self.__set_modal_and_transient(self.w_modify_repository_dialog,
+                gui_misc.set_modal_and_transient(self.w_modify_repository_dialog,
                     self.w_modify_publisher_dialog)
                 self.w_modify_repository_dialog.show_all()
 
@@ -989,7 +989,7 @@ class Repository(progress.GuiProgressTracker):
                         self.publishers_apply_cancel.set_sensitive(False)
                 else:
                         self.publishers_apply_cancel.set_sensitive(True)
-                self.__set_modal_and_transient(self.publishers_apply, parent_window)
+                gui_misc.set_modal_and_transient(self.publishers_apply, parent_window)
                 self.publishers_apply_textview.get_buffer().set_text("")
                 self.publishers_apply.show_all()
                 self.cancel_function = cancel_func
@@ -1354,12 +1354,6 @@ class Repository(progress.GuiProgressTracker):
                 gui_misc.display_help("manage_repo")
 
         @staticmethod
-        def __set_modal_and_transient(top_window, parent_window = None):
-                if parent_window:
-                        top_window.set_transient_for(parent_window)
-                top_window.set_modal(True)
-
-        @staticmethod
         def __update_publisher_details(pub, details_view):
                 if pub == None:
                         return
@@ -1673,7 +1667,7 @@ class Repository(progress.GuiProgressTracker):
                 repo = pub.selected_repository
                 origin_uri = repo.origins[0].uri
                 if origin_uri != None and origin_uri.startswith("https"):
-                        self.__set_modal_and_transient(self.w_add_publisher_dialog, 
+                        gui_misc.set_modal_and_transient(self.w_add_publisher_dialog, 
                             parent)
                         self.main_window = self.w_add_publisher_dialog
                         self.__on_manage_add_clicked(None)

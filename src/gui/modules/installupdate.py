@@ -384,6 +384,8 @@ class InstallUpdate(progress.GuiProgressTracker):
 
         def __proceed_with_stages(self):
                 self.__start_stage_one()
+                gui_misc.set_modal_and_transient(self.w_dialog,
+                    self.w_main_window)
                 self.w_dialog.show()
                 Thread(target = self.__proceed_with_stages_thread_ex,
                     args = ()).start()
