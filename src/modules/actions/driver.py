@@ -644,7 +644,10 @@ from %(imgroot)s/etc/driver_aliases." % \
                         else:
                                 raise
 
-                # Grab minor node permissions
+                # Grab minor node permissions.  Note that the clone driver
+                # action doesn't actually own its minor node perms; those are
+                # owned by other driver actions, through their clone_perms
+                # attributes.
                 try:
                         act.attrs["perms"] = []
                         act.attrs["clone_perms"] = []
@@ -656,7 +659,7 @@ from %(imgroot)s/etc/driver_aliases." % \
                                         continue
                                 major = namefields[0]
                                 minor = namefields[1]
-                                if major == name:
+                                if major == name and name != "clone":
                                         act.attrs["perms"].append(
                                             minor + " " + " ".join(fields[1:]))
                                 elif major == "clone" and minor == name:
