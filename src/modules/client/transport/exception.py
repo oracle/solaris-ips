@@ -298,7 +298,7 @@ class InvalidContentException(TransportException):
                 self.url = url
 
         def __str__(self):
-                s = "Invalid content for action with path %s" % self.path
+                s = "Invalid content path %s" % self.path
                 if self.reason:
                         s += ": %s." % self.reason
                 if self.url:

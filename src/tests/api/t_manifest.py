@@ -66,7 +66,7 @@ file ff555ffd mode=0644 owner=root group=bin path=/kernel/drv/foo.conf
 """
 
                 self.m2_signatures = {
-                    "sha-1": "74995c3722fb2c9f260d49bb2886266fd1cc5a1d"
+                    "sha-1": "e600f5e48a838b11ed73fd4afedfc35638ab0bbf"
                 }
 
                 #
@@ -334,10 +334,10 @@ dir mode=0755 owner=bin group=sys path=usr
         def test_validate(self):
                 """Verifies that Manifest validation works as expected."""
 
-                self.m2.set_content(self.m2_contents)
+                self.m2.set_content(self.m2_contents, signatures=True)
                 self.m2.validate(signatures=self.m2_signatures)
 
-                self.m2.set_content(self.diverse_contents)
+                self.m2.set_content(self.diverse_contents, signatures=True)
                 self.assertRaises(api_errors.BadManifestSignatures,
                     self.m2.validate, signatures=self.m2_signatures)
 

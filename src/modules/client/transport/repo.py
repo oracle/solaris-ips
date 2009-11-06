@@ -97,11 +97,11 @@ class HTTPRepo(TransportRepo):
                 self._engine = engine
                 self._verdata = None
 
-        def _add_file_url(self, url, filepath=None, progtrack=None,
-            header=None, compress=False):
+        def _add_file_url(self, url, filepath=None, progclass=None,
+            progtrack=None, header=None, compress=False):
                 self._engine.add_url(url, filepath=filepath,
-                    progtrack=progtrack, repourl=self._url, header=header,
-                    compressible=compress)
+                    progclass=progclass, progtrack=progtrack, repourl=self._url,
+                    header=header, compressible=compress)
 
         def _fetch_url(self, url, header=None, compress=False):
                 return self._engine.get_url(url, header, repourl=self._url,
@@ -245,6 +245,59 @@ class HTTPRepo(TransportRepo):
 
                 return self._fetch_url(requesturl, header, compress=True)
 
+        def get_manifests(self, mfstlist, dest, progtrack=None):
+                """Get manifests named in list.  The mfstlist argument
+                contains tuples (manifest_name, header).  This is so
+                that each manifest may contain unique header information.
+                The destination directory is specified in the dest argument."""
+
+                methodstr = "manifest/0/"
+                urllist = []
+                progclass = None
+
+                # create URL for requests
+                baseurl = urlparse.urljoin(self._repouri.uri, methodstr)
+
+                if progtrack:
+                        progclass = ProgressCallback
+
+                for f, h in mfstlist:
+                        url = urlparse.urljoin(baseurl, f)
+                        urllist.append(url)
+                        fn = os.path.join(dest, f)
+                        self._add_file_url(url, filepath=fn, header=h,
+                            progtrack=progtrack, progclass=progclass)
+
+                try:
+                        while self._engine.pending:
+                                self._engine.run()
+                except tx.ExcessiveTransientFailure, e:
+                        # Attach a list of failed and successful
+                        # requests to this exception.
+                        errors, success = self._engine.check_status(urllist,
+                            True)
+
+                        errors = self._annotate_exceptions(errors)
+                        success = self._url_to_request(success)
+                        e.failures = errors
+                        e.success = success
+
+                        # Reset the engine before propagating exception.
+                        self._engine.reset()
+                        raise
+
+                errors = self._engine.check_status(urllist)
+
+                # Transient errors are part of standard control flow.
+                # The repo's caller will look at these and decide whether
+                # to throw them or not.  Permanant failures are raised
+                # by the transport engine as soon as they occur.
+                #
+                # This adds an attribute that describes the request to the
+                # exception, if we were able to figure it out.
+
+                return self._annotate_exceptions(errors)
+
         @staticmethod
         def _annotate_exceptions(errors):
                 """Walk a list of transport errors, examine the
@@ -285,6 +338,10 @@ class HTTPRepo(TransportRepo):
 
                 methodstr = "file/0/"
                 urllist = []
+                progclass = None
+
+                if progtrack:
+                        progclass = FileProgress
 
                 # create URL for requests
                 baseurl = urlparse.urljoin(self._repouri.uri, methodstr)
@@ -294,7 +351,8 @@ class HTTPRepo(TransportRepo):
                         urllist.append(url)
                         fn = os.path.join(dest, f)
                         self._add_file_url(url, filepath=fn,
-                            progtrack=progtrack, header=header)
+                            progclass=progclass, progtrack=progtrack,
+                            header=header)
 
                 try:
                         while self._engine.pending:
@@ -378,10 +436,11 @@ class HTTPSRepo(HTTPRepo):
                 HTTPRepo.__init__(self, repostats, repouri, engine)
 
         # override the download functions to use ssl cert/key
-        def _add_file_url(self, url, filepath=None, progtrack=None,
-            header=None, compress=False):
+        def _add_file_url(self, url, filepath=None, progclass=None,
+            progtrack=None, header=None, compress=False):
                 self._engine.add_url(url, filepath=filepath,
-                    progtrack=progtrack, sslcert=self._repouri.ssl_cert,
+                    progclass=progclass, progtrack=progtrack,
+                    sslcert=self._repouri.ssl_cert,
                     sslkey=self._repouri.ssl_key, repourl=self._url,
                     header=header, compressible=compress)
 
@@ -400,6 +459,100 @@ class HTTPSRepo(HTTPRepo):
                 return self._engine.send_data(url, data, header=header,
                     sslcert=self._repouri.ssl_cert,
                     sslkey=self._repouri.ssl_key, repourl=self._url)
+
+# ProgressCallback objects that bridge the interfaces between ProgressTracker,
+# and the necessary callbacks for the TransportEngine.
+
+class ProgressCallback(object):
+        """This class bridges the interfaces between a ProgressTracker
+        object and the progress callback that's provided by Pycurl.
+        Since progress callbacks are per curl handle, and handles aren't
+        guaranteed to succeed, this object watches a handle's progress
+        and updates the tracker accordingly."""
+
+        def __init__(self, progtrack):
+                self.progtrack = progtrack
+
+        def abort(self):
+                """Download failed."""
+                pass
+
+        def commit(self, size):
+                """This download has succeeded.  The size argument is
+                the total size that the client received."""
+                pass
+
+        def progress_callback(self, dltot, dlcur, ultot, ulcur):
+                """Called by pycurl/libcurl framework to update
+                progress tracking."""
+
+                if hasattr(self.progtrack, "check_cancelation") and \
+                    self.progtrack.check_cancelation():
+                        return -1
+
+                return 0
+
+
+class FileProgress(ProgressCallback):
+        """This class bridges the interfaces between a ProgressTracker
+        object and the progress callback that's provided by Pycurl.
+        Since progress callbacks are per curl handle, and handles aren't
+        guaranteed to succeed, this object watches a handle's progress
+        and updates the tracker accordingly.  If the handle fails,
+        it will correctly remove the bytes from the file.  The curl
+        callback reports bytes even when it doesn't make progress.
+        It's necessary to keep additonal state here, since the client's
+        ProgressTracker has global counts of the bytes.  If we're
+        unable to keep a per-file count, the numbers will get
+        lost quickly."""
+
+        def __init__(self, progtrack):
+                ProgressCallback.__init__(self, progtrack)
+                self.dltotal = 0
+                self.dlcurrent = 0
+                self.completed = False
+
+        def abort(self):
+                """Download failed.  Remove the amount of bytes downloaded
+                by this file from the ProgressTracker."""
+
+                self.progtrack.download_add_progress(0, -self.dlcurrent)
+                self.completed = True
+
+        def commit(self, size):
+                """Indicate that this download has succeeded.  The size
+                argument is the total size that we received.  Compare this
+                value against the dlcurrent.  If it's out of sync, which
+                can happen if the underlying framework swaps our request
+                across connections, adjust the progress tracker by the
+                amount we're off."""
+
+                adjustment = int(size - self.dlcurrent)
+
+                self.progtrack.download_add_progress(1, adjustment)
+                self.completed = True
+
+        def progress_callback(self, dltot, dlcur, ultot, ulcur):
+                """Called by pycurl/libcurl framework to update
+                progress tracking."""
+
+                if hasattr(self.progtrack, "check_cancelation") and \
+                    self.progtrack.check_cancelation():
+                        return -1
+
+                if self.completed:
+                        return 0
+
+                if self.dltotal != dltot:
+                        self.dltotal = dltot
+
+                new_progress = int(dlcur - self.dlcurrent)
+                if new_progress > 0:
+                        self.dlcurrent += new_progress
+                        self.progtrack.download_add_progress(0, new_progress)
+
+                return 0
+
 
 # cache transport repo objects, so one isn't created on every operation
 

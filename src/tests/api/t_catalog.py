@@ -120,7 +120,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                     " variant.arch=sparc\n"
                     "set name=pkg.summary:th value=\"ซอฟต์แวร์ %s\"\n"
                     "set name=pkg.description value=\"Desc %s\"\n" % \
-                    (f, f, f, f, f))
+                    (f, f, f, f, f), signatures=True)
                 return m
 
         def __test_catalog_actions(self, nc, pkg_src_list):
@@ -639,13 +639,15 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                         "base@1.0,5.11-1:20000101T120000Z")
                 p1_man = manifest.Manifest()
                 p1_man.set_fmri(None, p1_fmri)
+                p1_man.set_content("", signatures=True)
 
                 p2_fmri = fmri.PkgFmri("pkg://opensolaris.org/"
                         "dependency@1.0,5.11-1:20000101T130000Z")
                 p2_man = manifest.Manifest()
                 p2_man.set_fmri(None, p2_fmri)
                 p2_man.set_content("set name=fmri value=%s\n"
-                    "depend type=require fmri=base@1.0\n" % p2_fmri.get_fmri())
+                    "depend type=require fmri=base@1.0\n" % p2_fmri.get_fmri(),
+                    signatures=True)
 
                 p3_fmri = fmri.PkgFmri("pkg://opensolaris.org/"
                         "summary@1.0,5.11-1:20000101T140000Z")
@@ -658,7 +660,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                     "set pkg.summary=\"Example pkg.Summary\"\n"
                     "set name=info.classification value=\"org.opensolaris."
                     "category.2008:Applications/Sound and Video\"\n" % \
-                    p3_fmri.get_fmri())
+                    p3_fmri.get_fmri(), signatures=True)
 
                 # Create and prep an empty catalog.
                 cpath = self.create_test_dir("test-06")
@@ -903,7 +905,9 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
 
                 def manifest_cb(cat, f):
                         if f.pkg_name == "apkg":
-                                return manifest.Manifest()
+                                m = manifest.Manifest()
+                                m.set_content("", signatures=True)
+                                return m
                         return self.__gen_manifest(f)
 
                 def ret_man(f):

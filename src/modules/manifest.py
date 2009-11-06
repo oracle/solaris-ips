@@ -287,13 +287,20 @@ class Manifest(object):
                 self.img = img
                 self.fmri = fmri
 
-        def set_content(self, content, excludes=EmptyI):
+        def set_content(self, content, excludes=EmptyI, signatures=False):
                 """content is the text representation of the manifest"""
                 self.actions = []
                 self.actions_bytype = {}
                 self.variants = {}
                 self.facets = {}
                 self.attributes = {}
+
+                if signatures:
+                        # Generate manifest signature based upon input
+                        # content, but only if signatures were requested.
+                        self.signatures = {
+                            "sha-1": self.hash_create(content)
+                        }
 
                 # So we could build up here the type/key_attr dictionaries like
                 # sdict and odict in difference() above, and have that be our
@@ -465,19 +472,15 @@ class Manifest(object):
                 file_handle.close()
                 return action_dict
 
-        @property
-        def signatures(self):
-                """A dict structure of signature key and value pairs for the
-                the contents of the Manifest.  The keys are the names of each
-                signature and the values are the signature."""
+        @staticmethod
+        def hash_create(mfstcontent):
+                """This method takes a string representing the on-disk
+                manifest content, and returns a hash value."""
 
-                # NOTE: The logic here must be identical to that of store() so
-                # that the signature properly reflects the on-disk data.
                 sha_1 = sha.new()
-                for l in self.as_lines():
-                        sha_1.update(l)
+                sha_1.update(mfstcontent)
 
-                return { "sha-1": sha_1.hexdigest() }
+                return sha_1.hexdigest()
 
         def validate(self, signatures):
                 """Verifies whether the signatures for the contents of

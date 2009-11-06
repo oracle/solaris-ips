@@ -43,7 +43,12 @@ class StreamingFileObj(object):
                 self.__done = False
 
         def __del__(self):
-                self.close()
+                try:
+                        self.close()
+                except AttributeError:
+                        # Ignore attribute error if instance is deleted
+                        # before initialization completes.
+                        pass
 
         # File object methods
 

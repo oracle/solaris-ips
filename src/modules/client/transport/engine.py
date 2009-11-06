@@ -108,19 +108,20 @@ class CurlTransportEngine(TransportEngine):
                 return ret
 
         def add_url(self, url, filepath=None, writefunc=None, header=None,
-            progtrack=None, sslcert=None, sslkey=None, repourl=None,
-            compressible=False):
+            progclass=None, progtrack=None, sslcert=None, sslkey=None,
+            repourl=None, compressible=False):
                 """Add a URL to the transport engine.  Caller must supply
                 either a filepath where the file should be downloaded,
                 or a callback to a function that will peform the write.
                 It may also optionally supply header information
                 in a dictionary.  If the caller has a ProgressTracker,
-                supply the object in the progtrack argument."""
+                it should pass the tracker in progtrack.  The caller should
+                also supply a class that wraps the tracker in progclass."""
 
                 t = TransportRequest(url, filepath=filepath,
-                    writefunc=writefunc, header=header, progtrack=progtrack,
-                    sslcert=sslcert, sslkey=sslkey, repourl=repourl,
-                    compressible=compressible)
+                    writefunc=writefunc, header=header, progclass=progclass,
+                    progtrack=progtrack, sslcert=sslcert, sslkey=sslkey,
+                    repourl=repourl, compressible=compressible)
 
                 self.__req_q.appendleft(t)
 
@@ -608,9 +609,9 @@ class CurlTransportEngine(TransportEngine):
                             " for URL %s did not specify filepath or write"
                             " function." % treq.url)
 
-                if treq.progtrack:
+                if treq.progtrack and treq.progclass:
                         hdl.setopt(pycurl.NOPROGRESS, 0)
-                        hdl.fileprog = FileProgress(treq.progtrack)
+                        hdl.fileprog = treq.progclass(treq.progtrack)
                         hdl.setopt(pycurl.PROGRESSFUNCTION,
                             hdl.fileprog.progress_callback)
 
@@ -703,67 +704,6 @@ class CurlTransportEngine(TransportEngine):
                 hdl.filetime = -1
 
 
-class FileProgress(object):
-        """This class bridges the interfaces between a ProgressTracker
-        object and the progress callback that's provided by Pycurl.
-        Since progress callbacks are per curl handle, and handles aren't
-        guaranteed to succeed, this object watches a handle's progress
-        and updates the tracker accordingly.  If the handle fails,
-        it will correctly remove the bytes from the file.  The curl
-        callback reports bytes even when it doesn't make progress.
-        It's necessary to keep additonal state here, since the client's
-        ProgressTracker has global counts of the bytes.  If we're
-        unable to keep a per-file count, the numbers will get
-        lost quickly."""
-
-        def __init__(self, progtrack):
-                self.progtrack = progtrack
-                self.dltotal = 0
-                self.dlcurrent = 0
-                self.completed = False
-
-        def abort(self):
-                """Download failed.  Remove the amount of bytes downloaded
-                by this file from the ProgressTracker."""
-
-                self.progtrack.download_add_progress(0, -self.dlcurrent)
-                self.completed = True
-
-        def commit(self, size):
-                """Indicate that this download has succeeded.  The size
-                argument is the total size that we received.  Compare this
-                value against the dlcurrent.  If it's out of sync, which
-                can happen if the underlying framework swaps our request
-                across connections, adjust the progress tracker by the
-                amount we're off."""
-
-                adjustment = int(size - self.dlcurrent)
-
-                self.progtrack.download_add_progress(1, adjustment)
-                self.completed = True
-
-        def progress_callback(self, dltot, dlcur, ultot, ulcur):
-                """Called by pycurl/libcurl framework to update
-                progress tracking."""
-
-                if hasattr(self.progtrack, "check_cancelation") and \
-                    self.progtrack.check_cancelation():
-                        return -1
-
-                if self.completed:
-                        return 0
-
-                if self.dltotal != dltot:
-                        self.dltotal = dltot
-
-                new_progress = int(dlcur - self.dlcurrent)
-                if new_progress > 0:
-                        self.dlcurrent += new_progress
-                        self.progtrack.download_add_progress(0, new_progress)
-
-                return 0
-
-
 class TransportRequest(object):
         """A class that contains per-request information for the underlying
         transport engines.  This is used to set per-request options that
@@ -771,8 +711,8 @@ class TransportRequest(object):
 
         def __init__(self, url, filepath=None, writefunc=None,
             hdrfunc=None, header=None, data=None, httpmethod="GET",
-            progtrack=None, sslcert=None, sslkey=None, repourl=None,
-            compressible=False):
+            progclass=None, progtrack=None, sslcert=None, sslkey=None,
+            repourl=None, compressible=False):
                 """Create a TransportRequest with the following parameters:
 
                 url - The url that the transport engine should retrieve
@@ -805,6 +745,12 @@ class TransportRequest(object):
                 the progress of the download, supply a ProgressTracker
                 object in this argument.
 
+                progclass - If the transport was supplied with a ProgressTracker
+                this must point to a class that knows how to wrap the progress
+                tracking object in way that allows the transport to invoke
+                the proper callbacks.  The transport instantiates an object
+                of this class before beginning the request.
+
                 repouri - This is the URL stem that identifies the repo.
                 It's a subset of url.  It's also used by the stats system.
 
@@ -821,6 +767,7 @@ class TransportRequest(object):
                 self.header = header
                 self.data = data
                 self.httpmethod = httpmethod
+                self.progclass = progclass
                 self.progtrack = progtrack
                 self.repourl = repourl
                 self.sslcert = sslcert

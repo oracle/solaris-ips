@@ -442,7 +442,7 @@ class Repository(object):
                 locking."""
 
                 if not manifest:
-                        manifest = self._get_manifest(pfmri)
+                        manifest = self._get_manifest(pfmri, sig=True)
                 c = self.catalog
                 c.add_package(pfmri, manifest=manifest)
 
@@ -480,7 +480,7 @@ class Repository(object):
                 f.version = v
                 return f
 
-        def _get_manifest(self, pfmri):
+        def _get_manifest(self, pfmri, sig=False):
                 """This function should be private; but is protected instead due
                 to its usage as a callback."""
 
@@ -496,7 +496,7 @@ class Repository(object):
                                     e.filename)
                         raise
                 m.set_fmri(None, pfmri)
-                m.set_content(content, EmptyI)
+                m.set_content(content, EmptyI, signatures=sig)
                 return m
 
         def __get_catalog_root(self):
@@ -631,7 +631,7 @@ class Repository(object):
                 self.catalog.log_updates = False
 
                 def add_package(f):
-                        m = self._get_manifest(f)
+                        m = self._get_manifest(f, sig=True)
                         if "pkg.fmri" in m:
                                 f = fmri.PkgFmri(m["pkg.fmri"])
                         if default_pub and not f.publisher:

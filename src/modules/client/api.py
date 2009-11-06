@@ -732,6 +732,7 @@ class ImageInterface(object):
                             progtrack=self.__progresstracker)
                         return self.__img
                 finally:
+                        self.__img.cleanup_downloads()
                         self.__activity_lock.release()
 
         def __licenses(self, mfst, local):

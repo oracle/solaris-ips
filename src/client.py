@@ -2480,6 +2480,7 @@ def image_create(args):
                 img.set_attrs(is_zone, pub_name, pub_url,
                     ssl_key=ssl_key, ssl_cert=ssl_cert, variants=variants,
                     refresh_allowed=refresh_catalogs, progtrack=progtrack)
+                img.cleanup_downloads()
         except OSError, e:
                 # Ensure messages are displayed after the spinner.
                 logger.error("\n")

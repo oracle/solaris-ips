@@ -30,6 +30,7 @@ import httplib
 import statvfs
 import errno
 import zlib
+import tempfile
 import threading
 
 import pkg.fmri
@@ -553,6 +554,7 @@ class Transport(object):
                 pub_prefix = fmri.get_publisher()
                 pub = self.__img.get_publisher(pub_prefix)
                 mfst = fmri.get_url_path()
+                download_dir = self.__img.incoming_download_dir()
                 mcontent = None
                 header = self.__build_header(intent=intent,
                     uuid=self.__get_uuid(pub))
@@ -561,6 +563,10 @@ class Transport(object):
                 # prior to this operation.
                 self._captive_portal_test()
 
+                # Check if the download_dir exists.  If it doesn't create
+                # the directories.
+                self._makedirs(download_dir)
+
                 for d in self.__gen_origins(pub, retry_count):
 
                         repostats = self.stats[d.get_url()]
@@ -568,6 +574,9 @@ class Transport(object):
                         try:
                                 resp = d.get_manifest(mfst, header)
                                 mcontent = resp.read()
+
+                                self._verify_manifest(fmri, content=mcontent)
+
                                 m = manifest.CachedManifest(fmri,
                                     self.__img.pkgdir,
                                     self.__img.cfg_cache.preferred_publisher,
@@ -589,6 +598,259 @@ class Transport(object):
                                 failures.append(te)
 
                 raise failures
+
+        def prefetch_manifests(self, fetchlist, excludes=misc.EmptyI,
+            progtrack=None, ccancel=None):
+                """Given a list of tuples [(fmri, intent), ...], prefetch
+                the manifests specified by the fmris in argument
+                fetchlist.  Caller may supply a progress tracker in
+                'progtrack' as well as the check-cancellation callback in
+                'ccancel.'
+
+                This method will not return transient transport errors,
+                but it should raise any that would cause an immediate
+                failure."""
+
+                self.__lock.acquire()
+                try:
+                        self._prefetch_manifests(fetchlist, excludes,
+                            progtrack, ccancel)
+                finally:
+                        self.__lock.release()
+
+
+        def _prefetch_manifests(self, fetchlist, excludes=misc.EmptyI,
+            progtrack=None, ccancel=None):
+                """This is the implementation of prefetch_manifests.
+                The other function is a wrapper for this one."""
+
+                download_dir = self.__img.incoming_download_dir()
+
+                # If captive portal test hasn't been executed, run it
+                # prior to this operation.
+                self._captive_portal_test()
+
+                # Check if the download_dir exists.  If it doesn't create
+                # the directories.
+                self._makedirs(download_dir)
+
+                # Call setup if the transport isn't configured yet.
+                if not self.__engine:
+                        self.__setup()
+
+                # Call statvfs to find the blocksize of download_dir's
+                # filesystem.
+                try:
+                        destvfs = os.statvfs(download_dir)
+                        # set the file buffer size to the blocksize of
+                        # our filesystem
+                        self.__engine.set_file_bufsz(destvfs[statvfs.F_BSIZE])
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES:
+                                raise apx.PermissionsException(e.filename)
+                        else:
+                                raise tx.TransportOperationError(
+                                    "Unable to stat VFS: %s" % e)
+                except AttributeError, e:
+                        # os.statvfs is not available on Windows
+                        pass
+
+                # Walk the tuples in fetchlist and create a MultiXfr
+                # instance for each publisher's worth of requests that
+                # this routine must process.
+                mx_pub = {}
+                for fmri, intent in fetchlist:
+                        pub_prefix = fmri.get_publisher()
+                        pub = self.__img.get_publisher(pub_prefix)
+                        mfst = fmri.get_url_path()
+                        header = self.__build_header(intent=intent,
+                            uuid=self.__get_uuid(pub))
+                        if pub_prefix not in mx_pub:
+                                mx_pub[pub_prefix] = MultiXfr(pub,
+                                    progtrack=progtrack,
+                                    ccancel=ccancel)
+                        # Add requests keyed by requested manifest
+                        # name.  Value contains (header, fmri) tuple.
+                        mx_pub[pub_prefix].add_hash(
+                            mfst, (header, fmri))
+
+                for mxfr in mx_pub.values():
+                        while mxfr:
+
+                                mfstlist = []
+                                # XXX Variable chunk size doesn't make
+                                # sense until the client supports multiple
+                                # origins.  This is fixed at 100 until then.
+                                chunksz = 100
+
+                                for i, k in enumerate(mxfr):
+                                        if i >= chunksz:
+                                                break
+                                        # List is (mfstname, header) tuple
+                                        mfstlist.append((k, mxfr[k][0]))
+
+                                self._prefetch_manifests_list(mxfr, mfstlist,
+                                    excludes)
+
+        def _prefetch_manifests_list(self, mxfr, mlist, excludes=misc.EmptyI):
+                """Perform bulk manifest prefetch.  This is the routine
+                that downloads initiates the downloads in chunks
+                determined by its caller _prefetch_manifests.  The mxfr
+                argument should be a MultiXfr object, and mlist
+                should be a list of tuples (manifestname, header)."""
+
+                # Don't perform multiple retries, since we're just prefetching.
+                retry_count = 1
+                mfstlist = mlist
+                pub = mxfr.get_publisher()
+                progtrack = mxfr.get_progtrack()
+
+                # download_dir is temporary download path.
+                download_dir = self.__img.incoming_download_dir()
+
+                for d in self.__gen_origins(pub, retry_count):
+
+                        failedreqs = []
+                        repostats = self.stats[d.get_url()]
+                        gave_up = False
+
+                        # This returns a list of transient errors
+                        # that occurred during the transport operation.
+                        # An exception handler here isn't necessary
+                        # unless we want to suppress a permanant failure.
+                        try:
+                                errlist = d.get_manifests(mfstlist,
+                                    download_dir, progtrack=progtrack)
+                        except tx.ExcessiveTransientFailure, ex:
+                                # If an endpoint experienced so many failures
+                                # that we just gave up, record this for later
+                                # and try a different host.
+                                gave_up = True
+                                errlist = ex.failures
+                                success = ex.success
+
+                        for e in errlist:
+                                req = getattr(e, "request", None)
+                                if req:
+                                        failedreqs.append(req)
+                                else:
+                                        raise e
+
+                        if gave_up:
+                                # If the transport gave up due to excessive
+                                # consecutive errors, the caller is returned a
+                                # list of successful requests, and a list of
+                                # failures.  We need to consider the requests
+                                # that were not attempted because we gave up
+                                # early.  In this situation, they're failed
+                                # requests, even though no exception was
+                                # returned.  Filter the flist to remove the
+                                # successful requests.  Everything else failed.
+                                failedreqs = [
+                                    x[0] for x in mfstlist
+                                    if x[0] not in success
+                                ]
+                        elif failedreqs:
+                                success = [
+                                    x[0] for x in mfstlist
+                                    if x[0] not in failedreqs
+                                ]
+                        else:
+                                success = [ x[0] for x in mfstlist ]
+                                mfstlist = None
+
+                        for s in success:
+
+                                dl_path = os.path.join(download_dir, s)
+
+                                try:
+                                        # Verify manifest content.
+                                        fmri = mxfr[s][1]
+                                        self._verify_manifest(fmri, dl_path)
+                                except tx.InvalidContentException, e:
+                                        e.request = s
+                                        repostats.record_error(content=True)
+                                        failedreqs.append(s)
+                                        continue
+
+                                pref_pub = \
+                                    self.__img.cfg_cache.preferred_publisher
+
+                                try:
+                                        mf = file(dl_path)
+                                        mcontent = mf.read()
+                                        mf.close()
+                                        m = manifest.CachedManifest(fmri,
+                                            self.__img.pkgdir, pref_pub,
+                                            excludes, mcontent)
+                                except ActionError, e:
+                                        repostats.record_error(content=True)
+                                        failedreqs.append(s)
+                                        os.remove(dl_path)
+                                        continue
+        
+                                os.remove(dl_path)
+                                progtrack.evaluate_progress(fmri)
+                                mxfr.del_hash(s)
+
+                        # Return if everything was successful
+                        if not mfstlist and not failedreqs:
+                                return
+                        elif failedreqs:
+                                # Generate mfstlist here, which included any
+                                # reqs that failed during verification.
+                                mfstlist = [
+                                    (x,y) for x,y in mfstlist
+                                    if x in failedreqs
+                                ]
+ 
+        def _verify_manifest(self, fmri, mfstpath=None, content=None):
+                """Verify a manifest.  The caller must supply the FMRI
+                for the package in 'fmri', as well as the path to the
+                manifest file that will be verified.  If signature information
+                is not present, this routine returns False.  If signature
+                information is present, and the manifest verifies, this
+                method returns true.  If the manifest fails to verify,
+                this function throws an InvalidContentException.
+
+                The caller may either specify a pathname to a file that
+                contains the manifest in 'mfstpath' or a string that contains
+                the manifest content in 'content'.  One of these arguments
+                must be used."""
+
+                # Get publisher information from FMRI.
+                pub = self.__img.get_publisher(fmri.get_publisher())
+                # Use the publisher to get the catalog and its signature info.
+                sigs = dict(pub.catalog.get_entry_signatures(fmri))
+
+                if sigs and "sha-1" in sigs:
+                        chash = sigs["sha-1"]
+                else:
+                        return False
+
+                if mfstpath:
+                        mf = file(mfstpath)
+                        mcontent = mf.read()
+                        mf.close()
+                elif content:
+                        mcontent = content
+                else:
+                        raise ValueError("Caller must supply either mfstpath "
+                            "or content arguments.")
+
+                newhash = manifest.Manifest.hash_create(mcontent)
+                if chash != newhash:
+                        if mfstpath:
+                                sz = os.stat(mfstpath).st_size
+                                os.remove(mfstpath)
+                        else:
+                                sz = None
+                        raise tx.InvalidContentException(mfstpath,
+                            "manifest hash failure: fmri: %s \n"
+                            "expected: %s computed: %s" % 
+                            (fmri, chash, newhash), size=sz)
+
+                return True
 
         @staticmethod
         def __build_header(intent=None, uuid=None):
@@ -1082,7 +1344,7 @@ class Transport(object):
                         try:
                                 versids = [
                                     int(v)
-                                    for v in versdict["versions"].split()
+                                    for v in versdict["versions"]
                                 ]
                         except ValueError:
                                 # Unable to determine version number.  Fail.
@@ -1184,8 +1446,67 @@ class Transport(object):
                             "chash failure: expected: %s computed: %s" % \
                             (chash, newhash), size=s.st_size)
 
+class MultiXfr(object):
+        """A transport object for performing multiple simultaneous
+        requests.  This object matches publisher to list of requests, and
+        allows the caller to associate a piece of data with the request key."""
 
-class MultiFile(object):
+        def __init__(self, pub, progtrack=None, ccancel=None):
+                """Supply the publisher as argument 'pub'."""
+
+                self._publisher = pub
+                self._hash = {}
+                self._progtrack = progtrack
+                # Add the check_cancelation to the progress tracker
+                if progtrack and ccancel:
+                        self._progtrack.check_cancelation = ccancel
+
+        def __contains__(self, key):
+                return key in self._hash
+
+        def __getitem__(self, key):
+                return self._hash[key]
+
+        def __iter__(self):
+                for k in self._hash:
+                        yield k
+
+        def __len__(self):
+                return len(self._hash)
+
+        def __nonzero__(self):
+                return bool(self._hash)
+
+        def add_hash(self, hashval, item):
+                """Add 'item' to list of values that exist for
+                hash value 'hashval'."""
+
+                self._hash[hashval] = item
+
+        def del_hash(self, hashval):
+                """Remove the hashval from the dictionary, if it exists."""
+
+                self._hash.pop(hashval, None)
+
+        def get_progtrack(self):
+                """Return the progress tracker object for this MFile,
+                if it has one."""
+
+                return self._progtrack
+
+        def get_publisher(self):
+                """Return the publisher object that will be used
+                for this MultiFile request."""
+
+                return self._publisher
+
+        def keys(self):
+                """Return a list of the keys in the hash."""
+
+                return self._hash.keys()
+
+
+class MultiFile(MultiXfr):
         """A transport object for performing multi-file requests
         using pkg actions.  This takes care of matching the publisher
         with the actions, and performs the download and content
@@ -1195,28 +1516,10 @@ class MultiFile(object):
                 """Supply the destination publisher in the pub argument.
                 The transport object should be passed in xport."""
 
-                self._publisher = pub
+                MultiXfr.__init__(self, pub, progtrack=progtrack,
+                    ccancel=ccancel)
+
                 self._transport = xport
-                self._progtrack = progtrack
-                # Add the check_cancelation to the progress tracker
-                self._progtrack.check_cancelation = ccancel
-                self._fhash = { }
-
-        def __contains__(self, key):
-                return key in self._fhash
-
-        def __getitem__(self, key):
-                return self._fhash[key]
-
-        def __iter__(self):
-                for v in self._fhash:
-                        yield v
-
-        def __len__(self):
-                return len(self._fhash)
-
-        def __nonzero__(self):
-                return bool(self._fhash)
 
         def add_action(self, action):
                 """The multiple file retrieval operation is asynchronous.
@@ -1234,37 +1537,13 @@ class MultiFile(object):
 
                 hashval = action.hash
 
-                # Each fhash key accesses a list of one or more actions.  If we
-                # already have a key in the dictionary, get the list and append
-                # the action to it.  Otherwise, create a new list with the first
-                # action.
-                if hashval in self._fhash:
-                        self._fhash[hashval].append(action)
-                else:
-                        self._fhash[hashval] = [ action ]
+                self.add_hash(hashval, action)
 
-        def del_hash(self, hashval):
-                """Remove the hashval from the dictionary, if it exists."""
+        def add_hash(self, hashval, item):
+                """Add 'item' to list of values that exist for
+                hash value 'hashval'."""
 
-                if hashval in self._fhash:
-                        del self._fhash[hashval]
-
-        def get_publisher(self):
-                """Return the publisher object that will be used
-                for this MultiFile request."""
-
-                return self._publisher
-
-        def get_progtrack(self):
-                """Return the progress tracker object for this MFile,
-                if it has one."""
-
-                return self._progtrack
-
-        def keys(self):
-                """Return a list of the keys in the fhash."""
-
-                return self._fhash.keys()
+                self._hash.setdefault(hashval, []).append(item)
 
         @staticmethod
         def _make_opener(hashval, cache_store):
@@ -1284,7 +1563,7 @@ class MultiFile(object):
                 filesz = os.stat(
                     self._transport.cache_store.lookup(hashval)).st_size
 
-                for action in self._fhash[hashval]:
+                for action in self._hash[hashval]:
                         action.data = self._make_opener(hashval,
                             self._transport.cache_store)
                         nactions += 1
@@ -1316,6 +1595,6 @@ class MultiFile(object):
                 """Wait for outstanding file retrieval operations to
                 complete."""
 
-                if self._fhash:
+                if self._hash:
                         self._transport._get_files(self)
 
