@@ -100,7 +100,7 @@ SUBCOMMANDS
           search indices.
 
      publish [ -d basedir] ... fmri [manifest] ...
-          Combines open, include and publish in a single operation.
+          Combines open, include and close in a single operation.
 
      generate [ -T pattern] bundlefile ...
           Read each given bundlefile (such as an SVR4 package, directory,
