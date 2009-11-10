@@ -73,6 +73,19 @@
       </locale>
     </schema>
     <schema>
+      <key>/schemas/apps/packagemanager/preferences/last_export_selections_path</key>
+      <applyto>/apps/packagemanager/preferences/last_export_selections_path</applyto>
+      <owner>packagemanager</owner>
+      <type>string</type>
+      <default></default>
+      <locale name="C">
+         <short>Last Export Selections Path</short>
+         <long>
+          The path for the last set of selections exported from packagemanager.
+         </long>
+      </locale>
+    </schema>
+    <schema>
       <key>/schemas/apps/packagemanager/preferences/initial_section</key>
       <applyto>/apps/packagemanager/preferences/initial_section</applyto>
       <owner>packagemanager</owner>

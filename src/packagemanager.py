@@ -46,6 +46,8 @@ INITIAL_APP_HPOS_PREFERENCES = "/apps/packagemanager/preferences/initial_app_hpo
 INITIAL_APP_VPOS_PREFERENCES = "/apps/packagemanager/preferences/initial_app_vposition"
 INITIAL_SHOW_FILTER_PREFERENCES = "/apps/packagemanager/preferences/initial_show_filter"
 INITIAL_SECTION_PREFERENCES = "/apps/packagemanager/preferences/initial_section"
+LAST_EXPORT_SELECTION_PATH = \
+        "/apps/packagemanager/preferences/last_export_selections_path"
 SHOW_STARTPAGE_PREFERENCES = "/apps/packagemanager/preferences/show_startpage"
 SAVE_STATE_PREFERENCES = "/apps/packagemanager/preferences/save_state"
 START_INSEARCH_PREFERENCES = "/apps/packagemanager/preferences/start_insearch"
@@ -108,6 +110,8 @@ import gettext
 import signal
 import threading
 import re
+import stat
+import tempfile
 from xml.sax import saxutils
 from threading import Thread
 from threading import Lock
@@ -177,6 +181,8 @@ class PackageManager:
                             self.client.get_int(INITIAL_SHOW_FILTER_PREFERENCES)
                         self.initial_section = \
                             self.client.get_int(INITIAL_SECTION_PREFERENCES)
+                        self.last_export_selection_path = \
+                            self.client.get_string(LAST_EXPORT_SELECTION_PATH)
                         self.show_startpage = \
                             self.client.get_bool(SHOW_STARTPAGE_PREFERENCES)
                         self.save_state = \
@@ -205,6 +211,7 @@ class PackageManager:
                         self.max_search_completion = 20
                         self.initial_show_filter = 0
                         self.initial_section = 2
+                        self.last_export_selection_path = ""
                         self.show_startpage = True
                         self.save_state = True
                         self.start_insearch = False
@@ -361,7 +368,22 @@ class PackageManager:
                     w_tree_api_search_error.get_widget("api_search_button")
                 infobuffer = self.api_search_error_textview.get_buffer()
                 infobuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)
-
+                w_tree_confirm = gtk.glade.XML(self.gladefile, "confirmationdialog")
+                self.w_exportconfirm_dialog = \
+                    w_tree_confirm.get_widget("confirmationdialog")
+                self.w_exportconfirm_dialog.set_icon(self.window_icon)
+                self.w_confirmok_button = w_tree_confirm.get_widget("ok_conf")
+                self.w_confirm_textview = w_tree_confirm.get_widget("confirmtext")
+                infobuffer = self.w_confirm_textview.get_buffer()
+                infobuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)                
+                self.w_confirm_label = w_tree_confirm.get_widget("confirm_label")
+                w_confirm_image = w_tree_confirm.get_widget("confirm_image")
+                w_confirm_image.set_from_stock(gtk.STOCK_DIALOG_INFO,
+                    gtk.ICON_SIZE_DND)
+                self.w_exportconfirm_dialog.set_title(_("Export Selections Confirmation"))
+                self.w_confirm_label.set_markup(
+                    _("<b>Export the following to a Web Install .p5i file:</b>"))
+                
                 self.w_main_window = w_tree_main.get_widget("mainwindow")
                 self.w_main_window.set_icon(self.window_icon)
                 self.w_main_hpaned = \
@@ -448,6 +470,8 @@ class PackageManager:
                 self.w_updateall_menuitem = w_tree_main.get_widget("package_update_all")
                 self.__set_icon(self.w_updateall_button,
                     self.w_updateall_menuitem, 'pm-update_all')
+                self.w_export_selections_menuitem = w_tree_main.get_widget(
+                    "file_export_selections")
                 self.w_cut_menuitem = w_tree_main.get_widget("edit_cut")
                 self.w_copy_menuitem = w_tree_main.get_widget("edit_copy")
                 self.w_paste_menuitem = w_tree_main.get_widget("edit_paste")
@@ -520,6 +544,8 @@ class PackageManager:
                                 "on_repositorycombobox_changed": \
                                     self.__on_repositorycombobox_changed,
                                 #menu signals
+                                "on_file_export_selections": \
+                                        self.__on_file_export_selections,
                                 "on_file_quit_activate":self.__on_file_quit_activate,
                                 "on_file_be_activate":self.__on_file_be_activate,
                                 "on_package_install_update_activate": \
@@ -594,9 +620,16 @@ class PackageManager:
                                 "on_ua_completed_linkbutton_clicked": \
                                      self.__on_ua_completed_linkbutton_clicked,
                             }
-                        w_xmltree_ua_completed.signal_autoconnect(dic_completed)
-        
+                        dic_confirm = \
+                            {
+                                "on_ok_conf_clicked": \
+                                    self.__on_confirm_proceed_button_clicked,
+                                "on_cancel_conf_clicked": \
+                                    self.__on_confirm_cancel_button_clicked,
+                            }        
                             
+                        w_xmltree_ua_completed.signal_autoconnect(dic_completed)
+                        w_tree_confirm.signal_autoconnect(dic_confirm)
                         w_tree_main.signal_autoconnect(dic_mainwindow)
                         w_tree_preferences.signal_autoconnect(dic_preferences)
                         w_tree_api_search_error.signal_autoconnect(
@@ -670,6 +703,99 @@ class PackageManager:
                         if sb_label and isinstance(sb_label, gtk.Label):
                                 return sb_label
                 return None
+                
+        def __on_confirm_cancel_button_clicked(self, widget):
+                self.w_exportconfirm_dialog.hide()
+
+        def __on_confirm_proceed_button_clicked(self, widget):
+                self.w_exportconfirm_dialog.hide()
+                self.__export_selections()
+
+        def __on_file_export_selections(self, menuitem):
+                if self.selected_pkgs == None or len(self.selected_pkgs) == 0:
+                        return
+                        
+                infobuffer = self.w_confirm_textview.get_buffer()
+                infobuffer.set_text("")
+                textiter = infobuffer.get_end_iter()
+                
+                infobuffer.insert(textiter, "\n")
+                for pub_name, pkgs in self.selected_pkgs.items():
+                        infobuffer.insert_with_tags_by_name(textiter,
+                            "%s\n" % pub_name, "bold")
+                        for pkg in pkgs.keys():
+                                infobuffer.insert(textiter,
+                                    "\t%s\n" % fmri.extract_pkg_name(pkg))
+                self.w_exportconfirm_dialog.show()
+
+        def __export_selections(self):
+                filename = self.__get_export_p5i_filename()
+                if not filename:
+                        return
+                try:
+                        fobj = open(filename, 'w')
+                except IOError, ex_sel:
+                        self.error_occurred(ex_sel, _("Export Selections Error"))
+                        return
+
+                self.api_o.write_p5i(fobj, pkg_names=self.selected_pkgs,
+                    pubs=self.selected_pkgs.keys())
+                fobj.close()
+                os.chmod(filename, stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP |
+                    stat.S_IWGRP | stat.S_IROTH | stat.S_IWOTH )
+
+        def __get_export_p5i_filename(self):
+                filename = None
+                chooser = gtk.FileChooserDialog(_("Export Selections"), 
+                    self.w_main_window,
+                    gtk.FILE_CHOOSER_ACTION_SAVE,
+                    (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
+                    gtk.STOCK_SAVE, gtk.RESPONSE_OK))
+        
+                file_filter = gtk.FileFilter()
+                file_filter.set_name(_("p5i Files"))
+                file_filter.add_pattern("*.p5i")
+                chooser.add_filter(file_filter)
+                file_filter = gtk.FileFilter()
+                file_filter.set_name(_("All Files"))
+                file_filter.add_pattern("*")
+                chooser.add_filter(file_filter)
+                
+                path = tempfile.gettempdir()
+                name = _("my_packages")
+                if self.last_export_selection_path and \
+                        self.last_export_selection_path != "":
+                        path, name_plus_ext = os.path.split(
+                            self.last_export_selection_path)
+                        name, ext = os.path.splitext(name_plus_ext)
+                        self.pylintstub = ext
+
+                #Check name
+                base_name = None
+                m = re.match("(.*)(-\d+)$", name)
+                if m == None and os.path.exists(path + os.sep + name + '.p5i'):
+                        base_name = name
+                if m and len(m.groups()) == 2:
+                        base_name = m.group(1)
+                name = name + '.p5i'
+                if base_name:
+                        for i in range(1, 99):
+                                full_path = path + os.sep + base_name + '-' + \
+                                        str(i) + '.p5i'
+                                if not os.path.exists(full_path):
+                                        name = base_name + '-' + str(i) + '.p5i'
+                                        break
+                chooser.set_current_folder(path)
+                chooser.set_current_name(name)
+                chooser.set_do_overwrite_confirmation(True)
+
+                response = chooser.run()
+                if response == gtk.RESPONSE_OK:
+                        filename = chooser.get_filename()
+                        self.last_export_selection_path = filename
+                chooser.destroy()
+
+                return filename
 
         def __set_search_text_mode(self, style):
                 if style == enumerations.SEARCH_STYLE_NORMAL:
@@ -2279,10 +2405,10 @@ class PackageManager:
                 self.application_refilter_idle_id = 0
                 model = self.w_application_treeview.get_model()
                 self.w_application_treeview.set_model(None)
-                id, order = self.application_list_sort.get_sort_column_id()
+                app_id, order = self.application_list_sort.get_sort_column_id()
                 self.application_list_sort.reset_default_sort_func()
                 self.application_list_filter.refilter()
-                self.application_list_sort.set_sort_column_id(id, order)
+                self.application_list_sort.set_sort_column_id(app_id, order)
                 self.w_application_treeview.set_model(model)
                 self.application_treeview_initialized = True
                 self.application_treeview_range = None
@@ -3156,6 +3282,9 @@ class PackageManager:
                         hpos = save_hpos
                         vpos = save_vpos
                 try:
+                        if self.last_export_selection_path:
+                                self.client.set_string(LAST_EXPORT_SELECTION_PATH,
+                                    self.last_export_selection_path)
                         self.client.set_string(LASTSOURCE_PREFERENCES, pub)
                         self.client.set_bool(START_INSEARCH_PREFERENCES,
                             start_insearch)
@@ -3873,6 +4002,7 @@ class PackageManager:
                         return
                 self.__enable_if_selected_for_removal()
                 self.__enable_if_selected_for_install_update()
+                self.__enable_disable_export_selections()
 
         def __enable_if_selected_for_removal(self):
                 sensitive = False
@@ -3991,6 +4121,13 @@ class PackageManager:
                 self.w_updateall_button.set_sensitive(update_available)
                 self.w_updateall_menuitem.set_sensitive(update_available)
                 self.__enable_disable_install_remove()
+
+        def __enable_disable_export_selections(self):
+                if self.selected_pkgs == None or len(self.selected_pkgs) == 0:
+                        self.w_export_selections_menuitem.set_sensitive(False)
+                else:
+                        self.w_export_selections_menuitem.set_sensitive(True)
+                return
 
         def __enable_disable_deselect(self):
                 if self.w_application_treeview.get_model():

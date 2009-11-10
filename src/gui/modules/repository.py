@@ -878,6 +878,8 @@ class Repository(progress.GuiProgressTracker):
                         try:
                                 pub = self.api_o.get_publisher(name,
                                     duplicate = True)
+                                if pub.disabled == (not to_enable):
+                                        continue
                                 pub.disabled = not to_enable
                                 self.no_changes += 1
                                 enable_text = _("Disabling")
@@ -897,7 +899,7 @@ class Repository(progress.GuiProgressTracker):
                 if len(errors) > 0:
                         gobject.idle_add(self.__show_errors, errors)
                 else:
-                        gobject.idle_add(self.parent.reload_packages)
+                        gobject.idle_add(self.parent.reload_packages, False)
 
         def __proceed_after_confirmation(self):
                 errors = []
@@ -1384,7 +1386,12 @@ class Repository(progress.GuiProgressTracker):
                 else:   # More Generic for WebInstall
                         msg_title = _("Publisher error")
                 for err in errors:
-                        error_msg += str(err[1]) + "\n\n"
+                        if isinstance(err[1], api_errors.CatalogRefreshException):
+                                error_msg += gui_misc.get_catalogrefresh_exception_msg(
+                                    err[1])
+                        else:
+                                error_msg += str(err[1])
+                        error_msg += "\n\n"
                 gui_misc.error_occurred(None, error_msg, msg_title, msg_type)
 
         @staticmethod
