@@ -356,3 +356,26 @@ def get_catalogrefresh_exception_msg(cre):
                 msg += cre.message
 
         return msg
+
+def change_stockbutton_label(button, text):
+        # Gtk.Button->Gtk.Alignment->Gtk.HBox->[Gtk.Image, Gtk.Label]
+        # Drill into Button widget to get Gtk.Label and set its text
+        children = button.get_children()
+        if len(children) == 0:
+                return
+        align = children[0]
+        if not align or not isinstance(align, gtk.Alignment):
+                return
+        children = align.get_children()
+        if len(children) == 0:
+                return
+        hbox = children[0]
+        if not hbox or not isinstance(hbox, gtk.HBox):
+                return
+        children = hbox.get_children()
+        if not (len(children) > 1):
+                return
+        button_label = children[1]
+        if not button_label or not isinstance(button_label, gtk.Label):
+                return
+        button_label.set_label(text)

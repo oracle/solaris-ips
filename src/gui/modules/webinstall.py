@@ -208,6 +208,8 @@ class Webinstall:
                         self.w_webinstall_dialog.resize(450, 100)
                         return
                 else:
+                        gui_misc.change_stockbutton_label(self.w_webinstall_proceed,
+                            _("_Proceed"))
                         self.w_webinstall_dialog.show_all()
                         self.w_webinstall_dialog.resize(450, 370)
                         
