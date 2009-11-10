@@ -63,7 +63,13 @@ protoproto: FRC
 
 PROTOS = $(SUBDIRS:%=%/prototype)
 
+#
+# The pkgproto command in the protoproto target does not generate editable
+# (e) file entries so we need to change any editable entries into simple
+# file entries for the subsequent comparison to suceed.
+#
 pkgproto: $(PROTOS)
-	nawk '$$1 ~ /[sdf]/ {print $$1, $$3}' $(PROTOS) | sort +1 -u > $@
+	nawk '$$1 ~ /[sdef]/ {print $$1, $$3}' $(PROTOS) | sed 's/^e/f/' | \
+	    sort +1 -u > $@
 
 FRC:

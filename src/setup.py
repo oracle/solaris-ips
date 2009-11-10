@@ -164,6 +164,7 @@ man5_dir = 'usr/share/man/cat5'
 resource_dir = 'usr/share/lib/pkg'
 smf_dir = 'var/svc/manifest/application'
 zones_dir = 'etc/zones'
+etcbrand_dir = 'etc/brand/ipkg'
 brand_dir = 'usr/lib/brand/ipkg'
 
 scripts_sunos = {
@@ -276,9 +277,12 @@ brand_files = [
         'brand/detach',
         'brand/prestate',
         'brand/poststate',
-        'brand/query',
         'brand/uninstall',
         'brand/common.ksh',
+        ]
+etcbrand_files = [
+        'brand/pkgrm.conf',
+        'brand/smf_disable.conf',
         ]
 smf_files = [
         'svc/pkg-server.xml',
@@ -821,6 +825,7 @@ if osname == 'sunos':
         data_files += [
                 (zones_dir, zones_files),
                 (brand_dir, brand_files),
+                (etcbrand_dir, etcbrand_files),
                 (smf_dir, smf_files),
                 ]
 

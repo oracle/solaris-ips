@@ -35,12 +35,15 @@ export PKG_IMAGE
 
 . /usr/lib/brand/ipkg/common.ksh
 
+f_a_obs=$(gettext "-a publisher=uri option is obsolete, use -P instead.")
 f_pkg5_missing=$(gettext "pkg(5) does not seem to be present on this system.\n")
-f_no_pref_publisher=$(gettext "Unable to get global zone preferred publisher information, and none was supplied.\nYou must specify one using the -P option.\n")
+f_no_pref_publisher=$(gettext "Unable to get global zone preferred publisher information, and none was supplied.\nYou must specify one using the -P option.")
+f_key_file=$(gettext "Key file not allowed without -P")
+f_cert_file=$(gettext "Cert file not allowed without -P")
 f_img=$(gettext "failed to create image\n")
 f_pkg=$(gettext "failed to install package\n")
 f_interrupted=$(gettext "Installation cancelled due to interrupt.\n")
-f_bad_publisher=$(gettext "Syntax error in publisher information.\n")
+f_bad_publisher=$(gettext "Syntax error in publisher information.")
 f_no_entire=$(gettext "Unable to find 'entire' incorporation in the global zone image.\n")
 f_no_entire_in_pref=$(gettext "Unable to locate the incorporation '%s' in the preferred publisher '%s'.\nUse -P to supply a publisher which contains this package.\n")
 f_key_prop=$(gettext "Unable to propagate key %s to %s")
@@ -60,17 +63,14 @@ m_more=$(gettext        "  Installing: Additional Packages (output follows)\n")
 m_smf=$(gettext	        " Postinstall: Copying SMF seed repository ...")
 m_more_brokenness=$(gettext " Postinstall: Applying workarounds.")
 m_mannote=$(gettext     "        Note: Man pages can be obtained by installing SUNWman")
-m_complete=$(gettext    "        Done: Installation completed in %s seconds.")
-m_postnote=$(gettext    "  Next Steps: Boot the zone, then log into the zone console")
-m_postnote2=$(gettext "             (zlogin -C) to complete the configuration process")
 
-m_usage=$(gettext    "$0: [-h] [-P publisher=uri] [-e extrapkg [...]]")
+m_usage=$(gettext "\n        install [-h]\n        install [-c certificate_file] [-k key_file] [-P publisher=uri]\n                [-e extrapkg [...]]\n        install {-a archive|-d path} {-p|-u} [-s|-v]")
 
 m_done=$(gettext      " done.")
 
 is_brand_labeled() {
 	brand_labeled=0
-	brand=$(/usr/sbin/zoneadm -z $zonename list -p | awk -F: '{print $6}')
+	brand=$(/usr/sbin/zoneadm -z $ZONENAME list -p | awk -F: '{print $6}')
 	if [[ $brand == "labeled" ]]; then
 		brand_labeled=1
 	fi
@@ -85,8 +85,8 @@ int_code=$ZONE_SUBPROC_NOTCOMPLETE
 trap trap_cleanup INT
 
 extra_packages=""
-zonename=""
-zonepath=""
+ZONENAME=""
+ZONEPATH=""
 pub_and_url=""
 
 # Setup i18n output
@@ -103,32 +103,82 @@ PKG=/usr/bin/pkg
 
 certfile="None"
 keyfile="None"
-while getopts "a:P:z:R:h:e:c:k:" opt; do
+unset install_archive
+unset source_dir
+unset msg
+unset silent_mode
+unset verbose_mode
+
+while getopts "a:c:d:e:hk:P:pR:suvz:" opt; do
 	case $opt in
-		h)	fail_usage "$m_usage";;
-		R)	zonepath="$OPTARG" ;;
-		z)	zonename="$OPTARG" ;;
-		a)	pub_and_url="$OPTARG";
-			print -u2 \
-			    "WARNING: -a is deprecated.  Use -P instead." ;;
-		P)	pub_and_url="$OPTARG" ;;
+		a)	# We're expecting a path to an archive
+			if [[ ! -f $OPTARG ]]; then
+			 	# If old style 'pub=uri' parameter then error.
+				echo $OPTARG | egrep -s =
+				if (( $? == 0 )); then
+					fail_usage "$f_a_obs"
+				fi
+			fi
+		 	install_archive="-a $OPTARG";;
 		c)	certfile="$OPTARG" ;;
-		k)	keyfile="$OPTARG" ;;
+		d) 	source_dir="-d $OPTARG";;
 		e)	extra_packages="$extra_packages $OPTARG" ;;
-		*)	fail_usage "$m_usage";;
+		h)	fail_usage "";;
+		k)	keyfile="$OPTARG" ;;
+		P)	pub_and_url="$OPTARG" ;;
+		p)	preserve_zone="-p";;
+		R)	ZONEPATH="$OPTARG" ;;
+		s)	silent_mode=1;;
+		u)	unconfig_zone="-u";;
+		v)	verbose_mode="-v";;
+		z)	ZONENAME="$OPTARG" ;;
+		*)	fail_usage "";;
 	esac
 done
 shift $((OPTIND-1))
 
-if [[ -z $zonepath || -z $zonename ]]; then
+if [[ -z $ZONEPATH || -z $ZONENAME ]]; then
 	print -u2 "Brand error: No zone path or name"
 	exit $ZONE_SUBPROC_USAGE
 fi
 
+# XXX shared/common script currently uses lower case zonename & zonepath
+zonename="$ZONENAME"
+zonepath="$ZONEPATH"
+
 is_brand_labeled
 
-zoneroot=$zonepath/root
+ZONEROOT=$ZONEPATH/root
 secinfo=""
+
+# An image install can't use both -a AND -d...
+[[ -n "$install_archive" && -n "$source_dir" ]] &&
+    fail_usage "$f_incompat_options" "-a" "-d"
+
+# The install can't be both verbose AND silent...
+[[ -n $silent_mode && -n $verbose_mode ]] && \
+    fail_usage "$f_incompat_options" "-s" "-v"
+
+# The install can't both preserve and unconfigure
+[[ -n $unconfig_zone && -n $preserve_zone ]] && \
+    fail_usage "$f_incompat_options" "-u" "-p"
+
+# IPS options aren't allowed when installing from a system image.
+if [[ -n "$install_archive" || -n "$source_dir" ]]; then
+	[[ -n $pub_and_url ]] && fail_usage "$f_incompat_options" "-a|-d" "-P"
+	[[ -n "$extra_packages" ]] && \
+	    fail_usage "$f_incompat_options" "-a|-d" "-e"
+	[[ "$certfile" != "None" ]] && \
+	    fail_usage "$f_incompat_options" "-a|-d" "-c"
+	[[ "$keyfile" != "None" ]] && \
+	    fail_usage "$f_incompat_options" "-a|-d" "-k"
+fi
+
+# p2v options aren't allowed when installing from a repo.
+if [[ -z $install_archive && -z $source_dir ]]; then
+	[[ -n $preserve_zone || -n $unconfig_zone ]] && \
+		fail_usage "$f_incompat_options" "default" "-p|-u"
+fi
 
 #
 # If the user didn't give us a publisher, and there's a preferred publisher set
@@ -138,10 +188,10 @@ propagate_secinfo=
 propagate_extra=
 if [[ -z $pub_and_url ]]; then
 	if [[ $keyfile != "None" ]]; then
-		fail_usage "Key file not allowed without -P"
+		fail_usage "$f_key_file"
 	fi
 	if [[ $certfile != "None" ]]; then
-		fail_usage "Cert file not allowed without -P"
+		fail_usage "$f_cert_file"
 	fi
 
 	# We look for a preferred online origin.
@@ -226,66 +276,29 @@ fi
 # Before installing the zone, set up ZFS dataset hierarchy for the zone root
 # dataset.
 #
-
-get_current_gzbe
-
-# Find the zone's current dataset.  This should have been created by zoneadm.
-get_zonepath_ds $zonepath
-
-# Check that zone is not in the ROOT dataset.
-fail_zonepath_in_rootds $ZONEPATH_DS
+create_active_ds
 
 #
-# From here on, errors should cause the zone to be incomplete.
+# If we're installing from an image, branch off to that installer.
 #
-int_code=$ZONE_SUBPROC_FATAL
+if [[ -n $install_archive || -n $source_dir ]]; then
+	/usr/lib/brand/ipkg/image_install $ZONENAME $ZONEPATH \
+	    $install_archive $source_dir $verbose_mode $silent_mode \
+	    $unconfig_zone $preserve_zone
+	ii_result=$?
 
-#
-# We need to tolerate errors while creating the datasets and making the
-# mountpoint, since these could already exist from some other BE.
-#
-
-/usr/sbin/zfs list -H -o name $ZONEPATH_DS/ROOT >/dev/null 2>&1
-if (( $? != 0 )); then
-	/usr/sbin/zfs create -o mountpoint=legacy -o zoned=on $ZONEPATH_DS/ROOT
-	if (( $? != 0 )); then
-		fail_fatal "$f_zfs_create"
+	if (( $ii_result != 0 )); then
+		exit $ZONE_SUBPROC_NOTCOMPLETE
 	fi
+	exit $ZONE_SUBPROC_OK
 fi
 
-BENAME=zbe
-BENUM=0
-# Try 100 different names before giving up.
-while [ $BENUM -lt 100 ]; do
-       	/usr/sbin/zfs create -o $PROP_ACTIVE=on -o $PROP_PARENT=$CURRENT_GZBE \
-	    -o canmount=noauto $ZONEPATH_DS/ROOT/$BENAME >/dev/null 2>&1
-	if (( $? == 0 )); then
-		break
-	fi
-        BENUM=`expr $BENUM + 1`
-	BENAME="zbe-$BENUM"
-done
-
-if [ $BENUM -ge 100 ]; then
-	fail_fatal "$f_zfs_create"
-fi
-
-if [ ! -d $zoneroot ]; then
-	/usr/bin/mkdir $zoneroot
-fi
-
-/usr/sbin/mount -F zfs $ZONEPATH_DS/ROOT/$BENAME $zoneroot || \
-	fail_incomplete "$f_zfs_mount"
-
-#
-# Done setting up the zone's datasets.
-#
 printf "$m_publisher\n" $publisher $publisherurl
 echo "$publishers_extra" | while IFS== read publisher publisherurl; do
 	[ -z "$publisher" ] && break
 	printf "$m_publisher\n" $publisher $publisherurl
 done
-printf "$m_image\n" $zoneroot
+printf "$m_image\n" $ZONEROOT
 
 #
 # We copy the credentials from the global zone into the new image
@@ -295,19 +308,19 @@ if [[ $keyfile != "None" ]]; then
 	newkeylocation="$KEYDIR/$(basename $keyfile)"
 	secinfo="$secinfo -k $newkeylocation"
 	printf "$m_key_prop\n" $(basename $keyfile)
-	mkdir -p -m 755 $zoneroot/$KEYDIR || fail_fatal "$f_key_prop"
-	cp $keyfile $zoneroot/$newkeylocation || fail_fatal "$f_key_prop"
-	chmod 644 $zoneroot/$newkeylocation
-	chown -h root:root $zoneroot/$newkeylocation
+	mkdir -p -m 755 $ZONEROOT/$KEYDIR || fail_fatal "$f_key_prop"
+	cp $keyfile $ZONEROOT/$newkeylocation || fail_fatal "$f_key_prop"
+	chmod 644 $ZONEROOT/$newkeylocation
+	chown -h root:root $ZONEROOT/$newkeylocation
 fi
 if [[ $certfile != "None" ]]; then
 	newcertlocation="$KEYDIR/$(basename $certfile)"
 	secinfo="$secinfo -c $newcertlocation"
 	printf "$m_cert_prop\n" $(basename $certfile)
-	mkdir -p -m 755 $zoneroot/$KEYDIR || fail_fatal "$f_cert_prop"
-	cp $certfile $zoneroot/$newcertlocation || fail_fatal "$f_cert_prop"
-	chmod 644 $zoneroot/$newkeylocation
-	chown -h root:root $zoneroot/$newkeylocation
+	mkdir -p -m 755 $ZONEROOT/$KEYDIR || fail_fatal "$f_cert_prop"
+	cp $certfile $ZONEROOT/$newcertlocation || fail_fatal "$f_cert_prop"
+	chmod 644 $ZONEROOT/$newkeylocation
+	chown -h root:root $ZONEROOT/$newkeylocation
 fi
 
 #
@@ -318,10 +331,10 @@ fi
 # XXX in the future, we can create the image --no-refresh, then
 # set the publisher.  But image-create --no-refresh is broken right now.
 #
-$PKG image-create -f --zone --full -p "$pub_and_url" $secinfo $zoneroot || \
+$PKG image-create -f --zone --full -p "$pub_and_url" $secinfo $ZONEROOT || \
     fail_incomplete "$f_img"
 
-PKG_IMAGE="$zoneroot"
+PKG_IMAGE="$ZONEROOT"
 export PKG_IMAGE
 
 # add extra publishers
@@ -433,35 +446,35 @@ $PKG install --no-index --no-refresh $pkglist || fail_fatal "$f_pkg"
 printf "\n$m_mannote\n"
 
 printf "$m_smf"
-ln -s ns_files.xml $zoneroot/var/svc/profile/name_service.xml
-ln -s generic_limited_net.xml $zoneroot/var/svc/profile/generic.xml
-ln -s inetd_generic.xml $zoneroot/var/svc/profile/inetd_services.xml
-ln -s platform_none.xml $zoneroot/var/svc/profile/platform.xml
+ln -s ns_files.xml $ZONEROOT/var/svc/profile/name_service.xml
+ln -s generic_limited_net.xml $ZONEROOT/var/svc/profile/generic.xml
+ln -s inetd_generic.xml $ZONEROOT/var/svc/profile/inetd_services.xml
+ln -s platform_none.xml $ZONEROOT/var/svc/profile/platform.xml
 
 # This was formerly done in i.manifest
-repfile=$zoneroot/etc/svc/repository.db
-cp $zoneroot/lib/svc/seed/nonglobal.db $repfile
+repfile=$ZONEROOT/etc/svc/repository.db
+cp $ZONEROOT/lib/svc/seed/nonglobal.db $repfile
 chmod 0600 $repfile
 chown root:sys $repfile
 
 printf "$m_done\n"
 
 # Clean up root as a role and jack if needed
-if grep "^root::::type=role;" $zoneroot/etc/user_attr >/dev/null 2>&1; then
+if grep "^root::::type=role;" $ZONEROOT/etc/user_attr >/dev/null 2>&1; then
 	printf "$m_brokenness\n"
 	#
 	# Remove "jack" user.
 	#
-	print "/^jack:/d\nw" | ed -s $zoneroot/etc/passwd
-	chmod u+w $zoneroot/etc/shadow
-	print "/^jack:/d\nw" | ed -s $zoneroot/etc/shadow
-	chmod u-w $zoneroot/etc/shadow
+	print "/^jack:/d\nw" | ed -s $ZONEROOT/etc/passwd
+	chmod u+w $ZONEROOT/etc/shadow
+	print "/^jack:/d\nw" | ed -s $ZONEROOT/etc/shadow
+	chmod u-w $ZONEROOT/etc/shadow
 
 	#
 	# Set root from a role back to... not a role.  Grr.
 	#
 	print "s/^root::::type=role;/root::::/\nw" |
-	    ed -s $zoneroot/etc/user_attr
+	    ed -s $ZONEROOT/etc/user_attr
 fi
 
 #
@@ -470,11 +483,11 @@ fi
 # See http://defect.opensolaris.org/bz/show_bug.cgi?id=741
 #
 printf "$m_more_brokenness\n"
-/usr/sbin/sysidconfig -b $zoneroot -a /lib/svc/method/sshd
-touch $zoneroot/etc/.UNCONFIGURED
+/usr/sbin/sysidconfig -b $ZONEROOT -a /lib/svc/method/sshd
+touch $ZONEROOT/etc/.UNCONFIGURED
 
 # Umount the dataset on the root.
-/usr/sbin/umount $zoneroot
+/usr/sbin/umount $ZONEROOT
 
 printf "$m_complete\n\n" ${SECONDS}
 if [ $brand_labeled -eq 0 ]; then

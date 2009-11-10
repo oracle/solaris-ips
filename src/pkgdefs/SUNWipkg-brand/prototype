@@ -1,6 +1,10 @@
 i pkginfo
 i copyright
 d none etc 755 root sys
+d none etc/brand 755 root sys
+d none etc/brand/ipkg 755 root sys
+e none etc/brand/ipkg/pkgrm.conf 644 root bin
+e none etc/brand/ipkg/smf_disable.conf 644 root bin
 d none etc/zones 755 root sys
 f none etc/zones/SUNWipkg.xml 444 root bin
 d none usr 755 root sys
@@ -13,10 +17,13 @@ f none usr/lib/brand/ipkg/common.ksh 444 root bin
 f none usr/lib/brand/ipkg/config.xml 444 root bin
 f none usr/lib/brand/ipkg/detach 755 root bin
 f none usr/lib/brand/ipkg/fmri_compare 755 root bin
+f none usr/lib/brand/ipkg/image_install 755 root bin
+f none usr/lib/brand/ipkg/p2v 755 root bin
 f none usr/lib/brand/ipkg/pkgcreatezone 755 root bin
+f none usr/lib/brand/ipkg/pkgrm.lst 444 root bin
 f none usr/lib/brand/ipkg/platform.xml 444 root bin
 f none usr/lib/brand/ipkg/poststate 755 root bin
 f none usr/lib/brand/ipkg/prestate 755 root bin
-f none usr/lib/brand/ipkg/query 755 root bin
+f none usr/lib/brand/ipkg/smf_disable.lst 444 root bin
 f none usr/lib/brand/ipkg/support 755 root bin
 f none usr/lib/brand/ipkg/uninstall 755 root bin

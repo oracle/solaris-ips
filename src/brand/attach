@@ -24,8 +24,12 @@
 # Use is subject to license terms.
 #
 
-m_installing=$(gettext "Installing...")
-m_usage=$(gettext  "ipkg brand attach arguments [-a archive] [-d dataset] [-n] [-r zfs-recv] [-u]\n\tThe -a archive option specifies a tar file or cpio archive.\n\tThe -d dataset option specifies an existing dataset.\n\tThe -r zfs-recv option receives the output of a 'zfs send' command\n\tof an existing zone root dataset.\n\tThe -u option indicates that the software should be updated to match\n\tthe current host.")
+. /usr/lib/brand/ipkg/common.ksh
+
+m_attach_log=$(gettext "Log File: %s")
+m_zfs=$(gettext "A ZFS file system was created for the zone.")
+m_attaching=$(gettext "Attaching...")
+m_usage=$(gettext  "attach [-a archive] [-d dataset] [-n] [-r zfs-recv] [-u]\n\tThe -a archive option specifies a tar file or cpio archive.\n\tThe -d dataset option specifies an existing dataset.\n\tThe -r zfs-recv option receives the output of a 'zfs send' command\n\tof an existing zone root dataset.\n\tThe -u option indicates that the software should be updated to match\n\tthe current host.")
 m_gzinc=$( gettext "       Global zone version: %s")
 m_zinc=$(  gettext "   Non-Global zone version: %s")
 m_insync=$(gettext "                Evaluation: Packages in %s are in sync with global zone.")
@@ -41,17 +45,10 @@ m_updating2=$(gettext  "  Updating non-global zone: (Stage 2).  Output follows")
 m_sync_done=$(gettext "  Updating non-global zone: Zone updated to %s")
 m_complete=$(gettext "Attach complete.")
 
-f_option_no_ds=$(gettext "The -a, -d or -r option is required when there is no active root dataset.")
-f_option_ds=$(gettext "The -a, -d or -r option is invalid when there is already an active root dataset.")
-f_bad_archive=$(gettext "Unknown archive format.")
-f_unpack=$(gettext "Unable to install the archive.")
-f_bad_dataset=$(gettext "Non-existent or invalid zone root dataset.")
-f_nogzinc=$(gettext "Could not find 'entire' incorporation for global zone.")
-f_nozinc=$(gettext "Could not find 'entire' incorporation for attaching zone.")
+sanity_fail_global=$(gettext  "  Sanity Check: FAILED, the image is from the global zone.")
 f_downrev=$(gettext "Zone is downrev of global zone.  Specify -u to update it.")
 f_uprev=$(gettext "Zone is uprev of global zone.  Global zone will need to be updated before attach can proceed.")
 f_update=$(gettext "Could not update attaching zone")
-f_bad_publisher=$(gettext "Syntax error in publisher information.\n")
 f_gz_entire=$(gettext "Could not find 'entire' incorporation for global zone.")
 f_zone_entire=$(gettext "Could not find 'entire' incorporation for non-global zone.")
 f_fmri_compare=$(gettext "Failed to compare 'entire' FMRIs")
@@ -62,17 +59,66 @@ f_get_secinfo=$(gettext "Failed to get key/cert information for publisher %s")
 f_nosuch_key=$(gettext "Failed to find key %s for global zone publisher")
 f_nosuch_cert=$(gettext "Failed to find cert %s for global zone publisher")
 
+# Clean up on interrupt
+trap_cleanup()
+{
+	msg=$(gettext "Installation cancelled due to interrupt.")
+	log "$msg"
+
+	# umount any mounted file systems
+	umnt_fs
+
+	trap_exit
+}
+
+# If the attach failed then clean up the ZFS datasets we created.
+trap_exit()
+{
+	if [[ $EXIT_CODE == $ZONE_SUBPROC_OK ]]; then
+		# unmount the zoneroot
+		umount $ZONEROOT > /dev/null 2>&1
+	else
+		if [[ "$install_media" != "-" ]]; then
+			/usr/lib/brand/ipkg/uninstall $ZONENAME $ZONEPATH -F
+		else
+			# Restore the zone properties for the pre-existing
+			# dataset.
+			if [[ -n "$ACTIVE_DS" ]]; then
+				zfs set zoned=off $ACTIVE_DS >/dev/null 2>&1
+				zfs set canmount=on $ACTIVE_DS >/dev/null 2>&1
+				zfs set mountpoint=$ZONEROOT $ACTIVE_DS \
+				    >/dev/null 2>&1
+			fi
+		fi
+	fi
+
+	exit $EXIT_CODE
+}
+
+EXIT_CODE=$ZONE_SUBPROC_USAGE
+install_media="-"
+
+trap trap_cleanup INT
+trap trap_exit EXIT
 
 #set -o xtrace
 
-. /usr/lib/brand/ipkg/common.ksh
-
-# Setup i18n output
-TEXTDOMAIN="SUNW_OST_OSCMD"
-export TEXTDOMAIN
-
 PKG="/usr/bin/pkg"
 KEYDIR=/var/pkg/ssl
+
+# If we weren't passed at least two arguments, exit now.
+(( $# < 2 )) && exit $ZONE_SUBPROC_USAGE
+
+ZONENAME="$1"
+ZONEPATH="$2"
+# XXX shared/common script currently uses lower case zonename & zonepath
+zonename="$ZONENAME"
+zonepath="$ZONEPATH"
+
+shift; shift	# remove ZONENAME and ZONEPATH from arguments array
+
+ZONEROOT="$ZONEPATH/root"
+logdir="$ZONEROOT/var/log"
 
 #
 # Resetting GZ_IMAGE to something besides slash allows for simplified
@@ -83,355 +129,178 @@ GZ_IMAGE=${GZ_IMAGE:-/}
 PKG_IMAGE=$GZ_IMAGE
 export PKG_IMAGE
 
-aarg=0
-darg=0
 noexecute=0
-rarg=0
+
+unset inst_type
 
 # Other brand attach options are invalid for this brand.
-while getopts "a:d:nR:r:uz:" opt; do
+while getopts "a:d:nr:u" opt; do
 	case $opt in
-		a)	ARCHIVE="$OPTARG"
-			if [ $darg -eq 1 -o $rarg -eq 1 ]; then
-				fail_usage "$m_usage"
+		a)
+			if [[ -n "$inst_type" ]]; then
+				fatal "$incompat_options" "$m_usage"
 			fi
-			aarg=1
+		 	inst_type="archive"
+			install_media="$OPTARG"
 			;;
-		d)	DATASET="$OPTARG"
-			if [ $aarg -eq 1 -o $rarg -eq 1 ]; then
-				fail_usage "$m_usage"
+		d)
+			if [[ -n "$inst_type" ]]; then
+				fatal "$incompat_options" "$m_usage"
 			fi
-			darg=1
+		 	inst_type="directory"
+			install_media="$OPTARG"
 			;;
 		n)	noexecute=1 ;;
-		R)	zonepath="$OPTARG" ;;
-		r)	ZFSRCV="$OPTARG"
-			if [ $aarg -eq 1 -o $darg -eq 1 ]; then
-				fail_usage "$m_usage"
+		r)
+			if [[ -n "$inst_type" ]]; then
+				fatal "$incompat_options" "$m_usage"
 			fi
-			rarg=1
+		 	inst_type="stdin"
+			install_media="$OPTARG"
 			;;
 		u)	allow_update=1 ;;
-		z)	zonename="$OPTARG" ;;
-		?)	fail_usage "$m_usage" ;;
-		*)	fail_usage "$m_usage";;
+		?)	fail_usage "" ;;
+		*)	fail_usage "";;
 	esac
 done
 shift $((OPTIND-1))
 
-zoneroot=$zonepath/root
+if [[ $noexecute == 1 && -n "$inst_type" ]]; then
+	fatal "$m_usage"
+fi
+
+[[ -z "$inst_type" ]] && inst_type="directory"
 
 if [ $noexecute -eq 1 ]; then
 	#
 	# The zone doesn't have to exist when the -n option is used, so do
 	# this work early.
 	#
-	if [ $aarg -eq 1 -o $rarg -eq 1 -o $allow_update -eq 1 ]; then
-		fail_usage "$m_usage";
-	fi
 
 	# XXX There is no sw validation for IPS right now, so just pretend
 	# everything will be ok.
-	exit 0
+	EXIT_CODE=$ZONE_SUBPROC_OK
+	exit $ZONE_SUBPROC_OK
 fi
 
-get_current_gzbe
+LOGFILE=$(/usr/bin/mktemp -t -p /var/tmp $ZONENAME.attach_log.XXXXXX)
+if [[ -z "$LOGFILE" ]]; then
+	fatal "$e_tmpfile"
+fi
+exec 2>>"$LOGFILE"
+log "$m_attach_log" "$LOGFILE"
 
 #
-# XXX we can't do the following since 'zoneadm verify' depends on the zonepath
-# already existing - maybe we can fix this in zoneadm in the future.
-#
-# First make the top-level zonepath dataset and be sure to tolerate errors
-# since this dataset could already exist from a different BE.
-#
-#pdir=`/usr/bin/dirname $zonepath`
-#zpname=`/usr/bin/basename $zonepath`
-#
-#get_zonepath_ds $pdir
-#zpds=$ZONEPATH_DS
-#
-# Note, this dataset might already exist so tolerate an error.
-#/usr/sbin/zfs create $zpds/$zpname
+# TODO - once sxce is gone, move the following block into
+# usr/lib/brand/shared/common.ksh code to share with other brands using
+# the same zfs dataset logic for attach. This currently uses get_current_gzbe
+# so we can't move it yet since beadm isn't in sxce.
 #
 
-fail_zonepath_in_rootds $zpds
+# Validate that the zonepath is not in the root dataset.
+pdir=`dirname $ZONEPATH`
+get_zonepath_ds $pdir
+fail_zonepath_in_rootds $ZONEPATH_DS
 
-# Top-level zonepath dataset should now exist.
-get_zonepath_ds $zonepath
+EXIT_CODE=$ZONE_SUBPROC_NOTCOMPLETE
 
-#
-# Note that the root dataset might already exist and be populated from either
-# a SNAP clone or from an earlier attach that failed because the sw was
-# out of sync but the -u option was not provided.  The user might be
-# re-running the attach with the -u option this time.  We need to be sure
-# to handle this case gracefully.
-#
-
-#
-# We first want to see if there is a pre-existing active root dataset, but
-# we can't call get_active_ds() since it errors out if there is no active
-# dataset.
-#
-ACTIVE_DS=`/usr/sbin/zfs list -H -r -t filesystem \
-    -o name,$PROP_PARENT,$PROP_ACTIVE $ZONEPATH_DS/ROOT | \
-    /usr/bin/nawk -v gzbe=$CURRENT_GZBE ' {
-	if ($1 ~ /ROOT\/[^\/]+$/ && $2 == gzbe && $3 == "on") {
+if [[ "$install_media" == "-" ]]; then
+	#
+	# Since we're using a pre-existing dataset, the dataset currently
+	# mounted on the {zonepath}/root becomes the active dataset.  We
+	# can't depend on the usual dataset attributes to detect this since
+	# the dataset could be a detached zone or one that the user set up by
+	# hand and lacking the proper attributes.  However, since the zone is
+	# not attached yet, the 'install_media == -' means the dataset must be
+	# mounted at this point.
+	#
+	ACTIVE_DS=`mount -p | nawk -v zroot=$ZONEROOT '{
+	    if ($3 == zroot && $4 == "zfs")
 		print $1
-		if (found == 1)
-			exit 1
-		found = 1
-	}
-    }'`
+	    }'`
 
-if [ $? -ne 0 ]; then
-	fail_fatal "$f_multiple_ds"
-fi
+	[[ -z "$ACTIVE_DS" ]] && fatal "$f_no_active_ds"
 
-if [ ! -d $zoneroot ]; then
-	/usr/bin/mkdir -p $zoneroot
-	/usr/bin/chmod 700 $zonepath
-fi
+	# Set up proper attributes on the ROOT dataset.
+	get_zonepath_ds $ZONEPATH
+	zfs list -H -t filesystem -o name $ZONEPATH_DS/ROOT >/dev/null 2>&1
+	(( $? != 0 )) && fatal "$f_no_active_ds"
 
-if [ -z "$ACTIVE_DS" ]; then
+	zfs set mountpoint=legacy $ZONEPATH_DS/ROOT >/dev/null 2>&1
+	zfs set zoned=on $ZONEPATH_DS/ROOT >/dev/null 2>&1
+
 	#
-	# There is no pre-existing active dataset.  In this case we need either
-	# the -a or -r option to populate a newly created dataset or the -d
-	# option to use a pre-existing dataset.
+	# We're typically using a pre-existing mounted dataset so setting the
+	# following propery changes will cause the {zonepath}/root dataset to
+	# be unmounted.  However, a p2v with an update-on-attach will have
+	# created the dataset with the correct properties, so setting these
+	# attributes won't unmount the dataset.  Thus, we check the mount
+	# and attempt the remount if necessary.
 	#
-	if [ $aarg -eq 1 -o $rarg -eq 1 ]; then
-		/usr/sbin/zfs create -o mountpoint=legacy -o zoned=on \
-		    $ZONEPATH_DS/ROOT
+	get_current_gzbe
+	zfs set $PROP_PARENT=$CURRENT_GZBE $ACTIVE_DS >/dev/null 2>&1
+	zfs set $PROP_ACTIVE=on $ACTIVE_DS >/dev/null 2>&1
+	zfs set canmount=noauto $ACTIVE_DS >/dev/null 2>&1
+	zfs inherit mountpoint $ACTIVE_DS >/dev/null 2>&1
+	zfs inherit zoned $ACTIVE_DS >/dev/null 2>&1
 
-		BENAME=zbe
-		BENUM=0
-		# Try 100 different names before giving up.
-		while [ $BENUM -lt 100 ]; do
-		        /usr/sbin/zfs create -o $PROP_ACTIVE=on \
-			    -o $PROP_PARENT=$CURRENT_GZBE \
-			    -o canmount=noauto $ZONEPATH_DS/ROOT/$BENAME
-			if [ $? = 0 ]; then
-		                break
-			fi
-		        BENUM=`expr $BENUM + 1`
-			BENAME="zbe-$BENUM"
-		done
+	mounted_ds=`mount -p | nawk -v zroot=$ZONEROOT '{
+	    if ($3 == zroot && $4 == "zfs")
+		print $1
+	    }'`
 
-		if [ $BENUM -ge 100 ]; then
-			fail_fatal "$f_zfs_create"
-		fi
-
-		ACTIVE_DS=$ZONEPATH_DS/ROOT/$BENAME
-
-	elif [ $darg -eq 1 ]; then
-		#
-		# Verify that the dataset exists
-		#
-		/usr/sbin/zfs list -H -o name $DATASET >/dev/null 2>&1
-		if [ $? -ne 0 ]; then
-			fail_fatal "$f_bad_dataset"
-		fi
-
-		#
-		# Verify that the dataset looks like it contains a zone root.
-		#
-		oldmnt=`/usr/sbin/zfs list -H -o mountpoint $DATASET`
-
-		if [ "$oldmnt" = "legacy" ]; then
-			mntpnt=`/usr/sbin/mount -p | \
-			    /usr/bin/nawk -v fs=$DATASET \
-			    '{if ($1 == fs) print $3}'`
-
-			if [ -n "$mntpnt" ]; then
-				/usr/sbin/umount $mntpnt
-			fi
-		else
-			/usr/sbin/zfs set mountpoint=legacy $DATASET || \
-			    fail_fatal "$f_zfs_create"
-		fi
-
-		/usr/sbin/mount -F zfs $DATASET $zoneroot
-		if [ $? -ne 0 ]; then
-			/usr/sbin/zfs set mountpoint=$oldmnt $DATASET
-			if [ "$oldmnt" = "legacy" -a -n "$mntpnt" ]; then
-				/usr/sbin/mount -F zfs $DATASET $mntpnt
-			fi
-			fail_fatal "$f_zfs_mount"
-		fi
-
-		if [ ! -d $zoneroot/etc -o ! -d $zoneroot/usr ]; then
-			/usr/sbin/umount $zoneroot
-			/usr/sbin/zfs set mountpoint=$oldmnt $DATASET
-			if [ "$oldmnt" = "legacy" -a -n "$mntpnt" ]; then
-				/usr/sbin/mount -F zfs $DATASET $mntpnt
-			fi
-			fail_fatal "$f_bad_dataset"
-		fi
-
-		#
-		# The dataset seems reasonable, make it the active dataset.
-		#
-		/usr/sbin/umount $zoneroot
-
-		/usr/sbin/zfs set zoned=on $DATASET || \
-		    fail_fatal "$f_zfs_create"
-
-		/usr/sbin/zfs set canmount=noauto $DATASET || \
-		    fail_fatal "$f_zfs_create"
-
-		/usr/sbin/zfs set $PROP_ACTIVE=on $DATASET || \
-		    fail_fatal "$f_zfs_create"
-
-		/usr/sbin/zfs set $PROP_PARENT=$CURRENT_GZBE $DATASET || \
-		    fail_fatal "$f_zfs_create"
-
-		ACTIVE_DS=$DATASET
-
-	else
-		#
-		# There is no pre-existing active dataset and no
-		# -a, -d or -r option so this is an error.
-		#
-		fail_fatal "$f_option_no_ds"
+	if [[ -z $mounted_ds ]]; then
+		mount -F zfs $ACTIVE_DS $ZONEROOT || fatal "$f_zfs_mount"
 	fi
-
-elif [ $aarg -eq 1 -o $darg -eq 1 -o $rarg -eq 1 ]; then
-	#
-	# We already have an active root dataset.  In this case the -a, -d or -r
-	# option is invalid (XXX unless we want to overwrite the contents of
-	# the pre-existing dataset).
-	#
-	fail_fatal "$f_option_ds"
-fi
-
-if [ $aarg -eq 1 ]; then
-	#
-	# Given a tar or cpio archive, unpack the archive into the dataset.
-	#
-	ftype="`LC_ALL=C file $ARCHIVE | cut -d: -f 2`"
-	case "$ftype" in
-	*cpio*)		filetype="cpio"
-			stage1="cat"
-			filetypename="cpio archive"
-		;;
-	*bzip2*)	filetype="cpio"
-			stage1="bzcat"
-			filetypename="bzipped cpio archive"
-		;;
-	*gzip*)		filetype="cpio"
-			stage1="gzcat"
-			filetypename="gzipped cpio archive"
-		;;
-	*USTAR\ tar\ archive)
-			filetype="tar"
-			filetypename="tar archive"
-		;;
-	*USTAR\ tar\ archive\ extended\ format*)
-			filetype="xustar"
-			filetypename="pax (xustar) archive"
-		;;
-	*)		fail_fatal "$f_bad_archive"
-		;;
-	esac
-
-	if [ ! -d $zoneroot ]; then
-		/usr/bin/mkdir -p $zoneroot
-		/usr/bin/chmod 700 $zonepath
-	fi
-
-	/usr/sbin/mount -F zfs $ACTIVE_DS $zoneroot || fail_fatal "$f_zfs_mount"
-
-	echo $m_installing
-	echo $filetypename
-
-	#
-	# XXX What does the archive contain?  Do we just get stuff under
-	# zonepath/root or do we get zonepath?  For zfs send, we send the
-	# zonepath/root dataset, so maybe we should assume only zonepath/root
-	# here as well?
-	#
-
-	unpack_result=0
-	if [[ "$filetype" = "cpio" ]]; then
-		cpioopts="-idm"
-		(cd "$zonepath" && $stage1 "$ARCHIVE" | cpio $cpioopts)
-		unpack_result=$?
-
-	elif [[ "$filetype" = "tar" ]]; then
-		(cd "$zonepath" && tar -xf "$ARCHIVE")
-		unpack_result=$?
-
-	elif [[ "$filetype" = "xustar" ]]; then
-		(cd "$zonepath" && pax -r -f "$ARCHIVE")
-		unpack_result=$?
-	fi
-
-	/usr/sbin/umount $zoneroot
-
-	if [[ $unpack_result -ne 0 ]]; then
-		fail_fatal "$f_unpack"
-	fi
-
-elif [ $rarg -eq 1 ]; then
-	#
-	# Given 'zfs send' output, receive the snapshot into the new dataset.
-	# XXX handle piped input
-	#
-	/usr/sbin/zfs receive -F $ACTIVE_DS < $ZFSRCV || \
-	    fail_fatal "$f_zfs_create"
-
 else
 	#
-	# If neither of the -a or -r options are provided, assume
-	# detach/attach behavior with an existing SNAP clone dataset already
-	# in existence, or we're using one from an earlier detach that was
-	# specified with -d, or possibly the dataset exists from a previous
-	# attach run that did not finish successfully because the sw was not
-	# updated (due to missing -u option).
+	# Since we're not using a pre-existing ZFS dataset layout, create
+	# the zone datasets and mount them.  Start by creating the zonepath
+	# dataset, similar to what zoneadm would do for an initial install.
 	#
-
-	#
-	# We know we already have a valid dataset from earlier validation.
-	#
-
-	#
-	# If we are attaching a zone that was previously detached on this
-	# system, then the dataset is not zoned and is mounted at this point.
-	# Look to see if the dataset is in this state.
-	#
-	zoned=`/usr/sbin/zfs list -H -o zoned $ACTIVE_DS`
-
-	if [ "$zoned" = "off" ]; then
-		#
-		# When we detached the SNAP clone zone, we changed some of the
-		# properties and then left it mounted.  Undo that work now.
-		#
-		/usr/sbin/umount $zonepath/root >/dev/null 2>&1
-
-		/usr/sbin/zfs set zoned=on $ACTIVE_DS || \
-			fail_fatal "$f_zfs_create"
-
-		/usr/sbin/zfs set mountpoint=legacy $ACTIVE_DS || \
-			fail_incomplete "$f_zfs_create"
-
-		/usr/sbin/zfs set canmount=noauto $ACTIVE_DS || \
-			fail_fatal "$f_zfs_create"
+	zds=$(zfs list -H -t filesystem -o name $pdir 2>/dev/null)
+	if (( $? == 0 )); then
+		pnm=$(/usr/bin/basename $ZONEPATH)
+		# The zonepath dataset might already exist.
+		zfs list -H -t filesystem -o name $zds/$pnm >/dev/null 2>&1
+	        if (( $? != 0 )); then
+			zfs create "$zds/$pnm"
+			(( $? != 0 )) && fatal "$f_zfs_create"
+			vlog "$m_zfs"
+		fi
 	fi
+
+	create_active_ds
 fi
 
-
-/usr/sbin/mount -F zfs $ACTIVE_DS $zoneroot || fail_fatal "$f_zfs_mount"
 #
-# unmount the zoneroot and clean up our temp files if anything goes wrong
+# The zone's datasets are now in place.
 #
-trap "/usr/sbin/umount $zoneroot > /dev/null 2>&1" EXIT
 
+log "$m_attaching"
+install_image "$inst_type" "$install_media"
+
+#
+# End of TODO block to move to common code.
+#
+
+#
+# Perform a final sanity check to confirm the image is not of the global zone.
+# Check for a few well-known global zone only svcs.
+#
+[[ -f $ZONEROOT/var/svc/manifest/system/sysevent.xml ]] && \
+    fatal "$sanity_fail_global"
+[[ -f $ZONEROOT/var/svc/manifest/system/zones.xml ]] && \
+    fatal "$sanity_fail_global"
+[[ -f $ZONEROOT/var/svc/manifest/system/dumpadm.xml ]] && \
+    fatal "$sanity_fail_global"
 
 #
 # Look for the 'entire' incorporation's FMRI in the current image; due to users
 # doing weird machinations with their publishers, we strip off the publisher
 # from the FMRI if it is present.
 #
-gz_entire_fmri=$(get_entire_incorp) || fail_fatal "$f_gz_entire"
+gz_entire_fmri=$(get_entire_incorp) || fatal "$f_gz_entire"
 
 #
 # Get publisher information for global zone.
@@ -456,7 +325,7 @@ fi
 # We're done with the global zone: switch images to the non-global
 # zone.
 #
-PKG_IMAGE="$zoneroot"
+PKG_IMAGE="$ZONEROOT"
 
 #
 # Get publisher information for non global zone.
@@ -464,13 +333,13 @@ PKG_IMAGE="$zoneroot"
 #
 get_preferred_publisher | IFS=" " read zone_publisher zone_publisher_url
 
-[[ -z $zone_publisher ]] && fail_usage "$f_no_pref_publisher" $zonename
-[[ -z $zone_publisher_url ]] && fail_usage "$f_no_pref_publisher" $zonename
+[[ -z $zone_publisher ]] && fail_usage "$f_no_pref_publisher" $ZONENAME
+[[ -z $zone_publisher_url ]] && fail_usage "$f_no_pref_publisher" $ZONENAME
 
 #
 # Get entire incorp for non-global zone
 #
-zone_entire_fmri=$(get_entire_incorp) || fail_fatal "$f_zone_entire"
+zone_entire_fmri=$(get_entire_incorp) || fatal "$f_zone_entire"
 
 printf "$m_gzinc\n" $gz_entire_fmri
 printf "$m_zinc\n" $zone_entire_fmri
@@ -479,16 +348,17 @@ printf "$m_zinc\n" $zone_entire_fmri
 #
 comp=$(/usr/lib/brand/ipkg/fmri_compare $zone_entire_fmri $gz_entire_fmri)
 if [[ $? -ne 0 ]]; then
-	fail_fatal "$f_fmri_compare"
+	fatal "$f_fmri_compare"
 fi
 if [[ $comp = "=" ]]; then
-	printf "$m_insync\n" $zonename
+	printf "$m_insync\n" $ZONENAME
 	echo $m_complete
+	EXIT_CODE=$ZONE_SUBPROC_OK
 	exit $ZONE_SUBPROC_OK
 fi
 if [[ $comp = ">" ]]; then
-	printf "$m_uprev\n" $zonename
-	fail_fatal "$f_uprev"
+	printf "$m_uprev\n" $ZONENAME
+	fatal "$f_uprev"
 fi
 
 #
@@ -496,8 +366,8 @@ fi
 #
 if [ -z $allow_update ]; then
 	# zone is downrev
-	printf "$m_dnrev\n" $zonename
-	fail_fatal "$f_downrev"
+	printf "$m_dnrev\n" $ZONENAME
+	fatal "$f_downrev"
 fi
 
 #
@@ -515,31 +385,31 @@ if [[ $? -ne 0 ]]; then
 	printf "$m_resetpub2\n" $gz_entire_fmri
 	printf "$m_resetpub3\n"
 
-	safe_dir $zoneroot/var
-	safe_dir $zoneroot/var/pkg
+	safe_dir var
+	safe_dir var/pkg
 
 	# Copy credentials from global zone.
 	secinfo=""
 	if [[ $gzkeyfile != "None" || $gzcertfile != "None" ]]; then
-		if [[ -e $zoneroot/$KEYDIR ]]; then
-			safe_dir $zoneroot/$KEYDIR
+		if [[ -e $ZONEROOT/$KEYDIR ]]; then
+			safe_dir $KEYDIR
 		else
-			mkdir -m 755 $zoneroot/$KEYDIR
+			mkdir -m 755 $ZONEROOT/$KEYDIR
 		fi
 	fi
 
 	if [[ $gzkeyfile != None ]]; then
 		newlocation="$KEYDIR/attach_$(basename $gzkeyfile)"
-		safe_copy $gzkeyfile $zoneroot/$newlocation
-		chmod 644 $zoneroot/$newkeylocation
-		chown -h root:root $zoneroot/$newkeylocation
+		safe_copy $gzkeyfile $ZONEROOT/$newlocation
+		chmod 644 $ZONEROOT/$newkeylocation
+		chown -h root:root $ZONEROOT/$newkeylocation
 		secinfo="$secinfo -k $newlocation"
 	fi
 	if [[ $gzcertfile != None ]]; then
 		newlocation="$KEYDIR/attach_$(basename $gzcertfile)"
-		safe_copy $gzcertfile $zoneroot/$newlocation
-		chmod 644 $zoneroot/$newkeylocation
-		chown -h root:root $zoneroot/$newkeylocation
+		safe_copy $gzcertfile $ZONEROOT/$newlocation
+		chmod 644 $ZONEROOT/$newkeylocation
+		chown -h root:root $ZONEROOT/$newkeylocation
 		secinfo="$secinfo -c $newlocation"
 	fi
 
@@ -547,7 +417,7 @@ if [[ $? -ne 0 ]]; then
 	# catalog to be updated.
 	$PKG set-publisher -P -O $gz_publisher_url $secinfo $gz_publisher
 	if [[ $? -ne 0 ]]; then
-		fail_fatal "$f_reset_pub"
+		fatal "$f_reset_pub"
 	fi
 	zone_publisher=$gz_publisher
 	zone_publisher_url=$gz_publisher_url
@@ -570,7 +440,7 @@ printf "$m_updating\n"
 #
 $PKG install $gz_entire_fmri
 if [ $? -ne 0 ]; then
-	fail_fatal "$f_update"
+	fatal "$f_update"
 fi
 
 printf "$m_updating2\n"
@@ -585,15 +455,16 @@ printf "$m_updating2\n"
 zone_pkgs=$(LC_ALL=C $PKG list --no-refresh -H "pkg://$zone_publisher/*" | \
     awk '{print $1}' | egrep -v '^entire$')
 if [[ $? -ne 0 ]]; then
-	fail_fatal "$f_pkg_list"
+	fatal "$f_pkg_list"
 fi
 
 $PKG install $zone_pkgs
 if [ $? -ne 0 ]; then
-	fail_fatal "$f_update"
+	fatal "$f_update"
 fi
 
 printf "$m_sync_done\n" $gz_entire_fmri
 printf "$m_complete\n"
 
+EXIT_CODE=$ZONE_SUBPROC_OK
 exit $ZONE_SUBPROC_OK

@@ -23,26 +23,40 @@
 # Use is subject to license terms.
 #
 
-ZONE_SUBPROC_OK=0
-ZONE_SUBPROC_USAGE=253
-ZONE_SUBPROC_INCOMPLETE=254
-ZONE_SUBPROC_FATAL=255
+unset LD_LIBRARY_PATH
+PATH=/usr/bin:/usr/sbin
+export PATH
+
+. /usr/lib/brand/shared/common.ksh
 
 PROP_PARENT="org.opensolaris.libbe:parentbe"
 PROP_ACTIVE="org.opensolaris.libbe:active"
 
+f_incompat_options=$(gettext "cannot specify both %s and %s options")
+f_sanity_detail=$(gettext  "Missing %s at %s")
+f_sanity_sparse=$(gettext  "Is this a sparse zone image?  The image must be whole-root.")
+sanity_ok=$(gettext     "  Sanity Check: Passed.  Looks like an OpenSolaris system.")
+sanity_fail=$(gettext   "  Sanity Check: FAILED (see log for details).")
+sanity_fail_vers=$(gettext  "  Sanity Check: the Solaris image (release %s) is not an OpenSolaris image and cannot be installed in this type of branded zone.")
+install_fail=$(gettext  "        Result: *** Installation FAILED ***")
 f_zfs_in_root=$(gettext "Installing a zone in the ROOT pool is unsupported.")
 f_zfs_create=$(gettext "Unable to create the zone's ZFS dataset.")
 f_root_create=$(gettext "Unable to create the zone's ZFS dataset mountpoint.")
-f_no_gzbe=$(gettext "Error: unable to determine global zone boot environment.")
-f_no_ds=$(gettext "Error: no zonepath dataset.")
-f_multiple_ds=$(gettext "Error: multiple active datasets.")
-f_no_active_ds=$(gettext "Error: no active dataset.")
+f_no_gzbe=$(gettext "unable to determine global zone boot environment.")
+f_no_ds=$(gettext "the zonepath must be a ZFS dataset.\nThe parent directory of the zonepath must be a ZFS dataset so that the\nzonepath ZFS dataset can be created properly.")
+f_multiple_ds=$(gettext "multiple active datasets.")
+f_no_active_ds=$(gettext "no active dataset.")
 f_zfs_mount=$(gettext "Unable to mount the zone's ZFS dataset.")
 
 f_safedir=$(gettext "Expected %s to be a directory.")
 f_cp=$(gettext "Failed to cp %s %s.")
 f_cp_unsafe=$(gettext "Failed to safely copy %s to %s.")
+
+m_brnd_usage=$(gettext "brand-specific usage: ")
+
+m_complete=$(gettext    "        Done: Installation completed in %s seconds.")
+m_postnote=$(gettext    "  Next Steps: Boot the zone, then log into the zone console (zlogin -C)")
+m_postnote2=$(gettext "              to complete the configuration process.")
 
 fail_incomplete() {
 	printf "ERROR: " 1>&2
@@ -51,16 +65,59 @@ fail_incomplete() {
 	exit $ZONE_SUBPROC_INCOMPLETE
 }
 
-fail_fatal() {
-	printf "ERROR: " 1>&2
+fail_usage() {
 	printf "$@" 1>&2
 	printf "\n" 1>&2
-	exit $ZONE_SUBPROC_FATAL
+	printf "$m_brnd_usage" 1>&2
+	printf "$m_usage\n" 1>&2
+	exit $ZONE_SUBPROC_USAGE
 }
 
-fail_usage() {
-	print "Usage: $1"
-	exit $ZONE_SUBPROC_USAGE
+sanity_check()
+{
+	typeset dir="$1"
+	shift
+	res=0
+
+	#
+	# Check for some required directories and make sure this isn't a
+	# sparse zone image from SXCE.
+	#
+	checks="etc etc/svc var var/svc"
+	for x in $checks; do
+		if [[ ! -e $dir/$x ]]; then
+			log "$f_sanity_detail" "$x" "$dir"
+			res=1
+		fi
+	done
+	if (( $res != 0 )); then
+		log "$f_sanity_sparse"
+		log "$sanity_fail"
+		fatal "$install_fail" "$ZONENAME"
+        fi
+
+	# Check for existence of pkg command.
+	if [[ ! -x $dir/usr/bin/pkg ]]; then
+		log "$f_sanity_detail" "usr/bin/pkg" "$dir"
+		log "$sanity_fail"
+		fatal "$install_fail" "$ZONENAME"
+	fi
+
+	#
+	# XXX There should be a better way to do this.
+	# Check image release.  We only work on the same minor release as the
+	# system is running.  The INST_RELEASE file doesn't exist with IPS on
+	# OpenSolaris, so its presence means we have an earlier Solaris
+	# (i.e. non-OpenSolaris) image.
+	#
+	if [[ -f "$dir/var/sadm/system/admin/INST_RELEASE" ]]; then
+		image_vers=$(nawk -F= '{if ($1 == "VERSION") print $2}' \
+		    $dir/var/sadm/system/admin/INST_RELEASE)
+		vlog "$sanity_fail_vers" "$image_vers"
+		fatal "$install_fail" "$ZONENAME"
+	fi
+	
+	vlog "$sanity_ok"
 }
 
 get_current_gzbe() {
@@ -82,19 +139,6 @@ get_current_gzbe() {
 
 	if [ -z "$CURRENT_GZBE" ]; then
 		fail_fatal "$f_no_gzbe"
-	fi
-}
-
-# Find the dataset mounted on the zonepath.
-get_zonepath_ds() {
-	ZONEPATH_DS=`/usr/sbin/zfs list -H -t filesystem -o name,mountpoint | \
-	    /usr/bin/nawk -v zonepath=$1 '{
-		if ($2 == zonepath)
-			print $1
-	}'`
-
-	if [ -z "$ZONEPATH_DS" ]; then
-		fail_fatal "$f_no_ds"
 	fi
 }
 
@@ -136,6 +180,66 @@ fail_zonepath_in_rootds() {
 }
 
 #
+# Set up ZFS dataset hierarchy for the zone root dataset.
+#
+create_active_ds() {
+	get_current_gzbe
+
+	#
+	# Find the zone's current dataset.  This should have been created by
+	# zoneadm.
+	#
+	get_zonepath_ds $zonepath
+
+	# Check that zone is not in the ROOT dataset.
+	fail_zonepath_in_rootds $ZONEPATH_DS
+
+	#
+	# From here on, errors should cause the zone to be incomplete.
+	#
+	int_code=$ZONE_SUBPROC_FATAL
+
+	#
+	# We need to tolerate errors while creating the datasets and making the
+	# mountpoint, since these could already exist from some other BE.
+	#
+
+	/usr/sbin/zfs list -H -o name $ZONEPATH_DS/ROOT >/dev/null 2>&1
+	if (( $? != 0 )); then
+		/usr/sbin/zfs create -o mountpoint=legacy \
+		    -o zoned=on $ZONEPATH_DS/ROOT
+		if (( $? != 0 )); then
+			fail_fatal "$f_zfs_create"
+		fi
+	fi
+
+	BENAME=zbe
+	BENUM=0
+	# Try 100 different names before giving up.
+	while [ $BENUM -lt 100 ]; do
+       		/usr/sbin/zfs create -o $PROP_ACTIVE=on \
+		    -o $PROP_PARENT=$CURRENT_GZBE \
+		    -o canmount=noauto $ZONEPATH_DS/ROOT/$BENAME >/dev/null 2>&1
+		if (( $? == 0 )); then
+			break
+		fi
+		BENUM=`expr $BENUM + 1`
+		BENAME="zbe-$BENUM"
+	done
+
+	if [ $BENUM -ge 100 ]; then
+		fail_fatal "$f_zfs_create"
+	fi
+
+	if [ ! -d $ZONEROOT ]; then
+		/usr/bin/mkdir $ZONEROOT
+	fi
+
+	/usr/sbin/mount -F zfs $ZONEPATH_DS/ROOT/$BENAME $ZONEROOT || \
+	    fail_incomplete "$f_zfs_mount"
+}
+
+#
 # Emits to stdout the entire incorporation for this image,
 # stripped of publisher name and other junk.
 #
@@ -171,27 +275,4 @@ get_pub_secinfo() {
 	cert=$(LC_ALL=C $PKG publisher $1 |
 	    nawk -F': ' '/SSL Cert/ {print $2; exit 0}')
 	print $key $cert
-}
-
-# Validate that the directory is safe.
-# n.b.: this is diverged from the shared/common.ksh version.
-safe_dir()
-{
-	typeset dir="$1"
-
-	[[ -h $dir || ! -d $dir ]] && fail_fatal "$f_safedir"
-}
-
-# Make a copy even if the destination already exists.
-# n.b.: this is diverged from the shared/common.ksh version.
-safe_copy()
-{
-	typeset src="$1"
-	typeset dst="$2"
-
-	if [[ ! -h $src && ! -h $dst && ! -d $dst ]]; then
-		/usr/bin/cp -p $src $dst || fail_fatal "$f_cp" "$src" "$dst"
-	else
-		fail_fatal "$f_cp_unsafe" "$src" "$dst"
-	fi
 }

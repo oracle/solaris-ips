@@ -26,6 +26,7 @@
 
 . /usr/lib/brand/ipkg/common.ksh
 
+m_usage=$(gettext "clone {sourcezone}")
 f_nosource=$(gettext "Error: unable to determine source zone dataset.")
 f_sysunconfig=$(gettext "Error: sys-unconfig failed.")
 f_nobrand=$(gettext "Error: unable to determine source zone brand.")
@@ -39,13 +40,13 @@ while getopts "R:z:" opt; do
 	case $opt in
 		R)	zonepath="$OPTARG" ;;
 		z)	zonename="$OPTARG" ;;
-		*)	fail_usage "$0 {sourcezone}";;
+		*)	fail_usage "";;
 	esac
 done
 shift $((OPTIND-1))
 
 if [ $# -ne 1 ]; then
-	fail_usage "$0 {sourcezone}";
+	fail_usage "";
 fi
 
 sourcezone=$1

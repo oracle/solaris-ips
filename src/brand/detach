@@ -20,13 +20,13 @@
 # CDDL HEADER END
 #
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
 . /usr/lib/brand/ipkg/common.ksh
 
-m_usage=$(gettext  "ipkg brand detach arguments [-n ].")
+m_usage=$(gettext  "detach [-n ].")
 
 f_mount=$(gettext "Error: error mounting zone root dataset.")
 
@@ -38,8 +38,8 @@ while getopts "nR:z:" opt; do
 		n)	noexecute=1 ;;
 		R)	zonepath="$OPTARG" ;;
 		z)	zonename="$OPTARG" ;;
-		?)	fail_usage "$m_usage" ;;
-		*)	fail_usage "$m_usage";;
+		?)	fail_usage "" ;;
+		*)	fail_usage "";;
 	esac
 done
 shift $((OPTIND-1))

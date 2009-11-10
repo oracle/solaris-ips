@@ -31,6 +31,7 @@ INSTALL = /usr/sbin/install
 ROOT = ../../proto/root_${MACH}
 ROOTETC = $(ROOT)/etc
 ROOTETCZONES = $(ROOT)/etc/zones
+ROOTETCBRAND = $(ROOT)/etc/brand/ipkg
 ROOTUSRLIB = $(ROOT)/usr/lib
 ROOTBRAND = $(ROOTUSRLIB)/brand
 ROOTBRANDPKG = $(ROOTBRAND)/ipkg
@@ -40,12 +41,15 @@ LINKBRANDPKG = /usr/lib/brand/ipkg
 ROOTDIRS = \
 	$(ROOT) \
 	$(ROOTETC) \
+	$(ROOTETCBRAND) \
 	$(ROOTETCZONES) \
 	$(ROOTUSRLIB) \
 	$(ROOTBRAND) \
 	$(ROOTBRANDPKG)
 
 ROOTFILES = \
+	$(ROOTETCBRAND)/pkgrm.conf \
+	$(ROOTETCBRAND)/smf_disable.conf \
 	$(ROOTETCZONES)/SUNWipkg.xml \
 	$(ROOTBRANDPKG)/config.xml \
 	$(ROOTBRANDPKG)/platform.xml \
@@ -54,10 +58,13 @@ ROOTFILES = \
 	$(ROOTBRANDPKG)/common.ksh \
 	$(ROOTBRANDPKG)/detach \
 	$(ROOTBRANDPKG)/fmri_compare \
+	$(ROOTBRANDPKG)/image_install \
+	$(ROOTBRANDPKG)/p2v \
 	$(ROOTBRANDPKG)/pkgcreatezone \
+	$(ROOTBRANDPKG)/pkgrm.lst \
 	$(ROOTBRANDPKG)/poststate \
 	$(ROOTBRANDPKG)/prestate \
-	$(ROOTBRANDPKG)/query \
+	$(ROOTBRANDPKG)/smf_disable.lst \
 	$(ROOTBRANDPKG)/support \
 	$(ROOTBRANDPKG)/uninstall
 
@@ -94,17 +101,24 @@ install: $(ROOTFILES)
 # repository's working copy's versions of the commands and modules.
 PWD:sh = pwd
 link:
+	mkdir -p /etc/brand/ipkg
 	mkdir -p /usr/lib/brand/ipkg
+	ln -sf $(PWD)/pkgrm.conf /etc/brand/ipkg/pkgrm.conf
+	ln -sf $(PWD)/smf_disable.conf /etc/brand/ipkg/smf_disable.conf
+	ln -sf $(PWD)/pkgrm.lst /usr/lib/brand/ipkg/pkgrm.lst
+	ln -sf $(PWD)/smf_disable.lst /usr/lib/brand/ipkg/smf_disable.lst
+	ln -sf $(PWD)/smf_disable.conf /usr/lib/brand/ipkg/smf_disable.conf
 	ln -sf $(PWD)/config.xml /usr/lib/brand/ipkg/config.xml
 	ln -sf $(PWD)/platform.xml /usr/lib/brand/ipkg/platform.xml
 	ln -sf $(PWD)/attach /usr/lib/brand/ipkg/attach
 	ln -sf $(PWD)/clone /usr/lib/brand/ipkg/clone
 	ln -sf $(PWD)/common.ksh /usr/lib/brand/ipkg/common.ksh
 	ln -sf $(PWD)/detach /usr/lib/brand/ipkg/detach
+	ln -sf $(PWD)/image_install /usr/lib/brand/ipkg/image_install
+	ln -sf $(PWD)/p2v /usr/lib/brand/ipkg/p2v
 	ln -sf $(PWD)/pkgcreatezone /usr/lib/brand/ipkg/pkgcreatezone
 	ln -sf $(PWD)/poststate /usr/lib/brand/ipkg/poststate
 	ln -sf $(PWD)/prestate /usr/lib/brand/ipkg/prestate
-	ln -sf $(PWD)/query /usr/lib/brand/ipkg/query
 	ln -sf $(PWD)/support /usr/lib/brand/ipkg/support
 	ln -sf $(PWD)/uninstall /usr/lib/brand/ipkg/uninstall
 	ln -sf $(PWD)/SUNWipkg.xml /etc/zones/SUNWipkg.xml
@@ -112,9 +126,14 @@ link:
 link-clean:
 	rm -rf /usr/lib/brand/ipkg
 	rm -f /etc/zones/SUNWipkg.xml
+	rm -rf /etc/brand/ipkg
 
-$(ROOT) $(ROOTETC) $(ROOTETCZONES) $(ROOTUSRLIB) $(ROOTBRAND) $(ROOTBRANDPKG):
+$(ROOT) $(ROOTETC) $(ROOTETCBRAND) $(ROOTETCZONES) $(ROOTUSRLIB) \
+	$(ROOTBRAND) $(ROOTBRANDPKG):
 	mkdir -p $@
+
+$(ROOTETCBRAND)/%: $(ROOTETCBRAND) %
+	rm -f $@; $(INSTALL) -f $(ROOTETCBRAND) -m 0644 $<
 
 $(ROOTETCZONES)/%: $(ROOTETCZONES) %
 	rm -f $@; $(INSTALL) -f $(ROOTETCZONES) -m 0444 $<
