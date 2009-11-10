@@ -34,14 +34,16 @@ ROOTSHARE = $(ROOT)/share/package-manager
 ROOTUSRLIB = $(ROOT)/lib
 
 ROOTAPPICONSHARE = $(ROOT)/share/icons/hicolor/48x48/apps
+ROOTAPPHIGHICONSHARE = $(ROOT)/share/icons/HighContrast/48x48/apps
 ROOTDATASHARE = $(ROOTSHARE)/data
 ROOTDESKTOPSHARE = $(ROOT)/share/applications
 ROOTGCONFSHARE = $(ROOTETC)/gconf/schemas
 ROOTHELPSHARE = $(ROOT)/share/gnome/help/package-manager
+ROOTHIGHICON16SHARE = $(ROOTSHARE)/icons/HighContrast/16x16/actions
+ROOTHIGHICON24SHARE = $(ROOTSHARE)/icons/HighContrast/24x24/actions
+ROOTHIGHICON48SHARE = $(ROOTSHARE)/icons/HighContrast/48x48/actions
 ROOTICON16SHARE = $(ROOTSHARE)/icons/hicolor/16x16/actions
-ROOTICON22SHARE = $(ROOTSHARE)/icons/hicolor/22x22/actions
 ROOTICON24SHARE = $(ROOTSHARE)/icons/hicolor/24x24/actions
-ROOTICON36SHARE = $(ROOTSHARE)/icons/hicolor/36x36/actions
 ROOTICON48SHARE = $(ROOTSHARE)/icons/hicolor/48x48/actions
 ROOTMIMEICONSHARE = $(ROOT)/share/icons/hicolor/48x48/mimetypes
 ROOTMIMETYPESHARE = $(ROOT)/share/mime/packages
@@ -52,12 +54,16 @@ ROOTSPSHARE = $(ROOTSHARE)/data/startpagebase
 
 ROOTDIRS = \
    $(ROOTAPPICONSHARE) \
+   $(ROOTAPPHIGHICONSHARE) \
    $(ROOTDATASHARE) \
    $(ROOTDESKTOPSHARE) \
    $(ROOTGCONFSHARE) \
    $(ROOTHELPSHARE) \
+   $(ROOTHIGHICON16SHARE) \
+   $(ROOTHIGHICON24SHARE) \
+   $(ROOTHIGHICON36SHARE) \
+   $(ROOTHIGHICON48SHARE) \
    $(ROOTICON16SHARE) \
-   $(ROOTICON22SHARE) \
    $(ROOTICON24SHARE) \
    $(ROOTICON36SHARE) \
    $(ROOTICON48SHARE) \
@@ -68,7 +74,10 @@ ROOTDIRS = \
    $(ROOTSPSHARE)
 
 APPICONS = \
-   data/packagemanager.png
+   data/icons/48x48/packagemanager.png
+
+APPHIGHICONS = \
+   data/icons/HighContrast/48x48/packagemanager.png
 
 CATALOG = \
    data/opensolaris.org \
@@ -106,6 +115,29 @@ SP_LOCALES = C de es fr it ja ko pt_BR ru sv zh_CN zh_HK zh_TW
 BUILDHELPFILES = \
 	$(HELP_LOCALES:%=help/%/package-manager.xml) \
 
+HIGHICONS16 = \
+   data/icons/HighContrast/16x16/filter_all.png \
+   data/icons/HighContrast/16x16/filter_selected.png \
+   data/icons/HighContrast/16x16/progress_checkmark.png \
+   data/icons/HighContrast/16x16/selection.png \
+   data/icons/HighContrast/16x16/status_checkmark.png \
+   data/icons/HighContrast/16x16/status_installed.png \
+   data/icons/HighContrast/16x16/status_newupdate.png \
+   data/icons/HighContrast/16x16/status_notinstalled.png
+
+HIGHICONS24 = \
+   data/icons/HighContrast/24x24/pm-install_update.png \
+   data/icons/HighContrast/24x24/pm-refresh.png \
+   data/icons/HighContrast/24x24/pm-remove.png \
+   data/icons/HighContrast/24x24/pm-update_all.png
+
+HIGHICONS48 = \
+   data/icons/HighContrast/48x48/packagemanager.png \
+   data/icons/HighContrast/48x48/pm-install_update.png \
+   data/icons/HighContrast/48x48/pm-refresh.png \
+   data/icons/HighContrast/48x48/pm-remove.png \
+   data/icons/HighContrast/48x48/pm-update_all.png
+
 ICONS16 = \
    data/icons/16x16/filter_all.png \
    data/icons/16x16/filter_selected.png \
@@ -117,17 +149,11 @@ ICONS16 = \
    data/icons/16x16/status_newupdate.png \
    data/icons/16x16/status_notinstalled.png
 
-ICONS22 = \
-   data/icons/22x22/search.png
-
 ICONS24 = \
    data/icons/24x24/pm-install_update.png \
    data/icons/24x24/pm-refresh.png \
    data/icons/24x24/pm-remove.png \
    data/icons/24x24/pm-update_all.png
-
-ICONS36 = \
-   data/icons/36x36/PM_package.png
 
 ICONS48 = \
    data/icons/48x48/packagemanager.png \
@@ -173,6 +199,7 @@ STATICSPFILES = \
 # Define the paths to all of the stuff we'll install.
 #
 ROOTAPPICONS = $(APPICONS:data/%=$(ROOTAPPICONSHARE)/%)
+ROOTAPPHIGHICONS = $(APPHIGHICONS:data/%=$(ROOTAPPHIGHICONSHARE)/%)
 
 ROOTCATALOG = $(CATALOG:data/%=$(ROOTDATASHARE)/%)
 
@@ -198,10 +225,12 @@ ROOTSPDIRS = \
 ROOTSPFILES = \
 	$(STATICSPFILES:data/startpagebase/%=$(ROOTSPSHARE)/%)
 
+ROOTHIGHICONS16 = $(HIGHICONS16:data/icons/HighContrast/16x16/%=$(ROOTHIGHICON16SHARE)/%)
+ROOTHIGHICONS24 = $(HIGHICONS24:data/icons/HighContrast/24x24/%=$(ROOTHIGHICON24SHARE)/%)
+ROOTHIGHICONS48 = $(HIGHICONS48:data/icons/HighContrast/48x48/%=$(ROOTHIGHICON48SHARE)/%)
+
 ROOTICONS16 = $(ICONS16:data/icons/16x16/%=$(ROOTICON16SHARE)/%)
-ROOTICONS22 = $(ICONS22:data/icons/22x22/%=$(ROOTICON22SHARE)/%)
 ROOTICONS24 = $(ICONS24:data/icons/24x24/%=$(ROOTICON24SHARE)/%)
-ROOTICONS36 = $(ICONS36:data/icons/36x36/%=$(ROOTICON36SHARE)/%)
 ROOTICONS48 = $(ICONS48:data/icons/48x48/%=$(ROOTICON48SHARE)/%)
 
 ROOTPYGLADE = $(ROOTSHARE)/packagemanager.glade
@@ -214,12 +243,16 @@ ROOTPYCALLMODS = $(ROOTPYMODS:%.py=%.pyc)
 
 ROOTCOMPONENTS = \
    $(ROOTAPPICONS) \
+   $(ROOTAPPHIGHICONS) \
    $(ROOTCATALOG) \
    $(ROOTDESKTOP) \
    $(ROOTGCONF) \
    $(ROOTHELPFILES) \
+   $(ROOTHIGHICONS16) \
+   $(ROOTHIGHICONS24) \
+   $(ROOTHIGHICONS36) \
+   $(ROOTHIGHICONS48) \
    $(ROOTICONS16) \
-   $(ROOTICONS22) \
    $(ROOTICONS24) \
    $(ROOTICONS36) \
    $(ROOTICONS48) \
@@ -279,7 +312,8 @@ link:
 	ln -sf $(PWD)/data/addmoresoftware.desktop /usr/share/applications/addmoresoftware.desktop
 	ln -sf $(PWD)/data/packagemanager.schemas /etc/gconf/schemas/packagemanager-preferences.schemas
 	ln -sf $(PWD)/data/icons /usr/share/package-manager/icons/hicolor
-	ln -sf $(PWD)/data/icons/packagemanager.png /usr/share/icons/hicolor/48x48/apps/packagemanager.png
+	ln -sf $(PWD)/data/icons/48x48/packagemanager.png /usr/share/icons/hicolor/48x48/apps/packagemanager.png
+	ln -sf $(PWD)/data/icons/HighContrast/48x48/packagemanager.png /usr/share/icons/HighContrast/48x48/apps/packagemanager.png
 	ln -sf $(PWD)/modules /usr/lib/python2.4/vendor-packages/pkg/gui
 
 link-clean:
@@ -289,9 +323,13 @@ link-clean:
 	rm -f /usr/share/applications/addmoresoftware.desktop
 	rm -f /usr/bin/packagemanager
 	rm -f /usr/share/icons/hicolor/48x48/apps/packagemanager.png
+	rm -f /usr/share/icons/HighContrast/48x48/apps/packagemanager.png
 
 $(ROOTDIRS):
 	$(INSTALL) -d -m 0755 $@
+
+$(ROOTAPPHIGHICONSHARE)/%: $(ROOTDIRS) data/%
+	$(INSTALL) -f $(ROOTAPPHIGHICONSHARE) -m 0644 $<
 
 $(ROOTAPPICONSHARE)/%: $(ROOTDIRS) data/%
 	$(INSTALL) -f $(ROOTAPPICONSHARE) -m 0644 $<
@@ -331,17 +369,20 @@ $(ROOTHELPDIRS): $(ROOTDIRS)
 $(ROOTHELPSHARE)/%: $(ROOTHELPDIRS) help/%
 	$(INSTALL) -f $(@D) -m 0644 $<
 
+$(ROOTHIGHICON16SHARE)/%: $(ROOTDIRS) data/icons/HighContrast/16x16/%
+	$(INSTALL) -f $(ROOTHIGHICON16SHARE) -m 0644 $<
+
+$(ROOTHIGHICON24SHARE)/%: $(ROOTDIRS) data/icons/HighContrast/24x24/%
+	$(INSTALL) -f $(ROOTHIGHICON24SHARE) -m 0644 $<
+
+$(ROOTHIGHICON48SHARE)/%: $(ROOTDIRS) data/icons/HighContrast/48x48/%
+	$(INSTALL) -f $(ROOTHIGHICON48SHARE) -m 0644 $<
+
 $(ROOTICON16SHARE)/%: $(ROOTDIRS) data/icons/16x16/%
 	$(INSTALL) -f $(ROOTICON16SHARE) -m 0644 $<
 
-$(ROOTICON22SHARE)/%: $(ROOTDIRS) data/icons/22x22/%
-	$(INSTALL) -f $(ROOTICON22SHARE) -m 0644 $<
-
 $(ROOTICON24SHARE)/%: $(ROOTDIRS) data/icons/24x24/%
 	$(INSTALL) -f $(ROOTICON24SHARE) -m 0644 $<
-
-$(ROOTICON36SHARE)/%: $(ROOTDIRS) data/icons/36x36/%
-	$(INSTALL) -f $(ROOTICON36SHARE) -m 0644 $<
 
 $(ROOTICON48SHARE)/%: $(ROOTDIRS) data/icons/48x48/%
 	$(INSTALL) -f $(ROOTICON48SHARE) -m 0644 $<

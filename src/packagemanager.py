@@ -532,6 +532,8 @@ class PackageManager:
                                     self.__on_mainwindow_check_resize,
                                 "on_mainwindow_key_press_event": \
                                     self.__on_mainwindow_key_press_event,
+                                "on_mainwindow_style_set": \
+                                    self.__on_mainwindow_style_set,
                                 "on_searchentry_changed":self.__on_searchentry_changed,
                                 "on_searchentry_focus_in_event": \
                                     self.__on_searchentry_focus_in,
@@ -797,6 +799,13 @@ class PackageManager:
 
                 return filename
 
+        @staticmethod
+        def __on_mainwindow_style_set(widget, previous_style):
+                ''' This is called when theme is changed.
+                We need to change the status icons in the Package List,
+                the search icon and the icons in the filter list'''
+                return
+                
         def __set_search_text_mode(self, style):
                 if style == enumerations.SEARCH_STYLE_NORMAL:
                         self.w_searchentry.modify_text(gtk.STATE_NORMAL,

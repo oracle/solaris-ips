@@ -11,6 +11,7 @@
     <property name="default_width">800</property>
     <property name="default_height">615</property>
     <signal name="key_press_event" handler="on_mainwindow_key_press_event"/>
+    <signal name="style_set" handler="on_mainwindow_style_set"/>
     <signal name="check_resize" handler="on_mainwindow_check_resize"/>
     <signal name="delete_event" handler="on_mainwindow_delete_event"/>
     <child>

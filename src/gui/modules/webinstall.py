@@ -420,8 +420,6 @@ class Webinstall:
                     action = enumerations.INSTALL_UPDATE,
                     parent_name = _("Package Manager"),
                     main_window = self.w_webinstall_dialog,
-                    icon_confirm_dialog = gui_misc.get_icon(
-                        self.icon_theme,'PM_package', 36),
                     web_install = True)
 
         def process_pkg_stems(self, pub_info, packages):

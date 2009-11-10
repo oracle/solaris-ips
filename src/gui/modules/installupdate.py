@@ -196,7 +196,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                         self.w_ua_dialog.set_icon(self.icon_confirm_dialog)
                 else:
                         self.w_ua_dialog.set_icon(
-                            self.parent.w_main_window.get_icon())
+                            self.w_main_window.get_icon())
 
                 if self.action == enumerations.REMOVE:
                         #We are not showing the download stage in the main stage list
