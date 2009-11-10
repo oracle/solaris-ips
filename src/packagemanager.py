@@ -3587,7 +3587,10 @@ class PackageManager:
                             enumerations.INFO_DEPEND_INFO]
                         dep_info = self.info_cache[pkg_stem][
                             enumerations.INFO_DEPEND_DEPEND_INFO]
-                        self.__set_dependencies_text(local_info, dep_info)
+                        installed_dep_info = self.info_cache[pkg_stem][
+                            enumerations.INFO_DEPEND_DEPEND_INSTALLED_INFO]
+                        self.__set_dependencies_text(local_info, dep_info,
+                            installed_dep_info)
                         return True
                 else:
                         return False
@@ -3598,42 +3601,61 @@ class PackageManager:
                 itr = instbuffer.get_start_iter()
                 instbuffer.insert(itr, text)
 
-        def __set_dependencies_text(self, info, dep_info):
+        def __set_dependencies_text(self, info, dep_info, installed_dep_info):
                 names = []
-                versions = []
                 states = None
+                installed_states = []
                 if dep_info != None and len(dep_info.get(0)) >= 0:
                         states = dep_info[0]
+                if installed_dep_info != None and len(installed_dep_info.get(0)) >= 0:
+                        installed_states = installed_dep_info[0]
                 version_fmt = _("%(version)s (Build %(build)s-%(branch)s)")
                 i = 0
                 for x in info.dependencies:
                         if states != None:
-                                split_names = x.split('@', 1)
-                                names.append(split_names[0])
-                                versions.append(version_fmt % \
+                                name = fmri.extract_pkg_name(x)
+                                version = version_fmt % \
                                     {"version": states[i].version,
                                     "build": states[i].build_release,
-                                    "branch": states[i].branch})
+                                    "branch": states[i].branch}
+                                found = False
+                                for state in installed_states:
+                                        if name ==  fmri.extract_pkg_name(state.fmri):
+                                                installed_version = version_fmt % \
+                                                    {"version": state.version,
+                                                    "build": state.build_release,
+                                                    "branch": state.branch}
+                                                found = True
+                                                break
+                                if not found:
+                                        installed_version = (_("(not installed)"))
+                                names.append((name, version, installed_version,
+                                    found))
+                                i += 1
                         else:
                                 names.append(x)
-                        i += 1
 
                 depbuffer = self.w_dependencies_textview.get_buffer()
                 depbuffer.set_text("")
                 if states == None:
-                        for i in  range(0, len(names)):
-                                itr = depbuffer.get_iter_at_line(i)
-                                dep_str = "%s\n" % (names[i]) 
-                                depbuffer.insert(itr, dep_str)
+                        if len(names) == 0:
+                                itr = depbuffer.get_iter_at_line(0)
+                                depbuffer.insert_with_tags_by_name(itr, 
+                                    _("None"), "bold")
+                        else:
+                                for i in  range(0, len(names)):
+                                        itr = depbuffer.get_iter_at_line(i)
+                                        dep_str = "%s\n" % (names[i]) 
+                                        depbuffer.insert(itr, dep_str)
                         return
                 max_name_len = 0
-                for name in names:
+                max_version_len = 0
+                for (name, version, installed_version, is_installed) in names:
                         if len(name) > max_name_len:
                                 max_name_len = len(name)
-                max_version_len = 0
-                for version in versions:
                         if len(version) > max_version_len:
                                 max_version_len = len(version)
+
                 style = self.w_dependencies_textview.get_style()
                 font_size_in_pango_unit = style.font_desc.get_size()
                 font_size_in_pixel = font_size_in_pango_unit / pango.SCALE
@@ -3647,32 +3669,35 @@ class PackageManager:
                     font_size_in_pixel + 2)
                 self.w_dependencies_textview.set_tabs(tab_array)
 
+                itr = depbuffer.get_iter_at_line(0)
+                depbuffer.insert_with_tags_by_name(itr, 
+                    _("Name\tDependency\tInstalled Version\n"), "bold")
                 installed_icon = None
                 not_installed_icon = None
-                for i in  range(0, len(names)):
-                        if api.PackageInfo.INSTALLED in states[i].states:
+                i += 0
+                for (name, version, installed_version, is_installed) in names:
+                        if is_installed:
                                 if installed_icon == None:
                                         installed_icon = gui_misc.resize_icon(
                                             self.installed_icon,
                                             font_size_in_pixel)
-                                installed_str = _("(installed)")
                                 icon = installed_icon
                         else:
                                 if not_installed_icon == None:
                                         not_installed_icon = gui_misc.resize_icon(
                                             self.not_installed_icon,
                                             font_size_in_pixel)
-                                installed_str = _("(not installed)")
                                 icon = not_installed_icon
-                        itr = depbuffer.get_iter_at_line(i)
-                        dep_str = "%s\t%s\t" % (names[i], versions[i])
+                        itr = depbuffer.get_iter_at_line(i + 1)
+                        dep_str = "%s\t%s\t" % (name, version)
                         depbuffer.insert(itr, dep_str)
                         end_itr = depbuffer.get_end_iter()
                         depbuffer.insert_pixbuf(end_itr, icon)
-                        depbuffer.insert(end_itr, " %s\n" % installed_str)
+                        depbuffer.insert(end_itr, " %s\n" % installed_version)
+                        i += 1
 
         def __update_package_info(self, pkg, local_info, remote_info, dep_info,
-            info_id):
+            installed_dep_info, info_id):
                 if self.showing_empty_details or (info_id != 
                     self.last_show_info_id):
                         return
@@ -3729,8 +3754,10 @@ class PackageManager:
                                 inst_str += ''.join("%s%s\n" % (
                                     self.api_o.root, x))
                 self.__set_installedfiles_text(inst_str)
-                self.__set_dependencies_text(local_info, dep_info)
-                self.info_cache[pkg_stem] = (labs, text, inst_str, local_info, dep_info)
+                self.__set_dependencies_text(local_info, dep_info, 
+                    installed_dep_info)
+                self.info_cache[pkg_stem] = (labs, text, inst_str, local_info,
+                    dep_info, installed_dep_info)
 
         def __update_package_license(self, licenses, license_id):
                 if self.showing_empty_details or (license_id !=
@@ -3855,11 +3882,22 @@ class PackageManager:
                         else:
                                 info = remote_info
                         dep_info = None
+                        installed_dep_info = None
                         if info and info.dependencies:
                                 try:
                                         temp_info = info.dependencies[:]
-                                        dep_info = self.api_o.info(temp_info,
+                                        dep_info = self.api_o.info(
+                                            temp_info,
                                             False,
+                                            frozenset([api.PackageInfo.STATE,
+                                            api.PackageInfo.IDENTITY]))
+                                        temp_info = []
+                                        for depend in info.dependencies:
+                                                name = fmri.extract_pkg_name(depend)
+                                                temp_info.append(name)
+                                        installed_dep_info = self.api_o.info(
+                                            temp_info,
+                                            True,
                                             frozenset([api.PackageInfo.STATE,
                                             api.PackageInfo.IDENTITY]))
                                 except (api_errors.TransportError):
@@ -3867,7 +3905,8 @@ class PackageManager:
                                 except (api_errors.InvalidDepotResponseException):
                                         pass
                         gobject.idle_add(self.__update_package_info, pkg,
-                            local_info, remote_info, dep_info, info_id)
+                            local_info, remote_info, dep_info, installed_dep_info,
+                            info_id)
                 self.api_o.log_operation_end()
                 return
 
