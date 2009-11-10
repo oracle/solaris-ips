@@ -63,7 +63,8 @@ class TestFileManager(pkg5unittest.Pkg5TestCase):
 
         def touch_old_file(self, s):
                 p = os.path.join(self.__test_dir, self.old_hash(s))
-                os.makedirs(os.path.dirname(p))
+                if not os.path.exists(os.path.dirname(p)):
+                        os.makedirs(os.path.dirname(p))
                 fh = open(p, "wb")
                 fh.write(s)
                 fh.close()
@@ -102,6 +103,7 @@ class TestFileManager(pkg5unittest.Pkg5TestCase):
                 self.assert_(os.path.isfile(p))
 
         def test_1(self):
+                """Verify base functionality works as expected."""
 
                 t = tempfile.gettempdir()
                 no_dir = os.path.join(t, "not_exist")
@@ -124,7 +126,7 @@ class TestFileManager(pkg5unittest.Pkg5TestCase):
                     set([unmoved]))
 
                 # Test a FileManager that can write to the file system.
-                fm = file_manager.FileManager(self.__test_dir, readonly=False)
+                fm = file_manager.FileManager(self.__test_dir, False)
 
                 hash1 = "584b6ab7d7eb446938a02e57101c3a2fecbfb3cb"
                 hash2 = "584b6ab7d7eb446938a02e57101c3a2fecbfb3cc"
@@ -137,7 +139,10 @@ class TestFileManager(pkg5unittest.Pkg5TestCase):
                     "58/584b6ab7d7eb446938a02e57101c3a2fecbfb3cb")
 
                 # Test that looking up a file stored under the old system gets
-                # moved to the correct location.
+                # moved to the correct location, that the new location is
+                # correctly returned, and that the old location's parent
+                # directory no longer exists as only a single file existed
+                # there.  Finally, remove it for the next test if successful.
                 p1 = self.touch_old_file(hash1)
                 self.assert_(os.path.isfile(p1))
                 self.assert_(os.path.isdir(os.path.dirname(p1)))
@@ -145,6 +150,23 @@ class TestFileManager(pkg5unittest.Pkg5TestCase):
                     os.path.join(self.__test_dir, l.lookup(hash1)))
                 self.assert_(not os.path.exists(p1))
                 self.assert_(not os.path.exists(os.path.dirname(p1)))
+                fm.remove(hash1)
+
+                # Test that looking up a file stored under the old system gets
+                # moved to the correct location, that the new location is
+                # correctly returned, and that the old location's parent
+                # directory still exists as multiple files were stored there.
+                # Finally, remove file stored in the old location for the next
+                # few tests.
+                p1 = self.touch_old_file(hash1)
+                p2 = self.touch_old_file(hash2)
+                self.assert_(os.path.isfile(p1))
+                self.assert_(os.path.isdir(os.path.dirname(p1)))
+                self.assertEqual(fm.lookup(hash1),
+                    os.path.join(self.__test_dir, l.lookup(hash1)))
+                self.assert_(not os.path.exists(p1))
+                self.assert_(os.path.exists(os.path.dirname(p1)))
+                fm.remove(hash2)
 
                 # Test that looking up a file stored under the old system gets
                 # moved and that it returns a file handle with the correct
@@ -243,3 +265,41 @@ class TestFileManager(pkg5unittest.Pkg5TestCase):
                 # been stored.
                 fm.set_read_only()
                 self.check_readonly(fm, unmoved, p)
+
+        def test_2_reverse(self):
+                """Verify that reverse layout migration works as expected."""
+
+                # Verify that reverse layout migration works as expected.
+                hash1 = "584b6ab7d7eb446938a02e57101c3a2fecbfb3cb"
+                hash2 = "584b6ab7d7eb446938a02e57101c3a2fecbfb3cc"
+                hash3 = "994b6ab7d7eb446938a02e57101c3a2fecbfb3cc"
+                hash4 = "cc1f76cdad188714d1c3b92a4eebb4ec7d646166"
+
+                l0 = layout.V0Layout()
+                l1 = layout.V1Layout()
+
+                # Populate the managed location using the v0 layout.
+                for hash in (hash1, hash2, hash3, hash4):
+                        self.touch_old_file(hash)
+
+                # Migrate it to the v1 layout.
+                fm = file_manager.FileManager(self.__test_dir, False)
+                for hash in fm.walk():
+                        self.assertEqual(fm.lookup(hash),
+                            os.path.join(self.__test_dir, l1.lookup(hash)))
+
+                # After migration verify that no v0 parent directories remain.
+                for hash in fm.walk():
+                        self.assertFalse(os.path.exists(os.path.dirname(
+                            os.path.join(self.__test_dir, l0.lookup(hash)))))
+
+                # Re-create the FileManager using v0 as the preferred layout.
+                fm = file_manager.FileManager(self.__test_dir, False,
+                    layouts=[l0, l1])
+
+                # Test that looking up a file stored under the v1 layout is
+                # correctly moved to the v0 layout.
+                for hash in fm.walk():
+                        self.assertEqual(fm.lookup(hash),
+                            os.path.join(self.__test_dir, l0.lookup(hash)))
+

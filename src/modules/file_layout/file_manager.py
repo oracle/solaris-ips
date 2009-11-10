@@ -59,6 +59,7 @@ class NeedToModifyReadOnlyFileManager(Exception):
                 The "create" parameter describes what kind of modification
                 was being attempted."""
 
+                Exception.__init__(self)
                 self.ent = thing_to_change
                 self.create = create
 
@@ -73,6 +74,7 @@ class FMPermissionsException(Exception):
         permissions to operate as needed on the file system."""
 
         def __init__(self, filename):
+                Exception.__init__(self)
                 self.filename = filename
 
         def __str__(self):
@@ -85,6 +87,7 @@ class UnrecognizedFilePaths(Exception):
         root which cannot be accounted for."""
 
         def __init__(self, filepaths):
+                Exception.__init__(self)
                 self.fps = filepaths
 
         def __str__(self):
@@ -165,15 +168,40 @@ class FileManager(object):
                     True)
                 if not cur_full_path:
                         return None
+
                 # If the depot isn't readonly and the file isn't in the location
                 # that the primary layout thinks it should be, try to move the
                 # file into the right place.
                 if dest_full_path != cur_full_path and not self.readonly:
+                        p_sdir = os.path.dirname(cur_full_path)
+                        p_ddir = os.path.dirname(dest_full_path)
                         try:
+                                # Ensure that the parent destination directory
+                                # exists first; it might not in a reverse
+                                # migration scenario.
+                                if not os.path.exists(p_ddir):
+                                        os.makedirs(p_ddir)
+
+                                # Attempt to move the file from the old location
+                                # to the preferred location.
                                 portable.rename(cur_full_path, dest_full_path)
-                                os.removedirs(os.path.dirname(cur_full_path))
+
+                                # Since the file has been moved, point at the
+                                # new destination *before* attempting to remove
+                                # the (now possibly empty) parent directory of
+                                # of the source file.
                                 cur_full_path = dest_full_path
+
+                                # This may fail because other files can still
+                                # exist in the parent path for the source, so
+                                # must be done last.
+                                os.removedirs(p_sdir)
                         except EnvironmentError:
+                                # If the rename failed, then simply leave the
+                                # file in its old location.  If the removal
+                                # of the source parent directory failed, that
+                                # likely means that other files still exist
+                                # there.  In either case, continue on.
                                 pass
 
                 if opener:
