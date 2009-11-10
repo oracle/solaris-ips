@@ -122,7 +122,7 @@ class Beadmin:
                 self.w_beconfirmation_dialog.set_icon(self.parent.window_icon)
                 self.w_beconfirmation_textview = \
                     w_tree_beconfirmation.get_widget("confirmtext")
-                self.w_cancelbe_button = w_tree_beconfirmation.get_widget("cancel_conf")
+                self.w_okbe_button = w_tree_beconfirmation.get_widget("ok_conf")
                 self.w_ok_button.set_sensitive(False)
                 progress_button.hide()
                 self.w_progressbar.set_pulse_step(0.1)
@@ -284,19 +284,19 @@ class Beadmin:
                 return True
 
         def __activate(self):
-                active_text = _("Active on reboot:\n")
-                delete_text = _("Delete boot environments:\n")
-                rename_text = _("Rename boot environments:\n")
+                active_text = _("Active on reboot\n")
+                delete_text = _("Delete\n")
+                rename_text = _("Rename\n")
                 active = ""
                 delete = ""
                 rename = {}
                 for row in self.be_list:
 
                         if row[BE_MARKED]:
-                                delete += row[BE_NAME] + "\n"
+                                delete += "\t" + row[BE_NAME] + "\n"
                         if row[BE_ACTIVE_DEFAULT] == True and row[BE_ID] != \
                             self.initial_default:
-                                active += row[BE_NAME] + "\n"
+                                active += "\t" + row[BE_NAME] + "\n"
                         if row[BE_NAME] != row[BE_ORIG_NAME]:
                                 rename[row[BE_ORIG_NAME]] = row[BE_NAME]
                 textbuf = self.w_beconfirmation_textview.get_buffer()
@@ -323,12 +323,14 @@ class Beadmin:
                             rename_text, "bold")
                         for orig in rename:
                                 textbuf.insert_with_tags_by_name(textiter,
+                                    "\t")
+                                textbuf.insert_with_tags_by_name(textiter,
                                     orig)
                                 textbuf.insert_with_tags_by_name(textiter,
                                     _(" to "), "bold")
                                 textbuf.insert_with_tags_by_name(textiter,
                                     rename.get(orig) + "\n")
-                self.w_cancelbe_button.grab_focus()
+                self.w_okbe_button.grab_focus()
                 gobject.idle_add(self.w_beconfirmation_dialog.show)
                 self.progress_stop_thread = True                
 

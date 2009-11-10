@@ -800,18 +800,18 @@ class InstallUpdate(progress.GuiProgressTracker):
                 return stuff_to_do
 
         def __operations_done(self, alternate_done_txt = None):
-                done_txt = _("Installation completed successfully.")
+                done_txt = _("Installation completed successfully")
                 if self.action == enumerations.REMOVE:
-                        done_txt = _("Packages removed successfully.")
+                        done_txt = _("Packages removed successfully")
                 elif self.action == enumerations.IMAGE_UPDATE:
-                        done_txt = _("Packages updated successfully.")
+                        done_txt = _("Packages updated successfully")
                 if alternate_done_txt != None:
                         done_txt = alternate_done_txt
                 self.w_stages_box.hide()
                 self.w_stages_icon.set_from_stock(
                     gtk.STOCK_OK, gtk.ICON_SIZE_DND)
                 self.w_stages_icon.show()
-                self.__stages_label_set_markup(done_txt)
+                self.__stages_label_set_markup("<b>" + done_txt + "</b>")
                 self.__update_details_text("\n"+ done_txt, "bold")
                 self.w_cancel_button.set_label("gtk-close")
                 self.w_cancel_button.grab_focus()

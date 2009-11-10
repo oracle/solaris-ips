@@ -835,13 +835,13 @@ class Repository(progress.GuiProgressTracker):
                 for row in self.publishers_list:
                         pub_name = row[enumerations.PUBLISHER_NAME]
                         if row[enumerations.PUBLISHER_REMOVED]:
-                                delete += pub_name + "\n"
+                                delete += "\t" + pub_name + "\n"
                         elif row[enumerations.PUBLISHER_ENABLE_CHANGED]:
                                 to_enable = row[enumerations.PUBLISHER_ENABLED]
                                 if not to_enable:
-                                        disable += pub_name + "\n"
+                                        disable += "\t" + pub_name + "\n"
                                 else:
-                                        enable += pub_name + "\n"
+                                        enable += "\t" + pub_name + "\n"
                 textbuf = self.w_confirmation_textview.get_buffer()
                 textbuf.set_text("")
                 textiter = textbuf.get_end_iter()

@@ -721,13 +721,13 @@ class PackageManager:
                 infobuffer.set_text("")
                 textiter = infobuffer.get_end_iter()
                 
-                infobuffer.insert(textiter, "\n")
                 for pub_name, pkgs in self.selected_pkgs.items():
                         infobuffer.insert_with_tags_by_name(textiter,
                             "%s\n" % pub_name, "bold")
                         for pkg in pkgs.keys():
                                 infobuffer.insert(textiter,
                                     "\t%s\n" % fmri.extract_pkg_name(pkg))
+                self.w_confirmok_button.grab_focus()                
                 self.w_exportconfirm_dialog.show()
 
         def __export_selections(self):
