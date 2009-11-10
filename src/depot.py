@@ -97,6 +97,7 @@ except ImportError:
 
 from pkg.misc import port_available, msg, emsg, setlocale
 import pkg.client.api_errors as api_errors
+import pkg.indexer as indexer
 import pkg.portable.util as os_util
 import pkg.search_errors as search_errors
 import pkg.server.depot as ds
@@ -224,7 +225,7 @@ if __name__ == "__main__":
         nasty = False
         nasty_value = 0
         repo_config_file = None
-        sort_file_max_size = None
+        sort_file_max_size = indexer.SORT_FILE_MAX_SIZE
         ssl_cert_file = None
         ssl_key_file = None
         ssl_dialog = "builtin"
