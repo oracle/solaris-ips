@@ -31,6 +31,7 @@ api.t_elf.py TestElf.test_get_info|pass
 api.t_elf.py TestElf.test_is_elf_object|pass
 api.t_file_manager.py TestFileManager.test_1|pass
 api.t_file_manager.py TestFileManager.test_2_reverse|pass
+api.t_file_manager.py TestFileManager.test_3_replace|pass
 api.t_filter.py TestFilter.test_01_debug_i386|pass
 api.t_filter.py TestFilter.test_02_nondebug_i386|pass
 api.t_filter.py TestFilter.test_03_i386|pass

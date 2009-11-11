@@ -131,7 +131,7 @@ class FileManager(object):
         def set_read_only(self):
                 """Make the FileManager read only."""
                 self.readonly = True
-                        
+
         def __select_path(self, hashval, check_existence):
                 """Find the path to the file with name hashval.
 
@@ -216,26 +216,36 @@ class FileManager(object):
                         raise NeedToModifyReadOnlyFileManager(hashval)
                 cur_full_path, dest_full_path = \
                     self.__select_path(hashval, True)
-                if cur_full_path == dest_full_path:
-                        return
-                if cur_full_path:
+
+                if cur_full_path and cur_full_path != dest_full_path:
+                        # The file is stored in an old location and needs to be
+                        # moved to a new location.  To prevent disruption of
+                        # service or other race conditions, rename the source
+                        # file into the old place first.
                         try:
-                                portable.remove(src_path)
+                                portable.rename(src_path, cur_full_path)
                         except EnvironmentError, e:
                                 if e.errno == errno.EACCES or \
                                     e.errno == errno.EROFS:
                                         raise FMPermissionsException(e.filename)
                                 raise
                         src_path = cur_full_path
+
                 p_dir = os.path.dirname(dest_full_path)
                 try:
+                        # Ensure that the destination's parent directory exists.
                         if not os.path.exists(p_dir):
                                 os.makedirs(p_dir)
+
+                        # Move the file into place.
                         portable.rename(src_path, dest_full_path)
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES or e.errno == errno.EROFS:
                                 raise FMPermissionsException(e.filename)
                         raise
+
+                # Attempt to remove the parent directory of the file's original
+                # location to ensure empty directories aren't left behind.
                 if cur_full_path:
                         try:
                                 os.removedirs(os.path.dirname(cur_full_path))
@@ -248,7 +258,6 @@ class FileManager(object):
                                         raise FMPermissionsException(e.filename)
                                 else:
                                         raise
-                return
 
         def remove(self, hashval):
                 """This function removes the file associated with the name
@@ -272,7 +281,6 @@ class FileManager(object):
                                         raise FMPermissionsException(e.filename)
                                 else:
                                         raise
-                return
 
         def walk(self):
                 """Generate all the hashes of all files known."""
