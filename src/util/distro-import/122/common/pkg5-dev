@@ -11,5 +11,6 @@ depend SUNWpkgcmds
 depend SUNWpython-setuptools
 depend SUNWsprot
 depend SUNWtidy
+depend SUNWxwinc
 depend SUNWzoneint
 end package
