@@ -75,8 +75,10 @@ trap_cleanup()
 trap_exit()
 {
 	if [[ $EXIT_CODE == $ZONE_SUBPROC_OK ]]; then
-		# unmount the zoneroot
-		umount $ZONEROOT > /dev/null 2>&1
+		# unmount the zoneroot if labeled brand
+		is_brand_labeled
+		(( $? == 1 )) && ( umount $ZONEROOT || \
+		    printf "$f_zfs_unmount" "$ZONEPATH/root" )
 	else
 		if [[ "$install_media" != "-" ]]; then
 			/usr/lib/brand/ipkg/uninstall $ZONENAME $ZONEPATH -F

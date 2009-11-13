@@ -40,6 +40,7 @@
 	<install>/usr/lib/brand/ipkg/pkgcreatezone -z %z -R %R</install>
 	<installopts>a:c:d:e:hk:P:p:suv</installopts>
 	<boot></boot>
+	<sysboot>/usr/lib/brand/ipkg/prestate %z %R 2 0</sysboot>
 	<halt></halt>
 	<verify_cfg>/usr/lib/brand/ipkg/support verify</verify_cfg>
 	<verify_adm></verify_adm>

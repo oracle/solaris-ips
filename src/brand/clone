@@ -28,8 +28,17 @@
 
 m_usage=$(gettext "clone {sourcezone}")
 f_nosource=$(gettext "Error: unable to determine source zone dataset.")
-f_sysunconfig=$(gettext "Error: sys-unconfig failed.")
-f_nobrand=$(gettext "Error: unable to determine source zone brand.")
+
+# Clean up on failure
+trap_exit()
+{
+	if (( $ZONE_IS_MOUNTED != 0 )); then
+		error "$v_unmount"
+		zoneadm -z $ZONENAME unmount
+	fi
+
+	exit $ZONE_SUBPROC_INCOMPLETE
+}
 
 # Set up ZFS dataset hierarchy for the zone.
 
@@ -38,8 +47,8 @@ ROOT="rpool/ROOT"
 # Other brand clone options are invalid for this brand.
 while getopts "R:z:" opt; do
 	case $opt in
-		R)	zonepath="$OPTARG" ;;
-		z)	zonename="$OPTARG" ;;
+		R)	ZONEPATH="$OPTARG" ;;
+		z)	ZONENAME="$OPTARG" ;;
 		*)	fail_usage "";;
 	esac
 done
@@ -57,13 +66,6 @@ if [ -z "$sourcezonepath" ]; then
 	fail_fatal "$f_nosource"
 fi
 
-# Find the active source zone brand
-brand=`/usr/sbin/zoneadm -z $sourcezone list -p | awk -F: '{print $6}'`
-
-if [ -z "$brand" ]; then
-	fail_fatal "$f_nobrand"
-fi
-
 get_current_gzbe
 get_zonepath_ds $sourcezonepath
 get_active_ds $CURRENT_GZBE $ZONEPATH_DS
@@ -76,8 +78,8 @@ get_active_ds $CURRENT_GZBE $ZONEPATH_DS
 # First make the top-level dataset.
 #
 
-pdir=`/usr/bin/dirname $zonepath`
-zpname=`/usr/bin/basename $zonepath`
+pdir=`/usr/bin/dirname $ZONEPATH`
+zpname=`/usr/bin/basename $ZONEPATH`
 
 get_zonepath_ds $pdir
 zpds=$ZONEPATH_DS
@@ -94,7 +96,7 @@ fail_zonepath_in_rootds $zpds
 /usr/sbin/zfs create -o mountpoint=legacy -o zoned=on $zpds/$zpname/ROOT
 
 # make snapshot
-SNAPNAME=${zonename}_snap
+SNAPNAME=${ZONENAME}_snap
 SNAPNUM=0
 while [ $SNAPNUM -lt 100 ]; do
 	/usr/sbin/zfs snapshot $ACTIVE_DS@$SNAPNAME
@@ -102,7 +104,7 @@ while [ $SNAPNUM -lt 100 ]; do
                 break
 	fi
 	SNAPNUM=`expr $SNAPNUM + 1`
-	SNAPNAME="${zonename}_snap$SNAPNUM"
+	SNAPNAME="${ZONENAME}_snap$SNAPNUM"
 done
 
 if [ $SNAPNUM -ge 100 ]; then
@@ -134,19 +136,20 @@ fi
 /usr/sbin/zfs set canmount=noauto $zpds/$zpname/ROOT/$BENAME || \
 	fail_incomplete "$f_zfs_create"
 
-if [ ! -d $zonepath/root ]; then
-	/usr/bin/mkdir -p $zonepath/root
-	/usr/bin/chmod 700 $zonepath
+if [ ! -d $ZONEPATH/root ]; then
+	/usr/bin/mkdir -p $ZONEPATH/root
+	/usr/bin/chmod 700 $ZONEPATH
 fi
 
-/usr/sbin/mount -F zfs $zpds/$zpname/ROOT/$BENAME $zonepath/root || \
-	fail_incomplete "$f_zfs_mount"
+ZONE_IS_MOUNTED=0
+trap trap_exit EXIT
 
-if [ $brand != labeled ]; then
-	/usr/sbin/sys-unconfig -R $zonepath/root || \
-	    fail_incomplete "$f_sysunconfig"
-fi
+#
+# Completion of unconfigure_zone will leave the zone root mounted for
+# ipkg brand zones.  The root won't be mounted for labeled brand zones.
+#
+is_brand_labeled
+(( $? == 0 )) && unconfigure_zone
 
-/usr/sbin/umount $zonepath/root || fail_fatal "$f_umount"
-
+trap - EXIT
 exit $ZONE_SUBPROC_OK

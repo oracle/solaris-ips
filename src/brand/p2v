@@ -40,7 +40,7 @@ EXIT_CODE=1
 # Clean up on failure
 trap_exit()
 {
-	if (( $zone_is_mounted != 0 )); then
+	if (( $ZONE_IS_MOUNTED != 0 )); then
 		error "$v_unmount"
 		zoneadm -z $ZONENAME unmount
 	fi
@@ -323,7 +323,7 @@ warn_zones()
 #
 # failure should unmount the zone if necessary;
 #
-zone_is_mounted=0
+ZONE_IS_MOUNTED=0
 trap trap_exit EXIT
 
 #
@@ -363,10 +363,6 @@ v_updatedone=$(gettext "Zone software update complete")
 e_badupdate=$(gettext "Updating the Zone software failed")
 v_adjust=$(gettext "Updating the image to run within a zone")
 v_stacktype=$(gettext "Stack type '%s'")
-v_mounting=$(gettext "Mounting the zone")
-e_badmount=$(gettext "Zone mount failed")
-v_unmount=$(gettext "Unmounting zone")
-e_badunmount=$(gettext "Zone unmount failed")
 v_rmhollowsvcs=$(gettext "Deleting global zone-only SMF services")
 v_fixnetsvcs=$(gettext "Adjusting network SMF services")
 v_rminvalidsvcs=$(gettext "Disabling invalid SMF services")
@@ -381,10 +377,7 @@ v_rmpkg=$(gettext "Remove package '%s'")
 e_rmpkg=$(gettext "removing package '%s'")
 v_rmzones=$(gettext "The following zones in this image will be unusable: %s")
 v_rmzonepaths=$(gettext "These zonepaths could be removed from this image:")
-v_unconfig=$(gettext "Performing zone sys-unconfig")
-e_unconfig=$(gettext "sys-unconfig failed")
 v_exitgood=$(gettext "Postprocessing successful.")
-e_exitfail=$(gettext "Postprocessing failed.")
 
 #
 # Do some validation on the paths we'll be accessing
@@ -442,11 +435,9 @@ fix_vfstab
 
 #
 # Mount the zone so that we can do all of the updates needed on the zone.
-# The zone's root dataset is currently mounted so we have to first umount it.
 #
-umount $ZONEROOT || fatal "$f_umount"
 vlog "$v_mounting"
-zone_is_mounted=1
+ZONE_IS_MOUNTED=1
 zoneadm -z $ZONENAME mount -f || fatal "$e_badmount"
 
 #
@@ -463,13 +454,15 @@ rm_pkgs
 
 vlog "$v_unmount"
 zoneadm -z $ZONENAME unmount || fatal "$e_badunmount"
-zone_is_mounted=0
+ZONE_IS_MOUNTED=0
 
-# Mount the zone's root dataset back onto ZONEROOT.
-get_current_gzbe
-get_zonepath_ds $ZONEPATH
-get_active_ds $CURRENT_GZBE $ZONEPATH_DS
-mount -F zfs -O $ACTIVE_DS $ZONEROOT || fail_fatal "$f_mount"
+is_brand_labeled
+brand_labeled=$?
+if (( $brand_labeled == 1 )); then
+	# The labeled brand needs to mount the zone's root dataset back onto
+	# ZONEROOT so we can finish processing.
+	mount_active_ds
+fi
 
 # Change the pkging variant from global zone to non-global zone.
 log "$v_change_var"
@@ -478,8 +471,7 @@ pkg -R $ZONEROOT change-variant variant.opensolaris.zone=nonglobal || \
 
 #
 # Run update on attach.  State is currently 'incomplete' so use the private
-# force-update option.  The zone's root dataset is still mounted at this point.
-# update-on-attach will unmount the zonepath dataset when its done.
+# force-update option.
 # This also leaves the zone in the 'installed' state.  This is a known bug
 # in 'zoneadm attach'.  We change the zone state back to 'incomplete' for
 # now but this can be removed once 'zoneadm attach' is fixed.
@@ -489,27 +481,9 @@ zoneadm -z $ZONENAME attach -U >&2 || fatal "$e_badupdate"
 zoneadm -z $ZONENAME mark incomplete || fatal "$e_badupdate"
 log "$v_updatedone"
 
-if [[ -n $OPT_U ]]; then
-	# We're sys-unconfiging the zone.
-	vlog "$v_unconfig"
+[[ -n $OPT_U ]] && unconfigure_zone
 
-	vlog "$v_mounting"
-	zone_is_mounted=1
-	zoneadm -z $ZONENAME mount -f || fatal "$e_badmount"
-
-	/usr/sbin/zlogin -S $ZONENAME /usr/sbin/sys-unconfig -R /a \
-            </dev/null >/dev/null 2>&1
-        if (( $? != 0 )); then
-                error "$e_unconfig"
-		failed=1
-        fi
-
-	vlog "$v_unmount"
-	zoneadm -z $ZONENAME unmount || fatal "$e_badunmount"
-	zone_is_mounted=0
-
-	[[ -n $failed ]] && fatal "$e_exitfail"
-fi
+(( $brand_labeled == 1 )) && mount_active_ds
 
 trap - EXIT
 vlog "$v_exitgood"

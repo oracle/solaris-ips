@@ -46,6 +46,7 @@ f_no_gzbe=$(gettext "unable to determine global zone boot environment.")
 f_no_ds=$(gettext "the zonepath must be a ZFS dataset.\nThe parent directory of the zonepath must be a ZFS dataset so that the\nzonepath ZFS dataset can be created properly.")
 f_multiple_ds=$(gettext "multiple active datasets.")
 f_no_active_ds=$(gettext "no active dataset.")
+f_zfs_unmount=$(gettext "Unable to unmount the zone's root ZFS dataset (%s).\nIs there a global zone process inside the zone root?\nThe current zone boot environment will remain mounted.\n")
 f_zfs_mount=$(gettext "Unable to mount the zone's ZFS dataset.")
 
 f_safedir=$(gettext "Expected %s to be a directory.")
@@ -53,6 +54,14 @@ f_cp=$(gettext "Failed to cp %s %s.")
 f_cp_unsafe=$(gettext "Failed to safely copy %s to %s.")
 
 m_brnd_usage=$(gettext "brand-specific usage: ")
+
+v_unconfig=$(gettext "Performing zone sys-unconfig")
+e_unconfig=$(gettext "sys-unconfig failed")
+v_mounting=$(gettext "Mounting the zone")
+e_badmount=$(gettext "Zone mount failed")
+v_unmount=$(gettext "Unmounting zone")
+e_badunmount=$(gettext "Zone unmount failed")
+e_exitfail=$(gettext "Postprocessing failed.")
 
 m_complete=$(gettext    "        Done: Installation completed in %s seconds.")
 m_postnote=$(gettext    "  Next Steps: Boot the zone, then log into the zone console (zlogin -C)")
@@ -71,6 +80,12 @@ fail_usage() {
 	printf "$m_brnd_usage" 1>&2
 	printf "$m_usage\n" 1>&2
 	exit $ZONE_SUBPROC_USAGE
+}
+
+is_brand_labeled() {
+	brand=$(/usr/sbin/zoneadm -z $ZONENAME list -p | awk -F: '{print $6}')
+	[[ $brand == "labeled" ]] && return 1
+	return 0
 }
 
 sanity_check()
@@ -180,6 +195,34 @@ fail_zonepath_in_rootds() {
 }
 
 #
+# Make sure the active dataset is mounted for the zone.  There are several
+# cases to consider:
+# 1) First boot of the zone, nothing is mounted
+# 2) Zone is halting, active dataset remains the same.
+# 3) Zone is halting, there is a new active dataset to mount.
+#
+mount_active_ds() {
+	mount -p | cut -d' ' -f3 | egrep -s "^$ZONEPATH/root$"
+	if (( $? == 0 )); then
+		# Umount current dataset on the root (it might be an old BE).
+		umount $ZONEPATH/root
+		if (( $? != 0 )); then
+			# The umount failed, leave the old BE mounted.
+			# Warn about gz process preventing umount.
+			printf "$f_zfs_unmount" "$ZONEPATH/root"
+			return
+		fi
+	fi
+
+	# Mount active dataset on the root.
+	get_current_gzbe
+	get_zonepath_ds $ZONEPATH
+	get_active_ds $CURRENT_GZBE $ZONEPATH_DS
+
+	mount -F zfs $ACTIVE_DS $ZONEPATH/root || fail_fatal "$f_zfs_mount"
+}
+
+#
 # Set up ZFS dataset hierarchy for the zone root dataset.
 #
 create_active_ds() {
@@ -237,6 +280,30 @@ create_active_ds() {
 
 	/usr/sbin/mount -F zfs $ZONEPATH_DS/ROOT/$BENAME $ZONEROOT || \
 	    fail_incomplete "$f_zfs_mount"
+}
+
+#
+# Run sys-unconfig on the zone.
+#
+unconfigure_zone() {
+	vlog "$v_unconfig"
+
+	vlog "$v_mounting"
+	ZONE_IS_MOUNTED=1
+	zoneadm -z $ZONENAME mount -f || fatal "$e_badmount"
+
+	zlogin -S $ZONENAME /usr/sbin/sys-unconfig -R /a \
+            </dev/null >/dev/null 2>&1
+        if (( $? != 0 )); then
+                error "$e_unconfig"
+		failed=1
+        fi
+
+	vlog "$v_unmount"
+	zoneadm -z $ZONENAME unmount || fatal "$e_badunmount"
+	ZONE_IS_MOUNTED=0
+
+	[[ -n $failed ]] && fatal "$e_exitfail"
 }
 
 #

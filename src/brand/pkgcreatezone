@@ -68,14 +68,6 @@ m_usage=$(gettext "\n        install [-h]\n        install [-c certificate_file]
 
 m_done=$(gettext      " done.")
 
-is_brand_labeled() {
-	brand_labeled=0
-	brand=$(/usr/sbin/zoneadm -z $ZONENAME list -p | awk -F: '{print $6}')
-	if [[ $brand == "labeled" ]]; then
-		brand_labeled=1
-	fi
-}
-
 trap_cleanup() {
 	print "$f_interrupted"
 	exit $int_code
@@ -147,6 +139,7 @@ zonename="$ZONENAME"
 zonepath="$ZONEPATH"
 
 is_brand_labeled
+brand_labeled=$?
 
 ZONEROOT=$ZONEPATH/root
 secinfo=""
@@ -423,9 +416,7 @@ pkglist="$pkglist SUNWroute"
 #
 # Get packages for TX zones if appropriate.
 #
-if [ $brand_labeled -ne 0 ]; then
-	pkglist="$pkglist system/trusted/trusted-nonglobal"
-fi
+(( $brand_labeled == 1 )) && pkglist="$pkglist system/trusted/trusted-nonglobal"
 
 #
 # Get man(1) but not the man pages
@@ -486,13 +477,13 @@ printf "$m_more_brokenness\n"
 /usr/sbin/sysidconfig -b $ZONEROOT -a /lib/svc/method/sshd
 touch $ZONEROOT/etc/.UNCONFIGURED
 
-# Umount the dataset on the root.
-/usr/sbin/umount $ZONEROOT
-
 printf "$m_complete\n\n" ${SECONDS}
-if [ $brand_labeled -eq 0 ]; then
+if (( $brand_labeled == 0 )); then
 	printf "$m_postnote\n"
 	printf "$m_postnote2\n"
+else
+	# Umount the dataset on the root.
+	umount $ZONEROOT || printf "$f_zfs_unmount" "$ZONEPATH/root"
 fi
 
 exit $ZONE_SUBPROC_OK

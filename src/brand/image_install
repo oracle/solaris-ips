@@ -221,6 +221,11 @@ zone_is_mounted=0
 
 trap - EXIT
 rm -f $LOGFILE
+
+# Mount active dataset on the root.
+is_brand_labeled
+(( $? == 0 )) && mount_active_ds
+
 log ""
 log "$m_complete" ${SECONDS}
 printf "$install_log\n" "$ZONEROOT/var/log/$ZONENAME.install$$.log"

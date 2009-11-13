@@ -20,13 +20,11 @@
 # CDDL HEADER END
 #
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
 . /usr/lib/brand/ipkg/common.ksh
-
-f_umount=$(gettext "Error: error unmounting zone root dataset.")
 
 # States
 # ZONE_STATE_CONFIGURED           0 (never see)
@@ -44,15 +42,23 @@ f_umount=$(gettext "Error: error unmounting zone root dataset.")
 # boot			1
 # halt			4
 
-zonename=$1
-zonepath=$2
+ZONENAME=$1
+ZONEPATH=$2
 state=$3
 cmd=$4
 
 # If we're not halting the zone, then just return.
 if [ $cmd -eq 4 ]; then
-	# Umount dataset on the root.
-	/usr/sbin/umount $zonepath/root || fail_fatal "$f_umount"
+	is_brand_labeled
+	if (( $? == 0 )); then
+		# Leave the active dataset mounted after halting (this might be
+		# a different dataset than what was mounted).
+		mount_active_ds
+	else
+		# Umount dataset on the root.
+		zoneroot="$ZONEPATH/root"
+		umount $zoneroot || printf "$f_zfs_unmount" "$zoneroot"
+	fi
 fi
 
 exit $ZONE_SUBPROC_OK
