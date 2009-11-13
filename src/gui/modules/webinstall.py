@@ -70,7 +70,7 @@ class Webinstall:
                 self.pr = progress.NullProgressTracker()
                 self.pub_new_tasks = []
                 self.pkg_install_tasks = []
-                self.icon_theme = gtk.IconTheme()
+                self.icon_theme = gtk.icon_theme_get_default()
                 icon_location = os.path.join(self.application_dir, ICON_LOCATION)
                 self.icon_theme.append_search_path(icon_location)
                 self.param = None
