@@ -491,12 +491,13 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
 		"""Test search cli options."""
 
 		durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.example_pkg10)
                 self.image_create(durl)
 
 		self.pkg("search", exit=2)
 
                 # Bug 1541
-                self.pkg("search -s httP://pkg.opensolaris.org bge")
+                self.pkg("search -s %s bin" % ("httP" + durl[4:]))
                 self.pkg("search -s ftp://pkg.opensolaris.org:88 bge", exit=1)
 
                 # Testing interaction of -o and -p options
@@ -675,10 +676,6 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                     [self.o_results])
                 self._search_op(True, "-s %s -o %s example_path" %
                     (durl, o_options), self.res_o_options_remote)
-
-                self._search_op(True, "-H -s "
-                    "http://pkg.opensolaris.org/release -o pkg.publisher "
-                    "/usr/bin/pkg", ["http://pkg.opensolaris.org/release/"])
 
                 self._search_op(True, "%s -p example_path" % pkg_options,
                     self.res_pkg_options_remote)
