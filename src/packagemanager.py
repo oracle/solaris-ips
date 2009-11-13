@@ -3028,8 +3028,13 @@ class PackageManager:
                 status_str = _("Refreshing package catalog information")
                 gobject.idle_add(self.__update_statusbar_message,
                     status_str)
+                self.__do_refresh(pubs=[pub])
+
+        def __do_refresh(self, pubs=None, immediate=False):
+                success = False
                 try:
-                        self.api_o.refresh(pubs=[pub])
+                        self.api_o.refresh(pubs=pubs, immediate=immediate)
+                        success = True
                 except api_errors.CatalogRefreshException, cre:
                         self.__catalog_refresh_message(cre)
                 except api_errors.InvalidDepotResponseException, idrex:
@@ -3040,6 +3045,11 @@ class PackageManager:
                         err = str(ex)
                         gobject.idle_add(self.error_occurred, err,
                             None, gtk.MESSAGE_INFO)
+                except Exception:
+                        err = str(ex)
+                        gobject.idle_add(self.error_occurred, err,
+                            None, gtk.MESSAGE_INFO)
+                return success
 
         def __get_application_categories_lists(self, publishers):
                 application_list = self.__get_new_application_liststore()
@@ -4092,30 +4102,14 @@ class PackageManager:
 
         def __check_if_updates_available(self, refresh_done):
                 # First we load the catalogs so package info can work
-                try:
-                        if not refresh_done:
-                                self.catalog_loaded = False
-                                self.api_o.refresh()
+                if not refresh_done:
+                        self.catalog_loaded = False
+                        success = self.__do_refresh()
+                        if success:
                                 self.catalog_loaded = True
-                except api_errors.InventoryException:
-                        gobject.idle_add(self.__set_empty_details_panel)
-                        return False
-                except api_errors.InvalidDepotResponseException, idrex:
-                        err = str(idrex)
-                        gobject.idle_add(self.error_occurred, err,
-                            None, gtk.MESSAGE_INFO)
-                        gobject.idle_add(self.__set_empty_details_panel)
-                        return False
-                except api_errors.CatalogRefreshException, cre:
-                        self.__catalog_refresh_message(cre)
-                        gobject.idle_add(self.__set_empty_details_panel)
-                        return False
-                except api_errors.ApiException, ex:
-                        err = str(ex)
-                        gobject.idle_add(self.error_occurred, err,
-                            None, gtk.MESSAGE_INFO)
-                        gobject.idle_add(self.__set_empty_details_panel)
-                        return False
+                        else:
+                                gobject.idle_add(self.__set_empty_details_panel)
+                                return False
                 gobject.idle_add(self.__show_info_after_catalog_load)
 
                 return_code = subprocess.call([os.path.join(self.application_dir, 
@@ -4149,41 +4143,16 @@ class PackageManager:
 
         def __catalog_refresh(self, reload_gui=True):
                 """Update image's catalogs."""
-                try:
-                        # Since the user requested the refresh, perform it
-                        # immediately for all publishers.
-                        self.api_o.refresh(immediate=True)
+                success = self.__do_refresh(immediate=True)
+                if success:
                         self.catalog_refresh_done = True
                         # Refresh will load the catalogs.
                         self.catalog_loaded = True
-                except api_errors.PublisherError:
-                        # In current implementation, this will never happen
-                        # We are not refreshing specific publisher
-                        self.__catalog_refresh_done()
-                        raise
-                except api_errors.PermissionsException:
-                        #Error will already have been reported in
-                        #Manage Repository dialog
+                        if reload_gui:
+                                self.__catalog_refresh_done()
+                else: 
                         self.__catalog_refresh_done()
                         return -1
-                except api_errors.CatalogRefreshException, cre:
-                        self.__catalog_refresh_message(cre)
-                        self.__catalog_refresh_done()
-                        return -1
-                except api_errors.InvalidDepotResponseException, idrex:
-                        err = str(idrex)
-                        gobject.idle_add(self.error_occurred, err,
-                            None, gtk.MESSAGE_INFO)
-                        self.__catalog_refresh_done()
-                        return -1
-                except api_errors.PublisherError:
-                        self.__catalog_refresh_done()
-                        raise
-                except Exception:
-                        self.__catalog_refresh_done()
-                        raise
-                if reload_gui:
-                        self.__catalog_refresh_done()
                 return 0
 
         def __add_pkgs_to_lists_from_cache(self, pub, application_list,
@@ -4788,7 +4757,7 @@ class PackageManager:
                         return
                 visible_publisher = self.__get_selected_publisher()
                 default_publisher = self.default_publisher
-                self.api_o.refresh()
+                self.__do_refresh()
                 if not self.img_timestamp:
                         self.img_timestamp = self.cache_o.get_index_timestamp()
                         self.__on_reload(None)
