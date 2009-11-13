@@ -36,7 +36,6 @@ MIN_APP_WIDTH = 750                       # Minimum application width
 MIN_APP_HEIGHT = 500                      # Minimum application height
 SECTION_ID_OFFSET = 10000                 # Offset to allow Sections to be identified 
                                           # in category tree
-IMAGE_DIRECTORY_DEFAULT = "/"             # Image default directory
 PACKAGEMANAGER_PREFERENCES = "/apps/packagemanager/preferences"
 MAX_SEARCH_COMPLETION_PREFERENCES = \
         "/apps/packagemanager/preferences/max_search_completion"
@@ -267,7 +266,6 @@ class PackageManager:
                 self.progress_stop_thread = True
                 self.catalog_loaded = False
                 self.update_all_proceed = False
-                self.ua_be_name = None
                 self.application_path = None
                 self.default_publisher = None
                 self.current_repos_with_search_errors = []
@@ -339,7 +337,6 @@ class PackageManager:
                 self.repo_combobox_add_index = 0
                 self.pr = progress.NullProgressTracker()
                 self.pylintstub = None
-                self.release_notes_url = "http://www.opensolaris.org"
                 self.__image_activity_lock = Lock()
                 self.category_expanded_paths = {}
                 self.category_active_paths = {}
@@ -504,18 +501,6 @@ class PackageManager:
                 self.__init_repository_tree_view()
                 self.w_main_window.set_title(self.main_window_title)
 
-                # Update All Completed Dialog
-                w_xmltree_ua_completed = gtk.glade.XML(self.gladefile,
-                    "ua_completed_dialog")
-                self.w_ua_completed_dialog = w_xmltree_ua_completed.get_widget(
-                    "ua_completed_dialog")
-                self.w_ua_completed_dialog .connect("destroy",
-                    self.__on_ua_completed_close)
-                self.w_ua_completed_release_label = w_xmltree_ua_completed.get_widget(
-                    "ua_completed_release_label")
-                self.w_ua_completed_linkbutton = w_xmltree_ua_completed.get_widget(
-                    "ua_completed_linkbutton")
-
                 # Setup Start Page
                 self.document = None
                 self.view = None
@@ -615,13 +600,7 @@ class PackageManager:
                                 "on_api_search_error_delete_event": \
                                     self.__on_api_search_error_delete_event,
                             }
-                        dic_completed = \
-                            {
-                                "on_ua_complete_close_button_clicked": \
-                                     self.__on_ua_completed_close,
-                                "on_ua_completed_linkbutton_clicked": \
-                                     self.__on_ua_completed_linkbutton_clicked,
-                            }
+
                         dic_confirm = \
                             {
                                 "on_ok_conf_clicked": \
@@ -630,7 +609,6 @@ class PackageManager:
                                     self.__on_confirm_cancel_button_clicked,
                             }        
                             
-                        w_xmltree_ua_completed.signal_autoconnect(dic_completed)
                         w_tree_confirm.signal_autoconnect(dic_confirm)
                         w_tree_main.signal_autoconnect(dic_mainwindow)
                         w_tree_preferences.signal_autoconnect(dic_preferences)
@@ -1862,10 +1840,6 @@ class PackageManager:
 
         def __on_file_quit_activate(self, widget):
                 ''' handler for quit menu event '''
-                self.__on_mainwindow_delete_event(None, None)
-
-        def __on_ua_completed_close(self, widget):
-                self.w_ua_completed_dialog.hide()
                 self.__on_mainwindow_delete_event(None, None)
 
         def __on_file_manage_publishers(self, widget):
@@ -3171,30 +3145,18 @@ class PackageManager:
                         self.__remove_cache()
 
                 installupdate.InstallUpdate(install_update, self, \
-                    self.image_directory, ips_update = False, \
-                    action = enumerations.INSTALL_UPDATE,
+                    self.image_directory, action = enumerations.INSTALL_UPDATE,
                     main_window = self.w_main_window)
 
         def __on_update_all(self, widget):
                 self.api_o.reset()
-                skip_be_dlg = False
-                if self.api_o.root != IMAGE_DIRECTORY_DEFAULT:
-                        skip_be_dlg = True
                 installupdate.InstallUpdate([], self,
-                    self.image_directory, ips_update = False,
-                    action = enumerations.IMAGE_UPDATE, be_name = self.ua_be_name,
+                    self.image_directory, action = enumerations.IMAGE_UPDATE,
                     parent_name = _("Package Manager"),
                     pkg_list = ["SUNWipkg", "SUNWipkg-gui"],
                     main_window = self.w_main_window,
-                    skip_be_dialog = skip_be_dlg)
+                    icon_confirm_dialog = self.window_icon)
                 return
-
-        def __on_ua_completed_linkbutton_clicked(self, widget):
-                try:
-                        gnome.url_show(self.release_notes_url)
-                except gobject.GError:
-                        self.error_occurred(_("Unable to navigate to:\n\t%s") % 
-                            self.release_notes_url)
 
         def __on_help_about(self, widget):
                 wTreePlan = gtk.glade.XML(self.gladefile, "aboutdialog")
@@ -3226,8 +3188,7 @@ class PackageManager:
                         self.__remove_cache()
 
                 installupdate.InstallUpdate(remove_list, self,
-                    self.image_directory, ips_update = False,
-                    action = enumerations.REMOVE,
+                    self.image_directory, action = enumerations.REMOVE,
                     main_window = self.w_main_window)
 
         def __on_reload(self, widget):
@@ -3263,7 +3224,7 @@ class PackageManager:
                             enumerations.REPOSITORY_NAME)
                 return name
 
-        def __main_application_quit(self, be_name = None):
+        def __main_application_quit(self, restart = False):
                 '''quits the main gtk loop'''
                 self.cancelled = True
                 self.exiting = True
@@ -3304,9 +3265,9 @@ class PackageManager:
                 except GError:
                         pass
 
-                if be_name:
+                if restart:
                         gobject.spawn_async([self.application_path, "-R",
-                            self.image_directory, "-U", be_name])
+                            self.image_directory, "-U"])
                 else:
                         if self.is_all_publishers:
                                 pub = self.__get_publisher_name_from_index(
@@ -4691,8 +4652,6 @@ class PackageManager:
         def process_package_list_end(self):
                 self.in_startpage_startup = False
                 if self.update_all_proceed:
-                # TODO: Handle situation where only SUNWipkg/SUNWipg-gui have been updated
-                # in update all: bug 6357
                         self.__on_update_all(None)
                         self.update_all_proceed = False
                 self.__enable_disable_install_remove()
@@ -4914,23 +4873,12 @@ class PackageManager:
                                 print "Error getting home directory for root"
                 return return_str
 
-        def restart_after_ips_update(self, be_name):
-                self.__main_application_quit(be_name)
+        def restart_after_ips_update(self):
+                self.__main_application_quit(restart = True)
 
-        def shutdown_after_image_update(self):
-                info_str = _("The Update All action is now complete and "
-                    "Package Manager will close.\n\nReview the posted release notes "
-                    "before rebooting your system:\n\n"
-                    )
-                self.w_ua_completed_release_label.set_text(info_str.strip('\n'))
-
-                info_str = misc.get_release_notes_url()
-                self.w_ua_completed_linkbutton.set_uri(info_str)
-                self.w_ua_completed_linkbutton.set_label(info_str)
-                self.release_notes_url = info_str
-                
-                self.w_ua_completed_dialog.set_title(_("Update All Complete"))
-                self.w_ua_completed_dialog.show()
+        def shutdown_after_image_update(self, exit_pm = False):
+                if exit_pm == True:
+                        self.__on_mainwindow_delete_event(None, None)
 
         def __get_api_object(self):
                 self.api_o = gui_misc.get_api_object(self.image_directory, 
@@ -4962,7 +4910,6 @@ if __name__ == '__main__':
         debug_descriptions = False
         max_filter_length = 0
         update_all_proceed = False
-        ua_be_name = None
         app_path = None
         image_dir = None
         info_install_arg = None
@@ -4972,8 +4919,8 @@ if __name__ == '__main__':
             "installation can be completed.")
 
         try:
-                opts, args = getopt.getopt(sys.argv[1:], "hR:U:i:", \
-                    ["help", "image-dir=", "update-all=", "info-install="])
+                opts, args = getopt.getopt(sys.argv[1:], "hR:Ui:", \
+                    ["help", "image-dir=", "update-all", "info-install="])
         except getopt.error, msg:
                 print "%s, for help use --help" % msg
                 sys.exit(2)
@@ -4994,7 +4941,6 @@ Use -U (--update-all) to proceed with Update All"""
                         image_dir = argument
                 if option in ("-U", "--update-all"):
                         update_all_proceed = True
-                        ua_be_name = argument
                 if option in ("-i", "--info-install"):
                         info_install_arg = argument
 
@@ -5024,7 +4970,6 @@ Use -U (--update-all) to proceed with Update All"""
         packagemanager.application_path = app_path
         packagemanager.image_directory = image_dir
         packagemanager.update_all_proceed = update_all_proceed
-        packagemanager.ua_be_name = ua_be_name
 
         while gtk.events_pending():
                 gtk.main_iteration(False)

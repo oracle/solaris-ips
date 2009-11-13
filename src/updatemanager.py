@@ -28,14 +28,12 @@ import getopt
 import os
 import subprocess
 import sys
-import time
 import locale
 import gettext
 import pango
 from threading import Thread
 
 try:
-        import gnome
         import gobject
         gobject.threads_init()        
         import gtk
@@ -119,7 +117,6 @@ class Updatemanager:
                 self.show_info_id = 0
                 self.package_selection = None
                 self.update_all_proceed = False
-                self.ua_be_name = None
                 self.application_path = None
                 self.icon_theme = gtk.IconTheme()
                 pkg_icon_location = os.path.join(self.application_dir, PKG_ICON_LOCATION)
@@ -132,10 +129,8 @@ class Updatemanager:
                     'status_newupdate')
                 icon_location = os.path.join(self.application_dir, ICON_LOCATION)
                 self.icon_theme.append_search_path(icon_location)
-                self.ua_start = 0
                 self.pylintstub = None
                 self.api_obj = None
-                self.release_notes_url = "http://www.opensolaris.org"
 
                 # Progress Dialog
                 self.gladefile = os.path.join(self.application_dir,
@@ -188,19 +183,6 @@ class Updatemanager:
                 self.w_um_cancel_button = w_xmltree_um.get_widget("cancel_button")
                 self.w_um_close_button = w_xmltree_um.get_widget("close_button")
 
-                # UM Completed Dialog
-                w_xmltree_um_completed = gtk.glade.XML(self.gladefile, 
-                    "um_completed_dialog")
-                self.w_um_completed_dialog = w_xmltree_um_completed.get_widget(
-                    "um_completed_dialog")
-                self.w_um_completed_dialog .connect("destroy", self.__on_um_dialog_close)
-                self.w_um_completed_time_label = w_xmltree_um_completed.get_widget(
-                    "um_completed_time_label")
-                self.w_um_completed_release_label = w_xmltree_um_completed.get_widget(
-                    "um_completed_release_label")
-                self.w_um_completed_linkbutton = w_xmltree_um_completed.get_widget(
-                    "um_completed_linkbutton")
-
                 self.details_cache = {}
                 
                 try:
@@ -222,16 +204,6 @@ class Updatemanager:
                                     self.__on_selectall_checkbutton_toggled,
                             }
                         w_xmltree_um.signal_autoconnect(dic)
-
-                        dic_completed = \
-                            {
-                                "on_um_complete_close_button_clicked": \
-                                     self.__on_um_dialog_close,
-                                "on_um_completed_linkbutton_clicked": \
-                                     self.__on_um_completed_linkbutton_clicked,
-                                     
-                            }
-                        w_xmltree_um_completed.signal_autoconnect(dic_completed)
 
                 except AttributeError, error:
                         print _("GUI will not respond to any event! %s. "
@@ -549,15 +521,6 @@ class Updatemanager:
                     self.pkg_not_installed_icon, self.pkg_update_available_icon)
                 self.details_cache[fmri] = (labs, text)
 
-        def __on_um_completed_linkbutton_clicked(self, widget):
-                try:
-                        gnome.url_show(self.release_notes_url)
-                except gobject.GError:
-                        gui_misc.error_occurred(self.w_um_dialog,
-                            _("Unable to navigate to:\n\t%s") % 
-                            self.release_notes_url,
-                            msg_title=_("Update Manager"))
-
         def __on_um_dialog_close(self, widget):
                 self.__exit_app()
 
@@ -568,71 +531,34 @@ class Updatemanager:
         def __on_help_button_clicked(widget):
                 gui_misc.display_help("um_info")
 
-        def __exit_app(self, be_name = None):
-                if be_name:
+        def __exit_app(self, restart = False):
+                if restart:
                         if self.image_dir_arg:
                                 gobject.spawn_async([self.application_path, "-R",
-                                    self.image_dir_arg, "-U", be_name])
+                                    self.image_dir_arg, "-U"])
                         else:
-                                gobject.spawn_async([self.application_path, 
-                                    "-U", be_name])
-
+                                gobject.spawn_async([self.application_path, "-U"])
                 self.w_um_dialog.hide()
                 gtk.main_quit()
                 sys.exit(0)
                 return True
         
-        def restart_after_ips_update(self, be_name):
-                self.__exit_app(be_name)
+        def restart_after_ips_update(self):
+                self.__exit_app(restart = True)
 
         def __on_updateall_button_clicked(self, widget):
                 self.__selectall_toggle(True)
                 self.__get_api_obj().reset()
-                self.ua_start = time.time()
-                skip_be_dlg = False
-                if self.__get_image_path() != IMAGE_DIRECTORY_DEFAULT:
-                        skip_be_dlg = True
                 installupdate.InstallUpdate([], self,
-                    self.__get_image_path(), ips_update = False,
-                    action = enumerations.IMAGE_UPDATE,
-                    be_name = self.ua_be_name,
+                    self.__get_image_path(), action = enumerations.IMAGE_UPDATE,
                     parent_name = _("Update Manager"),
                     pkg_list = ["SUNWipkg", "SUNWipkg-gui", "SUNWipkg-um"],
                     main_window = self.w_um_dialog,
-                    icon_confirm_dialog = self.__get_icon_pixbuf("UM_package", 36),
-                    skip_be_dialog = skip_be_dlg)
+                    icon_confirm_dialog = self.__get_icon_pixbuf("UM_package", 36))
                 return
                
         def __on_selectall_checkbutton_toggled(self, widget):
                 self.__selectall_toggle(widget.get_active())
-
-        def __display_update_image_success(self):
-                elapsed_sec = int(time.time() - self.ua_start)
-                elapsed_min = elapsed_sec / 60
-                info_str = ""
-                if elapsed_sec >= 120:
-                        info_str = _(
-                           "Update All finished successfully in %d minutes.") \
-                           % elapsed_min
-                else:
-                        info_str = _(
-                            "Update All finished successfully in %d seconds.") \
-                             % elapsed_sec
-                self.w_um_completed_time_label.set_text(info_str)
-
-                info_str = _(
-                    "Review the posted release notes before rebooting your system:"
-                    )
-                self.w_um_completed_release_label.set_text(info_str)
-
-                info_str = misc.get_release_notes_url()
-                self.w_um_completed_linkbutton.set_uri(info_str)
-                self.w_um_completed_linkbutton.set_label(info_str)
-                self.release_notes_url = info_str
-                
-                self.w_um_dialog.hide()
-                self.w_um_completed_dialog.set_title(_("Update All Completed"))
-                self.w_um_completed_dialog.show()
                 
         def __handle_cancel_exception(self):
                 gobject.idle_add(self.w_progress_dialog.hide)
@@ -758,8 +684,9 @@ class Updatemanager:
                 self.pylintstub = update_list
                 return
 
-        def shutdown_after_image_update(self):
-                self.__display_update_image_success()
+        def shutdown_after_image_update(self, exit_um = False):
+                if exit_um == False:
+                        self.__exit_app()
 
 #-------------------- remove those
 def main():
@@ -772,8 +699,8 @@ if __name__ == "__main__":
         debug = False
 
         try:
-                opts, args = getopt.getopt(sys.argv[1:], "huR:U:",
-                    ["help", "uninstalled", "image-dir=", "update-all="])
+                opts, args = getopt.getopt(sys.argv[1:], "huR:U",
+                    ["help", "uninstalled", "image-dir=", "update-all"])
         except getopt.error, msg:
                 print "%s, for help use --help" % msg
                 sys.exit(2)
@@ -797,7 +724,6 @@ Use -U (--update-all) to proceed with Update All"""
                         um.image_dir_arg = argument
                 if option in ("-U", "--update-all"):
                         um.update_all_proceed = True
-                        um.ua_be_name = argument
 
         um.init_tree_views()
 

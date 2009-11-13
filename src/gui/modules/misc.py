@@ -28,6 +28,9 @@ SPECIAL_CATEGORIES = ["locale", "plugin"] # We should cut all, but last part of 
                                           # However we need to have an exception rule
                                           # where we will cut all but three last parts.
 
+RELEASE_URL = "http://www.opensolaris.org" # Fallback url for release notes if api
+                                           # does not gave us one.
+
 import os
 import sys
 import urllib2
@@ -317,6 +320,14 @@ def get_pkg_info(api_o, pkg_stem, local):
                 return package_info
         else:
                 return None
+
+def restart_system():
+        # "init 6" performs reboot in a clean and orderly manner informing
+        # the svc.startd daemon of the change in runlevel which subsequently
+        # achieves the appropriate milestone and ultimately executes
+        # the rc0 kill scripts.
+        command = "init 6"
+        return os.system(command)
 
 def set_modal_and_transient(top_window, parent_window = None):
         if parent_window:

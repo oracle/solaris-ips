@@ -150,6 +150,7 @@ ICONS16 = \
    data/icons/16x16/status_notinstalled.png
 
 ICONS24 = \
+   data/icons/24x24/pm-check.png \
    data/icons/24x24/pm-install_update.png \
    data/icons/24x24/pm-refresh.png \
    data/icons/24x24/pm-remove.png \
@@ -174,6 +175,7 @@ PYMODS = \
    modules/parseqs.py \
    modules/progress.py \
    modules/repository.py \
+   modules/uarenamebe.py \
    modules/webinstall.py
 
 PYCMODS = $(PYMODS:%.py=%.pyc)

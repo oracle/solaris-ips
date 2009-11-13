@@ -8,7 +8,7 @@ SYNOPSIS
      /usr/bin/pm-updatemanager [options]
 
      /usr/bin/pm-updatemanager [-hRU]  [--help] [--image-dir dir]
-        [--update-all be_name]
+        [--update-all]
 
 DESCRIPTION
      pm-updatemanager is a program which you can use to update the installed
@@ -25,12 +25,11 @@ OPTIONS
           Operate on the image rooted at dir, rather than the one discovered
           automatically.
 
-     ---update-all or -U be_name
-          Update all packages in specified boot environment. When the user
-          chooses Update All option in pm-updatemanager and the packages
-          containing pkg or pm-updatemanager need to be updated before
-          doing image update, pm-updatemanager is called with this option
-          after the packages have been updated.
+     ---update-all or -U
+          Update all packages. When the user chooses Update All option in 
+          pm-updatemanager and the packages containing pkg or pm-updatemanager
+          need to be updated before doing image update, pm-updatemanager is
+          called with this option after the packages have been updated.
 
 
 EXAMPLES

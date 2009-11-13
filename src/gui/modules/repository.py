@@ -128,6 +128,8 @@ class Repository(progress.GuiProgressTracker):
                 self.w_publisher_add_button.set_sensitive(False)
                 self.w_add_publisher_comp_dialog = \
                     w_tree_add_publisher_complete.get_widget("add_publisher_complete")
+                self.w_add_image = \
+                    w_tree_add_publisher_complete.get_widget("add_image")
                 self.w_add_publisher_comp_dialog.set_icon(self.parent.window_icon)
                 self.w_add_publisher_c_name = \
                     w_tree_add_publisher_complete.get_widget("add_publisher_name")
@@ -234,6 +236,11 @@ class Repository(progress.GuiProgressTracker):
                     w_tree_publishers_apply.get_widget("apply_cancel")
                 self.publishers_apply_progress = \
                     w_tree_publishers_apply.get_widget("publishers_apply_progress")
+
+                checkmark_icon = gui_misc.get_icon(
+                    self.parent.icon_theme, "pm-check", 24)
+
+                self.w_add_image.set_from_pixbuf(checkmark_icon)
 
                 try:
                         dic_add_publisher = \

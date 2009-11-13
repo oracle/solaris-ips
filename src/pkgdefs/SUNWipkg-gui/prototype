@@ -36,6 +36,8 @@ f none usr/lib/python2.4/vendor-packages/pkg/gui/progress.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/gui/progress.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/gui/repository.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/gui/repository.pyc 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/gui/uarenamebe.py 444 root bin
+f none usr/lib/python2.4/vendor-packages/pkg/gui/uarenamebe.pyc 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/gui/webinstall.py 444 root bin
 f none usr/lib/python2.4/vendor-packages/pkg/gui/webinstall.pyc 444 root bin
 d none usr/share 755 root sys
@@ -109,6 +111,7 @@ f none usr/share/package-manager/icons/hicolor/16x16/actions/status_newupdate.pn
 f none usr/share/package-manager/icons/hicolor/16x16/actions/status_notinstalled.png 444 root other
 d none usr/share/package-manager/icons/hicolor/24x24 755 root bin
 d none usr/share/package-manager/icons/hicolor/24x24/actions 755 root bin
+f none usr/share/package-manager/icons/hicolor/24x24/actions/pm-check.png 444 root other
 f none usr/share/package-manager/icons/hicolor/24x24/actions/pm-install_update.png 444 root other
 f none usr/share/package-manager/icons/hicolor/24x24/actions/pm-refresh.png 444 root other
 f none usr/share/package-manager/icons/hicolor/24x24/actions/pm-remove.png 444 root other

@@ -24,4 +24,5 @@
 #
 
 __all__ = ['installupdate', 'enumerations', \
-    'repository', 'imageinfo', 'beadmin', 'cache']
+    'repository', 'imageinfo', 'beadmin', 'cache', \
+    'uarenamebe']

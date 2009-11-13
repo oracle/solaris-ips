@@ -8,7 +8,7 @@ SYNOPSIS
      /usr/bin/packagemanager [options]
 
      /usr/bin/packagemanager [-hiRU] [--help] [--info-install file]
-         [--update-all be_name] [--image-dir dir]
+         [--update-all] [--image-dir dir]
      /usr/bin/packagemanager [file]
 
 DESCRIPTION
@@ -41,12 +41,11 @@ OPTIONS
           Operate on the image rooted at dir, rather than the one discovered
           automatically.
 
-     ---update-all or -U be_name
-          Update all packages in specified boot environment. When the user
-          chooses Update All option in packagemanager and the packages
-          containing pkg or packagemanager need to be updated before 
-          doing image update, packagemanager is called with this option
-          after the packages have been updated.
+     ---update-all or -U
+          Update all packages. When the user chooses Update All option in 
+          packagemanager and the packages containing pkg or packagemanager
+          need to be updated before doing image update, packagemanager is
+          called with this option after the packages have been updated.
 
 
 EXAMPLES
