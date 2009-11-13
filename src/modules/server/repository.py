@@ -369,35 +369,35 @@ class Repository(object):
                         # catalog needs to be kept in sync if it exists.  If
                         # one doesn't exist, then it needs to be created.
                         v0_lm = get_file_lm(v0_attrs)
-
-                        if v1_cat and v1_cat.exists:
-                                if v0_lm != v1_cat.last_modified:
-                                        # If the old v0 catalog has changed then
-                                        # the v1 catalog needs to be rebuilt.
-                                        need_upgrade = True
-                        else:
-                                # If a v0 catalog exists and a v1 doesn't exist,
-                                # an upgrade is needed.
+                        if not v1_cat or not v1_cat.exists or \
+                            v0_lm != v1_cat.last_modified:
                                 need_upgrade = True
-                elif v1_cat:
-                        # A v1 catalog exists in the writable_root, but no v0
-                        # catalog exists.  This is likely from a v0 repository
-                        # that has since been upgraded to v1 and is now being
-                        # run read-only again with a writable root.  Assume that
-                        # the v1 catalog in the writable root should not be used
-                        # and destroy it.
-                        v1_cat.destroy()
+
+                if writ_cat_root and not self.read_only:
+                        # If a writable root was specified, but the server is
+                        # not in read-only mode, then the catalog must not be
+                        # stored using the writable root (this is consistent
+                        # with the storage of package data in this case).  As
+                        # such, destroy any v1 catalog data that might exist
+                        # and proceed.
                         shutil.rmtree(writ_cat_root, True)
                         writ_cat_root = None
-                        v1_cat = None
-
-                if v1_cat and writ_cat_root:
-                        # The catalog lives in the writable_root.
+                        if os.path.exists(v0_attrs) and not self.catalog.exists:
+                                # A v0 catalog exists, but no v1 catalog exists;
+                                # this can happen when a repository that was
+                                # previously run with --writable-root and
+                                # --readonly is now being run with only
+                                # --writable-root.
+                                need_upgrade = True
+                elif writ_cat_root and v0_lm and self.read_only:
+                        # The catalog lives in the writable_root if a v0 catalog
+                        # exists, writ_cat_root is set, and readonly is True.
                         self.catalog_root = writ_cat_root
 
                 if not need_upgrade or self.mirror:
                         # If an upgrade isn't needed, or this is a mirror, then
-                        # nothing should be done to the existing catalog data.
+                        # nothing more should be done to the existing catalog
+                        # data.
                         return
 
                 if self.read_only and not self.writable_root:
