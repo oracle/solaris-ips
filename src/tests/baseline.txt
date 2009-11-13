@@ -568,6 +568,8 @@ cli.t_publish_api.py TestPkgPublicationApi.test_stress_http_publish|pass
 cli.t_setUp.py TestSetUp.test_first_depot_start|pass
 cli.t_setUp.py TestSetUp.test_second_depot_start|pass
 cli.t_util_merge.py TestUtilMerge.test_0_merge|pass
+cli.t_util_update_file_layout.py TestFileManager.test_1|pass
+cli.t_util_update_file_layout.py TestFileManager.test_opts|pass
 cli.t_variants.py TestPkgVariants.test_old_zones_pkgs|pass
 cli.t_variants.py TestPkgVariants.test_variant_1|pass
 gui.t_pm_addrepo.py TestPkgGuiAddRepoBasics.testAddRepository|pass
