@@ -31,6 +31,7 @@ PUBLISHER_ADD = 0                         # Index for "Add..." string
 PUBLISHER_ALL = 1                         # Index for "All Sources" string
 SHOW_INFO_DELAY = 600       # Delay before showing selected package information
 SHOW_LICENSE_DELAY = 600    # Delay before showing license information
+RESIZE_DELAY = 600          # Delay before handling resize for startpage
 SEARCH_STR_FORMAT = "<%s>"
 MIN_APP_WIDTH = 750                       # Minimum application width
 MIN_APP_HEIGHT = 500                      # Minimum application height
@@ -278,6 +279,7 @@ class PackageManager:
                 self.info_cache = {}
                 self.selected = 0
                 self.selected_pkgs = {}
+                self.link_load_page = ""
                 self.start_page_url = None
                 self.to_install_update = {}
                 self.to_remove = {}
@@ -630,6 +632,8 @@ class PackageManager:
                 self.show_info_id = 0
                 self.last_show_licenses_id = 0
                 self.show_licenses_id = 0
+                self.resize_id = 0
+                self.last_resize = (0, 0)
                 self.showing_empty_details = False
                 self.in_setup = True
                 self.catalog_refresh_done = False
@@ -916,6 +920,7 @@ class PackageManager:
                 pass
 
         def __load_startpage(self):
+                self.link_load_page = ""
                 if self.__load_startpage_locale(START_PAGE_CACHE_LANG_BASE):
                         return
                 if self.__load_startpage_locale(START_PAGE_LANG_BASE):
@@ -1206,6 +1211,7 @@ class PackageManager:
                         return
 
         def __link_load_page(self, text =""):
+                self.link_load_page = text
                 self.document.clear()
                 self.document.open_stream('text/html')
                 display = "<html><head></head><body>%s</body></html>" % text
@@ -1826,11 +1832,31 @@ class PackageManager:
                 else:
                         self.__main_application_quit()
 
+        def __handle_resize(self, widget):
+                if self.last_resize == widget.get_size():
+                        return
+                self.last_resize = widget.get_size()
+
+                if self.w_main_view_notebook.get_current_page() == NOTEBOOK_START_PAGE:
+                        if self.link_load_page == "":
+                                self.__load_startpage()
+                        else:
+                                self.__link_load_page(self.link_load_page)
+                
         def __on_mainwindow_check_resize(self, widget):
-                if widget and self.gdk_window:
-                        status_height = self.w_statusbar_hbox.get_allocation().height
-                        self.gdk_window.move_resize(0, 0, widget.get_size()[0],
-                            widget.get_size()[1]-status_height)
+                if not widget or not self.gdk_window:
+                        return
+                if self.resize_id != 0:
+                        gobject.source_remove(self.resize_id)
+                        self.resize_id = 0
+
+                self.resize_id = \
+                            gobject.timeout_add(RESIZE_DELAY,
+                                self.__handle_resize, widget)
+                                
+                status_height = self.w_statusbar_hbox.get_allocation().height
+                self.gdk_window.move_resize(0, 0, widget.get_size()[0],
+                    widget.get_size()[1]-status_height)
 
         def __on_api_search_error_delete_event(self, widget, event):
                 self.__on_api_search_button_clicked(None)
