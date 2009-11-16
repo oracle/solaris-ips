@@ -198,7 +198,10 @@ class Webinstall:
                 infobuffer.set_text("")
                 
                 num_new_pub = len(self.pub_new_tasks)
-                num_install_tasks = len(self.pkg_install_tasks)
+                num_install_tasks = 0
+                for entry in self.pkg_install_tasks:
+                        packages = entry[1]
+                        num_install_tasks += len(packages)
 
                 self.__set_proceed_label(num_new_pub)
                 textiter = infobuffer.get_end_iter()
