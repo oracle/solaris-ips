@@ -166,6 +166,8 @@ smf_dir = 'var/svc/manifest/application'
 zones_dir = 'etc/zones'
 etcbrand_dir = 'etc/brand/ipkg'
 brand_dir = 'usr/lib/brand/ipkg'
+execattrd_dir = 'etc/security/exec_attr.d'
+authattrd_dir = 'etc/security/auth_attr.d'
 
 scripts_sunos = {
         scripts_dir: [
@@ -288,6 +290,8 @@ smf_files = [
         'svc/pkg-server.xml',
         'svc/pkg-update.xml',
         ]
+execattrd_files = ['util/misc/exec_attr.d/SUNWipkg']
+authattrd_files = ['util/misc/auth_attr.d/SUNWipkg']
 pspawn_srcs = [
         'modules/pspawn.c'
         ]
@@ -827,6 +831,8 @@ if osname == 'sunos':
                 (brand_dir, brand_files),
                 (etcbrand_dir, etcbrand_files),
                 (smf_dir, smf_files),
+                (execattrd_dir, execattrd_files),
+                (authattrd_dir, authattrd_files),
                 ]
 
 if osname == 'sunos' or osname == "linux":
