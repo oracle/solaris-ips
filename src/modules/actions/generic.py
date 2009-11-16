@@ -114,6 +114,16 @@ class Action(object):
 
                 self.attrs = attrs
 
+                self.set_data(data)
+
+        def set_data(self, data):
+                """This function sets the data field of the action.
+
+                The "data" parameter is the file to use to set the data field.
+                It can be a string which is the path to the file, a function
+                which provides the file when called, or a file handle to the
+                file."""
+
                 if data == None:
                         self.data = None
                         return

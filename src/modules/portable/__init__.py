@@ -210,6 +210,10 @@ def assert_mode(path, mode):
 # -------------------
 ELF, EXEC, UNFOUND = range(0, 3)
 
+# String to be used for an action attribute created for the internal use of
+# dependency analysis.
+PD_LOCAL_PATH = "pkg.internal.depend.localpath"
+
 
 import platform
 import util as os_util

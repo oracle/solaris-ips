@@ -132,7 +132,7 @@ def generate(args):
                         error(_("Could not find manifest file %s") % manf)
                         return 1
                 raise
-        except actions.MalformedActionError, e:
+        except (actions.MalformedActionError, actions.UnknownActionError), e:
                 error(_("Could not parse manifest %(manifest)s because of the "
                     "following line:\n%(line)s") % { 'manifest': manf ,
                     'line': e.actionstr})
@@ -224,7 +224,7 @@ def resolve(args, img_dir):
 
         try:
             pkg_deps, errs = dependencies.resolve_deps(manifest_paths, api_inst)
-        except actions.MalformedActionError, e:
+        except (actions.MalformedActionError, actions.UnknownActionError), e:
             error(_("Could not parse one or more manifests because of the " +
                 "following line:\n%s") % e.actionstr)
             return 1

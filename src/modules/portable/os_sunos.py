@@ -37,7 +37,7 @@ from os_unix import \
     get_group_by_name, get_user_by_name, get_name_by_gid, get_name_by_uid, \
     is_admin, get_userid, get_username, chown, rename, remove, link, \
     copyfile, split_path, get_root, assert_mode
-from pkg.portable import ELF, EXEC, UNFOUND
+from pkg.portable import ELF, EXEC, PD_LOCAL_PATH, UNFOUND
 import pkg.arch as arch
 
 def get_isainfo():
@@ -53,7 +53,7 @@ def get_file_type(actions, proto_dir):
         t_fd, t_path = tempfile.mkstemp()
         t_fh = os.fdopen(t_fd, "w")
         for a in actions:
-                t_fh.write(os.path.join(proto_dir, a.attrs["path"]) + "\n")
+                t_fh.write(os.path.join(a.attrs[PD_LOCAL_PATH]) + "\n")
         t_fh.close()
         res = subprocess.Popen(["/usr/bin/file", "-f", t_path],
             stdout=subprocess.PIPE).communicate()[0].splitlines()
@@ -62,7 +62,7 @@ def get_file_type(actions, proto_dir):
         for i, file_out in enumerate(res):
                 file_out = file_out.strip()
                 a = actions[i]
-                proto_file = os.path.join(proto_dir, a.attrs["path"])
+                proto_file = a.attrs[PD_LOCAL_PATH]
                 colon_cnt = proto_file.count(":") + 1
                 tmp = file_out.split(":", colon_cnt)
                 res_file_name = ":".join(tmp[0:colon_cnt])

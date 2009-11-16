@@ -52,13 +52,13 @@ def list_implicit_deps(file_path, proto_dir, remove_internal_deps=True):
         will be delivered by the package."""
 
         proto_dir = os.path.abspath(proto_dir)
-        m = make_manifest(file_path)
+        m, missing_manf_files = __make_manifest(file_path, [proto_dir])
         pkg_vars = m.get_all_variants()
         deps, elist, missing = list_implicit_deps_for_manifest(m, proto_dir,
             pkg_vars)
         if remove_internal_deps:
                 deps = resolve_internal_deps(deps, m, proto_dir, pkg_vars)
-        return deps, elist, missing
+        return deps, missing_manf_files + elist, missing
 
 def resolve_internal_deps(deps, mfst, proto_dir, pkg_vars):
         """Given a list of dependencies, remove those which are satisfied by
@@ -125,12 +125,6 @@ def list_implicit_deps_for_manifest(mfst, proto_dir, pkg_vars):
         'proto_dir' is the path to the proto area which holds the files that
         will be delivered by the package.
 
-        'plat' is a string that will be used to replace $PLATFORM in the elf
-        dependency generator instead of using the output of uname -i.
-
-        'isalist' is a list of strings that will be used to replace $ISALIST
-        in the elf dependency generator instead of the output of isalist -i.
-
         'pkg_vars' are the variants that this package was published against.
 
         Returns a tuple of three lists.
@@ -169,18 +163,39 @@ def list_implicit_deps_for_manifest(mfst, proto_dir, pkg_vars):
                     proto_dir))
         return deps, elist, missing
 
-def make_manifest(fp):
+def __make_manifest(fp, basedirs=None, load_data=True):
         """Given the file path, 'fp', return a Manifest for that path."""
 
         m = manifest.Manifest()
-        try:
-                fh = open(fp, "rb")
-                lines = fh.read()
-                fh.close()
-        except EnvironmentError, e:
-                raise 
-        m.set_content(lines)
-        return m
+        fh = open(fp, "rb")
+        acts = []
+        missing_files = []
+        accumulate = ""
+        for l in fh:
+                l = l.strip()
+                if l.endswith("\\"):
+                        accumulate += l[0:-1]
+                        continue
+                elif accumulate:
+                        l = accumulate + l
+                        accumulate = ""
+                if not l or l[0] == '#':
+                        continue
+                try:
+                        a, local_path = actions.internalizestr(l,
+                            basedirs=basedirs,
+                            load_data=load_data)
+                        if local_path:
+                                assert portable.PD_LOCAL_PATH not in a.attrs
+                                a.attrs[portable.PD_LOCAL_PATH] = local_path
+                        acts.append(a)
+                except actions.ActionDataError, e:
+                        missing_files.append(base.MissingFile(
+                            actions.internalizestr(l, basedirs=basedirs,
+                            load_data=False)[0].attrs["path"]))
+        fh.close()
+        m.set_content(acts)
+        return m, missing_files
 
 def choose_name(fp, mfst):
         """Find the package name for this manifest. If it's defined in a set
@@ -370,8 +385,8 @@ def resolve_deps(manifest_paths, api_inst):
         'api_inst' is an ImageInterface which references the current image."""
 
         manifests = [
-            (mp, choose_name(mp, mfst), mfst, mfst.get_all_variants())
-            for mp, mfst in ((mp, make_manifest(mp)) for mp in manifest_paths)
+            (mp, choose_name(mp, mfst), mfst, mfst.get_all_variants(), missing_manfs)
+            for mp, (mfst, missing_manfs) in ((mp, __make_manifest(mp, load_data=False)) for mp in manifest_paths)
         ]
         delivered_files = {}
         # Build a list of all files delivered in the manifests being resolved.
@@ -381,7 +396,7 @@ def resolve_deps(manifest_paths, api_inst):
                 mfst.gen_actions_by_type("hardlink"),
                 mfst.gen_actions_by_type("link")),
             pv)
-            for mp, name, mfst, pv in manifests
+            for mp, name, mfst, pv, miss_files in manifests
         ):
                 for f in f_list:
                         dep_vars = variants.VariantSets(f.get_variants())
@@ -390,7 +405,8 @@ def resolve_deps(manifest_paths, api_inst):
                             f.attrs["path"], []).append((n, dep_vars))
         pkg_deps = {}
         errs = []
-        for mp, name, mfst, pkg_vars in manifests:
+        for mp, name, mfst, pkg_vars, miss_files in manifests:
+                errs += miss_files
                 if mfst is None:
                         pkg_deps[mp] = None
                         continue

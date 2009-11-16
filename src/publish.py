@@ -194,24 +194,8 @@ def trans_add(repo_uri, args):
 
         if not args:
                 usage(_("No arguments specified for subcommand."), cmd="add")
-
-        atype = args[0]
-        data = None
-        if atype in ("file", "license"):
-                if len(args) < 2:
-                        raise RuntimeError, _("A filename must be provided "
-                            "for this action.")
-
-                aargs = args[2:]
-                data = args[1]
-        else:
-                aargs = args[1:]
-
-        try:
-                action = pkg.actions.fromlist(atype, aargs, data=data)
-        except ValueError, e:
-                error(e[0], cmd="add")
-                return 1
+                
+        action, lp = pkg.actions.internalizelist(args[0], args[1:])
 
         t = trans.Transaction(repo_uri, trans_id=trans_id)
         t.add(action)
@@ -284,62 +268,15 @@ def trans_include(repo_uri, fargs, transaction=None):
                                 accumulate = ""
                         if not line or line[0] == '#':
                                 continue
- 
-                        args = line.split()
-                        if args[0] in ("file", "license"):
-                                if args[1] == "NOHASH":
-                                        try:
-                                                filepath = pkg.actions.fromstr(
-                                                    line, None).attrs["path"]
-                                        except KeyError, e:
-                                                error(_("line %d: missing path")
-                                                    % (lineno + 1))
-                                                error_occurred = True
-                                                continue
-                                        except pkg.actions.ActionError, e:
-                                                error("line %d: %s" %
-                                                    (lineno + 1, e),
-                                                    cmd="include")
-                                                error_occurred = True
-                                                continue
-                                else:
-                                        filepath = args[1]
-                                        line = line.replace(args[1], "NOHASH",
-                                            1)
 
-                                if basedirs:
-                                        path = filepath.lstrip(os.path.sep)
-                                        # look for file in specified dirs
-                                        for d in basedirs:
-                                                data = os.path.join(d, path)
-                                                if os.path.isfile(data):
-                                                        break
-                                else:
-                                        data = filepath
-
-
-                                if not os.path.isfile(data):
-                                        error(_("line %s: File %s not found") %
-                                            (lineno + 1, filepath),
-                                            cmd="include")
-                                        error_occurred = True
-                                        continue
-                        else:
-                                data = None
                         try:
-                                action = pkg.actions.fromstr(line,
-                                                data=data)
-                        except  pkg.actions.ActionError, e:
-                                error(_("line %d: %s") %
-                                    (lineno + 1, e),
+                                action, lp = pkg.actions.internalizestr(line,
+                                    basedirs)
+                        except pkg.actions.ActionError, e:
+                                error("line %d: %s" % (lineno + 1, e),
                                     cmd="include")
                                 error_occurred = True
                                 continue
-
-                        # cleanup any leading / in path to prevent problems
-                        if "path" in action.attrs:
-                                action.attrs["path"] = \
-                                        action.attrs["path"].lstrip("/")
                         # omit set name=fmri actions
                         if action.name == "set" and \
                             action.attrs["name"] in ("fmri", "pkg.fmri"):

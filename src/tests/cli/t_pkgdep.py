@@ -40,8 +40,12 @@ class TestPkgdepBasics(testutils.SingleDepotTestCase):
 
         test_manf_1 = """\
 hardlink path=baz target=var/log/authlog
-file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.4/vendor-packages/pkg/client/indexer.py
-file NOHASH group=bin mode=0755 owner=root path=usr/xpg4/lib/libcurses.so.1
+file NOHASH group=bin mode=0755 owner=root \
+path=usr/lib/python2.4/v\
+endor-packages/pkg/client/indexer.py
+file NOHA\
+SH group=bin mode=0755 owner=root path=u\
+sr/xpg4/lib/libcurses.so.1
 """
         test_manf_2 = """
 file NOHASH group=bin mode=0755 owner=root path=usr/xpg4/lib/libcurses.so.1 variant.arch=foo
@@ -56,7 +60,13 @@ file NOHASH group=sys mode=0644 owner=root path=var/log/syslog
         resolve_dep_manf = """
 file NOHASH group=sys mode=0600 owner=root path=var/log/authlog preserve=true
 """
-        
+
+        payload_manf = """\
+hardlink path=usr/baz target=../foo/bar.py
+file usr/lib/python2.4/vendor-packages/pkg/client/indexer.py \
+group=bin mode=0755 owner=root path=foo/bar.py
+"""
+
         res_manf_1 = """\
 depend %(depend_debug_prefix)s.file=usr/bin/python2.4 fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.4/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=script
 depend %(depend_debug_prefix)s.file=usr/lib/python2.4/vendor-packages/pkg/__init__.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.4/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python
@@ -110,6 +120,14 @@ depend fmri=%(csl_pkg_name)s %(depend_debug_prefix)s.file=libc.so.1 %(depend_deb
 
         res_full_manf_1_mod_proto = res_full_manf_1 + """\
 depend fmri=%(dummy_fmri)s %(depend_debug_prefix)s.file=libc.so.1 %(depend_debug_prefix)s.path=lib %(depend_debug_prefix)s.path=usr/lib %(depend_debug_prefix)s.reason=usr/xpg4/lib/libcurses.so.1 %(depend_debug_prefix)s.type=elf type=require
+""" % {"depend_debug_prefix":base.Dependency.DEPEND_DEBUG_PREFIX, "dummy_fmri":base.Dependency.DUMMY_FMRI}
+
+        res_payload_1 = """\
+depend %(depend_debug_prefix)s.file=usr/bin/python2.4 fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=foo/bar.py %(depend_debug_prefix)s.type=script
+depend %(depend_debug_prefix)s.file=usr/lib/python2.4/vendor-packages/pkg/__init__.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=foo/bar.py %(depend_debug_prefix)s.type=python
+depend %(depend_debug_prefix)s.file=usr/lib/python2.4/vendor-packages/pkg/indexer.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=foo/bar.py %(depend_debug_prefix)s.type=python
+depend %(depend_debug_prefix)s.file=usr/lib/python2.4/vendor-packages/pkg/misc.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=foo/bar.py %(depend_debug_prefix)s.type=python
+depend %(depend_debug_prefix)s.file=usr/lib/python2.4/vendor-packages/pkg/search_storage.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=foo/bar.py %(depend_debug_prefix)s.type=python
 """ % {"depend_debug_prefix":base.Dependency.DEPEND_DEBUG_PREFIX, "dummy_fmri":base.Dependency.DUMMY_FMRI}
 
         two_variant_deps = """\
@@ -410,6 +428,8 @@ Environment:
                 portable.remove(tp)
 
         def test_resolve_screen_out(self):
+                """Check that the results printed to screen are what is
+                expected."""
                 
                 m1_path = None
                 m2_path = None
@@ -480,6 +500,22 @@ Environment:
                 finally:
                         if m_path:
                                 portable.remove(m_path)
+
+        def test_bug_11805(self):
+                """Test that paths as payloads work for file actions.
+
+                This tests both that file actions with payloads have their
+                dependencies analyzed correctly and that the correct path is
+                used for internal dependency resolution."""
+
+                try:
+                        tp = self.make_manifest(self.payload_manf)
+                        self.pkgdep("generate %s" % tp)
+                        self.check_res(self.res_payload_1, self.output)
+                        self.check_res("", self.errout)
+                finally:
+                        if tp:
+                                portable.remove(tp)
 
         def test_bug_11829(self):
 

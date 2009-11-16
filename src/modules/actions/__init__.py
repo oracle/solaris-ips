@@ -176,16 +176,34 @@ def fromstr(string, data=None):
 
         return action
 
-def fromlist(type, args, hash=None, data=None):
+def internalizelist(atype, args, ahash=None, basedirs=None):
         """Create an action instance based on a sequence of "key=value" strings.
+        This function also translates external representations of actions with
+        payloads (like file and license which can use NOHASH or file paths to
+        point to the payload) to an internal representation which sets the
+        data field of the action returned.
+
+        The "atype" parameter is the type of action to be built.
+
+        The "args" parameter is the sequence of "key=value" strings.
+
+        The "ahash" parameter is used to set the hash value for the action.
+
+        The "basedirs" parameter is the list of directories to look in to find
+        any payload for the action.
 
         Raises MalformedActionError if the attribute strings are malformed.
         """
 
-        if type not in types:
-                raise UnknownActionError(("%s %s" % (type,
-                    " ".join(args))).strip(), type)
+        if atype not in types:
+                raise UnknownActionError(("%s %s" % (atype,
+                    " ".join(args))).strip(), atype)
 
+        data = None
+
+        if atype in ("file", "license"):
+                data = args.pop(0)
+        
         attrs = {}
 
         try:
@@ -195,7 +213,7 @@ def fromlist(type, args, hash=None, data=None):
                                 p1 = " ".join(args[:kvi])
                                 p2 = " ".join(args[kvi:])
                                 raise MalformedActionError(
-                                    "%s %s %s" % (type, p1, p2), len(p1) + 1,
+                                    "%s %s %s" % (atype, p1, p2), len(p1) + 1,
                                     "attribute '%s'" % kv)
 
                         # This is by far the common case-- an attribute with
@@ -216,19 +234,83 @@ def fromlist(type, args, hash=None, data=None):
                 kvi = args.index(kv) + 1
                 p1 = " ".join(args[:kvi])
                 p2 = " ".join(args[kvi:])
-                raise MalformedActionError("%s %s %s" % (type, p1, p2),
+                raise MalformedActionError("%s %s %s" % (atype, p1, p2),
                     len(p1) + 2, "attribute '%s'" % kv)
 
-        action = types[type](data=data, **attrs)
+        action = types[atype](data=None, **attrs)
 
         ka = action.key_attr
         if ka is not None and (ka not in action.attrs or
             action.attrs[ka] is None):
-                raise InvalidActionError(("%s %s" % (type,
+                raise InvalidActionError(("%s %s" % (atype,
                     " ".join(args))).strip(), _("required attribute, "
                     "'%s', was not provided.") % ka)
 
-        if hash:
-                action.hash = hash
+        if ahash:
+                action.hash = ahash
 
-        return action
+        local_path = __set_action_data(data, action, basedirs)
+        return action, local_path
+
+def internalizestr(string, basedirs=None, load_data=True):
+        """Create an action instance based on a sequence of strings.
+        This function also translates external representations of actions with
+        payloads (like file and license which can use NOHASH or file paths to
+        point to the payload) to an internal representation which sets the
+        data field of the action returned.
+
+        In general, each string should be in the form of "key=value". The
+        exception is a payload for certain actions which should be the first
+        item in the sequence.
+
+        Raises MalformedActionError if the attribute strings are malformed.
+        """
+
+        string = string.strip()
+        args = string.split()
+        atype = args.pop(0)
+        
+        if atype not in types:
+                raise UnknownActionError(("%s %s" % (atype,
+                    " ".join(args))).strip(), atype)
+
+        action = fromstr(string)
+
+        if atype not in ("file", "license") or not load_data:
+                return action, None
+
+        local_path = __set_action_data(args[0], action, basedirs)
+        return action, local_path
+
+def __set_action_data(payload, action, basedirs):
+        """Sets the data field of an action using the information in the
+        payload and returns the actual path used to set the data.
+
+        The "payload" parameter is the representation of the data to assign to
+        the action's data field. It can either be NOHASH or a path to the file.
+
+        The "action" parameter is the action to modify.
+
+        The "basedirs" parameter contains the directories to examine to find
+        the payload in."""
+
+        if not payload:
+                return None
+        
+        if payload == "NOHASH":
+                filepath = os.path.sep + action.attrs["path"]
+        else:
+                filepath = payload
+
+        if basedirs:
+                path = filepath.lstrip(os.path.sep)
+                # look for file in specified dirs
+                for d in basedirs:
+                        data = os.path.join(d, path)
+                        if os.path.isfile(data):
+                                break
+        else:
+                data = filepath
+
+        action.set_data(data)
+        return data

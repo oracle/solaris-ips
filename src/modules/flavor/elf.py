@@ -30,6 +30,8 @@ import os
 import pkg.elf as elf
 import pkg.flavor.base as base
 
+from pkg.portable import PD_LOCAL_PATH
+
 class BadElfFile(base.DependencyAnalysisError):
         """Exception that is raised when the elf dependency checker is given
         a file that errors when it tries to get the dynamic section from the
@@ -110,7 +112,7 @@ def process_elf_dependencies(action, proto_dir, pkg_vars, **kwargs):
 
         installed_path = action.attrs[action.key_attr]
         
-        proto_file = os.path.join(proto_dir, installed_path)
+        proto_file = action.attrs[PD_LOCAL_PATH]
 
         if not os.path.exists(proto_file):
                 raise base.MissingFile(proto_file)

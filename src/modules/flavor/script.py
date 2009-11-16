@@ -52,18 +52,10 @@ def process_script_deps(action, proto_dir, pkg_vars, **kwargs):
 
         # localpath is path to actual file
         # path is path in installed image
-
         if action.name != "file":
                 return []
 
-        path = action.attrs[action.key_attr]
-        
-        localpath = os.path.join(proto_dir, path)
-
-        try:
-                f = open(localpath, "rb")
-        except EnvironmentError:
-                raise base.MissingFile(localpath)
+        f = action.data()
         l = f.readline()
         f.close()
 
@@ -80,8 +72,8 @@ def process_script_deps(action, proto_dir, pkg_vars, **kwargs):
                 deps = [ScriptDependency(action, p, pkg_vars, proto_dir)]
                 elist = []
                 if "python" in l:
-                        ds, errs = python.process_python_dependencies(localpath,
-                            proto_dir, action, pkg_vars)
+                        ds, errs = python.process_python_dependencies(proto_dir,
+                            action, pkg_vars)
                         elist.extend(errs)
                         deps.extend(ds)
                 return deps, elist

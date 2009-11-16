@@ -287,28 +287,7 @@ class Manifest(object):
                 self.img = img
                 self.fmri = fmri
 
-        def set_content(self, content, excludes=EmptyI, signatures=False):
-                """content is the text representation of the manifest"""
-                self.actions = []
-                self.actions_bytype = {}
-                self.variants = {}
-                self.facets = {}
-                self.attributes = {}
-
-                if signatures:
-                        # Generate manifest signature based upon input
-                        # content, but only if signatures were requested.
-                        self.signatures = {
-                            "sha-1": self.hash_create(content)
-                        }
-
-                # So we could build up here the type/key_attr dictionaries like
-                # sdict and odict in difference() above, and have that be our
-                # main datastore, rather than the simple list we have now.  If
-                # we do that here, we can even assert that the "same" action
-                # can't be in a manifest twice.  (The problem of having the same
-                # action more than once in packages that can be installed
-                # together has to be solved somewhere else, though.)
+        def __content_to_actions(self, content):
                 accumulate = ""
                 for l in content.splitlines():
                         l = l.lstrip()
@@ -323,47 +302,85 @@ class Manifest(object):
                                 continue
  
                         try:
-                                action = actions.fromstr(l)
+                                yield actions.fromstr(l)
                         except actions.ActionError, e:
                                 # Add the FMRI to the exception and re-raise
                                 e.fmri = self.fmri
                                 raise
-                        # XXX handle legacy transition issues; not needed after
-                        # 2009.06 release & republication are complete.
-                        if "opensolaris.zone" in action.attrs and \
-                            "variant.opensolaris.zone" not in action.attrs:
-                                action.attrs["variant.opensolaris.zone"] = \
-                                    action.attrs["opensolaris.zone"]
 
-                        if action.name == "set" and \
-                            action.attrs["name"] == "authority":
-                                # Translate old action to new.
-                                action.attrs["name"] = "publisher"
+        def set_content(self, content, excludes=EmptyI, signatures=False):
+                """content is the text representation of the manifest"""
+                self.actions = []
+                self.actions_bytype = {}
+                self.variants = {}
+                self.facets = {}
+                self.attributes = {}
 
-                        if action.attrs.has_key("path"):
-                                np = action.attrs["path"].lstrip(os.path.sep)
-                                action.attrs["path"] = np
+                # So we could build up here the type/key_attr dictionaries like
+                # sdict and odict in difference() above, and have that be our
+                # main datastore, rather than the simple list we have now.  If
+                # we do that here, we can even assert that the "same" action
+                # can't be in a manifest twice.  (The problem of having the same
+                # action more than once in packages that can be installed
+                # together has to be solved somewhere else, though.)
+                if isinstance(content, str):
+                        if signatures:
+                                # Generate manifest signature based upon input
+                                # content, but only if signatures were
+                                # requested.
+                                self.signatures = {
+                                    "sha-1": self.hash_create(content)
+                                }
+                        content = self.__content_to_actions(content)
 
-                        if not action.include_this(excludes):
-                                continue
+                for action in content:
+                        self.__add_action(action, excludes)
+                return
 
-                        self.actions.append(action)
-                        self.actions_bytype.setdefault(action.name, []). \
-                            append(action)
+        def __add_action(self, action, excludes):
+                """Performs any needed transformations on the action then adds
+                it to the manifest.
 
-                        # add any set actions to attributes
-                        if action.name == "set":
-                                self.fill_attributes(action)
-                        # append any variants and facets to manifest dict
-                        v_list, f_list = action.get_varcet_keys()
+                The "action" parameter is the action object that should be
+                added to the manifest.
 
-                        if v_list or f_list:
-                                for v, d in zip(v_list, repeat(self.variants)) \
-                                    + zip(f_list, repeat(self.facets)):
-                                        if v not in d:
-                                                d[v] = set([action.attrs[v]])
-                                        else:
-                                                d[v].add(action.attrs[v])
+                The "excludes" parameter is the variants to exclude from the
+                manifest."""
+
+                # XXX handle legacy transition issues; not needed after
+                # 2009.06 release & republication are complete.
+                if "opensolaris.zone" in action.attrs and \
+                    "variant.opensolaris.zone" not in action.attrs:
+                        action.attrs["variant.opensolaris.zone"] = \
+                            action.attrs["opensolaris.zone"]
+
+                if action.name == "set" and action.attrs["name"] == "authority":
+                        # Translate old action to new.
+                        action.attrs["name"] = "publisher"
+
+                if action.attrs.has_key("path"):
+                        np = action.attrs["path"].lstrip(os.path.sep)
+                        action.attrs["path"] = np
+
+                if not action.include_this(excludes):
+                        return
+
+                self.actions.append(action)
+                self.actions_bytype.setdefault(action.name, []).append(action)
+
+                # add any set actions to attributes
+                if action.name == "set":
+                        self.fill_attributes(action)
+                # append any variants and facets to manifest dict
+                v_list, f_list = action.get_varcet_keys()
+
+                if v_list or f_list:
+                        for v, d in zip(v_list, repeat(self.variants)) \
+                            + zip(f_list, repeat(self.facets)):
+                                if v not in d:
+                                        d[v] = set([action.attrs[v]])
+                                else:
+                                        d[v].add(action.attrs[v])
                 return
 
         def fill_attributes(self, action):

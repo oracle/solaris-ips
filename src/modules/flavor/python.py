@@ -25,10 +25,10 @@
 # Use is subject to license terms.
 #
 
-import os
-
 import pkg.flavor.base as base
 import pkg.flavor.depthlimitedmf as modulefinder
+
+from pkg.portable import PD_LOCAL_PATH
 
 class PythonModuleMissingPath(base.DependencyAnalysisError):
         """Exception that is raised when a module reports a module as a
@@ -60,14 +60,14 @@ class PythonDependency(base.SinglePathDependency):
                     self.pkg_vars)
 
 
-def process_python_dependencies(localpath, proto_dir, action, pkg_vars):
+def process_python_dependencies(proto_dir, action, pkg_vars):
         """Given the path to a python file, the proto area containing that file,
         the action that produced the dependency, and the variants against which
         the action's package was published, produce a list of PythonDependency
         objects."""
 
         mf = modulefinder.DepthLimitedModuleFinder(proto_dir)
-        mf.run_script(localpath, depth=1)
+        mf.run_script(action.attrs[PD_LOCAL_PATH], depth=1)
         deps = []
         errs = []
         for m in mf.modules.values():
