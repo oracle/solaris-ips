@@ -60,7 +60,6 @@ GDK_2BUTTON_PRESS = 5     # gtk.gdk._2BUTTON_PRESS causes pylint warning
 GDK_RIGHT_BUTTON = 3      # normally button 3 = right click
 
 PKG_CLIENT_NAME = "packagemanager"
-CHECK_FOR_UPDATES = "usr/lib/pm-checkforupdates"
 
 # Location for themable icons
 ICON_LOCATION = "usr/share/package-manager/icons"
@@ -98,7 +97,6 @@ INFORMATION_PAGE_HEADER = (
 import getopt
 import pwd
 import os
-import subprocess
 import sys
 import time
 import locale
@@ -265,14 +263,12 @@ class PackageManager:
                 self.image_directory = None
                 gtk.rc_parse('~/.gtkrc-1.2-gnome2')       # Load gtk theme
                 self.progress_stop_thread = True
-                self.catalog_loaded = False
                 self.update_all_proceed = False
                 self.application_path = None
                 self.default_publisher = None
                 self.current_repos_with_search_errors = []
                 self.exiting = False
                 self.first_run = True
-                self.in_reload = False
                 self.selected_pkgstem = None
                 self.selected_model = None
                 self.selected_path = None
@@ -636,7 +632,6 @@ class PackageManager:
                 self.last_resize = (0, 0)
                 self.showing_empty_details = False
                 self.in_setup = True
-                self.catalog_refresh_done = False
                 if self.initial_app_width >= MIN_APP_WIDTH and \
                         self.initial_app_height >= MIN_APP_HEIGHT:
                         self.w_main_window.resize(self.initial_app_width,
@@ -2315,16 +2310,6 @@ class PackageManager:
                                 self.__process_after_search_with_zero_results(
                                         pub_prefix, text)
                         return
-                # We cannot get status of the packages if catalogs have not
-                # been loaded so we pause for up to 5 seconds here to
-                # allow catalogs to be loaded
-                times = 5
-                while self.catalog_loaded == False:
-                        if times == 0:
-                                break
-                        time.sleep(1)
-                        times -= 1
-
                 #Now fetch full result set with Status
                 if self.exiting:
                         return
@@ -3056,13 +3041,14 @@ class PackageManager:
                     status_str)
                 self.__do_refresh(pubs=[pub])
 
-        def __do_refresh(self, pubs=None, immediate=False):
+        def __do_refresh(self, pubs=None, immediate=False, ignore_transport_ex=False):
                 success = False
                 try:
                         self.api_o.refresh(pubs=pubs, immediate=immediate)
                         success = True
                 except api_errors.CatalogRefreshException, cre:
-                        self.__catalog_refresh_message(cre)
+                        if ignore_transport_ex == False:
+                                self.__catalog_refresh_message(cre)
                 except api_errors.InvalidDepotResponseException, idrex:
                         err = str(idrex)
                         gobject.idle_add(self.error_occurred, err,
@@ -3244,8 +3230,15 @@ class PackageManager:
                 self.set_busy_cursor()
                 status_str = _("Refreshing package catalog information")
                 self.__update_statusbar_message(status_str)
-                self.in_reload = True
                 Thread(target = self.__catalog_refresh).start()
+
+        def __catalog_refresh(self):
+                """Update image's catalogs."""
+                success = self.__do_refresh(immediate=True)
+                self.__catalog_refresh_done()
+                if not success:
+                        return -1
+                return 0
 
         def __catalog_refresh_done(self):
                 if not self.exiting:
@@ -3787,8 +3780,6 @@ class PackageManager:
 
         def __show_licenses(self):
                 self.show_licenses_id = 0
-                if self.catalog_loaded == False:
-                        return
                 Thread(target = self.__show_package_licenses,
                     args = (self.selected_pkgstem, self.last_show_licenses_id,)).start()
 
@@ -3839,10 +3830,6 @@ class PackageManager:
 
         def __show_info(self, model, path):
                 self.show_info_id = 0
-                if self.catalog_loaded == False:
-                        self.selected_model = model
-                        self.selected_path = path
-                        return
                 if not (model and path):
                         return
                 if self.selected_model != None:
@@ -4106,46 +4093,6 @@ class PackageManager:
                         self.__image_activity_lock.release()
                 return res
 
-        def __enable_disable_update_all(self, refresh_done):
-                #XXX Api to provide fast information if there are some updates
-                #available within image
-                gobject.idle_add(self.w_updateall_button.set_sensitive, False)
-                gobject.idle_add(self.w_updateall_menuitem.set_sensitive, False)
-                update_available = self.__check_if_updates_available(refresh_done)
-                if not self.exiting:
-                        gobject.idle_add(self.__g_enable_disable_update_all, 
-                            update_available)
-                return False
-
-        def __show_info_after_catalog_load(self):
-                self.__show_info(self.selected_model, self.selected_path)
-                self.selected_model = None
-                self.selected_path = None
-                if (self.w_info_notebook.get_current_page() == 
-                    INFO_NOTEBOOK_LICENSE_PAGE and
-                    not self.showing_empty_details):
-                        self.__show_licenses()
-
-        def __check_if_updates_available(self, refresh_done):
-                # First we load the catalogs so package info can work
-                if not refresh_done:
-                        self.catalog_loaded = False
-                        success = self.__do_refresh()
-                        if success:
-                                self.catalog_loaded = True
-                        else:
-                                gobject.idle_add(self.__set_empty_details_panel)
-                                return False
-                gobject.idle_add(self.__show_info_after_catalog_load)
-
-                return_code = subprocess.call([os.path.join(self.application_dir, 
-                    CHECK_FOR_UPDATES),
-                    self.image_directory])
-                if return_code == enumerations.UPDATES_AVAILABLE:
-                        return True
-                else:
-                        return False
-
         def __g_enable_disable_update_all(self, update_available):
                 self.w_updateall_button.set_sensitive(update_available)
                 self.w_updateall_menuitem.set_sensitive(update_available)
@@ -4166,20 +4113,6 @@ class PackageManager:
                                         return
                 self.w_deselect_menuitem.set_sensitive(False)
                 return
-
-        def __catalog_refresh(self, reload_gui=True):
-                """Update image's catalogs."""
-                success = self.__do_refresh(immediate=True)
-                if success:
-                        self.catalog_refresh_done = True
-                        # Refresh will load the catalogs.
-                        self.catalog_loaded = True
-                        if reload_gui:
-                                self.__catalog_refresh_done()
-                else: 
-                        self.__catalog_refresh_done()
-                        return -1
-                return 0
 
         def __add_pkgs_to_lists_from_cache(self, pub, application_list,
             category_list, section_list):
@@ -4660,12 +4593,6 @@ class PackageManager:
                 else:
                         if not self.__doing_search():
                                 self.unset_busy_cursor()
-                
-                if self.user_rights and (self.first_run or self.in_reload):
-                        Thread(target = self.__enable_disable_update_all,
-                            args = (self.catalog_refresh_done,)).start()
-                self.catalog_refresh_done = False
-                self.in_reload = False
                 if self.first_run:
                         if self.start_insearch:
                                 self.w_repository_combobox.set_active(
@@ -4783,7 +4710,7 @@ class PackageManager:
                         return
                 visible_publisher = self.__get_selected_publisher()
                 default_publisher = self.default_publisher
-                self.__do_refresh()
+                self.__do_refresh(ignore_transport_ex=True)
                 if not self.img_timestamp:
                         self.img_timestamp = self.cache_o.get_index_timestamp()
                         self.__on_reload(None)
@@ -4836,8 +4763,6 @@ class PackageManager:
                 self.__enable_disable_selection_menus()
                 self.__enable_disable_install_remove()
                 self.update_statusbar()
-                Thread(target = self.__enable_disable_update_all,
-                    args = (False,)).start()
 
         def __catalog_refresh_message(self, cre):
                 total = cre.total
@@ -4952,7 +4877,7 @@ Use -U (--update-all) to proceed with Update All"""
                 sys.exit(1)
 
         # Setup webinstall
-        if info_install_arg or len(sys.argv) == 2:
+        if info_install_arg or len(sys.argv) == 2 and not update_all_proceed:
                 webinstall = webinstall.Webinstall(image_dir)
                 if len(sys.argv) == 2:
                         info_install_arg = sys.argv[1]

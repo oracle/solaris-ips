@@ -470,7 +470,8 @@ class InstallUpdate(progress.GuiProgressTracker):
                                 "their own.\nClick Update All to update all packages.")
                                 self.__g_error_stage(msg)
                         elif self.action == enumerations.IMAGE_UPDATE:
-                                gobject.idle_add(self.__operations_done)
+                                done_text = _("No updates available")
+                                gobject.idle_add(self.__operations_done, done_text)
 
         def __start_stage_one(self):
                 self.current_stage_label = self.w_stage1_label
