@@ -1,5 +1,7 @@
 devinfo:devinfo 0640 root sys
 devinfo:devinfo,ro 0444 root sys
+md:* 0640 root sys
+md:admin 0644 root sys
 su:[a-z] 0666 root sys
 su:[a-z],cu 0600 uucp uucp
 su:ssp 0600 root sys
