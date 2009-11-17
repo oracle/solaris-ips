@@ -1834,6 +1834,7 @@ examining the catalogs:"""))
                 img.history.operation_result = history.RESULT_NOTHING_TO_DO
         else:
                 img.history.operation_result = history.RESULT_SUCCEEDED
+        img.cleanup_downloads()
         return err
 
 def display_catalog_failures(cre):
@@ -2483,6 +2484,7 @@ def image_create(args):
                 img.cleanup_downloads()
         except OSError, e:
                 # Ensure messages are displayed after the spinner.
+                img.cleanup_downloads()
                 logger.error("\n")
                 error(_("cannot create image at %(image_dir)s: %(reason)s") %
                     { "image_dir": image_dir, "reason": e.args[1] },
@@ -2490,11 +2492,13 @@ def image_create(args):
                 return 1
         except api_errors.PermissionsException, e:
                 # Ensure messages are displayed after the spinner.
+                img.cleanup_downloads()
                 logger.error("")
                 error(e, cmd="image-create")
                 return 1
         except api_errors.InvalidDepotResponseException, e:
                 # Ensure messages are displayed after the spinner.
+                img.cleanup_downloads()
                 logger.error("\n")
                 error(_("The URI '%(pub_url)s' does not appear to point to a "
                     "valid pkg server.\nPlease check the server's "
@@ -2506,6 +2510,7 @@ def image_create(args):
                 return 1
         except api_errors.CatalogRefreshException, cre:
                 # Ensure messages are displayed after the spinner.
+                img.cleanup_downloads()
                 error("", cmd="image-create")
                 if display_catalog_failures(cre) == 0:
                         return 1

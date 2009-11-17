@@ -214,6 +214,7 @@ class ImageInterface(object):
                 """Finish planning an operation."""
 
                 assert self.__activity_lock._is_owned()
+                self.__img.cleanup_downloads()
                 self.__activity_lock.release()
 
         def __plan_common_exception(self, log_op_end=None):
@@ -518,15 +519,12 @@ class ImageInterface(object):
                                 try:
                                         self.__img.imageplan.preexecute()
                                 except search_errors.ProblematicPermissionsIndexException, e:
-                                        self.__img.cleanup_downloads()
                                         raise api_errors.ProblematicPermissionsIndexException(e)
                                 except:
-                                        self.__img.cleanup_downloads()
                                         raise
 
                                 if self.__canceling:
                                         self.__img.transport.reset()
-                                        self.__img.cleanup_downloads()
                                         raise api_errors.CanceledException()
                                 self.__prepared = True
                         except Exception, e:
@@ -546,6 +544,7 @@ class ImageInterface(object):
                                         self.log_operation_end(error=exc_type)
                                 raise
                 finally:
+                        self.__img.cleanup_downloads()
                         self.__set_can_be_canceled(False)
                         self.__activity_lock.release()
 
@@ -614,29 +613,24 @@ class ImageInterface(object):
                                         be.restore_install_uninstall()
                                 # Must be done after bootenv restore.
                                 self.log_operation_end(error=e)
-                                self.__img.cleanup_downloads()
                                 raise
                         except search_errors.ProblematicPermissionsIndexException, e:
                                 error = api_errors.ProblematicPermissionsIndexException(e)
                                 self.log_operation_end(error=error)
-                                self.__img.cleanup_downloads()
                                 raise error
                         except (search_errors.InconsistentIndexException,
                                 search_errors.PartialIndexingException), e:
                                 error = api_errors.CorruptedIndexException(e)
                                 self.log_operation_end(error=error)
-                                self.__img.cleanup_downloads()
                                 raise error
                         except search_errors.MainDictParsingException, e:
                                 error = api_errors.MainDictParsingException(e)
                                 self.log_operation_end(error=error)
-                                self.__img.cleanup_downloads()
                                 raise error
                         except actuator.NonzeroExitException, e:
                                 # Won't happen during image-update
                                 be.restore_install_uninstall()
                                 error = api_errors.ActuatorException(e)
-                                self.__img.cleanup_downloads()
                                 self.log_operation_end(error=error)
                                 raise error
                         except api_errors.WrapIndexingException, e:
@@ -649,7 +643,6 @@ class ImageInterface(object):
                                         be.restore_install_uninstall()
                                 # Must be done after bootenv restore.
                                 self.log_operation_end(error=e)
-                                self.__img.cleanup_downloads()
                                 raise
                         except:
                                 # Handle exceptions that are not subclasses of
@@ -663,11 +656,11 @@ class ImageInterface(object):
                                         be.restore_install_uninstall()
                                 # Must be done after bootenv restore.
                                 self.log_operation_end(error=exc_type)
-                                self.__img.cleanup_downloads()
                                 raise
 
                         self.__finished_execution(be)
                 finally:
+                        self.__img.cleanup_downloads()
                         self.__activity_lock.release()
 
         def __finished_execution(self, be):
@@ -686,7 +679,6 @@ class ImageInterface(object):
                         be.activate_image()
                 else:
                         be.activate_install_uninstall()
-                self.__img.cleanup_downloads()
                 self.__img.cleanup_cached_content()
                 # If the end of the operation wasn't already logged
                 # by one of the previous operations, then log it as
@@ -767,6 +759,7 @@ class ImageInterface(object):
                 try:
                         i = self._info_op(fmri_strings, local, info_needed)
                 finally:
+                        self.__img.cleanup_downloads()
                         self.__activity_lock.release()
 
                 return i
@@ -1013,6 +1006,7 @@ class ImageInterface(object):
                 # This needs to be done first so that find_root can use it.
                 self.__progresstracker.reset()
 
+                self.__img.cleanup_downloads()
                 # Recreate the image object using the path the api
                 # object was created with instead of the current path.
                 self.__img = image.Image(self.__img_path,
@@ -1307,8 +1301,12 @@ class ImageInterface(object):
         def add_publisher(self, pub, refresh_allowed=True):
                 """Add the provided publisher object to the image
                 configuration."""
-                self.__img.add_publisher(pub, refresh_allowed=refresh_allowed,
-                    progtrack=self.__progresstracker)
+                try:
+                        self.__img.add_publisher(pub,
+                            refresh_allowed=refresh_allowed,
+                            progtrack=self.__progresstracker)
+                finally:
+                        self.__img.cleanup_downloads()
 
         def get_preferred_publisher(self):
                 """Returns the preferred publisher object for the image."""
@@ -1522,6 +1520,7 @@ class ImageInterface(object):
                         # information needs to be restored so that state is
                         # consistent.
                         cleanup()
+                        self.__img.cleanup_downloads()
                         self.log_operation_end(error=e)
                         raise
                 except:
@@ -1529,6 +1528,7 @@ class ImageInterface(object):
                         # information needs to be restored so that state is
                         # consistent.
                         cleanup()
+                        self.__img.cleanup_downloads()
                         exc_type, exc_value, exc_traceback = \
                             sys.exc_info()
                         self.log_operation_end(error=exc_type)
@@ -1536,6 +1536,7 @@ class ImageInterface(object):
 
                 # Successful; so save configuration.
                 self.__img.save_config()
+                self.__img.cleanup_downloads()
                 self.log_operation_end()
                 return
 

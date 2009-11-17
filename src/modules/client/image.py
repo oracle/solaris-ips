@@ -404,6 +404,18 @@ class Image(object):
                 self.dl_cache_incoming = os.path.normpath(os.path.join(
                     self.dl_cache_dir, "incoming-%d" % os.getpid()))
 
+                # Test if we have the permissions to create the cache
+                # incoming directory in this hiearachy.  If not, we'll need to
+                # move it somewhere else.
+                try:
+                        os.makedirs(self.dl_cache_incoming)
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES or e.errno == errno.EROFS:
+                                self.dl_cache_incoming = tempfile.mkdtemp(
+                                    prefix="incoming-%d-" % os.getpid())
+                else:
+                        os.removedirs(self.dl_cache_incoming)
+
                 # Forcibly discard image catalogs so they can be re-loaded
                 # from the new location if they are already loaded.  This
                 # also prevents scribbling on image state information in
