@@ -190,35 +190,6 @@ class TestPkgPublisherBasics(testutils.SingleDepotTestCase):
                 self.pkg("set-publisher -O ftp://%s2 test2" % self.bogus_url,
                     exit=1)
 
-        def test_mirror(self):
-                """Test set-mirror and unset-mirror."""
-                durl = self.dc.get_depot_url()
-                self.image_create(durl, prefix="test")
-
-                self.pkg("set-publisher -m http://%s1 test" % self.bogus_url)
-                self.pkg("set-publisher -m http://%s2 test" %
-                    self.bogus_url)
-                self.pkg("set-publisher -m http://%s5" % self.bogus_url, exit=2)
-                self.pkg("set-publisher -m test", exit=2)
-                self.pkg("set-publisher -m http://%s1 test" % self.bogus_url,
-                    exit=1)
-                self.pkg("set-publisher -m http://%s5 test1" % self.bogus_url,
-                    exit=1)
-                self.pkg("set-publisher -m %s7 test" % self.bogus_url, exit=1)
-
-                self.pkg("set-publisher -M http://%s1 test" % self.bogus_url)
-                self.pkg("set-publisher -M http://%s2 test" %
-                    self.bogus_url)
-                self.pkg("set-publisher -M test1 http://%s2 http://%s4" %
-                    (self.bogus_url, self.bogus_url), exit=2)
-                self.pkg("set-publisher -M http://%s5" % self.bogus_url, exit=2)
-                self.pkg("set-publisher -M test", exit=2)
-                self.pkg("set-publisher -M http://%s5 test1" % self.bogus_url,
-                    exit=1)
-                self.pkg("set-publisher -M http://%s6 test" % self.bogus_url,
-                    exit=1)
-                self.pkg("set-publisher -M %s7 test" % self.bogus_url, exit=1)
-
         def test_missing_perms(self):
                 """Bug 2393"""
                 durl = self.dc.get_depot_url()
@@ -267,41 +238,6 @@ class TestPkgPublisherBasics(testutils.SingleDepotTestCase):
                 self.pkg("publisher test1", exit=3)
                 self.pkg("publisher test1", su_wrap=True, exit=3)
 
-        def test_mirror_longopt(self):
-                """Test set-mirror and unset-mirror."""
-                durl = self.dc.get_depot_url()
-                self.image_create(durl, prefix="test")
-
-                self.pkg("set-publisher --add-mirror=http://%s1 test" %
-                    self.bogus_url)
-                self.pkg("set-publisher --add-mirror=http://%s2 test" %
-                    self.bogus_url)
-                self.pkg("set-publisher --add-mirror=http://%s5" %
-                    self.bogus_url, exit=2)
-                self.pkg("set-publisher --add-mirror=test", exit=2)
-                self.pkg("set-publisher --add-mirror=http://%s1 test" %
-                    self.bogus_url, exit=1)
-                self.pkg("set-publisher --add-mirror=http://%s5 test1" %
-                    self.bogus_url, exit=1)
-                self.pkg("set-publisher --add-mirror=%s7 test" %
-                    self.bogus_url, exit=1)
-
-                self.pkg("set-publisher --remove-mirror=http://%s1 test" %
-                    self.bogus_url)
-                self.pkg("set-publisher --remove-mirror=http://%s2 test" %
-                    self.bogus_url)
-                self.pkg("set-publisher --remove-mirror=test http://%s2 http://%s4" %
-                    (self.bogus_url, self.bogus_url), exit=2)
-                self.pkg("set-publisher --remove-mirror=http://%s5" %
-                    self.bogus_url, exit=2)
-                self.pkg("set-publisher --remove-mirror=test", exit=2)
-                self.pkg("set-publisher --remove-mirror=http://%s5 test1" %
-                    self.bogus_url, exit=1)
-                self.pkg("set-publisher --remove-mirror=http://%s6 test" %
-                    self.bogus_url, exit=1)
-                self.pkg("set-publisher --remove-mirror=%s7 test" %
-                    self.bogus_url, exit=1)
-
 
 class TestPkgPublisherMany(testutils.ManyDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -316,7 +252,8 @@ class TestPkgPublisherMany(testutils.ManyDepotTestCase):
             close """
 
         def setUp(self):
-                testutils.ManyDepotTestCase.setUp(self, ["test1", "test2"])
+                testutils.ManyDepotTestCase.setUp(self, ["test1", "test2",
+                    "test1", "test1"])
 
                 durl1 = self.dcs[1].get_depot_url()
                 self.pkgsend_bulk(durl1, self.foo1)
@@ -329,6 +266,97 @@ class TestPkgPublisherMany(testutils.ManyDepotTestCase):
 
         def tearDown(self):
                 testutils.ManyDepotTestCase.tearDown(self)
+
+        def __test_mirror_origin(self, etype, add_opt, remove_opt):
+                durl1 = self.dcs[1].get_depot_url()
+                durl3 = self.dcs[3].get_depot_url()
+                durl4 = self.dcs[4].get_depot_url()
+
+                # Test single add.
+                self.pkg("set-publisher %s http://%s1 test1" % (add_opt,
+                    self.bogus_url))
+                self.pkg("set-publisher %s http://%s2 test1" % (add_opt,
+                    self.bogus_url))
+                self.pkg("set-publisher %s http://%s5" % (add_opt,
+                    self.bogus_url), exit=2)
+                self.pkg("set-publisher %s test1" % add_opt, exit=2)
+                self.pkg("set-publisher %s http://%s1 test1" % (add_opt,
+                    self.bogus_url), exit=1)
+                self.pkg("set-publisher %s http://%s5 test11" % (add_opt,
+                    self.bogus_url), exit=1)
+                self.pkg("set-publisher %s %s7 test1" % (add_opt,
+                    self.bogus_url), exit=1)
+
+                # Test single remove.
+                self.pkg("set-publisher %s http://%s1 test1" % (remove_opt,
+                    self.bogus_url))
+                self.pkg("set-publisher %s http://%s2 test1" % (remove_opt,
+                    self.bogus_url))
+                self.pkg("set-publisher %s test11 http://%s2 http://%s4" % (
+                    remove_opt, self.bogus_url, self.bogus_url), exit=2)
+                self.pkg("set-publisher %s http://%s5" % (remove_opt,
+                    self.bogus_url), exit=2)
+                self.pkg("set-publisher %s test1" % remove_opt, exit=2)
+                self.pkg("set-publisher %s http://%s5 test11" % (remove_opt,
+                    self.bogus_url), exit=1)
+                self.pkg("set-publisher %s http://%s6 test1" % (remove_opt,
+                    self.bogus_url), exit=1)
+                self.pkg("set-publisher %s %s7 test1" % (remove_opt,
+                    self.bogus_url), exit=1)
+
+                # Test a combined add and remove.
+                self.pkg("set-publisher %s %s test1" % (add_opt, durl3))
+                self.pkg("set-publisher %s %s %s %s test1" % (add_opt, durl4,
+                    remove_opt, durl3))
+                self.pkg("publisher | grep %s.*%s" % (etype, durl4))
+                self.pkg("publisher | grep %s.*%s" % (etype, durl3), exit=1)
+                self.pkg("set-publisher %s %s test1" % (remove_opt, durl4))
+
+                # Verify that if one of multiple URLs is not a valid URL, pkg
+                # will exit with an error, and does not add the valid one.
+                self.pkg("set-publisher %s %s %s http://b^^^/ogus test1" % (
+                    add_opt, durl3, add_opt), exit=1)
+                self.pkg("publisher | grep %s.*%s" % (etype, durl3), exit=1)
+
+                # Verify that multiple can be added at one time.
+                self.pkg("set-publisher %s %s %s %s test1" % (add_opt, durl3,
+                    add_opt, durl4))
+                self.pkg("publisher | grep %s.*%s" % (etype, durl3))
+                self.pkg("publisher | grep %s.*%s" % (etype, durl4))
+
+                # Verify that multiple can be removed at one time.
+                self.pkg("set-publisher %s %s %s %s test1" % (remove_opt, durl3,
+                    remove_opt, durl4))
+                self.pkg("publisher | grep %s.*%s" % (etype, durl3), exit=1)
+                self.pkg("publisher | grep %s.*%s" % (etype, durl4), exit=1)
+
+        def test_set_mirrors_origins(self):
+                """Test set-publisher functionality for mirrors and origins."""
+                durl1 = self.dcs[1].get_depot_url()
+                durl3 = self.dcs[3].get_depot_url()
+                durl4 = self.dcs[4].get_depot_url()
+                self.image_create(durl1, prefix="test1")
+
+                # Test short options for mirrors.
+                self.__test_mirror_origin("mirror", "-m", "-M")
+
+                # Test long options for mirrors.
+                self.__test_mirror_origin("mirror", "--add-mirror",
+                    "--remove-mirror")
+
+                # Test short options for origins.
+                self.__test_mirror_origin("origin", "-g", "-G")
+
+                # Test long options for origins.
+                self.__test_mirror_origin("origin", "--add-origin",
+                    "--remove-origin")
+
+                # Finally, verify that if multiple origins are present that -O
+                # will discard all others.
+                self.pkg("set-publisher -g %s -g %s test1" % (durl3, durl4))
+                self.pkg("set-publisher -O %s test1" % durl4)
+                self.pkg("publisher | grep origin.*%s" % durl1, exit=1)
+                self.pkg("publisher | grep origin.*%s" % durl3, exit=1)
 
         def test_enable_disable(self):
                 """Test enable and disable."""

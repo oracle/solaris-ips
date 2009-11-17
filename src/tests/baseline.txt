@@ -499,8 +499,6 @@ cli.t_pkg_list.py TestPkgList.test_pkg_list_cli_opts|pass
 cli.t_pkg_property.py TestPkgInfoBasics.test_bug_4372|pass
 cli.t_pkg_property.py TestPkgInfoBasics.test_missing_permssions|pass
 cli.t_pkg_property.py TestPkgInfoBasics.test_pkg_properties|pass
-cli.t_pkg_publisher.py TestPkgPublisherBasics.test_mirror|pass
-cli.t_pkg_publisher.py TestPkgPublisherBasics.test_mirror_longopt|pass
 cli.t_pkg_publisher.py TestPkgPublisherBasics.test_missing_perms|pass
 cli.t_pkg_publisher.py TestPkgPublisherBasics.test_pkg_publisher_bogus_opts|pass
 cli.t_pkg_publisher.py TestPkgPublisherBasics.test_publisher_add_remove|pass
@@ -508,6 +506,7 @@ cli.t_pkg_publisher.py TestPkgPublisherBasics.test_publisher_bad_opts|pass
 cli.t_pkg_publisher.py TestPkgPublisherBasics.test_publisher_uuid|pass
 cli.t_pkg_publisher.py TestPkgPublisherBasics.test_publisher_validation|pass
 cli.t_pkg_publisher.py TestPkgPublisherMany.test_enable_disable|pass
+cli.t_pkg_publisher.py TestPkgPublisherMany.test_set_mirrors_origins|pass
 cli.t_pkg_rebuild_index.py TestPkgRebuildIndex.test_rebuild_index_bad_opts|pass
 cli.t_pkg_rebuild_index.py TestPkgRebuildIndex.test_rebuild_index_bad_perms|pass
 cli.t_pkg_refresh.py TestPkgRefreshMulti.test_catalog_v1|pass

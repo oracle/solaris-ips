@@ -22,7 +22,7 @@ SYNOPSIS
 
      /usr/bin/pkg image-create [-fFPUz] [--force] [--full|--partial|--user]
          [--zone] [-k ssl_key] [-c ssl_cert] [--no-refresh]
-         (-p|--publisher) name=uri dir
+         [-g|--origin ...] [-m|--mirror ...] (-p|--publisher) name=uri dir
      /usr/bin/pkg image-update [-fnvq] [--be-name name] [--no-refresh]
          [--no-index]
 
@@ -34,8 +34,10 @@ SYNOPSIS
      /usr/bin/pkg property [-H] [propname ...]
 
      /usr/bin/pkg set-publisher [-Ped] [-k ssl_key] [-c ssl_cert]
-         [-O origin_uri] [-m mirror_to_add | --add-mirror=mirror_to_add]
-         [-M mirror_to_remove | --remove-mirror=mirror_to_remove]
+         [-g origin_to_add | --add-origin=origin_to_add ...]
+         [-G origin_to_remove | --remove-origin=origin_to_remove ...]
+         [-m mirror_to_add | --add-mirror=mirror_to_add ...]
+         [-M mirror_to_remove | --remove-mirror=mirror_to_remove ...]
          [--enable] [--disable] [--no-refresh] [--reset-uuid] publisher
      /usr/bin/pkg unset-publisher publisher ...
      /usr/bin/pkg publisher [-HPa] [publisher ...]
@@ -100,13 +102,15 @@ SUBCOMMANDS
      The following subcommands are supported:
 
      image-create [-fFPUz] [--force] [--full|--partial|--user] [--zone]
-       [-k ssl_key] [-c ssl_cert] [--no-refresh]
-       (-p|--publisher) name=origin_uri dir
+       [-k ssl_key] [-c ssl_cert] [--no-refresh] [-g|--origin ...]
+       [-m|--mirror ...] (-p|--publisher) name=origin_uri dir
           Create, at location given by dir, an image suitable for package
           operations.  The default image type is user, as given by the -U
           (--user) option.  The image type may be set to a full image (-F
           or --full) or to a partial image (-P or --partial) linked to the
-          full image enclosing the given dir path.
+          full image enclosing the given dir path.  Additional origins can
+          be specified using -g or --origin, while additional mirrors can
+          be specified using -m or --mirror.
 
           A preferred publisher must be provided using the -p or --publisher
           option.  An attempt to retrieve the catalog associated with this
@@ -399,7 +403,9 @@ SUBCOMMANDS
           property names is requested, display the names and values for those
           properties.  With -H, omit the headers from the listing.
 
-     set-publisher [-Ped] [-k ssl_key] [-c ssl_cert] [-O origin_uri]
+     set-publisher [-Ped] [-k ssl_key] [-c ssl_cert]
+       [-g origin_to_add | --add-origin=origin_to_add ...]
+       [-G origin_to_remove | --remove-origin=origin_to_remove ...]
        [-m mirror_to_add | --add-mirror=mirror_to_add]
        [-M mirror_to_remove | --remove-mirror=mirror_to_remove]
        [--enable] [--disable] [--no-refresh] [--reset-uuid] publisher
@@ -419,7 +425,11 @@ SUBCOMMANDS
 
           With -c and -k, specify client SSL certificate and key respectively.
 
-          With -O, set the origin URI for the publisher packaging repository.
+          With -g (--add-origin), add the URI as an origin for the given
+          publisher.  This should be the location of a package repository.
+
+          With -G (--remove-origin), remove the URI from the list of origins
+          for the given publisher.
 
           With --no-refresh, do not attempt to contact the publisher
           specified to retrieve its metadata (e.g. catalog).
@@ -475,17 +485,27 @@ SUBCOMMANDS
 
 EXAMPLES
      Example 1:  Create a new, full image, with publisher example.com,
-     stored at /aux0/example_root
+     stored at /aux0/example_root.
 
-     $ pkg image-create -F -a example.com=http://pkg.example.com:10000 \
+     $ pkg image-create -F -p example.com=http://pkg.example.com:10000 \
           /aux0/example_root
 
-     Example 2:  Install the latest version of the widget package in the
+     Example 2:  Create a new, full image, with publisher example.com,
+     that also has an additional mirror, two additional origins and is
+     stored at /aux0/example_root.
+
+     $ pkg image-create -F -p example.com=http://pkg.example.com:10000 \
+          -g http://alternate1.example.com:10000/ \
+          -g http://alternate2.example.com:10000/ \
+          -m http://mirror.example.com:10000/ \
+          /aux0/example_root
+
+     Example 3:  Install the latest version of the widget package in the
      current image.
 
      $ pkg install application/widget
 
-     Example 3:  List the contents of the SUNWzfs package.  Display the
+     Example 4:  List the contents of the SUNWzfs package.  Display the
      action name, the mode of the file (if defined), the size (if defined),
      the path, and the target (if a link).  Limit the action to types dir,
      file, link, and hardlink, since specifying the action.name attribute,
@@ -509,7 +529,7 @@ EXAMPLES
      link              lib/libzfs.so                       libzfs.so.1
      [ ... ]
 
-     Example 4:  Search the package database for the token "bge".
+     Example 5:  Search the package database for the token "bge".
 
      $ pkg search bge
      INDEX          ACTION    VALUE             PACKAGE
@@ -519,7 +539,7 @@ EXAMPLES
      The token shows up in the package SUNWbge both as the basename for the
      file action representing /kernel/drv/bge and as a driver name.
 
-     Example 5: Search for installed packages which depend on SUNWipkg.
+     Example 6: Search for installed packages which depend on SUNWipkg.
 
      $ pkg search -l 'depend::SUNWipkg'
      INDEX      ACTION    VALUE                     PACKAGE
@@ -527,7 +547,7 @@ EXAMPLES
      require    depend    SUNWipkg@0.5.11-0.111     pkg:/slim_install@0.1-0.111
      require    depend    SUNWipkg@0.5.11-0.111     pkg:/SUNWipkg-brand@0.5.11-0.111
 
-     Example 6: Search for all incorporate dependencies in installed packages.
+     Example 7: Search for all incorporate dependencies in installed packages.
 
      $ pkg search -l 'depend:incorporate:'
      INDEX      ACTION    VALUE                     PACKAGE
@@ -537,17 +557,17 @@ EXAMPLES
      incorporate depend    FSWxorg-fonts-core@0.5.11-0.111 pkg:/entire@0.5.11-0.111
      [ ... ]
 
-     Example 7:  Add new publisher example.org, with a repository located at
+     Example 8:  Add new publisher example.org, with a repository located at
      http://www.example.org/repo:
 
-     $ pkg set-publisher -O http://www.example.org/repo example.org
+     $ pkg set-publisher -g http://www.example.org/repo example.org
 
-     Example 8:  Add new publisher example.com, with a secure repository
+     Example 9:  Add new publisher example.com, with a secure repository
      located at https://secure.example.com/repo, and a key and cert stored
      in the directory /root/creds:
 
      $ pkg set-publisher -k /root/creds/example.key \
-          -c /root/creds/example.cert -O https://secure.example.com/repo \
+          -c /root/creds/example.cert -g https://secure.example.com/repo \
           example.com
 
 

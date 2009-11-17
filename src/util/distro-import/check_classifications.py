@@ -64,7 +64,7 @@ class CheckClassifications(object):
     If you want to check the classifications for a repository that is not
     the current publisher, then you will need to do:
 
-      $ pfexec pkg set-publisher -P -O http://new.publisher.org new-publisher
+      $ pfexec pkg set-publisher -P -g http://new.publisher.org new-publisher
       $ python check_classifications.py > classification_output.txt
       $ pfexec pkg set-publisher -P old-publisher
       $ pfexec pkg unset-publisher new-publisher 

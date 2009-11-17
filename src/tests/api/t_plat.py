@@ -94,8 +94,8 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
                 img1 = image.Image(tdir1, imgtype=image.IMG_USER,
                     should_exist=False)
                 img1.history.client_name = "pkg-test"
-                img1.set_attrs(False, "test", "http://localhost:10000",
-                    refresh_allowed=False)
+                img1.set_attrs(False, "test",
+                    origins=["http://localhost:10000"], refresh_allowed=False)
                 exefile = os.path.join(tdir1, 'less.com')
                 shutil.copyfile(exefilesrc, exefile)
                 proc = subprocess.Popen([exefile], stdin = subprocess.PIPE)
@@ -137,8 +137,8 @@ class TestPlat(pkg5unittest.Pkg5TestCase):
                 img1 = image.Image(tdir1, imgtype=image.IMG_USER,
                     should_exist=False)
                 img1.history.client_name = "pkg-test"
-                img1.set_attrs(False, "test",  "http://localhost:10000",
-                    refresh_allowed=False)
+                img1.set_attrs(False, "test",
+                    origins=["http://localhost:10000"], refresh_allowed=False)
                 exefile = os.path.join(tdir1, 'less.com')
                 shutil.copyfile(exefilesrc, exefile)
                 proc = subprocess.Popen([exefile], stdin = subprocess.PIPE)

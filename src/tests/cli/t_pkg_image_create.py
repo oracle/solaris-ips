@@ -41,10 +41,16 @@ class TestPkgImageCreateBasics(testutils.ManyDepotTestCase):
         persistent_depot = True
 
         def setUp(self):
-                testutils.ManyDepotTestCase.setUp(self, ["test1", "test2"])
+                # Extra instances of test1 are created so that a valid
+                # repository that is different than the actual test1
+                # repository can be used.
+                testutils.ManyDepotTestCase.setUp(self, ["test1", "test2",
+                    "test1", "test1"])
 
                 self.durl1 = self.dcs[1].get_depot_url()
                 self.durl2 = self.dcs[2].get_depot_url()
+                self.durl3 = self.dcs[3].get_depot_url()
+                self.durl4 = self.dcs[4].get_depot_url()
 
         def test_basic(self):
                 """ Create an image, verify it. """
@@ -145,6 +151,27 @@ class TestPkgImageCreateBasics(testutils.ManyDepotTestCase):
                         self.pkg("image-create %s test1=%s %s" % (opt,
                             self.durl1, img_path))
                         shutil.rmtree(img_path)
+
+                # Verify that specifying additional mirrors and origins works.
+                mirrors = " ".join(
+                    "-m %s" % u
+                    for u in (self.durl3, self.durl4)
+                )
+                origins = " ".join(
+                    "-g %s" % u
+                    for u in (self.durl3, self.durl4)
+                )
+
+                self.pkg("image-create %s test1=%s %s %s %s" % (opt, self.durl1,
+                    mirrors, origins, img_path))
+
+                self.pkg("-R %s publisher | grep origin.*%s" % (img_path,
+                    self.durl1))
+                for u in (self.durl3, self.durl4):
+                        self.pkg("-R %s publisher | grep mirror.*%s" % (
+                            img_path, u))
+                        self.pkg("-R %s publisher | grep origin.*%s" % (
+                            img_path, u))
 
         def test_5_bad_values_no_image(self):
                 """Verify that an invalid publisher URI or other piece of

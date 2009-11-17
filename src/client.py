@@ -157,7 +157,9 @@ Advanced subcommands:
         pkg property [-H] [propname ...]
 
         pkg set-publisher [-Ped] [-k ssl_key] [-c ssl_cert]
-            [-O origin_uri] [-m mirror_to_add | --add-mirror=mirror_to_add]
+            [-g origin_to_add | --add-origin=origin_to_add]
+            [-G origin_to_remove | --remove-origin=origin_to_remove]
+            [-m mirror_to_add | --add-mirror=mirror_to_add]
             [-M mirror_to_remove | --remove-mirror=mirror_to_remove]
             [--enable] [--disable] [--no-refresh] [--reset-uuid] publisher
         pkg unset-publisher publisher ...
@@ -1913,44 +1915,51 @@ def publisher_refresh(img, args):
 
 def publisher_set(img, args):
         """pkg set-publisher [-Ped] [-k ssl_key] [-c ssl_cert] [--reset-uuid]
-            [-O origin_url] [-m mirror to add] [-M mirror to remove]
-            [--enable] [--disable] [--no-refresh] publisher"""
+            [-g|--add-origin origin to add] [-G|--remove-origin origin to
+            remove] [-m|--add-mirror mirror to add] [-M|--remove-mirror mirror
+            to remove] [--enable] [--disable] [--no-refresh] publisher"""
 
         preferred = False
         ssl_key = None
         ssl_cert = None
         origin_url = None
         reset_uuid = False
-        add_mirror = None
-        remove_mirror = None
+        add_mirrors = set()
+        remove_mirrors = set()
+        add_origins = set()
+        remove_origins = set()
         refresh_catalogs = True
         disable = None
 
-        opts, pargs = getopt.getopt(args, "Pedk:c:O:M:m:",
-            ["add-mirror=", "remove-mirror=", "no-refresh", "reset-uuid",
-            "enable", "disable"])
+        opts, pargs = getopt.getopt(args, "Pedk:c:O:G:g:M:m:",
+            ["add-mirror=", "remove-mirror=", "add-origin=", "remove-origin=",
+            "no-refresh", "reset-uuid", "enable", "disable"])
 
         for opt, arg in opts:
-                if opt == "-P":
-                        preferred = True
-                if opt == "-k":
-                        ssl_key = arg
                 if opt == "-c":
                         ssl_cert = arg
+                if opt == "-d" or opt == "--disable":
+                        disable = True
+                if opt == "-e" or opt == "--enable":
+                        disable = False
+                if opt == "-g" or opt == "--add-origin":
+                        add_origins.add(arg)
+                if opt == "-G" or opt == "--remove-origin":
+                        remove_origins.add(arg)
+                if opt == "-k":
+                        ssl_key = arg
                 if opt == "-O":
                         origin_url = arg
                 if opt == "-m" or opt == "--add-mirror":
-                        add_mirror = arg
+                        add_mirrors.add(arg)
                 if opt == "-M" or opt == "--remove-mirror":
-                        remove_mirror = arg
-                if opt == "--no-refresh":
-                        refresh_catalogs = False
+                        remove_mirrors.add(arg)
+                if opt == "-P":
+                        preferred = True
                 if opt == "--reset-uuid":
                         reset_uuid = True
-                if opt == "-e" or opt == "--enable":
-                        disable = False
-                if opt == "-d" or opt == "--disable":
-                        disable = True
+                if opt == "--no-refresh":
+                        refresh_catalogs = False
 
         if len(pargs) == 0:
                 usage(_("requires a publisher name"), cmd="set-publisher")
@@ -1963,6 +1972,10 @@ def publisher_set(img, args):
         if preferred and disable:
                 usage(_("the -p and -d options may not be combined"),
                     cmd="set-publisher")
+
+        if origin_url and (add_origins or remove_origins):
+                usage(_("the -O and -g, --add-origin, -G, or --remove-origin "
+                    "options may not be combined"), cmd="set-publisher")
 
         api_inst = __api_alloc(img)
         if api_inst == None:
@@ -1979,8 +1992,8 @@ def publisher_set(img, args):
                 error(e, cmd="set-publisher")
                 return 1
         except api_errors.UnknownPublisher:
-                if not origin_url:
-                        error(_("publisher does not exist. Use -O to define "
+                if not origin_url and not add_origins:
+                        error(_("publisher does not exist. Use -g to define "
                             "origin URI for new publisher."),
                             cmd="set-publisher")
                         return 1
@@ -1994,14 +2007,22 @@ def publisher_set(img, args):
                 pub.disabled = disable
 
         if origin_url:
+                # For compatibility with old -O behaviour, treat -O as a wipe
+                # of existing origins and add the new one.
                 try:
-                        if not repo.origins:
-                                # New publisher case.
-                                repo.add_origin(origin_url)
-                                origin = repo.origins[0]
-                        else:
-                                origin = repo.origins[0]
-                                origin.uri = origin_url
+                        # Only use existing cert information if the new URI uses
+                        # https for transport.
+                        if repo.origins and not (ssl_cert or ssl_key) and \
+                            origin_url.startswith("https:"):
+                                for uri in repo.origins:
+                                        if ssl_cert is None:
+                                                ssl_cert = uri.ssl_cert
+                                        if ssl_key is None:
+                                                ssl_key = uri.ssl_key
+                                        break
+
+                        origin = repo.reset_origins()
+                        repo.add_origin(origin_url)
 
                         # XXX once image configuration supports storing this
                         # information at the uri level, ssl info should be set
@@ -2010,21 +2031,19 @@ def publisher_set(img, args):
                         error(e, cmd="set-publisher")
                         return 1
 
-        if add_mirror:
+        for entry in (("mirror", add_mirrors, remove_mirrors), ("origin",
+            add_origins, remove_origins)):
+                etype, add, remove = entry
+                # XXX once image configuration supports storing this
+                # information at the uri level, ssl info should be set
+                # here.
                 try:
-                        # XXX once image configuration supports storing this
-                        # information at the uri level, ssl info should be set
-                        # here.
-                        repo.add_mirror(add_mirror)
+                        for u in add:
+                                getattr(repo, "add_%s" % etype)(u)
+                        for u in remove:
+                                getattr(repo, "remove_%s" % etype)(u)
                 except (api_errors.PublisherError,
                     api_errors.CertificateError), e:
-                        error(e, cmd="set-publisher")
-                        return 1
-
-        if remove_mirror:
-                try:
-                        repo.remove_mirror(remove_mirror)
-                except api_errors.PublisherError, e:
                         error(e, cmd="set-publisher")
                         return 1
 
@@ -2382,48 +2401,58 @@ def image_create(args):
         component that consumes global zone-only information, such as various
         kernel statistics or device information."""
 
+        force = False
         imgtype = image.IMG_USER
         is_zone = False
+        mirrors = set()
+        origins = set()
+        pub_name = None
+        refresh_catalogs = True
         ssl_key = None
         ssl_cert = None
-        pub_name = None
-        pub_url = None
-        refresh_catalogs = True
-        force = False
         variants = {}
 
-        opts, pargs = getopt.getopt(args, "fFPUza:p:k:c:",
+        opts, pargs = getopt.getopt(args, "fFPUza:g:m:p:k:c:",
             ["force", "full", "partial", "user", "zone", "authority=",
-                "publisher=", "no-refresh", "variant="])
+                "mirror=", "origin=", "publisher=", "no-refresh", "variant="])
 
         for opt, arg in opts:
-                if opt == "-f" or opt == "--force":
-                        force = True
-                if opt == "-F" or opt == "--full":
-                        imgtype = imgtypes.IMG_ENTIRE
-                if opt == "-P" or opt == "--partial":
-                        imgtype = imgtypes.IMG_PARTIAL
-                if opt == "-U" or opt == "--user":
-                        imgtype = imgtypes.IMG_USER
-                if opt == "-z" or opt == "--zone":
-                        is_zone = True
-                        imgtype = image.IMG_ENTIRE
-                if opt == "--no-refresh":
-                        refresh_catalogs = False
-                if opt == "-k":
-                        ssl_key = arg
-                if opt == "-c":
-                        ssl_cert = arg
-
                 # -a is deprecated and will be removed at a future date.
                 if opt in ("-a", "-p", "--publisher"):
+                        pub_url = None
                         try:
                                 pub_name, pub_url = arg.split("=", 1)
                         except ValueError:
+                                pub_name = None
+                                pub_url = None
+
+                        if pub_name is None or pub_url is None:
                                 usage(_("publisher argument must be of the "
                                     "form '<prefix>=<url>'."),
                                     cmd="image-create")
-                if opt == "--variant":
+                        origins.add(pub_url)
+                elif opt == "-c":
+                        ssl_cert = arg
+                elif opt == "-f" or opt == "--force":
+                        force = True
+                elif opt in ("-g", "--origin"):
+                        origins.add(arg)
+                elif opt == "-k":
+                        ssl_key = arg
+                elif opt in ("-m", "--mirror"):
+                        mirrors.add(arg)
+                elif opt == "-z" or opt == "--zone":
+                        is_zone = True
+                        imgtype = image.IMG_ENTIRE
+                elif opt == "-F" or opt == "--full":
+                        imgtype = imgtypes.IMG_ENTIRE
+                elif opt == "-P" or opt == "--partial":
+                        imgtype = imgtypes.IMG_PARTIAL
+                elif opt == "-U" or opt == "--user":
+                        imgtype = imgtypes.IMG_USER
+                elif opt == "--no-refresh":
+                        refresh_catalogs = False
+                elif opt == "--variant":
                         try:
                                 v_name, v_value = arg.split("=", 1)
                                 if not v_name.startswith("variant."):
@@ -2455,10 +2484,10 @@ def image_create(args):
                 else:
                         ssl_cert = os.path.abspath(ssl_cert)
 
-        if not pub_name and not pub_url:
+        if not pub_name and not origins:
                 usage(_("a publisher must be specified"), cmd="image-create")
 
-        if not pub_name or not pub_url:
+        if not pub_name or not origins:
                 usage(_("publisher argument must be of the form "
                     "'<prefix>=<url>'."), cmd="image-create")
 
@@ -2473,14 +2502,14 @@ def image_create(args):
                 return 1
 
         global __img
-        
         try:
                 progtrack = get_tracker()
                 __img = img = image.Image(root=image_dir, imgtype=imgtype,
                     should_exist=False, progtrack=progtrack, force=force)
-                img.set_attrs(is_zone, pub_name, pub_url,
-                    ssl_key=ssl_key, ssl_cert=ssl_cert, variants=variants,
-                    refresh_allowed=refresh_catalogs, progtrack=progtrack)
+                img.set_attrs(is_zone, pub_name, mirrors=mirrors,
+                    origins=origins, ssl_key=ssl_key, ssl_cert=ssl_cert,
+                    refresh_allowed=refresh_catalogs, progtrack=progtrack,
+                    variants=variants)
                 img.cleanup_downloads()
         except OSError, e:
                 # Ensure messages are displayed after the spinner.
@@ -2489,6 +2518,9 @@ def image_create(args):
                 error(_("cannot create image at %(image_dir)s: %(reason)s") %
                     { "image_dir": image_dir, "reason": e.args[1] },
                     cmd="image-create")
+                return 1
+        except api_errors.PublisherError, e:
+                error(e, cmd="image-create")
                 return 1
         except api_errors.PermissionsException, e:
                 # Ensure messages are displayed after the spinner.
@@ -2959,5 +2991,9 @@ if __name__ == "__main__":
         misc.setlocale(locale.LC_ALL, "", error)
         gettext.install("pkg", "/usr/share/locale")
         __retval = handle_errors(main_func)
-        logging.shutdown()
+        try:
+                logging.shutdown()
+        except IOError:
+                # Ignore python's spurious pipe problems.
+                pass
         sys.exit(__retval)

@@ -265,7 +265,7 @@ else
 		pnm=$(/usr/bin/basename $ZONEPATH)
 		# The zonepath dataset might already exist.
 		zfs list -H -t filesystem -o name $zds/$pnm >/dev/null 2>&1
-	        if (( $? != 0 )); then
+		if (( $? != 0 )); then
 			zfs create "$zds/$pnm"
 			(( $? != 0 )) && fatal "$f_zfs_create"
 			vlog "$m_zfs"
@@ -308,10 +308,15 @@ gz_entire_fmri=$(get_entire_incorp) || fatal "$f_gz_entire"
 # Get publisher information for global zone.
 # If we were not able to get the zone's preferred publisher, complain.
 #
-get_preferred_publisher | IFS=" " read gz_publisher gz_publisher_url
+
+get_publisher_urls preferred origin |
+    IFS="=" read gz_publisher gz_publisher_origins
 
 [[ -z $gz_publisher ]] && fail_usage "$f_no_pref_publisher" "global"
-[[ -z $gz_publisher_url ]] && fail_usage "$f_no_pref_publisher" "global"
+[[ -z $gz_publisher_origins ]] && fail_usage "$f_no_pref_publisher" "global"
+
+get_publisher_urls preferred mirror |
+    IFS="=" read ignored gz_publisher_mirrors
 
 get_pub_secinfo $gz_publisher | read gzkeyfile gzcertfile
 if [[ $? -ne 0 ]]; then
@@ -333,10 +338,14 @@ PKG_IMAGE="$ZONEROOT"
 # Get publisher information for non global zone.
 # If we were not able to get the zone's preferred publisher, complain.
 #
-get_preferred_publisher | IFS=" " read zone_publisher zone_publisher_url
+get_publisher_urls preferred origin |
+    IFS="=" read zone_publisher zone_publisher_origins
 
 [[ -z $zone_publisher ]] && fail_usage "$f_no_pref_publisher" $ZONENAME
-[[ -z $zone_publisher_url ]] && fail_usage "$f_no_pref_publisher" $ZONENAME
+[[ -z $zone_publisher_origins ]] && fail_usage "$f_no_pref_publisher" $ZONENAME
+
+get_publisher_urls preferred mirror |
+    IFS="=" read ignored zone_publisher_mirrors
 
 #
 # Get entire incorp for non-global zone
@@ -415,14 +424,66 @@ if [[ $? -ne 0 ]]; then
 		secinfo="$secinfo -c $newlocation"
 	fi
 
-	# Note that we do cause a refresh here-- at some point we need the
+	# Note that we do cause a refresh here--at some point we need the
 	# catalog to be updated.
-	$PKG set-publisher -P -O $gz_publisher_url $secinfo $gz_publisher
+
+	# Be certain that the global zone preferred publisher exists in
+	# the non-global zone.  If it doesn't, all of these comparisons
+	# are not valid.
+	if [[ -n "$zone_publisher" && "$zone_publisher" != "$gz_publisher" ]];
+	then
+		zone_publisher_origins=""
+		zone_publisher_mirrors=""
+	fi
+
+	# Add any origins not found in zone configuration.
+	origins=""
+	src="$(echo $zone_publisher_origins | sed 's/ /|/g')"
+	for u in $gz_publisher_origins; do
+		[[ -z "$u" ]] && continue
+		case $u in
+			$src)   ;; # Already in zone config.
+			*)      origins="${origins}-g $u ";; # Add.
+		esac
+	done
+
+	# Remove any origins not found in global configuration.
+	src="$(echo $gz_publisher_origins | sed 's/ /|/g')"
+	for u in $zone_publisher_origins; do
+		[[ -z "$u" ]] && continue
+		case $u in
+			$src)   ;; # In global config.
+			*)      origins="${origins}-G $u ";; # Remove.
+		esac
+	done
+
+	# Add any mirrors not found in zone configuration.
+	mirrors=""
+	src="$(echo $zone_publisher_mirrors | sed 's/ /|/g')"
+	for u in $gz_publisher_mirrors; do
+		case $u in
+			$src)   ;; # Already in zone config.
+			*)      mirrors="${mirrors}-m $u ";; # Add.
+		esac
+	done
+
+	# Remove any mirrors not found in global configuration.
+	src="$(echo $gz_publisher_mirrors | sed 's/ /|/g')"
+	for u in $zone_publisher_mirrors; do
+		case $u in
+			$src)   ;; # In global config.
+			*)      mirrors="${mirrors}-M $u ";; # Remove.
+		esac
+	done
+
+	$PKG set-publisher -P $origins $mirrors $secinfo $gz_publisher
 	if [[ $? -ne 0 ]]; then
-		fatal "$f_reset_pub"
+		fatal "$f_reset_pub" $gz_publisher \
+		    "$gz_publisher_origins $gz_publisher_mirrors"
 	fi
 	zone_publisher=$gz_publisher
-	zone_publisher_url=$gz_publisher_url
+	zone_publisher_origins=$gz_publisher_origins
+	zone_publisher_mirrors=$gz_publisher_mirrors
 else
 	printf "$m_pubfine\n"
 fi

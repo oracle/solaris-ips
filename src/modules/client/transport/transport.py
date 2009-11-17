@@ -25,15 +25,12 @@
 # Use is subject to license terms.
 #
 
-import os
-import httplib
-import statvfs
 import errno
-import zlib
-import tempfile
+import httplib
+import os
+import statvfs
 import threading
-
-import pkg.fmri
+import zlib
 
 import pkg.catalog as catalog
 import pkg.client.api_errors as apx
@@ -44,6 +41,7 @@ import pkg.client.transport.exception as tx
 import pkg.client.transport.repo as trepo
 import pkg.client.transport.stats as tstats
 import pkg.file_layout.file_manager as file_manager
+import pkg.fmri
 import pkg.manifest as manifest
 import pkg.misc as misc
 import pkg.portable as portable
@@ -137,7 +135,7 @@ class Transport(object):
                         except tx.TransportProtoError, e:
                                 if e.code == httplib.NOT_FOUND:
                                         raise apx.UnsupportedSearchError(e.url,
-                                            "Search/1")
+                                            "search/1")
                                 elif e.code == httplib.NO_CONTENT:
                                         raise apx.NegativeSearchResult(e.url)
                                 elif e.code == httplib.BAD_REQUEST:
@@ -1093,7 +1091,6 @@ class Transport(object):
                 self._captive_portal_test()
 
                 for d in self.__gen_origins(pub, retry_count):
-
                         # If a transport exception occurs,
                         # save it if it's retryable, otherwise
                         # raise the error to a higher-level handler.
@@ -1103,15 +1100,15 @@ class Transport(object):
                                 self.__populate_repo_versions(d, vers)
                                 return vers 
                         except tx.TransportException, e:
+                                e.url = d.get_url()
                                 if e.retryable:
                                         failures.append(e)
                                 else:
                                         raise
                         except ValueError:
                                 raise apx.InvalidDepotResponseException(
-                                    pub["origin"],
-                                    "Unable to parse server response")
-
+                                    d.get_url(), "Unable to parse server "
+                                    "response")
                 raise failures
 
         @staticmethod
@@ -1269,14 +1266,19 @@ class Transport(object):
                         vd = self._get_versions(pub)
                 except tx.TransportException, e:
                         # Failure when contacting server.  Report
-                        # this as an error.
-                        raise apx.InvalidDepotResponseException(pub["origin"],
+                        # this as an error.  Attempt to report
+                        # the specific origin that failed, and
+                        # if not available, fallback to the
+                        # first one for the publisher.
+                        url = getattr(e, "url", pub["origin"])
+                        raise apx.InvalidDepotResponseException(url,
                             "Transport errors encountered when trying to "
                             "contact depot server.\nReported the following "
                             "errors:\n%s" % e)
 
                 if not self._valid_versions_test(vd):
-                        raise apx.InvalidDepotResponseException(pub["origin"],
+                        url = getattr(e, "url", pub["origin"])
+                        raise apx.InvalidDepotResponseException(url,
                             "Invalid or unparseable version information.")
 
                 return True

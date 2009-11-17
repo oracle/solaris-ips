@@ -945,7 +945,7 @@ class DuplicateRepositoryMirror(PublisherError):
 
         def __str__(self):
                 return _("Mirror '%s' already exists for the specified "
-                    "repository.") % self.data
+                    "publisher.") % self.data
 
 
 class DuplicateRepositoryOrigin(PublisherError):
@@ -954,7 +954,17 @@ class DuplicateRepositoryOrigin(PublisherError):
 
         def __str__(self):
                 return _("Origin '%s' already exists for the specified "
-                    "repository.") % self.data
+                    "publisher.") % self.data
+
+
+class PublisherOriginRequired(PublisherError):
+        """Used to indicate that the specified publisher must have at least one
+        repository with at least one origin URI."""
+
+        def __str__(self):
+                return _("At least one origin is required for %s.  You must "
+                "add a new origin before attempting to remove the specified "
+                "origin(s).") % self.data
 
 
 class RemovePreferredPublisher(PublisherError):

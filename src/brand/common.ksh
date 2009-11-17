@@ -109,7 +109,7 @@ sanity_check()
 		log "$f_sanity_sparse"
 		log "$sanity_fail"
 		fatal "$install_fail" "$ZONENAME"
-        fi
+	fi
 
 	# Check for existence of pkg command.
 	if [[ ! -x $dir/usr/bin/pkg ]]; then
@@ -323,11 +323,44 @@ get_entire_incorp() {
 }
 
 #
-# Emits to stdout the preferred publisher and its URL.
+# Emits to stdout the preferred publisher's prefix followed by a '=', and
+# then the list of the requested URLs separated by spaces, followed by a
+# newline after each unique publisher.  It expects two parameters, publisher
+# type ("preferred" or "all") and URL type ("mirror" or
+# "origin".
 #
-get_preferred_publisher() {
-	LC_ALL=C $PKG publisher -PH | nawk '$2 == "origin" && $3 == "online" \
-	    {printf "%s %s\n", $1, $4; exit 0;}'
+get_publisher_urls() {
+	ptype=$1
+	utype=$2
+
+	pub_opts="-H"
+	if [ "$ptype" == "preferred" ]; then
+		pub_opts="${pub_opts}P"
+	fi
+
+	__pub_prefix=""
+	__publisher_urls=""
+
+	LC_ALL=C $PKG publisher $pub_opts | nawk '$2 == "'"$utype"'" && \
+	    $3 == "online" {printf "%s %s\n", $1, $4;}' | {
+		while IFS=" " read __publisher __publisher_url; do
+			if [[ -n "$__pub_prefix" && \
+			    "$__pub_prefix" != "$__publisher" ]]; then
+				# Different publisher so emit accumulation and
+				# clear existing data.
+				echo $__pub_prefix=$__publisher_urls
+				__publisher_urls=""
+			fi
+			__pub_prefix=$__publisher
+			__publisher_urls="$__publisher_urls$__publisher_url "
+		done
+	}
+
+	if [[ -n "$__pub_prefix" && -n "$__publisher_urls" ]]; then
+		echo $__pub_prefix=$__publisher_urls
+	fi
+
+	return 0
 }
 
 #

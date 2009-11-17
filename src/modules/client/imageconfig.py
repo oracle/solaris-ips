@@ -256,7 +256,16 @@ class ImageConfig(object):
                         c.set(section, "disabled", str(pub.disabled))
 
                         repo = pub.selected_repository
+
+                        # For now, write out "origin" for compatibility with
+                        # older clients in addition to "origins".  Older
+                        # clients may drop the "origins" when rewriting the
+                        # configuration, but that doesn't really break
+                        # anything.
                         c.set(section, "origin", repo.origins[0].uri)
+
+                        c.set(section, "origins",
+                            str([u.uri for u in repo.origins]))
                         c.set(section, "mirrors",
                             str([u.uri for u in repo.mirrors]))
 
@@ -350,6 +359,8 @@ class ImageConfig(object):
                 changed = False
                 try:
                         alias = cp.get(s, "alias")
+                        if alias == "None":
+                                alias = None
                 except ConfigParser.NoOptionError:
                         alias = None
 
@@ -359,12 +370,27 @@ class ImageConfig(object):
                         raise RuntimeError(
                             "Invalid Publisher name: %s" % prefix)
 
-                origin = cp.get(s, "origin")
                 try:
                         d = cp.get(s, "disabled")
                 except ConfigParser.NoOptionError:
                         d = 'False'
                 disabled = d.lower() in ("true", "yes")
+
+                origin = cp.get(s, "origin")
+                try:
+                        org_str = cp.get(s, "origins")
+                except ConfigParser.NoOptionError:
+                        org_str = "None"
+
+                if org_str == "None":
+                        origins = []
+                else:
+                        origins = self.read_list(org_str)
+
+                # Ensure that the list of origins is unique and complete.
+                origins = set(origins)
+                if origin != "None":
+                        origins.add(origin)
 
                 mir_str = cp.get(s, "mirrors")
                 if mir_str == "None":
@@ -447,9 +473,11 @@ class ImageConfig(object):
                 # Guard against invalid configuration for ssl information. If
                 # this isn't done, the user won't be able to load the client
                 # to fix the problem.
-                if not origin.startswith("https"):
-                        ssl_key = None
-                        ssl_cert = None
+                for origin in origins:
+                        if not origin.startswith("https"):
+                                ssl_key = None
+                                ssl_cert = None
+                                break
 
                 #
                 # For zones, where the reachability of an absolute path
@@ -468,7 +496,7 @@ class ImageConfig(object):
                                 ssl_key = os.path.abspath(ssl_key)
                         if not os.path.exists(ssl_key):
                                 logger.error(api_errors.NoSuchKey(ssl_key,
-                                    uri=origin, publisher=prefix))
+                                    uri=list(origins)[0], publisher=prefix))
                                 ssl_key = None
 
                 if ssl_cert:
@@ -479,11 +507,13 @@ class ImageConfig(object):
                                 ssl_cert = os.path.abspath(ssl_cert)
                         if not os.path.exists(ssl_cert):
                                 logger.error(api_errors.NoSuchCertificate(
-                                    ssl_cert, uri=origin, publisher=prefix))
+                                    ssl_cert, uri=list(origins)[0],
+                                    publisher=prefix))
                                 ssl_cert = None
 
                 r = publisher.Repository(**repo_data)
-                r.add_origin(origin, ssl_cert=ssl_cert, ssl_key=ssl_key)
+                for o in origins:
+                        r.add_origin(o, ssl_cert=ssl_cert, ssl_key=ssl_key)
                 for m in mirrors:
                         r.add_mirror(m, ssl_cert=ssl_cert, ssl_key=ssl_key)
 

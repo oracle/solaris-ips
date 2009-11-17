@@ -1486,6 +1486,10 @@ class ImageInterface(object):
                                         publishers[old_pub.prefix] = old_pub
                                         break
 
+                repo = pub.selected_repository
+                if not repo.origins:
+                        raise api_errors.PublisherOriginRequired(pub.prefix)
+
                 try:
                         if disable:
                                 # Remove the publisher's metadata (such as

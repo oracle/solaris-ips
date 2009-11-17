@@ -468,9 +468,11 @@ class Image(object):
                                     os.path.join(kdir, fname))
                         self.__rebuild_image_catalogs(progtrack=progtrack)
 
-        def set_attrs(self, is_zone, prefix, pub_url,
-            ssl_key=None, ssl_cert=None, variants=EmptyDict,
-            refresh_allowed=True, progtrack=None):
+        def set_attrs(self, is_zone, prefix, mirrors=EmptyI, origins=EmptyI,
+            ssl_key=None, ssl_cert=None, refresh_allowed=True, progtrack=None,
+            variants=EmptyDict):
+                """Creates a new image with the given attributes if it does not
+                exist or sets the attributes of an already existing image."""
 
                 if not os.path.exists(os.path.join(self.imgdir,
                     imageconfig.CFG_FILE)):
@@ -482,7 +484,11 @@ class Image(object):
                 # so that if creation of the Publisher object fails, an
                 # empty, useless image won't be left behind.
                 repo = publisher.Repository()
-                repo.add_origin(pub_url, ssl_cert=ssl_cert, ssl_key=ssl_key)
+                for o in origins:
+                        repo.add_origin(o, ssl_cert=ssl_cert, ssl_key=ssl_key)
+                for m in mirrors:
+                        repo.add_mirror(m, ssl_cert=ssl_cert, ssl_key=ssl_key)
+
                 newpub = publisher.Publisher(prefix,
                     meta_root=self._get_publisher_meta_root(prefix),
                     repositories=[repo], transport=self.transport)
