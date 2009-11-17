@@ -159,6 +159,8 @@ DISPLAY_LINK,
 CLICK_LINK,
 ) = range(2)
 
+REGEX_STRIP_MARKUP = re.compile("<.{0,1}\w>")
+
 class PackageManager:
         def __init__(self):
                 signal.signal(signal.SIGINT, self.__main_application_quit)
@@ -390,8 +392,14 @@ class PackageManager:
                     w_tree_main.get_widget("applicationtreeview")
                 self.w_application_treeview.connect('key_press_event',
                     self.__on_applicationtreeview_button_and_key_events)
+                self.w_application_treeview.set_enable_search(True)
+                self.w_application_treeview.set_search_equal_func(
+                      self.__applicationtreeview_compare_func)
 
                 self.w_categories_treeview = w_tree_main.get_widget("categoriestreeview")
+                self.w_categories_treeview.set_search_equal_func(
+                    self.__categoriestreeview_compare_func)
+
                 self.w_info_notebook = w_tree_main.get_widget("details_notebook")
                 self.w_generalinfo_textview = \
                     w_tree_main.get_widget("generalinfotextview")
@@ -1420,6 +1428,8 @@ class PackageManager:
                         self.w_categories_treeview.append_column(column)
                         #Added selection listener
                         category_selection.set_mode(gtk.SELECTION_SINGLE)
+                        self.w_categories_treeview.set_search_column(
+                            enumerations.CATEGORY_NAME)
 
                 if section_list != None:
                         self.section_list = section_list
@@ -2795,14 +2805,30 @@ class PackageManager:
                                 self.category_active_paths[self.last_visible_publisher]\
                                         = path
 
+        @staticmethod
+        def __categoriestreeview_compare_func(model, column, key, itr):
+                value = model.get_value(itr, column)
+                if not value:
+                        return True
+
+                try:
+                        value = re.sub(REGEX_STRIP_MARKUP, "", value)
+                        match = re.match(re.escape(key), re.escape(value), re.IGNORECASE)
+                except (TypeError, re.error):
+                        return True
+
+                return match is None
+
         def __on_category_selection_changed(self, selection, widget):
                 '''This function is for handling category selection changes'''
                 if self.in_setup:
                         return
                 model, itr = selection.get_selected()
-                if itr:
-                        self.category_active_paths[self.last_visible_publisher] = \
-                                model.get_path(itr)
+                if not itr:
+                        return
+
+                self.category_active_paths[self.last_visible_publisher] = \
+                    model.get_path(itr)
                 if self.in_search_mode or self.is_all_publishers:
                         return
                 if self.saved_filter_combobox_active != None:
@@ -2900,6 +2926,15 @@ class PackageManager:
                         self.w_package_menu.popup( None, None, None, event.button,
                             curr_time)
                         return
+
+        @staticmethod
+        def __applicationtreeview_compare_func(model, column, key, itr):
+                value = model.get_value(itr, enumerations.NAME_COLUMN)
+                if not value:
+                        return True
+
+                value = value.lower()
+                return not value.startswith(key.lower())
 
         @staticmethod
         def __position_package_popup(menu, position):
