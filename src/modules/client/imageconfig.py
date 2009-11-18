@@ -32,22 +32,23 @@ import re
 from pkg.client import global_settings
 logger = global_settings.logger
 
-import pkg.client.api_errors as api_errors
-import pkg.client.publisher as publisher
-import pkg.fmri as fmri
-import pkg.portable as portable
-import pkg.variant as variant
+import pkg.client.api_errors  as api_errors
+import pkg.client.publisher   as publisher
+import pkg.facet              as facet
+import pkg.fmri               as fmri
+import pkg.portable           as portable
+import pkg.variant            as variant
 
+from pkg.misc import DictProperty
 # The default_policies dictionary defines the policies that are supported by 
 # pkg(5) and their default values. Calls to the ImageConfig.get_policy method
 # should use the constants defined here.
-REQUIRE_OPTIONAL = "require-optional"
+
 PURSUE_LATEST = "pursue-latest"
 DISPLAY_COPYRIGHTS = "display-copyrights"
 FLUSH_CONTENT_CACHE = "flush-content-cache-on-success"
 SEND_UUID = "send-uuid"
 default_policies = { 
-    REQUIRE_OPTIONAL: False,
     PURSUE_LATEST: True,
     DISPLAY_COPYRIGHTS: True,
     FLUSH_CONTENT_CACHE: False,
@@ -61,6 +62,7 @@ REPO_REFRESH_SECONDS_DEFAULT = 4 * 60 * 60
 # names of image configuration files managed by this module
 CFG_FILE = "cfg_cache"
 DA_FILE = "disabled_auth"
+
 
 class ImageConfig(object):
         """An ImageConfig object is a collection of configuration information:
@@ -76,18 +78,76 @@ class ImageConfig(object):
         def __init__(self, imgroot, pubdir):
                 self.__imgroot = imgroot
                 self.__pubdir = pubdir
-                self.publishers = {}
+                self.__publishers = {}
+                self.__publisher_search_order = []
+
                 self.properties = dict((
                     (p, str(v)) 
                     for p, v in default_policies.iteritems()
                 ))
-                self.preferred_publisher = None
-                self.filters = {}
+                self.facets = facet.Facets()
                 self.variants = variant.Variants()
                 self.children = []
 
+
         def __str__(self):
-                return "%s\n%s" % (self.publishers, self.properties)
+                return "%s\n%s" % (self.__publishers, self.properties)
+
+        def __get_preferred_publisher(self):
+                """Returns prefix of preferred publisher"""
+
+                for p in self.__publisher_search_order:
+                        if not self.__publishers[p].disabled:
+                                return p
+                raise KeyError, "No preferred publisher"
+
+        def __set_preferred_publisher(self, prefix):
+                """Enforce search order rules"""
+                if prefix not in self.__publishers:
+                        raise KeyError, "Publisher %s not found" % prefix
+                self.__publisher_search_order.remove(prefix)
+                self.__publisher_search_order.insert(0, prefix)
+
+        def remove_publisher(self, prefix):
+                """External functional interface - use property interface"""
+                del self.publishers[prefix]
+
+        def change_publisher_search_order(self, new_world_order):
+                """Change search order to desired value"""
+                if sorted(new_world_order) != sorted(self.__publisher_search_order):
+                        raise ValueError, "publishers added or removed"
+                self.__publisher_search_order = new_world_order
+                
+        def __get_publisher(self, prefix):
+                """Accessor method for publishers dictionary"""
+                return self.__publishers[prefix]
+
+        def __set_publisher(self, prefix, value):
+                """Accesor method to keep search order correct on insert"""
+                if prefix not in self.__publisher_search_order:
+                        self.__publisher_search_order.append(prefix)
+                self.__publishers[prefix] = value
+
+        def __del_publisher(self, prefix):
+                """Accessor method for publishers"""
+                if prefix in self.__publisher_search_order:
+                        self.__publisher_search_order.remove(prefix)
+                del self.__publishers[prefix]
+
+        def __publisher_iter(self):
+                return self.__publishers.__iter__()
+
+        def __publisher_iteritems(self):
+                """Support iteritems on publishers"""
+                return self.__publishers.iteritems()
+
+        def __publisher_keys(self):
+                """Support keys() on publishers"""
+                return self.__publishers.keys()
+
+        def __publisher_values(self):
+                """Support values() on publishers"""
+                return self.__publishers.values()
 
         def get_policy(self, policy):
                 """Return a boolean value for the named policy.  Returns
@@ -107,6 +167,7 @@ class ImageConfig(object):
                 changed = False
 
                 cp = ConfigParser.SafeConfigParser()
+                cp.optionxform = str # preserve option case
 
                 ccfile = os.path.join(path, CFG_FILE)
                 r = cp.read(ccfile)
@@ -121,11 +182,16 @@ class ImageConfig(object):
 
                 #
                 # Must load filters first, since the value of a filter can
-                # impact the default value of the zone variant.
+                # impact the default value of the zone variant.  This is
+                # legacy code, and should be removed when upgrade from
+                # pre-variant versions of opensolaris is no longer 
+                # supported
                 #
+
+                filters = {}
                 if cp.has_section("filter"):
                         for o in cp.options("filter"):
-                                self.filters[o] = cp.get("filter", o)
+                                filters[o] = cp.get("filter", o)
 
                 #
                 # Must load variants next, since in the case of zones,
@@ -134,7 +200,10 @@ class ImageConfig(object):
                 if cp.has_section("variant"):
                         for o in cp.options("variant"):
                                 self.variants[o] = cp.get("variant", o)
-
+                # facets
+                if cp.has_section("facet"):
+                        for o in cp.options("facet"):
+                                self.facets[o] = cp.get("facet", o) != "False"
                 # make sure we define architecture variant
                 if "variant.arch" not in self.variants:
                         self.variants["variant.arch"] = platform.processor()
@@ -142,7 +211,7 @@ class ImageConfig(object):
 
                 # make sure we define zone variant
                 if "variant.opensolaris.zone" not in self.variants:
-                        zone = self.filters.get("opensolaris.zone", "")
+                        zone = filters.get("opensolaris.zone", "")
                         if zone == "nonglobal":
                                 self.variants[
                                     "variant.opensolaris.zone"] = "nonglobal"
@@ -151,15 +220,15 @@ class ImageConfig(object):
                                     "variant.opensolaris.zone"] = "global"
                         changed = True
 
+                preferred_publisher = None
                 for s in cp.sections():
                         if re.match("authority_.*", s):
                                 k, a, c = self.read_publisher(pmroot, cp, s)
                                 changed |= c
-
                                 self.publishers[k] = a
-                               
-                                if self.preferred_publisher == None:
-                                        self.preferred_publisher = k
+                                # just in case there's no other indication
+                                if preferred_publisher is None:
+                                        preferred_publisher = k
 
                 # read in the policy section to provide backward
                 # compatibility for older images
@@ -173,18 +242,33 @@ class ImageConfig(object):
                                     o, raw=True).decode('utf-8')
 
                 try:
-                        self.preferred_publisher = \
-                            self.properties["preferred-publisher"]
+                        preferred_publisher = \
+                            str(self.properties["preferred-publisher"])
                 except KeyError:
                         try:
                                 # Compatibility with older clients.
                                 self.properties["preferred-publisher"] = \
-                                    self.properties["preferred-authority"]
-                                self.preferred_publisher = \
+                                    str(self.properties["preferred-authority"])
+                                preferred_publisher = \
                                     self.properties["preferred-publisher"]
                                 del self.properties["preferred-authority"]
                         except KeyError:
-                                pass
+                                pass                
+                try:
+                        self.__publisher_search_order = self.read_list(
+                            str(self.properties["publisher-search-order"]))
+                except KeyError:
+                        # make up the default - preferred, then the rest in alpha order
+                        self.__publisher_search_order = [preferred_publisher] + \
+                            sorted([ 
+                                name 
+                                for name in self.__publishers.keys() 
+                                if name != preferred_publisher
+                                ])
+
+                        self.properties["publisher-search-order"] = \
+                            str(self.__publisher_search_order)
+                        changed = True
 
                 # read disabled publisher file
                 # XXX when compatility with the old code is no longer needed,
@@ -218,6 +302,7 @@ class ImageConfig(object):
                 # XXX the use of the disabled_auth file can be removed when
                 # compatibility with the older code is no longer needed
                 da = ConfigParser.SafeConfigParser()
+                cp.optionxform = str # preserve option case
 
                 # For compatibility, the preferred-publisher is written out
                 # as the preferred-authority.  Modify a copy so that we don't
@@ -227,23 +312,25 @@ class ImageConfig(object):
                         del props["preferred-publisher"]
                 except KeyError:
                         pass
-                props["preferred-authority"] = self.preferred_publisher
+                props["preferred-authority"] = str(self.__publisher_search_order[0])
+                props["publisher-search-order"] = str(self.__publisher_search_order)
 
                 cp.add_section("property")
                 for p in props:
-                        cp.set("property", p,
-                            props[p].encode("utf-8"))
-
-                cp.add_section("filter")
-                for f in self.filters:
-                        cp.set("filter", f, str(self.filters[f]))
+                        cp.set("property", p, props[p].encode("utf-8"))
 
                 cp.add_section("variant")
                 for f in self.variants:
                         cp.set("variant", f, str(self.variants[f]))
 
-                for prefix in self.publishers:
-                        pub = self.publishers[prefix]
+                cp.add_section("facet")
+
+                for f in self.facets:
+                        
+                        cp.set("facet", f, str(self.facets[f]))
+
+                for prefix in self.__publishers:
+                        pub = self.__publishers[prefix]
                         section = "authority_%s" % pub.prefix
 
                         c = cp
@@ -254,6 +341,7 @@ class ImageConfig(object):
                         c.set(section, "alias", str(pub.alias))
                         c.set(section, "prefix", str(pub.prefix))
                         c.set(section, "disabled", str(pub.disabled))
+                        c.set(section, "sticky", str(pub.sticky))
 
                         repo = pub.selected_repository
 
@@ -335,9 +423,6 @@ class ImageConfig(object):
                                 raise
                         acp.write(f)
 
-        def remove_publisher(self, prefix):
-                del self.publishers[prefix]
-
         @staticmethod
         def read_list(list_str):
                 """Take a list in string representation and convert it back
@@ -369,6 +454,11 @@ class ImageConfig(object):
                 if prefix.startswith(fmri.PREF_PUB_PFX):
                         raise RuntimeError(
                             "Invalid Publisher name: %s" % prefix)
+
+                try:
+                        sticky = cp.getboolean(s, "sticky")
+                except (ConfigParser.NoOptionError, ValueError):
+                        sticky = True
 
                 try:
                         d = cp.get(s, "disabled")
@@ -522,10 +612,19 @@ class ImageConfig(object):
 
                 pub = publisher.Publisher(prefix, alias=alias,
                     client_uuid=client_uuid, disabled=disabled,
-                    meta_root=pmroot, repositories=[r])
+                    meta_root=pmroot, repositories=[r], sticky=sticky)
 
                 # write out the UUID if it was set
                 if pub.client_uuid != client_uuid:
                         changed = True
 
                 return prefix, pub, changed
+
+        # properties so we can enforce rules
+
+        publisher_search_order = property(lambda self: self.__publisher_search_order[:])
+        preferred_publisher = property(__get_preferred_publisher, __set_preferred_publisher,
+            doc="The publisher we prefer - first non-disabled publisher in search order")
+        publishers = DictProperty(__get_publisher, __set_publisher, __del_publisher, 
+            __publisher_iteritems, __publisher_keys, __publisher_values, __publisher_iter,
+            doc="A dict mapping publisher prefixes to publisher objects")

@@ -155,18 +155,22 @@ class ReadOnlyFileSystemException(PermissionsException):
 class PlanCreationException(ApiException):
         def __init__(self, unmatched_fmris=EmptyI, multiple_matches=EmptyI,
             missing_matches=EmptyI, illegal=EmptyI,
-            constraint_violations=EmptyI, badarch=EmptyI, not_installed=EmptyI,
-            installed=EmptyI, obsolete=EmptyI):
+            badarch=EmptyI, installed=EmptyI, multispec=EmptyI, 
+            no_solution=False, no_version=EmptyI, missing_dependency=EmptyI, 
+            wrong_publishers=EmptyI, obsolete=EmptyI):
                 ApiException.__init__(self)
-                self.unmatched_fmris = unmatched_fmris
-                self.multiple_matches = multiple_matches
-                self.missing_matches = missing_matches
-                self.illegal = illegal
-                self.constraint_violations = constraint_violations
-                self.badarch = badarch
-                self.not_installed = not_installed
-                self.installed = installed
+                self.unmatched_fmris       = unmatched_fmris
+                self.multiple_matches      = multiple_matches
+                self.missing_matches       = missing_matches
+                self.illegal               = illegal
+                self.badarch               = badarch
+                self.installed             = installed
+                self.multispec             = multispec
                 self.obsolete = obsolete
+                self.no_solution           = no_solution
+                self.no_version            = no_version
+                self.missing_dependency    = missing_dependency
+                self.wrong_publishers      = wrong_publishers
 
         def __str__(self):
                 res = []
@@ -177,6 +181,13 @@ Try relaxing the pattern, refreshing and/or examining the catalogs:""")
                         res += [s]
                         res += ["\t%s" % p for p in self.unmatched_fmris]
 
+                if self.wrong_publishers:
+                        s = _("The following patterns only matched packages "
+                            "that are from publishers other than that which "
+                            "supplied the already installed version of this package")
+                        res += [s]
+                        res += ["\t%s: %s" % (p[0], ", ".join(p[1])) for p in self.wrong_publishers]
+
                 if self.multiple_matches:
                         s = _("'%s' matches multiple packages")
                         for p, lst in self.multiple_matches:
@@ -184,16 +195,13 @@ Try relaxing the pattern, refreshing and/or examining the catalogs:""")
                                 for pfmri in lst:
                                         res.append("\t%s" % pfmri)
 
-                s = _("'%s' matches no installed packages")
-                res += [ s % p for p in self.missing_matches ]
+                if self.missing_matches:
+                        s = _("'%s' matches no installed packages")
+                        res += [ s % p for p in self.missing_matches ]
 
-                s = _("'%s' is an illegal fmri")
-                res += [ s % p for p in self.illegal ]
-
-                if self.constraint_violations:
-                        s = _("The following package(s) violated constraints:")
-                        res += [s]
-                        res += ["\t%s" % p for p in self.constraint_violations]
+                if self.illegal:
+                        s = _("'%s' is an illegal fmri")
+                        res += [ s % p for p in self.illegal ]
 
                 if self.badarch:
                         s = _("'%s' supports the following architectures: %s")
@@ -205,13 +213,6 @@ Try relaxing the pattern, refreshing and/or examining the catalogs:""")
                 s = _("'%(p)s' depends on obsolete package '%(op)s'")
                 res += [ s % {"p": p, "op": op} for p, op in self.obsolete ]
 
-                if self.not_installed:
-                        s = _("The proposed operation can not be performed for "
-                            "the following package(s) as they are not "
-                            "installed: ")
-                        res += [s]
-                        res += ["\t%s" % p for p in self.not_installed]
-
                 if self.installed:
                         s = _("The proposed operation can not be performed for "
                             "the following package(s) as they are already "
@@ -219,6 +220,25 @@ Try relaxing the pattern, refreshing and/or examining the catalogs:""")
                         res += [s]
                         res += ["\t%s" % p for p in self.installed]
 
+                if self.multispec:
+                        s = _("The following different patterns specify the"
+                              "same package(s):")
+                        res += [s]
+                        for t in self.multispec:
+                                res += [
+                                        ", ".join(
+                                        [t[i] for i in range(1, len(t))])
+                                        + ": %s" % t[0]
+                                        ] 
+                if self.no_solution:
+                        res += [_("No solution was found to satisfy constraints")]
+
+                if self.no_version:
+                        res += self.no_version
+
+                if self.missing_dependency:
+                        res += _("Package %s is missing a dependency: %s" % self.missing_dependency)
+                        
                 return "\n".join(res)
 
 
@@ -973,6 +993,13 @@ class RemovePreferredPublisher(PublisherError):
 
         def __str__(self):
                 return _("The preferred publisher cannot be removed.")
+
+
+class MoveRelativeToSelf(PublisherError):
+        """Used to indicate an attempt to search a repo before or after itself"""
+
+        def __str__(self):
+                return _("Cannot search a repository before or after itself")
 
 
 class SelectedRepositoryRemoval(PublisherError):

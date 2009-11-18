@@ -251,8 +251,12 @@ class TestPkgPublisherMany(testutils.ManyDepotTestCase):
             open bar@1,5.11-0
             close """
 
+        baz1 = """
+            open baz@1,5.11-0
+            close """
+
         def setUp(self):
-                testutils.ManyDepotTestCase.setUp(self, ["test1", "test2",
+                testutils.ManyDepotTestCase.setUp(self, ["test1", "test2", "test3", 
                     "test1", "test1"])
 
                 durl1 = self.dcs[1].get_depot_url()
@@ -261,8 +265,12 @@ class TestPkgPublisherMany(testutils.ManyDepotTestCase):
                 durl2 = self.dcs[2].get_depot_url()
                 self.pkgsend_bulk(durl2, self.bar1)
 
+                durl3 = self.dcs[3].get_depot_url()
+                self.pkgsend_bulk(durl3, self.baz1)
+
                 self.image_create(durl1, prefix="test1")
                 self.pkg("set-publisher -O " + durl2 + " test2")
+                self.pkg("set-publisher -O " + durl3 + " test3")
 
         def tearDown(self):
                 testutils.ManyDepotTestCase.tearDown(self)
@@ -361,11 +369,14 @@ class TestPkgPublisherMany(testutils.ManyDepotTestCase):
         def test_enable_disable(self):
                 """Test enable and disable."""
 
+                self.pkg("publisher")
                 self.pkg("publisher | grep test1")
                 self.pkg("publisher | grep test2")
 
                 self.pkg("set-publisher -d test2")
-                self.pkg("publisher | grep test2", exit=1)
+                self.pkg("publisher | grep test2") # always show
+                self.pkg("publisher -n | grep test2", exit=1) # unless -n
+
                 self.pkg("list -a bar", exit=1)
                 self.pkg("publisher -a | grep test2")
                 self.pkg("set-publisher -P test2", exit=1)
@@ -375,7 +386,8 @@ class TestPkgPublisherMany(testutils.ManyDepotTestCase):
                 self.pkg("list -a bar")
 
                 self.pkg("set-publisher --disable test2")
-                self.pkg("publisher | grep test2", exit=1)
+                self.pkg("publisher | grep test2")
+                self.pkg("publisher -n | grep test2", exit=1)
                 self.pkg("list -a bar", exit=1)
                 self.pkg("publisher -a | grep test2")
                 self.pkg("set-publisher --enable test2")
@@ -385,6 +397,42 @@ class TestPkgPublisherMany(testutils.ManyDepotTestCase):
                 # should fail because test is the preferred publisher
                 self.pkg("set-publisher -d test1", exit=1)
                 self.pkg("set-publisher --disable test1", exit=1)
+
+        def test_search_order(self):
+                """Test moving search order around"""
+                # following should be order from above test
+                self.pkg("publisher") # ease debugging
+                self.pkg("publisher -H | head -1 | egrep test1")
+                self.pkg("publisher -H | head -2 | egrep test2")
+                self.pkg("publisher -H | head -3 | egrep test3")
+                # make test2 disabled, make sure order is preserved                
+                self.pkg("set-publisher --disable test2")
+                self.pkg("publisher") # ease debugging
+                self.pkg("publisher -H | head -1 | egrep test1")
+                self.pkg("publisher -H | head -2 | egrep test2")
+                self.pkg("publisher -H | head -3 | egrep test3")
+                self.pkg("set-publisher --enable test2")
+                # make test3 preferred
+                self.pkg("set-publisher -P test3")
+                self.pkg("publisher") # ease debugging
+                self.pkg("publisher -H | head -1 | egrep test3")
+                self.pkg("publisher -H | head -2 | egrep test1")
+                self.pkg("publisher -H | head -3 | egrep test2")
+                # move test3 after test1
+                self.pkg("set-publisher --search-after=test1 test3")
+                self.pkg("publisher") # ease debugging              
+                self.pkg("publisher -H | head -1 | egrep test1")
+                self.pkg("publisher -H | head -2 | egrep test3")
+                self.pkg("publisher -H | head -3 | egrep test2")
+                # move test2 before test3
+                self.pkg("set-publisher --search-before=test3 test2")
+                self.pkg("publisher") # ease debugging              
+                self.pkg("publisher -H | head -1 | egrep test1")
+                self.pkg("publisher -H | head -2 | egrep test2")
+                self.pkg("publisher -H | head -3 | egrep test3")
+                # make sure we cannot get ahead or behind of ourselves
+                self.pkg("set-publisher --search-before=test3 test3", exit=1)
+                self.pkg("set-publisher --search-after=test3 test3", exit=1)
 
 if __name__ == "__main__":
         unittest.main()

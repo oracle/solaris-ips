@@ -711,6 +711,7 @@ class Publisher(object):
         __prefix = None
         __selected_repository = None
         __repositories = []
+        __sticky = True
         transport = None
 
         # Used to store the id of the original object this one was copied
@@ -719,7 +720,7 @@ class Publisher(object):
 
         def __init__(self, prefix, alias=None, client_uuid=None, disabled=False,
             meta_root=None, repositories=None, selected_repository=None,
-            transport=None):
+            transport=None, sticky=True):
                 """Initialize a new publisher object."""
 
                 if client_uuid is None:
@@ -738,6 +739,7 @@ class Publisher(object):
                 self.prefix = prefix
                 self.transport = transport
                 self.meta_root = meta_root
+                self.sticky = sticky
 
                 if repositories:
                         for r in repositories:
@@ -771,7 +773,8 @@ class Publisher(object):
                 pub = Publisher(self.__prefix, alias=self.__alias,
                     client_uuid=self.__client_uuid, disabled=self.__disabled,
                     meta_root=self.meta_root, repositories=repositories,
-                    selected_repository=selected, transport=self.transport)
+                    selected_repository=selected, transport=self.transport,
+                    sticky=self.__sticky)
                 pub._source_object_id = id(self)
                 return pub
 
@@ -920,6 +923,9 @@ class Publisher(object):
 
         def __set_client_uuid(self, value):
                 self.__client_uuid = value
+
+        def __set_stickiness(self, value):
+                self.__sticky = bool(value)
 
         def __str__(self):
                 return self.prefix
@@ -1491,3 +1497,7 @@ class Publisher(object):
         selected_repository = property(lambda self: self.__selected_repository,
             __set_selected_repository,
             doc="A reference to the selected repository object.")
+
+        sticky = property(lambda self: self.__sticky, __set_stickiness,
+            doc="Whether or not installed packages from this publisher are"
+                " always preferred to other publishers.")

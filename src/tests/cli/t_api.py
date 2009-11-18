@@ -40,7 +40,7 @@ import tempfile
 import time
 import unittest
 
-API_VERSION = 23
+API_VERSION = 24
 PKG_CLIENT_NAME = "pkg"
 
 class TestPkgApi(testutils.SingleDepotTestCase):
@@ -121,7 +121,7 @@ class TestPkgApi(testutils.SingleDepotTestCase):
         def __try_bad_installs(self, api_obj):
 
                 self.assertRaises(api_errors.PlanExistsException,
-                    api_obj.plan_install,["foo"], [])
+                    api_obj.plan_install,["foo"])
 
                 self.assertRaises(api_errors.PlanExistsException,
                     api_obj.plan_uninstall,["foo"], False)
@@ -167,7 +167,7 @@ class TestPkgApi(testutils.SingleDepotTestCase):
                 self.assertRaises(api_errors.PlanMissingException,
                     api_obj.prepare)
 
-                api_obj.plan_install(["foo"], [])
+                api_obj.plan_install(["foo"])
                 self.__try_bad_combinations_and_complete(api_obj)
                 api_obj.reset()
 
@@ -207,18 +207,17 @@ class TestPkgApi(testutils.SingleDepotTestCase):
                     progresstracker, lambda x: False, PKG_CLIENT_NAME)
 
                 recursive_removal = False
-                filters = []
 
-                api_obj.plan_install(["foo"], filters)
+                api_obj.plan_install(["foo"])
                 self.assert_(api_obj.describe() is not None)
                 api_obj.reset()
                 self.assert_(api_obj.describe() is None)
-                api_obj.plan_install(["foo"], filters)
+                api_obj.plan_install(["foo"])
                 self.assert_(api_obj.describe() is not None)
                 api_obj.prepare()
                 api_obj.reset()
                 self.assert_(api_obj.describe() is None)
-                api_obj.plan_install(["foo"], filters)
+                api_obj.plan_install(["foo"])
                 self.assert_(api_obj.describe() is not None)
                 api_obj.prepare()
                 api_obj.execute_plan()

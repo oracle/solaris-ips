@@ -53,6 +53,8 @@ class TestPkgVariants(testutils.SingleDepotTestCase):
         add file /tmp/bronze_zone/etc/sparc_global mode=0555 owner=root group=bin path=etc/zone_arch variant.arch=sparc variant.opensolaris.zone=global
         add file /tmp/bronze_zone/etc/i386_global mode=0555 owner=root group=bin path=etc/zone_arch variant.arch=i386 variant.opensolaris.zone=global
         add file /tmp/bronze_zone/etc/zos_global mode=0555 owner=root group=bin path=etc/zone_arch variant.arch=zos variant.opensolaris.zone=global
+        add file /tmp/bronze_zone/false mode=0555 owner=root group=bin path=etc/isdebug variant.debug.kernel=false 
+        add file /tmp/bronze_zone/true mode=0555 owner=root group=bin path=etc/isdebug variant.debug.kernel=true
         close"""
 
         silver10 = """
@@ -73,7 +75,9 @@ class TestPkgVariants(testutils.SingleDepotTestCase):
                 "/tmp/bronze_zone/etc/zos_nonglobal",
                 "/tmp/bronze_zone/etc/i386_global",
                 "/tmp/bronze_zone/etc/sparc_global",
-                "/tmp/bronze_zone/etc/zos_global"
+                "/tmp/bronze_zone/etc/zos_global",
+                "/tmp/bronze_zone/false",
+                "/tmp/bronze_zone/true",
                 ]
 
         def setUp(self):
@@ -107,29 +111,42 @@ class TestPkgVariants(testutils.SingleDepotTestCase):
 
                 self.__vtest(depot, "sparc", "global")
                 self.__vtest(depot, "i386", "global")
-                self.__vtest(depot, "zos", "global")
-                self.__vtest(depot, "sparc", "nonglobal")
-                self.__vtest(depot, "i386", "nonglobal")
-                self.__vtest(depot, "zos", "nonglobal")
+                self.__vtest(depot, "zos", "global", "true")
+                self.__vtest(depot, "sparc", "nonglobal", "true")
+                self.__vtest(depot, "i386", "nonglobal", "false")
+                self.__vtest(depot, "zos", "nonglobal", "false")
 
                 self.image_create(depot, 
                     additional_args="--variant variant.arch=%s" % "sparc")
                 self.pkg("install silver", exit=1)
 
-        def __vtest(self, depot, arch, zone):
+        def __vtest(self, depot, arch, zone, isdebug=""):
                 """ test if install works for spec'd arch"""
-                self.image_create(depot, additional_args="--variant variant.arch=%s --variant variant.opensolaris.zone=%s" % (arch, zone))
+
+                if isdebug:
+                        do_isdebug = "--variant variant.debug.kernel=%s" % isdebug
+                else:
+                        do_isdebug = ""
+                        is_debug = "false"
+
+                self.image_create(depot, 
+                    additional_args="--variant variant.arch=%s --variant variant.opensolaris.zone=%s %s" % (
+                    arch, zone, do_isdebug))
                 self.pkg("install bronze")
+                self.pkg("verify")
                 self.file_contains("etc/motd", arch)
                 self.file_contains("etc/zone_motd", zone)
                 self.file_contains("etc/zone_arch", zone)
                 self.file_contains("etc/zone_arch", arch)
-                self.pkg("verify")
+                self.file_contains("etc/isdebug", isdebug)
                 self.image_destroy()
 
         def file_contains(self, path, string):
                 file_path = os.path.join(self.get_img_path(), path)
-                f = file(file_path)
+                try:
+                        f = file(file_path)
+                except:
+                        self.assert_(False, "File %s is missing" % path)
                 for line in f:
                         if string in line:
                                 f.close()

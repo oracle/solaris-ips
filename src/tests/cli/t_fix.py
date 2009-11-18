@@ -90,6 +90,7 @@ class TestFix(testutils.SingleDepotTestCase):
                 size2 = self.file_size(victim)
                 self.assertEqual(size1, size2)
 
+                # check that we didn't reindex
                 new_mtime = os.stat(index_file).st_mtime
                 self.assertEqual(orig_mtime, new_mtime)
 

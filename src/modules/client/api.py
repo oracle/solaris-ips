@@ -43,13 +43,12 @@ import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.p5i as p5i
 import pkg.search_errors as search_errors
-import pkg.variant as variant
 import pkg.nrlock
 
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 23
+CURRENT_API_VERSION = 24
 CURRENT_P5I_VERSION = 1
 
 logger = global_settings.logger
@@ -88,7 +87,7 @@ class ImageInterface(object):
                 canceled changes. It can raise VersionException and
                 ImageNotFoundException."""
 
-                compatible_versions = set([23])
+                compatible_versions = set([CURRENT_API_VERSION])
 
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
@@ -243,13 +242,11 @@ class ImageInterface(object):
                 self.__activity_lock.release()
                 raise
 
-
-        def plan_install(self, pkg_list, filters, refresh_catalogs=True,
+        def plan_install(self, pkg_list, refresh_catalogs=True,
             noexecute=False, verbose=False, update_index=True):
                 """Contructs a plan to install the packages provided in
-                pkg_list.  pkg_list is a list of packages to install.  filters
-                is a list of filters to apply to the actions of the installed
-                packages.  refresh_catalogs controls whether the catalogs will
+                pkg_list.  pkg_list is a list of packages to install.  
+                refresh_catalogs controls whether the catalogs will
                 automatically be refreshed. noexecute determines whether the
                 history will be recorded after planning is finished.  verbose
                 controls whether verbose debugging output will be printed to the
@@ -268,7 +265,7 @@ class ImageInterface(object):
                         self.__img.make_install_plan(pkg_list,
                             self.__progresstracker,
                             self.__check_cancelation, noexecute,
-                            filters=filters, verbose=verbose)
+                            verbose=verbose)
 
                         assert self.__img.imageplan
 
@@ -389,25 +386,10 @@ class ImageInterface(object):
                                         # case; so proceed.
                                         pass
 
-                        # XXX For now, strip the publisher prefix from FMRIs for
-                        # packages that were installed from a publisher that was
-                        # preferred at the time of installation.  However, when
-                        # the image starts using prioritised publishers, this
-                        # will have to be removed.  Newer versions of packages
-                        # should only be a valid match if offered the same
-                        # publisher since equivalence cannot be determined by
-                        # package name alone.
-                        ppub = self.__img.get_preferred_publisher()
-                        pkg_list = [
-                            p.get_pkg_stem(anarchy=self.__img.is_pkg_preferred(
-                                p))
-                            for p in self.__img.gen_installed_pkgs()
-                        ]
-
-                        self.__img.make_install_plan(pkg_list,
-                            self.__progresstracker, self.__check_cancelation,
-                            noexecute, verbose=verbose, multimatch_ignore=True)
-
+                        self.__img.make_update_plan(self.__progresstracker,
+                            self.__check_cancelation, noexecute,
+                            verbose=verbose)
+                            
                         assert self.__img.imageplan
 
                         if self.__canceling:
@@ -433,13 +415,10 @@ class ImageInterface(object):
                 res = not self.__img.imageplan.nothingtodo()
                 return res, opensolaris_image
 
-        def plan_change_variant(self, variants, noexecute=False,
-            verbose=False, be_name=None):
-                """Creates a plan to change the specified variants on an image.
-                There is option to refresh_catalogs since if we're changing
-                architectures, we have to download manifests that were
-                previously uncached.  noexecute determines whether the history
-                will be recorded after planning is finished.  verbose controls
+        def plan_change_varcets(self, variants=None, facets=None,
+            noexecute=False, verbose=False, be_name=None):
+                """Creates a plan to change the specified variants/facets on an image.
+                verbose controls
                 whether verbose debugging output will be printed to the
                 terminal.  This function has two return values.  The first is
                 a boolean which tells the client whether there is anything to
@@ -450,13 +429,16 @@ class ImageInterface(object):
                 PlanCreationException and PermissionsException."""
 
                 self.__plan_common_start("change-variant")
+                if not variants and not facets:
+                        raise ValueError, "Nothing to do"
                 try:
                         self.check_be_name(be_name)
                         self.be_name = be_name
 
                         self.__refresh_publishers()
 
-                        self.__img.image_change_variant(variants,
+                        self.__img.image_change_varcets(variants, 
+                            facets,
                             self.__progresstracker,
                             self.__check_cancelation,
                             noexecute, verbose=verbose)
@@ -598,7 +580,7 @@ class ImageInterface(object):
                                         self.log_operation_end(error=e)
                                         raise e
                         else:
-                                if self.__img.imageplan.actuators.reboot_needed() and \
+                                if self.__img.imageplan.reboot_needed() and \
                                     self.__img.is_liveroot():
                                         e = api_errors.RebootNeededOnLiveImageException()
                                         self.log_operation_end(error=e)
@@ -1053,9 +1035,6 @@ class ImageInterface(object):
                     e.missing_matches or e.illegal:
                         self.log_operation_end(error=e,
                             result=history.RESULT_FAILED_BAD_REQUEST)
-                elif e.constraint_violations:
-                        self.log_operation_end(error=e,
-                            result=history.RESULT_FAILED_CONSTRAINED)
                 else:
                         self.log_operation_end(error=e)
 
@@ -1088,12 +1067,10 @@ class ImageInterface(object):
                                     gen_installed_pkg_names=\
                                         self.__img.gen_installed_pkg_names,
                                     case_sensitive=q.case_sensitive)
-                                excludes = [variant.Variants(
-                                    {"variant.arch": self.__img.get_arch()}
-                                    ).allow_action]
                                 res = query.search(
                                     self.__img.gen_installed_pkgs,
-                                    self.__img.get_manifest_path, excludes)
+                                    self.__img.get_manifest_path,
+                                    self.__img.list_excludes())
                         except search_errors.InconsistentIndexException, e:
                                 raise api_errors.InconsistentIndexException(e)
                         # i is being inserted to track which query the results
@@ -1267,11 +1244,9 @@ class ImageInterface(object):
                 if not os.path.isdir(self.__img.index_dir):
                         self.__img.mkdirs()
                 try:
-                        excludes = [variant.Variants(
-                            {"variant.arch": self.__img.get_arch()}).allow_action]
                         ind = indexer.Indexer(self.__img, self.__img.get_manifest,
                             self.__img.get_manifest_path,
-                            self.__progresstracker, excludes)
+                            self.__progresstracker, self.__img.list_excludes())
                         ind.rebuild_index_from_scratch(
                             self.__img.gen_installed_pkgs())
                 except search_errors.ProblematicPermissionsIndexException, e:
@@ -1307,6 +1282,21 @@ class ImageInterface(object):
                             progtrack=self.__progresstracker)
                 finally:
                         self.__img.cleanup_downloads()
+
+        def get_pub_search_order(self):
+                """Return current search order of publishers; includes
+                disabled publishers"""
+                return self.__img.cfg_cache.publisher_search_order
+
+        def set_pub_search_after(self, being_moved_prefix, staying_put_prefix):
+                """Change the publisher search order so that being_moved is
+                searched after staying_put"""
+                self.__img.pub_search_after(being_moved_prefix, staying_put_prefix)
+
+        def set_pub_search_before(self, being_moved_prefix, staying_put_prefix):
+                """Change the publisher search order so that being_moved is
+                searched before staying_put"""
+                self.__img.pub_search_before(being_moved_prefix, staying_put_prefix)
 
         def get_preferred_publisher(self):
                 """Returns the preferred publisher object for the image."""
@@ -1458,7 +1448,11 @@ class ImageInterface(object):
                                 # iterator key since the prefix might be
                                 # different for the new publisher object.
                                 updated = True
-                                del publishers[key]
+
+                                # only if prefix is different - this
+                                # preserves search order
+                                if key != pub.prefix:
+                                        del publishers[key]
 
                                 # Prepare the new publisher object.
                                 pub.meta_root = \

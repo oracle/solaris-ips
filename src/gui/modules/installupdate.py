@@ -237,7 +237,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 if self.ipkg_ipkgui_list == None:
                         return True
                 upgrade_needed = self.api_o.plan_install(
-                    self.ipkg_ipkgui_list, filters = [])
+                    self.ipkg_ipkgui_list)
                 return not upgrade_needed
 
         def __proceed_with_stages(self):
@@ -647,8 +647,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 stuff_to_do = False
                 if self.action == enumerations.INSTALL_UPDATE:
                         stuff_to_do = self.api_o.plan_install(
-                            self.list_of_packages, refresh_catalogs = False,
-                            filters = [])
+                            self.list_of_packages, refresh_catalogs = False)
                 elif self.action == enumerations.REMOVE:
                         plan_uninstall = self.api_o.plan_uninstall
                         stuff_to_do = \

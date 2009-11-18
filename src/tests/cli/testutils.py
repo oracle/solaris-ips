@@ -31,6 +31,7 @@ import shutil
 import errno
 import platform
 import tempfile
+import time
 try:
         import pwd
 except ImportError:
@@ -208,6 +209,25 @@ class TracebackException(pkg5unittest.Pkg5TestCase.failureException):
                         str += format_debug(self.__debug)
                 return str
 
+
+class AssFailException(pkg5unittest.Pkg5TestCase.failureException):
+        def __init__(self, comment = None, debug=None):
+                Exception.__init__(self)
+                self.__comment = comment
+                self.__debug = debug
+
+        def __str__(self):
+
+                str = ""
+                if self.__comment is None:
+                        str += Exception.__str__(self)
+                else:
+                        str += format_comment(self.__comment)
+                if self.__debug is not None and self.__debug != "":
+                        str += format_debug(self.__debug)
+                return str
+
+
 class UnexpectedExitCodeException(pkg5unittest.Pkg5TestCase.failureException):
         def __init__(self, command, expected, got, output=None, comment=None,
             debug=None):
@@ -225,8 +245,8 @@ class UnexpectedExitCodeException(pkg5unittest.Pkg5TestCase.failureException):
 
                 str = ""
                 str += format_comment(self.__comment)
-
-                str += "  Expected exit status: %d.  Got: %d." % \
+                
+                str += "  Expected exit status: %s.  Got: %d." % \
                     (self.__expected, self.__got)
 
                 str += format_output(self.__command, self.__output)
@@ -243,11 +263,12 @@ class PkgSendOpenException(pkg5unittest.Pkg5TestCase.failureException):
         def __init__(self, com = ""):
                 Exception.__init__(self, com)
 
-
-
 class CliTestCase(pkg5unittest.Pkg5TestCase):
         __debug = False
         __debug_buf = ""
+
+        def in_debug_mode(self):
+                return self.__debug
 
         def setUp(self):
                 self.image_dir = None
@@ -271,14 +292,13 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
         def tearDown(self):
                 self.image_destroy()
 
-        # In the case of an assertion (not a pkg() failure) dump the most
-        # recent debug info to stdout so that it is captured in the test log.
+        # In the case of an assertion (not a pkg() failure)
+        # raise an assertion so we can get the debug logs displayed
         def assert_(self, expr, msg=None):
                 if not expr:
-                        print "--- (most recent debug buffer) " + "-" * 39
-                        print self.get_debugbuf()
-                        print "-" * 70
-                        pkg5unittest.Pkg5TestCase.assert_(self, expr, msg)
+                        raise AssFailException(comment=msg,
+                            debug=self.get_debugbuf())
+ 
 
         def get_img_path(self):
                 return self.img_path
@@ -339,7 +359,9 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
         def image_destroy(self):
                 self.debug("image_destroy")
                 os.chdir(self.pwd)
-                if os.path.exists(self.img_path):
+
+                
+                if not self.in_debug_mode() and os.path.exists(self.img_path):
                         shutil.rmtree(self.img_path)
 
         def pkg(self, command, exit=0, comment="", prefix="", su_wrap=None):
@@ -375,7 +397,11 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                 if retcode == 99:
                         raise TracebackException(cmdline, self.output, comment,
                             debug=self.get_debugbuf())
-                elif retcode != exit:
+
+                if not isinstance(exit, list):
+                        exit = [exit]
+
+                if retcode not in exit:
                         raise UnexpectedExitCodeException(cmdline,
                             exit, retcode, self.output, comment,
                             debug=self.get_debugbuf())
@@ -456,7 +482,7 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
 
                 return retcode
 
-        def pkgsend(self, depot_url="", command="", exit=0, comment=""):
+        def pkgsend(self, depot_url="", command="", exit=0, comment="", retry400=True):
 
                 wrapper = ""
                 if os.environ.has_key("PKGCOVERAGE"):
@@ -464,8 +490,7 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
 
                 args = []
                 if depot_url:
-                        depot_url = "-s " + depot_url
-                        args.append(depot_url)
+                        args.append("-s " + depot_url)
 
                 if command:
                         args.append(command)
@@ -497,6 +522,7 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                         # retcode != 0 will be handled below
 
                 else:
+                        
                         p = subprocess.Popen(cmdline,
                             shell = True,
                             stdout = subprocess.PIPE,
@@ -505,13 +531,24 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                         output = p.stdout.read()
                         retcode = p.wait()
                         self.debugresult(retcode, output)
+                        
+                        if retcode !=0:
+                                if retry400 and (command.startswith("publish") or \
+                                    command.startswith("open")) and \
+                                    "status '400'" in output:    
+                                    # this may be error 400 - too quick to republish
+                                    # try once more after sleeping
+                                         time.sleep(1)
+                                         return self.pkgsend(depot_url, command, 
+                                             exit, comment, retry400=False)
 
-                        if retcode == 0 and command.startswith("close"):
+                        elif command.startswith("close") or \
+                            command.startswith("publish"):
                                 os.environ["PKG_TRANS_ID"] = ""
                                 for l in output.splitlines():
                                         if l.startswith("pkg:/"):
                                                 published = l
-                                                break
+                                                break                                        
 
                 if retcode == 99:
                         raise TracebackException(cmdline, output, comment,
@@ -536,18 +573,33 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
 
                 plist = []
                 try:
+                        accumulate = []
+                        current_fmri = None
+
                         for line in commands.split("\n"):
                                 line = line.strip()
                                 if line == "":
                                         continue
-                                retcode, published = self.pkgsend(depot_url, line)
-                                if retcode == 0 and published:
-                                        plist.append(published)
-
-                except TracebackException:
-                        if os.environ.get("PKG_TRANS_ID", None):
-                                self.pkgsend(depot_url, "close -A", exit=0)
-                        raise
+                                if line.startswith("add"):
+                                        accumulate.append(line[4:])
+                                else:
+                                        if current_fmri: # send any content seen so far (can be 0)
+                                                self.assert_(current_fmri != None, 
+                                                    "Missing open in pkgsend string")
+                                                f = tempfile.NamedTemporaryFile(dir="/tmp")
+                                                for l in accumulate:
+                                                        f.write("%s\n" % l)
+                                                f.flush()
+                                                cmd = "publish -d / %s %s" % (current_fmri, f.name)
+                                                current_fmri = None
+                                                accumulate = []
+                                                retcode, published = self.pkgsend(depot_url, cmd)
+                                                if retcode == 0 and published:
+                                                        plist.append(published)
+                                                f.close()
+                                        if line.startswith("open"):
+                                                current_fmri = line[5:].strip()
+                                        
                 except UnexpectedExitCodeException, e:
                         if e.exitcode != exit:
                                 raise
@@ -558,6 +610,7 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                             debug=self.get_debugbuf())
 
                 return plist
+                                                
 
         def cmdline_run(self, cmdline, exit=0):
                 p = subprocess.Popen(cmdline,
@@ -742,7 +795,9 @@ class ManyDepotTestCase(CliTestCase):
                         try:
                                 self.check_traceback(dc.get_logpath())
                         finally:
-                                dc.kill()
+                                status = dc.kill()
+                                if status:
+                                        self.debug("depot: %s" % status)
                                 shutil.rmtree(dir)
 
                 self.dcs = None

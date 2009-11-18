@@ -1,3 +1,13 @@
+Version 24:
+Incompatible with clients using version 0-23.
+    The pkg.client.api module has changed as follows:
+        * plan_install no longer takes a filters argument
+	* plan_change_variant changed to plan_change_varcets.
+	  w/ argument list changes.
+	* Added get_pub_search_order
+	* Added set_pub_search_after
+	* Added set_pub_search_before
+
 Version 23:
 Incompatible with clients using version 0-22.
     The pkg.client.api module has changed as follows:

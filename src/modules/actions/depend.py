@@ -31,37 +31,32 @@ This module contains the DependencyAction class, which represents a
 relationship between the package containing the action and another package.
 """
 
-import urllib
 import generic
 import pkg.fmri as fmri
 import pkg.version
-import pkg.client.constraint as constraint
 
 class DependencyAction(generic.Action):
         """Class representing a dependency packaging object.  The fmri attribute
         is expected to be the pkg FMRI that this package depends on.  The type
-        attribute is one of
+        attribute is one of these:
 
-        optional - dependency if present activates additional functionality,
-                   but is not needed
+        optional - optional dependency on minimum version of other package. In
+        other words, if installed, other packages must be at least at specified
+        version level.
 
-        require - dependency is needed for correct function
+        require -  dependency on minimum version of other package is needed 
+        for correct function of this package.
 
-        transfer - dependency on minimum version of other package that donated
-        components to this package at earlier version.  Other package need not
-        be installed, but if it is, it must be at the specified version.  Effect
-        is the same as optional, but the semantics are different.  OpenSolaris
-        doesn't use these for bundled packages, as incorporations are preferred.
+        incorporate - optional dependency on precise version of other package; 
+        non-specified portion of version is free to float.
 
-        incorporate - optional freeze at specified version
-
-        exclude - package non-functional if dependent package is present
-        (unimplemented) """
+        exclude - package may not be installed together with named version 
+        or higher - reverse logic of require."""
 
         name = "depend"
         attributes = ("type", "fmri")
         key_attr = "fmri"
-        known_types = ("optional", "require", "transfer", "incorporate")
+        known_types = ("optional", "require", "exclude", "incorporate")
 
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
@@ -164,80 +159,38 @@ class DependencyAction(generic.Action):
                 #           (fmri_string, cleanfmri)
                 self.attrs["fmri"] = cleanfmri
 
-        def get_constrained_fmri(self, image):
-                """ returns fmri of incorporation pkg or None if not
-                an incorporation"""
-
-                ctype = self.attrs["type"]
-                if ctype != "incorporate":
-                        return None
-
-                pkgfmri = self.attrs["fmri"]
-                f = fmri.PkgFmri(pkgfmri, image.attrs["Build-Release"])
-                image.fmri_set_default_publisher(f)
-
-                return f
-
-        def parse(self, image, source_name):
-                """decode depend action into fmri & constraint"""
-                ctype = self.attrs["type"]
-                fmristr = self.attrs["fmri"]
-                f = fmri.PkgFmri(fmristr, image.attrs["Build-Release"])
-                min_ver = f.version
-
-                if min_ver == None:
-                        min_ver = pkg.version.Version("0",
-                            image.attrs["Build-Release"])
-
-                name = f.get_name()
-                max_ver = None
-                presence = None
-
-                if ctype == "require":
-                        presence = constraint.Constraint.ALWAYS
-                elif ctype == "exclude":
-                        presence = constraint.Constraint.NEVER
-                elif ctype == "incorporate":
-                        presence = constraint.Constraint.MAYBE
-                        max_ver = min_ver
-                elif ctype == "optional":
-                        # Must be done here to avoid circular dependency
-                        # problems during import.
-                        from pkg.client.imageconfig import REQUIRE_OPTIONAL
-                        if image.cfg_cache.get_policy(REQUIRE_OPTIONAL):
-                                presence = constraint.Constraint.ALWAYS
-                        else:
-                                presence = constraint.Constraint.MAYBE
-                elif ctype == "transfer":
-                        presence = constraint.Constraint.MAYBE
-
-                assert presence
-
-                return f, constraint.Constraint(name, min_ver, max_ver,
-                    presence, source_name)
-
         def verify(self, image, **args):
                 # XXX Exclude and range between min and max not yet handled
 
+                def __min_version():
+                        return pkg.version.Version("0", image.attrs["Build-Release"])
+
                 ctype = self.attrs["type"]
+                pfmri = fmri.PkgFmri(self.attrs["fmri"], image.attrs["Build-Release"])
 
                 if ctype not in self.known_types:
                         return ["Unknown type (%s) in depend action" % ctype]
 
-                pkgfmri = self.attrs["fmri"]
-                f = fmri.PkgFmri(pkgfmri, image.attrs["Build-Release"])
+                installed_version = image.get_version_installed(pfmri)
 
-                installed_version = image.get_version_installed(f)
+                min_fmri = None
+                max_fmri = None
 
-                min_fmri, cons = self.parse(image, "")
-
-                if cons.max_ver:
-                        max_fmri = min_fmri.copy()
-                        max_fmri.version = cons.max_ver
-                else:
-                        max_fmri = None
-
-                required = (cons.presence == constraint.Constraint.ALWAYS)
+                if ctype == "require":
+                        required = True
+                        min_fmri = pfmri
+                elif ctype == "incorporate":
+                        max_fmri = pfmri
+                        min_fmri = pfmri
+                        required = False
+                elif ctype == "optional":
+                        required = False
+                        min_fmri = pfmri
+                elif ctype == "exclude":
+                        required = False
+                        max_fmri = pfmri
+                        min_fmri = pfmri.copy()
+                        min_fmri.version = __min_version()
 
                 if installed_version:
                         vi = installed_version.version
@@ -246,13 +199,14 @@ class DependencyAction(generic.Action):
                             pkg.version.CONSTRAINT_NONE):
                                 return ["%s dependency %s is downrev (%s)" %
                                     (ctype, min_fmri, installed_version)]
-                        if max_fmri and vi > max_fmri.version and \
+                        if max_fmri and max_fmri.version and  \
+                            vi > max_fmri.version and \
                             not vi.is_successor(max_fmri.version,
                             pkg.version.CONSTRAINT_AUTO):
                                 return ["%s dependency %s is uprev (%s)" %
                                     (ctype, max_fmri, installed_version)]
                 elif required:
-                        return ["Required dependency %s is not installed" % f]
+                        return ["Required dependency %s is not installed" % pfmri]
 
                 return []
 

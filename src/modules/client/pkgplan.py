@@ -32,7 +32,6 @@ logger = global_settings.logger
 
 import pkg.actions.directory as directory
 import pkg.manifest as manifest
-import pkg.client.api_errors as api_errors
 from pkg.misc import expanddirs, get_pkg_otw_size, EmptyI
 
 class PkgPlan(object):
@@ -71,21 +70,22 @@ class PkgPlan(object):
 
                 return s
 
-        def propose_reinstall(self, fmri, mfst):
-                self.destination_fmri = fmri
-                self.__destination_mfst = mfst
-                self.__legacy_info["version"] = self.destination_fmri.version
-                self.origin_fmri = fmri
-                self.__origin_mfst = mfst
-
-                if not self.image.is_pkg_installed(fmri):
-                        raise api_errors.PlanCreationException(
-                            not_installed=[fmri])
+        def propose(self, of, om, df, dm):
+                """Propose origin and dest fmri, manifest"""
+                self.origin_fmri = of
+                self.__origin_mfst = om
+                self.destination_fmri = df
+                self.__destination_mfst = dm
+                if self.destination_fmri:
+                        self.__legacy_info["version"] = self.destination_fmri.version
 
         def propose_repair(self, fmri, mfst, actions):
-                self.propose_reinstall(fmri, mfst)
-                self.origin_fmri = None
-
+                self.propose(fmri, mfst, fmri, mfst)
+                # self.origin_fmri = None
+                # I'd like a cleaner solution than this; we need to actually
+                # construct a list of actions as things currently are rather than
+                # just re-applying the current set of actions.
+                #
                 # Create a list of (src, dst) pairs for the actions to send to
                 # execute_repair.  src is none in this case since we aren't
                 # upgrading, just repairing.
@@ -93,23 +93,6 @@ class PkgPlan(object):
 
                 # Only install actions, no update or remove
                 self.__repair_actions = lst
-
-        def propose_destination(self, fmri, mfst):
-                self.destination_fmri = fmri
-                self.__destination_mfst = mfst
-                self.__legacy_info["version"] = self.destination_fmri.version
-
-                if self.image.is_pkg_installed(fmri):
-                        raise api_errors.PlanCreationException(
-                            installed=[fmri])
-
-        def propose_removal(self, fmri, mfst):
-                self.origin_fmri = fmri
-                self.__origin_mfst = mfst
-
-                if not self.image.is_pkg_installed(fmri):
-                        raise api_errors.PlanCreationException(
-                            not_installed=[fmri])
 
         def get_actions(self):
                 raise NotImplementedError()
@@ -130,20 +113,6 @@ class PkgPlan(object):
 
         def evaluate(self, old_excludes=EmptyI, new_excludes=EmptyI):
                 """Determine the actions required to transition the package."""
-                # if origin unset, determine if we're dealing with an previously
-                # installed version or if we're dealing with the null package
-                #
-                # XXX Perhaps make the pkgplan creator make this explicit, so we
-                # don't have to check?
-                f = None
-
-                if not self.origin_fmri:
-                        f = self.image.older_version_installed(
-                            self.destination_fmri)
-                        if f:
-                                self.origin_fmri = f
-                                self.__origin_mfst = \
-				    self.image.get_manifest(f)
 
                 # Assume that origin actions are unique, but make sure that
                 # destination ones are.
@@ -277,7 +246,7 @@ class PkgPlan(object):
                         raise
 
         def execute_update(self, src, dest):
-                """ handle action updates"""
+                """ handle action updates"""                                
                 try:
                         dest.install(self, src)
                 except Exception, e:

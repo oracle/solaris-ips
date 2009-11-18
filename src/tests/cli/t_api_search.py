@@ -47,7 +47,7 @@ import pkg.indexer as indexer
 import pkg.portable as portable
 import pkg.search_storage as ss
 
-API_VERSION = 23
+API_VERSION = 24
 PKG_CLIENT_NAME = "pkg"
 
 class TestApiSearchBasics(testutils.SingleDepotTestCase):
@@ -547,12 +547,23 @@ close
                 if remote:
                         search_func = lambda x: api_obj.remote_search(x,
                             servers=servers)
-                res = search_func(query)
-                if return_actions:
-                        res = self._extract_action_from_res(res)
-                else:
-                        res = self._extract_package_from_res(res)
-                res = set(res)
+                init_time = time.time()
+
+                # servers may not be ready immediately - retry search
+                # operation for 5 seconds
+
+                while (time.time() - init_time) < 5:
+                        try:
+                                res = search_func(query)
+                                if return_actions:
+                                        res = self._extract_action_from_res(res)
+                                else:
+                                        res = self._extract_package_from_res(res)
+                                res = set(res)
+                                break
+                        except api_errors.ProblematicSearchServers, e:
+                                pass
+
                 self._check(set(res), test_value)
 
         def _search_op_slow(self, api_obj, remote, token, test_value,
@@ -1130,7 +1141,7 @@ close
 
         @staticmethod
         def _do_install(api_obj, pkg_list, **kwargs):
-                api_obj.plan_install(pkg_list, [], **kwargs)
+                api_obj.plan_install(pkg_list, **kwargs)
                 TestApiSearchBasics._do_finish(api_obj)
 
         @staticmethod
@@ -1806,6 +1817,7 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
                 """Test for known bug 983."""
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.bug_983_manifest)
+                time.sleep(2)
                 self.image_create(durl)
                 progresstracker = progress.NullProgressTracker()
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,

@@ -1,4 +1,4 @@
-#!/usr/bin/python2.4
+#!/usr/bin/python
 #
 # CDDL HEADER START
 #
@@ -33,6 +33,7 @@ import time
 import errno
 import unittest
 import shutil
+import sys
 from stat import *
 
 # needed to get variant settings
@@ -157,6 +158,7 @@ class TestPkgChangeVariant(testutils.SingleDepotTestCase):
                 it doesn't contain the specified token."""
 
                 file_path = os.path.join(self.get_img_path(), path)
+
                 try:
                         f = file(file_path)
                 except IOError, e:
@@ -180,11 +182,11 @@ class TestPkgChangeVariant(testutils.SingleDepotTestCase):
                 f.close()
 
                 if not negate and not found:
-                        self.assert_(False, "File %s does not contain %s" %
-                            (path, token))
+                        self.assert_(False, "File %s (%s) does not contain %s" %
+                            (path, file_path, token))
                 if negate and found:
-                        self.assert_(False, "File %s contain %s" %
-                            (path, token))
+                        self.assert_(False, "File %s (%s) contains %s" %
+                            (path, file_path, token))
 
         def p_verify(self, p=None, v_arch=None, v_zone=None, negate=False):
                 """Given a specific architecture and zone variant, verify
@@ -268,13 +270,13 @@ class TestPkgChangeVariant(testutils.SingleDepotTestCase):
 
                 if "variant.arch" not in ic.variants:
                         self.assert_(False,
-                            "unable to determine inmage arch variant")
+                            "unable to determine image arch variant")
                 if ic.variants["variant.arch"] != v_arch:
                         self.assert_(False, "unexpected arch variant")
 
                 if "variant.opensolaris.zone" not in ic.variants:
                         self.assert_(False,
-                            "unable to determine inmage zone variant")
+                            "unable to determine image zone variant")
                 if ic.variants["variant.opensolaris.zone"] != v_zone:
                         self.assert_(False, "unexpected zone variant")
 
@@ -324,26 +326,29 @@ class TestPkgChangeVariant(testutils.SingleDepotTestCase):
                 ic_args += " --variant variant.opensolaris.zone=%s " % v_zone
                 depot = self.dc.get_depot_url()
                 self.image_create(depot, additional_args=ic_args)
+                self.pkg("variant -H| egrep %s" % ("'variant.arch[ ]*%s'" % v_arch))
+                self.pkg("variant -H| egrep %s" % ("'variant.opensolaris.zone[ ]*%s'" % v_zone))
 
                 # install the specified packages into the image
                 ii_args = "";
                 for p in pl:
                         ii_args += " %s " % p
-                self.pkg("install %s" % ii_args)
-
+                self.pkg("install %s" % ii_args)                
+                
                 # if we're paranoid, then verify the image we just installed
                 if self.verify_install:
                         self.i_verify(v_arch, v_zone, pl)
-
                 # change the specified variant
                 cv_args = "";
                 cv_args += " -v";
                 cv_args += " variant.arch=%s" % v_arch2
                 cv_args += " variant.opensolaris.zone=%s" % v_zone2
-                self.pkg("change-variant" + cv_args)
-
+                self.pkg("change-variant -v" + cv_args)
                 # verify the updated image
                 self.i_verify(v_arch2, v_zone2, pl2)
+
+                self.pkg("variant -H| egrep %s" % ("'variant.arch[ ]*%s'" % v_arch2))
+                self.pkg("variant -H| egrep %s" % ("'variant.opensolaris.zone[ ]*%s'" % v_zone2))
 
                 self.image_destroy()
 

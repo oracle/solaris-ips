@@ -525,7 +525,7 @@ def get_inventory_list(image, pargs, all_known, all_versions):
                         t = cmp(f1.pkg_name, f2.pkg_name)
                         if t != 0:
                                 return t
-                        t = cmp(f2, f1)
+                        t = cmp(f2.version, f1.version)
                         if t != 0:
                                 return t
                         if f1.get_publisher() == ppub:
@@ -657,6 +657,74 @@ class ImmutableDict(dict):
         def __oops(self):
                 raise TypeError, "Item assignment to ImmutableDict"
 
+# A way to have a dictionary be a property
+
+class DictProperty(object):
+        class __InternalProxy(object):
+                def __init__(self, obj, fget, fset, fdel, iteritems, keys, values, iterator):
+                        self.__obj = obj
+                        self.__fget = fget
+                        self.__fset = fset
+                        self.__fdel = fdel
+                        self.__iteritems = iteritems
+                        self.__keys = keys
+                        self.__values = values
+                        self.__iter = iterator
+
+                def __getitem__(self, key):
+                        if self.__fget is None:
+                                raise AttributeError, "unreadable attribute"
+
+                        return self.__fget(self.__obj, key)
+
+                def __setitem__(self, key, value):
+                        if self.__fset is None:
+                                raise AttributeError, "can't set attribute"
+                        self.__fset(self.__obj, key, value)
+
+                def __delitem__(self, key):
+                        if self.__fdel is None:
+                                raise AttributeError, "can't delete attribute"
+                        self.__fdel(self.__obj, key)
+
+                def iteritems(self):
+                        if self.__iteritems is None:
+                                raise AttributeError, "can't iterate over items"
+                        return self.__iteritems(self.__obj)
+
+                def keys(self):
+                        if self.__keys is None:
+                                raise AttributeError, "can't iterate over keys"
+                        return self.__keys(self.__obj)
+
+                def values(self):
+                        if self.__values is None:
+                                raise AttributeError, "can't iterate over values"
+                        return self.__values(self.__obj)
+
+                def __iter__(self):
+                        if self.__iter is None:
+                                raise AttributeError, "can't iterate"
+                        return self.__iter(self.__obj)
+
+        def __init__(self, fget=None, fset=None, fdel=None, iteritems=None, 
+            keys=None, values=None, iterator=None, doc=None):
+                self.__fget = fget
+                self.__fset = fset
+                self.__fdel = fdel
+                self.__iteritems = iteritems
+                self.__doc__ = doc
+                self.__keys = keys
+                self.__values = values
+                self.__iter = iterator
+
+        def __get__(self, obj, objtype=None):
+                if obj is None:
+                        return self
+                return self.__InternalProxy(obj, self.__fget, self.__fset, 
+                    self.__fdel, self.__iteritems, self.__keys, self.__values, self.__iter)
+
+        
 def get_sorted_publishers(pubs, preferred=None):
         spubs = []
         for p in sorted(pubs, key=operator.attrgetter("prefix")):
@@ -731,6 +799,20 @@ def validate_ssl_cert(ssl_cert, prefix=None, uri=None):
                     publisher=prefix, days=diff.days)
 
         return cert
+
+class Singleton(type):
+        """Set __metaclass__ to Singleton to create a singleton.
+        See http://en.wikipedia.org/wiki/Singleton_pattern """
+
+        def __init__(self, name, bases, dictionary):
+                super(Singleton, self).__init__(name, bases, dictionary)
+                self.instance = None
+ 
+        def __call__(self, *args, **kw):
+                if self.instance is None:
+                        self.instance = super(Singleton, self).__call__(*args, **kw)
+ 
+                return self.instance
 
 EmptyDict = ImmutableDict()
 

@@ -35,7 +35,6 @@ import pkg.client.api_errors as api_errors
 import pkg.manifest as manifest
 import pkg.actions as actions
 import pkg.fmri as fmri
-import pkg.client.filter as filter
 
 # Set the path so that modules above can be found
 path_to_parent = os.path.join(os.path.dirname(__file__), "..")

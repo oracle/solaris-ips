@@ -333,13 +333,18 @@ class PkgFmri(object):
                 if not other:
                         return 1
 
-                if self.pkg_name == other.pkg_name:
-                        return cmp(self.version, other.version)
+                c = cmp(self.publisher, other.publisher)
 
-                if self.pkg_name > other.pkg_name:
-                        return 1
+                if c != 0:
+                        return c
 
-                return -1
+                c = cmp(self.pkg_name, other.pkg_name)
+ 
+                if c != 0:
+                        return c
+
+                return cmp(self.version, other.version)
+
 
         def get_link_path(self, stemonly = False):
                 """Return the escaped link (or file) path fragment for this

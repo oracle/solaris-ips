@@ -31,7 +31,7 @@ from pkg.client import global_settings
 
 #The current version of the Client API the PM, UM and
 #WebInstall GUIs have been tested against and are known to work with.
-CLIENT_API_VERSION = 23
+CLIENT_API_VERSION = 24
 
 def get_cache_dir(api_object):
         img = api_object.img

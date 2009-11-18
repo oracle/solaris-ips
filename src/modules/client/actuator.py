@@ -39,6 +39,8 @@ class GenericActuator(object):
                 self.removal = {}
                 self.update =  {}
 
+        def __nonzero__(self):
+                return bool(self.install) or bool(self.removal) or bool(self.update)
 
         def scan_install(self, attrs):
                 self.__scan(self.install, attrs)
@@ -51,7 +53,7 @@ class GenericActuator(object):
 
         def __scan(self, dictionary, attrs):
                 for a in set(attrs.keys()) & self.actuator_attrs:
-			dictionary.setdefault(a, set()).add(attrs[a])
+                        dictionary.setdefault(a, set()).add(attrs[a])
 
         def reboot_needed(self):
                 return False
@@ -115,11 +117,22 @@ class Actuator(GenericActuator):
                 self.cmd_path = ""
 
         def __str__(self):
+                merge = {}
+
+                for d in [self.removal, self.update, self.install]:
+                        for a in d.keys():
+                                for smf in d[a]:
+                                        merge.setdefault(a, set()).add(smf)
+
+                if self.reboot_needed():
+                        merge["reboot-needed"] = set(["true"])
+                else:
+                        merge["reboot-needed"] = set(["false"])
+
                 return "\n".join([
                     "  %16s: %s" % (fmri, smf)
-                    for d in [self.removal, self.update, self.install]
-                    for fmri in d
-                    for smf in d[fmri]
+                    for fmri in merge
+                    for smf in merge[fmri]
                     ])
 
         def reboot_needed(self):
@@ -128,10 +141,10 @@ class Actuator(GenericActuator):
 
         def exec_prep(self, image):
                 if not image.is_liveroot():
-                        dir = DebugValues.get_value("actuator_cmds_dir")
-                        if not dir:
+                        cmds_dir = DebugValues.get_value("actuator_cmds_dir")
+                        if not cmds_dir:
                                 return
-                        self.cmd_path = dir
+                        self.cmd_path = cmds_dir
                 self.do_nothing = False
 
         def exec_pre_actuators(self, image):
@@ -213,7 +226,7 @@ class Actuator(GenericActuator):
                 params = tuple(refresh_fmris)
 
                 if params:
-                    self.__call(args + params)
+                        self.__call(args + params)
 
                 for fmri in restart_fmris.copy():
                         if self.__smf_svc_is_disabled(fmri):
@@ -268,7 +281,7 @@ class Actuator(GenericActuator):
 
                 try:
                         buf = self.__call(args)
-                except NonzeroExitException, e:
+                except NonzeroExitException:
                         return {} # empty output == not installed
 
                 return dict([
@@ -288,7 +301,7 @@ class Actuator(GenericActuator):
                         buf = proc.stdout.readlines()
                         ret = proc.wait()
                 except OSError, e:
-                        raise RuntimeError, "cannot execute %s" % (args,)
+                        raise RuntimeError, "cannot execute %s: %s" % (args, e)
 
                 if ret != 0:
                         raise NonzeroExitException(args, ret, buf)

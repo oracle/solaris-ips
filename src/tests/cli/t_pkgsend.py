@@ -55,10 +55,11 @@ class TestPkgsendBasics(testutils.SingleDepotTestCase):
                 dfurl = "file://%s" % self.dc.get_repodir()
 
                 for url in (dhurl, dfurl):
-                        self.pkgsend_bulk(url,
+                        for line in \
                             """open shouldnotexist@1.0,5.11-0
                             add dir mode=0755 owner=root group=bin path=/bin
-                            close -A""")
+                            close -A""".splitlines():
+                                self.pkgsend(url, line)
 
                         if url == dfurl:
                                 # Must restart pkg.depotd so it will pickup the
@@ -493,8 +494,8 @@ class TestPkgsendBasics(testutils.SingleDepotTestCase):
                                 # to be incremented.
                                 p2 = p.replace("<ver>", str(ver))
                                 self.pkgsend_bulk(url, p2, exit=exit)
-                                if exit:
-                                        self.pkgsend(url, "close -A")
+                                #if exit:
+                                #        self.pkgsend(url, "close -A")
 
                                 # Then do it line-by-line
                                 for i, l in enumerate(p.splitlines()):

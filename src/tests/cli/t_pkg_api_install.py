@@ -38,7 +38,7 @@ import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 import pkg.client.progress as progress
 
-API_VERSION = 23
+API_VERSION = 24
 PKG_CLIENT_NAME = "pkg"
 
 class TestPkgApiInstall(testutils.SingleDepotTestCase):
@@ -142,16 +142,15 @@ class TestPkgApiInstall(testutils.SingleDepotTestCase):
                         self.debug("wrote %s" % p)
 
         def tearDown(self):
+                self.debug("In teardown")
                 testutils.SingleDepotTestCase.tearDown(self)
                 for p in self.misc_files:
                         os.remove(p)
 
         @staticmethod
-        def __do_install(api_obj, fmris, filters=None):
-                if not filters:
-                        filters = []
+        def __do_install(api_obj, fmris):
                 api_obj.reset()
-                api_obj.plan_install(fmris, filters)
+                api_obj.plan_install(fmris)
                 api_obj.prepare()
                 api_obj.execute_plan()
 
@@ -386,7 +385,9 @@ class TestPkgApiInstall(testutils.SingleDepotTestCase):
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
                     progresstracker, lambda x: True, PKG_CLIENT_NAME)
 
-                self.assertRaises(api_errors.InventoryException,
+                self.pkg("list -a")
+
+                self.assertRaises(api_errors.PlanCreationException,
                     self.__do_install, api_obj, ["bar@1.1"])
 
         def test_bug_1338_2(self):
@@ -401,7 +402,7 @@ class TestPkgApiInstall(testutils.SingleDepotTestCase):
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
                     progresstracker, lambda x: True, PKG_CLIENT_NAME)
 
-                self.assertRaises(api_errors.InventoryException,
+                self.assertRaises(api_errors.PlanCreationException,
                     self.__do_install, api_obj, ["baz@1.0", "bar@1.1"])
 
         def test_bug_1338_3(self):
@@ -416,7 +417,7 @@ class TestPkgApiInstall(testutils.SingleDepotTestCase):
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
                     progresstracker, lambda x: True, PKG_CLIENT_NAME)
 
-                self.assertRaises(api_errors.InventoryException,
+                self.assertRaises(api_errors.PlanCreationException,
                     self.__do_install, api_obj, ["xdeep@1.0"])
 
         def test_bug_1338_4(self):
@@ -430,7 +431,7 @@ class TestPkgApiInstall(testutils.SingleDepotTestCase):
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
                     progresstracker, lambda x: True, PKG_CLIENT_NAME)
 
-                self.assertRaises(api_errors.InventoryException,
+                self.assertRaises(api_errors.PlanCreationException,
                     self.__do_install, api_obj, ["ydeep@1.0"])
 
         def test_bug_2795(self):
@@ -444,14 +445,16 @@ class TestPkgApiInstall(testutils.SingleDepotTestCase):
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
                     progresstracker, lambda x: True, PKG_CLIENT_NAME)
 
-                self.__do_install(api_obj, ["foo@1.1", "foo@1.2"])
-                self.pkg("list foo@1.1", exit = 1)
-                self.pkg("list foo@1.2")
-                self.__do_uninstall(api_obj, ["foo"])
+                self.assertRaises(api_errors.PlanCreationException,
+                    self.__do_install, api_obj, ["foo@1.1", "foo@1.2"])
 
-                self.__do_install(api_obj, ["foo@1.2", "foo@1.1"])
-                self.pkg("list foo@1.1", exit = 1)
-                self.pkg("list foo@1.2")
+                self.pkg("list foo", exit = 1)
+
+                self.assertRaises(api_errors.PlanCreationException,
+                    self.__do_install, api_obj, ["foo@1.1", "foo@1.2"])
+
+
+                self.pkg("list foo", exit = 1)
 
         def test_install_matching(self):
                 """ Try to [un]install packages matching a pattern """
@@ -491,31 +494,32 @@ class TestPkgApiInstall(testutils.SingleDepotTestCase):
 
                 def check_missing(e):
                         return e.missing_matches
-                
+
+
                 testutils.eval_assert_raises(api_errors.PlanCreationException,
-                    check_unfound, api_obj.plan_install, ["foo"], [])
+                    check_unfound, api_obj.plan_install, ["foo"])
 
                 api_obj.reset()
                 testutils.eval_assert_raises(api_errors.PlanCreationException,
-                    check_unfound, api_obj.plan_uninstall, ["foo"], [])
+                    check_missing, api_obj.plan_uninstall, ["foo"], False)
 
                 api_obj.reset()
                 testutils.eval_assert_raises(api_errors.PlanCreationException,
-                    check_illegal, api_obj.plan_install, ["@/foo"], [])
+                    check_illegal, api_obj.plan_install, ["@/foo"])
                 
                 api_obj.reset()
                 testutils.eval_assert_raises(api_errors.PlanCreationException,
-                    check_illegal, api_obj.plan_uninstall, ["/foo"], [])
+                    check_illegal, api_obj.plan_uninstall, ["/foo"], False)
 
                 self.pkgsend_bulk(durl, self.foo10)
 
                 api_obj.refresh(False)
                 testutils.eval_assert_raises(api_errors.PlanCreationException,
-                    check_unfound, api_obj.plan_uninstall, ["foo"], [])
+                    check_missing, api_obj.plan_uninstall, ["foo"], False)
 
                 api_obj.reset()
                 testutils.eval_assert_raises(api_errors.PlanCreationException,
-                    check_illegal, api_obj.plan_uninstall, ["/foo"], [])
+                    check_illegal, api_obj.plan_uninstall, ["/foo"], False)
 
                 api_obj.reset()
                 api_obj.refresh(True)
@@ -524,7 +528,7 @@ class TestPkgApiInstall(testutils.SingleDepotTestCase):
 
                 api_obj.reset()                
                 testutils.eval_assert_raises(api_errors.PlanCreationException,
-                    check_missing, api_obj.plan_uninstall, ["foo"], [])
+                    check_missing, api_obj.plan_uninstall, ["foo"], False)
 
         def test_bug_4109(self):
                 durl = self.dc.get_depot_url()
@@ -538,7 +542,7 @@ class TestPkgApiInstall(testutils.SingleDepotTestCase):
 
                 api_obj.reset()
                 testutils.eval_assert_raises(api_errors.PlanCreationException,
-                    check_illegal, api_obj.plan_install, ["/foo"], [])
+                    check_illegal, api_obj.plan_install, ["/foo"])
 
         def test_catalog_v0(self):
                 """Test install from a publisher's repository that only supports

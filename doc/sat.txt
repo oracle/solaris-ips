@@ -1,0 +1,238 @@
+
+It's become clear that our approach to evaluating
+packaging dependencies and constraints needs to become
+a lot more sophisticated as we've been trying to make
+packaging metadata more accurately reflect the way
+we build and test packages.
+
+A significant part of the difficulty is dealing with
+externally produced packages; if a variety of versions
+are available we may need to iteratively test multiple
+versions, evaluating their dependencies to find one that
+is compatible w/ the constraints that may be active on
+the current image.
+
+One method of doing this sort of automated decision making
+is to cast the problem as a series of boolean expressions,
+and then apply a SAT solver to find a solution.  These notes
+describe the results of my experiments w/ the minisat solver 
+Stephen posted some time ago....
+
+Notes:
+--------
+
+1) The presence of a particular package version is a 
+   single boolean variable; True if it's present,
+   False if not.
+
+   The problem set handed to the SAT solver is a series
+   of clauses; each clause are boolean variables (or
+   their negation) or'd together.  All clauses must be
+   true for the solution to exist.
+
+   The clauses need to encode the fact that only one version
+   of a package may be installed at a time, and also encode
+   all different package dependencies and constraints.
+
+2) Each package has some number of versions, inherently ordered.
+   Only one version of a package may be installed at a time
+
+   pkg a -> a.1, a.2, a.3, a.4
+   pkg b -> b.1, b.2, b.3, b.4
+
+   Thus for "a":
+
+   !a.1 | !a.2
+   !a.1 | !a.3
+   !a.1 | !a.4
+   !a.2 | !a.3
+   !a.2 | !a.4
+   !a.3 | !a.4
+
+   where !a represents the negation of a.
+
+   This means that for N versions, we have N(N-1)/2 clauses;
+   pruning older non-accessible versions will be required to 
+   bound memory consumption.
+
+3) Each version of a package may have dependencies on other
+   packages, either w/ or w/o a version.  The version specification
+   will likely not be fully specified (eg multiple versions
+   may satisfy this requirement).
+
+4) dependencies may be of the following types:
+
+   required: fmri specifies minimum acceptable version
+
+   if a.1 requires b.2, b.3 or b.4:
+      !a.1 | b.2 | b.3 | b.4
+   
+   optional: if present, fmri must be at this level or greater
+   if a.1 optionally requires b.3:
+      !a.1 | !b.1
+      !a.1 | !b.2
+
+   incorporate: if present, pkg must match fmri
+
+   if a.1 incorporates b.3:
+      !a.1 | !b.1
+      !a.1 | !b.2
+      !a.1 | !b.4
+
+   exclude: if present, pkg must be less that version in fmri:
+
+   if a.1 excludes b.3,
+
+      !a.1 | !b.3
+      !a.1 | !b.4
+
+   All of these are linear in the number of package versions
+   either meeting or failing to meet the dependency.
+
+5) To express state, the presence of a package is encoded as a 
+   clause.  We compute the matching fmris and then construct
+   a clause that matches one of those fmris.  Specifying a single
+   version requires that version to be present in the solution;
+   we can also specify current version or newer, or any version of
+   a package.
+
+6) The SAT solver will find a particular solution to our packaging
+   problem, but there is no way of "preferring" newer packages, and
+   preventing the introduction of extraneous unneeded packages.
+   As a result, external optimization in the form of repeated 
+   solution attempts w/ additional constraints is necessary.  
+   The following algorithm has been implemented:
+
+   The packaging problem to be solved is expressed as a series of
+   boolean constraints, and a solution obtained.  Then, for each
+   fmri appearing in the solution vector, all older versions are
+   excluded; in other words, if a.3 is part of the solution, then
+   subsequent solutions will not contain a.1 or a.2.  Then a single
+   vector is added that is the negation of the just found vector,
+   and another solution is found.  For example:
+
+   if solution is a.2, b.3, z.10, we add
+  
+   # first negations of older versions
+   !a.1
+   !b.1
+   !b.2
+   !z.1
+   !z.2
+   ...
+   !z.9
+   # now negate just found solution
+   !a.2 | !b.3 | !z.10
+
+   The latter vector requires that the new solution not contain
+   a.2 and b.3 and z.10; since we've excluded older versions we
+   will either get a vector that eliminates one of the packages
+   as unneeded (if dependencies allow) or one that has newer 
+   versions of one of the needed pkgs.
+
+   We repeat the above process until a solution cannot be found; 
+   the last found solution must therefore be the most optimal one.
+
+   The above technique may fail to find the overall optimal 
+   solution if newer packages have incorporation dependencies
+   on earlier versions of their dependencies.  This is expected
+   to be rare.  Pruning the solution space to eliminate older
+   packages is necessary due to rapid solution space growth if
+   there are multiple versions that satisfy dependencies.
+
+
+7) In order to prevent rapid growth of clause count as the
+   number of versions of packages increases, trimming the
+   solution space is essential.  I'm currently using the
+   following techniques:
+
+   1) install a new package on existing system
+
+   identify any existing installed constraints,
+   and trim pkg catalog to eliminate versions
+   outside those constraints.  
+
+   trim pkg catalog to exclude all pkg older than
+   those already installed
+
+   input to solver is trimmed catalog, and 
+   vectors selecting any version of already installed
+   pkgs that meet constraints, plus a vector selected
+   any version of desired pkg.
+
+   2) upgrade to latest version of all available pkgs
+
+   identify any existing installed constraints,
+   and trim pkg catalog to eliminate versions
+   OLDER than those constraints.  
+  
+   trim pkg catalog to exclude all pkg older than
+   those already installed
+
+   input to solver is trimmed catalog, and 
+   vectors selecting any version of already installed
+   pkgs 
+
+   3) upgrade to specified version 
+
+   identify any existing installed constraints,
+   and trim pkg catalog to eliminate versions
+   OLDER than those constraints.  
+  
+   trim pkg catalog to exclude all pkg older than
+   those already installed
+
+   input to solver is trimmed catalog, and 
+   vectors selecting any version of already installed
+   pkgs, plus vector(s) selecting desired constraint(s).
+
+8) One of the most difficult aspects of using a SAT solver
+   is providing a reasonable error message when no solution
+   can be found.
+
+
+   Some techniques that I'm experimenting with include:
+
+   Explicitly checking for obvious non-starters (pkg
+   version earlier than already installed, pkg version that
+   violates constraints on system) prior to passing to SAT
+   solver.  This is needed to permit trimming in any case.
+
+   Using the pruned catalog to quickly evaluate the effect
+   of constraints.   
+   
+   
+Implementation details
+-------------------------
+
+combine catalog object w/ list of installed pkgs and proposed
+changes:
+
+class pkg_solver(object):
+      def __init__(self, catalog, existing_fmris):
+
+      def solve_install(existing_freezes, proposed_fmris):
+      	  """tries to find solution that adds specified fmris
+	  to existing set; any existing packages containing
+	  incorporate dependencies which are at most only depended on
+	  by name (no version) are frozen."""
+
+      def solve_reinstall(existing_freezes, proposed_fmris):
+          """tries to find solution that replaces existing version
+	  with specified version; this one allows stuff to go
+	  backwards if specified on command line"""
+      
+      def solve_uninstall(existing_freezes, proposed_fmris):
+          """tries to remove specified package"""
+
+      def solve_update_all(existing_freezes):
+          """find most recent version of all packages"""
+
+      solve* routines return a list of tuples (old_version, new_version)
+      for each fmri that is changing; new installs have None as old_version,
+      removals have None as new_version.  A returned empty list indicates
+      that no action is needed.
+
+      A failure to find a solution throws an exception,
+      pkg_solver.No_Solution_Found.
+

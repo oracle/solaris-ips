@@ -611,8 +611,12 @@ class Transport(object):
 
                 self.__lock.acquire()
                 try:
-                        self._prefetch_manifests(fetchlist, excludes,
-                            progtrack, ccancel)
+                        try:
+                                self._prefetch_manifests(fetchlist, excludes,
+                                    progtrack, ccancel)
+                        except (apx.PermissionsException, 
+                            apx.InvalidDepotResponseException):
+                                pass             
                 finally:
                         self.__lock.release()
 

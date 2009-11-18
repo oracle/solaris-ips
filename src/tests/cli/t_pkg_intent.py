@@ -39,7 +39,7 @@ import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 import pkg.client.progress as progress
 
-API_VERSION = 23
+API_VERSION = 24
 PKG_CLIENT_NAME = "pkg"
 
 class TestPkgIntent(testutils.SingleDepotTestCase):
@@ -78,7 +78,7 @@ class TestPkgIntent(testutils.SingleDepotTestCase):
             open bar@1.2,5.11-0
             add depend type=require fmri=pkg:/foo@1.0
             add dir mode=0755 owner=root group=bin path=/bin
-            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat 
             close """
 
         baz10 = """
@@ -145,11 +145,9 @@ class TestPkgIntent(testutils.SingleDepotTestCase):
                 return False
 
         @staticmethod
-        def __do_install(api_obj, fmris, filters=None, noexecute=False):
-                if not filters:
-                        filters = []
+        def __do_install(api_obj, fmris, noexecute=False):
                 api_obj.reset()
-                api_obj.plan_install(fmris, filters, noexecute=noexecute)
+                api_obj.plan_install(fmris, noexecute=noexecute)
                 if not noexecute:
                         api_obj.prepare()
                         api_obj.execute_plan()
@@ -165,7 +163,7 @@ class TestPkgIntent(testutils.SingleDepotTestCase):
                         api_obj.execute_plan()
 
         def test_0_info(self):
-                """Verify that informational operations send the expected
+                """Verify that informational operations do not send
                 intent information."""
 
                 durl = self.dc.get_depot_url()
@@ -176,32 +174,19 @@ class TestPkgIntent(testutils.SingleDepotTestCase):
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
                     progresstracker, lambda x: False, PKG_CLIENT_NAME)
 
-                info_needed = api.PackageInfo.ALL_OPTIONS - \
-                    frozenset([api.PackageInfo.LICENSES,
-                    api.PackageInfo.SIZE]) - \
-                    (api.PackageInfo.ACTION_OPTIONS - \
+                api_obj.info(plist, False, frozenset([api.PackageInfo.IDENTITY,
+                    api.PackageInfo.STATE, api.PackageInfo.PREF_PUBLISHER]))
+
+                entries = self.get_intent_entries()
+                self.assert_(entries == [])
+                
+                api_obj.info(plist, False,
                     frozenset([api.PackageInfo.DEPENDENCIES]))
 
-                api_obj.info(plist, False, info_needed)
-
                 entries = self.get_intent_entries()
-                self.assertEqual(entries, [])
+                # Verify that no entries are present
+                self.assert_(not entries)
 
-                api_obj.info(plist, False,
-                    info_needed | api.PackageInfo.ACTION_OPTIONS)
-
-                entries = self.get_intent_entries()
-                # Verify that evaluation and processing entries are present
-                # for info.  This will only happen if the client actually
-                # has to contact the repository to get information not found
-                # in the catalog.
-                target = fmri.PkgFmri(plist[0]).get_fmri(anarchy=True,
-                    include_scheme=False)
-                self.assert_(self.intent_entry_exists(entries, {
-                    "operation": "info",
-                    "reason": "info",
-                    "initial_target": target,
-                }))
 
         def test_1_install_uninstall(self):
                 """Verify that the install and uninstall of a single package
@@ -216,46 +201,32 @@ class TestPkgIntent(testutils.SingleDepotTestCase):
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
                     progresstracker, lambda x: False, PKG_CLIENT_NAME)
                 self.__do_install(api_obj, ["foo"], noexecute=True)
+                entries = self.get_intent_entries()
+                # no data should be there
+                self.assert_(not entries)
+
                 self.__do_install(api_obj, ["foo"])
 
-                # Test uninstall.
-                self.__do_uninstall(api_obj, ["foo"], noexecute=True)
-                self.__do_uninstall(api_obj, ["foo"])
-
                 entries = self.get_intent_entries()
-                # Verify that entries are present for install.
-                target = fmri.PkgFmri(plist[0]).get_fmri(anarchy=True,
-                    include_scheme=False)
-                self.assert_(self.intent_entry_exists(entries, {
-                    "operation": "install",
-                    "reason": "info",
-                    "initial_target": target,
-                }))
+
+                foo = fmri.PkgFmri(plist[0]).get_fmri(anarchy=True)
+
 
                 self.assert_(self.intent_entry_exists(entries, {
                     "operation": "install",
-                    "reason": "info",
-                    "initial_target": target,
+                    "new_fmri" : foo,
+                    "reference": "foo"
                 }))
 
-                # Verify that evaluation entries are not present for uninstall.
-                # Image operations that are for evaluation only and do not
-                # require retrieving manifest information will not send any
-                # intent information for efficiency.
-                target_ver = str(fmri.PkgFmri(target).version)
-                self.assert_(self.intent_entry_exists(entries, {
-                    "operation": "uninstall",
-                    "prior_version": target_ver,
-                    "reason": "evaluate",
-                    "initial_target": target,
-                }) == False)
+                # Test uninstall.
+                self.__do_uninstall(api_obj, ["*"])
 
                 # Verify that processing entries are present for uninstall.
+                entries = self.get_intent_entries()
                 self.assert_(self.intent_entry_exists(entries, {
                     "operation": "uninstall",
-                    "prior_version": target_ver,
-                    "reason": "process",
-                    "initial_target": target,
+                    "old_fmri" :  foo,
+                    "reference": "*"
                 }))
 
         def test_2_upgrade(self):
@@ -268,66 +239,37 @@ class TestPkgIntent(testutils.SingleDepotTestCase):
                 self.image_create(durl)
                 progresstracker = progress.NullProgressTracker()
 
+                foo10 = fmri.PkgFmri(plist[0]).get_fmri(anarchy=True)
+                foo11 = fmri.PkgFmri(plist[1]).get_fmri(anarchy=True)
+
                 # Test install.
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
                     progresstracker, lambda x: True, PKG_CLIENT_NAME)
-                self.__do_install(api_obj, ["foo@1.0"], noexecute=True)
                 self.__do_install(api_obj, ["foo@1.0"])
-                self.__do_install(api_obj, ["foo@1.1"], noexecute=True)
                 self.__do_install(api_obj, ["foo@1.1"])
 
                 # Test uninstall.
-                self.__do_uninstall(api_obj, ["foo"], noexecute=True)
                 self.__do_uninstall(api_obj, ["foo"])
 
                 entries = self.get_intent_entries()
-                # Verify entries are present for install.
-                target0 = fmri.PkgFmri(plist[0]).get_fmri(anarchy=True,
-                    include_scheme=False)
+                # Verify that evaluation and processing entries are present
+                # for install.
                 self.assert_(self.intent_entry_exists(entries, {
                     "operation": "install",
-                    "reason": "info",
-                    "initial_target": target0,
-                }))
-
-                target1 = fmri.PkgFmri(plist[1]).get_fmri(anarchy=True,
-                    include_scheme=False)
-                self.assert_(self.intent_entry_exists(entries, {
-                    "operation": "install",
-                    "reason": "info",
-                    "initial_target": target1,
+                    "new_fmri" : foo10,
+                    "reference": "foo@1.0"
                 }))
 
                 self.assert_(self.intent_entry_exists(entries, {
                     "operation": "install",
-                    "reason": "info",
-                    "initial_target": target0,
+                    "new_fmri" : foo11,
+                    "old_fmri" : foo10,
+                    "reference": "foo@1.1"
                 }))
-
-                version0 = str(fmri.PkgFmri(target0).version)
-                self.assert_(self.intent_entry_exists(entries, {
-                    "operation": "install",
-                    "reason": "info",
-                    "initial_target": target1,
-                }))
-
-                # Verify that evaluation entries are not present for uninstall.
-                # Image operations that are for evaluation only and do not
-                # require retrieving manifest information will not send any
-                # intent information for efficiency.
                 self.assert_(self.intent_entry_exists(entries, {
                     "operation": "uninstall",
-                    "reason": "evaluate",
-                    "prior_version": str(fmri.PkgFmri(plist[1]).version),
-                    "initial_target": target1,
-                }) == False)
-
-                version1 = str(fmri.PkgFmri(target1).version)
-                self.assert_(self.intent_entry_exists(entries, {
-                    "operation": "uninstall",
-                    "reason": "process",
-                    "prior_version": version1,
-                    "initial_target": target1,
+                    "old_fmri" :  foo11,
+                    "reference": "foo"
                 }))
 
         def test_3_dependencies(self):
@@ -344,32 +286,35 @@ class TestPkgIntent(testutils.SingleDepotTestCase):
                 self.__do_install(api_obj, ["bar@1.0"])
                 self.__do_uninstall(api_obj, ["bar", "foo"])
 
+
+                foo = fmri.PkgFmri(plist[0]).get_fmri(anarchy=True)
+                bar = fmri.PkgFmri(plist[1]).get_fmri(anarchy=True)
+
                 # Only testing for process; no need to re-test for evaluate.
                 entries = self.get_intent_entries()
-                target1 = fmri.PkgFmri(plist[1]).get_fmri(anarchy=True,
-                    include_scheme=False)
                 self.assert_(self.intent_entry_exists(entries, {
                     "operation": "install",
-                    "reason": "info",
-                    "initial_target": target1,
+                    "new_fmri" : bar,
+                    "reference": "bar@1.0"
                 }))
 
-                target0 = fmri.PkgFmri(plist[0]).get_fmri(anarchy=True,
-                    include_scheme=False)
                 self.assert_(self.intent_entry_exists(entries, {
                     "operation": "install",
-                    "reason": "info",
-                    "initial_target": target0,
+                    "new_fmri" : foo,
                 }))
 
         def test_4_image_upgrade(self):
                 """Verify that the correct intent information is sent during an
                 image upgrade."""
 
+                fmri_list = ["foo10", "foo11", "bar10", "foo12", "bar11"]
+                
                 plist = []
                 durl = self.dc.get_depot_url()
                 plist.extend(self.pkgsend_bulk(durl, self.foo10 + self.foo11 + \
                     self.bar10))
+
+
                 self.image_create(durl)
                 progresstracker = progress.NullProgressTracker()
 
@@ -379,6 +324,11 @@ class TestPkgIntent(testutils.SingleDepotTestCase):
 
                 plist.extend(self.pkgsend_bulk(durl, self.foo12 + self.bar11))
 
+                def print_fmri(a):
+                        return fmri.PkgFmri(a).get_fmri(anarchy=True)
+
+                fmris = dict(zip(fmri_list, [print_fmri(p) for p in plist]))
+
                 api_obj.refresh(immediate=True)
 
                 api_obj.reset()
@@ -386,154 +336,35 @@ class TestPkgIntent(testutils.SingleDepotTestCase):
                 api_obj.prepare()
                 api_obj.execute_plan()
 
-                # Only testing for process; no need to re-test for evaluate.
+                # uninstall foo & bar
+                self.__do_uninstall(api_obj, ["foo"], True)
+                                       
                 entries = self.get_intent_entries()
-                # Verify that foo10 was installed when upgrading to foo12.
-                version0 = str(fmri.PkgFmri(plist[0]).version)
-                target3 = fmri.PkgFmri(plist[3]).get_fmri(anarchy=True,
-                    include_scheme=False)
+                # Verify that foo11 was installed when upgrading to foo12.
                 self.assert_(self.intent_entry_exists(entries, {
                     "operation": "image-update",
-                    "reason": "info",
-                    "initial_target": target3,
+                    "new_fmri" : fmris["foo12"],
+                    "old_fmri" : fmris["foo11"]
                 }))
 
-                version2 = str(fmri.PkgFmri(plist[2]).version)
-                target4 = fmri.PkgFmri(plist[4]).get_fmri(anarchy=True,
-                    include_scheme=False)
                 # Verify that bar10 was installed when upgrading to bar11.
                 self.assert_(self.intent_entry_exists(entries, {
                     "operation": "image-update",
-                    "reason": "info",
-                    "initial_target": target4,
+                    "new_fmri" : fmris["bar11"],
+                    "old_fmri" : fmris["bar10"]
                 }))
-
-        def test_5_recursive_uninstall(self):
-                """Verify that a recursive uninstall sends the expected intent
-                information."""
-
-                durl = self.dc.get_depot_url()
-                plist = self.pkgsend_bulk(durl, self.foo10 + self.foo11 + self.bar10)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
-                self.__do_install(api_obj, ["bar@1.0"])
-
-                # Only testing for process; no need to re-test for evaluate.
-                self.__do_uninstall(api_obj, ["foo"], True)
-
-                entries = self.get_intent_entries()
-                # Verify that foo10 was uninstalled.
-                target0 = fmri.PkgFmri(plist[0]).get_fmri(anarchy=True,
-                    include_scheme=False)
-                version0 = str(fmri.PkgFmri(target0).version)
+                # Verify that bar was uninstalled along w/ foo
                 self.assert_(self.intent_entry_exists(entries, {
                     "operation": "uninstall",
-                    "reason": "process",
-                    "initial_target": target0,
-                    "prior_version": version0,
+                    "old_fmri" : fmris["bar11"]
                 }))
 
-                # Verify that bar10 was uninstalled because of foo10.
-                target2 = fmri.PkgFmri(plist[2]).get_fmri(anarchy=True,
-                    include_scheme=False)
-                version2 = str(fmri.PkgFmri(target2).version)
+                # Verify that bar was uninstalled along w/ foo
                 self.assert_(self.intent_entry_exists(entries, {
                     "operation": "uninstall",
-                    "needed_by": target0,
-                    "reason": "process",
-                    "initial_target": target0,
-                    "target": target2,
-                    "prior_version": version2,
+                    "old_fmri" : fmris["foo12"],
+                    "reference": "foo"
                 }))
-
-        def test_6_deep_dependencies(self):
-                """Verify that an install or uninstall of a package with a
-                dependency chain sends the expected intent information."""
-
-                durl = self.dc.get_depot_url()
-                plist = self.pkgsend_bulk(durl, self.foo10 + self.bar10 + \
-                    self.baz10)
-                self.image_create(durl)
-                progresstracker = progress.NullProgressTracker()
-
-                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
-                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
-                self.__do_install(api_obj, ["baz"])
-                self.__do_uninstall(api_obj, ["foo"], True)
-
-                # Only testing for process; no need to re-test for evaluate.
-                entries = self.get_intent_entries()
-
-                #
-                # Verify the install entries.
-                #
-
-                # Verify baz is logged.
-                target2 = fmri.PkgFmri(plist[2]).get_fmri(anarchy=True,
-                    include_scheme=False)
-                self.assert_(self.intent_entry_exists(entries, {
-                    "operation": "install",
-                    "reason": "info",
-                    "initial_target": target2,
-                }))
-
-                # Verify bar is logged.
-                target1 = fmri.PkgFmri(plist[1]).get_fmri(anarchy=True,
-                    include_scheme=False)
-                self.assert_(self.intent_entry_exists(entries, {
-                    "operation": "install",
-                    "reason": "info",
-                    "initial_target": target1,
-                }))
-
-                # Verify foo is logged.
-                target0 = fmri.PkgFmri(plist[0]).get_fmri(anarchy=True,
-                    include_scheme=False)
-                self.assert_(self.intent_entry_exists(entries, {
-                    "operation": "install",
-                    "reason": "info",
-                    "initial_target": target0,
-                }))
-
-                #
-                # Verify the uninstall entries.
-                #
-
-                # Verify foo is the initial target.
-                version0 = str(fmri.PkgFmri(target0).version)
-                self.assert_(self.intent_entry_exists(entries, {
-                    "operation": "uninstall",
-                    "reason": "process",
-                    "initial_target": target0,
-                    "prior_version": version0,
-                }))
-
-                # Verify foo is the initial target, bar is needed_by foo, and
-                # foo is the target.
-                version1 = str(fmri.PkgFmri(target1).version)
-                self.assert_(self.intent_entry_exists(entries, {
-                    "operation": "uninstall",
-                    "needed_by": target0,
-                    "reason": "process",
-                    "initial_target": target0,
-                    "target": target1,
-                    "prior_version": version1,
-                }))
-
-                # Verify foo is the initial target, baz is needed_by bar, and
-                # baz is the target.
-                version2 = str(fmri.PkgFmri(target2).version)
-                self.assert_(self.intent_entry_exists(entries, {
-                    "operation": "uninstall",
-                    "needed_by": target1,
-                    "reason": "process",
-                    "initial_target": target0,
-                    "target": target2,
-                    "prior_version": version2,
-                }))
-
 
 if __name__ == "__main__":
         unittest.main()

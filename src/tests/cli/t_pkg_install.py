@@ -1,4 +1,4 @@
-#!/usr/bin/python2.4
+#!/usr/bin/python
 #
 # CDDL HEADER START
 #
@@ -63,6 +63,14 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
 
         afoo10 = """
             open a/foo@1.0,5.11-0
+            close """
+
+        boring10 = """
+            open boring@1.0,5.11-0
+            close """
+
+        boring11 = """
+            open boring@1.1,5.11-0
             close """
 
         bar10 = """
@@ -133,6 +141,17 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
             add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
 
+        a6018_1 = """
+            open a6018@1.0,5.11-0
+            close """
+        a6018_2 = """
+            open a6018@2.0,5.11-0
+            close """
+        b6018_1 = """
+            open b6018@1.0,5.11-0
+            add depend type=optional fmri=a6018@1
+            close """
+
         misc_files = [ "/tmp/libc.so.1", "/tmp/cat", "/tmp/baz" ]
 
         def setUp(self):
@@ -201,8 +220,8 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
 
                 self.pkg("search -l /lib/libc.so.1")
                 self.pkg("search -r /lib/libc.so.1")
-                self.pkg("search -l blah", exit = 1)
-                self.pkg("search -r blah", exit = 1)
+                self.pkg("search -l blah", exit=1)
+                self.pkg("search -r blah", exit=1)
 
                 # check to make sure timestamp was set to correct value
 
@@ -232,11 +251,11 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
 
                 self.pkg("install foo@1.0")
                 self.pkg("list foo@1.0")
-                self.pkg("list foo@1.1", exit = 1)
+                self.pkg("list foo@1.1", exit=1)
 
                 self.pkg("install foo@1.1")
                 self.pkg("list foo@1.1")
-                self.pkg("list foo@1.0", exit = 1)
+                self.pkg("list foo@1.0", exit=1)
                 self.pkg("list foo@1")
                 self.pkg("verify")
 
@@ -260,9 +279,39 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
                 self.pkg("uninstall -v bar foo")
 
                 # foo and bar should not be installed at this point
-                self.pkg("list bar", exit = 1)
-                self.pkg("list foo", exit = 1)
+                self.pkg("list bar", exit=1)
+                self.pkg("list foo", exit=1)
                 self.pkg("verify")
+
+        def test_basics_5(self):
+                """ Add bar@1.1, install bar@1.0. """
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.xbar11)
+                self.image_create(durl)
+                self.pkg("install xbar@1.0", exit=1)
+
+        def test_basics_6(self):
+                """ Install bar@1.0, upgrade to bar@1.1.
+                Boring should be left alone, while
+                foo gets upgraded as needed"""
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.bar10)
+                self.pkgsend_bulk(durl, self.bar11)
+                self.pkgsend_bulk(durl, self.foo10)
+                self.pkgsend_bulk(durl, self.foo11)
+                self.pkgsend_bulk(durl, self.foo12)
+                self.pkgsend_bulk(durl, self.boring10)
+                self.pkgsend_bulk(durl, self.boring11)
+
+                self.image_create(durl)
+
+                self.pkg("install foo@1.0 bar@1.0 boring@1.0")
+                self.pkg("list")
+                self.pkg("list foo@1.0 boring@1.0 bar@1.0")
+                self.pkg("install -v bar@1.1") # upgrade bar
+                self.pkg("list")
+                self.pkg("list bar@1.1 foo@1.2 boring@1.0")
 
         def test_image_upgrade(self):
                 """ Send package bar@1.1, dependent on foo@1.2.  Install bar@1.0.
@@ -311,8 +360,8 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
                 # bar depends on foo.  foo and bar should both
                 # be removed by this action.
                 self.pkg("uninstall -vr foo")
-                self.pkg("list bar", exit = 1)
-                self.pkg("list foo", exit = 1)
+                self.pkg("list bar", exit=1)
+                self.pkg("list foo", exit=1)
 
         def test_nonrecursive_dependent_uninstall(self):
                 """Trying to remove a package that's a dependency of another
@@ -325,27 +374,20 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
 
                 self.pkg("install bar@1.0")
 
-                self.pkg("uninstall -v foo", exit = 1)
+                self.pkg("uninstall -v foo", exit=1)
                 self.pkg("list bar")
                 self.pkg("list foo")
 
-        def test_basics_5(self):
-                """ Add bar@1.1, install bar@1.0. """
-
-                durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.xbar11)
-                self.image_create(durl)
-
-                self.pkg("install xbar@1.0", exit = 1)
-
+        
         def test_bug_1338(self):
                 """ Add bar@1.1, dependent on foo@1.2, install bar@1.1. """
 
                 durl = self.dc.get_depot_url()
+                self.pkg("list -a")
                 self.pkgsend_bulk(durl, self.bar11)
                 self.image_create(durl)
 
-                self.pkg("install bar@1.1", exit = 1)
+                self.pkg("install xbar@1.1", exit=1)
 
         def test_bug_1338_2(self):
                 """ Add bar@1.1, dependent on foo@1.2, and baz@1.0, dependent
@@ -355,8 +397,8 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
                 self.pkgsend_bulk(durl, self.bar11)
                 self.pkgsend_bulk(durl, self.baz10)
                 self.image_create(durl)
-
-                self.pkg("install baz@1.0 bar@1.1", exit = 1)
+                self.pkg("list -a")
+                self.pkg("install baz@1.0 bar@1.1")
 
         def test_bug_1338_3(self):
                 """ Add xdeep@1.0, xbar@1.0. xDeep@1.0 depends on xbar@1.0 which
@@ -367,7 +409,7 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
                 self.pkgsend_bulk(durl, self.xdeep10)
                 self.image_create(durl)
 
-                self.pkg("install xdeep@1.0", exit = 1)
+                self.pkg("install xdeep@1.0", exit=1)
 
         def test_bug_1338_4(self):
                 """ Add ydeep@1.0. yDeep@1.0 depends on ybar@1.0 which depends
@@ -377,7 +419,7 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
                 self.pkgsend_bulk(durl, self.ydeep10)
                 self.image_create(durl)
 
-                self.pkg("install ydeep@1.0", exit = 1)
+                self.pkg("install ydeep@1.0", exit=1)
 
         def test_bug_2795(self):
                 """ Try to install two versions of the same package """
@@ -387,14 +429,34 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
                 self.pkgsend_bulk(durl, self.foo12)
                 self.image_create(durl)
 
-                self.pkg("install foo@1.1 foo@1.2")
-                self.pkg("list foo@1.1", exit = 1)
-                self.pkg("list foo@1.2")
-                self.pkg("uninstall foo")
+                self.pkg("install foo@1.1 foo@1.2", exit=1)
 
-                self.pkg("install foo@1.2 foo@1.1")
-                self.pkg("list foo@1.1", exit = 1)
-                self.pkg("list foo@1.2")
+        def test_bug_6018(self):
+                """  From original comment in bug report:
+
+                Consider a repository that contains:
+
+                a@1 and a@2
+
+                b@1 that contains an optional dependency on package a@1
+
+                If a@1 and b@1 are installed in an image, the "pkg image-update" command
+                produces the following output:
+
+                $ pkg image-update
+                No updates available for this image.
+
+                However, "pkg install a@2" works. 
+                """
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.a6018_1)
+                self.pkgsend_bulk(durl, self.a6018_2)                
+                self.pkgsend_bulk(durl, self.b6018_1)                
+                self.image_create(durl)
+                self.pkg("install b6018@1 a6018@1")
+                self.pkg("image-update")
+                self.pkg("list b6018@1 a6018@2")
 
 
         def test_install_matching(self):
@@ -405,16 +467,18 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
                 self.pkgsend_bulk(durl, self.bar10)
                 self.pkgsend_bulk(durl, self.baz10)
                 self.image_create(durl)
-
-                self.pkg("install 'ba*'")
-                self.pkg("list foo@1.0", exit=0)
-                self.pkg("list bar@1.0", exit=0)
-                self.pkg("list baz@1.0", exit=0)
-
-                self.pkg("uninstall 'ba*'")
-                self.pkg("list foo@1.0", exit=0)
-                self.pkg("list bar@1.0", exit=1)
-                self.pkg("list baz@1.0", exit=1)
+                # don't specify versions here; we have many
+                # different versions of foo, bar & baz in repo
+                # when entire class is run w/ one repo instance.
+                
+                # first case should fail since multiple patterns
+                # match the same pacakge
+                self.pkg("install 'ba*' 'b*'", exit=1)
+                self.pkg("install 'ba*'", exit=0)
+                self.pkg("list foo", exit=0)
+                self.pkg("list bar", exit=0)
+                self.pkg("list baz", exit=0)
+                self.pkg("uninstall 'b*' 'f*'")
 
         def test_bug_3770(self):
                 """ Try to install two versions of the same package """
@@ -490,34 +554,15 @@ class TestPkgInstallAmbiguousPatterns(testutils.SingleDepotTestCase):
                 "multiple_matches" populated (on uninstall)."""
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.afoo10)
+                self.pkgsend_bulk(durl, self.bfoo10)
                 self.pkgsend_bulk(durl, self.bar10)
                 self.image_create(durl)
 
-                self.pkg("install foo")
-                foo_dir = os.path.join(self.img_path, "var", "pkg", "pkg", "a%2Ffoo")
-                old_ver = os.listdir(foo_dir)[0]
-                new_ver = old_ver[:-2]+ str((int(old_ver[-2]) + 1) % 10) + \
-                    old_ver[-1]
-                shutil.copytree(os.path.join(foo_dir, old_ver),
-                    os.path.join(foo_dir, new_ver))
-
-                # Load the 'installed' catalog and add an entry for the
-                # new package version.
-                istate_dir = os.path.join(self.img_path, "var", "pkg", "state",
-                    "installed")
-                cat = catalog.Catalog(meta_root=istate_dir)
-
-                # Value of PKG_STATE_INSTALLED in image.py is 2.
-                mdata = { "states": [2] }
-                cat.add_package(
-                    fmri.PkgFmri("a/foo@%s" % urllib.unquote(new_ver),
-                        publisher="test"), metadata=mdata)
-                cat.save()
-
-                known_dir = os.path.join(self.img_path, "var", "pkg", "state",
-                    "known")
-                shutil.rmtree(known_dir)
+                self.pkg("install foo", exit=1)
+                self.pkg("install a/foo b/foo", exit=0)
+                self.pkg("list")                
                 self.pkg("uninstall foo", exit=1)
+                self.pkg("uninstall a/foo b/foo", exit=0)
 
         def test_bug_6874(self):
                 """Don't stack trace when printing a PlanCreationException with
@@ -541,7 +586,7 @@ class TestPkgInstallAmbiguousPatterns(testutils.SingleDepotTestCase):
 
                 self.pkgsend_bulk(durl, self.anotherfoo11)
                 self.pkg("refresh")
-                self.pkg("image-update -v")
+                self.pkg("image-update -v", exit=4)
 
         def test_ambiguous_pattern_depend(self):
                 """A dependency on a package should pull in an exact name
@@ -562,9 +607,6 @@ class TestPkgInstallAmbiguousPatterns(testutils.SingleDepotTestCase):
                 self.pkg("install depender")
 
                 # Make sure that we didn't get other/foo from the dependency.
-                # Note that because inventory() sorts by package name and
-                # evaluate_fmri() only looks at the first value, this package
-                # name must sort before "foo" in order to cause a faillure here.
                 self.pkg("list another/foo", exit=1)
 
         def test_non_ambiguous_fragment(self):
@@ -964,12 +1006,11 @@ foobar 2
                 """Make sure we don't round up packages we specify on
                 install"""
                 durl = self.dc.get_depot_url()
-
+                first_bronze = self.pkgsend_bulk(durl, self.bronze20)
                 self.pkgsend_bulk(durl, self.incorp20)
                 self.pkgsend_bulk(durl, self.amber10)
                 self.pkgsend_bulk(durl, self.bronze10)
                 self.pkgsend_bulk(durl, self.amber20)
-                first_bronze = self.pkgsend_bulk(durl, self.bronze20)
                 self.pkgsend_bulk(durl, self.bronze20)
 
                 # create image 
@@ -1082,10 +1123,8 @@ foobar 2
 
                 # upgrade pkg that loses incorp. deps. in new version
                 self.pkg("install incorp@2.0")
-                # FIX ME; bronze doesn't get updated because it was part
-                # of previous incorporation
                 self.pkg("image-update")
-                self.pkg("list bronze@3.0", exit=1)
+                self.pkg("list bronze@3.0")
 
         def test_upgrade3(self):
                 """ test for editable files moving between packages or locations or both"""
@@ -1188,11 +1227,11 @@ foobar 2
 
                 self.pkg("--debug simulate_live_root=True install liveroot@1.0")
                 self.pkg("verify -v")
-                self.pkg("--debug simulate_live_root=True install liveroot@2.0", exit=1)
-                self.pkg("--debug simulate_live_root=True uninstall liveroot", exit=1)
+                self.pkg("--debug simulate_live_root=True install liveroot@2.0", exit=5)
+                self.pkg("--debug simulate_live_root=True uninstall liveroot", exit=5)
                 # "break" liveroot@1
                 self.file_append("etc/liveroot", "this file has been changed")
-                self.pkg("--debug simulate_live_root=True fix liveroot", exit=1)
+                self.pkg("--debug simulate_live_root=True fix liveroot", exit=5)
 
         def test_upgrade_driver_conflicts(self):
                 """Test to make sure driver_aliases conflicts don't cause
@@ -1582,6 +1621,7 @@ adm:NP:6445::::::
                 self.pkg("contents -m usertest")
 
                 self.pkgsend_bulk(durl, self.usertest11)
+                self.pkg("refresh")
                 self.pkg("install usertest")
                 self.pkg("verify")
                 self.pkg("contents -m usertest")
@@ -1832,29 +1872,29 @@ adm:NP:6445::::::
 
                 name_pat = re.compile("^\s+open\s+(\S+)\@.*$")
 
-                def __manually_check_deps(name, install=True):
+                def __manually_check_deps(name, install=True, exit=0):
                         cmd = "install --no-refresh"
                         if not install:
                                 cmd = "uninstall"
                         if name == "only_depend" and not install:
-                                self.pkg("uninstall foo")
+                                self.pkg("uninstall foo", exit=exit)
                         elif name == "only_driver":
-                                self.pkg("%s devicebase" % cmd)
+                                self.pkg("%s devicebase" % cmd, exit=exit)
                         elif name == "only_group":
-                                self.pkg("%s basics" % cmd)
+                                self.pkg("%s basics" % cmd, exit=exit)
                         elif name == "only_hardlink":
-                                self.pkg("%s only_file" % cmd)
+                                self.pkg("%s only_file" % cmd, exit=exit)
                         elif name == "only_user":
                                 if install:
-                                        self.pkg("%s basics" % cmd)
-                                        self.pkg("%s only_group" % cmd)
+                                        self.pkg("%s basics" % cmd, exit=exit)
+                                        self.pkg("%s only_group" % cmd, exit=exit)
                                 else:
-                                        self.pkg("%s only_group" % cmd)
-                                        self.pkg("%s basics" % cmd)
+                                        self.pkg("%s only_group" % cmd, exit=exit)
+                                        self.pkg("%s basics" % cmd, exit=exit)
                 for p in pkg_list:
                         name_mat = name_pat.match(p.splitlines()[1])
                         pname = name_mat.group(1)
-                        __manually_check_deps(pname)
+                        __manually_check_deps(pname, exit=[0,4])
                         self.pkg("install --no-refresh %s" % pname,
                             su_wrap=True, exit=1)
                         self.pkg("install %s" % pname, su_wrap=True,
@@ -1868,7 +1908,7 @@ adm:NP:6445::::::
                 for p in pkg_list:
                         name_mat = name_pat.match(p.splitlines()[1])
                         pname = name_mat.group(1)
-                        __manually_check_deps(pname)
+                        __manually_check_deps(pname, exit=[0,4])
                         self.pkg("install --no-refresh %s" % pname)
 
                 for p in pkg_list:
@@ -1876,7 +1916,7 @@ adm:NP:6445::::::
                 self.pkgsend_bulk(durl, self.devicebase + self.basics0 + \
                     self.basics1)
 
-                self.pkg("image-update --no-refresh", su_wrap=True)
+                self.pkg("image-update --no-refresh", su_wrap=True, exit=4)
                 self.pkg("refresh")
                 self.pkg("image-update", su_wrap=True, exit=1)
                 # Should fail since user doesn't have permission to refresh
@@ -1975,6 +2015,133 @@ class TestDependencies(testutils.SingleDepotTestCase):
             close
         """
 
+        pkg30 = """
+            open pkg3@1.0,5.11-0
+            add depend type=require fmri=pkg:/pkg1@1.1
+            close
+        """
+
+        pkg40 = """
+            open pkg4@1.0,5.11-0
+            add depend type=exclude fmri=pkg:/pkg1@1.1
+            close
+        """
+
+        pkg50 = """
+            open pkg5@1.0,5.11-0
+            add depend type=exclude fmri=pkg:/pkg1@1.1
+            add depend type=require fmri=pkg:/pkg1@1.0
+            close
+        """
+ 
+        pkg505 = """
+            open pkg5@1.0.5,5.11-0
+            add depend type=exclude fmri=pkg:/pkg1@1.1
+            add depend type=require fmri=pkg:/pkg1@1.0
+            close
+        """
+        pkg51 = """
+            open pkg5@1.1,5.11-0
+            add depend type=exclude fmri=pkg:/pkg1@1.1
+            add depend type=exclude fmri=pkg:/pkg2
+            add depend type=require fmri=pkg:/pkg1@1.0
+            close
+        """
+        pkg60 = """
+            open pkg6@1.0,5.11-0
+            add depend type=exclude fmri=pkg:/pkg1@1.1
+            close
+        """
+
+        pkg61 = """
+            open pkg6@1.1,5.11-0
+            close
+        """
+
+        leaf_template = """
+            open pkg%s%s@%s,5.11-0
+            add depend type=require fmri=pkg:/%s_incorp
+            close
+        """
+        leaf_expansion = [
+                ("A","_0", "1.0", "A"),
+                ("A","_1", "1.0", "A"),
+                ("A","_2", "1.0", "A"),
+                ("A","_3", "1.0", "A"),
+
+                ("B","_0", "1.0", "B"),
+                ("B","_1", "1.0", "B"),
+                ("B","_2", "1.0", "B"),
+                ("B","_3", "1.0", "B"),
+
+                ("A","_0", "1.1", "A"),
+                ("A","_1", "1.1", "A"),
+                ("A","_2", "1.1", "A"),
+                ("A","_3", "1.1", "A"),
+
+                ("B","_0", "1.1", "B"),
+                ("B","_1", "1.1", "B"),
+                ("B","_2", "1.1", "B"),
+                ("B","_3", "1.1", "B")
+                ]
+
+        incorps = [ """
+            open A_incorp@1.0,5.11-0
+            add depend type=incorporate fmri=pkg:/pkgA_0@1.0
+            add depend type=incorporate fmri=pkg:/pkgA_1@1.0
+            add depend type=incorporate fmri=pkg:/pkgA_2@1.0
+            add depend type=incorporate fmri=pkg:/pkgA_3@1.0
+            close
+        """, 
+
+        """
+            open B_incorp@1.0,5.11-0
+            add depend type=incorporate fmri=pkg:/pkgB_0@1.0
+            add depend type=incorporate fmri=pkg:/pkgB_1@1.0
+            add depend type=incorporate fmri=pkg:/pkgB_2@1.0
+            add depend type=incorporate fmri=pkg:/pkgB_3@1.0
+            close
+        """, 
+
+        """
+            open A_incorp@1.1,5.11-0
+            add depend type=incorporate fmri=pkg:/pkgA_0@1.1
+            add depend type=incorporate fmri=pkg:/pkgA_1@1.1
+            add depend type=incorporate fmri=pkg:/pkgA_2@1.1
+            add depend type=incorporate fmri=pkg:/pkgA_3@1.1
+            close
+        """, 
+
+        """
+            open B_incorp@1.1,5.11-0
+            add depend type=incorporate fmri=pkg:/pkgB_0@1.1
+            add depend type=incorporate fmri=pkg:/pkgB_1@1.1
+            add depend type=incorporate fmri=pkg:/pkgB_2@1.1
+            add depend type=incorporate fmri=pkg:/pkgB_3@1.1
+            close
+        """, 
+
+        """
+            open incorp@1.0,5.11-0
+            add depend type=incorporate fmri=pkg:/A_incorp@1.0
+            add depend type=incorporate fmri=pkg:/B_incorp@1.0
+            close
+        """,
+
+        """
+            open incorp@1.1,5.11-0
+            add depend type=incorporate fmri=pkg:/A_incorp@1.1
+            add depend type=incorporate fmri=pkg:/B_incorp@1.1
+            close
+        """]
+                    
+        bug_7394_incorp = """
+            open bug_7394_incorp@1.0,5.11-0
+            add depend type=incorporate fmri=pkg:/pkg1@2.0
+            close
+        """
+
+
         def setUp(self):
                 testutils.SingleDepotTestCase.setUp(self)
                 durl = self.dc.get_depot_url()
@@ -1982,11 +2149,73 @@ class TestDependencies(testutils.SingleDepotTestCase):
                 self.pkgsend_bulk(durl, self.pkg20)
                 self.pkgsend_bulk(durl, self.pkg11)
                 self.pkgsend_bulk(durl, self.pkg21)
+                self.pkgsend_bulk(durl, self.pkg30)
+                self.pkgsend_bulk(durl, self.pkg40)
+                self.pkgsend_bulk(durl, self.pkg50)
+                self.pkgsend_bulk(durl, self.pkg505)
+                self.pkgsend_bulk(durl, self.pkg51)
+                self.pkgsend_bulk(durl, self.pkg60)
+                self.pkgsend_bulk(durl, self.pkg61)
+                self.pkgsend_bulk(durl, self.bug_7394_incorp)
+
+                for t in self.leaf_expansion:
+                        self.pkgsend_bulk(durl, self.leaf_template % t)
+
+                for i in self.incorps:
+                        self.pkgsend_bulk(durl, i)
+
+        def test_require_dependencies(self):
+                """ exercise require dependencies"""
+                durl = self.dc.get_depot_url()
+                self.image_create(durl)
+                self.pkg("install pkg1@1.0")
+                self.pkg("verify  pkg1@1.0")
+                self.pkg("install pkg3@1.0")
+                self.pkg("verify  pkg3@1.0 pkg1@1.1")
+
+        def test_exclude_dependencies(self):
+                """ exercise exclude dependencies """
+                durl = self.dc.get_depot_url()
+                self.image_create(durl)
+                # install pkg w/ exclude dep.
+                self.pkg("install pkg4@1.0")
+                self.pkg("verify  pkg4@1.0")
+                # install pkg that is allowed by dep
+                self.pkg("install pkg1@1.0")
+                self.pkg("verify  pkg1@1.0")
+                # try to install disallowed pkg
+                self.pkg("install pkg1@1.1", exit=1)
+                self.pkg("uninstall '*'")
+                # install pkg 
+                self.pkg("install pkg1@1.1")
+                # try to install pkg exclude dep on already
+                # installed pkg
+                self.pkg("install pkg4@1.0", exit=1)
+                self.pkg("uninstall '*'")
+                # install a package w/ both exclude
+                # and require dependencies
+                self.pkg("install pkg5")
+                self.pkg("verify pkg5@1.1 pkg1@1.0 ")
+                self.pkg("uninstall '*'")
+                # pick pkg to install that fits constraint
+                # of already installed pkg
+                self.pkg("install pkg2")
+                self.pkg("install pkg5")
+                self.pkg("verify pkg5@1.0.5 pkg1@1.0 pkg2")
+                self.pkg("uninstall '*'")
+                # install a package that requires updating
+                # existing package to avoid exclude 
+                # dependency
+                self.pkg("install pkg6@1.0")
+                self.pkg("install pkg1@1.1")
+                self.pkg("verify pkg1@1.1 pkg6@1.1")
+                self.pkg("uninstall '*'")
+                # try to install two incompatible pkgs
+                self.pkg("install pkg1@1.1 pkg4@1.0", exit=1)
 
         def test_optional_dependencies(self):
                 """ check to make sure that optional dependencies are enforced
                 """
-
                 durl = self.dc.get_depot_url()
                 self.image_create(durl)
                 self.pkg("install pkg1@1.0")
@@ -2007,17 +2236,34 @@ class TestDependencies(testutils.SingleDepotTestCase):
                 self.pkg("list pkg1@1.1")
                 self.pkg("install pkg2@1.0", exit=1)
 
-        def test_require_optional(self):
-                """ check that the require optional policy is working
-                """
-
+        def test_incorporation_dependencies(self):
+                """ shake out incorporation dependencies """
                 durl = self.dc.get_depot_url()
                 self.image_create(durl)
-                self.pkg("set-property require-optional true")
-                self.pkg("install pkg1")
-                # the optional dependency should be installed because of the
-                # policy setting
-                self.pkg("list pkg2@1.1")
+                self.pkg("list -a") # help w/ debugging
+
+                # simple pkg requiring controlling incorp
+                # should control pkgA_1 as well
+                self.pkg("install -v pkgA_0@1.0 pkgA_1")
+                self.pkg("list")
+                self.pkg("verify pkgA_0@1.0 pkgA_1@1.0 A_incorp@1.0")
+                self.pkg("image-update -v")
+                self.pkg("list pkgA_0@1.1 pkgA_1@1.1 A_incorp@1.1")
+                self.pkg("uninstall '*'")
+                # try nested incorporations
+                self.pkg("install -v incorp@1.0 pkgA_0 pkgB_0")
+                self.pkg("list")
+                self.pkg("list incorp@1.0 pkgA_0@1.0 pkgB_0@1.0 A_incorp@1.0 B_incorp@1.0")
+                # try to break incorporation
+                self.pkg("install -v A_incorp@1.1", exit=1) # fixed by incorp@1.0
+                # try image update
+                self.pkg("image-update -v")
+                self.pkg("list incorp@1.1 pkgA_0@1.1 pkgB_0@1.1 A_incorp@1.1 B_incorp@1.1")
+                self.pkg("uninstall '*'")
+                # what happens when incorporation specified
+                # a package that isn't in the catalog
+                self.pkg("install bug_7394_incorp")
+                self.pkg("install pkg1", exit=1)
 
 class TestMultipleDepots(testutils.ManyDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -2166,44 +2412,49 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
 
         def test_04_upgrade_preferred_to_non_preferred(self):
                 """Install a package from the preferred publisher, and then
-                upgrade it, implicitly switching to a non-preferred
-                publisher."""
+                upgrade it, failing to implicitly switching to a non-preferred
+                publisher and then managing it explicitly"""
                 self.pkg("list -a upgrade-p")
                 self.pkg("install upgrade-p@1.0")
-                self.pkg("install upgrade-p@1.1")
+                self.pkg("install upgrade-p@1.1", exit=1)
+                self.pkg("install pkg://test2/upgrade-p@1.1")
                 self.pkg("uninstall upgrade-p")
 
         def test_05_upgrade_non_preferred_to_preferred(self):
                 """Install a package from a non-preferred publisher, and then
-                upgrade it, implicitly switching to the preferred publisher."""
+                try to upgrade it, failing to implicitly switchto the preferred 
+                publisher and then succeed doing it explicitly."""
                 self.pkg("list -a upgrade-np")
                 self.pkg("install upgrade-np@1.0")
-                self.pkg("install upgrade-np@1.1")
+                self.pkg("install upgrade-np@1.1", exit=1)
+                self.pkg("install pkg://test1/upgrade-np@1.1")
                 self.pkg("uninstall upgrade-np")
 
         def test_06_upgrade_preferred_to_non_preferred_incorporated(self):
                 """Install a package from the preferred publisher, and then
-                upgrade it, implicitly switching to a non-preferred
+                upgrade it, failing to implicitly switching to a non-preferred
                 publisher, when the package is constrained by an
-                incorporation."""
+                incorporation, and then succeed when doing so explicitly"""
+
                 self.pkg("list -a upgrade-p incorp-p")
                 self.pkg("install incorp-p@1.0")
                 self.pkg("install upgrade-p")
-                self.pkg("install incorp-p@1.1")
+                self.pkg("install incorp-p@1.1", exit=1)
+                self.pkg("install incorp-p@1.1 pkg://test2/upgrade-p@1.1")
                 self.pkg("list upgrade-p@1.1")
-                self.pkg("uninstall upgrade-p")
+                self.pkg("uninstall '*'")
+
 
         def test_07_upgrade_non_preferred_to_preferred_incorporated(self):
                 """Install a package from the preferred publisher, and then
                 upgrade it, implicitly switching to a non-preferred
                 publisher, when the package is constrained by an
                 incorporation."""
+                self.pkg("list", exit=1)
                 self.pkg("list -a upgrade-np incorp-np")
                 self.pkg("install incorp-np@1.0")
-                self.pkg("install upgrade-np")
-                self.pkg("install incorp-np@1.1")
-                self.pkg("list upgrade-np@1.1")
-                self.pkg("uninstall upgrade-np incorp-np incorp-p")
+                self.pkg("install upgrade-np", exit=1)
+                self.pkg("uninstall '*'")
 
         def test_08_install_repository_access(self):
                 """Verify that packages can still be installed from a repository
@@ -2263,14 +2514,15 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
                 self.pkg("install quux@1.0")
                 self.pkg("set-publisher -P test2")
                 self.pkg("unset-publisher test1")
+                self.pkg("list")
 
                 # Attempting to install an already installed package should
                 # be a no-op even if the corresponding publisher no longer
                 # exists.
-                self.pkg("install quux@1.0")
+                self.pkg("install quux@1.0", exit=4)
 
                 # Image update should work if we don't see the optional dependency
-                self.pkg("image-update")
+                self.pkg("image-update", exit=4)
 
                 # Add back the installed package's publisher, but using a
                 # a repository with an empty catalog.  After that, attempt to
@@ -2278,7 +2530,7 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
                 # the fmri is no longer in the publisher's catalog.
                 self.pkg("set-publisher -O %s test1" % \
                     self.dcs[3].get_depot_url())
-                self.pkg("install quux@1.0")
+                self.pkg("install quux@1.0", exit=4)
                 self.pkg("info quux@1.0")
                 self.pkg("unset-publisher test1")
 
@@ -2293,7 +2545,7 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
                     self.dcs[1].get_depot_url())
                 self.pkg("set-publisher -O %s test1" % \
                     self.dcs[3].get_depot_url())
-                self.pkg("install quux@1.0")
+                self.pkg("install quux@1.0", exit=4)
                 self.pkg("unset-publisher test1")
                 self.pkg("unset-publisher test3")
 
@@ -2303,7 +2555,7 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
                 # different publisher's catalog.
                 self.pkg("set-publisher -O %s test3" % \
                     self.dcs[1].get_depot_url())
-                self.pkg("install quux@1.0")
+                self.pkg("install quux@1.0", exit=4)
                 self.pkg("unset-publisher test3")
 
                 # Change the image metadata back to where it was, in preparation
@@ -2385,10 +2637,15 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
                 self.pkg("set-publisher -P -O %s test3" % \
                     self.dcs[3].get_depot_url())
 
+                # make sure we look here first; tests rely on that
+                self.pkg("set-publisher --search-before=test2 test1")
+                self.pkg("publisher")
                 # First, verify that installing a package from a non-preferred
                 # publisher will cause its dependencies to be installed from the
                 # same publisher if the preferred publisher does not offer them.
+                self.pkg("list -a")
                 self.pkg("install pkg://test1/baz")
+                self.pkg("list")
                 self.pkg("info baz | grep test1")
                 self.pkg("info corge | grep test1")
                 self.pkg("uninstall -r corge")
@@ -2406,7 +2663,77 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
                 self.pkg("set-publisher -P test1")
                 self.pkg("unset-publisher test3")
 
+        def test_14_nonsticky_publisher(self):
+                """Test various aspects of the stick/non-sticky
+                behavior of publishers"""
 
+                # For ease of debugging
+                self.pkg("list -a")
+                # install from non-preferred repo explicitly
+                self.pkg("install pkg://test2/upgrade-np@1.0")
+                # Demonstrate that perferred publisher is not
+                # acceptable, since test2 is sticky by default
+                self.pkg("install upgrade-np@1.1", exit=1) # not right repo
+                # Check that we can proceed once test2 is not sticky
+                self.pkg("set-publisher --non-sticky test2")
+                self.pkg("install upgrade-np@1.1") # should work now
+                # Restore to pristine
+                self.pkg("set-publisher --sticky test2")
+                self.pkg("uninstall upgrade-np")
+                # Repeat the test w/ preferred
+                self.pkg("install upgrade-p")
+                self.pkg("set-publisher -P test2")
+                self.pkg("install upgrade-p@1.1", exit=1) #orig pub is sticky
+                self.pkg("set-publisher --non-sticky test1")  #not anymore
+                self.pkg("install upgrade-p@1.1")
+                self.pkg("set-publisher -P --sticky test1") # restore
+                self.pkg("uninstall '*'")
+                # Check  that search order can be overridden w/ explicit
+                # version specification...
+                self.pkg("install upgrade-p")
+                self.pkg("install upgrade-p@1.1", exit=1)
+                self.pkg("set-publisher --non-sticky test1") 
+                self.pkg("install upgrade-p@1.1") # find match later on 
+                self.pkg("set-publisher --sticky test1")
+                self.pkg("uninstall '*'")                
+
+        def test_15_nonsticky_update(self):
+                """Test to make sure image-update follows the same
+                publisher selection mechanisms as pkg install"""
+
+                # try image-update
+                self.pkg("install pkg://test2/upgrade-np@1.0")
+                self.pkg("image-update", exit=4) 
+                self.pkg("list upgrade-np@1.0")
+                self.pkg("set-publisher --non-sticky test2") 
+                self.pkg("publisher")
+                self.pkg("list -a upgrade-np")
+                self.pkg("image-update") 
+                self.pkg("list upgrade-np@1.1")
+                self.pkg("set-publisher --sticky test2")  
+                self.pkg("uninstall '*'")                
+
+        def test_16_disabled_nonsticky(self):
+                """Test to make sure disabled publishers are 
+                automatically made non-sticky, and after 
+                being enabled keep their previous value
+                of stickiness"""
+
+                # For ease of debugging
+                self.pkg("list -a")
+                # install from non-preferred repo explicitly
+                self.pkg("install pkg://test2/upgrade-np@1.0")
+                # Demonstrate that perferred publisher is not
+                # acceptable, since test2 is sticky by default
+                self.pkg("install upgrade-np@1.1", exit=1) # not right repo
+                # Disable test2 and then we should be able to proceed
+                self.pkg("set-publisher --disable test2")
+                self.pkg("install upgrade-np@1.1")
+                self.pkg("publisher")
+                self.pkg("set-publisher --enable test2")
+                self.pkg("publisher")
+                self.pkg("publisher | egrep sticky", exit=1 )
+                
 class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
         """
         If a new essential directory is added to the format of an image it will
@@ -2820,9 +3147,13 @@ class TestPkgInstallObsolete(testutils.SingleDepotTestCase):
                     close
                 """
 
-                fred = """
+                fred1 = """
                     open fred@1
                     add depend type=require fmri=foo
+                    close
+                """
+                fred2 = """
+                    open fred@2
                     close
                 """
 
@@ -2833,7 +3164,8 @@ class TestPkgInstallObsolete(testutils.SingleDepotTestCase):
                 self.pkgsend_bulk(durl, qbar)
                 self.pkgsend_bulk(durl, qux1)
                 self.pkgsend_bulk(durl, qux2)
-                self.pkgsend_bulk(durl, fred)
+                self.pkgsend_bulk(durl, fred1)
+
 
                 self.image_create(durl)
 
@@ -2847,7 +3179,7 @@ class TestPkgInstallObsolete(testutils.SingleDepotTestCase):
 
                 # Explicitly installing an obsolete package succeeds, but
                 # results in nothing on the system. (1)
-                self.pkg("install foo@2")
+                self.pkg("install foo@2", exit=4)
                 self.pkg("list foo", exit=1)
 
                 # Installing a package with a dependency on an obsolete package
@@ -2861,7 +3193,7 @@ class TestPkgInstallObsolete(testutils.SingleDepotTestCase):
                 self.pkg("list qbar")
                 self.pkg("list foo@1")
                 self.pkg("list qux | grep -- --r--")
-
+                self.pkg("uninstall '*'") #clean up for next test
                 # A simple rename test: First install the pre-renamed version of
                 # qux.  Then install the renamed version, and see that the new
                 # package is installed, and the renamed package is installed,
@@ -2870,12 +3202,18 @@ class TestPkgInstallObsolete(testutils.SingleDepotTestCase):
                 self.pkg("install qux")
                 self.pkg("list foo@1")
                 self.pkg("list qux | grep -- --r--")
+                self.pkg("uninstall '*'") #clean up for next test
 
                 # Install a package that's going to be obsoleted and a package
                 # that depends on it.  Update the package to its obsolete
                 # version and see that it fails.  (6, sorta)
-                self.pkg("install foo@1 fred")
-                self.pkg("install foo", exit=1)
+                self.pkg("install foo@1 fred@1")
+                self.pkg("install foo@2", exit=1)
+                # now add a version of fred that doesn't require foo, and
+                # show that update works
+                self.pkgsend_bulk(durl, fred2)
+                self.pkg("refresh")
+                self.pkg("install foo@2")
 
         def test_basic_7a(self):
                 """Upgrade a package to a version with a dependency on a renamed
@@ -3049,7 +3387,8 @@ class TestPkgInstallObsolete(testutils.SingleDepotTestCase):
                 self.pkgsend_bulk(durl, t6ap2_1)
 
                 self.pkg("refresh")
-                self.pkg("image-update", exit=1)
+                self.pkg("image-update", exit=4) # does nothing
+                self.pkg("list t6ap1")
 
         def test_basic_6b(self):
                 """Install a package with a dependency, and image-update after
@@ -3085,12 +3424,14 @@ class TestPkgInstallObsolete(testutils.SingleDepotTestCase):
                 self.image_create(durl)
 
                 self.pkg("install t6ap1")
+                self.pkg("list")
 
                 self.pkgsend_bulk(durl, t6ap1_2)
                 self.pkgsend_bulk(durl, t6ap2_2)
 
                 self.pkg("refresh")
-                self.pkg("image-update", exit=1)
+                self.pkg("image-update")
+                self.pkg("list t6ap1@2 t6ap2@1")
 
         def test_basic_8a(self):
                 """Upgrade a package to an obsolete leaf version when another
@@ -3123,7 +3464,8 @@ class TestPkgInstallObsolete(testutils.SingleDepotTestCase):
                 self.pkgsend_bulk(durl, t8ap1_2)
 
                 self.pkg("refresh")
-                self.pkg("image-update", exit=1)
+                self.pkg("image-update", exit=4) # does nothing
+                self.pkg("list  t8ap2@1")
 
         def test_basic_13a(self):
                 """Publish an package with a dependency, then publish both as
@@ -3192,8 +3534,9 @@ class TestPkgInstallObsolete(testutils.SingleDepotTestCase):
                 self.pkg("list pkg:/netbeans", exit=1)
 
         def test_basic_11a(self):
-                """Install a package using an ambiguous name where only one
-                match is non-renamed."""
+                """Install a package using an ambiguous name where
+                pkg is renamed to another package, but not the
+                conflicting one"""
 
                 t11p1 = """
                     open netbonze@1
@@ -3218,9 +3561,7 @@ class TestPkgInstallObsolete(testutils.SingleDepotTestCase):
                 self.pkgsend_bulk(durl, t11p3)
                 self.image_create(durl)
 
-                self.pkg("install netbonze")
-                self.pkg("list pkg:/developer/netbonze")
-                self.pkg("list pkg:/netbonze", exit=1)
+                self.pkg("install netbonze", exit=1)
 
         def test_basic_11b(self):
                 """Install a package using an ambiguous name where only one
@@ -3229,24 +3570,38 @@ class TestPkgInstallObsolete(testutils.SingleDepotTestCase):
 
                 t11p1 = """
                     open netbooze@1
+                    close
+                """
+
+                t11p2 = """
+                    open netbooze@2
                     add set name=pkg.renamed value=true
                     add depend type=require fmri=developer/netbooze
                     close
                 """
 
-                t11p2 = """
-                    open developer/netbooze@1
+                t11p3 = """
+                    open developer/netbooze@2
+                    close
+                """
+
+                t11p4 = """
+                    open developer/netbooze@3
+                    add depend type=require fmri=developer/missing
                     close
                 """
 
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, t11p1)
                 self.pkgsend_bulk(durl, t11p2)
+                self.pkgsend_bulk(durl, t11p3)
+                self.pkgsend_bulk(durl, t11p4)
                 self.image_create(durl)
 
                 self.pkg("install netbooze")
                 self.pkg("list pkg:/developer/netbooze")
-                self.pkg("list pkg:/netbooze", exit=1)
+                self.pkg("list pkg:/netbooze")
+
 
         def test_basic_12(self):
                 """Upgrade a package across a rename to an ambiguous name."""
@@ -3352,7 +3707,7 @@ class TestPkgInstallObsolete(testutils.SingleDepotTestCase):
                 self.image_create(durl)
 
                 self.pkg("install inc1p1")
-                self.pkg("install inc1p2")
+                self.pkg("install inc1p2", exit=4)
 
                 self.pkg("list inc1p2", exit=1)
 
@@ -3421,8 +3776,7 @@ class TestPkgInstallMultiObsolete(testutils.ManyDepotTestCase):
         def test_01(self):
                 """If an obsolete package is found in a preferred publisher and
                 a non-obsolete package of the same name is found in a
-                non-preferred publisher, then we should choose the package from
-                the preferred publisher, even though it's obsolete."""
+                non-preferred publisher, pick the preferred pub as usual """
 
                 durl1 = self.dcs[1].get_depot_url()
                 durl2 = self.dcs[2].get_depot_url()
@@ -3432,8 +3786,9 @@ class TestPkgInstallMultiObsolete(testutils.ManyDepotTestCase):
 
                 self.image_create(durl1, prefix="test1")
                 self.pkg("set-publisher -O " + durl2 + " test2")
+                self.pkg("list -a")
 
-                self.pkg("install stem")
+                self.pkg("install stem", exit=4) # noting to do since it's obs
                 # We should choose the obsolete package, which means nothing
                 # gets installed.
                 self.pkg("list", exit=1)
@@ -3461,8 +3816,7 @@ class TestPkgInstallMultiObsolete(testutils.ManyDepotTestCase):
                 self.image_create(durl1, prefix="test1")
                 self.pkg("set-publisher -O " + durl2 + " test2")
 
-                self.pkg("install stem")
-                self.pkg("list pkg://test2/stem")
+                self.pkg("install stem", exit=1)
 
 
 if __name__ == "__main__":

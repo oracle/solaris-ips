@@ -40,7 +40,7 @@ import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 import pkg.client.progress as progress
 
-API_VERSION = 23
+API_VERSION = 24
 PKG_CLIENT_NAME = "pkg"
 
 class TestApiInfo(testutils.SingleDepotTestCase):
@@ -128,8 +128,6 @@ class TestApiInfo(testutils.SingleDepotTestCase):
 
                 self.image_create(durl)
 
-                filters = []
-
                 local = True
                 get_license = False
 
@@ -141,7 +139,7 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                 self.assert_(not ret[api.ImageInterface.INFO_FOUND])
                 self.assert_(len(ret[api.ImageInterface.INFO_MISSING]) == 1)
                 
-                api_obj.plan_install(["jade"], filters)
+                api_obj.plan_install(["jade"])
                 api_obj.prepare()
                 api_obj.execute_plan()
 

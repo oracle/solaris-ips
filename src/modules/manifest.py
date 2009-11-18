@@ -923,7 +923,7 @@ class EmptyCachedManifest(Manifest):
                 # origin has been removed.  This is an optimization for
                 # uninstall.
                 return ([], [],
-                    [(a, None) for a in origin.gen_actions(self_exclude)])
+                    [(a, None) for a in origin.gen_actions(origin_exclude)])
 
         @staticmethod
         def get_directories(excludes):

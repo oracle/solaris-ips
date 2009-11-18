@@ -211,7 +211,6 @@ class TestPkgInfoBasics(testutils.SingleDepotTestCase):
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, pkg1)
                 self.image_create(durl)
-
                 self.pkg("info --license -r bronze")
                 self.pkg("info --license -r silver", exit=1)
                 self.pkg("info --license -r bronze silver", exit=1)

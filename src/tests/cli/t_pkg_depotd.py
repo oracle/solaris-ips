@@ -242,7 +242,7 @@ class TestPkgDepot(testutils.SingleDepotTestCase):
                 self.dc.refresh()
                 self.pkg("refresh")
 
-                self.pkg("install bar")
+                self.pkg("install bar", exit=4) # nothing to do
                 self.pkg("verify")
 
         def test_face_root(self):

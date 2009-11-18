@@ -1,0 +1,98 @@
+
+In order to select packages from a variety of sources, pkg(5) supports
+the configuration of multiple publishers.  We've started with the
+concept of a preferred publisher, but some ambiguity has arisen as to
+what should happen when publishers are deleted, added, etc.  In
+addition, the single level of selection afforded by the preferred
+designation appears to be somewhat limiting; at the same time, the
+rules for selecting amongst multiple publishers of the same package
+need clarification rather than additional complexity.
+
+We propose the idea of publisher search order, starting with the
+preferred publisher.  Adding a publisher adds a new publisher at the
+end of the search order; if a publisher is made preferred it is moved
+to the front of the search order.  Deleting or disabling a publisher
+causes it to be removed from the search order. Re-enabling a publisher
+causes it to added at the end of the search order.
+
+When a package is nominated for installation without an explicit
+publisher being specified, the first publisher found in the search
+order to provide the package is selected. Once installed, subsequent
+updates to that package by default always occur from that publisher,
+even if a publisher earlier in the search order starts publishing a
+package with the same name.  This behavior of a publisher is
+characterized as "sticky", and is the default.  It can be disabled on
+a per-publisher basis, and such disablement is useful mostly for
+developers seeking to replace a portion of their packages w/
+development versions. If a publisher is made "non-sticky", its
+packages are searched for as on initial installation on every update -
+no preference is afforded by the previous installation.  Deleted/disabled
+publishers are made non-sticky.
+
+Each selection of the publisher for a package is made independently
+according to the algorithms above; there is no implicit inheritance
+of publisher across dependencies of any type.
+
+The above suggests the following additions to the set-publisher
+subcommand of pkg:
+
+set-publisher [--search-before=publisher] [--search-after=publisher] publisher
+set-publisher [--sticky] [--non-sticky] publisher
+
+
+--search-before=publisherB publisherA causes publisher A to be moved
+from its current place in the search order to be just ahead of publisher B.
+
+--search-after=publisherB publisherA causes publisher A to be moved
+from its current place in the search order to be just behind publisher B.
+
+Specifying --non-sticky causes this publisher not to automatically
+be selected for all updates to packages already installed from this
+publisher; instead, publishers searched earlier are automatically preferred.
+--sticky causes the original behavior to be restored for subsequent
+updates.
+
+
+Use cases
+---------
+
+Normal user getting packages from pkg.opensolaris.org and datahavens.org:
+
+   1) Installs system as per usual, points preferred to usual
+      best available publisher - say, pkg.opensolaris.org
+   2) Adds new publisher datahavens.org to acquire mplayer.
+      Without specifying search order, new publisher is appended
+      to the current order.
+
+Project Developer:
+
+   1) Installs system as per usual, points preferred to usual
+      best available publisher - say, pkg.opensolaris.org
+   2) Adds new publisher "MyOwnRepo" pointing at his
+      latest and greatest bits. Note that his repo is lowest 
+      in search order, but since his package names are unique no issues 
+      arise.
+
+Contrib User that prefers supported bits:
+
+   1) Installs system as per usual, points preferred to usual
+      best available publisher - say, pkg.opensolaris.org
+   2) Adds contrib repo after p.o.o, and makes it non-sticky.
+   3) Adds packages from contrib as desired.
+   4) When and if packages move to p.o.o, they're automatically
+      updated from p.o.o on the next image update or
+      pkg install ....
+
+OpenSolaris developer:
+
+   1) Installs system as per usual, points preferred to usual
+      best available publisher - say, pkg.opensolaris.org/dev
+   2) Adds new preferred publisher "MyOwnRepo" pointing at his
+      latest and greatest bits; making it preferred places it 
+      first in the search order.
+   3) Pkg.opensolaris.org is made non-sticky to cause pkgs from MyOwnRepo
+      to replace those from pkg.opensolaris.org on next update
+   4) If additional fresh bits are required, additional development
+      repos can be added and placed ahead of pkg.opensolaris.org
+      in the search order; in this way multiple consolidations 
+      can be kept at the bleeding edge.

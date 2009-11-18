@@ -306,6 +306,10 @@ arch_srcs = [
 _actions_srcs = [
         'modules/actions/_actions.c'
         ]
+solver_srcs = [
+        'modules/solver/solver.c', 
+        'modules/solver/py_solver.c'
+        ]
 include_dirs = [ 'modules' ]
 lint_flags = [ '-u', '-axms', '-erroff=E_NAME_DEF_NOT_USED2' ]
 
@@ -871,6 +875,18 @@ if osname == 'sunos' or osname == "linux":
                             extra_link_args = link_args,
                             define_macros = [('_FILE_OFFSET_BITS', '64')]
                             ),
+                    Extension(
+                             'solver',
+                             solver_srcs,
+                             include_dirs = include_dirs + ["."],
+                             extra_compile_args = compile_args,
+                             extra_link_args = [
+                                 "-ztext",
+                                 "-lm",
+                                 "-lc"
+                                 ],
+                             define_macros = [('_FILE_OFFSET_BITS', '64')]
+                            )
                     ]
         else:
             elf_libraries += [ 'ssl' ]

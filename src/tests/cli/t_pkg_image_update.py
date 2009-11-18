@@ -181,15 +181,15 @@ class TestImageUpdate(testutils.ManyDepotTestCase):
                 self.image_create(durl1, prefix="test1")
 
                 # First, verify that the preferred status of a publisher will
-                # choose which source is used for image-update when two
+                # not affect which source is used for image-update when two
                 # publishers offer the same package and the package publisher
                 # was preferred at the time of install.
                 self.pkg("set-publisher -P -O %s test2" % durl2)
                 self.pkg("install foo@1.0")
                 self.pkg("info foo@1.0 | grep test2")
                 self.pkg("set-publisher -P test1")
-                self.pkg("image-update -v")
-                self.pkg("info foo@1.1 | grep test1")
+                self.pkg("image-update -v", exit=4)
+                self.pkg("info foo@1.1 | grep test1", exit=1)
                 self.pkg("uninstall foo")
 
                 # Next, verify that the preferred status of a publisher will
@@ -199,28 +199,11 @@ class TestImageUpdate(testutils.ManyDepotTestCase):
                 # to install the package.
                 self.pkg("install baz@1.0")
                 self.pkg("info baz@1.0 | grep test2")
-                self.pkg("image-update -v")
+                self.pkg("image-update -v", exit=4)
                 self.pkg("info baz@1.0 | grep test2")
-                self.pkg("uninstall baz")
-
-                # Next, verify that if two non-preferred publishers offer
-                # the same package, that the publisher it was installed from
-                # will be chosen for an update and the update will succeed. In
-                # addition, its dependencies should be selected from the same
-                # publisher used for the update if that publisher has them and
-                # the remaining dependencies selected from the first available.
-                self.pkg("set-publisher -P -O %s test3" % durl3)
-                self.pkg("install pkg://test1/qux@1.0")
-                self.pkg("info qux@1.0 | grep test1")
-                self.pkg("info quux@1.0 | grep test1")
-                self.pkg("info corge@1.0 | grep test2")
-                self.pkg("image-update -v")
-                self.pkg("info qux@1.1 | grep test1")
-                self.pkg("info quux@1.1 | grep test1")
-                self.pkg("info corge@1.1 | grep test1")
 
                 # Finally, cleanup and verify no packages are installed.
-                self.pkg("uninstall -vr corge")
+                self.pkg("uninstall '*'")
                 self.pkg("list", exit=1)
 
 

@@ -30,6 +30,7 @@ import time
 import urllib2
 import httplib
 import pkg.pkgsubprocess as subprocess
+
 from pkg.misc import versioned_urlopen
 
 class DepotStateException(Exception):
@@ -63,6 +64,7 @@ class DepotController(object):
                 self.__state = self.HALTED
                 self.__writable_root = None
                 self.__sort_file_max_size = None
+                self.__starttime = 0
                 return
 
         def set_depotd_path(self, path):
@@ -267,6 +269,7 @@ class DepotController(object):
                     close_fds=True)
                 if self.__depot_handle == None:
                         raise DepotStateException("Could not start Depot")
+                self.__starttime = time.time()
                 
         def start(self):
                 self.__initial_start()
@@ -329,6 +332,12 @@ class DepotController(object):
                 return self.__depot_handle.poll()
 
         def kill(self):
+                """kill the depot; letting it live for
+                a little while helps get reliable death"""
+
+                lifetime = time.time() - self.__starttime 
+                if lifetime < 1.0:
+                        time.sleep(1.0 - lifetime)
 
                 if self.__depot_handle == None:
                         # XXX might want to remember and return saved
@@ -336,14 +345,12 @@ class DepotController(object):
                         return 0
 
                 status = -1
-                #
-                # With sleeptime doubling every loop iter, and capped at
-                # 10.0 secs, the cumulative time waited will be 10 secs.
-                #
+
+                wait_to_exit = 5.0
                 sleeptime = 0.05
                 firsttime = True
 
-                while sleeptime <= 10.0:
+                while wait_to_exit > 0:
                         status = self.__depot_handle.poll()
                         if status is not None:
                                 break
@@ -358,6 +365,7 @@ class DepotController(object):
                                 firsttime = False
 
                         time.sleep(sleeptime)
+                        wait_to_exit -= sleeptime
                         sleeptime *= 2
                 else:
                         assert status is None
@@ -365,7 +373,8 @@ class DepotController(object):
                             "Depot did not shut down, trying kill -9 %d" % \
                             self.__depot_handle.pid
                         os.kill(self.__depot_handle.pid, signal.SIGKILL)
-                        status = self.__depot_handle.wait()
+                        #self.__depot_handle.wait()
+                        status = self.__depot_handle.poll()
 
                 # XXX do something useful with status
                 self.__state = self.HALTED

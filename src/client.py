@@ -79,12 +79,21 @@ from pkg.client.history import (RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
     RESULT_FAILED_OUTOFMEMORY)
 from pkg.misc import EmptyI, msg, PipeError
 
-CLIENT_API_VERSION = 23
+CLIENT_API_VERSION = 24
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
 JUST_LEFT = -1
 JUST_RIGHT = 1
+
+#pkg exit codes
+EXIT_OK      = 0
+EXIT_OOPS    = 1
+EXIT_BADOPT  = 2
+EXIT_PARTIAL = 3
+EXIT_NOP     = 4
+EXIT_NOTLIVE = 5
+
 
 logger = global_settings.logger
 
@@ -147,11 +156,14 @@ Advanced subcommands:
             [-t action_type ... ] [pkg_fmri_pattern ...]
         pkg image-create [-fFPUz] [--force] [--full|--partial|--user] [--zone]
             [-k ssl_key] [-c ssl_cert] [--no-refresh]
-            [--variant <variant_spec>=<instance>]
+            [--variant <variant_spec>=<instance>] 
+            [--facet <facet_spec>=[True,False]]
             (-p|--publisher) name=uri dir
         pkg change-variant [-nvq] [--be-name name] <variant_spec>=<instance>
             [<variant_spec>=<instance> ...]
-
+        pkg change-facet -nvq [--be-name name] <facet_spec>=[True|False|None] ...
+        pkg variant -H [<variant_spec>]
+        pkg facet -H [<facet_spec>]
         pkg set-property propname propvalue
         pkg unset-property propname ...
         pkg property [-H] [propname ...]
@@ -161,9 +173,11 @@ Advanced subcommands:
             [-G origin_to_remove | --remove-origin=origin_to_remove]
             [-m mirror_to_add | --add-mirror=mirror_to_add]
             [-M mirror_to_remove | --remove-mirror=mirror_to_remove]
-            [--enable] [--disable] [--no-refresh] [--reset-uuid] publisher
+            [--enable] [--disable] [--no-refresh] [--reset-uuid] 
+            [--non-sticky] [--sticky] [--search-after=publisher]
+            [--search-before=publisher] publisher
         pkg unset-publisher publisher ...
-        pkg publisher [-HPa] [publisher ...]
+        pkg publisher [-HPn] [publisher ...]
         pkg history [-Hl]
         pkg purge-history
         pkg rebuild-index
@@ -243,13 +257,13 @@ def list_inventory(img, args):
                 fmt_str = "%-45s %-15s %-10s %s"
 
         if not check_fmri_args(pargs):
-                return 1
+                return EXIT_OOPS
 
         img.history.operation_name = "list"
 
         api_inst = __api_alloc(img, quiet=True)
         if api_inst == None:
-                return 1
+                return EXIT_OOPS
 
         info_needed = frozenset([api.PackageInfo.SUMMARY])
         ppub = img.get_preferred_publisher()
@@ -331,7 +345,7 @@ def list_inventory(img, args):
                                         pis = ret[api.ImageInterface.INFO_FOUND]
                                 except api_errors.ApiException, e:
                                         error(e)
-                                        return 1
+                                        return EXIT_OOPS
 
                                 msg(fmt_str % (pf, pis[0].summary))
 
@@ -345,7 +359,7 @@ def list_inventory(img, args):
                                 logger.error(_("no packages installed"))
                                 img.history.operation_result = \
                                     history.RESULT_NOTHING_TO_DO
-                                return 1
+                                return EXIT_OOPS
 
                         if upgradable_only:
                                 if pargs:
@@ -356,14 +370,14 @@ def list_inventory(img, args):
                                             "have available updates"))
                                 img.history.operation_result = \
                                     history.RESULT_NOTHING_TO_DO
-                                return 1
+                                return EXIT_OOPS
 
                         img.history.operation_result = \
                             history.RESULT_NOTHING_TO_DO
-                        return 1
+                        return EXIT_OOPS
 
                 img.history.operation_result = history.RESULT_SUCCEEDED
-                return 0
+                return EXIT_OK
 
         except api_errors.InventoryException, e:
                 if e.illegal:
@@ -371,7 +385,7 @@ def list_inventory(img, args):
                                 error(i)
                         img.history.operation_result = \
                             history.RESULT_FAILED_BAD_REQUEST
-                        return 1
+                        return EXIT_OOPS
 
                 if all_known:
                         state = _("known")
@@ -382,7 +396,7 @@ def list_inventory(img, args):
                             "'%(pattern)s' %(state)s") %
                             { "pattern": pat, "state": state })
                 img.history.operation_result = history.RESULT_NOTHING_TO_DO
-                return 1
+                return EXIT_OOPS
 
 def get_tracker(quiet=False):
         if quiet:
@@ -434,12 +448,13 @@ def fix_image(img, args):
                             "Please retry this operation on an alternate boot "
                             "environment."))
                         success = False
+                        return EXIT_NOTLIVE
 
                 if not success:
                         progresstracker.verify_done()
-                        return 1
+                        return EXIT_OOPS
         progresstracker.verify_done()
-        return 0
+        return EXIT_OK
 
 def verify_image(img, args):
         opts, pargs = getopt.getopt(args, "vfqH")
@@ -465,14 +480,14 @@ def verify_image(img, args):
         progresstracker = get_tracker(quiet)
 
         if not check_fmri_args(pargs):
-                return 1
+                return EXIT_OOPS
 
         fmris, notfound, illegals = img.installed_fmris_from_args(pargs)
 
         if illegals:
                 for i in illegals:
                         logger.error(str(i))
-                return 1
+                return EXIT_OOPS
 
         any_errors = False
 
@@ -528,8 +543,8 @@ installed on the system.\n"""))
                 any_errors = True
 
         if any_errors:
-                return 1
-        return 0
+                return EXIT_OOPS
+        return EXIT_OK
 
 def __api_prepare(operation, api_inst, verbose=False):
         # Exceptions which happen here are printed in the above level, with
@@ -561,22 +576,22 @@ def __api_execute_plan(operation, api_inst, raise_ActionExecutionError=True):
                 api_inst.execute_plan()
         except RuntimeError, e:
                 error(_("%s failed: %s") % (operation, e))
-                return False
+                return EXIT_OOPS
         except api_errors.ImageUpdateOnLiveImageException:
                 error(_("%s cannot be done on live image") % operation)
-                return False
+                return EXIT_NOTLIVE
         except api_errors.RebootNeededOnLiveImageException:
                 error(_("Requested \"%s\" operation would affect files that cannot be "
                         "modified in live image.\n"
                         "Please retry this operation on an alternate boot environment.") %
                       operation)
-                return False
+                return EXIT_NOTLIVE
         except api_errors.CorruptedIndexException, e:
                 error(INCONSISTENT_INDEX_ERROR_MESSAGE)
-                return False
+                return EXIT_OOPS
         except api_errors.ProblematicPermissionsIndexException, e:
                 error(str(e) + PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE)
-                return False
+                return EXIT_OOPS
         except api_errors.ReadOnlyFileSystemException, e:
                 error(e)
                 raise
@@ -584,20 +599,20 @@ def __api_execute_plan(operation, api_inst, raise_ActionExecutionError=True):
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
                 error("\n" + str(e))
-                return False
+                return EXIT_OOPS
         except api_errors.MainDictParsingException, e:
                 error(str(e))
-                return False
+                return EXIT_OOPS
         except KeyboardInterrupt:
                 raise
         except api_errors.BEException, e:
                 error(e)
-                return False
+                return EXIT_OOPS
         except api_errors.WrapSuccessfulIndexingException:
                 raise
         except api_errors.ActionExecutionError, e:
                 if not raise_ActionExecutionError:
-                        return False
+                        return 1
                 error(_("An unexpected error happened during " \
                     "%s: %s") % (operation, e))
                 raise
@@ -605,7 +620,7 @@ def __api_execute_plan(operation, api_inst, raise_ActionExecutionError=True):
                 error(_("An unexpected error happened during " \
                     "%s: %s") % (operation, e))
                 raise
-        return True
+        return EXIT_OK
 
 def __api_alloc(img, quiet=False):
         progresstracker = get_tracker(quiet)
@@ -649,9 +664,11 @@ Cannot remove '%s' due to the following packages that depend on it:"""
                 if noexecute:
                         return True
                 return False
-        if e_type == api_errors.BEException:
+
+        if issubclass(e_type, api_errors.BEException):
                 error(_(e))
                 return False
+
         if e_type in (api_errors.CertificateError,
             api_errors.PlanCreationException,
             api_errors.PermissionsException):
@@ -715,28 +732,113 @@ def change_variant(img, args):
                 return 1
 
         try:
-                stuff_to_do = api_inst.plan_change_variant(variants,
+                stuff_to_do = api_inst.plan_change_varcets(variants, facets=None,
                     noexecute=noexecute, verbose=verbose, be_name=be_name)
         except:
                 if not __api_plan_exception(op, noexecute=noexecute):
-                        return 1
+                        return EXIT_OOPS
 
         if not stuff_to_do:
                 msg(_("No updates necessary for this image."))
-                return 0
+                return EXIT_NOP
 
         if noexecute:
-                return 0
+                return EXIT_OOPS
 
 
         # Exceptions which happen here are printed in the above level, with
         # or without some extra decoration done here.
         if not __api_prepare("change-variant", api_inst, verbose=verbose):
-                return 1
+                return EXIT_OOPS
 
-        ret_code = 0
-        if not __api_execute_plan("change-variant", api_inst):
-                ret_code = 1
+        ret_code = __api_execute_plan("change-variant", api_inst)
+
+        if bool(os.environ.get("PKG_MIRROR_STATS", False)):
+                print_mirror_stats(api_inst)
+
+        return ret_code
+
+def change_facet(img, args):
+        """Attempt to change the facets as specified, updating
+        image as necessary"""
+
+        op = "change-facet"
+        opts, pargs = getopt.getopt(args, "nvq", ["be-name="])
+
+        quiet = noexecute = verbose = False
+        be_name = None
+        for opt, arg in opts:
+                if opt == "-n":
+                        noexecute = True
+                elif opt == "-v":
+                        verbose = True
+                elif opt == "-q":
+                        quiet = True
+                elif opt == "--be-name":
+                        be_name = arg
+
+        if verbose and quiet:
+                usage(_("%s: -v and -q may not be combined") % op)
+
+        if not pargs:
+                usage(_("%s: no facets specified") % op)
+
+        facets = img.get_facets()
+        allowed_values = {
+            "TRUE" : True, 
+            "FALSE": False, 
+            "NONE" : None
+        }
+
+        for arg in pargs:
+
+                # '=' is not allowed in facet names or values
+                if (len(arg.split('=')) != 2):
+                        usage(_("%s: facets must to be of the form "
+                            "'facet....=[True|False|None]'") % op)
+
+                # get the facet name and value
+                name, value = arg.split('=')                
+                if not name.startswith("facet."):
+                        name = "facet." + name
+                
+                if value.upper() not in allowed_values:
+                        usage(_("%s: facets must to be of the form "
+                            "'facet....=[True|False|None]'.") % op)
+
+                v = allowed_values[value.upper()]
+
+                if v is None and name in facets:
+                        del facets[name]
+                else:
+                        facets[name] = v
+
+        api_inst = __api_alloc(img, quiet)
+        if api_inst == None:
+                return EXIT_OOPS
+
+        try:
+                stuff_to_do = api_inst.plan_change_varcets(variants=None, 
+                    facets=facets, noexecute=noexecute, verbose=verbose,
+                    be_name=be_name)
+        except:
+                if not __api_plan_exception(op, noexecute=noexecute):
+                        return 1
+
+        if not stuff_to_do:
+                msg(_("Facet change has no effect on image"))
+                return EXIT_NOP
+
+        if noexecute:
+                return EXIT_OK
+
+
+        # Exceptions which happen here are printed in the above level, with
+        # or without some extra decoration done here.
+        if not __api_prepare(op, api_inst, verbose=verbose):
+                return EXIT_OOPS
+
+        ret_code = __api_execute_plan(op, api_inst)
 
         if bool(os.environ.get("PKG_MIRROR_STATS", False)):
                 print_mirror_stats(api_inst)
@@ -748,7 +850,6 @@ def image_update(img, args):
         version."""
 
         # XXX Publisher-catalog issues.
-        # XXX Are filters appropriate for an image update?
         # XXX Leaf package refinements.
 
         op = "image-update"
@@ -783,7 +884,7 @@ def image_update(img, args):
 
         api_inst = __api_alloc(img, quiet)
         if api_inst == None:
-                return 1
+                return EXIT_OOPS
 
         try:
                 stuff_to_do, opensolaris_image = \
@@ -792,21 +893,19 @@ def image_update(img, args):
                         update_index=update_index, be_name=be_name)
         except:
                 if not __api_plan_exception(op, noexecute=noexecute):
-                        return 1
+                        return EXIT_OOPS
 
         if not stuff_to_do:
                 msg(_("No updates available for this image."))
-                return 0
+                return EXIT_NOP
 
         if noexecute:
-                return 0
+                return EXIT_OK
 
         if not __api_prepare(op, api_inst, verbose=verbose):
                 return 1
 
-        ret_code = 0
-        if not __api_execute_plan(op, api_inst):
-                ret_code = 1
+        ret_code = __api_execute_plan(op, api_inst)
 
         if ret_code == 0 and opensolaris_image:
                 msg("\n" + "-" * 75)
@@ -834,18 +933,16 @@ def install(img, args):
 
         # XXX Publisher-catalog issues.
         op = "install"
-        opts, pargs = getopt.getopt(args, "nvf:q", ["no-refresh", "no-index"])
+        opts, pargs = getopt.getopt(args, "nvq", ["no-refresh", "no-index"])
 
         quiet = noexecute = verbose = False
         refresh_catalogs = update_index = True
-        filters = []
+
         for opt, arg in opts:
                 if opt == "-n":
                         noexecute = True
                 elif opt == "-v":
                         verbose = True
-                elif opt == "-f":
-                        filters += [ arg ]
                 elif opt == "-q":
                         quiet = True
                 elif opt == "--no-refresh":
@@ -860,40 +957,34 @@ def install(img, args):
                 usage(_("-v and -q may not be combined"), cmd="install")
 
         if not check_fmri_args(pargs):
-                return 1
-
-        # XXX not sure where this should live
-        pkg_list = [ pat.replace("*", ".*").replace("?", ".")
-            for pat in pargs ]
+                return EXIT_OOPS
 
         api_inst = __api_alloc(img, quiet)
         if api_inst == None:
-                return 1
+                return EXIT_OOPS
 
         try:
-                stuff_to_do = api_inst.plan_install(pkg_list, filters,
+                stuff_to_do = api_inst.plan_install(pargs,
                     refresh_catalogs, noexecute, verbose=verbose,
                     update_index=update_index)
         except:
                 if not __api_plan_exception(op, noexecute=noexecute):
-                        return 1
+                        return EXIT_OOPS
 
         if not stuff_to_do:
                 msg(_("No updates necessary for this image."))
-                return 0
+                return EXIT_NOP
 
         if noexecute:
-                return 0
+                return EXIT_OK
 
         # Exceptions which happen here are printed in the above level, with
         # or without some extra decoration done here.
         if not __api_prepare(op, api_inst, verbose=verbose):
-                return 1
+                return EXIT_OOPS
 
-        ret_code = 0
-        if not __api_execute_plan(op, api_inst,
-            raise_ActionExecutionError=False):
-                ret_code = 1
+        ret_code = __api_execute_plan(op, api_inst,
+            raise_ActionExecutionError=False)
 
         if bool(os.environ.get("PKG_MIRROR_STATS", False)):
                 print_mirror_stats(api_inst)
@@ -928,46 +1019,38 @@ def uninstall(img, args):
                 usage(_("-v and -q may not be combined"), cmd="uninstall")
 
         if not check_fmri_args(pargs):
-                return 1
-
-        # XXX not sure where this should live
-        pkg_list = [ pat.replace("*", ".*").replace("?", ".")
-            for pat in pargs ]
+                return EXIT_OOPS
 
         api_inst = __api_alloc(img, quiet)
-        if api_inst == None:
-                return 1
+        if api_inst is None:
+                return EXIT_OOPS
 
         try:
-                if not api_inst.plan_uninstall(pkg_list, recursive_removal,
+                if not api_inst.plan_uninstall(pargs, recursive_removal,
                     noexecute, verbose=verbose, update_index=update_index):
                         assert 0
         except:
                 if not __api_plan_exception(op, noexecute=noexecute):
-                        return 1
+                        return EXIT_OOPS
         if noexecute:
-                return 0
+                return EXIT_OK
 
         # Exceptions which happen here are printed in the above level, with
         # or without some extra decoration done here.
         if not __api_prepare(op, api_inst, verbose=verbose):
-                return 1
+                return EXIT_OOPS
 
-        ret_code = 0
-        if not __api_execute_plan(op, api_inst):
-                ret_code = 1
-
-        return ret_code
+        return __api_execute_plan(op, api_inst)
 
 def freeze(img, args):
         """Attempt to take package specified to FROZEN state, with given
         restrictions.  Package must have been in the INSTALLED state."""
-        return 0
+        return EXIT_OK
 
 def unfreeze(img, args):
         """Attempt to return package specified to INSTALLED state from FROZEN
         state."""
-        return 0
+        return EXIT_OK
 
 def __convert_output(a_str, match):
         """Converts a string to a three tuple with the information to fill
@@ -1132,14 +1215,14 @@ def search(img, args):
 
         api_inst = __api_alloc(img)
         if api_inst == None:
-                return 1
+                return EXIT_OOPS
 
         try:
                 query = [api.Query(" ".join(pargs), case_sensitive,
                     return_actions)]
         except api_errors.BooleanQueryException, e:
                 error(e)
-                return 1
+                return EXIT_OOPS
 
         good_res = False
         bad_res = False
@@ -1151,7 +1234,7 @@ def search(img, args):
                         searches.append(api_inst.remote_search(query,
                             servers=servers))
                 # By default assume we don't find anything.
-                retcode = 1
+                retcode = EXIT_OOPS
 
                 # get initial set of results
                 justs = calc_justs(attrs)
@@ -1245,7 +1328,7 @@ def search(img, args):
             api_errors.InconsistentIndexException):
                 error(_("The search index appears corrupted.  Please "
                     "rebuild the index with 'pkg rebuild-index'."))
-                return 1
+                return EXIT_OOPS
         except api_errors.ProblematicSearchServers, e:
                 error(e)
                 bad_res = True
@@ -1255,16 +1338,16 @@ def search(img, args):
             api_errors.InconsistentIndexException):
                 error(_("The search index appears corrupted.  Please "
                     "rebuild the index with 'pkg rebuild-index'."))
-                return 1
+                return EXIT_OOPS
         except api_errors.ApiException, e:
                 error(e)
-                return 1
+                return EXIT_OOPS
         if good_res and bad_res:
-                retcode = 4
+                retcode = EXIT_NOP
         elif bad_res:
-                retcode = 1
+                retcode = EXIT_OOPS
         elif good_res:
-                retcode = 0
+                retcode = EXIT_OK
         return retcode
 
 def info(img, args):
@@ -1294,13 +1377,13 @@ def info(img, args):
                     cmd="info")
 
         if not check_fmri_args(pargs):
-                return 1
+                return EXIT_OOPS
 
         err = 0
 
         api_inst = __api_alloc(img, quiet=True)
         if api_inst == None:
-                return 1
+                return EXIT_OOPS
 
         try:
                 info_needed = api.PackageInfo.ALL_OPTIONS
@@ -1314,7 +1397,7 @@ def info(img, args):
                         ret = api_inst.info(pargs, info_local, info_needed)
                 except api_errors.UnrecognizedOptionsToInfo, e:
                         error(e)
-                        return 1
+                        return EXIT_OOPS
                 pis = ret[api.ImageInterface.INFO_FOUND]
                 notfound = ret[api.ImageInterface.INFO_MISSING]
                 illegals = ret[api.ImageInterface.INFO_ILLEGALS]
@@ -1322,10 +1405,10 @@ def info(img, args):
 
         except api_errors.PermissionsException, e:
                 error(e)
-                return 1
+                return EXIT_OOPS
         except api_errors.NoPackagesInstalledException:
                 error(_("no packages installed"))
-                return 1
+                return EXIT_OOPS
 
         no_licenses = []
         for i, pi in enumerate(pis):
@@ -1395,7 +1478,7 @@ def info(img, args):
                 # XXX add license/copyright info here?
 
         if notfound:
-                err = 1
+                err = EXIT_OOPS
                 if pis:
                         logger.error("")
                 if info_local:
@@ -1412,19 +1495,19 @@ examining the catalogs:"""))
                         logger.error("        %s" % p)
 
         if illegals:
-                err = 1
+                err = EXIT_OOPS
                 for i in illegals:
                         logger.error(str(i))
 
         if multi_match:
-                err = 1
+                err = EXIT_OOPS
                 for pfmri, matches in multi_match:
                         error(_("'%s' matches multiple packages") % pfmri)
                         for k in matches:
                                 logger.error("\t%s" % k)
 
         if no_licenses:
-                err = 1
+                err = EXIT_OOPS
                 error(_("no license information could be found for the "
                     "following packages:"))
                 for pfmri in no_licenses:
@@ -1685,7 +1768,7 @@ def list_contents(img, args):
                    "packages"), cmd="contents")
 
         if not check_fmri_args(pargs):
-                return 1
+                return EXIT_OOPS
 
         if display_raw:
                 display_headers = False
@@ -1702,7 +1785,7 @@ def list_contents(img, args):
 
         img.history.operation_name = "contents"
 
-        err = 0
+        err = EXIT_OK
 
         if local:
                 fmris, notfound, illegals = \
@@ -1713,13 +1796,13 @@ def list_contents(img, args):
                                 logger.error(i)
                         img.history.operation_result = \
                             history.RESULT_FAILED_BAD_REQUEST
-                        return 1
+                        return EXIT_OOPS
 
                 if not fmris and not notfound:
                         error(_("no packages installed"))
                         img.history.operation_result = \
                             history.RESULT_NOTHING_TO_DO
-                        return 1
+                        return EXIT_OOPS
         elif remote:
                 # Verify validity of certificates before attempting network
                 # operations
@@ -1728,7 +1811,7 @@ def list_contents(img, args):
                 except (api_errors.CertificateError,
                     api_errors.PermissionsException), e:
                         img.history.log_operation_end(error=e)
-                        return 1
+                        return EXIT_OOPS
 
                 fmris = []
                 notfound = []
@@ -1805,7 +1888,7 @@ def list_contents(img, args):
         else:
                 excludes = img.list_excludes()
 
-        manifests = ( img.get_manifest(f, all_arch=display_raw) for f in fmris )
+        manifests = ( img.get_manifest(f, all_variants=display_raw) for f in fmris )
 
         actionlist = [
             (m.fmri, a, None, None, None)
@@ -1818,7 +1901,7 @@ def list_contents(img, args):
                     action_types, display_headers)
 
         if notfound:
-                err = 1
+                err = EXIT_OOPS
                 if fmris:
                         logger.error("")
                 if local:
@@ -1889,7 +1972,7 @@ def publisher_refresh(img, args):
 
         api_inst = __api_alloc(img)
         if api_inst == None:
-                return 1
+                return EXIT_OOPS
 
         try:
                 # The user explicitly requested this refresh, so set the
@@ -1899,25 +1982,26 @@ def publisher_refresh(img, args):
         except api_errors.PublisherError, e:
                 error(e)
                 error(_("'pkg publisher' will show a list of publishers."))
-                return 1
+                return EXIT_OOPS
         except (api_errors.PermissionsException), e:
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
                 error("\n" + str(e))
-                return 1
+                return EXIT_OOPS
         except api_errors.CatalogRefreshException, e:
                 if display_catalog_failures(e) == 0:
-                        return 1
+                        return EXIT_OOPS
                 else:
-                        return 3
+                        return EXIT_PARTIAL
         else:
-                return 0
+                return EXIT_OK
 
 def publisher_set(img, args):
         """pkg set-publisher [-Ped] [-k ssl_key] [-c ssl_cert] [--reset-uuid]
             [-g|--add-origin origin to add] [-G|--remove-origin origin to
             remove] [-m|--add-mirror mirror to add] [-M|--remove-mirror mirror
-            to remove] [--enable] [--disable] [--no-refresh] publisher"""
+            to remove] [--enable] [--disable] [--no-refresh] [--sticky] [--non-sticky ]
+            [--search-before=publisher] [--search-after=publisher] publisher"""
 
         preferred = False
         ssl_key = None
@@ -1930,10 +2014,14 @@ def publisher_set(img, args):
         remove_origins = set()
         refresh_catalogs = True
         disable = None
+        sticky = None
+        search_before = None
+        search_after = None
 
         opts, pargs = getopt.getopt(args, "Pedk:c:O:G:g:M:m:",
             ["add-mirror=", "remove-mirror=", "add-origin=", "remove-origin=",
-            "no-refresh", "reset-uuid", "enable", "disable"])
+            "no-refresh", "reset-uuid", "enable", "disable", "sticky", 
+            "non-sticky", "search-before=", "search-after="])
 
         for opt, arg in opts:
                 if opt == "-c":
@@ -1960,7 +2048,15 @@ def publisher_set(img, args):
                         reset_uuid = True
                 if opt == "--no-refresh":
                         refresh_catalogs = False
-
+                if opt == "--sticky":
+                        sticky = True
+                if opt == "--non-sticky":
+                        sticky = False
+                if opt == "--search-before":
+                        search_before = arg
+                if opt == "--search-after":
+                        search_after = arg
+                        
         if len(pargs) == 0:
                 usage(_("requires a publisher name"), cmd="set-publisher")
         elif len(pargs) > 1:
@@ -1977,9 +2073,13 @@ def publisher_set(img, args):
                 usage(_("the -O and -g, --add-origin, -G, or --remove-origin "
                     "options may not be combined"), cmd="set-publisher")
 
+        if search_before and search_after:
+                usage(_("search_before and search_after may not be combined"),
+                      cmd="set-publisher")
+
         api_inst = __api_alloc(img)
         if api_inst == None:
-                return 1
+                return EXIT_OOPS
 
         new_pub = False
         try:
@@ -1990,13 +2090,13 @@ def publisher_set(img, args):
                 repo = pub.selected_repository
         except api_errors.PermissionsException, e:
                 error(e, cmd="set-publisher")
-                return 1
+                return EXIT_OOPS
         except api_errors.UnknownPublisher:
                 if not origin_url and not add_origins:
                         error(_("publisher does not exist. Use -g to define "
                             "origin URI for new publisher."),
                             cmd="set-publisher")
-                        return 1
+                        return EXIT_OOPS
                 # No pre-existing, so create a new one.
                 repo = publisher.Repository()
                 pub = publisher.Publisher(name, repositories=[repo])
@@ -2005,6 +2105,10 @@ def publisher_set(img, args):
         if disable is not None:
                 # Set disabled property only if provided.
                 pub.disabled = disable
+
+        if sticky is not None:
+                # Set stickiness only if provided
+                pub.sticky = sticky
 
         if origin_url:
                 # For compatibility with old -O behaviour, treat -O as a wipe
@@ -2029,7 +2133,7 @@ def publisher_set(img, args):
                         # here.
                 except api_errors.PublisherError, e:
                         error(e, cmd="set-publisher")
-                        return 1
+                        return EXIT_OOPS
 
         for entry in (("mirror", add_mirrors, remove_mirrors), ("origin",
             add_origins, remove_origins)):
@@ -2045,7 +2149,7 @@ def publisher_set(img, args):
                 except (api_errors.PublisherError,
                     api_errors.CertificateError), e:
                         error(e, cmd="set-publisher")
-                        return 1
+                        return EXIT_OOPS
 
         # None is checked for here so that a client can unset a ssl_cert or
         # ssl_key by using -k "" or -c "".
@@ -2079,7 +2183,7 @@ def publisher_set(img, args):
                 except (api_errors.PublisherError,
                     api_errors.CertificateError), e:
                         error(e, cmd="set-publisher")
-                        return 1
+                        return EXIT_OOPS
 
         try:
                 if new_pub:
@@ -2091,24 +2195,31 @@ def publisher_set(img, args):
         except api_errors.CatalogRefreshException, e:
                 text = "Could not refresh the catalog for %s"
                 error(_(text) % pub)
-                return 1
+                return EXIT_OOPS
         except api_errors.InvalidDepotResponseException, e:
                 error(_("The origin URIs for '%(pubname)s' do not appear to "
                     "point to a valid pkg server.\nPlease check the server's "
                     "address and client's network configuration."
                     "\nAdditional details:\n\n%(details)s") %
                     { "pubname": pub.prefix, "details": e })
-                return 1
+                return EXIT_OOPS
         except api_errors.PermissionsException, e:
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
                 error("\n" + str(e))
-                return 1
+                return EXIT_OOPS
 
         if preferred:
                 api_inst.set_preferred_publisher(prefix=pub.prefix)
 
-        return 0
+        if search_before:
+                api_inst.set_pub_search_before(pub.prefix, search_before)
+
+        if search_after:
+                api_inst.set_pub_search_after(pub.prefix, search_after)
+
+
+        return EXIT_OK
 
 def publisher_unset(img, args):
         """pkg unset-publisher publisher ..."""
@@ -2119,7 +2230,7 @@ def publisher_unset(img, args):
 
         api_inst = __api_alloc(img)
         if api_inst == None:
-                return 1
+                return EXIT_OOPS
 
         errors = []
         for name in args:
@@ -2129,17 +2240,17 @@ def publisher_unset(img, args):
                     api_errors.PublisherError), e:
                         errors.append((name, e))
 
-        retcode = 0
+        retcode = EXIT_OK
         if errors:
                 if len(errors) == len(args):
                         # If the operation failed for every provided publisher
                         # prefix or alias, complete failure occurred.
-                        retcode = 1
+                        retcode = EXIT_OOPS
                 else:
                         # If the operation failed for only some of the provided
                         # publisher prefixes or aliases, then partial failure
                         # occurred.
-                        retcode = 3
+                        retcode = EXIT_PARTIAL
 
                 txt = ""
                 for name, err in errors:
@@ -2155,20 +2266,21 @@ def publisher_list(img, args):
         """pkg publishers"""
         omit_headers = False
         preferred_only = False
-        inc_disabled = False
+        inc_disabled = True
 
-        opts, pargs = getopt.getopt(args, "HPa")
+        # 'a' is left over
+        opts, pargs = getopt.getopt(args, "HPan")
         for opt, arg in opts:
                 if opt == "-H":
                         omit_headers = True
                 if opt == "-P":
                         preferred_only = True
-                if opt == "-a":
-                        inc_disabled = True
+                if opt == "-n":
+                        inc_disabled = False
 
         api_inst = __api_alloc(img, quiet=True)
         if api_inst == None:
-                return 1
+                return EXIT_OOPS
 
         cert_cache = {}
         def get_cert_info(ssl_cert):
@@ -2207,7 +2319,7 @@ def publisher_list(img, args):
 
                 return cert_cache[ssl_cert]
 
-        retcode = 0
+        retcode = EXIT_OK
         if len(pargs) == 0:
                 fmt = "%-24s %-12s %-8s %-8s %s"
                 if not omit_headers:
@@ -2223,13 +2335,32 @@ def publisher_list(img, args):
                             if inc_disabled or not p.disabled
                         ]
 
+                # if more than one, list in publisher search order
+                if len(pubs) > 1:
+                        so = api_inst.get_pub_search_order()
+                        pub_dict = dict([(p.prefix, p) for p in pubs])
+                        pubs = [
+                                pub_dict[name]
+                                for name in so
+                                if name in pub_dict
+                                ]
                 for p in pubs:
                         pfx = p.prefix
                         pstatus = ""
+
+                        if not p.sticky:
+                                pstatus_list = [_("non-sticky")]
+                        else:
+                                pstatus_list = []
+
                         if not preferred_only and p == pref_pub:
-                                pstatus = _("(preferred)")
+                                pstatus_list.append(_("preferred"))
                         if p.disabled:
-                                pstatus = _("(disabled)")
+                                pstatus_list.append(_("disabled"))
+                        if pstatus_list:
+                                pstatus = "(%s)" % ", ".join(pstatus_list)
+                        else:
+                                pstatus = ""
 
                         # Only show the selected repository's information in
                         # summary view.
@@ -2244,7 +2375,7 @@ def publisher_list(img, args):
                                     uri))
         else:
                 def display_ssl_info(uri):
-                        retcode = 0
+                        retcode = EXIT_OK
                         c = get_cert_info(uri.ssl_cert)
                         msg(_("              SSL Key:"), uri.ssl_key)
                         msg(_("             SSL Cert:"), uri.ssl_cert)
@@ -2253,7 +2384,7 @@ def publisher_list(img, args):
                                 return retcode
 
                         if c["errors"]:
-                                retcode = 1
+                                retcode = EXIT_OOPS
 
                         for e in c["errors"]:
                                 logger.error("\n" + str(e) + "\n")
@@ -2271,13 +2402,13 @@ def publisher_list(img, args):
                                 msg(_("           Origin URI:"), uri)
                                 rval = display_ssl_info(uri)
                                 if rval == 1:
-                                        retcode = 3
+                                        retcode = EXIT_PARTIAL
 
                         for uri in r.mirrors:
                                 msg(_("           Mirror URI:"), uri)
                                 rval = display_ssl_info(uri)
                                 if rval == 1:
-                                        retcode = 3
+                                        retcode = EXIT_PARTIAL
                         return retcode
 
                 for name in pargs:
@@ -2321,7 +2452,7 @@ def property_set(img, args):
         if propname == "preferred-publisher":
                 error(_("set-publisher must be used to change the preferred "
                     "publisher"), cmd="set-property")
-                return 1
+                return EXIT_OOPS
 
         try:
                 img.set_property(propname, propvalue)
@@ -2329,8 +2460,8 @@ def property_set(img, args):
                 # Prepend a newline because otherwise the exception
                 # will be printed on the same line as the spinner.
                 error("\n" + str(e), cmd="set-property")
-                return 1
-        return 0
+                return EXIT_OOPS
+        return EXIT_OK
 
 def property_unset(img, args):
         """pkg unset-property propname ..."""
@@ -2349,21 +2480,21 @@ def property_unset(img, args):
                 if p == "preferred-publisher":
                         error(_("set-publisher must be used to change the "
                             "preferred publisher"), cmd="unset-property")
-                        return 1
+                        return EXIT_OOPS
 
                 try:
                         img.delete_property(p)
                 except KeyError:
                         error(_("no such property: %s") % p,
                             cmd="unset-property")
-                        return 1
+                        return EXIT_OOPS
                 except api_errors.PermissionsException, e:
                         # Prepend a newline because otherwise the exception
                         # will be printed on the same line as the spinner.
                         error("\n" + str(e), cmd="unset-property")
-                        return 1
+                        return EXIT_OOPS
 
-        return 0
+        return EXIT_OK
 
 def property_list(img, args):
         """pkg property [-H] [propname ...]"""
@@ -2377,7 +2508,7 @@ def property_list(img, args):
         for p in pargs:
                 if not img.has_property(p):
                         error(_("property: no such property: %s") % p)
-                        return 1
+                        return EXIT_OOPS
 
         if not pargs:
                 pargs = list(img.properties())
@@ -2390,8 +2521,74 @@ def property_list(img, args):
         for p in pargs:
                 msg(fmt % (p, img.get_property(p)))
 
-        return 0
+        return EXIT_OK
 
+def variant_list(img, args):
+        """pkg variant [-H] [<variant_spec>]"""
+
+        omit_headers = False
+
+        opts, pargs = getopt.getopt(args, "H")
+
+        for opt, arg in opts:
+                if opt == "-H":
+                        omit_headers = True
+
+        variants = img.get_variants()
+
+        for p in pargs:
+                if p not in variants:
+                        error(_("no such variant: %s") % p, cmd="variant")
+                        return EXIT_OOPS
+
+        if not pargs:
+                pargs = variants.keys()
+
+        width = max(max([len(p) for p in pargs]), 8)
+        fmt = "%%-%ss %%s" % width
+        if not omit_headers:
+                msg(fmt % ("VARIANT", "VALUE"))
+
+        for p in pargs:
+                msg(fmt % (p, variants[p]))
+
+        return EXIT_OK
+        
+def facet_list(img, args):
+        """pkg facet [-H] [<facet_spec>]"""
+
+        omit_headers = False
+
+        opts, pargs = getopt.getopt(args, "H")
+
+        for opt, arg in opts:
+                if opt == "-H":
+                        omit_headers = True
+
+        facets = img.get_facets()
+
+        for i, p in enumerate(pargs[:]):
+                if not p.startswith("facet."):
+                        pargs[i] = "facet." + p
+
+        if not pargs:
+                pargs = facets.keys()
+
+        if pargs:
+                width = max(max([len(p) for p in pargs]), 8)
+        else:
+                width = 8
+
+        fmt = "%%-%ss %%s" % width
+
+        if not omit_headers:
+                msg(fmt % ("FACETS", "VALUE"))
+
+        for p in pargs:
+                msg(fmt % (p, facets[p]))
+
+        return EXIT_OK
+       
 def image_create(args):
         """Create an image of the requested kind, at the given path.  Load
         catalog for initial publisher for convenience.
@@ -2411,9 +2608,10 @@ def image_create(args):
         ssl_key = None
         ssl_cert = None
         variants = {}
+        facets = pkg.facet.Facets()
 
         opts, pargs = getopt.getopt(args, "fFPUza:g:m:p:k:c:",
-            ["force", "full", "partial", "user", "zone", "authority=",
+            ["force", "full", "partial", "user", "zone", "authority=", "facet=",
                 "mirror=", "origin=", "publisher=", "no-refresh", "variant="])
 
         for opt, arg in opts:
@@ -2463,6 +2661,19 @@ def image_create(args):
                                     cmd="image-create")
                         variants[v_name] = v_value
 
+                if opt == "--facet":
+
+                        allow = {"TRUE":True, "FALSE":False}
+                        f_name, f_value = arg.split("=",1)
+                        if not f_name.startswith("facet."):
+                                f_name = "facet.%s" % f_name
+                        if f_value.upper() not in allow:
+                                usage(_("Facet arguments must be"
+                                    "form 'facet..=[True|False]'"),
+                                    cmd="image-create")
+                        facets[f_name]= allow[f_value.upper()]
+
+
         if len(pargs) != 1:
                 usage(_("only one image directory path may be specified"),
                     cmd="image-create")
@@ -2494,22 +2705,22 @@ def image_create(args):
         if pub_name.startswith(fmri.PREF_PUB_PFX):
                 error(_("a publisher's prefix may not start with the text: %s"
                         % fmri.PREF_PUB_PFX), cmd="image-create")
-                return 1
+                return EXIT_OOPS
 
         if not misc.valid_pub_prefix(pub_name):
                 error(_("publisher prefix contains invalid characters"),
                     cmd="image-create")
-                return 1
+                return EXIT_OOPS
 
         global __img
         try:
                 progtrack = get_tracker()
                 __img = img = image.Image(root=image_dir, imgtype=imgtype,
                     should_exist=False, progtrack=progtrack, force=force)
-                img.set_attrs(is_zone, pub_name, mirrors=mirrors,
+                img.set_attrs(is_zone, pub_name, facets=facets,
                     origins=origins, ssl_key=ssl_key, ssl_cert=ssl_cert,
                     refresh_allowed=refresh_catalogs, progtrack=progtrack,
-                    variants=variants)
+                    variants=variants, mirrors=mirrors)
                 img.cleanup_downloads()
         except OSError, e:
                 # Ensure messages are displayed after the spinner.
@@ -2518,16 +2729,18 @@ def image_create(args):
                 error(_("cannot create image at %(image_dir)s: %(reason)s") %
                     { "image_dir": image_dir, "reason": e.args[1] },
                     cmd="image-create")
-                return 1
+                return EXIT_OOPS
+                
         except api_errors.PublisherError, e:
                 error(e, cmd="image-create")
-                return 1
+                return EXIT_OOPS
+
         except api_errors.PermissionsException, e:
                 # Ensure messages are displayed after the spinner.
                 img.cleanup_downloads()
                 logger.error("")
                 error(e, cmd="image-create")
-                return 1
+                return EXIT_OOPS
         except api_errors.InvalidDepotResponseException, e:
                 # Ensure messages are displayed after the spinner.
                 img.cleanup_downloads()
@@ -2539,19 +2752,19 @@ def image_create(args):
                     { "pub_url": pub_url, "error": e },
                     cmd="image-create")
                 print_proxy_config()
-                return 1
+                return EXIT_OOPS
         except api_errors.CatalogRefreshException, cre:
                 # Ensure messages are displayed after the spinner.
                 img.cleanup_downloads()
                 error("", cmd="image-create")
                 if display_catalog_failures(cre) == 0:
-                        return 1
+                        return EXIT_OOPS
                 else:
-                        return 3
+                        return EXIT_PARTIAL
         except api_errors.ImageCreationException, e:
                 error(e, cmd="image-create")
-                return 1
-        return 0
+                return EXIT_OOPS
+        return EXIT_OK
 
 def rebuild_index(img, pargs):
         """pkg rebuild-index
@@ -2565,22 +2778,22 @@ def rebuild_index(img, pargs):
 
         api_inst = __api_alloc(img)
         if api_inst == None:
-                return 1
+                return EXIT_OOPS
 
         try:
                 api_inst.rebuild_search_index()
         except api_errors.CorruptedIndexException:
                 error(INCONSISTENT_INDEX_ERROR_MESSAGE, cmd="rebuild-index")
-                return 1
+                return EXIT_OOPS
         except api_errors.ProblematicPermissionsIndexException, e:
                 error(str(e) + PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE,
                     cmd="rebuild-index")
-                return 1
+                return EXIT_OOPS
         except api_errors.MainDictParsingException, e:
                 error(str(e), cmd="rebuild-index")
-                return 1
+                return EXIT_OOPS
         else:
-                return 0
+                return EXIT_OK
 
 def history_list(img, args):
         """Display history about the current image.
@@ -2606,7 +2819,7 @@ def history_list(img, args):
 
         if not os.path.exists(img.history.path):
                 # Nothing to display.
-                return 0
+                return EXIT_OK
 
         for entry in sorted(os.listdir(img.history.path)):
                 # Load the history entry.
@@ -2615,7 +2828,7 @@ def history_list(img, args):
                             filename=entry)
                 except api_errors.PermissionsException, e:
                         error(e, cmd="history")
-                        return 1
+                        return EXIT_OOPS
                 except history.HistoryLoadException, e:
                         if e.parse_failure:
                                 # Ignore corrupt entries.
@@ -2677,8 +2890,15 @@ def history_list(img, args):
                         msg("%-19s %-25s %-15s %s" % (start_time,
                             he.operation_name, he.client_name, outcome))
 
-        return 0
+        return EXIT_OK
 
+def history_purge(img, pargs):
+        """Purge image history"""
+        ret_code = img.history.purge()
+        if ret_code == EXIT_OK:
+                msg(_("History purged."))
+        return ret_code
+                
 def print_proxy_config():
         """If the user has configured http_proxy or https_proxy in the
         environment, print out the values.  Some transport errors are
@@ -2715,12 +2935,16 @@ def main_func():
         show_usage = False
         for opt, arg in opts:
                 if opt == "-D" or opt == "--debug":
-                        try:
-                                key, value = arg.split("=", 1)
-                        except (AttributeError, ValueError):
-                                usage(_("%(opt)s takes argument of form "
-                                    "name=value, not %(arg)s") % { "opt":  opt,
-                                    "arg": arg })
+                        if arg in ["plan", "transport"]:
+                                key = arg
+                                value = "True"
+                        else:
+                                try:
+                                        key, value = arg.split("=", 1)
+                                except (AttributeError, ValueError):
+                                        usage(_("%(opt)s takes argument of form "
+                                            "name=value, not %(arg)s") % { "opt":  opt,
+                                            "arg": arg })
                         DebugValues.set_value(key, value)
                 elif opt == "-R":
                         mydir = arg
@@ -2764,7 +2988,7 @@ def main_func():
                         usage(_("version: command does not take operands " \
                             "('%s')") % " ".join(pargs))
                 msg(pkg.VERSION)
-                return 0
+                return EXIT_OK
 
         provided_image_dir = True
         pkg_image_used = False
@@ -2789,7 +3013,7 @@ def main_func():
                 error(_("Could not find image.  Use the -R option or set "
                     "$PKG_IMAGE to point\nto an image, or change the working "
                     "directory to one inside the image."))
-                return 1
+                return EXIT_OOPS
 
         try:
                 __img = img = image.Image(mydir, provided_image_dir)
@@ -2801,58 +3025,44 @@ def main_func():
                         error(_(m) % e.user_dir)
                 else:
                         error(_("No image found."))
-                return 1
+                return EXIT_OOPS
 
+        cmds = {
+                "authority"        : publisher_list,
+                "change-facet"     : change_facet,
+                "change-variant"   : change_variant,
+                "contents"         : list_contents,
+                "facet"            : facet_list,
+                "fix"              : fix_image,
+                "freeze"           : freeze,
+                "history"          : history_list,
+                "image-update"     : image_update,
+                "info"             : info,
+                "install"          : install,
+                "list"             : list_inventory,
+                "property"         : property_list,
+                "publisher"        : publisher_list,
+                "purge-history"    : history_purge,
+                "rebuild-index"    : rebuild_index,
+                "refresh"          : publisher_refresh,
+                "search"           : search,
+                "set-authority"    : publisher_set,
+                "set-property"     : property_set,
+                "set-publisher"    : publisher_set,
+                "unfreeze"         : unfreeze,
+                "uninstall"        : uninstall,
+                "unset-authority"  : publisher_unset,
+                "unset-property"   : property_unset,
+                "unset-publisher"  : publisher_unset,
+                "variant"          : variant_list,
+                "verify"           : verify_image
+               }
+
+        callable = cmds.get(subcommand, None)
+        if not callable:
+                usage(_("unknown subcommand '%s'") % subcommand)
         try:
-                if subcommand == "refresh":
-                        return publisher_refresh(img, pargs)
-                elif subcommand == "list":
-                        return list_inventory(img, pargs)
-                elif subcommand == "image-update":
-                        return image_update(img, pargs)
-                elif subcommand == "change-variant":
-                        return change_variant(img, pargs)
-                elif subcommand == "install":
-                        return install(img, pargs)
-                elif subcommand == "uninstall":
-                        return uninstall(img, pargs)
-                elif subcommand == "freeze":
-                        return freeze(img, pargs)
-                elif subcommand == "unfreeze":
-                        return unfreeze(img, pargs)
-                elif subcommand == "search":
-                        return search(img, pargs)
-                elif subcommand == "info":
-                        return info(img, pargs)
-                elif subcommand == "contents":
-                        return list_contents(img, pargs)
-                elif subcommand == "fix":
-                        return fix_image(img, pargs)
-                elif subcommand == "verify":
-                        return verify_image(img, pargs)
-                elif subcommand in ("set-authority", "set-publisher"):
-                        return publisher_set(img, pargs)
-                elif subcommand in ("unset-authority", "unset-publisher"):
-                        return publisher_unset(img, pargs)
-                elif subcommand in ("authority", "publisher"):
-                        return publisher_list(img, pargs)
-                elif subcommand == "set-property":
-                        return property_set(img, pargs)
-                elif subcommand == "unset-property":
-                        return property_unset(img, pargs)
-                elif subcommand == "property":
-                        return property_list(img, pargs)
-                elif subcommand == "history":
-                        return history_list(img, pargs)
-                elif subcommand == "purge-history":
-                        ret_code = img.history.purge()
-                        if ret_code == 0:
-                                msg(_("History purged."))
-                        return ret_code
-                elif subcommand == "rebuild-index":
-                        return rebuild_index(img, pargs)
-                else:
-                        usage(_("unknown subcommand '%s'") % subcommand)
+                return callable(img, pargs)
 
         except getopt.GetoptError, e:
                 if e.opt in ("help", "?"):
@@ -2883,7 +3093,7 @@ def handle_errors(func, non_wrap_print=True, *args, **kwargs):
                         if __img:
                                 __img.history.abort(RESULT_FAILED_OUTOFMEMORY)
                         error("\n" + misc.out_of_memory())
-                        __ret = 1
+                        __ret = EXIT_OOPS
         except SystemExit, __e:
                 if __img:
                         __img.history.abort(RESULT_FAILED_UNKNOWN)
@@ -2893,17 +3103,17 @@ def handle_errors(func, non_wrap_print=True, *args, **kwargs):
                         __img.history.abort(RESULT_CANCELED)
                 # We don't want to display any messages here to prevent
                 # possible further broken pipe (EPIPE) errors.
-                __ret = 1
+                __ret = EXIT_OOPS
         except api_errors.CertificateError, __e:
                 if __img:
                         __img.history.abort(RESULT_FAILED_CONFIGURATION)
                 error(__e)
-                __ret = 1
+                __ret = EXIT_OOPS
         except api_errors.PublisherError, __e:
                 if __img:
                         __img.history.abort(RESULT_FAILED_BAD_REQUEST)
                 error(__e)
-                __ret = 1
+                __ret = EXIT_OOPS
         except api_errors.TransportError, __e:
                 if __img:
                         __img.history.abort(RESULT_FAILED_TRANSPORT)
@@ -2912,7 +3122,7 @@ def handle_errors(func, non_wrap_print=True, *args, **kwargs):
                     "operation."))
                 logger.error(_("Details follow:\n\n%s") % __e)
                 print_proxy_config()
-                __ret = 1
+                __ret = EXIT_OOPS
         except api_errors.InvalidDepotResponseException, __e:
                 if __img:
                         __img.history.abort(RESULT_FAILED_TRANSPORT)
@@ -2923,7 +3133,7 @@ def handle_errors(func, non_wrap_print=True, *args, **kwargs):
                     "attempt to contact the server using a web browser."))
                 logger.error(_("\nAdditional details:\n\n%s") % __e)
                 print_proxy_config()
-                __ret = 1
+                __ret = EXIT_OOPS
         except history.HistoryLoadException, __e:
                 # Since a history related error occurred, discard all
                 # information about the current operation(s) in progress.
@@ -2932,7 +3142,7 @@ def handle_errors(func, non_wrap_print=True, *args, **kwargs):
                 error(_("An error was encountered while attempting to load "
                     "history information\nabout past client operations."))
                 error(__e)
-                __ret = 1
+                __ret = EXIT_OOPS
         except history.HistoryStoreException, __e:
                 # Since a history related error occurred, discard all
                 # information about the current operation(s) in progress.
@@ -2942,7 +3152,7 @@ def handle_errors(func, non_wrap_print=True, *args, **kwargs):
                     "information about the\ncurrent operation in client "
                     "history."))
                 error(__e)
-                __ret = 1
+                __ret = EXIT_OOPS
         except history.HistoryPurgeException, __e:
                 # Since a history related error occurred, discard all
                 # information about the current operation(s) in progress.
@@ -2951,7 +3161,7 @@ def handle_errors(func, non_wrap_print=True, *args, **kwargs):
                 error(_("An error was encountered while attempting to purge "
                     "client history."))
                 error(__e)
-                __ret = 1
+                __ret = EXIT_OOPS
         except api_errors.VersionException, __e:
                 if __img:
                         __img.history.abort(RESULT_FAILED_UNKNOWN)
@@ -2961,9 +3171,9 @@ def handle_errors(func, non_wrap_print=True, *args, **kwargs):
                     {'client': __e.received_version,
                      'api': __e.expected_version
                     })
-                __ret = 1
+                __ret = EXIT_OOPS
         except api_errors.WrapSuccessfulIndexingException, __e:
-                __ret = 0
+                __ret = EXIT_OK
         except api_errors.WrapIndexingException, __e:
                 def _wrapper():
                         raise __e.wrapped
@@ -2977,7 +3187,7 @@ def handle_errors(func, non_wrap_print=True, *args, **kwargs):
                     "successfuly.")
                 error(s)
         except api_errors.ReadOnlyFileSystemException, __e:
-                __ret = 1
+                __ret = EXIT_OOPS
         except:
                 if __img:
                         __img.history.abort(RESULT_FAILED_UNKNOWN)

@@ -278,6 +278,7 @@ cli.t_api_search.py TestApiSearchBasicsRestartingDepot.test_bug_8318|pass
 cli.t_api_search.py TestApiSearchBasicsRestartingDepot.test_local_image_update|pass
 cli.t_api_search.py TestApiSearchMulti.test_bug_2955|pass
 cli.t_api_search.py TestApiSearchMulti.test_bug_8318|pass
+cli.t_change_facet.py TestPkgChangeFacet.test_1|pass
 cli.t_change_variant.py TestPkgChangeVariant.test_cv_01_none_1|pass
 cli.t_change_variant.py TestPkgChangeVariant.test_cv_01_none_2|pass
 cli.t_change_variant.py TestPkgChangeVariant.test_cv_01_none_3|pass
@@ -302,6 +303,7 @@ cli.t_change_variant.py TestPkgChangeVariant.test_cv_10_arch_and_zone_1|pass
 cli.t_change_variant.py TestPkgChangeVariant.test_cv_10_arch_and_zone_2|pass
 cli.t_change_variant.py TestPkgChangeVariant.test_cv_11_arch_and_zone_1|pass
 cli.t_change_variant.py TestPkgChangeVariant.test_cv_11_arch_and_zone_2|pass
+cli.t_colliding_links.py TestPkgCollidingLinks.test_1|pass
 cli.t_fix.py TestFix.test_fix1|pass
 cli.t_fix.py TestFix.test_fix2|pass
 cli.t_pkg_R_option.py TestROption.test_1|pass
@@ -320,7 +322,7 @@ cli.t_pkg_api_install.py TestPkgApiInstall.test_bug_2795|pass
 cli.t_pkg_api_install.py TestPkgApiInstall.test_bug_4109|pass
 cli.t_pkg_api_install.py TestPkgApiInstall.test_catalog_v0|pass
 cli.t_pkg_api_install.py TestPkgApiInstall.test_image_upgrade|pass
-cli.t_pkg_api_install.py TestPkgApiInstall.test_install_matching|error
+cli.t_pkg_api_install.py TestPkgApiInstall.test_install_matching|pass
 cli.t_pkg_api_install.py TestPkgApiInstall.test_nonrecursive_dependent_uninstall|pass
 cli.t_pkg_api_install.py TestPkgApiInstall.test_recursive_uninstall|pass
 cli.t_pkg_contents.py TestPkgContentsBasics.test_contents_1|pass
@@ -378,8 +380,10 @@ cli.t_pkg_info.py TestPkgInfoBasics.test_bug_2274|pass
 cli.t_pkg_info.py TestPkgInfoBasics.test_info_empty_image|pass
 cli.t_pkg_info.py TestPkgInfoBasics.test_info_local_remote|pass
 cli.t_pkg_info.py TestPkgInfoBasics.test_pkg_info_bad_fmri|pass
+cli.t_pkg_install.py TestDependencies.test_exclude_dependencies|pass
+cli.t_pkg_install.py TestDependencies.test_incorporation_dependencies|pass
+cli.t_pkg_install.py TestDependencies.test_require_dependencies|pass
 cli.t_pkg_install.py TestDependencies.test_optional_dependencies|pass
-cli.t_pkg_install.py TestDependencies.test_require_optional|pass
 cli.t_pkg_install.py TestImageCreateCorruptImage.test_empty_ospkg|pass
 cli.t_pkg_install.py TestImageCreateCorruptImage.test_empty_var_pkg|pass
 cli.t_pkg_install.py TestImageCreateCorruptImage.test_ospkg_left_alone|pass
@@ -414,6 +418,9 @@ cli.t_pkg_install.py TestMultipleDepots.test_10_install_after_publisher_removal|
 cli.t_pkg_install.py TestMultipleDepots.test_11_uninstall_after_preferred_publisher_change|pass
 cli.t_pkg_install.py TestMultipleDepots.test_12_uninstall_after_publisher_removal|pass
 cli.t_pkg_install.py TestMultipleDepots.test_13_non_preferred_multimatch|pass
+cli.t_pkg_install.py TestMultipleDepots.test_14_nonsticky_publisher|pass
+cli.t_pkg_install.py TestMultipleDepots.test_15_nonsticky_update|pass
+cli.t_pkg_install.py TestMultipleDepots.test_16_disabled_nonsticky|pass
 cli.t_pkg_install.py TestPkgInstallActions.test_bad_hardlinks|pass
 cli.t_pkg_install.py TestPkgInstallActions.test_bad_links|pass
 cli.t_pkg_install.py TestPkgInstallActions.test_basics_0|pass
@@ -436,16 +443,18 @@ cli.t_pkg_install.py TestPkgInstallBasics.test_basics_2|pass
 cli.t_pkg_install.py TestPkgInstallBasics.test_basics_3|pass
 cli.t_pkg_install.py TestPkgInstallBasics.test_basics_4|pass
 cli.t_pkg_install.py TestPkgInstallBasics.test_basics_5|pass
+cli.t_pkg_install.py TestPkgInstallBasics.test_basics_6|pass
 cli.t_pkg_install.py TestPkgInstallBasics.test_bug_1338|pass
 cli.t_pkg_install.py TestPkgInstallBasics.test_bug_1338_2|pass
 cli.t_pkg_install.py TestPkgInstallBasics.test_bug_1338_3|pass
 cli.t_pkg_install.py TestPkgInstallBasics.test_bug_1338_4|pass
 cli.t_pkg_install.py TestPkgInstallBasics.test_bug_2795|pass
 cli.t_pkg_install.py TestPkgInstallBasics.test_bug_3770|pass
+cli.t_pkg_install.py TestPkgInstallBasics.test_bug_6018|pass
 cli.t_pkg_install.py TestPkgInstallBasics.test_bug_9929|pass
 cli.t_pkg_install.py TestPkgInstallBasics.test_cli|pass
 cli.t_pkg_install.py TestPkgInstallBasics.test_image_upgrade|pass
-cli.t_pkg_install.py TestPkgInstallBasics.test_install_matching|fail
+cli.t_pkg_install.py TestPkgInstallBasics.test_install_matching|pass
 cli.t_pkg_install.py TestPkgInstallBasics.test_nonrecursive_dependent_uninstall|pass
 cli.t_pkg_install.py TestPkgInstallBasics.test_recursive_uninstall|pass
 cli.t_pkg_install.py TestPkgInstallCircularDependencies.test_anchored_circular_dependencies|pass
@@ -507,6 +516,7 @@ cli.t_pkg_publisher.py TestPkgPublisherBasics.test_publisher_uuid|pass
 cli.t_pkg_publisher.py TestPkgPublisherBasics.test_publisher_validation|pass
 cli.t_pkg_publisher.py TestPkgPublisherMany.test_enable_disable|pass
 cli.t_pkg_publisher.py TestPkgPublisherMany.test_set_mirrors_origins|pass
+cli.t_pkg_publisher.py TestPkgPublisherMany.test_search_order|pass
 cli.t_pkg_rebuild_index.py TestPkgRebuildIndex.test_rebuild_index_bad_opts|pass
 cli.t_pkg_rebuild_index.py TestPkgRebuildIndex.test_rebuild_index_bad_perms|pass
 cli.t_pkg_refresh.py TestPkgRefreshMulti.test_catalog_v1|pass
@@ -570,6 +580,8 @@ cli.t_setUp.py TestSetUp.test_second_depot_start|pass
 cli.t_util_merge.py TestUtilMerge.test_0_merge|pass
 cli.t_util_update_file_layout.py TestFileManager.test_1|pass
 cli.t_util_update_file_layout.py TestFileManager.test_opts|pass
+cli.t_solver.py TestSolver.test_no_solution|pass
+cli.t_solver.py TestSolver.test_solution|pass
 cli.t_variants.py TestPkgVariants.test_old_zones_pkgs|pass
 cli.t_variants.py TestPkgVariants.test_variant_1|pass
 gui.t_pm_addrepo.py TestPkgGuiAddRepoBasics.testAddRepository|pass

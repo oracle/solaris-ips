@@ -128,7 +128,7 @@ class TestPkgList(testutils.ManyDepotTestCase):
                     "foo 1.0-0 known u----\n"
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
-
+                
         def test_list_02(self):
                 """List all "foo@1.0", regardless of publisher, with "pkg:/"
                 prefix."""
@@ -249,6 +249,7 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 durl2 = self.dcs[2].get_depot_url()
                 durl3 = self.dcs[3].get_depot_url()
 
+                self.pkg("list -a")
                 # Install a package from the second publisher.
                 self.pkg("install pkg://test2/foo@1.0")
 

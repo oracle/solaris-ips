@@ -73,8 +73,21 @@ class Variants(dict):
         # Methods which are unique to variants
         def allow_action(self, action):
                 """ determine if variants permit this action """
-                for a in set(action.attrs.keys()) & \
-                    self.__keyset:
+                aset = set([k for k in action.attrs.keys() if k.startswith("variant.")])
+
+                unknown_variants = aset - self.__keyset
+
+                # handle variant.debug
+
+                for u in unknown_variants:
+                        # install only unknown variant.debug
+                        # actions tagged w/ "false"
+                        if u.startswith("variant.debug.") and \
+                            action.attrs[u] != "false":
+                                return False
+                        # could assert here for other
+                        # unknown variants... best course TBD
+                for a in aset & self.__keyset:
                         if self[a] != action.attrs[a]:
                                 return False
                 return True

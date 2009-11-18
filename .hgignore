@@ -12,6 +12,7 @@
 ^nbproject
 ^proto
 ^packages
+^nbproject
 # Specific build products
 ^src/extern/.*
 ^src/brand/fmri_compare$

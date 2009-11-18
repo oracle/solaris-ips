@@ -89,15 +89,15 @@ class TestPkgHistory(testutils.ManyDepotTestCase):
 
                 durl2 = self.dcs[2].get_depot_url()
                 commands = [
-                    "install foo",
-                    "uninstall foo",
-                    "image-update",
-                    "set-publisher -O " + durl2 + " test2",
-                    "set-publisher -P test1",
-                    "set-publisher -m " + durl2 + " test1",
-                    "set-publisher -M " + durl2 + " test1",
-                    "unset-publisher test2",
-                    "rebuild-index"
+                    ("install foo", 0),
+                    ("uninstall foo", 0),
+                    ("image-update", 4), 
+                    ("set-publisher -O " + durl2 + " test2", 0),
+                    ("set-publisher -P test1", 0), 
+                    ("set-publisher -m " + durl2 + " test1", 0),
+                    ("set-publisher -M " + durl2 + " test1", 0),
+                    ("unset-publisher test2", 0),
+                    ("rebuild-index", 0)
                 ]
 
                 operations = [
@@ -111,8 +111,8 @@ class TestPkgHistory(testutils.ManyDepotTestCase):
                     "rebuild-index"
                 ]
 
-                for cmd in commands:
-                        self.pkg(cmd)
+                for cmd, exit in commands:
+                        self.pkg(cmd, exit=exit)
 
                 self.pkg("history -H")
                 o = self.output
@@ -129,7 +129,7 @@ class TestPkgHistory(testutils.ManyDepotTestCase):
                 # The actual commands are only found in long format.
                 self.pkg("history -l")
                 o = self.output
-                for cmd in commands:
+                for cmd, exit in commands:
                         # Verify that each of the commands was recorded.
                         if o.find(" %s" % cmd) == -1:
                                 raise RuntimeError("Command: %s wasn't recorded,"

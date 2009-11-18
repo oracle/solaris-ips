@@ -71,7 +71,7 @@ class TestROption(testutils.SingleDepotTestCase):
                 self.pkg("-R %s image-update" % imgpath)
 
                 self.pkg("-R %s uninstall foo" % badpath, exit=1)
-                self.pkg("-R %s install foo" % imgpath)
+                self.pkg("-R %s install foo" % imgpath, exit=4)
 
                 self.pkg("-R %s info foo" % badpath, exit=1)
                 self.pkg("-R %s info foo" % imgpath)

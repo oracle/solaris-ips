@@ -39,11 +39,9 @@ logger = global_settings.logger
 import pkg.Uuid25
 import pkg.catalog
 import pkg.client.api_errors            as api_errors
-import pkg.client.constraint            as constraint
 import pkg.client.history               as history
 import pkg.client.imageconfig           as imageconfig
 import pkg.client.imageplan             as imageplan
-import pkg.client.imagestate            as imagestate
 import pkg.client.pkgplan               as pkgplan
 import pkg.client.progress              as progress
 import pkg.client.publisher             as publisher
@@ -53,7 +51,6 @@ import pkg.manifest                     as manifest
 import pkg.misc                         as misc
 import pkg.portable                     as portable
 import pkg.server.catalog
-import pkg.variant                      as variant
 import pkg.version
 
 from pkg.client.debugvalues import DebugValues
@@ -191,13 +188,11 @@ class Image(object):
                 self.__init_catalogs()
                 self.__upgraded = False
 
-                self.arch_change = False
                 self.attrs = {
                     "Policy-Require-Optional": False,
                     "Policy-Pursue-Latest": True
                 }
                 self.cfg_cache = None
-                self.constraints = constraint.ConstraintSet()
                 self.dl_cache_dir = None
                 self.dl_cache_incoming = None
                 self.history = history.History()
@@ -206,9 +201,9 @@ class Image(object):
                 self.imgdir = None
                 self.index_dir = None
                 self.is_user_cache_dir = False
-                self.new_variants = {}
                 self.pkgdir = None
                 self.root = root
+                self.__req_dependents = None
 
                 # Transport operations for this image
                 self.transport = transport.Transport(self)
@@ -228,8 +223,6 @@ class Image(object):
 
                 # a place to keep info about saved_files; needed by file action
                 self.saved_files = {}
-
-                self.state = imagestate.ImageState(self)
 
                 self.type = None
 
@@ -289,8 +282,8 @@ class Image(object):
                 while True:
                         imgtype = self.image_type(d)
                         if imgtype == IMG_USER:
-                                # XXX Look at image file to determine filter
-                                # tags and repo URIs.
+                                # XXX Should look at image file to determine 
+                                # repo URIs.
                                 if exact_match and \
                                     os.path.realpath(startd) != \
                                     os.path.realpath(d):
@@ -301,8 +294,8 @@ class Image(object):
                                 self.attrs["Build-Release"] = "5.11"
                                 return
                         elif imgtype == IMG_ENTIRE:
-                                # XXX Look at image file to determine filter
-                                # tags and repo URIs.
+                                # XXX Look at image file to determine
+                                # repo URIs.
                                 # XXX Look at image file to determine if this
                                 # image is a partial image.
                                 if exact_match and \
@@ -470,7 +463,7 @@ class Image(object):
 
         def set_attrs(self, is_zone, prefix, mirrors=EmptyI, origins=EmptyI,
             ssl_key=None, ssl_cert=None, refresh_allowed=True, progtrack=None,
-            variants=EmptyDict):
+            variants=EmptyDict, facets=EmptyDict):
                 """Creates a new image with the given attributes if it does not
                 exist or sets the attributes of an already existing image."""
 
@@ -500,7 +493,6 @@ class Image(object):
 
                 # Determine and add the default variants for the image.
                 if is_zone:
-                        self.cfg_cache.filters["opensolaris.zone"] = "nonglobal"
                         self.cfg_cache.variants[
                             "variant.opensolaris.zone"] = "nonglobal"
                 else:
@@ -511,20 +503,21 @@ class Image(object):
                     variants.get("variant.arch", platform.processor())
 
                 # After setting up the default variants, add any overrides or
-                # additional variants specified.
+                # additional variants or facets specified.
                 self.cfg_cache.variants.update(variants)
+                self.cfg_cache.facets.update(facets)
 
                 # Now everything is ready for publisher configuration.
-                self.cfg_cache.preferred_publisher = newpub.prefix
                 self.add_publisher(newpub, refresh_allowed=refresh_allowed,
                     progtrack=progtrack)
+                self.cfg_cache.preferred_publisher = newpub.prefix
 
                 # No need to save configuration as add_publisher will do that
                 # if successful.
                 self.history.log_operation_end()
 
         def is_liveroot(self):
-                return bool(self.root == "/" or
+                return bool(self.root == "/" or 
                     DebugValues.get_value("simulate_live_root"))
 
         def is_zone(self):
@@ -532,10 +525,7 @@ class Image(object):
                     "variant.opensolaris.zone"] == "nonglobal"
 
         def get_arch(self):
-                if "variant.arch" in self.new_variants:
-                        return self.new_variants["variant.arch"]
-                else:
-                        return self.cfg_cache.variants["variant.arch"]
+                return self.cfg_cache.variants["variant.arch"]
 
         def get_root(self):
                 return self.root
@@ -548,6 +538,30 @@ class Image(object):
                         if inc_disabled or not pub.disabled:
                                 yield self.cfg_cache.publishers[p]
 
+        def get_publisher_ranks(self):
+                """Returns dictionary of publishers by name; each
+                entry contains a tuple of search order index starting 
+                at 0, and a boolean indicating whether or not 
+                this publisher is "sticky"."""
+
+                # automatically make disabled publishers not sticky
+                so = self.cfg_cache.publisher_search_order
+
+                ret = dict([
+                            (p.prefix, 
+                             (so.index(p.prefix), 
+                              not p.disabled and p.sticky)) 
+                            for p in self.gen_publishers()
+                            ])
+
+                # add any publishers for pkgs that are installed,
+                # but have been deleted... so they're not sticky.
+                for pfmri in self.gen_installed_pkgs():
+                        ret.setdefault(pfmri.get_publisher(), 
+                            (len(ret) + 1, False))
+                
+                return ret
+                        
         def check_cert_validity(self):
                 """Look through the publishers defined for the image.  Print
                 a message and exit with an error if one of the certificates
@@ -599,7 +613,7 @@ class Image(object):
                 return self.cfg_cache.publishers
 
         def get_publisher(self, prefix=None, alias=None, origin=None):
-                publishers = [p for p in self.get_publishers().values()]
+                publishers = [p for p in self.cfg_cache.publishers.values()]
                 for pub in publishers:
                         if prefix and prefix == pub.prefix:
                                 return pub
@@ -609,6 +623,48 @@ class Image(object):
                             pub.selected_repository.has_origin(origin):
                                 return pub
                 raise api_errors.UnknownPublisher(max(prefix, alias, origin))
+
+        def pub_search_before(self, being_moved, staying_put):
+                """Moves publisher "being_moved" to after "staying_put"
+                in search order"""
+                self.__pub_search_common(being_moved, staying_put, after=False)
+
+        def pub_search_after(self, being_moved, staying_put):
+                """Moves publisher "being_moved" to after "staying_put"
+                in search order"""
+                self.__pub_search_common(being_moved, staying_put, after=True)
+
+        def __pub_search_common(self, being_moved, staying_put, after=True):
+                """Moves publisher "being_moved" to after "staying_put"
+                in search order"""
+                if after:
+                        r = "search-after"
+                else:
+                        r = "search-before"
+
+                self.history.log_operation_start(r)
+                try:
+                        bm = self.get_publisher(being_moved).prefix
+                        sp = self.get_publisher(staying_put).prefix
+                except api_errors.ApiException, e:
+                        self.history.log_operation_end(e)
+                        raise
+
+                if bm == sp:
+                        e = api_errors.MoveRelativeToSelf()
+                        self.history.log_operation_end(e)
+                        raise e
+                
+                # compute new order and set it
+                so = self.cfg_cache.publisher_search_order
+                so.remove(bm)
+                if after:
+                        so.insert(so.index(sp) + 1, bm)
+                else:
+                        so.insert(so.index(sp), bm)
+                self.cfg_cache.change_publisher_search_order(so)
+                self.save_config()
+                self.history.log_operation_end()
 
         def get_preferred_publisher(self):
                 """Returns the prefix of the preferred publisher."""
@@ -736,21 +792,13 @@ class Image(object):
                                 yield (act, errors)
 
         def __call_imageplan_evaluate(self, ip, verbose=False):
-                if verbose:
-                        logger.info(_("Before evaluation:"))
-                        logger.info(ip)
-
                 # A plan can be requested without actually performing an
                 # operation on the image.
                 if self.history.operation_name:
                         self.history.operation_start_state = ip.get_plan()
 
-                try:
-                        ip.evaluate()
-                except constraint.ConstraintException, e:
-                        raise api_errors.PlanCreationException(
-                            constraint_violations=str(e).split("\n"))
-
+                ip.evaluate(verbose)
+                
                 self.imageplan = ip
 
                 if self.history.operation_name:
@@ -758,63 +806,37 @@ class Image(object):
                             ip.get_plan(full=False)
 
                 if verbose:
-                        logger.info(_("After evaluation:"))
                         ip.display()
 
-        def image_change_variant(self, variants, progtrack, check_cancelation,
+        def image_change_varcets(self, variants, facets, progtrack, check_cancelation,
             noexecute, verbose=False):
 
-                ip = imageplan.ImagePlan(self, progtrack, lambda: False,
-                    noexecute=noexecute, variants=variants,
-                    recursive_removal=True)
+
+                ip = imageplan.ImagePlan(self, progtrack, check_cancelation,
+                    noexecute=noexecute)
+
                 progtrack.evaluate_start()
 
-                # make sure that some variants are actually changing
-                variants = dict(set(variants.iteritems()) - \
-                    set(self.cfg_cache.variants.iteritems()))
+                # compute dict of changing variants
+                if variants:
+                        variants = dict(set(variants.iteritems()) - \
+                           set(self.cfg_cache.variants.iteritems()))
+                # facets are always the entire set
 
-                if not variants:
-                        self.__call_imageplan_evaluate(ip, verbose)
-                        logger.info("No variant changes.")
-                        return
-
-                #
-                # only get manifests for all architectures if we're
-                # changing the architecture variant
-                #
-                if "variant.arch" in variants:
-                        self.arch_change = True
-
-                #
-                # we can't set self.new_variants until after we
-                # instantiate the image plan since the image plan has
-                # to cache information like the old excludes, and
-                # once we set new_variants things like self.list_excludes()
-                # and self.get_arch() will report valus based off of the
-                # new variants we're moving too.
-                #
-                self.new_variants = variants
-
-                for fmri in self.gen_installed_pkgs():
-                        m = self.get_manifest(fmri)
-                        m_arch = m.get_variants("variant.arch")
-                        if not m_arch:
-                                # keep packages that don't have an explicit arch
-                                ip.propose_fmri(fmri)
-                        elif self.get_arch() in m_arch:
-                                # keep packages that match the current arch
-                                ip.propose_fmri(fmri)
-                        else:
-                                # remove packages for different archs
-                                ip.propose_fmri_removal(fmri)
+                ip.plan_change_varcets(variants, facets)
 
                 self.__call_imageplan_evaluate(ip, verbose)
 
-        def image_config_update(self):
-                if not self.new_variants:
-                        return
+        def image_config_update(self, new_variants, new_facets):
+                """update variants in image config"""
                 ic = self.cfg_cache
-                ic.variants.update(self.new_variants)
+
+                if new_variants is not None:
+                        ic.variants.update(new_variants)
+
+                if new_facets is not None:
+                        ic.facets = new_facets
+
                 ic.write(self.imgdir)
                 ic = imageconfig.ImageConfig(self.root,
                     self._get_publisher_meta_dir())
@@ -834,14 +856,16 @@ class Image(object):
                         pp.propose_repair(fmri, m, actions)
                         pp.evaluate(self.list_excludes(), self.list_excludes())
                         pps.append(pp)
-
                 ip = imageplan.ImagePlan(self, progtrack, lambda: False)
+                self.imageplan = ip
+
                 ip.update_index = False
+                ip.state = imageplan.EVALUATED_PKGS
                 progtrack.evaluate_start()
                 ip.pkg_plans = pps
 
                 ip.evaluate()
-                if ip.actuators.reboot_needed() and self.is_liveroot():
+                if ip.reboot_needed() and self.is_liveroot():
                         raise api_errors.RebootNeededOnLiveImageException()
                 ip.preexecute()
                 ip.execute()
@@ -858,101 +882,49 @@ class Image(object):
 
                 return False
 
-        def __fetch_manifest(self, fmri, excludes=EmptyI):
-                """A wrapper call for getting manifests.  This invokes
-                the transport method, gets the manifest, and performs
-                any additional image-related processing."""
-
-                m = self.transport.get_manifest(fmri, excludes,
-                    self.state.get_intent_str(fmri))
-
-                # What is the client currently processing?
-                targets = self.state.get_targets()
-
-                intent = None
-                for entry in targets:
-                        target, reason = entry
-
-                        # Ignore the publisher for comparison.
-                        np_target = target.get_fmri(anarchy=True)
-                        np_fmri = fmri.get_fmri(anarchy=True)
-                        if np_target == np_fmri:
-                                intent = reason
-
-                # If no intent could be found, assume INTENT_INFO.
-                self.state.set_touched_manifest(fmri,
-                    max(intent, imagestate.INTENT_INFO))
-
-                return m
-
-        def __touch_manifest(self, fmri):
-                """Perform steps necessary to 'touch' a manifest to provide
-                intent information.  Ignores most exceptions as this operation
-                is only for informational purposes."""
-
-                # What is the client currently processing?
-                target, intent = self.state.get_target()
-
-                # Ignore dry-runs of operations or operations which do not have
-                # a set target.
-                if not target or intent == imagestate.INTENT_EVALUATE:
-                        return
-
-                if not self.state.get_touched_manifest(fmri, intent):
-                        # If the manifest for this fmri hasn't been "seen"
-                        # before, determine if intent information needs to be
-                        # provided.
-
-                        # Ignore the publisher for comparison.
-                        np_target = target.get_fmri(anarchy=True)
-                        np_fmri = fmri.get_fmri(anarchy=True)
-                        if np_target == np_fmri:
-                                # If the client is currently processing
-                                # the given fmri (for an install, etc.)
-                                # then intent information is needed.
-                                try:
-                                        self.transport.touch_manifest(fmri,
-                                            self.state.get_intent_str(fmri))
-                                except (api_errors.UnknownPublisher,
-                                    api_errors.TransportError):
-                                        # It's not fatal if we can't find
-                                        # or reach the publisher.
-                                        pass
-                                self.state.set_touched_manifest(fmri, intent)
-
         def get_manifest_path(self, fmri):
                 """Return path to on-disk manifest"""
                 mpath = os.path.join(self.imgdir, "pkg",
                     fmri.get_dir_path(), "manifest")
                 return mpath
 
-        def __get_manifest(self, fmri, excludes=EmptyI):
+        def __get_manifest(self, fmri, excludes=EmptyI, intent=None):
                 """Find on-disk manifest and create in-memory Manifest
                 object.... grab from server if needed"""
 
                 try:
-                        return manifest.CachedManifest(fmri, self.pkgdir,
+                        ret = manifest.CachedManifest(fmri, self.pkgdir,
                             self.cfg_cache.preferred_publisher,
                             excludes)
+                        # if we have a intent string, let depot
+                        # know for what we're using the cached manifest
+                        if intent:
+                                try:
+                                        self.transport.touch_manifest(fmri, intent)
+                                except (api_errors.UnknownPublisher,
+                                    api_errors.TransportError):
+                                        # It's not fatal if we can't find
+                                        # or reach the publisher.
+                                        pass
                 except KeyError:
-                        return self.__fetch_manifest(fmri, excludes)
+                        ret = self.transport.get_manifest(fmri, excludes,
+                                                    intent)
+                return ret
 
-        def get_manifest(self, fmri, all_arch=False):
+        def get_manifest(self, fmri, all_variants=False, intent=None):
                 """return manifest; uses cached version if available.
-                all_arch controls whether manifest contains actions
-                for all architectures"""
+                all_variants controls whether manifest contains actions
+                for all variants"""
 
-                # Normally elide other arch variants
-                if self.arch_change or all_arch:
-                        all_arch = True
-                        v = EmptyI
+                # Normally elide other arch variants, facets
+                
+                if all_variants:
+                        excludes = EmptyI
                 else:
-                        arch = {"variant.arch": self.get_arch()}
-                        v = [variant.Variants(arch).allow_action]
+                        excludes = [ self.cfg_cache.variants.allow_action ]
 
-                m = self.__get_manifest(fmri, v)
+                m = self.__get_manifest(fmri, excludes=excludes, intent=intent)
 
-                self.__touch_manifest(fmri)
                 return m
 
         def set_pkg_state(self, pfmri, state):
@@ -1124,7 +1096,7 @@ class Image(object):
                         entry = cat.get_entry(f)
                         states = entry["metadata"]["states"]
                         if self.PKG_STATE_V1 not in states:
-                                return self.get_manifest(f, all_arch=True)
+                                return self.get_manifest(f, all_variants=True)
                         return None
 
                 # batch_mode is set to True here as any operations that modify
@@ -1220,53 +1192,32 @@ class Image(object):
                 states = entry["metadata"]["states"]
                 return self.PKG_STATE_INSTALLED in states
 
-        def is_pkg_preferred(self, pfmri):
-                """Compatibility function for use by pkg.client.api only.
-                Should be removed once publishers are ranked by priority.
-
-                Returns a boolean value indicating whether the specified
-                package was installed from a publisher that was preferred at
-                the time of installation, or is from the same publisher as
-                the currently preferred publisher."""
-
-                if pfmri.publisher == self.get_preferred_publisher():
-                        return True
-
-                # Avoid loading the installed catalog if the known catalog
-                # is already loaded.  This is safe since the installed
-                # catalog is a subset of the known, and a specific entry
-                # is being retrieved.
-                if not self.__catalog_loaded(self.IMG_CATALOG_KNOWN):
-                        cat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
-                else:
-                        cat = self.get_catalog(self.IMG_CATALOG_KNOWN)
-
-                try:
-                        entry = cat.get_entry(pfmri)
-                except api_errors.UnknownCatalogEntry:
-                        return False
-                states = entry["metadata"]["states"]
-                return self.__PKG_STATE_PREFERRED in states
-
-        def list_excludes(self, new_variants=None):
+        def list_excludes(self, new_variants=None, new_facets=None):
                 """Generate a list of callables that each return True if an
                 action is to be included in the image using the currently
-                defined variants for the image, or an updated set if
-                new_variants are specified.  The callables take a single action
-                argument.  Variants, facets and filters will be handled in
-                this fashion."""
-
-                # XXX simple for now; facets and filters need impl.
+                defined variants & facets for the image, or an updated set if
+                new_variants or new_facets are specified."""
+                
                 if new_variants:
                         new_vars = self.cfg_cache.variants.copy()
                         new_vars.update(new_variants)
-                        return [new_vars.allow_action]
-                elif self.new_variants:
-                        new_vars = self.cfg_cache.variants.copy()
-                        new_vars.update(self.new_variants)
-                        return [new_vars.allow_action]
+                        var_call = new_vars.allow_action
                 else:
-                        return [self.cfg_cache.variants.allow_action]
+                        var_call = self.cfg_cache.variants.allow_action
+                if new_facets:
+                        fac_call = new_facets.allow_action
+                else:
+                        fac_call = self.cfg_cache.facets.allow_action
+
+                return [var_call, fac_call]
+
+        def get_variants(self):
+                """ return a copy of the current image variants"""
+                return self.cfg_cache.variants.copy()
+
+        def get_facets(self):
+                """ Return a copy of the current image facets"""
+                return self.cfg_cache.facets.copy()
 
         def __build_dependents(self, progtrack):
                 """Build a dictionary mapping packages to the list of packages
@@ -1282,30 +1233,17 @@ class Image(object):
                                 if a.name != "depend" or \
                                     a.attrs["type"] != "require":
                                         continue
-
-                                dfmri = self.strtofmri(a.attrs["fmri"])
-                                if dfmri not in self.__req_dependents:
-                                        self.__req_dependents[dfmri] = []
-                                self.__req_dependents[dfmri].append(f)
+                                name = self.strtofmri(a.attrs["fmri"]).pkg_name
+                                self.__req_dependents.setdefault(name, []).append(f)
 
         def get_dependents(self, pfmri, progtrack):
                 """Return a list of the packages directly dependent on the given
                 FMRI."""
 
-                if not hasattr(self, "_Image__req_dependents"):
+                if self.__req_dependents is None:
                         self.__build_dependents(progtrack)
 
-                dependents = []
-                # We run through all the keys, in case a package is depended
-                # upon under multiple versions.  That is, if pkgA depends on
-                # libc@1 and pkgB depends on libc@2, we need to return both pkgA
-                # and pkgB.  If we used package names as keys, this would be
-                # simpler, but it wouldn't handle catalog operations (such as
-                # rename) that might have been applied to the fmri.
-                for f in self.__req_dependents.iterkeys():
-                        if pfmri.is_successor(f):
-                                dependents.extend(self.__req_dependents[f])
-                return dependents
+                return self.__req_dependents.get(pfmri.pkg_name, [])
 
         def __rebuild_image_catalogs(self, progtrack=None):
                 """Rebuilds the image catalogs based on the available publisher
@@ -1921,54 +1859,6 @@ class Image(object):
                 return pkg.fmri.MatchingPkgFmri(myfmri,
                     self.attrs["Build-Release"])
 
-        def load_constraints(self, progtrack):
-                """Load constraints for all install pkgs"""
-
-                cat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
-                for f, actions in cat.actions([cat.DEPENDENCY],
-                    excludes=self.list_excludes()):
-                        if not self.constraints.start_loading(f):
-                                # skip loading if already done
-                                continue
-
-                        for a in actions:
-                                if a.name != "depend":
-                                        continue
-                                progtrack.evaluate_progress()
-                                con = a.parse(self, f.get_name())[1]
-                                self.constraints.update_constraints(con)
-                        self.constraints.finish_loading(f)
-
-        def __get_installed_unbound_inc_list(self):
-                """Returns list of packages containing incorporation
-                dependencies on which no other pkgs depend."""
-
-                inc_tuples = []
-                dependents = set()
-
-                cat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
-                for f, actions in cat.actions([cat.DEPENDENCY],
-                    excludes=self.list_excludes()):
-                        for a in actions:
-                                if a.name != "depend":
-                                        continue
-                                fmri_name = f.get_pkg_stem()
-                                con_fmri = a.get_constrained_fmri(self)
-                                if con_fmri:
-                                        con_name = con_fmri.get_pkg_stem()
-                                        dependents.add(con_name)
-                                        inc_tuples.append((fmri_name, con_name))
-
-                # remove those incorporations which are depended on by other
-                # incorporations.
-                deletions = 0
-                for i, a in enumerate(inc_tuples[:]):
-                        if a[0] in dependents:
-                                del inc_tuples[i - deletions]
-
-                for p in set([ a[0] for a in inc_tuples ]):
-                        yield pkg.fmri.PkgFmri(p, self.attrs["Build-Release"])
-
         def get_user_by_name(self, name):
                 return portable.get_user_by_name(name, self.root,
                     self.type != IMG_USER)
@@ -2399,258 +2289,50 @@ class Image(object):
                 return olist, onames
 
         def make_install_plan(self, pkg_list, progtrack, check_cancelation,
-            noexecute, filters=None, verbose=False, multimatch_ignore=False):
+            noexecute, verbose=False):
                 """Take a list of packages, specified in pkg_list, and attempt
                 to assemble an appropriate image plan.  This is a helper
                 routine for some common operations in the client.
-
-                This method checks all publishers for a package match;
-                however, it defaults to choosing the preferred publisher
-                when an ambiguous package name is specified.  If the user
-                wishes to install a package from a non-preferred publisher,
-                the full FMRI that contains a publisher should be used
-                to name the package.
-
-                'multimatch_ignore' is an optional, boolean value that
-                indicates whether packages that have multiple matches for
-                only non-preferred publishers should be ignored when creating
-                the install plan.  This is intended to be used during an
-                image-update.
                 """
-
-                if filters is None:
-                        filters = []
-
-                error = 0
                 ip = imageplan.ImagePlan(self, progtrack, check_cancelation,
-                    filters=filters, noexecute=noexecute)
+                    noexecute=noexecute)
 
                 progtrack.evaluate_start()
-                self.load_constraints(progtrack)
 
-                unmatched_fmris = []
-                multiple_matches = []
-                illegal_fmris = []
-                constraint_violations = []
+                try:
+                        ip.plan_install(pkg_list)
 
-                # order package list so that any unbound incorporations are
-                # done first
-
-                inc_list = list(self.__get_installed_unbound_inc_list())
-
-                head = []
-                tail = []
-                for s in pkg_list:
-                        try:
-                                p = pkg.fmri.PkgFmri(s,
-                                    self.attrs["Build-Release"])
-                        except pkg.fmri.IllegalFmri:
-                                illegal_fmris.append(s)
-                                error = 1
-                                continue
-
-                        for inc in inc_list:
-                                if inc.pkg_name == p.pkg_name:
-                                        head.append((s, p))
-                                        break
-                        else:
-                                tail.append((s, p))
-                pkg_list = head + tail
-
-                # This approach works only for cases w/ simple
-                # incorporations; the apply_constraints_to_fmri
-                # call below binds the version too quickly.  This
-                # awaits a proper solver.
-
-                # XXX This logic is very inefficient for cases like image-update
-                # where the entire package inventory is matched against each
-                # package (think num_installed * available_pkgs).
-                ppub = self.get_preferred_publisher()
-                for p, conp in pkg_list:
-                        progtrack.evaluate_progress()
-                        try:
-                                conp = \
-                                    self.constraints.apply_constraints_to_fmri(
-                                    conp, auto=True)
-                        except constraint.ConstraintException, e:
-                                error = 1
-                                constraint_violations.extend(str(e).split("\n"))
-                                continue
-
-                        # If we were passed in an fmri object or a string that
-                        # anchors the package stem with the scheme, match on the
-                        # stem exactly as given.  Otherwise we can let the
-                        # default, looser matching mechanism be used.
-                        # inventory() will override if globbing characters are
-                        # used.
-                        matcher = None
-                        if isinstance(p, pkg.fmri.PkgFmri) or \
-                            p.startswith("pkg:/"):
-                                matcher = pkg.fmri.exact_name_match
-
-                        try:
-                                matches = list(self.inventory([conp],
-                                    all_known=True, matcher=matcher,
-                                    ordered=False))
-                        except api_errors.InventoryException, e:
-                                assert(not (e.notfound and e.illegal))
-                                assert(e.notfound or e.illegal)
-                                error = 1
-                                if e.notfound:
-                                        unmatched_fmris.append(p)
-                                else:
-                                        illegal_fmris.append(p)
-                                continue
-
-                        pnames = set()
-                        pmatch = []
-                        npnames = set()
-                        npmatch = []
-                        for m, st in matches:
-                                if m.publisher == ppub:
-                                        pnames.add(m.get_pkg_stem())
-                                        pmatch.append((m, st))
-                                else:
-                                        npnames.add(m.get_pkg_stem())
-                                        npmatch.append((m, st))
-
-                        pfmri = None
-                        # If we have more than one possible match from the
-                        # preferred publisher, try to narrow it down to one
-                        # non-obsolete package.
-                        if len(pnames) > 1:
-                                # Filter out packages whose newest version is
-                                # obsolete.  If there's more than one package
-                                # left, then there's still a conflict, but if
-                                # there's only one, we can assume that's the one
-                                # we want.  If there are none, we'll try again
-                                # with the non-preferred publisher.
-                                d = {}
-                                for m, st in pmatch:
-                                        d.setdefault(m.get_pkg_stem(), (m, st))
-                                nonobs = [
-                                    (m, st)
-                                    for stem, (m, st) in d.iteritems()
-                                    if not st["obsolete"] and not st["renamed"]
-                                ]
-                                if len(nonobs) > 1:
-                                        # There can only be one preferred publisher, so
-                                        # filtering is pointless and these are truly
-                                        # ambiguous matches.
-                                        multiple_matches.append((p, pnames))
-                                        error = 1
-                                        continue
-                                if nonobs:
-                                        pfmri, status = nonobs[0]
-
-                        # If we couldn't find exactly one non-obsolete match
-                        # from the preferred publisher, try to find one from the
-                        # non-preferred publishers, if any matches exist.
-                        if not pfmri and len(npnames) > 1:
-                                npmatch, npnames = \
-                                    self.__filter_install_matches(npmatch)
-                                d = {}
-                                for m, st in npmatch:
-                                        d.setdefault(m.get_pkg_stem(), (m, st))
-                                nonobs = [
-                                    (m, st)
-                                    for stem, (m, st) in d.iteritems()
-                                    if not st["obsolete"] and not st["renamed"]
-                                ]
-                                if len(nonobs) > 1:
-                                        if multimatch_ignore:
-                                                # Caller has requested that this
-                                                # package be skipped if multiple
-                                                # matches are found.
-                                                continue
-                                        # If there are still multiple matches
-                                        # after filtering, fail.
-                                        multiple_matches.append((p, npnames))
-                                        error = 1
-                                        continue
-                                if nonobs:
-                                        pfmri, status = nonobs[0]
-
-
-                        # At this point, either there's exactly one preferred or
-                        # non-preferred match, or all possible matches are
-                        # obsolete, so it doesn't really matter what we choose,
-                        # nothing will actually get installed.  So choose the
-                        # latest.
-                        #
-                        # Although looking at what's already installed in the
-                        # procedure above is incredibly complicated, here's an
-                        # instance where it would give us better results.  If we
-                        # chose something already installed, then it would get
-                        # removed, rather than nothing happening.  If things
-                        # were still ambiguous, we could error out.
-                        if not pfmri:
-                                if pmatch:
-                                        pfmri, status = pmatch[0]
-                                else:
-                                        pfmri, status = npmatch[0]
-
-                        if status["obsolete"]:
-                                vi = self.get_version_installed(pfmri)
-                                if vi:
-                                        ip.propose_fmri_removal(vi)
-                        else:
-                                # Take this fork for a renamed package, since
-                                # the rename will happen as part of the eval.
-                                ip.propose_fmri(pfmri)
-
-                if error != 0:
-                        raise api_errors.PlanCreationException(unmatched_fmris,
-                            multiple_matches, [], illegal_fmris,
-                            constraint_violations=constraint_violations)
+                except api_errors.ApiException, e:
+                        ip.show_failure(verbose)
+                        raise
 
                 self.__call_imageplan_evaluate(ip, verbose)
 
+        def make_update_plan(self, progtrack, check_cancelation,
+            noexecute, verbose=False):
+                """Create a plan to update all packages as far as
+                possible."""
+
+                progtrack.evaluate_start()
+
+                ip = imageplan.ImagePlan(self, progtrack, check_cancelation,
+                    noexecute=noexecute)
+
+                ip.plan_update()
+                
+                self.__call_imageplan_evaluate(ip, verbose)
+
         def make_uninstall_plan(self, fmri_list, recursive_removal,
-            progresstracker, check_cancelation, noexecute, verbose=False):
-                ip = imageplan.ImagePlan(self, progresstracker,
-                    check_cancelation, recursive_removal, noexecute=noexecute)
+            progtrack, check_cancelation, noexecute, verbose=False):
+                """Create uninstall plan to remove the specified packages;
+                do so recursively iff recursive_removal is set"""
 
-                err = 0
+                progtrack.evaluate_start()
 
-                unmatched_fmris = []
-                multiple_matches = []
-                missing_matches = []
-                illegal_fmris = []
+                ip = imageplan.ImagePlan(self, progtrack,
+                    check_cancelation, noexecute=noexecute)
 
-                progresstracker.evaluate_start()
-
-                for ppat in fmri_list:
-                        progresstracker.evaluate_progress()
-                        try:
-                                matches = list(self.inventory([ppat],
-                                    ordered=False))
-                        except api_errors.InventoryException, e:
-                                if e.illegal:
-                                        illegal_fmris.append(ppat)
-                                else:
-                                        try:
-                                                list(self.inventory([ppat],
-                                                    all_known=True,
-                                                    ordered=False))
-                                                missing_matches.append(ppat)
-                                        except api_errors.InventoryException:
-                                                unmatched_fmris.append(ppat)
-                                err = 1
-                                continue
-
-                        if len(matches) > 1:
-                                matchlist = [m[0] for m in matches]
-                                multiple_matches.append((ppat, matchlist))
-                                err = 1
-                                continue
-
-                        # Propose the removal of the first (and only!) match.
-                        ip.propose_fmri_removal(matches[0][0])
-
-                if err == 1:
-                        raise api_errors.PlanCreationException(unmatched_fmris,
-                            multiple_matches, missing_matches, illegal_fmris)
+                ip.plan_uninstall(fmri_list, recursive_removal)
 
                 self.__call_imageplan_evaluate(ip, verbose)
 
@@ -2713,7 +2395,7 @@ class Image(object):
                 # XXX call to progress tracker that SUNWipkg is being refreshed
 
                 img.make_install_plan(["SUNWipkg"], progtrack,
-                    check_cancelation, noexecute, filters = [])
+                    check_cancelation, noexecute)
 
                 return img.imageplan.nothingtodo()
 

@@ -40,7 +40,7 @@ import pkg.flavor.base as base
 import pkg.portable as portable
 import pkg.publish.dependencies as dependencies
 
-API_VERSION = 23
+API_VERSION = 24
 PKG_CLIENT_NAME = "pkg"
 
 class TestApiDependencies(testutils.SingleDepotTestCase):
@@ -175,7 +175,7 @@ close""" % { "foo": os.path.join(self.testdata_dir, "foo") }
 
         @staticmethod
         def _do_install(api_obj, pkg_list, **kwargs):
-                api_obj.plan_install(pkg_list, [], **kwargs)
+                api_obj.plan_install(pkg_list, **kwargs)
                 TestApiDependencies._do_finish(api_obj)
 
         @staticmethod

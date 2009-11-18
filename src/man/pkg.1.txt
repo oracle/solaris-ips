@@ -21,13 +21,20 @@ SYNOPSIS
      /usr/bin/pkg refresh [--full] [publisher ...]
 
      /usr/bin/pkg image-create [-fFPUz] [--force] [--full|--partial|--user]
-         [--zone] [-k ssl_key] [-c ssl_cert] [--no-refresh]
-         [-g|--origin ...] [-m|--mirror ...] (-p|--publisher) name=uri dir
+         [--zone] [-k ssl_key] [-c ssl_cert] [--no-refresh] 
+         [--variant <variant_spec>=<instance>] [-g|--origin ...] [-m|--mirror ...]
+         [--facet <facet_spec>=[True|False]] (-p|--publisher) name=uri dir
+
      /usr/bin/pkg image-update [-fnvq] [--be-name name] [--no-refresh]
          [--no-index]
 
+     /usr/bin/pkg variant [<variant_spec>]
      /usr/bin/pkg change-variant [-nvq] [--be-name name]
-         <variant_spec>=<instance> [<variant_spec>=<instance> ...]
+         <variant_spec>=<instance> ...
+
+     /usr/bin/pkg facet [<facet_spec>] 
+     /usr/bin/pkg change-facet [-nvq] [--be-name name] 
+         <facet_spec>=[True|False|None] ...
 
      /usr/bin/pkg set-property propname propvalue
      /usr/bin/pkg unset-property propname ...
@@ -38,9 +45,11 @@ SYNOPSIS
          [-G origin_to_remove | --remove-origin=origin_to_remove ...]
          [-m mirror_to_add | --add-mirror=mirror_to_add ...]
          [-M mirror_to_remove | --remove-mirror=mirror_to_remove ...]
+         [--search-before publisher] [--search-after publisher]
+         [--sticky] [--non-sticky]
          [--enable] [--disable] [--no-refresh] [--reset-uuid] publisher
      /usr/bin/pkg unset-publisher publisher ...
-     /usr/bin/pkg publisher [-HPa] [publisher ...]
+     /usr/bin/pkg publisher [-HPn] [publisher ...]
 
      /usr/bin/pkg history [-Hl]
      /usr/bin/pkg purge-history
@@ -103,6 +112,8 @@ SUBCOMMANDS
 
      image-create [-fFPUz] [--force] [--full|--partial|--user] [--zone]
        [-k ssl_key] [-c ssl_cert] [--no-refresh] [-g|--origin ...]
+       [--variant <variant_spec>=<instance>] ...
+       [--facet <facet_spec>=[True|False]] ...
        [-m|--mirror ...] (-p|--publisher) name=origin_uri dir
           Create, at location given by dir, an image suitable for package
           operations.  The default image type is user, as given by the -U
@@ -128,6 +139,10 @@ SUBCOMMANDS
           With --no-refresh, do not attempt to contact the repositories for
           the image's publishers to retrieve publisher metadata (e.g.
           catalogs).
+
+          With --variant, set the specified variant to the indicated value.
+
+          With --facet, set the specified facet to the indicated value.
 
      image-update [-fnvq] [--be-name name] [--no-index] [--no-refresh]
           Update all installed packages in the current image to the
@@ -370,12 +385,16 @@ SUBCOMMANDS
 
           The -H option causes the headers to be omitted.
 
+     variant [<variant_spec> ...]
+          Display the current values of all variants, or with arguments,
+          only the variants specified
+
      change-variant [-nvq] [--be-name name]
        <variant_spec>=<instance> [<variant_spec>=<instance> ...]
           Change the specified variants in the current image.
 
-          With the -n option, execute the requested operation but make no
-          persistent changes to the image.
+          With the -n option, plan the requested operation but make
+          no actual changes.
 
           With the -v option, issue verbose progress messages during the
           requested operation.  With the -q option, be completely silent.
@@ -384,6 +403,29 @@ SUBCOMMANDS
           argument given.  This option is only valid if a new boot environment
           is created during image update. See also beadm(1m).
 
+     facet [<facet_spec> ...]
+          Without arguments, displays the current values of all facets.  With
+          argument(s), evalute if each facet would be true or false and print
+          the result.
+
+     change-facet [-nvq] [--be-name name]
+       <facet_spec>=[True|False|None] ...
+
+          Change the specified facets in the current image.
+
+          With the -n option, plan the requested operation but make
+          no actual changes.
+
+          With the -v option, issue verbose progress messages during the
+          requested operation.  With the -q option, be completely silent.
+
+          With --be-name, rename the newly created boot environment to be the
+          argument given.  This option is only valid if a new boot environment
+          is created during the operation. See also beadm(1m).
+
+          Facets may be set to True or False.  Setting one to None removes
+          that facet specification from the current image.
+     
      fix [pkg_fmri_pattern ...]
           Fix any errors reported by pkg verify.
 
@@ -408,20 +450,36 @@ SUBCOMMANDS
        [-G origin_to_remove | --remove-origin=origin_to_remove ...]
        [-m mirror_to_add | --add-mirror=mirror_to_add]
        [-M mirror_to_remove | --remove-mirror=mirror_to_remove]
-       [--enable] [--disable] [--no-refresh] [--reset-uuid] publisher
+       [--search-before publisher] [--search-after publisher]
+       [--sticky] [--non-sticky] [--enable] [--disable] [--no-refresh] 
+       [--reset-uuid] publisher
+
           Update an existing publisher or add an additional package
+          publisher.  If no options affecting search order are specified,
+          new publishers are appended to the search order and are thus
+          searched last.
+
+          With -P, set the specified publisher as the preferred
+          publisher, i.e.  first in the search order.  When installing
+          new packages, this publisher will be searched first.
+          Updates to already installed packages will come from the
+          same publisher that originally provided the package so long
+          as that publisher remains sticky.
+
+          With --non-sticky, specify that higher ranked publishers than
+          this one may provide updates to packages originally installed
+          from this publisher.
+
+          With --sticky, return to the default behavior of always sourcing
+          updates from the same publisher that provided the package originally.
+
+          With --search-before, alter the publisher search order so that 
+          the publisher being modified is now searched before the specified
           publisher.
 
-          With -P, set the specified publisher as the preferred publisher.  When
-          installing new packages, the preferred publisher will be checked first
-          when determining which package repositories should be used for the
-          retrieval of package content and metadata during package operations.
-          When updating existing packages, if a package was installed from a
-          publisher that was preferred at the time of install, then updates will
-          be obtained from the current preferred publisher.  For packages that
-          were installed from a publisher that was not preferred at the time of
-          install, updates will always be obtained from the original publisher
-          regardless of the current, preferred publisher.
+          With --search-after, alter the publisher search order so that 
+          the publisher being modified is now searched after the specified
+          publisher.
 
           With -c and -k, specify client SSL certificate and key respectively.
 
@@ -454,14 +512,15 @@ SUBCOMMANDS
           Remove the configuration associated with the given publisher
           or publishers.
 
-     publisher [-HPa] [publisher ...]
-          Display publisher information.  With no arguments, display the
-          list of enabled publishers, their origin URIs, and mirrors.  If
-          specific publishers are requested, display the configuration
-          values, including mirrors, associated with those publishers.  With
-          -H, omit the headers from the listing.  With -P, display only the
-          preferred publisher. With -a, display all publishers (including those
-          that are disabled).
+     publisher [-HPn] [publisher ...]
+          Display publisher information.  With no arguments, display
+          the list of all publishers, their origin URIs, and mirrors
+          in search order preference.  If specific publishers are
+          requested, display the configuration values, including
+          mirrors, associated with those publishers.  With -H, omit
+          the headers from the listing.  With -P, display only the
+          preferred publisher. With -n, display only enabled
+          publishers.
 
      history [-Hl]
           Displays the command history of the applicable image.  With -H, omit
@@ -574,14 +633,19 @@ EXAMPLES
 EXIT STATUS
      The following exit values are returned:
 
-     0     Everything worked.
+     0     Command succeeded.
 
-     1     Something bad happened.
+     1     An error occurred.
 
      2     Invalid command line options were specified.
 
      3     Multiple operations were requested, but only some of them
            succeeded.
+
+     4     No changes were made - nothing to do.
+
+     5     The requested operation cannot be performed on a live
+           image.
 
 FILES
      var/pkg                    Metadata location for full and partial

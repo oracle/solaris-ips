@@ -60,7 +60,6 @@ class Pkg5TestCase(unittest.TestCase):
         def __str__(self):
                 return "%s.py %s.%s" % (self.__class__.__module__,
                     self.__class__.__name__, self.__testMethodName)
-
         def getTeardownFunc(self):
                 return (self, self.tearDown)
 
@@ -168,7 +167,7 @@ class _Pkg5TestResult(unittest._TextTestResult):
                     tdf = test.getTeardownFunc()[1]
                     tdf()
                     if test.persistent_depot:
-                        test.dc.kill()
+                            test.reallytearDown()
                     raise
 
         def getDescription(self, test):
@@ -339,6 +338,7 @@ class Pkg5TestSuite(unittest.TestSuite):
                                 # For test classes with persistent_depot set,
                                 # make their setup/teardown methods do nothing
                                 # since we are calling them here.
+                                test.reallytearDown = tdf
                                 test.setUp = donothing
                                 test.tearDown = donothing
                         test_start = time.time()
