@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import testutils
@@ -30,6 +30,8 @@ if __name__ == "__main__":
 import os
 import unittest
 import shutil
+
+from pkg import misc
 
 class TestPkgActuators(testutils.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -42,15 +44,15 @@ general/single_instance boolean true
 restarter/start_pid count 4172
 restarter/start_method_timestamp time 1222382991.639687000
 restarter/start_method_waitstatus integer 0
-restarter/transient_contract count 
+restarter/transient_contract count
 restarter/auxiliary_state astring none
 restarter/next_state astring none
 restarter/state astring online
 restarter/state_timestamp time 1222382991.644413000
-restarter_actions/refresh integer 
-restarter_actions/maint_on integer 
-restarter_actions/maint_off integer 
-restarter_actions/restart integer 
+restarter_actions/refresh integer
+restarter_actions/maint_on integer
+restarter_actions/maint_off integer
+restarter_actions/restart integer
 local-filesystems/entities fmri svc:/system/filesystem/local
 local-filesystems/grouping astring require_all
 local-filesystems/restart_on astring none
@@ -73,15 +75,15 @@ general/single_instance boolean true
 restarter/start_pid count 4172
 restarter/start_method_timestamp time 1222382991.639687000
 restarter/start_method_waitstatus integer 0
-restarter/transient_contract count 
+restarter/transient_contract count
 restarter/auxiliary_state astring none
 restarter/next_state astring none
 restarter/state astring disabled
 restarter/state_timestamp time 1222992132.445811000
-restarter_actions/refresh integer 
-restarter_actions/maint_on integer 
-restarter_actions/maint_off integer 
-restarter_actions/restart integer 
+restarter_actions/refresh integer
+restarter_actions/maint_on integer
+restarter_actions/maint_off integer
+restarter_actions/restart integer
 local-filesystems/entities fmri svc:/system/filesystem/local
 local-filesystems/grouping astring require_all
 local-filesystems/restart_on astring none
@@ -104,15 +106,15 @@ general/single_instance boolean true
 restarter/start_pid count 7816
 restarter/start_method_timestamp time 1222992237.506096000
 restarter/start_method_waitstatus integer 0
-restarter/transient_contract count 
+restarter/transient_contract count
 restarter/auxiliary_state astring none
 restarter/next_state astring none
 restarter/state astring online
 restarter/state_timestamp time 1222992237.527408000
-restarter_actions/refresh integer 
-restarter_actions/maint_on integer 
-restarter_actions/maint_off integer 
-restarter_actions/restart integer 
+restarter_actions/refresh integer
+restarter_actions/maint_on integer
+restarter_actions/maint_off integer
+restarter_actions/restart integer
 general_ovr/enabled boolean true
 local-filesystems/entities fmri svc:/system/filesystem/local
 local-filesystems/grouping astring require_all
@@ -136,15 +138,15 @@ general/single_instance boolean true
 restarter/start_pid count 7816
 restarter/start_method_timestamp time 1222992237.506096000
 restarter/start_method_waitstatus integer 0
-restarter/transient_contract count 
+restarter/transient_contract count
 restarter/auxiliary_state astring none
 restarter/next_state astring none
 restarter/state astring disabled
 restarter/state_timestamp time 1222992278.822335000
-restarter_actions/refresh integer 
-restarter_actions/maint_on integer 
-restarter_actions/maint_off integer 
-restarter_actions/restart integer 
+restarter_actions/refresh integer
+restarter_actions/maint_on integer
+restarter_actions/maint_off integer
+restarter_actions/restart integer
 general_ovr/enabled boolean false
 local-filesystems/entities fmri svc:/system/filesystem/local
 local-filesystems/grouping astring require_all
@@ -177,7 +179,7 @@ exit $PKG_SVCADM_EXIT_CODE
 
         misc_files = [ "svcprop_enabled", "svcprop_disabled", "svcprop_temp_enabled", "empty",
                        "svcprop_temp_enabled", "usr/bin/svcprop", "usr/sbin/svcadm"]
- 
+
         testdata_dir = None
 
         def setUp(self):
@@ -190,22 +192,22 @@ exit $PKG_SVCADM_EXIT_CODE
 
                 self.pkg_list+= ["""
                     open basics@1.0,5.11-0
-                    add file """ + self.testdata_dir + """/empty mode=0644 owner=root group=sys path=/test_restart restart_fmri=svc:system/test_restart_svc 
+                    add file """ + self.testdata_dir + """/empty mode=0644 owner=root group=sys path=/test_restart restart_fmri=svc:system/test_restart_svc
                     close """]
 
                 self.pkg_list+= ["""
                     open basics@1.1,5.11-0
-                    add file """ + self.testdata_dir + """/empty mode=0655 owner=root group=sys path=/test_restart restart_fmri=svc:system/test_restart_svc 
+                    add file """ + self.testdata_dir + """/empty mode=0655 owner=root group=sys path=/test_restart restart_fmri=svc:system/test_restart_svc
                     close """]
- 
+
                 self.pkg_list+= ["""
                     open basics@1.2,5.11-0
-                    add file """ + self.testdata_dir + """/empty mode=0646 owner=root group=sys path=/test_restart restart_fmri=svc:system/test_restart_svc 
+                    add file """ + self.testdata_dir + """/empty mode=0646 owner=root group=sys path=/test_restart restart_fmri=svc:system/test_restart_svc
                     close """]
 
                 self.pkg_list+= ["""
                     open basics@1.3,5.11-0
-                    add file """ + self.testdata_dir + """/empty mode=0657 owner=root group=sys path=/test_restart refresh_fmri=svc:system/test_refresh_svc 
+                    add file """ + self.testdata_dir + """/empty mode=0657 owner=root group=sys path=/test_restart refresh_fmri=svc:system/test_refresh_svc
                     close """]
 
                 self.pkg_list+= ["""
@@ -226,13 +228,13 @@ exit $PKG_SVCADM_EXIT_CODE
                         data = "self.%s_data" % os.path.basename(f)
                         file_handle.write(eval(data))
                         file_handle.close()
-                        os.chmod(filename, 0755)
+                        os.chmod(filename, misc.PKG_DIR_MODE)
 
         def tearDown(self):
                 testutils.SingleDepotTestCase.tearDown(self)
                 if self.testdata_dir:
                         shutil.rmtree(self.testdata_dir)
-        
+
         def test_actuators(self):
                 """test actuators"""
 
@@ -254,7 +256,7 @@ exit $PKG_SVCADM_EXIT_CODE
                 cmdstr = "--debug actuator_cmds_dir=%s" % self.testdata_dir
                 self.pkg(cmdstr + " install basics@1.0")
                 self.pkg("verify")
-                
+
                 self.file_contains(svcadm_output, "svcadm restart svc:system/test_restart_svc")
                 os.unlink(svcadm_output)
 
@@ -264,7 +266,7 @@ exit $PKG_SVCADM_EXIT_CODE
                 self.pkg("verify")
                 self.file_contains(svcadm_output, "svcadm restart svc:system/test_restart_svc")
                 os.unlink(svcadm_output)
-                
+
                 # test to see if our test service is restarted on uninstall
                 self.pkg(cmdstr + " uninstall basics")
                 self.pkg("verify")
@@ -324,12 +326,12 @@ exit $PKG_SVCADM_EXIT_CODE
                 self.pkg(cmdstr + " uninstall basics")
                 self.pkg("verify")
                 self.file_contains(svcadm_output, "svcadm disable -s svc:system/test_disable_svc")
- 
+
         def file_does_not_exist(self, path):
                 file_path = os.path.join(self.get_img_path(), path)
                 if os.path.exists(file_path):
                         self.assert_(False, "File %s exists" % path)
-                
+
         def file_contains(self, path, string):
                 file_path = os.path.join(self.get_img_path(), path)
                 try:

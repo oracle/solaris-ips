@@ -103,7 +103,8 @@ class FileAction(generic.Action):
                     (pkgplan.image.get_root(), path)))
 
                 if not os.path.exists(os.path.dirname(final_path)):
-                        self.makedirs(os.path.dirname(final_path), mode=0755)
+                        self.makedirs(os.path.dirname(final_path),
+                            mode=misc.PKG_DIR_MODE)
 
                 # XXX If we're upgrading, do we need to preserve file perms from
                 # exisiting file?
@@ -203,9 +204,9 @@ class FileAction(generic.Action):
                         except OSError, e:
                                 if e.errno != errno.EACCES:
                                         raise
-                                # On Windows, the time cannot be changed on a 
+                                # On Windows, the time cannot be changed on a
                                 # read-only file
-                                os.chmod(final_path, 0600)
+                                os.chmod(final_path, stat.S_IRUSR|stat.S_IWUSR)
                                 os.utime(final_path, (t, t))
                                 os.chmod(final_path, mode)
 

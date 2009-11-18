@@ -45,10 +45,10 @@ import pkg.fmri as fmri
 import pkg.catalog as catalog
 import pkg.client.api_errors as api_errors
 import pkg.manifest as manifest
+import pkg.misc as misc
 import pkg.portable as portable
 import pkg.variant as variant
 
-from pkg.misc import EmptyI
 
 class TestCatalog(pkg5unittest.Pkg5TestCase):
         def setUp(self):
@@ -59,7 +59,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                     "ips.test.%d" % self.pid)
 
                 try:
-                        os.makedirs(self.__test_prefix, 0755)
+                        os.makedirs(self.__test_prefix, misc.PKG_DIR_MODE)
                 except OSError, e:
                         if e.errno != errno.EEXIST:
                                 raise e
@@ -101,7 +101,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
 
                 target = os.path.join(self.__test_prefix, name)
                 try:
-                        os.makedirs(target, 0755)
+                        os.makedirs(target, misc.PKG_DIR_MODE)
                 except OSError, e:
                         if e.errno != errno.EEXIST:
                                 raise e
@@ -190,7 +190,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                                 self.assertEqual([v for v in vars], [])
                                 continue
 
-                        expected = expected_dependency() 
+                        expected = expected_dependency()
                         self.assertEqual(returned, expected)
                         self.assertEqual(var, ["i386", "sparc"])
                         self.assertEqual([(n, vs) for n, vs in vars],
@@ -211,7 +211,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                                 self.assertEqual(returned, [])
                                 continue
 
-                        expected = expected_all_variant_summary(f) 
+                        expected = expected_all_variant_summary(f)
                         self.assertEqual(returned, expected)
 
                 # This case should only return the summary-related actions (but
@@ -231,7 +231,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                                 continue
 
                         returned.sort()
-                        expected = expected_all_locale_summary(f) 
+                        expected = expected_all_locale_summary(f)
                         self.assertEqual(returned, expected)
 
                 # This case should only return the summary-related actions (but
@@ -249,7 +249,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                                 self.assertEqual(returned, [])
                                 continue
 
-                        expected = expected_summary(f) 
+                        expected = expected_summary(f)
                         self.assertEqual(returned, expected)
 
                 # Verify that retrieving a single entry's actions works as well.
@@ -268,7 +268,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                     str(a)
                     for a in nc.get_entry_actions(f, [nc.DEPENDENCY])
                 ]
-                expected = expected_dependency() 
+                expected = expected_dependency()
                 self.assertEqual(returned, expected)
 
                 # This case should only return the summary-related actions (but
@@ -277,17 +277,17 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                     str(a)
                     for a in nc.get_entry_actions(f, [nc.SUMMARY])
                 ]
-                expected = expected_all_variant_summary(f) 
+                expected = expected_all_variant_summary(f)
                 self.assertEqual(returned, expected)
 
                 # This case should only return the summary-related actions (but
                 # for 'C' and 'th' locales and without sparc variants).
                 returned = sorted([
                     str(a)
-                    for a in nc.get_entry_actions(f, [nc.SUMMARY], 
+                    for a in nc.get_entry_actions(f, [nc.SUMMARY],
                     excludes=excludes, locales=locales)
                 ])
-                expected = expected_all_locale_summary(f) 
+                expected = expected_all_locale_summary(f)
                 self.assertEqual(returned, expected)
 
                 # This case should only return the summary-related actions (but
@@ -297,7 +297,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                     for a in nc.get_entry_actions(f, [nc.SUMMARY],
                     excludes=excludes)
                 ]
-                expected = expected_summary(f) 
+                expected = expected_summary(f)
                 self.assertEqual(returned, expected)
 
         def test_01_attrs(self):

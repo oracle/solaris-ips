@@ -32,6 +32,7 @@ import os
 import pkg.client.api_errors as api_errors
 import pkg.client.publisher as publisher
 import pkg.fmri as fmri
+import pkg.misc as misc
 import pkg.p5i as p5i
 import shutil
 import sys
@@ -47,6 +48,10 @@ import pkg5unittest
 class TestP5I(pkg5unittest.Pkg5TestCase):
         """Class to test the functionality of the pkg.p5i module."""
 
+        #
+        # Whitespace at the ends of some lines in the below is
+        # significant.
+        #
         p5i_bobcat = """{
   "packages": [
     "pkg:/bar@1.0,5.11-0", 
@@ -92,7 +97,8 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
                     "ips.test.%d" % self.pid)
 
                 try:
-                        os.makedirs(self.__test_prefix, 0755)
+                        os.makedirs(self.__test_prefix,
+                            misc.PKG_DIR_MODE)
                 except OSError, e:
                         if e.errno != errno.EEXIST:
                                 raise e

@@ -29,11 +29,6 @@ if __name__ == "__main__":
 
 import httplib
 import os
-import pkg.depotcontroller as dc
-import pkg.fmri as fmri
-import pkg.misc as misc
-import pkg.p5i as p5i
-import pkg.server.repositoryconfig as rcfg
 import shutil
 import tempfile
 import time
@@ -42,6 +37,11 @@ import urllib
 import urllib2
 import urlparse
 
+import pkg.depotcontroller as dc
+import pkg.fmri as fmri
+import pkg.misc as misc
+import pkg.p5i as p5i
+import pkg.server.repositoryconfig as rcfg
 
 class TestPkgDepot(testutils.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -280,7 +280,7 @@ class TestPkgDepot(testutils.SingleDepotTestCase):
                 self.assert_(not self.dc.is_alive())
 
                 # Next, test readonly mode with a repo_dir that is empty.
-                os.makedirs(dpath, 0755)
+                os.makedirs(dpath, misc.PKG_DIR_MODE)
                 self.dc.set_readonly()
                 self.dc.start_expected_fail()
                 self.assert_(not self.dc.is_alive())
@@ -296,7 +296,7 @@ class TestPkgDepot(testutils.SingleDepotTestCase):
 
                 # Next, test readwrite (publishing) mode with an empty repo_dir.
                 shutil.rmtree(dpath)
-                os.makedirs(dpath, 0755)
+                os.makedirs(dpath, misc.PKG_DIR_MODE)
                 self.dc.set_readwrite()
                 self.dc.start()
                 self.assert_(self.dc.is_alive())
@@ -333,7 +333,7 @@ class TestDepotController(testutils.CliTestCase):
                 logpath = os.path.join(self.get_test_prefix(), self.id())
 
                 try:
-                        os.makedirs(depotpath, 0755)
+                        os.makedirs(depotpath, misc.PKG_DIR_MODE)
                 except:
                         pass
 
@@ -373,7 +373,7 @@ class TestDepotController(testutils.CliTestCase):
                         f.write(p)
                         f.close()
                         self.debug("wrote %s" % p)
-                
+
                 writable_root = os.path.join(self.get_test_prefix(),
                     "writ_root")
                 index_dir = os.path.join(writable_root, "index")
@@ -383,7 +383,7 @@ class TestDepotController(testutils.CliTestCase):
                 o_feed = os.path.join(base_dir, "feed.xml")
 
                 timeout = 10
-                
+
                 def check_state(check_feed):
                         found = not os.path.exists(o_index_dir) and \
                             not os.path.exists(o_feed) and \
@@ -412,7 +412,7 @@ class TestDepotController(testutils.CliTestCase):
                                 except urllib2.HTTPError:
                                         time.sleep(1)
                         self.assert_(got)
-                        
+
                 self.__dc.set_port(12000)
                 self.__dc.set_writable_root(writable_root)
                 self.__dc.start()

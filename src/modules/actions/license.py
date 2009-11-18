@@ -62,7 +62,6 @@ class LicenseAction(generic.Action):
 
         def install(self, pkgplan, orig):
                 """Client-side method that installs the license."""
-                mode = 0444
                 owner = 0
                 group = 0
 
@@ -75,9 +74,10 @@ class LicenseAction(generic.Action):
 
                 # make sure the directory exists and the file is writable
                 if not os.path.exists(os.path.dirname(path)):
-                        self.makedirs(os.path.dirname(path), mode=0755)
+                        self.makedirs(os.path.dirname(path),
+                            mode=misc.PKG_DIR_MODE)
                 elif os.path.exists(path):
-                        os.chmod(path, 0644)
+                        os.chmod(path, misc.PKG_FILE_MODE)
 
                 lfile = file(path, "wb")
                 # XXX Should throw an exception if shasum doesn't match
@@ -87,7 +87,7 @@ class LicenseAction(generic.Action):
                 lfile.close()
                 stream.close()
 
-                os.chmod(path, mode)
+                os.chmod(path, misc.PKG_RO_FILE_MODE)
 
                 try:
                         portable.chown(path, owner, group)

@@ -33,6 +33,8 @@ import tempfile
 import unittest
 import urllib
 
+from pkg import misc
+
 class TestPkgsendBasics(testutils.SingleDepotTestCase):
         persistent_depot = False
 
@@ -88,7 +90,7 @@ class TestPkgsendBasics(testutils.SingleDepotTestCase):
 
                 # Create an empty directory to abuse as a repository.
                 junk_repo = os.path.join(self.get_test_prefix(), "junk-repo")
-                os.makedirs(junk_repo, 0755)
+                os.makedirs(junk_repo, misc.PKG_DIR_MODE)
 
                 # Point at a valid directory that does not contain a repository.
                 dfurl = "file://" + junk_repo

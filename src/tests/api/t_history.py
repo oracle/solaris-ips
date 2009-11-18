@@ -20,14 +20,15 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import os
 import re
+import shutil
+import stat
 import sys
 import tempfile
-import shutil
 import unittest
 
 import pkg
@@ -444,6 +445,18 @@ class TestHistory(pkg5unittest.Pkg5TestCase):
                                 self.assertNotEqual(e.find("AssertionError"),
                                     -1)
 
+        def test_13_bug_11735(self):
+                """Ensure that history files are created with appropriate
+                permissions"""
+
+                h = self.__h
+                self.assertEqual(stat.S_IMODE(os.stat(h.path).st_mode),
+                                 misc.PKG_DIR_MODE)
+
+                entry = os.path.join(h.path, os.listdir(h.path)[0])
+                self.assertEqual(stat.S_IMODE(os.stat(entry).st_mode),
+                                 misc.PKG_FILE_MODE)
+
+
 if __name__ == "__main__":
         unittest.main()
-

@@ -28,12 +28,15 @@
 import copy
 import errno
 import os
-import pkg.client.api_errors as api_errors
-import pkg.client.publisher as publisher
 import shutil
 import sys
 import tempfile
 import unittest
+
+import pkg.client.api_errors as api_errors
+import pkg.client.publisher as publisher
+import pkg.misc as misc
+
 
 # Set the path so that modules above can be found.
 path_to_parent = os.path.join(os.path.dirname(__file__), "..")
@@ -54,7 +57,7 @@ class TestPublisher(pkg5unittest.Pkg5TestCase):
                     "ips.test.%d" % self.pid)
 
                 try:
-                        os.makedirs(self.__test_prefix, 0755)
+                        os.makedirs(self.__test_prefix, misc.PKG_DIR_MODE)
                 except OSError, e:
                         if e.errno != errno.EEXIST:
                                 raise e

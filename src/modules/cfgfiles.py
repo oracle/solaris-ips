@@ -21,28 +21,29 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
 # NOTE: This module is inherently posix specific.  Care is taken in the modules
 # that use this module to not use it on other operating systems.
 
-import os
-import fcntl
-import re
-import tempfile
-import sys
-import time
 import datetime
+import fcntl
+import os
+import re
+import stat
+import sys
+import tempfile
+import time
 
 class CfgFile(object):
     """ Solaris configuration file editor... make it easier to
         modify Solaris line-oriented configuration files from actions """
 
-    def __init__(self, filename, separator, column_names, keys, 
+    def __init__(self, filename, separator, column_names, keys,
                  comment_match="#", continuation_lines=False):
-        
+
         self.filename = filename
         self.separator = separator
         self.continuation_lines = continuation_lines
@@ -60,21 +61,21 @@ class CfgFile(object):
             self.keys = [keys]
         else:
             self.keys = keys
-            
+
         self.index = {}
 
         assert(set(self.column_names) >= set(self.keys))
 
     def __str__(self):
         return "CfgFile(%s):%s:%s:%s" % \
-            (self.filename, self.keys, self.column_names, self.index) 
+            (self.filename, self.keys, self.column_names, self.index)
 
     def getcolumnnames(self):
         return self.column_names
 
     def iscommentline(self, line):
         return self.comment_regexp.match(line)
-    
+
     def splitline(self, line):
         cols = line.split(self.separator)
 
@@ -101,7 +102,7 @@ class CfgFile(object):
                 while self.continuation_lines and line[-2:] == "\\\n":
                     linecnt += 1
                     line += file.next()
-                    
+
                 line = line.rstrip("\n")
                 if self.iscommentline(line):
                     self.index[lineno] = \
@@ -132,9 +133,9 @@ class CfgFile(object):
         return dict((i, self.default_values[i])
                     for i in self.default_values
                     if isinstance(self.default_values[i], str))
-    
+
     def updatevalue(self, template):
-        """ update existing record, using orig values if missing 
+        """ update existing record, using orig values if missing
             in template"""
         orig = self.index[tuple(template[k] for k in self.keys)].copy()
         for name in self.column_names:
@@ -178,9 +179,9 @@ class CfgFile(object):
             [
                 "%s" % template[key] for key in self.column_names
                 ]))
-            
+
     def writefile(self):
-        
+
         if not self.needswriting:
             return
 
@@ -195,11 +196,11 @@ class CfgFile(object):
 
         for l in self.getfilelines():
             print >>file, l
-            
+
         file.close()
 
         os.rename(name, self.filename)
-    
+
 class PasswordFile(CfgFile):
     """Manage the passwd and shadow together. Note that
        insertion/deletion of +/- fields isn't supported"""
@@ -210,8 +211,8 @@ class PasswordFile(CfgFile):
                     {"username"   : (1, None),
                      "password"   : (2, "x"),
                      "uid"        : (3, None),
-                     "gid"        : (4, None), 
-                     "gcos-field" : (5, "& User"), 
+                     "gid"        : (4, None),
+                     "gcos-field" : (5, "& User"),
                      "home-dir"   : (6, "/"),
                      "login-shell": (7, "")
                      },
@@ -222,7 +223,7 @@ class PasswordFile(CfgFile):
                     ":",
                     {"username"   : (1, None),
                      "password"   : (2, "*LK*"),
-                     "lastchg"    : (3, days),               
+                     "lastchg"    : (3, days),
                      "min"        : (4, ""),
                      "max"        : (5, ""),
                      "warn"       : (6, ""),
@@ -240,10 +241,10 @@ class PasswordFile(CfgFile):
 
     def __str__(self):
         return "PasswordFile: [%s %s]" % (self.password_file, self.shadow_file)
- 
+
     def getvalue(self, template):
         """ merge dbs... do passwd file first to get right passwd value"""
-        c = self.password_file.getvalue(template).copy() 
+        c = self.password_file.getvalue(template).copy()
         c.update(self.shadow_file.getvalue(template))
         return c
 
@@ -252,7 +253,7 @@ class PasswordFile(CfgFile):
         if "password" in copy:
             copy["password"]=""
         self.password_file.updatevalue(copy)
-        self.shadow_file.updatevalue(template)    
+        self.shadow_file.updatevalue(template)
 
     def setvalue(self, template):
         # ignore attempts to set passwd for passwd file
@@ -267,7 +268,7 @@ class PasswordFile(CfgFile):
         self.shadow_file.removevalue(template)
 
     def getnextuid(self):
-        """returns next free system (<=99) uid""" 
+        """returns next free system (<=99) uid"""
         uids=[]
         for t in self.password_file.index.itervalues():
             if t[1]:
@@ -292,7 +293,7 @@ class PasswordFile(CfgFile):
 
     def getuser(self, username):
         return self.getvalue({"username" : username})
-    
+
     def getdefaultvalues(self):
         a = self.password_file.getdefaultvalues()
         a.update(self.shadow_file.getdefaultvalues())
@@ -301,14 +302,14 @@ class PasswordFile(CfgFile):
     def lockfile(self):
         fn = os.path.join(self.path_prefix, "etc/.pwd.lock")
         self.lockfd = file(fn, 'w')
-        os.chmod(fn, 0600)
+        os.chmod(fn, stat.S_IRUSR|stat.S_IWUSR)
         fcntl.lockf(self.lockfd, fcntl.LOCK_EX, 0,0,0)
-        
+
     def unlockfile(self):
         fcntl.lockf(self.lockfd, fcntl.LOCK_EX, 0,0,0)
         self.lockfd.close()
         self.lockfd = None
-        
+
 class GroupFile(CfgFile):
     """ manage the group file"""
     def __init__(self, path_prefix):
@@ -320,12 +321,12 @@ class GroupFile(CfgFile):
                           "user-list"  : (4, "")
                           },
                          "groupname", comment_match="[+-]")
-    
+
         self.readfile()
         self.default_values["gid"] = self.getnextgid()
 
     def getnextgid(self):
-        """returns next free system (<=99) gid""" 
+        """returns next free system (<=99) gid"""
         gids=[]
         for t in self.index.itervalues():
             if t[1]:
@@ -357,11 +358,11 @@ class GroupFile(CfgFile):
         users.remove(username)
         group["user-list"] = ",".join(users)
         self.setvalue(group)
-     
+
     def getgroups(self, username):
         """ return list of additional groups user belongs to """
         return sorted([
-                t[1]["groupname"] 
+                t[1]["groupname"]
                 for t in self.index.values()
                 if username in t[1]["user-list"].split(",")
                 ])
@@ -374,18 +375,18 @@ class GroupFile(CfgFile):
         for g in removals:
             self.subuser(g, username)
         for g in additions:
-            self.adduser(g, username)        
+            self.adduser(g, username)
 
     def removeuser(self, username):
         for g in self.getgroups(username):
             self.subuser(g, username)
-        
+
 class FtpusersFile(CfgFile):
     """ If a username is present in this file, it denies that user
     the ability to use ftp"""
 
     def __init__(self, path_prefix):
-        
+
         CfgFile.__init__(self, os.path.join(path_prefix, "etc/ftpd/ftpusers"),
                     " ",
                     {"username"   : (1, None)
@@ -441,7 +442,7 @@ class UserattrFile(CfgFile):
         d = {}
         for attr in attributes:
             a = re.split("(?<=[^\\\\])=", attr)
-            d[a[0]] = a[1].split(",") 
+            d[a[0]] = a[1].split(",")
         cols[4] = d
         return cols
 

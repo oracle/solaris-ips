@@ -41,6 +41,7 @@ import pkg.client.progress as progress
 import pkg.fmri
 import pkg.manifest as manifest
 import pkg.client.api_errors as api_errors
+import pkg.misc as misc
 import pkg.pkgtarfile as ptf
 import pkg.portable as portable
 import pkg.publish.transaction as trans
@@ -650,7 +651,7 @@ def main_func():
                 basedir = target
                 if not os.path.exists(basedir):
                         try:
-                                os.makedirs(basedir, 0755)
+                                os.makedirs(basedir, misc.PKG_DIR_MODE)
                         except:
                                 error(_("Unable to create basedir '%s'.") % \
                                     basedir)

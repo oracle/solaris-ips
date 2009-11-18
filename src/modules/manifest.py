@@ -28,15 +28,15 @@
 import os
 import errno
 import tempfile
+import sha
 from itertools import groupby, chain, repeat
-from pkg.misc import EmptyI, expanddirs
 
 import pkg.actions as actions
 import pkg.client.api_errors as api_errors
 import pkg.portable as portable
 import pkg.variant as variant
-import sha
 
+from pkg.misc import EmptyI, expanddirs, PKG_FILE_MODE
 from pkg.actions.attribute import AttributeAction
 
 class Manifest(object):
@@ -300,7 +300,7 @@ class Manifest(object):
 
                         if not l or l[0] == "#":  # ignore blank lines & comments
                                 continue
- 
+
                         try:
                                 yield actions.fromstr(l)
                         except actions.ActionError, e:
@@ -526,7 +526,7 @@ class Manifest(object):
                 #
                 mfile.write(self.tostr_unsorted())
                 mfile.close()
-                os.chmod(fn, 0644)
+                os.chmod(fn, PKG_FILE_MODE)
                 portable.rename(fn, mfst_path)
 
         def get_variants(self, name):
@@ -601,8 +601,8 @@ null = Manifest()
 class CachedManifest(Manifest):
         """This class handles a cache of manifests for the client;
         it partitions the manifest into multiple files (one per
-        action type) and also builds an on-disk cache of the 
-        directories explictly and implicitly referenced by the 
+        action type) and also builds an on-disk cache of the
+        directories explictly and implicitly referenced by the
         manifest, tagging each one w/ the appropriate variants/facets."""
 
         def __file_path(self, name):
@@ -635,7 +635,7 @@ class CachedManifest(Manifest):
                         # we have no cached copy; save one
                         # don't specify excludes so on-disk copy has
                         # all variants
-                        self.set_content(contents) 
+                        self.set_content(contents)
                         self.__finiload()
                         if self.__storeback():
                                 self.__unload()
@@ -645,7 +645,7 @@ class CachedManifest(Manifest):
 
                 # we have a cached copy of the manifest
                 mdpath = self.__file_path("manifest.dircache")
-                
+
                 # have we computed the dircache?
                 if not os.path.exists(mdpath): # we're adding cache
                         self.excludes = EmptyI # to existing manifest
@@ -669,13 +669,13 @@ class CachedManifest(Manifest):
                 when downloading new manifests"""
                 self.actions = []
                 self.actions_bytype = {}
-                self.variants = {}   
-                self.facets = {}     
-                self.attributes = {} 
+                self.variants = {}
+                self.facets = {}
+                self.attributes = {}
                 self.loaded = False
-                
+
         def __finiload(self):
-                """Finish loading.... this part of initialization is common 
+                """Finish loading.... this part of initialization is common
                 to multiple code paths"""
                 self.loaded = True
 
@@ -697,7 +697,7 @@ class CachedManifest(Manifest):
 
         def __storebytype(self):
                 """ create manifest.<typename> files to accelerate partial
-                parsing of manifests.  Separate from __storeback code to 
+                parsing of manifests.  Separate from __storeback code to
                 allow upgrade to reuse existing on disk manifests"""
 
                 assert self.loaded
@@ -705,7 +705,7 @@ class CachedManifest(Manifest):
                 t_dir = self.__file_dir()
 
                 # create per-action type cache; use rename to avoid
-                # corrupt files if ^C'd in the middle 
+                # corrupt files if ^C'd in the middle
                 for n in self.actions_bytype.keys():
                         t_prefix = "manifest.%s." % n
 
@@ -715,7 +715,7 @@ class CachedManifest(Manifest):
                         for a in self.actions_bytype[n]:
                                 f.write("%s\n" % a)
                         f.close()
-                        os.chmod(fn, 0644)
+                        os.chmod(fn, PKG_FILE_MODE)
                         portable.rename(fn, self.__file_path("manifest.%s" % n))
 
                 # create dircache
@@ -728,32 +728,32 @@ class CachedManifest(Manifest):
                         f.write(s)
 
                 f.close()
-                os.chmod(fn, 0644)
+                os.chmod(fn, PKG_FILE_MODE)
                 portable.rename(fn, self.__file_path("manifest.dircache"))
 
         @staticmethod
         def __gen_dirs_to_str(dirs):
-                """ from a dictionary of paths, generate contents of dircache 
+                """ from a dictionary of paths, generate contents of dircache
                 file"""
-                for d in dirs:                        
+                for d in dirs:
                         for v in dirs[d]:
                                 yield "dir path=%s %s\n" % \
                                     (d, " ".join("%s=%s" % t \
                                     for t in v.iteritems()))
-        
+
         def __actions_to_dirs(self):
-                """ create dictionary of all directories referenced 
-                by actions explicitly or implicitly from self.actions...  
+                """ create dictionary of all directories referenced
+                by actions explicitly or implicitly from self.actions...
                 include variants as values; collapse variants where possible"""
                 assert self.loaded
-                        
+
                 dirs = {}
-                # build a dictionary containing all directories tagged w/ 
+                # build a dictionary containing all directories tagged w/
                 # variants
                 for a in self.actions:
                         v, f = a.get_varcet_keys()
                         variants = dict((name, a.attrs[name]) for name in v + f)
-                        for d in expanddirs(a.directory_references()): 
+                        for d in expanddirs(a.directory_references()):
                                 if d not in dirs:
                                         dirs[d] = [variants]
                                 elif variants not in dirs[d]:
@@ -766,11 +766,11 @@ class CachedManifest(Manifest):
                                 continue
                         # could collapse dirs where all variants are present
                 return dirs
-                
+
         def get_directories(self, excludes):
                 """ return a list of directories implicitly or
                 explicitly referenced by this object"""
-                
+
                 mpath = self.__file_path("manifest.dircache")
 
                 if not os.path.exists(mpath):
@@ -780,18 +780,18 @@ class CachedManifest(Manifest):
                                 self.__load()
                         # generate actions that contain directories
                         alist = [
-                                actions.fromstr(s.strip()) 
+                                actions.fromstr(s.strip())
                                 for s in self.__gen_dirs_to_str(
                                     self.__actions_to_dirs())
                                 ]
-                else: 
+                else:
                         # we have cached copy on disk; use it
                         f = file(mpath)
                         alist = [actions.fromstr(s.strip()) for s in f]
                         f.close()
                 s = set([
-                         a.attrs["path"] 
-                         for a in alist 
+                         a.attrs["path"]
+                         for a in alist
                          if a.include_this(excludes)
                          ])
                 return list(s)
@@ -803,7 +803,7 @@ class CachedManifest(Manifest):
 
                 if self.loaded: #if already loaded, use in-memory cached version
                         # invoke subclass method to generate action by action
-                        for a in Manifest.gen_actions_by_type(self, atype, 
+                        for a in Manifest.gen_actions_by_type(self, atype,
                             excludes):
                                 yield a
                         return
@@ -816,7 +816,7 @@ class CachedManifest(Manifest):
                                 # get manifest from disk
                                 self.__load()
                         # invoke subclass method to generate action by action
-                        for a in Manifest.gen_actions_by_type(self, atype, 
+                        for a in Manifest.gen_actions_by_type(self, atype,
                             excludes):
                                 yield a
                 else:
@@ -846,13 +846,13 @@ class CachedManifest(Manifest):
                         if a.include_this(self.excludes):
                                 self.fill_attributes(a)
                 f.close()
-                return True                
-                
+                return True
+
         def __getitem__(self, key):
                 if not self.loaded and not self.__load_attributes():
                         self.__load()
                 return Manifest.__getitem__(self, key)
-                
+
         def __setitem__(self, key, value):
                 """No assignments to cached manifests allowed."""
                 assert "CachedManifests are not dicts"
@@ -897,11 +897,11 @@ class CachedManifest(Manifest):
             self_exclude=EmptyI):
                 if not self.loaded:
                         self.__load()
-                return Manifest.difference(self, origin, 
-                    origin_exclude=origin_exclude, 
+                return Manifest.difference(self, origin,
+                    origin_exclude=origin_exclude,
                     self_exclude=self_exclude)
 
-                
+
 class EmptyCachedManifest(Manifest):
         """Special class for pkgplan's need for a empty manifest;
         the regular null manifest doesn't support get_directories

@@ -31,11 +31,13 @@ This module contains the HardLinkAction class, which represents a hardlink-type
 packaging object."""
 
 import errno
+import link
 import os
 import stat
 
+from pkg import misc
 from pkg.client.api_errors import ActionExecutionError
-import link
+
 
 class HardLinkAction(link.LinkAction):
         """Class representing a hardlink-type packaging object."""
@@ -47,7 +49,7 @@ class HardLinkAction(link.LinkAction):
 
         def get_target_path(self):
                 """ return a path for target that is relative to image"""
-                
+
                 target = self.attrs["target"]
 
                 # paths are either relative to path or absolute;
@@ -73,7 +75,8 @@ class HardLinkAction(link.LinkAction):
                     (pkgplan.image.get_root(), path)))
 
                 if not os.path.exists(os.path.dirname(path)):
-                        self.makedirs(os.path.dirname(path), mode=0755)
+                        self.makedirs(os.path.dirname(path),
+                            mode=misc.PKG_DIR_MODE)
                 elif os.path.exists(path):
                         os.unlink(path)
 

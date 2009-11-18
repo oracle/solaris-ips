@@ -167,7 +167,7 @@ class Repository(object):
         __catalog = None
         __lock = None
 
-        def __init__(self, auto_create=False, catalog_root=None, 
+        def __init__(self, auto_create=False, catalog_root=None,
             cfgpathname=None, fork_allowed=False, index_root=None, log_obj=None,
             mirror=False, pkg_root=None, properties=EmptyDict, read_only=False,
             repo_root=None, trans_root=None,
@@ -203,7 +203,7 @@ class Repository(object):
                         self.pkg_root = pkg_root
                 if trans_root:
                         self.trans_root = trans_root
-                
+
                 # Must be set before writable_root.
                 self.__required_dirs = [self.trans_root, self.pkg_root,
                     self.catalog_root]
@@ -411,7 +411,7 @@ class Repository(object):
                         self.catalog.destroy()
                 elif writ_cat_root and not os.path.exists(writ_cat_root):
                         try:
-                                os.mkdir(writ_cat_root, 0755)
+                                os.mkdir(writ_cat_root, misc.PKG_DIR_MODE)
                         except EnvironmentError, e:
                                 if e.errno == errno.EACCES:
                                         raise api_errors.PermissionsException(
@@ -817,7 +817,7 @@ class Repository(object):
                 # Ensure the permissions on the new temporary catalog
                 # directory are correct.
                 try:
-                        os.chmod(tmp_cat_root, 0755)
+                        os.chmod(tmp_cat_root, misc.PKG_DIR_MODE)
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES:
                                 raise api_errors.PermissionsException(
@@ -1082,7 +1082,7 @@ class Repository(object):
                 if fp is not None:
                         return fp
                 raise RepositoryFileNotFoundError(fhash)
-                
+
         @property
         def in_flight_transactions(self):
                 """The number of transactions awaiting completion."""
@@ -1234,7 +1234,7 @@ class Repository(object):
                             index_dir=self.index_root,
                             get_manifest_path=self.manifest,
                             case_sensitive=q.case_sensitive)
-                        return query.search(c.fmris)                
+                        return query.search(c.fmris)
 
                 c = self.catalog
                 query_lst = []

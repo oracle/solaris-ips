@@ -21,12 +21,13 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
 
 import os
+import stat
 import tarfile
 # Without the below statements, tarfile will trigger calls to getpwuid
 # and getgrgid for every file extracted.  This in turn leads to nscd
@@ -89,7 +90,7 @@ class PkgTarFile(tarfile.TarFile):
                         # don't exist for these directories, the permissions
                         # will be wrong.
                         try:
-                                os.makedirs(upperdirs, 0700)
+                                os.makedirs(upperdirs, stat.S_IRWXU)
                         except EnvironmentError:
                                 pass
                 try:

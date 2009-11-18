@@ -39,6 +39,8 @@ import time
 from stat import *
 import generic
 
+from pkg import misc
+
 class LegacyAction(generic.Action):
         """Class representing a legacy SVr4 packaging object."""
 
@@ -52,14 +54,14 @@ class LegacyAction(generic.Action):
                 return [os.path.normpath(os.path.join("var/sadm/pkg", self.attrs["pkg"]))]
 
         def install(self, pkgplan, orig):
-                """Client-side method that installs the dummy package files.  
+                """Client-side method that installs the dummy package files.
                 Use per-pkg hardlinks to create reference count for pkginfo file"""
 
                 pkgdir = os.path.join(pkgplan.image.get_root(), "var/sadm/pkg",
                     self.attrs["pkg"])
 
                 if not os.path.isdir(pkgdir):
-                        os.makedirs(pkgdir, 0755)
+                        os.makedirs(pkgdir, misc.PKG_DIR_MODE)
 
                 pkginfo = os.path.join(pkgdir, "pkginfo")
 
@@ -100,7 +102,7 @@ class LegacyAction(generic.Action):
                 # uninstall easier
 
                 if not orig:
-                        linkfile = os.path.join(pkgdir, 
+                        linkfile = os.path.join(pkgdir,
                             "pkginfo.%d" % (os.stat(pkginfo)[ST_NLINK] + 1))
                         os.link(pkginfo, linkfile)
 
@@ -117,7 +119,7 @@ class LegacyAction(generic.Action):
                         if e.errno != errno.ENOENT:
                                 raise
 
-                os.chmod(pkginfo, 0644)
+                os.chmod(pkginfo, misc.PKG_FILE_MODE)
 
         def verify(self, img, **args):
                 pkgdir = os.path.join(img.get_root(), "var/sadm/pkg",
@@ -138,7 +140,7 @@ class LegacyAction(generic.Action):
         def remove(self, pkgplan):
 
                 # pkg directory is removed via implicit directory removal
-                
+
                 pkgdir = os.path.join(pkgplan.image.get_root(), "var/sadm/pkg",
                     self.attrs["pkg"])
 
@@ -148,7 +150,7 @@ class LegacyAction(generic.Action):
                         link_count = os.stat(pkginfo)[ST_NLINK]
                         linkfile = os.path.join(pkgdir,
                             "pkginfo.%d" % (link_count))
-                        
+
                         if os.path.isfile(linkfile):
                                 os.unlink(linkfile)
 

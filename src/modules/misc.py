@@ -40,6 +40,7 @@ import re
 import sha
 import shutil
 import socket
+import stat
 import struct
 import sys
 import time
@@ -356,7 +357,7 @@ def setlocale(category, loc=None, printer=None):
                 locale.setlocale(category, loc)
                 # Because of Python bug 813449, getdefaultlocale may fail
                 # with a ValueError even if setlocale succeeds. So we call
-                # it here to prevent having this error raised if it is 
+                # it here to prevent having this error raised if it is
                 # called later by other non-pkg(5) code.
                 locale.getdefaultlocale()
         except (locale.Error, ValueError):
@@ -412,12 +413,12 @@ def port_available(host, port):
                                 errnum = e[0]
                                 if errnum != errno.EINVAL:
                                         raise
-                                # this BSD-based system has trouble with a 
+                                # this BSD-based system has trouble with a
                                 # non-blocking failed connect
                                 sock.close()
                                 sock = socket.socket(family, socktype, proto)
                                 sock.connect(sockaddr)
-                                
+
                         sock.close()
 
                         # If we successfully connected...
@@ -534,7 +535,7 @@ def get_inventory_list(image, pargs, all_known, all_versions):
                                 return 1
                         return cmp(f1.get_publisher(),
                             f2.get_publisher())
-                
+
                 res.sort(cmp=__fmri_cmp)
         return res
 
@@ -819,3 +820,8 @@ EmptyDict = ImmutableDict()
 # Setting the python file buffer size to 128k gives substantial performance
 # gains on certain files.
 PKG_FILE_BUFSIZ = 128 * 1024
+
+PKG_FILE_MODE = stat.S_IWUSR | stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH
+PKG_DIR_MODE = (stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH |
+    stat.S_IXOTH)
+PKG_RO_FILE_MODE = stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH

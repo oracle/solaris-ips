@@ -30,13 +30,14 @@
 This module contains the LinkAction class, which represents a link-type
 packaging object."""
 
-import os
 import errno
+import os
+import stat
 
 import generic
 import pkg.actions
 from pkg.client.api_errors import ActionExecutionError
-import stat
+from pkg import misc
 
 class LinkAction(generic.Action):
         """Class representing a link-type packaging object."""
@@ -64,7 +65,8 @@ class LinkAction(generic.Action):
                     (pkgplan.image.get_root(), path)))
 
                 if not os.path.exists(os.path.dirname(path)):
-                        self.makedirs(os.path.dirname(path), mode=0755)
+                        self.makedirs(os.path.dirname(path),
+                            mode=misc.PKG_DIR_MODE)
 
                 # XXX The exists-unlink-symlink path appears to be as safe as it
                 # gets to modify a link with the current symlink(2) interface.

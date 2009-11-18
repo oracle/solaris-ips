@@ -1251,7 +1251,7 @@ class Image(object):
 
                 if not progtrack:
                         progtrack = progress.QuietProgressTracker()
-                
+
                 progtrack.cache_catalogs_start()
 
                 publist = list(self.gen_publishers())
@@ -1428,9 +1428,8 @@ class Image(object):
                 icat.append(kcat, cb=installed_append_cb)
 
                 # Save the new catalogs.
-                root_mode = 0755
                 for cat in kcat, icat:
-                        os.makedirs(cat.meta_root, mode=root_mode)
+                        os.makedirs(cat.meta_root, mode=misc.PKG_DIR_MODE)
                         cat.finalize(pubs=final_pubs)
                         cat.save()
 
@@ -1805,9 +1804,8 @@ class Image(object):
                 # can be saved and the image structure can be upgraded.  But
                 # first, attempt to save the image catalogs before changing
                 # structure.
-                root_mode = 0755
                 for cat in icat, kcat:
-                        os.makedirs(cat.meta_root, mode=root_mode)
+                        os.makedirs(cat.meta_root, mode=misc.PKG_DIR_MODE)
                         cat.save()
 
                 # Next, reset the publisher meta_roots to reflect the new
@@ -2194,8 +2192,7 @@ class Image(object):
                         rval = tempfile.mkdtemp(dir=tempdir)
 
                         # Force standard mode.
-                        root_mode = 0755
-                        os.chmod(rval, root_mode)
+                        os.chmod(rval, misc.PKG_DIR_MODE)
                         return rval
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES:

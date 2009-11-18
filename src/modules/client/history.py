@@ -438,7 +438,7 @@ class History(object):
                 op.start_state = get_node_values("start_state")
                 op.end_state = get_node_values("end_state")
                 op.errors.extend(get_node_values("errors", child_name="error"))
-                        
+
                 return op
 
         def __load(self, filename):
@@ -556,7 +556,7 @@ class History(object):
                                 # Only the right-most directory should be
                                 # created.  Assume that if the parent structure
                                 # does not exist, it shouldn't be created.
-                                os.mkdir(self.path, 0755)
+                                os.mkdir(self.path, misc.PKG_DIR_MODE)
                         except EnvironmentError, e:
                                 if e.errno not in (errno.EROFS, errno.EACCES,
                                     errno.ENOENT):
@@ -581,7 +581,8 @@ class History(object):
                 for i in range(1, 100):
                         try:
                                 f = os.fdopen(os.open(pathname,
-                                    os.O_CREAT|os.O_EXCL|os.O_WRONLY), "w")
+                                    os.O_CREAT|os.O_EXCL|os.O_WRONLY,
+                                    misc.PKG_FILE_MODE), "w")
                                 d.writexml(f,
                                     encoding=sys.getdefaultencoding())
                                 f.close()
@@ -602,8 +603,7 @@ class History(object):
                                         # access errors as it isn't critical
                                         # to the image that this data is
                                         # written.
-                                        raise HistoryStoreException(
-                                            e)
+                                        raise HistoryStoreException(e)
                                 # For all other failures, return, and avoid any
                                 # further attempts.
                                 return

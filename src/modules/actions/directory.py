@@ -78,7 +78,7 @@ class DirectoryAction(generic.Action):
 
                 # XXX Hack!  (See below comment.)
                 if not portable.is_admin():
-                        mode |= 0200
+                        mode |= stat.S_IWUSR
 
                 if not orig:
                         try:
