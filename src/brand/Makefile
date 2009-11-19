@@ -51,8 +51,6 @@ ROOTFILES = \
 	$(ROOTETCBRAND)/pkgrm.conf \
 	$(ROOTETCBRAND)/smf_disable.conf \
 	$(ROOTETCZONES)/SUNWipkg.xml \
-	$(ROOTBRANDPKG)/config.xml \
-	$(ROOTBRANDPKG)/platform.xml \
 	$(ROOTBRANDPKG)/attach \
 	$(ROOTBRANDPKG)/clone \
 	$(ROOTBRANDPKG)/common.ksh \
@@ -108,8 +106,6 @@ link:
 	ln -sf $(PWD)/pkgrm.lst /usr/lib/brand/ipkg/pkgrm.lst
 	ln -sf $(PWD)/smf_disable.lst /usr/lib/brand/ipkg/smf_disable.lst
 	ln -sf $(PWD)/smf_disable.conf /usr/lib/brand/ipkg/smf_disable.conf
-	ln -sf $(PWD)/config.xml /usr/lib/brand/ipkg/config.xml
-	ln -sf $(PWD)/platform.xml /usr/lib/brand/ipkg/platform.xml
 	ln -sf $(PWD)/attach /usr/lib/brand/ipkg/attach
 	ln -sf $(PWD)/clone /usr/lib/brand/ipkg/clone
 	ln -sf $(PWD)/common.ksh /usr/lib/brand/ipkg/common.ksh

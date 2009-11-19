@@ -274,8 +274,6 @@ zones_files = [
         'brand/SUNWipkg.xml',
         ]
 brand_files = [
-        'brand/config.xml',
-        'brand/platform.xml',
         'brand/pkgcreatezone',
         'brand/attach',
         'brand/clone',
