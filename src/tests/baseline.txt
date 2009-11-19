@@ -552,6 +552,13 @@ cli.t_pkgdep_resolve.py TestApiDependencies.test_resolve_mix|pass
 cli.t_pkgdep_resolve.py TestApiDependencies.test_simple_variants_1|pass
 cli.t_pkgdep_resolve.py TestApiDependencies.test_simple_variants_2|pass
 cli.t_pkgdep_resolve.py TestApiDependencies.test_two_variants|pass
+cli.t_pkgmogrify.py TestPkgMogrify.test_1|pass
+cli.t_pkgmogrify.py TestPkgMogrify.test_2|pass
+cli.t_pkgmogrify.py TestPkgMogrify.test_3|pass
+cli.t_pkgmogrify.py TestPkgMogrify.test_4|pass
+cli.t_pkgmogrify.py TestPkgMogrify.test_5|pass
+cli.t_pkgmogrify.py TestPkgMogrify.test_6|pass
+cli.t_pkgmogrify.py TestPkgMogrify.test_7|pass
 cli.t_pkgrecv.py TestPkgrecvMulti.test_0_opts|pass
 cli.t_pkgrecv.py TestPkgrecvMulti.test_1_recv_pkgsend|pass
 cli.t_pkgrecv.py TestPkgrecvMulti.test_2_recv_compare|pass

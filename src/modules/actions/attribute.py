@@ -33,6 +33,7 @@ possible types are: XXX."""
 
 import generic
 import pkg.fmri as fmri
+import pkg.actions
 
 class AttributeAction(generic.Action):
         """Class representing a package attribute."""
@@ -50,8 +51,10 @@ class AttributeAction(generic.Action):
                 if len(attrs) == 1:
                         self.attrs["name"], self.attrs["value"] = \
                             self.attrs.popitem()
-                assert "name" in self.attrs
-                assert "value" in self.attrs
+
+                if "name" not in self.attrs or "value" not in self.attrs:
+                        raise pkg.actions.InvalidActionError(str(self),
+                            'Missing "name" or "value" attribute')
 
         def verify(self, img, **args):
                 """Since there's no install method, this class is always

@@ -1,0 +1,119 @@
+A ON manifest pre-processor needs the following attributes:
+
+1) Can selectively "comment out" parts of the
+   manifest.
+
+2) Can perform string substitution in manifests.
+
+3) Can include other files to be part of this manifest
+   using either inline include statements or command
+   line arguments.  In either case, a search path 
+   for these files can be specified via one or more
+   -I options ala cpp.
+
+4) Can transform actions matching certain
+   criteria, using specifications delivered as part of the
+   manifest (or one of the included files).
+
+Importer currently does the first two via simple recursive
+string substitution:
+
+Macros are of the form: $(MACRONAME) and can have
+any string value, including another macro.  Macros
+are found in each line, repeatedly substituted
+until no more are found.  Expressions of macro
+form w/o a value are passed through w/o modification.
+
+Eliding lines from a manifest is done by using a
+macro at the begining of the line that has a '#'
+value, which is the manifest comment character.
+As a practical matter, the macro names are assigned
+in the importer Makefile to facilitate understanding;
+eg
+
+$(sparc_ONLY) has the value '#' unless the current
+build is sparc; $(i386_ONLY) is similar.  On sparc,
+$(ARCH64) is sparcv9, etc.
+
+The importer files then use these macros to allow
+a single file to be used for both architectures.
+
+For including files, the easiest mechanism would be
+some unique (distinct from either a comment, macro
+or action line) syntax such as:
+
+<include "path">
+
+The specified path is searched w/o substitution for 
+if it starts w/ "/"; otherwise any parameters specifed
+via -I are preprended and then searched for in order.
+
+Any files specified w/ -A would be searched for and appended
+to the manifest as if they had be specified w/ <include "path">
+at the end of the file.
+
+Once the manifest preprocessor had performed macro substitution
+and file inclusion, the last step would be executing any transformative
+steps specified in the files.  These transformative steps would 
+contain a set of matching criteria and the desired effect on the action:
+
+<transform matching criteria -> operation>
+
+matching criteria would be of the form
+
+file|dir|signature|...     any action types
+path=var/svc/manifest/.*xml
+mode=0?1[0-7][0-7][0-7]
+
+when python regexp rules would be used to find matching attributes.
+If multiple attributes are specified they all must be true for the
+transform to take effect, with exception that specifying multiple 
+action types will match any specified.
+
+operation specification looks like this:
+
+drop				# discard this action
+edit attribute regexp [replace]	# apply regexp to value of attribute;
+     	       	      		# if match occurs, substitute replace for
+				# portion of attribute value that matched.
+				# If replace is omitted, remove the 
+				# the attribute values that match regexp
+set attribute value		# set specified attribute to value
+add attribute value		# add value to attribute
+
+Examples:
+
+Add tags to smf manifest so they're properly imported:
+
+<transform file path=var/svc/manifest/.*\.xml -> add refresh_fmri svc:/system/manifest-import:default>
+
+Add tags to gnome icon files to rebuild icon cache:
+
+<transform file path=usr/share/icons/.* -> add restart_fmri svc:/application/desktop-cache/icon-cache:default>
+
+Change action location (including link targets) from usr/openwin to usr/X11:
+
+<transform path=usr/openwin -> edit path usr/openwin usr/X11>
+<transform target=.*openwin.* -> edit target openwin X11>
+
+
+Command line
+------------
+
+pkgmog [-D macro=value] ... [-I includepath]... [-A filename] ... [inputfile [outputfile]]
+
+Where:
+
+inputfile is stdin if omitted
+outputfile is stdout if omitted
+
+-D defines the value of the specified macro; may be empty
+
+-I adds the specified path to search for included files
+
+-A appends the file to the end of the input as if the last line in the file
+   included it
+
+(pkgmog is short for package transmogrify)
+
+

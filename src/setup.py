@@ -173,6 +173,7 @@ scripts_sunos = {
         scripts_dir: [
                 ['client.py', 'pkg'],
                 ['pkgdep.py', 'pkgdep'],
+                ['util/publish/pkgmogrify.py', 'pkgmogrify'],
                 ['publish.py', 'pkgsend'],
                 ['pull.py', 'pkgrecv'],
                 ['packagemanager.py', 'packagemanager'],
@@ -208,6 +209,7 @@ scripts_other_unix = {
         scripts_dir: [
                 ['client.py', 'client.py'],
                 ['pkgdep.py', 'pkgdep'],
+                ['pkgmogrify.py', 'pkgmogrify'],
                 ['pull.py', 'pull.py'],
                 ['publish.py', 'publish.py'],
                 ['scripts/pkg.sh', 'pkg'],
@@ -234,6 +236,7 @@ man1_files = [
         'man/packagemanager.1',
         'man/pkg.1',
         'man/pkgdep.1',
+        'man/pkgmogrify.1',
         'man/pkgsend.1',
         'man/pkgrecv.1',
         'man/pm-updatemanager.1',

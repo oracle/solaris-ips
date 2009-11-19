@@ -1,0 +1,174 @@
+User Commands                                            pkgmogrify(1)
+
+
+NAME
+     pkgmogrify - image packaging system manifest transmogrifier
+
+SYNOPSIS
+     /usr/bin/pkgmogrify [-v] [-I includedir ...] [-D macro=value ...] 
+           [ -O outputfile] [inputfile ...]
+
+DESCRIPTION
+     pkgmogrify provides for the automated editing of package manifests 
+     to simplify the typical transformations needed when automating
+     software builds and package republication.
+
+     pkgmogrify provides the following:
+
+     * Macro replacement to facilitate sharing of a
+     single manifest across various architectures and platforms.
+
+     * An include file mechanism to allow the inclusion of standard
+     components and transforms.
+ 
+     * Transformations of package actions, allowing the modification,
+     deletion or addition of action tags.
+
+OPTIONS
+     The following options are supported:
+
+     -D macro=value
+          Defines the specified macro to have the defined value.  Macros
+          appear in the input file as $(macro); substitution is repeated
+          until no more translations are found.  Common idioms include:
+
+      *   Elimination of lines in a manifest on other architectures by 
+          using an architecture-specific tag at the beginning of the line:
+
+          $(sparc_ONLY)file ....
+
+	  When processing the SPARC architecture, this macro would be
+	  set to the empty string.  When processing other
+	  architectures, this macro would be set to '#' on the command
+	  line, thus eliminating this action from the manifest on the 
+	  current architecture.
+
+      *   Specifying the name of the 64 bit architecture directory for 
+          executables and libraries:
+
+          file NOHASH path=usr/bin/$(ARCH64)/cputrack ...
+
+	  Again, the expectation is that these macros would be set to
+	  the desired value on the command line; there are no pre-defined
+	  macro values.
+
+     -I include_directory
+          Adds the specified directory to the search path for both files
+          specfied on the command line and the embedded <include path>  
+          directives.
+    
+     -O outputfile 
+          Write output to the specified file.  The file is not written
+          if an error occurs.
+
+     -v   Write out comments into output manifest showing effect of
+          transforms to aid debugging.
+
+     --help or -?
+          Displays a usage message.
+
+EMBEDDED DIRECTIVES
+
+     There are two types of directives supported in 
+     manifest files: include directives and transform directives.
+     Include directives insert the specified file (searched for
+     along the paths specified with the -I option) into the 
+     manifest at the point they're encountered; transform directives
+     are accumulated until all the file(s) have been read into
+     memory, and then are applied in the order they were encountered.
+          
+     Include directives are of the form:
+
+     <include path> 
+
+     This causes the named file to be searched for at the specified path,
+     prepending the specified search directories.  When found, the
+     specified file is included.  
+
+     <transform matching-criteria -> operation>
+    
+     where matching-criteria are of the form:
+
+     Matching criteria are of the form:
+
+     [action-type ... ] [attribute=<value-regexp> ...]
+
+     One of the action-types specified must match.  All of the attributes
+     specified must match.  The regular expression syntax used is that of
+     python; more information is available via the command "pydoc sre" or
+     (more completely) at http://docs.python.org/dev/howto/regex.html.
+     Some examples of matching expressions include:
+
+     file dir link                      # matches files, directories and links   
+     path=var/svc/manifest/.*xml        # (note python regexp syntax)
+     mode=0?1[0-7][0-7][0-7]            # 
+
+     Multiple criteria may be specified, separated by spaces.
+
+     Operation synatx is of the form:
+
+     drop				# discard this action
+     edit attribute regexp replace	# apply regexp to value of attribute;
+              	      		        # if match occurs, substitute replace for
+			        	# portion of attribute value that matches 
+     delete attribute regexp            # remove attribute values matching regexp
+     set attribute value		# set specified attribute to value
+     add attribute value		# add value to attribute
+     default attribute value            # if attribute is missing, add w/ specified value
+
+     The order of processing is as follows:
+     
+     1) Lines are read from input file(s).
+     2) Macros are applied.
+     3) <include ...>  and <transform> directives are processed causing
+        additional files to be found and read in.
+     4) Once all input has been accumulated, each line in the input is
+        converted into actions and all transforms applied.
+     5) Once processing is complete and successful, the output is written.
+
+EXAMPLES:
+
+     # add tags to smf manifests so they get imported on live pkg install
+     <transform file path=var/svc/manifest/.*\.xml -> add restart_fmri svc:/system/manifest-import:default>
+ 
+     # move files from usr/sfw/bin to usr/bin
+     <transform file edit path usr/sfw/bin usr/bin>
+
+     # Add reboot-needed tags to files that aren't .conf files under /kernel.
+     # Can also be done w/ regexp magic in a single expression, 
+     # but this is easier.  Note that this leverages how transforms 
+     # are applied to each action in the order seen in the input files
+
+     <transform file path=kernel/.* -> set reboot-needed true>
+     <transform file path=kernel/.*\.conf -> delete reboot-needed .*>
+
+EXIT STATUS
+     The following exit values are returned:
+
+     0     Everything worked.
+
+     1     Something bad but anticipated happened.
+
+     2     Invalid command line options were specified.
+
+     99    Unexpected processing error
+
+ATTRIBUTES
+     See attributes(5) for descriptions of the  following  attri-
+     butes:
+     ____________________________________________________________
+    |       ATTRIBUTE TYPE        |       ATTRIBUTE VALUE       |
+    |_____________________________|_____________________________|
+    | Availability                |                             |
+    |_____________________________|_____________________________|
+
+SEE ALSO
+     pkg(5)
+
+NOTES
+     The image packaging system is an under-development feature.
+     Command names, invocation, formats, and operations are all subject
+     to change.  Development is hosted in the OpenSolaris community
+     at
+
+     http://opensolaris.org/os/project/pkg/

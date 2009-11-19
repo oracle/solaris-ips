@@ -34,6 +34,7 @@ link:
 	ln -sf $(PWD)/packagemanager.1.txt /usr/share/man/cat1/packagemanager.1
 	ln -sf $(PWD)/pkg.1.txt /usr/share/man/cat1/pkg.1
 	ln -sf $(PWD)/pkgdep.1.txt /usr/share/man/cat1/pkgdep.1
+	ln -sf $(PWD)/pkgmogrify.1.txt /usr/share/man/cat1/pkgmogrify.1
 	ln -sf $(PWD)/pkgrecv.1.txt /usr/share/man/cat1/pkgrecv.1
 	ln -sf $(PWD)/pkgsend.1.txt /usr/share/man/cat1/pkgsend.1
 	ln -sf $(PWD)/pm-updatemanager.1.txt /usr/share/man/cat1/pm-updatemanager.1
