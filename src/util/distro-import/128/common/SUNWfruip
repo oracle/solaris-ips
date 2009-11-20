@@ -1,0 +1,12 @@
+package SUNWfruip
+consolidation "osnet"
+classification "System/Administration and Configuration"
+$(i386_ONLY)import SUNWfruip.i
+$(sparc_ONLY)import SUNWfruip.u
+# BEGIN NON-REDISTRIBUTABLE
+$(sparc_ONLY)drop usr/platform/SUNW,Netra-T12
+$(sparc_ONLY)drop usr/platform/SUNW,Netra-T12/lib
+$(sparc_ONLY)drop usr/platform/SUNW,Netra-T12/lib/libfruaccess.so
+$(sparc_ONLY)drop usr/platform/SUNW,Netra-T12/lib/libfruaccess.so.1
+# END NON-REDISTRIBUTABLE
+end package

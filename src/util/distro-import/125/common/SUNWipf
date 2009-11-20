@@ -1,6 +1,6 @@
 package SUNWipf
 consolidation "osnet"
-classification "Applications/System Utilities"
+classification "System/Administration and Configuration"
 import SUNWipfu
 import SUNWipfr
 

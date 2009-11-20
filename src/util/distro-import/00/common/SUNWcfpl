@@ -3,4 +3,5 @@ consolidation "osnet"
 classification "System/Libraries"
 import SUNWcfpl
 import SUNWcfplr
+depend_path /usr/sbin/luxadm
 end package

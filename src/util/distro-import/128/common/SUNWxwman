@@ -1,0 +1,5 @@
+package SUNWxwman
+consolidation "X"
+classification "System/X11"
+import SUNWxwman
+end package

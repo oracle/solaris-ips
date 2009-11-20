@@ -1,6 +1,6 @@
 i copyright
 i pkginfo
-d none etc 755 root bin
+d none etc 755 root sys
 d none etc/security 755 root sys
 d none etc/security/auth_attr.d 755 root sys
 f none etc/security/auth_attr.d/SUNWipkg 644 root sys

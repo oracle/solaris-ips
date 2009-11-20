@@ -1,0 +1,6 @@
+package SUNWlang-el
+consolidation "l10n"
+classification "System/Localizations"
+import SUNWlang-el
+depend SUNWlang-elGR
+end package

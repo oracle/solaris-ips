@@ -310,6 +310,9 @@ category = Media
 [SUNWaudiocmi]
 category = Media
 
+[SUNWaudioemu10k]
+category = Media
+
 [SUNWaudiohd]
 category = Media
 
@@ -468,12 +471,6 @@ category = Libraries (System)
 
 [SUNWcfpl]
 category = Libraries (System)
-
-[SUNWcg6]
-category = Display
-
-[SUNWcg6h]
-category = Display
 
 [SUNWcglib]
 category = Java
@@ -1157,9 +1154,6 @@ category = Universal Access
 category = Universal Access
 
 [SUNWgnome-a11y-libs]
-category = Universal Access
-
-[SUNWgnome-a11y-libs-python24]
 category = Universal Access
 
 [SUNWgnome-a11y-libs-python26]
@@ -1930,6 +1924,9 @@ category = Internationalization
 [SUNWiiimf-zhTW-twle-open]
 category = Internationalization
 
+[SUNWilb]
+category = Administration and Configuration
+
 [SUNWilmbase]
 category = Libraries (System)
 
@@ -1976,7 +1973,7 @@ category = Core
 category = System Utilities
 
 [SUNWipf]
-category = System Utilities
+category = Administration and Configuration
 
 [SUNWipfh]
 category = System
@@ -2051,6 +2048,9 @@ category = Networking
 category = Networking
 
 [SUNWiwk]
+category = Networking
+
+[SUNWiwp]
 category = Networking
 
 [SUNWixgb]
@@ -2206,6 +2206,9 @@ category = Localizations (System)
 [SUNWlang-ar-extra]
 category = Localizations (System)
 
+[SUNWlang-arEG]
+category = Localizations (System)
+
 [SUNWlang-as]
 category = Localizations (System)
 
@@ -2261,6 +2264,9 @@ category = Localizations (System)
 category = Localizations (System)
 
 [SUNWlang-el-extra]
+category = Localizations (System)
+
+[SUNWlang-elGR]
 category = Localizations (System)
 
 [SUNWlang-en]
@@ -2344,6 +2350,9 @@ category = Localizations (System)
 [SUNWlang-it-extra]
 category = Localizations (System)
 
+[SUNWlang-itIT]
+category = Localizations (System)
+
 [SUNWlang-ja]
 category = Localizations (System)
 
@@ -2413,6 +2422,9 @@ category = Localizations (System)
 [SUNWlang-nl-extra]
 category = Localizations (System)
 
+[SUNWlang-nlNL]
+category = Localizations (System)
+
 [SUNWlang-nn]
 category = Localizations (System)
 
@@ -2455,6 +2467,9 @@ category = Localizations (System)
 [SUNWlang-ru-extra]
 category = Localizations (System)
 
+[SUNWlang-ruRU]
+category = Localizations (System)
+
 [SUNWlang-sa]
 category = Localizations (System)
 
@@ -2486,6 +2501,9 @@ category = Localizations (System)
 category = Localizations (System)
 
 [SUNWlang-sr-extra]
+category = Localizations (System)
+
+[SUNWlang-srRS]
 category = Localizations (System)
 
 [SUNWlang-sv]
@@ -2769,12 +2787,6 @@ category = Python
 
 [SUNWlogrotate]
 category = Administration and Configuration
-
-[SUNWlp-cmds]
-category = Printing
-
-[SUNWlpr-cmds]
-category = Printing
 
 [SUNWlsimega]
 category = Storage
@@ -3104,6 +3116,9 @@ category = Text Tools
 category = Text Tools
 
 [SUNWopenssl]
+category = Security
+
+[SUNWopenssl-fips-140]
 category = Security
 
 [SUNWopenwsman]
@@ -3769,9 +3784,6 @@ category = Ports
 [SUNWscsip]
 category = Plug-ins and Run-times
 
-[SUNWsdcard]
-category = Storage
-
 [SUNWsdhcm]
 category = Services
 
@@ -3965,6 +3977,9 @@ category = System Utilities
 category = Other Peripherals
 
 [SUNWtcat]
+category = Application and Web Servers
+
+[SUNWtcat-examples]
 category = Application and Web Servers
 
 [SUNWtcltls]
@@ -4495,6 +4510,9 @@ category = X11 (System)
 [SUNWxwdv]
 category = X11 (System)
 
+[SUNWxwdxm]
+category = X11 (System)
+
 [SUNWxwfs]
 category = X11 (System)
 
@@ -4541,9 +4559,6 @@ category = Networking
 category = Administration and Configuration
 
 [SUNWzfs]
-category = File System
-
-[SUNWzfs-auto-snapshot]
 category = File System
 
 [SUNWzip]

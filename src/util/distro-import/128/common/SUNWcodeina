@@ -1,0 +1,15 @@
+package SUNWcodeina
+consolidation "gnome"
+classification "Applications/Sound and Video"
+import SUNWcodeina
+import SUNWcodeina-root
+depend SUNWgnome-python26-extras
+depend SUNWgnome-python26-libs
+depend SUNWgst-python26
+depend SUNWpython26-notify
+depend SUNWpython26-pyopenssl
+depend SUNWpython26-twisted
+depend SUNWpython26-xdg
+depend SUNWpyyaml26
+depend_path /usr/bin/bash
+end package
