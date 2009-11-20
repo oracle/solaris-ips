@@ -71,7 +71,7 @@ POHASH = 'bd072fef8eb36241852d25a9161282a051f0a63e'
 
 COV = 'coveragepy'
 COVIDIR = 'coverage'
-COVVER = 'tip'
+COVVER = 'coverage-3.2b2'
 COVARC = '%s-%s.tar.bz2' % (COV, COVVER)
 COVDIR = '%s' % COV
 COVURL = 'http://bitbucket.org/ned/%s/get/%s.tar.bz2' % (COV, COVVER)
