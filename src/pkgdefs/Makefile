@@ -34,7 +34,7 @@ BUILDPYOPENSSL:sh = if [ -n "$BUILD_PYOPENSSL" ]; then echo SUNWpython-pyopenssl
 
 SUBDIRS= SUNWipkg SUNWipkg-brand SUNWipkg-gui SUNWipkg-gui-data \
     SUNWipkg-gui-l10n SUNWipkg-um SUNWpython-cherrypy SUNWpython-mako \
-    SUNWpython-ply SUNWpython-pycurl SUNWldtp $(BUILDPYOPENSSL)
+    SUNWpython-ply SUNWpython-pycurl SUNWldtp SUNWpython-coverage $(BUILDPYOPENSSL)
 
 all:
 

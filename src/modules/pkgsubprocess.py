@@ -140,12 +140,20 @@ class Popen(subprocess.Popen):
                         if preexec_fn:
                                 apply(preexec_fn)
 
-                        if not env:
+                        if env is None:
                                 # If caller didn't pass us an environment in
                                 # env, borrow the env that the current process
                                 # is using.
-                                env = [ "%s=%s" % (k, v) for k, v in\
-                                    os.environ.items() ]
+                                env = os.environ.copy()
+
+                        if type(env) == dict:
+                                # The bundled subprocess module takes a dict in
+                                # the "env" argument.  Allow that here by doing
+                                # the explicit conversion to a list.
+                                env = [
+                                    "%s=%s" % (k, v)
+                                    for k, v in env.iteritems()
+                                ]
 
                         self.pid = posix_spawnp(executable, args, sfa, env)
 

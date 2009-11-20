@@ -68,6 +68,10 @@ class Pkg5TestCase(unittest.TestCase):
                         result = self.defaultTestResult()
                 result.startTest(self)
                 testMethod = getattr(self, self.__testMethodName)
+                if result.coverage:
+                        self.coverage_cmd, self.coverage_env = result.coverage
+                else:
+                        self.coverage_cmd, self.coverage_env = "", {}
                 try:
                         try:
                                 self.setUp()
@@ -205,7 +209,7 @@ class Pkg5TestRunner(unittest.TextTestRunner):
         sep2 = '-' * 70
 
         def __init__(self, baseline, stream=sys.stderr, output=OUTPUT_DOTS,
-            timing_file=None, bailonfail=False):
+            timing_file=None, bailonfail=False, coverage=None):
                 """Set up the runner, creating a baseline object that has
                 a name of 'suite'_baseline.pkl, where suite is 'cli', 'api',
                 etc."""
@@ -215,6 +219,7 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                 self.output = output
                 self.timing_file = timing_file
                 self.bailonfail = bailonfail
+                self.coverage = coverage
 
         def _makeResult(self):
                 return _Pkg5TestResult(self.stream, self.output, self.baseline,
@@ -224,7 +229,8 @@ class Pkg5TestRunner(unittest.TextTestRunner):
                 "Run the given test case or test suite."
                 result = self._makeResult()
                 startTime = time.time()
-                test(result)
+                result.coverage = self.coverage
+                test.run(result)
                 stopTime = time.time()
                 timeTaken = stopTime - startTime
                 timing = {}
@@ -313,6 +319,10 @@ class Pkg5TestSuite(unittest.TestSuite):
 
                 if persistent_depot:
                         inst, tdf = self._tests[0].getTeardownFunc()
+                        if result.coverage:
+                                inst.coverage_cmd, inst.coverage_env = result.coverage
+                        else:
+                                inst.coverage_cmd, inst.coverage_env = "", {}
                         try:
                                 inst.setUp()
                         except KeyboardInterrupt:

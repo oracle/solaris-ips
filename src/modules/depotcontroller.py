@@ -44,7 +44,7 @@ class DepotController(object):
         STARTING = 1
         RUNNING = 2
 
-        def __init__(self):
+        def __init__(self, wrapper=None, env=None):
                 self.__auto_port = True
                 self.__cfg_file = None
                 self.__debug_features = {}
@@ -65,6 +65,12 @@ class DepotController(object):
                 self.__writable_root = None
                 self.__sort_file_max_size = None
                 self.__starttime = 0
+                self.__wrapper = []
+                self.__env = {}
+                if wrapper:
+                        self.__wrapper = wrapper
+                if env:
+                        self.__env = env
                 return
 
         def set_depotd_path(self, path):
@@ -200,9 +206,7 @@ class DepotController(object):
                 """ Return the equivalent command line invocation (as an
                     array) for the depot as currently configured. """
 
-                args = []
-                if os.environ.has_key("PKGCOVERAGE"):
-                        args.append("figleaf")
+                args = self.__wrapper[:]
                 args.append(self.__depot_path)
                 if self.__depot_content_root:
                         args.append("--content-root")
@@ -262,7 +266,9 @@ class DepotController(object):
 
                 self.__output = open(self.__logpath, "w", 0)
 
-                self.__depot_handle = subprocess.Popen(args=args,
+                newenv = os.environ.copy()
+                newenv.update(self.__env)
+                self.__depot_handle = subprocess.Popen(args=args, env=newenv,
                     stdin=subprocess.PIPE,
                     stdout=self.__output,
                     stderr=self.__output,

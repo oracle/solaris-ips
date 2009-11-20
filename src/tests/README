@@ -1,5 +1,5 @@
 
-Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
 
 tests/README
@@ -22,25 +22,21 @@ tests/README
 	   -v             Verbose output
 	   -b <filename>  Baseline filename
 	   -o <regexp>    Run only tests that match regexp
+	   -c             Collect code coverage data
 
   When adding, removing, or changing the results of test cases, make
   sure to update baseline.txt and check it in.  This can be done with the
   -g option to run.py.
+
+  The code coverage collection is done with Ned Batchelder's "coverage.py"
+  tool [1].
 
   2.  Pending work.
 
   The special dependency scenarios in "old" should be recoded as part of
   the cli test suite.
 
-  Targets to evaluate code coverage [1,2] should be added, possibly with
-  supporting global options added to each utility.
-
   3.  References
 
-  [1] N. Batchelder, coverage module, 2007.  
-      http://nedbatchelder.com/code/modules/coverage.html
-
-  [2] C. T. Brown, figleaf module, 2006.
-      http://darcs.idyll.org/~t/projects/figleaf/README.html
-
-  
+  [1] N. Batchelder, coverage module, 2009.
+      http://nedbatchelder.com/code/coverage/

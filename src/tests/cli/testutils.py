@@ -365,15 +365,15 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                         shutil.rmtree(self.img_path)
 
         def pkg(self, command, exit=0, comment="", prefix="", su_wrap=None):
-                wrapper = ""
-                if os.environ.has_key("PKGCOVERAGE"):
-                        wrapper = "figleaf"
+                wrapper = self.coverage_cmd
 
                 if su_wrap:
                         if su_wrap == True:
                                 su_wrap = get_su_wrap_user()
-                        su_wrap = "su %s -c 'LD_LIBRARY_PATH=%s " % \
-                            (su_wrap, os.getenv("LD_LIBRARY_PATH", ""))
+                        cov_env = " ".join(
+                            ("%s=%s" % e for e in self.coverage_env.items()))
+                        su_wrap = "su %s -c 'LD_LIBRARY_PATH=%s %s " % \
+                            (su_wrap, os.getenv("LD_LIBRARY_PATH", ""), cov_env)
                         su_end = "'"
                 else:
                         su_wrap = ""
@@ -386,9 +386,10 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                             g_proto_area, command, su_end)
                 self.debugcmd(cmdline)
 
-                p = subprocess.Popen(cmdline, shell = True,
-                    stdout = subprocess.PIPE,
-                    stderr = subprocess.STDOUT)
+                newenv = os.environ.copy()
+                newenv.update(self.coverage_env)
+                p = subprocess.Popen(cmdline, shell=True, env=newenv,
+                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
                 self.output = p.stdout.read()
                 retcode = p.wait()
@@ -410,9 +411,7 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
 
         def pkgdep(self, command, proto=None, use_proto=True, exit=0,
             comment=""):
-                wrapper = ""
-                if os.environ.has_key("PKGCOVERAGE"):
-                        wrapper = "figleaf"
+                wrapper = self.coverage_cmd
 
                 if proto is None:
                         proto = g_proto_area
@@ -424,9 +423,10 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                     command, proto)
                 self.debugcmd(cmdline)
 
-                p = subprocess.Popen(cmdline, shell = True,
-                    stdout = subprocess.PIPE,
-                    stderr = subprocess.PIPE)
+                newenv = os.environ.copy()
+                newenv.update(self.coverage_env)
+                p = subprocess.Popen(cmdline, shell=True, env=newenv,
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
                 self.output = p.stdout.read()
                 self.errout = p.stderr.read()
@@ -445,10 +445,7 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
 
         def pkgrecv(self, server_url=None, command=None, exit=0, out=False,
             comment=""):
-
-                wrapper = ""
-                if os.environ.has_key("PKGCOVERAGE"):
-                        wrapper = "figleaf"
+                wrapper = self.coverage_cmd
 
                 args = []
                 if server_url:
@@ -461,9 +458,10 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                     g_proto_area, " ".join(args))
                 self.debugcmd(cmdline)
 
-                p = subprocess.Popen(cmdline, shell = True,
-                    stdout = subprocess.PIPE,
-                    stderr = subprocess.STDOUT)
+                newenv = os.environ.copy()
+                newenv.update(self.coverage_env)
+                p = subprocess.Popen(cmdline, shell=True, env=newenv,
+                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
                 self.output = p.stdout.read()
                 retcode = p.wait()
@@ -483,10 +481,7 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                 return retcode
 
         def pkgsend(self, depot_url="", command="", exit=0, comment="", retry400=True):
-
-                wrapper = ""
-                if os.environ.has_key("PKGCOVERAGE"):
-                        wrapper = "figleaf"
+                wrapper = self.coverage_cmd
 
                 args = []
                 if depot_url:
@@ -502,11 +497,11 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                 # XXX may need to be smarter.
                 output = ""
                 published = None
+                newenv = os.environ.copy()
+                newenv.update(self.coverage_env)
                 if command.startswith("open "):
-                        p = subprocess.Popen(cmdline,
-                            shell = True,
-                            stdout = subprocess.PIPE,
-                            stderr = subprocess.STDOUT)
+                        p = subprocess.Popen(cmdline, shell=True, env=newenv,
+                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
                         out, err = p.communicate()
                         retcode = p.wait()
@@ -522,17 +517,14 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                         # retcode != 0 will be handled below
 
                 else:
-                        
-                        p = subprocess.Popen(cmdline,
-                            shell = True,
-                            stdout = subprocess.PIPE,
-                            stderr = subprocess.STDOUT)
+                        p = subprocess.Popen(cmdline, shell=True, env=newenv,
+                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
                         output = p.stdout.read()
                         retcode = p.wait()
                         self.debugresult(retcode, output)
                         
-                        if retcode !=0:
+                        if retcode != 0:
                                 if retry400 and (command.startswith("publish") or \
                                     command.startswith("open")) and \
                                     "status '400'" in output:    
@@ -672,18 +664,12 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
 
         def validate_html_file(self, fname, exit=0, comment="",
             options="-quiet -utf8"):
-                wrapper = ""
-                if os.environ.has_key("PKGCOVERAGE"):
-                        wrapper = "figleaf"
-
-                cmdline = "%s tidy %s %s" % (wrapper, options, fname)
+                cmdline = "tidy %s %s" % (options, fname)
                 self.debugcmd(cmdline)
 
                 output = ""
-                p = subprocess.Popen(cmdline,
-                    shell=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT)
+                p = subprocess.Popen(cmdline, shell=True,
+                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
                 output = p.stdout.read()
                 retcode = p.wait()
@@ -712,7 +698,8 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                 self.debug("start_depot: depot data in %s" % depotdir)
                 self.debug("start_depot: depot logging to %s" % logpath)
 
-                dc = depotcontroller.DepotController()
+                dc = depotcontroller.DepotController(
+                    wrapper=self.coverage_cmd.split(), env=self.coverage_env)
                 dc.set_depotd_path(g_proto_area + "/usr/lib/pkg.depotd")
                 dc.set_depotd_content_root(g_proto_area + "/usr/share/lib/pkg")
                 for f in debug_features:

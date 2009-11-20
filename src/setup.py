@@ -69,14 +69,14 @@ PODIR = '%s-%s' % (PO, POVER)
 POURL = 'http://downloads.sourceforge.net/pyopenssl/%s' % (POARC)
 POHASH = 'bd072fef8eb36241852d25a9161282a051f0a63e'
 
-FL = 'figleaf'
-FLIDIR = 'figleaf'
-FLVER = 'latest'
-FLARC = '%s-%s.tar.gz' % (FL, FLVER)
-FLDIR = '%s-%s' % (FL, FLVER)
-FLURL = 'http://darcs.idyll.org/~t/projects/%s' % FLARC
+COV = 'coveragepy'
+COVIDIR = 'coverage'
+COVVER = 'tip'
+COVARC = '%s-%s.tar.bz2' % (COV, COVVER)
+COVDIR = '%s' % COV
+COVURL = 'http://bitbucket.org/ned/%s/get/%s.tar.bz2' % (COV, COVVER)
 # No hash, since we always fetch the latest
-FLHASH = None
+COVHASH = None
 
 LDTP = 'ldtp'
 LDTPIDIR = 'ldtp'
@@ -106,7 +106,7 @@ PLYURL = 'http://www.dabeaz.com/ply/%s' % (PLYARC)
 PLYHASH = '38efe9e03bc39d40ee73fa566eb9c1975f1a8003'
 
 PC = 'pycurl'
-PCIDIR = 'pycurl'
+PCIDIR = 'curl'
 PCVER = '7.19.0'
 PCARC = '%s-%s.tar.gz' % (PC, PCVER)
 PCDIR = '%s-%s' % (PC, PCVER)
@@ -314,32 +314,6 @@ solver_srcs = [
 include_dirs = [ 'modules' ]
 lint_flags = [ '-u', '-axms', '-erroff=E_NAME_DEF_NOT_USED2' ]
 
-# Runs the test suite with the code coverage suite (figleaf) turned on, and
-# outputs a coverage report.
-# TODO: Make the cov report format an option (html, ast, cov, etc)
-class cov_func(Command):
-        description = "Runs figleaf code coverage suite"
-        user_options = []
-        def initialize_options(self):
-                pass
-        def finalize_options(self):
-                pass
-        def run(self):
-                if not os.path.isdir(FLDIR):
-                        prep_sw(FL, FLARC, FLDIR, FLURL,
-                            FLHASH)
-                        install_sw(FL, FLDIR, FLIDIR)
-                # Run the test suite with coverage enabled
-                os.putenv('PYEXE', sys.executable)
-                os.chdir(os.path.join(pwd, "tests"))
-                # Reconstruct the cmdline and send that to run.py
-                os.environ["PKGCOVERAGE"] = "1"
-                cmd = [sys.executable, "run.py"]
-                subprocess.call(cmd)
-                print "Generating coverage report in directory: '%s/cov_report'" % \
-                    pwd
-                os.system("figleaf2html -d cov_report .figleaf")
-
 # Runs lint on the extension module source code
 class lint_func(Command):
         description = "Runs various lint tools over IPS extension source code"
@@ -485,18 +459,17 @@ class install_func(_install):
                                 os.environ["LDFLAGS"] = \
                                     "-L/usr/sfw/lib -R/usr/sfw/lib " + \
                                     os.environ.get("LDFLAGS", "")
-                        prep_sw(PO, POARC, PODIR, POURL,
-                            POHASH)
+                        prep_sw(PO, POARC, PODIR, POURL, POHASH)
                         install_sw(PO, PODIR, POIDIR)
                         os.environ = saveenv
-                prep_sw(MAKO, MAKOARC, MAKODIR, MAKOURL,
-                    MAKOHASH)
+                prep_sw(MAKO, MAKOARC, MAKODIR, MAKOURL, MAKOHASH)
                 install_sw(MAKO, MAKODIR, MAKOIDIR)
-                prep_sw(PLY, PLYARC, PLYDIR, PLYURL,
-                    PLYHASH)
+                prep_sw(PLY, PLYARC, PLYDIR, PLYURL, PLYHASH)
                 install_sw(PLY, PLYDIR, PLYIDIR)
                 prep_sw(PC, PCARC, PCDIR, PCURL, PCHASH)
                 install_sw(PC, PCDIR, PCIDIR)
+                prep_sw(COV, COVARC, COVDIR, COVURL, COVHASH)
+                install_sw(COV, COVDIR, COVIDIR)
 
                 # Remove some bits that we're not going to package, but be sure
                 # not to complain if we try to remove them twice.
@@ -758,12 +731,15 @@ class test_func(Command):
         # NOTE: these options need to be in sync with tests/run.py and the
         # list of options stored in initialize_options below. The first entry
         # in each tuple must be the exact name of a member variable.
-        user_options = [("verbosemode", 'v', "run tests in verbose mode"),
+        user_options = [
+            ("baselinefile=", 'b', "baseline file <file>"),
+            ("coverage", "c", "collect code coverage data"),
             ("genbaseline", 'g', "generate test baseline"),
+            ("only=", "o", "only <regex>"),
             ("parseable", 'p', "parseable output"),
             ("timing", "t", "timing file <file>"),
-            ("baselinefile=", 'b', "baseline file <file>"),
-            ("only=", "o", "only <regex>")]
+            ("verbosemode", 'v', "run tests in verbose mode"),
+        ]
         description = "Runs unit and functional tests"
 
         def initialize_options(self):
@@ -773,6 +749,7 @@ class test_func(Command):
                 self.parseable = 0
                 self.genbaseline = 0
                 self.timing = 0
+                self.coverage = 0
 
         def finalize_options(self):
                 pass
@@ -818,7 +795,6 @@ cmdclasses = {
         'lint': lint_func,
         'clean': clean_func,
         'clobber': clobber_func,
-        'coverage': cov_func,
         'test': test_func,
         }
 

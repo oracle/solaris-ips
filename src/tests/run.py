@@ -39,10 +39,12 @@ import getopt
 import pkg5unittest
 import platform
 import re
+import shutil
 import subprocess
 import tempfile
 import types
 import unittest
+import coverage
 
 # Make sure current directory is in the path
 sys.path.insert(0, ".")
@@ -70,9 +72,9 @@ ostype = os.name
 if ostype == '':
         ostype = 'unknown'
 
-def find_tests(testdir, testpat, startatpat=False):
+def find_tests(testdir, testpats, startatpat=False):
         # Test pattern to match against
-        pat = re.compile("%s" % testpat, re.IGNORECASE)
+        pats = [ re.compile("%s" % pat, re.IGNORECASE) for pat in testpats ]
         startatpat = re.compile("%s" % startattest, re.IGNORECASE)
         seen = False
 
@@ -128,7 +130,10 @@ def find_tests(testdir, testpat, startatpat=False):
                                         seen = True
                                 if not seen:
                                         delattr(classobj, attrname)
-                                if not re.search(pat, full):
+                                found = reduce(lambda x, y: x or y,
+                                    [ re.search(pat, full) for pat in pats ],
+                                    None)
+                                if not found:
                                         delattr(classobj, attrname)
                         testclasses.append(classobj)
                         
@@ -139,10 +144,11 @@ def find_tests(testdir, testpat, startatpat=False):
         return suite
 
 def usage():
-        print >> sys.stderr, "Usage: %s [-ghptv] [-b filename] [-o regexp]" \
+        print >> sys.stderr, "Usage: %s [-cghptv] [-b filename] [-o regexp]" \
                 % sys.argv[0]
-        print >> sys.stderr, "       %s [-hptvx] [-b filename] [-s regexp] "\
+        print >> sys.stderr, "       %s [-chptvx] [-b filename] [-s regexp] "\
                 "[-o regexp]" % sys.argv[0]
+        print >> sys.stderr, "   -c             Collect code coverage data"
         print >> sys.stderr, "   -g             Generate result baseline"
         print >> sys.stderr, "   -h             This help message"
         print >> sys.stderr, "   -p             Parseable output format"
@@ -157,7 +163,7 @@ def usage():
 
 if __name__ == "__main__":
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "ghptvxb:o:s:",
+                opts, pargs = getopt.getopt(sys.argv[1:], "cghptvxb:o:s:",
                     ["generate-baseline", "parseable", "timing", "verbose",
                     "baseline-file", "only"])
         except getopt.GetoptError, e:
@@ -166,22 +172,25 @@ if __name__ == "__main__":
 
         bfile = os.path.join(os.getcwd(), "baseline.txt")
         generate = False
-        onlyval = ""
+        onlyval = []
         output = pkg5unittest.OUTPUT_DOTS
         bailonfail = False
         startattest = ""
         timing_file = False
+        do_coverage = False
         for opt, arg in opts:
                 if opt == "-v":
                         output = pkg5unittest.OUTPUT_VERBOSE
                 if opt == "-p":
                         output = pkg5unittest.OUTPUT_PARSEABLE
+                if opt == "-c":
+                        do_coverage = True
                 if opt == "-g":
                         generate = True
                 if opt == "-b":
                         bfile = arg
                 if opt == "-o":
-                        onlyval = arg
+                        onlyval.append(arg)
                 if opt == "-x":
                         bailonfail = True
                 if opt == "-t":
@@ -192,6 +201,16 @@ if __name__ == "__main__":
 			usage()
         if (bailonfail or startattest) and generate:
                 usage()
+        if not onlyval:
+                onlyval = [ "" ]
+
+        # Set up coverage directory and start code coverage for the API tests.
+        if do_coverage:
+                covdir = tempfile.mkdtemp(prefix=".coverage-", dir=os.getcwd())
+                os.chmod(covdir, 01777)
+                cov_file = "%s/pkg5" % covdir
+                cov = coverage.coverage(data_file=cov_file, data_suffix=True)
+                cov.start()
 
         import pkg.portable
 
@@ -237,10 +256,21 @@ if __name__ == "__main__":
                 timing_file = os.path.join(os.getcwd(), "timing_info.txt")
                 if os.path.exists(timing_file):
                         os.remove(timing_file)
+
+        # Set up coverage for cli tests
+        if do_coverage:
+                cov_env = {
+                    "COVERAGE_FILE": "%s/pkg5" % covdir
+                }
+                cov_cmd = "coverage run -p"
+        else:
+                cov_env = {}
+                cov_cmd = ""
         
         # Run the python test suites
         runner = pkg5unittest.Pkg5TestRunner(baseline, output=output,
-            timing_file=timing_file, bailonfail=bailonfail)
+            timing_file=timing_file, bailonfail=bailonfail,
+            coverage=(cov_cmd, cov_env))
         exitval = 0
         for x in suites:
                 try:
@@ -257,5 +287,41 @@ if __name__ == "__main__":
         # Update baseline results and display mismatches (failures)
         baseline.store()
         baseline.reportfailures()
+
+        # Stop and save coverage data for API tests, and combine coverage data
+        # from all processes.
+        if do_coverage:
+                cov.stop()
+                cov.save()
+                newenv = os.environ.copy()
+                newenv.update(cov_env)
+                subprocess.Popen(["coverage", "combine"], env=newenv).wait()
+                os.rename("%s/pkg5" % covdir, ".coverage")
+                shutil.rmtree(covdir)
+                print >> sys.stderr, "Generating html coverage report"
+                vp = cli.testutils.g_proto_area + "/usr/lib/python2.4/vendor-packages"
+                omits = [
+                    # External modules
+                    "%s/cherrypy" % vp,
+                    "%s/ply" % vp,
+                    "%s/mako" % vp,
+                    # This removes test-related stuff, as well as compiled
+                    # expressions such as Mako templates and filters.
+                    ""
+                ]
+                subprocess.Popen(["coverage", "html", "--omit", ",".join(omits),
+                    "-d", "htmlcov"]).wait()
+                # The coverage data file and report are most likely owned by
+                # root, if a true test run was performed.  Make the files owned
+                # by the owner of the test directory, so they can be easily
+                # removed.
+                try:
+                        uid, gid = os.stat(".")[4:6]
+                        os.chown("htmlcov", uid, gid)
+                        os.chown(".coverage", uid, gid)
+                        for f in os.listdir("htmlcov"):
+                                os.chown("htmlcov/%s" % f, uid, gid)
+                except EnvironmentError:
+                        pass
 
         sys.exit(exitval)
