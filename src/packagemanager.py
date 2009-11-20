@@ -3000,6 +3000,8 @@ class PackageManager:
                                 self.__clear_search_results()
                         self.same_publisher_on_setup = False
                         self.unset_busy_cursor()
+                        if self.in_setup:
+                                self.in_setup = False
                         return
                 selected_publisher = self.__get_selected_publisher()
                 index =  self.w_repository_combobox.get_active()
