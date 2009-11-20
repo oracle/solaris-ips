@@ -20,7 +20,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
@@ -30,20 +30,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#if defined (__SVR4) && defined (__sun)
-/* Solaris has a built-in SHA-1 library interface */
-#include <sha1.h>
-#else
-/*
- * All others can use OpenSSL, but OpenSSL's method names
- * are slightly different
- */
-#include <openssl/sha.h>
-#define SHA1_CTX SHA_CTX
-#define SHA1Update SHA1_Update
-#define SHA1Init SHA1_Init
-#define SHA1Final SHA1_Final
-#endif
 #include <elf.h>
 #include <gelf.h>
 
@@ -59,7 +45,7 @@ pythonify_ver_liblist_cb(libnode_t *n, void *info, void *info2)
 	PyObject *ent;
 	dyninfo_t *dyn = (dyninfo_t *)info2;
 	char *str;
-	
+
 	if ((str = elf_strptr(dyn->elf, dyn->dynstr, n->nameoff)) == NULL) {
 		PyErr_SetString(ElfError, elf_errmsg(-1));
 		return (-1);
@@ -81,7 +67,7 @@ pythonify_2dliblist_cb(libnode_t *n, void *info, void *info2)
 
 	pverlist = PyList_New(0);
 	if (liblist_foreach(
-		n->verlist, pythonify_ver_liblist_cb, pverlist, dyn) == -1)
+	    n->verlist, pythonify_ver_liblist_cb, pverlist, dyn) == -1)
 		return (-1);
 
 	if ((str = elf_strptr(dyn->elf, dyn->dynstr, n->nameoff)) == NULL) {
@@ -243,7 +229,7 @@ get_dynamic(PyObject *self, PyObject *args)
 	if (dyn->deps->head) {
 		pdep = PyList_New(0);
 		if (liblist_foreach(
-			dyn->deps, pythonify_2dliblist_cb, pdep, dyn) == -1)
+		    dyn->deps, pythonify_2dliblist_cb, pdep, dyn) == -1)
 			goto err;
 		PyDict_SetItemString(pdict, "deps", pdep);
 	}
@@ -252,11 +238,11 @@ get_dynamic(PyObject *self, PyObject *args)
 
 		pdef = PyList_New(0);
 		if (liblist_foreach(
-			dyn->vers, pythonify_1dliblist_cb, pdef, dyn) == -1)
+		    dyn->vers, pythonify_1dliblist_cb, pdef, dyn) == -1)
 			goto err;
 		PyDict_SetItemString(pdict, "vers", pdef);
 		if ((str = elf_strptr(
-			dyn->elf, dyn->dynstr, dyn->def)) == NULL) {
+		    dyn->elf, dyn->dynstr, dyn->def)) == NULL) {
 			PyErr_SetString(ElfError, elf_errmsg(-1));
 			goto err;
 		}
@@ -266,7 +252,7 @@ get_dynamic(PyObject *self, PyObject *args)
 		char *str;
 
 		if ((str = elf_strptr(
-			dyn->elf, dyn->dynstr, dyn->runpath)) == NULL) {
+		    dyn->elf, dyn->dynstr, dyn->runpath)) == NULL) {
 			PyErr_SetString(ElfError, elf_errmsg(-1));
 			goto err;
 		}
@@ -294,26 +280,6 @@ out:
 	(void) close(fd);
 	return (pdict);
 }
-
-/*
- * XXX: Implemented as part of get_dynamic above.
- *
- * For ELF nontriviality: Need to turn an ELF object into a unique hash.
- *
- * From Eric Saxe's investigations, we see that the following sections can
- * generally be ignored:
- *
- *    .SUNW_signature, .comment, .SUNW_ctf, .SUNW_dof, .debug, .plt, .rela.bss,
- *    .rela.plt, .line, .note
- *
- * Conversely, the following sections are generally significant:
- *
- *    .rodata.str1.8, .rodata.str1.1, .rodata, .data1, .data, .text
- *
- * Accordingly, we will hash on the latter group of sections to determine our
- * ELF hash.
- */
-
 
 static PyMethodDef methods[] = {
 	{ "is_elf_object", elf_is_elf_object, METH_VARARGS },

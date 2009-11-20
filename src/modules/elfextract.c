@@ -38,7 +38,7 @@
 #include <string.h>
 #include <netinet/in.h>
 #include <inttypes.h>
-#if defined (__SVR4) && defined (__sun)
+#if defined(__SVR4) && defined(__sun)
 /* Solaris has a built-in SHA-1 library interface */
 #include <sha1.h>
 #else
@@ -47,10 +47,10 @@
  * are slightly different
  */
 #include <openssl/sha.h>
-#define SHA1_CTX SHA_CTX
-#define SHA1Update SHA1_Update
-#define SHA1Init SHA1_Init
-#define SHA1Final SHA1_Final
+#define	SHA1_CTX SHA_CTX
+#define	SHA1Update SHA1_Update
+#define	SHA1Init SHA1_Init
+#define	SHA1Final SHA1_Final
 #endif
 
 #include <liblist.h>
@@ -84,7 +84,7 @@ pkg_string_from_arch(int arch)
 	case EM_SPARCV9:
 		return ("sparc");
 	case EM_386:
-#if defined (__SVR4) && defined (__sun)
+#if defined(__SVR4) && defined(__sun)
 /* Solaris calls x86_64 "amd64", and recognizes 486 */
 	case EM_486:
 	case EM_AMD64:
@@ -255,12 +255,27 @@ getheaderinfo(int fd)
 	return (hi);
 }
 
+/*
+ * For ELF nontriviality: Need to turn an ELF object into a unique hash.
+ *
+ * From Eric Saxe's investigations, we see that the following sections can
+ * generally be ignored:
+ *
+ *    .SUNW_signature, .comment, .SUNW_dof, .debug, .plt, .rela.bss,
+ *    .rela.plt, .line, .note
+ *
+ * Conversely, the following sections are generally significant:
+ *
+ *    .rodata.str1.8, .rodata.str1.1, .rodata, .data1, .data, .text
+ *
+ * Accordingly, we will hash on the latter group of sections to determine our
+ * ELF hash.
+ */
 static int
 hashsection(char *name)
 {
 	if (strcmp(name, ".SUNW_signature") == 0 ||
 	    strcmp(name, ".comment") == 0 ||
-	    strcmp(name, ".SUNW_ctf") == 0 ||
 	    strcmp(name, ".SUNW_dof") == 0 ||
 	    strcmp(name, ".debug") == 0 ||
 	    strcmp(name, ".plt") == 0 ||
@@ -437,7 +452,7 @@ getdynamic(int fd)
 	/* Dynamic but no string table? */
 	if (data_dyn && dynstr < 0) {
 		PyErr_SetString(ElfError,
-			"bad elf: didn't find the dynamic duo");
+		    "bad elf: didn't find the dynamic duo");
 		goto bad;
 	}
 
