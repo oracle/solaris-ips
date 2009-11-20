@@ -110,6 +110,14 @@ INFO_DEPEND_DEPEND_INFO,
 INFO_DEPEND_DEPEND_INSTALLED_INFO
 ) = range(6)
 
+# Install/Update/Remove confirmation
+(
+CONFIRM_NAME,
+CONFIRM_PUB,
+CONFIRM_DESC,
+CONFIRM_STATUS
+) = range(4)
+
 #Repository action
 (
 ADD_PUBLISHER,

@@ -185,6 +185,52 @@
       </locale>
     </schema>
     <schema>
+      <key>/schemas/apps/packagemanager/preferences/imageupdate_confirm</key>
+      <applyto>/apps/packagemanager/preferences/imageupdate_confirm</applyto>
+      <owner>packagemanager</owner>
+      <type>bool</type>
+      <default>True</default>
+      <locale name="C">
+         <short>Display confirmation dialog after Check for updates</short>
+         <long>
+          A boolean which determines whether Package Manager should show
+          confirmation dialog when the updates are found after performing
+          Updates operation (Checks if updates are available) or it should
+          go straight to the update all operation.
+         </long>
+      </locale>
+    </schema>
+    <schema>
+      <key>/schemas/apps/packagemanager/preferences/install_confirm</key>
+      <applyto>/apps/packagemanager/preferences/install_confirm</applyto>
+      <owner>packagemanager</owner>
+      <type>bool</type>
+      <default>True</default>
+      <locale name="C">
+         <short>Display install/update packages confirmation dialog</short>
+         <long>
+          A boolean which determines whether Package Manager should show
+          confirmation dialog when the user selected some packages for
+          installation or update.
+         </long>
+      </locale>
+    </schema>
+    <schema>
+      <key>/schemas/apps/packagemanager/preferences/remove_confirm</key>
+      <applyto>/apps/packagemanager/preferences/remove_confirm</applyto>
+      <owner>packagemanager</owner>
+      <type>bool</type>
+      <default>True</default>
+      <locale name="C">
+         <short>Display remove packages confirmation dialog</short>
+         <long>
+          A boolean which determines whether Package Manager should show
+          confirmation dialog when the user selected some packages for
+          removal.
+         </long>
+      </locale>
+    </schema>
+    <schema>
       <key>/schemas/apps/packagemanager/preferences/start_insearch</key>
       <applyto>/apps/packagemanager/preferences/start_insearch</applyto>
       <owner>packagemanager</owner>

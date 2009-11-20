@@ -91,6 +91,8 @@ class Repository(progress.GuiProgressTracker):
                     "confirmationdialog")
                 self.w_confirmation_dialog =  \
                     w_tree_confirmation.get_widget("confirmationdialog")
+		self.w_confirmation_label = \
+                    w_tree_confirmation.get_widget("confirm_label")
                 self.w_confirmation_dialog.set_icon(self.parent.window_icon)
                 self.w_confirmation_textview = \
                     w_tree_confirmation.get_widget("confirmtext")
@@ -830,28 +832,45 @@ class Repository(progress.GuiProgressTracker):
                 self.w_add_publisher_comp_dialog.show()
 
         def __prepare_confirmation_dialog(self):
-                disable_text = _("Disable Publisher:\n")
-                enable_text = _("Enable Publisher:\n")
-                delete_text = _("Delete Publishers:\n")
                 # TODO: The priorities are not supported yet.
                 # change_text = _("Change Priority:\n")
                 # change = {}
                 disable = ""
                 enable = ""
                 delete = ""
+		disable_no = 0
+		enable_no = 0
+		delete_no = 0
                 for row in self.publishers_list:
                         pub_name = row[enumerations.PUBLISHER_NAME]
                         if row[enumerations.PUBLISHER_REMOVED]:
                                 delete += "\t" + pub_name + "\n"
+				delete_no += 1
                         elif row[enumerations.PUBLISHER_ENABLE_CHANGED]:
                                 to_enable = row[enumerations.PUBLISHER_ENABLED]
                                 if not to_enable:
                                         disable += "\t" + pub_name + "\n"
+					disable_no += 1
                                 else:
                                         enable += "\t" + pub_name + "\n"
+					enable_no += 1
                 textbuf = self.w_confirmation_textview.get_buffer()
                 textbuf.set_text("")
                 textiter = textbuf.get_end_iter()
+
+                disable_text = ngettext("Disable Publisher:\n",
+		    "Disable Publishers:\n", disable_no)
+                enable_text = ngettext("Enable Publisher:\n",
+		    "Enable Publishers:\n", enable_no)
+                delete_text = ngettext("Remove Publisher:\n",
+		    "Remove Publishers:\n", delete_no)
+
+		confirm_no = delete_no + enable_no + disable_no
+		confirm_text = ngettext("Apply the following change:",
+		    "Apply the following changes:", confirm_no)
+
+		self.w_confirmation_label.set_markup("<b>" + confirm_text + "</b>")
+
                 if len(delete) > 0:
                         textbuf.insert_with_tags_by_name(textiter,
                             delete_text, "bold")

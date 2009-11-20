@@ -49,6 +49,9 @@ INITIAL_SECTION_PREFERENCES = "/apps/packagemanager/preferences/initial_section"
 LAST_EXPORT_SELECTION_PATH = \
         "/apps/packagemanager/preferences/last_export_selections_path"
 SHOW_STARTPAGE_PREFERENCES = "/apps/packagemanager/preferences/show_startpage"
+SHOW_IMAGE_UPDATE_CONFIRMATION = "/apps/packagemanager/preferences/imageupdate_confirm"
+SHOW_INSTALL_CONFIRMATION = "/apps/packagemanager/preferences/install_confirm"
+SHOW_REMOVE_CONFIRMATION = "/apps/packagemanager/preferences/remove_confirm"
 SAVE_STATE_PREFERENCES = "/apps/packagemanager/preferences/save_state"
 START_INSEARCH_PREFERENCES = "/apps/packagemanager/preferences/start_insearch"
 LASTSOURCE_PREFERENCES = "/apps/packagemanager/preferences/lastsource"
@@ -187,6 +190,12 @@ class PackageManager:
                             self.client.get_bool(SHOW_STARTPAGE_PREFERENCES)
                         self.save_state = \
                             self.client.get_bool(SAVE_STATE_PREFERENCES)
+                        self.show_image_update = \
+                            self.client.get_bool(SHOW_IMAGE_UPDATE_CONFIRMATION)
+                        self.show_install = \
+                            self.client.get_bool(SHOW_INSTALL_CONFIRMATION)
+                        self.show_remove = \
+                            self.client.get_bool(SHOW_REMOVE_CONFIRMATION)
                         self.start_insearch = \
                             self.client.get_bool(START_INSEARCH_PREFERENCES)
                         self.lastsource = \
@@ -203,6 +212,12 @@ class PackageManager:
                             self.client.get_int(INITIAL_APP_VPOS_PREFERENCES)
                         self.client.add_dir(PACKAGEMANAGER_PREFERENCES,
                             gconf.CLIENT_PRELOAD_NONE)
+                        self.client.notify_add(SHOW_IMAGE_UPDATE_CONFIRMATION,
+                            self.__show_image_update_changed)
+                        self.client.notify_add(SHOW_INSTALL_CONFIRMATION,
+                            self.__show_install_changed)
+                        self.client.notify_add(SHOW_REMOVE_CONFIRMATION,
+                            self.__show_remove_changed)
                         self.client.notify_add(SAVE_STATE_PREFERENCES,
                             self.__save_state_changed)
                 except GError:
@@ -213,6 +228,9 @@ class PackageManager:
                         self.initial_section = 2
                         self.last_export_selection_path = ""
                         self.show_startpage = True
+                        self.show_image_update = True
+                        self.show_install = True
+                        self.show_remove = True
                         self.save_state = True
                         self.start_insearch = False
                         self.lastsource = ""
@@ -355,6 +373,12 @@ class PackageManager:
                     w_tree_preferences.get_widget("startpage_checkbutton")
                 self.w_exit_checkbutton = \
                     w_tree_preferences.get_widget("exit_checkbutton")
+                self.w_confirm_updateall_checkbutton = \
+                    w_tree_preferences.get_widget("confirm_updateall_checkbutton")
+                self.w_confirm_install_checkbutton = \
+                    w_tree_preferences.get_widget("confirm_install_checkbutton")
+                self.w_confirm_remove_checkbutton = \
+                    w_tree_preferences.get_widget("confirm_remove_checkbutton")
                 self.api_search_error_dialog = \
                     w_tree_api_search_error.get_widget("api_search_error")
                 self.api_search_error_textview = \
@@ -588,10 +612,18 @@ class PackageManager:
                             }
                         dic_preferences = \
                             {
+                                "on_preferencesdialog_delete_event": \
+                                    self.__on_preferencesdialog_delete_event,
                                 "on_startpage_checkbutton_toggled": \
                                     self.__on_startpage_checkbutton_toggled,
                                 "on_exit_checkbutton_toggled": \
                                     self.__on_exit_checkbutton_toggled,
+                                "on_confirm_updateall_checkbutton_toggled": \
+                                    self.on_confirm_updateall_checkbutton_toggled,
+                                "on_confirm_install_checkbutton_toggled": \
+                                    self.on_confirm_install_checkbutton_toggled,
+                                "on_confirm_remove_checkbutton_toggled": \
+                                    self.on_confirm_remove_checkbutton_toggled,
                                 "on_preferenceshelp_clicked": \
                                     self.__on_preferenceshelp_clicked,
                                 "on_preferencesclose_clicked": \
@@ -1866,6 +1898,10 @@ class PackageManager:
         def __on_api_search_error_delete_event(self, widget, event):
                 self.__on_api_search_button_clicked(None)
 
+        def __on_preferencesdialog_delete_event(self, widget, event):
+                self.__on_preferencesclose_clicked(None)
+                return True
+
         def __on_api_search_button_clicked(self, widget):
                 self.api_search_error_dialog.hide()
 
@@ -2559,8 +2595,12 @@ class PackageManager:
                                     enumerations.STATUS_COLUMN)
                                 pkg_publisher = model.get_value(itr,
                                     enumerations.PUBLISHER_COLUMN)
-                                self.__add_pkg_stem_to_list(pkg_stem, 
-                                    pkg_status, pkg_publisher)
+                                pkg_description = model.get_value(itr,
+                                    enumerations.DESCRIPTION_COLUMN)
+                                pkg_name = model.get_value(itr,
+                                    enumerations.NAME_COLUMN)
+                                self.__add_pkg_stem_to_list(pkg_stem, pkg_name, 
+                                    pkg_status, pkg_publisher, pkg_description)
                         elif not select_all and mark_value:
                                 model.set_value(itr, enumerations.MARK_COLUMN, False)
                                 pkg_stem = model.get_value(itr,
@@ -2606,7 +2646,12 @@ class PackageManager:
                         pkg_status = model.get_value(itr, enumerations.STATUS_COLUMN)
                         pkg_publisher = model.get_value(itr,
                             enumerations.PUBLISHER_COLUMN)
-                        self.__add_pkg_stem_to_list(pkg_stem, pkg_status, pkg_publisher)
+                        pkg_description = model.get_value(itr,
+                            enumerations.DESCRIPTION_COLUMN)
+                        pkg_name = model.get_value(itr,
+                            enumerations.NAME_COLUMN)
+                        self.__add_pkg_stem_to_list(pkg_stem, pkg_name, pkg_status,
+                            pkg_publisher, pkg_description)
                 self.__enable_disable_selection_menus()
                 self.update_statusbar()
                 self.__enable_disable_install_remove()
@@ -2619,9 +2664,21 @@ class PackageManager:
         def __save_state_changed(self, client, connection_id, entry, arguments):
                 self.save_state = entry.get_value().get_bool()
 
+        def __show_image_update_changed(self, client, connection_id, entry, arguments):
+                self.show_image_update = entry.get_value().get_bool()
+
+        def __show_install_changed(self, client, connection_id, entry, arguments):
+                self.show_install = entry.get_value().get_bool()
+
+        def __show_remove_changed(self, client, connection_id, entry, arguments):
+                self.show_remove = entry.get_value().get_bool()
+
         def __on_preferences(self, widget):
                 self.w_startpage_checkbutton.set_active(self.show_startpage)
                 self.w_exit_checkbutton.set_active(self.save_state)
+                self.w_confirm_updateall_checkbutton.set_active(self.show_image_update)
+                self.w_confirm_install_checkbutton.set_active(self.show_install)
+                self.w_confirm_remove_checkbutton.set_active(self.show_remove)
                 self.w_preferencesdialog.show()
 
         def __on_preferencesclose_clicked(self, widget):
@@ -2644,6 +2701,39 @@ class PackageManager:
                 try:
                         self.client.set_bool(SAVE_STATE_PREFERENCES,
                             self.save_state)
+                except GError:
+                        pass
+
+        def on_confirm_updateall_checkbutton_toggled(self, widget, reverse = False):
+                active = widget.get_active()
+                if reverse:
+                        active = not active
+                self.show_image_update = active
+                try:
+                        self.client.set_bool(SHOW_IMAGE_UPDATE_CONFIRMATION,
+                            self.show_image_update)
+                except GError:
+                        pass
+
+        def on_confirm_install_checkbutton_toggled(self, widget, reverse = False):
+                active = widget.get_active()
+                if reverse:
+                        active = not active
+                self.show_install = active
+                try:
+                        self.client.set_bool(SHOW_INSTALL_CONFIRMATION,
+                            self.show_install)
+                except GError:
+                        pass
+
+        def on_confirm_remove_checkbutton_toggled(self, widget, reverse = False):
+                active = widget.get_active()
+                if reverse:
+                        active = not active
+                self.show_remove = active
+                try:
+                        self.client.set_bool(SHOW_REMOVE_CONFIRMATION,
+                            self.show_remove)
                 except GError:
                         pass
 
@@ -3189,32 +3279,46 @@ class PackageManager:
         def __on_install_update(self, widget):
                 self.api_o.reset()
                 install_update = []
+                confirmation_list = None
+                if self.show_install:
+                        confirmation_list = []
+
                 if self.selected > 0:
                         visible_publisher = self.__get_selected_publisher()
                         pkgs = self.selected_pkgs.get(visible_publisher)
                         if pkgs:
                                 for pkg_stem in pkgs:
-                                        status = pkgs.get(pkg_stem)
+                                        status = pkgs.get(pkg_stem)[0]
                                         if status == enumerations.NOT_INSTALLED or \
                                             status == enumerations.UPDATABLE:
                                                 install_update.append(pkg_stem)
-
+                                                if self.show_install:
+                                                        desc = pkgs.get(pkg_stem)[1]
+                                                        pkg_name = pkgs.get(pkg_stem)[2]
+                                                        confirmation_list.append(
+                                                            [pkg_name, visible_publisher,
+                                                            desc, status])
                 if self.img_timestamp != self.cache_o.get_index_timestamp():
                         self.img_timestamp = None
                         self.__remove_cache()
 
                 installupdate.InstallUpdate(install_update, self, \
                     self.image_directory, action = enumerations.INSTALL_UPDATE,
-                    main_window = self.w_main_window)
+                    main_window = self.w_main_window,
+                    confirmation_list = confirmation_list)
 
         def __on_update_all(self, widget):
                 self.api_o.reset()
+                confirmation = None
+                if self.show_image_update:
+                        confirmation = []
                 installupdate.InstallUpdate([], self,
                     self.image_directory, action = enumerations.IMAGE_UPDATE,
                     parent_name = _("Package Manager"),
                     pkg_list = ["SUNWipkg", "SUNWipkg-gui"],
                     main_window = self.w_main_window,
-                    icon_confirm_dialog = self.window_icon)
+                    icon_confirm_dialog = self.window_icon,
+                    confirmation_list = confirmation)
                 return
 
         def __on_help_about(self, widget):
@@ -3232,15 +3336,24 @@ class PackageManager:
         def __on_remove(self, widget):
                 self.api_o.reset()
                 remove_list = []
+                confirmation_list = None
+                if self.show_remove:
+                        confirmation_list = []
                 if self.selected > 0:
                         visible_publisher = self.__get_selected_publisher()
                         pkgs = self.selected_pkgs.get(visible_publisher)
                         if pkgs:
                                 for pkg_stem in pkgs:
-                                        status = pkgs.get(pkg_stem)
+                                        status = pkgs.get(pkg_stem)[0]
                                         if status == enumerations.INSTALLED or \
                                             status == enumerations.UPDATABLE:
                                                 remove_list.append(pkg_stem)
+                                                if self.show_remove:
+                                                        desc = pkgs.get(pkg_stem)[1]
+                                                        pkg_name = pkgs.get(pkg_stem)[2]
+                                                        confirmation_list.append(
+                                                            [pkg_name, visible_publisher,
+                                                            desc, status])
 
                 if self.img_timestamp != self.cache_o.get_index_timestamp():
                         self.img_timestamp = None
@@ -3248,7 +3361,8 @@ class PackageManager:
 
                 installupdate.InstallUpdate(remove_list, self,
                     self.image_directory, action = enumerations.REMOVE,
-                    main_window = self.w_main_window)
+                    main_window = self.w_main_window,
+                    confirmation_list = confirmation_list)
 
         def __on_reload(self, widget):
                 self.force_reload_packages = True
@@ -3480,8 +3594,12 @@ class PackageManager:
                         else:
                                 pkg_publisher = filterModel.get_value(itr, 
                                     enumerations.PUBLISHER_COLUMN)
-                                self.__add_pkg_stem_to_list(pkg_stem, pkg_status,
-                                    pkg_publisher)
+                                pkg_description = filterModel.get_value(itr, 
+                                    enumerations.DESCRIPTION_COLUMN)
+                                pkg_name = filterModel.get_value(itr,
+                                    enumerations.NAME_COLUMN)
+                                self.__add_pkg_stem_to_list(pkg_stem, pkg_name,
+                                    pkg_status, pkg_publisher, pkg_description)
                         self.update_statusbar()
                         self.__enable_disable_selection_menus()
                         self.__enable_disable_install_remove()
@@ -3494,10 +3612,10 @@ class PackageManager:
                         self.w_reload_menuitem.set_sensitive(False)
                         self.w_reload_button.set_sensitive(False)
 
-        def __add_pkg_stem_to_list(self, stem, status, pub):
+        def __add_pkg_stem_to_list(self, stem, name, status, pub, description="test"):
                 if self.selected_pkgs.get(pub) == None:
                         self.selected_pkgs[pub] = {}
-                self.selected_pkgs.get(pub)[stem] = status
+                self.selected_pkgs.get(pub)[stem] = [status, description, name]
                 if status == enumerations.NOT_INSTALLED or \
                     status == enumerations.UPDATABLE:
                         if self.to_install_update.get(pub) == None:
@@ -3545,7 +3663,7 @@ class PackageManager:
                         pkgs = self.selected_pkgs.get(pub)
                         status = None
                         if stem in pkgs:
-                                status = pkgs.pop(stem)
+                                status = pkgs.pop(stem)[0]
                         if status == enumerations.NOT_INSTALLED or \
                             status == enumerations.UPDATABLE:
                                 if self.to_install_update.get(pub) == None:
@@ -3890,7 +4008,6 @@ class PackageManager:
                     args = (pkg, pkg_stem, pkg_status, self.last_show_info_id)).start()
 
         def __show_package_info(self, pkg, pkg_stem, pkg_status, info_id):
-                self.api_o.log_operation_start("info")
                 local_info = None
                 remote_info = None
                 if not self.showing_empty_details and (info_id ==
@@ -3937,7 +4054,6 @@ class PackageManager:
                         gobject.idle_add(self.__update_package_info, pkg,
                             local_info, remote_info, dep_info, installed_dep_info,
                             info_id)
-                self.api_o.log_operation_end()
                 return
 
         # This function is ported from pkg.actions.generic.distinguished_name()

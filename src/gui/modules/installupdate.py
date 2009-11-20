@@ -30,6 +30,7 @@ import time
 import pango
 import datetime
 import traceback
+from gettext import ngettext
 from threading import Thread
 try:
         import gobject
@@ -44,6 +45,7 @@ import pkg
 import pkg.gui.progress as progress
 import pkg.misc as misc
 import pkg.client.history as history
+import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 import pkg.gui.beadmin as beadm
 import pkg.gui.uarenamebe as uarenamebe
@@ -53,7 +55,8 @@ import pkg.gui.enumerations as enumerations
 class InstallUpdate(progress.GuiProgressTracker):
         def __init__(self, list_of_packages, parent, image_directory,
             action = -1, parent_name = "", pkg_list = None, main_window = None,
-            icon_confirm_dialog = None, title = None, web_install = False):
+            icon_confirm_dialog = None, title = None, web_install = False,
+            confirmation_list = None):
                 if action == -1:
                         return
                 progress.GuiProgressTracker.__init__(self)
@@ -65,6 +68,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 if self.api_o == None:
                         return
                 self.parent_name = parent_name
+                self.confirmation_list = confirmation_list
                 self.ipkg_ipkgui_list = pkg_list
                 self.icon_confirm_dialog = icon_confirm_dialog
                 self.title = title
@@ -94,8 +98,34 @@ class InstallUpdate(progress.GuiProgressTracker):
                 gladefile = os.path.join(self.parent.application_dir,
                     "usr/share/package-manager/packagemanager.glade")
                 w_tree_dialog = gtk.glade.XML(gladefile, "createplandialog")
-                w_tree_removeconfirm = \
-                    gtk.glade.XML(gladefile, "removeconfirmation")
+                w_tree_confirmdialog = \
+                    gtk.glade.XML(gladefile, "confirmdialog")
+
+                self.w_confirm_dialog = w_tree_confirmdialog.get_widget("confirmdialog")
+                self.w_install_expander = \
+                    w_tree_confirmdialog.get_widget("install_expander")
+                self.w_install_treeview = \
+                    w_tree_confirmdialog.get_widget("install_treeview")
+                self.w_update_expander = \
+                    w_tree_confirmdialog.get_widget("update_expander")
+                self.w_update_treeview = \
+                    w_tree_confirmdialog.get_widget("update_treeview")
+                self.w_remove_expander = \
+                    w_tree_confirmdialog.get_widget("remove_expander")
+                self.w_remove_treeview = \
+                    w_tree_confirmdialog.get_widget("remove_treeview")
+                self.w_confirm_ok_button =  \
+                    w_tree_confirmdialog.get_widget("confirm_ok_button")
+                self.w_confirm_label =  \
+                    w_tree_confirmdialog.get_widget("confirm_label")
+                self.w_remove_label = w_tree_confirmdialog.get_widget("remove_label")
+                self.w_update_label = w_tree_confirmdialog.get_widget("update_label")
+                self.w_install_label = w_tree_confirmdialog.get_widget("install_label")
+
+                self.w_confirm_dialog.set_icon(self.icon_confirm_dialog)
+                gui_misc.set_modal_and_transient(self.w_confirm_dialog,
+                    self.w_main_window)
+
                 self.w_dialog = w_tree_dialog.get_widget("createplandialog")
                 self.w_expander = w_tree_dialog.get_widget("expander3")
                 self.w_cancel_button = w_tree_dialog.get_widget("cancelcreateplan")
@@ -104,11 +134,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                     w_tree_dialog.get_widget("ua_release_notes_button")
                 self.w_progressbar = w_tree_dialog.get_widget("createplanprogress")
                 self.w_details_textview = w_tree_dialog.get_widget("createplantextview")
-                self.w_removeconfirm_dialog = \
-                    w_tree_removeconfirm.get_widget("removeconfirmation")
-                self.w_removeconfirm_dialog.set_icon(self.icon_confirm_dialog)
-                w_removeproceed_button = w_tree_removeconfirm.get_widget("remove_proceed")
-                w_remove_treeview = w_tree_removeconfirm.get_widget("removetreeview")
+
                 w_stage2 = w_tree_dialog.get_widget("stage2")
                 self.w_stages_box = w_tree_dialog.get_widget("stages_box")
                 self.w_stage1_label = w_tree_dialog.get_widget("label_stage1")
@@ -137,6 +163,9 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.w_stage2_icon.set_from_pixbuf(blank_icon)
                 self.w_stage3_icon.set_from_pixbuf(blank_icon)
 
+                proceed_txt = _("_Proceed")
+                gui_misc.change_stockbutton_label(self.w_confirm_ok_button, proceed_txt)
+
                 infobuffer = self.w_details_textview.get_buffer()
                 infobuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)
                 infobuffer.create_tag("level1", left_margin=30, right_margin=10)
@@ -153,15 +182,23 @@ class InstallUpdate(progress.GuiProgressTracker):
                                 "on_createplandialog_delete_event": \
                                     self.__on_createplandialog_delete,
                             }
-                        dic_removeconfirm = \
+
+
+                        dic_confirmdialog = \
                             {
-                                "on_proceed_button_clicked": \
-                                    self.__on_remove_proceed_button_clicked,
-                                "on_cancel_button_clicked": \
-                                self.__on_remove_cancel_button_clicked,
+                                "on_confirmdialog_delete_event": \
+                                    self.__on_confirmdialog_delete_event,
+                                "on_confirm_donotshow_toggled": \
+                                    self.__on_confirm_donotshow_toggled,
+                                "on_confirm_cancel_button_clicked": \
+                                    self.__on_confirm_cancel_button_clicked,
+                                "on_confirm_ok_button_clicked": \
+                                    self.__on_confirm_ok_button_clicked,
                             }
+
+                        w_tree_confirmdialog.signal_autoconnect(dic_confirmdialog)
                         w_tree_dialog.signal_autoconnect(dic_createplan)
-                        w_tree_removeconfirm.signal_autoconnect(dic_removeconfirm)
+
                 except AttributeError, error:
                         print _("GUI will not respond to any event! %s. "
                             "Check installupdate.py signals") \
@@ -170,25 +207,40 @@ class InstallUpdate(progress.GuiProgressTracker):
                 gui_misc.set_modal_and_transient(self.w_dialog, self.w_main_window)
 
                 if self.action == enumerations.REMOVE:
-                        #We are not showing the download stage in the main stage list
+                        # For the remove, we are not showing the download stage
                         self.stages[3] = [_("Removing..."), _("Remove")]
                         self.w_stage3_label.set_text(self.stages[3][1])
                         w_stage2.hide()
                         self.w_dialog.set_title(_("Remove"))
-                        w_removeproceed_button.grab_focus()
-                        cell = gtk.CellRendererText()
-                        remove_column = gtk.TreeViewColumn('Removed')
-                        remove_column.pack_start(cell, True)
-                        remove_column.add_attribute(cell, 'text', 0)
-                        w_remove_treeview.append_column(remove_column)
 
-                        liststore = gtk.ListStore(str)
-                        for sel_pkg in list_of_packages:
-                                liststore.append([sel_pkg])
-                        w_remove_treeview.set_model(liststore)
-                        w_remove_treeview.expand_all()
-                        self.w_removeconfirm_dialog.show()
+                        if self.confirmation_list != None:
+                                self.w_confirm_dialog.set_title(_("Remove Confirmation"))
+                                pkgs_no = len(self.confirmation_list)
+                                remove_text = ngettext(
+                                    "Review the package to be removed",
+                		    "Review the packages to be removed", pkgs_no)
+                                self.w_confirm_label.set_markup("<b>"+remove_text+"</b>")
+                                rm_txt = ngettext("Package to be removed",
+                		    "Packages to be removed", pkgs_no)
+                                self.w_remove_label.set_markup("<b>"+rm_txt+"</b>")
 
+                                self.w_install_expander.hide()
+                                self.w_update_expander.hide()
+                                self.__init_confirmation_tree_view(self.w_remove_treeview)
+                                liststore = gtk.ListStore(str, str, str)
+                                for sel_pkg in self.confirmation_list:
+                                        liststore.append(
+                                            [sel_pkg[enumerations.CONFIRM_NAME],
+                                            sel_pkg[enumerations.CONFIRM_PUB],
+                                            sel_pkg[enumerations.CONFIRM_DESC]])
+                                liststore.set_default_sort_func(lambda *args: -1) 
+                                liststore.set_sort_column_id(0, gtk.SORT_ASCENDING)
+                                self.w_remove_treeview.set_model(liststore)
+                                self.w_remove_expander.set_expanded(True)
+                                self.w_confirm_ok_button.grab_focus()
+                                self.w_confirm_dialog.show()
+                        else:
+                                self.__proceed_with_stages()
                 elif self.action == enumerations.IMAGE_UPDATE:
                         self.w_dialog.set_title(_("Update All"))
                         self.__proceed_with_stages()
@@ -197,16 +249,138 @@ class InstallUpdate(progress.GuiProgressTracker):
                                 self.w_dialog.set_title(self.title)
                         else:
                                 self.w_dialog.set_title(_("Install/Update"))
-                        self.__proceed_with_stages()
 
+                        if self.confirmation_list != None:
+                                self.w_remove_expander.hide()
+                                to_install = gtk.ListStore(str, str, str)
+                                to_update = gtk.ListStore(str, str, str)
+                                for cpk in self.confirmation_list:
+                                        if cpk[enumerations.CONFIRM_STATUS] == \
+                                            enumerations.UPDATABLE:
+                                                to_update.append(
+                                                    [cpk[enumerations.CONFIRM_NAME], 
+                                                    cpk[enumerations.CONFIRM_PUB],
+                                                    cpk[enumerations.CONFIRM_DESC]])
+                                        else:
+                                                to_install.append(
+                                                    [cpk[enumerations.CONFIRM_NAME],
+                                                    cpk[enumerations.CONFIRM_PUB],
+                                                    cpk[enumerations.CONFIRM_DESC]])
+
+                                operation_txt = _("Install/Update Confirmation")
+                                install_text = ngettext(
+                                    "Review the package to be Installed/Updated",
+                		    "Review the packages to be Installed/Updated",
+                                     len(self.confirmation_list))
+                                if len(to_install) == 0:
+                                        operation_txt = _("Update Confirmation")
+                                        install_text = ngettext(
+                                            "Review the package to be Updated",
+                        		    "Review the packages to be Updated",
+                                            len(to_update))
+                                if len(to_update) == 0:
+                                        operation_txt = _("Install Confirmation")
+                                        install_text = ngettext(
+                                            "Review the package to be Installed",
+                        		    "Review the packages to be Installed",
+                                            len(to_install))
+
+                                self.w_confirm_dialog.set_title(operation_txt)
+                                self.w_confirm_label.set_markup("<b>"+install_text+"</b>")
+
+                                if len(to_install) > 0:
+                                        self.__init_confirmation_tree_view(
+                                            self.w_install_treeview)
+                                        to_install.set_default_sort_func(lambda *args: -1)
+                                        to_install.set_sort_column_id(0,
+                                            gtk.SORT_ASCENDING)
+                                        self.w_install_treeview.set_model(to_install)
+                                        self.w_install_expander.set_expanded(True)
+                                        inst_txt = ngettext("Package to be installed",
+                        		    "Packages to be installed", len(to_install))
+                                        self.w_install_label.set_markup(
+                                            "<b>"+inst_txt+"</b>")
+                                else:
+                                        self.w_install_expander.hide()
+                                if len(to_update) > 0:
+                                        self.__init_confirmation_tree_view(
+                                            self.w_update_treeview)
+                                        to_update.set_default_sort_func(lambda *args: -1) 
+                                        to_update.set_sort_column_id(0,
+                                            gtk.SORT_ASCENDING)
+                                        self.w_update_treeview.set_model(to_update)
+                                        self.w_update_expander.set_expanded(True)
+                                        update_label = ngettext("Package to be updated",
+                        		    "Packages to be updated", len(to_install))
+                                        self.w_update_label.set_markup(
+                                            "<b>"+update_label+"</b>")
+                                else:
+                                        self.w_update_expander.hide()
+                                self.w_confirm_ok_button.grab_focus()
+                                self.w_confirm_dialog.show()
+                        else:
+                                self.__proceed_with_stages()
+
+        @staticmethod
+        def __init_confirmation_tree_view(treeview):
+                name_renderer = gtk.CellRendererText()
+                column = gtk.TreeViewColumn(_('Name'), name_renderer,
+                    text = enumerations.CONFIRM_NAME)
+                column.set_resizable(False)
+                column.set_sort_column_id(0)
+                column.set_sort_indicator(True)
+                treeview.append_column(column)
+                publisher_renderer = gtk.CellRendererText()
+                column = gtk.TreeViewColumn(_('Publisher'), publisher_renderer,
+                    text = enumerations.CONFIRM_PUB)
+                column.set_resizable(False)
+                column.set_sort_column_id(1)
+                column.set_sort_indicator(True)
+                treeview.append_column(column)
+                name_renderer = gtk.CellRendererText()
+                name_renderer.set_property("ellipsize", pango.ELLIPSIZE_END)
+                column = gtk.TreeViewColumn(_('Description'), name_renderer,
+                    text = enumerations.CONFIRM_DESC)
+                column.set_resizable(True)
+                column.set_sort_column_id(2)
+                column.set_sort_indicator(True)
+                treeview.append_column(column)
+
+        def __on_confirm_donotshow_toggled(self, widget):
+                if self.action == enumerations.REMOVE:
+                        self.parent.on_confirm_remove_checkbutton_toggled(widget,
+                            reverse=True)
+                elif self.action == enumerations.IMAGE_UPDATE:
+                        self.parent.on_confirm_updateall_checkbutton_toggled(widget,
+                            reverse=True)
+                elif self.action == enumerations.INSTALL_UPDATE:
+                        self.parent.on_confirm_install_checkbutton_toggled(widget,
+                            reverse=True)
+
+        def __on_confirm_ok_button_clicked(self, widget):
+                if self.action == enumerations.INSTALL_UPDATE or \
+                    self.action == enumerations.REMOVE:
+                        self.__on_confirm_cancel_button_clicked(None)
+                        self.__proceed_with_stages()
+                else:
+                        self.w_dialog.show()
+                        self.__on_confirm_cancel_button_clicked(None)
+                        self.__proceed_with_stages(continue_operation = True)
+
+        def __on_confirmdialog_delete_event(self, widget, event):
+                self.__on_confirm_cancel_button_clicked(None)
+                return True
+
+        def __on_confirm_cancel_button_clicked(self, widget):
+                self.w_confirm_dialog.hide()
 
         def __on_createplandialog_delete(self, widget, event):
                 self.__on_cancelcreateplan_clicked(None)
                 return True
 
         def __on_cancelcreateplan_clicked(self, widget):
-                '''Handler for signal send by cancel button, which user might press during
-                evaluation stage - while the dialog is creating plan'''
+                '''Handler for signal send by cancel button, which user might press
+                during evaluation stage - while the dialog is creating plan'''
                 if self.api_o.can_be_canceled():
                         self.canceling = True
                         Thread(target = self.api_o.cancel, args = ()).start()
@@ -226,13 +400,6 @@ class InstallUpdate(progress.GuiProgressTracker):
                                 return
                         gobject.idle_add(self.parent.update_package_list, None)
 
-        def __on_remove_cancel_button_clicked(self, widget):
-                self.w_removeconfirm_dialog.hide()
-
-        def __on_remove_proceed_button_clicked(self, widget):
-                self.w_removeconfirm_dialog.hide()
-                self.__proceed_with_stages()
-
         def __ipkg_ipkgui_uptodate(self):
                 if self.ipkg_ipkgui_list == None:
                         return True
@@ -240,18 +407,20 @@ class InstallUpdate(progress.GuiProgressTracker):
                     self.ipkg_ipkgui_list)
                 return not upgrade_needed
 
-        def __proceed_with_stages(self):
-                self.__start_stage_one()
-                gui_misc.set_modal_and_transient(self.w_dialog,
-                    self.w_main_window)
-                self.w_dialog.show()
+        def __proceed_with_stages(self, continue_operation = False):
+                if continue_operation == False:
+                        self.__start_stage_one()
+                        gui_misc.set_modal_and_transient(self.w_dialog,
+                            self.w_main_window)
+                        self.w_dialog.show()
                 Thread(target = self.__proceed_with_stages_thread_ex,
-                    args = ()).start()
+                    args = (continue_operation, )).start()
 
-        def __proceed_with_stages_thread_ex(self):
+        def __proceed_with_stages_thread_ex(self, continue_operation = False):
                 try:
                         try:
-                                if self.action == enumerations.IMAGE_UPDATE:
+                                if self.action == enumerations.IMAGE_UPDATE and \
+                                    continue_operation == False:
                                         self.__start_substage(
                                             _("Ensuring %s is up to date...") %
                                             self.parent_name,
@@ -274,10 +443,14 @@ class InstallUpdate(progress.GuiProgressTracker):
                                         else:
                                                 self.uarenamebe_o = \
                                                     uarenamebe.RenameBeAfterUpdateAll(
-                                                    self.parent, self.icon_confirm_dialog,
+                                                    self.parent,
+                                                    self.icon_confirm_dialog,
                                                     self.w_main_window)
                                                 self.api_o.reset()
-                                self.__proceed_with_stages_thread()
+                                if continue_operation == False:
+                                        self.__proceed_with_stages_thread()
+                                else:
+                                        self.__continue_with_stages_thread()
                         except (MemoryError, EnvironmentError), __e:
                                 if isinstance(__e, EnvironmentError) and \
                                     __e.errno != errno.ENOMEM:
@@ -437,27 +610,17 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.api_o.execute_plan()
                 gobject.idle_add(self.__operations_done)
 
-
         def __proceed_with_stages_thread(self):
                 self.__start_substage(
                     _("Gathering package information, please wait..."))
                 stuff_todo = self.__plan_stage()
                 if stuff_todo:
-                        self.__afterplan_information()
-                        self.prev_pkg = None
-                        # The api.prepare() mostly is downloading the files so we are
-                        # Not showing this stage in the main stage dialog. If download
-                        # is necessary, then we are showing it in the details view
-                        if not self.action == enumerations.REMOVE:
-                                self.__start_stage_two()
-                                self.__start_substage(None,
-                                    bounce_progress=False)
-                        self.api_o.prepare()
-                        self.__start_stage_three()
-                        self.__start_substage(None,
-                            bounce_progress=False)
-                        self.api_o.execute_plan()
-                        gobject.idle_add(self.__operations_done)
+
+                        if self.action == enumerations.IMAGE_UPDATE and \
+                            self.confirmation_list != None:
+                                gobject.idle_add(self.__show_image_update_confirmation)
+                        else:
+                                self.__continue_with_stages_thread()
                 else:
                         if self.web_install:
                                 gobject.idle_add(self.w_expander.hide)
@@ -472,6 +635,113 @@ class InstallUpdate(progress.GuiProgressTracker):
                         elif self.action == enumerations.IMAGE_UPDATE:
                                 done_text = _("No updates available")
                                 gobject.idle_add(self.__operations_done, done_text)
+
+        def __show_image_update_confirmation(self):
+                dic_to_update = {}
+                dic_to_install = {}
+                dic_to_remove = {}
+                to_update = gtk.ListStore(str, str, str)
+                to_install = gtk.ListStore(str, str, str)
+                to_remove = gtk.ListStore(str, str, str)
+
+
+                plan = self.api_o.describe().get_changes()
+
+                for pkg_plan in plan:
+                        orig = pkg_plan[0]
+                        dest = pkg_plan[1]
+                        if orig and dest:
+                                dic_to_update[dest.pkg_stem] = [dest.publisher, None] 
+                        elif not orig and dest:
+                                dic_to_install[dest.pkg_stem] = [dest.publisher, None] 
+                        elif orig and not dest:
+                                dic_to_remove[orig.pkg_stem] = [orig.publisher, None] 
+
+                self.__update_descriptions(dic_to_update, dic_to_install, dic_to_remove)
+
+                self.__dic_to_liststore(dic_to_update, to_update)
+                self.__dic_to_liststore(dic_to_install, to_install)
+                self.__dic_to_liststore(dic_to_remove, to_remove)
+
+                if len(to_update) > 0:
+                        self.__init_confirmation_tree_view(
+                            self.w_update_treeview)
+                        to_update.set_default_sort_func(lambda *args: -1) 
+                        to_update.set_sort_column_id(0, gtk.SORT_ASCENDING)
+                        self.w_update_treeview.set_model(to_update)
+                        self.w_update_expander.set_expanded(True)
+                        update_label = ngettext("Package to be updated",
+        		    "Packages to be updated", len(to_install))
+                        self.w_update_label.set_markup(
+                            "<b>"+update_label+"</b>")
+                else:
+                        self.w_update_expander.hide()
+
+                if len(to_install) > 0:
+                        self.__init_confirmation_tree_view(
+                            self.w_install_treeview)
+                        to_install.set_default_sort_func(lambda *args: -1) 
+                        to_install.set_sort_column_id(0, gtk.SORT_ASCENDING)
+                        self.w_install_treeview.set_model(to_install)
+                        self.w_install_expander.set_expanded(True)
+                        inst_txt = ngettext("Package to be installed",
+        		    "Packages to be installed", len(to_install))
+                        self.w_install_label.set_markup(
+                            "<b>"+inst_txt+"</b>")
+                else:
+                        self.w_install_expander.hide()
+
+                if len(to_remove) > 0:
+                        self.__init_confirmation_tree_view(
+                            self.w_remove_treeview)
+                        to_remove.set_default_sort_func(lambda *args: -1) 
+                        to_remove.set_sort_column_id(0, gtk.SORT_ASCENDING)
+                        self.w_remove_treeview.set_model(to_remove)
+                        self.w_remove_expander.set_expanded(True)
+                        rm_txt = ngettext("Package to be removed",
+        		    "Packages to be removed", len(to_remove))
+                        self.w_remove_label.set_markup(
+                            "<b>"+rm_txt+"</b>")
+                else:
+                        self.w_remove_expander.hide()
+
+
+                operation_txt = _("Update All Confirmation")
+                no_pkgs = len(to_update) + len(to_install) + len(to_remove)
+                install_text = ngettext(
+                    "Review the package which will be affected by Update all",
+		    "Review the packages which will be affected by Update all", no_pkgs)
+
+                self.w_confirm_dialog.set_title(operation_txt)
+                self.w_confirm_label.set_markup("<b>"+install_text+"</b>")
+
+                self.w_confirm_ok_button.grab_focus()
+                self.__start_substage(None,
+                            bounce_progress=False)
+                self.w_dialog.hide()
+                self.w_confirm_dialog.show()
+
+        @staticmethod
+        def __dic_to_liststore(dic, liststore):
+                for entry in dic:
+                        liststore.append([entry, dic[entry][0], dic[entry][1]])
+
+        def __continue_with_stages_thread(self):
+                self.__afterplan_information()
+                self.prev_pkg = None
+                # The api.prepare() mostly is downloading the files so we are
+                # Not showing this stage in the main stage dialog. If download
+                # is necessary, then we are showing it in the details view
+                if not self.action == enumerations.REMOVE:
+                        self.__start_stage_two()
+                        self.__start_substage(None,
+                            bounce_progress=False)
+                self.api_o.prepare()
+                self.__start_stage_three()
+                self.__start_substage(None,
+                    bounce_progress=False)
+                self.api_o.execute_plan()
+                gobject.idle_add(self.__operations_done)
 
         def __start_stage_one(self):
                 self.current_stage_label = self.w_stage1_label
@@ -772,6 +1042,26 @@ class InstallUpdate(progress.GuiProgressTracker):
                         version_suf += "%d" % s_bran[l_ver]
                 pkg_version = version_pref + version_suf + dt_str
                 return pkg_name + "@" + pkg_version
+
+        def __update_descriptions(self, to_update, to_install, to_remove):
+                pkgs_table = to_update.keys() + to_install.keys() + to_remove.keys()
+                info = None
+                try:
+                        info = self.api_o.info(pkgs_table, False,
+                            frozenset([api.PackageInfo.SUMMARY,
+                            api.PackageInfo.IDENTITY]))
+                        for info_s in info.get(0):
+                                stem = info_s.pkg_stem
+                                if stem in to_update:
+                                        to_update[stem][1] = info_s.summary
+                                elif stem in to_install:
+                                        to_install[stem][1] = info_s.summary
+                                elif stem in to_remove:
+                                        to_remove[stem][1] = info_s.summary
+                except (api_errors.TransportError):
+                        pass
+                except (api_errors.InvalidDepotResponseException):
+                        pass
 
         @staticmethod
         def get_datetime(date_time):
