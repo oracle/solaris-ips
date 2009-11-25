@@ -57,6 +57,25 @@ case "$1" in
 	bool_ops=""
 	option_props=""
 
+	# retrieve the pkg_root property. If the variable is left empty
+	# pkg_root is /
+	pkg_root=$(svcprop -p pkg/pkg_root $SMF_FMRI)
+	if [[ $? -ne 0 ]]; then
+		echo "service property pkg/pkg_root not defined for" \
+		    "service: $SMF_FMRI"
+		exit $SMF_EXIT_ERR_CONFIG
+	fi
+
+	# make sure pkg_root ends with a /
+	echo $pkg_root | grep /$ >/dev/null
+	if [[ $? -ne 0 ]]; then
+		pkg_root="${pkg_root}/"
+	fi
+
+	# adjust the PYTHONPATH to point to the current environment
+	PYTHONPATH=${pkg_root}usr/lib/python2.4/vendor-packages/:$PYTHONPATH
+	export PYTHONPATH
+
 	# Go through each property in boolean_props and, if its value is set
 	# to true in SMF, add the appropriate command line flag to the string.
 	cnt=0
@@ -103,6 +122,15 @@ case "$1" in
 			echo "service property pkg/$o not defined for" \
 		       	    "service: $SMF_FMRI"
 			exit $SMF_EXIT_ERR_CONFIG
+		fi
+		# check if content_root is a relative or absolute path, if
+		# relative append to pkg_root
+		if [[ $o == 'content_root' ]]; then
+			echo $val | grep ^/ >/dev/null
+			if [[ $? -ne 0 ]]; then
+				# pkg_root has been checked to end with a slash
+				val="${pkg_root}$val"
+			fi
 		fi
 		# If the SMF property is set to something other than 'none', add
 		# the flag and its argument to the command.
@@ -159,7 +187,7 @@ case "$1" in
 	wrapper="ppriv -s A=basic,-file_link_any,-proc_info,-proc_session$privaddr$forkexec -e"
 
 	# Build the command to start pkg.depotd with the specified options.
-	cmd="$wrapper /usr/lib/pkg.depotd $bool_ops $option_ops"
+	cmd="$wrapper ${pkg_root}usr/lib/pkg.depotd $bool_ops $option_ops"
 	# Echo the command so that the log contains the command used to start
 	# the depot.
 	echo $cmd
