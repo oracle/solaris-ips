@@ -83,17 +83,19 @@ class DependencyAction(generic.Action):
         def clean_fmri(self):
                 """ Clean up an invalid depend fmri into one which
                 we can recognize.
+
                 Example: 2.01.01.38-0.96  -> 2.1.1.38-0.96
                 This also corrects self.attrs["fmri"] as external code
-                knows about that, too.
-                """
-                #
+                knows about that, too."""
+
                 # This hack corrects a problem in pre-2008.11 packaging
                 # metadata: some depend actions were specified with invalid
                 # fmris of the form 2.38.01.01.3 (the padding zero is considered
                 # invalid).  When we get an invalid FMRI, we use regular
                 # expressions to perform a replacement operation which
-                # cleans up these problems.
+                # cleans up these problems.  It is hoped that someday this
+                # function may be removed completely once applicable releases
+                # are EOL'd.
                 #
                 # n.b. that this parser is not perfect: it will fix only
                 # the 'release' and 'branch' part of depend fmris-- these
@@ -105,7 +107,20 @@ class DependencyAction(generic.Action):
                 fmri_string = self.attrs["fmri"]
 
                 #
-                # Start by locating the @ and the "," or "-" or ":" which
+                # First, try to eliminate fmris that don't need cleaning since
+                # this process is relatively expensive (when considering tens
+                # of thousands of executions).  This currently leaves us with
+                # about 5-8% false positives, but is still a huge win overall.
+                # This won't account for cases like 'foo@00.1.2', but there
+                # are currently no known cases of that and the publication
+                # tools don't allow that syntax (currently) anyway.
+                #
+                if fmri_string.find(".0") == -1:
+                        # Nothing to do.
+                        return
+
+                #
+                # Next, locate the @ and the "," or "-" or ":" which
                 # is to the right of said @.
                 #
                 verbegin = fmri_string.find("@")
