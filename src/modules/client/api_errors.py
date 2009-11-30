@@ -1,4 +1,4 @@
-#!/usr/bin/python2.4
+#!/usr/bin/python
 #
 # CDDL HEADER START
 #
@@ -298,7 +298,7 @@ class CatalogError(ApiException):
                         self.data = args[0]
                 else:
                         self.data = None
-                self.args = kwargs
+                self._args = kwargs
 
         def __str__(self):
                 return str(self.data)
@@ -320,7 +320,7 @@ class BadCatalogMetaRoot(CatalogError):
         def __str__(self):
                 return _("Catalog meta_root '%(root)s' is invalid; unable "
                     "to complete operation: '%(op)s'.") % { "root": self.data,
-                    "op": self.args.get("operation", None) }
+                    "op": self._args.get("operation", None) }
 
 
 class BadCatalogPermissions(CatalogError):
@@ -337,7 +337,7 @@ class BadCatalogPermissions(CatalogError):
         def __str__(self):
                 msg = _("The following catalog files have incorrect "
                     "permissions:\n")
-                for f in self.args:
+                for f in self._args:
                         fname, emode, fmode = f
                         msg += _("\t%(fname)s: expected mode: %(emode)s, found "
                             "mode: %(fmode)s\n") % { "fname": fname,
@@ -371,8 +371,8 @@ class DuplicateCatalogEntry(CatalogError):
         def __str__(self):
                 return _("Unable to perform '%(op)s' operation for catalog "
                     "%(name)s; completion would result in a duplicate entry "
-                    "for package '%(fmri)s'.") % { "op": self.args.get(
-                    "operation", None), "name": self.args.get("catalog_name",
+                    "for package '%(fmri)s'.") % { "op": self._args.get(
+                    "operation", None), "name": self._args.get("catalog_name",
                     None), "fmri": self.data }
 
 
@@ -695,7 +695,7 @@ class DataError(ApiException):
                         self.data = args[0]
                 else:
                         self.data = None
-                self.args = kwargs
+                self._args = kwargs
 
 
 class InvalidP5IFile(DataError):
@@ -859,7 +859,7 @@ class PublisherError(ApiException):
                         self.data = args[0]
                 else:
                         self.data = None
-                self.args = kwargs
+                self._args = kwargs
 
         def __str__(self):
                 return str(self.data)
@@ -872,7 +872,7 @@ class BadPublisherMetaRoot(PublisherError):
         def __str__(self):
                 return _("Publisher meta_root '%(root)s' is invalid; unable "
                     "to complete operation: '%(op)s'.") % { "root": self.data,
-                    "op": self.args.get("operation", None) }
+                    "op": self._args.get("operation", None) }
 
 
 class BadPublisherPrefix(PublisherError):
@@ -889,7 +889,7 @@ class BadRepositoryAttributeValue(PublisherError):
         def __str__(self):
                 return _("'%(value)s' is not a valid value for repository "
                     "attribute '%(attribute)s'.") % {
-                    "value": self.args["value"], "attribute": self.data }
+                    "value": self._args["value"], "attribute": self.data }
 
 
 class BadRepositoryCollectionType(PublisherError):
@@ -1112,7 +1112,7 @@ class UnsupportedRepositoryURIAttribute(PublisherError):
 
         def __str__(self):
                 return _("'%(attr)s' is not supported for '%(scheme)s'.") % {
-                    "attr": self.data, "scheme": self.args["scheme"] }
+                    "attr": self.data, "scheme": self._args["scheme"] }
 
 
 class CertificateError(ApiException):
@@ -1124,7 +1124,7 @@ class CertificateError(ApiException):
                         self.data = args[0]
                 else:
                         self.data = None
-                self.args = kwargs
+                self._args = kwargs
 
         def __str__(self):
                 return str(self.data)
@@ -1134,8 +1134,8 @@ class ExpiredCertificate(CertificateError):
         """Used to indicate that a certificate has expired."""
 
         def __str__(self):
-                publisher = self.args.get("publisher", None)
-                uri = self.args.get("uri", None)
+                publisher = self._args.get("publisher", None)
+                uri = self._args.get("uri", None)
                 if publisher:
                         if uri:
                                 return _("Certificate '%(cert)s' for publisher "
@@ -1159,9 +1159,9 @@ class ExpiringCertificate(CertificateError):
         """Used to indicate that a certificate has expired."""
 
         def __str__(self):
-                publisher = self.args.get("publisher", None)
-                uri = self.args.get("uri", None)
-                days = self.args.get("days", 0)
+                publisher = self._args.get("publisher", None)
+                uri = self._args.get("uri", None)
+                days = self._args.get("days", 0)
                 if publisher:
                         if uri:
                                 return _("Certificate '%(cert)s' for publisher "
@@ -1184,8 +1184,8 @@ class InvalidCertificate(CertificateError):
         """Used to indicate that a certificate is invalid."""
 
         def __str__(self):
-                publisher = self.args.get("publisher", None)
-                uri = self.args.get("uri", None)
+                publisher = self._args.get("publisher", None)
+                uri = self._args.get("uri", None)
                 if publisher:
                         if uri:
                                 return _("Certificate '%(cert)s' for publisher "
@@ -1206,8 +1206,8 @@ class NoSuchKey(CertificateError):
         """Used to indicate that a key could not be found."""
 
         def __str__(self):
-                publisher = self.args.get("publisher", None)
-                uri = self.args.get("uri", None)
+                publisher = self._args.get("publisher", None)
+                uri = self._args.get("uri", None)
                 if publisher:
                         if uri:
                                 return _("Unable to locate key '%(key)s' for "
@@ -1228,8 +1228,8 @@ class NoSuchCertificate(CertificateError):
         """Used to indicate that a certificate could not be found."""
 
         def __str__(self):
-                publisher = self.args.get("publisher", None)
-                uri = self.args.get("uri", None)
+                publisher = self._args.get("publisher", None)
+                uri = self._args.get("uri", None)
                 if publisher:
                         if uri:
                                 return _("Unable to locate certificate "
@@ -1252,8 +1252,8 @@ class NotYetValidCertificate(CertificateError):
         effective date)."""
 
         def __str__(self):
-                publisher = self.args.get("publisher", None)
-                uri = self.args.get("uri", None)
+                publisher = self._args.get("publisher", None)
+                uri = self._args.get("uri", None)
                 if publisher:
                         if uri:
                                 return _("Certificate '%(cert)s' for publisher "
@@ -1304,7 +1304,7 @@ class ManifestError(ApiException):
                         self.data = args[0]
                 else:
                         self.data = None
-                self.args = kwargs
+                self._args = kwargs
 
         def __str__(self):
                 return str(self.data)

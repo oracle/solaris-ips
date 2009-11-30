@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 Python
 # Software Foundation; All Rights Reserved
 #
@@ -68,12 +69,13 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
                 self.depth = depth
                 modulefinder.ModuleFinder.run_script(self, pathname)
 
-        def load_module(self, fqname, fp, pathname, (suffix, mode, type)):
+        def load_module(self, fqname, fp, pathname, file_info):
                 """This code has been slightly modified from the function of
                 the parent class. Specifically, it checks the current depth
                 of the loading and halts if it exceeds the depth that was given
                 to run_script."""
 
+                suffix, mode, type = file_info
                 self.msgin(2, "load_module", fqname, fp and "fp", pathname)
                 if type == imp.PKG_DIRECTORY:
                         m = self.load_package(fqname, pathname)

@@ -1,4 +1,4 @@
-#!/usr/bin/python2.4
+#!/usr/bin/python
 #
 # CDDL HEADER START
 #
@@ -22,6 +22,10 @@
 
 # Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+
+import cli.testutils as testutils
+if __name__ == "__main__":
+        testutils.setup_environment("../../../proto")
 
 import os
 import shutil
@@ -77,7 +81,7 @@ file NOHASH group=bin mode=0755 owner=root path=lib/libc.so.1
 file NOHASH group=bin mode=0755 owner=root path=usr/xpg4/lib/libcurses.so.1
 """
         ext_python_manf = """ \
-file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.4/vendor-packages/pkg/client/indexer.py
+file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py
 """
         variant_manf_1 = """ \
 set name=variant.arch value=foo value=bar value=baz
@@ -295,12 +299,12 @@ file NOHASH group=bin mode=0755 owner=root path=usr/bin/ksh variant.arch=foo
 
                 def _check_all_res(res):
                         ds, es, ms = res
-                        expected_deps = set(["usr/bin/python2.4",
-                            "usr/lib/python2.4/vendor-packages/pkg/" +
+                        expected_deps = set(["usr/bin/python",
+                            "usr/lib/python2.6/vendor-packages/pkg/" +
                             "__init__.py",
-                            "usr/lib/python2.4/vendor-packages/pkg/indexer.py",
-                            "usr/lib/python2.4/vendor-packages/pkg/misc.py",
-                            "usr/lib/python2.4/vendor-packages/pkg/" +
+                            "usr/lib/python2.6/vendor-packages/pkg/indexer.py",
+                            "usr/lib/python2.6/vendor-packages/pkg/misc.py",
+                            "usr/lib/python2.6/vendor-packages/pkg/" +
                             "search_storage.py"])
                         self.assert_(len(es) == 0 and len(ms) == 0)
                         self.assertEqual(len(ds), len(expected_deps))
@@ -312,15 +316,16 @@ file NOHASH group=bin mode=0755 owner=root path=usr/bin/ksh variant.arch=foo
                                 expected_deps.remove(d.dep_key())
                                 self.assertEqual(
                                         d.action.attrs["path"],
-                                        "usr/lib/python2.4/vendor-packages/"
+                                        "usr/lib/python2.6/vendor-packages/"
                                         "pkg/client/indexer.py")
+                self.__debug = True
                 t_path = None
                 try:
                         t_path = self.make_manifest(self.ext_python_manf)
                         _check_all_res(dependencies.list_implicit_deps(t_path,
-                            "/"))
+                            testutils.g_proto_area))
                         _check_all_res(dependencies.list_implicit_deps(t_path,
-                            "/", remove_internal_deps=False))
+                            testutils.g_proto_area))
                 finally:
                         if t_path:
                                 portable.remove(t_path)

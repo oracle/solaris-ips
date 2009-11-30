@@ -1,4 +1,4 @@
-#!/usr/bin/python2.4
+#!/usr/bin/python
 #
 # CDDL HEADER START
 #
@@ -27,6 +27,7 @@ import calendar
 import cStringIO
 import datetime
 import errno
+import hashlib
 import httplib
 import locale
 import OpenSSL.crypto as osc
@@ -37,7 +38,6 @@ import pkg.portable as portable
 import pkg.urlhelpers as urlhelpers
 import platform
 import re
-import sha
 import shutil
 import socket
 import stat
@@ -302,7 +302,7 @@ def gunzip_from_stream(gz, outfile):
         if flag & FHCRC:
                 gz.read(2)
 
-        shasum = sha.new()
+        shasum = hashlib.sha1()
         dcobj = zlib.decompressobj(-zlib.MAX_WBITS)
 
         while True:
@@ -322,7 +322,7 @@ class PipeError(Exception):
         """ Pipe exception. """
 
         def __init__(self, args=None):
-                self.args = args
+                self._args = args
 
 def msg(*text):
         """ Emit a message. """
@@ -563,7 +563,7 @@ def get_data_digest(data, length=None, return_content=False):
         # Read the data in chunks and compute the SHA1 hash as it comes in.  A
         # large read on some platforms (e.g. Windows XP) may fail.
         content = cStringIO.StringIO()
-        fhash = sha.new()
+        fhash = hashlib.sha1()
         while length > 0:
                 data = f.read(min(bufsz, length))
                 if return_content:
@@ -622,7 +622,7 @@ operation again."""
 class CfgCacheError(Exception):
         """Thrown when there are errors with the cfg cache."""
         def __init__(self, args=None):
-                self.args = args
+                self._args = args
 
 # ImmutableDict and EmptyI for argument defaults
 EmptyI = tuple()

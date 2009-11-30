@@ -28,7 +28,7 @@
 import os
 import errno
 import time
-import sha
+import hashlib
 import urllib
 
 import pkg.fmri as fmri
@@ -711,7 +711,7 @@ class IndexStoreDictMutable(IndexStoreBase):
 class IndexStoreSetHash(IndexStoreBase):
         def __init__(self, file_name):
                 IndexStoreBase.__init__(self, file_name)
-                self.hash_val = sha.new().hexdigest()
+                self.hash_val = hashlib.sha1().hexdigest()
 
         def set_hash(self, vals):
                 """Set the has value."""
@@ -721,7 +721,7 @@ class IndexStoreSetHash(IndexStoreBase):
                 """Calculate the hash value of the sorted members of vals."""
                 vl = list(vals)
                 vl.sort()
-                shasum = sha.new()
+                shasum = hashlib.sha1()
                 for v in vl:
                         shasum.update(v)
                 return shasum.hexdigest()

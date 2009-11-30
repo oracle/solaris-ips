@@ -1,4 +1,4 @@
-#!/usr/bin/python2.4
+#!/usr/bin/python
 #
 # CDDL HEADER START
 #
@@ -36,7 +36,6 @@ import urllib
 from pkg.client import global_settings
 logger = global_settings.logger
 
-import pkg.Uuid25
 import pkg.catalog
 import pkg.client.api_errors            as api_errors
 import pkg.client.history               as history

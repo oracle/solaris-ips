@@ -1,3 +1,4 @@
+#!/usr/bin/python
 ##################################################################################
 # PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2
 #     http://www.python.org/download/releases/2.6.1/license/

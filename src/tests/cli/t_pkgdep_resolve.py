@@ -1,4 +1,4 @@
-#!/usr/bin/python2.4
+#!/usr/bin/python
 #
 # CDDL HEADER START
 #
@@ -63,14 +63,14 @@ depend fmri=__TBD pkg.debug.depend.file=var/log/authlog pkg.debug.depend.reason=
 file NOHASH group=sys mode=0644 owner=root path=var/log/syslog
 """
         multi_deps = """\
-file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.4/v-p/pkg/client/indexer.py
-depend fmri=__TBD pkg.debug.depend.file=usr/bin/python2.4 pkg.debug.depend.reason=usr/lib/python2.4/v-p/pkg/client/indexer.py pkg.debug.depend.type=script type=require
-depend fmri=__TBD pkg.debug.depend.file=usr/lib/python2.4/v-p/pkg/misc.py pkg.debug.depend.reason=usr/lib/python2.4/v-p/pkg/client/indexer.py pkg.debug.depend.type=python type=require
+file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.6/v-p/pkg/client/indexer.py
+depend fmri=__TBD pkg.debug.depend.file=usr/bin/python2.6 pkg.debug.depend.reason=usr/lib/python2.6/v-p/pkg/client/indexer.py pkg.debug.depend.type=script type=require
+depend fmri=__TBD pkg.debug.depend.file=usr/lib/python2.6/v-p/pkg/misc.py pkg.debug.depend.reason=usr/lib/python2.6/v-p/pkg/client/indexer.py pkg.debug.depend.type=python type=require
 """
 
         misc_manf = """\
 set name=fmri value=pkg:/footest@0.5.11,5.11-0.117
-file NOHASH group=bin mode=0444 owner=root path=usr/lib/python2.4/v-p/pkg/misc.py
+file NOHASH group=bin mode=0444 owner=root path=usr/lib/python2.6/v-p/pkg/misc.py
 """
 
         simp_manf = """\
@@ -150,7 +150,7 @@ file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.foo=baz 
 
                 self.inst_pkg = """\
 open example2_pkg@1.0,5.11-0
-add file %(foo)s mode=0555 owner=root group=bin path=/usr/bin/python2.4
+add file %(foo)s mode=0555 owner=root group=bin path=/usr/bin/python2.6
 close""" % { "foo": os.path.join(self.testdata_dir, "foo") }
 
                 self.var_pkg = """\
@@ -259,11 +259,11 @@ close""" % { "foo": os.path.join(self.testdata_dir, "foo") }
                                 if d.attrs["fmri"] == p2_name:
                                         self.assertEqual(
                                             d.attrs["%s.file" % self.depend_dp],
-                                            "usr/lib/python2.4/v-p/pkg/misc.py")
+                                            "usr/lib/python2.6/v-p/pkg/misc.py")
                                 elif d.attrs["fmri"].startswith(p3_name):
                                         self.assertEqual(
                                             d.attrs["%s.file" % self.depend_dp],
-                                            "usr/bin/python2.4")
+                                            "usr/bin/python2.6")
                                 else:
                                         raise RuntimeError("Got expected fmri "
                                             "%s for in dependency %s" %

@@ -1,4 +1,4 @@
-#!/usr/bin/python2.4
+#!/usr/bin/python
 #
 # CDDL HEADER START
 #
@@ -45,7 +45,7 @@ import pkg.server.catalog as catalog
 
 class UpdateLogException(Exception):
         def __init__(self, args=None):
-                self.args = args
+                self._args = args
 
 class UpdateLog(object):
         """The update log is a mechanism that allows clients and servers to

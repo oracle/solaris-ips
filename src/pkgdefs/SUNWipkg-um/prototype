@@ -45,4 +45,5 @@ f none usr/share/update-manager/updatemanager.glade 444 root bin
 d none var 755 root sys
 d none var/svc 755 root sys
 d none var/svc/manifest 755 root sys
+d none var/svc/manifest/application 755 root sys
 f none var/svc/manifest/application/pkg-update.xml 444 root sys

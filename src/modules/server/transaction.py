@@ -1,4 +1,4 @@
-#!/usr/bin/python2.4
+#!/usr/bin/python
 #
 # CDDL HEADER START
 #
@@ -25,9 +25,9 @@
 import calendar
 import datetime
 import errno
+import hashlib
 import os
 import re
-import sha
 import shutil
 import urllib
 
@@ -76,27 +76,27 @@ class TransactionOperationError(TransactionError):
                 TransactionError.__init__(self, *args)
                 if kwargs is None:
                         kwargs = {}
-                self.args = kwargs
+                self._args = kwargs
 
         def __str__(self):
-                if "client_release" in self.args:
+                if "client_release" in self._args:
                         return _("The specified client_release is invalid: "
-                            "'%s'") % self.args.get("msg", "")
-                elif "fmri_version" in self.args:
+                            "'%s'") % self._args.get("msg", "")
+                elif "fmri_version" in self._args:
                         return _("'The specified FMRI, '%s', has an invalid "
-                            "version.") % self.args.get("pfmri", "")
-                elif "valid_new_fmri" in self.args:
+                            "version.") % self._args.get("pfmri", "")
+                elif "valid_new_fmri" in self._args:
                         return _("The specified FMRI, '%s', already exists or "
-                            "has been restricted.") % self.args.get("pfmri", "")
-                elif "publisher_required" in self.args:
+                            "has been restricted.") % self._args.get("pfmri", "")
+                elif "publisher_required" in self._args:
                         return _("The specified FMRI, '%s', must include the "
                             "publisher prefix as the repository contains "
                             "package data for more than one publisher or "
                             "a default publisher has not been defined.") % \
-                            self.args.get("pfmri", "")
-                elif "pfmri" in self.args:
+                            self._args.get("pfmri", "")
+                elif "pfmri" in self._args:
                         return _("The specified FMRI, '%s', is invalid.") % \
-                            self.args["pfmri"]
+                            self._args["pfmri"]
                 return str(self.data)
 
 
@@ -401,7 +401,7 @@ class Transaction(object):
                         # header, allowing us to generate deterministic
                         # hashes for different files with identical content.
                         cfile = open(opath, "rb")
-                        chash = sha.new()
+                        chash = hashlib.sha1()
                         while True:
                                 cdata = cfile.read(bufsz)
                                 if cdata == "":

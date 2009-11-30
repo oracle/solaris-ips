@@ -1,4 +1,4 @@
-#!/usr/bin/python2.4
+#!/usr/bin/python2.6
 #
 # CDDL HEADER START
 #
@@ -41,7 +41,7 @@ class TestPkgdepBasics(testutils.SingleDepotTestCase):
         test_manf_1 = """\
 hardlink path=baz target=var/log/authlog
 file NOHASH group=bin mode=0755 owner=root \
-path=usr/lib/python2.4/v\
+path=usr/lib/python2.6/v\
 endor-packages/pkg/client/indexer.py
 file NOHA\
 SH group=bin mode=0755 owner=root path=u\
@@ -63,28 +63,28 @@ file NOHASH group=sys mode=0600 owner=root path=var/log/authlog preserve=true
 
         payload_manf = """\
 hardlink path=usr/baz target=../foo/bar.py
-file usr/lib/python2.4/vendor-packages/pkg/client/indexer.py \
+file usr/lib/python2.6/vendor-packages/pkg/client/indexer.py \
 group=bin mode=0755 owner=root path=foo/bar.py
 """
 
         res_manf_1 = """\
-depend %(depend_debug_prefix)s.file=usr/bin/python2.4 fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.4/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=script
-depend %(depend_debug_prefix)s.file=usr/lib/python2.4/vendor-packages/pkg/__init__.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.4/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python
-depend %(depend_debug_prefix)s.file=usr/lib/python2.4/vendor-packages/pkg/indexer.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.4/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python
-depend %(depend_debug_prefix)s.file=usr/lib/python2.4/vendor-packages/pkg/misc.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.4/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python
-depend %(depend_debug_prefix)s.file=usr/lib/python2.4/vendor-packages/pkg/search_storage.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.4/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python
+depend %(depend_debug_prefix)s.file=usr/bin/python2.6 fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=script
+depend %(depend_debug_prefix)s.file=usr/lib/python2.6/vendor-packages/pkg/__init__.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python
+depend %(depend_debug_prefix)s.file=usr/lib/python2.6/vendor-packages/pkg/indexer.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python
+depend %(depend_debug_prefix)s.file=usr/lib/python2.6/vendor-packages/pkg/misc.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python
+depend %(depend_debug_prefix)s.file=usr/lib/python2.6/vendor-packages/pkg/search_storage.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python
 depend %(depend_debug_prefix)s.file=var/log/authlog fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=baz %(depend_debug_prefix)s.type=hardlink
 """ % {"depend_debug_prefix":base.Dependency.DEPEND_DEBUG_PREFIX, "dummy_fmri":base.Dependency.DUMMY_FMRI}
 
         res_full_manf_1 = """\
 hardlink path=baz target=var/log/authlog
-file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.4/vendor-packages/pkg/client/indexer.py
+file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py
 file NOHASH group=bin mode=0755 owner=root path=usr/xpg4/lib/libcurses.so.1
-depend %(depend_debug_prefix)s.file=usr/bin/python2.4 fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.4/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=script
-depend %(depend_debug_prefix)s.file=usr/lib/python2.4/vendor-packages/pkg/__init__.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.4/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python
-depend %(depend_debug_prefix)s.file=usr/lib/python2.4/vendor-packages/pkg/indexer.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.4/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python
-depend %(depend_debug_prefix)s.file=usr/lib/python2.4/vendor-packages/pkg/misc.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.4/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python
-depend %(depend_debug_prefix)s.file=usr/lib/python2.4/vendor-packages/pkg/search_storage.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.4/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python
+depend %(depend_debug_prefix)s.file=usr/bin/python2.6 fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=script
+depend %(depend_debug_prefix)s.file=usr/lib/python2.6/vendor-packages/pkg/__init__.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python
+depend %(depend_debug_prefix)s.file=usr/lib/python2.6/vendor-packages/pkg/indexer.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python
+depend %(depend_debug_prefix)s.file=usr/lib/python2.6/vendor-packages/pkg/misc.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python
+depend %(depend_debug_prefix)s.file=usr/lib/python2.6/vendor-packages/pkg/search_storage.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python
 depend %(depend_debug_prefix)s.file=var/log/authlog fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=baz %(depend_debug_prefix)s.type=hardlink
 """ % {"depend_debug_prefix":base.Dependency.DEPEND_DEBUG_PREFIX, "dummy_fmri":base.Dependency.DUMMY_FMRI}
 
@@ -107,11 +107,11 @@ variant.arch:foo
 """
 
         test_manf_1_resolved = """\
-depend fmri=%(py_pkg_name)s %(depend_debug_prefix)s.file=usr/bin/python2.4 %(depend_debug_prefix)s.reason=usr/lib/python2.4/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=script type=require
-depend fmri=%(ips_pkg_name)s %(depend_debug_prefix)s.file=usr/lib/python2.4/vendor-packages/pkg/__init__.py %(depend_debug_prefix)s.reason=usr/lib/python2.4/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python type=require
-depend fmri=%(ips_pkg_name)s %(depend_debug_prefix)s.file=usr/lib/python2.4/vendor-packages/pkg/indexer.py %(depend_debug_prefix)s.reason=usr/lib/python2.4/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python type=require
-depend fmri=%(ips_pkg_name)s %(depend_debug_prefix)s.file=usr/lib/python2.4/vendor-packages/pkg/misc.py %(depend_debug_prefix)s.reason=usr/lib/python2.4/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python type=require
-depend fmri=%(ips_pkg_name)s %(depend_debug_prefix)s.file=usr/lib/python2.4/vendor-packages/pkg/search_storage.py %(depend_debug_prefix)s.reason=usr/lib/python2.4/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python type=require
+depend fmri=%(py_pkg_name)s %(depend_debug_prefix)s.file=usr/bin/python2.6 %(depend_debug_prefix)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=script type=require
+depend fmri=%(ips_pkg_name)s %(depend_debug_prefix)s.file=usr/lib/python2.6/vendor-packages/pkg/__init__.py %(depend_debug_prefix)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python type=require
+depend fmri=%(ips_pkg_name)s %(depend_debug_prefix)s.file=usr/lib/python2.6/vendor-packages/pkg/indexer.py %(depend_debug_prefix)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python type=require
+depend fmri=%(ips_pkg_name)s %(depend_debug_prefix)s.file=usr/lib/python2.6/vendor-packages/pkg/misc.py %(depend_debug_prefix)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python type=require
+depend fmri=%(ips_pkg_name)s %(depend_debug_prefix)s.file=usr/lib/python2.6/vendor-packages/pkg/search_storage.py %(depend_debug_prefix)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python type=require
 depend fmri=%(resolve_name)s %(depend_debug_prefix)s.file=var/log/authlog %(depend_debug_prefix)s.reason=baz %(depend_debug_prefix)s.type=hardlink type=require
 depend fmri=%(csl_pkg_name)s %(depend_debug_prefix)s.file=libc.so.1 %(depend_debug_prefix)s.path=lib %(depend_debug_prefix)s.path=usr/lib %(depend_debug_prefix)s.reason=usr/xpg4/lib/libcurses.so.1 %(depend_debug_prefix)s.type=elf type=require
 """
@@ -123,11 +123,11 @@ depend fmri=%(dummy_fmri)s %(depend_debug_prefix)s.file=libc.so.1 %(depend_debug
 """ % {"depend_debug_prefix":base.Dependency.DEPEND_DEBUG_PREFIX, "dummy_fmri":base.Dependency.DUMMY_FMRI}
 
         res_payload_1 = """\
-depend %(depend_debug_prefix)s.file=usr/bin/python2.4 fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=foo/bar.py %(depend_debug_prefix)s.type=script
-depend %(depend_debug_prefix)s.file=usr/lib/python2.4/vendor-packages/pkg/__init__.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=foo/bar.py %(depend_debug_prefix)s.type=python
-depend %(depend_debug_prefix)s.file=usr/lib/python2.4/vendor-packages/pkg/indexer.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=foo/bar.py %(depend_debug_prefix)s.type=python
-depend %(depend_debug_prefix)s.file=usr/lib/python2.4/vendor-packages/pkg/misc.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=foo/bar.py %(depend_debug_prefix)s.type=python
-depend %(depend_debug_prefix)s.file=usr/lib/python2.4/vendor-packages/pkg/search_storage.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=foo/bar.py %(depend_debug_prefix)s.type=python
+depend %(depend_debug_prefix)s.file=usr/bin/python2.6 fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=foo/bar.py %(depend_debug_prefix)s.type=script
+depend %(depend_debug_prefix)s.file=usr/lib/python2.6/vendor-packages/pkg/__init__.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=foo/bar.py %(depend_debug_prefix)s.type=python
+depend %(depend_debug_prefix)s.file=usr/lib/python2.6/vendor-packages/pkg/indexer.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=foo/bar.py %(depend_debug_prefix)s.type=python
+depend %(depend_debug_prefix)s.file=usr/lib/python2.6/vendor-packages/pkg/misc.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=foo/bar.py %(depend_debug_prefix)s.type=python
+depend %(depend_debug_prefix)s.file=usr/lib/python2.6/vendor-packages/pkg/search_storage.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=foo/bar.py %(depend_debug_prefix)s.type=python
 """ % {"depend_debug_prefix":base.Dependency.DEPEND_DEBUG_PREFIX, "dummy_fmri":base.Dependency.DUMMY_FMRI}
 
         two_variant_deps = """\

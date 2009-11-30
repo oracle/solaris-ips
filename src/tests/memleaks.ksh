@@ -43,7 +43,7 @@ ROOT=$PWD/../../proto/root_$(uname -p)
 
 # Add our proto area to the beginning of PYTHONPATH.  This ensures that the
 # developer's personal python lib will be used as needed.
-export PYTHONPATH=$ROOT/usr/lib/python2.4/vendor-packages/:$PYTHONPATH
+export PYTHONPATH=$ROOT/usr/lib/python2.6/vendor-packages/:$PYTHONPATH
 export PATH=$ROOT/usr/bin:$PATH
 
 print -u2 -- \

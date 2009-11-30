@@ -26,7 +26,7 @@
 #
 MACH=$(uname -p)
 export PATH=../../../proto/root_$MACH/usr/bin:$PATH
-export PYTHONPATH=../../../proto/root_$MACH/usr/lib/python2.4/vendor-packages
+export PYTHONPATH=../../../proto/root_$MACH/usr/lib/python2.6/vendor-packages
 
 buildid=$(echo $1 | tr -d '[a-z]')
 pkgname=$2
@@ -91,7 +91,7 @@ if [[ $pkgname == "SUNWipkg" ]]; then
 	pkgsend add depend fmri=SUNWpython-pycurl@7.19.0.1-0.$buildid \
 	    type=require
 	pkgsend add depend fmri=SUNWpython-pyopenssl@0.7-0.$buildid type=require
-	pkgsend add depend fmri=SUNWpython24-simplejson@0.5.11-0.$buildid \
+	pkgsend add depend fmri=SUNWpython26-simplejson@0.5.11-0.$buildid \
 	    type=require
 elif [[ $pkgname == "SUNWipkg-gui" ]]; then
 	pkgsend import $PKG_ARCHIVE/SUNWipkg-gui-data

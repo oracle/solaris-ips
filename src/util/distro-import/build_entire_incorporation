@@ -25,7 +25,7 @@
 # Use is subject to license terms.
 #
 export PATH=../../../proto/root_$(uname -p)/usr/bin:$PATH
-export PYTHONPATH=../../../proto/root_$(uname -p)/usr/lib/python2.4/vendor-packages
+export PYTHONPATH=../../../proto/root_$(uname -p)/usr/lib/python2.6/vendor-packages
 export PACKAGEPATH=../../../packages/i386
 
 TMPFILE=$(mktemp ./temp_redistXXXXXX)

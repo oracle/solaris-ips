@@ -1,4 +1,4 @@
-#!/usr/bin/python2.4
+#!/usr/bin/python
 #
 # CDDL HEADER START
 #
@@ -38,11 +38,11 @@ import os
 import rfc822
 import time
 import urllib
+import uuid
 import xml.dom.minidom as xmini
 
 from pkg.misc import get_rel_path
 import pkg.catalog as catalog
-import pkg.Uuid25 as uuid
 
 MIME_TYPE = "application/atom+xml"
 CACHE_FILENAME = "feed.xml"

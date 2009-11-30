@@ -1,4 +1,4 @@
-#!/usr/bin/python2.4
+#!/usr/bin/python
 #
 # CDDL HEADER START
 #
@@ -27,8 +27,8 @@
 
 import os
 import errno
+import hashlib
 import tempfile
-import sha
 from itertools import groupby, chain, repeat
 
 import pkg.actions as actions
@@ -494,7 +494,7 @@ class Manifest(object):
                 """This method takes a string representing the on-disk
                 manifest content, and returns a hash value."""
 
-                sha_1 = sha.new()
+                sha_1 = hashlib.sha1()
                 sha_1.update(mfstcontent)
 
                 return sha_1.hexdigest()

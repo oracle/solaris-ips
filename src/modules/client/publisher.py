@@ -1,4 +1,4 @@
-#!/usr/bin/python2.4
+#!/usr/bin/python
 #
 # CDDL HEADER START
 #
@@ -43,6 +43,7 @@ import shutil
 import tempfile
 import time
 import urlparse
+import uuid
 
 from pkg.client import global_settings
 logger = global_settings.logger
@@ -52,7 +53,6 @@ import pkg.client.api_errors as api_errors
 import pkg.misc as misc
 import pkg.portable as portable
 import pkg.server.catalog as old_catalog
-import pkg.Uuid25
 
 # The "core" type indicates that a repository contains all of the dependencies
 # declared by packages in the repository.  It is primarily used for operating
@@ -1449,7 +1449,7 @@ class Publisher(object):
         def reset_client_uuid(self):
                 """Replaces the current client_uuid with a new UUID."""
 
-                self.__client_uuid = str(pkg.Uuid25.uuid1())
+                self.__client_uuid = str(uuid.uuid1())
 
         def set_origin(self, origin):
                 """Deprecated"""

@@ -1,4 +1,4 @@
-#!/usr/bin/python2.4
+#!/usr/bin/python
 #
 # CDDL HEADER START
 #
@@ -54,7 +54,7 @@ from pkg.misc import EmptyI
 
 class CatalogException(Exception):
         def __init__(self, args=None):
-                self.args = args
+                self._args = args
 
 
 class CatalogPermissionsException(CatalogException):
@@ -71,7 +71,7 @@ class CatalogPermissionsException(CatalogException):
         def __str__(self):
                 msg = _("The following catalog files have incorrect "
                     "permissions:\n")
-                for f in self.args:
+                for f in self._args:
                         fname, emode, fmode = f
                         msg += _("\t%(fname)s: expected mode: %(emode)s, found "
                             "mode: %(fmode)s\n") % ({ "fname": fname,

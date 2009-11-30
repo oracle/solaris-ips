@@ -25,7 +25,7 @@
 MACH:sh = uname -p
 
 KSH=/usr/bin/ksh
-PYTHON = /usr/bin/python
+PYTHON = /usr/bin/python2.6
 INSTALL = /usr/sbin/install -s
 
 ROOT = ../../proto/root_${MACH}/usr
@@ -47,7 +47,7 @@ ROOTICON24SHARE = $(ROOTSHARE)/icons/hicolor/24x24/actions
 ROOTICON48SHARE = $(ROOTSHARE)/icons/hicolor/48x48/actions
 ROOTMIMEICONSHARE = $(ROOT)/share/icons/hicolor/48x48/mimetypes
 ROOTMIMETYPESHARE = $(ROOT)/share/mime/packages
-ROOTPYTHON = $(ROOTUSRLIB)/python2.4
+ROOTPYTHON = $(ROOTUSRLIB)/python2.6
 ROOTPYTHONPKG = $(ROOTPYTHONVENDOR)/pkg/gui
 ROOTPYTHONVENDOR = $(ROOTPYTHON)/vendor-packages
 ROOTSPSHARE = $(ROOTSHARE)/data/startpagebase
@@ -316,11 +316,11 @@ link:
 	ln -sf $(PWD)/data/icons /usr/share/package-manager/icons/hicolor
 	ln -sf $(PWD)/data/icons/48x48/packagemanager.png /usr/share/icons/hicolor/48x48/apps/packagemanager.png
 	ln -sf $(PWD)/data/icons/HighContrast/48x48/packagemanager.png /usr/share/icons/HighContrast/48x48/apps/packagemanager.png
-	ln -sf $(PWD)/modules /usr/lib/python2.4/vendor-packages/pkg/gui
+	ln -sf $(PWD)/modules /usr/lib/python2.6/vendor-packages/pkg/gui
 
 link-clean:
 	rm -rf /usr/share/lib/package-manager
-	rm -rf /usr/lib/python2.4/vendor-packages/pkg/gui
+	rm -rf /usr/lib/python2.6/vendor-packages/pkg/gui
 	rm -f /usr/share/applications/packagemanager.desktop
 	rm -f /usr/share/applications/addmoresoftware.desktop
 	rm -f /usr/bin/packagemanager

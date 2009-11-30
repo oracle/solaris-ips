@@ -1,4 +1,4 @@
-#!/usr/bin/python2.4
+#!/usr/bin/python2.6
 #
 # CDDL HEADER START
 #
@@ -154,7 +154,7 @@ Usage:
             if opt in ("-p", "--proto_dir"):
                 self.proto_dir = val.strip()
                 self.pkg_dir = self.proto_dir + \
-                    "/usr/lib/python2.4/vendor-packages"
+                    "/usr/lib/python2.6/vendor-packages"
                 self.pkg_cmd = self.proto_dir + "/usr/bin/pkg"
             if opt in ("-v", "--verbose"):
                 self.verbose = True

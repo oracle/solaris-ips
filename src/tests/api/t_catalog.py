@@ -1,4 +1,4 @@
-#!/usr/bin/python2.4
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
 # CDDL HEADER START

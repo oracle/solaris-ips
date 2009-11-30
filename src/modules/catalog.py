@@ -1,4 +1,4 @@
-#!/usr/bin/python2.4
+#!/usr/bin/python
 #
 # CDDL HEADER START
 #
@@ -29,13 +29,13 @@ import copy
 import calendar
 import datetime
 import errno
+import hashlib
 import os
 try:
         # Some versions of python don't have these constants.
         os.SEEK_SET
 except AttributeError:
         os.SEEK_SET, os.SEEK_CUR, os.SEEK_END = range(3)
-import sha
 import simplejson as json
 import stat
 import statvfs
@@ -65,7 +65,7 @@ class _JSONWriter(object):
                 if sign:
                         if not pathname:
                                 # Only needed if not writing to __fileobj.
-                                self.__sha_1 = sha.new()
+                                self.__sha_1 = hashlib.sha1()
                         self.__sha_1_value = None
 
                 self.__sign = sign

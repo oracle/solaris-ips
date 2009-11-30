@@ -27,7 +27,7 @@ setlocal
 set CMDSCRIPT=client.py
 set MY_HOME=%~dp0
 set MY_IPS_BASE=%MY_HOME%\..\..
-set PYTHONPATH=%PYTHONPATH%;%MY_IPS_BASE%\usr\lib\python2.4\vendor-packages
+set PYTHONPATH=%PYTHONPATH%;%MY_IPS_BASE%\usr\lib\python2.6\vendor-packages
 set MY_BASE=%MY_HOME%\..\..\..
 set PATH=%MY_BASE%\python;%PATH%
 set PYTHONUNBUFFERED=yes

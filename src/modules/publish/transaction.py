@@ -1,4 +1,4 @@
-#!/usr/bin/python2.4
+#!/usr/bin/python
 #
 # CDDL HEADER START
 #
@@ -30,6 +30,7 @@ though the other classes can be referred to for documentation purposes."""
 
 import httplib
 import os
+import StringIO
 import urllib
 import urllib2
 import urlparse
@@ -46,7 +47,7 @@ class TransactionError(Exception):
                 Exception.__init__(self, *args)
                 if args:
                         self.data = args[0]
-                self.args = kwargs
+                self._args = kwargs
 
         def __str__(self):
                 return str(self.data)
@@ -67,14 +68,14 @@ class TransactionRepositoryURLError(TransactionError):
                 TransactionError.__init__(self, *args, **kwargs)
 
         def __str__(self):
-                if "scheme" in self.args:
+                if "scheme" in self._args:
                         return _("Unsupported scheme '%(scheme)s' in URL: "
-                            "'%(url)s'.") % { "scheme": self.args["scheme"],
+                            "'%(url)s'.") % { "scheme": self._args["scheme"],
                             "url": self.data }
-                elif "netloc" in self.args:
+                elif "netloc" in self._args:
                         return _("Malformed URL: '%s'.") % self.data
                 return _("Invalid repository URL: '%(url)s': %(msg)s") % {
-                    "url": self.data, "msg": self.args.get("msg", "") }
+                    "url": self.data, "msg": self._args.get("msg", "") }
 
 
 class TransactionOperationError(TransactionError):
@@ -84,25 +85,25 @@ class TransactionOperationError(TransactionError):
         the operation that failed."""
 
         def __str__(self):
-                if "status" in self.args:
+                if "status" in self._args:
                         return _("'%(op)s' failed for transaction ID "
                             "'%(trans_id)s'; status '%(status)s': "
                             "%(msg)s") % { "op": self.data,
-                            "trans_id": self.args.get("trans_id", ""),
-                            "status": self.args["status"],
-                            "msg": self.args.get("msg", "") }
-                if "trans_id" in self.args:
+                            "trans_id": self._args.get("trans_id", ""),
+                            "status": self._args["status"],
+                            "msg": self._args.get("msg", "") }
+                if "trans_id" in self._args:
                         return _("'%(op)s' failed for transaction ID "
                             "'%(trans_id)s': %(msg)s") % { "op": self.data,
-                            "trans_id": self.args["trans_id"],
-                            "msg": self.args.get("msg", ""),
+                            "trans_id": self._args["trans_id"],
+                            "msg": self._args.get("msg", ""),
                             }
                 if self.data:
                         return _("'%(op)s' failed; unable to initiate "
                             "transaction:\n%(msg)s") % { "op": self.data,
-                            "msg": self.args.get("msg", "") }
+                            "msg": self._args.get("msg", "") }
                 return _("Unable to initiate transaction:\n%s") % \
-                    self.args.get("msg", "")
+                    self._args.get("msg", "")
 
 
 class TransactionRepositoryInvalidError(TransactionError):
@@ -117,7 +118,7 @@ class UnsupportedRepoTypeOperationError(TransactionError):
         def __str__(self):
                 return _("Unsupported operation '%(op)s' for the specified "
                     "repository type '%(type)s'.") % { "op": self.data,
-                    "type": self.args.get("type", "") }
+                    "type": self._args.get("type", "") }
 
 
 class FileTransaction(object):
@@ -260,17 +261,16 @@ class HTTPTransaction(object):
                 if hasattr(e, "read") and callable(e.read):
                         # Extract the message from the server output.
                         msg = ""
-                        from xml.dom.ext.reader import HtmlLib
-                        reader = HtmlLib.Reader()
+                        from xml.dom.minidom import Document, parse
                         output = e.read()
-                        doc = reader.fromString(output)
+                        dom = parse(StringIO.StringIO(output))
 
                         paragraphs = []
-                        if not doc.isHtml():
+                        if not isinstance(dom, Document):
                                 # Assume the output was the message.
                                 msg = output
                         else:
-                                paragraphs = doc.getElementsByTagName("p")
+                                paragraphs = dom.getElementsByTagName("p")
 
                         # XXX this is specific to the depot server's current
                         # error output style.

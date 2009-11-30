@@ -1,4 +1,4 @@
-#!/usr/bin/python2.4
+#!/usr/bin/python2.6
 #
 # CDDL HEADER START
 #
@@ -36,7 +36,7 @@ import tarfile
 import tempfile
 import urllib
 import py_compile
-import sha
+import hashlib
 
 from distutils.errors import DistutilsError
 from distutils.core import setup, Extension
@@ -55,11 +55,11 @@ import distutils.util as util
 # 3rd party software required for the build
 CP = 'CherryPy'
 CPIDIR = 'cherrypy'
-CPVER = '3.1.1'
+CPVER = '3.1.2'
 CPARC = '%s-%s.tar.gz' % (CP, CPVER)
 CPDIR = '%s-%s' % (CP, CPVER)
 CPURL = 'http://download.cherrypy.org/cherrypy/%s/%s' % (CPVER, CPARC)
-CPHASH = '0a8aace00ea28adc05edd41e20dd910042e6d265'
+CPHASH = 'a94aedfd0e675858dbcc32dd250c23d285ee9b88'
 
 PO = 'pyOpenSSL'
 POIDIR = 'OpenSSL'
@@ -152,7 +152,7 @@ extern_dir = os.path.normpath(os.path.join(pwd, "extern"))
 cacert_dir = os.path.normpath(os.path.join(pwd, "cacert"))
 cacert_install_dir = 'usr/share/pkg/cacert'
 
-py_install_dir = 'usr/lib/python2.4/vendor-packages'
+py_install_dir = 'usr/lib/python2.6/vendor-packages'
 
 scripts_dir = 'usr/bin'
 lib_dir = 'usr/lib'
@@ -492,7 +492,7 @@ def hash_sw(swname, swarc, swhash):
                 return True
 
         print "checksumming %s" % swname
-        hash = sha.new()
+        hash = hashlib.sha1()
         f = open(swarc, "rb")
         while True:
                 data = f.read(65536)
@@ -614,7 +614,7 @@ def install_sw(swname, swdir, swidir):
         swinst_dir = os.path.join(root_dir, py_install_dir, swidir)
         if not os.path.exists(swinst_dir):
                 print "installing %s" % swname
-                args = ['python', 'setup.py', 'install',
+                args = ['python2.6', 'setup.py', 'install',
                     '--root=%s' % root_dir,
                     '--install-lib=%s' % py_install_dir,
                     '--install-data=%s' % py_install_dir]
@@ -869,8 +869,8 @@ if osname == 'sunos' or osname == "linux":
             elf_libraries += [ 'ssl' ]
 
 setup(cmdclass = cmdclasses,
-    name = 'ips',
-    version = '1.0',
+    name = 'pkg',
+    version = '0.1',
     package_dir = {'pkg':'modules'},
     packages = packages,
     data_files = data_files,

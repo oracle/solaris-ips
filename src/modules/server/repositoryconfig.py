@@ -1,4 +1,4 @@
-#!/usr/bin/python2.4
+#!/usr/bin/python
 #
 # CDDL HEADER START
 #
@@ -25,8 +25,8 @@
 
 import ConfigParser
 import pkg.misc as misc
-import pkg.Uuid25 as uuid
 import random
+import uuid
 
 PROP_TYPE_STR = 0
 PROP_TYPE_INT = 1

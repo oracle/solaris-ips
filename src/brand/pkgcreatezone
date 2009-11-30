@@ -474,7 +474,7 @@ pkglist="$pkglist SUNWcnetr SUNWesu SUNWadmr SUNWadmap SUNWbzip SUNWgzip"
 #
 # Workaround: For now, SUNWipkg has no dependency on python, so we supply it.
 #
-pkglist="$pkglist SUNWPython SUNWipkg"
+pkglist="$pkglist SUNWPython26 SUNWipkg"
 
 #
 # Get some diagnostic tools, truss, dtrace, etc.

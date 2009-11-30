@@ -23,7 +23,7 @@
 # Use is subject to license terms.
 
 run: stats.py
-	python2.4 scenario.py
+	python2.6 scenario.py
 
 stats.py:
 	cp ../../modules/client/transport/stats.py .

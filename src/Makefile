@@ -28,9 +28,9 @@
 # publish.py -> /usr/bin/pkgsend
 # depot.py -> /usr/lib/pkg.depotd
 #
-# pkg/*.py -> /usr/lib/python2.4/vendor-packages/pkg/
+# pkg/*.py -> /usr/lib/python2.6/vendor-packages/pkg/
 
-PYTHON = /usr/bin/python
+PYTHON = /usr/bin/python2.6
 
 all := TARGET = all
 link := TARGET = link
@@ -79,7 +79,7 @@ link:
 	ln -sf $(PWD)/pull.py /usr/bin/pkgrecv
 	ln -sf $(PWD)/publish.py /usr/bin/pkgsend
 	ln -sf $(PWD)/depot.py /usr/lib/pkg.depotd
-	ln -sf $(PWD)/modules /usr/lib/python2.4/vendor-packages/pkg
+	ln -sf $(PWD)/modules /usr/lib/python2.6/vendor-packages/pkg
 	ln -sf $(PWD)/pkg-server.xml /var/svc/manifest/application/pkg-server.xml
 	ln -sf $(PWD)/pkg-update.xml /var/svc/manifest/application/pkg-update.xml
 	@cd web; pwd; $(MAKE) $(TARGET)
@@ -93,7 +93,7 @@ link-clean:
 	rm -f /usr/bin/pkgrecv
 	rm -f /usr/bin/pkgsend
 	rm -f /usr/lib/pkg.depotd
-	rm -f /usr/lib/python2.4/vendor-packages/pkg
+	rm -f /usr/lib/python2.6/vendor-packages/pkg
 	rm -f /var/svc/manifest/application/pkg-server.xml
 	rm -f /var/svc/manifest/application/pkg-update.xml
 	@cd web; pwd; $(MAKE) $(TARGET)

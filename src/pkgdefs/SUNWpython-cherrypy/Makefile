@@ -27,7 +27,7 @@ MACH:sh = uname -p
 ROOT = ../../../proto/root_$(MACH)
 PKG = SUNWpython-cherrypy
 PKGARCHIVE = ../../../packages/$(MACH)
-PROTOLOC = $(ROOT)/usr/lib/python2.4/vendor-packages/cherrypy
+PROTOLOC = $(ROOT)/usr/lib/python2.6/vendor-packages/cherrypy
 
 # By default create only the sysv package; failure of the IPS package to build
 # may confuse without enlightening.

@@ -1,4 +1,4 @@
-#!/usr/bin/python2.4
+#!/usr/bin/python2.6
 #
 # CDDL HEADER START
 #
@@ -299,7 +299,7 @@ if __name__ == "__main__":
                 os.rename("%s/pkg5" % covdir, ".coverage")
                 shutil.rmtree(covdir)
                 print >> sys.stderr, "Generating html coverage report"
-                vp = cli.testutils.g_proto_area + "/usr/lib/python2.4/vendor-packages"
+                vp = cli.testutils.g_proto_area + "/usr/lib/python2.6/vendor-packages"
                 omits = [
                     # External modules
                     "%s/cherrypy" % vp,

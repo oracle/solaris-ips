@@ -27,7 +27,7 @@ MACH:sh = uname -p
 ROOT = ../../../proto/root_$(MACH)
 PKG = SUNWpython-ply
 PKGARCHIVE = ../../../packages/$(MACH)
-PROTOLOC = $(ROOT)/usr/lib/python2.4/vendor-packages/ply
+PROTOLOC = $(ROOT)/usr/lib/python2.6/vendor-packages/ply
 
 # By default create only the sysv package; failure of the IPS package to build
 # may confuse without enlightening.

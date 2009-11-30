@@ -1,5 +1,11 @@
 --- find-python-path.py.orig	2009-09-30 13:52:05.871915809 +0100
 +++ find-python-path.py	2009-09-30 13:52:18.469972626 +0100
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python2.6
+ 
+ import sys
+ from os.path import split, basename
 @@ -7,7 +7,7 @@
      for path in sys.path:
  	(head, tail) = split (path)
