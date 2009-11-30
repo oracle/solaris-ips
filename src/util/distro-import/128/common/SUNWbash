@@ -10,4 +10,5 @@ add file .bashrc \
     owner=root \
     group=other \
     preserve=true
+chattr etc/skel/.bashrc original_name=SUNWcs:etc/skel/.bashrc
 end package
