@@ -441,11 +441,8 @@ class InstallUpdate(progress.GuiProgressTracker):
                                                 self.__proceed_with_ipkg_thread()
                                                 return
                                         else:
-                                                self.uarenamebe_o = \
-                                                    uarenamebe.RenameBeAfterUpdateAll(
-                                                    self.parent,
-                                                    self.icon_confirm_dialog,
-                                                    self.w_main_window)
+                                                gobject.idle_add(
+                                                    self.__create_uarenamebe_o)
                                                 self.api_o.reset()
                                 if continue_operation == False:
                                         self.__proceed_with_stages_thread()
@@ -585,6 +582,13 @@ class InstallUpdate(progress.GuiProgressTracker):
                 except Exception:
                         self.__handle_error()
                         return
+
+        def __create_uarenamebe_o(self):
+                if self.uarenamebe_o == None:
+                        self.uarenamebe_o = \
+                            uarenamebe.RenameBeAfterUpdateAll(
+                            self.parent, self.icon_confirm_dialog,
+                            self.w_main_window)
 
         def __handle_nospace_error(self):
                 gobject.idle_add(self.__prompt_to_load_beadm)
