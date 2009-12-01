@@ -570,6 +570,25 @@ printf "$m_more_brokenness\n"
 /usr/sbin/sysidconfig -b $ZONEROOT -a /lib/svc/method/sshd
 touch $ZONEROOT/etc/.UNCONFIGURED
 
+#
+# Labeled zones need to be able to modify /etc/gconf files, when gnome
+# packages are installed in the zone.  Set up links in the zone to the
+# global zone files -- this will provide default versions from the global
+# zone, which can be modified by the zone, breaking the link.
+if (( $brand_labeled == 1 )); then
+	cd /etc/gconf
+	for i in $(find .); do
+		if [ ! -e $ZONEROOT/etc/gconf/$i ]; then
+			if [ -d $i ]; then
+				mkdir $ZONEROOT/etc/gconf/$i
+			else
+				ln -s /etc/gconf-global/$i \
+				    $ZONEROOT/etc/gconf/$i
+			fi
+		fi
+	done
+fi
+
 printf "$m_complete\n\n" ${SECONDS}
 if (( $brand_labeled == 0 )); then
 	printf "$m_postnote\n"
