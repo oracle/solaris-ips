@@ -36,6 +36,7 @@ from tempfile import mkstemp
 
 import generic
 import pkg.pkgsubprocess as subprocess
+from pkg.client.debugvalues import DebugValues
 
 class DriverAction(generic.Action):
         """Class representing a driver-type packaging object."""
@@ -43,21 +44,18 @@ class DriverAction(generic.Action):
         name = "driver"
         key_attr = "name"
 
-        # XXX This is a gross hack to let us test the action without having to
-        # be root.
-        if "USR_SBIN" in os.environ:
-                usr_sbin = os.environ["USR_SBIN"]
-                if not usr_sbin.endswith("/"):
-                        usr_sbin += "/"
-        else:
-                usr_sbin = "/usr/sbin/"
-
-        add_drv = usr_sbin + "add_drv"
-        rem_drv = usr_sbin + "rem_drv"
-        update_drv = usr_sbin + "update_drv"
+        usr_sbin = None
 
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
+
+                if not self.__class__.usr_sbin:
+                        usr_sbin = DebugValues.get("driver-cmd-dir",
+                            "/usr/sbin") + "/"
+                        self.__class__.usr_sbin = usr_sbin
+                        self.__class__.add_drv = usr_sbin + "add_drv"
+                        self.__class__.rem_drv = usr_sbin + "rem_drv"
+                        self.__class__.update_drv = usr_sbin + "update_drv"
 
                 #
                 # Clean up clone_perms.  This attribute may been specified either as:
@@ -108,6 +106,11 @@ class DriverAction(generic.Action):
                         print "-" * 60
                         print buf,
                         print "-" * 60
+
+        @classmethod
+        def __activate_drivers(cls):
+                cls.__call([cls.usr_sbin + "devfsadm", "-u"],
+                    "Driver activation failed", {})
 
         def install(self, pkgplan, orig):
                 image = pkgplan.image
@@ -227,7 +230,12 @@ from %(imgroot)s/etc/driver_aliases." % \
                 if orig:
                         return self.__update_install(image, orig)
 
-                args = ( self.add_drv, "-n", "-b", image.get_root() )
+                if image.is_liveroot():
+                        args = ( self.add_drv, "-u" )
+                        image.imageplan.add_actuator("install",
+                            "activate-drivers", self.__activate_drivers)
+                else:
+                        args = ( self.add_drv, "-n", "-b", image.get_root() )
 
                 if "alias" in self.attrs:
                         args += (

@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
                 
@@ -117,11 +117,18 @@ class Actuator(GenericActuator):
                 self.cmd_path = ""
 
         def __str__(self):
-                merge = {}
+                def check_val(dfmri):
+                        # For actuators which are a single, global function that
+                        # needs to get executed, simply print true.
+                        if callable(dfmri):
+                                return [ "true" ]
+                        else:
+                                return dfmri
 
+                merge = {}
                 for d in [self.removal, self.update, self.install]:
                         for a in d.keys():
-                                for smf in d[a]:
+                                for smf in check_val(d[a]):
                                         merge.setdefault(a, set()).add(smf)
 
                 if self.reboot_needed():
@@ -133,7 +140,7 @@ class Actuator(GenericActuator):
                     "  %16s: %s" % (fmri, smf)
                     for fmri in merge
                     for smf in merge[fmri]
-                    ])
+                ])
 
         def reboot_needed(self):
                 return bool("true" in self.update.get("reboot-needed", [])) or \
@@ -251,6 +258,10 @@ class Actuator(GenericActuator):
                 params = tuple(self.tmp_suspend_fmris)
                 if params:
                         self.__call(args + params)
+
+                for act in self.install.itervalues():
+                        if callable(act):
+                                act()
 
         def __smf_svc_get_state(self, fmri):
                 """ return state of smf service """

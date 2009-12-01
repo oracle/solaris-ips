@@ -482,7 +482,28 @@ class ImagePlan(object):
                 if new_fmri:
                         return None, s # only report new on upgrade
                 return s, None         # handle uninstall
-                        
+
+        def add_actuator(self, phase, name, value):
+                """Add an actuator to the plan.
+
+                The actuator name ('reboot-needed', 'restart_fmri', etc.) is
+                given in 'name', and the fmri string or callable is given in
+                'value'.  The 'phase' parameter must be one of 'install',
+                'remove', or 'update'.
+                """
+
+                if phase == "install":
+                        d = self.__actuators.install
+                elif phase == "remove":
+                        d = self.__actuators.removal
+                elif phase == "update":
+                        d = self.__actuators.update
+
+                if callable(value):
+                        d[name] = value
+                else:
+                        d.setdefault(name, []).append(value)
+
         def evaluate(self, verbose=False):
                 """Given already determined fmri changes, 
                 build pkg plans and figure out exact impact of
@@ -493,8 +514,7 @@ class ImagePlan(object):
                 if self.__noexecute and not verbose:
                         return # optimize performance if no one cares
 
-                #prefetch manifests
-                                         
+                # prefetch manifests
                 prefetch_list = [] # manifest, intents to be prefetched
                 eval_list = []     # oldfmri, oldintent, newfmri, newintent
                                    # prefetched intents omitted
