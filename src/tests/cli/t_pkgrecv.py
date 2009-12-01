@@ -461,8 +461,8 @@ class TestPkgrecvMulti(testutils.ManyDepotTestCase):
 
                 f = fmri.PkgFmri(self.published[3], None)
 
-                os.putenv("PKG_SRC", self.durl1)
-                os.putenv("PKG_DEST", self.tempdir)
+                os.environ["PKG_SRC"] = self.durl1
+                os.environ["PKG_DEST"] = self.tempdir
 
                 # First, retrieve the package.
                 self.pkgrecv(command="%s" % f)
@@ -492,7 +492,7 @@ class TestPkgrecvMulti(testutils.ManyDepotTestCase):
                                     misc.gunzip_from_stream, ifile, ofile)
 
                 for var in ("PKG_SRC", "PKG_DEST"):
-                        os.unsetenv(var)
+                        del os.environ[var]
 
 
 if __name__ == "__main__":
