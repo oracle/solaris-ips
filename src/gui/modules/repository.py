@@ -61,13 +61,13 @@ class Repository(progress.GuiProgressTracker):
                 if self.api_o == None:
                         return
                 self.webinstall_new = webinstall_new
-                self.publishers_list_filter = None
                 self.progress_stop_thread = False
                 self.repository_selection = None
                 self.cancel_progress_thread = False
                 self.cancel_function = None
                 self.is_name_valid = False
                 self.is_url_valid = False
+                self.priority_changes = []
                 self.url_err = None
                 self.name_error = None
                 self.publisher_info = _("e.g. http://pkg.opensolaris.org/release")
@@ -91,7 +91,7 @@ class Repository(progress.GuiProgressTracker):
                     "confirmationdialog")
                 self.w_confirmation_dialog =  \
                     w_tree_confirmation.get_widget("confirmationdialog")
-		self.w_confirmation_label = \
+                self.w_confirmation_label = \
                     w_tree_confirmation.get_widget("confirm_label")
                 self.w_confirmation_dialog.set_icon(self.parent.window_icon)
                 self.w_confirmation_textview = \
@@ -101,7 +101,6 @@ class Repository(progress.GuiProgressTracker):
                 confirmbuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)
                 self.w_confirmation_dialog.set_title(
                     _("Manage Publishers Confirmation"))
-
                 self.w_publishers_treeview = \
                     w_tree_manage_publishers.get_widget("publishers_treeview")
                 self.w_add_publisher_dialog = \
@@ -225,6 +224,10 @@ class Repository(progress.GuiProgressTracker):
                     w_tree_manage_publishers.get_widget("manage_remove")
                 self.w_manage_modify_btn = \
                     w_tree_manage_publishers.get_widget("manage_modify")
+                self.w_manage_up_btn = \
+                    w_tree_manage_publishers.get_widget("manage_move_up")
+                self.w_manage_down_btn = \
+                    w_tree_manage_publishers.get_widget("manage_move_down")
                 self.publishers_apply = \
                     w_tree_publishers_apply.get_widget("publishers_apply")
                 self.publishers_apply.set_icon(self.parent.window_icon)
@@ -368,16 +371,21 @@ class Repository(progress.GuiProgressTracker):
                             % error
 
                 self.publishers_list = self.__get_publishers_liststore()
-                self.__init_pubs_tree_views()
+                self.__init_pubs_tree_views(self.publishers_list)
                 self.__init_mirrors_tree_views(self.modify_repo_mirrors_treeview)
                 self.__init_repos_tree_views(self.modify_pub_repos_treeview)
 
                 if self.action == enumerations.ADD_PUBLISHER:
-                        gui_misc.set_modal_and_transient(self.w_add_publisher_dialog)
+                        gui_misc.set_modal_and_transient(self.w_add_publisher_dialog, 
+                            self.main_window)
                         self.__on_manage_add_clicked(None)
                         return
                 elif self.action == enumerations.MANAGE_PUBLISHERS:
-                        self.__prepare_repository_list()
+                        gui_misc.set_modal_and_transient(self.w_manage_publishers_dialog,
+                            self.main_window)
+                        gui_misc.set_modal_and_transient(self.w_confirmation_dialog,
+                            self.w_manage_publishers_dialog)
+                        self.__prepare_publisher_list()
                         publisher_selection = self.w_publishers_treeview.get_selection()
                         publisher_selection.set_mode(gtk.SELECTION_SINGLE)
                         publisher_selection.connect("changed",
@@ -397,7 +405,11 @@ class Repository(progress.GuiProgressTracker):
                         self.w_manage_publishers_dialog.show_all()
                         return
 
-        def __init_pubs_tree_views(self):
+        def __init_pubs_tree_views(self, publishers_list):
+                publishers_list_filter = publishers_list.filter_new()
+                publishers_list_sort = gtk.TreeModelSort(publishers_list_filter)
+                publishers_list_sort.set_sort_column_id(
+                    enumerations.PUBLISHER_PRIORITY_CHANGED, gtk.SORT_ASCENDING)
                 # Name column
                 name_renderer = gtk.CellRendererText()
                 column = gtk.TreeViewColumn(_("Publisher"),
@@ -411,16 +423,6 @@ class Repository(progress.GuiProgressTracker):
                     alias_renderer, text = enumerations.PUBLISHER_ALIAS)
                 column.set_expand(True)
                 self.w_publishers_treeview.append_column(column)
-                # Preferred column
-                radio_renderer = gtk.CellRendererToggle()
-                column = gtk.TreeViewColumn(_("Preferred"),
-                    radio_renderer, active = enumerations.PUBLISHER_PREFERRED)
-                radio_renderer.set_property("activatable", True)
-                radio_renderer.set_property("radio", True)
-                column.set_expand(False)
-                column.set_cell_data_func(radio_renderer,
-                    self.__radio_data_function, None)
-                self.w_publishers_treeview.append_column(column)
                 # Enabled column
                 toggle_renderer = gtk.CellRendererToggle()
                 column = gtk.TreeViewColumn(_("Enabled"),
@@ -431,33 +433,42 @@ class Repository(progress.GuiProgressTracker):
                 column.set_cell_data_func(toggle_renderer, 
                     self.__toggle_data_function, None)
                 self.w_publishers_treeview.append_column(column)
-                self.publishers_list_filter = self.publishers_list.filter_new()
-                self.publishers_list_filter.set_visible_func(self.__publishers_filter)
-                self.w_publishers_treeview.set_model(self.publishers_list_filter)
+                publishers_list_filter.set_visible_func(self.__publishers_filter)
+                self.w_publishers_treeview.set_model(publishers_list_sort)
 
-        def __prepare_repository_list(self):
+        def __prepare_publisher_list(self):
                 self.no_changes = 0
+                self.priority_changes = []
                 pubs = self.api_o.get_publishers(duplicate=True)
-                model = self.w_publishers_treeview.get_model()
-                if not model:
+                sorted_model = self.w_publishers_treeview.get_model()
+                if not sorted_model:
                         return
+
+                if len(pubs) > 1:
+                        so = self.api_o.get_pub_search_order()
+                        pub_dict = dict([(p.prefix, p) for p in pubs])
+                        pubs = [
+                            pub_dict[name]
+                            for name in so
+                            if name in pub_dict
+                            ]
                 self.w_publishers_treeview.set_model(None)
-                self.publishers_list.clear()
+                filtered_model = sorted_model.get_model()
+                model = filtered_model.get_model()
+                model.clear()
                 j = 0
-                pref_pub = self.api_o.get_preferred_publisher()
                 for pub in pubs:
                         name = pub.prefix
-                        is_preferred = name == pref_pub.prefix
                         alias = pub.alias
                         # BUG: alias should be either "None" or None.
                         # in the list it's "None", but when adding pub it's None
                         if not alias or len(alias) == 0 or alias == "None":
                                 alias = name
-                        publisher_row = [j, name, alias, not pub.disabled, 
-                            is_preferred, pub, False, False]
-                        self.publishers_list.insert(j, publisher_row)
+                        publisher_row = [j, j, name, alias, not pub.disabled, 
+                            pub, False, False]
+                        model.insert(j, publisher_row)
                         j += 1
-                self.w_publishers_treeview.set_model(model)
+                self.w_publishers_treeview.set_model(sorted_model)
 
         def __validate_url(self, url_widget, w_ssl_key = None, w_ssl_cert = None):
                 self.__validate_url_generic(url_widget, self.w_add_error_label, 
@@ -555,13 +566,15 @@ class Repository(progress.GuiProgressTracker):
                 selection = tsel.get_selected()
                 itr = selection[1]
                 if itr == None:
-                        return None
-                filt_model = selection[0]
-                filt_path = filt_model.get_path(itr)
-                path = filt_model.convert_path_to_child_path(filt_path)
-                model = filt_model.get_model()
-                f_itr = model.get_iter(path)
-                return (f_itr, model)
+                        return (None, None)
+                sorted_model = selection[0]
+                sorted_path = sorted_model.get_path(itr)
+                filter_path = sorted_model.convert_path_to_child_path(sorted_path)
+                filter_model = sorted_model.get_model()
+                path = filter_model.convert_path_to_child_path(filter_path)
+                model = filter_model.get_model()
+                itr = model.get_iter(path)
+                return (itr, model)
 
         def __get_selected_mirror_itr_model(self):
                 return self.__get_fitr_model_from_tree(\
@@ -697,24 +710,28 @@ class Repository(progress.GuiProgressTracker):
                 self.__update_repository_dialog(repo, 
                     expand=False, update_ssl=False, update_url=False)
 
-        def __enable_disable(self, cell, filtered_path):
-                filtered_model = self.w_publishers_treeview.get_model()
+        def __enable_disable(self, cell, sorted_path):
+                sorted_model = self.w_publishers_treeview.get_model()
+                filtered_path = sorted_model.convert_path_to_child_path(sorted_path)
+                filtered_model = sorted_model.get_model()
                 path = filtered_model.convert_path_to_child_path(filtered_path)
                 model = filtered_model.get_model()
                 itr = model.get_iter(path)
                 if itr == None:
                         return
-                preferred = model.get_value(itr, enumerations.PUBLISHER_PREFERRED)
+                preferred = 0 == model.get_value(itr,
+                    enumerations.PUBLISHER_PRIORITY_CHANGED)
                 if preferred:
                         return
                 enabled = model.get_value(itr, enumerations.PUBLISHER_ENABLED)
                 changed = model.get_value(itr, enumerations.PUBLISHER_ENABLE_CHANGED)
                 model.set_value(itr, enumerations.PUBLISHER_ENABLED, not enabled)
                 model.set_value(itr, enumerations.PUBLISHER_ENABLE_CHANGED, not changed)
+                self.__enable_disable_updown_btn(itr, model)
 
         def __is_enough_visible_pubs(self):
-                model = self.w_publishers_treeview.get_model()
-                if len(model) > 1:
+                filtered_model = self.w_publishers_treeview.get_model()
+                if len(filtered_model) > 1:
                         return True
                 return False
 
@@ -725,12 +742,38 @@ class Repository(progress.GuiProgressTracker):
                                 return
                 self.w_manage_remove_btn.set_sensitive(False)
 
-        def __enable_disable_ok_btn(self):
-                for row in self.publishers_list:
-                        if row[enumerations.PUBLISHER_REMOVED] or \
-                            row[enumerations.PUBLISHER_ENABLE_CHANGED]:
-                                return True
-                return False
+        def __enable_disable_updown_btn(self, itr, model):
+                up_enabled = True
+                down_enabled = True
+                sorted_size = len(self.w_publishers_treeview.get_model())
+                i = 0
+
+                if itr:
+                        enabled = model.get_value(itr,
+                            enumerations.PUBLISHER_ENABLED)
+                        cur_priority = model.get_value(itr,
+                            enumerations.PUBLISHER_PRIORITY_CHANGED)
+                        self.__enable_disable_remove_btn(itr)
+                        if cur_priority == 0:
+                                self.__enable_disable_remove_btn(None)
+                                up_enabled = False
+                                for row in self.w_publishers_treeview.get_model():
+                                        if i == 1:
+                                                down_enabled = \
+                                                    row[enumerations.PUBLISHER_ENABLED]
+                                                break
+                                        i += 1
+                        elif cur_priority == 1 and not enabled:
+                                up_enabled = False
+                                down_enabled = True
+                        elif cur_priority == sorted_size - 1:
+                                up_enabled = True
+                                down_enabled = False
+                        if sorted_size == 1:
+                                up_enabled = False
+                                down_enabled = False
+                self.w_manage_up_btn.set_sensitive(up_enabled)
+                self.w_manage_down_btn.set_sensitive(down_enabled)
 
         def __do_add_repository(self, name=None, url=None, ssl_key=None, ssl_cert=None,
             pub=None):
@@ -832,28 +875,50 @@ class Repository(progress.GuiProgressTracker):
                 self.w_add_publisher_comp_dialog.show()
 
         def __prepare_confirmation_dialog(self):
-                # TODO: The priorities are not supported yet.
-                # change_text = _("Change Priority:\n")
-                # change = {}
                 disable = ""
                 enable = ""
                 delete = ""
-		disable_no = 0
-		enable_no = 0
-		delete_no = 0
+                priority_change = ""
+                disable_no = 0
+                enable_no = 0
+                delete_no = 0
+                not_removed = []
+                removed_priorities = []
+                priority_changed = []
                 for row in self.publishers_list:
                         pub_name = row[enumerations.PUBLISHER_NAME]
                         if row[enumerations.PUBLISHER_REMOVED]:
                                 delete += "\t" + pub_name + "\n"
-				delete_no += 1
-                        elif row[enumerations.PUBLISHER_ENABLE_CHANGED]:
-                                to_enable = row[enumerations.PUBLISHER_ENABLED]
-                                if not to_enable:
-                                        disable += "\t" + pub_name + "\n"
-					disable_no += 1
-                                else:
-                                        enable += "\t" + pub_name + "\n"
-					enable_no += 1
+                                delete_no += 1
+                                removed_priorities.append(
+                                    row[enumerations.PUBLISHER_PRIORITY])
+                        else:
+                                if row[enumerations.PUBLISHER_ENABLE_CHANGED]:
+                                        to_enable = row[enumerations.PUBLISHER_ENABLED]
+                                        if not to_enable:
+                                                disable += "\t" + pub_name + "\n"
+                                                disable_no += 1
+                                        else:
+                                                enable += "\t" + pub_name + "\n"
+                                                enable_no += 1
+                                not_removed.append(row)
+
+                for pub in not_removed:
+                        if not self.__check_if_ignore(pub, removed_priorities):
+                                pub_name = pub[enumerations.PUBLISHER_NAME]
+                                pri = pub[enumerations.PUBLISHER_PRIORITY_CHANGED]
+                                priority_changed.append([pri, pub_name])
+
+                if disable_no == 0 and enable_no == 0 and delete_no == 0 and \
+                    len(priority_changed) == 0:
+                        self.__on_manage_cancel_clicked(None)
+                        return
+
+                priority_changed.sort()
+                for pri, pub_name in priority_changed:
+                        priority_change += "\t" + str(pri+1) + \
+                            " - " + pub_name + "\n"
+
                 textbuf = self.w_confirmation_textview.get_buffer()
                 textbuf.set_text("")
                 textiter = textbuf.get_end_iter()
@@ -864,12 +929,13 @@ class Repository(progress.GuiProgressTracker):
 		    "Enable Publishers:\n", enable_no)
                 delete_text = ngettext("Remove Publisher:\n",
 		    "Remove Publishers:\n", delete_no)
+                priority_text = _("Change Priorities:\n")
 
-		confirm_no = delete_no + enable_no + disable_no
-		confirm_text = ngettext("Apply the following change:",
+                confirm_no = delete_no + enable_no + disable_no
+                confirm_text = ngettext("Apply the following change:",
 		    "Apply the following changes:", confirm_no)
 
-		self.w_confirmation_label.set_markup("<b>" + confirm_text + "</b>")
+                self.w_confirmation_label.set_markup("<b>" + confirm_text + "</b>")
 
                 if len(delete) > 0:
                         textbuf.insert_with_tags_by_name(textiter,
@@ -892,6 +958,14 @@ class Repository(progress.GuiProgressTracker):
                             enable_text, "bold")
                         textbuf.insert_with_tags_by_name(textiter,
                             enable)
+                if len(priority_change) > 0:
+                        if len(delete) > 0 or len(disable) or len(enable) > 0:
+                                textbuf.insert_with_tags_by_name(textiter,
+                                    "\n")
+                        textbuf.insert_with_tags_by_name(textiter,
+                            priority_text, "bold")
+                        textbuf.insert_with_tags_by_name(textiter,
+                            priority_change)
 
                 self.w_confirm_cancel_btn.grab_focus()
                 self.w_confirmation_dialog.show_all()
@@ -929,6 +1003,24 @@ class Repository(progress.GuiProgressTracker):
 
         def __proceed_after_confirmation(self):
                 errors = []
+
+                for row in self.priority_changes:
+                        try:
+                                if row[0] == enumerations.PUBLISHER_MOVE_BEFORE:
+                                        self.api_o.set_pub_search_before(row[1],
+                                            row[2])
+                                else:
+                                        self.api_o.set_pub_search_after(row[1],
+                                            row[2])
+                                self.no_changes += 1
+                                self.__g_update_details_text(
+                                    _("Changing priority for publisher %s\n")
+                                    % row[1])
+                        except (api_errors.PermissionsException,
+                            api_errors.PublisherError,
+                            api_errors.InvalidDepotResponseException), e:
+                                errors.append((row[enumerations.PUBLISHER_OBJECT], e))
+
                 for row in self.publishers_list:
                         name = row[enumerations.PUBLISHER_NAME]
                         try:
@@ -988,7 +1080,9 @@ class Repository(progress.GuiProgressTracker):
                         gobject.idle_add(self.__g_delete_widget_handler_hide,
                             self.w_modify_publisher_dialog, None)
                         if self.action == enumerations.MANAGE_PUBLISHERS:
-                                gobject.idle_add(self.__prepare_repository_list)
+                                gobject.idle_add(self.__prepare_publisher_list)
+                                selection = self.w_publishers_treeview.get_selection()
+                                gobject.idle_add(selection.select_path, 0)
                                 self.no_changes += 1
 
         def __proceed_modifyrepo_ok(self):
@@ -1047,17 +1141,15 @@ class Repository(progress.GuiProgressTracker):
 
         # Signal handlers
         def __on_publisher_selection_changed(self, selection, widget):
-                model, itr = selection.get_selected()
-                if itr:
+                itr, model = self.__get_selected_publisher_itr_model()
+                if itr and model:
+                        self.__enable_disable_updown_btn(itr, model)
                         self.__update_publisher_details(
                             model.get_value(itr, enumerations.PUBLISHER_OBJECT),
                             self.w_manage_publishers_details)
-                        if model.get_value(itr, enumerations.PUBLISHER_PREFERRED):
+                        if 0 == model.get_value(itr,
+                            enumerations.PUBLISHER_PRIORITY_CHANGED):
                                 itr = None
-                else:
-                        selection.select_path(0)
-                        self.__update_publisher_details(None,
-                            self.w_manage_publishers_details)
                 self.__enable_disable_remove_btn(itr)
 
         def __on_repository_selection_changed(self, selection, widget):
@@ -1088,7 +1180,8 @@ class Repository(progress.GuiProgressTracker):
                 if self.no_changes > 0:
                         self.parent.reload_packages()
                         if self.action == enumerations.MANAGE_PUBLISHERS:
-                                self.__prepare_repository_list()
+                                self.__prepare_publisher_list()
+                                self.w_publishers_treeview.get_selection().select_path(0)
                 self.__delete_widget_handler_hide(widget, event)
                 return True
 
@@ -1115,10 +1208,6 @@ class Repository(progress.GuiProgressTracker):
 
         def __on_modcertkeyentry_changed(self, widget):
                 self.__repositorymodifyurl_changed(self.w_repositorymodify_url)
-
-        @staticmethod
-        def __is_pub_modified():
-                return True
 
         def __on_modifypub_url_changed(self, widget):
                 self.__validate_url_generic(widget, self.w_modifypub_error_label,
@@ -1282,31 +1371,78 @@ class Repository(progress.GuiProgressTracker):
 
         def __on_manage_modify_clicked(self, widget):
                 itr, model = self.__get_selected_publisher_itr_model()
-                pub = model.get_value(itr, enumerations.PUBLISHER_OBJECT)
-                self.__modify_publisher_dialog(pub)
+                if itr and model:
+                        pub = model.get_value(itr, enumerations.PUBLISHER_OBJECT)
+                        self.__modify_publisher_dialog(pub)
 
         def __on_manage_remove_clicked(self, widget):
                 itr, model = self.__get_selected_publisher_itr_model()
+                tsel = self.w_publishers_treeview.get_selection()
+                selection = tsel.get_selected()
+                sel_itr = selection[1]
+                sorted_model = selection[0]
+                sorted_path = sorted_model.get_path(sel_itr)
                 if itr and model:
+                        current_priority = model.get_value(itr, 
+                            enumerations.PUBLISHER_PRIORITY_CHANGED)
                         model.set_value(itr, enumerations.PUBLISHER_REMOVED, True)
+                        for element in model:
+                                if element[enumerations.PUBLISHER_PRIORITY_CHANGED] > \
+                                    current_priority:
+                                        element[
+                                            enumerations.PUBLISHER_PRIORITY_CHANGED] -= 1
+                        tsel.select_path(sorted_path)
+                        if not tsel.path_is_selected(sorted_path):
+                                row = sorted_path[0]-1
+                                if row >= 0:
+                                        tsel.select_path((row,))
 
         def __on_manage_move_up_clicked(self, widget):
-                # TODO: The priorities are not supported yet.
-                pass
+                before_name = None
+                itr, model = self.__get_selected_publisher_itr_model()
+                cur_priority = model.get_value(itr,
+                            enumerations.PUBLISHER_PRIORITY_CHANGED)
+                cur_name = model.get_value(itr, enumerations.PUBLISHER_NAME)
+                for element in model:
+                        if cur_priority == \
+                            element[enumerations.PUBLISHER_PRIORITY_CHANGED]:
+                                element[
+                                    enumerations.PUBLISHER_PRIORITY_CHANGED] -= 1
+                        elif element[enumerations.PUBLISHER_PRIORITY_CHANGED] \
+                            == cur_priority - 1 :
+                                before_name = element[enumerations.PUBLISHER_NAME]
+                                element[
+                                    enumerations.PUBLISHER_PRIORITY_CHANGED] += 1
+                self.priority_changes.append([enumerations.PUBLISHER_MOVE_BEFORE,
+                    cur_name, before_name])
+                self.__enable_disable_updown_btn(itr, model)
 
         def __on_manage_move_down_clicked(self, widget):
-                # TODO: The priorities are not supported yet.
-                pass
+                after_name = None
+                itr, model = self.__get_selected_publisher_itr_model()
+                cur_priority = model.get_value(itr,
+                            enumerations.PUBLISHER_PRIORITY_CHANGED)
+                cur_name = model.get_value(itr, enumerations.PUBLISHER_NAME)
+                for element in model:
+                        if cur_priority == \
+                            element[enumerations.PUBLISHER_PRIORITY_CHANGED]:
+                                element[
+                                    enumerations.PUBLISHER_PRIORITY_CHANGED] += 1
+                        elif element[enumerations.PUBLISHER_PRIORITY_CHANGED] \
+                            == cur_priority + 1 :
+                                after_name = element[enumerations.PUBLISHER_NAME]
+                                element[
+                                    enumerations.PUBLISHER_PRIORITY_CHANGED] -= 1
+                self.priority_changes.append([enumerations.PUBLISHER_MOVE_AFTER,
+                    cur_name, after_name])
+                self.__enable_disable_updown_btn(itr, model)
 
         def __on_manage_cancel_clicked(self, widget):
                 self.__on_manage_publishers_delete_event(
                     self.w_manage_publishers_dialog, None)
 
         def __on_manage_ok_clicked(self, widget):
-                if self.__enable_disable_ok_btn():
-                        self.__prepare_confirmation_dialog()
-                else:
-                        self.__on_manage_cancel_clicked(None)
+                self.__prepare_confirmation_dialog()
 
         def __on_pub_modify_repo_clicked(self, widget):
                 itr, model = self.__get_selected_repository_itr_model()
@@ -1366,6 +1502,25 @@ class Repository(progress.GuiProgressTracker):
 #-----------------------------------------------------------------------------#
 # Static Methods
 #-----------------------------------------------------------------------------#
+        @staticmethod
+        def __is_pub_modified():
+                return True
+
+        @staticmethod
+        def __check_if_ignore(pub, removed_list):
+                """If we remove a publisher from our model, the priorities of
+                   subsequent publishers  are decremented. We need to ignore the
+                   priority changes caused solely by publisher(s) removal.
+                   This function returns True if the priority change for a publisher
+                   is due to publisher(s) removal or False otherwise.""" 
+                priority_sum = 0
+                priority = pub[enumerations.PUBLISHER_PRIORITY]
+                priority_changed = pub[enumerations.PUBLISHER_PRIORITY_CHANGED]
+                for num in removed_list:
+                        if num < priority:
+                                priority_sum += 1
+                return (priority == priority_changed + priority_sum)
+
         @staticmethod
         def __on_add_pub_help_clicked(widget):
                 gui_misc.display_help("add_repo")
@@ -1627,14 +1782,14 @@ class Repository(progress.GuiProgressTracker):
         @staticmethod
         def __get_publishers_liststore():
                 return gtk.ListStore(
-                        gobject.TYPE_INT,         # enumerations.PUBLISHER_PRIORITY
-                        gobject.TYPE_STRING,      # enumerations.PUBLISHER_NAME
-                        gobject.TYPE_STRING,      # enumerations.PUBLISHER_ALIAS
-                        gobject.TYPE_BOOLEAN,     # enumerations.PUBLISHER_ENABLED
-                        gobject.TYPE_BOOLEAN,     # enumerations.PUBLISHER_PREFERRED
-                        gobject.TYPE_PYOBJECT,    # enumerations.PUBLISHER_OBJECT
-                        gobject.TYPE_BOOLEAN,     # enumerations.PUBLISHER_ENABLE_CHANGED
-                        gobject.TYPE_BOOLEAN,     # enumerations.PUBLISHER_REMOVED
+                        gobject.TYPE_INT,      # enumerations.PUBLISHER_PRIORITY
+                        gobject.TYPE_INT,      # enumerations.PUBLISHER_PRIORITY_CHANGED
+                        gobject.TYPE_STRING,   # enumerations.PUBLISHER_NAME
+                        gobject.TYPE_STRING,   # enumerations.PUBLISHER_ALIAS
+                        gobject.TYPE_BOOLEAN,  # enumerations.PUBLISHER_ENABLED
+                        gobject.TYPE_PYOBJECT, # enumerations.PUBLISHER_OBJECT
+                        gobject.TYPE_BOOLEAN,  # enumerations.PUBLISHER_ENABLE_CHANGED
+                        gobject.TYPE_BOOLEAN,  # enumerations.PUBLISHER_REMOVED
                         )
 
         @staticmethod
@@ -1660,16 +1815,9 @@ class Repository(progress.GuiProgressTracker):
         @staticmethod
         def __toggle_data_function(column, renderer, model, itr, data):
                 if itr:
-                        renderer.set_property("sensitive", 
-                            not model.get_value(itr, 
-                            enumerations.PUBLISHER_PREFERRED))
-
-        @staticmethod
-        def __radio_data_function(column, renderer, model, itr, data):
-                # TODO: The priority will take over preferred, so 
-                # we do not allow to change preferred.
-                if itr:
-                        renderer.set_property("sensitive", False)
+                        # Do not allow to remove the publisher of first priority search
+                        renderer.set_property("sensitive", (0 != model.get_value(itr, 
+                            enumerations.PUBLISHER_PRIORITY_CHANGED)))
 
         @staticmethod
         def __get_registration_uri(repo):
