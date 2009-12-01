@@ -50,7 +50,6 @@ import coverage
 sys.path.insert(0, ".")
 
 import cli.testutils
-import gui.testutils
 
 if __name__ == "__main__":
         cli.testutils.setup_environment("../../proto")
@@ -234,12 +233,13 @@ if __name__ == "__main__":
         suites.append(api_suite)
         if ostype == "posix":
                 suites.append(cli_suite)
+                gui_suite = find_tests("gui", onlyval, startattest)
+                import gui.testutils
                 if not gui.testutils.check_for_gtk():
                         print "GTK not present, GUI tests disabled."
                 elif not gui.testutils.check_if_a11y_enabled():
                         print "Accessibility not enabled, GUI tests disabled."
                 else:
-                        gui_suite = find_tests("gui", onlyval, startattest)
                         suites.append(gui_suite)
 
         # Initialize the baseline results and load them
