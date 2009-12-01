@@ -25,7 +25,6 @@
 
 MACH:sh = uname -p
 
-PYTHON = /usr/bin/python
 INSTALL = /usr/sbin/install
 
 ROOT = ../../proto/root_${MACH}

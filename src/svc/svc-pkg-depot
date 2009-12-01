@@ -73,7 +73,18 @@ case "$1" in
 	fi
 
 	# adjust the PYTHONPATH to point to the current environment
-	PYTHONPATH=${pkg_root}usr/lib/python2.4/vendor-packages/:$PYTHONPATH
+	# we need to make sure to adjust the PYTHONPATH accordingly
+	# to a Python 2.4 or 2.6 environment
+	python_ver=$(head -1 ${pkg_root}usr/lib/pkg.depotd 2>/dev/null |
+	    awk -F/ '{print $NF}')
+	if [[ $python_ver != *python* ]]; then
+		echo "invalid python version $python_ver found in"
+		echo "${pkg_root}usr/lib/pkg.depotd"
+		exit $SMF_EXIT_ERR_FATAL
+	fi
+
+	PYTHONPATH=${pkg_root}usr/lib/${python_ver}/vendor-packages/:$PYTHONPATH
+
 	export PYTHONPATH
 
 	# Go through each property in boolean_props and, if its value is set
