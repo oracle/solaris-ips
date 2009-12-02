@@ -1,4 +1,5 @@
 package xvm
+consolidation "osnet"
 classification "System/Virtualization"
 summary "Solaris x86 Hypervisor"
 depend SUNWvirtinst
@@ -7,6 +8,7 @@ depend SUNWvncviewer
 end package
 
 package xvm-gui
+consolidation "gnome"
 classification "System/Virtualization"
 summary "Solaris x86 Hypervisor management GUI"
 depend SUNWvirt-manager

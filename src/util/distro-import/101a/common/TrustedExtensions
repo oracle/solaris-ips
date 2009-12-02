@@ -1,4 +1,5 @@
 package trusted-extensions
+consolidation "osnet"
 classification "Desktop (GNOME)/Trusted Extensions"
 summary "Trusted Extensions"
 depend SUNWtgnome-tsoljdsdevmgr

@@ -1,4 +1,5 @@
 package avs
+consolidation "osnet"
 classification "Drivers/Storage"
 summary "Availability Suite"
 version 0.1

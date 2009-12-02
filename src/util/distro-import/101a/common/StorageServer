@@ -1,4 +1,5 @@
 package storage-server
+consolidation "osnet"
 classification "Drivers/Storage"
 summary "Multi Protocol Storage Server cluster"
 version 0.1

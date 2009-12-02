@@ -1,4 +1,5 @@
 package lang-support-common
+consolidation "l10n"
 cluster lang-support-common
 classification "System/Localizations"
 summary "Language Support cluster - common"
@@ -16,6 +17,7 @@ depend SUNWuium
 end package
 
 package lang-support-arabic
+consolidation "l10n"
 cluster lang-support-arabic
 classification "System/Localizations"
 summary "Language Support cluster - Arabic"
@@ -32,6 +34,7 @@ depend lang-support-common
 end package
 
 package lang-support-belarusian
+consolidation "l10n"
 cluster lang-support-belarusian
 classification "System/Localizations"
 summary "Language Support cluster - Belarusian"
@@ -41,6 +44,7 @@ depend lang-support-common
 end package
 
 package lang-support-bulgarian
+consolidation "l10n"
 cluster lang-support-bulgarian
 classification "System/Localizations"
 summary "Language Support cluster - Bulgarian"
@@ -56,6 +60,7 @@ depend lang-support-common
 end package
 
 package lang-support-catalan
+consolidation "l10n"
 cluster lang-support-catalan
 classification "System/Localizations"
 summary "Language Support cluster - Catalan"
@@ -72,6 +77,7 @@ depend lang-support-common
 end package
 
 package lang-support-czech
+consolidation "l10n"
 cluster lang-support-czech
 classification "System/Localizations"
 summary "Language Support cluster - Czech"
@@ -91,6 +97,7 @@ depend lang-support-common
 end package
 
 package lang-support-danish
+consolidation "l10n"
 cluster lang-support-danish
 classification "System/Localizations"
 summary "Language Support cluster - Danish"
@@ -107,6 +114,7 @@ depend lang-support-common
 end package
 
 package lang-support-german
+consolidation "l10n"
 cluster lang-support-german
 classification "System/Localizations"
 summary "Language Support cluster - German"
@@ -131,6 +139,7 @@ depend lang-support-common
 end package
 
 package lang-support-greek
+consolidation "l10n"
 cluster lang-support-greek
 classification "System/Localizations"
 summary "Language Support cluster - Greek"
@@ -147,6 +156,7 @@ depend lang-support-common
 end package
 
 package lang-support-english
+consolidation "l10n"
 cluster lang-support-english
 classification "System/Localizations"
 summary "Language Support cluster - English"
@@ -159,6 +169,7 @@ depend lang-support-common
 end package
 
 package lang-support-spanish
+consolidation "l10n"
 cluster lang-support-spanish
 classification "System/Localizations"
 summary "Language Support cluster - Spanish"
@@ -184,6 +195,7 @@ depend lang-support-common
 end package
 
 package lang-support-estonian
+consolidation "l10n"
 cluster lang-support-estonian
 classification "System/Localizations"
 summary "Language Support cluster - Estonian"
@@ -197,6 +209,7 @@ depend lang-support-common
 end package
 
 package lang-support-finnish
+consolidation "l10n"
 cluster lang-support-finnish
 classification "System/Localizations"
 summary "Language Support cluster - Finnish"
@@ -212,6 +225,7 @@ depend lang-support-common
 end package
 
 package lang-support-french
+consolidation "l10n"
 cluster lang-support-french
 classification "System/Localizations"
 summary "Language Support cluster - French"
@@ -236,6 +250,7 @@ depend lang-support-common
 end package
 
 package lang-support-hebrew
+consolidation "l10n"
 cluster lang-support-hebrew
 classification "System/Localizations"
 summary "Language Support cluster - Hebrew"
@@ -250,6 +265,7 @@ depend lang-support-common
 end package
 
 package lang-support-indic
+consolidation "l10n"
 cluster lang-support-indic
 classification "System/Localizations"
 summary "Language Support cluster - Indic"
@@ -263,6 +279,7 @@ depend lang-support-common
 end package
 
 package lang-support-croatian
+consolidation "l10n"
 cluster lang-support-croatian
 classification "System/Localizations"
 summary "Language Support cluster - Croatian"
@@ -277,6 +294,7 @@ depend lang-support-common
 end package
 
 package lang-support-hungarian
+consolidation "l10n"
 cluster lang-support-hungarian
 classification "System/Localizations"
 summary "Language Support cluster - Hungarian"
@@ -293,6 +311,7 @@ depend lang-support-common
 end package
 
 package lang-support-indonesian
+consolidation "l10n"
 cluster lang-support-indonesian
 classification "System/Localizations"
 summary "Language Support cluster - Indonesian"
@@ -304,6 +323,7 @@ depend lang-support-common
 end package
 
 package lang-support-icelandic
+consolidation "l10n"
 cluster lang-support-icelandic
 classification "System/Localizations"
 summary "Language Support cluster - Icelandic"
@@ -317,6 +337,7 @@ depend lang-support-common
 end package
 
 package lang-support-italian
+consolidation "l10n"
 cluster lang-support-italian
 classification "System/Localizations"
 summary "Language Support cluster - Italian"
@@ -340,6 +361,7 @@ depend lang-support-common
 end package
 
 package lang-support-japanese
+consolidation "l10n"
 cluster lang-support-japanese
 classification "System/Localizations"
 summary "Language Support cluster - Japanese"
@@ -369,6 +391,7 @@ depend lang-support-common
 end package
 
 package lang-support-georgian
+consolidation "l10n"
 cluster lang-support-georgian
 classification "System/Localizations"
 summary "Language Support cluster - Georgian"
@@ -380,6 +403,7 @@ depend lang-support-common
 end package
 
 package lang-support-kazakh
+consolidation "l10n"
 cluster lang-support-kazakh
 classification "System/Localizations"
 summary "Language Support cluster - Kazakh"
@@ -390,6 +414,7 @@ depend lang-support-common
 end package
 
 package lang-support-korean
+consolidation "l10n"
 cluster lang-support-korean
 classification "System/Localizations"
 summary "Language Support cluster - Korean"
@@ -419,6 +444,7 @@ depend lang-support-common
 end package
 
 package lang-support-lithuanian
+consolidation "l10n"
 cluster lang-support-lithuanian
 classification "System/Localizations"
 summary "Language Support cluster - Lithuanian"
@@ -433,6 +459,7 @@ depend lang-support-common
 end package
 
 package lang-support-latvian
+consolidation "l10n"
 cluster lang-support-latvian
 classification "System/Localizations"
 summary "Language Support cluster - Latvian"
@@ -446,6 +473,7 @@ depend lang-support-common
 end package
 
 package lang-support-macedonian
+consolidation "l10n"
 cluster lang-support-macedonian
 classification "System/Localizations"
 summary "Language Support cluster - Macedonian"
@@ -461,6 +489,7 @@ depend lang-support-common
 end package
 
 package lang-support-malay
+consolidation "l10n"
 cluster lang-support-malay
 classification "System/Localizations"
 summary "Language Support cluster - Malay"
@@ -472,6 +501,7 @@ depend lang-support-common
 end package
 
 package lang-support-maltese
+consolidation "l10n"
 cluster lang-support-maltese
 classification "System/Localizations"
 summary "Language Support cluster - Maltese"
@@ -483,6 +513,7 @@ depend lang-support-common
 end package
 
 package lang-support-norwegian-bokmal
+consolidation "l10n"
 cluster lang-support-norwegian-bokmal
 classification "System/Localizations"
 summary "Language Support cluster - Norwegian Bokmal"
@@ -497,6 +528,7 @@ depend lang-support-common
 end package
 
 package lang-support-dutch
+consolidation "l10n"
 cluster lang-support-dutch
 classification "System/Localizations"
 summary "Language Support cluster - Dutch"
@@ -514,6 +546,7 @@ depend lang-support-common
 end package
 
 package lang-support-norwegian-nynorsk
+consolidation "l10n"
 cluster lang-support-norwegian-nynorsk
 classification "System/Localizations"
 summary "Language Support cluster - Norwegian Nynorsk"
@@ -526,6 +559,7 @@ depend lang-support-common
 end package
 
 package lang-support-norwegian
+consolidation "l10n"
 cluster lang-support-norwegian
 classification "System/Localizations"
 summary "Language Support cluster - Norwegian"
@@ -539,6 +573,7 @@ depend lang-support-common
 end package
 
 package lang-support-polish
+consolidation "l10n"
 cluster lang-support-polish
 classification "System/Localizations"
 summary "Language Support cluster - Polish"
@@ -556,6 +591,7 @@ depend lang-support-common
 end package
 
 package lang-support-portuguese
+consolidation "l10n"
 cluster lang-support-portuguese
 classification "System/Localizations"
 summary "Language Support cluster - Portugese"
@@ -571,6 +607,7 @@ depend lang-support-common
 end package
 
 package lang-support-portuguese-BR
+consolidation "l10n"
 cluster lang-support-portuguese-BR
 classification "System/Localizations"
 summary "Language Support cluster - Portugese (Brazil)"
@@ -591,6 +628,7 @@ depend lang-support-common
 end package
 
 package lang-support-romanian
+consolidation "l10n"
 cluster lang-support-romanian
 classification "System/Localizations"
 summary "Language Support cluster - Romanian"
@@ -605,6 +643,7 @@ depend lang-support-common
 end package
 
 package lang-support-russian
+consolidation "l10n"
 cluster lang-support-russian
 classification "System/Localizations"
 summary "Language Support cluster - Russian"
@@ -625,6 +664,7 @@ depend lang-support-common
 end package
 
 package lang-support-serbo-croatian
+consolidation "l10n"
 cluster lang-support-serbo-croatian
 classification "System/Localizations"
 summary "Language Support cluster - Serbo-Croatian"
@@ -637,6 +677,7 @@ depend lang-support-common
 end package
 
 package lang-support-slovak
+consolidation "l10n"
 cluster lang-support-slovak
 classification "System/Localizations"
 summary "Language Support cluster - Slovak"
@@ -653,6 +694,7 @@ depend lang-support-common
 end package
 
 package lang-support-slovenian
+consolidation "l10n"
 cluster lang-support-slovenian
 classification "System/Localizations"
 summary "Language Support cluster - Slovenian"
@@ -669,6 +711,7 @@ depend lang-support-common
 end package
 
 package lang-support-albanian
+consolidation "l10n"
 cluster lang-support-albanian
 classification "System/Localizations"
 summary "Language Support cluster - Albanian"
@@ -681,6 +724,7 @@ depend lang-support-common
 end package
 
 package lang-support-serbian
+consolidation "l10n"
 cluster lang-support-serbian
 classification "System/Localizations"
 summary "Language Support cluster - Serbian"
@@ -694,6 +738,7 @@ depend lang-support-common
 end package
 
 package lang-support-swedish
+consolidation "l10n"
 cluster lang-support-swedish
 classification "System/Localizations"
 summary "Language Support cluster - Swedish"
@@ -716,6 +761,7 @@ depend lang-support-common
 end package
 
 package lang-support-thai
+consolidation "l10n"
 cluster lang-support-thai
 classification "System/Localizations"
 summary "Language Support cluster - Thai"
@@ -730,6 +776,7 @@ depend lang-support-common
 end package
 
 package lang-support-turkish
+consolidation "l10n"
 cluster lang-support-turkish
 classification "System/Localizations"
 summary "Language Support cluster - Turkish"
@@ -745,6 +792,7 @@ depend lang-support-common
 end package
 
 package lang-support-ukrainian
+consolidation "l10n"
 cluster lang-support-ukrainian
 classification "System/Localizations"
 summary "Language Support cluster - Ukrainian"
@@ -757,6 +805,7 @@ depend lang-support-common
 end package
 
 package lang-support-vietnamese
+consolidation "l10n"
 cluster lang-support-vietnamese
 classification "System/Localizations"
 summary "Language Support cluster - Vietnamese"
@@ -770,6 +819,7 @@ depend lang-support-common
 end package
 
 package lang-support-chinese-CN
+consolidation "l10n"
 cluster lang-support-chinese-CN
 classification "System/Localizations"
 summary "Language Support cluster - Chinese (Simplified)"
@@ -800,6 +850,7 @@ depend lang-support-common
 end package
 
 package lang-support-chinese-HK
+consolidation "l10n"
 cluster lang-support-chinese-HK
 classification "System/Localizations"
 summary "Language Support cluster - Chinese (Traditional; Hong Kong)"
@@ -827,6 +878,7 @@ depend lang-support-common
 end package
 
 package lang-support-chinese-TW
+consolidation "l10n"
 cluster lang-support-chinese-TW
 classification "System/Localizations"
 summary "Language Support cluster - Chinese (Traditional; Taiwan)"
@@ -856,6 +908,7 @@ depend lang-support-common
 end package
 
 package lang-support-all
+consolidation "l10n"
 cluster lang-support-all
 classification "System/Localizations"
 summary "Language Support cluster - all"
@@ -920,6 +973,7 @@ end package
 # on the package with the new name.
 #
 package lang-support-slovakian
+consolidation "l10n"
 cluster lang-support-slovakian
 depend lang-support-slovak
 end package

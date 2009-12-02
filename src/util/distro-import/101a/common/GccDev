@@ -1,4 +1,5 @@
 package gcc-dev
+consolidation "sfw"
 classification "Development/Suites"
 summary "GNU Tools Development cluster"
 depend SUNWaconf

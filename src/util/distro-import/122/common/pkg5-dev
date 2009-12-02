@@ -1,4 +1,5 @@
 package developer/opensolaris/pkg5
+consolidation "ips"
 classification "Development/Distribution Tools"
 summary "Dependencies required to build the pkg(5) project."
 depend SUNWgnome-common-devel

@@ -707,6 +707,7 @@ $(sparc_ONLY)include sparc/SUNWstc
 $(sparc_ONLY)include sparc/SUNWus
 $(sparc_ONLY)include sparc/SUNWust
 package slim_install
+consolidation "install"
 cluster slim_install
 description "slim install cluster"
 version 0.1
@@ -1420,6 +1421,7 @@ depend SUNWzone
 $(i386_ONLY)depend SUNWzyd
 end package
 package babel_install
+consolidation "install"
 cluster babel_install
 description "babel install cluster"
 version 0.1

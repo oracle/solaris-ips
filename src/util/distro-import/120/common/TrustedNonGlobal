@@ -1,4 +1,5 @@
 package system/trusted/trusted-nonglobal
+consolidation "osnet"
 classification "System/Trusted"
 summary "Trusted Extensions labeled zone"
 depend FSWxorg-fonts-core

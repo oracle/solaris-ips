@@ -1,4 +1,5 @@
 package amp
+consolidation "sfw"
 classification "Web Services/Application and Web Servers"
 summary "Cluster containing an AMP (Apache, MySQL, PHP) deployment kit"
 depend SUNWapch22
