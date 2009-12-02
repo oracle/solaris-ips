@@ -641,6 +641,8 @@ class PackageManager:
 
                         dic_confirm = \
                             {
+                                "on_confirmationdialog_delete_event": \
+                                    self.__on_confirmation_dialog_delete_event,
                                 "on_ok_conf_clicked": \
                                     self.__on_confirm_proceed_button_clicked,
                                 "on_cancel_conf_clicked": \
@@ -723,6 +725,10 @@ class PackageManager:
                                 return sb_label
                 return None
                 
+        def __on_confirmation_dialog_delete_event(self, widget, event):
+                self.__on_confirm_cancel_button_clicked(None)
+                return True
+
         def __on_confirm_cancel_button_clicked(self, widget):
                 self.w_exportconfirm_dialog.hide()
 
