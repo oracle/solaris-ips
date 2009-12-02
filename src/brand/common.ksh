@@ -376,3 +376,12 @@ get_pub_secinfo() {
 	    nawk -F': ' '/SSL Cert/ {print $2; exit 0}')
 	print $key $cert
 }
+
+#
+# Handle pkg exit code.  Exit 0 means Command succeeded, exit 4 means
+# No changes were made - nothing to do.  Any other exit code is an error.
+#
+pkg_err_check() {
+	res=$?
+	(( $res != 0 && $res != 4 )) && fail_fatal "$1"
+}

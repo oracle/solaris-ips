@@ -53,6 +53,7 @@ f_gz_entire=$(gettext "Could not find 'entire' incorporation for global zone.")
 f_zone_entire=$(gettext "Could not find 'entire' incorporation for non-global zone.")
 f_fmri_compare=$(gettext "Failed to compare 'entire' FMRIs")
 f_reset_pub=$(gettext "Failed to reset publisher to %s %s")
+f_del_pub=$(gettext "Failed to unset publisher '%s' for zone.")
 f_no_pref_publisher=$(gettext "Unable to get preferred publisher information for zone '%s'.")
 f_pkg_list=$(gettext "Unable to get zone package list.")
 f_get_secinfo=$(gettext "Failed to get key/cert information for publisher %s")
@@ -430,10 +431,12 @@ if [[ $? -ne 0 ]]; then
 	# Be certain that the global zone preferred publisher exists in
 	# the non-global zone.  If it doesn't, all of these comparisons
 	# are not valid.
+	del_ngz_pub=0
 	if [[ -n "$zone_publisher" && "$zone_publisher" != "$gz_publisher" ]];
 	then
 		zone_publisher_origins=""
 		zone_publisher_mirrors=""
+		del_ngz_pub=1
 	fi
 
 	# Add any origins not found in zone configuration.
@@ -481,6 +484,13 @@ if [[ $? -ne 0 ]]; then
 		fatal "$f_reset_pub" $gz_publisher \
 		    "$gz_publisher_origins $gz_publisher_mirrors"
 	fi
+
+	# If the original preferred non-global zone publisher has the 
+	# same URI as the global zone publisher we just stuck into the zone,
+	# then we now need to delete the old ngz publisher.
+	(( $del_ngz_pub == 1 )) && ( $PKG unset-publisher $zone_publisher || \
+	    fatal "$f_del_pub" $zone_publisher )
+
 	zone_publisher=$gz_publisher
 	zone_publisher_origins=$gz_publisher_origins
 	zone_publisher_mirrors=$gz_publisher_mirrors
@@ -501,10 +511,7 @@ printf "$m_updating\n"
 # some updates-- particularly on a respin of a package (say, where only
 # the datestamps change).
 #
-$PKG install $gz_entire_fmri
-if [ $? -ne 0 ]; then
-	fatal "$f_update"
-fi
+$PKG install $gz_entire_fmri || pkg_err_check "$f_update"
 
 printf "$m_updating2\n"
 #
@@ -521,10 +528,7 @@ if [[ $? -ne 0 ]]; then
 	fatal "$f_pkg_list"
 fi
 
-$PKG install $zone_pkgs
-if [ $? -ne 0 ]; then
-	fatal "$f_update"
-fi
+$PKG install $zone_pkgs || pkg_err_check "$f_update"
 
 printf "$m_sync_done\n" $gz_entire_fmri
 printf "$m_complete\n"

@@ -463,9 +463,9 @@ printf "$m_core\n"
 # work.  This can all hopefully go away once "primordial" actions
 # arrive.
 #
-$PKG install -q --no-refresh --no-index $entire_fmri || fail_fatal "$f_pkg"
-$PKG install -q --no-refresh --no-index SUNWcsd || fail_fatal "$f_pkg"
-$PKG install --no-refresh --no-index SUNWcs || fail_fatal "$f_pkg"
+$PKG install -q --no-refresh --no-index $entire_fmri || pkg_err_check "$f_pkg"
+$PKG install --no-refresh --no-index SUNWcsd || pkg_err_check "$f_pkg"
+$PKG install --no-refresh --no-index SUNWcs || pkg_err_check "$f_pkg"
 
 printf "$m_more\n"
 pkglist=""
@@ -525,7 +525,7 @@ pkglist="$pkglist $extra_packages"
 # Do the install; we just refreshed on image-create, so skip that.  We
 # also skip indexing here, as that is also what the LiveCD does.
 #
-$PKG install --no-index --no-refresh $pkglist || fail_fatal "$f_pkg"
+$PKG install --no-index --no-refresh $pkglist || pkg_err_check "$f_pkg"
 
 printf "\n$m_mannote\n"
 
