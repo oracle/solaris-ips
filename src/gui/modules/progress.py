@@ -84,8 +84,6 @@ class GuiProgressTracker(NullProgressTracker):
                 function'''
                 if self.prev_pkg != self.eval_cur_fmri:
                         self.prev_pkg = self.eval_cur_fmri
-                        self.update_details_text("%s\n" % self.eval_cur_fmri,
-                            "level1")
                         text = _("Evaluating: %s") % self.eval_cur_fmri.get_name()
                         self.update_label_text(text)
 

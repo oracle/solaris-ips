@@ -5502,7 +5502,7 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                 <child>
                   <widget class="GtkImage" id="confirm_image">
                     <property name="visible">True</property>
-                    <property name="stock">gtk-dialog-warning</property>
+                    <property name="stock">gtk-dialog-info</property>
                     <property name="icon-size">5</property>
                   </widget>
                   <packing>
@@ -5512,6 +5512,7 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                 </child>
                 <child>
                   <widget class="GtkLabel" id="confirm_label">
+                    <property name="width_request">350</property>
                     <property name="visible">True</property>
                     <property name="xalign">0</property>
                     <property name="label" translatable="yes">&lt;b&gt;Review the packages to be installed or udpated&lt;/b&gt;</property>
@@ -5564,7 +5565,7 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                 <child>
                   <widget class="GtkLabel" id="install_label">
                     <property name="visible">True</property>
-                    <property name="label" translatable="yes">&lt;b&gt;Packages to be _installed:&lt;/b&gt;</property>
+                    <property name="label" translatable="yes">_Install Details</property>
                     <property name="use_markup">True</property>
                     <property name="use_underline">True</property>
                     <property name="mnemonic_widget">install_expander</property>
@@ -5616,7 +5617,7 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                 <child>
                   <widget class="GtkLabel" id="update_label">
                     <property name="visible">True</property>
-                    <property name="label" translatable="yes">&lt;b&gt;Packages to be _updated:&lt;/b&gt;</property>
+                    <property name="label" translatable="yes">_Update Details</property>
                     <property name="use_markup">True</property>
                     <property name="use_underline">True</property>
                     <property name="mnemonic_widget">update_expander</property>
@@ -5668,7 +5669,7 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                 <child>
                   <widget class="GtkLabel" id="remove_label">
                     <property name="visible">True</property>
-                    <property name="label" translatable="yes">&lt;b&gt;Packages to be _removed:&lt;/b&gt;</property>
+                    <property name="label" translatable="yes">_Remove Details</property>
                     <property name="use_markup">True</property>
                     <property name="use_underline">True</property>
                     <property name="mnemonic_widget">remove_expander</property>

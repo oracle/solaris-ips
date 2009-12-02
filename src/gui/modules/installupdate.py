@@ -118,9 +118,6 @@ class InstallUpdate(progress.GuiProgressTracker):
                     w_tree_confirmdialog.get_widget("confirm_ok_button")
                 self.w_confirm_label =  \
                     w_tree_confirmdialog.get_widget("confirm_label")
-                self.w_remove_label = w_tree_confirmdialog.get_widget("remove_label")
-                self.w_update_label = w_tree_confirmdialog.get_widget("update_label")
-                self.w_install_label = w_tree_confirmdialog.get_widget("install_label")
 
                 self.w_confirm_dialog.set_icon(self.icon_confirm_dialog)
                 gui_misc.set_modal_and_transient(self.w_confirm_dialog,
@@ -220,9 +217,6 @@ class InstallUpdate(progress.GuiProgressTracker):
                                     "Review the package to be removed",
                 		    "Review the packages to be removed", pkgs_no)
                                 self.w_confirm_label.set_markup("<b>"+remove_text+"</b>")
-                                rm_txt = ngettext("Package to be removed",
-                		    "Packages to be removed", pkgs_no)
-                                self.w_remove_label.set_markup("<b>"+rm_txt+"</b>")
 
                                 self.w_install_expander.hide()
                                 self.w_update_expander.hide()
@@ -270,19 +264,21 @@ class InstallUpdate(progress.GuiProgressTracker):
                                 operation_txt = _("Install/Update Confirmation")
                                 install_text = ngettext(
                                     "Review the package to be Installed/Updated",
-                		    "Review the packages to be Installed/Updated",
+                                    "Review the packages to be Installed/Updated",
                                      len(self.confirmation_list))
+
                                 if len(to_install) == 0:
                                         operation_txt = _("Update Confirmation")
                                         install_text = ngettext(
                                             "Review the package to be Updated",
-                        		    "Review the packages to be Updated",
+                                            "Review the packages to be Updated",
                                             len(to_update))
+
                                 if len(to_update) == 0:
                                         operation_txt = _("Install Confirmation")
                                         install_text = ngettext(
                                             "Review the package to be Installed",
-                        		    "Review the packages to be Installed",
+                                            "Review the packages to be Installed",
                                             len(to_install))
 
                                 self.w_confirm_dialog.set_title(operation_txt)
@@ -296,10 +292,6 @@ class InstallUpdate(progress.GuiProgressTracker):
                                             gtk.SORT_ASCENDING)
                                         self.w_install_treeview.set_model(to_install)
                                         self.w_install_expander.set_expanded(True)
-                                        inst_txt = ngettext("Package to be installed",
-                        		    "Packages to be installed", len(to_install))
-                                        self.w_install_label.set_markup(
-                                            "<b>"+inst_txt+"</b>")
                                 else:
                                         self.w_install_expander.hide()
                                 if len(to_update) > 0:
@@ -310,10 +302,6 @@ class InstallUpdate(progress.GuiProgressTracker):
                                             gtk.SORT_ASCENDING)
                                         self.w_update_treeview.set_model(to_update)
                                         self.w_update_expander.set_expanded(True)
-                                        update_label = ngettext("Package to be updated",
-                        		    "Packages to be updated", len(to_install))
-                                        self.w_update_label.set_markup(
-                                            "<b>"+update_label+"</b>")
                                 else:
                                         self.w_update_expander.hide()
                                 self.w_confirm_ok_button.grab_focus()
@@ -615,8 +603,11 @@ class InstallUpdate(progress.GuiProgressTracker):
                 gobject.idle_add(self.__operations_done)
 
         def __proceed_with_stages_thread(self):
-                self.__start_substage(
-                    _("Gathering package information, please wait..."))
+                self.__start_substage(None)
+                substage_text = _("Gathering package information, please wait...")
+                self.update_label_text(substage_text)
+                self.update_details_text(substage_text + "\n", "level1")
+
                 stuff_todo = self.__plan_stage()
                 if stuff_todo:
 
@@ -674,10 +665,6 @@ class InstallUpdate(progress.GuiProgressTracker):
                         to_update.set_sort_column_id(0, gtk.SORT_ASCENDING)
                         self.w_update_treeview.set_model(to_update)
                         self.w_update_expander.set_expanded(True)
-                        update_label = ngettext("Package to be updated",
-        		    "Packages to be updated", len(to_install))
-                        self.w_update_label.set_markup(
-                            "<b>"+update_label+"</b>")
                 else:
                         self.w_update_expander.hide()
 
@@ -688,10 +675,6 @@ class InstallUpdate(progress.GuiProgressTracker):
                         to_install.set_sort_column_id(0, gtk.SORT_ASCENDING)
                         self.w_install_treeview.set_model(to_install)
                         self.w_install_expander.set_expanded(True)
-                        inst_txt = ngettext("Package to be installed",
-        		    "Packages to be installed", len(to_install))
-                        self.w_install_label.set_markup(
-                            "<b>"+inst_txt+"</b>")
                 else:
                         self.w_install_expander.hide()
 
@@ -702,10 +685,6 @@ class InstallUpdate(progress.GuiProgressTracker):
                         to_remove.set_sort_column_id(0, gtk.SORT_ASCENDING)
                         self.w_remove_treeview.set_model(to_remove)
                         self.w_remove_expander.set_expanded(True)
-                        rm_txt = ngettext("Package to be removed",
-        		    "Packages to be removed", len(to_remove))
-                        self.w_remove_label.set_markup(
-                            "<b>"+rm_txt+"</b>")
                 else:
                         self.w_remove_expander.hide()
 
