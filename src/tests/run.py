@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import os
@@ -233,13 +233,13 @@ if __name__ == "__main__":
         suites.append(api_suite)
         if ostype == "posix":
                 suites.append(cli_suite)
-                gui_suite = find_tests("gui", onlyval, startattest)
                 import gui.testutils
                 if not gui.testutils.check_for_gtk():
                         print "GTK not present, GUI tests disabled."
                 elif not gui.testutils.check_if_a11y_enabled():
                         print "Accessibility not enabled, GUI tests disabled."
                 else:
+                        gui_suite = find_tests("gui", onlyval, startattest)
                         suites.append(gui_suite)
 
         # Initialize the baseline results and load them
