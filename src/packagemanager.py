@@ -3276,6 +3276,22 @@ class PackageManager:
                                 Thread(target = self.cache_o.remove_datamodel,
                                     args = [pub[1]]).start()
 
+        def __add_install_update_pkgs_for_publisher(self, pub_name,
+            install_update, confirmation_list):
+                pkgs = self.selected_pkgs.get(pub_name)
+                if pkgs:
+                        for pkg_stem in pkgs:
+                                status = pkgs.get(pkg_stem)[0]
+                                if status == enumerations.NOT_INSTALLED or \
+                                    status == enumerations.UPDATABLE:
+                                        install_update.append(pkg_stem)
+                                        if self.show_install:
+                                                desc = pkgs.get(pkg_stem)[1]
+                                                pkg_name = pkgs.get(pkg_stem)[2]
+                                                confirmation_list.append(
+                                                    [pkg_name, pub_name,
+                                                    desc, status])
+ 
         def __on_install_update(self, widget):
                 self.api_o.reset()
                 install_update = []
@@ -3285,19 +3301,19 @@ class PackageManager:
 
                 if self.selected > 0:
                         visible_publisher = self.__get_selected_publisher()
-                        pkgs = self.selected_pkgs.get(visible_publisher)
-                        if pkgs:
-                                for pkg_stem in pkgs:
-                                        status = pkgs.get(pkg_stem)[0]
-                                        if status == enumerations.NOT_INSTALLED or \
-                                            status == enumerations.UPDATABLE:
-                                                install_update.append(pkg_stem)
-                                                if self.show_install:
-                                                        desc = pkgs.get(pkg_stem)[1]
-                                                        pkg_name = pkgs.get(pkg_stem)[2]
-                                                        confirmation_list.append(
-                                                            [pkg_name, visible_publisher,
-                                                            desc, status])
+                        if visible_publisher == self.publisher_options[PUBLISHER_ALL]:
+                                for repo in self.repositories_list:
+                                        pub_name = repo[enumerations.REPOSITORY_NAME]
+                                        if pub_name == \
+                                            self.publisher_options[PUBLISHER_ALL]:
+                                                break
+                                        self.__add_install_update_pkgs_for_publisher(
+                                            pub_name, install_update, confirmation_list)
+                        else:
+                                self.__add_install_update_pkgs_for_publisher(
+                                    visible_publisher,
+                                    install_update, confirmation_list)
+
                 if self.img_timestamp != self.cache_o.get_index_timestamp():
                         self.img_timestamp = None
                         self.__remove_cache()
@@ -3333,6 +3349,22 @@ class PackageManager:
         def __on_help_help(widget):
                 gui_misc.display_help()
 
+        def __add_remove_pkgs_for_publisher(self, pub_name,
+            remove_list, confirmation_list):
+                pkgs = self.selected_pkgs.get(pub_name)
+                if pkgs:
+                        for pkg_stem in pkgs:
+                                status = pkgs.get(pkg_stem)[0]
+                                if status == enumerations.INSTALLED or \
+                                    status == enumerations.UPDATABLE:
+                                        remove_list.append(pkg_stem)
+                                        if self.show_remove:
+                                                desc = pkgs.get(pkg_stem)[1]
+                                                pkg_name = pkgs.get(pkg_stem)[2]
+                                                confirmation_list.append(
+                                                    [pkg_name, pub_name,
+                                                    desc, status])
+
         def __on_remove(self, widget):
                 self.api_o.reset()
                 remove_list = []
@@ -3341,19 +3373,18 @@ class PackageManager:
                         confirmation_list = []
                 if self.selected > 0:
                         visible_publisher = self.__get_selected_publisher()
-                        pkgs = self.selected_pkgs.get(visible_publisher)
-                        if pkgs:
-                                for pkg_stem in pkgs:
-                                        status = pkgs.get(pkg_stem)[0]
-                                        if status == enumerations.INSTALLED or \
-                                            status == enumerations.UPDATABLE:
-                                                remove_list.append(pkg_stem)
-                                                if self.show_remove:
-                                                        desc = pkgs.get(pkg_stem)[1]
-                                                        pkg_name = pkgs.get(pkg_stem)[2]
-                                                        confirmation_list.append(
-                                                            [pkg_name, visible_publisher,
-                                                            desc, status])
+                        if visible_publisher == self.publisher_options[PUBLISHER_ALL]:
+                                for repo in self.repositories_list:
+                                        pub_name = repo[enumerations.REPOSITORY_NAME]
+                                        if pub_name == \
+                                            self.publisher_options[PUBLISHER_ALL]:
+                                                break
+                                        self.__add_remove_pkgs_for_publisher(
+                                            pub_name, remove_list, confirmation_list)
+                        else:
+                                self.__add_remove_pkgs_for_publisher(
+                                    visible_publisher,
+                                    remove_list, confirmation_list)
 
                 if self.img_timestamp != self.cache_o.get_index_timestamp():
                         self.img_timestamp = None
@@ -4758,16 +4789,29 @@ class PackageManager:
                     "usr/share/package-manager/"),
                     icon_name)
 
+        def __count_selected_packages(self):
+                self.selected = 0
+                visible_publisher = self.__get_selected_publisher()
+                if visible_publisher == self.publisher_options[PUBLISHER_ALL]:
+                        for repo in self.repositories_list:
+                                pub_name = repo[enumerations.REPOSITORY_NAME]
+                                if pub_name == \
+                                    self.publisher_options[PUBLISHER_ALL]:
+                                        break
+                                pkgs = self.selected_pkgs.get(pub_name)
+                                if pkgs:
+                                        self.selected += len(pkgs)
+                else:
+                        pkgs = self.selected_pkgs.get(visible_publisher)
+                        if pkgs:
+                                self.selected = len(pkgs)
+ 
         def update_statusbar(self):
                 '''Function which updates statusbar'''
                 self.__remove_statusbar_message()
                 search_text = self.w_searchentry.get_text()
 
-                self.selected = 0
-                visible_publisher = self.__get_selected_publisher()
-                pkgs = self.selected_pkgs.get(visible_publisher)
-                if pkgs:
-                        self.selected = len(pkgs)
+                self.__count_selected_packages()
                 if not self.in_search_mode:
                         if self.application_list == None:
                                 return
