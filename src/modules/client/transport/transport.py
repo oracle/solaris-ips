@@ -677,19 +677,17 @@ class Transport(object):
                             mfst, (header, fmri))
 
                 for mxfr in mx_pub.values():
-                        while mxfr:
-
-                                mfstlist = []
+                        namelist = [k for k in mxfr]
+                        while namelist:
                                 # XXX Variable chunk size doesn't make
                                 # sense until the client supports multiple
                                 # origins.  This is fixed at 100 until then.
                                 chunksz = 100
-
-                                for i, k in enumerate(mxfr):
-                                        if i >= chunksz:
-                                                break
-                                        # List is (mfstname, header) tuple
-                                        mfstlist.append((k, mxfr[k][0]))
+                                mfstlist = [
+                                    (n, mxfr[n][0])
+                                    for n in namelist[:chunksz]
+                                ]
+                                del namelist[:chunksz]
 
                                 self._prefetch_manifests_list(mxfr, mfstlist,
                                     excludes)
