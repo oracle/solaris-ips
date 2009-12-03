@@ -33,7 +33,13 @@ import urlparse
 EmptyI = tuple()
 
 class ApiException(Exception):
-        pass
+
+        def __unicode__(self):
+                # To workaround python issues 6108 and 2517, this provides a
+                # a standard wrapper for this class' exceptions so that they
+                # have a chance of being stringified correctly.
+                return str(self)
+
 
 class ImageNotFoundException(ApiException):
         """Used when an image was not found"""
@@ -728,7 +734,7 @@ class TransportError(ApiException):
         defined here that raise NotImplementedError."""
 
         def __str__(self):
-                raise NotImplementedError
+                raise NotImplementedError()
 
 
 class RetrievalError(ApiException):
