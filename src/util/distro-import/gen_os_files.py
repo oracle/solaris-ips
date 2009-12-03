@@ -214,7 +214,9 @@ class GenOSFiles:
                 except IndexError:
                     pass
 
-            elif line.startswith("classification"):
+            elif line.startswith("classification") or \
+                line.startswith("$(i386_ONLY)classification") or \
+                line.startswith("$(sparc_ONLY)classification"):
                 classification_found = True
                 tokens = line.split(None, 1)[1].strip('"').split("/")
                 try:
