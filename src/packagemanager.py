@@ -37,6 +37,10 @@ MIN_APP_WIDTH = 750                       # Minimum application width
 MIN_APP_HEIGHT = 500                      # Minimum application height
 SECTION_ID_OFFSET = 10000                 # Offset to allow Sections to be identified 
                                           # in category tree
+RECENT_SEARCH_ID_OFFSET = 10999           # Offset to allow Recent Search Sections
+                                          # to be identified in category tree
+RECENT_SEARCH_ID = RECENT_SEARCH_ID_OFFSET + 1 #  Recent Search Section ID
+CATEGORY_TOGGLE_ICON_WIDTH = 16           # Width of category toggle icon
 PACKAGEMANAGER_PREFERENCES = "/apps/packagemanager/preferences"
 MAX_SEARCH_COMPLETION_PREFERENCES = \
         "/apps/packagemanager/preferences/max_search_completion"
@@ -79,6 +83,8 @@ ACTION_INTERNAL = 'internal'   # Internal Action value: pm-action=internal
 INTERNAL_URI = 'uri'           # Internal field: uri to navigate to in StartPage
                                # without protocol scheme specified
 INTERNAL_SEARCH = 'search'     # Internal field: search support page action
+INTERNAL_SEARCH_VIEW_RESULTS = "view_recent_search"
+                               # Internal field: view recent search results
 INTERNAL_SEARCH_VIEW_PUB ="view_pub_packages" # Internal field: view publishers packages
 INTERNAL_SEARCH_VIEW_ALL = "view_all_packages_filter" # Internal field: change to View 
                                                       # All Packages
@@ -162,7 +168,8 @@ DISPLAY_LINK,
 CLICK_LINK,
 ) = range(2)
 
-REGEX_STRIP_MARKUP = re.compile("<.{0,1}\w>")
+REGEX_STRIP_MARKUP = re.compile(r'<.*?>')
+REGEX_STRIP_RESULT = re.compile(r'\(\d+\) ?')
 
 class PackageManager:
         def __init__(self):
@@ -253,7 +260,12 @@ class PackageManager:
                         self.gconf_not_show_repos = ""
                 self.set_section = 0
                 self.in_search_mode = False
-
+                self.in_recent_search = False
+                self.recent_searches = {}
+                self.recent_searches_cat_iter = None
+                self.adding_recent_search = False
+                self.recent_searches_list = []
+                
                 global_settings.client_name = PKG_CLIENT_NAME
 
                 # This call only affects sockets created by Python.  The
@@ -1167,8 +1179,6 @@ class PackageManager:
 
                 # Browse a Publisher
                 if search_action and search_action.find(INTERNAL_SEARCH_VIEW_PUB) > -1:
-                        if self.in_search_mode:
-                                return
                         pub = re.findall(r'<b>(.*)<\/b>', search_action)[0]
                         if handle_what == DISPLAY_LINK:
                                 return _("View packages in %(s1)s%(pub)s%(e1)s") % \
@@ -1201,6 +1211,28 @@ class PackageManager:
                             _("Loading %(s1)sSearch Help%(e1)s ...") %
                             {"s1": s1, "e1": e1})
                         gui_misc.display_help()
+                        return
+                # View Recent Search Results
+                if search_action and \
+                        search_action.find(INTERNAL_SEARCH_VIEW_RESULTS) > -1:
+                        recent_search = \
+                                re.findall(r'<span>(.*)<\/span>', search_action)[0]
+                        if handle_what == DISPLAY_LINK:
+                                return _("View results for %s") % recent_search
+                        category_tree = self.w_categories_treeview.get_model()
+                        if category_tree == None:
+                                return
+                        rs_iter = category_tree.iter_children(
+                            self.recent_searches_cat_iter)
+                        while rs_iter:
+                                rs_value = category_tree.get_value(rs_iter,
+                                    enumerations.CATEGORY_NAME)
+                                if rs_value == recent_search:
+                                        path = category_tree.get_path(rs_iter)
+                                        self.w_categories_treeview.set_cursor(path)
+                                        self.w_categories_treeview.scroll_to_cell(path)
+                                        return
+                                rs_iter = category_tree.iter_next(rs_iter)
                         return
 
                 # Internal Browse
@@ -1369,7 +1401,7 @@ class PackageManager:
                 column.connect_after('clicked',
                     self.__application_treeview_column_sorted, None)
                 self.w_application_treeview.append_column(column)
-                if self.is_all_publishers:
+                if self.is_all_publishers or self.in_recent_search:
                         repository_renderer = gtk.CellRendererText()
                         column = gtk.TreeViewColumn(_('Publisher'),
                             repository_renderer,
@@ -2025,6 +2057,39 @@ class PackageManager:
                 self.__link_load_page(header + body + footer)
                 self.w_main_view_notebook.set_current_page(NOTEBOOK_START_PAGE)
                     
+        def __setup_recent_search_page(self):
+                header = INFORMATION_PAGE_HEADER
+                header += _("alt='[Information]' title='Information' ALIGN='bottom'></TD>"
+                    "<TD><h3><b>Recent Searches</b></h3><TD></TD></TR>"
+                    "<TR><TD></TD><TD> Access stored results from recent searches "
+                    "in this session.</TD></TR>"
+                    )
+                body = "<TR><TD></TD><TD>"
+                search_list = ""
+                for search in self.recent_searches_list:
+                        search_list += "<li style='padding-left:7px'>%s: <a href=" % \
+                                search
+                        search_list += "'pm?pm-action=internal&search=%s" % \
+                                INTERNAL_SEARCH_VIEW_RESULTS
+                        search_list += " <span>%s</span>'>" % search
+                        search_list += _("results")
+                        search_list += "</a></li>"
+
+                if len(self.recent_searches_list) > 0:
+                        body += "<TR><TD></TD><TD></TD></TR><TR><TD></TD><TD>"
+                        body += ngettext(
+                            "Click on the search results link below to view the stored "
+                            "results:", "Click on one of the search results links below "
+                            "to view the stored results:",
+                            len(self.recent_searches_list)
+                            )
+                        body += "</TD></TR><TR><TD></TD><TD>"
+                        body += search_list
+                body += "<TD></TD></TR>"
+                footer = "</table>"
+                self.__link_load_page(header + body + footer)
+                self.w_main_view_notebook.set_current_page(NOTEBOOK_START_PAGE)
+                    
         def __setup_search_zero_filtered_results_page(self, text, num):
                 header = INFORMATION_PAGE_HEADER
                 active_filter = self.w_filter_combobox.get_active()
@@ -2116,16 +2181,18 @@ class PackageManager:
                 self.w_main_view_notebook.set_current_page(NOTEBOOK_START_PAGE)
                 self.__set_focus_on_searchentry()
 
-        def __clear_before_search(self, show_list=True):
-                self.in_setup = True
+        def __clear_before_search(self, show_list=True, in_setup=True, unselect_cat=True):
+                self.in_setup = in_setup
                 application_list = self.__get_new_application_liststore()
                 self.__set_empty_details_panel()
                 self.__set_main_view_package_list(show_list)
                 self.__init_tree_views(application_list, None, None)
-                self.__unselect_category()
+                if unselect_cat:
+                        self.__unselect_category()
 
         def __restore_setup_for_browse(self):
                 self.in_search_mode = False
+                self.in_recent_search = False
                 self.is_all_publishers = False
                 self.w_infosearch_frame.hide()
                 self.set_busy_cursor()
@@ -2163,15 +2230,14 @@ class PackageManager:
 
                 self.__set_main_view_package_list()
 
+        def __save_application_list(self, app_list):
+                self.saved_application_list = app_list
+                                
         def __save_setup_before_search(self, single_search=False):
                 #Do not save search data models
                 if self.in_search_mode:
                         return
-                selected_section, selected_category = \
-                        self.__get_active_section_and_category()
-                self.pylintstub = selected_category
-                self.saved_section_active = selected_section
-                self.saved_application_list = self.application_list
+                self.__save_application_list(self.application_list)
                 self.saved_application_list_sort = \
                         self.application_list_sort
                 self.saved_application_list_filter = \
@@ -2185,6 +2251,7 @@ class PackageManager:
                         self.saved_repository_combobox_active = pub_index
 
         def __do_search(self, widget=None, ev=None):
+                self.in_recent_search = False
                 self.__reset_search_start()
                 if self.search_text_style == enumerations.SEARCH_STYLE_PROMPT or \
                         self.w_searchentry.get_text_length() == 0:
@@ -2233,7 +2300,7 @@ class PackageManager:
         def __unselect_category(self):
                 selection, path = self.__get_selection_and_category_path()
                 if selection:
-                        self.category_active_paths[self.last_visible_publisher] = path
+                        self.__save_active_category(path)
                         selection.unselect_all()
 
         def __process_after_search_failure(self):
@@ -2367,6 +2434,8 @@ class PackageManager:
                         return
                 self.in_setup = True
                 application_list = self.__get_full_list_from_search(result)
+                gobject.idle_add(self.__add_recent_search, text, pub_prefix,
+                    application_list)
                 if self.search_start > 0:
                         self.search_time_sec = int(time.time() - self.search_start)
                         if debug:
@@ -2836,6 +2905,18 @@ class PackageManager:
 
         def __on_category_row_activated(self, view, path, col, user):
                 '''This function is for handling category double click activations'''
+                # Activated sub node in Recent Searches category
+                if self.in_recent_search:
+                        return
+                # User activated Recent Searches Top Level category
+                model = self.w_categories_treeview.get_model()
+                if model != None and self.recent_searches_cat_iter:
+                        rs_path = model.get_path(self.recent_searches_cat_iter)
+                        selection, curr_path = self.__get_selection_and_category_path()
+                        self.pylintstub = selection
+                        if curr_path == rs_path:
+                                self.__setup_recent_search_page()
+                                return
                 if self.category_list == None:
                         self.__set_main_view_package_list()
                         return
@@ -2862,15 +2943,15 @@ class PackageManager:
 
         def __on_categoriestreeview_row_collapsed(self, treeview, itr, path, data):
                 self.w_categories_treeview.set_cursor(path)
-                self.category_expanded_paths[(self.last_visible_publisher, path)] = 0
-                self.category_active_paths[self.last_visible_publisher] = path
+                self.__save_expanded_path(path, False)
+                self.__save_active_category(path)
                 
         def __on_categoriestreeview_row_expanded(self, treeview, itr, path, data):
                 if self.in_setup and not self.first_run:
                         return
                 self.w_categories_treeview.set_cursor(path)
-                self.category_expanded_paths[(self.last_visible_publisher, path)] = 1
-                self.category_active_paths[self.last_visible_publisher] = path
+                self.__save_expanded_path(path, True)
+                self.__save_active_category(path)
 
         def __on_categoriestreeview_button_press_event(self, treeview, event, data):
                 if event.type != gtk.gdk.BUTTON_PRESS:
@@ -2881,8 +2962,10 @@ class PackageManager:
                 if pthinfo is not None:
                         path = pthinfo[0]
                         cellx = pthinfo[2]
-                        #Ignore clicks on row toggle icon which is 16 pixels wide
-                        if cellx <= 16:
+                        #Clicking on row toggle icon just select the path
+                        if cellx <= CATEGORY_TOGGLE_ICON_WIDTH:
+                                self.w_categories_treeview.set_cursor(path)
+                                self.w_categories_treeview.scroll_to_cell(path)
                                 return
                         #Collapse expand Top level Sections only
                         tree_view = self.w_categories_treeview
@@ -2899,8 +2982,7 @@ class PackageManager:
                                                 tree_view.collapse_row(path)
                                 else:
                                         tree_view.expand_row(path, False)
-                                self.category_active_paths[self.last_visible_publisher]\
-                                        = path
+                                self.__save_active_category(path)
 
         @staticmethod
         def __categoriestreeview_compare_func(model, column, key, itr):
@@ -2910,11 +2992,35 @@ class PackageManager:
 
                 try:
                         value = re.sub(REGEX_STRIP_MARKUP, "", value)
+                        value = re.sub(REGEX_STRIP_RESULT, "", value)
                         match = re.match(re.escape(key), re.escape(value), re.IGNORECASE)
                 except (TypeError, re.error):
                         return True
 
                 return match is None
+
+        def __in_recent_searches(self, path):
+                if not path or len(path) == 0:
+                        return False
+                model = self.w_categories_treeview.get_model()
+                if model == None:
+                        return False
+                rs_path = model.get_path(self.recent_searches_cat_iter)
+                if rs_path and len(rs_path) > 0 and path[0] == rs_path[0]:
+                        return True
+                return False
+                
+        def __save_expanded_path(self, path, expanded):
+                if not path or len(path) == 0:
+                        return                
+                self.category_expanded_paths[(self.last_visible_publisher, path)] = \
+                        expanded
+
+        def __save_active_category(self, path):
+                if not path or len(path) == 0 or self.__in_recent_searches(path):
+                        return                
+                self.category_active_paths[self.last_visible_publisher] = path
+                self.saved_section_active = path[0]
 
         def __on_category_selection_changed(self, selection, widget):
                 '''This function is for handling category selection changes'''
@@ -2924,9 +3030,28 @@ class PackageManager:
                 if not itr:
                         return
 
-                self.category_active_paths[self.last_visible_publisher] = \
-                    model.get_path(itr)
+                path = model.get_path(itr)
+                sel_category = model[path]
+                if sel_category[enumerations.CATEGORY_ID] == RECENT_SEARCH_ID:
+                        if not self.adding_recent_search:
+                                self.__setup_recent_search_page()
+                                if not self.is_all_publishers:
+                                        self.__save_setup_before_search(
+                                            single_search=True)
+                                self.in_search_mode = True
+                                self.in_recent_search = True
+                        else:
+                                self.__set_main_view_package_list()
+                        return
+                elif sel_category[enumerations.CATEGORY_ID] > RECENT_SEARCH_ID:
+                        self.__restore_recent_search(sel_category)
+                        return
+                self.__save_active_category(path)
                 if self.in_search_mode or self.is_all_publishers:
+                        #Required for A11Y support because focus event not triggered
+                        #when A11Y enabled and user clicks on Category after Search
+                        self.__unset_search(True)
+                        self.__set_main_view_package_list()
                         return
                 if self.saved_filter_combobox_active != None:
                         self.w_filter_combobox.set_active(
@@ -3086,6 +3211,7 @@ class PackageManager:
                 self.w_infosearch_frame.hide()
                 self.__update_tooltips()
                 self.in_search_mode = False
+                self.in_recent_search = False
                 self.is_all_publishers = False
                 if same_repo:
                         self.__restore_setup_for_browse()
@@ -3158,12 +3284,12 @@ class PackageManager:
                 self.publisher_changed = True
                 self.last_visible_publisher = self.__get_selected_publisher()
                 self.saved_repository_combobox_active = \
-                        self.w_repository_combobox.get_active()   
+                        self.w_repository_combobox.get_active()
                 gobject.idle_add(self.__init_tree_views, application_list,
                     category_list, section_list)
 
         def __unset_saved(self):
-                self.saved_application_list = None
+                self.__save_application_list(None)
                 self.saved_application_list_filter = None
                 self.saved_application_list_sort = None
                 self.saved_category_list = None
@@ -3424,6 +3550,7 @@ class PackageManager:
         def __catalog_refresh(self):
                 """Update image's catalogs."""
                 success = self.__do_refresh(immediate=True)
+                gobject.idle_add(self.__clear_recent_searches)
                 self.__catalog_refresh_done()
                 if not success:
                         return -1
@@ -4118,7 +4245,10 @@ class PackageManager:
                 cat_path = list(category_model.get_path(category_itr))
                         
                 # Top level Section has been selected
-                if len(cat_path) == 1 and selected_category > SECTION_ID_OFFSET:
+                if len(cat_path) == 1 and selected_category > RECENT_SEARCH_ID_OFFSET:
+                        selected_section = selected_category
+                        return selected_section, 0
+                elif len(cat_path) == 1 and selected_category > SECTION_ID_OFFSET:
                         selected_section = selected_category - SECTION_ID_OFFSET
                         return selected_section, 0
                 else:
@@ -4146,7 +4276,8 @@ class PackageManager:
                 category_list = model.get_value(itr, enumerations.CATEGORY_LIST_COLUMN)
                 selected_section, selected_category = \
                         self.__get_active_section_and_category()
-                
+                        
+                in_recent_search = False
                 if selected_section == 0 and selected_category == 0:
                         #Clicked on All Categories
                         category = True
@@ -4155,16 +4286,19 @@ class PackageManager:
                         if category_list and selected_category in category_list:
                                 category = True
                 elif category_list:
-                        #Clicked on Top Level section
-                        categories_in_section = \
-                                self.section_categories_list[selected_section]
-                        for cat_id in category_list:
-                                if cat_id in categories_in_section:
-                                        category = True
-                                        break
+                        #Clicked on Top Level section                        
+                        if selected_section < RECENT_SEARCH_ID_OFFSET:
+                                categories_in_section = \
+                                        self.section_categories_list[selected_section]
+                                for cat_id in category_list:
+                                        if cat_id in categories_in_section:
+                                                category = True
+                                                break
+                        else:
+                                in_recent_search = True
                 if (model.get_value(itr, enumerations.IS_VISIBLE_COLUMN) == False):
                         return False
-                if self.in_search_mode:
+                if self.in_search_mode or in_recent_search:
                         return self.__is_package_filtered(model, itr, filter_id)
                 return (category &
                     self.__is_package_filtered(model, itr, filter_id))
@@ -4283,11 +4417,6 @@ class PackageManager:
                 finally:
                         self.__image_activity_lock.release()
                 return res
-
-        def __g_enable_disable_update_all(self, update_available):
-                self.w_updateall_button.set_sensitive(update_available)
-                self.w_updateall_menuitem.set_sensitive(update_available)
-                self.__enable_disable_install_remove()
 
         def __enable_disable_export_selections(self):
                 if self.selected_pkgs == None or len(self.selected_pkgs) == 0:
@@ -4540,7 +4669,15 @@ class PackageManager:
                         category_ids = self.section_categories_list[sec_id]
                         for cat_id in category_ids.keys():
                                 category_tree.append(cat_iter, category_ids[cat_id])
-
+                self.recent_searches_cat_iter = category_tree.append(None,
+                    [RECENT_SEARCH_ID,
+                    "<span foreground='#757575'><b>" + _("Recent Searches") +
+                    "</b></span>", None, None])
+                if self.recent_searches and len(self.recent_searches) > 0:
+                        for recent_search in self.recent_searches_list:
+                                category_tree.append(self.recent_searches_cat_iter, 
+                                    self.recent_searches[recent_search])
+                
                 self.w_categories_treeview.set_model(category_tree)
                 
                 #Initial startup expand default Section if available
@@ -4550,8 +4687,146 @@ class PackageManager:
                         return
                 self.__restore_category_state()
 
+        def __add_recent_search(self, text, pub_prefix, application_list):
+                self.adding_recent_search = True
+                category_tree = self.w_categories_treeview.get_model()
+                if category_tree == None:
+                        return
+                if self.is_all_publishers:
+                        pub_prefix = _("All Publishers")
+                recent_search = "(%d) <b>%s</b> %s" % \
+                        (len(application_list), text, pub_prefix)
+                if not (recent_search in self.recent_searches):
+                        cat_iter = category_tree.append(self.recent_searches_cat_iter,
+                            [RECENT_SEARCH_ID + 1, recent_search, text, application_list])
+                        self.recent_searches[recent_search] = \
+                                [RECENT_SEARCH_ID + 1, recent_search, text,
+                                application_list]
+                        self.recent_searches_list.append(recent_search)
+                else:
+                        rs_iter = category_tree.iter_children(
+                            self.recent_searches_cat_iter)
+                        while rs_iter:
+                                rs_value = category_tree.get_value(rs_iter,
+                                    enumerations.CATEGORY_NAME)
+                                if rs_value == recent_search:
+                                        category_tree.remove(rs_iter)
+                                        break
+                                rs_iter = category_tree.iter_next(rs_iter)
+                        cat_iter = category_tree.append(self.recent_searches_cat_iter,
+                            [RECENT_SEARCH_ID + 1, recent_search, text, application_list])
+                        self.recent_searches_list.remove(recent_search)
+                        self.recent_searches_list.append(recent_search)
+                path = category_tree.get_path(cat_iter)
+                self.w_categories_treeview.expand_to_path(path)
+                self.__unselect_category()
+                self.w_categories_treeview.scroll_to_cell(path)
+                self.adding_recent_search = False
+                
+        def __clear_recent_searches(self):
+                category_tree = self.w_categories_treeview.get_model()
+                if category_tree == None:
+                        return                        
+                if self.recent_searches == None or len(self.recent_searches) == 0:
+                        return                        
+                self.__set_searchentry_to_prompt()
+                selection, sel_path = self.__get_selection_and_category_path()
+                rs_iter = category_tree.iter_children(self.recent_searches_cat_iter)
+                while rs_iter:
+                        category_tree.remove(rs_iter)
+                        if category_tree.iter_is_valid(rs_iter):
+                                rs_iter = category_tree.iter_next(rs_iter)
+                        else:
+                                break
+                del(self.recent_searches_list[:])
+                self.recent_searches.clear()
+                
+                rs_path = category_tree.get_path(self.recent_searches_cat_iter)
+                if selection and sel_path and rs_path and len(sel_path) > 0 and \
+                        len(rs_path) > 0 and sel_path[0] == rs_path[0]:
+                        self.__restore_setup_for_browse()
+                               
+        def __restore_recent_search(self, sel_category):
+                if not sel_category:
+                        return
+                if not self.is_all_publishers:
+                        self.__save_setup_before_search(single_search=True)
+
+                application_list = sel_category[enumerations.SECTION_LIST_OBJECT]
+                text = sel_category[enumerations.CATEGORY_DESCRIPTION]
+
+                pkg_stems = []
+                pkg_stem_states = {}
+                for row in application_list:
+                        pkg_stems.append(row[enumerations.STEM_COLUMN])
+                #Check for changes in pacakge installation status
+                try:
+                        info = self.api_o.info(pkg_stems, True, frozenset(
+                                    [api.PackageInfo.STATE, api.PackageInfo.IDENTITY]))
+                        for info_s in info.get(0):
+                                pkg_stem = fmri.PkgFmri(info_s.fmri).get_pkg_stem(
+                                    include_scheme = True)
+                                if api.PackageInfo.INSTALLED in info_s.states:
+                                        pkg_stem_states[pkg_stem] = \
+                                                enumerations.INSTALLED
+                                else:
+                                        pkg_stem_states[pkg_stem] = \
+                                                enumerations.NOT_INSTALLED
+                except (api_errors.TransportError):
+                        pass
+                except (api_errors.InvalidDepotResponseException):
+                        pass
+
+                #Create a new result list updated with current installation status
+                tmp_app_list = self.__get_new_application_liststore()
+                
+                for row in application_list:
+                        pkg_stem = row[enumerations.STEM_COLUMN]
+                        pub = row[enumerations.PUBLISHER_COLUMN]
+                        marked = False
+                        pkgs = None
+                        if self.selected_pkgs != None:
+                                pkgs = self.selected_pkgs.get(pub)
+                        if pkgs != None:
+                                if pkg_stem in pkgs:
+                                        marked = True
+                        if row[enumerations.MARK_COLUMN] != marked:
+                                row[enumerations.MARK_COLUMN] = marked
+                        
+                        if pkg_stem_states.has_key(pkg_stem):
+                                row[enumerations.STATUS_COLUMN] = \
+                                        pkg_stem_states[pkg_stem]
+                                if pkg_stem_states[pkg_stem] == \
+                                        enumerations.NOT_INSTALLED:
+                                        row[enumerations.STATUS_ICON_COLUMN] = \
+                                                self.not_installed_icon
+                                else:
+                                        row[enumerations.STATUS_ICON_COLUMN] = \
+                                                self.installed_icon
+                        else:
+                                row[enumerations.STATUS_COLUMN] = \
+                                        enumerations.NOT_INSTALLED
+                                row[enumerations.STATUS_ICON_COLUMN] = \
+                                        self.not_installed_icon
+                        tmp_app_list.append(row)
+
+                self.__clear_before_search(show_list=True, in_setup=False,
+                    unselect_cat=False)
+                self.in_search_mode = True
+                self.in_recent_search = True
+                self.__set_search_text_mode(enumerations.SEARCH_STYLE_NORMAL)
+                self.w_searchentry.set_text(text)
+                self.__set_main_view_package_list()
+                self.__init_tree_views(tmp_app_list, None, None, None, None,
+                    enumerations.NAME_COLUMN)
+
         def __restore_category_state(self):
                 #Restore expanded Category state
+                if self.w_categories_treeview == None:
+                        return
+                model = self.w_categories_treeview.get_model()
+                if model == None:
+                        return
                 if len(self.category_expanded_paths) > 0:
                         paths = self.category_expanded_paths.items()
                         for key, val in paths:
