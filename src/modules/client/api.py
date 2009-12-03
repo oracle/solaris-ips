@@ -26,6 +26,7 @@
 #
 
 import copy
+import fnmatch
 import os
 import StringIO
 import sys
@@ -41,14 +42,15 @@ import pkg.client.publisher as publisher
 import pkg.client.query_parser as query_p
 import pkg.fmri as fmri
 import pkg.misc as misc
+import pkg.nrlock
 import pkg.p5i as p5i
 import pkg.search_errors as search_errors
-import pkg.nrlock
+import pkg.version
 
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 24
+CURRENT_API_VERSION = 25
 CURRENT_P5I_VERSION = 1
 
 logger = global_settings.logger
@@ -70,6 +72,12 @@ class ImageInterface(object):
         INFO_MISSING = 1
         INFO_MULTI_MATCH = 2
         INFO_ILLEGALS = 3
+
+        LIST_ALL = 0
+        LIST_INSTALLED = 1
+        LIST_INSTALLED_NEWEST = 2
+        LIST_NEWEST = 3
+        LIST_UPGRADABLE = 4
 
         # Private constants used for tracking which type of plan was made.
         __INSTALL = 1
@@ -728,6 +736,591 @@ class ImageInterface(object):
                         license_lst.append(LicenseInfo(text))
                 return license_lst
 
+        def get_pkg_categories(self, installed=False, pubs=misc.EmptyI):
+                """Returns an order list of tuples of the form (scheme,
+                category) containing the names of all categories in use by
+                the last version of each unique package in the catalog on a
+                per-publisher basis.
+
+                'installed' is an optional boolean value indicating whether
+                only the categories used by currently installed packages
+                should be returned.  If False, the categories used by the
+                latest vesion of every known package will be returned
+                instead.
+
+                'pubs' is an optional list of publisher prefixes to restrict
+                the results to."""
+
+                if installed:
+                        img_cat = self.__img.get_catalog(
+                            self.__img.IMG_CATALOG_INSTALLED)
+                        excludes = misc.EmptyI
+                else:
+                        img_cat = self.__img.get_catalog(
+                            self.__img.IMG_CATALOG_KNOWN)
+                        excludes = self.__img.list_excludes()
+                return sorted(img_cat.categories(excludes=excludes, pubs=pubs))
+
+        @staticmethod
+        def __get_pkg_cat_data(img_cat, info_needed, actions=None,
+            excludes=misc.EmptyI, pfmri=None):
+                # XXX this doesn't handle locale.
+                get_summ = summ = desc = cat_info = deps = None
+                cat_data = []
+                get_summ = PackageInfo.SUMMARY in info_needed
+                if PackageInfo.CATEGORIES in info_needed:
+                        cat_info = []
+                if PackageInfo.DEPENDENCIES in info_needed:
+                        cat_data.append(img_cat.DEPENDENCY)
+                        deps = []
+
+                if deps is None or len(info_needed) != 1:
+                        # Anything other than dependency data
+                        # requires summary data.
+                        cat_data.append(img_cat.SUMMARY)
+
+                if actions is None:
+                        actions = img_cat.get_entry_actions(pfmri, cat_data,
+                            excludes=excludes)
+
+                for a in actions:
+                        if deps is not None and a.name == "depend":
+                                deps.append(a.attrs.get(a.key_attr))
+                                continue
+                        elif a.name != "set":
+                                continue
+
+                        attr_name = a.attrs["name"]
+                        if attr_name == "pkg.summary":
+                                if get_summ:
+                                        summ = a.attrs["value"]
+                        elif attr_name in ("description", "pkg.description"):
+                                desc = a.attrs["value"]
+                        elif cat_info != None and a.has_category_info():
+                                cat_info.extend(a.parse_category_info())
+
+                if get_summ and summ is None:
+                        if desc is None:
+                                summ = ""
+                        else:
+                                summ = desc
+                if not PackageInfo.DESCRIPTION in info_needed:
+                        desc = None
+                return summ, desc, cat_info, deps
+
+        def get_pkg_list(self, pkg_list, cats=None, patterns=misc.EmptyI,
+            pubs=misc.EmptyI, variants=False):
+                """A generator function that produces tuples of the form ((pub,
+                stem, version), summary, categories, states).  Where 'pub' is
+                the publisher of the package, 'stem' is the name of the package,
+                'version' is a string for the package version, 'summary' is the
+                package summary, 'categories' is a list of tuples of the form
+                (scheme, category), and 'states' is a list of PackageInfo states
+                for the package.  Results are always sorted by stem, publisher,
+                and then in descending version order.
+
+                'pkg_list' is one of the following constant values indicating
+                what base set of package data should be used for results:
+
+                        LIST_ALL
+                                All known packages.
+
+                        LIST_INSTALLED
+                                Installed packages.
+
+                        LIST_INSTALLED_NEWEST
+                                Installed packages and the newest
+                                versions of packages not installed.
+                                Renamed packages that are listed in
+                                an installed incorporation will be
+                                excluded unless they are installed.
+
+                        LIST_NEWEST
+                                The newest versions of all known packages.
+
+                        LIST_UPGRADABLE
+                                Packages that are installed and upgradable.
+
+                'cats' is an optional list of package category tuples of the
+                form (scheme, cat) to restrict the results to.  If a package
+                is assigned to any of the given categories, it will be
+                returned.  A value of [] will return packages not assigned
+                to any package category.  A value of None indicates that no
+                package category filtering should be applied.
+
+                'patterns' is an optional list of FMRI wildcard strings to
+                filter results by.
+
+                'pubs' is an optional list of publisher prefixes to restrict
+                the results to.
+
+                'variants' is an optional boolean value that indicates that
+                packages that are for arch or zone variants not applicable to
+                this image should be returned.
+
+                Please note that this function may invoke network operations
+                to retrieve the requested package information."""
+
+                all = installed = inst_newest = newest = upgradable = False
+                if pkg_list == self.LIST_ALL:
+                        all = True
+                elif pkg_list == self.LIST_INSTALLED:
+                        installed = True
+                elif pkg_list == self.LIST_INSTALLED_NEWEST:
+                        inst_newest = True
+                elif pkg_list == self.LIST_NEWEST:
+                        newest = True
+                elif pkg_list == self.LIST_UPGRADABLE:
+                        upgradable = True
+
+                inc_vers = {}
+                brelease = self.__img.attrs["Build-Release"]
+
+                # Each pattern in patterns can be a partial or full FMRI, so
+                # extract the individual components for use in filtering.
+                illegals = []
+                pat_tuples = {}
+                MATCH_EXACT = 0
+                MATCH_FMRI = 1
+                MATCH_GLOB = 2
+                for pat in patterns:
+                        try:
+                                if "*" in pat or "?" in pat:
+                                        matcher = MATCH_GLOB
+
+                                        # XXX By default, matching FMRIs
+                                        # currently do not also use
+                                        # MatchingVersion.  If that changes,
+                                        # this should change too.
+                                        parts = pat.split("@", 1)
+                                        if len(parts) == 1:
+                                                npat = pkg.fmri.MatchingPkgFmri(
+                                                    pat, brelease)
+                                        else:
+                                                npat = pkg.fmri.MatchingPkgFmri(
+                                                    parts[0], brelease)
+                                                npat.version = \
+                                                    pkg.version.MatchingVersion(
+                                                    str(parts[1]), brelease)
+                                elif pat.startswith("pkg:/"):
+                                        matcher = MATCH_EXACT
+                                        npat = pkg.fmri.PkgFmri(pat,
+                                            brelease)
+                                else:
+                                        matcher = MATCH_FMRI
+                                        npat = pkg.fmri.PkgFmri(pat,
+                                            brelease)
+                                pat_tuples[pat] = (npat.tuple(), matcher)
+                        except (pkg.fmri.FmriError, pkg.version.VersionError):
+                                illegals.append(pat)
+
+                if illegals:
+                        raise api_errors.InventoryException(illegal=illegals)
+
+                # For LIST_INSTALLED_NEWEST, installed packages need to be
+                # determined and incorporation and publisher relationships
+                # mapped.
+                inst_stems = {}
+                ren_inst_stems = {}
+                ren_stems = {}
+
+                pub_ranks = {}
+                inc_stems = {}
+                if inst_newest:
+                        img_cat = self.__img.get_catalog(
+                            self.__img.IMG_CATALOG_INSTALLED)
+                        cat_info = frozenset([img_cat.DEPENDENCY])
+
+                        pub_ranks = self.__img.get_publisher_ranks()
+
+                        # The incorporation list should include all installed,
+                        # incorporated packages from all publishers.
+                        for t in img_cat.entry_actions(cat_info):
+                                (pub, stem, ver), entry, actions = t
+
+                                inst_stems[stem] = ver
+                                pkgr = False
+                                targets = set()
+                                for a in actions:
+                                        if a.name == "set" and \
+                                            a.attrs["name"] == "pkg.renamed":
+                                                pkgr = True
+                                                continue
+                                        elif a.name != "depend":
+                                                continue
+
+                                        if a.attrs["type"] == "require":
+                                                # Because the actions are not
+                                                # returned in a guaranteed
+                                                # order, the dependencies will
+                                                # have to be recorded for
+                                                # evaluation later.
+                                                targets.add(a.attrs["fmri"])
+                                        elif a.attrs["type"] == "incorporate":
+                                                # Record incorporated packages.
+                                                tgt = fmri.PkgFmri(
+                                                    a.attrs["fmri"], brelease)
+                                                tver = tgt.version
+                                                over = inc_vers.get(
+                                                    tgt.pkg_name, None)
+
+                                                # In case this package has been
+                                                # incorporated more than once,
+                                                # use the newest version.
+                                                if over is not None and \
+                                                    over > tver:
+                                                        continue
+                                                inc_vers[tgt.pkg_name] = tver
+
+                                if pkgr:
+                                        for f in targets:
+                                                tgt = fmri.PkgFmri(f, brelease)
+                                                ren_stems[tgt.pkg_name] = stem
+                                                ren_inst_stems.setdefault(stem,
+                                                    set())
+                                                ren_inst_stems[stem].add(
+                                                    tgt.pkg_name)
+
+                        def check_stem(t, entry):
+                                pub, stem, ver = t
+                                if stem in inst_stems:
+                                        iver = inst_stems[stem]
+                                        if stem in ren_inst_stems or \
+                                            ver == iver:
+                                                # The package has been renamed
+                                                # or the entry is for the same
+                                                # version as that which is
+                                                # installed, so doesn't need
+                                                # to be checked.
+                                                return False
+                                        # The package may have been renamed in
+                                        # a newer version, so must be checked.
+                                        return True
+                                elif stem in inc_vers:
+                                        # Package is incorporated, but not
+                                        # installed, so should be checked.
+                                        return True
+
+                                tgt = ren_stems.get(stem, None)
+                                while tgt is not None:
+                                        # This seems counter-intuitive, but
+                                        # for performance and other reasons,
+                                        # this stem should only be checked
+                                        # for a rename if it is incorporated
+                                        # or installed using a previous name.
+                                        if tgt in inst_stems or \
+                                            tgt in inc_vers:
+                                                return True
+                                        tgt = ren_stems.get(tgt, None)
+
+                                # Package should not be checked.
+                                return False
+
+                        img_cat = self.__img.get_catalog(
+                            self.__img.IMG_CATALOG_KNOWN)
+
+                        # Find terminal rename entry for all known packages not
+                        # rejected by check_stem().
+                        for t, entry, actions in img_cat.entry_actions(cat_info,
+                            cb=check_stem, last=True):
+                                pkgr = False
+                                targets = set()
+                                for a in actions:
+                                        if a.name == "set" and \
+                                            a.attrs["name"] == "pkg.renamed":
+                                                pkgr = True
+                                                continue
+
+                                        if a.name != "depend":
+                                                continue
+
+                                        if a.attrs["type"] != "require":
+                                                continue
+
+                                        # Because the actions are not
+                                        # returned in a guaranteed
+                                        # order, the dependencies will
+                                        # have to be recorded for
+                                        # evaluation later.
+                                        targets.add(a.attrs["fmri"])
+
+                                if pkgr:
+                                        pub, stem, ver = t
+                                        for f in targets:
+                                                tgt = fmri.PkgFmri(f, brelease)
+                                                ren_stems[tgt.pkg_name] = stem
+
+                        # Determine highest ranked publisher for package stems
+                        # listed in installed incorporations.
+                        def pub_order(a, b):
+                                return cmp(pub_ranks[a][0], pub_ranks[b][0])
+
+                        for p in sorted(pub_ranks, cmp=pub_order):
+                                if pubs and p not in pubs:
+                                        continue
+                                for stem in img_cat.names(pubs=[p]):
+                                        if stem in inc_vers:
+                                                inc_stems.setdefault(stem, p)
+
+                if installed or upgradable:
+                        img_cat = self.__img.get_catalog(
+                            self.__img.IMG_CATALOG_INSTALLED)
+
+                        # Don't need to perform variant filtering if only
+                        # listing installed packages.
+                        variants = True
+                else:
+                        img_cat = self.__img.get_catalog(
+                            self.__img.IMG_CATALOG_KNOWN)
+
+                cat_info = frozenset([img_cat.DEPENDENCY, img_cat.SUMMARY])
+                api_info = frozenset([PackageInfo.SUMMARY,
+                    PackageInfo.CATEGORIES])
+
+                # Keep track of when the newest version has been found for
+                # each incorporated stem.
+                slist = set()
+
+                # Keep track of listed stems for all other packages on a
+                # per-publisher basis.
+                nlist = set()
+
+                def check_state(t, entry):
+                        states = entry["metadata"]["states"]
+                        pkgi = self.__img.PKG_STATE_INSTALLED in states
+                        pkgu = self.__img.PKG_STATE_UPGRADABLE in states
+                        pub, stem, ver = t
+
+                        if upgradable:
+                                # If package is marked upgradable, return it.
+                                return pkgu
+                        elif pkgi:
+                                # Nothing more to do here.
+                                return True
+                        elif stem in inst_stems:
+                                # Some other version of this package is
+                                # installed, so this one should not be
+                                # returned.
+                                return False
+
+                        # Attempt to determine if this package is installed
+                        # under a different name or constrained under a
+                        # different name.
+                        tgt = ren_stems.get(stem, None)
+                        while tgt is not None:
+                                if tgt in inc_vers:
+                                        # Package is incorporated under a
+                                        # different name, so allow this
+                                        # to fallthrough to the incoporation
+                                        # evaluation.
+                                        break
+                                elif tgt in inst_stems:
+                                        # Package is installed under a
+                                        # different name, so skip it.
+                                        return False
+                                tgt = ren_stems.get(tgt, None)
+
+                        # Attempt to find a suitable version to return.
+                        if stem in inc_vers:
+                                # For package stems that are incorporated, only
+                                # return the newest successor version  based on
+                                # publisher rank.
+                                if stem in slist:
+                                        # Newest version already returned.
+                                        return False
+
+                                if stem in inc_stems and \
+                                    pub != inc_stems[stem]:
+                                        # This entry is for a lower-ranked
+                                        # publisher.
+                                        return False
+
+                                # XXX version should not require build release.
+                                ever = pkg.version.Version(ver, brelease)
+
+                                # If the entry's version is a successor to
+                                # the incorporated version, then this is the
+                                # 'newest' version of this package since
+                                # entries are processed in descending version
+                                # order.
+                                iver = inc_vers[stem]
+                                if ever.is_successor(iver,
+                                    pkg.version.CONSTRAINT_AUTO):
+                                        slist.add(stem)
+                                        return True
+                                return False
+
+                        pkg_stem = pub + "!" + stem
+                        if pkg_stem in nlist:
+                                # A newer version has already been listed for
+                                # this stem and publisher.
+                                return False
+                        return True
+
+                filter_cb = None
+                if inst_newest or upgradable:
+                        # Filtering needs to be applied.
+                        filter_cb = check_state
+
+                arch = self.__img.get_arch()
+                excludes = self.__img.list_excludes()
+                is_zone = self.__img.is_zone()
+
+                for t, entry, actions in img_cat.entry_actions(cat_info,
+                    cb=filter_cb, excludes=excludes, last=newest,
+                    ordered=True, pubs=pubs):
+                        pub, stem, ver = t
+
+                        # Perform image arch and zone variant filtering so
+                        # that only packages appropriate for this image are
+                        # returned, but only do this for packages that are
+                        # not installed.
+                        pcats = []
+                        pkgr = False
+                        omit_package = False
+                        summ = None
+                        targets = set()
+
+                        states = entry["metadata"]["states"]
+                        pkgi = self.__img.PKG_STATE_INSTALLED in states
+                        for a in actions:
+                                if a.name == "depend" and \
+                                    a.attrs["type"] == "require":
+                                        targets.add(a.attrs["fmri"])
+                                        continue
+                                if a.name != "set":
+                                        continue
+
+                                atname = a.attrs["name"]
+                                atvalue = a.attrs["value"]
+                                if atname == "pkg.summary":
+                                        summ = atvalue
+                                        continue
+
+                                if atname in ("description",
+                                    "pkg.description"):
+                                        if summ is None:
+                                                summ = atvalue
+                                        continue
+
+                                if atname == "info.classification":
+                                        pcats.extend(
+                                            a.parse_category_info())
+
+                                if pkgi:
+                                        # No filtering for installed packages.
+                                        continue
+
+                                # Rename filtering should only be performed for
+                                # incorporated packages at this point.
+                                if atname == "pkg.renamed":
+                                        if stem in inc_vers:
+                                                pkgr = True
+                                        continue
+
+                                if variants:
+                                        # No variant filtering.
+                                        continue
+
+                                is_list = type(atvalue) == list
+                                if atname == "variant.arch":
+                                        if (is_list and arch not in atvalue) or \
+                                           (not is_list and arch != atvalue):
+                                                # Package is not for the
+                                                # image's architecture.
+                                                omit_package = True
+                                                continue
+
+                                if atname == "variant.opensolaris.zone":
+                                        if (is_zone and is_list and 
+                                            "nonglobal" not in atvalue) or \
+                                           (is_zone and not is_list and
+                                            atvalue != "nonglobal"):
+                                                # Package is for zones only.
+                                                omit_package = True
+
+                        if filter_cb is not None:
+                                pkg_stem = pub + "!" + stem
+                                nlist.add(pkg_stem)
+
+                        if not pkgi and pkgr and stem in inc_vers:
+                                # If the package is not installed, but this is
+                                # the terminal version entry for the stem and
+                                # it is an incorporated package, then omit the
+                                # package if it has been installed or is
+                                # incorporated using one of the new names.
+                                for e in targets:
+                                        tgt = e
+                                        while tgt is not None:
+                                                if tgt in ren_inst_stems or \
+                                                    tgt in inc_vers:
+                                                        omit_package = True
+                                                        break
+                                                tgt = ren_stems.get(tgt, None)
+
+                        # Pattern filtering has to be applied last so that
+                        # renames, incorporations, and everything else is
+                        # handled correctly.
+                        if not omit_package:
+                                for pat in patterns:
+                                        (pat_pub, pat_stem, pat_ver), matcher = \
+                                            pat_tuples[pat]
+
+                                        if pat_pub is not None and \
+                                            pub != pat_pub:
+                                                # Publisher doesn't match.
+                                                omit_package = True
+                                                continue
+
+                                        if matcher == MATCH_EXACT:
+                                                if pat_stem != stem:
+                                                        # Stem doesn't match.
+                                                        omit_package = True
+                                                        continue
+                                        elif matcher == MATCH_FMRI:
+                                                if not ("/" + stem).endswith(
+                                                    "/" + pat_stem):
+                                                        # Stem doesn't match.
+                                                        omit_package = True
+                                                        continue
+                                        elif matcher == MATCH_GLOB:
+                                                if not fnmatch.fnmatchcase(stem,
+                                                    pat_stem):
+                                                        # Stem doesn't match.
+                                                        omit_package = True
+                                                        continue
+
+                                        if pat_ver is not None:
+                                                ever = pkg.version.Version(ver,
+                                                    brelease)
+                                                if not ever.is_successor(pat_ver,
+                                                    pkg.version.CONSTRAINT_AUTO):
+                                                        omit_package = True
+                                                        continue
+
+                                        # If this entry matched at least one
+                                        # pattern, then ensure it is returned.
+                                        omit_package = False
+                                        break
+
+                        if omit_package:
+                                continue
+
+                        if cats is not None:
+                                if not cats:
+                                        if pcats:
+                                                # Only want packages with no
+                                                # categories.
+                                                continue
+                                elif not [sc for sc in cats if sc in pcats]:
+                                        # Package doesn't match specified
+                                        # category criteria.
+                                        continue
+
+                        # Return the requested package data.
+                        yield (t, summ, pcats,
+                            frozenset(entry["metadata"]["states"]))
+
         def info(self, fmri_strings, local, info_needed):
                 """Gathers information about fmris.  fmri_strings is a list
                 of fmri_names for which information is desired.  local
@@ -798,10 +1391,10 @@ class ImageInterface(object):
                                 for m, state in matches:
                                         if m.get_publisher() == ppub:
                                                 pnames[m.get_pkg_stem()] = 1
-                                                pmatch.append(m)
+                                                pmatch.append((m, state))
                                         else:
                                                 npnames[m.get_pkg_stem()] = 1
-                                                npmatch.append(m)
+                                                npmatch.append((m, state))
 
                                 if len(pnames.keys()) > 1:
                                         multiple_matches.append(
@@ -830,55 +1423,18 @@ class ImageInterface(object):
                             self.__img.IMG_CATALOG_KNOWN)
                 excludes = self.__img.list_excludes()
 
-                # Set of summary-related options that are in catalog data.
-                summ_opts = frozenset([PackageInfo.SUMMARY,
-                    PackageInfo.CATEGORIES, PackageInfo.DESCRIPTION])
-
-                # Set of all options that are in catalog data.
-                cat_opts = summ_opts | frozenset([PackageInfo.DEPENDENCIES])
+                # Set of options that can use catalog data.
+                cat_opts = frozenset([PackageInfo.SUMMARY,
+                    PackageInfo.CATEGORIES, PackageInfo.DESCRIPTION,
+                    PackageInfo.DEPENDENCIES])
 
                 # Set of options that require manifest retrieval.
                 act_opts = PackageInfo.ACTION_OPTIONS - \
                     frozenset([PackageInfo.DEPENDENCIES])
 
-                def get_pkg_cat_data(f):
-                        # XXX this doesn't handle locale.
-                        get_summ = summ = desc = cat_info = deps = None
-                        cat_data = []
-                        if summ_opts & info_needed:
-                                cat_data.append(img_cat.SUMMARY)
-                                get_summ = PackageInfo.SUMMARY in info_needed
-                        if PackageInfo.CATEGORIES in info_needed:
-                                cat_info = []
-                        if PackageInfo.DEPENDENCIES in info_needed:
-                                cat_data.append(img_cat.DEPENDENCY)
-                                deps = []
-
-                        for a in img_cat.get_entry_actions(f, cat_data,
-                            excludes=excludes):
-                                if a.name == "depend":
-                                        deps.append(a.attrs.get(a.key_attr))
-                                elif a.attrs["name"] == "pkg.summary":
-                                        if get_summ:
-                                                summ = a.attrs["value"]
-                                elif a.attrs["name"] in ("description",
-                                    "pkg.description"):
-                                        desc = a.attrs["value"]
-                                elif cat_info != None and a.has_category_info():
-                                        cat_info.extend(
-                                            PackageCategory(scheme, cat)
-                                            for scheme, cat
-                                            in a.parse_category_info())
-
-                        if get_summ and summ == None:
-                                summ = desc
-                        if not PackageInfo.DESCRIPTION in info_needed:
-                                desc = None
-                        return summ, desc, cat_info, deps
-
                 pis = []
-                for f in fmris:
-                        pub = name = version = release = states = None
+                for f, fstate in fmris:
+                        pub = name = version = release = None
                         build_release = branch = packaging_date = None
                         if PackageInfo.IDENTITY in info_needed:
                                 pub, name, version = f.tuple()
@@ -888,22 +1444,41 @@ class ImageInterface(object):
                                 branch = version.branch
                                 packaging_date = \
                                     version.get_timestamp().strftime("%c")
+
                         pref_pub = None
                         if PackageInfo.PREF_PUBLISHER in info_needed:
-                                pref_pub = f.get_publisher() == ppub
-                        state = None
+                                pref_pub = (f.get_publisher() == ppub)
+
+                        # XXX gross; info needs to switch to using get_pkg_list
+                        # routines at a later date once matching is figured
+                        # out.
+                        states = set()
                         if PackageInfo.STATE in info_needed:
-                                states = self.__img.get_pkg_state(f)
+                                if fstate["state"] == \
+                                    self.__img.PKG_STATE_INSTALLED:
+                                        states.add(PackageInfo.INSTALLED)
+                                if fstate["in_catalog"]:
+                                        states.add(PackageInfo.KNOWN)
+                                if fstate["upgradable"]:
+                                        states.add(PackageInfo.UPGRADABLE)
+                                if fstate["obsolete"]:
+                                        states.add(PackageInfo.OBSOLETE)
+                                if fstate["renamed"]:
+                                        states.add(PackageInfo.RENAMED)
+
                         links = hardlinks = files = dirs = dependencies = None
                         summary = size = licenses = cat_info = description = \
                             None
 
-                        if frozenset([PackageInfo.SUMMARY,
-                            PackageInfo.CATEGORIES,
-                            PackageInfo.DESCRIPTION,
-                            PackageInfo.DEPENDENCIES]) & info_needed:
+                        if cat_opts & info_needed:
                                 summary, description, cat_info, dependencies = \
-                                    get_pkg_cat_data(f)
+                                    self.__get_pkg_cat_data(img_cat,
+                                        info_needed, excludes=excludes, pfmri=f)
+                                if cat_info is not None:
+                                        cat_info = [ 
+                                            PackageCategory(scheme, cat)
+                                            for scheme, cat in cat_info
+                                        ]
 
                         if (frozenset([PackageInfo.SIZE,
                             PackageInfo.LICENSES]) | act_opts) & info_needed:
@@ -1683,11 +2258,17 @@ class PackageInfo(object):
         could need. The fmri is guaranteed to be set. All other values may
         be None, depending on how the PackageInfo instance was created."""
 
-        # Possible package installation states
-        INSTALLED = 1
-        NOT_INSTALLED = 2
-        OBSOLETE = 3
-        RENAMED = 4
+        # Possible package installation states; these constants should match
+        # the values used by the Image class.  Constants with negative values
+        # are not currently available.
+        FROZEN = -1
+        INCORPORATED = -2
+        EXCLUDES = -3
+        KNOWN = image.Image.PKG_STATE_KNOWN
+        INSTALLED = image.Image.PKG_STATE_INSTALLED
+        UPGRADABLE = image.Image.PKG_STATE_UPGRADABLE
+        OBSOLETE = image.Image.PKG_STATE_OBSOLETE
+        RENAMED = image.Image.PKG_STATE_RENAMED
 
         __NUM_PROPS = 13
         IDENTITY, SUMMARY, CATEGORIES, STATE, PREF_PUBLISHER, SIZE, LICENSES, \
@@ -1708,6 +2289,7 @@ class PackageInfo(object):
                 if category_info_list is None:
                         category_info_list = []
                 self.category_info_list = category_info_list
+                self.states = states
                 self.publisher = publisher
                 self.preferred_publisher = preferred_publisher
                 self.version = version
@@ -1723,31 +2305,9 @@ class PackageInfo(object):
                 self.dirs = dirs
                 self.dependencies = dependencies
                 self.description = description
-                self.states = self.__map_states(states)
 
         def __str__(self):
                 return self.fmri
-
-        @classmethod
-        def __map_states(cls, states):
-                d = {
-                    0: cls.NOT_INSTALLED,
-                    2: cls.INSTALLED,
-                    8: cls.OBSOLETE,
-                    9: cls.RENAMED
-                }
-
-                if not states:
-                        return []
-
-                return [
-                    t
-                    for t in (
-                        d.get(s, -1)
-                        for s in states
-                    )
-                    if t != -1
-                ]
 
         @staticmethod
         def build_from_fmri(f):

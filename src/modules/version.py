@@ -171,6 +171,33 @@ class MatchingDotSequence(DotSequence):
                                         return False
                 return True
 
+        def is_subsequence(self, other):
+                """Return true if self is a "subsequence" of other, meaning that
+                other and self have identical components, up to the length of
+                self's sequence or self or other is '*'."""
+
+                if str(self) == "*" or str(other) == "*":
+                        return True
+
+                if len(self) > len(other):
+                        return False
+
+                for a, b in zip(self, other):
+                        if a != b:
+                                return False
+                return True
+
+        def is_same_major(self, other):
+                """Test if DotSequences have the same major number, or major
+                is '*'."""
+                return self[0] == "*" or other[0] == "*" or self[0] == other[0]
+
+        def is_same_minor(self, other):
+                """ Test if DotSequences have the same major and minor num."""
+                return self[0] == "*" or other[0] == "*" or self[1] == "*" or \
+                    other[1] == "*" or \
+                    (self[0] == other[0] and self[1] == other[1])
+
 
 class IllegalVersion(VersionError):
         """Used to indicate that the specified version string is not valid."""
@@ -431,28 +458,50 @@ class Version(object):
                 if constraint == None or constraint == CONSTRAINT_NONE:
                         return self > other
 
-                if constraint == CONSTRAINT_AUTO:
-                        release_match = branch_match = date_match = False
-
+                if constraint == CONSTRAINT_AUTO and \
+                    type(other) == MatchingVersion:
                         if other.release and self.release:
-                                if other.release.is_subsequence(self.release):
-                                        release_match = True
-                        elif not other.release:
-                                release_match = True
+                                if not other.release.is_subsequence(
+                                    self.release):
+                                        return False
+                        elif other.release and other.release != "*":
+                                return False
 
                         if other.branch and self.branch:
-                                if other.branch.is_subsequence(self.branch):
-                                        branch_match = True
-                        elif not other.branch:
-                                branch_match = True
+                                if not other.branch.is_subsequence(self.branch):
+                                        return False
+                        elif other.branch and other.branch != "*":
+                                return False
 
                         if self.timestr and other.timestr:
-                                if other.timestr == self.timestr:
-                                        date_match = True
-                        elif not other.timestr:
-                                date_match = True
+                                if not (other.timestr == self.timestr or \
+                                    other.timestr == "*"):
+                                        return False
+                        elif other.timestr and other.timestr != "*":
+                                return False
 
-                        return release_match and branch_match and date_match
+                        return True
+                elif constraint == CONSTRAINT_AUTO:
+                        if other.release and self.release:
+                                if not other.release.is_subsequence(
+                                    self.release):
+                                        return False
+                        elif other.release:
+                                return False
+
+                        if other.branch and self.branch:
+                                if not other.branch.is_subsequence(self.branch):
+                                        return False
+                        elif other.branch:
+                                return False
+
+                        if self.timestr and other.timestr:
+                                if other.timestr != self.timestr:
+                                        return False
+                        elif other.timestr:
+                                return False
+
+                        return True
 
                 if constraint == CONSTRAINT_RELEASE:
                         return other.release.is_subsequence(self.release)
@@ -473,6 +522,48 @@ class Version(object):
                         return other.branch.is_same_minor(self.branch)
 
                 raise ValueError, "constraint has unknown value"
+
+        @classmethod
+        def split(self, ver):
+                """Takes an assumed valid version string and asplits it into
+                its components as a tuple of the form ((release, build_release,
+                branch, timestr), short_ver)."""
+
+                # Locate and extract the time string.
+                timeidx = ver.find(":")
+                if timeidx != -1:
+                        timestr = ver[timeidx + 1:]
+                else:
+                        timeidx = None
+                        timestr = None
+
+                # Locate and extract the branch string.
+                branchidx = ver.find("-")
+                if branchidx != -1:
+                        branch = ver[branchidx + 1:timeidx]
+                else:
+                        branchidx = timeidx
+                        branch = None
+
+                # Locate and extract the build string.
+                buildidx = ver.find(",")
+                if buildidx != -1:
+                        build = ver[buildidx + 1:branchidx]
+                else:
+                        buildidx = branchidx
+                        build = None
+
+                release = ver[:buildidx]
+
+                build_release = ""
+                if build is not None:
+                        build_release = build
+
+                if branch is not None:
+                        short_ver = release + "-" + branch
+                else:
+                        short_ver = release
+                return (release, build_release, branch, timestr), short_ver
 
 
 class MatchingVersion(Version):

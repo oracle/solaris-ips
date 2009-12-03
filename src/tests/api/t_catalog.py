@@ -51,6 +51,8 @@ import pkg.variant as variant
 
 
 class TestCatalog(pkg5unittest.Pkg5TestCase):
+        """Tests for all catalog functionality."""
+
         def setUp(self):
                 self.pid = os.getpid()
                 self.pwd = os.getcwd()
@@ -82,10 +84,24 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                     fmri.PkgFmri("pkg:/zpkg@1.0,5.11-1:20000101T120040Z"),
                     fmri.PkgFmri("pkg:/zpkg@1.0,5.11-1:20000101T120014Z")
                 ]:
-                        f.set_publisher("opensolaris.org")
+                        if f.pkg_name == "apkg":
+                                f.set_publisher("extra")
+                        elif f.pkg_name == "zpkg":
+                                f.set_publisher("contrib.opensolaris.org")
+                        else:
+                                f.set_publisher("opensolaris.org")
                         self.c.add_package(f)
                         self.nversions += 1
-                        stems[f.pkg_name] = None
+                        stems[f.get_pkg_stem()] = None
+
+                # And for good measure, ensure that one of the publishers has
+                # a package with the exact same name and version as another
+                # publisher's package.
+                f = fmri.PkgFmri("pkg://extra/zpkg@1.0,5.11-1:20000101T120040Z")
+                stems[f.get_pkg_stem()] = None
+                self.c.add_package(f)
+                self.nversions += 1
+
                 self.npkgs = len(stems)
 
         def tearDown(self):
@@ -112,6 +128,13 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 m.set_content(
                     "depend fmri=foo@1.0 type=require\n"
                     "set name=facet.devel value=true\n"
+                    "set name=info.classification "
+                    """value="Desktop (GNOME)/Application" """
+                    """value="org.opensolaris.category.2009:GNOME (Desktop)"\n"""
+                    "set name=info.classification "
+                    """value="Sparc Application" variant.arch=sparc\n"""
+                    "set name=info.classification "
+                    """value="i386 Application" variant.arch=i386\n"""
                     "set name=variant.arch value=i386 value=sparc\n"
                     "set name=pkg.obsolete value=true\n"
                     "set name=pkg.fmri value=\"%s\"\n"
@@ -134,12 +157,24 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
 
                 def expected_summary(f):
                         return [
+                            ('set name=info.classification '
+                            'value="Desktop (GNOME)/Application" '
+                            'value="org.opensolaris.category.2009:GNOME (Desktop)"'),
+                            ("set name=info.classification "
+                            """value="i386 Application" variant.arch=i386"""),
                             "set name=pkg.summary value=\"Summary %s\"" % f,
                             "set name=pkg.description value=\"Desc %s\"" % f,
                         ]
 
                 def expected_all_variant_summary(f):
                         return [
+                            ('set name=info.classification '
+                            'value="Desktop (GNOME)/Application" '
+                            'value="org.opensolaris.category.2009:GNOME (Desktop)"'),
+                            ("set name=info.classification "
+                            """value="Sparc Application" variant.arch=sparc"""),
+                            ("set name=info.classification "
+                            """value="i386 Application" variant.arch=i386"""),
                             "set name=pkg.summary value=\"Summary %s\"" % f,
                             ("set name=pkg.summary value=\"Sparc Summary %s\""
                             " variant.arch=sparc" % f),
@@ -152,10 +187,41 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                             "set name=pkg.summary value=\"Summary %s\"" % f,
                             "set name=pkg.description value=\"Desc %s\"" % f,
                             "set name=pkg.summary:th value=\"ซอฟต์แวร์ %s\"" % f,
+                            ('set name=info.classification '
+                            'value="Desktop (GNOME)/Application" '
+                            'value="org.opensolaris.category.2009:GNOME (Desktop)"'),
+                            ("set name=info.classification "
+                            """value="i386 Application" variant.arch=i386"""),
+                        ])
+
+                def expected_categories(f):
+                        # The comparison has to be sorted for this case.
+                        return set([
+                            ("", "Desktop (GNOME)/Application"),
+                            ("org.opensolaris.category.2009", "GNOME (Desktop)"),
+                            ("", "i386 Application"),
+                        ])
+
+                def expected_all_variant_categories(f):
+                        # The comparison has to be sorted for this case.
+                        return set([
+                            ("", "Desktop (GNOME)/Application"),
+                            ("org.opensolaris.category.2009", "GNOME (Desktop)"),
+                            ("", "i386 Application"),
+                            ("", "Sparc Application"),
                         ])
 
                 # Next, ensure its populated.
-                self.assertEqual([f for f in nc.fmris()], pkg_src_list)
+                def ordered(a, b):
+                        rval = cmp(a.pkg_name, b.pkg_name)
+                        if rval != 0:
+                                return rval
+                        rval = cmp(a.publisher, b.publisher)
+                        if rval != 0:
+                                return rval
+                        return cmp(a.version, b.version) * -1
+                self.assertEqual([f for f in nc.fmris(ordered=True)],
+                    sorted(pkg_src_list, cmp=ordered))
 
                 # This case should raise an AssertionError.
                 try:
@@ -173,7 +239,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 locales = set(("C", "th"))
 
                 # This case should only return the dependency-related actions.
-                for f, actions in nc.actions([nc.DEPENDENCY]):
+                def validate_dep(f, actions):
                         returned = []
                         for a in actions:
                                 self.assertTrue(isinstance(a,
@@ -188,13 +254,31 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                                 self.assertEqual(returned, [])
                                 self.assertEqual(var, None)
                                 self.assertEqual([v for v in vars], [])
-                                continue
+                                return
 
                         expected = expected_dependency()
                         self.assertEqual(returned, expected)
                         self.assertEqual(var, ["i386", "sparc"])
                         self.assertEqual([(n, vs) for n, vs in vars],
                             [("variant.arch", ["i386", "sparc"])])
+
+                for f, actions in nc.actions([nc.DEPENDENCY]):
+                        validate_dep(f, actions)
+
+                latest = [f for f in nc.fmris(last=True)]
+                for f, actions in nc.actions([nc.DEPENDENCY], last=True):
+                        self.assert_(f in latest)
+                        validate_dep(f, actions)
+
+                latest = [
+                    (pub, stem, ver)
+                    for pub, stem, ver in nc.tuples(last=True)
+                ]
+                for (pub, stem, ver), entry, actions in nc.entry_actions(
+                    [nc.DEPENDENCY], last=True):
+                        self.assert_((pub, stem, ver) in latest)
+                        f = fmri.PkgFmri("%s@%s" % (stem, ver), publisher=pub)
+                        validate_dep(f, actions)
 
                 # This case should only return the summary-related actions (but
                 # for all variants).
@@ -300,6 +384,16 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 expected = expected_summary(f)
                 self.assertEqual(returned, expected)
 
+                # This case should return the categories used (but without sparc
+                # variants).
+                returned = nc.categories(excludes=excludes)
+                expected = expected_categories(f)
+                self.assertEqual(returned, expected)
+
+        def debug(self, value):
+                import sys
+                print >> sys.__stderr__, value
+
         def test_01_attrs(self):
                 self.assertEqual(self.npkgs, self.c.package_count)
                 self.assertEqual(self.nversions, self.c.package_version_count)
@@ -331,6 +425,16 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 # First, verify that passing a single version pattern
                 # works as expected.
 
+                # Sorts by stem, then version, then publisher.
+                def extract_order(a, b):
+                        res = cmp(a.pkg_name, b.pkg_name)
+                        if res != 0:
+                                return res
+                        res = cmp(a.version, b.version) * -1
+                        if res != 0:
+                                return res
+                        return cmp(a.publisher, b.publisher)
+
                 # This is a dict containing the set of fmris that are expected
                 # to be returned by extract_matching_fmris keyed by version
                 # pattern.
@@ -346,6 +450,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                         "pkg:/test@3.2.1,5.11-1.2:20000101T120051Z",
                         "pkg:/test@3.2.1,5.11-1.2.3:20000101T120052Z",
                         "pkg:/zpkg@1.0,5.11-1:20000101T120014Z",
+                        "pkg:/zpkg@1.0,5.11-1:20000101T120040Z",
                         "pkg:/zpkg@1.0,5.11-1:20000101T120040Z"],
                     "1.0": ["pkg:/apkg@1.0,5.11-1:20000101T120040Z",
                         "pkg:/test@1.0,5.11-1:20000101T120000Z",
@@ -354,6 +459,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                         "pkg:/test@1.0,5.11-1.2:20000101T120030Z",
                         "pkg:/test@1.0,5.11-2:20000101T120040Z",
                         "pkg:/zpkg@1.0,5.11-1:20000101T120014Z",
+                        "pkg:/zpkg@1.0,5.11-1:20000101T120040Z",
                         "pkg:/zpkg@1.0,5.11-1:20000101T120040Z"],
                     "1.1": ["pkg:/test@1.1,5.11-1:20000101T120040Z"],
                     "*.1": ["pkg:/test@1.1,5.11-1:20000101T120040Z"],
@@ -377,6 +483,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                         "pkg:/test@3.2.1,5.11-1.2:20000101T120051Z",
                         "pkg:/test@3.2.1,5.11-1.2.3:20000101T120052Z",
                         "pkg:/zpkg@1.0,5.11-1:20000101T120014Z",
+                        "pkg:/zpkg@1.0,5.11-1:20000101T120040Z",
                         "pkg:/zpkg@1.0,5.11-1:20000101T120040Z"],
                     "*,*-*": ["pkg:/apkg@1.0,5.11-1:20000101T120040Z",
                         "pkg:/test@1.0,5.11-1:20000101T120000Z",
@@ -389,6 +496,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                         "pkg:/test@3.2.1,5.11-1.2:20000101T120051Z",
                         "pkg:/test@3.2.1,5.11-1.2.3:20000101T120052Z",
                         "pkg:/zpkg@1.0,5.11-1:20000101T120014Z",
+                        "pkg:/zpkg@1.0,5.11-1:20000101T120040Z",
                         "pkg:/zpkg@1.0,5.11-1:20000101T120040Z"],
                     "*,*-*.2": ["pkg:/test@1.0,5.11-1.2:20000101T120030Z",
                         "pkg:/test@3.2.1,5.11-1.2:20000101T120051Z"],
@@ -399,24 +507,13 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                         "pkg:/test@1.1,5.11-1:20000101T120040Z",
                         "pkg:/test@3.2.1,5.11-1:20000101T120050Z",
                         "pkg:/zpkg@1.0,5.11-1:20000101T120014Z",
+                        "pkg:/zpkg@1.0,5.11-1:20000101T120040Z",
                         "pkg:/zpkg@1.0,5.11-1:20000101T120040Z"],
                     "*,*-1.2": ["pkg:/test@1.0,5.11-1.2:20000101T120030Z",
                         "pkg:/test@3.2.1,5.11-1.2:20000101T120051Z"],
                     "*,*-1.2.*": ["pkg:/test@1.0,5.11-1.2:20000101T120030Z",
                         "pkg:/test@3.2.1,5.11-1.2:20000101T120051Z",
                         "pkg:/test@3.2.1,5.11-1.2.3:20000101T120052Z"],
-                    "*": ["pkg:/apkg@1.0,5.11-1:20000101T120040Z",
-                        "pkg:/test@1.0,5.11-1:20000101T120000Z",
-                        "pkg:/test@1.0,5.11-1:20000101T120010Z",
-                        "pkg:/test@1.0,5.11-1.1:20000101T120020Z",
-                        "pkg:/test@1.0,5.11-1.2:20000101T120030Z",
-                        "pkg:/test@1.0,5.11-2:20000101T120040Z",
-                        "pkg:/test@1.1,5.11-1:20000101T120040Z",
-                        "pkg:/test@3.2.1,5.11-1:20000101T120050Z",
-                        "pkg:/test@3.2.1,5.11-1.2:20000101T120051Z",
-                        "pkg:/test@3.2.1,5.11-1.2.3:20000101T120052Z",
-                        "pkg:/zpkg@1.0,5.11-1:20000101T120014Z",
-                        "pkg:/zpkg@1.0,5.11-1:20000101T120040Z"],
                     "*,*-*:*": ["pkg:/apkg@1.0,5.11-1:20000101T120040Z",
                         "pkg:/test@1.0,5.11-1:20000101T120000Z",
                         "pkg:/test@1.0,5.11-1:20000101T120010Z",
@@ -428,22 +525,42 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                         "pkg:/test@3.2.1,5.11-1.2:20000101T120051Z",
                         "pkg:/test@3.2.1,5.11-1.2.3:20000101T120052Z",
                         "pkg:/zpkg@1.0,5.11-1:20000101T120014Z",
+                        "pkg:/zpkg@1.0,5.11-1:20000101T120040Z",
                         "pkg:/zpkg@1.0,5.11-1:20000101T120040Z"],
                 }
 
                 for pat in versions:
                         chash = {}
-                        plist = sorted(catalog.extract_matching_fmris(self.c.fmris(),
-                            counthash=chash, versions=[pat])[0])
+                        rlist = []
+                        for f in catalog.extract_matching_fmris(self.c.fmris(),
+                            counthash=chash, versions=[pat])[0]:
+                                f.set_publisher(None)
+                                rlist.append(f)
+
+                        # Custom sort the returned and expected to avoid having
+                        # to define test data in extract order.  The primary
+                        # interest here is in what is returned, not the order.
+                        rlist = sorted([
+                            fmri.PkgFmri(f.get_fmri(anarchy=True))
+                            for f in rlist
+                        ])
+                        rlist = [f.get_fmri() for f in rlist]
+
+                        elist = sorted([
+                            fmri.PkgFmri(e)
+                            for e in versions[pat]
+                        ])
+                        elist = [f.get_fmri() for f in elist]
+
                         # Verify that the list of matches are the same.
-                        plist = [f.get_fmri(anarchy=True) for f in plist]
-                        self.assertEqual(plist, versions[pat])
+                        self.assertEqual(rlist, elist)
+
                         # Verify that the same number of matches was returned
                         # in the counthash.
                         self.assertEqual(chash[pat], len(versions[pat]))
 
-                # Last, verify that providing multiple versions for a single call
-                # returns the expected results.
+                # Last, verify that providing multiple versions for a single
+                # call returns the expected results.
 
                 # This is a dict containing the set of fmris that are expected
                 # to be returned by extract_matching_fmris keyed by version
@@ -455,6 +572,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                         "pkg:/test@1.1,5.11-1:20000101T120040Z",
                         "pkg:/test@3.2.1,5.11-1:20000101T120050Z",
                         "pkg:/zpkg@1.0,5.11-1:20000101T120014Z",
+                        "pkg:/zpkg@1.0,5.11-1:20000101T120040Z",
                         "pkg:/zpkg@1.0,5.11-1:20000101T120040Z"],
                     "*,*-*:*": ["pkg:/apkg@1.0,5.11-1:20000101T120040Z",
                         "pkg:/test@1.0,5.11-1:20000101T120000Z",
@@ -467,6 +585,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                         "pkg:/test@3.2.1,5.11-1.2:20000101T120051Z",
                         "pkg:/test@3.2.1,5.11-1.2.3:20000101T120052Z",
                         "pkg:/zpkg@1.0,5.11-1:20000101T120014Z",
+                        "pkg:/zpkg@1.0,5.11-1:20000101T120040Z",
                         "pkg:/zpkg@1.0,5.11-1:20000101T120040Z"],
                 }
 
@@ -483,14 +602,19 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                     "pkg:/test@3.2.1,5.11-1.2.3:20000101T120052Z",
                     "pkg:/zpkg@1.0,5.11-1:20000101T120014Z",
                     "pkg:/zpkg@1.0,5.11-1:20000101T120040Z",
+                    "pkg:/zpkg@1.0,5.11-1:20000101T120040Z",
                 ]
 
-                plist = sorted(catalog.extract_matching_fmris(self.c.fmris(),
-                    counthash=chash, versions=versions.keys())[0])
-                plist = [p.get_fmri(anarchy=True) for p in plist]
+                rlist = catalog.extract_matching_fmris(self.c.fmris(),
+                    counthash=chash, versions=versions.keys())[0]
+                rlist = sorted([
+                    fmri.PkgFmri(f.get_fmri(anarchy=True))
+                    for f in rlist
+                ])
+                rlist = [f.get_fmri() for f in rlist]
 
                 # Verify that the list of matches are the same.
-                self.assertEqual(plist, elist)
+                self.assertEqual(rlist, elist)
 
                 for pat in versions:
                         # Verify that the same number of matches was returned
@@ -619,16 +743,166 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                         fmris[f.pkg_name].setdefault(str(f.version), [])
                         fmris[f.pkg_name][str(f.version)].append(f)
 
-                names = self.assertEqual(self.c.names(), set(["apkg", "test",
-                    "zpkg"]))
+                # test names()
+                self.assertEqual(self.c.names(), set(["apkg", "test", "zpkg"]))
+                self.assertEqual(self.c.names(pubs=["extra",
+                    "opensolaris.org"]), set(["apkg", "test", "zpkg"]))
+                self.assertEqual(self.c.names(pubs=["extra",
+                    "contrib.opensolaris.org"]), set(["apkg", "zpkg"]))
+                self.assertEqual(self.c.names(pubs=["opensolaris.org"]),
+                    set(["test"]))
 
-                for name in fmris:
-                        for ver, entries in self.c.entries_by_version(names):
-                                flist = [f[0] for f in entries]
-                                self.assertEqual(fmris[name], flist)
+                # test pkg_names()
+                expected = [
+                    ("extra", "apkg"),
+                    ("opensolaris.org", "test"),
+                    ("contrib.opensolaris.org", "zpkg"),
+                    ("extra", "zpkg"),
+                ]
 
-                        for ver, fmris in self.c.fmris_by_version(names):
-                                self.assertEqual(fmris[name], fmris)
+                for pubs in ([], ["extra", "opensolaris.org"], ["extra"],
+                    ["bobcat"]):
+                        elist = [
+                            e for e in expected
+                            if not pubs or e[0] in pubs
+                        ]
+                        rlist = [e for e in self.c.pkg_names(pubs=pubs)]
+                        self.assertEqual(rlist, elist)
+
+                def fmri_order(a, b):
+                        rval = cmp(a.pkg_name, b.pkg_name)
+                        if rval != 0:
+                                return rval
+                        rval = cmp(a.publisher, b.publisher)
+                        if rval != 0:
+                                return rval
+                        return cmp(a.version, b.version) * -1
+
+                def tuple_order(a, b):
+                        apub, astem, aver = a
+                        bpub, bstem, bver = b
+                        rval = cmp(astem, bstem)
+                        if rval != 0:
+                                return rval
+                        rval = cmp(apub, bpub)
+                        if rval != 0:
+                                return rval
+                        aver = version.Version(aver, "5.11")
+                        bver = version.Version(bver, "5.11")
+                        return cmp(aver, bver) * -1
+
+                def tuple_entry_order(a, b):
+                        (apub, astem, aver), entry = a
+                        (bpub, bstem, bver), entry = b
+                        rval = cmp(astem, bstem)
+                        if rval != 0:
+                                return rval
+                        rval = cmp(apub, bpub)
+                        if rval != 0:
+                                return rval
+                        aver = version.Version(aver, "5.11")
+                        bver = version.Version(bver, "5.11")
+                        return cmp(aver, bver) * -1
+
+                # test fmris()
+                for pubs in ([], ["extra", "opensolaris.org"], ["extra"],
+                    ["bobcat"]):
+                        # Check base functionality.
+                        elist = [
+                            f for f in self.c.fmris()
+                            if not pubs or f.publisher in pubs
+                        ]
+                        rlist = [e for e in self.c.fmris(pubs=pubs)]
+                        self.assertEqual(rlist, elist)
+
+                        # Check last functionality.
+                        elist = {}
+                        for f in self.c.fmris(pubs=pubs):
+                                if f.get_pkg_stem() not in elist or \
+                                    f.version > elist[f.get_pkg_stem()].version:
+                                        elist[f.get_pkg_stem()] = f
+                        elist = sorted(elist.values())
+
+                        rlist = sorted([f for f in self.c.fmris(last=True,
+                            pubs=pubs)])
+                        self.assertEqual(rlist, elist)
+
+                        # Check ordered functionality.
+                        elist.sort(cmp=fmri_order)
+
+                        rlist = [f for f in self.c.fmris(last=True,
+                            ordered=True, pubs=pubs)]
+                        self.assertEqual(rlist, elist)
+
+                # test entries(), tuple_entries()
+                for pubs in ([], ["extra", "opensolaris.org"], ["extra"],
+                    ["bobcat"]):
+                        # Check base functionality.
+                        elist = [(f, {}) for f in self.c.fmris(pubs=pubs)]
+                        rlist = [e for e in self.c.entries(pubs=pubs)]
+                        self.assertEqual(rlist, elist)
+
+                        # Check last functionality.
+                        elist = {}
+                        for f in self.c.fmris(pubs=pubs):
+                                if f.get_pkg_stem() not in elist or \
+                                    f.version > elist[f.get_pkg_stem()].version:
+                                        elist[f.get_pkg_stem()] = f
+                        elist = [(f, {}) for f in sorted(elist.values(),
+                            cmp=fmri_order)]
+                        rlist = [e for e in self.c.entries(last=True,
+                            ordered=True, pubs=pubs)]
+                        self.assertEqual(rlist, elist)
+
+                        # Check base functionality.
+                        elist = []
+                        for f in self.c.fmris(pubs=pubs):
+                                pub, stem, ver = f.tuple()
+                                ver = str(ver)
+                                elist.append(((pub, stem, ver), {}))
+                        rlist = [e for e in self.c.tuple_entries(pubs=pubs)]
+                        self.assertEqual(rlist, elist)
+
+                        # Check last functionality.
+                        elist = {}
+                        for f in self.c.fmris(pubs=pubs):
+                                if f.get_pkg_stem() not in elist or \
+                                    f.version > elist[f.get_pkg_stem()].version:
+                                        elist[f.get_pkg_stem()] = f
+
+                        nlist = []
+                        for f in sorted(elist.values()):
+                                pub, stem, ver = f.tuple()
+                                ver = str(ver)
+                                nlist.append(((pub, stem, ver), {}))
+                        elist = sorted(nlist, cmp=tuple_entry_order)
+                        nlist = None
+                        rlist = [e for e in self.c.tuple_entries(last=True,
+                            ordered=True, pubs=pubs)]
+                        self.assertEqual(rlist, elist)
+
+                # test entries_by_version() and fmris_by_version()
+                for pubs in ([], ["extra", "opensolaris.org"], ["extra"]):
+                        for name in fmris:
+                                for ver, entries in self.c.entries_by_version(
+                                    name, pubs=pubs):
+                                        flist = [
+                                            f[1] for f in entries
+                                            if not pubs or f[0].publisher in pubs
+                                        ]
+                                        elist = [
+                                            {} for f in entries
+                                            if not pubs or f[0].publisher in pubs
+                                        ]
+                                        self.assertEqual(flist, elist)
+
+                                for ver, pfmris in self.c.fmris_by_version(name,
+                                    pubs=pubs):
+                                        elist = [
+                                            f for f in fmris[name][str(ver)]
+                                            if not pubs or f.publisher in pubs
+                                        ]
+                                        self.assertEqual(pfmris, elist)
 
         def test_06_operations(self):
                 """Verify that catalog operations work as expected."""
@@ -892,7 +1166,8 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                     nc.package_version_count)
 
         def test_09_actions(self):
-                """Verify that the actions functions work as expected."""
+                """Verify that the actions-related catalog functions work as
+                expected."""
 
                 pkg_src_list = [
                     fmri.PkgFmri("pkg://opensolaris.org/"
@@ -901,6 +1176,9 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                         "test@1.0,5.11-1.1:20000101T120020Z"),
                     fmri.PkgFmri("pkg://opensolaris.org/"
                         "apkg@1.0,5.11-1:20000101T120040Z"),
+                    fmri.PkgFmri("pkg://extra/"
+                        "apkg@1.0,5.11-1:20000101T120040Z"),
+                    fmri.PkgFmri("pkg://extra/zpkg@1.0,5.11-1:20000101T120040Z")
                 ]
 
                 def manifest_cb(cat, f):
@@ -950,6 +1228,8 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
 
 
 class TestEmptyCatalog(pkg5unittest.Pkg5TestCase):
+        """Basic functionality tests for empty catalogs."""
+
         def setUp(self):
                 self.c = catalog.Catalog()
 

@@ -168,9 +168,6 @@ class _JSONWriter(object):
 
                 if self.__sign:
                         self.__sha_1.update(data)
-                if self.__fileobj:
-                        self.__fileobj.write(data)
-                        return
 
 
 class CatalogPartBase(object):
@@ -353,15 +350,51 @@ class CatalogPart(CatalogPartBase):
                 CatalogPartBase.__init__(self, name, meta_root=meta_root,
                     sign=sign)
 
-        def __iter_entries(self):
-                """Private generator function to iterate over catalog
-                entries."""
+        def __iter_entries(self, last=False, ordered=False, pubs=EmptyI):
+                """Private generator function to iterate over catalog entries.
+
+                'last' is a boolean value that indicates only the last entry
+                for each package on a per-publisher basis should be returned.
+                As long as the CatalogPart has been saved since the last
+                modifying operation, or sort() has has been called, this will
+                also be the newest version of the package.
+
+                'ordered' is an optional boolean value that indicates that
+                results should sorted by stem and then by publisher and
+                be in descending version order.  If False, results will be
+                in a ascending version order on a per-publisher, per-stem
+                basis.
+
+                'pubs' is an optional list of publisher prefixes to restrict
+                the results to."""
 
                 self.load()
-                for pub in self.publishers():
-                        for stem in self.__data[pub]:
-                                for entry in self.__data[pub][stem]:
-                                        yield pub, stem, entry
+                if ordered:
+                        stems = self.pkg_names(pubs=pubs)
+                else:
+                        stems = (
+                            (pub, stem)
+                            for pub in self.publishers(pubs=pubs)
+                            for stem in self.__data[pub]
+                        )
+
+                if last:
+                        return (
+                            (pub, stem, self.__data[pub][stem][-1])
+                            for pub, stem in stems
+                        )
+
+                if ordered:
+                        return (
+                            (pub, stem, entry)
+                            for pub, stem in stems
+                            for entry in reversed(self.__data[pub][stem])
+                        )
+                return (
+                    (pub, stem, entry)
+                    for pub, stem in stems
+                    for entry in self.__data[pub][stem]
+                )
 
         def add(self, pfmri, metadata=None, op_time=None):
                 """Add a catalog entry for a given FMRI.
@@ -403,32 +436,58 @@ class CatalogPart(CatalogPartBase):
                 self.signatures = {}
                 return entry
 
-        def entries(self):
+        def entries(self, cb=None, last=False, ordered=False, pubs=EmptyI):
                 """A generator function that produces tuples of the form
                 (fmri, entry) as it iterates over the contents of the catalog
                 part (where entry is the related catalog entry for the fmri).
                 Callers should not modify any of the data that is returned.
 
+                'cb' is an optional callback function that will be executed for
+                each package. It must accept two arguments: 'pkg' and 'entry'.
+                'pkg' is an FMRI object and 'entry' is the dictionary structure
+                of the catalog entry for the package.  If the callback returns
+                False, then the entry will not be included in the results.
+
+                'last' is a boolean value that indicates only the last entry
+                for each package on a per-publisher basis should be returned.
+                As long as the CatalogPart has been saved since the last
+                modifying operation, or sort() has has been called, this will
+                also be the newest version of the package.
+
+                'ordered' is an optional boolean value that indicates that
+                results should sorted by stem and then by publisher and
+                be in descending version order.  If False, results will be
+                in a ascending version order on a per-publisher, per-stem
+                basis.
+
+                'pubs' is an optional list of publisher prefixes to restrict
+                the results to.
+
                 Results are always in catalog version order on a per-
                 publisher, per-stem basis.
                 """
 
-                for pub, stem, entry in self.__iter_entries():
-                        yield (fmri.PkgFmri("%s@%s" % (stem, entry["version"]),
-                            publisher=pub), entry)
-                return
+                for pub, stem, entry in self.__iter_entries(last=last,
+                    ordered=ordered, pubs=pubs):
+                        f = fmri.PkgFmri("%s@%s" % (stem, entry["version"]),
+                            publisher=pub)
+                        if cb is None or cb(f, entry):
+                                yield f, entry
 
-        def entries_by_version(self, name):
+        def entries_by_version(self, name, pubs=EmptyI):
                 """A generator function that produces tuples of (version,
                 entries), where entries is a list of tuples of the format
                 (fmri, entry) where entry is the catalog entry for the
-                FMRI) as it iterates over the CatalogPart contents."""
+                FMRI) as it iterates over the CatalogPart contents.
+
+                'pubs' is an optional list of publisher prefixes to restrict
+                the results to."""
 
                 self.load()
 
                 versions = {}
                 entries = {}
-                for pub in self.publishers():
+                for pub in self.publishers(pubs=pubs):
                         ver_list = self.__data[pub].get(name, ())
                         for entry in ver_list:
                                 sver = entry["version"]
@@ -442,41 +501,59 @@ class CatalogPart(CatalogPartBase):
                 for key, ver in sorted(versions.iteritems(), key=itemgetter(1)):
                         yield ver, entries[key]
 
-        def fmris(self, objects=True):
-                """A generator function that produces FMRIs as it
-                iterates over the contents of the catalog part.
+        def fmris(self, last=False, objects=True, ordered=False, pubs=EmptyI):
+                """A generator function that produces FMRIs as it iterates
+                over the contents of the catalog part.
+
+                'last' is a boolean value that indicates only the last fmri
+                for each package on a per-publisher basis should be returned.
+                As long as the CatalogPart has been saved since the last
+                modifying operation, or sort() has has been called, this will
+                also be the newest version of the package.
 
                 'objects' is an optional boolean value indicating whether
                 FMRIs should be returned as FMRI objects or as strings.
 
+                'ordered' is an optional boolean value that indicates that
+                results should sorted by stem and then by publisher and
+                be in descending version order.  If False, results will be
+                in a ascending version order on a per-publisher, per-stem
+                basis.
+
+                'pubs' is an optional list of publisher prefixes to restrict
+                the results to.
+
                 Results are always in catalog version order on a per-
-                publisher, per-stem basis.
-                """
+                publisher, per-stem basis."""
 
                 if objects:
-                        for pub, stem, entry in self.__iter_entries():
+                        for pub, stem, entry in self.__iter_entries(last=last,
+                            ordered=ordered, pubs=pubs):
                                 yield fmri.PkgFmri("%s@%s" % (stem,
                                     entry["version"]), publisher=pub)
                         return
 
-                for pub, stem, entry in self.__iter_entries():
+                for pub, stem, entry in self.__iter_entries(last=last,
+                    ordered=ordered, pubs=pubs):
                         yield "pkg://%s/%s@%s" % (pub,
                             stem, entry["version"])
                 return
 
-        def fmris_by_version(self, name):
+        def fmris_by_version(self, name, pubs=EmptyI):
                 """A generator function that produces tuples of (version,
                 fmris), where fmris is a list of the fmris related to the
-                version."""
+                version.
+
+                'pubs' is an optional list of publisher prefixes to restrict
+                the results to."""
 
                 self.load()
 
                 versions = {}
                 entries = {}
-                for pub in self.publishers():
-                        try:
-                                ver_list = self.__data[pub][name]
-                        except KeyError:
+                for pub in self.publishers(pubs=pubs):
+                        ver_list = self.__data[pub].get(name, None)
+                        if ver_list is None:
                                 continue
 
                         for entry in ver_list:
@@ -491,24 +568,34 @@ class CatalogPart(CatalogPartBase):
                 for key, ver in sorted(versions.iteritems(), key=itemgetter(1)):
                         yield ver, entries[key]
 
-        def get_entry(self, pfmri):
-                """Returns the catalog entry for the given package FMRI."""
+        def get_entry(self, pfmri=None, pub=None, stem=None, ver=None):
+                """Returns the catalog entry for the given package FMRI or
+                FMRI components."""
 
-                if not pfmri.publisher:
+                assert (pfmri or (pub and stem and ver))
+                if not ((pfmri and pfmri.publisher) or pub):
+                        if not pfmri:
+                                pfmri = fmri.PkgFmri("%s@%s" % (stem, ver),
+                                    publisher=pub)
                         raise api_errors.AnarchicalCatalogFMRI(pfmri.get_fmri())
 
-                self.load()
-                try:
-                        pkg_list = self.__data[pfmri.publisher]
-                except KeyError:
-                        raise api_errors.UnknownCatalogEntry(pfmri.get_fmri())
+                # Since this is a hot path, this function checks for loaded
+                # status before attempting to call the load function.
+                if not self.loaded:
+                        self.load()
 
-                ver = str(pfmri.version)
-                ver_list = pkg_list.get(pfmri.pkg_name, ())
+                if pfmri:
+                        pub, stem, ver = pfmri.tuple()
+                        ver = str(ver)
+
+                pkg_list = self.__data.get(pub, None)
+                if pkg_list is None:
+                        return
+
+                ver_list = pkg_list.get(stem, ())
                 for entry in ver_list:
                         if entry["version"] == ver:
                                 return entry
-                raise api_errors.UnknownCatalogEntry(pfmri.get_fmri())
 
         def get_package_counts(self):
                 """Returns a tuple of integer values (package_count,
@@ -536,16 +623,43 @@ class CatalogPart(CatalogPartBase):
                         return
                 self.__data = CatalogPartBase.load(self)
 
-        def names(self):
+        def names(self, pubs=EmptyI):
                 """Returns a set containing the names of all the packages in
-                the CatalogPart."""
+                the CatalogPart.
+
+                'pubs' is an optional list of publisher prefixes to restrict
+                the results to."""
 
                 self.load()
                 return set((
                     stem
-                    for pub in self.publishers()
+                    for pub in self.publishers(pubs=pubs)
                     for stem in self.__data[pub]
                 ))
+
+        def pkg_names(self, pubs=EmptyI):
+                """A generator function that produces package tuples of the form
+                (pub, stem) as it iterates over the contents of the CatalogPart.
+
+                'pubs' is an optional list of publisher prefixes to restrict
+                the results to.
+
+                Results are always returned sorted by stem and then by
+                publisher."""
+
+                self.load()
+
+                # Results have to be sorted by stem first, and by
+                # publisher prefix second.
+                pkg_list = [
+                        "%s!%s" % (stem, pub)
+                        for pub in self.publishers(pubs=pubs)
+                        for stem in self.__data[pub]
+                ]
+
+                for entry in sorted(pkg_list):
+                        stem, pub = entry.split("!", 1)
+                        yield pub, stem
 
         def publishers(self, pubs=EmptyI):
                 """A generator function that returns publisher prefixes as it
@@ -568,9 +682,8 @@ class CatalogPart(CatalogPartBase):
                         raise api_errors.AnarchicalCatalogFMRI(pfmri.get_fmri())
 
                 self.load()
-                try:
-                        pkg_list = self.__data[pfmri.publisher]
-                except KeyError:
+                pkg_list = self.__data.get(pfmri.publisher, None)
+                if pkg_list is None:
                         raise api_errors.UnknownCatalogEntry(pfmri.get_fmri())
 
                 ver = str(pfmri.version)
@@ -655,24 +768,67 @@ class CatalogPart(CatalogPartBase):
                         for stem in self.__data[pub]:
                                 self.__data[pub][stem].sort(cmp=order)
 
-        def tuples(self):
-                """A generator function that produces FMRI tuples as it iterates
-                over the contents of the catalog part."""
+        def tuples(self, last=False, ordered=False, pubs=EmptyI):
+                """A generator function that produces FMRI tuples as it
+                iterates over the contents of the catalog part.
 
-                self.load()
+                'last' is a boolean value that indicates only the last FMRI
+                tuple for each package on a per-publisher basis should be
+                returned.  As long as the CatalogPart has been saved since
+                the last modifying operation, or sort() has has been called,
+                this will also be the newest version of the package.
 
-                # Results have to be sorted by stem first, and by
-                # publisher prefix second.
-                pkg_list = [
-                        "%s!%s" % (stem, pub)
-                        for pub in self.publishers()
-                        for stem in self.__data[pub]
-                ]
+                'ordered' is an optional boolean value that indicates that
+                results should sorted by stem and then by publisher and
+                be in descending version order.  If False, results will be
+                in a ascending version order on a per-publisher, per-stem
+                basis.
 
-                for entry in sorted(pkg_list):
-                        stem, pub = entry.split("!", 1)
-                        for entry in self.__data[pub][stem]:
-                                yield pub, stem, entry["version"]
+                'pubs' is an optional list of publisher prefixes to restrict
+                the results to."""
+
+                return (
+                    (pub, stem, entry["version"])
+                    for pub, stem, entry in self.__iter_entries(last=last,
+                        ordered=ordered, pubs=pubs)
+                )
+
+        def tuple_entries(self, cb=None, last=False, ordered=False, pubs=EmptyI):
+                """A generator function that produces tuples of the form ((pub,
+                stem, version), entry) as it iterates over the contents of the
+                catalog part (where entry is the related catalog entry for the
+                fmri).  Callers should not modify any of the data that is
+                returned.
+
+                'cb' is an optional callback function that will be executed for
+                each package. It must accept two arguments: 'pkg' and 'entry'.
+                'pkg' is an FMRI tuple and 'entry' is the dictionary structure
+                of the catalog entry for the package.  If the callback returns
+                False, then the entry will not be included in the results.
+
+                'last' is a boolean value that indicates only the last entry
+                for each package on a per-publisher basis should be returned.
+                As long as the CatalogPart has been saved since the last
+                modifying operation, or sort() has has been called, this will
+                also be the newest version of the package.
+
+                'ordered' is an optional boolean value that indicates that
+                results should sorted by stem and then by publisher and
+                be in descending version order.  If False, results will be
+                in a ascending version order on a per-publisher, per-stem
+                basis.
+
+                'pubs' is an optional list of publisher prefixes to restrict
+                the results to.
+
+                Results are always in catalog version order on a per-publisher,
+                per-stem basis."""
+
+                for pub, stem, entry in self.__iter_entries(last=last,
+                    ordered=ordered, pubs=pubs):
+                        t = (pub, stem, entry["version"])
+                        if cb is None or cb(t, entry):
+                                yield t, entry
 
         def validate(self, signatures=None):
                 """Verifies whether the signatures for the contents of the
@@ -734,17 +890,13 @@ class CatalogUpdate(CatalogPartBase):
                         raise api_errors.UnknownUpdateType(operation)
 
                 self.load()
-                try:
-                        pkg_list = self.__data[pfmri.publisher]
-                except KeyError:
-                        pkg_list = self.__data[pfmri.publisher] = {}
+                self.__data.setdefault(pfmri.publisher, {})
+                pkg_list = self.__data[pfmri.publisher]
 
-                try:
-                        ver_list = pkg_list[pfmri.pkg_name]
-                except KeyError:
-                        ver_list = pkg_list[pfmri.pkg_name] = []
+                pkg_list.setdefault(pfmri.pkg_name, [])
+                ver_list = pkg_list[pfmri.pkg_name]
 
-                if metadata:
+                if metadata is not None:
                         entry = metadata
                 else:
                         entry = {}
@@ -1102,12 +1254,32 @@ class Catalog(object):
                 # Must be done last.
                 self.__set_perms()
 
+        def __actions(self, info_needed, excludes=EmptyI, cb=None, locales=None,
+            last_version=False, ordered=False, pubs=EmptyI):
+                assert info_needed
+                if not locales:
+                        locales = set(("C",))
+                else:
+                        locales = set(locales)
+
+                for f, entry in self.__entries(cb=cb, info_needed=info_needed,
+                    locales=locales, last_version=last_version,
+                    ordered=ordered, pubs=pubs):
+                        if "actions" in entry:
+                                yield f, self.__gen_actions(entry["actions"],
+                                    excludes)
+                        elif self.__manifest_cb:
+                                yield f, self.__gen_lazy_actions(f, info_needed,
+                                    locales, excludes)
+                        else:
+                                yield f, EmptyI
+
         def __append(self, src, cb=None, pfmri=None, pubs=EmptyI):
                 """Private version; caller responsible for locking."""
 
                 base = self.get_part(self.__BASE_PART)
                 src_base = src.get_part(self.__BASE_PART, must_exist=True)
-                if not src_base:
+                if src_base is None:
                         if pfmri:
                                 raise api_errors.UnknownCatalogEntry(pfmri)
                         # Nothing to do
@@ -1123,7 +1295,11 @@ class Catalog(object):
                 # current catalog along and then add it to the 'd'iscard dict if
                 # 'cb' is defined and returns False.
                 if pfmri:
-                        entries = [(pfmri, src_base.get_entry(pfmri))]
+                        entry = src_base.get_entry(pfmri)
+                        if entry is None:
+                                raise api_errors.UnknownCatalogEntry(
+                                    pfmri.get_fmri())
+                        entries = [(pfmri, entry)]
                 else:
                         entries = src_base.entries()
 
@@ -1133,7 +1309,7 @@ class Catalog(object):
                                 continue
 
                         nentry = copy.deepcopy(entry)
-                        if cb:
+                        if cb is not None:
                                 merge, mdata = cb(src, f, entry)
                                 if not merge:
                                         pub = d.setdefault(f.publisher, {})
@@ -1161,18 +1337,17 @@ class Catalog(object):
                                 continue
 
                         part = src.get_part(name, must_exist=True)
-                        if not part:
+                        if part is None:
                                 # Part doesn't exist in-memory or on-disk, so
                                 # skip it.
                                 continue
 
                         if pfmri:
-                                try:
-                                        entries = [(pfmri,
-                                            part.get_entry(pfmri))]
-                                except api_errors.UnknownCatalogEntry:
+                                entry = part.get_entry(pfmri)
+                                if entry is None:
                                         # Package isn't in this part; skip it.
                                         continue
+                                entries = [(pfmri, entry)]
                         else:
                                 entries = part.entries()
 
@@ -1189,6 +1364,84 @@ class Catalog(object):
                                 nentry = copy.deepcopy(entry)
                                 npart.add(f, metadata=nentry, op_time=op_time)
 
+        def __entries(self, cb=None, info_needed=EmptyI,
+            last_version=False, locales=None, ordered=False, pubs=EmptyI,
+            tuples=False):
+                base = self.get_part(self.__BASE_PART, must_exist=True)
+                if base is None:
+                        # Catalog contains nothing.
+                        return
+
+                if not locales:
+                        locales = set(("C",))
+                else:
+                        locales = set(locales)
+
+                parts = []
+                if self.DEPENDENCY in info_needed:
+                        part = self.get_part(self.__DEPS_PART, must_exist=True)
+                        if part is not None:
+                                parts.append(part)
+
+                if self.SUMMARY in info_needed:
+                        for locale in locales:
+                                part = self.get_part(
+                                    "%s.%s" % (self.__SUMM_PART_PFX, locale),
+                                    must_exist=True)
+                                if part is None:
+                                        # Data not available for this
+                                        # locale.
+                                        continue
+                                parts.append(part)
+
+                def merge_entry(src, dest):
+                        for k, v in src.iteritems():
+                                if k == "actions":
+                                        dest.setdefault(k, [])
+                                        dest[k] += v
+                                elif k != "version":
+                                        dest[k] = v
+
+                if tuples:
+                        for r, bentry in base.tuple_entries(cb=cb,
+                            last=last_version, ordered=ordered, pubs=pubs):
+                                pub, stem, ver = r
+                                mdata = {}
+                                merge_entry(bentry, mdata)
+                                for part in parts:
+                                        entry = part.get_entry(pub=pub,
+                                            stem=stem, ver=ver)
+                                        if entry is None:
+                                                # Part doesn't have this FMRI,
+                                                # so skip it.
+                                                continue
+                                        for k, v in entry.iteritems():
+                                                if k == "actions":
+                                                        mdata.setdefault(k, [])
+                                                        mdata[k] += v
+                                                elif k != "version":
+                                                        mdata[k] = v
+                                yield r, mdata
+                        return
+
+                for f, bentry in base.entries(cb=cb, last=last_version,
+                    ordered=ordered, pubs=pubs):
+                        mdata = {}
+                        merge_entry(bentry, mdata)
+                        for part in parts:
+                                entry = part.get_entry(f)
+                                if entry is None:
+                                        # Part doesn't have this FMRI,
+                                        # so skip it.
+                                        continue
+                                for k, v in entry.iteritems():
+                                        if k == "actions":
+                                                mdata.setdefault(k, [])
+                                                mdata[k] += v
+                                        elif k != "version":
+                                                mdata[k] = v
+                        yield f, mdata
+
         def __finalize(self, pfmris=None, pubs=None, sort=True):
                 """Private finalize method; exposes additional controls for
                 internal callers."""
@@ -1197,7 +1450,7 @@ class Catalog(object):
                 package_version_count = 0
 
                 part = self.get_part(self.__BASE_PART, must_exist=True)
-                if part:
+                if part is not None:
                         # If the base Catalog didn't exist (in-memory or on-
                         # disk) that implies there is nothing to sort and
                         # there are no packages (since the base catalog part
@@ -1219,7 +1472,13 @@ class Catalog(object):
         def __gen_actions(actions, excludes=EmptyI):
                 for astr in actions:
                         a = pkg.actions.fromstr(astr)
-                        if a.include_this(excludes):
+                        if a.name == "set" and \
+                            (a.attrs["name"].startswith("facet") or
+                            a.attrs["name"].startswith("variant")):
+                                # Don't filter actual facet or variant
+                                # set actions.
+                                yield a
+                        elif a.include_this(excludes):
                                 yield a
 
         def __gen_lazy_actions(self, f, info_needed, locales=EmptyI,
@@ -1289,11 +1548,11 @@ class Catalog(object):
         def __get_update(self, name, cache=True, must_exist=False):
                 # First, check if the update has already been cached,
                 # and if so, return it.
-                try:
-                        return self.__updates[name]
-                except KeyError:
-                        if not self.meta_root and must_exist:
-                                return
+                ulog = self.__updates.get(name, None)
+                if ulog is not None:
+                        return ulog
+                elif not self.meta_root and must_exist:
+                        return
 
                 # Next, if the update hasn't been cached,
                 # create an object for it.
@@ -1342,10 +1601,8 @@ class Catalog(object):
                         # The last component of the updatelog filename is the
                         # related locale.
                         locale = pname.split(".", 2)[2]
-                        try:
-                                parts = updates[locale]
-                        except KeyError:
-                                parts = updates[locale] = {}
+                        updates.setdefault(locale, {})
+                        parts = updates[locale]
                         parts[pname] = entries[pname]
 
                 logdate = datetime_to_update_ts(op_time)
@@ -1494,12 +1751,13 @@ class Catalog(object):
                 # XXX need filesystem unlock too?
                 self.__lock.release()
 
-        def actions(self, info_needed, excludes=EmptyI, locales=None):
+        def actions(self, info_needed, excludes=EmptyI, cb=None,
+            last=False, locales=None, ordered=False, pubs=EmptyI):
                 """A generator function that produces tuples of the format
                 (fmri, actions) as it iterates over the contents of the
                 catalog (where 'actions' is a generator that returns the
                 Actions corresponding to the requested information).
-                
+
                 If the catalog doesn't contain any action data for the package
                 entry, and manifest_cb was defined at Catalog creation time,
                 the action data will be lazy-loaded by the actions generator;
@@ -1513,8 +1771,16 @@ class Catalog(object):
 
                 'excludes' is a list of variants which will be used to determine
                 what should be allowed by the actions generator in addition to
-                what is specified by 'info_needed'.  If not provided, only
-                'info_needed' will determine what actions are returned.
+                what is specified by 'info_needed'.
+
+                'cb' is an optional callback function that will be executed for
+                each package before its action data is retrieved. It must accept
+                two arguments: 'pkg' and 'entry'.  'pkg' is an FMRI object and
+                'entry' is the dictionary structure of the catalog entry for the
+                package.  If the callback returns False, then the entry will not
+                be included in the results.  This can significantly improve
+                performance by avoiding action data retrieval for results that
+                will not be used.
 
                 'info_needed' is a set of one or more catalog constants
                 indicating the types of catalog data that will be returned
@@ -1528,27 +1794,29 @@ class Catalog(object):
                                 Any remaining set Actions not listed above, such
                                 as pkg.summary, pkg.description, etc.
 
+                'last' is a boolean value that indicates only the last entry
+                for each package on a per-publisher basis should be returned.
+                As long as the catalog has been saved since the last modifying
+                operation, or finalize() has has been called, this will also be
+                the newest version of the package.
+
                 'locales' is an optional set of locale names for which Actions
                 should be returned.  The default is set(('C',)) if not provided.
 
-                'pfmri' is an optional FMRI to limit the returned results to."""
+                'ordered' is an optional boolean value that indicates that
+                results should sorted by stem and then by publisher and
+                be in descending version order.  If False, results will be
+                in a ascending version order on a per-publisher, per-stem
+                basis.
 
-                assert info_needed
-                if not locales:
-                        locales = set(("C",))
-                else:
-                        locales = set(locales)
+                'pfmri' is an optional FMRI to limit the returned results to.
 
-                for f, entry in self.entries(info_needed=info_needed,
-                    locales=locales):
-                        if "actions" in entry:
-                                yield f, self.__gen_actions(entry["actions"],
-                                    excludes)
-                        elif self.__manifest_cb:
-                                yield f, self.__gen_lazy_actions(f, info_needed,
-                                    locales, excludes)
-                        else:
-                                yield f, EmptyI
+                'pubs' is an optional list of publisher prefixes to restrict
+                the results to."""
+
+                return self.__actions(info_needed, excludes=excludes,
+                    cb=cb, last_version=last, locales=locales, ordered=ordered,
+                    pubs=pubs)
 
         def add_package(self, pfmri, manifest=None, metadata=None):
                 """Add a package and its related metadata to the catalog and
@@ -1696,7 +1964,6 @@ class Catalog(object):
                         # this is safe.
                         old_batch_mode = self.batch_mode
                         self.batch_mode = True
-
                         self.__append(src, cb=cb, pfmri=pfmri, pubs=pubs)
                 finally:
                         self.batch_mode = old_batch_mode
@@ -1723,7 +1990,7 @@ class Catalog(object):
                                 for pname, pdata in metadata.iteritems():
                                         part = self.get_part(pname,
                                             must_exist=True)
-                                        if not part:
+                                        if part is None:
                                                 # Part doesn't exist; skip.
                                                 continue
 
@@ -1799,6 +2066,28 @@ class Catalog(object):
                         self.batch_mode = old_batch_mode
                         self.__unlock_catalog()
 
+        def categories(self, excludes=EmptyI, pubs=EmptyI):
+                """Returns a set of tuples of the form (scheme, category)
+                containing the names of all categories in use by the last
+                version of each unique package in the catalog on a per-
+                publisher basis.
+
+                'excludes' is a list of variants which will be used to
+                determine what category actions will be checked.
+
+                'pubs' is an optional list of publisher prefixes to restrict
+                the results to."""
+
+                acts = self.__actions([self.SUMMARY], excludes=excludes,
+                    last_version=True, pubs=pubs)
+                return set((
+                    sc
+                    for f, acts in acts
+                    for a in acts
+                    if a.has_category_info()
+                    for sc in a.parse_category_info()
+                ))
+
         @property
         def created(self):
                 """A UTC datetime object indicating the time the catalog was
@@ -1823,7 +2112,8 @@ class Catalog(object):
                 self.__parts = {}
                 self.__updates = {}
 
-        def entries(self, info_needed=EmptyI, locales=None):
+        def entries(self, info_needed=EmptyI, last=False, locales=None,
+            ordered=False, pubs=EmptyI):
                 """A generator function that produces tuples of the format
                 (fmri, metadata) as it iterates over the contents of the
                 catalog (where 'metadata' is a dict containing the requested
@@ -1853,63 +2143,32 @@ class Catalog(object):
                                 pkg.description, etc. in a list under the key
                                 'actions'.
 
+                'last' is a boolean value that indicates only the last entry
+                for each package on a per-publisher basis should be returned.
+                As long as the catalog has been saved since the last modifying
+                operation, or finalize() has has been called, this will also be
+                the newest version of the package.
+
                 'locales' is an optional set of locale names for which Actions
                 should be returned.  The default is set(('C',)) if not provided.
                 Note that unlike actions(), catalog entries will not lazy-load
-                action data if it is missing from the catalog."""
+                action data if it is missing from the catalog.
 
-                base = self.get_part(self.__BASE_PART, must_exist=True)
-                if not base:
-                        # Catalog contains nothing.
-                        return
+                'ordered' is an optional boolean value that indicates that
+                results should sorted by stem and then by publisher and
+                be in descending version order.  If False, results will be
+                in a ascending version order on a per-publisher, per-stem
+                basis.
 
-                if not locales:
-                        locales = set(("C",))
-                else:
-                        locales = set(locales)
+                'pubs' is an optional list of publisher prefixes to restrict
+                the results to."""
 
-                parts = []
-                if self.DEPENDENCY in info_needed:
-                        part = self.get_part(self.__DEPS_PART, must_exist=True)
-                        if part:
-                                parts.append(part)
+                return self.__entries(info_needed=info_needed,
+                    last_version=last, locales=locales, ordered=ordered,
+                    pubs=pubs)
 
-                if self.SUMMARY in info_needed:
-                        for locale in locales:
-                                part = self.get_part(
-                                    "%s.%s" % (self.__SUMM_PART_PFX, locale),
-                                    must_exist=True)
-                                if not part:
-                                        # Data not available for this
-                                        # locale.
-                                        continue
-                                parts.append(part)
-
-                def merge_entry(src, dest):
-                        for k, v in src.iteritems():
-                                if k == "actions":
-                                        dest.setdefault(k, [])
-                                        dest[k] += v
-                                elif k != "version":
-                                        dest[k] = v
-
-                def merge_meta(pfmri, meta):
-                        for part in parts:
-                                try:
-                                        entry = part.get_entry(pfmri)
-                                except api_errors.UnknownCatalogEntry:
-                                        # Part doesn't have this FMRI,
-                                        # so skip it.
-                                        continue
-                                merge_entry(entry, meta)
-
-                for f, bentry in base.entries():
-                        mdata = {}
-                        merge_entry(bentry, mdata)
-                        merge_meta(f, mdata)
-                        yield f, mdata
-
-        def entries_by_version(self, name, info_needed=EmptyI, locales=None):
+        def entries_by_version(self, name, info_needed=EmptyI, locales=None,
+            pubs=EmptyI):
                 """A generator function that produces tuples of the format
                 (version, entries) as it iterates over the contents of the
                 the catalog, where entries is a list of tuples of the format
@@ -1942,10 +2201,12 @@ class Catalog(object):
 
                 'locales' is an optional set of locale names for which Actions
                 should be returned.  The default is set(('C',)) if not provided.
-                """
+
+                'pubs' is an optional list of publisher prefixes to restrict
+                the results to."""
 
                 base = self.get_part(self.__BASE_PART, must_exist=True)
-                if not base:
+                if base is None:
                         # Catalog contains nothing.
                         return
 
@@ -1957,7 +2218,7 @@ class Catalog(object):
                 parts = []
                 if self.DEPENDENCY in info_needed:
                         part = self.get_part(self.__DEPS_PART, must_exist=True)
-                        if part:
+                        if part is not None:
                                 parts.append(part)
 
                 if self.SUMMARY in info_needed:
@@ -1965,7 +2226,7 @@ class Catalog(object):
                                 part = self.get_part(
                                     "%s.%s" % (self.__SUMM_PART_PFX, locale),
                                     must_exist=True)
-                                if not part:
+                                if part is None:
                                         # Data not available for this
                                         # locale.
                                         continue
@@ -1979,24 +2240,101 @@ class Catalog(object):
                                 elif k != "version":
                                         dest[k] = v
 
-                def merge_meta(pfmri, meta):
-                        for part in parts:
-                                try:
-                                        entry = part.get_entry(pfmri)
-                                except api_errors.UnknownCatalogEntry:
-                                        # Part doesn't have this FMRI,
-                                        # so skip it.
-                                        continue
-                                merge_entry(entry, meta)
-
-                for ver, entries in base.entries_by_version(name):
+                for ver, entries in base.entries_by_version(name, pubs=pubs):
                         nentries = []
                         for f, bentry in entries:
                                 mdata = {}
                                 merge_entry(bentry, mdata)
-                                merge_meta(f, mdata)
+                                for part in parts:
+                                        entry = part.get_entry(f)
+                                        if entry is None:
+                                                # Part doesn't have this FMRI,
+                                                # so skip it.
+                                                continue
+                                        merge_entry(entry, mdata)
                                 nentries.append((f, mdata))
                         yield ver, nentries
+
+        def entry_actions(self, info_needed, excludes=EmptyI, cb=None,
+            last=False, locales=None, ordered=False, pubs=EmptyI):
+                """A generator function that produces tuples of the format
+                ((pub, stem, version), entry, actions) as it iterates over
+                the contents of the catalog (where 'actions' is a generator
+                that returns the Actions corresponding to the requested
+                information).
+
+                If the catalog doesn't contain any action data for the package
+                entry, and manifest_cb was defined at Catalog creation time,
+                the action data will be lazy-loaded by the actions generator;
+                otherwise it will return an empty iterator.  This means that
+                the manifest_cb will be executed even for packages that don't
+                actually have any actions corresponding to info_needed.  For
+                example, if a package doesn't have any dependencies, the
+                manifest_cb will still be executed.  This was considered a
+                reasonable compromise as packages are generally expected to
+                have DEPENDENCY and SUMMARY information.
+
+                'excludes' is a list of variants which will be used to determine
+                what should be allowed by the actions generator in addition to
+                what is specified by 'info_needed'.
+
+                'cb' is an optional callback function that will be executed for
+                each package before its action data is retrieved. It must accept
+                two arguments: 'pkg' and 'entry'.  'pkg' is an FMRI object and
+                'entry' is the dictionary structure of the catalog entry for the
+                package.  If the callback returns False, then the entry will not
+                be included in the results.  This can significantly improve
+                performance by avoiding action data retrieval for results that
+                will not be used.
+
+                'info_needed' is a set of one or more catalog constants
+                indicating the types of catalog data that will be returned
+                in 'actions' in addition to the above:
+
+                        DEPENDENCY
+                                Depend and set Actions for package obsoletion,
+                                renaming, variants.
+
+                        SUMMARY
+                                Any remaining set Actions not listed above, such
+                                as pkg.summary, pkg.description, etc.
+
+                'last' is a boolean value that indicates only the last entry
+                for each package on a per-publisher basis should be returned.
+                As long as the catalog has been saved since the last modifying
+                operation, or finalize() has has been called, this will also be
+                the newest version of the package.
+
+                'locales' is an optional set of locale names for which Actions
+                should be returned.  The default is set(('C',)) if not provided.
+
+                'ordered' is an optional boolean value that indicates that
+                results should sorted by stem and then by publisher and
+                be in descending version order.  If False, results will be
+                in a ascending version order on a per-publisher, per-stem
+                basis.
+
+                'pfmri' is an optional FMRI to limit the returned results to.
+
+                'pubs' is an optional list of publisher prefixes to restrict
+                the results to."""
+
+                for r, entry in self.__entries(cb=cb, info_needed=info_needed,
+                    locales=locales, last_version=last, ordered=ordered,
+                    pubs=pubs, tuples=True):
+                        if "actions" in entry:
+                                yield (r, entry,
+                                    self.__gen_actions(entry["actions"],
+                                    excludes))
+                        elif self.__manifest_cb:
+                                pub, stem, ver = r
+                                f = fmri.PkgFmri("%s@%s" % (stem, ver),
+                                    publisher=pub)
+                                yield (r, entry,
+                                    self.__gen_lazy_actions(f, info_needed,
+                                    locales, excludes))
+                        else:
+                                yield r, entry, EmptyI
 
         @property
         def exists(self):
@@ -2024,41 +2362,62 @@ class Catalog(object):
 
                 return self.__finalize(pfmris=pfmris, pubs=pubs)
 
-        def fmris(self, objects=True):
+        def fmris(self, last=False, objects=True, ordered=False, pubs=EmptyI):
                 """A generator function that produces FMRIs as it iterates
                 over the contents of the catalog.
 
+                'last' is a boolean value that indicates only the last FMRI
+                for each package on a per-publisher basis should be returned.
+                As long as the catalog has been saved since the last modifying
+                operation, or finalize() has has been called, this will also be
+                the newest version of the package.
+
                 'objects' is an optional boolean value indicating whether
-                FMRIs should be returned as FMRI objects or as strings."""
+                FMRIs should be returned as FMRI objects or as strings.
+
+                'ordered' is an optional boolean value that indicates that
+                results should sorted by stem and then by publisher and
+                be in descending version order.  If False, results will be
+                in a ascending version order on a per-publisher, per-stem
+                basis.
+
+                'pubs' is an optional list of publisher prefixes to restrict
+                the results to."""
 
                 base = self.get_part(self.__BASE_PART, must_exist=True)
-                if not base:
+                if base is None:
                         # Catalog contains nothing.
 
                         # This construction is necessary to get python to
                         # return no results properly to callers expecting
                         # a generator function.
                         return iter(())
-                return base.fmris(objects=objects)
+                return base.fmris(last=last, objects=objects, ordered=ordered,
+                    pubs=pubs)
 
-        def fmris_by_version(self, name):
+        def fmris_by_version(self, name, pubs=EmptyI):
                 """A generator function that produces tuples of (version,
                 fmris), where fmris is a of the fmris related to the
-                version, for the given package name."""
+                version, for the given package name.
+
+                'pubs' is an optional list of publisher prefixes to restrict
+                the results to."""
 
                 base = self.get_part(self.__BASE_PART, must_exist=True)
-                if not base:
+                if base is None:
                         # Catalog contains nothing.
 
                         # This construction is necessary to get python to
                         # return no results properly to callers expecting
                         # a generator function.
                         return iter(())
-                return base.fmris_by_version(name)
+                return base.fmris_by_version(name, pubs=pubs)
 
         def get_entry(self, pfmri, info_needed=EmptyI, locales=None):
                 """Returns a dict containing the metadata for the specified
-                FMRI containing the requested information.
+                FMRI containing the requested information.  If the specified
+                FMRI does not exist in the catalog, a value of None will be
+                returned.
 
                 'metadata' always contains the following information at a
                  minimum:
@@ -2096,22 +2455,10 @@ class Catalog(object):
                                 elif k != "version":
                                         dest[k] = v
 
-                def merge_meta(pfmri, meta):
-                        for part in parts:
-                                try:
-                                        entry = part.get_entry(pfmri)
-                                except api_errors.UnknownCatalogEntry:
-                                        # Part doesn't have this FMRI,
-                                        # so skip it.
-                                        continue
-                                merge_entry(entry, meta)
-
                 parts = []
                 base = self.get_part(self.__BASE_PART, must_exist=True)
-                if not base:
-                        # Catalog contains nothing.
-                        raise api_errors.UnknownCatalogEntry(
-                            pfmri.get_fmri())
+                if base is None:
+                        return
 
                 if not locales:
                         locales = set(("C",))
@@ -2122,12 +2469,14 @@ class Catalog(object):
                 # must be present in the BASE catalog part.
                 mdata = {}
                 bentry = base.get_entry(pfmri)
+                if bentry is None:
+                        return
                 merge_entry(bentry, mdata)
 
                 if self.DEPENDENCY in info_needed:
                         part = self.get_part(self.__DEPS_PART,
                             must_exist=True)
-                        if part:
+                        if part is not None:
                                 parts.append(part)
 
                 if self.SUMMARY in info_needed:
@@ -2135,13 +2484,19 @@ class Catalog(object):
                                 part = self.get_part(
                                     "%s.%s" % (self.__SUMM_PART_PFX, locale),
                                     must_exist=True)
-                                if not part:
+                                if part is None:
                                         # Data not available for this
                                         # locale.
                                         continue
                                 parts.append(part)
 
-                merge_meta(pfmri, mdata)
+                for part in parts:
+                        entry = part.get_entry(pfmri)
+                        if entry is None:
+                                # Part doesn't have this FMRI,
+                                # so skip it.
+                                continue
+                        merge_entry(entry, mdata)
                 return mdata
 
         def get_entry_actions(self, pfmri, info_needed, excludes=EmptyI,
@@ -2183,6 +2538,8 @@ class Catalog(object):
 
                 entry = self.get_entry(pfmri, info_needed=info_needed,
                     locales=locales)
+                if entry is None:
+                        raise api_errors.UnknownCatalogEntry(pfmri.get_fmri())
 
                 if "actions" in entry:
                         return self.__gen_actions(entry["actions"], excludes)
@@ -2200,6 +2557,8 @@ class Catalog(object):
 
                 info_needed = [self.DEPENDENCY]
                 entry = self.get_entry(pfmri, info_needed=info_needed)
+                if entry is None:
+                        raise api_errors.UnknownCatalogEntry(pfmri.get_fmri())
 
                 if "actions" in entry:
                         actions = self.__gen_actions(entry["actions"])
@@ -2226,6 +2585,8 @@ class Catalog(object):
                 be a string, list, dict, etc."""
 
                 entry = self.get_entry(pfmri)
+                if entry is None:
+                        raise api_errors.UnknownCatalogEntry(pfmri.get_fmri())
                 return (
                     (k.split("signature-")[1], v)
                     for k, v in entry.iteritems()
@@ -2253,11 +2614,11 @@ class Catalog(object):
 
                 # First, check if the part has already been cached, and if so,
                 # return it.
-                try:
-                        return self.__parts[name]
-                except KeyError:
-                        if not self.meta_root and must_exist:
-                                return
+                part = self.__parts.get(name, None)
+                if part is not None:
+                        return part
+                elif not self.meta_root and must_exist:
+                        return
 
                 # Next, if the part hasn't been cached, create an object for it.
                 part = CatalogPart(name, meta_root=self.meta_root,
@@ -2421,15 +2782,18 @@ class Catalog(object):
                 # Ensure updates are in chronological ascending order.
                 return sorted(updates)
 
-        def names(self):
+        def names(self, pubs=EmptyI):
                 """Returns a set containing the names of all the packages in
-                the Catalog."""
+                the Catalog.
+
+                'pubs' is an optional list of publisher prefixes to restrict
+                the results to."""
 
                 base = self.get_part(self.__BASE_PART, must_exist=True)
-                if not base:
+                if base is None:
                         # Catalog contains nothing.
                         return set()
-                return base.names()
+                return base.names(pubs=pubs)
 
         @property
         def package_count(self):
@@ -2448,12 +2812,29 @@ class Catalog(object):
 
                 return self._attrs.parts
 
+        def pkg_names(self, pubs=EmptyI):
+                """A generator function that produces package tuples of the form
+                (pub, stem) as it iterates over the contents of the catalog.
+
+                'pubs' is an optional list that contains the prefixes of the
+                publishers to restrict the results to."""
+
+                base = self.get_part(self.__BASE_PART, must_exist=True)
+                if base is None:
+                        # Catalog contains nothing.
+
+                        # This construction is necessary to get python to
+                        # return no results properly to callers expecting
+                        # a generator function.
+                        return iter(())
+                return base.pkg_names(pubs=pubs)
+
         def publishers(self):
                 """Returns a set containing the prefixes of all the publishers
                 in the Catalog."""
 
                 base = self.get_part(self.__BASE_PART, must_exist=True)
-                if not base:
+                if base is None:
                         # Catalog contains nothing.
                         return set()
                 return set(p for p in base.publishers())
@@ -2476,16 +2857,16 @@ class Catalog(object):
 
                         for name in self._attrs.parts:
                                 part = self.get_part(name)
-                                if not part:
+                                if part is None:
                                         continue
 
-                                try:
-                                        pkg_entry = part.get_entry(pfmri)
-                                except api_errors.UnknownCatalogEntry:
+                                pkg_entry = part.get_entry(pfmri)
+                                if pkg_entry is None:
                                         if name == self.__BASE_PART:
                                                 # Entry should exist in at least
                                                 # the base part.
-                                                raise
+                                                raise api_errors.UnknownCatalogEntry(
+                                                    pfmri.get_fmri())
                                         # Skip; package's presence is optional
                                         # in other parts.
                                         continue
@@ -2504,7 +2885,6 @@ class Catalog(object):
 
                 self.__lock_catalog()
                 try:
-                        # Ensure consistent catalog state.
                         self.__save()
                 finally:
                         self.__unlock_catalog()
@@ -2531,19 +2911,89 @@ class Catalog(object):
                                                 continue
                 return sigs
 
-        def tuples(self):
-                """A generator function that produces FMRI tuples as it iterates
-                over the contents of the catalog."""
+        def tuples(self, last=False, ordered=False, pubs=EmptyI):
+                """A generator function that produces FMRI tuples as it
+                iterates over the contents of the catalog.
+
+                'last' is a boolean value that indicates only the last FMRI
+                tuple for each package on a per-publisher basis should be
+                returned.  As long as the catalog has been saved since the
+                last modifying operation, or finalize() has has been called,
+                this will also be the newest version of the package.
+
+                'ordered' is an optional boolean value that indicates that
+                results should sorted by stem and then by publisher and
+                be in descending version order.  If False, results will be
+                in a ascending version order on a per-publisher, per-stem
+                basis.
+
+                'pubs' is an optional list of publisher prefixes to restrict
+                the results to."""
 
                 base = self.get_part(self.__BASE_PART, must_exist=True)
-                if not base:
+                if base is None:
                         # Catalog contains nothing.
 
                         # This construction is necessary to get python to
                         # return no results properly to callers expecting
                         # a generator function.
                         return iter(())
-                return base.tuples()
+                return base.tuples(last=last, ordered=ordered, pubs=pubs)
+
+        def tuple_entries(self, info_needed=EmptyI, last=False, locales=None,
+            ordered=False, pubs=EmptyI):
+                """A generator function that produces tuples of the format
+                ((pub, stem, version), entry, actions) as it iterates over
+                the contents of the catalog (where 'metadata' is a dict
+                containing the requested information).
+
+                'metadata' always contains the following information at a
+                 minimum:
+
+                        BASE
+                                'metadata' will be populated with Manifest
+                                signature data, if available, using key-value
+                                pairs of the form 'signature-<name>': value.
+
+                'info_needed' is an optional list of one or more catalog
+                constants indicating the types of catalog data that will
+                be returned in 'metadata' in addition to the above:
+
+                        DEPENDENCY
+                                'metadata' will contain depend and set Actions
+                                for package obsoletion, renaming, variants,
+                                and facets stored in a list under the
+                                key 'actions'.
+
+                        SUMMARY
+                                'metadata' will contain any remaining Actions
+                                not listed above, such as pkg.summary,
+                                pkg.description, etc. in a list under the key
+                                'actions'.
+
+                'last' is a boolean value that indicates only the last entry
+                for each package on a per-publisher basis should be returned.
+                As long as the catalog has been saved since the last modifying
+                operation, or finalize() has has been called, this will also be
+                the newest version of the package.
+
+                'locales' is an optional set of locale names for which Actions
+                should be returned.  The default is set(('C',)) if not provided.
+                Note that unlike actions(), catalog entries will not lazy-load
+                action data if it is missing from the catalog.
+
+                'ordered' is an optional boolean value that indicates that
+                results should sorted by stem and then by publisher and
+                be in descending version order.  If False, results will be
+                in a ascending version order on a per-publisher, per-stem
+                basis.
+
+                'pubs' is an optional list of publisher prefixes to restrict
+                the results to."""
+
+                return self.__entries(info_needed=info_needed,
+                    locales=locales, last_version=last, ordered=ordered,
+                    pubs=pubs, tuples=True)
 
         @property
         def updates(self):
@@ -2566,12 +3016,14 @@ class Catalog(object):
                 assert not self.log_updates and not self.read_only
 
                 base = self.get_part(self.__BASE_PART, must_exist=True)
-                if not base:
+                if base is None:
                         raise api_errors.UnknownCatalogEntry(pfmri.get_fmri())
 
                 # get_entry returns the actual catalog entry, so updating it
                 # simply requires reassignment.
                 entry = base.get_entry(pfmri)
+                if entry is None:
+                        raise api_errors.UnknownCatalogEntry(pfmri.get_fmri())
                 if metadata is None:
                         if "metadata" in entry:
                                 del entry["metadata"]
@@ -2587,19 +3039,14 @@ class Catalog(object):
 
                 for name in self._attrs.parts:
                         part = self.get_part(name)
-                        if not part:
+                        if part is None:
                                 # Part does not exist; no validation needed.
                                 continue
                         part.validate()
 
                 for name in self._attrs.updates:
-                        try:
-                                ulog = self.__updates[name]
-                        except KeyError:
-                                ulog = CatalogUpdate(name,
-                                    meta_root=self.meta_root)
-
-                        if not ulog:
+                        ulog = self.__get_update(name, cache=False)
+                        if ulog is None:
                                 # Update does not exist; no validation needed.
                                 continue
                         ulog.validate()
@@ -2631,7 +3078,7 @@ def verify(filename):
                 catobj = CatalogUpdate(fn, meta_root=path)
         else:
                 # Unrecognized.
-                raise api_errors.UnrecognizedCatalogPart(fn) 
+                raise api_errors.UnrecognizedCatalogPart(fn)
 
         # With the else case above, this should never be None.
         assert catobj
@@ -2770,7 +3217,6 @@ def extract_matching_fmris(pkgs, patterns=None, matcher=None,
         # 'pattern' may be a partially or fully decorated fmri; we want
         # to extract its name and version to match separately against
         # the catalog.
-        # XXX "5.11" here needs to be saner
         tuples = {}
 
         if patterns:
@@ -2789,11 +3235,13 @@ def extract_matching_fmris(pkgs, patterns=None, matcher=None,
                         tuples[pattern] = pattern.tuple()
                 else:
                         assert pattern != None
+                        # XXX "5.11" here needs to be saner
                         tuples[pattern] = \
                             fmri.PkgFmri(pattern, "5.11").tuple()
 
         def by_pattern(p):
                 cat_pub, cat_name = p.tuple()[:2]
+                pat_match = False
                 for pattern in patterns:
                         pat_pub, pat_name, pat_version = tuples[pattern]
 
@@ -2816,15 +3264,17 @@ def extract_matching_fmris(pkgs, patterns=None, matcher=None,
                                 continue
 
                         if counthash is not None:
-                                try:
-                                        counthash[pattern] += 1
-                                except KeyError:
-                                        counthash[pattern] = 1
+                                counthash.setdefault(pattern, 0)
+                                counthash[pattern] += 1
+                        pat_match = True
+
+                if pat_match:
                         return p
 
         def by_version(p):
+                pat_match = False
                 for ver in versions:
-                        if ver == p.version:
+                        if p.version == ver:
                                 matched["version"].add(ver)
                                 if counthash is not None:
                                         sver = str(ver)
@@ -2832,7 +3282,9 @@ def extract_matching_fmris(pkgs, patterns=None, matcher=None,
                                                 counthash[sver] += 1
                                         else:
                                                 counthash[sver] = 1
-                                return p
+                                pat_match = True
+                if pat_match:
+                        return p
 
         ret = []
         if patterns:

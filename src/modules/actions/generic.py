@@ -114,7 +114,12 @@ class Action(object):
 
                 self.attrs = attrs
 
-                self.set_data(data)
+                # Since this is a hot path, avoid a function call unless
+                # absolutely necessary.
+                if data is None:
+                        self.data = None
+                else:
+                        self.set_data(data)
 
         def set_data(self, data):
                 """This function sets the data field of the action.
@@ -124,7 +129,7 @@ class Action(object):
                 which provides the file when called, or a file handle to the
                 file."""
 
-                if data == None:
+                if data is None:
                         self.data = None
                         return
 
@@ -310,7 +315,7 @@ class Action(object):
                     "path: usr/lib/libc.so.1".
                 """
 
-                if self.key_attr == None:
+                if self.key_attr is None:
                         return str(self)
                 return "%s: %s" % \
                     (self.name, self.attrs.get(self.key_attr, "???"))

@@ -183,7 +183,6 @@ class Image(object):
                         assert(not force)
                 else:
                         assert(imgtype is not None)
-
                 self.__init_catalogs()
                 self.__upgraded = False
 
@@ -281,7 +280,7 @@ class Image(object):
                 while True:
                         imgtype = self.image_type(d)
                         if imgtype == IMG_USER:
-                                # XXX Should look at image file to determine 
+                                # XXX Should look at image file to determine
                                 # repo URIs.
                                 if exact_match and \
                                     os.path.realpath(startd) != \
@@ -516,7 +515,7 @@ class Image(object):
                 self.history.log_operation_end()
 
         def is_liveroot(self):
-                return bool(self.root == "/" or 
+                return bool(self.root == "/" or
                     DebugValues.get_value("simulate_live_root"))
 
         def is_zone(self):
@@ -539,28 +538,24 @@ class Image(object):
 
         def get_publisher_ranks(self):
                 """Returns dictionary of publishers by name; each
-                entry contains a tuple of search order index starting 
-                at 0, and a boolean indicating whether or not 
+                entry contains a tuple of search order index starting
+                at 0, and a boolean indicating whether or not
                 this publisher is "sticky"."""
 
                 # automatically make disabled publishers not sticky
                 so = self.cfg_cache.publisher_search_order
 
                 ret = dict([
-                            (p.prefix, 
-                             (so.index(p.prefix), 
-                              not p.disabled and p.sticky)) 
-                            for p in self.gen_publishers()
-                            ])
+                    (p.prefix, (so.index(p.prefix), p.sticky))
+                    for p in self.gen_publishers()
+                ])
 
                 # add any publishers for pkgs that are installed,
                 # but have been deleted... so they're not sticky.
-                for pfmri in self.gen_installed_pkgs():
-                        ret.setdefault(pfmri.get_publisher(), 
-                            (len(ret) + 1, False))
-                
+                for pub in self.get_installed_pubs():
+                        ret.setdefault(pub, (len(ret) + 1, False))
                 return ret
-                        
+
         def check_cert_validity(self):
                 """Look through the publishers defined for the image.  Print
                 a message and exit with an error if one of the certificates
@@ -653,7 +648,7 @@ class Image(object):
                         e = api_errors.MoveRelativeToSelf()
                         self.history.log_operation_end(e)
                         raise e
-                
+
                 # compute new order and set it
                 so = self.cfg_cache.publisher_search_order
                 so.remove(bm)
@@ -797,7 +792,7 @@ class Image(object):
                         self.history.operation_start_state = ip.get_plan()
 
                 ip.evaluate(verbose)
-                
+
                 self.imageplan = ip
 
                 if self.history.operation_name:
@@ -916,7 +911,7 @@ class Image(object):
                 for all variants"""
 
                 # Normally elide other arch variants, facets
-                
+
                 if all_variants:
                         excludes = EmptyI
                 else:
@@ -1165,9 +1160,8 @@ class Image(object):
                 """Returns the list of states a package is in for this image."""
 
                 cat = self.get_catalog(self.IMG_CATALOG_KNOWN)
-                try:
-                        entry = cat.get_entry(pfmri)
-                except api_errors.UnknownCatalogEntry:
+                entry = cat.get_entry(pfmri)
+                if entry is None:
                         return []
                 return entry["metadata"]["states"]
 
@@ -1184,9 +1178,8 @@ class Image(object):
                 else:
                         cat = self.get_catalog(self.IMG_CATALOG_KNOWN)
 
-                try:
-                        entry = cat.get_entry(pfmri)
-                except api_errors.UnknownCatalogEntry:
+                entry = cat.get_entry(pfmri)
+                if entry is None:
                         return False
                 states = entry["metadata"]["states"]
                 return self.PKG_STATE_INSTALLED in states
@@ -1196,7 +1189,7 @@ class Image(object):
                 action is to be included in the image using the currently
                 defined variants & facets for the image, or an updated set if
                 new_variants or new_facets are specified."""
-                
+
                 if new_variants:
                         new_vars = self.cfg_cache.variants.copy()
                         new_vars.update(new_variants)
@@ -1310,19 +1303,18 @@ class Image(object):
                         # Need to get any state information from the old 'known'
                         # catalog and return it so that it will be merged with
                         # the new 'known' catalog.
-                        try:
-                                entry = old_kcat.get_entry(f)
+                        entry = old_kcat.get_entry(f)
+                        if entry is not None:
                                 old_kcat.remove_package(f)
-                        except api_errors.UnknownCatalogEntry:
+                                mdata = entry["metadata"]
+                                states = set(mdata["states"])
+                        else:
                                 # If the package can't be found
                                 # in the previous 'known'
                                 # catalog, then this is a
                                 # completely new package.
                                 states = set()
                                 mdata = { "states": states }
-                        else:
-                                mdata = entry["metadata"]
-                                states = set(mdata["states"])
 
                         if src_cat.version == 0:
                                 states.add(self.PKG_STATE_V0)
@@ -1341,13 +1333,13 @@ class Image(object):
 
                         dp = src_cat.get_part("catalog.dependency.C",
                             must_exist=True)
-                        try:
+                        dpent = None
+                        if dp is not None:
                                 dpent = dp.get_entry(f)
-                        except (api_errors.UnknownCatalogEntry, AttributeError):
-                                dpent = None
                         states.discard(self.PKG_STATE_OBSOLETE)
                         states.discard(self.PKG_STATE_RENAMED)
-                        if dpent:
+
+                        if dpent is not None:
                                 mfst = pkg.manifest.Manifest()
                                 mfst.set_content("\n".join(dpent["actions"]))
                                 if mfst.getbool("pkg.obsolete", "false"):
@@ -1567,6 +1559,13 @@ class Image(object):
                 cat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
                 for f in cat.fmris():
                         yield f
+
+        def get_installed_pubs(self):
+                """Returns a set containing the prefixes of all publishers with
+                installed packages."""
+
+                cat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
+                return cat.publishers()
 
         def __upgrade_image(self, progtrack=None):
                 """Transform the existing image structure and its data to
@@ -2315,7 +2314,7 @@ class Image(object):
                     noexecute=noexecute)
 
                 ip.plan_update()
-                
+
                 self.__call_imageplan_evaluate(ip, verbose)
 
         def make_uninstall_plan(self, fmri_list, recursive_removal,
@@ -2405,7 +2404,7 @@ class Image(object):
                 illegals = []
                 try:
                         for m in self.inventory(args, ordered=False):
-                                found.append(m[0])
+                                found.append(m)
                 except api_errors.InventoryException, e:
                         illegals = e.illegal
                         notfound = e.notfound

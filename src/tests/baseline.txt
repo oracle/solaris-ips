@@ -235,6 +235,14 @@ cli.t_api.py TestPkgApi.test_publisher_apis|pass
 cli.t_api.py TestPkgApi.test_refresh_transition|pass
 cli.t_api.py TestPkgApi.test_reset|pass
 cli.t_api_info.py TestApiInfo.test_info_local_remote|pass
+cli.t_api_list.py TestApiList.test_list_01_full|pass
+cli.t_api_list.py TestApiList.test_list_02_newest|pass
+cli.t_api_list.py TestApiList.test_list_03_cats|pass
+cli.t_api_list.py TestApiList.test_list_04_pubs|pass
+cli.t_api_list.py TestApiList.test_list_05_installed|pass
+cli.t_api_list.py TestApiList.test_list_06_upgradable|pass
+cli.t_api_list.py TestApiList.test_list_07_get_pkg_categories|pass
+cli.t_api_list.py TestApiList.test_list_08_patterns|pass
 cli.t_api_search.py TestApiSearchBasicsPersistentDepot.test_010_remote|pass
 cli.t_api_search.py TestApiSearchBasicsPersistentDepot.test_020_local_0|pass
 cli.t_api_search.py TestApiSearchBasicsPersistentDepot.test_030_degraded_local|pass
@@ -383,8 +391,8 @@ cli.t_pkg_info.py TestPkgInfoBasics.test_info_local_remote|pass
 cli.t_pkg_info.py TestPkgInfoBasics.test_pkg_info_bad_fmri|pass
 cli.t_pkg_install.py TestDependencies.test_exclude_dependencies|pass
 cli.t_pkg_install.py TestDependencies.test_incorporation_dependencies|pass
-cli.t_pkg_install.py TestDependencies.test_require_dependencies|pass
 cli.t_pkg_install.py TestDependencies.test_optional_dependencies|pass
+cli.t_pkg_install.py TestDependencies.test_require_dependencies|pass
 cli.t_pkg_install.py TestImageCreateCorruptImage.test_empty_ospkg|pass
 cli.t_pkg_install.py TestImageCreateCorruptImage.test_empty_var_pkg|pass
 cli.t_pkg_install.py TestImageCreateCorruptImage.test_ospkg_left_alone|pass
@@ -492,6 +500,7 @@ cli.t_pkg_intent.py TestPkgIntent.test_3_dependencies|pass
 cli.t_pkg_intent.py TestPkgIntent.test_4_image_upgrade|pass
 cli.t_pkg_intent.py TestPkgIntent.test_5_recursive_uninstall|pass
 cli.t_pkg_intent.py TestPkgIntent.test_6_deep_dependencies|pass
+cli.t_pkg_list.py TestPkgList.test_list_00|pass
 cli.t_pkg_list.py TestPkgList.test_list_01|pass
 cli.t_pkg_list.py TestPkgList.test_list_02|pass
 cli.t_pkg_list.py TestPkgList.test_list_03|pass
@@ -516,8 +525,8 @@ cli.t_pkg_publisher.py TestPkgPublisherBasics.test_publisher_bad_opts|pass
 cli.t_pkg_publisher.py TestPkgPublisherBasics.test_publisher_uuid|pass
 cli.t_pkg_publisher.py TestPkgPublisherBasics.test_publisher_validation|pass
 cli.t_pkg_publisher.py TestPkgPublisherMany.test_enable_disable|pass
-cli.t_pkg_publisher.py TestPkgPublisherMany.test_set_mirrors_origins|pass
 cli.t_pkg_publisher.py TestPkgPublisherMany.test_search_order|pass
+cli.t_pkg_publisher.py TestPkgPublisherMany.test_set_mirrors_origins|pass
 cli.t_pkg_rebuild_index.py TestPkgRebuildIndex.test_rebuild_index_bad_opts|pass
 cli.t_pkg_rebuild_index.py TestPkgRebuildIndex.test_rebuild_index_bad_perms|pass
 cli.t_pkg_refresh.py TestPkgRefreshMulti.test_catalog_v1|pass
@@ -585,11 +594,11 @@ cli.t_publish_api.py TestPkgPublicationApi.test_stress_file_publish|pass
 cli.t_publish_api.py TestPkgPublicationApi.test_stress_http_publish|pass
 cli.t_setUp.py TestSetUp.test_first_depot_start|pass
 cli.t_setUp.py TestSetUp.test_second_depot_start|pass
+cli.t_solver.py TestSolver.test_no_solution|pass
+cli.t_solver.py TestSolver.test_solution|pass
 cli.t_util_merge.py TestUtilMerge.test_0_merge|pass
 cli.t_util_update_file_layout.py TestFileManager.test_1|pass
 cli.t_util_update_file_layout.py TestFileManager.test_opts|pass
-cli.t_solver.py TestSolver.test_no_solution|pass
-cli.t_solver.py TestSolver.test_solution|pass
 cli.t_variants.py TestPkgVariants.test_old_zones_pkgs|pass
 cli.t_variants.py TestPkgVariants.test_variant_1|pass
 gui.t_pm_addrepo.py TestPkgGuiAddRepoBasics.testAddRepository|pass

@@ -71,6 +71,7 @@ import pkg.client.progress as progress
 import pkg.client.publisher as publisher
 import pkg.fmri as fmri
 import pkg.misc as misc
+import pkg.version as version
 
 from pkg.client import global_settings
 from pkg.client.debugvalues import DebugValues
@@ -79,7 +80,7 @@ from pkg.client.history import (RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
     RESULT_FAILED_OUTOFMEMORY)
 from pkg.misc import EmptyI, msg, PipeError
 
-CLIENT_API_VERSION = 24
+CLIENT_API_VERSION = 25
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -142,7 +143,7 @@ Usage:
 Basic subcommands:
         pkg install [-nvq] [--no-refresh] [--no-index] package...
         pkg uninstall [-nrvq] [--no-index] package...
-        pkg list [-Hafsuv] [--no-refresh] [package...]
+        pkg list [-Hafnsuv] [--no-refresh] [package...]
         pkg image-update [-fnvq] [--be-name name] [--no-refresh] [--no-index]
         pkg refresh [--full] [publisher ...]
         pkg version
@@ -220,31 +221,58 @@ def check_fmri_args(args):
 def list_inventory(img, args):
         """List packages."""
 
-        all_known = False
-        all_versions = True
+        opts, pargs = getopt.getopt(args, "Hafnsuv", ["no-refresh"])
+
         display_headers = True
         refresh_catalogs = True
+        pkg_list = api.ImageInterface.LIST_INSTALLED
         summary = False
-        upgradable_only = False
         verbose = False
+        variants = False
 
-        opts, pargs = getopt.getopt(args, "Hafsuv", ["no-refresh"])
-
+        ltypes = set()
         for opt, arg in opts:
-                if opt == "-a":
-                        all_known = True
-                elif opt == "-H":
+                if opt == "-H":
                         display_headers = False
+                elif opt == "-a":
+                        ltypes.add(opt)
+                        pkg_list = api.ImageInterface.LIST_INSTALLED_NEWEST
+                elif opt == "-f":
+                        ltypes.add(opt)
+                        pkg_list = api.ImageInterface.LIST_ALL
+                        variants = True
+                elif opt == "-n":
+                        ltypes.add(opt)
+                        pkg_list = api.ImageInterface.LIST_NEWEST
                 elif opt == "-s":
                         summary = True
                 elif opt == "-u":
-                        upgradable_only = True
+                        ltypes.add(opt)
+                        pkg_list = api.ImageInterface.LIST_UPGRADABLE
                 elif opt == "-v":
                         verbose = True
-                elif opt == "-f":
-                        all_versions = False
                 elif opt == "--no-refresh":
                         refresh_catalogs = False
+
+        allowed = [
+            ("-a", ("-f", "-s", "-v")),
+            ("-u", ("-s", "-v")),
+            ("-n", ("-s", "-v")),
+        ]
+
+        if "-f" in ltypes and "-a" not in ltypes:
+                usage(_("-f may only be used in combination with -a"),
+                    cmd="list")
+
+        for ltype, permitted in allowed:
+                if ltype in ltypes:
+                        ltypes.discard(ltype)
+                        diff = ltypes.difference(permitted)
+                        if not diff:
+                                # Only allowed options used.
+                                continue
+                        usage(_("%(opts)s may not be used with %(opt)s") % {
+                            "opts": ", ".join(diff), "opt": ltype })
 
         if summary and verbose:
                 usage(_("-s and -v may not be combined"), cmd="list")
@@ -259,143 +287,141 @@ def list_inventory(img, args):
         if not check_fmri_args(pargs):
                 return EXIT_OOPS
 
-        img.history.operation_name = "list"
-
-        api_inst = __api_alloc(img, quiet=True)
+        api_inst = __api_alloc(img, quiet=not display_headers)
         if api_inst == None:
                 return EXIT_OOPS
 
-        info_needed = frozenset([api.PackageInfo.SUMMARY])
-        ppub = img.get_preferred_publisher()
-        seen_one_pkg = False
+        api_inst.log_operation_start("list")
+        if pkg_list != api_inst.LIST_INSTALLED and refresh_catalogs:
+                # If the user requested packages other than those
+                # installed, ensure that a refresh is performed if
+                # needed since the catalog may be out of date or
+                # invalid as a result of publisher information
+                # changing (such as an origin uri, etc.).
+                try:
+                        api_inst.refresh()
+                except KeyboardInterrupt:
+                        raise
+                except:
+                        # Ignore the above error and just use what
+                        # already exists.
+                        pass
+
+        state_map = [
+            [(api.PackageInfo.UPGRADABLE, "u")],
+            [(api.PackageInfo.FROZEN, "f")],
+            [(api.PackageInfo.OBSOLETE, "o"),
+            (api.PackageInfo.RENAMED, "r")],
+            [(api.PackageInfo.EXCLUDES, "x")],
+            [(api.PackageInfo.INCORPORATED, "i")],
+        ]
+
+        pats = EmptyI
+        if pargs:
+                pats = pargs
+
         found = False
+        ppub = api_inst.get_preferred_publisher().prefix
         try:
-                if all_known and refresh_catalogs:
-                        # If the user requested all known packages, ensure that
-                        # a publisher metadata refresh is performed if needed
-                        # since the catalog may be out of date or invalid as
-                        # a result of publisher information changing (such as
-                        # an origin uri, etc.).
-                        tracker = get_tracker(quiet=not display_headers)
-                        try:
-                                img.refresh_publishers(progtrack=tracker)
-                        except KeyboardInterrupt:
-                                raise
-                        except:
-                                # Ignore the above error and just use what
-                                # already exists.
-                                pass
+                res = api_inst.get_pkg_list(pkg_list, patterns=pats,
+                    variants=variants)
+                for pt, summ, cats, states in res:
+                        found = True
+                        if display_headers:
+                                if verbose:
+                                        msg(fmt_str % \
+                                            ("FMRI", "STATE", "UFOXI"))
+                                elif summary:
+                                        msg(fmt_str % \
+                                            ("NAME (PUBLISHER)",
+                                            "SUMMARY"))
+                                else:
+                                        msg(fmt_str % \
+                                            ("NAME (PUBLISHER)",
+                                            "VERSION", "STATE", "UFOXI"))
+                                display_headers = False
 
-                res = misc.get_inventory_list(img, pargs,
-                    all_known, all_versions)
-                prev_pfmri_str = ""
-                prev_state = None
-                for pfmri, state in res:
-                        if all_versions and prev_pfmri_str and \
-                            prev_pfmri_str == pfmri.get_short_fmri() and \
-                            prev_state == state:
-                                continue
-                        prev_pfmri_str = pfmri.get_short_fmri()
-                        prev_state = state
-                        seen_one_pkg = True
-                        if upgradable_only and not state["upgradable"]:
-                                continue
-
-                        if not found:
-                                if display_headers:
-                                        if verbose:
-                                                msg(fmt_str % \
-                                                    ("FMRI", "STATE", "UFOXI"))
-                                        elif summary:
-                                                msg(fmt_str % \
-                                                    ("NAME (PUBLISHER)",
-                                                    "SUMMARY"))
+                        ufoxi = ""
+                        for sentry in state_map:
+                                for s, v in sentry:
+                                        if s in states:
+                                                st = v
+                                                break
                                         else:
-                                                msg(fmt_str % \
-                                                    ("NAME (PUBLISHER)",
-                                                    "VERSION", "STATE", "UFOXI"))
-                                found = True
-                        ufix = "%c%c%c%c%c" % \
-                            (state["upgradable"] and "u" or "-",
-                            state["frozen"] and "f" or "-",
-                            state["obsolete"] and "o" or
-                                (state["renamed"] and "r" or "-"),
-                            state["excludes"] and "x" or "-",
-                            state["incorporated"] and "i" or "-")
+                                                st = "-"
+                                ufoxi += st
 
-                        if pfmri.publisher == ppub:
-                                pub = ""
+                        pub, stem, ver = pt
+                        if pub == ppub:
+                                spub = ""
                         else:
-                                pub = " (" + pfmri.get_publisher() + ")"
+                                spub = " (" + pub + ")"
 
+                        # Check for installed state first.
                         st_str = ""
-                        if state["state"] == img.PKG_STATE_KNOWN:
-                                st_str = _("known")
-                        elif state["state"] == img.PKG_STATE_INSTALLED:
+                        if api.PackageInfo.INSTALLED in states:
                                 st_str = _("installed")
+                        else:
+                                st_str = _("known")
 
                         if verbose:
-                                msg("%-64s %-10s %s" % (pfmri, st_str, ufix))
-                        elif summary:
-                                pf = pfmri.get_name() + pub
+                                pfmri = "pkg://%s/%s@%s" % (pub, stem, ver)
+                                msg("%-64s %-10s %s" % (pfmri, st_str, ufoxi))
+                                continue
 
-                                try:
-                                        ret = api_inst.info([pfmri],
-                                            not all_known, info_needed)
-                                        pis = ret[api.ImageInterface.INFO_FOUND]
-                                except api_errors.ApiException, e:
-                                        error(e)
-                                        return EXIT_OOPS
+                        pf = stem + spub
+                        if summary:
+                                msg(fmt_str % (pf, summ))
+                                continue
 
-                                msg(fmt_str % (pf, pis[0].summary))
-
-                        else:
-                                pf = pfmri.get_name() + pub
-                                msg(fmt_str % (pf, pfmri.get_version(), st_str,
-                                    ufix))
+                        sver = version.Version.split(ver)[-1]
+                        msg(fmt_str % (pf, sver, st_str, ufoxi))
 
                 if not found:
-                        if not seen_one_pkg and not all_known:
+                        if pargs:
+                                raise api_errors.InventoryException(
+                                    notfound=pargs)
+                        if pkg_list == api_inst.LIST_INSTALLED:
                                 logger.error(_("no packages installed"))
-                                img.history.operation_result = \
-                                    history.RESULT_NOTHING_TO_DO
+                                api_inst.log_operation_end(
+                                    result=history.RESULT_NOTHING_TO_DO)
                                 return EXIT_OOPS
-
-                        if upgradable_only:
+                        if pkg_list == api_inst.LIST_UPGRADABLE:
                                 if pargs:
                                         logger.error(_("No specified packages "
-                                            "have available updates"))
+                                            "have newer versions available."))
                                 else:
                                         logger.error(_("No installed packages "
-                                            "have available updates"))
-                                img.history.operation_result = \
-                                    history.RESULT_NOTHING_TO_DO
+                                            "have newer versions available."))
+                                api_inst.log_operation_end(
+                                    result=history.RESULT_NOTHING_TO_DO)
                                 return EXIT_OOPS
 
-                        img.history.operation_result = \
-                            history.RESULT_NOTHING_TO_DO
+                        api_inst.log_operation_end(
+                            result=history.RESULT_NOTHING_TO_DO)
                         return EXIT_OOPS
 
-                img.history.operation_result = history.RESULT_SUCCEEDED
+                api_inst.log_operation_end()
                 return EXIT_OK
-
         except api_errors.InventoryException, e:
                 if e.illegal:
                         for i in e.illegal:
                                 error(i)
-                        img.history.operation_result = \
-                            history.RESULT_FAILED_BAD_REQUEST
+                        api_inst.log_operation_end(
+                            result=history.RESULT_FAILED_BAD_REQUEST)
                         return EXIT_OOPS
 
-                if all_known:
+                if pkg_list == api.ImageInterface.LIST_ALL:
                         state = _("known")
+                elif pkg_list == api.ImageInterface.LIST_INSTALLED_NEWEST:
+                        state = _("known or installed")
                 else:
                         state = _("installed")
                 for pat in e.notfound:
                         error(_("no packages matching "
                             "'%(pattern)s' %(state)s") %
                             { "pattern": pat, "state": state })
-                img.history.operation_result = history.RESULT_NOTHING_TO_DO
+                api_inst.log_operation_end(result=history.RESULT_NOTHING_TO_DO)
                 return EXIT_OOPS
 
 def get_tracker(quiet=False):
@@ -415,7 +441,7 @@ def fix_image(img, args):
 
         any_errors = False
         repairs = []
-        for f in fmris:
+        for f, fstate in fmris:
                 failed_actions = []
                 for err in img.verify(f, progresstracker,
                     verbose=True, forever=True):
@@ -492,7 +518,7 @@ def verify_image(img, args):
         any_errors = False
 
         header = False
-        for f in fmris:
+        for f, fstate in fmris:
                 pkgerr = False
                 for err in img.verify(f, progresstracker,
                     verbose=verbose, forever=forever):
@@ -1436,7 +1462,7 @@ def info(img, args):
 
                 if api.PackageInfo.INSTALLED in pi.states:
                         state = fmt % _("Installed")
-                elif api.PackageInfo.NOT_INSTALLED in pi.states:
+                else:
                         state = fmt % _("Not installed")
 
                 name_str = _("          Name:")
@@ -1856,9 +1882,9 @@ def list_contents(img, args):
                         # matches is a list reverse sorted by version, so take
                         # the first; i.e., the latest.
                         if len(pmatch) > 0:
-                                fmris.append(pmatch[0])
+                                fmris.append((pmatch[0], None))
                         else:
-                                fmris.append(npmatch[0])
+                                fmris.append((npmatch[0], None))
 
         #
         # If the user specifies no specific attrs, and no specific
@@ -1888,7 +1914,10 @@ def list_contents(img, args):
         else:
                 excludes = img.list_excludes()
 
-        manifests = ( img.get_manifest(f, all_variants=display_raw) for f in fmris )
+        manifests = (
+            img.get_manifest(f, all_variants=display_raw)
+            for f, state in fmris
+        )
 
         actionlist = [
             (m.fmri, a, None, None, None)
@@ -2660,19 +2689,16 @@ def image_create(args):
                                     "form '<name>=<value>'."),
                                     cmd="image-create")
                         variants[v_name] = v_value
-
                 if opt == "--facet":
-
-                        allow = {"TRUE":True, "FALSE":False}
-                        f_name, f_value = arg.split("=",1)
+                        allow = { "TRUE":True, "FALSE":False }
+                        f_name, f_value = arg.split("=", 1)
                         if not f_name.startswith("facet."):
                                 f_name = "facet.%s" % f_name
                         if f_value.upper() not in allow:
                                 usage(_("Facet arguments must be"
                                     "form 'facet..=[True|False]'"),
                                     cmd="image-create")
-                        facets[f_name]= allow[f_value.upper()]
-
+                        facets[f_name] = allow[f_value.upper()]
 
         if len(pargs) != 1:
                 usage(_("only one image directory path may be specified"),
@@ -3058,11 +3084,11 @@ def main_func():
                 "verify"           : verify_image
                }
 
-        callable = cmds.get(subcommand, None)
-        if not callable:
+        func = cmds.get(subcommand, None)
+        if not func:
                 usage(_("unknown subcommand '%s'") % subcommand)
         try:
-                return callable(img, pargs)
+                return func(img, pargs)
 
         except getopt.GetoptError, e:
                 if e.opt in ("help", "?"):

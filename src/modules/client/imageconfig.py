@@ -40,7 +40,7 @@ import pkg.portable           as portable
 import pkg.variant            as variant
 
 from pkg.misc import DictProperty
-# The default_policies dictionary defines the policies that are supported by 
+# The default_policies dictionary defines the policies that are supported by
 # pkg(5) and their default values. Calls to the ImageConfig.get_policy method
 # should use the constants defined here.
 
@@ -48,7 +48,7 @@ PURSUE_LATEST = "pursue-latest"
 DISPLAY_COPYRIGHTS = "display-copyrights"
 FLUSH_CONTENT_CACHE = "flush-content-cache-on-success"
 SEND_UUID = "send-uuid"
-default_policies = { 
+default_policies = {
     PURSUE_LATEST: True,
     DISPLAY_COPYRIGHTS: True,
     FLUSH_CONTENT_CACHE: False,
@@ -82,7 +82,7 @@ class ImageConfig(object):
                 self.__publisher_search_order = []
 
                 self.properties = dict((
-                    (p, str(v)) 
+                    (p, str(v))
                     for p, v in default_policies.iteritems()
                 ))
                 self.facets = facet.Facets()
@@ -117,7 +117,7 @@ class ImageConfig(object):
                 if sorted(new_world_order) != sorted(self.__publisher_search_order):
                         raise ValueError, "publishers added or removed"
                 self.__publisher_search_order = new_world_order
-                
+
         def __get_publisher(self, prefix):
                 """Accessor method for publishers dictionary"""
                 return self.__publishers[prefix]
@@ -151,7 +151,7 @@ class ImageConfig(object):
 
         def get_policy(self, policy):
                 """Return a boolean value for the named policy.  Returns
-                the default value for the policy if the named policy is 
+                the default value for the policy if the named policy is
                 not defined in the image configuration.
                 """
                 assert policy in default_policies
@@ -159,7 +159,7 @@ class ImageConfig(object):
                         policystr = self.properties[policy]
                         return policystr.lower() in ("true", "yes")
                 return default_policies[policy]
-                
+
         def read(self, path):
                 """Read the config files for the image from the given directory.
                 """
@@ -184,7 +184,7 @@ class ImageConfig(object):
                 # Must load filters first, since the value of a filter can
                 # impact the default value of the zone variant.  This is
                 # legacy code, and should be removed when upgrade from
-                # pre-variant versions of opensolaris is no longer 
+                # pre-variant versions of opensolaris is no longer
                 # supported
                 #
 
@@ -238,7 +238,7 @@ class ImageConfig(object):
 
                 if cp.has_section("property"):
                         for o in cp.options("property"):
-                                self.properties[o] = cp.get("property", 
+                                self.properties[o] = cp.get("property",
                                     o, raw=True).decode('utf-8')
 
                 try:
@@ -253,22 +253,7 @@ class ImageConfig(object):
                                     self.properties["preferred-publisher"]
                                 del self.properties["preferred-authority"]
                         except KeyError:
-                                pass                
-                try:
-                        self.__publisher_search_order = self.read_list(
-                            str(self.properties["publisher-search-order"]))
-                except KeyError:
-                        # make up the default - preferred, then the rest in alpha order
-                        self.__publisher_search_order = [preferred_publisher] + \
-                            sorted([ 
-                                name 
-                                for name in self.__publishers.keys() 
-                                if name != preferred_publisher
-                                ])
-
-                        self.properties["publisher-search-order"] = \
-                            str(self.__publisher_search_order)
-                        changed = True
+                                pass
 
                 # read disabled publisher file
                 # XXX when compatility with the old code is no longer needed,
@@ -287,9 +272,39 @@ class ImageConfig(object):
                                         self.publishers[k] = a
                                         changed |= c
 
-                #
-                # If the configuration changed, rewrite it if possible
-                #
+                try:
+                        self.__publisher_search_order = self.read_list(
+                            str(self.properties["publisher-search-order"]))
+                except KeyError:
+                        # make up the default - preferred, then the rest in
+                        # alpha order
+                        self.__publisher_search_order = [preferred_publisher] + \
+                            sorted([ 
+                                name 
+                                for name in self.__publishers.keys() 
+                                if name != preferred_publisher
+                                ])
+                        changed = True
+                else:
+                        # Ensure that all configured publishers are present in
+                        # search order (add them in alpha order to the end).
+                        # Also ensure that all publishers in search order that
+                        # are not known are removed.
+                        pfxs = self.__publishers.keys()
+                        pso = self.__publisher_search_order
+                        for i, pfx in enumerate(list(pso)):
+                                if pfx not in pfxs:
+                                        # Safe since iteration is over copy.
+                                        del pso[i]
+                        for pfx in sorted(pfxs):
+                                if pfx not in pso:
+                                        pso.append(pfx)
+                        self.__publisher_search_order = list(pso)
+
+                self.properties["publisher-search-order"] = \
+                    str(self.__publisher_search_order)
+
+                # If the configuration changed, rewrite it if possible.
                 if changed:
                         try:
                                 self.write(path)
@@ -326,7 +341,7 @@ class ImageConfig(object):
                 cp.add_section("facet")
 
                 for f in self.facets:
-                        
+
                         cp.set("facet", f, str(self.facets[f]))
 
                 for prefix in self.__publishers:
@@ -427,7 +442,7 @@ class ImageConfig(object):
         def read_list(list_str):
                 """Take a list in string representation and convert it back
                 to a Python list."""
-                
+
                 # Strip brackets and any whitespace
                 list_str = list_str.strip("][ ")
                 # Strip comma and any whitespeace
@@ -625,6 +640,6 @@ class ImageConfig(object):
         publisher_search_order = property(lambda self: self.__publisher_search_order[:])
         preferred_publisher = property(__get_preferred_publisher, __set_preferred_publisher,
             doc="The publisher we prefer - first non-disabled publisher in search order")
-        publishers = DictProperty(__get_publisher, __set_publisher, __del_publisher, 
+        publishers = DictProperty(__get_publisher, __set_publisher, __del_publisher,
             __publisher_iteritems, __publisher_keys, __publisher_values, __publisher_iter,
             doc="A dict mapping publisher prefixes to publisher objects")

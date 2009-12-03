@@ -120,10 +120,39 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 self.pkg("list -@", exit=2)
                 self.pkg("list -v -s", exit=2)
 
+        def test_list_00(self):
+                """Verify that sort order and content of a full list matches
+                expected."""
+
+                self.pkg("list -aH")
+                expected = \
+                    ("foo 1.2.1-0 known -----\n"
+                    "foo (test2) 1.2.1-0 known -----\n"
+                    "food 1.2-0 known -----\n"
+                    "food (test2) 1.2-0 known -----\n")
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
+
+                self.pkg("list -afH")
+                expected = \
+                    ("foo 1.2.1-0 known -----\n"
+                    "foo 1.2-0 known u----\n"
+                    "foo 1.1-0 known u----\n"
+                    "foo 1.0-0 known u----\n"
+                    "foo 1-0 known u----\n"
+                    "foo (test2) 1.2.1-0 known -----\n"
+                    "foo (test2) 1.2-0 known u----\n"
+                    "foo (test2) 1.1-0 known u----\n"
+                    "foo (test2) 1.0-0 known u----\n"
+                    "foo (test2) 1-0 known u----\n"
+                    "food 1.2-0 known -----\n"
+                    "food (test2) 1.2-0 known -----\n")
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
 
         def test_list_01(self):
                 """List all "foo@1.0" from auth "test1"."""
-                self.pkg("list -aH pkg://test1/foo@1.0,5.11-0")
+                self.pkg("list -afH pkg://test1/foo@1.0,5.11-0")
                 expected = \
                     "foo 1.0-0 known u----\n"
                 output = self.reduceSpaces(self.output)
@@ -132,7 +161,7 @@ class TestPkgList(testutils.ManyDepotTestCase):
         def test_list_02(self):
                 """List all "foo@1.0", regardless of publisher, with "pkg:/"
                 prefix."""
-                self.pkg("list -aH pkg:/foo@1.0,5.11-0")
+                self.pkg("list -afH pkg:/foo@1.0,5.11-0")
                 expected = \
                     "foo 1.0-0 known u----\n" \
                     "foo (test2) 1.0-0 known u----\n"
@@ -142,7 +171,7 @@ class TestPkgList(testutils.ManyDepotTestCase):
         def test_list_03(self):
                 """List all "foo@1.0", regardless of publisher, without "pkg:/"
                 prefix."""
-                self.pkg("list -aH pkg:/foo@1.0,5.11-0")
+                self.pkg("list -afH pkg:/foo@1.0,5.11-0")
                 expected = \
                     "foo         1.0-0 known u----\n" \
                     "foo (test2) 1.0-0 known u----\n"
@@ -155,14 +184,14 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 self.pkg("list -aHf foo")
                 expected = \
                     "foo         1.2.1-0 known -----\n" \
-                    "foo (test2) 1.2.1-0 known -----\n" \
                     "foo         1.2-0   known u----\n" \
-                    "foo (test2) 1.2-0   known u----\n" \
                     "foo         1.1-0   known u----\n" \
-                    "foo (test2) 1.1-0   known u----\n" \
                     "foo         1.0-0   known u----\n" \
-                    "foo (test2) 1.0-0   known u----\n" \
                     "foo         1-0     known u----\n" \
+                    "foo (test2) 1.2.1-0 known -----\n" \
+                    "foo (test2) 1.2-0   known u----\n" \
+                    "foo (test2) 1.1-0   known u----\n" \
+                    "foo (test2) 1.0-0   known u----\n" \
                     "foo (test2) 1-0     known u----\n"
                 output = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
@@ -181,17 +210,18 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 """Show foo@1.0 from both depots, but 1.1 only from test2."""
                 self.pkg("list -aHf foo@1.0-0 pkg://test2/foo@1.1-0")
                 expected = \
-                    "foo (test2) 1.1-0 known u----\n" + \
-                    "foo         1.0-0 known u----\n" + \
+                    "foo         1.0-0 known u----\n" \
+                    "foo (test2) 1.1-0 known u----\n" \
                     "foo (test2) 1.0-0 known u----\n"
                 output = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
 
-                self.pkg("list -aH foo@1.0-0 pkg://test2/foo@1.1-0")
+                self.pkg("list -aHf foo@1.0-0 pkg://test2/foo@1.1-0")
                 expected = \
-                    "foo (test2) 1.1-0 known u----\n" + \
-                    "foo         1.0-0 known u----\n" 
+                    "foo         1.0-0 known u----\n" \
+                    "foo (test2) 1.1-0 known u----\n" \
+                    "foo (test2) 1.0-0 known u----\n"
                 output = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
@@ -200,10 +230,10 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 """Show versions 1.0 and 1.1 of foo only from publisher test2."""
                 self.pkg("list -aHf pkg://test2/foo")
                 expected = \
-                    "foo (test2) 1.2.1-0 known -----\n" + \
-                    "foo (test2) 1.2-0   known u----\n" + \
-                    "foo (test2) 1.1-0   known u----\n" + \
-                    "foo (test2) 1.0-0   known u----\n" + \
+                    "foo (test2) 1.2.1-0 known -----\n" \
+                    "foo (test2) 1.2-0   known u----\n" \
+                    "foo (test2) 1.1-0   known u----\n" \
+                    "foo (test2) 1.0-0   known u----\n" \
                     "foo (test2) 1-0     known u----\n"
                 output = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
@@ -221,13 +251,13 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 the latter once."""
                 self.pkg("list -aHf pkg://test1/foo@1 pkg:/foo@1.2")
                 expected = \
-                    "foo         1.2.1-0 known -----\n" + \
-                    "foo (test2) 1.2.1-0 known -----\n" + \
-                    "foo         1.2-0   known u----\n" + \
-                    "foo (test2) 1.2-0   known u----\n" + \
-                    "foo         1.1-0   known u----\n" + \
-                    "foo         1.0-0   known u----\n" + \
-                    "foo         1-0     known u----\n"
+                    "foo         1.2.1-0 known -----\n" \
+                    "foo         1.2-0   known u----\n" \
+                    "foo         1.1-0   known u----\n" \
+                    "foo         1.0-0   known u----\n" \
+                    "foo         1-0     known u----\n" \
+                    "foo (test2) 1.2.1-0 known -----\n" \
+                    "foo (test2) 1.2-0   known u----\n"
                 output = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
@@ -257,7 +287,7 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 # that of an empty repository.  The package should still be
                 # shown as known for test1 and installed for test2.
                 self.pkg("set-publisher -O %s test2" % durl3)
-                self.pkg("list -aH foo@1.0")
+                self.pkg("list -aHf foo@1.0")
                 expected = \
                     "foo 1.0-0 known u----\n" + \
                     "foo (test2) 1.0-0 installed u----\n"
@@ -271,7 +301,7 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 # for test2.
                 self.pkg("unset-publisher test2")
                 self.pkg("set-publisher -O %s test2" % durl3)
-                self.pkg("list -aH foo@1.0")
+                self.pkg("list -aHf foo@1.0")
                 expected = \
                     "foo 1.0-0 known u----\n" + \
                     "foo (test2) 1.0-0 installed u----\n"
@@ -286,7 +316,7 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 # packages in the specified repository are for publisher test2.
                 self.pkg("unset-publisher test2")
                 self.pkg("set-publisher -O %s test3" % durl2)
-                self.pkg("list -aH foo@1.0")
+                self.pkg("list -aHf foo@1.0")
                 expected = \
                     "foo 1.0-0 known u----\n" + \
                     "foo (test2) 1.0-0 installed u----\n"
@@ -367,14 +397,14 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 self.pkg("list -aHf foo*")
                 expected = \
                     "foo         1.2.1-0 known -----\n" \
-                    "foo (test2) 1.2.1-0 known -----\n" \
                     "foo         1.2-0   known u----\n" \
-                    "foo (test2) 1.2-0   known u----\n" \
                     "foo         1.1-0   known u----\n" \
-                    "foo (test2) 1.1-0   known u----\n" \
                     "foo         1.0-0   known u----\n" \
-                    "foo (test2) 1.0-0   known u----\n" \
                     "foo         1-0     known u----\n" \
+                    "foo (test2) 1.2.1-0 known -----\n" \
+                    "foo (test2) 1.2-0   known u----\n" \
+                    "foo (test2) 1.1-0   known u----\n" \
+                    "foo (test2) 1.0-0   known u----\n" \
                     "foo (test2) 1-0     known u----\n" \
                     "food        1.2-0   known -----\n" \
                     "food (test2) 1.2-0  known -----\n"
@@ -417,8 +447,8 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 self.pkg("list -aHf foo*@1.2")
                 expected = \
                     "foo          1.2.1-0 known -----\n" + \
-                    "foo  (test2) 1.2.1-0 known -----\n" + \
                     "foo          1.2-0   known u----\n" + \
+                    "foo  (test2) 1.2.1-0 known -----\n" + \
                     "foo  (test2) 1.2-0   known u----\n" + \
                     "food         1.2-0   known -----\n" + \
                     "food (test2) 1.2-0   known -----\n"

@@ -15,7 +15,7 @@ SYNOPSIS
      /usr/bin/pkg info [-lr] [--license] [pkg_fmri_pattern ...]
      /usr/bin/pkg contents [-Hmr] [-o attribute ...] [-s sort_key]
          [-t action_type ... ] [pkg_fmri_pattern ...]
-     /usr/bin/pkg list [-Hafsuv] [--no-refresh] [pkg_fmri_pattern ...]
+     /usr/bin/pkg list [-Hafnsuv] [--no-refresh] [pkg_fmri_pattern ...]
      /usr/bin/pkg search [-alprHI] [-o attribute ...] [-s repo_uri] query
 
      /usr/bin/pkg refresh [--full] [publisher ...]
@@ -323,13 +323,15 @@ SUBCOMMANDS
           '<token>' results in a list of packages containing actions which
           matched token.
 
-     list [-Hafsuv] [--no-refresh] [pkg_fmri_pattern ...]
-          Display a list of packages in the current image, including state
-          and other information.  The usual output is in four columns:
+     list [-Hafnsuv] [--no-refresh] [pkg_fmri_pattern ...]
+          Display a list of packages in the current image, including
+          state and other information.  By default, package variants
+          for a different architecture or zone type are excluded.
+          The usual output is in four columns:
 
-              NAME (PUBLISHER)                  VERSION          STATE      UFOXI
-              SUNWcs                            0.5.11-0.126     installed  -----
-              web/firefox/plugin/flash (extra)  10.0.32.18-0.111 installed  -----
+            NAME (PUBLISHER)                  VERSION          STATE      UFOXI
+            SUNWcs                            0.5.11-0.126     installed  -----
+            web/firefox/plugin/flash (extra)  10.0.32.18-0.111 installed  -----
 
           The first column contains the name of the package.  If the publisher
           from which it is installed (or available, if not installed) is not
@@ -341,40 +343,50 @@ SUBCOMMANDS
           contains a set of flags that show how the package relates to other
           packages:
 
-              - a "u" in the "U" column shows that it can be upgraded;
+              - a "u" in the "U" column shows that a newer version is
+                available, although it may not be possible to install
+                this newer version due to package dependencies or
+                constraints;
 
-              - an "f" in the "F" column shows that this version has been
-                frozen (not implemented);
+              - an "f" in the "F" column shows that this version has
+                been frozen (not implemented);
 
-              - an "o" in the "O" column shows that it is obsolete, while an
-                "r" shows that it has been renamed (a form of obsoletion);
+              - an "o" in the "O" column shows that it is obsolete,
+                while an "r" shows that it has been renamed (a form of
+                obsoletion);
 
-              - an "x" in the "X" column shows that it is prevented from being
-                installed because some other package has excluded it (not
-                implemented); and
+              - an "x" in the "X" column shows that it is prevented from
+                being installed because some other package has excluded
+                it (not implemented); and
 
-              - an "i" in the "I" column shows that it has been constrained by
-                an incorporation (not implemented).
+              - an "i" in the "I" column shows that it has been
+                constrained by an incorporation (not implemented).
 
           With -H, omit the headers from the listing.
 
-          With -a, report on all packages known, whether installed or not;
-          without -a, report only based on installed packages in the
-          image.
+          With -a, list installed packages and the newest version of
+          packages that are not installed and are available for
+          installation; without -a, list only installed packages.
 
-          With -f, report all versions of packages; without -f report only the
-          installed and newest version of a package.
+          With -f, include all versions of all packages for all variants
+          regardless of installed state.  This option may only be used
+          with -a.
 
-          With -s, display a one-line short-form giving the package name and
-          description.
+          With -n, display the newest versions of all known packages,
+          regardless of installed state.
 
-          With -u, report only packages with newer versions available.
+          With -s, display a one-line short-form giving the package name
+          and description.  This option may be used with -a, -n, -u or
+          -v.
 
-          With -v, report full package FMRIs, including publisher and complete
-          version, all in the first column (the VERSION column disappears).
+          With -u, list only packages with newer versions available.
 
-          With --no-refresh, do not attempt to contact the repositories for
-          the image's publishers to retrieve publisher metadata (e.g.
+          With -v, show full package FMRIs, including publisher and
+          complete version, all in the first column (the VERSION column
+          disappears).  This option may be used with -a, -n, or -u.
+
+          With --no-refresh, do not attempt to contact the repositories
+          for the image's publishers to retrieve publisher metadata (e.g.
           catalogs).
 
      verify [-Hqv] [pkg_fmri_pattern ...]

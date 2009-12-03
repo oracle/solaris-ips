@@ -307,6 +307,7 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                 return self.__test_prefix
 
         def debug(self, s):
+                s = str(s)
                 if self.__debug:
                         print >> sys.stderr, s
                 self.__debug_buf += s
@@ -564,6 +565,7 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                     returned; it will be empty if none were. """
 
                 plist = []
+                retcode = None
                 try:
                         accumulate = []
                         current_fmri = None

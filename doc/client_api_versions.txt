@@ -1,5 +1,25 @@
+Version 25:
+Incompatible with clients using versions 0-24:
+Changes:
+    The PackageInfo class has changed as follows:
+        * The NOT_INSTALLED constant has been removed as checking
+          for the presence of INSTALLED should be sufficient.
+
+        * A new constant named 'KNOWN' has been added.  It indicates
+          that the package is currently available from a publisher's
+           repository.
+     
+         * A new constant named 'UPGRADABLE' has been added. It
+           indicates that a new version of the package is available.
+ 
+     The following new api functions were added to ImageInterface (see
+     'pydoc pkg.client.api.ImageInterface' for more information):
+         * get_pkg_categories
+ 
+         * get_pkg_list
+
 Version 24:
-Incompatible with clients using version 0-23.
+Incompatible with clients using versions 0-23.
     The pkg.client.api module has changed as follows:
         * plan_install no longer takes a filters argument
 	* plan_change_variant changed to plan_change_varcets.
@@ -9,7 +29,7 @@ Incompatible with clients using version 0-23.
 	* Added set_pub_search_before
 
 Version 23:
-Incompatible with clients using version 0-22.
+Incompatible with clients using versions 0-22.
     The pkg.client.api module has changed as follows:
         * PackageInfo objects no longer take a "state" parameter, but a
 	  "states" parameter, and the corresponding "state" member is now
@@ -21,7 +41,7 @@ Changes:
 	Adds the description field to the PackageInfo class.
 
 Version 21:
-Incompatible with clients using version 0-20.
+Incompatible with clients using versions 0-20.
 Changes:
     The pkg.client.api_errors module has changed as follows:
         * All CatalogCacheError class exceptions were removed as the

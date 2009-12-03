@@ -1267,11 +1267,8 @@ class Repository(object):
                         return False
 
                 c = self.catalog
-                try:
-                        c.get_entry(pfmri)
-                except api_errors.UnknownCatalogEntry:
-                        return True
-                return False
+                entry = c.get_entry(pfmri)
+                return entry is None
 
         def write_config(self):
                 """Save the repository's current configuration data."""
