@@ -289,7 +289,9 @@ class Manifest(object):
 
         def __content_to_actions(self, content):
                 accumulate = ""
+                lineno = 0
                 for l in content.splitlines():
+                        lineno += 1
                         l = l.lstrip()
                         if l.endswith("\\"):          # allow continuation chars
                                 accumulate += l[0:-1] # elide backslash
@@ -306,6 +308,7 @@ class Manifest(object):
                         except actions.ActionError, e:
                                 # Add the FMRI to the exception and re-raise
                                 e.fmri = self.fmri
+                                e.lineno = lineno
                                 raise
 
         def set_content(self, content, excludes=EmptyI, signatures=False):

@@ -255,7 +255,7 @@ def internalizelist(atype, args, ahash=None, basedirs=None):
         if ahash:
                 action.hash = ahash
 
-        local_path = __set_action_data(data, action, basedirs)
+        local_path = set_action_data(data, action, basedirs)
         return action, local_path
 
 def internalizestr(string, basedirs=None, load_data=True):
@@ -285,10 +285,10 @@ def internalizestr(string, basedirs=None, load_data=True):
         if atype not in ("file", "license") or not load_data:
                 return action, None
 
-        local_path = __set_action_data(args[0], action, basedirs)
+        local_path = set_action_data(args[0], action, basedirs)
         return action, local_path
 
-def __set_action_data(payload, action, basedirs):
+def set_action_data(payload, action, basedirs):
         """Sets the data field of an action using the information in the
         payload and returns the actual path used to set the data.
 

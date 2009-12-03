@@ -133,6 +133,9 @@ Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
            [--ssl-dialog] [--ssl-key-file] [--sort-file-max-size size]
            [--writable-root dir]
 
+        --add-content   Check the repository on startup and add any new
+                        packages found.  Cannot be used with --mirror or 
+                        --readonly.
         --cfg-file      The pathname of the file from which to read and to
                         write configuration information.
         --content-root  The file system path to the directory containing the
@@ -147,6 +150,9 @@ Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
         --debug         The name of a debug feature to enable; or a whitespace
                         or comma separated list of features to enable.  Possible
                         values are: headers.
+        --exit-ready    Go through normal startup processing (including rebuilding
+                        catalog or indices, if requested) but exit when ready
+                        to start serving packages.
         --log-access    The destination for any access related information
                         logged by the depot process.  Possible values are:
                         stderr, stdout, none, or an absolute pathname.  The
@@ -230,6 +236,8 @@ if __name__ == "__main__":
         ssl_key_file = None
         ssl_dialog = "builtin"
         writable_root = None
+        add_content = False
+        exit_ready = False
 
         if "PKG_REPO" in os.environ:
                 repo_path = os.environ["PKG_REPO"]
@@ -261,8 +269,8 @@ if __name__ == "__main__":
         opt = None
         repo_props = {}
         try:
-                long_opts = ["cfg-file=", "content-root=", "debug=",
-                    "disable-ops=", "mirror", "nasty=", "set-property=",
+                long_opts = ["add-content", "cfg-file=", "content-root=", "debug=",
+                    "disable-ops=", "exit-ready", "mirror", "nasty=", "set-property=",
                     "proxy-base=", "readonly", "rebuild", "refresh-index",
                     "ssl-cert-file=", "ssl-dialog=", "ssl-key-file=",
                     "sort-file-max-size=", "writable-root="]
@@ -289,6 +297,8 @@ if __name__ == "__main__":
                                             "maximum value is %d" % THREADS_MAX
                         elif opt == "-t":
                                 socket_timeout = int(arg)
+                        elif opt == "--add-content":
+                                add_content = True
                         elif opt == "--cfg-file":
                                 repo_config_file = os.path.abspath(arg)
                         elif opt == "--content-root":
@@ -335,6 +345,8 @@ if __name__ == "__main__":
 
                                         disable_ops.setdefault(op, [])
                                         disable_ops[op].append(ver)
+                        elif opt == "--exit-ready":
+                                exit_ready = True
                         elif opt in log_opts:
                                 if arg is None or arg == "":
                                         raise OptionError, \
@@ -485,10 +497,12 @@ if __name__ == "__main__":
                 usage("pkg.depotd: illegal option value: %s specified " \
                     "for option: %s" % (arg, opt))
 
+        if rebuild and add_content:
+                usage("--add-content cannot be used with --rebuild")
         if rebuild and reindex:
                 usage("--refresh-index cannot be used with --rebuild")
-        if rebuild and (readonly or mirror):
-                usage("--readonly and --mirror cannot be used with --rebuild")
+        if (rebuild or add_content) and (readonly or mirror):
+                usage("--readonly and --mirror cannot be used with --rebuild or --add-content")
         if reindex and mirror:
                 usage("--mirror cannot be used with --refresh-index")
         if reindex and readonly and not writable_root:
@@ -506,14 +520,14 @@ if __name__ == "__main__":
 
         # If the program is going to reindex, the port is irrelevant since
         # the program will not bind to a port.
-        if not reindex:
+        if not reindex and not exit_ready:
                 available, msg = port_available(None, port)
                 if not available:
                         print "pkg.depotd: unable to bind to the specified " \
                             "port: %d. Reason: %s" % (port, msg)
                         sys.exit(1)
         else:
-                # Not applicable for reindexing operations.
+                # Not applicable if we're not going to serve content
                 content_root = None
 
         key_data = None
@@ -633,13 +647,13 @@ if __name__ == "__main__":
         # remaining preparation.
 
         # Initialize repository state.
-        fork_allowed = not reindex
+        fork_allowed = not reindex and not exit_ready  
         try:
                 repo = sr.Repository(auto_create=not readonly,
                     cfgpathname=repo_config_file, fork_allowed=fork_allowed,
                     log_obj=cherrypy, mirror=mirror, properties=repo_props,
-                    read_only=readonly, repo_root=repo_path,
-                    sort_file_max_size=sort_file_max_size,
+                    read_only=readonly, refresh_index=not add_content, 
+                    repo_root=repo_path, sort_file_max_size=sort_file_max_size,
                     writable_root=writable_root)
         except sr.RepositoryError, _e:
                 emsg("pkg.depotd: %s" % _e)
@@ -676,6 +690,21 @@ if __name__ == "__main__":
                     api_errors.PermissionsException), e:
                         emsg(str(e), "INDEX")
                         sys.exit(1)
+
+        elif add_content:
+                try:
+                        repo.add_content()
+                except sr.RepositoryError, e:
+                        emsg(str(e), "ADD_CONTENT")
+                        sys.exit(1)
+                except (search_errors.IndexingException,
+                    api_errors.PermissionsException), e:
+                        emsg(str(e), "INDEX")
+                        sys.exit(1)
+
+        # ready to start depot; exit now if requested
+        if exit_ready:
+                sys.exit(0)
 
         # Next, initialize depot.
         if nasty:

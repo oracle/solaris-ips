@@ -511,6 +511,37 @@ class TestPkgsendBasics(testutils.SingleDepotTestCase):
                                                 break
                                 ver += 2
 
+        def test_15_test_no_catalog_option(self):
+                """Verify that --no-catalog works as expected.  Also exercise
+                --fmri-in-manifest"""
+                pkg_manifest = \
+"""set name=pkg.fmri value=foo@0.5.11,5.11-0.129
+dir path=foo mode=0755 owner=root group=bin
+dir path=foo/bar mode=0755 owner=root group=bin
+"""
+                self.dc.stop()
+                rpath = self.dc.get_repodir()
+                fpath = os.path.join(self.get_test_prefix(), "manifest")
+                f = file(fpath, "w")
+                f.write(pkg_manifest)
+                f.close()
+                self.pkgsend("file://%s" % rpath,
+                    "create-repository --set-property publisher.prefix=test")
+                cat_path = os.path.join(rpath, "catalog/catalog.attrs")
+                mtime = os.stat(cat_path).st_mtime                
+                self.pkgsend("file://%s publish --fmri-in-manifest --no-catalog %s" % (
+                                rpath, fpath))
+                new_mtime = os.stat(cat_path).st_mtime
+                assert(mtime == new_mtime, "modified times not the same before and after publication")
+                self.dc.set_add_content()
+                
+                self.dc.start()
+                
+                dhurl = self.dc.get_depot_url()
+                self.dc.set_repodir(rpath)
+                self.image_create(dhurl)
+                self.pkg("list -a foo")
+                self.image_destroy()
 
 if __name__ == "__main__":
         unittest.main()

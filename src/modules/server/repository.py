@@ -176,7 +176,7 @@ class Repository(object):
         def __init__(self, auto_create=False, catalog_root=None,
             cfgpathname=None, fork_allowed=False, index_root=None, log_obj=None,
             mirror=False, pkg_root=None, properties=EmptyDict, read_only=False,
-            repo_root=None, trans_root=None,
+            repo_root=None, trans_root=None, refresh_index=True,
             sort_file_max_size=indexer.SORT_FILE_MAX_SIZE, writable_root=None):
                 """Prepare the repository for use."""
 
@@ -259,7 +259,7 @@ class Repository(object):
                         self.__init_config(cfgpathname=cfgpathname,
                             properties=properties)
                         self.__init_dirs()
-                        self.__init_state()
+                        self.__init_state(refresh_index=refresh_index)
                 finally:
                         self.__unlock_repository()
 
@@ -621,7 +621,7 @@ class Repository(object):
                         self.log_obj.log(msg=msg, context=context,
                             severity=severity)
 
-        def __rebuild(self, lm=None):
+        def __rebuild(self, lm=None, incremental=False):
                 """Private version; caller responsible for repository
                 locking."""
 
@@ -637,7 +637,7 @@ class Repository(object):
 
                 # Pointless to log incremental updates since a new catalog
                 # is being built.  This also helps speed up rebuild.
-                self.catalog.log_updates = False
+                self.catalog.log_updates = incremental
 
                 def add_package(f):
                         m = self._get_manifest(f, sig=True)
@@ -645,8 +645,8 @@ class Repository(object):
                                 f = fmri.PkgFmri(m["pkg.fmri"])
                         if default_pub and not f.publisher:
                                 f.publisher = default_pub
-                        self.__log(str(f))
                         self.__add_package(f, manifest=m)
+                        self.__log(str(f))
 
                 # XXX eschew os.walk in favor of another os.listdir here?
                 for pkg in os.walk(self.pkg_root):
@@ -663,6 +663,11 @@ class Repository(object):
                                         self.__log(_("Skipping %(fmri)s; "
                                             "invalid manifest: %(error)s") % {
                                             "fmri": f, "error": e })
+                                except api_errors.DuplicateCatalogEntry, e:
+                                        # ignore dups if incremental mode
+                                        if incremental:
+                                                continue
+                                        raise
 
                 # Private add_package doesn't automatically save catalog
                 # so that operations can be batched (there is significant
@@ -673,7 +678,7 @@ class Repository(object):
                 self.catalog.finalize()
                 self.__save_catalog(lm=lm)
 
-        def __refresh_index(self):
+        def __refresh_index(self, synchronous=False):
                 """Private version; caller responsible for repository
                 locking."""
 
@@ -685,6 +690,7 @@ class Repository(object):
                         return
 
                 cat = self.catalog
+                forked = False
 
                 try:
                         fmris_to_index = set(cat.fmris())
@@ -721,6 +727,7 @@ class Repository(object):
                                                     "indexing process failed: "
                                                     "%s" % e)
                                                 raise
+                                        forked = True
                                 else:
                                         self.run_update_index()
                         else:
@@ -739,8 +746,18 @@ class Repository(object):
                                 self.__search_available = True
                 finally:
                         self.__searchdb_update_handle_lock.release()
+                        if forked and synchronous:
+                                while self.__searchdb_update_handle is not None:
+                                        try:
+                                                self.__searchdb_update_handle.wait()
+                                                self.__searchdb_update_handle = None
+                                        except OSError, e:
+                                                if e.errno == errno.EINTR:
+                                                        continue
+                                                break
 
-        def __init_state(self):
+
+        def __init_state(self, refresh_index=True):
                 """Private version; caller responsible for repository
                 locking."""
 
@@ -770,7 +787,7 @@ class Repository(object):
                 if not self.read_only and not self.catalog.exists:
                         self.catalog.save()
 
-                if not self.read_only or self.writable_root:
+                if refresh_index and not self.read_only or self.writable_root:
                         try:
                                 try:
                                         self.__refresh_index()
@@ -1054,7 +1071,7 @@ class Repository(object):
                                 raise RepositoryFileNotFoundError(e.filename)
                         raise
 
-        def close(self, trans_id, refresh_index=True):
+        def close(self, trans_id, refresh_index=True, add_to_catalog=True):
                 """Closes the transaction specified by 'trans_id'.
 
                 Returns a tuple containing the package FMRI and the current
@@ -1069,7 +1086,8 @@ class Repository(object):
                         raise RepositoryInvalidTransactionIDError(trans_id)
 
                 try:
-                        pfmri, pstate = t.close(refresh_index=refresh_index)
+                        pfmri, pstate = t.close(refresh_index=refresh_index,
+                        add_to_catalog=add_to_catalog)
                         del self.__in_flight_trans[trans_id]
                         return pfmri, pstate
                 except (api_errors.CatalogError, trans.TransactionError), e:
@@ -1162,6 +1180,20 @@ class Repository(object):
                 self.__lock_repository()
                 try:
                         self.__refresh_index()
+                finally:
+                        self.__unlock_repository()
+
+        def add_content(self):
+                """Looks for packages added to the repository that are not
+                in the catalog and adds them in"""
+                if self.mirror:
+                        raise RepositoryMirrorError()
+
+                self.__lock_repository()
+                try:
+                        self.__check_search()
+                        self.__rebuild(incremental=True)
+                        self.__refresh_index(synchronous=True)
                 finally:
                         self.__unlock_repository()
 

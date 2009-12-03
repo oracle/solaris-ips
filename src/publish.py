@@ -46,6 +46,8 @@ import traceback
 
 import pkg.actions
 import pkg.bundle
+import pkg.fmri
+import pkg.manifest
 import pkg.publish.transaction as trans
 from pkg.misc import msg, emsg, PipeError
 
@@ -85,8 +87,9 @@ Packager subcommands:
         pkgsend add action arguments
         pkgsend import [-T file_pattern] bundlefile ...
         pkgsend include [-d basedir] .. [manifest] ...
-        pkgsend close [-A | --no-index]
-        pkgsend publish [-d basedir] ... fmri [manifest] ...
+        pkgsend close [-A | [--no-index] [--no-catalog]]
+        pkgsend publish [ -d basedir] ... [--no-index] 
+          [--fmri-in-manifest | pkg_fmri] [--no-catalog] [manifest] ...
         pkgsend generate [-T file_pattern] bundlefile ....
         pkgsend refresh-index
 
@@ -160,8 +163,9 @@ def trans_close(repo_uri, args):
         abandon = False
         trans_id = None
         refresh_index = True
+        add_to_catalog = True
 
-        opts, pargs = getopt.getopt(args, "At:", ["no-index"])
+        opts, pargs = getopt.getopt(args, "At:", ["no-index", "no-catalog"])
 
         for opt, arg in opts:
                 if opt == "-A":
@@ -170,7 +174,8 @@ def trans_close(repo_uri, args):
                         trans_id = arg
                 elif opt == "--no-index":
                         refresh_index = False
-
+                elif opt == "--no-catalog":
+                        add_to_catalog = False
         if trans_id is None:
                 try:
                         trans_id = os.environ["PKG_TRANS_ID"]
@@ -178,7 +183,8 @@ def trans_close(repo_uri, args):
                         usage(_("No transaction ID specified using -t or in "
                             "$PKG_TRANS_ID."), cmd="close")
 
-        t = trans.Transaction(repo_uri, trans_id=trans_id)
+        t = trans.Transaction(repo_uri, trans_id=trans_id, 
+            add_to_catalog=add_to_catalog)
         pkg_state, pkg_fmri = t.close(abandon, refresh_index)
         for val in (pkg_state, pkg_fmri):
                 if val is not None:
@@ -202,30 +208,101 @@ def trans_add(repo_uri, args):
         return 0
 
 def trans_publish(repo_uri, fargs):
-        error_occurred = False
-        opts, pargs = getopt.getopt(fargs, "-d:")
-        include_opts = []
+        opts, pargs = getopt.getopt(fargs, "d:", ["no-index", 
+            "no-catalog", "fmri-in-manifest"])
+        basedirs = []
+
+        refresh_index = True
+        add_to_catalog = True
+        embedded_fmri = False
 
         for opt, arg in opts:
                 if opt == "-d":
-                        include_opts += [opt, arg]
-        if not pargs:
+                        basedirs.append(arg)
+                elif opt == "--no-index":
+                        refresh_index = False
+                elif opt == "--no-catalog":
+                        add_to_catalog = False
+                elif opt == "--fmri-in-manifest":
+                        embedded_fmri = True
+
+        if not pargs and not embedded_fmri:
                 usage(_("No fmri argument specified for subcommand"),
                     cmd="publish")
 
-        t = trans.Transaction(repo_uri, pkg_name=pargs[0])
-        t.open()
-        del pargs[0]
-        if trans_include(repo_uri, include_opts + pargs, transaction=t):
-                abandon = True
+        if not embedded_fmri:
+                pkg_name = pargs[0]
+                del pargs[0]
+
+        if not pargs:
+                filelist = [("<stdin>", sys.stdin)]
         else:
-                abandon = False
-        pkg_state, pkg_fmri = t.close(abandon=abandon)
+                try:
+                        filelist = [(f, file(f)) for f in pargs]
+                except IOError, e:
+                        error(e, cmd="publish")
+                        return 1
+
+        lines = ""      # giant string of all input files concatenated together
+        linecnts = []   # tuples of starting line number, ending line number
+        linecounter = 0 # running total
+
+        for filename, f in filelist:
+                try:
+                        data = f.read()
+                except IOError, e:
+                        error(e, cmd="publish")
+                        return 1                
+                lines += data
+                linecnt = len(data.splitlines())
+                linecnts.append((linecounter, linecounter + linecnt))
+                linecounter += linecnt
+
+        m = pkg.manifest.Manifest()
+        try:
+                m.set_content(lines)
+        except pkg.actions.ActionError, e:
+                lineno = e.lineno
+                for i, tup in enumerate(linecnts):
+                        if lineno > tup[0] and lineno <= tup[1]:
+                                filename = filelist[i][0]
+                                lineno -= tup[0]
+                                break;
+                else:
+                        filename = "???"
+                        lineno = "???"
+
+                error(_("File %s line %s: %s") % (filename, lineno, e),
+                    cmd="publish")
+                return 1
+
+        if embedded_fmri:
+                if "pkg.fmri" not in m:
+                        error(_("Manifest does not set fmri and " + 
+                            "--fmri-in-manifest specified"))
+                        return 1
+                pkg_name = pkg.fmri.PkgFmri(m["pkg.fmri"]).get_short_fmri()
+
+        t = trans.Transaction(repo_uri, pkg_name=pkg_name, refresh_index=refresh_index)
+        t.open()
+
+        for a in m.gen_actions():
+                # don't publish this action
+                if a.name == "set" and a.attrs["name"] in ["pkg.fmri", "fmri"]:
+                        continue
+                elif a.name in ["file", "license"]:
+                        pkg.actions.set_action_data(a.hash, a, basedirs)
+                try:
+                        t.add(a)
+                except:
+                        t.close(abandon=True)
+                        raise
+
+        pkg_state, pkg_fmri = t.close(abandon=False, 
+            refresh_index=refresh_index, add_to_catalog=add_to_catalog)
         for val in (pkg_state, pkg_fmri):
                 if val is not None:
                         msg(val)
-        if abandon:
-                return 1
         return 0
 
 def trans_include(repo_uri, fargs, transaction=None):
@@ -256,37 +333,49 @@ def trans_include(repo_uri, fargs, transaction=None):
                         error(e, cmd="include")
                         return 1
 
+        lines = []      # giant string of all input files concatenated together
+        linecnts = []   # tuples of starting line number, ending line number
+        linecounter = 0 # running total
+
         for filename, f in filelist:
-                accumulate = ""
-                for lineno, line in enumerate(f):
-                        line = line.strip()
-                        if line.endswith("\\"):
-                                accumulate += line[0:-1]
-                                continue
-                        elif accumulate:
-                                line = accumulate + line
-                                accumulate = ""
-                        if not line or line[0] == '#':
-                                continue
+                try:
+                        data = f.read()
+                except IOError, e:
+                        error(e, cmd="publish")
+                        return 1                
+                lines.append(data)
+                linecnt = len(data.splitlines())
+                linecnts.append((linecounter, linecounter + linecnt))
+                linecounter += linecnt
 
-                        try:
-                                action, lp = pkg.actions.internalizestr(line,
-                                    basedirs)
-                        except pkg.actions.ActionError, e:
-                                error("line %d: %s" % (lineno + 1, e),
-                                    cmd="include")
-                                error_occurred = True
-                                continue
-                        # omit set name=fmri actions
-                        if action.name == "set" and \
-                            action.attrs["name"] in ("fmri", "pkg.fmri"):
-                                continue
+        m = pkg.manifest.Manifest()
+        try:
+                m.set_content(data)
+        except pkg.actions.ActionError, e:
+                lineno = e.lineno
+                for i, tup in enumerate(linecnts):
+                        if lineno > tup[0] and lineno <= tup[1]:
+                                filename = filelist[i][0]
+                                lineno -= tup[0]
+                                break;
+                else:
+                        filename = "???"
+                        lineno = "???"
 
-                        t.add(action)
-        if error_occurred:
+                error(_("File %s line %s: %s") % (filename, lineno, e),
+                    cmd="include")
                 return 1
-        else:
-                return 0
+
+        for a in m.gen_actions():
+                # don't publish this action
+                if a.name == "set" and a.attrs["name"] in  ["pkg.fmri", "fmri"]:
+                        continue
+                elif a.name in ["file", "license"]:
+                        pkg.actions.set_action_data(a.hash, a, basedirs)
+
+                t.add(a)
+
+        return 0
 
 def gen_actions(files, timestamp_files):
         for filename in files:

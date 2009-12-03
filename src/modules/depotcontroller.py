@@ -45,6 +45,7 @@ class DepotController(object):
         RUNNING = 2
 
         def __init__(self, wrapper=None, env=None):
+                self.__add_content = False
                 self.__auto_port = True
                 self.__cfg_file = None
                 self.__debug_features = {}
@@ -53,6 +54,7 @@ class DepotController(object):
                 self.__depot_content_root = None
                 self.__dir = None
                 self.__disable_ops = None
+                self.__exit_ready = False
                 self.__logpath = "/tmp/depot.log"
                 self.__mirror = False
                 self.__output = None
@@ -125,6 +127,12 @@ class DepotController(object):
 
         def set_norebuild(self):
                 self.__rebuild = False
+
+        def set_exit_ready(self):
+                self.__exit_ready = True
+
+        def set_add_content(self):
+                self.__add_content = True
 
         def set_logpath(self, logpath):
                 self.__logpath = logpath
@@ -225,6 +233,10 @@ class DepotController(object):
                         args.append("--mirror")
                 if self.__refresh_index:
                         args.append("--refresh-index")
+                if self.__add_content:
+                        args.append("--add-content")
+                if self.__exit_ready:
+                        args.append("--exit-ready")
                 if self.__cfg_file:
                         args.append("--cfg-file=%s" % self.__cfg_file)
                 if self.__debug_features:

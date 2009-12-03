@@ -7,10 +7,11 @@ NAME
 SYNOPSIS
      /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
          [-t socket_timeout] [--cfg-file] [--content-root] [--debug]
-         [--disable-ops=<op[/1]>[,...]] [--log-access] [--log-errors]
+         [--disable-ops=<op[/1]>[,...]] [--exit-ready] [--log-access] [--log-errors]
          [--mirror] [--set-property <section.property>=<value> ...]
          [--proxy-base url] [--readonly] [--rebuild] [--ssl-cert-file]
-         [--ssl-dialog] [--ssl-key-file] [--writable-root]
+         [--ssl-dialog] [--ssl-key-file] [--writable-root] [--add-content]
+
 
 DESCRIPTION
      pkg.depotd is the depot server for the image packaging system.
@@ -151,6 +152,10 @@ OPTIONS
      -t socket_timeout          Overrides pkg/socket_timeout with the
                                 value given by socket_timeout.
 
+     --add-content              On startup, look for new packages and
+                                add them to the catalog; also updates the
+                                search indices synchronously.
+
      --cfg-file cfg_file        Overrides pkg/cfg_file with the value
                                 given by cfg_file.
 
@@ -165,6 +170,11 @@ OPTIONS
 
      --debug features           Overrides pkg/debug with the value given
                                 by features.
+
+     --exit-ready               Prepare for startup, but exit just before
+                                serving content.  This is useful for making
+                                sure search indicies are built, new content
+                                cataloged, etc.  
 
      --log-access dest          Overrides pkg/log_access with the value
                                 given by dest.

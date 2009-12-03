@@ -282,7 +282,7 @@ class Transaction(object):
                     action.name for action in m.gen_actions()
                 ))
 
-        def close(self, refresh_index=True):
+        def close(self, refresh_index=True, add_to_catalog=True):
                 """Closes an open transaction, returning the published FMRI for
                 the corresponding package, and its current state in the catalog.
                 """
@@ -297,7 +297,8 @@ class Transaction(object):
                 pkg_state = "SUBMITTED"
 
                 # set state to PUBLISHED
-                pkg_fmri, pkg_state = self.accept_publish(refresh_index)
+                pkg_fmri, pkg_state = self.accept_publish(refresh_index,
+                add_to_catalog)
 
                 # Discard the in-flight transaction data.
                 try:
@@ -468,7 +469,7 @@ class Transaction(object):
 
                 return
 
-        def accept_publish(self, refresh_index=True):
+        def accept_publish(self, refresh_index=True, add_to_catalog=True):
                 """Transaction meets consistency criteria, and can be published.
                 Publish, making appropriate catalog entries."""
 
@@ -480,8 +481,11 @@ class Transaction(object):
                 # XXX If we are going to publish, then we should augment
                 # our response with any other packages that moved to
                 # PUBLISHED due to the package's arrival.
+                
                 self.publish_package()
-                self.repo.add_package(self.fmri)
+
+                if add_to_catalog:
+                        self.repo.add_package(self.fmri)
                 if refresh_index:
                         self.repo.refresh_index()
 

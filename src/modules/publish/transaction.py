@@ -135,7 +135,7 @@ class FileTransaction(object):
         __repo_cache = {}
 
         def __init__(self, origin_url, create_repo=False, pkg_name=None,
-            repo_props=EmptyDict, trans_id=None):
+            repo_props=EmptyDict, trans_id=None, refresh_index=True):
                 scheme, netloc, path, params, query, fragment = \
                     urlparse.urlparse(origin_url, "file", allow_fragments=0)
                 path = urllib.url2pathname(path)
@@ -149,7 +149,8 @@ class FileTransaction(object):
                 if origin_url not in repo_cache:
                         try:
                                 repo = sr.Repository(auto_create=create_repo,
-                                    properties=repo_props, repo_root=path)
+                                    properties=repo_props, repo_root=path, 
+                                    refresh_index=refresh_index)
                         except EnvironmentError, e:
                                 raise TransactionOperationError(None, msg=_(
                                     "An error occurred while trying to "
@@ -179,7 +180,7 @@ class FileTransaction(object):
                         raise TransactionOperationError("add",
                             trans_id=self.trans_id, msg=str(e))
 
-        def close(self, abandon=False, refresh_index=True):
+        def close(self, abandon=False, refresh_index=True, add_to_catalog=True):
                 """Ends an in-flight transaction.  Returns a tuple containing
                 a package fmri (if applicable) and the final state of the
                 related package.
@@ -202,7 +203,9 @@ class FileTransaction(object):
                 else:
                         try:
                                 pkg_fmri, pkg_state = self.__repo.close(
-                                    self.trans_id, refresh_index=refresh_index)
+                                    self.trans_id, 
+                                    refresh_index=refresh_index,
+                                    add_to_catalog=add_to_catalog)
                         except sr.RepositoryError, e:
                                 raise TransactionOperationError("close",
                                     trans_id=self.trans_id, msg=str(e))
@@ -235,7 +238,7 @@ class HTTPTransaction(object):
         """Provides a publishing interface for HTTP(S)-based repositories."""
 
         def __init__(self, origin_url, create_repo=False, pkg_name=None,
-            repo_props=EmptyDict, trans_id=None):
+            repo_props=EmptyDict, trans_id=None, refresh_index=True):
 
                 if create_repo:
                         scheme, netloc, path, params, query, fragment = \
@@ -334,7 +337,7 @@ class HTTPTransaction(object):
                         raise TransactionOperationError("add",
                             trans_id=self.trans_id, status=status, msg=msg)
 
-        def close(self, abandon=False, refresh_index=True):
+        def close(self, abandon=False, refresh_index=True, add_to_catalog=False):
                 """Ends an in-flight transaction.  Returns a tuple containing
                 a package fmri (if applicable) and the final state of the
                 related package.
@@ -345,8 +348,13 @@ class HTTPTransaction(object):
 
                 If 'refresh_index' is True, the repository will be instructed
                 to update its search indices after publishing.  Has no effect
-                if 'abandon' is True."""
+                if 'abandon' is True.
+                
+                'add_to_catalog' isn't supported w/ http transport, but ignoring
+                it will affect performance only.                
+                """
 
+                
                 op = "close"
                 if abandon:
                         op = "abandon"
@@ -451,7 +459,7 @@ class NullTransaction(object):
         purposes."""
 
         def __init__(self, origin_url, create_repo=False, pkg_name=None,
-            repo_props=EmptyDict, trans_id=None):
+            repo_props=EmptyDict, trans_id=None, refresh_index=True):
                 self.create_repo = create_repo
                 self.origin_url = origin_url
                 self.pkg_name = pkg_name
@@ -521,8 +529,8 @@ class Transaction(object):
             "null": NullTransaction,
         }
 
-        def __new__(cls, origin_url, create_repo=False, pkg_name=None,
-            repo_props=EmptyDict, trans_id=None, noexecute=False):
+        def __new__(cls, origin_url, add_to_catalog=True, create_repo=False, pkg_name=None,
+            repo_props=EmptyDict, trans_id=None, noexecute=False, refresh_index=True):
                 scheme, netloc, path, params, query, fragment = \
                     urlparse.urlparse(origin_url, "http", allow_fragments=0)
                 scheme = scheme.lower()
@@ -541,5 +549,5 @@ class Transaction(object):
                     query, fragment))
 
                 return cls.__schemes[scheme](origin_url,
-                    create_repo=create_repo, pkg_name=pkg_name,
+                    create_repo=create_repo, pkg_name=pkg_name, refresh_index=refresh_index,
                     repo_props=repo_props, trans_id=trans_id)
