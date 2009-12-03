@@ -1,3 +1,9 @@
+Version 26:
+Compatible with clients using version 25.
+    The client API has changed such that an immediate refresh is always
+    performed when the 'refresh_catalogs' parameter is True for install,
+    update, and change variant operations.
+
 Version 25:
 Incompatible with clients using versions 0-24:
 Changes:

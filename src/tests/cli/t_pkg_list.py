@@ -378,15 +378,19 @@ class TestPkgList(testutils.ManyDepotTestCase):
 
         def test_list_10_all_known_failed_refresh(self):
                 """Verify that a failed implicit refresh will not prevent pkg
-                list from working properly."""
+                list from working properly when appropriate."""
 
                 # Set test2's origin to an unreachable URI.
-                self.pkg("set-publisher --no-refresh -O http://test.invalid2 test2")
+                self.pkg("set-publisher --no-refresh -O http://test.invalid2 "
+                    "test2")
 
-                # Verify pkg list -a works as expected for both an unprivileged
-                # user and a privileged one when a publisher needs a refresh.
+                # Verify pkg list -a works as expected for an unprivileged user
+                # when a permissions failure is encountered.
                 self.pkg("list -a", su_wrap=True)
-                self.pkg("list -a")
+
+                # Verify pkg list -a fails for a privileged user when a
+                # publisher's repository is unreachable.
+                self.pkg("list -a", exit=1)
 
                 # Reset test2's origin.
                 durl2 = self.dcs[2].get_depot_url()

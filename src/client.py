@@ -80,7 +80,7 @@ from pkg.client.history import (RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
     RESULT_FAILED_OUTOFMEMORY)
 from pkg.misc import EmptyI, msg, PipeError
 
-CLIENT_API_VERSION = 25
+CLIENT_API_VERSION = 26
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -300,8 +300,21 @@ def list_inventory(img, args):
                 # changing (such as an origin uri, etc.).
                 try:
                         api_inst.refresh()
-                except KeyboardInterrupt:
-                        raise
+                except api_errors.PermissionsException:
+                        # Ignore permission exceptions with the
+                        # assumption that an unprivileged user is
+                        # executing this command and that the
+                        # refresh doesn't matter.
+                        pass
+                except api_errors.CatalogRefreshException, e:
+                        succeeded = display_catalog_failures(e, 
+                            ignore_perms_failure=True)
+                        if succeeded != e.total:
+                                # If total number of publishers does
+                                # not match 'successful' number
+                                # refreshed, abort.
+                                return EXIT_OOPS
+
                 except:
                         # Ignore the above error and just use what
                         # already exists.
@@ -607,10 +620,10 @@ def __api_execute_plan(operation, api_inst, raise_ActionExecutionError=True):
                 error(_("%s cannot be done on live image") % operation)
                 return EXIT_NOTLIVE
         except api_errors.RebootNeededOnLiveImageException:
-                error(_("Requested \"%s\" operation would affect files that cannot be "
-                        "modified in live image.\n"
-                        "Please retry this operation on an alternate boot environment.") %
-                      operation)
+                error(_("Requested \"%s\" operation would affect files that "
+                    "cannot be modified in live image.\n"
+                    "Please retry this operation on an alternate boot "
+                    "environment.") % operation)
                 return EXIT_NOTLIVE
         except api_errors.CorruptedIndexException, e:
                 error(INCONSISTENT_INDEX_ERROR_MESSAGE)
@@ -638,7 +651,7 @@ def __api_execute_plan(operation, api_inst, raise_ActionExecutionError=True):
                 raise
         except api_errors.ActionExecutionError, e:
                 if not raise_ActionExecutionError:
-                        return 1
+                        return EXIT_OOPS
                 error(_("An unexpected error happened during " \
                     "%s: %s") % (operation, e))
                 raise
@@ -685,16 +698,13 @@ Cannot remove '%s' due to the following packages that depend on it:"""
                 return False
         if e_type == api_errors.CatalogRefreshException:
                 if display_catalog_failures(e) != 0:
-                        raise RuntimeError("Catalog refresh failed during %s." %
-                            op)
+                        return False
                 if noexecute:
                         return True
                 return False
-
         if issubclass(e_type, api_errors.BEException):
                 error(_(e))
                 return False
-
         if e_type in (api_errors.CertificateError,
             api_errors.PlanCreationException,
             api_errors.PermissionsException):
@@ -755,7 +765,7 @@ def change_variant(img, args):
 
         api_inst = __api_alloc(img, quiet)
         if api_inst == None:
-                return 1
+                return EXIT_OOPS
 
         try:
                 stuff_to_do = api_inst.plan_change_varcets(variants, facets=None,
@@ -849,7 +859,7 @@ def change_facet(img, args):
                     be_name=be_name)
         except:
                 if not __api_plan_exception(op, noexecute=noexecute):
-                        return 1
+                        return EXIT_OOPS
 
         if not stuff_to_do:
                 msg(_("Facet change has no effect on image"))
@@ -929,7 +939,7 @@ def image_update(img, args):
                 return EXIT_OK
 
         if not __api_prepare(op, api_inst, verbose=verbose):
-                return 1
+                return EXIT_OOPS
 
         ret_code = __api_execute_plan(op, api_inst)
 
@@ -1211,7 +1221,7 @@ def search(img, args):
                                 if not misc.valid_pub_url(arg):
                                         error(_("%s is not a valid "
                                             "server URL.") % orig_arg)
-                                        return 1
+                                        return EXIT_OOPS
                         remote = True
                         servers.append({"origin": arg})
                 elif opt == "-I":
@@ -1667,9 +1677,9 @@ def guess_unknown(j, v):
         try:
                 int(v)
                 return JUST_RIGHT
-        # attribute is non-numeric or is something like
-        # a list.
         except (ValueError, TypeError):
+                # attribute is non-numeric or is something like
+                # a list.
                 return JUST_LEFT
 
 def create_output_format(display_headers, widths, justs, line):
@@ -1951,7 +1961,7 @@ examining the catalogs:"""))
         img.cleanup_downloads()
         return err
 
-def display_catalog_failures(cre):
+def display_catalog_failures(cre, ignore_perms_failure=False):
         total = cre.total
         succeeded = cre.succeeded
 
@@ -1962,6 +1972,19 @@ def display_catalog_failures(cre):
                 logger.error(txt)
         else:
                 msg(txt)
+
+        for pub, err in cre.failed:
+                if ignore_perms_failure and \
+                    not isinstance(err, api_errors.PermissionsException):
+                        # If any errors other than a permissions exception are
+                        # found, then don't ignore them.
+                        ignore_perms_failure = False
+                        break
+
+        if cre.failed and ignore_perms_failure:
+                # Consider those that failed to have succeeded and add them
+                # to the actual successful total.
+                return succeeded + len(cre.failed)
 
         for pub, err in cre.failed:
                 if isinstance(err, urllib2.HTTPError):
@@ -2012,7 +2035,7 @@ def publisher_refresh(img, args):
                 error(e)
                 error(_("'pkg publisher' will show a list of publishers."))
                 return EXIT_OOPS
-        except (api_errors.PermissionsException), e:
+        except api_errors.PermissionsException, e:
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
                 error("\n" + str(e))
@@ -2154,7 +2177,7 @@ def publisher_set(img, args):
                                                 ssl_key = uri.ssl_key
                                         break
 
-                        origin = repo.reset_origins()
+                        repo.reset_origins()
                         repo.add_origin(origin_url)
 
                         # XXX once image configuration supports storing this
@@ -2756,11 +2779,9 @@ def image_create(args):
                     { "image_dir": image_dir, "reason": e.args[1] },
                     cmd="image-create")
                 return EXIT_OOPS
-                
         except api_errors.PublisherError, e:
                 error(e, cmd="image-create")
                 return EXIT_OOPS
-
         except api_errors.PermissionsException, e:
                 # Ensure messages are displayed after the spinner.
                 img.cleanup_downloads()

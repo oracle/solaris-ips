@@ -40,7 +40,7 @@ import pkg.flavor.base as base
 import pkg.portable as portable
 import pkg.publish.dependencies as dependencies
 
-API_VERSION = 25
+API_VERSION = 26
 PKG_CLIENT_NAME = "pkg"
 
 class TestApiDependencies(testutils.SingleDepotTestCase):

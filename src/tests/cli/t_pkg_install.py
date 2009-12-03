@@ -2458,7 +2458,8 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
 
         def test_08_install_repository_access(self):
                 """Verify that packages can still be installed from a repository
-                even when any of the other repositories are not reachable."""
+                even when any of the other repositories are not reachable and
+                --no-refresh is used."""
 
                 # Change the second publisher to point to an unreachable URI.
                 self.pkg("set-publisher --no-refresh -O http://test.invalid7 test2")
@@ -2466,9 +2467,15 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
                 # Verify that no packages are installed.
                 self.pkg("list", exit=1)
 
-                # Verify moo can be installed (as only depot1 has it) even though
+                # Verify moo can not be installed (as only depot1 has it) since
                 # test2 cannot be reached (and needs a refresh).
-                self.pkg("install moo")
+                self.pkg("install moo", exit=1)
+
+                # Verify moo can be installed (as only depot1 has it) even though
+                # test2 cannot be reached (and needs a refresh) if --no-refresh
+                # is used.
+                self.pkg("install --no-refresh moo")
+
                 self.pkg("uninstall moo")
 
                 # Reset the test2 publisher.
@@ -2487,9 +2494,14 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
                 durl4 = self.dcs[4].get_depot_url()
                 self.pkg("set-publisher -O %s test2" % durl4)
 
+                # Verify image-update does not work since test1 is unreachable
+                # even though upgrade-np@1.1 is available from test2.
+                self.pkg("image-update", exit=1)
+
                 # Verify image-update works even though test1 is unreachable
-                # since upgrade-np@1.1 is available from test2.
-                self.pkg("image-update")
+                # since upgrade-np@1.1 is available from test2 if --no-refresh
+                # is used.
+                self.pkg("image-update --no-refresh")
 
                 # Now reset everything for the next test.
                 self.pkg("uninstall upgrade-np")

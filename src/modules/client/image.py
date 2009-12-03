@@ -1508,6 +1508,11 @@ class Image(object):
                                 if pub.refresh(full_refresh=full_refresh,
                                     immediate=immediate):
                                         updated += 1
+                        except api_errors.PermissionsException, e:
+                                failed.append((pub, e))
+                                # No point in continuing since no data can
+                                # be written.
+                                break
                         except api_errors.ApiException, e:
                                 failed.append((pub, e))
                                 continue

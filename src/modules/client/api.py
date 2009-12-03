@@ -50,7 +50,7 @@ import pkg.version
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 25
+CURRENT_API_VERSION = 26
 CURRENT_P5I_VERSION = 1
 
 logger = global_settings.logger
@@ -95,7 +95,7 @@ class ImageInterface(object):
                 canceled changes. It can raise VersionException and
                 ImageNotFoundException."""
 
-                compatible_versions = set([CURRENT_API_VERSION])
+                compatible_versions = set([25, CURRENT_API_VERSION])
 
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
@@ -186,19 +186,8 @@ class ImageInterface(object):
                 # attempting network operations.
                 #
                 self.__cert_verify()
-
-                try:
-                        self.__img.refresh_publishers(
-                            progtrack=self.__progresstracker)
-                except KeyboardInterrupt:
-                        raise
-                except api_errors.InvalidDepotResponseException:
-                        raise
-                except:
-                        # Since this is not a refresh
-                        # that was explicitly requested,
-                        # it doesn't matter if it fails.
-                        pass
+                self.__img.refresh_publishers(immediate=True,
+                    progtrack=self.__progresstracker)
 
         def __plan_common_start(self, operation):
                 """Start planning an operation.  Aquire locks and log
