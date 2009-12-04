@@ -135,9 +135,9 @@ file NOHASH group=bin mode=0755 owner=root path=usr/bin/ksh variant.arch=foo
                 try:
                         t_path = self.make_manifest(self.ext_hardlink_manf)
                         _check_results(dependencies.list_implicit_deps(t_path,
-                            "/"))
+                            "/", {}, []))
                         _check_results(dependencies.list_implicit_deps(t_path,
-                            "/",
+                            "/", {}, [],
                             remove_internal_deps=False))
                 finally:
                         if t_path:
@@ -152,11 +152,11 @@ file NOHASH group=bin mode=0755 owner=root path=usr/bin/ksh variant.arch=foo
                 try:
                         t_path = self.make_manifest(self.int_hardlink_manf)
                         ds, es, ms = \
-                            dependencies.list_implicit_deps(t_path, "/")
+                            dependencies.list_implicit_deps(t_path, "/", {}, [])
                         self.assert_(len(es) == 0 and len(ms) == 1)
                         self.assert_(len(ds) == 0)
                         ds, es, ms = dependencies.list_implicit_deps(t_path,
-                            "/", remove_internal_deps=False)
+                            "/", {}, [], remove_internal_deps=False)
                         self.assert_(len(es) == 0 and len(ms) == 1)
                         self.assertEqual(len(ds), 1)
                         d = ds[0]
@@ -185,9 +185,10 @@ file NOHASH group=bin mode=0755 owner=root path=usr/bin/ksh variant.arch=foo
                 t_path = None
                 try:
                         t_path = self.make_manifest(self.ext_pb_manf)
-                        _check_res(dependencies.list_implicit_deps(t_path, "/"))
                         _check_res(dependencies.list_implicit_deps(t_path, "/",
-                            remove_internal_deps=False))
+                            {}, []))
+                        _check_res(dependencies.list_implicit_deps(t_path, "/",
+                            {}, [], remove_internal_deps=False))
                 finally:
                         if t_path:
                                 portable.remove(t_path)
@@ -201,7 +202,7 @@ file NOHASH group=bin mode=0755 owner=root path=usr/bin/ksh variant.arch=foo
                 try:
                         t_path = self.make_manifest(self.int_pb_manf)
                         ds, es, ms = \
-                            dependencies.list_implicit_deps(t_path, "/")
+                            dependencies.list_implicit_deps(t_path, "/", {}, [])
                         self.assert_(len(es) == 0 and len(ms) == 0)
                         self.assert_(len(ds) == 1)
                         d = ds[0]
@@ -211,7 +212,7 @@ file NOHASH group=bin mode=0755 owner=root path=usr/bin/ksh variant.arch=foo
                         self.assertEqual(set(d.run_paths), set(["lib",
                             "usr/lib"]))
                         ds, es, ms = dependencies.list_implicit_deps(t_path,
-                            "/", remove_internal_deps=False)
+                            "/", {}, [], remove_internal_deps=False)
                         for d in ds:
                                 self.assert_(d.is_error())
                                 self.assertEqual(d.dep_vars, None)
@@ -253,9 +254,10 @@ file NOHASH group=bin mode=0755 owner=root path=usr/bin/ksh variant.arch=foo
                 t_path = None
                 try:
                         t_path = self.make_manifest(self.ext_elf_manf)
-                        _check_res(dependencies.list_implicit_deps(t_path, "/"))
                         _check_res(dependencies.list_implicit_deps(t_path, "/",
-                            remove_internal_deps=False))
+                            {}, []))
+                        _check_res(dependencies.list_implicit_deps(t_path, "/",
+                            {}, [], remove_internal_deps=False))
                 finally:
                         if t_path:
                                 portable.remove(t_path)
@@ -284,11 +286,11 @@ file NOHASH group=bin mode=0755 owner=root path=usr/bin/ksh variant.arch=foo
                 try:
                         t_path = self.make_manifest(self.int_elf_manf)
                         d_map, es, ms = dependencies.list_implicit_deps(t_path,
-                            "/")
+                            "/", {}, [])
                         self.assert_(len(es) == 0 and len(ms) == 0)
                         self.assert_(len(d_map) == 0)
                         _check_all_res(dependencies.list_implicit_deps(t_path,
-                            "/", remove_internal_deps=False))
+                            "/", {}, [], remove_internal_deps=False))
                 finally:
                         if t_path:
                                 portable.remove(t_path)
@@ -306,7 +308,8 @@ file NOHASH group=bin mode=0755 owner=root path=usr/bin/ksh variant.arch=foo
                             "usr/lib/python2.6/vendor-packages/pkg/misc.py",
                             "usr/lib/python2.6/vendor-packages/pkg/" +
                             "search_storage.py"])
-                        self.assert_(len(es) == 0 and len(ms) == 0)
+                        self.assertEqual(es, [])
+                        self.assertEqual(ms, {})
                         self.assertEqual(len(ds), len(expected_deps))
                         for d in ds:
                                 self.assert_(d.is_error())
@@ -323,9 +326,9 @@ file NOHASH group=bin mode=0755 owner=root path=usr/bin/ksh variant.arch=foo
                 try:
                         t_path = self.make_manifest(self.ext_python_manf)
                         _check_all_res(dependencies.list_implicit_deps(t_path,
-                            testutils.g_proto_area))
+                            "/", {}, []))
                         _check_all_res(dependencies.list_implicit_deps(t_path,
-                            testutils.g_proto_area))
+                            "/", {}, [], remove_internal_deps=False))
                 finally:
                         if t_path:
                                 portable.remove(t_path)
@@ -339,7 +342,7 @@ file NOHASH group=bin mode=0755 owner=root path=usr/bin/ksh variant.arch=foo
                 try:
                         t_path = self.make_manifest(self.variant_manf_1)
                         ds, es, ms = \
-                            dependencies.list_implicit_deps(t_path, "/")
+                            dependencies.list_implicit_deps(t_path, "/", {}, [])
                         self.assert_(len(es) == 0 and len(ms) == 0)
                         self.assert_(len(ds) == 2)
                         for d in ds:
@@ -380,7 +383,7 @@ file NOHASH group=bin mode=0755 owner=root path=usr/bin/ksh variant.arch=foo
                 try:
                         t_path = self.make_manifest(self.variant_manf_2)
                         ds, es, ms = \
-                            dependencies.list_implicit_deps(t_path, "/")
+                            dependencies.list_implicit_deps(t_path, "/", {}, [])
                         self.assert_(len(es) == 0 and len(ms) == 0)
                         self.assert_(len(ds) == 1)
                         d = ds[0]
@@ -393,7 +396,7 @@ file NOHASH group=bin mode=0755 owner=root path=usr/bin/ksh variant.arch=foo
                         self.assertEqual(set(d.run_paths),
                             set(["lib", "usr/lib"]))
                         ds, es, ms = dependencies.list_implicit_deps(t_path,
-                            "/", remove_internal_deps=False)
+                            "/", {}, [], remove_internal_deps=False)
                         self.assert_(len(es) == 0 and len(ms) == 0)
                         self.assert_(len(ds) == 2)
                         for d in ds:
@@ -430,7 +433,7 @@ file NOHASH group=bin mode=0755 owner=root path=usr/bin/ksh variant.arch=foo
                 try:
                         t_path = self.make_manifest(self.variant_manf_3)
                         ds, es, ms = \
-                            dependencies.list_implicit_deps(t_path, "/")
+                            dependencies.list_implicit_deps(t_path, "/", {}, [])
                         self.assert_(len(es) == 0 and len(ms) == 0)
                         self.assert_(len(ds) == 2)
                         for d in ds:
@@ -487,7 +490,7 @@ file NOHASH group=bin mode=0755 owner=root path=usr/bin/ksh variant.arch=foo
                         t_path = self.make_manifest(
                             self.int_hardlink_manf_test_symlink)
                         ds, es, ms = dependencies.list_implicit_deps(t_path,
-                            dir_path)
+                            dir_path, {}, [])
                 finally:
                         if dir_path:
                                 shutil.rmtree(dir_path)

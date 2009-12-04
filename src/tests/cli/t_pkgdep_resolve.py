@@ -133,7 +133,55 @@ set name=variant.foo value=bar value=baz
 set name=variant.num value=one value=two value=three
 file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.foo=baz variant.num=two
 """
-        
+
+        collision_manf = """\
+set name=fmri value=pkg:/collision_manf
+depend fmri=__TBD pkg.debug.depend.file=no_such_named_file pkg.debug.depend.path=platform/foo/baz pkg.debug.depend.path=platform/bar/baz pkg.debug.depend.path=lib pkg.debug.depend.path=usr/lib pkg.debug.depend.reason=foo/bar pkg.debug.depend.type=elf type=require\
+"""
+
+        collision_manf_num_var = """\
+set name=fmri value=pkg:/collision_manf
+set name=variant.num value=one value=two
+depend fmri=__TBD pkg.debug.depend.file=no_such_named_file pkg.debug.depend.path=platform/foo/baz pkg.debug.depend.path=platform/bar/baz pkg.debug.depend.path=lib pkg.debug.depend.path=usr/lib pkg.debug.depend.reason=foo/bar pkg.debug.depend.type=elf type=require\
+"""
+
+        sat_both = """\
+set name=fmri value=pkg:/sat_both
+file NOHASH path=platform/bar/baz/no_such_named_file
+file NOHASH path=platform/foo/baz/no_such_named_file
+"""
+
+        sat_bar_libc = """\
+set name=fmri value=pkg:/sat_bar_libc
+file NOHASH path=platform/bar/baz/no_such_named_file
+"""
+
+        sat_bar_libc2 = """\
+set name=fmri value=pkg:/sat_bar_libc2
+file NOHASH path=platform/bar/baz/no_such_named_file
+"""
+
+        sat_foo_libc = """\
+set name=fmri value=pkg:/sat_foo_libc
+file NOHASH path=platform/foo/baz/no_such_named_file
+"""
+
+        sat_bar_libc_num_var = """\
+set name=fmri value=pkg:/sat_bar_libc
+set name=variant.num value=one
+file NOHASH path=platform/bar/baz/no_such_named_file
+"""
+        sat_foo_libc_num_var = """\
+set name=fmri value=pkg:/sat_foo_libc
+set name=variant.num value=two
+file NOHASH path=platform/foo/baz/no_such_named_file
+"""
+        sat_foo_libc_num_var_both = """\
+set name=fmri value=pkg:/sat_foo_libc
+set name=variant.num value=one value=two
+file NOHASH path=platform/foo/baz/no_such_named_file
+"""
+
         misc_files = ["foo"]
         
         def setUp(self):
@@ -206,28 +254,22 @@ close""" % { "foo": os.path.join(self.testdata_dir, "foo") }
                 works."""
 
                 self.make_image()
-                m1_path = None
-                m2_path = None
-                try:
-                        m1_path = self.make_manifest(self.hardlink1_manf_deps)
-                        m2_path = self.make_manifest(self.hardlink2_manf_deps)
-                        p1_name = os.path.basename(m1_path)
-                        p2_name = os.path.basename(m2_path)
-                        pkg_deps, errs = dependencies.resolve_deps(
-                            [m1_path, m2_path], self.api_obj)
-                        self.assertEqual(len(pkg_deps), 2)
-                        self.assertEqual(len(pkg_deps[m1_path]), 2)
-                        self.assertEqual(len(pkg_deps[m2_path]), 1)
-                        self.assertEqual(len(errs), 0)
-                        for d in pkg_deps[m1_path]:
-                                self.assertEqual(d.attrs["fmri"], p2_name)
-                        for d in pkg_deps[m2_path]:
-                                self.assertEqual(d.attrs["fmri"], p1_name)
-                finally:
-                        if m1_path:
-                                portable.remove(m1_path)
-                        if m2_path:
-                                portable.remove(m2_path)
+                m1_path = self.make_manifest(self.hardlink1_manf_deps)
+                m2_path = self.make_manifest(self.hardlink2_manf_deps)
+                p1_name = os.path.basename(m1_path)
+                p2_name = os.path.basename(m2_path)
+                pkg_deps, errs = dependencies.resolve_deps(
+                    [m1_path, m2_path], self.api_obj)
+                self.assertEqual(len(pkg_deps), 2)
+                self.assertEqual(len(pkg_deps[m1_path]), 2)
+                self.assertEqual(len(pkg_deps[m2_path]), 1)
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                for d in pkg_deps[m1_path]:
+                        self.assertEqual(d.attrs["fmri"], p2_name)
+                for d in pkg_deps[m2_path]:
+                        self.assertEqual(d.attrs["fmri"], p1_name)
 
         def test_resolve_mix(self):
                 """Test that resolving against both packages installed on the
@@ -241,182 +283,140 @@ close""" % { "foo": os.path.join(self.testdata_dir, "foo") }
                 self.api_obj.refresh(immediate=True)
                 self._do_install(self.api_obj, ["example2_pkg"])
                 
-                m1_path = None
-                m2_path = None
-                try:
-                        m1_path = self.make_manifest(self.multi_deps)
-                        m2_path = self.make_manifest(self.misc_manf)
-                        p3_name = "pkg:/example2_pkg@1.0,5.11-0"
-                        p2_name = "pkg:/footest@0.5.11,5.11-0.117"
+                m1_path = self.make_manifest(self.multi_deps)
+                m2_path = self.make_manifest(self.misc_manf)
+                p3_name = "pkg:/example2_pkg@1.0,5.11-0"
+                p2_name = "pkg:/footest@0.5.11,5.11-0.117"
 
-                        pkg_deps, errs = dependencies.resolve_deps(
-                            [m1_path, m2_path], self.api_obj)
-                        self.assertEqual(len(pkg_deps), 2)
-                        self.assertEqual(len(pkg_deps[m1_path]), 2)
-                        self.assertEqual(len(pkg_deps[m2_path]), 0)
-                        self.assertEqual(len(errs), 0)
-                        for d in pkg_deps[m1_path]:
-                                if d.attrs["fmri"] == p2_name:
-                                        self.assertEqual(
-                                            d.attrs["%s.file" % self.depend_dp],
-                                            "usr/lib/python2.6/v-p/pkg/misc.py")
-                                elif d.attrs["fmri"].startswith(p3_name):
-                                        self.assertEqual(
-                                            d.attrs["%s.file" % self.depend_dp],
-                                            "usr/bin/python2.6")
-                                else:
-                                        raise RuntimeError("Got expected fmri "
-                                            "%s for in dependency %s" %
-                                            (d.attrs["fmri"], d))
-                finally:
-                        if m1_path:
-                                portable.remove(m1_path)
-                        if m2_path:
-                                portable.remove(m2_path)
+                pkg_deps, errs = dependencies.resolve_deps(
+                    [m1_path, m2_path], self.api_obj)
+                self.assertEqual(len(pkg_deps), 2)
+                self.assertEqual(len(pkg_deps[m1_path]), 2)
+                self.assertEqual(len(pkg_deps[m2_path]), 0)
+                self.assertEqual(len(errs), 0)
+                for d in pkg_deps[m1_path]:
+                        if d.attrs["fmri"] == p2_name:
+                                self.assertEqual(
+                                    d.attrs["%s.file" % self.depend_dp],
+                                    "usr/lib/python2.6/v-p/pkg/misc.py")
+                        elif d.attrs["fmri"].startswith(p3_name):
+                                self.assertEqual(
+                                    d.attrs["%s.file" % self.depend_dp],
+                                    "usr/bin/python2.6")
+                        else:
+                                raise RuntimeError("Got expected fmri "
+                                    "%s for in dependency %s" %
+                                    (d.attrs["fmri"], d))
 
         def test_simple_variants_1(self):
                 """Test that variants declared on the actions work correctly
                 when resolving dependencies."""
 
                 self.make_image()
-                m1_path = None
-                m2_path = None
-                m3_path = None
-                try:
-                        m1_path = self.make_manifest(self.simple_variant_deps)
-                        m2_path = self.make_manifest(self.simple_v_deps_bar)
-                        m3_path = self.make_manifest(self.simple_v_deps_baz)
-                        p2_name = "s-v-bar"
-                        p3_name = "s-v-baz"
-                        pkg_deps, errs = dependencies.resolve_deps(
-                            [m1_path, m2_path, m3_path], self.api_obj)
-                        for d in pkg_deps[m1_path]:
-                                if d.attrs["fmri"] == "pkg:/s-v-bar":
-                                        self.assertEqual(
-                                            d.attrs["variant.foo"],
-                                            set(["bar"]))
-                                elif d.attrs["fmri"] == "pkg:/s-v-baz":
-                                        self.assertEqual(
-                                            d.attrs["variant.foo"],
-                                            set(["baz"]))
-                                else:
-                                        raise RuntimeError("Unexpected fmri %s "
-                                            "for dependency %s" %
-                                            (d.attrs["fmri"], d))
-                        self.assertEqual(len(pkg_deps), 3)
-                        self.assertEqual(len(pkg_deps[m1_path]), 2)
-                        self.assertEqual(len(pkg_deps[m2_path]), 0)
-                        self.assertEqual(len(pkg_deps[m3_path]), 0)
-                        self.assertEqual(len(errs), 0)
-                finally:
-                        if m1_path:
-                                portable.remove(m1_path)
-                        if m2_path:
-                                portable.remove(m2_path)
-                        if m3_path:
-                                portable.remove(m3_path)
+                m1_path = self.make_manifest(self.simple_variant_deps)
+                m2_path = self.make_manifest(self.simple_v_deps_bar)
+                m3_path = self.make_manifest(self.simple_v_deps_baz)
+                p2_name = "s-v-bar"
+                p3_name = "s-v-baz"
+                pkg_deps, errs = dependencies.resolve_deps(
+                    [m1_path, m2_path, m3_path], self.api_obj)
+                for d in pkg_deps[m1_path]:
+                        if d.attrs["fmri"] == "pkg:/s-v-bar":
+                                self.assertEqual(
+                                    d.attrs["variant.foo"],
+                                    set(["bar"]))
+                        elif d.attrs["fmri"] == "pkg:/s-v-baz":
+                                self.assertEqual(
+                                    d.attrs["variant.foo"],
+                                    set(["baz"]))
+                        else:
+                                raise RuntimeError("Unexpected fmri %s "
+                                    "for dependency %s" %
+                                    (d.attrs["fmri"], d))
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" % "\n".join(["%s" % (e,) for e in errs]))
+                self.assertEqual(len(pkg_deps), 3)
+                self.assertEqual(len(pkg_deps[m1_path]), 2)
+                self.assertEqual(len(pkg_deps[m2_path]), 0)
+                self.assertEqual(len(pkg_deps[m3_path]), 0)
 
         def test_simple_variants_2 (self):
                 """Test that variants declared on the packages work correctly
                 when resolving dependencies."""
 
                 self.make_image()
-                m1_path = None
-                m2_path = None
-                m3_path = None
-                try:
-                        m1_path = self.make_manifest(self.simple_variant_deps)
-                        m2_path = self.make_manifest(self.simple_v_deps_bar2)
-                        m3_path = self.make_manifest(self.simple_v_deps_baz2)
-                        p2_name = "s-v-bar"
-                        p3_name = "s-v-baz"
-                        pkg_deps, errs = dependencies.resolve_deps(
-                            [m1_path, m2_path, m3_path], self.api_obj)
-                        self.assertEqual(len(pkg_deps), 3)
-                        self.assertEqual(len(pkg_deps[m1_path]), 2)
-                        self.assertEqual(len(pkg_deps[m2_path]), 0)
-                        self.assertEqual(len(pkg_deps[m3_path]), 0)
-                        self.assertEqual(len(errs), 0)
-                        for d in pkg_deps[m1_path]:
-                                if d.attrs["fmri"] == "pkg:/s-v-bar":
-                                        self.assertEqual(
-                                            d.attrs["variant.foo"],
-                                            set(["bar"]))
-                                elif d.attrs["fmri"] == "pkg:/s-v-baz":
-                                        self.assertEqual(
-                                            d.attrs["variant.foo"],
-                                            set(["baz"]))
-                                else:
-                                        raise RuntimeError("Unexpected fmri %s "
-                                            "for dependency %s" %
-                                            (d.attrs["fmri"], d))
-                finally:
-                        if m1_path:
-                                portable.remove(m1_path)
-                        if m2_path:
-                                portable.remove(m2_path)
-                        if m3_path:
-                                portable.remove(m3_path)
+                m1_path = self.make_manifest(self.simple_variant_deps)
+                m2_path = self.make_manifest(self.simple_v_deps_bar2)
+                m3_path = self.make_manifest(self.simple_v_deps_baz2)
+                p2_name = "s-v-bar"
+                p3_name = "s-v-baz"
+                pkg_deps, errs = dependencies.resolve_deps(
+                    [m1_path, m2_path, m3_path], self.api_obj)
+                self.assertEqual(len(pkg_deps), 3)
+                self.assertEqual(len(pkg_deps[m1_path]), 2)
+                self.assertEqual(len(pkg_deps[m2_path]), 0)
+                self.assertEqual(len(pkg_deps[m3_path]), 0)
+                self.assertEqual(len(errs), 0)
+                for d in pkg_deps[m1_path]:
+                        if d.attrs["fmri"] == "pkg:/s-v-bar":
+                                self.assertEqual(
+                                    d.attrs["variant.foo"],
+                                    set(["bar"]))
+                        elif d.attrs["fmri"] == "pkg:/s-v-baz":
+                                self.assertEqual(
+                                    d.attrs["variant.foo"],
+                                    set(["baz"]))
+                        else:
+                                raise RuntimeError("Unexpected fmri %s "
+                                    "for dependency %s" %
+                                    (d.attrs["fmri"], d))
 
         def test_two_variants (self):
                 """Test that variants declared on the packages work correctly
                 when resolving dependencies."""
 
                 self.make_image()
-                m1_path = None
-                m2_path = None
-                m3_path = None
-                m4_path = None
-                try:
-                        m1_path = self.make_manifest(self.two_variant_deps)
-                        m2_path = self.make_manifest(self.two_v_deps_bar)
-                        m3_path = self.make_manifest(self.two_v_deps_baz_one)
-                        m4_path = self.make_manifest(self.two_v_deps_baz_two)
-                        p2_name = "s-v-bar"
-                        p3_name = "s-v-baz-one"
-                        p4_name = "s-v-baz-two"
-                        pkg_deps, errs = dependencies.resolve_deps(
-                            [m1_path, m2_path, m3_path, m4_path], self.api_obj)
-                        self.assertEqual(len(pkg_deps), 4)
-                        self.assertEqual(len(pkg_deps[m1_path]), 3)
-                        self.assertEqual(len(pkg_deps[m2_path]), 0)
-                        self.assertEqual(len(pkg_deps[m3_path]), 0)
-                        self.assertEqual(len(pkg_deps[m4_path]), 0)
-                        self.assertEqual(len(errs), 1)
-                        for d in pkg_deps[m1_path]:
-                                if d.attrs["fmri"] == "pkg:/s-v-bar":
-                                        self.assertEqual(
-                                            d.attrs["variant.foo"],
-                                            set(["bar"]))
-                                        self.assertEqual(
-                                            "variant.num" in d.attrs, False)
-                                elif d.attrs["fmri"] == "pkg:/s-v-baz-one":
-                                        self.assertEqual(
-                                            d.attrs["variant.foo"],
-                                            set(["baz"]))
-                                        self.assertEqual(
-                                            d.attrs["variant.num"],
-                                            set(["one"]))
-                                elif d.attrs["fmri"] == "pkg:/s-v-baz-two":
-                                        self.assertEqual(
-                                            d.attrs["variant.foo"],
-                                            set(["baz"]))
-                                        self.assertEqual(
-                                            d.attrs["variant.num"],
-                                            set(["two"]))
-                                else:
-                                        raise RuntimeError("Unexpected fmri %s "
-                                            "for dependency %s" %
-                                            (d.attrs["fmri"], d))
-                finally:
-                        if m1_path:
-                                portable.remove(m1_path)
-                        if m2_path:
-                                portable.remove(m2_path)
-                        if m3_path:
-                                portable.remove(m3_path)
-                        if m4_path:
-                                portable.remove(m4_path)
+                m1_path = self.make_manifest(self.two_variant_deps)
+                m2_path = self.make_manifest(self.two_v_deps_bar)
+                m3_path = self.make_manifest(self.two_v_deps_baz_one)
+                m4_path = self.make_manifest(self.two_v_deps_baz_two)
+                p2_name = "s-v-bar"
+                p3_name = "s-v-baz-one"
+                p4_name = "s-v-baz-two"
+                pkg_deps, errs = dependencies.resolve_deps(
+                    [m1_path, m2_path, m3_path, m4_path], self.api_obj)
+                self.assertEqual(len(pkg_deps), 4)
+                self.assertEqual(len(pkg_deps[m1_path]), 3)
+                self.assertEqual(len(pkg_deps[m2_path]), 0)
+                self.assertEqual(len(pkg_deps[m3_path]), 0)
+                self.assertEqual(len(pkg_deps[m4_path]), 0)
+                self.assertEqual(len(errs), 1)
+                for d in pkg_deps[m1_path]:
+                        if d.attrs["fmri"] == "pkg:/s-v-bar":
+                                self.assertEqual(
+                                    d.attrs["variant.foo"],
+                                    set(["bar"]))
+                                self.assertEqual(
+                                    "variant.num" in d.attrs, False)
+                        elif d.attrs["fmri"] == "pkg:/s-v-baz-one":
+                                self.assertEqual(
+                                    d.attrs["variant.foo"],
+                                    set(["baz"]))
+                                self.assertEqual(
+                                    d.attrs["variant.num"],
+                                    set(["one"]))
+                        elif d.attrs["fmri"] == "pkg:/s-v-baz-two":
+                                self.assertEqual(
+                                    d.attrs["variant.foo"],
+                                    set(["baz"]))
+                                self.assertEqual(
+                                    d.attrs["variant.num"],
+                                    set(["two"]))
+                        else:
+                                raise RuntimeError("Unexpected fmri %s "
+                                    "for dependency %s" %
+                                    (d.attrs["fmri"], d))
 
         def test_bug_11518(self):
                 """Test that resolving against an installed, cached, manifest
@@ -428,25 +428,226 @@ close""" % { "foo": os.path.join(self.testdata_dir, "foo") }
                 self.api_obj.refresh(immediate=True)
                 self._do_install(self.api_obj, ["variant_pkg"])
 
-                m1_path = None
-                try:
-                        m1_path = self.make_manifest(self.simp_manf)
-                        p2_name = "pkg:/variant_pkg@1.0,5.11-0"
+                m1_path = self.make_manifest(self.simp_manf)
+                p2_name = "pkg:/variant_pkg@1.0,5.11-0"
 
-                        pkg_deps, errs = dependencies.resolve_deps(
-                            [m1_path], self.api_obj)
-                        self.assertEqual(len(pkg_deps), 1)
-                        self.assertEqual(len(pkg_deps[m1_path]), 1)
-                        self.assertEqual(len(errs), 0)
-                        for d in pkg_deps[m1_path]:
-                                if d.attrs["fmri"].startswith(p2_name):
-                                        self.assertEqual(
-                                            d.attrs["%s.file" % self.depend_dp],
-                                            "var/log/syslog")
-                                else:
-                                        raise RuntimeError("Got expected fmri "
-                                            "%s for in dependency %s" %
-                                            (d.attrs["fmri"], d))
-                finally:
-                        if m1_path:
-                                portable.remove(m1_path)
+                pkg_deps, errs = dependencies.resolve_deps(
+                    [m1_path], self.api_obj)
+                self.assertEqual(len(pkg_deps), 1)
+                self.assertEqual(len(pkg_deps[m1_path]), 1)
+                self.assertEqual(len(errs), 0)
+                for d in pkg_deps[m1_path]:
+                        if d.attrs["fmri"].startswith(p2_name):
+                                self.assertEqual(
+                                    d.attrs["%s.file" % self.depend_dp],
+                                    "var/log/syslog")
+                        else:
+                                raise RuntimeError("Got expected fmri "
+                                    "%s for in dependency %s" %
+                                    (d.attrs["fmri"], d))
+
+        def test_bug_12697_and_12896(self):
+                """Test that pkgdep resolve handles multiple run path
+                dependencies correctly when the files are delivered in the same
+                package and when the files are delivered in different packages.
+                """
+
+                def __check_results(pkg_deps, errs, exp_pkg, no_deps, one_dep):
+                        if errs:
+                                raise RuntimeError("Got the following "
+                                    "unexpected errors:\n%s" %
+                                    "\n".join([str(e) for e in errs]))
+                        self.assertEqual(len(pkg_deps), 2)
+                        self.assertEqual(len(pkg_deps[no_deps]), 0)
+                        if len(pkg_deps[one_dep]) != 1:
+                                raise RuntimeError("Got more than one "
+                                    "dependency:\n%s" %
+                                    "\n".join(
+                                        [str(d) for d in pkg_deps[col_path]]))
+                        d = pkg_deps[one_dep][0]
+                        self.assertEqual(d.attrs["fmri"], exp_pkg)
+                
+                self.make_image()
+
+                col_path = self.make_manifest(self.collision_manf)
+                col_path_num_var = self.make_manifest(
+                    self.collision_manf_num_var)
+                # This manifest provides both files that satisfy col_path's
+                # dependencies.
+                both_path = self.make_manifest(self.sat_both)
+                # This manifest provides a file that satisfies the dependency
+                # in col_path by delivering a file in patform/bar/baz/.
+                bar_path = self.make_manifest(self.sat_bar_libc)
+                bar2_path = self.make_manifest(self.sat_bar_libc2)
+                # This manifest provides a file that satisfies the dependency
+                # in col_path by delivering a file in patform/foo/baz/.
+                foo_path = self.make_manifest(self.sat_foo_libc)
+                # This manifest provides a file that satisfies the dependency
+                # in col_path by delivering a file in patform/bar/baz/, but that
+                # file is tagged with variant.num=one.
+                bar_path_num_var = self.make_manifest(self.sat_bar_libc_num_var)
+                # This manifest provides a file that satisfies the dependency
+                # in col_path by delivering a file in patform/foo/baz/, but that
+                # file is tagged with variant.num=two.
+                foo_path_num_var = self.make_manifest(self.sat_foo_libc_num_var)
+                # This manifest provides a file that satisfies the dependency
+                # in col_path by delivering a file in patform/foo/baz/, but that
+                # file is tagged with variant.num=one and variant.num=two.
+                foo_path_num_var_both = self.make_manifest(
+                    self.sat_foo_libc_num_var_both)
+
+                # The following tests should all succeed because either the same
+                # package delivers both files which could satisfy the dependency
+                # or only one package which delivers the dependency is being
+                # resolved against.
+                pkg_deps, errs = dependencies.resolve_deps(
+                    [col_path, both_path], self.api_obj)
+                __check_results(pkg_deps, errs, "pkg:/sat_both", both_path,
+                    col_path)
+
+                pkg_deps, errs = dependencies.resolve_deps(
+                    [col_path, bar_path], self.api_obj)
+                __check_results(pkg_deps, errs, "pkg:/sat_bar_libc", bar_path,
+                    col_path)
+
+                pkg_deps, errs = dependencies.resolve_deps(
+                    [col_path, foo_path], self.api_obj)
+                __check_results(pkg_deps, errs, "pkg:/sat_foo_libc", foo_path,
+                    col_path)
+
+                # This test should also pass because the dependencies will be
+                # variant tagged, just as the file delivery is.
+                pkg_deps, errs = dependencies.resolve_deps(
+                    [col_path_num_var, foo_path_num_var, bar_path_num_var],
+                    self.api_obj)
+                if errs:
+                        raise RuntimeError("Got the following unexpected "
+                            "errors:\n%s" %
+                            "\n".join([str(e) for e in errs]))
+                self.assertEqual(len(pkg_deps), 3)
+                self.assertEqual(len(pkg_deps[foo_path_num_var]), 0)
+                self.assertEqual(len(pkg_deps[bar_path_num_var]), 0)
+                self.assertEqual(len(pkg_deps[col_path_num_var]), 2)
+                for d in pkg_deps[col_path_num_var]:
+                        if d.attrs["fmri"] not in \
+                            ("pkg:/sat_foo_libc", "pkg:/sat_bar_libc"):
+                                raise RuntimeError("Unexpected fmri in %s" % d)
+
+                # This resolution should fail because in the case of
+                # variant.num=one, files which satisfy the dependency are
+                # delivered in two packages.
+                pkg_deps, errs = dependencies.resolve_deps(
+                    [col_path_num_var, foo_path_num_var_both, bar_path_num_var],
+                    self.api_obj)
+                self.assertEqual(len(pkg_deps), 3)
+                for k in pkg_deps:
+                        if pkg_deps[k]:
+                                raise RuntimeError("Got the following "
+                                    "unexpected dependencies:\n%s" %
+                                    "\n".join(["%s\n%s" %
+                                        (k,"\n".join([
+                                            "\t%s" % d for d in pkg_deps[k]]))
+                                            for k in pkg_deps
+                                        ]))
+                if len(errs) != 2:
+                        raise RuntimeError("Didn't get two errors:\n%s" %
+                            "\n".join(str(e) for e in errs))
+                for e in errs:
+                        if isinstance(e,
+                            dependencies.MultiplePackagesRunPathError):
+                                for d in e.res:
+                                        if d.attrs["fmri"] not in \
+                                            ("pkg:/sat_foo_libc",
+                                            "pkg:/sat_bar_libc"):
+                                                raise RuntimeError("Unexpected "
+                                                    "dependency action:%s" % d)
+                                self.assertEqual(
+                                    e.source.attrs["%s.file" % self.depend_dp],
+                                    "no_such_named_file")
+                        elif isinstance(e,
+                            dependencies.UnresolvedDependencyError):
+                                self.assertEqual(e.path, col_path_num_var)
+                                self.assertEqual(
+                                    e.file_dep.attrs[
+                                        "%s.file" % self.depend_dp],
+                                    "no_such_named_file")
+                        else:
+                                raise RuntimeError("Unexpected error:%s" % e)
+
+                # This resolution should fail because files which satisfy the
+                # dependency are being delivered in two packages.
+                pkg_deps, errs = dependencies.resolve_deps(
+                    [col_path, bar_path, foo_path], self.api_obj)
+                self.assertEqual(len(pkg_deps), 3)
+                for k in pkg_deps:
+                        if pkg_deps[k]:
+                                raise RuntimeError("Got the following "
+                                    "unexpected dependencies:\n%s" %
+                                    "\n".join(["%s\n%s" %
+                                        (k,"\n".join([
+                                            "\t%s" % d for d in pkg_deps[k]]))
+                                            for k in pkg_deps
+                                        ]))
+                if len(errs) != 2:
+                        raise RuntimeError("Didn't get two errors:\n%s" %
+                            "\n".join(str(e) for e in errs))
+                for e in errs:
+                        if isinstance(e,
+                            dependencies.MultiplePackagesRunPathError):
+                                for d in e.res:
+                                        if d.attrs["fmri"] not in \
+                                            ("pkg:/sat_foo_libc",
+                                            "pkg:/sat_bar_libc"):
+                                                raise RuntimeError("Unexpected "
+                                                    "dependency action:%s" % d)
+                                self.assertEqual(
+                                    e.source.attrs["%s.file" % self.depend_dp],
+                                    "no_such_named_file")
+                        elif isinstance(e,
+                            dependencies.UnresolvedDependencyError):
+                                self.assertEqual(e.path, col_path)
+                                self.assertEqual(
+                                    e.file_dep.attrs[
+                                        "%s.file" % self.depend_dp],
+                                    "no_such_named_file")
+                        else:
+                                raise RuntimeError("Unexpected error:%s" % e)
+
+                # This resolution should fail because files which satisfy the
+                # dependency are being delivered in two packages.
+                pkg_deps, errs = dependencies.resolve_deps(
+                    [col_path, bar_path, bar2_path], self.api_obj)
+                self.assertEqual(len(pkg_deps), 3)
+                for k in pkg_deps:
+                        if pkg_deps[k]:
+                                raise RuntimeError("Got the following "
+                                    "unexpected dependencies:\n%s" %
+                                    "\n".join(["%s\n%s" %
+                                        (k,"\n".join([
+                                            "\t%s" % d for d in pkg_deps[k]]))
+                                            for k in pkg_deps
+                                        ]))
+                if len(errs) != 2:
+                        raise RuntimeError("Didn't get two errors:\n%s" %
+                            "\n".join(str(e) for e in errs))
+                for e in errs:
+                        if isinstance(e,
+                            dependencies.AmbiguousPathError):
+                                for d in e.pkgs:
+                                        if d not in \
+                                            ("pkg:/sat_bar_libc",
+                                            "pkg:/sat_bar_libc2"):
+                                                raise RuntimeError("Unexpected "
+                                                    "dependency action:%s" % d)
+                                self.assertEqual(
+                                    e.source.attrs["%s.file" % self.depend_dp],
+                                    "no_such_named_file")
+                        elif isinstance(e,
+                            dependencies.UnresolvedDependencyError):
+                                self.assertEqual(e.path, col_path)
+                                self.assertEqual(
+                                    e.file_dep.attrs[
+                                        "%s.file" % self.depend_dp],
+                                    "no_such_named_file")
+                        else:
+                                raise RuntimeError("Unexpected error:%s" % e)

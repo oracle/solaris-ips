@@ -81,5 +81,5 @@ def process_python_dependencies(proto_dir, action, pkg_vars):
                             pkg_vars, proto_dir))
                 else:
                         errs.append(PythonModuleMissingPath(m.__name__,
-                            localpath))
+                            action.attrs[PD_LOCAL_PATH]))
         return deps, errs

@@ -123,8 +123,9 @@ class ActionDataError(ActionError):
         """Used to indicate that a file-related error occuring during action
         initialization."""
 
-        def __init__(self, *args):
+        def __init__(self, *args, **kwargs):
                 self.error = args[0]
+                self.path = kwargs.get("path", None)
 
         def __str__(self):
                 return str(self.error)

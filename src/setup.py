@@ -172,7 +172,7 @@ authattrd_dir = 'etc/security/auth_attr.d'
 scripts_sunos = {
         scripts_dir: [
                 ['client.py', 'pkg'],
-                ['pkgdep.py', 'pkgdep'],
+                ['pkgdep.py', 'pkgdepend'],
                 ['util/publish/pkgmogrify.py', 'pkgmogrify'],
                 ['publish.py', 'pkgsend'],
                 ['pull.py', 'pkgrecv'],
@@ -235,7 +235,7 @@ scripts = {
 man1_files = [
         'man/packagemanager.1',
         'man/pkg.1',
-        'man/pkgdep.1',
+        'man/pkgdepend.1',
         'man/pkgmogrify.1',
         'man/pkgsend.1',
         'man/pkgrecv.1',

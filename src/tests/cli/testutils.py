@@ -410,7 +410,7 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
 
                 return retcode
 
-        def pkgdep(self, command, proto=None, use_proto=True, exit=0,
+        def pkgdepend(self, command, proto=None, use_proto=True, exit=0,
             comment=""):
                 wrapper = self.coverage_cmd
 
@@ -420,7 +420,7 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                 if not use_proto:
                         proto = ""
                         
-                cmdline = "%s %s/usr/bin/pkgdep %s %s" % (wrapper, g_proto_area,
+                cmdline = "%s %s/usr/bin/pkgdepend %s %s" % (wrapper, g_proto_area,
                     command, proto)
                 self.debugcmd(cmdline)
 
@@ -436,11 +436,11 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
 
                 if retcode == 99:
                         raise TracebackException(cmdline, self.output, comment,
-                            debug=self.get_debugbuf())
+                            debug=self.errout)
                 elif retcode != exit:
                         raise UnexpectedExitCodeException(cmdline,
                             exit, retcode, self.output, comment,
-                            debug=self.get_debugbuf())
+                            debug=self.errout)
 
                 return retcode
 

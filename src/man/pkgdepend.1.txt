@@ -1,18 +1,19 @@
-User Commands                                             pkgdep(1)
+User Commands                                             pkgdepend(1)
 
 
 NAME
-     pkgdep - image packaging system dependency analyzer
+     pkgdepend - image packaging system dependency analyzer
 
 SYNOPSIS
-     /usr/bin/pkgdep [options] command [cmd_options] [operands]
+     /usr/bin/pkgdepend [options] command [cmd_options] [operands]
 
-     /usr/bin/pkgdep generate [-IMm] manifest_path proto_dir
+     /usr/bin/pkgdepend generate [-IMm] [-D name=value] [-k path] manifest_path 
+         proto_dir
 
-     /usr/bin/pkgdep resolve [-dMos] manifest_path ...
+     /usr/bin/pkgdepend resolve [-dMos] manifest_path ...
 
 DESCRIPTION
-     The pkgdep command allows the user to produce the files upon which a
+     The pkgdepend command allows the user to produce the files upon which a
      package depends due to its contents, or resolve those dependencies into
      the packages which contain the files depended upon. The typical use is to
      use the production phase to independently generate the dependencies for
@@ -35,7 +36,7 @@ OPTIONS
 SUBCOMMANDS
      The following subcommands are supported:
 
-     generate [-IMm] manifest_path proto_dir
+     generate [-IMm] [-D name=value] [-k path] manifest_path proto_dir
           Produce the dependencies on files of the manifest specified by 
           manifest_path, whose contents are found in proto_dir.
 
@@ -47,6 +48,13 @@ SUBCOMMANDS
 
           With -m, the original manifest will be repeated with any 
           discovered dependencies added after.
+
+          For each -D, add the 'value' as a way to expand the token 'name' in
+          run paths for elf file dependencies.
+
+          For each -k, add the path given to the list of paths in which to look 
+          for kernel modules.  Using the -k argument removes the default paths
+          which are /kernel and /usr/kernel.
 
      resolve [-mo] [-d output_dir] [-s suffix] manifest_path ...
           Transform dependencies on files into dependencies on the packages
@@ -77,12 +85,12 @@ EXAMPLES
      whose content directory is in ./bar/baz and store the results in 
      foo.fdeps.
 
-     $ pkgdep generate foo ./bar/baz > foo.fdeps
+     $ pkgdepend generate foo ./bar/baz > foo.fdeps
 
      Example 2: Resolve the file dependencies in foo.fdeps, and bar.fdeps 
      against each other, and the packages currently installed on the system.
 
-     $ pkgdep resolve foo.fdeps bar.fdeps
+     $ pkgdepend resolve foo.fdeps bar.fdeps
      $ ls *.res
        foo.fdeps.res     bar.fdeps.res
 
@@ -91,8 +99,20 @@ EXAMPLES
      resolve the file dependencies and place the resulting manifests, which
      could be used with pkgsend publish, in ./res
 
-     $ pkgdep generate -m foo > ./deps/foo
-     $ pkgdep generate -m bar > ./deps/bar
-     $ pkgdep resolve -m -d ./res ./deps/foo ./deps/bar
+     $ pkgdepend generate -m foo > ./deps/foo
+     $ pkgdepend generate -m bar > ./deps/bar
+     $ pkgdepend resolve -m -d ./res ./deps/foo ./deps/bar
      $ ls ./res
        foo     bar
+
+     Example 4: Replace all $PLATFORM tokens in the run paths in elf files with
+     sun4v and sun4u while generating the dependences for the manifest written 
+     in foo whose content directory is in /.
+
+     $ pkgdepend generate -D 'PLATFORM=sun4v' -D 'PLATFORM=sun4u' foo /
+
+     Example 5: Use /kmod as the directory in which to find kernel modules when
+     generating the dependencies for the manifest written in foo whose content 
+     directory is in /.
+
+     $ pkgdepend generate -k /kmod foo /

@@ -43,7 +43,7 @@ import pkg.publish.dependencies as dependencies
 from pkg.misc import msg, emsg, PipeError
 
 CLIENT_API_VERSION = 26
-PKG_CLIENT_NAME = "pkgdep"
+PKG_CLIENT_NAME = "pkgdepend"
 
 DEFAULT_SUFFIX = ".res"
 
@@ -64,7 +64,7 @@ def error(text, cmd=None):
 
         # This has to be a constant value as we can't reliably get our actual
         # program name on all platforms.
-        emsg(ws + "pkgdep: " + text_nows)
+        emsg(ws + "pkgdepend: " + text_nows)
 
 def usage(usage_error=None, cmd=None, retcode=2):
         """Emit a usage message and optionally prefix it with a more specific
@@ -74,11 +74,11 @@ def usage(usage_error=None, cmd=None, retcode=2):
                 error(usage_error, cmd=cmd)
         emsg (_("""\
 Usage:
-        pkgdep [options] command [cmd_options] [operands]
+        pkgdepend [options] command [cmd_options] [operands]
 
 Subcommands:
-        pkgdep generate [-IMm] manifest proto_dir
-        pkgdep [options] resolve [-dMos] manifest ...
+        pkgdepend generate [-DIkMm] manifest proto_dir
+        pkgdepend [options] resolve [-dMos] manifest ...
 
 Options:
         -R dir
@@ -92,7 +92,7 @@ def generate(args):
         """Produce a list of file dependencies from a manfiest and a proto
         area."""
         try:
-                opts, pargs = getopt.getopt(args, "IMm?",
+                opts, pargs = getopt.getopt(args, "D:Ik:Mm?",
                     ["help"])
         except getopt.GetoptError, e:
                 usage(_("illegal global option -- %s") % e.opt)
@@ -101,10 +101,27 @@ def generate(args):
         echo_manf = False
         show_missing = False
         show_usage = False
+        isa_paths = []
+        kernel_paths = []
+        platform_paths = []
+        dyn_tok_conv = {}
+        import sys
 
         for opt, arg in opts:
-                if opt == "-I":
+                if opt == "-D":
+                        try:
+                                dyn_tok_name, dyn_tok_val = arg.split("=", 1)
+                        except:
+                                usage(_("-D arguments must be of the form "
+                                    "'name=value'."))
+                        if not dyn_tok_name[0] == "$":
+                                dyn_tok_name = "$" + dyn_tok_name
+                        dyn_tok_conv.setdefault(dyn_tok_name, []).append(
+                            dyn_tok_val)
+                elif opt == "-I":
                         remove_internal_deps = False
+                elif opt == "-k":
+                        kernel_paths.append(arg)
                 elif opt == "-m":
                         echo_manf = True
                 elif opt == "-M":
@@ -114,24 +131,31 @@ def generate(args):
         if show_usage:
                 usage(retcode=0)
         if len(pargs) != 2:
-                usage()
+                usage(_("Generate only accepts exactly two arguments."))
+
+        if not kernel_paths:
+                kernel_paths = ["/kernel", "/usr/kernel"]
+
+        if "$ORIGIN" in dyn_tok_conv:
+                usage(_("ORIGIN may not be specified using -D. It will be "
+                    "inferred from the\ninstall paths of the files."))
 
         retcode = 0
                 
         manf = pargs[0]
         proto_dir = pargs[1]
 
-        if (not os.path.isdir(proto_dir)) or (not os.path.isfile(manf)):
-            usage(retcode=1)
+        if not os.path.isfile(manf):
+                usage(_("The manifest file %s could not be found." % manf),
+                    retcode=2)
+
+        if not os.path.isdir(proto_dir):
+                usage(_("The proto directory %s could not be found." %
+                    proto_dir), retcode=2)
 
         try:
                 ds, es, ms = dependencies.list_implicit_deps(manf, proto_dir,
-                    remove_internal_deps)
-        except IOError, e:
-                if e.errno == errno.ENOENT:
-                        error(_("Could not find manifest file %s") % manf)
-                        return 1
-                raise
+                    dyn_tok_conv, kernel_paths, remove_internal_deps)
         except (actions.MalformedActionError, actions.UnknownActionError), e:
                 error(_("Could not parse manifest %(manifest)s because of the "
                     "following line:\n%(line)s") % { 'manifest': manf ,
@@ -185,12 +209,14 @@ def resolve(args, img_dir):
 
         for manifest in manifest_paths:
             if not os.path.isfile(manifest):
-                usage()
+                usage(_("The manifest file %s could not be found." % manifest),
+                    retcode=2)
 
         if out_dir:
                 out_dir = os.path.abspath(out_dir)
                 if not os.path.isdir(out_dir):
-                    usage()
+                        usage(_("The output directory %s is not a directory." %
+                            manf), retcode=2)
 
         if img_dir is None:
                 try:
@@ -241,14 +267,10 @@ def resolve(args, img_dir):
                 ret_code = pkgdeps_in_place(pkg_deps, manifest_paths, suffix,
                     echo_manifest)
 
-        for path, file_dep, pvars in errs:
+        for e in errs:
                 if ret_code == 0:
                         ret_code = 1
-                emsg("%s has unresolved dependency '%s' under the following "
-                     "combinations of variants:" % (path, file_dep))
-                for grp in pvars.get_unsatisfied():
-                        emsg(" ".join([
-                            ("%s:%s" % (name, val)) for name, val in grp]))
+                emsg(e)
         return ret_code
 
 def echo_line(l):
@@ -458,6 +480,15 @@ if __name__ == "__main__":
                 __ret = main_func()
         except api_errors.MissingFileArgumentException, e:
                 error("The manifest file %s could not be found." % e.path)
+                __ret = 1
+        except api_errors.VersionException, __e:
+                error(_("The %(cmd)s command appears out of sync with the "
+                    "libraries provided \nby SUNWipkg. The client version is "
+                    "%(client)s while the library API version is %(api)s") %
+                    {"cmd": PKG_CLIENT_NAME,
+                     "client": __e.received_version,
+                     "api": __e.expected_version
+                    })
                 __ret = 1
         except RuntimeError, _e:
                 emsg("%s: %s" % (PKG_CLIENT_NAME, _e))

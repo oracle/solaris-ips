@@ -49,16 +49,19 @@ class UnsupportedDynamicToken(base.DependencyAnalysisError):
         """Exception that is used for elf dependencies which have a dynamic
         token in their path that we're unable to decode."""
 
-        def __init__(self, file_path, run_path, token):
+        def __init__(self, proto_path, installed_path, run_path, token):
                 base.DependencyAnalysisError.__init__(self)
-                self.fp = file_path
+                self.pp = proto_path
+                self.ip = installed_path
                 self.rp = run_path
                 self.tok = token
 
         def __str__(self):
-                return  _("%s had this token, %s, in its run path:%s. We are "
-                    "unable to handle this token at this time.") % \
-                    (self.fp, self.tok, self.rp)
+                return  _("%s (which will be installed at %s) had this token, "
+                    "%s, in its run path:%s.  It is not currently possible to "
+                    "automatically expand this token. Please specify its value "
+                    "on the command line.") % \
+                    (self.pp, self.ip, self.tok, self.rp)
 
 
 class ElfDependency(base.MultiplePathDependency):
@@ -103,15 +106,62 @@ class ElfDependency(base.MultiplePathDependency):
                 return "ElfDep(%s, %s, %s, %s)" % (self.action, self.base_name,
                     self.run_paths, self.pkg_vars)
 
-def process_elf_dependencies(action, proto_dir, pkg_vars, **kwargs):
-        """Given a file action and proto directory, produce the elf dependencies
-        for that file."""
+def expand_variables(paths, dyn_tok_conv):
+        """Replace dynamic tokens, such as $PLATFORM, in the paths in the
+        paramter 'paths' with the values for that token provided in the
+        dictionary 'dyn_tok_conv.'
+        """
+
+        res = []
+        elist = []
+        for p in paths:
+                tok_start = p.find("$")
+                if tok_start > -1:
+                        tok = p[tok_start:]
+                        tok_end = tok.find("/")
+                        if tok_end > -1:
+                                tok = tok[:tok_end]
+                        if tok not in dyn_tok_conv:
+                                elist.append((p, tok))
+                        else:
+                                np = [
+                                    p[:tok_start] + dc + \
+                                    p[tok_start + len(tok):]
+                                    for dc in dyn_tok_conv[tok]
+                                ]
+                                # The first dynamic token has been replaced, but
+                                # more may remain so process the path again.
+                                rec_res, rec_elist = expand_variables(np,
+                                    dyn_tok_conv)
+                                res.extend(rec_res)
+                                elist.extend(rec_elist)
+                else:
+                        res.append(p)
+        return res, elist
+        
+def process_elf_dependencies(action, proto_dir, pkg_vars, dyn_tok_conv,
+    kernel_paths, **kwargs):
+        """Produce the elf dependencies for the file delivered in the action
+        provided.
+
+        'action' is the file action to analyze.
+
+        'pkg_vars' is the list of variants against which the package delivering
+        the action was published.
+
+        'proto_dir' is the proto area where the file the action delivers lives.
+
+        'dyn_tok_conv' is the dictionary which maps the dynamic tokens, like
+        $PLATFORM, to the values they should be expanded to.
+
+        'kernel_paths' contains the run paths which kernel modules should use.
+        """
 
         if not action.name == "file":
                 return []
 
         installed_path = action.attrs[action.key_attr]
-        
+
         proto_file = action.attrs[PD_LOCAL_PATH]
 
         if not os.path.exists(proto_file):
@@ -133,11 +183,8 @@ def process_elf_dependencies(action, proto_dir, pkg_vars, **kwargs):
         if len(rp) == 1 and rp[0] == "":
                 rp = []
 
-        rp = [
-            os.path.normpath(p.replace("$ORIGIN",
-                os.path.join("/", os.path.dirname(installed_path))))
-            for p in rp
-        ]
+        dyn_tok_conv["$ORIGIN"] = [os.path.join("/",
+            os.path.dirname(installed_path))]
 
         kernel64 = None
 
@@ -156,7 +203,7 @@ def process_elf_dependencies(action, proto_dir, pkg_vars, **kwargs):
                         rp.append("/platform/%s/kernel" %
                             installed_path.split("/")[1]) 
                 # Default kernel search path
-                rp.extend(("/kernel", "/usr/kernel"))
+                rp.extend(kernel_paths)
                 # What subdirectory should we look in for 64-bit kernel modules?
                 if ei["bits"] == 64:
                         if ei["arch"] == "i386":
@@ -172,20 +219,45 @@ def process_elf_dependencies(action, proto_dir, pkg_vars, **kwargs):
                 if "/usr/lib" not in rp:
                         rp.append("/usr/lib")
 
+        rp, elist = expand_variables(rp, dyn_tok_conv)
+
+        elist = [
+            UnsupportedDynamicToken(proto_file, installed_path, p, tok)
+            for p, tok in elist
+        ]
+
         res = []
-        elist = []
 
-        for p in rp:
-                if "$" in p:
-                        tok = p[p.find("$"):]
-                        if "/" in tok:
-                                tok = tok[:tok.find("/")]
-                        elist.append(UnsupportedDynamicToken(installed_path, p,
-                            tok))
-
-        rp = [p for p in rp[:] if "$" not in p]
-
-        return [
-            ElfDependency(action, d, rp, pkg_vars, proto_dir)
-            for d in deps
-        ], elist
+        for d in deps:
+                pn, fn = os.path.split(d)
+                pathlist = []
+                for p in rp:
+                        if kernel64:
+                                # Find 64-bit modules the way krtld does.
+                                # XXX We don't resolve dependencies found in
+                                # /platform, since we don't know where under
+                                # /platform to look.
+                                deppath = os.path.join(p, pn, kernel64, fn)[1:]
+                        else:
+                                # This is a hack for when a runpath uses the 64
+                                # symlink to the actual 64-bit directory.
+                                # Better would be to see if the runpath was a
+                                # link, and if so, use its resolution, but
+                                # extracting that information from used list is
+                                # a pain, especially because you potentially
+                                # have to resolve symlinks at all levels of the
+                                # path.
+                                if p.endswith("/64"):
+                                        if ei["arch"] == "i386":
+                                                p = p[:-2] + "amd64"
+                                        elif ei["arch"] == "sparc":
+                                                p = p[:-2] + "sparcv9"
+                                deppath = os.path.join(p, d).lstrip(os.path.sep)
+                        # deppath includes filename; remove that.
+                        head, tail = os.path.split(deppath)
+                        if head:
+                                pathlist.append(head)
+                res.append(ElfDependency(action, fn, pathlist, pkg_vars,
+                    proto_dir))
+        del dyn_tok_conv["$ORIGIN"]
+        return res, elist

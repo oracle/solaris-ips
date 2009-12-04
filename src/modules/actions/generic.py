@@ -136,10 +136,10 @@ class Action(object):
                 if isinstance(data, basestring):
                         if not os.path.exists(data):
                                 raise pkg.actions.ActionDataError(
-                                    _("No such file: '%s'.") % data)
+                                    _("No such file: '%s'.") % data, path=data)
                         elif os.path.isdir(data):
                                 raise pkg.actions.ActionDataError(
-                                    _("'%s' is not a file.") % data)
+                                    _("'%s' is not a file.") % data, path=data)
 
                         def file_opener():
                                 return open(data, "rb")
@@ -151,7 +151,7 @@ class Action(object):
                                 except EnvironmentError, e:
                                         raise \
                                             pkg.actions.ActionDataError(
-                                            e)
+                                            e, path=data)
                         return
 
                 if callable(data):
