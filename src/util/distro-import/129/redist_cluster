@@ -485,7 +485,6 @@ include common/SUNWpython26-lxml
 include common/SUNWpython26-setuptools
 include common/SUNWpython26-twisted-web2
 include common/SUNWpywbem
-include common/SUNWpyyaml25
 include common/SUNWqdox
 include common/SUNWqos
 include common/SUNWqosu
@@ -945,6 +944,7 @@ include common/SUNWpython25-cssutils
 include common/SUNWpython25-simplejson
 include common/SUNWpython25-twisted
 include common/SUNWpython25-twisted-web2
+include common/SUNWpyyaml25
 include common/SUNWrmodu
 $(i386_ONLY)include common/SUNWsam
 $(i386_ONLY)include common/SUNWscn-base
@@ -2363,7 +2363,6 @@ depend SUNWpython26-xdg
 depend SUNWpython26-zope-interface
 depend SUNWpywbem
 depend SUNWpyyaml24
-depend SUNWpyyaml25
 depend SUNWpyyaml26
 depend SUNWqdox
 $(sparc_ONLY)depend SUNWqfed
@@ -2397,7 +2396,7 @@ depend SUNWrsm
 depend SUNWrsmo
 depend SUNWrss-glx
 depend SUNWrsync
-depend SUNWrtls
+$(i386_ONLY)depend SUNWrtls
 depend SUNWrtorrent
 $(i386_ONLY)depend SUNWrtw
 depend SUNWruby18
@@ -2886,6 +2885,7 @@ depend SUNWpython25-cssutils
 depend SUNWpython25-simplejson
 depend SUNWpython25-twisted
 depend SUNWpython25-twisted-web2
+depend SUNWpyyaml25
 $(i386_ONLY)depend SUNWrmodr
 depend SUNWrmodu
 depend SUNWsfdoc

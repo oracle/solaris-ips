@@ -396,7 +396,6 @@ include common/SUNWrpm
 include common/SUNWrsg
 include common/SUNWrsgk
 include common/SUNWrsync
-include common/SUNWrtls
 include common/SUNWsane-backend
 include common/SUNWsbp2
 include common/SUNWscreen
@@ -680,6 +679,7 @@ $(i386_ONLY)include i386/SUNWparted
 $(i386_ONLY)include i386/SUNWpsdcr
 $(i386_ONLY)include i386/SUNWpsdir
 $(i386_ONLY)include i386/SUNWralink
+$(i386_ONLY)include i386/SUNWrtls
 $(i386_ONLY)include i386/SUNWrtw
 $(i386_ONLY)include i386/SUNWrum
 $(i386_ONLY)include i386/SUNWrwd
@@ -1329,7 +1329,7 @@ depend SUNWrpm
 depend SUNWrsg
 depend SUNWrsgk
 depend SUNWrsync
-depend SUNWrtls
+$(i386_ONLY)depend SUNWrtls
 $(i386_ONLY)depend SUNWrtw
 $(i386_ONLY)depend SUNWrum
 $(i386_ONLY)depend SUNWrwd

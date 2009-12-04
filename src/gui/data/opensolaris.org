@@ -3643,9 +3643,6 @@ category = Python
 [SUNWpyyaml24]
 category = Python
 
-[SUNWpyyaml25]
-category = Python
-
 [SUNWpyyaml26]
 category = Python
 
