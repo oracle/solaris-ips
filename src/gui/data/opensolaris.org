@@ -1,51 +1,6 @@
 [BRCMbnx]
 category = Networking
 
-[FSWxorg-fonts-core]
-category = Fonts
-
-[FSWxorg-fonts-cyrillic]
-category = Fonts
-
-[FSWxorg-fonts-daewoo]
-category = Fonts
-
-[FSWxorg-fonts-ethiopic]
-category = Fonts
-
-[FSWxorg-fonts-iso8859-10]
-category = Fonts
-
-[FSWxorg-fonts-iso8859-13]
-category = Fonts
-
-[FSWxorg-fonts-iso8859-14]
-category = Fonts
-
-[FSWxorg-fonts-iso8859-16]
-category = Fonts
-
-[FSWxorg-fonts-iso8859-2]
-category = Fonts
-
-[FSWxorg-fonts-iso8859-3]
-category = Fonts
-
-[FSWxorg-fonts-iso8859-4]
-category = Fonts
-
-[FSWxorg-fonts-iso8859-9]
-category = Fonts
-
-[FSWxorg-fonts-jiskan]
-category = Fonts
-
-[FSWxorg-fonts-syriac]
-category = Fonts
-
-[FSWxorg-fonts-vera]
-category = Fonts
-
 [NVDAcg]
 category = Graphics and Imaging
 
@@ -985,6 +940,69 @@ category = Other Languages
 [SUNWfmd]
 category = Administration and Configuration
 
+[SUNWfont-daewoo-misc]
+category = Fonts
+
+[SUNWfont-isas-misc]
+category = Fonts
+
+[SUNWfont-jis-misc]
+category = Fonts
+
+[SUNWfont-misc-ethiopic]
+category = Fonts
+
+[SUNWfont-misc-meltho]
+category = Fonts
+
+[SUNWfont-xorg-core]
+category = Fonts
+
+[SUNWfont-xorg-cyrillic]
+category = Fonts
+
+[SUNWfont-xorg-iso8859-1]
+category = Fonts
+
+[SUNWfont-xorg-iso8859-10]
+category = Fonts
+
+[SUNWfont-xorg-iso8859-11]
+category = Fonts
+
+[SUNWfont-xorg-iso8859-13]
+category = Fonts
+
+[SUNWfont-xorg-iso8859-14]
+category = Fonts
+
+[SUNWfont-xorg-iso8859-15]
+category = Fonts
+
+[SUNWfont-xorg-iso8859-16]
+category = Fonts
+
+[SUNWfont-xorg-iso8859-2]
+category = Fonts
+
+[SUNWfont-xorg-iso8859-3]
+category = Fonts
+
+[SUNWfont-xorg-iso8859-4]
+category = Fonts
+
+[SUNWfont-xorg-iso8859-5]
+category = Fonts
+
+[SUNWfont-xorg-iso8859-7]
+category = Fonts
+
+[SUNWfont-xorg-iso8859-8]
+category = Fonts
+
+[SUNWfont-xorg-iso8859-9]
+category = Fonts
+
 [SUNWfontconfig]
 category = Libraries (System)
 
@@ -1825,13 +1843,40 @@ category = Internationalization
 [SUNWibus-table-data-cangjie]
 category = Internationalization
 
+[SUNWibus-table-data-cantonese]
+category = Internationalization
+
+[SUNWibus-table-data-cantonhk]
+category = Internationalization
+
+[SUNWibus-table-data-cns11643]
+category = Internationalization
+
 [SUNWibus-table-data-erbi]
+category = Internationalization
+
+[SUNWibus-table-data-jyutping]
 category = Internationalization
 
 [SUNWibus-table-data-quick]
 category = Internationalization
 
+[SUNWibus-table-data-rustrad]
+category = Internationalization
+
+[SUNWibus-table-data-stroke5]
+category = Internationalization
+
+[SUNWibus-table-data-thai]
+category = Internationalization
+
 [SUNWibus-table-data-translit]
+category = Internationalization
+
+[SUNWibus-table-data-viqr]
+category = Internationalization
+
+[SUNWibus-table-data-wu]
 category = Internationalization
 
 [SUNWibus-table-data-wubi]
@@ -1844,6 +1889,12 @@ category = Internationalization
 category = Internationalization
 
 [SUNWibus-table-data-zhengma]
+category = Internationalization
+
+[SUNWibus-table-data-zhuyin]
+category = Internationalization
+
+[SUNWibus-table-data-ziranma]
 category = Internationalization
 
 [SUNWiconv-extra]
@@ -2815,8 +2866,20 @@ category = System Utilities
 [SUNWlxml]
 category = Libraries (System)
 
+[SUNWlxml-python]
+category = Python
+
+[SUNWlxml-python26]
+category = Python
+
 [SUNWlxsl]
 category = Libraries (System)
+
+[SUNWlxsl-python]
+category = Python
+
+[SUNWlxsl-python26]
+category = Python
 
 [SUNWlynx]
 category = Internet
@@ -3235,6 +3298,15 @@ category = Administration and Configuration
 [SUNWphp52]
 category = PHP
 
+[SUNWphp52-apc]
+category = PHP
+
+[SUNWphp52-idn]
+category = PHP
+
+[SUNWphp52-memcache]
+category = PHP
+
 [SUNWphp52-mysql]
 category = PHP
 
@@ -3242,6 +3314,15 @@ category = PHP
 category = PHP
 
 [SUNWphp52-pgsql]
+category = PHP
+
+[SUNWphp52-suhosin]
+category = PHP
+
+[SUNWphp52-tcpwrap]
+category = PHP
+
+[SUNWphp52-xdebug]
 category = PHP
 
 [SUNWphp52d]
@@ -3523,15 +3604,6 @@ category = Python
 [SUNWpython24-simplejson]
 category = Python
 
-[SUNWpython25-simplejson]
-category = Python
-
-[SUNWpython25-twisted]
-category = Python
-
-[SUNWpython25-twisted-web2]
-category = Python
-
 [SUNWpython26-cssutils]
 category = Python
 
@@ -3784,6 +3856,9 @@ category = Ports
 [SUNWscsip]
 category = Plug-ins and Run-times
 
+[SUNWsdcard]
+category = Storage
+
 [SUNWsdhcm]
 category = Services
 
@@ -3879,6 +3954,9 @@ category = Sound and Video
 
 [SUNWsound-exchange]
 category = Sound and Video
+
+[SUNWspawn-fcgi]
+category = Application and Web Servers
 
 [SUNWspeex]
 category = Multimedia Libraries
@@ -3990,6 +4068,9 @@ category = Core
 
 [SUNWtcpdS]
 category = Core
+
+[SUNWtcpdump]
+category = Internet
 
 [SUNWtcsh]
 category = Shells
@@ -4180,7 +4261,16 @@ category = Fonts
 [SUNWttf-arphic-uming]
 category = Fonts
 
+[SUNWttf-bh-luxi]
+category = Fonts
+
+[SUNWttf-bitstream-vera]
+category = Fonts
+
 [SUNWttf-bpg-georgian]
+category = Fonts
+
+[SUNWttf-dejavu]
 category = Fonts
 
 [SUNWttf-gentium]
@@ -4202,6 +4292,9 @@ category = Fonts
 category = Fonts
 
 [SUNWttf-kacst]
+category = Fonts
+
+[SUNWttf-liberation]
 category = Fonts
 
 [SUNWttf-mgopen]
@@ -4345,6 +4438,9 @@ category = Internet
 [SUNWvr]
 category = Networking
 
+[SUNWvrrp]
+category = Administration and Configuration
+
 [SUNWvscan]
 category = Services
 
@@ -4352,9 +4448,6 @@ category = Services
 category = Hardware
 
 [SUNWvtsmn]
-category = Hardware
-
-[SUNWvtss]
 category = Hardware
 
 [SUNWvtsts]
@@ -4559,6 +4652,9 @@ category = Networking
 category = Administration and Configuration
 
 [SUNWzfs]
+category = File System
+
+[SUNWzfs-auto-snapshot]
 category = File System
 
 [SUNWzip]

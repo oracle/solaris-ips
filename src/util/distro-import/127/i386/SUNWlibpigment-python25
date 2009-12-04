@@ -6,4 +6,5 @@
 # SUNWlibpigment-python25 was EOFed in snv_127.
 #
 package SUNWlibpigment-python25
+consolidation "gnome"
 end package

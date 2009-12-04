@@ -1,0 +1,8 @@
+package SUNWphp52-idn
+consolidation "sfw"
+classification "Development/PHP"
+import SUNWphp52r-idn
+import SUNWphp52u-idn
+depend SUNWphp52
+version 0.2.0
+end package

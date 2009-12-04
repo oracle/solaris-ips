@@ -1,0 +1,5 @@
+package SUNWzfs-auto-snapshot
+consolidation "gnome"
+classification "System/File System"
+import SUNWzfs-auto-snapshot
+end package

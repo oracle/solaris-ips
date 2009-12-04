@@ -1,0 +1,10 @@
+package SUNWttf-bh-luxi
+consolidation "X"
+classification "System/Fonts"
+import SUNWttf-bh-luxi
+add dir path=etc mode=0755 owner=root group=sys
+add dir path=etc/X11 mode=0755 owner=root group=sys
+add dir path=etc/X11/fontpath.d mode=0755 owner=root group=sys
+add link path=etc/X11/fontpath.d/bh-luxi:pri=42 \
+    target=../../../usr/share/fonts/TrueType/bh-luxi
+end package

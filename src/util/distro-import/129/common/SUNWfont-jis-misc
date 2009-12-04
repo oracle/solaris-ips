@@ -1,0 +1,12 @@
+package SUNWfont-jis-misc
+consolidation "X"
+classification "System/Fonts"
+import SUNWfont-jis-misc
+add dir path=etc mode=0755 owner=root group=sys
+add dir path=etc/X11 mode=0755 owner=root group=sys
+add dir path=etc/X11/fontpath.d mode=0755 owner=root group=sys
+add link path=etc/X11/fontpath.d/jiskan:unscaled:pri=14 \
+    target=../../../usr/share/fonts/X11/jiskan
+add link path=etc/X11/fontpath.d/jiskan:pri=84 \
+    target=../../../usr/share/fonts/X11/jiskan
+end package

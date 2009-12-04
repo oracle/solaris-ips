@@ -1,0 +1,16 @@
+package developer/opensolaris/pkg5
+consolidation "ips"
+classification "Development/Distribution Tools"
+summary "Dependencies required to build the pkg(5) project."
+depend SUNWgnome-common-devel
+depend SUNWgnome-doc-utils
+depend SUNWmercurial
+depend SUNWonbld
+depend SUNWperl584usr
+depend SUNWpkgcmds
+depend SUNWpython26-setuptools
+depend SUNWsprot
+depend SUNWtidy
+depend SUNWxwinc
+depend SUNWzoneint
+end package

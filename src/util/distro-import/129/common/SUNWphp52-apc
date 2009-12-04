@@ -1,0 +1,8 @@
+package SUNWphp52-apc
+consolidation "sfw"
+classification "Development/PHP"
+import SUNWphp52r-apc
+import SUNWphp52u-apc
+depend SUNWphp52
+version 3.0.19
+end package

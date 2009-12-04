@@ -1,10 +1,13 @@
-#
-# As there isn't currently a way to delete packages on upgrade, create an
-# empty package which will cause the previous contents of the package to
-# be deleted when the empty version is installed.
-#
-# SUNWsdcard was EOFed in snv_128.
-#
 package SUNWsdcard
 consolidation "osnet"
+$(i386_ONLY)classification "Drivers/Storage"
+$(i386_ONLY)import SUNWsdcard
+
+$(i386_ONLY)add driver name=sdcard \
+$(i386_ONLY)    perms="* 0644 root root"
+
+$(i386_ONLY)add driver name=sdhost \
+$(i386_ONLY)    perms="* 0644 root root" \
+$(i386_ONLY)    alias="pciclass,080500" \
+$(i386_ONLY)    alias="pciclass,080501"
 end package

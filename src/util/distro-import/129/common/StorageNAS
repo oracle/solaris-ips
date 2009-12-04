@@ -1,0 +1,12 @@
+package storage-nas
+consolidation "osnet"
+classification "Drivers/Storage"
+summary "Network Attached Storage cluster"
+version 0.1
+depend SUNWiscsi
+depend SUNWiscsitgt
+depend SUNWndmp
+depend SUNWnfss
+depend SUNWsmbs
+depend SUNWvscan
+end package

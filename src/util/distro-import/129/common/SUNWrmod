@@ -1,0 +1,13 @@
+package SUNWrmod
+consolidation "osnet"
+$(i386_ONLY)classification "System/Core"
+$(i386_ONLY)import SUNWrmodr
+$(i386_ONLY)chattr boot/solaris/bootenv.rc \
+$(i386_ONLY)    original_name=SUNWrmodr:boot/solaris/bootenv.rc
+$(i386_ONLY)drop boot/solaris.xpm.gz
+$(i386_ONLY)add file solaris.xpm path=boot/solaris.xpm mode=0644 owner=root \
+$(i386_ONLY)    group=sys
+$(i386_ONLY)add file master path=boot/solaris/devicedb/master mode=0644 \
+$(i386_ONLY)    owner=root group=sys preserve=true
+$(i386_ONLY)import SUNWrmodu
+end package

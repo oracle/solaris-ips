@@ -6,4 +6,5 @@
 # SUNWgnome-media-center was EOFed in snv_124.
 #
 package SUNWgnome-media-center
+consolidation "gnome"
 end package

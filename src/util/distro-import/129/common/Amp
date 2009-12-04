@@ -1,0 +1,19 @@
+package amp
+consolidation "sfw"
+classification "Web Services/Application and Web Servers"
+summary "Cluster containing an AMP (Apache, MySQL, PHP) deployment kit"
+depend SUNWapch22
+depend SUNWapch22m-dtrace
+depend SUNWapch22m-fcgid
+depend SUNWapch22m-php52
+depend SUNWapch22m-security
+depend SUNWmysql51
+depend SUNWphp52
+depend SUNWphp52-apc
+depend SUNWphp52-idn
+depend SUNWphp52-memcache
+depend SUNWphp52-mysql
+depend SUNWphp52-suhosin
+depend SUNWphp52-tcpwrap
+depend SUNWphp52-xdebug
+end package

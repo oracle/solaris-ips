@@ -1,0 +1,6 @@
+package SUNWlxsl-python26
+consolidation "sfw"
+classification "Development/Python"
+import SUNWlxsl-python26
+version 1.1.26
+end package

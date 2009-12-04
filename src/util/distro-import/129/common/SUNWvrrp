@@ -1,0 +1,6 @@
+package SUNWvrrp
+consolidation "osnet"
+classification "System/Administration and Configuration"
+import SUNWvrrpr
+import SUNWvrrpu
+end package

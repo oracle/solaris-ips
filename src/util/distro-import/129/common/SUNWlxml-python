@@ -1,0 +1,6 @@
+package SUNWlxml-python
+consolidation "sfw"
+classification "Development/Python"
+import SUNWlxml-python
+version 2.7.6
+end package

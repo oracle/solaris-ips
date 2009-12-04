@@ -1,0 +1,7 @@
+package SUNWibus-table-data-translit
+consolidation "l10n"
+classification "System/Internationalization"
+import SUNWibus-table-data-translit
+depend SUNWibus-table
+version 1.2.0
+end package

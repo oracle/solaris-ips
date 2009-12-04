@@ -12,8 +12,6 @@ add link path=usr/bin/rksh \
 # /usr/has
 add dir path=usr/has mode=0755 owner=root group=bin
 add dir path=usr/has/bin mode=0755 owner=root group=bin
-add dir path=usr/has/man mode=0755 owner=root group=bin
-add dir path=usr/has/man/man1 mode=0755 owner=root group=bin
 # Replace BSD vi with vim
 drop usr/bin/ex
 drop usr/bin/vi

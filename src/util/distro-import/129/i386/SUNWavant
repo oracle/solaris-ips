@@ -1,0 +1,9 @@
+package SUNWavant
+consolidation "gnome"
+classification "Applications/Panels and Applets"
+import SUNWavant
+import SUNWavant-devel
+import SUNWavant-root
+depend SUNWgnome-python26-libs
+depend SUNWpython26-xdg
+end package

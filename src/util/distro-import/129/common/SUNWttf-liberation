@@ -1,0 +1,10 @@
+package SUNWttf-liberation
+consolidation "X"
+classification "System/Fonts"
+import SUNWttf-liberation
+add dir path=etc mode=0755 owner=root group=sys
+add dir path=etc/X11 mode=0755 owner=root group=sys
+add dir path=etc/X11/fontpath.d mode=0755 owner=root group=sys
+add link path=etc/X11/fontpath.d/liberation:pri=42 \
+    target=../../../usr/share/fonts/TrueType/liberation
+end package
