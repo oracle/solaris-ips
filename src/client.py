@@ -767,6 +767,7 @@ def change_variant(img, args):
         if api_inst == None:
                 return EXIT_OOPS
 
+        stuff_to_do = None
         try:
                 stuff_to_do = api_inst.plan_change_varcets(variants, facets=None,
                     noexecute=noexecute, verbose=verbose, be_name=be_name)
@@ -853,6 +854,7 @@ def change_facet(img, args):
         if api_inst == None:
                 return EXIT_OOPS
 
+        stuff_to_do = None
         try:
                 stuff_to_do = api_inst.plan_change_varcets(variants=None, 
                     facets=facets, noexecute=noexecute, verbose=verbose,
@@ -922,6 +924,7 @@ def image_update(img, args):
         if api_inst == None:
                 return EXIT_OOPS
 
+        stuff_to_do = opensolaris_image = None
         try:
                 stuff_to_do, opensolaris_image = \
                     api_inst.plan_update_all(sys.argv[0], refresh_catalogs,
@@ -999,6 +1002,7 @@ def install(img, args):
         if api_inst == None:
                 return EXIT_OOPS
 
+        stuff_to_do = None
         try:
                 stuff_to_do = api_inst.plan_install(pargs,
                     refresh_catalogs, noexecute, verbose=verbose,
