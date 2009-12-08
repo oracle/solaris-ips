@@ -194,7 +194,7 @@ def set_package_details(pkg_name, local_info, remote_info, textview,
                     {"version": local_info.version,
                     "build": local_info.build_release,
                     "branch": local_info.branch}
-                labs["available"] =  _("Update Available:")
+                labs["available"] =  _("Latest Version:")
                 if (local_info.build_release != remote_info.build_release or
                     local_info.branch != remote_info.branch):
                         text["available"] = yes_text % \
@@ -205,7 +205,7 @@ def set_package_details(pkg_name, local_info, remote_info, textview,
                         text["available"] = _("No")
         else:
                 text["ins"] = _("No")
-                labs["available"] =  _("Version Available:")
+                labs["available"] =  _("Latest Version:")
                 text["available"] = _(
                     "%(version)s (Build %(build)s-%(branch)s)") % \
                     {"version": remote_info.version,

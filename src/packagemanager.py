@@ -337,7 +337,7 @@ class PackageManager:
                     (enumerations.FILTER_UPDATES, self.update_available_icon,
                     _('Updates')),
                     (enumerations.FILTER_NOT_INSTALLED, self.not_installed_icon,
-                    _('Not installed Packages')),
+                    _('Not Installed Packages')),
                     (-1, None, ""),
                     (enumerations.FILTER_SELECTED,
                     gui_misc.get_icon(self.icon_theme, 'filter_selected'),
@@ -417,6 +417,19 @@ class PackageManager:
                 self.w_confirm_label.set_markup(
                     _("<b>Export the following to a Web Install .p5i file:</b>"))
                 
+                w_version_info = gtk.glade.XML(self.gladefile,
+                    "version_info_dialog")
+                self.w_version_info_dialog = \
+                    w_version_info.get_widget("version_info_dialog")
+                self.w_info_name_label = w_version_info.get_widget("info_name")
+                self.w_info_installed_label = w_version_info.get_widget("info_installed")
+                self.w_info_installable_label = w_version_info.get_widget(
+                    "info_installable")
+                self.w_info_ok_button = w_version_info.get_widget("info_ok_button")
+                self.w_info_expander = w_version_info.get_widget("version_info_expander")
+                self.w_info_textview = w_version_info.get_widget("infotextview")
+                infobuffer = self.w_info_textview.get_buffer()
+                infobuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)                
                 self.w_main_window = w_tree_main.get_widget("mainwindow")
                 self.w_main_window.set_icon(self.window_icon)
                 self.w_main_hpaned = \
@@ -499,6 +512,9 @@ class PackageManager:
                 self.w_reload_menuitem = w_tree_main.get_widget("file_reload")
                 self.__set_icon(self.w_reload_button, self.w_reload_menuitem,
                     'pm-refresh')
+                self.w_version_info_menuitem = \
+                    w_tree_main.get_widget("package_version_info")
+                self.w_version_info_menuitem.set_sensitive(False)
                 self.w_installupdate_menuitem = \
                     w_tree_main.get_widget("package_install_update")
                 self.__set_icon(self.w_installupdate_button, 
@@ -577,6 +593,8 @@ class PackageManager:
                                         self.__on_file_export_selections,
                                 "on_file_quit_activate":self.__on_file_quit_activate,
                                 "on_file_be_activate":self.__on_file_be_activate,
+                                "on_package_version_info_activate": \
+                                    self.__on_version_info,
                                 "on_package_install_update_activate": \
                                     self.__on_install_update,
                                 "on_file_manage_publishers_activate": \
@@ -661,11 +679,21 @@ class PackageManager:
                                     self.__on_confirm_cancel_button_clicked,
                             }        
                             
+                        dic_version_info = \
+                            {
+                                "on_info_ok_clicked": \
+                                    self.__on_info_ok_button_clicked,
+                                "on_info_help_clicked": \
+                                    self.__on_info_help_button_clicked,
+                                "on_version_info_dialog_delete_event": \
+                                    self.__on_version_info_dialog_delete_event,
+                            }        
                         w_tree_confirm.signal_autoconnect(dic_confirm)
                         w_tree_main.signal_autoconnect(dic_mainwindow)
                         w_tree_preferences.signal_autoconnect(dic_preferences)
                         w_tree_api_search_error.signal_autoconnect(
                             dic_api_search_error)
+                        w_version_info.signal_autoconnect(dic_version_info)
                 except AttributeError, error:
                         print _(
                             "GUI will not respond to any event! %s. "
@@ -707,6 +735,7 @@ class PackageManager:
                         self.w_main_view_notebook.set_current_page(
                             NOTEBOOK_PACKAGE_LIST_PAGE)
                 self.api_search_error_dialog.set_transient_for(self.w_main_window)
+                self.w_version_info_dialog.set_transient_for(self.w_main_window)
                 self.__setup_text_signals()
 
         @staticmethod
@@ -1206,11 +1235,10 @@ class PackageManager:
                         if handle_what == DISPLAY_LINK:
                                 return _("Display %(s1)sSearch Help%(e1)s") % \
                                         {"s1": s1, "e1": e1}
-                        #TBD: Launch search help, need Search Help target
                         self.__update_statusbar_message(
                             _("Loading %(s1)sSearch Help%(e1)s ...") %
                             {"s1": s1, "e1": e1})
-                        gui_misc.display_help()
+                        gui_misc.display_help("search-pkg")
                         return
                 # View Recent Search Results
                 if search_action and \
@@ -3185,10 +3213,12 @@ class PackageManager:
                             INFO_NOTEBOOK_LICENSE_PAGE):
                                 self.__on_notebook_change(None, None, 
                                     INFO_NOTEBOOK_LICENSE_PAGE)
+                        self.w_version_info_menuitem.set_sensitive(True)
                 else:
                         self.selected_model = None
                         self.selected_path = None
                         self.selected_pkgstem = None
+                        self.w_version_info_menuitem.set_sensitive(False)
 
         def __on_package_selection_changed(self, selection, widget):
                 '''This function is for handling package selection changes'''
@@ -3424,7 +3454,148 @@ class PackageManager:
                                                 confirmation_list.append(
                                                     [pkg_name, pub_name,
                                                     desc, status])
- 
+        def __on_version_info(self, widget):
+                model, itr = self.package_selection.get_selected()
+                if itr:
+                        pkg_stem = model.get_value(itr, enumerations.STEM_COLUMN)
+                        name = model.get_value(itr, enumerations.NAME_COLUMN)
+                        self.set_busy_cursor()
+                        Thread(target = self.__get_info, args = (pkg_stem, name)).start()
+
+        def __get_info(self, pkg_stem, name):
+                self.api_o.reset()
+                local_info = gui_misc.get_pkg_info(self.api_o, pkg_stem, True)
+                remote_info = gui_misc.get_pkg_info(self.api_o, pkg_stem, False)
+                if self.exiting:
+                        return
+                plan_pkg = None
+
+                installed_only = False
+                if local_info:
+                        if (local_info.build_release == remote_info.build_release
+                            and local_info.branch == remote_info.branch):
+                                installed_only = True
+
+                if not installed_only:
+                        install_update_list = []
+                        stuff_to_do = False
+                        install_update_list.append(pkg_stem)
+                        try:
+                                stuff_to_do = self.api_o.plan_install(
+                                    install_update_list,
+                                    refresh_catalogs = False) 
+                        except api_errors.ApiException:
+                                gobject.idle_add(self.unset_busy_cursor)
+                                return
+                        if stuff_to_do:
+                                plan = self.api_o.describe().get_changes()
+                                plan_pkg = None
+                                for pkg_plan in plan:
+                                        if name == pkg_plan[1].pkg_stem:
+                                                plan_pkg = pkg_plan[1]
+                                                break
+                                if plan_pkg == None:
+                                        gobject.idle_add(self.unset_busy_cursor)
+                                        return
+                gobject.idle_add(self.__after_get_info, local_info, remote_info,
+                    plan_pkg, name)
+                return
+
+        def __after_get_info(self, local_info, remote_info, plan_pkg, name):
+                if self.exiting:
+                        return
+                self.w_info_name_label.set_text(name)
+                installable_fmt = \
+                    _("%(version)s (Build %(build)s-%(branch)s)")
+                expander_fmt = _(
+                    "The latest version of %s cannot be installed "
+                    "until you update your system. "
+                    "Run \"Updates\" to get your system up-to-date.")
+                if local_info:
+                        yes_text = _("Yes, %(version)s (Build %(build)s-%(branch)s)")
+                        installed_label = yes_text % \
+                            {"version": local_info.version,
+                            "build": local_info.build_release,
+                            "branch": local_info.branch}
+                        if (local_info.build_release == remote_info.build_release
+                            and local_info.branch == remote_info.branch):
+                                installable_label = \
+                                    _("Installed package is up-to-date")
+                                self.w_info_expander.hide()
+                                self.w_version_info_dialog.set_size_request(-1, -1)
+                        else:
+                                if plan_pkg == None:
+                                        # Updateable but cannot do it
+                                        installable_label = _("None")
+                                        self.__setup_version_info_details(name,
+                                            remote_info.version,
+                                            remote_info.build_release,
+                                            remote_info.branch)
+                else:
+                        installed_label = _("No")
+                        if plan_pkg:
+                                if plan_pkg.build_release == remote_info.build_release \
+                                    and plan_pkg.branch == remote_info.branch:
+                                        installable_label = installable_fmt % \
+                                            {"version": plan_pkg.version,
+                                            "build": plan_pkg.build_release,
+                                            "branch": plan_pkg.branch}
+                                        self.w_info_expander.hide()
+                                else:
+                                        installable_label = installable_fmt % \
+                                            {"version": plan_pkg.version,
+                                            "build": plan_pkg.build_release,
+                                            "branch": plan_pkg.branch}
+                                            
+                                        self.__setup_version_info_details(name,
+                                            remote_info.version,
+                                            remote_info.build_release,
+                                            remote_info.branch)
+                        
+                self.w_info_installed_label.set_text(installed_label)
+                self.w_info_installable_label.set_text(installable_label)
+                self.w_info_ok_button.grab_focus()                
+                self.w_version_info_dialog.show()
+                self.unset_busy_cursor()
+
+        def __setup_version_info_details(self, name, version, build_release, branch):
+                installable_fmt = \
+                    _("%(version)s (Build %(build)s-%(branch)s)")
+                expander_fmt = _(
+                    "The latest version of %s cannot be installed "
+                    "until you update your system. "
+                    "Run \"Updates\" to get your system up-to-date.")
+                installable_exp = installable_fmt % \
+                    {"version": version,
+                    "build": build_release,
+                    "branch": branch}
+                expander_text = installable_exp + "\n\n"
+                expander_text += expander_fmt % name   
+                
+                # Ensure we have enough room for the Details message
+                # without requiring a scrollbar  
+                self.w_info_textview.set_size_request(484, 95)
+                self.w_info_expander.set_expanded(True)
+                self.w_info_expander.show()
+
+                details_buff = self.w_info_textview.get_buffer()
+                details_buff.set_text("")
+                itr = details_buff.get_iter_at_line(0)
+                details_buff.insert_with_tags_by_name(itr,
+                    _("Latest Version: "), "bold")
+                details_buff.insert(itr, expander_text)
+                         
+        def __on_info_ok_button_clicked(self, widget):
+                self.w_version_info_dialog.hide()
+
+        @staticmethod
+        def __on_info_help_button_clicked(widget):
+                gui_misc.display_help("package-version")
+
+        def __on_version_info_dialog_delete_event(self, widget, event):
+                self.__on_info_ok_button_clicked(None)
+                return True
+
         def __on_install_update(self, widget):
                 self.api_o.reset()
                 install_update = []
@@ -3631,6 +3802,8 @@ class PackageManager:
                 if len(self.search_completion) > 0 and self.cache_o != None:
                         self.cache_o.dump_search_completion_info(self.search_completion)
 
+                if self.api_o.can_be_canceled():
+                        Thread(target = self.api_o.cancel, args = ()).start()
                 self.__do_exit()
                 gobject.timeout_add(1000, self.__do_exit)
                 return True
@@ -4877,9 +5050,9 @@ class PackageManager:
                         self.w_progress_frame.hide()
                         return False
                 if self.api_o.can_be_canceled():
-                        self.progress_cancel.show()
+                        self.progress_cancel.set_sensitive(True)
                 else:
-                        self.progress_cancel.hide()
+                        self.progress_cancel.set_sensitive(False)
                 self.w_progress_frame.show()
                 result = (count + 0.0)/total
                 if result > 1.0:
@@ -4901,9 +5074,10 @@ class PackageManager:
                 gobject.idle_add(self.w_progress_frame.show)
                 while not self.progress_stop_thread:
                         if self.api_o != None and self.api_o.can_be_canceled():
-                                gobject.idle_add(self.progress_cancel.show)
+                                gobject.idle_add(self.progress_cancel.set_sensitive, True)
                         else:
-                                gobject.idle_add(self.progress_cancel.hide)
+                                gobject.idle_add(self.progress_cancel.set_sensitive,
+                                    False)
                         gobject.idle_add(self.w_status_progressbar.pulse)
                         time.sleep(0.1)
                 gobject.idle_add(self.w_progress_frame.hide)
