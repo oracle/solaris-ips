@@ -89,12 +89,35 @@ class GroupAction(generic.Action):
 
                 cur_attrs = gr.getvalue(self.attrs)
 
-                return [ "%s: '%s' should be '%s'" % 
-                       (a, cur_attrs[a], self.attrs[a])
-                      for a in self.attrs
-                      if a in cur_attrs and self.attrs[a] != cur_attrs[a]
-                      ]
+                # Get the default values if they're non-empty
+                grdefval = dict((
+                    (k, v)
+                    for k, v in gr.getdefaultvalues().iteritems()
+                    if v != ""
+                ))
 
+                # If "gid" is set dynamically, ignore what's on disk.
+                if "gid" not in self.attrs:
+                        cur_attrs["gid"] = ""
+
+                should_be = grdefval.copy()
+                should_be.update(self.attrs)
+                # Note where attributes are missing
+                for k in should_be:
+                        cur_attrs.setdefault(k, "<missing>")
+                # Note where attributes should be empty
+                for k in cur_attrs:
+                        if cur_attrs[k]:
+                                should_be.setdefault(k, "<empty>")
+                # Ignore "user-list", as it is only modified by user actions
+                should_be.pop("user-list", None)
+
+                return [
+                    "%s: '%s' should be '%s'" %
+                        (a, cur_attrs[a], should_be[a])
+                    for a in should_be
+                    if cur_attrs[a] != should_be[a]
+                ]
 
         def remove(self, pkgplan):
                 """client-side method that removes this group"""

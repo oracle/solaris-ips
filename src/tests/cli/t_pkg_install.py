@@ -1482,7 +1482,7 @@ adm:NP:6445::::::
                     add dir mode=0755 owner=Kermit group=Kermit path=/export/home/Kermit
                     add file """ + self.testdata_dir + """/empty mode=0755 owner=Kermit group=Kermit path=/usr/local/bin/do_user_nothing
                     add depend fmri=pkg:/basics@1.0 type=require
-                    add user username=Kermit group=Kermit home-dir=/export/home/Kermit group-list=lp group-list=staff group-list=root ftpuser=false
+                    add user username=Kermit group=Kermit home-dir=/export/home/Kermit2 group-list=lp group-list=staff group-list=root ftpuser=false
                     add depend fmri=pkg:/grouptest@1.0 type=require
                     add depend fmri=pkg:/basics@1.0 type=require
                     close """
@@ -1628,6 +1628,192 @@ adm:NP:6445::::::
 
                 self.pkg("uninstall usertest")
                 self.pkg("verify")
+
+        def test_ftpuser(self):
+                """Make sure we correctly handle /etc/ftpd/ftpusers."""
+
+                notftpuser = """
+                open notftpuser@1
+                add user username=animal group=root ftpuser=false
+                close"""
+
+                ftpuserexp = """
+                open ftpuserexp@1
+                add user username=fozzie group=root ftpuser=true
+                close"""
+
+                ftpuserimp = """
+                open ftpuserimp@1
+                add user username=gonzo group=root
+                close"""
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.basics0)
+                self.pkgsend_bulk(durl, notftpuser)
+                self.pkgsend_bulk(durl, ftpuserexp)
+                self.pkgsend_bulk(durl, ftpuserimp)
+                self.image_create(durl)
+
+                self.pkg("install basics")
+
+                # Add a user with ftpuser=false.  Make sure the user is added to
+                # the file, and that the user verifies.
+                self.pkg("install notftpuser")
+                fpath = self.get_img_path() + "/etc/ftpd/ftpusers"
+                self.assert_("animal\n" in file(fpath).readlines())
+                self.pkg("verify notftpuser")
+
+                # Add a user with an explicit ftpuser=true.  Make sure the user
+                # is not added to the file, and that the user verifies.
+                self.pkg("install ftpuserexp")
+                self.assert_("fozzie\n" not in file(fpath).readlines())
+                self.pkg("verify ftpuserexp")
+
+                # Add a user with an implicit ftpuser=true.  Make sure the user
+                # is not added to the file, and that the user verifies.
+                self.pkg("install ftpuserimp")
+                self.assert_("gonzo\n" not in file(fpath).readlines())
+                self.pkg("verify ftpuserimp")
+
+                # Put a user into the ftpusers file as shipped, then add that
+                # user, with ftpuser=false.  Make sure the user remains in the
+                # file, and that the user verifies.
+                self.pkg("uninstall notftpuser")
+                file(fpath, "a").write("animal\n")
+                self.pkg("install notftpuser")
+                self.assert_("animal\n" in file(fpath).readlines())
+                self.pkg("verify notftpuser")
+
+                # Put a user into the ftpusers file as shipped, then add that
+                # user, with an explicit ftpuser=true.  Make sure the user is
+                # stripped from the file, and that the user verifies.
+                self.pkg("uninstall ftpuserexp")
+                file(fpath, "a").write("fozzie\n")
+                self.pkg("install ftpuserexp")
+                self.assert_("fozzie\n" not in file(fpath).readlines())
+                self.pkg("verify ftpuserexp")
+
+                # Put a user into the ftpusers file as shipped, then add that
+                # user, with an implicit ftpuser=true.  Make sure the user is
+                # stripped from the file, and that the user verifies.
+                self.pkg("uninstall ftpuserimp")
+                file(fpath, "a").write("gonzo\n")
+                self.pkg("install ftpuserimp")
+                self.assert_("gonzo\n" not in file(fpath).readlines())
+                self.pkg("verify ftpuserimp")
+
+        def test_groupverify(self):
+                """Make sure we correctly verify group actions when users have
+                been added."""
+
+                simplegroup = """
+                open simplegroup@1
+                add group groupname=muppets
+                close"""
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.basics0)
+                self.pkgsend_bulk(durl, simplegroup)
+                self.image_create(durl)
+
+                self.pkg("install basics")
+                self.pkg("install simplegroup")
+                self.pkg("verify simplegroup")
+
+                gpath = self.get_img_path() + "/etc/group"
+                gdata = file(gpath).readlines()
+                gdata[-1] = gdata[-1].rstrip() + "kermit,misspiggy\n"
+                file(gpath, "w").writelines(gdata)
+                self.pkg("verify simplegroup")
+
+        def test_userverify(self):
+                """Make sure we correctly verify user actions when the on-disk
+                databases have been modified."""
+
+                simpleuser = """
+                open simpleuser@1
+                add user username=misspiggy group=root gcos-field="& loves Kermie" login-shell=/bin/sh
+                close"""
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.basics0)
+                self.pkgsend_bulk(durl, simpleuser)
+                self.image_create(durl)
+
+                self.pkg("install basics")
+                self.pkg("install simpleuser")
+                self.pkg("verify simpleuser")
+
+                ppath = self.get_img_path() + "/etc/passwd"
+                pdata = file(ppath).readlines()
+                spath = self.get_img_path() + "/etc/shadow"
+                sdata = file(spath).readlines()
+
+                def finderr(err):
+                        self.assert_("\t\t" + err in self.output)
+
+                # change a provided, empty-default field to something else
+                pdata[-1] = "misspiggy:x:5:0:& loves Kermie:/:/bin/zsh"
+                file(ppath, "w").writelines(pdata)
+                self.pkg("verify simpleuser", exit=1)
+                finderr("login-shell: '/bin/zsh' should be '/bin/sh'")
+
+                # change a provided, non-empty-default field to the default
+                pdata[-1] = "misspiggy:x:5:0:& User:/:/bin/sh"
+                file(ppath, "w").writelines(pdata)
+                self.pkg("verify simpleuser", exit=1)
+                finderr("gcos-field: '& User' should be '& loves Kermie'")
+
+                # change a non-provided, non-empty-default field to something
+                # other than the default
+                pdata[-1] = "misspiggy:x:5:0:& loves Kermie:/misspiggy:/bin/sh"
+                file(ppath, "w").writelines(pdata)
+                self.pkg("verify simpleuser", exit=1)
+                finderr("home-dir: '/misspiggy' should be '/'")
+
+                # add a non-provided, empty-default field
+                pdata[-1] = "misspiggy:x:5:0:& loves Kermie:/:/bin/sh"
+                sdata[-1] = "misspiggy:*LK*:14579:7:::::"
+                file(ppath, "w").writelines(pdata)
+                os.chmod(spath, S_IMODE(os.stat(spath).st_mode)| S_IWUSR)
+                file(spath, "w").writelines(sdata)
+                self.pkg("verify simpleuser", exit=1)
+                finderr("min: '7' should be '<empty>'")
+
+                # remove a non-provided, non-empty-default field
+                pdata[-1] = "misspiggy:x:5:0:& loves Kermie::/bin/sh"
+                sdata[-1] = "misspiggy:*LK*:14579::::::"
+                file(ppath, "w").writelines(pdata)
+                file(spath, "w").writelines(sdata)
+                self.pkg("verify simpleuser", exit=1)
+                finderr("home-dir: '' should be '/'")
+
+                # remove a provided, non-empty-default field
+                pdata[-1] = "misspiggy:x:5:0::/:/bin/sh"
+                file(ppath, "w").writelines(pdata)
+                self.pkg("verify simpleuser", exit=1)
+                finderr("gcos-field: '' should be '& loves Kermie'")
+
+                # remove a provided, empty-default field
+                pdata[-1] = "misspiggy:x:5:0:& loves Kermie:/:"
+                file(ppath, "w").writelines(pdata)
+                self.pkg("verify simpleuser", exit=1)
+                finderr("login-shell: '' should be '/bin/sh'")
+
+                # remove the user from /etc/passwd
+                pdata[-1] = "misswiggy:x:5:0:& loves Kermie:/:"
+                file(ppath, "w").writelines(pdata)
+                self.pkg("verify simpleuser", exit=1)
+                finderr("login-shell: '<missing>' should be '/bin/sh'")
+                finderr("gcos-field: '<missing>' should be '& loves Kermie'")
+                finderr("group: '<missing>' should be 'root'")
+
+                # remove the user completely
+                sdata[-1] = "misswiggy:*LK*:14579::::::"
+                file(spath, "w").writelines(sdata)
+                self.pkg("verify simpleuser", exit=1)
+                finderr("username: '<missing>' should be 'misspiggy'")
+
 
         def test_minugid(self):
                 """Ensure that an unspecified uid/gid results in the first

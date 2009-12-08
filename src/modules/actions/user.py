@@ -96,10 +96,7 @@ class UserAction(generic.Action):
                 if grps:
                         cur_attrs["group-list"] = grps
 
-                if ftp.getuser(username):
-                        cur_attrs["ftpuser"] = "false"
-                else:
-                        cur_attrs["ftpuser"] = "true"
+                cur_attrs["ftpuser"] = str(ftp.getuser(username)).lower()
 
                 return (pw, gr, ftp, cur_attrs)
 
@@ -129,6 +126,14 @@ class UserAction(generic.Action):
                                 orig_attrs["group-list"] = []
                                 orig_attrs["ftpuser"] = "true"
                                 orig_attrs.update(orig.attrs)
+                        else:
+                                # If we're installing a user for the first time,
+                                # we want to override whatever value might be
+                                # represented by the presence or absence of the
+                                # user in the ftpusers file.  Remove the value
+                                # from the representation of the file so that
+                                # the new value takes precedence in the merge.
+                                del cur_attrs["ftpuser"]
 
                         final_attrs = self.merge(orig_attrs, cur_attrs)
 
@@ -137,7 +142,7 @@ class UserAction(generic.Action):
                         if "group-list" in final_attrs:
                                 gr.setgroups(username, final_attrs["group-list"])
 
-                        ftp.setuser(username, final_attrs["ftpuser"] == "true")
+                        ftp.setuser(username, final_attrs.get("ftpuser", "true") == "true")
 
                         pw.writefile()
                         gr.writefile()
@@ -166,12 +171,40 @@ class UserAction(generic.Action):
                 if "group-list" in self.attrs:
                         self.attrs["group-list"] = sorted(self.attrs["group-list"])
 
-                return [ "%s: '%s' should be '%s'" % 
-                      (a, cur_attrs[a], self.attrs[a])
-                      for a in self.attrs
-                      if a in cur_attrs and self.attrs[a] != cur_attrs[a]
-                      ]
-                                
+                # Get the default values if they're non-empty
+                pwdefval = dict((
+                    (k, v)
+                    for k, v in pw.getdefaultvalues().iteritems()
+                    if v != ""
+                ))
+
+                # Certain defaults are dynamic, so we need to ignore what's on
+                # disk
+                if "gid" not in self.attrs:
+                        cur_attrs["gid"] = ""
+                if "uid" not in self.attrs:
+                        cur_attrs["uid"] = ""
+                if "lastchg" not in self.attrs:
+                        cur_attrs["lastchg"] = ""
+
+                pwdefval["ftpuser"] = "true"
+                should_be = pwdefval.copy()
+                should_be.update(self.attrs)
+                # Note where attributes are missing
+                for k in should_be:
+                        cur_attrs.setdefault(k, "<missing>")
+                # Note where attributes should be empty
+                for k in cur_attrs:
+                        if cur_attrs[k]:
+                                should_be.setdefault(k, "<empty>")
+
+                return [
+                    "%s: '%s' should be '%s'" %
+                        (a, cur_attrs[a], should_be[a])
+                    for a in should_be
+                    if cur_attrs[a] != should_be[a]
+                ]
+
         def remove(self, pkgplan):
                 """client-side method that removes this user"""
                 if not have_cfgfiles:

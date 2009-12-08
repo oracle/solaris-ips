@@ -408,9 +408,15 @@ class FtpusersFile(CfgFile):
         self.removevalue({"username" : username})
 
     def setuser(self, username, value):
+        """Add or remove 'username' from the file to turn off or on the user's
+        ability to ftp into the system.  If 'value' is True, allow the user, and
+        if False, deny the user.  If the value matches what is already encoded,
+        don't do anything.
+        """
+
         if not value and self.getuser(username):
             self.adduser(username)
-        elif not self.getuser(username):
+        elif value and not self.getuser(username):
             self.subuser(username)
 
 class UserattrFile(CfgFile):
