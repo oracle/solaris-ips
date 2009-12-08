@@ -25,6 +25,7 @@
 # Use is subject to license terms.
 #
 
+import datetime
 import errno
 import os
 import platform
@@ -136,13 +137,6 @@ class Image(object):
         # be changed as it would invalidate existing catalog data stored in the
         # image.  This means that if a constant is removed, the values of the
         # other constants should not change, etc.
-
-        # This is a temporary, private state that is used to indicate that
-        # a package with state PKG_STATE_INSTALLED was installed from a
-        # publisher that was preferred at the time of installation.  It
-        # will be obsolete in the near future when publishers are ranked
-        # instead.
-        __PKG_STATE_PREFERRED = 5
 
         # This state indicates that a package is present in a repository
         # catalog.
@@ -951,20 +945,6 @@ class Image(object):
                         icat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
                         icat.remove_package(pfmri)
                         states.discard(self.PKG_STATE_INSTALLED)
-                        # XXX This needs to be changed once publisher
-                        # priortisation is implemented.
-                        states.discard(self.__PKG_STATE_PREFERRED)
-                elif state == self.PKG_STATE_INSTALLED:
-                        states.add(state)
-
-                        # XXX The below needs to be removed once publisher
-                        # priortisation is implemented.
-
-                        # If this package is being marked as 'installed', then
-                        # also mark if it is being installed from a publisher
-                        # that is currently preferred.
-                        if pfmri.publisher == self.get_preferred_publisher():
-                                states.add(self.__PKG_STATE_PREFERRED)
                 else:
                         # All other states should simply be added to the
                         # existing set of states.
@@ -1255,13 +1235,17 @@ class Image(object):
 
                 self.history.log_operation_start("rebuild-image-catalogs")
 
+                # Mark all operations as occurring at this time.
+                op_time = datetime.datetime.utcnow()
+
                 # The image catalogs need to be updated, but this is a bit
                 # tricky as previously known packages must remain known even
                 # if PKG_STATE_KNOWN is no longer true if any other state
                 # information is present.  This is to allow freezing, etc. of
                 # package states on a permanent basis even if the package is
-                # no longer available from a publisher repository.
-                old_kcat = self.get_catalog(self.IMG_CATALOG_KNOWN)
+                # no longer available from a publisher repository.  However,
+                # this is only True of installed packages.
+                old_icat = self.get_catalog(self.IMG_CATALOG_INSTALLED)
 
                 # batch_mode is set to True here since without it, catalog
                 # population time is almost doubled (since the catalog is
@@ -1292,136 +1276,186 @@ class Image(object):
                 # as it used to be.  In the future, it could likely be improved
                 # by usage of the SAT solver.
                 newest = {}
-                for pfx, cat in [(None, old_kcat)] + pub_cats:
-                        for f in cat.fmris():
-                                nver = newest.get(f.pkg_name, None)
-                                newest[f.pkg_name] = max(nver, f.version)
+                for pfx, cat in [(None, old_icat)] + pub_cats:
+                        for f in cat.fmris(last=True, pubs=[pfx]):
+                                nver, snver = newest.get(f.pkg_name, (None,
+                                    None))
+                                if f.version > nver:
+                                        newest[f.pkg_name] = (f.version,
+                                            str(f.version))
 
                 # Next, copy all of the entries for the catalog parts that
                 # currently exist into the image 'known' catalog.
-                def pub_append_cb(src_cat, f, ignored):
-                        # Need to get any state information from the old 'known'
-                        # catalog and return it so that it will be merged with
-                        # the new 'known' catalog.
-                        entry = old_kcat.get_entry(f)
-                        if entry is not None:
-                                old_kcat.remove_package(f)
-                                mdata = entry["metadata"]
-                                states = set(mdata["states"])
-                        else:
-                                # If the package can't be found
-                                # in the previous 'known'
-                                # catalog, then this is a
-                                # completely new package.
-                                states = set()
-                                mdata = { "states": states }
 
-                        if src_cat.version == 0:
-                                states.add(self.PKG_STATE_V0)
-                                states.discard(self.PKG_STATE_V1)
-                        else:
-                                # Assume V1 catalog source.
-                                states.add(self.PKG_STATE_V1)
-                                states.discard(self.PKG_STATE_V0)
+                # Iterator for source parts.
+                sparts = (
+                   (pfx, cat, name, cat.get_part(name, must_exist=True))
+                   for pfx, cat in pub_cats
+                   for name in cat.parts
+                )
 
-                        states.add(self.PKG_STATE_KNOWN)
-                        nver = newest.get(f.pkg_name, None)
-                        if not nver or f.version == nver:
-                                states.discard(self.PKG_STATE_UPGRADABLE)
-                        elif nver:
-                                states.add(self.PKG_STATE_UPGRADABLE)
+                for pfx, cat, name, spart in sparts:
+                        # 'spart' is the source part.
+                        if spart is None:
+                                # Client hasn't retrieved this part.
+                                continue
 
-                        dp = src_cat.get_part("catalog.dependency.C",
-                            must_exist=True)
-                        dpent = None
-                        if dp is not None:
-                                dpent = dp.get_entry(f)
-                        states.discard(self.PKG_STATE_OBSOLETE)
-                        states.discard(self.PKG_STATE_RENAMED)
+                        # New known part.
+                        nkpart = kcat.get_part(name)
+                        base = name.startswith("catalog.base.")
 
-                        if dpent is not None:
-                                mfst = pkg.manifest.Manifest()
-                                mfst.set_content("\n".join(dpent["actions"]))
-                                if mfst.getbool("pkg.obsolete", "false"):
-                                        states.add(self.PKG_STATE_OBSOLETE)
-                                elif mfst.getbool("pkg.renamed", "false"):
-                                        states.add(self.PKG_STATE_RENAMED)
+                        # Avoid accessor overhead since this will be
+                        # used for every entry.
+                        cat_ver = cat.version
 
-                        mdata["states"] = list(states)
-                        return True, mdata
+                        for t, sentry in spart.tuple_entries(pubs=[pfx]):
+                                pub, stem, ver = t
 
-                for pfx, cat in pub_cats:
-                        kcat.append(cat, cb=pub_append_cb, pubs=[pfx])
+                                # copy() is too slow here and catalog entries
+                                # are shallow so this should be sufficient.
+                                entry = dict(sentry.iteritems()) 
+                                if not base:
+                                        # Nothing else to do except add the
+                                        # entry for non-base catalog parts.
+                                        nkpart.add(metadata=entry,
+                                            op_time=op_time, pub=pub, stem=stem,
+                                            ver=ver)
+                                        continue
 
-                # Determine what publishers actually need sorting.  This
-                # information can be passed on to catalog finalize() to
-                # improve catalog write performance.
-                final_pubs = set([p for p in kcat.publishers()])
+                                # Only the base catalog part stores package
+                                # state information and/or other metadata.
+                                mdata = entry["metadata"] = {}
+                                states = [self.PKG_STATE_KNOWN]
+                                if cat_ver == 0:
+                                        states.append(self.PKG_STATE_V0)
+                                else:
+                                        # Assume V1 catalog source.
+                                        states.append(self.PKG_STATE_V1)
 
-                # Remove any publishers that have a v1 catalog and don't have
-                # packages that are not present in the current v1 catalog.
-                final_pubs.difference_update(set([
-                    pfx for pfx, cat in pub_cats
-                    if cat.version == 1 and pfx not in old_kcat.publishers()
-                ]))
-                pub_cats = None
+                                nver, snver = newest.get(stem, (None, None))
+                                if snver is not None and ver != snver:
+                                        states.append(self.PKG_STATE_UPGRADABLE)
 
-                # Next, add any remaining entries in the previous 'known'
-                # catalog to the new one, but clear PKG_STATE_KNOWN and
-                # drop any entries that have no remaining state information.
-                def old_append_cb(src_cat, f, entry):
-                        # Need to get any state information from the old 'known'
-                        # catalog and return it so that it will be merged with
-                        # the new 'known' catalog.
-                        mdata = entry["metadata"]
-                        states = set(mdata["states"])
+                                # Determine if package is obsolete or has been
+                                # renamed and mark with appropriate state.
+                                dp = cat.get_part("catalog.dependency.C",
+                                    must_exist=True)
 
-                        states.discard(self.PKG_STATE_KNOWN)
+                                dpent = None
+                                if dp is not None:
+                                        dpent = dp.get_entry(pub=pub, stem=stem,
+                                            ver=ver)
+                                if dpent is not None:
+                                        for a in dpent["actions"]:
+                                                if not a.startswith("set"):
+                                                        continue
 
-                        # Since this package is no longer available, it
-                        # can only be considered upgradable if it is
-                        # installed and there is a newer version
-                        # available.
-                        nver = newest.get(f.pkg_name, None)
-                        if self.PKG_STATE_INSTALLED not in states or \
-                            (nver and f.version == nver):
-                                states.discard(self.PKG_STATE_UPGRADABLE)
-                        elif nver:
-                                states.add(self.PKG_STATE_UPGRADABLE)
+                                                if a.find("pkg.obsolete") != -1:
+                                                        if a.find("true") == -1:
+                                                                continue
+                                                        states.append(
+                                                            self.PKG_STATE_OBSOLETE)
+                                                elif a.find("pkg.renamed") != -1:
+                                                        if a.find("true") == -1:
+                                                                continue
+                                                        states.append(
+                                                            self.PKG_STATE_RENAMED)
+                                mdata["states"] = states
 
-                        if not states or (len(states) == 1 and
-                            (self.PKG_STATE_V0 in states or
-                            self.PKG_STATE_V1 in states)):
-                                # This entry is no longer available and
-                                # has no meaningful state information, so
-                                # should be skipped.
-                                return False, None
-
-                        # The package is either installed, frozen, or is
-                        # in some other state that needs preservation.
-                        mdata["states"] = list(states)
-                        return True, mdata
-
-                kcat.append(old_kcat, cb=old_append_cb)
-
-                # Finally, re-populate the 'installed' catalog based on the
-                # contents of the new, 'known' catalog and save them both.
-                def installed_append_cb(src_cat, f, entry):
-                        states = entry["metadata"]["states"]
-                        if self.PKG_STATE_INSTALLED in states:
-                                return True, None
-                        return False, None
+                                # Add base entry.
+                                nkpart.add(metadata=entry, op_time=op_time,
+                                    pub=pub, stem=stem, ver=ver)
 
                 # Create the new installed catalog in a temporary location.
                 icat = pkg.catalog.Catalog(batch_mode=True,
                     meta_root=os.path.join(tmp_state_root,
                     self.IMG_CATALOG_INSTALLED), sign=False)
-                icat.append(kcat, cb=installed_append_cb)
+
+                # Now add installed packages to list of known packages using
+                # previous state information.  While doing so, track any
+                # new entries as the versions for the stem of the entry will
+                # need to be passed to finalize() for sorting.
+                final_fmris = []
+                for name in old_icat.parts:
+                        # Old installed part.
+                        ipart = old_icat.get_part(name, must_exist=True)
+
+                        # New known part.
+                        nkpart = kcat.get_part(name)
+
+                        # New installed part.
+                        nipart = icat.get_part(name)
+
+                        base = name.startswith("catalog.base.")
+
+                        mdata = None
+                        for t, entry in ipart.tuple_entries():
+                                pub, stem, ver = t
+
+                                if base:
+                                        # Initially assume that package isn't
+                                        # known when attempting to add the
+                                        # installed package to list of known.
+                                        mdata = entry["metadata"]
+                                        states = set(mdata["states"])
+                                        states.discard(self.PKG_STATE_KNOWN)
+
+                                        nver, snver = newest.get(stem, (None,
+                                            None))
+                                        if snver is not None and ver == snver:
+                                                states.discard(
+                                                    self.PKG_STATE_UPGRADABLE)
+                                        elif snver is not None:
+                                                states.add(
+                                                    self.PKG_STATE_UPGRADABLE)
+                                        mdata["states"] = list(states)
+
+                                # Try to add the installed package to the new
+                                # catalog part.  If it succeeds, then the
+                                # package is no longer available, but must
+                                # remain in the image cataogs.
+                                update = False
+                                try:
+                                        nkpart.add(metadata=entry,
+                                            op_time=op_time, pub=pub, stem=stem,
+                                            ver=ver)
+                                except api_errors.DuplicateCatalogEntry:
+                                        # Entry already exists so needs update.
+                                        update = True
+
+                                if not base or not update:
+                                        # If this isn't a base part or the
+                                        # known catalog part doesn't need
+                                        # updating, then the installed part
+                                        # needs a new entry.
+                                        nipart.add(metadata=entry,
+                                            op_time=op_time, pub=pub, stem=stem,
+                                            ver=ver)
+                                        continue
+
+                                # entry needs to be updated with existing state
+                                # information.
+                                kentry = nkpart.get_entry(pub=pub, stem=stem,
+                                    ver=ver)
+                                mdata = kentry["metadata"]
+                                kstates = mdata["states"]
+
+                                # The package is installed obviously since the
+                                # iteration is being done over the installed
+                                # catalog part's entries.
+                                kstates.append(self.PKG_STATE_INSTALLED)
+
+                                # Now that the known part has been updated,
+                                # add an entry to the installed part.
+                                nipart.add(metadata=kentry, op_time=op_time,
+                                    pub=pub, stem=stem, ver=ver)
+                                final_fmris.append(pkg.fmri.PkgFmri(
+                                    "%s@%s" % (stem, ver), publisher=pub))
 
                 # Save the new catalogs.
                 for cat in kcat, icat:
                         os.makedirs(cat.meta_root, mode=misc.PKG_DIR_MODE)
-                        cat.finalize(pubs=final_pubs)
+                        cat.finalize(pfmris=final_fmris)
                         cat.save()
 
                 # Next, preserve the old installed state dir, rename the
@@ -1718,8 +1752,6 @@ class Image(object):
                                                 # Strip the PREF_PUB_PFX.
                                                 inst_fmri.set_publisher(
                                                     inst_fmri.get_publisher())
-                                                states.append(
-                                                    self.__PKG_STATE_PREFERRED)
                                         icat.add_package(f, metadata=mdata)
                                         del installed[f.pkg_name]
                                 kcat.add_package(f, metadata=mdata)
@@ -1756,9 +1788,6 @@ class Image(object):
                         if f.preferred_publisher():
                                 # Strip the PREF_PUB_PFX.
                                 f.set_publisher(f.get_publisher())
-
-                                # Set preferred state.
-                                states.append(self.__PKG_STATE_PREFERRED)
 
                         icat.add_package(f, metadata=mdata)
                         kcat.add_package(f, metadata=mdata)
@@ -2302,7 +2331,7 @@ class Image(object):
                 try:
                         ip.plan_install(pkg_list)
 
-                except api_errors.ApiException, e:
+                except api_errors.ApiException:
                         ip.show_failure(verbose)
                         raise
 

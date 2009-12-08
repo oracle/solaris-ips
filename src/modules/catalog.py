@@ -396,8 +396,9 @@ class CatalogPart(CatalogPartBase):
                     for entry in self.__data[pub][stem]
                 )
 
-        def add(self, pfmri, metadata=None, op_time=None):
-                """Add a catalog entry for a given FMRI.
+        def add(self, pfmri=None, metadata=None, op_time=None, pub=None,
+            stem=None, ver=None):
+                """Add a catalog entry for a given FMRI or FMRI components.
 
                 'metadata' is an optional dict containing the catalog
                 metadata that should be stored for the specified FMRI.
@@ -406,21 +407,31 @@ class CatalogPart(CatalogPartBase):
                 but should not be modified.
                 """
 
-                if not pfmri.publisher:
-                        raise api_errors.AnarchicalCatalogFMRI(pfmri.get_fmri())
+                assert pfmri or (pub and stem and ver)
+                if pfmri and not pfmri.publisher:
+                        raise api_errors.AnarchicalCatalogFMRI(str(pfmri))
 
-                self.load()
-                pkg_list = self.__data.setdefault(pfmri.publisher, {})
+                if not self.loaded:
+                        # Hot path, so avoid calling load unless necessary, even
+                        # though it performs this check already.
+                        self.load()
 
-                ver = str(pfmri.version)
-                ver_list = pkg_list.setdefault(pfmri.pkg_name, [])
+                if pfmri:
+                        pub, stem, ver = pfmri.tuple()
+                        ver = str(ver)
+
+                pkg_list = self.__data.setdefault(pub, {})
+                ver_list = pkg_list.setdefault(stem, [])
                 for entry in ver_list:
                         if entry["version"] == ver:
+                                if not pfmri:
+                                        pfmri = "pkg://%s/%s@%s" % (pub, stem,
+                                            ver)
                                 raise api_errors.DuplicateCatalogEntry(
                                     pfmri, operation="add",
                                     catalog_name=self.pathname)
 
-                if metadata:
+                if metadata is not None:
                         entry = metadata
                 else:
                         entry = {}
@@ -553,7 +564,7 @@ class CatalogPart(CatalogPartBase):
                 entries = {}
                 for pub in self.publishers(pubs=pubs):
                         ver_list = self.__data[pub].get(name, None)
-                        if ver_list is None:
+                        if not ver_list:
                                 continue
 
                         for entry in ver_list:
@@ -569,15 +580,12 @@ class CatalogPart(CatalogPartBase):
                         yield ver, entries[key]
 
         def get_entry(self, pfmri=None, pub=None, stem=None, ver=None):
-                """Returns the catalog entry for the given package FMRI or
+                """Returns the catalog part entry for the given package FMRI or
                 FMRI components."""
 
-                assert (pfmri or (pub and stem and ver))
-                if not ((pfmri and pfmri.publisher) or pub):
-                        if not pfmri:
-                                pfmri = fmri.PkgFmri("%s@%s" % (stem, ver),
-                                    publisher=pub)
-                        raise api_errors.AnarchicalCatalogFMRI(pfmri.get_fmri())
+                assert pfmri or (pub and stem and ver)
+                if pfmri and not pfmri.publisher:
+                        raise api_errors.AnarchicalCatalogFMRI(str(pfmri))
 
                 # Since this is a hot path, this function checks for loaded
                 # status before attempting to call the load function.
@@ -589,7 +597,7 @@ class CatalogPart(CatalogPartBase):
                         ver = str(ver)
 
                 pkg_list = self.__data.get(pub, None)
-                if pkg_list is None:
+                if not pkg_list:
                         return
 
                 ver_list = pkg_list.get(stem, ())
@@ -683,7 +691,7 @@ class CatalogPart(CatalogPartBase):
 
                 self.load()
                 pkg_list = self.__data.get(pfmri.publisher, None)
-                if pkg_list is None:
+                if not pkg_list:
                         raise api_errors.UnknownCatalogEntry(pfmri.get_fmri())
 
                 ver = str(pfmri.version)
@@ -757,10 +765,10 @@ class CatalogPart(CatalogPartBase):
                                 # CatalogPart, so continue if it does not
                                 # exist.
                                 pkg_list = self.__data.get(f.publisher, None)
-                                if pkg_list is not None:
+                                if pkg_list:
                                         ver_list = pkg_list.get(f.pkg_name,
                                             None)
-                                        if ver_list is not None:
+                                        if ver_list:
                                                 ver_list.sort(cmp=order)
                         return
 
@@ -2620,15 +2628,25 @@ class Catalog(object):
                 elif not self.meta_root and must_exist:
                         return
 
-                # Next, if the part hasn't been cached, create an object for it.
+                # If the caller said the part must_exist, then it must already
+                # be part of the catalog attributes to be valid.
+                aparts = self._attrs.parts
+                if must_exist and name not in aparts:
+                        return
+
+                # Next, since the part hasn't been cached, create an object
+                # for it and add it to catalog attributes.
                 part = CatalogPart(name, meta_root=self.meta_root,
                     ordered=not self.__batch_mode, sign=self.__sign)
-                if self.meta_root and must_exist and not part.exists:
-                        # Part doesn't exist on-disk, so don't return anything.
+                if must_exist and self.meta_root and not part.exists:
+                        # This is a double-check for the client case where
+                        # there is a part that is known to the catalog but
+                        # that the client has purposefully not retrieved.
+                        # (Think locale specific data.)
                         return
+
                 self.__parts[name] = part
 
-                aparts = self._attrs.parts
                 if name not in aparts:
                         # Add a new entry to the catalog attributes for this new
                         # part since it didn't exist previously.
@@ -3295,7 +3313,7 @@ def extract_matching_fmris(pkgs, patterns=None, matcher=None,
 
                 for p in pkgs:
                         res = by_pattern(p)
-                        if res is not None:
+                        if res:
                                 ret.append(res)
         elif versions:
                 unmatched = copy.deepcopy(matched)
@@ -3305,7 +3323,7 @@ def extract_matching_fmris(pkgs, patterns=None, matcher=None,
 
                 for p in pkgs:
                         res = by_version(p)
-                        if res is not None:
+                        if res:
                                 ret.append(res)
         else:
                 # No patterns and no versions means that no filtering can be

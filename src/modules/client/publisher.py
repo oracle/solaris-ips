@@ -1148,6 +1148,7 @@ class Publisher(object):
                 # Finally, save the new Catalog, and replace the old in-memory
                 # catalog.
                 v1_cat.batch_mode = False
+                v1_cat.finalize()
                 v1_cat.save()
                 self.__catalog = v1_cat
 
