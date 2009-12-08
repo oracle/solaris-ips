@@ -142,15 +142,6 @@ PUBLISHER_MOVE_BEFORE,
 PUBLISHER_MOVE_AFTER,
 ) = range(2)
 
-
-# Repositories List in the Modify Publisher Dialog
-(
-MREPOSITORY_NAME,
-MREPOSITORY_ACTIVE,
-MREPOSITORY_REGISTERED,
-MREPOSITORY_OBJECT,
-MREPOSITORY_PUB_OBJECT,
-) = range(5)
 # Return values from /usr/lib/pm-checkforupdates
 (
 UPDATES_AVAILABLE,

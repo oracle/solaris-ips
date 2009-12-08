@@ -1563,7 +1563,7 @@
     </child>
   </widget>
   <widget class="GtkDialog" id="beadmin">
-    <property name="width_request">600</property>
+    <property name="width_request">650</property>
     <property name="height_request">500</property>
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
     <property name="border_width">5</property>
@@ -1591,7 +1591,7 @@
                 <property name="xalign">0</property>
                 <property name="yalign">0</property>
                 <property name="ypad">2</property>
-                <property name="label" translatable="yes">&lt;b&gt;Delete, rename and activate boot environments:&lt;/b&gt;</property>
+                <property name="label" translatable="yes">&lt;b&gt;Delete, rename and activate boot environments&lt;/b&gt;</property>
                 <property name="use_markup">True</property>
               </widget>
               <packing>
@@ -1764,7 +1764,7 @@
                       <widget class="GtkImage" id="confirm_image">
                         <property name="visible">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                        <property name="stock">gtk-dialog-warning</property>
+                        <property name="stock">gtk-dialog-info</property>
                         <property name="icon-size">5</property>
                       </widget>
                       <packing>
@@ -2955,7 +2955,7 @@ system will boot into the new BE on restart.</property>
                 <property name="yalign">0</property>
                 <property name="xpad">4</property>
                 <property name="ypad">4</property>
-                <property name="label" translatable="yes">Specify the publisher name and URL</property>
+                <property name="label" translatable="yes">Specify the publisher name and URI</property>
                 <property name="use_markup">True</property>
               </widget>
               <packing>
@@ -2998,7 +2998,7 @@ system will boot into the new BE on restart.</property>
                         <property name="yalign">0</property>
                         <property name="xpad">4</property>
                         <property name="ypad">4</property>
-                        <property name="label" translatable="yes">_URL:</property>
+                        <property name="label" translatable="yes">_URI:</property>
                         <property name="use_markup">True</property>
                         <property name="use_underline">True</property>
                         <property name="mnemonic_widget">add_publisher_url</property>
@@ -3099,7 +3099,7 @@ system will boot into the new BE on restart.</property>
                             <property name="visible">True</property>
                             <property name="xpad">4</property>
                             <property name="ypad">4</property>
-                            <property name="label" translatable="yes">This is a secure repository.</property>
+                            <property name="label" translatable="yes">This is a secure publisher.</property>
                           </widget>
                         </child>
                       </widget>
@@ -3387,7 +3387,7 @@ Specify the location of these files.</property>
   </widget>
   <widget class="GtkDialog" id="manage_publishers">
     <property name="width_request">500</property>
-    <property name="height_request">380</property>
+    <property name="height_request">422</property>
     <property name="border_width">5</property>
     <property name="title" translatable="yes">Manage Publishers</property>
     <property name="modal">True</property>
@@ -3418,7 +3418,7 @@ Specify the location of these files.</property>
                     <property name="yalign">0</property>
                     <property name="xpad">4</property>
                     <property name="ypad">4</property>
-                    <property name="label" translatable="yes">&lt;b&gt;Add, modify and remove publishers and their repositories&lt;/b&gt;</property>
+                    <property name="label" translatable="yes">&lt;b&gt;Add, modify and remove publishers&lt;/b&gt;</property>
                     <property name="use_markup">True</property>
                   </widget>
                   <packing>
@@ -3433,7 +3433,7 @@ Specify the location of these files.</property>
                     <property name="yalign">0</property>
                     <property name="xpad">4</property>
                     <property name="ypad">4</property>
-                    <property name="label" translatable="yes">Set publisher priorities using arrows</property>
+                    <property name="label" translatable="yes">Set publisher priorities using arrows.</property>
                     <property name="use_markup">True</property>
                   </widget>
                   <packing>
@@ -3457,7 +3457,7 @@ Specify the location of these files.</property>
                     <property name="orientation">vertical</property>
                     <property name="spacing">10</property>
                     <child>
-                      <widget class="GtkFrame" id="frame2">
+                      <widget class="GtkFrame" id="manage_publishers_frame">
                         <property name="visible">True</property>
                         <property name="label_xalign">0</property>
                         <property name="shadow_type">in</property>
@@ -3560,7 +3560,7 @@ Specify the location of these files.</property>
                   <widget class="GtkVBox" id="vbox2">
                     <property name="visible">True</property>
                     <property name="orientation">vertical</property>
-                    <property name="spacing">15</property>
+                    <property name="spacing">20</property>
                     <child>
                       <widget class="GtkVButtonBox" id="vbuttonbox2">
                         <property name="visible">True</property>
@@ -3614,6 +3614,7 @@ Specify the location of these files.</property>
                         </child>
                       </widget>
                       <packing>
+                        <property name="expand">False</property>
                         <property name="position">0</property>
                       </packing>
                     </child>
@@ -3622,15 +3623,38 @@ Specify the location of these files.</property>
                         <property name="visible">True</property>
                         <property name="orientation">vertical</property>
                         <property name="spacing">5</property>
-                        <property name="layout_style">end</property>
+                        <property name="layout_style">start</property>
                         <child>
                           <widget class="GtkButton" id="manage_move_up">
-                            <property name="label">gtk-go-up</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
-                            <property name="use_stock">True</property>
                             <signal name="clicked" handler="on_manage_move_up_clicked"/>
+                            <child>
+                              <widget class="GtkHBox" id="hbox4">
+                                <property name="visible">True</property>
+                                <child>
+                                  <widget class="GtkImage" id="image2">
+                                    <property name="visible">True</property>
+                                    <property name="stock">gtk-go-up</property>
+                                  </widget>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <widget class="GtkLabel" id="label2">
+                                    <property name="visible">True</property>
+                                    <property name="label" translatable="yes">_Up</property>
+                                    <property name="use_underline">True</property>
+                                  </widget>
+                                  <packing>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                              </widget>
+                            </child>
                           </widget>
                           <packing>
                             <property name="expand">False</property>
@@ -3640,12 +3664,35 @@ Specify the location of these files.</property>
                         </child>
                         <child>
                           <widget class="GtkButton" id="manage_move_down">
-                            <property name="label">gtk-go-down</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
-                            <property name="use_stock">True</property>
                             <signal name="clicked" handler="on_manage_move_down_clicked"/>
+                            <child>
+                              <widget class="GtkHBox" id="hbox3">
+                                <property name="visible">True</property>
+                                <child>
+                                  <widget class="GtkImage" id="image1">
+                                    <property name="visible">True</property>
+                                    <property name="stock">gtk-go-down</property>
+                                  </widget>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <widget class="GtkLabel" id="label1">
+                                    <property name="visible">True</property>
+                                    <property name="label" translatable="yes">_Down</property>
+                                    <property name="use_underline">True</property>
+                                  </widget>
+                                  <packing>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                              </widget>
+                            </child>
                           </widget>
                           <packing>
                             <property name="expand">False</property>
@@ -3719,395 +3766,6 @@ Specify the location of these files.</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
                 <signal name="clicked" handler="on_manage_ok_clicked"/>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="position">2</property>
-              </packing>
-            </child>
-          </widget>
-          <packing>
-            <property name="expand">False</property>
-            <property name="pack_type">end</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-      </widget>
-    </child>
-  </widget>
-  <widget class="GtkDialog" id="modify_publisher">
-    <property name="border_width">5</property>
-    <property name="title" translatable="yes">Modify Publisher</property>
-    <property name="resizable">False</property>
-    <property name="modal">True</property>
-    <property name="window_position">center-on-parent</property>
-    <property name="type_hint">dialog</property>
-    <property name="transient_for">manage_publishers</property>
-    <property name="has_separator">False</property>
-    <signal name="delete_event" handler="on_modify_publisher_delete_event"/>
-    <child internal-child="vbox">
-      <widget class="GtkVBox" id="dialog-vbox18">
-        <property name="visible">True</property>
-        <property name="orientation">vertical</property>
-        <property name="spacing">2</property>
-        <child>
-          <widget class="GtkTable" id="table1">
-            <property name="visible">True</property>
-            <property name="n_rows">5</property>
-            <property name="n_columns">2</property>
-            <property name="column_spacing">10</property>
-            <property name="row_spacing">5</property>
-            <child>
-              <widget class="GtkLabel" id="modlabel3">
-                <property name="visible">True</property>
-                <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                <property name="xalign">0</property>
-                <property name="yalign">0</property>
-                <property name="label" translatable="yes">&lt;b&gt;Publisher Alias and URL&lt;/b&gt;</property>
-                <property name="use_markup">True</property>
-              </widget>
-              <packing>
-                <property name="y_options">GTK_FILL</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkHBox" id="hbox1">
-                <property name="visible">True</property>
-                <property name="spacing">10</property>
-                <child>
-                  <widget class="GtkVBox" id="vbox3">
-                    <property name="visible">True</property>
-                    <property name="orientation">vertical</property>
-                    <property name="spacing">5</property>
-                    <child>
-                      <widget class="GtkLabel" id="modlabel5">
-                        <property name="visible">True</property>
-                        <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                        <property name="xalign">0</property>
-                        <property name="yalign">0</property>
-                        <property name="label" translatable="yes">Name:</property>
-                        <property name="use_markup">True</property>
-                      </widget>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <widget class="GtkLabel" id="modlabel2">
-                        <property name="visible">True</property>
-                        <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                        <property name="xalign">0</property>
-                        <property name="yalign">0</property>
-                        <property name="ypad">4</property>
-                        <property name="label" translatable="yes">_Alias:</property>
-                        <property name="use_markup">True</property>
-                        <property name="use_underline">True</property>
-                        <property name="mnemonic_widget">modify_pub_alias</property>
-                      </widget>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <widget class="GtkLabel" id="modlabel1">
-                        <property name="visible">True</property>
-                        <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                        <property name="xalign">0</property>
-                        <property name="yalign">0</property>
-                        <property name="ypad">4</property>
-                        <property name="label" translatable="yes">_URL:</property>
-                        <property name="use_markup">True</property>
-                        <property name="use_underline">True</property>
-                        <property name="mnemonic_widget">modify_pub_url</property>
-                      </widget>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="position">2</property>
-                      </packing>
-                    </child>
-                  </widget>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <widget class="GtkVBox" id="vbox4">
-                    <property name="visible">True</property>
-                    <property name="orientation">vertical</property>
-                    <property name="spacing">5</property>
-                    <child>
-                      <widget class="GtkLabel" id="modify_pub_label">
-                        <property name="visible">True</property>
-                        <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                        <property name="xalign">0</property>
-                        <property name="yalign">0</property>
-                        <property name="use_markup">True</property>
-                      </widget>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <widget class="GtkEntry" id="modify_pub_alias">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="invisible_char">&#x25CF;</property>
-                        <signal name="focus_in_event" handler="on_modify_pub_alias_focus"/>
-                        <signal name="activate" handler="on_modifypub_ok_clicked"/>
-                      </widget>
-                      <packing>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <widget class="GtkVBox" id="vbox2">
-                        <property name="visible">True</property>
-                        <property name="orientation">vertical</property>
-                        <child>
-                          <widget class="GtkEntry" id="modify_pub_url">
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="invisible_char">&#x25CF;</property>
-                            <signal name="changed" handler="on_modifypub_url_changed"/>
-                            <signal name="focus_in_event" handler="on_modify_pub_url_focus"/>
-                            <signal name="activate" handler="on_modifypub_ok_clicked"/>
-                          </widget>
-                          <packing>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkLabel" id="modifypub_error_label">
-                            <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                            <property name="no_show_all">True</property>
-                            <property name="xalign">0</property>
-                            <property name="yalign">0</property>
-                            <property name="ypad">4</property>
-                            <property name="use_markup">True</property>
-                          </widget>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                      </widget>
-                      <packing>
-                        <property name="position">2</property>
-                      </packing>
-                    </child>
-                  </widget>
-                  <packing>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
-              </widget>
-              <packing>
-                <property name="top_attach">1</property>
-                <property name="bottom_attach">2</property>
-                <property name="y_options">GTK_FILL</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkExpander" id="modify_pub_expander">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="spacing">5</property>
-                <child>
-                  <widget class="GtkFrame" id="frame2">
-                    <property name="visible">True</property>
-                    <property name="label_xalign">0</property>
-                    <property name="shadow_type">in</property>
-                    <child>
-                      <widget class="GtkScrolledWindow" id="scrolledwindow2">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="hscrollbar_policy">automatic</property>
-                        <property name="vscrollbar_policy">automatic</property>
-                        <child>
-                          <widget class="GtkTextView" id="modifypub_details">
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="editable">False</property>
-                            <property name="left_margin">6</property>
-                            <property name="cursor_visible">False</property>
-                          </widget>
-                        </child>
-                      </widget>
-                    </child>
-                    <child>
-                      <placeholder/>
-                      <packing>
-                        <property name="type">label_item</property>
-                      </packing>
-                    </child>
-                  </widget>
-                </child>
-                <child>
-                  <widget class="GtkLabel" id="label1">
-                    <property name="visible">True</property>
-                    <property name="label" translatable="yes">_Details</property>
-                    <property name="use_underline">True</property>
-                  </widget>
-                  <packing>
-                    <property name="type">label_item</property>
-                  </packing>
-                </child>
-              </widget>
-              <packing>
-                <property name="top_attach">2</property>
-                <property name="bottom_attach">3</property>
-                <property name="y_options">GTK_FILL</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkLabel" id="repository_modif_lablel1">
-                <property name="visible">True</property>
-                <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                <property name="xalign">0</property>
-                <property name="yalign">0</property>
-                <property name="label" translatable="yes">&lt;b&gt;_Repositories&lt;/b&gt;</property>
-                <property name="use_markup">True</property>
-                <property name="use_underline">True</property>
-                <property name="mnemonic_widget">modify_pub_repos_treeview</property>
-              </widget>
-              <packing>
-                <property name="top_attach">3</property>
-                <property name="bottom_attach">4</property>
-                <property name="y_options">GTK_FILL</property>
-                <property name="y_padding">5</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkFrame" id="frame1">
-                <property name="visible">True</property>
-                <property name="label_xalign">0</property>
-                <property name="shadow_type">in</property>
-                <child>
-                  <widget class="GtkScrolledWindow" id="scrolledwindow1">
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="hscrollbar_policy">automatic</property>
-                    <property name="vscrollbar_policy">automatic</property>
-                    <child>
-                      <widget class="GtkTreeView" id="modify_pub_repos_treeview">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <accessibility>
-                          <atkproperty name="AtkObject::accessible-name">Repositories</atkproperty>
-                        </accessibility>
-                      </widget>
-                    </child>
-                  </widget>
-                </child>
-                <child>
-                  <placeholder/>
-                  <packing>
-                    <property name="type">label_item</property>
-                  </packing>
-                </child>
-              </widget>
-              <packing>
-                <property name="top_attach">4</property>
-                <property name="bottom_attach">5</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkVButtonBox" id="vbuttonbox1">
-                <property name="visible">True</property>
-                <property name="orientation">vertical</property>
-                <property name="layout_style">start</property>
-                <child>
-                  <widget class="GtkButton" id="pub_modify_repo">
-                    <property name="label" translatable="yes">_Modify...</property>
-                    <property name="visible">True</property>
-                    <property name="sensitive">False</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
-                    <property name="use_underline">True</property>
-                    <signal name="clicked" handler="on_pub_modify_repo_clicked"/>
-                  </widget>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-              </widget>
-              <packing>
-                <property name="left_attach">1</property>
-                <property name="right_attach">2</property>
-                <property name="top_attach">4</property>
-                <property name="bottom_attach">5</property>
-                <property name="x_options">GTK_FILL</property>
-              </packing>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-          </widget>
-          <packing>
-            <property name="position">1</property>
-          </packing>
-        </child>
-        <child internal-child="action_area">
-          <widget class="GtkHButtonBox" id="dialog-action_area18">
-            <property name="visible">True</property>
-            <property name="layout_style">end</property>
-            <child>
-              <widget class="GtkButton" id="modifypub_cancel">
-                <property name="label">gtk-cancel</property>
-                <property name="response_id">-2</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_modifypub_cancel_clicked"/>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkButton" id="modifypub_ok">
-                <property name="label">gtk-ok</property>
-                <property name="response_id">-3</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_modifypub_ok_clicked"/>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkButton" id="modify_pub_help">
-                <property name="label">gtk-help</property>
-                <property name="response_id">-11</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_modify_pub_help_clicked"/>
               </widget>
               <packing>
                 <property name="expand">False</property>
@@ -4640,13 +4298,13 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
     </child>
   </widget>
   <widget class="GtkDialog" id="modify_repository">
+    <property name="width_request">500</property>
     <property name="border_width">5</property>
-    <property name="title" translatable="yes">Modify Repository</property>
+    <property name="title" translatable="yes">Modify Publisher</property>
     <property name="resizable">False</property>
     <property name="modal">True</property>
     <property name="window_position">center-on-parent</property>
     <property name="type_hint">dialog</property>
-    <property name="transient_for">modify_publisher</property>
     <property name="has_separator">False</property>
     <signal name="delete_event" handler="on_modify_repository_delete_event"/>
     <child internal-child="vbox">
@@ -4660,16 +4318,13 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
             <property name="orientation">vertical</property>
             <property name="spacing">5</property>
             <child>
-              <widget class="GtkLabel" id="repositorymodifytitlelabel">
+              <widget class="GtkLabel" id="label3">
                 <property name="visible">True</property>
                 <property name="xalign">0</property>
-                <property name="yalign">0</property>
-                <property name="ypad">2</property>
-                <property name="label" translatable="yes">&lt;b&gt;Modify repository URL&lt;/b&gt;</property>
+                <property name="label" translatable="yes">&lt;b&gt;Publisher&lt;/b&gt;</property>
                 <property name="use_markup">True</property>
               </widget>
               <packing>
-                <property name="expand">False</property>
                 <property name="position">0</property>
               </packing>
             </child>
@@ -4680,43 +4335,15 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                   <widget class="GtkVBox" id="vbox13">
                     <property name="visible">True</property>
                     <property name="orientation">vertical</property>
-                    <property name="spacing">3</property>
                     <child>
-                      <widget class="GtkHBox" id="hbox1">
+                      <widget class="GtkHBox" id="hbox4">
                         <property name="visible">True</property>
-                        <property name="spacing">10</property>
                         <child>
-                          <widget class="GtkVBox" id="vbox2">
+                          <widget class="GtkAlignment" id="alignment2">
+                            <property name="width_request">16</property>
                             <property name="visible">True</property>
-                            <property name="orientation">vertical</property>
                             <child>
-                              <widget class="GtkLabel" id="repository_name_text">
-                                <property name="visible">True</property>
-                                <property name="xalign">0</property>
-                                <property name="yalign">0</property>
-                                <property name="ypad">4</property>
-                                <property name="label" translatable="yes">Name: </property>
-                                <property name="use_underline">True</property>
-                              </widget>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="position">0</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <widget class="GtkLabel" id="label25">
-                                <property name="visible">True</property>
-                                <property name="xalign">0</property>
-                                <property name="yalign">0</property>
-                                <property name="ypad">4</property>
-                                <property name="label" translatable="yes">_URL: </property>
-                                <property name="use_underline">True</property>
-                                <property name="mnemonic_widget">repositorymodifyurl</property>
-                              </widget>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="position">1</property>
-                              </packing>
+                              <placeholder/>
                             </child>
                           </widget>
                           <packing>
@@ -4725,27 +4352,68 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkVBox" id="vbox3">
+                          <widget class="GtkHBox" id="hbox1">
                             <property name="visible">True</property>
-                            <property name="orientation">vertical</property>
+                            <property name="spacing">10</property>
                             <child>
-                              <widget class="GtkLabel" id="repository_name_label">
+                              <widget class="GtkVBox" id="vbox2">
                                 <property name="visible">True</property>
-                                <property name="xalign">0</property>
-                                <property name="yalign">0</property>
-                                <property name="ypad">4</property>
-                                <property name="use_underline">True</property>
+                                <property name="orientation">vertical</property>
+                                <child>
+                                  <widget class="GtkLabel" id="repository_name_text">
+                                    <property name="visible">True</property>
+                                    <property name="xalign">0</property>
+                                    <property name="yalign">0</property>
+                                    <property name="ypad">4</property>
+                                    <property name="label" translatable="yes">Name: </property>
+                                    <property name="use_underline">True</property>
+                                  </widget>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">False</property>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <widget class="GtkLabel" id="label25">
+                                    <property name="visible">True</property>
+                                    <property name="xalign">0</property>
+                                    <property name="yalign">0</property>
+                                    <property name="ypad">4</property>
+                                    <property name="label" translatable="yes">A_lias:</property>
+                                    <property name="use_underline">True</property>
+                                    <property name="mnemonic_widget">repositorymodifyalias</property>
+                                  </widget>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">False</property>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
                               </widget>
                               <packing>
+                                <property name="expand">False</property>
                                 <property name="position">0</property>
                               </packing>
                             </child>
                             <child>
-                              <widget class="GtkVBox" id="vbox4">
+                              <widget class="GtkVBox" id="vbox3">
                                 <property name="visible">True</property>
                                 <property name="orientation">vertical</property>
                                 <child>
-                                  <widget class="GtkEntry" id="repositorymodifyurl">
+                                  <widget class="GtkLabel" id="repository_name_label">
+                                    <property name="visible">True</property>
+                                    <property name="xalign">0</property>
+                                    <property name="yalign">0</property>
+                                    <property name="ypad">4</property>
+                                    <property name="use_underline">True</property>
+                                  </widget>
+                                  <packing>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <widget class="GtkEntry" id="repositorymodifyalias">
                                     <property name="width_request">320</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -4753,23 +4421,9 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                                     <accessibility>
                                       <atkproperty name="AtkObject::accessible-name">repositorymodifyurl</atkproperty>
                                     </accessibility>
-                                    <signal name="changed" handler="on_repositorymodifyurl_changed"/>
-                                    <signal name="focus_in_event" handler="on_repositorymodifyurl_focus_in_event"/>
-                                    <signal name="activate" handler="on_repositorymodifyok_clicked"/>
                                   </widget>
                                   <packing>
-                                    <property name="position">0</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <widget class="GtkLabel" id="moderror_label">
-                                    <property name="visible">True</property>
-                                    <property name="sensitive">False</property>
-                                    <property name="no_show_all">True</property>
-                                    <property name="xalign">0</property>
-                                    <property name="use_markup">True</property>
-                                  </widget>
-                                  <packing>
+                                    <property name="expand">False</property>
                                     <property name="position">1</property>
                                   </packing>
                                 </child>
@@ -4777,6 +4431,17 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <widget class="GtkAlignment" id="alignment3">
+                                <property name="visible">True</property>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                              </widget>
+                              <packing>
+                                <property name="position">2</property>
                               </packing>
                             </child>
                           </widget>
@@ -4796,7 +4461,6 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                 </child>
               </widget>
               <packing>
-                <property name="expand">False</property>
                 <property name="position">1</property>
               </packing>
             </child>
@@ -4812,7 +4476,7 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                     <child>
                       <widget class="GtkLabel" id="repositorymodifyregistrationcommentlabel">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">This is a secure repository. Refer to the posted</property>
+                        <property name="label" translatable="yes">This is a secure publisher.</property>
                       </widget>
                     </child>
                   </widget>
@@ -4829,7 +4493,7 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                     <property name="top_padding">3</property>
                     <child>
                       <widget class="GtkLinkButton" id="repositorymodifyregistrationlinkbutton">
-                        <property name="label" translatable="yes">_Instructions</property>
+                        <property name="label" translatable="yes">Re_gistration Details</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
@@ -4852,10 +4516,205 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
               </packing>
             </child>
             <child>
+              <widget class="GtkVBox" id="vbox4">
+                <property name="visible">True</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <widget class="GtkLabel" id="label1">
+                    <property name="visible">True</property>
+                    <property name="xalign">0</property>
+                    <property name="ypad">4</property>
+                    <property name="label" translatable="yes">&lt;b&gt;Origins&lt;/b&gt;</property>
+                    <property name="use_markup">True</property>
+                  </widget>
+                  <packing>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkHBox" id="hbox3">
+                    <property name="visible">True</property>
+                    <property name="spacing">6</property>
+                    <child>
+                      <widget class="GtkAlignment" id="alignment1">
+                        <property name="width_request">10</property>
+                        <property name="visible">True</property>
+                        <child>
+                          <placeholder/>
+                        </child>
+                      </widget>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkVBox" id="vbox6">
+                        <property name="visible">True</property>
+                        <property name="orientation">vertical</property>
+                        <property name="spacing">5</property>
+                        <child>
+                          <widget class="GtkHBox" id="hbox2">
+                            <property name="visible">True</property>
+                            <property name="spacing">10</property>
+                            <child>
+                              <widget class="GtkLabel" id="label2">
+                                <property name="visible">True</property>
+                                <property name="xalign">0</property>
+                                <property name="yalign">0</property>
+                                <property name="ypad">4</property>
+                                <property name="label" translatable="yes">O_rigin:</property>
+                                <property name="use_underline">True</property>
+                                <property name="mnemonic_widget">add_repo</property>
+                              </widget>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <widget class="GtkVBox" id="vbox7">
+                                <property name="visible">True</property>
+                                <property name="orientation">vertical</property>
+                                <child>
+                                  <widget class="GtkEntry" id="add_repo">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="no_show_all">True</property>
+                                    <property name="invisible_char">&#x25CF;</property>
+                                    <signal name="changed" handler="on_add_repo_changed"/>
+                                    <signal name="focus_in_event" handler="on_add_repo_focus_in_event"/>
+                                    <signal name="activate" handler="on_pub_add_repo_clicked"/>
+                                  </widget>
+                                  <packing>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <widget class="GtkLabel" id="modrepoerror_label">
+                                    <property name="visible">True</property>
+                                    <property name="sensitive">False</property>
+                                    <property name="xalign">0</property>
+                                    <property name="label" translatable="yes">e.g. http://pkg.opensolaris.org/release</property>
+                                    <property name="use_markup">True</property>
+                                    <property name="wrap">True</property>
+                                  </widget>
+                                  <packing>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                              </widget>
+                              <packing>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkFrame" id="frame2">
+                            <property name="visible">True</property>
+                            <property name="label_xalign">0</property>
+                            <property name="shadow_type">in</property>
+                            <child>
+                              <widget class="GtkScrolledWindow" id="scrolledwindow1">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="hscrollbar_policy">automatic</property>
+                                <property name="vscrollbar_policy">automatic</property>
+                                <child>
+                                  <widget class="GtkTreeView" id="modify_pub_repos_treeview">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="headers_visible">False</property>
+                                    <property name="rules_hint">True</property>
+                                    <accessibility>
+                                      <atkproperty name="AtkObject::accessible-name">Repositories</atkproperty>
+                                    </accessibility>
+                                  </widget>
+                                </child>
+                              </widget>
+                            </child>
+                            <child>
+                              <placeholder/>
+                              <packing>
+                                <property name="type">label_item</property>
+                              </packing>
+                            </child>
+                          </widget>
+                          <packing>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </widget>
+                      <packing>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkVButtonBox" id="vbuttonbox1">
+                        <property name="visible">True</property>
+                        <property name="orientation">vertical</property>
+                        <property name="spacing">20</property>
+                        <property name="layout_style">start</property>
+                        <child>
+                          <widget class="GtkButton" id="pub_add_repo">
+                            <property name="label" translatable="yes">_Add</property>
+                            <property name="visible">True</property>
+                            <property name="sensitive">False</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <property name="use_underline">True</property>
+                            <signal name="clicked" handler="on_pub_add_repo_clicked"/>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkButton" id="pub_remove_repo">
+                            <property name="label" translatable="yes">Remo_ve</property>
+                            <property name="visible">True</property>
+                            <property name="sensitive">False</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <property name="use_underline">True</property>
+                            <signal name="clicked" handler="on_pub_remove_repo_clicked"/>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </widget>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                  </widget>
+                  <packing>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </widget>
+              <packing>
+                <property name="position">3</property>
+              </packing>
+            </child>
+            <child>
               <widget class="GtkExpander" id="repositorymodifysslexpander">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="spacing">10</property>
+                <property name="spacing">4</property>
+                <signal name="activate" handler="on_repositorymodifysslexpander_activate"/>
                 <child>
                   <widget class="GtkHBox" id="hbox17">
                     <property name="visible">True</property>
@@ -4903,7 +4762,7 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                                 <property name="xalign">0</property>
                                 <property name="yalign">0</property>
                                 <property name="ypad">4</property>
-                                <property name="label" translatable="yes">SSL C_ertificate:</property>
+                                <property name="label" translatable="yes">SSL Certi_ficate:</property>
                                 <property name="use_underline">True</property>
                                 <property name="mnemonic_widget">modcertentry</property>
                               </widget>
@@ -4922,7 +4781,7 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                           <widget class="GtkVBox" id="vbox25">
                             <property name="visible">True</property>
                             <property name="orientation">vertical</property>
-                            <property name="spacing">5</property>
+                            <property name="spacing">7</property>
                             <child>
                               <widget class="GtkEntry" id="modkeyentry">
                                 <property name="visible">True</property>
@@ -4979,10 +4838,11 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkVBox" id="vbox26">
+                          <widget class="GtkVButtonBox" id="vbuttonbox3">
                             <property name="visible">True</property>
                             <property name="orientation">vertical</property>
                             <property name="spacing">5</property>
+                            <property name="layout_style">start</property>
                             <child>
                               <widget class="GtkButton" id="modkeybrowse">
                                 <property name="label" translatable="yes">_Browse...</property>
@@ -5000,7 +4860,7 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                             </child>
                             <child>
                               <widget class="GtkButton" id="modcertbrowse">
-                                <property name="label" translatable="yes">Br_owse...</property>
+                                <property name="label" translatable="yes">Bro_wse...</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
@@ -5039,7 +4899,7 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                 </child>
               </widget>
               <packing>
-                <property name="position">3</property>
+                <property name="position">4</property>
               </packing>
             </child>
             <child>
@@ -5048,6 +4908,7 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                 <property name="can_focus">True</property>
                 <property name="use_underline">True</property>
                 <property name="spacing">10</property>
+                <signal name="activate" handler="on_repositorymodifymirrorsexpander_activate"/>
                 <child>
                   <widget class="GtkHBox" id="hbox21">
                     <property name="visible">True</property>
@@ -5082,6 +4943,7 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                                 <property name="ypad">4</property>
                                 <property name="label" translatable="yes">M_irror:</property>
                                 <property name="use_underline">True</property>
+                                <property name="mnemonic_widget">addmirror_entry</property>
                               </widget>
                               <packing>
                                 <property name="expand">False</property>
@@ -5146,6 +5008,7 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="headers_visible">False</property>
+                                    <property name="rules_hint">True</property>
                                   </widget>
                                 </child>
                               </widget>
@@ -5168,12 +5031,14 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkVBox" id="vbox21">
+                      <widget class="GtkVButtonBox" id="vbuttonbox2">
                         <property name="visible">True</property>
                         <property name="orientation">vertical</property>
+                        <property name="spacing">20</property>
+                        <property name="layout_style">start</property>
                         <child>
                           <widget class="GtkButton" id="addmirror_button">
-                            <property name="label" translatable="yes">_Add</property>
+                            <property name="label" translatable="yes">A_dd</property>
                             <property name="visible">True</property>
                             <property name="sensitive">False</property>
                             <property name="can_focus">True</property>
@@ -5189,7 +5054,7 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                         </child>
                         <child>
                           <widget class="GtkButton" id="mirrorremove">
-                            <property name="label" translatable="yes">_Remove</property>
+                            <property name="label" translatable="yes">Remov_e</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
@@ -5224,8 +5089,11 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                 </child>
               </widget>
               <packing>
-                <property name="position">4</property>
+                <property name="position">5</property>
               </packing>
+            </child>
+            <child>
+              <placeholder/>
             </child>
           </widget>
           <packing>
@@ -5385,7 +5253,7 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                         <property name="yalign">0</property>
                         <property name="xpad">4</property>
                         <property name="ypad">4</property>
-                        <property name="label" translatable="yes">URL:</property>
+                        <property name="label" translatable="yes">URI:</property>
                         <property name="use_markup">True</property>
                       </widget>
                       <packing>

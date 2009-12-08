@@ -23,6 +23,8 @@
 # Use is subject to license terms.
 #
 
+MODIFY_DIALOG_WIDTH_DEFAULT = 500
+MODIFY_DIALOG_SSL_WIDTH_DEFAULT = 410
 
 import sys
 import os
@@ -80,8 +82,6 @@ class Repository(progress.GuiProgressTracker):
                     gtk.glade.XML(parent.gladefile, "add_publisher_complete")
                 w_tree_modify_repository = \
                     gtk.glade.XML(parent.gladefile, "modify_repository")
-                w_tree_modify_publisher = \
-                    gtk.glade.XML(parent.gladefile, "modify_publisher")
                 w_tree_manage_publishers = \
                     gtk.glade.XML(parent.gladefile, "manage_publishers")
                 w_tree_publishers_apply = \
@@ -149,20 +149,28 @@ class Repository(progress.GuiProgressTracker):
                 self.w_modify_repository_dialog.set_icon(self.parent.window_icon)
                 self.w_addmirror_entry = \
                     w_tree_modify_repository.get_widget("addmirror_entry")
+                self.w_addorigin_entry = \
+                    w_tree_modify_repository.get_widget("add_repo")
                 self.w_addmirror_button = \
                     w_tree_modify_repository.get_widget("addmirror_button")
                 self.w_rmmirror_button = \
                     w_tree_modify_repository.get_widget("mirrorremove")
+                self.w_addorigin_button = \
+                    w_tree_modify_repository.get_widget("pub_add_repo")
+                self.w_rmorigin_button = \
+                    w_tree_modify_repository.get_widget("pub_remove_repo")
+                self.w_modify_pub_alias = \
+                    w_tree_modify_repository.get_widget("repositorymodifyalias")
                 self.w_repositorymodifyok_button = \
                     w_tree_modify_repository.get_widget("repositorymodifyok")
                 self.modify_repo_mirrors_treeview = \
                     w_tree_modify_repository.get_widget("modify_repo_mirrors_treeview")
-                self.w_repositorymodify_url = \
-                    w_tree_modify_repository.get_widget("repositorymodifyurl")
+                self.modify_repo_origins_treeview = \
+                    w_tree_modify_repository.get_widget("modify_pub_repos_treeview")
                 self.w_modmirrerror_label = \
                     w_tree_modify_repository.get_widget("modmirrerror_label")
-                self.w_moderror_label = \
-                    w_tree_modify_repository.get_widget("moderror_label")
+                self.w_modoriginerror_label = \
+                    w_tree_modify_repository.get_widget("modrepoerror_label")
                 self.w_modsslerror_label = \
                     w_tree_modify_repository.get_widget("modsslerror_label")
                 self.w_repositorymodify_name = \
@@ -185,38 +193,12 @@ class Repository(progress.GuiProgressTracker):
                 self.w_repositorymodify_cert_entry = \
                     w_tree_modify_repository.get_widget(
                     "modcertentry")   
-                self.w_modify_publisher_dialog = \
-                    w_tree_modify_publisher.get_widget("modify_publisher")
-                self.w_modify_publisher_dialog.set_icon(self.parent.window_icon)
-                self.w_modify_pub_label = \
-                    w_tree_modify_publisher.get_widget("modify_pub_label")
-                self.w_modify_pub_alias = \
-                    w_tree_modify_publisher.get_widget("modify_pub_alias")
-                self.w_modify_pub_url = \
-                    w_tree_modify_publisher.get_widget("modify_pub_url")
-                self.modify_pub_repos_treeview = \
-                    w_tree_modify_publisher.get_widget("modify_pub_repos_treeview")
-                self.modify_pub_ok_btn = \
-                    w_tree_modify_publisher.get_widget("modifypub_ok")
-                self.pub_modify_repo_btn = \
-                    w_tree_modify_publisher.get_widget("pub_modify_repo")
-                self.w_modifypub_error_label = \
-                    w_tree_modify_publisher.get_widget("modifypub_error_label")
-                self.w_modifypub_details = \
-                    w_tree_modify_publisher.get_widget("modifypub_details")
                 self.w_manage_publishers_dialog = \
                     w_tree_manage_publishers.get_widget("manage_publishers")
                 self.w_manage_publishers_dialog.set_icon(self.parent.window_icon)
-                w_priorities_label = \
-                    w_tree_manage_publishers.get_widget("priorities_label")
-                # TODO: The priorities are not supported yet.
-                w_priorities_label.set_property('visible', False)
-                w_priorities_label.set_property('no-show-all', True)
                 self.w_manage_publishers_details = \
                     w_tree_manage_publishers.get_widget("manage_publishers_details")
-                modifypub_details_buf =  self.w_modifypub_details.get_buffer()
                 manage_pub_details_buf =  self.w_manage_publishers_details.get_buffer()
-                modifypub_details_buf.create_tag("level0", weight=pango.WEIGHT_BOLD)
                 manage_pub_details_buf.create_tag("level0", weight=pango.WEIGHT_BOLD)
                 self.w_manage_ok_btn = \
                     w_tree_manage_publishers.get_widget("manage_ok")
@@ -299,21 +281,6 @@ class Repository(progress.GuiProgressTracker):
                                 "on_manage_help_clicked": \
                                     self.__on_manage_help_clicked,
                             }
-                        dic_modify_publisher = \
-                            {
-                                "on_modify_publisher_delete_event" : \
-                                    self.__delete_widget_handler_hide,
-                                "on_pub_modify_repo_clicked" : \
-                                    self.__on_pub_modify_repo_clicked,
-                                "on_modifypub_cancel_clicked" : \
-                                    self.__on_modifypub_cancel_clicked,
-                                "on_modifypub_ok_clicked" : \
-                                    self.__on_modifypub_ok_clicked,
-                                "on_modifypub_url_changed": \
-                                    self.__on_modifypub_url_changed,
-                                "on_modify_pub_help_clicked": \
-                                    self.__on_modify_pub_help_clicked,
-                            }
                         dic_modify_repo = \
                             {
                                 "on_modify_repository_delete_event": \
@@ -324,14 +291,18 @@ class Repository(progress.GuiProgressTracker):
                                     self.__on_modcertbrowse_clicked,
                                 "on_addmirror_entry_changed": \
                                     self.__on_addmirror_entry_changed,
-                                "on_repositorymodifyurl_changed": \
-                                    self.__repositorymodifyurl_changed,
+                                "on_add_repo_changed": \
+                                    self.__on_addorigin_entry_changed,
                                 "on_addmirror_button_clicked": \
                                     self.__on_addmirror_button_clicked,
+                                "on_pub_add_repo_clicked": \
+                                    self.__on_addorigin_button_clicked,
                                 "on_repositorymodifyok_clicked": \
                                     self.__on_repositorymodifyok_clicked,
                                 "on_mirrorremove_clicked": \
                                     self.__on_rmmirror_button_clicked,
+                                "on_pub_remove_repo_clicked": \
+                                    self.__on_rmorigin_button_clicked,
                                 "on_repositorymodifycancel_clicked": \
                                     self.__on_repositorymodifycancel_clicked,
                                 "on_modkeyentry_changed": \
@@ -361,7 +332,6 @@ class Repository(progress.GuiProgressTracker):
                             dic_add_publisher_comp)
                         w_tree_add_publisher.signal_autoconnect(dic_add_publisher)
                         w_tree_manage_publishers.signal_autoconnect(dic_manage_publishers)
-                        w_tree_modify_publisher.signal_autoconnect(dic_modify_publisher)
                         w_tree_modify_repository.signal_autoconnect(dic_modify_repo)
                         w_tree_confirmation.signal_autoconnect(dic_confirmation)
                         w_tree_publishers_apply.signal_autoconnect(dic_apply)
@@ -371,9 +341,9 @@ class Repository(progress.GuiProgressTracker):
                             % error
 
                 self.publishers_list = self.__get_publishers_liststore()
-                self.__init_pubs_tree_views(self.publishers_list)
-                self.__init_mirrors_tree_views(self.modify_repo_mirrors_treeview)
-                self.__init_repos_tree_views(self.modify_pub_repos_treeview)
+                self.__init_pubs_tree_view(self.publishers_list)
+                self.__init_mirrors_tree_view(self.modify_repo_mirrors_treeview)
+                self.__init_origins_tree_view(self.modify_repo_origins_treeview)
 
                 if self.action == enumerations.ADD_PUBLISHER:
                         gui_misc.set_modal_and_transient(self.w_add_publisher_dialog, 
@@ -390,22 +360,23 @@ class Repository(progress.GuiProgressTracker):
                         publisher_selection.set_mode(gtk.SELECTION_SINGLE)
                         publisher_selection.connect("changed",
                             self.__on_publisher_selection_changed, None)
-                        repository_selection = \
-                            self.modify_pub_repos_treeview.get_selection()
-                        repository_selection.set_mode(gtk.SELECTION_SINGLE)
-                        repository_selection.connect("changed",
-                            self.__on_repository_selection_changed, None)
                         mirrors_selection = \
                             self.modify_repo_mirrors_treeview.get_selection()
                         mirrors_selection.set_mode(gtk.SELECTION_SINGLE)
                         mirrors_selection.connect("changed",
                             self.__on_mirror_selection_changed, None)
+                        origins_selection = \
+                            self.modify_repo_origins_treeview.get_selection()
+                        origins_selection.set_mode(gtk.SELECTION_SINGLE)
+                        origins_selection.connect("changed",
+                            self.__on_origin_selection_changed, None)
+
                         gui_misc.set_modal_and_transient(self.w_add_publisher_dialog,
                             self.w_manage_publishers_dialog)
                         self.w_manage_publishers_dialog.show_all()
                         return
 
-        def __init_pubs_tree_views(self, publishers_list):
+        def __init_pubs_tree_view(self, publishers_list):
                 publishers_list_filter = publishers_list.filter_new()
                 publishers_list_sort = gtk.TreeModelSort(publishers_list_filter)
                 publishers_list_sort.set_sort_column_id(
@@ -580,121 +551,122 @@ class Repository(progress.GuiProgressTracker):
                 return self.__get_fitr_model_from_tree(\
                     self.modify_repo_mirrors_treeview)
 
-        def __get_selected_repository_itr_model(self):
+        def __get_selected_origin_itr_model(self):
                 return self.__get_fitr_model_from_tree(\
-                    self.modify_pub_repos_treeview)
+                    self.modify_repo_origins_treeview)
 
         def __modify_publisher_dialog(self, pub):
-                self.__update_publisher_dialog(pub)
-                self.__update_publisher_details(pub,
-                    self.w_modifypub_details)
-                gui_misc.set_modal_and_transient(self.w_modify_publisher_dialog,
-                    self.w_manage_publishers_dialog)
-                self.w_modify_publisher_dialog.show_all()
-
-        def __update_publisher_dialog(self, pub, update_alias=True):
-                pub = self.api_o.get_publisher(prefix=pub.prefix,
-                    alias=pub.prefix, duplicate=True)
-                selected_repo = pub.selected_repository
-                origin = selected_repo.origins[0]
-                prefix = ""
-                alias = ""
-                uri = ""
-                if pub.prefix and len(pub.prefix) > 0:
-                        prefix = pub.prefix
-                if pub.alias and len(pub.alias) > 0 \
-                    and pub.alias != "None":
-                        alias = pub.alias
-                if origin.uri and len(origin.uri) > 0:
-                        uri = origin.uri
-                self.w_modify_pub_label.set_text(prefix)
-                if update_alias:
-                        self.w_modify_pub_alias.set_text(alias)
-                self.w_modify_pub_url.set_text(uri)
-                repositories_list = self.__get_repositories_liststore()
-                j = 0
-                for repo in pub.repositories:
-                        selected = False
-                        if selected_repo == repo:
-                                selected = True
-                        name = uri
-                        if repo.name and len(repo.name) > 0:
-                                name = repo.name
-                        repository = [name, selected, 'n/a', repo, pub]
-                        repositories_list.insert(j, repository)
-                        j += 1
-                self.modify_pub_repos_treeview.set_model(repositories_list)
-
-        def __modify_repository_dialog(self, pub, repository):
-                self.repository_modify_publisher = \
-                    self.api_o.get_publisher(prefix=pub.prefix,
-                        alias=pub.prefix, duplicate=True)
-                self.__update_repository_dialog(repository)
                 gui_misc.set_modal_and_transient(self.w_modify_repository_dialog,
-                    self.w_modify_publisher_dialog)
-                self.w_modify_repository_dialog.show_all()
+                    self.w_manage_publishers_dialog)
+                self.repository_modify_publisher = self.api_o.get_publisher(
+                    prefix=pub.prefix, alias=pub.prefix, duplicate=True)
+                updated_modify_repository = self.__update_modify_repository_dialog(True,
+                    True, True, True)
+                    
+                style = self.w_repositorymodify_name.get_style()
+                font_size_in_pango_unit = style.font_desc.get_size()
+                font_size_in_pixel = font_size_in_pango_unit / pango.SCALE 
+                ssl_error_len = len(_("SSL Key not found at specified location")) * \
+                        font_size_in_pixel
+                if ssl_error_len > MODIFY_DIALOG_SSL_WIDTH_DEFAULT:
+                        new_dialog_width = ssl_error_len * \
+                                (float(MODIFY_DIALOG_WIDTH_DEFAULT)/
+                                    MODIFY_DIALOG_SSL_WIDTH_DEFAULT)
+                        self.w_modify_repository_dialog.set_size_request(
+                            int(new_dialog_width), -1)
+                else:
+                        self.w_modify_repository_dialog.set_size_request(
+                            MODIFY_DIALOG_WIDTH_DEFAULT, -1)
 
-        def __update_repository_dialog(self, repository, expand=True, 
-            update_ssl=True, update_url=True):
-                name = ""
+                if updated_modify_repository:
+                        self.w_modify_repository_dialog.show_all()
+
+        def __update_modify_repository_dialog(self, update_alias=False, 
+            update_mirrors=False, update_origins=False, update_ssl=False):
+                if not self.repository_modify_publisher:
+                        return False
+                pub = self.repository_modify_publisher
+                selected_repo = pub.selected_repository
+                prefix = ""
                 ssl_cert = ""
                 ssl_key = ""
-                uri = None
-                insert_count = 0
-                mirrors_list = self.__get_mirrors_liststore()
-                for mirr in repository.mirrors:
-                        if mirr.ssl_cert:
-                                ssl_cert = mirr.ssl_cert
-                        if mirr.ssl_key:
-                                ssl_key = mirr.ssl_key
-                        mirror = [mirr.uri]
-                        mirrors_list.insert(insert_count, mirror)
-                        insert_count += 1
-                for uri in repository.origins:
-                        if uri.ssl_cert:
-                                ssl_cert = uri.ssl_cert
-                        if uri.ssl_key:
-                                ssl_key = uri.ssl_key
-                if expand == True:
-                        if insert_count > 0:
-                                self.w_repositorymirror_expander.set_expanded(True)
-                        else:
-                                self.w_repositorymirror_expander.set_expanded(False)
-                        if len(ssl_cert) > 0 or len(ssl_key) > 0:
-                                self.w_repositoryssl_expander.set_expanded(True)
-                        else:
-                                self.w_repositoryssl_expander.set_expanded(False)
-                if update_ssl:
-                        self.w_repositorymodify_cert_entry.set_text(ssl_cert)
-                        self.w_repositorymodify_key_entry.set_text(ssl_key)
-                if update_url:
-                        self.w_repositorymodify_url.set_text(repository.origins[0].uri)
-                self.modify_repo_mirrors_treeview.set_model(mirrors_list)
-                if repository.name and len(repository.name) > 0:
-                        name = repository.name
-                reg_uri = self.__get_registration_uri(repository)
+
+                if pub.prefix and len(pub.prefix) > 0:
+                        prefix = pub.prefix
+                self.w_repositorymodify_name.set_text(prefix)
+
+                if update_alias:
+                        alias = ""
+                        if pub.alias and len(pub.alias) > 0 \
+                            and pub.alias != "None":
+                                alias = pub.alias
+                        self.w_modify_pub_alias.set_text(alias)
+
+                if update_mirrors or update_ssl:
+                        if update_mirrors:
+                                insert_count = 0
+                                mirrors_list = self.__get_mirrors_origins_liststore()
+                        for mirror in selected_repo.mirrors:
+                                if mirror.ssl_cert:
+                                        ssl_cert = mirror.ssl_cert
+                                if mirror.ssl_key:
+                                        ssl_key = mirror.ssl_key
+                                if update_mirrors:
+                                        mirror_uri = [mirror.uri]
+                                        mirrors_list.insert(insert_count, mirror_uri)
+                                        insert_count += 1
+                        if update_mirrors:
+                                self.modify_repo_mirrors_treeview.set_model(mirrors_list)
+                                if len(selected_repo.mirrors) > 0:
+                                        self.w_repositorymirror_expander.set_expanded(
+                                            True)
+                                else:
+                                        self.w_repositorymirror_expander.set_expanded(
+                                            False)
+
+                if update_origins or update_ssl:
+                        if update_origins:
+                                insert_count = 0
+                                origins_list = self.__get_mirrors_origins_liststore()
+                        for origin in selected_repo.origins:
+                                if origin.ssl_cert:
+                                        ssl_cert = origin.ssl_cert
+                                if origin.ssl_key:
+                                        ssl_key = origin.ssl_key
+                                if update_origins:
+                                        origin_uri = [origin.uri]
+                                        origins_list.insert(insert_count, origin_uri)
+                                        insert_count += 1
+                        if update_origins:
+                                self.modify_repo_origins_treeview.set_model(origins_list)
+
+                reg_uri = self.__get_registration_uri(selected_repo)
                 if reg_uri != None:
                         self.w_repositorymodify_registration_link.set_uri(
                             reg_uri)
                         self.w_repositorymodify_registration_box.show()
                 else:
                         self.w_repositorymodify_registration_box.hide()
-                self.w_repositorymodify_name.set_text(name)
-                self.modify_repo_mirrors_treeview.set_model(mirrors_list)
+
+                if update_ssl:
+                        self.w_repositorymodify_cert_entry.set_text(ssl_cert)
+                        self.w_repositorymodify_key_entry.set_text(ssl_key)
+                        if len(ssl_cert) > 0 or len(ssl_key) > 0:
+                                self.w_repositoryssl_expander.set_expanded(True)
+                        else:
+                                self.w_repositoryssl_expander.set_expanded(False)
+                return True
 
         def __add_mirror(self, new_mirror):
                 pub = self.repository_modify_publisher
                 repo = pub.selected_repository
                 try:
-                        # This part is copied from "def publisher_set(img, args)"
-                        # from the client.py as the publisher API is not ready yet.
                         repo.add_mirror(new_mirror)
                         self.w_addmirror_entry.set_text("")
                 except (api_errors.PublisherError,
                     api_errors.CertificateError), e:
-                        gobject.idle_add(self.__show_errors, [(pub, e)])
-                self.__update_repository_dialog(repo, 
-                    expand=False, update_ssl=False, update_url=False)
+                        self.__show_errors([(pub, e)])
+                self.__update_modify_repository_dialog(update_mirrors=True)
 
         def __rm_mirror(self):
                 itr, model = self.__get_selected_mirror_itr_model()
@@ -706,9 +678,32 @@ class Repository(progress.GuiProgressTracker):
                 try:
                         repo.remove_mirror(remove_mirror)
                 except api_errors.PublisherError, e:
-                        gobject.idle_add(self.__show_errors, [(pub, e)])
-                self.__update_repository_dialog(repo, 
-                    expand=False, update_ssl=False, update_url=False)
+                        self.__show_errors([(pub, e)])
+                self.__update_modify_repository_dialog(update_mirrors=True)
+
+        def __add_origin(self, new_origin):
+                pub = self.repository_modify_publisher
+                repo = pub.selected_repository
+                try:
+                        repo.add_origin(new_origin)
+                        self.w_addorigin_entry.set_text("")
+                except (api_errors.PublisherError,
+                    api_errors.CertificateError), e:
+                        self.__show_errors([(pub, e)])
+                self.__update_modify_repository_dialog(update_origins=True)
+
+        def __rm_origin(self):
+                itr, model = self.__get_selected_origin_itr_model()
+                remove_origin = None
+                if itr and model:
+                        remove_origin = model.get_value(itr, 0)
+                pub = self.repository_modify_publisher
+                repo = pub.selected_repository
+                try:
+                        repo.remove_origin(remove_origin)
+                except api_errors.PublisherError, e:
+                        self.__show_errors([(pub, e)])
+                self.__update_modify_repository_dialog(update_origins=True)
 
         def __enable_disable(self, cell, sorted_path):
                 sorted_model = self.w_publishers_treeview.get_model()
@@ -729,15 +724,16 @@ class Repository(progress.GuiProgressTracker):
                 model.set_value(itr, enumerations.PUBLISHER_ENABLE_CHANGED, not changed)
                 self.__enable_disable_updown_btn(itr, model)
 
-        def __is_enough_visible_pubs(self):
-                filtered_model = self.w_publishers_treeview.get_model()
-                if len(filtered_model) > 1:
+        @staticmethod
+        def __is_at_least_one_entry(treeview):
+                model = treeview.get_model()
+                if len(model) > 1:
                         return True
                 return False
 
         def __enable_disable_remove_btn(self, itr):
                 if itr:
-                        if self.__is_enough_visible_pubs():
+                        if self.__is_at_least_one_entry(self.w_publishers_treeview):
                                 self.w_manage_remove_btn.set_sensitive(True)
                                 return
                 self.w_manage_remove_btn.set_sensitive(False)
@@ -867,7 +863,7 @@ class Repository(progress.GuiProgressTracker):
         def __afteradd_confirmation(self, pub):
                 repo = pub.selected_repository
                 origin = repo.origins[0]
-                # TODO: desc not available at the moment
+                # Descriptions not available at the moment
                 self.w_add_publisher_c_desc.hide()
                 self.w_add_publisher_c_desc_l.hide()
                 self.w_add_publisher_c_name.set_text(pub.prefix)
@@ -1063,37 +1059,14 @@ class Repository(progress.GuiProgressTracker):
                     self.w_manage_publishers_dialog, None)
                 return False
 
-        def __proceed_modifypub_ok(self):
-                origin_url = self.w_modify_pub_url.get_text()
-                alias = self.w_modify_pub_alias.get_text()
-                name = self.w_modify_pub_label.get_text()
-                pub = self.api_o.get_publisher(name, duplicate = True)
-                repo = pub.selected_repository
-                origin = repo.origins[0]
-                origin.uri = origin_url
-                pub.alias = alias
-                errors = self.__update_publisher(pub, new_publisher=False)
-                self.progress_stop_thread = True
-                if len(errors) > 0:
-                        gobject.idle_add(self.__show_errors, errors)
-                else:
-                        gobject.idle_add(self.__g_delete_widget_handler_hide,
-                            self.w_modify_publisher_dialog, None)
-                        if self.action == enumerations.MANAGE_PUBLISHERS:
-                                gobject.idle_add(self.__prepare_publisher_list)
-                                selection = self.w_publishers_treeview.get_selection()
-                                gobject.idle_add(selection.select_path, 0)
-                                self.no_changes += 1
-
         def __proceed_modifyrepo_ok(self):
                 errors = []
-                pub = self.repository_modify_publisher
-                repo = pub.selected_repository
+                alias = self.w_modify_pub_alias.get_text()
                 ssl_key = self.w_repositorymodify_key_entry.get_text()
                 ssl_cert = self.w_repositorymodify_cert_entry.get_text()
-                origin_url = self.w_repositorymodify_url.get_text()
-                origin = repo.origins[0]
-                origin.uri = origin_url
+                pub = self.repository_modify_publisher
+                repo = pub.selected_repository
+                pub.alias = alias
                 errors += self.__update_ssl_creds(pub, repo, ssl_cert, ssl_key)
                 errors += self.__update_publisher(pub, new_publisher=False)
                 self.progress_stop_thread = True
@@ -1102,7 +1075,11 @@ class Repository(progress.GuiProgressTracker):
                 else:
                         gobject.idle_add(self.__g_delete_widget_handler_hide,
                             self.w_modify_repository_dialog, None)
-                gobject.idle_add(self.__update_publisher_dialog, pub, False)
+                        if self.action == enumerations.MANAGE_PUBLISHERS:
+                                gobject.idle_add(self.__prepare_publisher_list)
+                                selection = self.w_publishers_treeview.get_selection()
+                                gobject.idle_add(selection.select_path, 0)
+                                self.no_changes += 1
 
         def __run_with_prog_in_thread(self, func, parent_window = None,
             cancel_func = None, *f_args):
@@ -1152,19 +1129,20 @@ class Repository(progress.GuiProgressTracker):
                                 itr = None
                 self.__enable_disable_remove_btn(itr)
 
-        def __on_repository_selection_changed(self, selection, widget):
-                model_itr = selection.get_selected()
-                if model_itr[1]:
-                        self.pub_modify_repo_btn.set_sensitive(True)
-                else:
-                        self.pub_modify_repo_btn.set_sensitive(False)
-
         def __on_mirror_selection_changed(self, selection, widget):
                 model_itr = selection.get_selected()
                 if model_itr[1]:
                         self.w_rmmirror_button.set_sensitive(True)
                 else:
                         self.w_rmmirror_button.set_sensitive(False)
+
+        def __on_origin_selection_changed(self, selection, widget):
+                model_itr = selection.get_selected()
+                if model_itr[1] and \
+                    self.__is_at_least_one_entry(self.modify_repo_origins_treeview):
+                        self.w_rmorigin_button.set_sensitive(True)
+                else:
+                        self.w_rmorigin_button.set_sensitive(False)
 
         def __g_on_add_publisher_delete_event(self, widget, event):
                 self.__on_add_publisher_delete_event(widget, event)
@@ -1207,102 +1185,79 @@ class Repository(progress.GuiProgressTracker):
                     w_ssl_key=widget, w_ssl_cert=self.w_cert_entry)
 
         def __on_modcertkeyentry_changed(self, widget):
-                self.__repositorymodifyurl_changed(self.w_repositorymodify_url)
-
-        def __on_modifypub_url_changed(self, widget):
-                self.__validate_url_generic(widget, self.w_modifypub_error_label,
-                    self.modify_pub_ok_btn, name_valid=True,
-                    function=self.__is_pub_modified)
-
-        def __on_addmirror_entry_changed(self, widget):
-                error_text = ""
-                url_error = None
-                mirror_url = widget.get_text()
-                origin_url = self.w_repositorymodify_url.get_text()
-                is_url_valid, url_error = self.__is_url_valid(mirror_url)
-                # http: and https: are being only checked when someone types the prefix
-                if len(mirror_url) <= 4:
-                        if is_url_valid == False and url_error != None:
-                                self.__show_error_label_with_format(
-                                    self.w_modmirrerror_label, url_error)
-                        else:
-                                self.w_modmirrerror_label.set_text(self.publisher_info)
-                                self.w_modmirrerror_label.set_markup(self.publisher_info)
-                                self.w_modmirrerror_label.set_sensitive(False)
-                        self.w_addmirror_button.set_sensitive(False)
-                        return
-                is_origin_ssl = origin_url.startswith("https")
-                is_mirror_ssl = mirror_url.startswith("https")
-                if (is_mirror_ssl and is_origin_ssl) or \
-                    (not is_mirror_ssl and not is_origin_ssl) :
-                        if is_url_valid == False and url_error != None:
-                                self.__show_error_label_with_format(
-                                    self.w_modmirrerror_label, url_error)
-                        else:
-                                self.w_modmirrerror_label.set_text(self.publisher_info)
-                                self.w_modmirrerror_label.set_markup(self.publisher_info)
-                                self.w_modmirrerror_label.set_sensitive(False)
-                        self.w_addmirror_button.set_sensitive(is_url_valid)
-                        return
-                elif is_mirror_ssl:
-                        error_text = _("Mirrors and repository URL\n"
-                            "must be either https or http.")
-                elif is_origin_ssl:
-                        # Mirror is not ssl, but origin is
-                        error_text = _("Mirrors and repository URL\n"
-                            "must be either https or http.")
-                if error_text != "":
-                        self.__show_error_label_with_format(
-                            self.w_modmirrerror_label, error_text)
-                        self.w_addmirror_button.set_sensitive(False)
-
-        def __repositorymodifyurl_changed(self, widget):
-                self.w_moderror_label.set_markup(self.publisher_info)
-                self.w_moderror_label.set_sensitive(False)
-                self.w_modsslerror_label.hide()
-                valid_url = True
-                valid_ssl = True
-                pub = self.repository_modify_publisher
-                repository = pub.selected_repository
-                url = widget.get_text()
+                self.__on_addorigin_entry_changed(None)
+                self.__on_addmirror_entry_changed(None)
                 ssl_key = self.w_repositorymodify_key_entry.get_text()
                 ssl_cert = self.w_repositorymodify_cert_entry.get_text()
-                is_origin_ssl = url.startswith("https")
-                if is_origin_ssl:
-                        self.w_repositoryssl_expander.set_expanded(True)
+                ssl_valid, ssl_error = self.__validate_ssl_key_cert(None,
+                    ssl_key, ssl_cert)
+                self.w_repositorymodifyok_button.set_sensitive(True)
+                if ssl_valid == False and (len(ssl_key) > 0 or len(ssl_cert) > 0):
+                        self.w_repositorymodifyok_button.set_sensitive(False)
+                        if ssl_error != None:
+                                self.__show_error_label_with_format(
+                                    self.w_modsslerror_label, ssl_error)
+                        else:
+                                self.w_modsslerror_label.set_text("")
+                        return
+                self.w_modsslerror_label.set_text("")
+
+        def __on_addmirror_entry_changed(self, widget):
+                uri_list_model = self.modify_repo_mirrors_treeview.get_model()
+                error_text = _("Mirrors for a secure publisher\n"
+                            "need to begin with https://")
+                self.__validate_mirror_origin_url(self.w_addmirror_entry.get_text(),
+                    self.w_addmirror_button, self.w_modmirrerror_label, uri_list_model,
+                    error_text)
+
+        def __on_addorigin_entry_changed(self, widget):
+                uri_list_model = self.modify_repo_origins_treeview.get_model()
+                error_text = _("Origins for a secure publisher\n"
+                            "need to begin with https://")
+                self.__validate_mirror_origin_url(self.w_addorigin_entry.get_text(),
+                    self.w_addorigin_button, self.w_modoriginerror_label, uri_list_model,
+                    error_text)
+
+        def __validate_mirror_origin_url(self, url, add_button, error_label,
+            uri_list_model, error_text):
+                url_error = None
                 is_url_valid, url_error = self.__is_url_valid(url)
-                if len(repository.mirrors) > 0:
-                        are_mirrors_ssl = \
-                            self.__check_if_all_mirrors_are_ssl(repository.mirrors)
-                        if are_mirrors_ssl and not is_origin_ssl:
-                                url_error = _("SSL URL should be specified")
+                add_button.set_sensitive(False)
+                error_label.set_sensitive(False)
+                error_label.set_markup(self.publisher_info)
+                if len(url) <= 4:
+                        if is_url_valid == False and url_error != None:
                                 self.__show_error_label_with_format(
-                                    self.w_moderror_label, url_error)
-                                valid_url = False
-                        elif not are_mirrors_ssl and is_origin_ssl:
-                                url_error = _("SSL URL should not be specified")
+                                    error_label, url_error)
+                        return
+
+                for uri_row in uri_list_model:
+                        origin_url = uri_row[0].strip("/")
+                        if origin_url.strip("/") == url.strip("/"):
+                                url_error = _("URI already added")
                                 self.__show_error_label_with_format(
-                                    self.w_moderror_label, url_error)
-                                valid_url = False
-                ssl_valid, ssl_error = self.__validate_ssl_key_cert(url, ssl_key,
-                    ssl_cert, ignore_ssl_check_for_http=False)
-                self.__on_addmirror_entry_changed(self.w_addmirror_entry)
-                if is_url_valid == False and url_error != None:
-                        self.__show_error_label_with_format(
-                            self.w_moderror_label, url_error)
-                        valid_url = False
-                if not is_origin_ssl and ssl_valid == False and ssl_error != None:
-                        self.__show_error_label_with_format(
-                            self.w_moderror_label, ssl_error)
-                        valid_ssl = False
-                elif is_origin_ssl and ssl_error != None:
-                        self.__show_error_label_with_format(
-                            self.w_modsslerror_label, ssl_error)
-                        valid_ssl = False
-                elif is_origin_ssl:
-                        if len(ssl_key) == 0 or len(ssl_cert) == 0:
-                                valid_ssl = False
-                self.w_repositorymodifyok_button.set_sensitive(valid_url and valid_ssl)
+                                            error_label, url_error)
+                                return
+
+                ssl_specified = self.__is_ssl_specified()
+                is_mirror_ssl = url.startswith("https")
+                if ssl_specified and is_mirror_ssl == False:
+                        self.__show_error_label_with_format(error_label, error_text)
+                        return
+
+                if is_url_valid == False:
+                        if url_error != None:
+                                self.__show_error_label_with_format(error_label,
+                                    url_error)
+                        return
+                add_button.set_sensitive(True)
+
+        def __is_ssl_specified(self):
+                ssl_key = self.w_repositorymodify_key_entry.get_text()
+                ssl_cert = self.w_repositorymodify_cert_entry.get_text()
+                if len(ssl_key) > 0 or len(ssl_cert) > 0:
+                        return True
+                return False
 
         def __on_publishername_changed(self, widget):
                 error_label = self.w_add_error_label
@@ -1444,25 +1399,6 @@ class Repository(progress.GuiProgressTracker):
         def __on_manage_ok_clicked(self, widget):
                 self.__prepare_confirmation_dialog()
 
-        def __on_pub_modify_repo_clicked(self, widget):
-                itr, model = self.__get_selected_repository_itr_model()
-                pub = model.get_value(itr,
-                    enumerations.MREPOSITORY_PUB_OBJECT)
-                repository = model.get_value(itr,
-                    enumerations.MREPOSITORY_OBJECT)
-                self.__modify_repository_dialog(pub, repository)
-
-        def __on_modifypub_cancel_clicked(self, widget):
-                self.__delete_widget_handler_hide(
-                    self.w_modify_publisher_dialog, None)
-
-        def __on_modifypub_ok_clicked(self, widget):
-                if self.modify_pub_ok_btn.get_property('sensitive') == 0:
-                        return
-                self.publishers_apply.set_title(_("Applying Changes"))
-                self.__run_with_prog_in_thread(self.__proceed_modifypub_ok,
-                    self.w_modify_publisher_dialog)
-
         def __on_publishers_apply_delete_event(self, widget, event):
                 self.__on_apply_cancel_clicked(None)
                 return True
@@ -1472,18 +1408,25 @@ class Repository(progress.GuiProgressTracker):
                         return
                 new_mirror = self.w_addmirror_entry.get_text()
                 self.__add_mirror(new_mirror)
-                self.__repositorymodifyurl_changed(self.w_repositorymodify_url)
+
+        def __on_addorigin_button_clicked(self, widget):
+                if self.w_addorigin_button.get_property('sensitive') == 0:
+                        return
+                new_origin = self.w_addorigin_entry.get_text()
+                self.__add_origin(new_origin)
 
         def __on_rmmirror_button_clicked(self, widget):
                 self.__rm_mirror()
-                self.__repositorymodifyurl_changed(self.w_repositorymodify_url)
+
+        def __on_rmorigin_button_clicked(self, widget):
+                self.__rm_origin()
                 
         def __on_repositorymodifyok_clicked(self, widget):
                 if self.w_repositorymodifyok_button.get_property('sensitive') == 0:
                         return
                 self.publishers_apply.set_title(_("Applying Changes"))
                 self.__run_with_prog_in_thread(self.__proceed_modifyrepo_ok,
-                    self.w_modify_repository_dialog)
+                    self.w_manage_publishers_dialog)
 
         def __on_repositorymodifycancel_clicked(self, widget):
                 self.__delete_widget_handler_hide(
@@ -1502,10 +1445,6 @@ class Repository(progress.GuiProgressTracker):
 #-----------------------------------------------------------------------------#
 # Static Methods
 #-----------------------------------------------------------------------------#
-        @staticmethod
-        def __is_pub_modified():
-                return True
-
         @staticmethod
         def __check_if_ignore(pub, removed_list):
                 """If we remove a publisher from our model, the priorities of
@@ -1530,10 +1469,6 @@ class Repository(progress.GuiProgressTracker):
                 gui_misc.display_help("manage_repo")
 
         @staticmethod
-        def __on_modify_pub_help_clicked(widget):
-                gui_misc.display_help("manage_repo")
-
-        @staticmethod
         def __on_modify_repo_help_clicked(widget):
                 gui_misc.display_help("manage_repo")
 
@@ -1544,12 +1479,14 @@ class Repository(progress.GuiProgressTracker):
                 details_buffer = details_view.get_buffer()
                 details_buffer.set_text("")
                 uri_s_itr = details_buffer.get_start_iter()
-                details_buffer.insert_with_tags_by_name(uri_s_itr,
-                    _("Publisher URI:\n"), "level0")
                 repo = pub.selected_repository
-                origin = repo.origins[0]
+                num = len(repo.origins)
+                origin_txt = ngettext("Origin:\n", "Origins:\n", num)
+                details_buffer.insert_with_tags_by_name(uri_s_itr,
+                    origin_txt, "level0")
                 uri_itr = details_buffer.get_end_iter()
-                details_buffer.insert(uri_itr, "%s\n" % origin.uri)
+                for origin in repo.origins:
+                        details_buffer.insert(uri_itr, "%s\n" % origin.uri)
                 description = ""
                 if repo.description:
                         description = repo.description
@@ -1615,7 +1552,6 @@ class Repository(progress.GuiProgressTracker):
                             chooser.get_filename())
                 chooser.destroy()
 
-
         @staticmethod
         def __delete_widget_handler_hide(widget, event):
                 widget.hide()
@@ -1643,7 +1579,6 @@ class Repository(progress.GuiProgressTracker):
                                 origin = repo.origins[0]
                                 origin.uri = origin_url
                 return (pub, repo, new_pub)
-
 
         @staticmethod
         def __update_ssl_creds(pub, repo, ssl_cert, ssl_key):
@@ -1704,7 +1639,7 @@ class Repository(progress.GuiProgressTracker):
                         if valid_start:
                                 url_error = None
                         else:
-                                url_error = _("URL is not valid")
+                                url_error = _("URI is not valid")
                         return False, url_error
 
         @staticmethod
@@ -1713,7 +1648,7 @@ class Repository(progress.GuiProgressTracker):
                 '''The SSL Cert and SSL Key may be valid and contain no error'''
                 ssl_error = None
                 ssl_valid = True
-                if origin_url.startswith("http:"):
+                if origin_url and origin_url.startswith("http:"):
                         if ignore_ssl_check_for_http:
                                 return ssl_valid, ssl_error
                         if (ssl_key != None and len(ssl_key) != 0) or \
@@ -1723,59 +1658,34 @@ class Repository(progress.GuiProgressTracker):
                         elif (ssl_key == None or len(ssl_key) == 0) or \
                             (ssl_cert == None or len(ssl_cert) == 0):
                                 ssl_valid = True
-                elif origin_url.startswith("https"):
+                elif origin_url == None or origin_url.startswith("https"):
                         if (ssl_key == None or len(ssl_key) == 0) or \
                             (ssl_cert == None or len(ssl_cert) == 0):
                                 ssl_valid = False
                         elif not os.path.isfile(ssl_key):
-                                ssl_error = _("SSL Key not found at specified path")
+                                ssl_error = _("SSL Key not found at specified location")
                                 ssl_valid = False
                         elif not os.path.isfile(ssl_cert):
                                 ssl_error = \
-                                    _("SSL Certificate not found at specified path")
+                                    _("SSL Certificate not found at specified location")
                                 ssl_valid = False
                 return ssl_valid, ssl_error
 
         @staticmethod
-        def __check_if_all_mirrors_are_ssl(mirrors):
-                are_mirrors_ssl = False
-                if mirrors:
-                        for mirr in mirrors:
-                                if mirr.uri.startswith("https"):
-                                        are_mirrors_ssl = True
-                                        break
-                return are_mirrors_ssl
-
-        @staticmethod
-        def __init_repos_tree_views(treeview):
-                # Name column
-                name_renderer = gtk.CellRendererText()
-                name_renderer.set_property("ellipsize", pango.ELLIPSIZE_END)
-                column = gtk.TreeViewColumn(_("Repository"),
-                    name_renderer, text = enumerations.MREPOSITORY_NAME)
+        def __init_mirrors_tree_view(treeview):
+                # URI column - 0
+                uri_renderer = gtk.CellRendererText()
+                column = gtk.TreeViewColumn(_("Mirror URI"),
+                    uri_renderer,  text = 0)
                 column.set_expand(True)
                 treeview.append_column(column)
-                # Active column
-                radio_renderer = gtk.CellRendererToggle()
-                column = gtk.TreeViewColumn(_("Active"),
-                    radio_renderer, active = enumerations.MREPOSITORY_ACTIVE)
-                radio_renderer.set_property("activatable", True)
-                radio_renderer.set_property("radio", True)
-                column.set_expand(False)
-                treeview.append_column(column)
-                # Registered column
-                alias_renderer = gtk.CellRendererText()
-                column = gtk.TreeViewColumn(_("Registered"),
-                    alias_renderer,  markup = enumerations.MREPOSITORY_REGISTERED)
-                column.set_expand(False)
-                treeview.append_column(column)
 
         @staticmethod
-        def __init_mirrors_tree_views(treeview):
-                # Name column - 0
-                name_renderer = gtk.CellRendererText()
-                column = gtk.TreeViewColumn(_("Mirror Name"),
-                    name_renderer,  text = 0)
+        def __init_origins_tree_view(treeview):
+                # URI column - 0
+                uri_renderer = gtk.CellRendererText()
+                column = gtk.TreeViewColumn(_("Origin URI"),
+                    uri_renderer,  text = 0)
                 column.set_expand(True)
                 treeview.append_column(column)
 
@@ -1793,17 +1703,7 @@ class Repository(progress.GuiProgressTracker):
                         )
 
         @staticmethod
-        def __get_repositories_liststore():
-                return gtk.ListStore(
-                        gobject.TYPE_STRING,      # enumerations.MREPOSITORY_NAME
-                        gobject.TYPE_BOOLEAN,     # enumerations.MREPOSITORY_ACTIVE
-                        gobject.TYPE_STRING,      # enumerations.MREPOSITORY_REGISTERED
-                        gobject.TYPE_PYOBJECT,    # enumerations.MREPOSITORY_OBJECT
-                        gobject.TYPE_PYOBJECT,    # enumerations.MREPOSITORY_PUB_OBJECT
-                        )
-
-        @staticmethod
-        def __get_mirrors_liststore():
+        def __get_mirrors_origins_liststore():
                 return gtk.ListStore(
                         gobject.TYPE_STRING,      # name
                         )

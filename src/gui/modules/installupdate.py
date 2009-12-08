@@ -604,9 +604,9 @@ class InstallUpdate(progress.GuiProgressTracker):
 
         def __proceed_with_stages_thread(self):
                 self.__start_substage(None)
-                substage_text = _("Gathering package information, please wait...")
-                self.update_label_text(substage_text)
-                self.update_details_text(substage_text + "\n", "level1")
+                self.update_label_text(_("Gathering package information, please wait..."))
+                self.update_details_text(
+                    _("Gathering package information") + "\n", "level1")
 
                 stuff_todo = self.__plan_stage()
                 if stuff_todo:
