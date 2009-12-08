@@ -1,0 +1,15 @@
+package clustertools
+version 8.2.1
+depend clustertools_8.2.1
+end package
+
+package clustertools_8.2.1
+classification "Development/High Performance Computing"
+version 8.2.1
+import SUNWompi
+import SUNWompiat
+import SUNWompil
+import SUNWompimn
+import SUNWompir
+import SUNWomsc
+end package
