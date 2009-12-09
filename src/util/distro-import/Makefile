@@ -707,6 +707,7 @@ backpublish:
 clean:
 	rm -f $(OBJS)
 	rm -rf proto
+	rm -f $(FIX_FILES:%=$(BUILDID)/%)
 
 clobber: clean
 	rm -f $(PROG)
