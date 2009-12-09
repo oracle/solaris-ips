@@ -172,12 +172,7 @@ REGEX_STRIP_RESULT = re.compile(r'\(\d+\) ?')
 class PackageManager:
         def __init__(self):
                 signal.signal(signal.SIGINT, self.__main_application_quit)
-                # We reset the HOME directory in case the user called us
-                # with gksu and had NFS mounted home directory in which
-                # case dbus called from gconf cannot write to the directory.
-                if os.getuid() == 0:
-                        home_dir = self.__find_root_home_dir()
-                        os.putenv('HOME', home_dir)
+                self.__reset_home_dir()
                 self.api_o = None
                 self.cache_o = None
                 self.img_timestamp = None
@@ -245,17 +240,8 @@ class PackageManager:
                         self.initial_app_hpos = 200
                         self.initial_app_vpos = 320
 
-                if self.initial_app_width == -1:
-                        self.initial_app_width = 800
-                if self.initial_app_height == -1:
-                        self.initial_app_height = 600
-                if self.initial_app_hpos == -1:
-                        self.initial_app_hpos = 200
-                if self.initial_app_vpos == -1:
-                        self.initial_app_vpos = 320
+                self.__fix_initial_values()
 
-                if not self.gconf_not_show_repos:
-                        self.gconf_not_show_repos = ""
                 self.set_section = 0
                 self.in_search_mode = False
                 self.in_recent_search = False
@@ -407,16 +393,13 @@ class PackageManager:
                     w_tree_confirm.get_widget("confirmationdialog")
                 self.w_exportconfirm_dialog.set_icon(self.window_icon)
                 self.w_confirmok_button = w_tree_confirm.get_widget("ok_conf")
+                self.w_confirmhelp_button = w_tree_confirm.get_widget("help_conf")
                 self.w_confirm_textview = w_tree_confirm.get_widget("confirmtext")
-                infobuffer = self.w_confirm_textview.get_buffer()
-                infobuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)                
                 self.w_confirm_label = w_tree_confirm.get_widget("confirm_label")
                 w_confirm_image = w_tree_confirm.get_widget("confirm_image")
                 w_confirm_image.set_from_stock(gtk.STOCK_DIALOG_INFO,
                     gtk.ICON_SIZE_DND)
-                self.w_exportconfirm_dialog.set_title(_("Export Selections Confirmation"))
-                self.w_confirm_label.set_markup(
-                    _("<b>Export the following to a Web Install .p5i file:</b>"))
+                self.__setup_export_selection_dialog()
                 
                 w_version_info = gtk.glade.XML(self.gladefile,
                     "version_info_dialog")
@@ -674,6 +657,8 @@ class PackageManager:
                             {
                                 "on_confirmationdialog_delete_event": \
                                     self.__on_confirmation_dialog_delete_event,
+                                "on_help_conf_clicked": \
+                                    self.__on_confirm_help_button_clicked,
                                 "on_ok_conf_clicked": \
                                     self.__on_confirm_proceed_button_clicked,
                                 "on_cancel_conf_clicked": \
@@ -715,21 +700,9 @@ class PackageManager:
                 self.last_resize = (0, 0)
                 self.showing_empty_details = False
                 self.in_setup = True
-                if self.initial_app_width >= MIN_APP_WIDTH and \
-                        self.initial_app_height >= MIN_APP_HEIGHT:
-                        self.w_main_window.resize(self.initial_app_width,
-                            self.initial_app_height)
-                if self.initial_app_hpos > 0:
-                        self.w_main_hpaned.set_position(self.initial_app_hpos)
-                if self.initial_app_vpos > 0:
-                        self.w_main_vpaned.set_position(self.initial_app_vpos)
+                self.__set_initial_sizes()
                 self.w_main_window.show_all()
-                gdk_win = self.w_main_window.get_window()
-                self.gdk_window = gtk.gdk.Window(gdk_win, gtk.gdk.screen_width(),
-                    gtk.gdk.screen_height(), gtk.gdk.WINDOW_CHILD, 0, gtk.gdk.INPUT_ONLY)
-                gdk_cursor = gtk.gdk.Cursor(gtk.gdk.WATCH)
-
-                self.gdk_window.set_cursor(gdk_cursor)
+                self.__setup_busy_cursor()
                 if self.show_startpage:
                         self.w_main_view_notebook.set_current_page(NOTEBOOK_START_PAGE)
                 else:
@@ -739,6 +712,36 @@ class PackageManager:
                 self.w_version_info_dialog.set_transient_for(self.w_main_window)
                 self.__setup_text_signals()
 
+        def __set_initial_sizes(self):
+                if self.initial_app_width >= MIN_APP_WIDTH and \
+                        self.initial_app_height >= MIN_APP_HEIGHT:
+                        self.w_main_window.resize(self.initial_app_width,
+                            self.initial_app_height)
+                if self.initial_app_hpos > 0:
+                        self.w_main_hpaned.set_position(self.initial_app_hpos)
+                if self.initial_app_vpos > 0:
+                        self.w_main_vpaned.set_position(self.initial_app_vpos)
+
+        def __setup_busy_cursor(self):
+                gdk_win = self.w_main_window.get_window()
+                self.gdk_window = gtk.gdk.Window(gdk_win, gtk.gdk.screen_width(),
+                    gtk.gdk.screen_height(), gtk.gdk.WINDOW_CHILD, 0, gtk.gdk.INPUT_ONLY)
+                gdk_cursor = gtk.gdk.Cursor(gtk.gdk.WATCH)
+
+                self.gdk_window.set_cursor(gdk_cursor)
+
+        def __fix_initial_values(self):
+                if self.initial_app_width == -1:
+                        self.initial_app_width = 800
+                if self.initial_app_height == -1:
+                        self.initial_app_height = 600
+                if self.initial_app_hpos == -1:
+                        self.initial_app_hpos = 200
+                if self.initial_app_vpos == -1:
+                        self.initial_app_vpos = 320
+
+                if not self.gconf_not_show_repos:
+                        self.gconf_not_show_repos = ""
         @staticmethod
         def __set_icon(button, menuitem, icon_name):
                 icon_source = gtk.IconSource()
@@ -767,9 +770,21 @@ class PackageManager:
                                 return sb_label
                 return None
                 
+        def __setup_export_selection_dialog(self):
+                infobuffer = self.w_confirm_textview.get_buffer()
+                infobuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)
+                self.w_exportconfirm_dialog.set_title(_("Export Selections Confirmation"))
+                self.w_confirm_label.set_markup(
+                    _("<b>Export the following to a Web Install .p5i file:</b>"))
+                self.w_confirmhelp_button.set_property('visible', True)
+
         def __on_confirmation_dialog_delete_event(self, widget, event):
                 self.__on_confirm_cancel_button_clicked(None)
                 return True
+
+        @staticmethod
+        def __on_confirm_help_button_clicked(widget):
+                gui_misc.display_help("webinstall")
 
         def __on_confirm_cancel_button_clicked(self, widget):
                 self.w_exportconfirm_dialog.hide()
@@ -3331,10 +3346,6 @@ class PackageManager:
                 self.w_info_name_label.set_text(name)
                 installable_fmt = \
                     _("%(version)s (Build %(build)s-%(branch)s)")
-                expander_fmt = _(
-                    "The latest version of %s cannot be installed "
-                    "until you update your system. "
-                    "Run \"Updates\" to get your system up-to-date.")
                 if local_info:
                         yes_text = _("Yes, %(version)s (Build %(build)s-%(branch)s)")
                         installed_label = yes_text % \
@@ -5254,6 +5265,14 @@ class PackageManager:
                         ermsg += "%s: %s\n" % (pub["origin"], str(err))
                 gobject.idle_add(self.error_occurred, ermsg,
                     None, gtk.MESSAGE_INFO)
+
+        def __reset_home_dir(self):
+                # We reset the HOME directory in case the user called us
+                # with gksu and had NFS mounted home directory in which
+                # case dbus called from gconf cannot write to the directory.
+                if os.getuid() == 0:
+                        home_dir = self.__find_root_home_dir()
+                        os.putenv('HOME', home_dir)
 
         @staticmethod
         def __find_root_home_dir():
