@@ -26,7 +26,9 @@
 ^src/man/pkg.1$
 ^src/man/pkg.5$
 ^src/man/pkg.depotd.1m$
-^src/man/pkgdep.1$
+^src/man/pkgdepend.1$
+^src/man/pkgdiff.1$
+^src/man/pkgmogrify.1$
 ^src/man/pkgrecv.1$
 ^src/man/pkgsend.1$
 ^src/man/pm-updatemanager.1$

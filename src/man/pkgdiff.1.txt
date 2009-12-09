@@ -1,0 +1,70 @@
+User Commands                                            pkgdiff(1)
+
+
+NAME
+     pkgdiff - compare pkg manifests
+
+SYNOPSIS
+     /usr/bin/pkgdiff [-i attribute] [-o attribute] ...  file1 file2 
+
+
+DESCRIPTION
+     pkgdiff compares two package manifests and reports on differences.
+     pkgdiff sorts each manifest & action into a consistent order before
+     comparison.
+
+     Output is of the form:
+
+     + <complete action> if this action is in file2 but not in file1
+     - <complete action> if this action is in file1 but not in file2
+
+     actionname keyvalue <variant values, if any>
+       - attribute1=value1         if this attribute,value is in file1 
+                                   but not in file2
+       + attribute2=value2         if this attribute,value is in file2
+                                   but not in file1
+
+     Note that actions with different variants but the same type & 
+     key attribute value (usually path) are treated as separate actions
+     for purposes of comparison, so actions changing attributes will
+     appear in their complete form rather than as attribute changes.
+
+OPTIONS
+
+     -i attribute    Ignore this attribute if present during comparisons
+     	                  File hash values may be ignored with -i hash.  May not be used
+     	                  with -o option.
+
+     -o attribute   Only report differences in this attribute.   May not be
+     	                  used with -i option.  Will elide any action changes that don't 
+                          affect this attribute on an action.
+
+EXIT STATUS
+     The following exit values are returned:
+
+     0     No differences were found
+
+     1     Differences were found
+
+     >1    An error occurred
+
+
+ATTRIBUTES
+     See attributes(5) for descriptions of the  following  attri-
+     butes:
+     ____________________________________________________________
+    |       ATTRIBUTE TYPE        |       ATTRIBUTE VALUE       |
+    |_____________________________|_____________________________|
+    | Availability                |                             |
+    |_____________________________|_____________________________|
+
+SEE ALSO
+     pkg(5)
+
+NOTES
+     The image packaging system is an under-development feature.
+     Command names, invocation, formats, and operations are all subject
+     to change.  Development is hosted in the OpenSolaris community
+     at
+
+     http://opensolaris.org/os/project/pkg/
