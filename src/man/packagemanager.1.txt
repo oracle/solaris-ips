@@ -42,7 +42,7 @@ OPTIONS
           automatically.
 
      ---update-all or -U
-          Update all packages. When the user chooses Update All option in 
+          Update all packages. When the user chooses Updates option in 
           packagemanager and the packages containing pkg or packagemanager
           need to be updated before doing image update, packagemanager is
           called with this option after the packages have been updated.

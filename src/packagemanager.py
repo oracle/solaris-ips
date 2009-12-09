@@ -5361,7 +5361,7 @@ if __name__ == '__main__':
                 if option in ("-h", "--help"):
                         print """\
 Use -R (--image-dir) to specify image directory.
-Use -U (--update-all) to proceed with Update All"""
+Use -U (--update-all) to proceed with Updates"""
                         sys.exit(0)
                 if option in ("-R", "--image-dir"):
                         image_dir = argument

@@ -475,8 +475,8 @@ class InstallUpdate(progress.GuiProgressTracker):
                         return
                 except api_errors.IpkgOutOfDateException:
                         msg = _("pkg(5) appears to be out of "
-                            "date and should be\nupdated before running "
-                            "Update All.\nPlease update SUNWipkg package")
+                            "date and should be updated.\n"
+                            "Please update SUNWipkg package")
                         self.__g_error_stage(msg)
                         return
                 except api_errors.NonLeafPackageException, nlpe:
@@ -625,7 +625,7 @@ class InstallUpdate(progress.GuiProgressTracker):
 
                         if self.action == enumerations.INSTALL_UPDATE:
                                 msg = _("Selected package(s) cannot be updated on "
-                                "their own.\nClick Update All to update all packages.")
+                                "their own.\nClick Updates to update all packages.")
                                 self.__g_error_stage(msg)
                         elif self.action == enumerations.IMAGE_UPDATE:
                                 done_text = _("No updates available")
