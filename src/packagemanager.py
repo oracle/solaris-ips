@@ -123,7 +123,6 @@ from xml.sax import saxutils
 from threading import Thread
 from threading import Lock
 from collections import deque
-from cPickle import UnpicklingError
 from gettext import ngettext
 
 try:
@@ -141,7 +140,6 @@ try:
 except ImportError:
         sys.exit(1)
 import pkg.misc as misc
-import pkg.client.image as image
 import pkg.client.progress as progress
 import pkg.client.api_errors as api_errors
 import pkg.client.api as api
@@ -347,7 +345,6 @@ class PackageManager:
                     PUBLISHER_ADD : _("Add..."),
                     PUBLISHER_ALL : _("All Publishers (Search)")}
                 self.last_visible_publisher = None
-                self.last_visible_publisher_uptodate = False
                 self.publisher_changed = True
                 self.search_start = 0
                 self.search_time_sec = 0
@@ -371,6 +368,10 @@ class PackageManager:
                 self.category_expanded_paths = {}
                 self.category_active_paths = {}
                 
+                self.use_cache = False # Turns off Details Description cache
+                                       # Search history cache is always on
+                                       # Caching package list is removed
+
                 # Create Widgets and show gui
                 self.gladefile = os.path.join(self.application_dir,
                     "usr/share/package-manager/packagemanager.glade")
@@ -1638,19 +1639,17 @@ class PackageManager:
                 if self.a11y_application_treeview.get_n_accessible_children() != 0:
                         a11y_enabled = True
 
+                if not a11y_enabled:
+                        return
+
                 visible_range = self.w_application_treeview.get_visible_range()
                 if visible_range == None:
                         return
-                a11y_start = start = visible_range[0][0]
-                a11y_end = end = visible_range[1][0]
-                if debug_descriptions:
-                        print "Range Start: %d End: %d" % (start, end)
+                a11y_start = visible_range[0][0]
+                a11y_end = visible_range[1][0]
 
                 # We use check_range only for accessibility purposes to
                 # reduce the amount of processing to be done in that case.
-                # We do not use it when getting descriptions as we may discard
-                # description requests so we need a description request to
-                # be for everything that is currently visible.
                 # Switching Publishers need to use default range
                 if self.publisher_changed:
                         check_range = False
@@ -1674,35 +1673,11 @@ class PackageManager:
                                                                 a11y_end = old_start
                                                 else:
                                                         a11y_start = old_end
-                if debug_descriptions:
-                        print "Adjusted Range Start: %d End: %d" % (start, end)
                 self.application_treeview_range = visible_range
 
                 sort_filt_model = \
                     self.w_application_treeview.get_model() #gtk.TreeModelSort
-                filt_model = sort_filt_model.get_model() #gtk.TreeModelFilter
-                model = filt_model.get_model() #gtk.ListStore
-                sf_itr = sort_filt_model.get_iter_from_string(str(start))                
-                pkg_stems_and_itr_to_fetch = {}
-                while start <= end:
-                        filtered_itr = sort_filt_model.convert_iter_to_child_iter(None,
-                            sf_itr)
-                        app_itr = filt_model.convert_iter_to_child_iter(filtered_itr)
 
-                        desc = sort_filt_model.get_value(sf_itr,
-                            enumerations.DESCRIPTION_COLUMN)
-                        # Only Fetch description for packages without a
-                        # description
-                        if desc == '...':
-                                pkg_fmri = sort_filt_model.get_value(sf_itr,
-                                    enumerations.FMRI_COLUMN)
-                                if pkg_fmri != None:
-                                        pkg_stem = pkg_fmri.get_pkg_stem(
-                                            include_scheme = True)
-                                        pkg_stems_and_itr_to_fetch[pkg_stem] = \
-                                            model.get_string_from_iter(app_itr)
-                        start += 1
-                        sf_itr = sort_filt_model.iter_next(sf_itr)
                 if a11y_enabled:
                         sf_itr = sort_filt_model.get_iter_from_string(
                             str(a11y_start))                
@@ -1711,122 +1686,9 @@ class PackageManager:
                                 a11y_start += 1
                                 sf_itr = sort_filt_model.iter_next(sf_itr)
 
-                if debug_descriptions:
-                        print "PKGS to FETCH: \n%s" % pkg_stems_and_itr_to_fetch
-                if len(pkg_stems_and_itr_to_fetch) > 0:
-                        self.last_status_id += 1
-                        self.description_queue.append((pkg_stems_and_itr_to_fetch,
-                             model, self.last_status_id))
-                        self.__start_description_thread()
-
-        def __start_description_thread(self):
-                if not self.description_thread_running:
-                        status_id = -1
-                        model = None
-                        stems = None
-                        # Discard description requests except for the last two
-                        while status_id + 1 < self.last_status_id:
-                                try:
-                                        stems, model, status_id = \
-                                                self.description_queue.pop()
-                                except IndexError:
-                                        return
-                        Thread(target = self.__get_pkg_descriptions,
-                            args = [stems, model, status_id]).start() 
-                        self.description_thread_running = True
-                    
         def __doing_search(self):
                 return self.search_start > 0
                 
-        def __get_pkg_descriptions(self, pkg_stems_and_itr_to_fetch, 
-            orig_model, last_status_id):
-                # Note: no need to aquire lock even though this is called
-                # from a thread, it just creates an update job and dispatches it
-                # to the idle handler; it does not modify any global state.
-                info = None
-                if not self.__doing_search():
-                        gobject.idle_add(self.__update_statusbar_message,
-                            _("Fetching descriptions..."))
-                try:
-                        info = self.api_o.info(pkg_stems_and_itr_to_fetch.keys(), False,
-                                frozenset([api.PackageInfo.IDENTITY,
-                                    api.PackageInfo.SUMMARY]))
-                except api_errors.TransportError, ex:
-                        gobject.idle_add(self.update_statusbar)
-                        err = str(ex)
-                        gobject.idle_add(self.error_occurred, err,
-                            None, gtk.MESSAGE_INFO)
-                        gobject.idle_add(self.__restart_description_thread)
-                        return
-                except api_errors.InvalidDepotResponseException, ex:
-                        gobject.idle_add(self.update_statusbar)
-                        err = str(ex)
-                        gobject.idle_add(self.error_occurred, err,
-                            None, gtk.MESSAGE_INFO)
-                        gobject.idle_add(self.__restart_description_thread)
-                        return
-                if info and len(info.get(0)) == 0:
-                        gobject.idle_add(self.update_statusbar)
-                        return
-                pkg_infos = info.get(0)
-                pkg_descriptions_for_update = []
-                for pkg_info in pkg_infos:
-                        short_fmri = fmri.PkgFmri(pkg_info.fmri).get_pkg_stem(
-                            include_scheme = True)
-                        pkg_descriptions_for_update.append((short_fmri,
-                            pkg_stems_and_itr_to_fetch[short_fmri],
-                            pkg_info.summary))
-                if debug_descriptions:
-                        print "FETCHED PKGS: \n%s" % pkg_descriptions_for_update
-                gobject.idle_add(self.__update_description_from_iter,
-                    pkg_descriptions_for_update, orig_model, last_status_id)
-
-        def __restart_description_thread(self):
-                self.description_thread_running = False
-                self.__start_description_thread()
-                return
-
-        def __update_description_from_iter(self, pkg_descriptions_for_update, 
-            orig_model, last_status_id):
-                if self.exiting:
-                        return
-                self.__restart_description_thread()
-                if self.last_status_id > last_status_id + 1:
-                        return
-                sort_filt_model = \
-                    self.w_application_treeview.get_model() #gtk.TreeModelSort
-                if not sort_filt_model:
-                        return
-                filt_model = sort_filt_model.get_model() #gtk.TreeModelFilter
-                model = filt_model.get_model() #gtk.ListStore
-
-                #If model has changed abandon description updates
-                if orig_model != model:
-                        return
-
-                #If doing a search or switching sources abandon description updates
-                if self.__doing_search() or self.in_setup:
-                        return
-
-                if debug_descriptions:
-                        print "UPDATE DESCRIPTIONS: \n%s" % pkg_descriptions_for_update
-                for pkg_stem, path, summary in pkg_descriptions_for_update:
-                        itr = model.get_iter_from_string(path)
-                        stored_pkg_fmri = model.get_value(itr, enumerations.FMRI_COLUMN)
-                        stored_pkg_stem = stored_pkg_fmri.get_pkg_stem(
-                            include_scheme = True)
-
-                        if pkg_stem != stored_pkg_stem:
-                                if debug:
-                                        print ("__update_description_from_iter(): "
-                                            "model not consistent so abandoning "
-                                            "these description updates.")
-                                self.update_statusbar()
-                                return
-                        model.set_value(itr, enumerations.DESCRIPTION_COLUMN, summary)
-                if not self.__doing_search():
-                        self.update_statusbar()
-
         def __create_icon_column(self, name, expand_pixbuf, enum_value, set_data_func):
                 column = gtk.TreeViewColumn()
                 column.set_title(name)
@@ -2461,6 +2323,8 @@ class PackageManager:
                 if self.exiting:
                         return
                 self.in_setup = True
+                if debug_perf:
+                        print "Time for search:", time.time() - self.search_start
                 application_list = self.__get_full_list_from_search(result)
                 gobject.idle_add(self.__add_recent_search, text, pub_prefix,
                     application_list)
@@ -2508,7 +2372,7 @@ class PackageManager:
                 for name, pub in search_result:
                         application_list.append(
                             [False, None, name, '...', enumerations.NOT_INSTALLED, None, 
-                            "pkg://" + pub + "/" + name, None, True, None, 
+                            self.__get_pkg_stem(name, pub), None, True, None, 
                             pub])
                 return application_list
 
@@ -2520,24 +2384,48 @@ class PackageManager:
 
         def __add_pkgs_to_list_from_search(self, search_result,
             application_list):
+                local_results = self.__get_info_for_search_results(search_result)
+                remote_results = self.__get_info_for_search_results(search_result,
+                    local_results)
+                self.__add_pkgs_to_lists_from_info(local_results, 
+                    remote_results, application_list)
+
+        def __get_info_for_search_results(self, search_result, local_results = None):
                 pargs = []
+                results = []
+                local_info = local_results == None
                 for name, pub in search_result:
-                        pargs.append("pkg://" + pub + "/" + name)
-                # We now need to get the status for each package
-                if debug_descriptions:
-                        print "pargs:", pargs
+                        found = False
+                        if local_results:
+                                for result in local_results:
+                                        if (name == result.pkg_stem and
+                                            pub == result.publisher):
+                                                found = True
+                                                break
+                                if not found: 
+                                        pargs.append(self.__get_pkg_stem(name, pub))
+                        else:
+                                pargs.append(self.__get_pkg_stem(name, pub))
+
                 try:
-                        pkgs_known = self.__get_inventory_list(pargs,
-                            True, True)
-                except api_errors.InventoryException:
-                        # This can happen if load_catalogs has not been run
-                        err = _("Unable to get status for search results.\n"
-                            "The catalogs have not been loaded.\n"
-                            "Please try again after a few seconds.\n")
-                        gobject.idle_add(self.error_occurred, err)
-                        return
-                return self.__add_pkgs_to_lists(pkgs_known, application_list,
-                    None, None)
+                        try:
+                                res = self.api_o.info(pargs, 
+                                          local_info, frozenset(
+                                          [api.PackageInfo.IDENTITY, 
+                                          api.PackageInfo.STATE, 
+                                          api.PackageInfo.SUMMARY]))
+                                results = res.get(0)
+                        except api_errors.TransportError, ex:
+                                err = str(ex)
+                                gobject.idle_add(self.error_occurred, err)
+                        except api_errors.InvalidDepotResponseException, ex:
+                                err = str(ex)
+                                gobject.idle_add(self.error_occurred, err)
+                        except Exception:
+                                err = str(ex)
+                                gobject.idle_add(self.error_occurred, err)
+                finally:
+                        return results
 
         def __application_refilter(self):
                 ''' Disconnecting the model from the treeview improves
@@ -3248,6 +3136,8 @@ class PackageManager:
 
         def __on_repositorycombobox_changed(self, widget):
                 '''On repository combobox changed'''
+                if debug_perf:
+                        print "Start change publisher", time.time()
                 if self.same_publisher_on_setup:
                         if self.is_all_publishers:
                                 self.__clear_search_results()
@@ -3358,86 +3248,20 @@ class PackageManager:
                 category_list = self.__get_new_category_liststore()
                 section_list = self.__get_new_section_liststore()
                 for pub in publishers:
-                        uptodate = False
-                        try:
-                                uptodate = self.__check_if_cache_uptodate(pub)
-                                if uptodate:
-                                        self.__add_pkgs_to_lists_from_cache(pub,
-                                            application_list, category_list,
-                                            section_list)
-                        except (UnpicklingError, EOFError, IOError):
-                                #Most likely cache is corrupted, silently load list
-                                #from api.
-                                application_list = self.__get_new_application_liststore()
-                                category_list = self.__get_new_category_liststore()
-                                uptodate = False
-                        if not uptodate:
-                                self.__refresh_for_publisher(pub)
-                                self.__add_pkgs_to_lists_from_api(pub,
-                                    application_list, category_list, section_list)
-                                category_list.prepend(None, [0, _('All'), None, None])
-                        if self.application_list and self.category_list and \
-                            not self.last_visible_publisher_uptodate:
-                                status_str = _("Loading package list")
-                                gobject.idle_add(self.__update_statusbar_message,
-                                    status_str)
-                                if self.last_visible_publisher:
-                                        dump_list = self.application_list
-                                        if self.saved_application_list != None:
-                                                dump_list = \
-                                                    self.saved_application_list
-                                        self.__dump_datamodels(
-                                            self.last_visible_publisher, dump_list,
-                                            self.category_list, self.section_list)
-                        self.last_visible_publisher_uptodate = uptodate
+                        if debug_perf:
+                                a = time.time()
+                        self.__refresh_for_publisher(pub)
+                        if debug_perf:
+                                print "Time to refresh", time.time() - a
+                                a = time.time()
+                        self.__add_pkgs_to_lists_from_api(pub,
+                            application_list, category_list, section_list)
+                        if debug_perf:
+                                b = time.time()
+                                print "Time to add", b - a, b
+                        category_list.prepend(None, [0, _('All'), None, None])
+
                 return application_list, category_list, section_list
-
-        def __check_if_cache_uptodate(self, pub):
-                if self.cache_o:
-                        uptodate = self.cache_o.check_if_cache_uptodate(pub)
-                        # We need to reset the state of the api, otherwise
-                        # method api.can_be_canceled() will return True
-                        self.api_o.reset()
-                        return uptodate
-                return False
-
-        def __dump_datamodels(self, pub, application_list, category_list,
-            section_list):
-                #Consistency check - only dump models if publisher passed in matches 
-                #publisher in application list
-                if application_list == None:
-                        return
-                try:
-                        app_pub = self.application_list[0]\
-                                [enumerations.PUBLISHER_COLUMN]
-                except (IndexError, ValueError):
-                        #Empty application list nothing to dump
-                        return
-
-                if pub != app_pub:
-                        if debug:
-                                print "ERROR: __dump_data_models(): INCONSISTENT " \
-                                        "pub %s != app_list_pub %s" % \
-                                        (pub,  app_pub)
-                        return
-
-                if self.cache_o:
-                        if self.img_timestamp == \
-                            self.cache_o.get_index_timestamp():
-                                Thread(target = self.cache_o.dump_datamodels,
-                                    args = (pub, application_list, category_list,
-                                    section_list)).start()
-                        else:
-                                self.__remove_cache()
-
-        def __remove_cache(self):
-                model = self.w_repository_combobox.get_model()
-                for pub in model:
-                        pub_name = pub[1]
-                        if (pub_name and 
-                            pub_name not in self.publisher_options.values()):
-                                Thread(target = self.cache_o.remove_datamodel,
-                                    args = [pub[1]]).start()
 
         def __add_install_update_pkgs_for_publisher(self, pub_name,
             install_update, confirmation_list):
@@ -3620,7 +3444,6 @@ class PackageManager:
 
                 if self.img_timestamp != self.cache_o.get_index_timestamp():
                         self.img_timestamp = None
-                        self.__remove_cache()
 
                 installupdate.InstallUpdate(install_update, self, \
                     self.image_directory, action = enumerations.INSTALL_UPDATE,
@@ -3692,7 +3515,6 @@ class PackageManager:
 
                 if self.img_timestamp != self.cache_o.get_index_timestamp():
                         self.img_timestamp = None
-                        self.__remove_cache()
 
                 installupdate.InstallUpdate(remove_list, self,
                     self.image_directory, action = enumerations.REMOVE,
@@ -3711,8 +3533,6 @@ class PackageManager:
                 self.__set_empty_details_panel()
                 self.in_setup = True
                 self.last_visible_publisher = None
-                if widget != None:
-                        self.__remove_cache()
                 self.set_busy_cursor()
                 status_str = _("Refreshing package catalog information")
                 self.__update_statusbar_message(status_str)
@@ -3790,14 +3610,6 @@ class PackageManager:
                                     self.saved_repository_combobox_active)
                         else:
                                 pub = self.__get_selected_publisher()
-                        if self.in_search_mode:
-                                self.__dump_datamodels(pub,
-                                    self.saved_application_list, self.category_list,
-                                    self.section_list)
-                        else:
-                                self.__dump_datamodels(pub,
-                                    self.application_list, self.category_list,
-                                    self.section_list)
 
                 if len(self.search_completion) > 0 and self.cache_o != None:
                         self.cache_o.dump_search_completion_info(self.search_completion)
@@ -4060,6 +3872,10 @@ class PackageManager:
                 return
 
         def __setting_from_cache(self, pkg_stem):
+                if not self.use_cache:
+                        if debug:
+                                print "DEBUG: __setting_from_cache: not using cache"
+                        return False
                 if len(self.info_cache) > MAX_INFO_CACHE_LIMIT:
                         self.info_cache = {}
 
@@ -4248,8 +4064,9 @@ class PackageManager:
                 self.__set_installedfiles_text(inst_str)
                 self.__set_dependencies_text(local_info, dep_info, 
                     installed_dep_info)
-                self.info_cache[pkg_stem] = (labs, text, inst_str, local_info,
-                    dep_info, installed_dep_info)
+                if self.use_cache:
+                        self.info_cache[pkg_stem] = (labs, text, inst_str,
+                            local_info, dep_info, installed_dep_info)
 
         def __update_package_license(self, licenses, license_id):
                 if self.showing_empty_details or (license_id !=
@@ -4370,9 +4187,8 @@ class PackageManager:
                         installed_dep_info = None
                         if info and info.dependencies:
                                 try:
-                                        temp_info = info.dependencies[:]
                                         dep_info = self.api_o.info(
-                                            temp_info,
+                                            info.dependencies,
                                             False,
                                             frozenset([api.PackageInfo.STATE,
                                             api.PackageInfo.IDENTITY]))
@@ -4617,13 +4433,15 @@ class PackageManager:
 
         def __add_pkgs_to_lists_from_api(self, pub, application_list,
             category_list, section_list):
-                """ This method set up image from the given directory and
-                returns the image object or None"""
-                pargs = []
-                pargs.append("pkg://" + pub + "/*")
+                pubs = []
+                pubs.append(pub)
+                pkgs_from_api = []
+
+                status_str = _("Loading package list")
+                gobject.idle_add(self.__update_statusbar_message, status_str)
                 try:
-                        pkgs_known = self.__get_inventory_list(pargs,
-                            True, True)
+                        pkgs_from_api = self.api_o.get_pkg_list(pubs = pubs,
+                            pkg_list = api.ImageInterface.LIST_INSTALLED_NEWEST)
                 except api_errors.InventoryException:
                         # This can happen if the repository does not
                         # contain any packages
@@ -4631,108 +4449,120 @@ class PackageManager:
                         gobject.idle_add(self.error_occurred, err, None,
                             gtk.MESSAGE_INFO)
                         gobject.idle_add(self.unset_busy_cursor)
-                        pkgs_known = []
 
-                return self.__add_pkgs_to_lists(pkgs_known, application_list,
+                return self.__add_pkgs_to_lists(pkgs_from_api, pubs, application_list,
                     category_list, section_list)
 
-        def __add_pkgs_to_lists(self, pkgs_known, application_list,
-            category_list, section_list):
-                if section_list != None:
-                        self.__init_sections(section_list)
-                #Imageinfo for categories
-                imginfo = imageinfo.ImageInfo()
-                sectioninfo = imageinfo.ImageInfo()
-                pubs = [p.prefix for p in self.api_o.get_publishers()]
-                categories = {}
+        def __get_categories_for_pubs(self, pubs):
                 sections = {}
-                share_path = os.path.join(self.application_dir,
-                    "usr/share/package-manager/data")
+                #ImageInfo for categories
+                sectioninfo = imageinfo.ImageInfo()
+                share_path = os.path.join(self.application_dir, 
+                        "usr/share/package-manager/data")
                 for pub in pubs:
-                        category = imginfo.read(os.path.join(share_path, pub))
-                        if len(category) == 0:
-                                category = imginfo.read(os.path.join(share_path,
-                                    "opensolaris.org"))
-                        categories[pub] = category
+                        if debug_perf:
+                                a = time.time()
                         section = sectioninfo.read(os.path.join(share_path,
                             pub + ".sections"))
                         if len(section) == 0:
                                 section = sectioninfo.read(os.path.join(share_path,
-                                "opensolaris.org.sections"))
+                                    "opensolaris.org.sections"))
                         sections[pub] = section
-                pkg_count = 0
-                pkg_add = 0
-                total_pkg_count = len(pkgs_known)
+                        if debug_perf:
+                                print "Time for get_pkg_categories", time.time() - a
+
+                return sections
+
+        def __add_pkgs_to_lists_from_info(self, local_results, remote_results, 
+            application_list):
                 status_str = _("Loading package list")
                 gobject.idle_add(self.__update_statusbar_message, status_str)
-                prev_stem = ""
-                prev_pfmri_str = ""
-                next_app = None
-                pkg_name = None
-                pkg_publisher = None
-                prev_state = None
-                for pkg, state in pkgs_known:
-                        if prev_pfmri_str and \
-                            prev_pfmri_str == pkg.get_short_fmri() and \
-                            prev_state == state:
-                                pkg_count += 1
-                                continue
-                        # XXX These image constants have to be used for now
-                        # until there is a list api to replace inventory, etc.
-                        if prev_stem and \
-                            prev_stem == pkg.get_pkg_stem() and \
-                            prev_state["state"] == image.Image.PKG_STATE_KNOWN and \
-                            state["state"] == image.Image.PKG_STATE_INSTALLED:
-                                pass
-                        elif next_app != None:
-                                self.__add_package_to_list(next_app,
-                                    application_list,
-                                    pkg_add, pkg_name,
-                                    categories, category_list, pkg_publisher)
-                                pkg_add += 1
-                        prev_stem = pkg.get_pkg_stem()
-                        prev_pfmri_str = pkg.get_short_fmri()
-                        prev_state = state
 
-                        gobject.idle_add(self.__progress_set_fraction,
-                            pkg_count, total_pkg_count)
-                        status_icon = None
-                        pkg_name = pkg.get_name()
-                        pkg_name = gui_misc.get_pkg_name(pkg_name)
-                        pkg_stem = pkg.get_pkg_stem()
-                        pkg_publisher = pkg.get_publisher()
-                        pkg_state = enumerations.NOT_INSTALLED
-                        if state["state"] == image.Image.PKG_STATE_INSTALLED:
-                                pkg_state = enumerations.INSTALLED
-                                if state["upgradable"] == True:
+                pkg_add = self.__add_pkgs_to_lists_from_results(local_results,
+                    0, application_list)
+                self.__add_pkgs_to_lists_from_results(remote_results,
+                    pkg_add, application_list)
+
+        def __add_pkgs_to_lists_from_results(self, results, pkg_add,
+            application_list):
+                for result in results:
+                        pkg_pub = result.publisher
+                        pkg_name = result.pkg_stem
+                        pkg_fmri = fmri.PkgFmri(result.fmri)
+                        pkg_stem = pkg_fmri.get_pkg_stem()
+                        summ = result.summary
+
+                        if api.PackageInfo.INSTALLED in result.states:
+                                if api.PackageInfo.UPGRADABLE in result.states:
                                         status_icon = self.update_available_icon
                                         pkg_state = enumerations.UPDATABLE
                                 else:
                                         status_icon = self.installed_icon
+                                        pkg_state = enumerations.INSTALLED
                         else:
                                 status_icon = self.not_installed_icon
+                                pkg_state = enumerations.NOT_INSTALLED
+                        pkg_name = gui_misc.get_pkg_name(pkg_name)
                         marked = False
-                        pkgs = self.selected_pkgs.get(pkg_publisher)
+                        pkgs = self.selected_pkgs.get(pkg_pub)
                         if pkgs != None:
                                 if pkg_stem in pkgs:
                                         marked = True
                         next_app = \
                             [
-                                marked, status_icon, pkg_name, '...', pkg_state,
-                                pkg, pkg_stem, None, True, None, pkg_publisher
+                                marked, status_icon, pkg_name, summ, pkg_state,
+                                pkg_fmri, pkg_stem, None, True, None, pkg_pub
                             ]
-                        pkg_count += 1
-
-                if next_app:
-                        self.__add_package_to_list(next_app, application_list, 
-                            pkg_add, pkg_name, categories, 
-                            category_list, pkg_publisher)
+                        application_list.insert(pkg_add, next_app)
                         pkg_add += 1
+                return pkg_add
+
+        def __add_pkgs_to_lists(self, pkgs_from_api, pubs, application_list,
+            category_list, section_list):
+                if section_list != None:
+                        self.__init_sections(section_list)
+                sections = self.__get_categories_for_pubs(pubs)
+                pkg_add = 0
+                if debug_perf:
+                        a = time.time()
+                for entry in pkgs_from_api:
+                        (pkg_pub, pkg_name, ver), summ, cats, states = entry
+                        if debug:
+                                print entry
+                        pkg_fmri = fmri.PkgFmri("%s@%s" % (pkg_name,
+                            ver), publisher=pkg_pub)
+                        pkg_stem = pkg_fmri.get_pkg_stem()
+                        pkg_name = gui_misc.get_pkg_name(pkg_name)
+                        if api.PackageInfo.INSTALLED in states:
+                                pkg_state = enumerations.INSTALLED
+                                if api.PackageInfo.UPGRADABLE in states:
+                                        status_icon = self.update_available_icon
+                                        pkg_state = enumerations.UPDATABLE
+                                else:
+                                        status_icon = self.installed_icon
+                        else:
+                                pkg_state = enumerations.NOT_INSTALLED
+                                status_icon = self.not_installed_icon
+                        marked = False
+                        pkgs = self.selected_pkgs.get(pkg_pub)
+                        if pkgs != None:
+                                if pkg_stem in pkgs:
+                                        marked = True
+                        next_app = \
+                            [
+                                marked, status_icon, pkg_name, summ, pkg_state,
+                                pkg_fmri, pkg_stem, None, True, None, pkg_pub
+                            ]
+                        self.__add_package_to_list(next_app,
+                            application_list,
+                            pkg_add, pkg_name,
+                            cats, category_list, pkg_pub)
+                        pkg_add += 1
+                if debug_perf:
+                        print "Time to add packages:", time.time() - a
                 if category_list != None:
                         self.__add_categories_to_sections(sections,
                             category_list, section_list)
-                gobject.idle_add(self.__progress_set_fraction,
-                    pkg_count, total_pkg_count)
                 return
 
         def __add_categories_to_sections(self, sections, category_list, section_list):
@@ -4742,7 +4572,7 @@ class PackageManager:
                                         self.__add_category_to_section(_(category),
                                             _(section), category_list, section_list)
 
-                #1915 Sort the Categories into alphabetical order and prepend All Category
+                # Sort the Categories into alphabetical order
                 if len(category_list) > 0:
                         rows = [tuple(r) + (i,) for i, r in enumerate(category_list)]
                         rows.sort(self.__sort)
@@ -4751,25 +4581,21 @@ class PackageManager:
                 return
 
         def __add_package_to_list(self, app, application_list, pkg_add,
-            pkg_name, categories, category_list, pub):
+            pkg_name, cats, category_list, pub):
                 row_iter = application_list.insert(pkg_add, app)
                 if category_list == None:
                         return
-                cat_pub = categories.get(pub)
-                pkg_fmri = app[enumerations.FMRI_COLUMN]
-                if pkg_fmri:
-                        pkg_name = pkg_fmri.get_name()
-                if pkg_name in cat_pub:
-                        pkg_categories = cat_pub.get(pkg_name)
-                        for pcat in pkg_categories.split(","):
-                                self.__add_package_to_category(_(pcat), None,
+                for cat in cats:
+                        names = cat[1].split('/', 2)
+                        if len(names) > 1:
+                                self.__add_package_to_category(names[1],
                                     row_iter, application_list,
                                     category_list)
 
         @staticmethod
-        def __add_package_to_category(category_name, category_description,
-            package, application_list, category_list):
-                if not package or category_name == _('All'):
+        def __add_package_to_category(category_name, package, 
+            application_list, category_list):
+                if not package or category_name == 'All':
                         return
                 if not category_name:
                         return
@@ -4781,7 +4607,7 @@ class PackageManager:
                 if not category_id:                       # Category not exists
                         category_id = len(category_list) + 1
                         category_list.append(None, [category_id, category_name,
-                            category_description, None])
+                            None, None])
                 if application_list.get_value(package,
                     enumerations.CATEGORY_LIST_COLUMN):
                         a = application_list.get_value(package,
@@ -5027,6 +4853,8 @@ class PackageManager:
                         if section[enumerations.SECTION_NAME] == section_name:
                                 section_id = section[enumerations.SECTION_ID]
                                 for category in category_list:
+                                        category[enumerations.CATEGORY_NAME] = \
+                                            _(category[enumerations.CATEGORY_NAME])
                                         if category[enumerations.CATEGORY_NAME] == \
                                             category_name:
                                                 section_lst = category[ \
@@ -5042,6 +4870,7 @@ class PackageManager:
                                                             section_lst:
                                                                 section_lst.append(
                                                                     section_id)
+                                break
 
 
         def __progress_set_fraction(self, count, total):
@@ -5094,10 +4923,6 @@ class PackageManager:
 #-----------------------------------------------------------------------------#
 # Static Methods
 #-----------------------------------------------------------------------------#
-
-        #@staticmethod
-        #def N_(message):
-        #        return message
 
         @staticmethod
         def __sort(a, b):
@@ -5170,8 +4995,7 @@ class PackageManager:
         def reload_packages(self):
                 self.api_o = gui_misc.get_api_object(self.image_directory, 
                     self.pr, self.w_main_window)
-                self.cache_o = self.__get_cache_obj(self.icon_theme, 
-                    self.application_dir, self.api_o)
+                self.cache_o = self.__get_cache_obj(self.api_o)
                 self.force_reload_packages = False
                 self.__do_reload(None)
 
@@ -5201,10 +5025,9 @@ class PackageManager:
                         self.__update_reload_button()
                         self.w_repository_combobox.grab_focus()
 
-        def __get_cache_obj(self, icon_theme, application_dir, api_o):
-                cache_o = cache.CacheListStores(icon_theme, application_dir,
-                    api_o, self.lang, self.update_available_icon, self.installed_icon,
-                    self.not_installed_icon)
+        @staticmethod
+        def __get_cache_obj(api_o):
+                cache_o = cache.CacheListStores(api_o)
                 return cache_o
 
         def __setup_search_completion(self):
@@ -5233,6 +5056,8 @@ class PackageManager:
                 else:
                         if not self.__doing_search():
                                 self.unset_busy_cursor()
+                if debug_perf:
+                        print "End process_package_list_end", time.time()
                 if self.first_run:
                         if self.start_insearch:
                                 self.w_repository_combobox.set_active(
@@ -5402,10 +5227,11 @@ class PackageManager:
                                 for pkg in pkg_list:
                                         pkg_stem = None
                                         if pub != default_publisher:
-                                                pkg_stem = "pkg://%s/%s" % \
-                                                        (pub, pkg)
+                                                pkg_stem = self.__get_pkg_stem(
+                                                    pkg, pub)
                                         else:
-                                                pkg_stem = "pkg:/%s" % pkg
+                                                pkg_stem = self.__get_pkg_stem(
+                                                    pkg)
                                         if pkg_stem:
                                                 if self.info_cache.has_key(pkg_stem):
                                                         del self.info_cache[pkg_stem]
@@ -5446,6 +5272,15 @@ class PackageManager:
                                 print "Error getting home directory for root"
                 return return_str
 
+        @staticmethod
+        def __get_pkg_stem(pkg_name, pkg_pub=None):
+                pkg_str = "pkg:/"
+                if pkg_pub == None:
+                        return_str = "%s%s" % (pkg_str, pkg_name)
+                else:
+                        return_str = "%s/%s/%s" % (pkg_str, pkg_pub, pkg_name)
+                return return_str
+
         def restart_after_ips_update(self):
                 self.__main_application_quit(restart = True)
 
@@ -5456,8 +5291,7 @@ class PackageManager:
         def __get_api_object(self):
                 self.api_o = gui_misc.get_api_object(self.image_directory, 
                     self.pr, self.w_main_window)
-                self.cache_o = self.__get_cache_obj(self.icon_theme,
-                    self.application_dir, self.api_o)
+                self.cache_o = self.__get_cache_obj(self.api_o)
                 self.img_timestamp = self.cache_o.get_index_timestamp()
                 self.__setup_search_completion()
                 gobject.idle_add(self.__got_api_object)
@@ -5480,7 +5314,7 @@ def main():
 
 if __name__ == '__main__':
         debug = False
-        debug_descriptions = False
+        debug_perf = False
         max_filter_length = 0
         update_all_proceed = False
         app_path = None

@@ -45,6 +45,8 @@ except ImportError:
 
 import pkg.portable as portable
 import pkg.client.progress as progress
+import pkg.client.api as api
+import pkg.fmri as fmri
 import pkg.gui.beadmin as beadm
 import pkg.gui.installupdate as installupdate
 import pkg.gui.enumerations as enumerations
@@ -131,6 +133,7 @@ class Updatemanager:
                 self.icon_theme.append_search_path(icon_location)
                 self.pylintstub = None
                 self.api_obj = None
+                self.use_cache = False # Turns off Details Description cache
 
                 # Progress Dialog
                 self.gladefile = os.path.join(self.application_dir,
@@ -164,6 +167,7 @@ class Updatemanager:
                 self.w_um_dialog = w_xmltree_um.get_widget("um_dialog")
                 self.w_um_dialog.connect("destroy", self.__on_um_dialog_close)
                 self.w_um_intro_label = w_xmltree_um.get_widget("um_intro_label")
+                self.w_um_intro2_label = w_xmltree_um.get_widget("um_intro2_label")
                 self.w_um_install_button = w_xmltree_um.get_widget("um_install_button")
                 self.w_um_updateall_button = \
                     w_xmltree_um.get_widget("um_updateall_button")
@@ -176,6 +180,7 @@ class Updatemanager:
                 self.w_progress_dialog.set_transient_for(self.w_um_dialog)
 
                 self.w_um_treeview = w_xmltree_um.get_widget("um_treeview")  
+                self.w_um_treeview_frame = w_xmltree_um.get_widget("um_treeview_frame")  
                 self.w_um_textview = w_xmltree_um.get_widget("um_textview")  
                 infobuffer = self.w_um_textview.get_buffer()
                 infobuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)
@@ -273,8 +278,9 @@ class Updatemanager:
                 # Show Cancel, Update All only
                 self.w_select_checkbox.hide()
                 self.w_um_install_button.hide()
-                self.w_um_intro_label.set_text(_(
-                    "Updates are available for the following packages.\n"
+                self.w_um_intro_label.set_markup(_(
+                    "<b>Updates are available for the following packages</b>"))
+                self.w_um_intro2_label.set_markup(_(
                     "Click Update All to create a new boot environment and "
                     "install all packages into it."))
                         
@@ -302,7 +308,7 @@ class Updatemanager:
 
                 version_renderer = gtk.CellRendererText()
                 version_renderer.set_property('xalign', 0.0)
-                column = gtk.TreeViewColumn(_("Latest Version"), version_renderer,
+                column = gtk.TreeViewColumn(_("Current Version"), version_renderer,
                     text = UM_LATEST_VER) 
                 column.set_cell_data_func(version_renderer,
                     self.__cell_data_function, None)
@@ -367,26 +373,21 @@ class Updatemanager:
                         return
 
                 self.api_obj = self.__get_api_obj()
-                image_obj = self.api_obj.img
 
                 count = 0
-                pkg_upgradeable = None
-                for pkg, state in sorted(misc.get_inventory_list(
-                    image_obj, [], all_known = True, all_versions = False)):
-
-                        while gtk.events_pending():
-                                gtk.main_iteration(False)
-
-                        if state["upgradable"] and \
-                            state["state"] == image_obj.PKG_STATE_INSTALLED:
-                                pkg_upgradeable = pkg
-                        
-                        # Allow testing by listing uninstalled packages, -u option
-                        add_package = False
-                        if pkg_upgradeable != None and not state["upgradable"]:
-                                add_package = pkg_upgradeable.is_same_pkg(pkg)
-                                if list_uninstalled:
-                                        add_package = not add_package
+                list_option = api.ImageInterface.LIST_UPGRADABLE
+                if list_uninstalled:
+                        list_option = api.ImageInterface.LIST_INSTALLED_NEWEST
+                pkgs_from_api = self.api_obj.get_pkg_list(pkg_list = list_option)
+                for entry in pkgs_from_api:
+                        (pkg_pub, pkg_name, ver) = entry[0]
+                        states = entry[3]
+                        pkg_fmri = fmri.PkgFmri("%s@%s" % (pkg_name, ver),
+                            publisher = pkg_pub)
+                        add_package = True
+                        if list_uninstalled:
+                                if api.PackageInfo.INSTALLED in states:
+                                        add_package = False
 
                         if add_package:
                                 count += 1
@@ -397,10 +398,11 @@ class Updatemanager:
                                 #        incState = _("Inc")
                                 #else:
                                 #        incState = "--"
-                                pkg_name = gui_misc.get_pkg_name(pkg.get_name())
+                                pkg_name = gui_misc.get_pkg_name(pkg_name)
                                 um_list.insert(count, [count, False, None,
-                                    pkg_name, None, pkg.get_version(), None,
-                                    pkg.get_pkg_stem()])
+                                    pkg_name, None, 
+                                    pkg_fmri.get_version(), None, 
+                                    pkg_fmri.get_pkg_stem()])
                                 
                 if debug:
                         print _("count: %d") % count
@@ -423,16 +425,18 @@ class Updatemanager:
 
         def __display_nopermissions(self):
                 self.w_um_intro_label.set_markup(
-                    _("<b>You do not have sufficient permissions.</b>"
-                    "\n\nPlease restart pm-updatemanager using pfexec."))
+                    _("<b>You do not have sufficient permissions</b>"))
+                self.w_um_intro2_label.set_markup(
+                    _("Please restart pm-updatemanager using pfexec."))
                 self.__setup_display()
 
         def __display_noupdates(self):
-                self.w_um_intro_label.set_markup(_("<b>No Updates available.</b>"))
+                self.w_um_intro_label.set_markup(_("<b>No Updates available</b>"))
+                self.w_um_intro2_label.hide()
                 self.__setup_display()
 
         def __setup_display(self):
-                self.w_um_treeview.hide()
+                self.w_um_treeview_frame.hide()
                 self.w_um_expander.hide()
                 self.w_um_install_button.set_sensitive(False)
                 self.w_um_updateall_button.hide()
@@ -455,8 +459,8 @@ class Updatemanager:
                         gobject.source_remove(self.show_info_id)
                         self.show_info_id = 0
                 if itr:                        
-                        fmri = model.get_value(itr, UM_STEM)
-                        if self.__setting_from_cache(fmri):
+                        stem = model.get_value(itr, UM_STEM)
+                        if self.__setting_from_cache(stem):
                                 return
                         pkg_name =  model.get_value(itr, UM_NAME)
                         infobuffer = self.w_um_textview.get_buffer()
@@ -466,13 +470,15 @@ class Updatemanager:
                             gobject.timeout_add(SHOW_INFO_DELAY,
                             self.__show_info, model, model.get_path(itr))
 
-        def __setting_from_cache(self, fmri):
+        def __setting_from_cache(self, stem):
+                if not self.use_cache:
+                        return False
                 if len(self.details_cache) > MAX_INFO_CACHE_LIMIT:
                         self.details_cache = {}
 
-                if self.details_cache.has_key(fmri):
-                        labs = self.details_cache[fmri][0]
-                        text = self.details_cache[fmri][1]
+                if self.details_cache.has_key(stem):
+                        labs = self.details_cache[stem][0]
+                        text = self.details_cache[stem][1]
                         gui_misc.set_package_details_text(labs, text,
                             self.w_um_textview, self.pkg_installed_icon,
                             self.pkg_not_installed_icon, 
@@ -485,26 +491,26 @@ class Updatemanager:
                 self.show_info_id = 0
 
                 itr = model.get_iter(path)
-                fmri = model.get_value(itr, UM_STEM)
+                stem = model.get_value(itr, UM_STEM)
                 pkg_name =  model.get_value(itr, UM_NAME)
                 Thread(target = self.__show_package_info,
-                    args=(fmri, pkg_name, self.last_show_info_id)).start()
+                    args=(stem, pkg_name, self.last_show_info_id)).start()
 
-        def __show_package_info(self, fmri, pkg_name, info_id):
+        def __show_package_info(self, stem, pkg_name, info_id):
                 local_info = None
                 remote_info = None
                 if info_id == self.last_show_info_id:
                         local_info = gui_misc.get_pkg_info(self.__get_api_obj(),
-                            fmri, True) 
+                            stem, True) 
                 if info_id == self.last_show_info_id:
                         remote_info = gui_misc.get_pkg_info(self.__get_api_obj(),
-                            fmri, False) 
+                            stem, False) 
                 if info_id == self.last_show_info_id:
-                        gobject.idle_add(self.__update_package_info, fmri,
+                        gobject.idle_add(self.__update_package_info, stem,
                             pkg_name, local_info, remote_info, info_id)
                 return 
  
-        def  __update_package_info(self, fmri, pkg_name, local_info, remote_info,
+        def  __update_package_info(self, stem, pkg_name, local_info, remote_info,
             info_id):
                 if info_id != self.last_show_info_id:
                         return
@@ -519,7 +525,8 @@ class Updatemanager:
                 labs, text = gui_misc.set_package_details(pkg_name, local_info,
                     remote_info, self.w_um_textview, self.pkg_installed_icon,
                     self.pkg_not_installed_icon, self.pkg_update_available_icon)
-                self.details_cache[fmri] = (labs, text)
+                if self.use_cache:
+                        self.details_cache[stem] = (labs, text)
 
         def __on_um_dialog_close(self, widget):
                 self.__exit_app()
@@ -669,17 +676,12 @@ class Updatemanager:
 
         def setup_updates(self):
                 if self.user_rights:
-                        Thread(target = self.get_updates_to_list(), args = ()).start()
+                        Thread(target = self.get_updates_to_list, args = ()).start()
                 else:
                         self.progress_stop_thread = True
                         self.__display_nopermissions()
                 return False
 
-        @staticmethod
-        def progress_pulse():
-                if debug:
-                        print "pulse: \n"
-                
         def update_package_list(self, update_list):
                 self.pylintstub = update_list
                 return
