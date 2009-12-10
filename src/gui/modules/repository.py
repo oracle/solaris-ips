@@ -1046,6 +1046,7 @@ class Repository(progress.GuiProgressTracker):
                                         self.api_o.update_publisher(pub)
                         except (api_errors.PermissionsException,
                             api_errors.PublisherError,
+                            api_errors.CatalogRefreshException,
                             api_errors.InvalidDepotResponseException), e:
                                 errors.append((row[enumerations.PUBLISHER_OBJECT], e))
                 self.progress_stop_thread = True
