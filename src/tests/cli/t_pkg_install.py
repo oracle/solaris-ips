@@ -3884,6 +3884,115 @@ class TestPkgInstallObsolete(testutils.SingleDepotTestCase):
                 self.pkg("image-update")
                 self.pkg("list remrenA")
 
+        def test_unobsoleted(self):
+                """Ensure that the existence of an obsolete package version
+                does not prevent the system from upgrading to or installing
+                a resurrected version."""
+
+                pA_1 = """
+                    open reintroA@1
+                    close
+                """
+
+                pA_2 = """
+                    open reintroA@2
+                    add set name=pkg.obsolete value=true
+                    close
+                """
+
+                pA_3 = """
+                    open reintroA@3
+                    close
+                """
+
+                pB_1 = """
+                    open reintroB@1
+                    add depend type=require fmri=pkg:/reintroA@1
+                    close
+                """
+
+                pB_2 = """
+                    open reintroB@2
+                    close
+                """
+
+                pB_3 = """
+                    open reintroB@3
+                    add depend type=require fmri=pkg:/reintroA@3
+                    close
+                """
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, pA_1)
+                self.pkgsend_bulk(durl, pA_2)
+                self.pkgsend_bulk(durl, pA_3)
+
+                self.pkgsend_bulk(durl, pB_1)
+                self.pkgsend_bulk(durl, pB_2)
+                self.pkgsend_bulk(durl, pB_3)
+
+                self.image_create(durl)
+
+                # Check installation of an unobsoleted package with no
+                # dependencies.
+
+                # Testing reintroA@1 -> reintroA@3 with image-update
+                self.pkg("install reintroA@1")
+                self.pkg("refresh")
+                self.pkg("image-update")
+                self.pkg("list reintroA@3")
+                self.pkg("uninstall reintroA")
+
+                # Testing reintroA@1 -> reintroA@3 with install
+                self.pkg("install reintroA@1")
+                self.pkg("install reintroA@3")
+                self.pkg("list reintroA@3")
+                self.pkg("uninstall reintroA")
+
+                # Testing empty image -> reintroA@3 with install
+                self.pkg("install reintroA@3")
+                self.pkg("list reintroA@3")
+                self.pkg("uninstall reintroA")
+
+                # Testing reintroA@1 -> reintroA@2 -> reintroA@3 with install
+                self.pkg("install reintroA@1")
+                self.pkg("install reintroA@2")
+                self.pkg("install reintroA@3")
+                self.pkg("list reintroA@3")
+                self.pkg("uninstall reintroA")
+
+                # Check installation of a package with an unobsoleted
+                # dependency.
+
+                # Testing reintroB@1 -> reintroB@3 with image-update
+                self.pkg("install reintroB@1")
+                self.pkg("refresh")
+                self.pkg("image-update")
+                self.pkg("list reintroB@3")
+                self.pkg("list reintroA@3")
+                self.pkg("uninstall reintroB reintroA")
+
+                # Testing reintroB@1 -> reintroB@3 with install
+                self.pkg("install reintroB@1")
+                self.pkg("install reintroB@3")
+                self.pkg("list reintroB@3")
+                self.pkg("list reintroA@3")
+                self.pkg("uninstall reintroB reintroA")
+
+                # Testing empty image -> reintroB@3 with install
+                self.pkg("install reintroB@3")
+                self.pkg("list reintroB@3")
+                self.pkg("list reintroA@3")
+                self.pkg("uninstall reintroB reintroA")
+
+                # Testing reintroB@1 -> reintroB@2 -> reintroB@3 with install
+                self.pkg("install reintroB@1")
+                self.pkg("install reintroB@2")
+                self.pkg("install reintroB@3")
+                self.pkg("list reintroB@3")
+                self.pkg("list reintroA@3")
+                self.pkg("uninstall reintroB reintroA")
+
         def test_incorp_1(self):
                 """We should be able to incorporate an obsolete package."""
 
