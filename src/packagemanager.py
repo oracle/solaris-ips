@@ -3053,7 +3053,7 @@ class PackageManager:
                         self.w_package_menu.popup( None, None,
                             self.__position_package_popup, gtk.gdk.KEY_PRESS,
                             curr_time, popup_position)
-                        return
+                        return True
 
                 if event.type != gtk.gdk.BUTTON_PRESS and event.type != 5:
                         return
