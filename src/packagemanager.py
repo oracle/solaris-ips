@@ -522,12 +522,9 @@ class PackageManager:
                 self.w_clear_search_menuitem = w_tree_main.get_widget("clear")
                 self.w_main_clipboard =  gtk.clipboard_get(gtk.gdk.SELECTION_CLIPBOARD)
                 self.saved_filter_combobox_active = self.initial_show_filter
-                self.search_image = w_tree_main.get_widget("search_image")
                 self.search_button = w_tree_main.get_widget("do_search")
                 self.progress_cancel = w_tree_main.get_widget("progress_cancel")
                 self.is_all_publishers = False
-                self.search_image.set_from_pixbuf(gui_misc.get_icon(self.icon_theme,
-                    'search', 20))
                 self.saved_repository_combobox_active = -1
                 self.saved_section_active = 0
                 self.saved_application_list = None
