@@ -13,8 +13,8 @@ SYNOPSIS
      /usr/bin/pkg verify [-Hvq] [pkg_fmri_pattern ...]
      /usr/bin/pkg fix [pkg_fmri_pattern ...]
      /usr/bin/pkg info [-lr] [--license] [pkg_fmri_pattern ...]
-     /usr/bin/pkg contents [-Hmr] [-o attribute ...] [-s sort_key]
-         [-t action_type ... ] [pkg_fmri_pattern ...]
+     /usr/bin/pkg contents [-Hmr] [-a attribute=pattern ...] [-s sort_key]
+         [-o attribute ...] [-t action_type ...] [pkg_fmri_pattern ...]
      /usr/bin/pkg list [-Hafnsuv] [--no-refresh] [pkg_fmri_pattern ...]
      /usr/bin/pkg search [-alprHI] [-o attribute ...] [-s repo_uri] query
 
@@ -210,8 +210,8 @@ SUBCOMMANDS
           With --license, print out the license text(s) for the package.
           This may be combined with -l or -r.
 
-     contents [-Hmr] [-o attribute ...] [-s sort_key] [-t action_type ... ]
-              [pkg_fmri_pattern ...]
+     contents [-Hmr] [-a attribute=pattern ...] [-o attribute ...]
+              [-s sort_key] [-t action_type ...] [pkg_fmri_pattern ...]
           Display the contents (action attributes) of packages in the
           current image.  By default, only the path attribute is displayed,
           but the attribute set may be determined with the -o option.  The
@@ -220,6 +220,13 @@ SUBCOMMANDS
           the attribute names with commas.  Only actions which have the
           requested attributes will be displayed.  The -m option may
           also be used, as a shorthand for '-Ho action.raw'.
+
+          The -a option allows you to limit the output to those actions
+          which have an attribute named in the option argument the value of
+          which matches the (glob) pattern in the option argument
+          (following the attribute name with an equals sign).  If multiple
+          -a options are given, then actions matching any of them will be
+          displayed.
 
           The -s option specifies the attribute by which the listing should
           be sorted.
@@ -240,29 +247,48 @@ SUBCOMMANDS
           Several special "pseudo" attribute names are available for
           convenience:
 
-          action.name           Corresponds to the name of the action.
-                                For example, for a file action, this is
-                                "file"
+          action.hash           Corresponds to the value of the action's
+                                hash, if the action carries a payload.
 
           action.key            Corresponds to the value of the action's
                                 key attribute.  For example, for a file
                                 action, this is the path to the file.
+
+          action.name           Corresponds to the name of the action.
+                                For example, for a file action, this is
+                                "file"
 
           action.raw            Corresponds to the complete contents of
                                 the action as represented in the package
                                 manifest.  This corresponds to the
                                 lines of output of 'pkg contents -m'
 
+          pkg.fmri              Corresponds to the full form FMRI of the
+                                package containing the action, such as
+                                pkg://extra/virtualbox@3.0.0,5.11-0.101:20090702T175410Z
+
           pkg.name              Corresponds to the name of the package
                                 containing the action, such as "SUNWcs"
-
-          pkg.shortfmri         Corresponds to the short form FMRI of
-                                the package containing the action, such
-                                as pkg://opensolaris.org/SUNWzone@0.5.11-0.79
 
           pkg.publisher         Corresponds to the publisher of the
                                 the package containing the action, such
                                 as "opensolaris.org"
+
+          pkg.shortfmri         Corresponds to the short form FMRI of the
+                                package containing the action, such as
+                                pkg://opensolaris.org/SUNWzone@0.5.11-0.79
+
+          The contents and search subcommands are related: both are used to
+          query the system for the contents of packages.  The contents
+          subcommand displays actions in one or more packages, filtering
+          the output based on the options chosen by the user.  The search
+          subcommand approaches the query from the other direction, looking
+          for packages which contain a user-supplied token.
+
+          Each subcommand is capable of formulating some queries of which
+          the other is capable.  Care should be taken in choosing the
+          subcommand, as a given query may be more naturally formulated in
+          one than in the other.
 
      search [-alprHI] [-o attribute ...] [-s repo_uri] query
           Search for matches to the query, and display the results.
@@ -600,7 +626,25 @@ EXAMPLES
      link              lib/libzfs.so                       libzfs.so.1
      [ ... ]
 
-     Example 5:  Search the package database for the token "bge".
+     Example 5:  List the contents of SUNWfirefox and SUNWthunderbird,
+     limiting the display to just the package name and path attributes of
+     actions whose "path" attribute ends in ".desktop" or ".png".
+
+     $ pkg contents contents -o pkg.name,path -a path=\*.desktop \
+         -a path=\*.png SUNWfirefox SUNWthunderbird
+     PKG.NAME        PATH
+     SUNWfirefox     usr/lib/firefox/chrome/icons/default/default16.png
+     SUNWfirefox     usr/lib/firefox/chrome/icons/default/default32.png
+     SUNWfirefox     usr/lib/firefox/chrome/icons/default/default48.png
+     SUNWfirefox     usr/lib/firefox/icons/document.png
+     SUNWfirefox     usr/lib/firefox/icons/mozicon128.png
+     SUNWfirefox     usr/lib/firefox/res/html/folder.png
+     SUNWfirefox     usr/share/applications/firefox.desktop
+     SUNWthunderbird usr/share/applications/thunderbird.desktop
+     SUNWfirefox     usr/share/pixmaps/firefox-icon.png
+     SUNWthunderbird usr/share/pixmaps/thunderbird-icon.png
+
+     Example 6:  Search the package database for the token "bge".
 
      $ pkg search bge
      INDEX          ACTION    VALUE             PACKAGE
@@ -610,7 +654,7 @@ EXAMPLES
      The token shows up in the package SUNWbge both as the basename for the
      file action representing /kernel/drv/bge and as a driver name.
 
-     Example 6: Search for installed packages which depend on SUNWipkg.
+     Example 7: Search for installed packages which depend on SUNWipkg.
 
      $ pkg search -l 'depend::SUNWipkg'
      INDEX      ACTION    VALUE                     PACKAGE
@@ -618,7 +662,7 @@ EXAMPLES
      require    depend    SUNWipkg@0.5.11-0.111     pkg:/slim_install@0.1-0.111
      require    depend    SUNWipkg@0.5.11-0.111     pkg:/SUNWipkg-brand@0.5.11-0.111
 
-     Example 7: Search for all incorporate dependencies in installed packages.
+     Example 8: Search for all incorporate dependencies in installed packages.
 
      $ pkg search -l 'depend:incorporate:'
      INDEX      ACTION    VALUE                     PACKAGE
@@ -628,12 +672,12 @@ EXAMPLES
      incorporate depend    FSWxorg-fonts-core@0.5.11-0.111 pkg:/entire@0.5.11-0.111
      [ ... ]
 
-     Example 8:  Add new publisher example.org, with a repository located at
+     Example 9:  Add new publisher example.org, with a repository located at
      http://www.example.org/repo:
 
      $ pkg set-publisher -g http://www.example.org/repo example.org
 
-     Example 9:  Add new publisher example.com, with a secure repository
+     Example 10:  Add new publisher example.com, with a secure repository
      located at https://secure.example.com/repo, and a key and cert stored
      in the directory /root/creds:
 

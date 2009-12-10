@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import testutils
@@ -133,6 +133,32 @@ class TestPkgContentsBasics(testutils.SingleDepotTestCase):
                 self.image_create(self.dc.get_depot_url())
                 self.pkg("contents bad", exit=1)
                 self.pkg("contents -r bad", exit=1)
+
+        def test_contents_dash_a(self):
+                """Test the -a option of contents"""
+                self.image_create(self.dc.get_depot_url())
+                self.pkg("install bronze")
+
+                # Basic -a
+                self.pkg("contents -H -o action.hash -a path=usr/bin/sh")
+                self.assert_(self.output.rstrip() ==
+                    "f2b5bfd72a6b759e4e47599f828a174a0668b243")
+
+                # -a with a pattern
+                self.pkg("contents -H -o action.hash -a path=etc/bronze*")
+                self.assert_(self.output.splitlines() == [
+                    "28f75bcd652b188fbe0a7938265aa5d9196cb7e8",
+                    "3bb4541b7c38be84b76994cce8bc8233d5bc9720"])
+
+                # Multiple -a
+                self.pkg("contents -H -o action.hash -a path=etc/bronze1 "
+                    "-a mode=0555")
+                self.assert_(self.output.splitlines() == [
+                    "28f75bcd652b188fbe0a7938265aa5d9196cb7e8",
+                    "f2b5bfd72a6b759e4e47599f828a174a0668b243"])
+
+                # Non-matching pattern should exit 1
+                self.pkg("contents -a path=usr/bin/notthere", 1)
 
 if __name__ == "__main__":
         unittest.main()

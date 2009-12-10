@@ -45,6 +45,7 @@
 import calendar
 import datetime
 import errno
+import fnmatch
 import getopt
 import gettext
 import itertools
@@ -98,7 +99,7 @@ EXIT_NOTLIVE = 5
 
 logger = global_settings.logger
 
-valid_special_attrs = ["action.name", "action.key", "action.raw"]
+valid_special_attrs = ["action.hash", "action.key", "action.name", "action.raw"]
 
 valid_special_prefixes = ["action."]
 
@@ -153,8 +154,8 @@ Advanced subcommands:
         pkg search [-alprI] [-s server] query
         pkg verify [-Hqv] [pkg_fmri_pattern ...]
         pkg fix [pkg_fmri_pattern ...]
-        pkg contents [-Hmr] [-o attribute ...] [-s sort_key]
-            [-t action_type ... ] [pkg_fmri_pattern ...]
+        pkg contents [-Hmr] [-a attribute=pattern ...] [-o attribute ...]
+            [-s sort_key] [-t action_type ... ] [pkg_fmri_pattern ...]
         pkg image-create [-fFPUz] [--force] [--full|--partial|--user] [--zone]
             [-k ssl_key] [-c ssl_cert] [--no-refresh]
             [--variant <variant_spec>=<instance>] 
@@ -1612,6 +1613,8 @@ def produce_lines(actionlist, attrs, action_types=None, show_all=False):
                                 a = action.attrs[action.key_attr]
                         elif attr == "action.raw":
                                 a = action
+                        elif attr == "action.hash":
+                                a = getattr(action, "hash", "")
                         elif attr == "pkg.name":
                                 a = pfmri.get_name()
                         elif attr == "pkg.fmri":
@@ -1775,7 +1778,7 @@ def list_contents(img, args):
         # XXX Need remote-info option, to request equivalent information
         # from repository.
 
-        opts, pargs = getopt.getopt(args, "Ho:s:t:mfr")
+        opts, pargs = getopt.getopt(args, "Ha:o:s:t:mfr")
 
         display_headers = True
         display_raw = False
@@ -1784,9 +1787,13 @@ def list_contents(img, args):
         attrs = []
         sort_attrs = []
         action_types = []
+        attr_match = {}
         for opt, arg in opts:
                 if opt == "-H":
                         display_headers = False
+                elif opt == "-a":
+                        attr, match = arg.split("=")
+                        attr_match.setdefault(attr, []).append(match)
                 elif opt == "-o":
                         attrs.extend(arg.split(","))
                 elif opt == "-s":
@@ -1928,6 +1935,31 @@ def list_contents(img, args):
         else:
                 excludes = img.list_excludes()
 
+        def matches(action):
+                """Given an action, return True if any of its attributes' values
+                matches the pattern for the same attribute in the attr_match
+                dictionary, and False otherwise."""
+
+                # If no matches have been specified, all actions match
+                if not attr_match:
+                        return True
+
+                matchset = set(attr_match.keys())
+                attrset = set(action.attrs.keys())
+
+                iset = attrset.intersection(matchset)
+
+                # Iterate over the set of attributes common to the action and
+                # the match specification.  If the values match the pattern in
+                # the specification, then return True (implementing an OR across
+                # multiple possible matches).
+                for attr in iset:
+                        for match in attr_match[attr]:
+                                for attrval in action.attrlist(attr):
+                                        if fnmatch.fnmatch(attrval, match):
+                                                return True
+                return False
+
         manifests = (
             img.get_manifest(f, all_variants=display_raw)
             for f, state in fmris
@@ -1937,9 +1969,15 @@ def list_contents(img, args):
             (m.fmri, a, None, None, None)
             for m in manifests
             for a in m.gen_actions(excludes)
+            if matches(a)
         ]
 
-        if fmris:
+        if attr_match and fmris and not actionlist:
+                err = EXIT_OOPS
+                logger.error(_("""\
+pkg: contents: no matching actions found in the listed packages"""))
+
+        if fmris and not err:
                 display_contents_results(actionlist, attrs, sort_attrs,
                     action_types, display_headers)
 

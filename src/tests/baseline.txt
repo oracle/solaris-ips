@@ -338,6 +338,7 @@ cli.t_pkg_contents.py TestPkgContentsBasics.test_contents_1|pass
 cli.t_pkg_contents.py TestPkgContentsBasics.test_contents_2|pass
 cli.t_pkg_contents.py TestPkgContentsBasics.test_contents_3|pass
 cli.t_pkg_contents.py TestPkgContentsBasics.test_contents_bad_opts|pass
+cli.t_pkg_contents.py TestPkgContentsBasics.test_contents_dash_a|pass
 cli.t_pkg_contents.py TestPkgContentsBasics.test_contents_empty_image|pass
 cli.t_pkg_contents.py TestPkgContentsBasics.test_contents_failures|pass
 cli.t_pkg_depotd.py TestDepotController.testBadArgs|pass
