@@ -1,0 +1,4 @@
+package FSWxorg-client-docs
+depend SUNWxwman
+renamed 130
+end package

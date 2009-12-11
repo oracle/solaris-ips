@@ -1,0 +1,5 @@
+package FSWxorg-fonts-daewoo
+consolidation "X"
+depend SUNWfont-daewoo-misc
+renamed 130
+end package

@@ -1,0 +1,4 @@
+package SUNWjavadb-common
+depend SUNWjavadb
+renamed 130
+end package

@@ -1,0 +1,4 @@
+package SUNWafbcf
+consolidation "smcc"
+obsoleted 130
+end package

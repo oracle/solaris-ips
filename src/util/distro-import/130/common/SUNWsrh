@@ -1,0 +1,4 @@
+package SUNWsrh
+consolidation "osnet"
+obsoleted 130
+end package

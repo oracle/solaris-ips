@@ -1,0 +1,4 @@
+package SUNWjavadb-client
+depend SUNWjavadb
+renamed 130
+end package

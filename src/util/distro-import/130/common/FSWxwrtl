@@ -1,0 +1,4 @@
+package FSWxwrtl
+depend SUNWxwrtl
+renamed 130
+end package

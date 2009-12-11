@@ -1,0 +1,4 @@
+package SUNWpython25-twisted-web2
+consolidation "gnome"
+obsoleted 130
+end package

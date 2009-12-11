@@ -1,0 +1,4 @@
+package SUNWlp-cmds
+consolidation "osnet"
+obsoleted 130
+end package

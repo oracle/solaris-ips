@@ -1,0 +1,4 @@
+package SUNWgnome-a11y-libs-python24
+consolidation "gnome"
+obsoleted 130
+end package

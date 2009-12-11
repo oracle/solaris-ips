@@ -1,0 +1,4 @@
+package SUNWdesktop-search-thunderbird
+consolidation "gnome"
+obsoleted 130
+end package

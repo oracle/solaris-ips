@@ -1,0 +1,4 @@
+package SUNWvtss
+consolidation "SunVTS"
+obsoleted 130
+end package

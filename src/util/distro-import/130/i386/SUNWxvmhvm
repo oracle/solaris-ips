@@ -1,0 +1,4 @@
+package SUNWxvmhvm
+depend SUNWxvm
+renamed 130
+end package

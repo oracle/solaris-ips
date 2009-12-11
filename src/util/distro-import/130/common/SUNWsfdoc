@@ -1,0 +1,4 @@
+package SUNWsfdoc
+consolidation "sfw"
+obsoleted 130
+end package

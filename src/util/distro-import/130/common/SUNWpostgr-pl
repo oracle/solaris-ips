@@ -1,0 +1,5 @@
+package SUNWpostgr-pl
+consolidation "sfw"
+version 8.1.11
+obsoleted 130
+end package

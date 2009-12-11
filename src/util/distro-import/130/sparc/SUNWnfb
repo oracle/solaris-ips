@@ -1,0 +1,5 @@
+package SUNWnfb
+consolidation "smcc"
+depend SUNWefb
+renamed 130
+end package

@@ -1,0 +1,6 @@
+package SUNWapch22m-php5
+consolidation "sfw"
+version 2.2.6
+depend SUNWapch22m-php52
+renamed 130
+end package

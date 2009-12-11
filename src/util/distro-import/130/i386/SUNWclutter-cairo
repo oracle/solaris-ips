@@ -1,0 +1,4 @@
+package SUNWclutter-cairo
+consolidation "gnome"
+obsoleted 130
+end package

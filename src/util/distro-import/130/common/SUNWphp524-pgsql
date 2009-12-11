@@ -1,0 +1,6 @@
+package SUNWphp524-pgsql
+consolidation "sfw"
+version 5.2.4
+depend SUNWphp52-pgsql
+renamed 130
+end package

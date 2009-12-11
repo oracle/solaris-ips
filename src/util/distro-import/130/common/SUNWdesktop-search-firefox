@@ -1,0 +1,4 @@
+package SUNWdesktop-search-firefox
+consolidation "gnome"
+obsoleted 130
+end package

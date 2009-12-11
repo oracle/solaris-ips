@@ -1,0 +1,4 @@
+package SUNWgnome-xml-root
+depend SUNWgnome-xml
+renamed 130
+end package

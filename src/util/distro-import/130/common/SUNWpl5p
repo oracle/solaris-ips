@@ -1,0 +1,5 @@
+package SUNWpl5p
+consolidation "osnet"
+version 5.6.1
+obsoleted 130
+end package

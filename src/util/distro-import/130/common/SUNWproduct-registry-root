@@ -1,0 +1,4 @@
+package SUNWproduct-registry-root
+depend SUNWwsr2
+renamed 130
+end package

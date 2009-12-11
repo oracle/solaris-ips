@@ -1,0 +1,6 @@
+package SUNWgimpprint
+consolidation "sfw"
+depend SUNWgutenprint
+version 4.2.6
+renamed 130
+end package

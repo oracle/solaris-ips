@@ -1,0 +1,5 @@
+package SUNWcakrx
+consolidation "osnet"
+depend SUNWcakr
+renamed 130
+end package

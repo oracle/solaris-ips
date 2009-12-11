@@ -1,0 +1,6 @@
+package FSWxorg-client-programs
+depend SUNWxwice
+depend SUNWxwopt
+depend SUNWxwplt
+renamed 130
+end package

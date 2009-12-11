@@ -1,0 +1,5 @@
+package FSWxorg-fonts-iso8859-13
+consolidation "X"
+depend SUNWfont-xorg-iso8859-13
+renamed 130
+end package

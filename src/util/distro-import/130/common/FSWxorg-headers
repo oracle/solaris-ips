@@ -1,0 +1,4 @@
+package FSWxorg-headers
+depend SUNWxwinc
+renamed 130
+end package

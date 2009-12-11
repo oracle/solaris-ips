@@ -1,0 +1,6 @@
+package SUNWpostgr-server-data
+consolidation "sfw"
+version 8.1.11
+depend SUNWpostgr-server
+renamed 130
+end package

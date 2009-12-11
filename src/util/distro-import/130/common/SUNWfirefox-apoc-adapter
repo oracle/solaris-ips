@@ -1,0 +1,4 @@
+package SUNWfirefox-apoc-adapter
+consolidation "gnome"
+obsoleted 130
+end package

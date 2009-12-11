@@ -77,6 +77,7 @@ pkgdict = {}         # pkgdict contains Package objects we're importing by name
 pkgpaths = {}        # where we found svr4 pkgs by name
 pkgpath_dict = {}    # mapping of paths to ips pkg
 print_pkg_names = False # jusr print package names seen
+publish_all = False  # always publish all obsoleted and renamed packages?
 reference_uris = []  # list of url@pkg specs to compute dependencies against
 show_debug = False   # print voluminous debug output
 summary_detritus = [", (usr)", ", (root)", " (usr)", " (root)", " (/usr)", \
@@ -100,6 +101,8 @@ class Package(object):
                 self.summary = ""
                 self.version = ""
                 self.consolidation = ""
+                self.obsolete_branch = None
+                self.rename_branch = None
                 self.imppkg = None
                 self.actions = []
 
@@ -1118,6 +1121,20 @@ def SolarisParse(mf):
                 elif token == "description":
                         curpkg.desc = lexer.get_token()
 
+                elif token == "obsoleted":
+                        curpkg.obsolete_branch = lexer.get_token()
+                        action = \
+                            actions.fromstr("set name=pkg.obsolete value=true")
+                        action.attrs["importer.source"] = "add"
+                        curpkg.actions.append(action)
+
+                elif token == "renamed":
+                        curpkg.rename_branch = lexer.get_token()
+                        action = \
+                            actions.fromstr("set name=pkg.renamed value=true")
+                        action.attrs["importer.source"] = "add"
+                        curpkg.actions.append(action)
+
                 elif token == "consolidation":
 			# Add to consolidation incorporation and
 			# include the org.opensolaris.consolidation
@@ -1210,6 +1227,7 @@ def main_func():
         global def_vers
         global just_these_pkgs
         global nopublish
+        global publish_all
         global print_pkg_names
         global reference_uris
         global show_debug
@@ -1217,7 +1235,7 @@ def main_func():
 
         
         try:
-                _opts, _args = getopt.getopt(sys.argv[1:], "B:D:I:G:NR:T:b:dj:m:ns:v:w:p:")
+                _opts, _args = getopt.getopt(sys.argv[1:], "AB:D:I:G:NR:T:b:dj:m:ns:v:w:p:")
         except getopt.GetoptError, _e:
                 print "unknown option", _e.opt
                 sys.exit(1)
@@ -1255,6 +1273,9 @@ def main_func():
                         elided_files[arg] = True
                 elif opt == "-I":
                         include_path.extend(arg.split(":"))
+                elif opt == "-A":
+                        # Always publish obsoleted and renamed packages.
+                        publish_all = True
                 elif opt == "-B":
                         branch_file = file(arg)
                         for _line in branch_file:
@@ -1302,6 +1323,43 @@ def main_func():
 
         for _mf in filelist:
                 SolarisParse(_mf)
+
+        # Unless we are publishing all obsolete and renamed packages 
+        # (-A command line option), remove obsolete and renamed packages
+        # that weren't obsoleted or renamed at this branch and create 
+        # a dictionary (called or_pkgs_per_con) of obsoleted and renamed
+        # packages per consolidation.  The version portion of the fmri 
+        # will contain the branch that the package was obsoleted or renamed at.
+        or_pkgs_per_con = {}
+        for pkg in pkgdict:
+                obs_branch = pkgdict[pkg].obsolete_branch
+                rename_branch = pkgdict[pkg].rename_branch
+
+                ver_tokens = pkgdict[pkg].version.split(".")
+                cons = pkgdict[pkg].consolidation
+                if obs_branch:
+                        ver_tokens[-1] = obs_branch
+                        ver_string = ".".join(ver_tokens)
+                        or_pkgs_per_con.setdefault(cons, {})[pkg] = ver_string
+
+                        if publish_all:
+                                pkgdict[pkg].version = ver_string
+                        else:
+                                if obs_branch != def_branch.split(".")[1]:
+                                        # Not publishing this obsolete package.
+                                        del pkgdict[pkg]
+
+                if rename_branch:
+                        ver_tokens[-1] = rename_branch
+                        ver_string = ".".join(ver_tokens)
+                        or_pkgs_per_con.setdefault(cons, {})[pkg] = ver_string
+
+                        if publish_all:
+                                pkgdict[pkg].version = ver_string
+                        else:
+                                if rename_branch != def_branch.split(".")[1]:
+                                        # Not publishing this renamed package.
+                                        del pkgdict[pkg]
 
         print "Second pass: global crosschecks", datetime.now()
         # perform global crosschecks
@@ -1362,6 +1420,17 @@ def main_func():
                             "depend fmri=%s type=incorporate" % depend)
                         action.attrs["importer.source"] = "depend"
                         curpkg.actions.append(action)
+
+                # Add in the obsoleted and renamed packages for this
+                # consolidation.
+                for name in or_pkgs_per_con.get(cons, {}):
+                        version = or_pkgs_per_con[cons][name]
+                        action = actions.fromstr(
+                            "depend fmri=%s@%s type=incorporate" %
+                                (name, version))
+                        action.attrs["importer.source"] = "depend"
+                        curpkg.actions.append(action)
+
                 action = actions.fromstr("set " \
                     "name=org.opensolaris.consolidation value=%s" % cons)
                 action.attrs["importer.source"] = "add"

@@ -1,0 +1,4 @@
+package SUNWlang-mt-extra
+consolidation "l10n"
+obsoleted 130
+end package

@@ -1,0 +1,5 @@
+package SUNWcedu
+consolidation "nspg"
+depend SUNWced
+renamed 130
+end package

@@ -1,0 +1,5 @@
+package SUNWvscankr
+consolidation "osnet"
+depend SUNWvscan
+renamed 130
+end package

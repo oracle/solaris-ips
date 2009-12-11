@@ -1,0 +1,4 @@
+package SUNWpython24-cssutils
+consolidation "gnome"
+obsoleted 130
+end package

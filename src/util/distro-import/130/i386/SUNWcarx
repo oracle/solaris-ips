@@ -1,0 +1,5 @@
+package SUNWcarx
+consolidation "osnet"
+depend SUNWcar
+renamed 130
+end package

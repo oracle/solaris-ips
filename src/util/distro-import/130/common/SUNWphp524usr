@@ -1,0 +1,5 @@
+package SUNWphp524usr
+version 5.2.4
+depend SUNWphp524
+renamed 130
+end package

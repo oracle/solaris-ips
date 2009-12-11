@@ -1,0 +1,4 @@
+package SUNWgnome-freedb-libs
+consolidation "gnome"
+obsoleted 130
+end package
