@@ -5471,6 +5471,7 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                           <widget class="GtkTreeView" id="install_treeview">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
+                            <property name="rules_hint">True</property>
                           </widget>
                         </child>
                       </widget>
@@ -5523,6 +5524,7 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                           <widget class="GtkTreeView" id="update_treeview">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
+                            <property name="rules_hint">True</property>
                           </widget>
                         </child>
                       </widget>
@@ -5575,6 +5577,7 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                           <widget class="GtkTreeView" id="remove_treeview">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
+                            <property name="rules_hint">True</property>
                           </widget>
                         </child>
                       </widget>

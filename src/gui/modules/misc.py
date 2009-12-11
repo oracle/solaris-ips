@@ -159,7 +159,8 @@ def error_occurred(parent, error_msg, msg_title = None,
         msgbox.destroy()
 
 def set_package_details(pkg_name, local_info, remote_info, textview,
-    installed_icon, not_installed_icon, update_available_icon):
+    installed_icon, not_installed_icon, update_available_icon, 
+    is_all_publishers_installed=None, pubs_disabled_status=None):
         installed = True
 
         if not local_info:
@@ -226,6 +227,15 @@ def set_package_details(pkg_name, local_info, remote_info, textview,
 
         text["cat"] = categories
         text["repository"] = local_info.publisher
+        # pubs_disabled_status: dict of publisher disabled status:
+        # pub_status[pub_name] = True disabled or False enabled
+        if is_all_publishers_installed and pubs_disabled_status != None:
+                if local_info.publisher in pubs_disabled_status:
+                        if pubs_disabled_status[local_info.publisher]:
+                                text["repository"] = local_info.publisher + \
+                                _(" (disabled)")
+                else:
+                        text["repository"] = local_info.publisher + _(" (removed)")
         set_package_details_text(labs, text, textview, installed_icon,
                 not_installed_icon, update_available_icon)
         return (labs, text)
