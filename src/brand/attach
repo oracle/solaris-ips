@@ -498,11 +498,17 @@ else
 	printf "$m_pubfine\n"
 fi
 
-if [ -d /var/pkg/download ]; then
-	PKG_CACHEDIR=/var/pkg/download
-	export PKG_CACHEDIR
-	printf "$m_cache\n" $PKG_CACHEDIR
-fi
+#
+# XXX Use of the global zone cache is temporarily disabled due to bug:
+#     12986 cross-device link traceback on install
+# Once that is fixed, we can re-enable the cache.  In the meantime, updating
+# a zone will be required to re-download all of the pkgs needed by the zone.
+#
+# if [ -d /var/pkg/download ]; then
+# 	PKG_CACHEDIR=/var/pkg/download
+# 	export PKG_CACHEDIR
+# 	printf "$m_cache\n" $PKG_CACHEDIR
+# fi
 
 printf "$m_updating\n"
 
