@@ -2031,7 +2031,7 @@
                             <property name="visible">True</property>
                             <child>
                               <widget class="GtkCheckButton" id="exit_checkbutton">
-                                <property name="label" translatable="yes">Remember selected publisher on _exit</property>
+                                <property name="label" translatable="yes">Remember current state on _exit</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
