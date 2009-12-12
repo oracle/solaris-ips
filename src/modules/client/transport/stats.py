@@ -139,9 +139,9 @@ class RepoChooser(object):
                                 rs.origin_cspeed = origin_avg_cspeed
 
                         # Decay error rate for transient errors.
-                        # Reduce the error penalty by 10% each iteration.
-                        # In other words, keep 90% of the current value.
-                        rs._err_decay *= 0.9
+                        # Reduce the error penalty by .1% each iteration.
+                        # In other words, keep 99.9% of the current value.
+                        rs._err_decay *= 0.999
 
                 found_rs.sort(key=lambda x: x[0].quality, reverse=True)
 
@@ -181,6 +181,7 @@ class RepoStats(object):
                 self.__failed_tx = 0
                 self.__content_err = 0
                 self.__decayable_err = 0
+                self.__timeout_err = 0
                 self.__total_tx = 0
                 self.__consecutive_errors = 0
 
@@ -204,10 +205,13 @@ class RepoStats(object):
         def record_connection(self, time):
                 """Record amount of time spent connecting."""
 
+                if not self.__used:
+                        self.__used = True
+
                 self.__connections += 1
                 self.__connect_time += time
 
-        def record_error(self, decayable=False, content=False):
+        def record_error(self, decayable=False, content=False, timeout=False):
                 """Record that an operation to the RepositoryURI represented
                 by this RepoStats object failed with an error.
 
@@ -228,6 +232,11 @@ class RepoStats(object):
                         self.__content_err += 1
                 else:
                         self.__failed_tx += 1
+                # A timeout may be decayable or not, so track it in addition
+                # to the other classes of errors.
+                if timeout:
+                        self.__timeout_err += 1
+
 
         def record_progress(self, bytes, seconds):
                 """Record time and size of a network operation to a
@@ -271,7 +280,10 @@ class RepoStats(object):
                 """The average connection time for this host."""
 
                 if self.__connections == 0:
-                        return 0
+                        if self.__used and self.__timeout_err > 0:
+                                return 1.0
+                        else:
+                                return 0.0
 
                 return self.__connect_time / self.__connections
 
@@ -321,10 +333,11 @@ class RepoStats(object):
 
                 Cspeed = 100
                 Cconn_speed = 66
-                Cerror = 20
-                Ccontent_err = 200
+                Cerror = 500
+                Ccontent_err = 1000
                 Crand_max = 20
                 Cospeed_none = 100000
+                Cocspeed_none = 1
 
                 if self.origin_speed > 0:
                         ospeed = self.origin_speed
@@ -334,12 +347,18 @@ class RepoStats(object):
                 if self.origin_cspeed > 0:
                         ocspeed = self.origin_cspeed
                 else:
-                        ocspeed = 1
+                        ocspeed = Cocspeed_none
 
-                def H_used(self):
+                # This function applies a bonus to hosts that have little or
+                # no usage.  It started out life as a Heaviside step function,
+                # but it has since been adjusted so that it scales back the
+                # bonus as the host approaches the limit where the bonus
+                # is applied.  Hosts with no use recieve the largest bonus,
+                # while hosts at <= Nused transactions receive the none.
+                def unused_bonus(self):
                         tx = 0
 
-                        tx = self.__total_tx - self.failures
+                        tx = self.__total_tx
 
                         if tx < 0:
                                 return 0
@@ -378,7 +397,7 @@ class RepoStats(object):
                 # a simulated environment.
                 #
                 
-                q = H_used(self) + \
+                q = unused_bonus(self) + \
                     (Cspeed * ((self.__bytes_xfr / (1 + self.__seconds_xfr))
                     / ospeed)**2) + \
                     int(random.gauss(0, Crand_max)) - \

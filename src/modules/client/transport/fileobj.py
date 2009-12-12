@@ -25,6 +25,8 @@
 # Use is subject to license terms.
 #
 
+import pkg.client.transport.exception as tx
+
 class StreamingFileObj(object):
 
         def __init__(self, url, engine, ccancel=None):
@@ -267,6 +269,12 @@ class StreamingFileObj(object):
 
                         try:
                                 engine.run()
+                        except tx.ExcessiveTransientFailure, ex:
+                                s = engine.check_status([self.__url])
+                                ex.failures = s
+                                self.__lock.release()
+                                self.close()
+                                raise
                         except:
                                 # Cleanup and close, if exception
                                 # raised by run.

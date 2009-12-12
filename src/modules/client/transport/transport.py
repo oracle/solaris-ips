@@ -139,6 +139,12 @@ class Transport(object):
                                 fobj._prime()
                                 return fobj
 
+                        except tx.ExcessiveTransientFailure, ex:
+                                # If an endpoint experienced so many failures
+                                # that we just gave up, grab the list of
+                                # failures that it contains
+                                failures.extend(ex.failures)
+
                         except tx.TransportProtoError, e:
                                 if e.code == httplib.NOT_FOUND:
                                         raise apx.UnsupportedSearchError(e.url,
@@ -218,6 +224,11 @@ class Transport(object):
 
                                 return
 
+                        except tx.ExcessiveTransientFailure, ex:
+                                # If an endpoint experienced so many failures
+                                # that we just gave up, grab the list of
+                                # failures that it contains
+                                failures.extend(ex.failures)
                         except tx.TransportProtoError, e:
                                 if e.code == httplib.NOT_MODIFIED:
                                         return
@@ -501,6 +512,12 @@ class Transport(object):
                                 resp = d.get_datastream(fhash, header)
                                 return resp
 
+                        except tx.ExcessiveTransientFailure, ex:
+                                # If an endpoint experienced so many failures
+                                # that we just gave up, grab the list of
+                                # failures that it contains
+                                failures.extend(ex.failures)
+
                         except tx.TransportException, e:
                                 if e.retryable:
                                         failures.append(e)
@@ -540,6 +557,12 @@ class Transport(object):
                         try:
                                 d.touch_manifest(mfst, header, ccancel=ccancel)
                                 return
+
+                        except tx.ExcessiveTransientFailure, ex:
+                                # If an endpoint experienced so many failures
+                                # that we just gave up, grab the list of
+                                # failures that it contains
+                                failures.extend(ex.failures)
 
                         except tx.TransportException, e:
                                 if e.retryable:
@@ -604,6 +627,13 @@ class Transport(object):
 
                                 return m
 
+                        except tx.ExcessiveTransientFailure, ex:
+                                # If an endpoint experienced so many failures
+                                # that we just gave up, grab the list of
+                                # failures that it contains
+                                failures.extend(ex.failures)
+                                mcontent = None
+
                         except tx.TransportException, e:
                                 if e.retryable:
                                         failures.append(e)
@@ -630,6 +660,9 @@ class Transport(object):
                 This method will not return transient transport errors,
                 but it should raise any that would cause an immediate
                 failure."""
+
+                if not fetchlist:
+                        return
 
                 self.__lock.acquire()
                 try:
@@ -701,10 +734,8 @@ class Transport(object):
                 for mxfr in mx_pub.values():
                         namelist = [k for k in mxfr]
                         while namelist:
-                                # XXX Variable chunk size doesn't make
-                                # sense until the client supports multiple
-                                # origins.  This is fixed at 100 until then.
-                                chunksz = 100
+                                chunksz = self.__chunk_size(pub,
+                                    origin_only=True)
                                 mfstlist = [
                                     (n, mxfr[n][0])
                                     for n in namelist[:chunksz]
@@ -1124,6 +1155,13 @@ class Transport(object):
                                 # Save this information for later use, too.
                                 self.__populate_repo_versions(d, vers)
                                 return vers 
+                        except tx.ExcessiveTransientFailure, ex:
+                                # If an endpoint experienced so many failures
+                                # that we just gave up, grab the list of
+                                # failures that it contains
+                                for f in ex.failures:
+                                        f.url = d.get_url()
+                                        failures.append(f)
                         except tx.TransportException, e:
                                 e.url = d.get_url()
                                 if e.retryable:
@@ -1251,7 +1289,7 @@ class Transport(object):
                         for rs, ruri in rslist:
                                 yield self.__repo_cache.new_repo(rs, ruri)
 
-        def __chunk_size(self, pub):
+        def __chunk_size(self, pub, origin_only=False):
                 """Determine the chunk size based upon how many of the known
                 mirrors have been visited.  If not all mirrors have been
                 visited, choose a small size so that if it ends up being
@@ -1264,8 +1302,11 @@ class Transport(object):
                         self.__setup()
 
                 repo = pub.selected_repository
-                repolist = repo.mirrors[:]
-                repolist.extend(repo.origins)
+                if origin_only:
+                        repolist = repo.origins[:]
+                else:
+                        repolist = repo.mirrors[:]
+                        repolist.extend(repo.origins)
 
                 n = len(repolist)
                 m = self.stats.get_num_visited(repolist)

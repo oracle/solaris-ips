@@ -586,7 +586,7 @@ installed on the system.\n"""))
                 return EXIT_OOPS
         return EXIT_OK
 
-def __api_prepare(operation, api_inst, verbose=False):
+def __api_prepare(operation, api_inst):
         # Exceptions which happen here are printed in the above level, with
         # or without some extra decoration done here.
         # XXX would be nice to kick the progress tracker.
@@ -600,8 +600,6 @@ def __api_prepare(operation, api_inst, verbose=False):
         except api_errors.TransportError, e:
                 # move past the progress tracker line.
                 msg("\n")
-                if verbose:
-                        e.verbose = True
                 raise e
         except KeyboardInterrupt:
                 raise
@@ -786,13 +784,10 @@ def change_variant(img, args):
 
         # Exceptions which happen here are printed in the above level, with
         # or without some extra decoration done here.
-        if not __api_prepare("change-variant", api_inst, verbose=verbose):
+        if not __api_prepare("change-variant", api_inst):
                 return EXIT_OOPS
 
         ret_code = __api_execute_plan("change-variant", api_inst)
-
-        if bool(os.environ.get("PKG_MIRROR_STATS", False)):
-                print_mirror_stats(api_inst)
 
         return ret_code
 
@@ -874,13 +869,10 @@ def change_facet(img, args):
 
         # Exceptions which happen here are printed in the above level, with
         # or without some extra decoration done here.
-        if not __api_prepare(op, api_inst, verbose=verbose):
+        if not __api_prepare(op, api_inst):
                 return EXIT_OOPS
 
         ret_code = __api_execute_plan(op, api_inst)
-
-        if bool(os.environ.get("PKG_MIRROR_STATS", False)):
-                print_mirror_stats(api_inst)
 
         return ret_code
 
@@ -942,7 +934,7 @@ def image_update(img, args):
         if noexecute:
                 return EXIT_OK
 
-        if not __api_prepare(op, api_inst, verbose=verbose):
+        if not __api_prepare(op, api_inst):
                 return EXIT_OOPS
 
         ret_code = __api_execute_plan(op, api_inst)
@@ -953,19 +945,7 @@ def image_update(img, args):
                 msg(misc.get_release_notes_url())
                 msg("-" * 75 + "\n")
 
-        if bool(os.environ.get("PKG_MIRROR_STATS", False)):
-                print_mirror_stats(api_inst)
-
         return ret_code
-
-def print_mirror_stats(api_inst):
-        """Given an api_inst object, print depot status information."""
-
-        status_fmt = "%-10s %-35s %10s %10s"
-        print status_fmt % ("Publisher", "URI", "Success", "Failure")
-
-        for ds in api_inst.img.gen_depot_status():
-                print status_fmt % (ds.prefix, ds.url, ds.good_tx, ds.errors)
 
 def install(img, args):
         """Attempt to take package specified to INSTALLED state.  The operands
@@ -1021,14 +1001,11 @@ def install(img, args):
 
         # Exceptions which happen here are printed in the above level, with
         # or without some extra decoration done here.
-        if not __api_prepare(op, api_inst, verbose=verbose):
+        if not __api_prepare(op, api_inst):
                 return EXIT_OOPS
 
         ret_code = __api_execute_plan(op, api_inst,
             raise_ActionExecutionError=False)
-
-        if bool(os.environ.get("PKG_MIRROR_STATS", False)):
-                print_mirror_stats(api_inst)
 
         return ret_code
 
@@ -1078,7 +1055,7 @@ def uninstall(img, args):
 
         # Exceptions which happen here are printed in the above level, with
         # or without some extra decoration done here.
-        if not __api_prepare(op, api_inst, verbose=verbose):
+        if not __api_prepare(op, api_inst):
                 return EXIT_OOPS
 
         return __api_execute_plan(op, api_inst)

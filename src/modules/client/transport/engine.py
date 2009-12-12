@@ -146,12 +146,20 @@ class CurlTransportEngine(TransportEngine):
                         repostats.record_tx()
                         bytes = h.getinfo(pycurl.SIZE_DOWNLOAD)
                         seconds = h.getinfo(pycurl.TOTAL_TIME) - \
-                            h.getinfo(pycurl.PRETRANSFER_TIME)
+                            h.getinfo(pycurl.STARTTRANSFER_TIME)
+
+                        # Sometimes libcurl will report no transfer time.
+                        # In that case, just use starttransfer time if it's
+                        # non-zero.
+                        if seconds < 0:
+                                seconds = h.getinfo(pycurl.STARTTRANSFER_TIME)
                         conn_count = h.getinfo(pycurl.NUM_CONNECTS)
+                        conn_time = h.getinfo(pycurl.CONNECT_TIME)
 
                         repostats.record_progress(bytes, seconds)
-                        if conn_count > 0:
-                                conn_time = h.getinfo(pycurl.CONNECT_TIME)
+                        # Only count connections if the connection time is
+                        # positive too.
+                        if conn_count > 0 and conn_time > 0:
                                 repostats.record_connection(conn_time)
 
                         httpcode = h.getinfo(pycurl.RESPONSE_CODE)
@@ -169,8 +177,22 @@ class CurlTransportEngine(TransportEngine):
                                 decay = httpcode in tx.decayable_http_errors
                                 repostats.record_error(decayable=decay)
                                 errors_seen += 1
+                                if proto in tx.proto_code_map:
+                                        # Look up protocol error code map
+                                        # from transport exception's table.
+                                        pmap = tx.proto_code_map[proto]
+                                        proto_reason = pmap[httpcode]
+                                else:
+                                        proto_reason = None
                                 ex = tx.TransportProtoError(proto, httpcode,
-                                    url, repourl=urlstem)
+                                    url, reason=proto_reason, repourl=urlstem)
+                        elif en == pycurl.E_OPERATION_TIMEOUTED:
+                                decay = en in tx.decayable_pycurl_errors
+                                repostats.record_error(decayable=decay,
+                                    timeout=True)
+                                errors_seen += 1
+                                ex = tx.TransportFrameworkError(en, url, em,
+                                    repourl=urlstem)
                         else:
                                 decay = en in tx.decayable_pycurl_errors
                                 repostats.record_error(decayable=decay)
@@ -192,13 +214,31 @@ class CurlTransportEngine(TransportEngine):
                         repostats.record_tx()
                         bytes = h.getinfo(pycurl.SIZE_DOWNLOAD)
                         seconds = h.getinfo(pycurl.TOTAL_TIME) - \
-                            h.getinfo(pycurl.PRETRANSFER_TIME)
+                            h.getinfo(pycurl.STARTTRANSFER_TIME)
                         conn_count = h.getinfo(pycurl.NUM_CONNECTS)
+                        conn_time = h.getinfo(pycurl.CONNECT_TIME)
                         h.filetime = h.getinfo(pycurl.INFO_FILETIME)
 
+                        if seconds > 0:
+                                bytespersec = bytes / seconds
+                        else:
+                                bytespersec = 0
+                        # If a request ahead of a successful request fails due
+                        # to a timeout, sometimes libcurl will report impossibly
+                        # large total time values.  In this case, check that the
+                        # bytes/sec exceeds our minimum threshold.  If it does
+                        # not, and the total time is longer than our timeout,
+                        # discard the time calculation as it is bogus.
+                        if (bytespersec < 
+                            global_settings.pkg_client_lowspeed_limit) and (
+                            seconds > 
+                            global_settings.PKG_CLIENT_LOWSPEED_TIMEOUT):
+                                bytes = 0
+                                seconds = 0
                         repostats.record_progress(bytes, seconds)
-                        if conn_count > 0:
-                                conn_time = h.getinfo(pycurl.CONNECT_TIME)
+                        # Only count connections if the connection time is
+                        # positive too.
+                        if conn_count > 0 and conn_time > 0:
                                 repostats.record_connection(conn_time)
 
                         httpcode = h.getinfo(pycurl.RESPONSE_CODE)
@@ -211,8 +251,16 @@ class CurlTransportEngine(TransportEngine):
                                 repostats.clear_consecutive_errors()
                                 success.append(url)
                         else:
+                                if proto in tx.proto_code_map:
+                                        # Look up protocol error code map
+                                        # from transport exception's table.
+                                        pmap = tx.proto_code_map[proto]
+                                        proto_reason = pmap[httpcode]
+                                else:
+                                        proto_reason = None
                                 ex = tx.TransportProtoError(proto,
-                                    httpcode, url, repourl=urlstem)
+                                    httpcode, url, reason=proto_reason,
+                                    repourl=urlstem)
 
                                 # If code >= 400, record this as an error.
                                 # Handlers above the engine get to decide

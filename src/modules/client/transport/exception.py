@@ -35,13 +35,16 @@ retryable_http_errors = set((httplib.REQUEST_TIMEOUT, httplib.BAD_GATEWAY,
 
 # Errors that stats.py may include in a decay-able error rate
 decayable_http_errors = set((httplib.NOT_FOUND,))
-decayable_pycurl_errors = set((pycurl.E_OPERATION_TIMEOUTED,))
+decayable_pycurl_errors = set((pycurl.E_OPERATION_TIMEOUTED,
+        pycurl.E_COULDNT_CONNECT))
 
 # Different protocols may have different retryable errors.  Map proto
 # to set of retryable errors.
 
 retryable_proto_errors = { "http" : retryable_http_errors,
                            "https" : retryable_http_errors }
+
+proto_code_map = { "http" : httplib.responses, "https": httplib.responses }
 
 retryable_pycurl_errors = set((pycurl.E_COULDNT_CONNECT, pycurl.E_PARTIAL_FILE,
         pycurl.E_OPERATION_TIMEOUTED, pycurl.E_GOT_NOTHING, pycurl.E_SEND_ERROR,
@@ -53,21 +56,7 @@ class TransportException(api_errors.TransportError):
         package."""
         def __init__(self):
                 self.count = 1
-                self.rcount = 1
                 self.retryable = False
-                self.verbose = False
-
-        def simple_cmp(self, other):
-                """Subclasses that wish to provided a simplified output
-                interface must implement this routine and simple_str."""
-
-                return self.__cmp__(other)
-
-        def simple_str(self):
-                """Subclasses that wish to provided a simplified output
-                interface must implement this routine and simple_cmp."""
-
-                return self.__str__()
 
 
 class TransportOperationError(TransportException):
@@ -106,24 +95,11 @@ class TransportFailures(TransportException):
                 if not found:
                         self.exceptions.append(exc)
 
-                found = False
-                for x in self.reduced_ex:
-                        if x.simple_cmp(exc) == 0:
-                                x.rcount += 1
-                                found = True
-                                break
-
-                if not found:
-                        self.reduced_ex.append(exc)
-
+        def extend(self, exc_list):
+                for exc in exc_list:
+                        self.append(exc)
 
         def __str__(self):
-                if self.verbose:
-                        return self.detailed_str()
-
-                return self.simple_str()
-
-        def detailed_str(self):
                 if len(self.exceptions) == 0:
                         return "[no errors accumulated]"
 
@@ -134,20 +110,6 @@ class TransportFailures(TransportException):
                         s += str(x)
                         if x.count > 1:
                                 s += " (happened %d times)" % x.count
-                        s += "\n"
-                return s
-
-        def simple_str(self):
-                if len(self.reduced_ex) == 0:
-                        return "[no errors accumulated]"
-
-                s = ""
-                for i, x in enumerate(self.reduced_ex):
-                        if len(self.reduced_ex) > 1:
-                                s += "%d: " % (i + 1)
-                        s += x.simple_str()
-                        if x.rcount > 1:
-                                s += " (happened %d times)" % x.rcount
                         s += "\n"
                 return s
 
@@ -173,7 +135,7 @@ class TransportProtoError(TransportException):
                 if self.code:
                         s += ": code: %d" % self.code
                 if self.reason:
-                        s += "\nreason: %s" % self.reason
+                        s += " reason: %s" % self.reason
                 if self.url:
                         s += "\nURL: '%s'." % self.url
                 return s
@@ -191,25 +153,6 @@ class TransportProtoError(TransportException):
                 if r != 0:
                         return r
                 return cmp(self.reason, other.reason)
-
-        def simple_cmp(self, other):
-                if not isinstance(other, TransportProtoError):
-                        return -1
-                r = cmp(self.proto, other.proto)
-                if r != 0:
-                        return r
-                r = cmp(self.code, other.code)
-                if r != 0:
-                        return r
-                return cmp(self.urlstem, other.urlstem)
-
-        def simple_str(self):
-                s = "%s protocol error" % self.proto
-                if self.code:
-                        s += ": code: %d" % self.code
-                if self.urlstem:
-                        s += "\nURL: '%s'." % self.urlstem
-                return s
 
 
 class TransportFrameworkError(TransportException):
@@ -241,25 +184,6 @@ class TransportFrameworkError(TransportException):
                 if r != 0:
                         return r
                 return cmp(self.reason, other.reason)
-
-        def simple_cmp(self, other):
-                if not isinstance(other, TransportFrameworkError):
-                        return -1
-                r = cmp(self.code, other.code)
-                if r != 0:
-                        return r
-                r = cmp(self.reason, other.reason)
-                if r != 0:
-                        return r
-                return cmp(self.urlstem, other.urlstem)
-
-        def simple_str(self):
-                s = "Framework error: code: %d" % self.code
-                if self.reason:
-                        s += " reason: %s" % self.reason
-                if self.urlstem:
-                        s += "\nURL: '%s'." % self.urlstem
-                return s
 
 
 class TransferContentException(TransportException):

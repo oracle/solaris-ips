@@ -215,12 +215,11 @@ class FileManager(object):
                                 # must be done last.
                                 os.removedirs(p_sdir)
                         except EnvironmentError:
-                                # If the rename failed, then simply leave the
-                                # file in its old location.  If the removal
-                                # of the source parent directory failed, that
-                                # likely means that other files still exist
-                                # there.  In either case, continue on.
-                                pass
+                                # If there's an error during these operations,
+                                # check that cur_full_path still exists.  If
+                                # it's gone, return None.
+                                if not os.path.exists(cur_full_path):
+                                        return None
 
                 if opener:
                         return open(cur_full_path, "rb")
