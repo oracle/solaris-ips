@@ -27,7 +27,7 @@
 
 class StreamingFileObj(object):
 
-        def __init__(self, url, engine):
+        def __init__(self, url, engine, ccancel=None):
                 """Create a streaming file object that wraps around a
                 transport engine.  This is only necessary if the underlying
                 transport doesn't have its own streaming interface and the
@@ -41,6 +41,8 @@ class StreamingFileObj(object):
                 self.__httpmsg = None
                 self.__headers = {}
                 self.__done = False
+                self.__check_cancelation = ccancel
+                self.__lock = DummyLock()
 
         def __del__(self):
                 try:
@@ -178,11 +180,21 @@ class StreamingFileObj(object):
         def writelines(self, llist):
                 raise NotImplementedError
 
+        # Methods that access the callbacks
+
         def get_write_func(self):
                 return self.__write_callback
 
         def get_header_func(self):
                 return self.__header_callback
+
+        def get_progress_func(self):
+                return self.__progress_callback
+
+        # Miscellaneous accessors
+
+        def set_lock(self, lock):
+                self.__lock = lock
 
         # Header and message methods
 
@@ -235,8 +247,10 @@ class StreamingFileObj(object):
                 if not engine:
                         return False
 
+                self.__lock.acquire()
                 while 1:
                         if self.__done:
+                                self.__lock.release()
                                 return False
                         elif not engine.pending:
                                 # nothing pending means no more transfer
@@ -244,11 +258,21 @@ class StreamingFileObj(object):
                                 s = engine.check_status([self.__url])
                                 if s:
                                         # Cleanup prior to raising exception
+                                        self.__lock.release()
                                         self.close()
                                         raise s[0]
+
+                                self.__lock.release()
                                 return False
 
-                        engine.run()
+                        try:
+                                engine.run()
+                        except:
+                                # Cleanup and close, if exception
+                                # raised by run.
+                                self.__lock.release()
+                                self.close()
+                                raise
 
                         if size > 0 and len(self.__buf) < size:
                                 # loop if we need more data in the buffer
@@ -257,6 +281,7 @@ class StreamingFileObj(object):
                                 # break out of this loop
                                 break
 
+                self.__lock.release()
                 return True
 
         def __fill_headers(self):
@@ -274,6 +299,15 @@ class StreamingFileObj(object):
                                 break
 
                 self.__headers_arrived = True
+
+        def __progress_callback(self, dltot, dlcur, ultot, ulcur):
+                """Called by pycurl/libcurl framework to update
+                progress tracking."""
+
+                if self.__check_cancelation and self.__check_cancelation():
+                        return -1
+
+                return 0
 
         def __write_callback(self, data):
                 """A callback given to transport engine that writes data
@@ -301,3 +335,15 @@ class StreamingFileObj(object):
                         k, v = data.split(":", 1)
                         if v:
                                 self.__headers[k] = v.strip()
+
+class DummyLock(object):
+        """This has the same external interface as threading.Lock,
+        but performs no locking.  This is a placeholder object for situations
+        where we want to be able to do locking, but don't always need a
+        lock object present."""
+
+        def acquire(self, blocking=1):
+                return True
+
+        def release(self):
+                return

@@ -341,7 +341,7 @@ class CurlTransportEngine(TransportEngine):
                 return rf, rs
 
         def get_url(self, url, header=None, sslcert=None, sslkey=None,
-            repourl=None, compressible=False):
+            repourl=None, compressible=False, ccancel=None):
                 """Invoke the engine to retrieve a single URL.  Callers
                 wishing to obtain multiple URLs at once should use
                 addUrl() and run().
@@ -349,30 +349,38 @@ class CurlTransportEngine(TransportEngine):
                 getUrl will return a read-only file object that allows access
                 to the URL's data."""
 
-                fobj = fileobj.StreamingFileObj(url, self)
+                fobj = fileobj.StreamingFileObj(url, self, ccancel=ccancel)
+                progfunc = None
+
+                if ccancel:
+                        progfunc = fobj.get_progress_func()
 
                 t = TransportRequest(url, writefunc=fobj.get_write_func(),
                     hdrfunc=fobj.get_header_func(), header=header,
                     sslcert=sslcert, sslkey=sslkey, repourl=repourl,
-                    compressible=compressible)
+                    compressible=compressible, progfunc=progfunc)
 
                 self.__req_q.appendleft(t)
 
                 return fobj
 
         def get_url_header(self, url, header=None, sslcert=None, sslkey=None,
-            repourl=None):
+            repourl=None, ccancel=None):
                 """Invoke the engine to retrieve a single URL's headers.
 
                 getUrlHeader will return a read-only file object that
                 contains no data."""
 
-                fobj = fileobj.StreamingFileObj(url, self)
+                fobj = fileobj.StreamingFileObj(url, self, ccancel=ccancel)
+                progfunc = None
+
+                if ccancel:
+                        progfunc = fobj.get_progress_func()
 
                 t = TransportRequest(url, writefunc=fobj.get_write_func(),
                     hdrfunc=fobj.get_header_func(), header=header,
                     httpmethod="HEAD", sslcert=sslcert, sslkey=sslkey,
-                    repourl=repourl)
+                    repourl=repourl, progfunc=progfunc)
 
                 self.__req_q.appendleft(t)
 
@@ -466,7 +474,7 @@ class CurlTransportEngine(TransportEngine):
                 self.__success = []
 
         def send_data(self, url, data, header=None, sslcert=None, sslkey=None,
-            repourl=None):
+            repourl=None, ccancel=None):
                 """Invoke the engine to retrieve a single URL.  
                 This routine sends the data in data, and returns the
                 server's response.  
@@ -477,12 +485,16 @@ class CurlTransportEngine(TransportEngine):
                 sendData will return a read-only file object that allows access
                 to the server's response.."""
 
-                fobj = fileobj.StreamingFileObj(url, self)
+                fobj = fileobj.StreamingFileObj(url, self, ccancel=ccancel)
+                progfunc = None
+
+                if ccancel:
+                        progfunc = fobj.get_progress_func()
 
                 t = TransportRequest(url, writefunc=fobj.get_write_func(),
                     hdrfunc=fobj.get_header_func(), header=header, data=data,
                     httpmethod="POST", sslcert=sslcert, sslkey=sslkey,
-                    repourl=repourl)
+                    repourl=repourl, progfunc=progfunc)
 
                 self.__req_q.appendleft(t)
 
@@ -614,6 +626,10 @@ class CurlTransportEngine(TransportEngine):
                         hdl.fileprog = treq.progclass(treq.progtrack)
                         hdl.setopt(pycurl.PROGRESSFUNCTION,
                             hdl.fileprog.progress_callback)
+                elif treq.progfunc:
+                        # For light-weight progress tracking / cancelation.
+                        hdl.setopt(pycurl.NOPROGRESS, 0)
+                        hdl.setopt(pycurl.PROGRESSFUNCTION, treq.progfunc)
 
                 if treq.compressible:
                         hdl.setopt(pycurl.ENCODING, "")
@@ -712,7 +728,7 @@ class TransportRequest(object):
         def __init__(self, url, filepath=None, writefunc=None,
             hdrfunc=None, header=None, data=None, httpmethod="GET",
             progclass=None, progtrack=None, sslcert=None, sslkey=None,
-            repourl=None, compressible=False):
+            repourl=None, compressible=False, progfunc=None):
                 """Create a TransportRequest with the following parameters:
 
                 url - The url that the transport engine should retrieve
@@ -751,6 +767,11 @@ class TransportRequest(object):
                 the proper callbacks.  The transport instantiates an object
                 of this class before beginning the request.
 
+                progfunc - A function to be used as a progress callback.
+                The preferred method is is use progtrack/progclass, but
+                light-weight implementations may use progfunc instead,
+                especially if they don't need per-file updates.
+
                 repouri - This is the URL stem that identifies the repo.
                 It's a subset of url.  It's also used by the stats system.
 
@@ -769,6 +790,7 @@ class TransportRequest(object):
                 self.httpmethod = httpmethod
                 self.progclass = progclass
                 self.progtrack = progtrack
+                self.progfunc = progfunc
                 self.repourl = repourl
                 self.sslcert = sslcert
                 self.sslkey = sslkey

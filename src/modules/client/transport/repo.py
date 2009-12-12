@@ -103,17 +103,17 @@ class HTTPRepo(TransportRepo):
                     progclass=progclass, progtrack=progtrack, repourl=self._url,
                     header=header, compressible=compress)
 
-        def _fetch_url(self, url, header=None, compress=False):
+        def _fetch_url(self, url, header=None, compress=False, ccancel=None):
                 return self._engine.get_url(url, header, repourl=self._url,
-                    compressible=compress)
+                    compressible=compress, ccancel=ccancel)
 
-        def _fetch_url_header(self, url, header=None):
+        def _fetch_url_header(self, url, header=None, ccancel=None):
                 return self._engine.get_url_header(url, header,
-                    repourl=self._url)
+                    repourl=self._url, ccancel=ccancel)
 
-        def _post_url(self, url, data, header=None):
+        def _post_url(self, url, data, header=None, ccancel=None):
                 return self._engine.send_data(url, data, header,
-                    repourl=self._url)
+                    repourl=self._url, ccancel=ccancel)
 
         def add_version_data(self, verdict):
                 """Cache the information about what versions a repository
@@ -121,7 +121,7 @@ class HTTPRepo(TransportRepo):
 
                 self._verdata = verdict
 
-        def do_search(self, data, header=None):
+        def do_search(self, data, header=None, ccancel=None):
                 """Perform a remote search against origin repos."""
 
                 methodstr = "search/1/"
@@ -134,7 +134,7 @@ class HTTPRepo(TransportRepo):
                             for i, q in enumerate(data)])
 
                         resp = self._post_url(requesturl, request_data,
-                            header)
+                            header, ccancel=ccancel)
 
                 else:
                         baseurl = urlparse.urljoin(self._repouri.uri,
@@ -142,11 +142,12 @@ class HTTPRepo(TransportRepo):
                         requesturl = urlparse.urljoin(baseurl, urllib.quote(
                             str(data[0]), safe=''))
 
-                        resp = self._fetch_url(requesturl, header)
+                        resp = self._fetch_url(requesturl, header,
+                            ccancel=ccancel)
 
                 return resp
 
-        def get_catalog(self, ts=None, header=None):
+        def get_catalog(self, ts=None, header=None, ccancel=None):
                 """Get the catalog from the repo.  If ts is defined,
                 request only changes newer than timestamp ts."""
 
@@ -160,9 +161,11 @@ class HTTPRepo(TransportRepo):
                         else:
                                 header["If-Modified-Since"] = ts
 
-                return self._fetch_url(requesturl, header, compress=True)
+                return self._fetch_url(requesturl, header, compress=True,
+                    ccancel=ccancel)
 
-        def get_catalog1(self, filelist, destloc, header=None, ts=None):
+        def get_catalog1(self, filelist, destloc, header=None, ts=None,
+            progtrack=None):
                 """Get the files that make up the catalog components
                 that are listed in 'filelist'.  Download the files to
                 the directory specified in 'destloc'.  The caller
@@ -173,6 +176,7 @@ class HTTPRepo(TransportRepo):
 
                 methodstr = "catalog/1/"
                 urllist = []
+                progclass = None
 
                 if ts:
                         # Convert date to RFC 1123 compliant string
@@ -183,6 +187,9 @@ class HTTPRepo(TransportRepo):
                         else:
                                 header["If-Modified-Since"] = tsstr
 
+                if progtrack:
+                        progclass = ProgressCallback
+
                 # create URL for requests
                 baseurl = urlparse.urljoin(self._repouri.uri, methodstr)
 
@@ -191,7 +198,8 @@ class HTTPRepo(TransportRepo):
                         urllist.append(url)
                         fn = os.path.join(destloc, f)
                         self._add_file_url(url, filepath=fn, header=header,
-                            compress=True)
+                            compress=True, progtrack=progtrack,
+                            progclass=progclass)
 
                 try:
                         while self._engine.pending:
@@ -234,7 +242,7 @@ class HTTPRepo(TransportRepo):
 
                 return self._fetch_url(requesturl, header)
 
-        def get_manifest(self, mfst, header=None):
+        def get_manifest(self, mfst, header=None, ccancel=None):
                 """Get a manifest from repo.  The name of the
                 manifest is given in mfst."""
 
@@ -243,7 +251,8 @@ class HTTPRepo(TransportRepo):
                 baseurl = urlparse.urljoin(self._repouri.uri, methodstr)
                 requesturl = urlparse.urljoin(baseurl, mfst)
 
-                return self._fetch_url(requesturl, header, compress=True)
+                return self._fetch_url(requesturl, header, compress=True,
+                    ccancel=ccancel)
 
         def get_manifests(self, mfstlist, dest, progtrack=None):
                 """Get manifests named in list.  The mfstlist argument
@@ -389,12 +398,12 @@ class HTTPRepo(TransportRepo):
 
                 return self._url
 
-        def get_versions(self, header=None):
+        def get_versions(self, header=None, ccancel=None):
                 """Query the repo for versions information.
                 Returns a fileobject."""
 
                 requesturl = urlparse.urljoin(self._repouri.uri, "versions/0/")
-                return self._fetch_url(requesturl, header)
+                return self._fetch_url(requesturl, header, ccancel=None)
 
         def has_version_data(self):
                 """Returns true if this repo knows its version information."""
@@ -408,7 +417,7 @@ class HTTPRepo(TransportRepo):
                 return self.has_version_data() and \
                     (op in self._verdata and ver in self._verdata[op])
 
-        def touch_manifest(self, mfst, header=None):
+        def touch_manifest(self, mfst, header=None, ccancel=None):
                 """Invoke HTTP HEAD to send manifest intent data."""
 
                 methodstr = "manifest/0/"
@@ -416,7 +425,8 @@ class HTTPRepo(TransportRepo):
                 baseurl = urlparse.urljoin(self._repouri.uri, methodstr)
                 requesturl = urlparse.urljoin(baseurl, mfst)
 
-                resp = self._fetch_url_header(requesturl, header)
+                resp = self._fetch_url_header(requesturl, header,
+                    ccancel=ccancel)
 
                 # response is empty, or should be.
                 resp.read()
@@ -444,21 +454,23 @@ class HTTPSRepo(HTTPRepo):
                     sslkey=self._repouri.ssl_key, repourl=self._url,
                     header=header, compressible=compress)
 
-        def _fetch_url(self, url, header=None, compress=False):
+        def _fetch_url(self, url, header=None, compress=False, ccancel=None):
                 return self._engine.get_url(url, header=header,
                     sslcert=self._repouri.ssl_cert,
                     sslkey=self._repouri.ssl_key, repourl=self._url,
-                    compressible=compress)
+                    compressible=compress, ccancel=ccancel)
 
-        def _fetch_url_header(self, url, header=None):
+        def _fetch_url_header(self, url, header=None, ccancel=None):
                 return self._engine.get_url_header(url, header=header,
                     sslcert=self._repouri.ssl_cert,
-                    sslkey=self._repouri.ssl_key, repourl=self._url)
+                    sslkey=self._repouri.ssl_key, repourl=self._url,
+                    ccancel=ccancel)
 
-        def _post_url(self, url, data, header=None):
+        def _post_url(self, url, data, header=None, ccancel=None):
                 return self._engine.send_data(url, data, header=header,
                     sslcert=self._repouri.ssl_cert,
-                    sslkey=self._repouri.ssl_key, repourl=self._url)
+                    sslkey=self._repouri.ssl_key, repourl=self._url,
+                    ccancel=ccancel)
 
 # ProgressCallback objects that bridge the interfaces between ProgressTracker,
 # and the necessary callbacks for the TransportEngine.

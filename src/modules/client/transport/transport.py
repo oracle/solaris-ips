@@ -96,20 +96,26 @@ class Transport(object):
                 self.__engine.reset()
                 self.__repo_cache.clear_cache()
 
-        def do_search(self, pub, data):
+        def do_search(self, pub, data, ccancel=None):
                 """Perform a search request.  Returns a file-like object
                 that contains the search results.  Callers need to catch
                 transport exceptions that this object may generate."""
 
                 self.__lock.acquire()
                 try:
-                        fobj = self._do_search(pub, data)
+                        fobj = self._do_search(pub, data, ccancel=ccancel)
                 finally:
                         self.__lock.release()
 
+                # Since we're returning a file object that's using the
+                # same engine as the rest of this transport, assign
+                # our lock to the fobj.  It must synchronize with us
+                # too.
+                fobj.set_lock(self.__lock)
+
                 return fobj
 
-        def _do_search(self, pub, data):
+        def _do_search(self, pub, data, ccancel=None):
                 """Implementation of do_search, which is wrapper for this
                 method."""
 
@@ -128,7 +134,8 @@ class Transport(object):
                 for d in self.__gen_origins(pub, retry_count):
 
                         try:
-                                fobj = d.do_search(data, header)
+                                fobj = d.do_search(data, header,
+                                    ccancel=ccancel)
                                 fobj._prime()
                                 return fobj
 
@@ -171,20 +178,18 @@ class Transport(object):
 
                 return self.__cadir
 
-        def get_catalog(self, pub, ts=None):
+        def get_catalog(self, pub, ts=None, ccancel=None):
                 """Get the catalog for the specified publisher.  If
                 ts is defined, request only changes newer than timestamp
                 ts."""
 
                 self.__lock.acquire()
                 try:
-                        resp = self._get_catalog(pub, ts)
+                        self._get_catalog(pub, ts, ccancel=ccancel)
                 finally:
                         self.__lock.release()
 
-                return resp
-
-        def _get_catalog(self, pub, ts=None):
+        def _get_catalog(self, pub, ts=None, ccancel=None):
                 """Get catalog.  This is the implementation of get_catalog,
                 a wrapper for this function."""
 
@@ -206,7 +211,8 @@ class Transport(object):
                         # raise the error to a higher-level handler.
                         try:
 
-                                resp = d.get_catalog(ts, header)
+                                resp = d.get_catalog(ts, header,
+                                    ccancel=ccancel)
 
                                 updatelog.recv(resp, croot, ts, pub)
 
@@ -258,7 +264,8 @@ class Transport(object):
                         raise te
                 return
 
-        def get_catalog1(self, pub, flist, ts=None, path=None):
+        def get_catalog1(self, pub, flist, ts=None, path=None,
+            progtrack=None, ccancel=None):
                 """Get the catalog1 files from publisher 'pub' that
                 are given as a list in 'flist'.  If the caller supplies
                 an optional timestamp argument, only get the files that
@@ -286,11 +293,13 @@ class Transport(object):
 
                 self.__lock.acquire()
                 try:
-                        self._get_catalog1(pub, flist, ts=ts, path=path)
+                        self._get_catalog1(pub, flist, ts=ts, path=path,
+                            progtrack=progtrack, ccancel=ccancel)
                 finally:
                         self.__lock.release()
 
-        def _get_catalog1(self, pub, flist, ts=None, path=None):
+        def _get_catalog1(self, pub, flist, ts=None, path=None,
+            progtrack=None, ccancel=None):
                 """This is the implementation of get_catalog1.  The
                 other function is a wrapper for this one."""
 
@@ -298,6 +307,9 @@ class Transport(object):
                 failures = []
                 repo_found = False
                 header = self.__build_header(uuid=self.__get_uuid(pub))
+
+                if progtrack and ccancel:
+                        progtrack.check_cancelation = ccancel
 
                 # Ensure that caller only passed one item, if ts was
                 # used.
@@ -344,7 +356,7 @@ class Transport(object):
                         pass
 
                 for d in self.__gen_origins_byversion(pub, retry_count,
-                    "catalog", 1):
+                    "catalog", 1, ccancel=ccancel):
 
                         failedreqs = []
                         repostats = self.stats[d.get_url()]
@@ -357,7 +369,7 @@ class Transport(object):
                         # unless we want to supress a permanent failure.
                         try:
                                 errlist = d.get_catalog1(flist, download_dir,
-                                    header, ts)
+                                    header, ts, progtrack=progtrack)
                         except tx.TransportProtoError, e:
                                 # If we've performed a conditional
                                 # request, and it returned 304, raise a
@@ -465,6 +477,12 @@ class Transport(object):
                 finally:
                         self.__lock.release()
 
+                # Since we're returning a file object that's using the
+                # same engine as the rest of this transport, assign
+                # our lock to the fobj.  It must synchronize with us
+                # too.
+                resp.set_lock(self.__lock)
+
                 return resp
 
         def _get_datastream(self, fmri, fhash):
@@ -490,7 +508,7 @@ class Transport(object):
                                         raise
                 raise failures
 
-        def touch_manifest(self, fmri, intent=None):
+        def touch_manifest(self, fmri, intent=None, ccancel=None):
                 """Touch a manifest.  This operation does not
                 return the manifest's content.  The FMRI is given
                 as fmri.  An optional intent string may be supplied
@@ -498,11 +516,11 @@ class Transport(object):
 
                 self.__lock.acquire()
                 try:
-                        self._touch_manifest(fmri, intent)
+                        self._touch_manifest(fmri, intent, ccancel=ccancel)
                 finally:
                         self.__lock.release()
 
-        def _touch_manifest(self, fmri, intent=None):
+        def _touch_manifest(self, fmri, intent=None, ccancel=None):
                 """Implementation of touch_manifest, which is a wrapper
                 around this function."""
 
@@ -520,7 +538,7 @@ class Transport(object):
                         # save it if it's retryable, otherwise
                         # raise the error to a higher-level handler.
                         try:
-                                d.touch_manifest(mfst, header)
+                                d.touch_manifest(mfst, header, ccancel=ccancel)
                                 return
 
                         except tx.TransportException, e:
@@ -531,19 +549,22 @@ class Transport(object):
 
                 raise failures
 
-        def get_manifest(self, fmri, excludes=misc.EmptyI, intent=None):
+        def get_manifest(self, fmri, excludes=misc.EmptyI, intent=None,
+            ccancel=None):
                 """Given a fmri, and optional excludes, return a manifest
                 object."""
 
                 self.__lock.acquire()
                 try:
-                        m = self._get_manifest(fmri, excludes, intent)
+                        m = self._get_manifest(fmri, excludes, intent,
+                            ccancel=ccancel)
                 finally:
                         self.__lock.release()
 
                 return m
 
-        def _get_manifest(self, fmri, excludes=misc.EmptyI, intent=None):
+        def _get_manifest(self, fmri, excludes=misc.EmptyI, intent=None,
+            ccancel=None):
                 """This is the implementation of get_manifest.  The
                 get_manifest function wraps this."""
 
@@ -570,7 +591,8 @@ class Transport(object):
                         repostats = self.stats[d.get_url()]
 
                         try:
-                                resp = d.get_manifest(mfst, header)
+                                resp = d.get_manifest(mfst, header,
+                                    ccancel=ccancel)
                                 mcontent = resp.read()
 
                                 self._verify_manifest(fmri, content=mcontent)
@@ -613,7 +635,7 @@ class Transport(object):
                 try:
                         try:
                                 self._prefetch_manifests(fetchlist, excludes,
-                                    progtrack, ccancel)
+                                    progtrack, ccancel=ccancel)
                         except (apx.PermissionsException, 
                             apx.InvalidDepotResponseException):
                                 pass             
@@ -1069,19 +1091,19 @@ class Transport(object):
                 finally:
                         self.__lock.release()
 
-        def get_versions(self, pub):
+        def get_versions(self, pub, ccancel=None):
                 """Query the publisher's origin servers for versions
                 information.  Return a dictionary of "name":"versions" """
 
                 self.__lock.acquire()
                 try:
-                        v = self._get_versions(pub)
+                        v = self._get_versions(pub, ccancel=ccancel)
                 finally:
                         self.__lock.release()
 
                 return v
 
-        def _get_versions(self, pub):
+        def _get_versions(self, pub, ccancel=None):
                 """Implementation of get_versions"""
 
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
@@ -1097,7 +1119,8 @@ class Transport(object):
                         # save it if it's retryable, otherwise
                         # raise the error to a higher-level handler.
                         try:
-                                vers = self.__get_version(d, header)        
+                                vers = self.__get_version(d, header,
+                                    ccancel=ccancel)
                                 # Save this information for later use, too.
                                 self.__populate_repo_versions(d, vers)
                                 return vers 
@@ -1114,11 +1137,11 @@ class Transport(object):
                 raise failures
 
         @staticmethod
-        def __get_version(repo, header=None):
+        def __get_version(repo, header=None, ccancel=None):
                 """An internal method that returns a versions dictionary
                 given a transport repo object."""
 
-                resp = repo.get_versions(header)
+                resp = repo.get_versions(header, ccancel=ccancel)
                 verlines = resp.readlines()
 
                 return dict(
@@ -1126,7 +1149,7 @@ class Transport(object):
                     for s in (l.strip() for l in verlines)
                 )
 
-        def __populate_repo_versions(self, repo, vers=None):
+        def __populate_repo_versions(self, repo, vers=None, ccancel=None):
                 """Download versions information for the transport
                 repository object and store that information inside
                 of it."""
@@ -1136,7 +1159,7 @@ class Transport(object):
                 
                 if not vers:
                         try:
-                                vers = self.__get_version(repo)
+                                vers = self.__get_version(repo, ccancel=ccancel)
                         except ValueError:
                                 raise tx.PkgProtoError(repo.get_url(),
                                     "versions", 0,
@@ -1182,7 +1205,8 @@ class Transport(object):
                         for rs, ruri in rslist:
                                 yield self.__repo_cache.new_repo(rs, ruri)
 
-        def __gen_origins_byversion(self, pub, count, operation, version):
+        def __gen_origins_byversion(self, pub, count, operation, version,
+            ccancel=None):
                 """Return origin repos for publisher pub, that support
                 the operation specified as a string in the 'operation'
                 argument.  The operation must support the version
@@ -1206,7 +1230,7 @@ class Transport(object):
                                 if not repo.has_version_data():
                                         try:
                                                 self.__populate_repo_versions(
-                                                    repo)
+                                                    repo, ccancel=ccancel)
                                         except tx.TransportException:
                                                 continue
 
@@ -1249,7 +1273,7 @@ class Transport(object):
                         return CHUNK_SMALL
                 return CHUNK_LARGE
 
-        def valid_publisher_test(self, pub):
+        def valid_publisher_test(self, pub, ccancel=None):
                 """Test that the publisher supplied in pub actually
                 points to a valid packaging server."""
 
@@ -1261,11 +1285,11 @@ class Transport(object):
 
                 return val
 
-        def _valid_publisher_test(self, pub):
+        def _valid_publisher_test(self, pub, ccancel=None):
                 """Implementation of valid_publisher_test."""
 
                 try:
-                        vd = self._get_versions(pub)
+                        vd = self._get_versions(pub, ccancel=ccancel)
                 except tx.TransportException, e:
                         # Failure when contacting server.  Report
                         # this as an error.  Attempt to report
@@ -1285,18 +1309,18 @@ class Transport(object):
 
                 return True
 
-        def captive_portal_test(self):
+        def captive_portal_test(self, ccancel=None):
                 """A captive portal forces a HTTP client on a network
                 to see a special web page, usually for authentication
                 purposes.  (http://en.wikipedia.org/wiki/Captive_portal)."""
 
                 self.__lock.acquire()
                 try:
-                        self._captive_portal_test()
+                        self._captive_portal_test(ccancel=ccancel)
                 finally:
                         self.__lock.release()
 
-        def _captive_portal_test(self):
+        def _captive_portal_test(self, ccancel=None):
                 """Implementation of captive_portal_test."""
 
                 if self.__portal_test_executed:
@@ -1307,12 +1331,15 @@ class Transport(object):
 
                 for pub in self.__img.gen_publishers():
                         try:
-                                vd = self._get_versions(pub)
+                                vd = self._get_versions(pub, ccancel=ccancel)
                         except tx.TransportException:
                                 # Encountered a transport error while
                                 # trying to contact this publisher.
                                 # Pick another publisher instead.
                                 continue
+                        except apx.CanceledException:
+                                self.__portal_test_executed = False
+                                raise
 
                         if self._valid_versions_test(vd):
                                 return

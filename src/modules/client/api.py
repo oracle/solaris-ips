@@ -30,6 +30,7 @@ import fnmatch
 import os
 import StringIO
 import sys
+import threading
 import urllib
 
 import pkg.client.actuator as actuator
@@ -131,6 +132,8 @@ class ImageInterface(object):
                 self.__can_be_canceled = False
                 self.__canceling = False
                 self.__activity_lock = pkg.nrlock.NRLock()
+                self.__cancel_lock =  threading.Lock()
+                self.__cancel_cv = threading.Condition(self.__cancel_lock)
 
         @property
         def img(self):
@@ -195,7 +198,9 @@ class ImageInterface(object):
 
                 self.__activity_lock.acquire()
                 try:
+                        self.__cancel_lock.acquire()
                         self.__set_can_be_canceled(True)
+                        self.__cancel_lock.release()
                         if self.__plan_type is not None:
                                 raise api_errors.PlanExistsException(
                                     self.__plan_type)
@@ -233,6 +238,8 @@ class ImageInterface(object):
 
                 if exc_type == api_errors.PlanCreationException:
                         self.__set_history_PlanCreationException(exc_value)
+                elif exc_type == api_errors.CanceledException:
+                        self.__cancel_done()
                 elif not log_op_end or exc_type in log_op_end:
                         self.log_operation_end(error=exc_value)
                 self.__reset_unlock()
@@ -266,9 +273,7 @@ class ImageInterface(object):
 
                         assert self.__img.imageplan
 
-                        if self.__canceling:
-                                raise api_errors.CanceledException()
-                        self.__set_can_be_canceled(False)
+                        self.__disable_cancel()
 
                         if not noexecute:
                                 self.__plan_type = self.__INSTALL
@@ -311,9 +316,7 @@ class ImageInterface(object):
 
                         assert self.__img.imageplan
 
-                        if self.__canceling:
-                                raise api_errors.CanceledException()
-                        self.__set_can_be_canceled(False)
+                        self.__disable_cancel()
 
                         if not noexecute:
                                 self.__plan_type = self.__UNINSTALL
@@ -389,9 +392,7 @@ class ImageInterface(object):
                             
                         assert self.__img.imageplan
 
-                        if self.__canceling:
-                                raise api_errors.CanceledException()
-                        self.__set_can_be_canceled(False)
+                        self.__disable_cancel()
 
                         if not noexecute:
                                 self.__plan_type = self.__IMAGE_UPDATE
@@ -442,9 +443,7 @@ class ImageInterface(object):
 
                         assert self.__img.imageplan
 
-                        if self.__canceling:
-                                raise api_errors.CanceledException()
-                        self.__set_can_be_canceled(False)
+                        self.__disable_cancel()
 
                         if not noexecute:
                                 self.__plan_type = self.__IMAGE_UPDATE
@@ -483,48 +482,56 @@ class ImageInterface(object):
                 plan_X method has been called."""
 
                 self.__activity_lock.acquire()
-                self.__set_can_be_canceled(True)
-
                 try:
+                        if not self.__img.imageplan:
+                                raise api_errors.PlanMissingException()
+
+                        if self.__prepared:
+                                raise api_errors.AlreadyPreparedException()
+                        assert self.__plan_type == self.__INSTALL or \
+                            self.__plan_type == self.__UNINSTALL or \
+                            self.__plan_type == self.__IMAGE_UPDATE
+
+                        self.__cancel_lock.acquire()
+                        self.__set_can_be_canceled(True)
+                        self.__cancel_lock.release()
+
                         try:
-                                if not self.__img.imageplan:
-                                        raise api_errors.PlanMissingException()
-
-                                if self.__prepared:
-                                        raise api_errors.AlreadyPreparedException()
-                                assert self.__plan_type == self.__INSTALL or \
-                                    self.__plan_type == self.__UNINSTALL or \
-                                    self.__plan_type == self.__IMAGE_UPDATE
-                                try:
-                                        self.__img.imageplan.preexecute()
-                                except search_errors.ProblematicPermissionsIndexException, e:
-                                        raise api_errors.ProblematicPermissionsIndexException(e)
-                                except:
-                                        raise
-
-                                if self.__canceling:
-                                        self.__img.transport.reset()
-                                        raise api_errors.CanceledException()
-                                self.__prepared = True
-                        except Exception, e:
-                                if self.__img.history.operation_name:
-                                        # If an operation is in progress, log
-                                        # the error and mark its end.
-                                        self.log_operation_end(error=e)
-                                raise
+                                self.__img.imageplan.preexecute()
+                        except search_errors.ProblematicPermissionsIndexException, e:
+                                raise api_errors.ProblematicPermissionsIndexException(e)
                         except:
-                                # Handle exceptions that are not subclasses of
-                                # Exception.
-                                if self.__img.history.operation_name:
-                                        # If an operation is in progress, log
-                                        # the error and mark its end.
-                                        exc_type, exc_value, exc_traceback = \
-                                            sys.exc_info()
-                                        self.log_operation_end(error=exc_type)
                                 raise
+
+                        self.__disable_cancel()
+                        self.__prepared = True
+                except api_errors.CanceledException, e:
+                        self.__cancel_done()
+                        if self.__img.history.operation_name:
+                                # If an operation is in progress, log
+                                # the error and mark its end.
+                                self.log_operation_end(error=e)
+                        raise
+                except Exception, e:
+                        self.__cancel_cleanup_exception()
+                        if self.__img.history.operation_name:
+                                # If an operation is in progress, log
+                                # the error and mark its end.
+                                self.log_operation_end(error=e)
+                        raise
+                except:
+                        # Handle exceptions that are not subclasses of
+                        # Exception.
+                        self.__cancel_cleanup_exception()
+                        if self.__img.history.operation_name:
+                                # If an operation is in progress, log
+                                # the error and mark its end.
+                                exc_type, exc_value, exc_traceback = \
+                                    sys.exc_info()
+                                self.log_operation_end(error=exc_type)
+                        raise
                 finally:
                         self.__img.cleanup_downloads()
-                        self.__set_can_be_canceled(False)
                         self.__activity_lock.release()
 
         def execute_plan(self):
@@ -536,7 +543,9 @@ class ImageInterface(object):
                 called."""
 
                 self.__activity_lock.acquire()
+                self.__cancel_lock.acquire()
                 self.__set_can_be_canceled(False)
+                self.__cancel_lock.release()
                 try:
                         if not self.__img.imageplan:
                                 raise api_errors.PlanMissingException()
@@ -696,7 +705,9 @@ class ImageInterface(object):
                 work while the rest of the API is put into place."""
 
                 self.__activity_lock.acquire()
+                self.__cancel_lock.acquire()
                 self.__set_can_be_canceled(False)
+                self.__cancel_lock.release()
                 try:
                         self.__img.refresh_publishers(full_refresh=full_refresh,
                             immediate=immediate, pubs=pubs,
@@ -1524,6 +1535,20 @@ class ImageInterface(object):
                 """Returns true if the API is in a cancelable state."""
                 return self.__can_be_canceled
 
+        def __disable_cancel(self):
+                """Sets_can_be_canceled to False in a way that prevents missed
+                wakeups.  This may raise CanceledException, if a
+                cancellation is pending.""" 
+
+                self.__cancel_lock.acquire()
+                if self.__canceling:
+                        self.__cancel_lock.release()
+                        self.__img.transport.reset()
+                        raise api_errors.CanceledException()
+                else:
+                        self.__set_can_be_canceled(False)
+                self.__cancel_lock.release()
+
         def __set_can_be_canceled(self, status):
                 """Private method. Handles the details of changing the
                 cancelable state."""
@@ -1563,14 +1588,39 @@ class ImageInterface(object):
                 self.__prepared = False
                 self.__executed = False
                 self.__be_name = None
-                self.__set_can_be_canceled(False)
-                self.__canceling = False
 
+                self.__cancel_cleanup_exception()
+                
         def __check_cancelation(self):
                 """Private method. Provides a callback method for internal
                 code to use to determine whether the current action has been
                 canceled."""
                 return self.__canceling
+
+        def __cancel_cleanup_exception(self):
+                """A private method that is called from exception handlers.
+                This is not needed if the method calls reset unlock,
+                which will call this method too.  This catches the case
+                where a caller might have called cancel and gone to sleep,
+                but the requested operation failed with an exception before
+                it could raise a CanceledException."""
+
+                self.__cancel_lock.acquire()
+                self.__set_can_be_canceled(False)
+                self.__canceling = False
+                # Wake up any threads that are waiting on this aborted
+                # operation.
+                self.__cancel_cv.notify_all()
+                self.__cancel_lock.release()
+
+
+        def __cancel_done(self):
+                """A private method that wakes any threads that have been
+                sleeping, waiting for a cancellation to finish."""
+
+                self.__cancel_lock.acquire()
+                self.__cancel_cv.notify_all()
+                self.__cancel_lock.release()
 
         def cancel(self):
                 """Used for asynchronous cancelation. It returns the API
@@ -1579,19 +1629,23 @@ class ImageInterface(object):
                 its initial state. Canceling during prepare puts the API
                 into the state it was in just after planning had completed.
                 Plan execution cannot be canceled. A call to this method blocks
-                until the canelation has happened. Note: this does not
+                until the cancellation has happened. Note: this does not
                 necessarily return the disk to its initial state since the
                 indexes or download cache may have been changed by the
                 prepare method."""
+
+                self.__cancel_lock.acquire()
+
                 if not self.__can_be_canceled:
+                        self.__cancel_lock.release()
                         return False
+
                 self.__set_can_be_canceled(False)
                 self.__canceling = True
-                # The lock is taken here to make the call block, until
-                # the activity has been canceled.
-                self.__activity_lock.acquire()
-                self.__activity_lock.release()
+                # Wait until the cancelled operation wakes us up.
+                self.__cancel_cv.wait()
                 self.__canceling = False
+                self.__cancel_lock.release()
                 return True
 
         def __set_history_PlanCreationException(self, e):
@@ -1703,6 +1757,10 @@ class ImageInterface(object):
                 invalid = []
                 unsupported = []
 
+                self.__cancel_lock.acquire()
+                self.__set_can_be_canceled(True)
+                self.__cancel_lock.release()
+
                 if not servers:
                         servers = self.__img.gen_publishers()
 
@@ -1722,13 +1780,20 @@ class ImageInterface(object):
                                 else:
                                         new_qs.append(q)
                         except query_p.BooleanQueryException, e:
+                                self.__cancel_cleanup_exception()
                                 raise api_errors.BooleanQueryException(e)
                         except query_p.ParseError, e:
+                                self.__cancel_cleanup_exception()
                                 raise api_errors.ParseError(e)
+
                 query_str_and_args_lst = new_qs
 
                 for pub in servers:
                         descriptive_name = None
+
+                        if self.__canceling:
+                                self.__cancel_done()
+                                raise api_errors.CanceledException()
 
                         if isinstance(pub, dict):
                                 origin = pub["origin"]
@@ -1744,7 +1809,11 @@ class ImageInterface(object):
 
                         try:
                                 res = self.__img.transport.do_search(pub,
-                                    query_str_and_args_lst)
+                                    query_str_and_args_lst,
+                                    ccancel=self.__check_cancelation)
+                        except api_errors.CanceledException:
+                                self.__cancel_done()
+                                raise
                         except api_errors.NegativeSearchResult:
                                 continue
                         except api_errors.TransportError, e:
@@ -1757,6 +1826,7 @@ class ImageInterface(object):
                                 ex = self._validate_search(
                                     query_str_and_args_lst)
                                 if ex:
+                                        self.__cancel_cleanup_exception()
                                         raise ex
                                 failed.append((descriptive_name, e))
                                 continue
@@ -1767,13 +1837,19 @@ class ImageInterface(object):
                                         continue
                                 for line in res:
                                         yield self.__parse_v_1(line, pub, 1)
+                        except api_errors.CanceledException:
+                                self.__cancel_done()
+                                raise
                         except api_errors.TransportError, e:
                                 failed.append((descriptive_name, e))
                                 continue
 
                 if failed or invalid or unsupported:
+                        self.__cancel_cleanup_exception()
                         raise api_errors.ProblematicSearchServers(failed,
                             invalid, unsupported)
+
+                self.__disable_cancel()
 
         @staticmethod
         def __unconvert_return_type(v):
@@ -1918,12 +1994,15 @@ class ImageInterface(object):
                 dt = None
                 self.__activity_lock.acquire()
                 try:
+                        self.__cancel_lock.acquire()
                         self.__set_can_be_canceled(True)
+                        self.__cancel_lock.release()
                         try:
                                 dt = pub.catalog.last_modified
                         except:
                                 self.__reset_unlock()
                                 raise
+                        self.__disable_cancel()
                 finally:
                         self.__activity_lock.release()
                 return dt
