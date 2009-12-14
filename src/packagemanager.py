@@ -2200,7 +2200,7 @@ class PackageManager:
                         if pkgs != None:
                                 if stem in pkgs:
                                         marked = True
-                        # When switching after Manage Repository dialog
+                        # When switching after Manage Publisher dialog
                         # this assignment can cause bogus refilter
                         if pkg[enumerations.MARK_COLUMN] != marked:
                                 pkg[enumerations.MARK_COLUMN] = marked
@@ -2293,6 +2293,12 @@ class PackageManager:
                 if selection:
                         self.__save_active_category(path)
                         selection.unselect_all()
+
+        def __process_after_cancel(self):
+                if self.is_all_publishers:
+                        self.__setup_before_all_publishers_mode()
+                else:
+                        self.__unset_search(True)
 
         def __process_after_search_failure(self):
                 self.__reset_search_start()
@@ -2399,10 +2405,9 @@ class PackageManager:
                                                 pub_prefix, text)
                                 return
                 except api_errors.CanceledException:
-                        # TBD. Currently search is not cancelable
-                        # so this should not happen, but the logic is in place
-                        # to support cancelable search.
+                        self.__reset_search_start()
                         gobject.idle_add(self.unset_busy_cursor)
+                        gobject.idle_add(self.__process_after_cancel)
                         return
                 except Exception, ex:
                         # We are not interested in this error
