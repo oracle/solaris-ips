@@ -237,6 +237,25 @@
                       </widget>
                     </child>
                     <child>
+                      <widget class="GtkMenuItem" id="recent_searches">
+                        <property name="no_show_all">True</property>
+                        <property name="label" translatable="yes">_Recent Searches</property>
+                        <property name="use_underline">True</property>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkMenuItem" id="clear_recent_searches">
+                        <property name="no_show_all">True</property>
+                        <property name="label" translatable="yes">Clear Recent Searc_hes</property>
+                        <property name="use_underline">True</property>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkSeparatorMenuItem" id="separatormenuitem5">
+                        <property name="no_show_all">True</property>
+                      </widget>
+                    </child>
+                    <child>
                       <widget class="GtkImageMenuItem" id="edit_preferences">
                         <property name="label">gtk-preferences</property>
                         <property name="visible">True</property>
@@ -2232,6 +2251,72 @@
                   </widget>
                   <packing>
                     <property name="position">7</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkLabel" id="search_label">
+                    <property name="no_show_all">True</property>
+                    <property name="xalign">0</property>
+                    <property name="yalign">0</property>
+                    <property name="ypad">2</property>
+                    <property name="label" translatable="yes">&lt;b&gt;Recent Searches&lt;/b&gt;</property>
+                    <property name="use_markup">True</property>
+                  </widget>
+                  <packing>
+                    <property name="position">8</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkHBox" id="hbox10">
+                    <property name="no_show_all">True</property>
+                    <child>
+                      <widget class="GtkAlignment" id="alignment5">
+                        <property name="width_request">17</property>
+                        <property name="visible">True</property>
+                        <child>
+                          <placeholder/>
+                        </child>
+                      </widget>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkVBox" id="vbox5">
+                        <property name="visible">True</property>
+                        <property name="orientation">vertical</property>
+                        <property name="spacing">3</property>
+                        <child>
+                          <widget class="GtkHBox" id="hbox11">
+                            <property name="visible">True</property>
+                            <child>
+                              <widget class="GtkCheckButton" id="recent_search_checkbutton">
+                                <property name="label" translatable="yes">Show _all publisher results</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="use_underline">True</property>
+                                <property name="draw_indicator">True</property>
+                              </widget>
+                              <packing>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                          </widget>
+                          <packing>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                      </widget>
+                      <packing>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </widget>
+                  <packing>
+                    <property name="position">9</property>
                   </packing>
                 </child>
               </widget>
@@ -5722,7 +5807,7 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkLabel" id="label5">
+                  <widget class="GtkLabel" id="info_installable_label">
                     <property name="visible">True</property>
                     <property name="xalign">0</property>
                     <property name="yalign">0</property>

@@ -416,6 +416,8 @@ class PackageManager:
                 self.w_info_installed_label = w_version_info.get_widget("info_installed")
                 self.w_info_installable_label = w_version_info.get_widget(
                     "info_installable")
+                self.w_info_installable_prefix_label = w_version_info.get_widget(
+                    "info_installable_label")
                 self.w_info_ok_button = w_version_info.get_widget("info_ok_button")
                 self.w_info_expander = w_version_info.get_widget("version_info_expander")
                 self.w_info_textview = w_version_info.get_widget("infotextview")
@@ -3420,8 +3422,7 @@ class PackageManager:
 
                 installed_only = False
                 if local_info:
-                        if (local_info.build_release == remote_info.build_release
-                            and local_info.branch == remote_info.branch):
+                        if self.__same_pkg_versions(local_info, remote_info):
                                 installed_only = True
 
                 if not installed_only:
@@ -3449,43 +3450,92 @@ class PackageManager:
                     plan_pkg, name)
                 return
 
+        @staticmethod
+        def __same_pkg_versions(info1, info2):
+                if info1 == None or info2 == None:
+                        return False
+                        
+                return info1.version == info2.version and \
+                        info1.build_release == info2.build_release and \
+                        info1.branch == info2.branch
+
+        def __hide_pkg_version_details(self):
+                self.w_info_expander.hide()
+                self.w_version_info_dialog.set_size_request(-1, -1)
+                
         def __after_get_info(self, local_info, remote_info, plan_pkg, name):
                 if self.exiting:
                         return
                 self.w_info_name_label.set_text(name)
                 installable_fmt = \
                     _("%(version)s (Build %(build)s-%(branch)s)")
+                installed_label = ""
+                installable_label = ""
+                installable_prefix_label = _("<b>Installable Version:</b>")
+                
                 if local_info:
+                        # Installed
+                        installable_prefix_label = _("<b>Upgradeable Version:</b>")
                         yes_text = _("Yes, %(version)s (Build %(build)s-%(branch)s)")
                         installed_label = yes_text % \
                             {"version": local_info.version,
                             "build": local_info.build_release,
                             "branch": local_info.branch}
-                        if (local_info.build_release == remote_info.build_release
-                            and local_info.branch == remote_info.branch):
+                        if self.__same_pkg_versions(local_info, remote_info):
+                                # Installed and up to date
                                 installable_label = \
                                     _("Installed package is up-to-date")
-                                self.w_info_expander.hide()
-                                self.w_version_info_dialog.set_size_request(-1, -1)
+                                self.__hide_pkg_version_details()
                         else:
                                 if plan_pkg == None:
-                                        # Updateable but cannot do it
+                                        # Installed with later version but can't upgrade
+                                        # Upgradeable Version: None
                                         installable_label = _("None")
                                         self.__setup_version_info_details(name,
                                             remote_info.version,
                                             remote_info.build_release,
-                                            remote_info.branch)
+                                            remote_info.branch, False)
+                                else:
+                                        # Installed with later version and can upgrade to
+                                        # Upgradeable Version: <version>
+                                        # Upgradeable == Latest Version
+                                        if self.__same_pkg_versions(plan_pkg, 
+                                            remote_info):
+                                                installable_label = installable_fmt % \
+                                                    {"version": plan_pkg.version,
+                                                    "build": plan_pkg.build_release,
+                                                    "branch": plan_pkg.branch}
+                                                self.__hide_pkg_version_details()
+                                        else:
+                                        # Installed with later version and can upgrade
+                                        # Upgradeable Version: <version>
+                                        # but NOT to the Latest Version
+                                                installable_label = installable_fmt % \
+                                                    {"version": plan_pkg.version,
+                                                    "build": plan_pkg.build_release,
+                                                    "branch": plan_pkg.branch}
+
+                                                self.__setup_version_info_details(name,
+                                                    remote_info.version,
+                                                    remote_info.build_release,
+                                                    remote_info.branch, False)
                 else:
+                        # Not Installed
                         installed_label = _("No")
                         if plan_pkg:
-                                if plan_pkg.build_release == remote_info.build_release \
-                                    and plan_pkg.branch == remote_info.branch:
+                                # Not installed with later version available to install
+                                # Installable: <version>
+                                # Installable == Latest Version
+                                if self.__same_pkg_versions(plan_pkg, remote_info):
                                         installable_label = installable_fmt % \
                                             {"version": plan_pkg.version,
                                             "build": plan_pkg.build_release,
                                             "branch": plan_pkg.branch}
-                                        self.w_info_expander.hide()
+                                        self.__hide_pkg_version_details()
                                 else:
+                                        # Not installed with later version available
+                                        # Installable: <version>
+                                        # but NOT to the Latest Version
                                         installable_label = installable_fmt % \
                                             {"version": plan_pkg.version,
                                             "build": plan_pkg.build_release,
@@ -3494,21 +3544,37 @@ class PackageManager:
                                         self.__setup_version_info_details(name,
                                             remote_info.version,
                                             remote_info.build_release,
-                                            remote_info.branch)
+                                            remote_info.branch, True)
+                        else:
+                                # Not Installed with later version and can't install
+                                # Installable Version: None
+                                installable_label = _("None")
+                                self.__setup_version_info_details(name,
+                                    remote_info.version,
+                                    remote_info.build_release,
+                                    remote_info.branch, True)
                         
                 self.w_info_installed_label.set_text(installed_label)
                 self.w_info_installable_label.set_text(installable_label)
+                self.w_info_installable_prefix_label.set_markup(installable_prefix_label)
                 self.w_info_ok_button.grab_focus()                
                 self.w_version_info_dialog.show()
                 self.unset_busy_cursor()
 
-        def __setup_version_info_details(self, name, version, build_release, branch):
+        def __setup_version_info_details(self, name, version, build_release, branch,
+            to_be_installed):
                 installable_fmt = \
                     _("%(version)s (Build %(build)s-%(branch)s)")
-                expander_fmt = _(
-                    "The latest version of %s cannot be installed "
-                    "until you update your system. "
-                    "Run \"Updates\" to get your system up-to-date.")
+                if to_be_installed:
+                        expander_fmt = _(
+                            "The latest version of %s cannot be installed. "
+                            "It may be possible to do so after updating your system. "
+                            "Run \"Updates\" to get your system up-to-date.")
+                else:
+                        expander_fmt = _(
+                            "Cannot upgrade to the latest version of %s. "
+                            "It may be possible to do so after updating your system. "
+                            "Run \"Updates\" to get your system up-to-date.")
                 installable_exp = installable_fmt % \
                     {"version": version,
                     "build": build_release,

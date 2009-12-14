@@ -126,7 +126,7 @@ max-args=15
 max-locals=60
 
 # Maximum number of return / yield for function / method body
-max-returns=22
+max-returns=30
 
 # Maximum number of branch for function / method body
 max-branchs=50
