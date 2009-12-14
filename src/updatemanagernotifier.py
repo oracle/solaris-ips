@@ -66,7 +66,7 @@ IMAGE_DIR_COMMAND = "svcprop -p update/image_dir svc:/application/pkg/update"
 CHECK_FOR_UPDATES = "/usr/lib/pm-checkforupdates"
 
 ICON_LOCATION = "/usr/share/update-manager/icons"
-NOTIFY_ICON_NAME = "notify_update"
+NOTIFY_ICON_NAME = "updatemanager"
 GKSU_PATH = "/usr/bin/gksu"
 UPDATEMANAGER = "pm-updatemanager"
 

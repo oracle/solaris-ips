@@ -34,13 +34,13 @@ d none usr/share/update-manager/icons 755 root bin
 d none usr/share/update-manager/icons/hicolor 755 root bin
 d none usr/share/update-manager/icons/hicolor/24x24 755 root bin
 d none usr/share/update-manager/icons/hicolor/24x24/actions 755 root bin
-f none usr/share/update-manager/icons/hicolor/24x24/actions/notify_update.png 444 root other
+f none usr/share/update-manager/icons/hicolor/24x24/actions/updatemanager.png 444 root other
 d none usr/share/update-manager/icons/hicolor/36x36 755 root bin
 d none usr/share/update-manager/icons/hicolor/36x36/actions 755 root bin
-f none usr/share/update-manager/icons/hicolor/36x36/actions/UM_package.png 444 root other
+f none usr/share/update-manager/icons/hicolor/36x36/actions/updatemanager.png 444 root other
 d none usr/share/update-manager/icons/hicolor/48x48 755 root bin
 d none usr/share/update-manager/icons/hicolor/48x48/actions 755 root bin
-f none usr/share/update-manager/icons/hicolor/48x48/actions/UM_app.png 444 root other
+f none usr/share/update-manager/icons/hicolor/48x48/actions/updatemanager.png 444 root other
 f none usr/share/update-manager/updatemanager.glade 444 root bin
 d none var 755 root sys
 d none var/svc 755 root sys

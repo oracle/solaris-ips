@@ -173,7 +173,7 @@ class Updatemanager:
                     w_xmltree_um.get_widget("um_updateall_button")
                 self.pm_image = \
                     w_xmltree_um.get_widget("pm_image")
-                self.pm_image.set_from_pixbuf(self.__get_icon_pixbuf('UM_app', 48))
+                self.pm_image.set_from_pixbuf(self.__get_icon_pixbuf('updatemanager', 48))
                 self.w_um_expander = w_xmltree_um.get_widget("um_expander")
                 self.w_um_expander.set_expanded(True)
 
@@ -332,7 +332,7 @@ class Updatemanager:
                     self.__on_package_selection_changed, None)
 
                 # Setup Icons
-                self.w_um_dialog.set_icon(self.__get_icon_pixbuf("UM_package", 36))
+                self.w_um_dialog.set_icon(self.__get_icon_pixbuf("updatemanager", 36))
 
         def __get_image_path(self):
                 '''This function gets the image path or the default'''
@@ -563,7 +563,7 @@ class Updatemanager:
                     parent_name = _("Update Manager"),
                     pkg_list = ["SUNWipkg", "SUNWipkg-gui", "SUNWipkg-um"],
                     main_window = self.w_um_dialog,
-                    icon_confirm_dialog = self.__get_icon_pixbuf("UM_package", 36))
+                    icon_confirm_dialog = self.__get_icon_pixbuf("updatemanager", 36))
                 return
                
         def __on_selectall_checkbutton_toggled(self, widget):

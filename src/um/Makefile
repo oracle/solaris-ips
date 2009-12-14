@@ -73,13 +73,13 @@ GCONF = \
    data/updatemanager-preferences.schemas
 
 ICONS24 = \
-   data/icons/24x24/notify_update.png
+   data/icons/24x24/updatemanager.png
 
 ICONS36 = \
-   data/icons/36x36/UM_package.png
+   data/icons/36x36/updatemanager.png
 
 ICONS48 = \
-   data/icons/48x48/UM_app.png
+   data/icons/48x48/updatemanager.png
 
 PYGLADE = \
    data/updatemanager.glade
