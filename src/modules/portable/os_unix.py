@@ -39,6 +39,7 @@ import platform
 import shutil
 import stat
 import sys
+import tempfile
 import util as os_util
 # used to cache contents of passwd and group files
 users = {}
@@ -227,7 +228,32 @@ def chown(path, owner, group):
         return os.chown(path, owner, group)
 
 def rename(src, dst):
-        os.rename(src, dst)
+        try:
+                os.rename(src, dst)
+        except OSError, e:
+                # Handle the case where we tried to rename a file across a
+                # filesystem boundary.
+                if e.errno != errno.EXDEV or not os.path.isfile(src):
+                        raise
+
+                # Copy the data and metadata into a temporary file in the same
+                # filesystem as the destination, rename into place, and unlink
+                # the original.
+                try:
+                        fd, tmpdst = tempfile.mkstemp(suffix=".pkg5.xdev",
+                            dir=os.path.dirname(dst))
+                except OSError, e:
+                        # If we don't have sufficient permissions to put the
+                        # file where we want it, then higher levels can deal
+                        # with that effectively, but people will want to know
+                        # the original destination filename.
+                        if e.errno == errno.EACCES:
+                                e.filename=dst
+                        raise
+                os.close(fd)
+                shutil.copy2(src, tmpdst)
+                os.rename(tmpdst, dst)
+                os.unlink(src)
 
 def remove(path):
         os.unlink(path)
