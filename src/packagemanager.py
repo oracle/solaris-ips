@@ -3297,6 +3297,9 @@ class PackageManager:
                 else:
                         self.is_all_publishers_installed = False
 
+                self.__do_set_publisher()
+
+        def __do_set_publisher(self):
                 self.cancelled = True
                 self.in_setup = True
                 self.set_busy_cursor()
@@ -3304,7 +3307,7 @@ class PackageManager:
                 if self.in_search_mode:
                         self.__unset_search(False)
 
-                pub = [selected_publisher, ]
+                pub = [self.__get_selected_publisher(), ]
                 self.set_section = self.initial_section
                 self.__set_searchentry_to_prompt()
                 self.__disconnect_models()
@@ -5365,7 +5368,8 @@ class PackageManager:
                         return
                 self.img_timestamp = self.cache_o.get_index_timestamp()
                 visible_list = update_list.get(visible_publisher)
-                if self.is_all_publishers:
+                if self.is_all_publishers or self.is_all_publishers_installed \
+                    or self.in_recent_search:
                         for pub in self.api_o.get_publishers():
                                 if pub.disabled:
                                         continue
@@ -5382,6 +5386,8 @@ class PackageManager:
                                                 self.__update_publisher_list(prefix,
                                                         self.saved_application_list,
                                                         package_list)
+                        if self.is_all_publishers_installed:
+                                self.__do_set_publisher()
                 elif visible_list:
                         visible_list = self.__update_package_list_names(visible_list)
                         self.__update_publisher_list(visible_publisher, 
@@ -5406,6 +5412,8 @@ class PackageManager:
                                                 if self.info_cache.has_key(pkg_stem):
                                                         del self.info_cache[pkg_stem]
                                                 self.__remove_pkg_stem_from_list(pkg_stem)
+                if self.is_all_publishers_installed:
+                        return
                 # We need to reset status descriptions if a11y is enabled
                 self.__set_visible_status(False)
                 self.__process_package_selection()
