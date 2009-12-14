@@ -23,7 +23,7 @@
 # Use is subject to license terms.
 #
 
-PKG_CLIENT_NAME = "packagemanager"
+PKG_CLIENT_NAME = "packagemanager-webinstall"
 # Location for themable icons
 ICON_LOCATION = "usr/share/package-manager/icons"
 
@@ -134,6 +134,7 @@ class Webinstall:
                 self.w_webinstall_dialog.set_icon(self.window_icon)
                 self.api_o = gui_misc.get_api_object(self.image_dir, self.pr,
                     self.w_webinstall_dialog)
+                gui_misc.setup_logging(PKG_CLIENT_NAME)
         
         def __output_new_pub_tasks(self, infobuffer, textiter, num_tasks):
                 if num_tasks == 0:
@@ -245,6 +246,7 @@ class Webinstall:
                 gui_misc.display_help("webinstall")
 
         def __exit_app(self, be_name = None):
+                gui_misc.shutdown_logging()
                 self.w_webinstall_dialog.destroy()
                 gtk.main_quit()
                 sys.exit(0)

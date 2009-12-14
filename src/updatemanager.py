@@ -218,6 +218,7 @@ class Updatemanager:
  
                 self.w_um_dialog.show_all()
                 self.w_um_dialog.resize(620, 500)
+                gui_misc.setup_logging(PKG_CLIENT_NAME)
 
         def __set_cancel_state(self, status):
                 if status:
@@ -539,6 +540,7 @@ class Updatemanager:
                 gui_misc.display_help("um_info")
 
         def __exit_app(self, restart = False):
+                gui_misc.shutdown_logging()
                 if restart:
                         if self.image_dir_arg:
                                 gobject.spawn_async([self.application_path, "-R",

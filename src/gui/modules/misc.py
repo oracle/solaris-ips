@@ -47,7 +47,15 @@ import pkg.misc as misc
 import pkg.client.api_errors as api_errors
 import pkg.client.api as api
 from pkg.gui.misc_non_gui import get_api_object as ngao
+from pkg.gui.misc_non_gui import setup_logging as su_logging
+from pkg.gui.misc_non_gui import shutdown_logging as sd_logging
 
+def setup_logging(client_name):
+        su_logging(client_name)
+        
+def shutdown_logging():
+        sd_logging()
+        
 def get_icon_pixbuf(application_dir, icon_name):
         return get_pixbuf_from_path(os.path.join(application_dir,
             "usr/share/icons/package-manager"), icon_name)

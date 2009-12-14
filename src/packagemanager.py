@@ -718,7 +718,8 @@ class PackageManager:
                 self.api_search_error_dialog.set_transient_for(self.w_main_window)
                 self.w_version_info_dialog.set_transient_for(self.w_main_window)
                 self.__setup_text_signals()
-
+                gui_misc.setup_logging(PKG_CLIENT_NAME)
+                
         def __set_initial_sizes(self):
                 if self.initial_app_width >= MIN_APP_WIDTH and \
                         self.initial_app_height >= MIN_APP_HEIGHT:
@@ -3739,6 +3740,7 @@ class PackageManager:
                 pub = ""
                 start_insearch = False
                 width = height = hpos = vpos = -1
+                gui_misc.shutdown_logging()
                 if self.save_state:
                         if self.is_all_publishers:
                                 start_insearch = True

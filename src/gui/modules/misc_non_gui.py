@@ -25,6 +25,8 @@
 
 import os
 import cPickle
+import logging
+import logging.handlers
 
 import pkg.client.api as api
 from pkg.client import global_settings
@@ -32,6 +34,47 @@ from pkg.client import global_settings
 # The current version of the Client API the PM, UM and
 # WebInstall GUIs have been tested against and are known to work with.
 CLIENT_API_VERSION = 26
+
+class _LogFilter(logging.Filter):
+        def __init__(self, max_level=logging.CRITICAL):
+                logging.Filter.__init__(self)
+                self.max_level = max_level
+
+        def filter(self, record):
+                return record.levelno <= self.max_level
+
+
+def setup_logging(client_name):
+        # TBD: for now just put the logs in /var/tmp
+        # GUI can consume and present them to the user
+        log_path = os.path.join("/var/tmp", client_name)
+        log_fmt = logging.Formatter(
+            "%(asctime)s: %(levelname)s: " + client_name +
+            ": %(filename)s: %(module)s: %(lineno)s: %(message)s")
+
+        infolog_path = log_path + "_info.log"
+        infolog_exists = os.path.exists(infolog_path)
+        info_h = logging.handlers.RotatingFileHandler(infolog_path, backupCount=5)
+        info_t = _LogFilter(logging.INFO)
+        info_h.addFilter(info_t)
+        info_h.setFormatter(log_fmt)
+        info_h.setLevel(logging.INFO)
+        if infolog_exists:
+                info_h.doRollover()
+        global_settings.info_log_handler = info_h
+
+        errlog_path = log_path + "_error.log"
+        errlog_exists = os.path.exists(errlog_path)
+        err_h = logging.handlers.RotatingFileHandler(errlog_path, backupCount=5)
+        err_h.setFormatter(log_fmt)
+        err_h.setLevel(logging.WARNING)
+        if errlog_exists:
+                err_h.doRollover()
+        global_settings.error_log_handler = err_h
+
+def shutdown_logging():
+        global_settings.reset_logging()
+        logging.shutdown()
 
 def get_cache_dir(api_object):
         img = api_object.img
