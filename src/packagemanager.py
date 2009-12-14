@@ -1934,7 +1934,8 @@ class PackageManager:
                 self.is_all_publishers_installed = False
                 self.is_all_publishers = True
                 self.w_infosearch_frame.hide()
-                self.__set_searchentry_to_prompt()
+                if not self.w_searchentry.is_focus():
+                        self.__set_searchentry_to_prompt()
                 
                 self.__save_setup_before_search()
                 first_run = self.first_run
