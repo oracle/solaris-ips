@@ -1,6 +1,12 @@
-package opends
+package service/network/ldap/opends
 classification "System/Administration and Configuration"
 summary "OpenDS, an open source LDAP directory server"
 import opends
+version 1.2.0
+end package
+
+package opends
+add set name=pkg.renamed value=true
+depend service/network/ldap/opends
 version 1.2.0
 end package

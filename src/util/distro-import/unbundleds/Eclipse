@@ -1,7 +1,13 @@
-package eclipse
+package developer/eclipse
 classification "Development/Integrated Development Environments"
 summary "Eclipse IDE"
 version 3.4.2
 import eclipse
 depend SUNWj6dev
+end package
+
+package eclipse
+add set name=pkg.renamed value=true
+depend developer/eclipse
+version 3.4.2
 end package

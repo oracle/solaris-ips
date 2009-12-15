@@ -1,4 +1,4 @@
-package openoffice
+package office/openoffice
 classification "Applications/Office"
 summary "OpenOffice.org 3.1.0"
 version 3.1.0
@@ -54,15 +54,15 @@ import openofficeorg3-writer
 import openofficeorg-ure
 end package
 
-package openoffice-sdk
+package office/openoffice/openoffice-sdk
 classification "Applications/Office"
 summary "Software Development Kit for OpenOffice.org 3.1.0"
 version 3.1.0
 import ooobasis31-sdk
-depend openoffice
+depend office/openoffice
 end package
 
-package openoffice-de
+package office/openoffice/locale/de
 classification "Applications/Office"
 summary "German localization of OpenOffice.org 3.1.0"
 version 3.1.0
@@ -77,10 +77,10 @@ import ooobasis31-de-math
 import ooobasis31-de-res
 import ooobasis31-de-writer
 import openofficeorg3-de
-depend openoffice
+depend office/openoffice
 end package
 
-package openoffice-es
+package office/openoffice/locale/es
 classification "Applications/Office"
 summary "Spanish localization for OpenOffice.org 3.1.0"
 version 3.1.0
@@ -95,10 +95,10 @@ import ooobasis31-es-math
 import ooobasis31-es-res
 import ooobasis31-es-writer
 import openofficeorg3-es
-depend openoffice
+depend office/openoffice
 end package
 
-package openoffice-fr
+package office/openoffice/locale/fr
 classification "Applications/Office"
 summary "French localization for OpenOffice.org 3.1.0"
 version 3.1.0
@@ -113,10 +113,10 @@ import ooobasis31-fr-math
 import ooobasis31-fr-res
 import ooobasis31-fr-writer
 import openofficeorg3-fr
-depend openoffice
+depend office/openoffice
 end package
 
-package openoffice-hu
+package office/openoffice/locale/hu
 classification "Applications/Office"
 summary "Hungarian localization for OpenOffice.org 3.1.0"
 version 3.1.0
@@ -131,10 +131,10 @@ import ooobasis31-hu-math
 import ooobasis31-hu-res
 import ooobasis31-hu-writer
 import openofficeorg3-hu
-depend openoffice
+depend office/openoffice
 end package
 
-package openoffice-it
+package office/openoffice/locale/it
 classification "Applications/Office"
 summary "Italian localization for OpenOffice.org 3.1.0"
 version 3.1.0
@@ -149,10 +149,10 @@ import ooobasis31-it-math
 import ooobasis31-it-res
 import ooobasis31-it-writer
 import openofficeorg3-it
-depend openoffice
+depend office/openoffice
 end package
 
-package openoffice-ja
+package office/openoffice/locale/ja
 classification "Applications/Office"
 summary "Japanese localization for OpenOffice.org 3.1.0"
 version 3.1.0
@@ -167,10 +167,10 @@ import ooobasis31-ja-math
 import ooobasis31-ja-res
 import ooobasis31-ja-writer
 import openofficeorg3-ja
-depend openoffice
+depend office/openoffice
 end package
 
-package openoffice-ko
+package office/openoffice/locale/ko
 classification "Applications/Office"
 summary "Korean localization for OpenOffice.org 3.1.0"
 version 3.1.0
@@ -185,10 +185,10 @@ import ooobasis31-ko-math
 import ooobasis31-ko-res
 import ooobasis31-ko-writer
 import openofficeorg3-ko
-depend openoffice
+depend office/openoffice
 end package
 
-package openoffice-nl
+package office/openoffice/locale/nl
 classification "Applications/Office"
 summary "Dutch localization for OpenOffice.org 3.1.0"
 version 3.1.0
@@ -203,10 +203,10 @@ import ooobasis31-nl-math
 import ooobasis31-nl-res
 import ooobasis31-nl-writer
 import openofficeorg3-nl
-depend openoffice
+depend office/openoffice
 end package
 
-package openoffice-pl
+package office/openoffice/locale/pl
 classification "Applications/Office"
 summary "Polish localization for OpenOffice.org 3.1.0"
 version 3.1.0
@@ -221,10 +221,10 @@ import ooobasis31-pl-math
 import ooobasis31-pl-res
 import ooobasis31-pl-writer
 import openofficeorg3-pl
-depend openoffice
+depend office/openoffice
 end package
 
-package openoffice-pt
+package office/openoffice/locale/pt
 classification "Applications/Office"
 summary "Portuguese localization for OpenOffice.org 3.1.0"
 version 3.1.0
@@ -239,10 +239,10 @@ import ooobasis31-pt-math
 import ooobasis31-pt-res
 import ooobasis31-pt-writer
 import openofficeorg3-pt
-depend openoffice
+depend office/openoffice
 end package
 
-package openoffice-pt-BR
+package office/openoffice/locale/pt-BR
 classification "Applications/Office"
 summary "Portuguese Brazilian localization for OpenOffice.org 3.1.0"
 version 3.1.0
@@ -257,10 +257,10 @@ import ooobasis31-pt-BR-math
 import ooobasis31-pt-BR-res
 import ooobasis31-pt-BR-writer
 import openofficeorg3-pt-BR
-depend openoffice
+depend office/openoffice
 end package
 
-package openoffice-ru
+package office/openoffice/locale/ru
 classification "Applications/Office"
 summary "Russian localization for OpenOffice.org 3.1.0"
 version 3.1.0
@@ -275,10 +275,10 @@ import ooobasis31-ru-math
 import ooobasis31-ru-res
 import ooobasis31-ru-writer
 import openofficeorg3-ru
-depend openoffice
+depend office/openoffice
 end package
 
-package openoffice-sv
+package office/openoffice/locale/sv
 classification "Applications/Office"
 summary "Swedish localization for OpenOffice.org 3.1.0"
 version 3.1.0
@@ -293,10 +293,10 @@ import ooobasis31-sv-math
 import ooobasis31-sv-res
 import ooobasis31-sv-writer
 import openofficeorg3-sv
-depend openoffice
+depend office/openoffice
 end package
 
-package openoffice-zh-CN
+package office/openoffice/locale/zh-CN
 classification "Applications/Office"
 summary "Simplified Chinese localization for OpenOffice.org 3.1.0"
 version 3.1.0
@@ -311,10 +311,10 @@ import ooobasis31-zh-CN-math
 import ooobasis31-zh-CN-res
 import ooobasis31-zh-CN-writer
 import openofficeorg3-zh-CN
-depend openoffice
+depend office/openoffice
 end package
 
-package openoffice-zh-TW
+package office/openoffice/locale/zh-TW
 classification "Applications/Office"
 summary "Traditional Chinese localization for OpenOffice.org 3.1.0"
 version 3.1.0
@@ -329,5 +329,107 @@ import ooobasis31-zh-TW-math
 import ooobasis31-zh-TW-res
 import ooobasis31-zh-TW-writer
 import openofficeorg3-zh-TW
-depend openoffice
+depend office/openoffice
+end package
+
+package openoffice
+add set name=pkg.renamed value=true
+depend office/openoffice
+version 3.1.0
+end package
+
+package openoffice-sdk
+add set name=pkg.renamed value=true
+depend office/openoffice/openoffice-sdk
+version 3.1.0
+end package
+
+package openoffice-de
+add set name=pkg.renamed value=true
+depend office/openoffice/locale/de
+version 3.1.0
+end package
+
+package openoffice-es
+add set name=pkg.renamed value=true
+depend office/openoffice/locale/es
+version 3.1.0
+end package
+
+package openoffice-fr
+add set name=pkg.renamed value=true
+depend office/openoffice/locale/fr
+version 3.1.0
+end package
+
+package openoffice-hu
+add set name=pkg.renamed value=true
+depend office/openoffice/locale/hu
+version 3.1.0
+end package
+
+package openoffice-it
+add set name=pkg.renamed value=true
+depend office/openoffice/locale/it
+version 3.1.0
+end package
+
+package openoffice-ja
+add set name=pkg.renamed value=true
+depend office/openoffice/locale/ja
+version 3.1.0
+end package
+
+package openoffice-ko
+add set name=pkg.renamed value=true
+depend office/openoffice/locale/ko
+version 3.1.0
+end package
+
+package openoffice-nl
+add set name=pkg.renamed value=true
+depend office/openoffice/locale/nl
+version 3.1.0
+end package
+
+package openoffice-pl
+add set name=pkg.renamed value=true
+depend office/openoffice/locale/pl
+version 3.1.0
+end package
+
+package openoffice-pt
+add set name=pkg.renamed value=true
+depend office/openoffice/locale/pt
+version 3.1.0
+end package
+
+package openoffice-pt-BR
+add set name=pkg.renamed value=true
+depend office/openoffice/locale/pt-BR
+version 3.1.0
+end package
+
+package openoffice-ru
+add set name=pkg.renamed value=true
+depend office/openoffice/locale/ru
+version 3.1.0
+end package
+
+package openoffice-sv
+add set name=pkg.renamed value=true
+depend office/openoffice/locale/sv
+version 3.1.0
+end package
+
+package openoffice-zh-CN
+add set name=pkg.renamed value=true
+depend office/openoffice/locale/zh-CN
+version 3.1.0
+end package
+
+package openoffice-zh-TW
+add set name=pkg.renamed value=true
+depend office/openoffice/locale/zh-TW
+version 3.1.0
 end package

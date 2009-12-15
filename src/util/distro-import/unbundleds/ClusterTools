@@ -1,10 +1,4 @@
-package clustertools
-summary "Sun HPC ClusterTools"
-version 7.1
-depend clustertools_7.1
-end package
-
-package clustertools_7.1
+package developer/clustertools-71
 classification "Development/High Performance Computing"
 summary "Sun HPC ClusterTools 7.1"
 version 7.1
@@ -12,4 +6,10 @@ import SUNWompi
 import SUNWompiat
 import SUNWompimn 
 import SUNWomsc
+end package
+
+package clustertools_7.1
+add set name=pkg.renamed value=true
+depend developer/clustertools-71
+version 7.1
 end package

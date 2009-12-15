@@ -1,9 +1,9 @@
-package sunstudio
+package developer/sunstudio
 version 12.1
-depend sunstudio12u1
+depend developer/sunstudio12u1
 end package
 
-package sunstudio12u1
+package developer/sunstudio12u1
 classification "Development/C"
 classification "Development/C++"
 classification "Development/High Performance Computing"
@@ -26,7 +26,7 @@ depend SUNWj6rtx
 depend SUNWlibm
 depend SUNWsprot
 depend SUNWtoo
-add depend fmri=sunstudioexpress@0.2009.3.1 type=optional
+add depend fmri=developer/sunstudioexpress@0.2009.3.1 type=optional
 add set name=info.keyword value="Fortran compiler module iropt optimizer \
     autopar debug debugger debugging breakpoint parallelization tuning \
     multi-thread multi-core productivity HPC linux collector platform \
@@ -35,7 +35,7 @@ add set name=info.keyword value="Fortran compiler module iropt optimizer \
     DLight"
 end package
 
-package sunstudioexpress
+package developer/sunstudioexpress
 classification "Development/C"
 classification "Development/C++"
 classification "Development/High Performance Computing"
@@ -64,4 +64,22 @@ add set name=info.keyword value="Fortran compiler module iropt optimizer \
     xprofile profile profiling performance library blas lapack fftpack \
     fft solver sparse autopar C C++ OpenMP Studio IDE editor refactoring \
     DLight"
+end package
+
+package sunstudio
+add set name=pkg.renamed value=true
+depend developer/sunstudio
+version 12.1
+end package
+
+package sunstudio12u1
+add set name=pkg.renamed value=true
+depend developer/sunstudio12u1
+version 12.1
+end package
+
+package sunstudioexpress
+add set name=pkg.renamed value=true
+depend developer/sunstudioexpress
+version 0.2009.3.1
 end package

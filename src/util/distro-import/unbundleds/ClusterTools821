@@ -1,9 +1,9 @@
-package clustertools
+package developer/clustertools
 version 8.2.1
-depend clustertools_8.2.1
+depend developer/clustertools-821
 end package
 
-package clustertools_8.2.1
+package developer/clustertools-821
 classification "Development/High Performance Computing"
 version 8.2.1
 import SUNWompi
@@ -12,4 +12,16 @@ import SUNWompil
 import SUNWompimn
 import SUNWompir
 import SUNWomsc
+end package
+
+package clustertools
+add set name=pkg.renamed value=true
+depend developer/clustertools
+version 8.2.1
+end package
+
+package clustertools_8.2.1
+add set name=pkg.renamed value=true
+depend developer/clustertools-821
+version 8.2.1
 end package
