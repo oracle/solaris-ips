@@ -182,6 +182,26 @@ set name=variant.num value=one value=two
 file NOHASH path=platform/foo/baz/no_such_named_file
 """
 
+        multi_file_dep_manf = """\
+file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py
+depend fmri=__TBD pkg.debug.depend.file=search_storage.py pkg.debug.depend.file=search_storage.pyc pkg.debug.depend.file=search_storage/__init__.py pkg.debug.depend.path=usr/lib/python2.6/pkg pkg.debug.depend.path=usr/lib/python2.6/lib-dynload/pkg pkg.debug.depend.path=usr/lib/python2.6/lib-old/pkg pkg.debug.depend.path=usr/lib/python2.6/lib-tk/pkg pkg.debug.depend.path=usr/lib/python2.6/plat-sunos5/pkg pkg.debug.depend.path=usr/lib/python2.6/site-packages/pkg pkg.debug.depend.path=usr/lib/python2.6/vendor-packages/pkg pkg.debug.depend.path=usr/lib/python2.6/vendor-packages/gst-0.10/pkg pkg.debug.depend.path=usr/lib/python2.6/vendor-packages/gtk-2.0/pkg pkg.debug.depend.path=usr/lib/python26.zip/pkg pkg.debug.depend.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py pkg.debug.depend.type=python type=require
+"""
+        multi_file_sat_both = """\
+set name=fmri value=pkg:/sat_both
+file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.6/vendor-packages/pkg/search_storage.py
+file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.6/vendor-packages/pkg/search_storage.pyc
+"""
+
+        multi_file_sat_py = """\
+set name=fmri value=pkg:/sat_py
+file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.6/vendor-packages/pkg/search_storage.py
+file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.6/lib-tk/pkg/search_storage.py
+"""
+        multi_file_sat_pyc = """\
+set name=fmri value=pkg:/sat_pyc
+file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.6/vendor-packages/pkg/search_storage.pyc
+"""
+        
         misc_files = ["foo"]
         
         def setUp(self):
@@ -260,12 +280,12 @@ close""" % { "foo": os.path.join(self.testdata_dir, "foo") }
                 p2_name = os.path.basename(m2_path)
                 pkg_deps, errs = dependencies.resolve_deps(
                     [m1_path, m2_path], self.api_obj)
-                self.assertEqual(len(pkg_deps), 2)
-                self.assertEqual(len(pkg_deps[m1_path]), 2)
-                self.assertEqual(len(pkg_deps[m2_path]), 1)
                 if errs:
                         raise RuntimeError("Got the following unexpected "
                             "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
+                self.assertEqual(len(pkg_deps), 2)
+                self.assertEqual(len(pkg_deps[m1_path]), 2)
+                self.assertEqual(len(pkg_deps[m2_path]), 1)
                 for d in pkg_deps[m1_path]:
                         self.assertEqual(d.attrs["fmri"], p2_name)
                 for d in pkg_deps[m2_path]:
@@ -298,7 +318,7 @@ close""" % { "foo": os.path.join(self.testdata_dir, "foo") }
                         if d.attrs["fmri"] == p2_name:
                                 self.assertEqual(
                                     d.attrs["%s.file" % self.depend_dp],
-                                    "usr/lib/python2.6/v-p/pkg/misc.py")
+                                    ["usr/lib/python2.6/v-p/pkg/misc.py"])
                         elif d.attrs["fmri"].startswith(p3_name):
                                 self.assertEqual(
                                     d.attrs["%s.file" % self.depend_dp],
@@ -417,6 +437,94 @@ close""" % { "foo": os.path.join(self.testdata_dir, "foo") }
                                 raise RuntimeError("Unexpected fmri %s "
                                     "for dependency %s" %
                                     (d.attrs["fmri"], d))
+
+        def test_multi_file_dependencies(self):
+                def __check_results(pkg_deps, errs, exp_pkg, no_deps, one_dep):
+                        if errs:
+                                raise RuntimeError("Got the following "
+                                    "unexpected errors:\n%s" %
+                                    "\n".join([str(e) for e in errs]))
+                        self.assertEqual(len(pkg_deps), 2)
+                        self.assertEqual(len(pkg_deps[no_deps]), 0)
+                        if len(pkg_deps[one_dep]) != 1:
+                                raise RuntimeError("Got more than one "
+                                    "dependency:\n%s" %
+                                    "\n".join(
+                                        [str(d) for d in pkg_deps[col_path]]))
+                        d = pkg_deps[one_dep][0]
+                        self.assertEqual(d.attrs["fmri"], exp_pkg)
+                
+                self.make_image()
+
+                col_path = self.make_manifest(self.multi_file_dep_manf)
+                # This manifest provides two files that satisfy col_path's
+                # file dependencies.
+                both_path = self.make_manifest(self.multi_file_sat_both)
+                # This manifest provides a file that satisfies the dependency
+                # in col_path by delivering a py or pyc file..
+                py_path = self.make_manifest(self.multi_file_sat_py)
+                pyc_path = self.make_manifest(self.multi_file_sat_pyc)
+
+                # The following tests should all succeed because either the same
+                # package delivers both files which could satisfy the dependency
+                # or only one package which delivers the dependency is being
+                # resolved against.
+                pkg_deps, errs = dependencies.resolve_deps(
+                    [col_path, both_path], self.api_obj)
+                __check_results(pkg_deps, errs, "pkg:/sat_both", both_path,
+                    col_path)
+
+                pkg_deps, errs = dependencies.resolve_deps(
+                    [col_path, py_path], self.api_obj)
+                __check_results(pkg_deps, errs, "pkg:/sat_py", py_path,
+                    col_path)
+
+                pkg_deps, errs = dependencies.resolve_deps(
+                    [col_path, pyc_path], self.api_obj)
+                __check_results(pkg_deps, errs, "pkg:/sat_pyc", pyc_path,
+                    col_path)
+
+                # This resolution should fail because files which satisfy the
+                # dependency are delivered in two packages.
+                pkg_deps, errs = dependencies.resolve_deps(
+                    [col_path, py_path, pyc_path], self.api_obj)
+                self.assertEqual(len(pkg_deps), 3)
+                for k in pkg_deps:
+                        if pkg_deps[k]:
+                                raise RuntimeError("Got the following "
+                                    "unexpected dependencies:\n%s" %
+                                    "\n".join(["%s\n%s" %
+                                        (k,"\n".join([
+                                            "\t%s" % d for d in pkg_deps[k]]))
+                                            for k in pkg_deps
+                                        ]))
+                if len(errs) != 2:
+                        raise RuntimeError("Didn't get two errors:\n%s" %
+                            "\n".join(str(e) for e in errs))
+                for e in errs:
+                        if isinstance(e,
+                            dependencies.MultiplePackagesPathError):
+                                for d in e.res:
+                                        if d.attrs["fmri"] not in \
+                                            ("pkg:/sat_py",
+                                            "pkg:/sat_pyc"):
+                                                raise RuntimeError("Unexpected "
+                                                    "dependency action:%s" % d)
+                                self.assertEqual(
+                                    e.source.attrs["%s.file" % self.depend_dp],
+                                    ["search_storage.py", "search_storage.pyc",
+                                    "search_storage/__init__.py"])
+                        elif isinstance(e,
+                            dependencies.UnresolvedDependencyError):
+                                self.assertEqual(e.path, col_path)
+                                self.assertEqual(
+                                    e.file_dep.attrs[
+                                        "%s.file" % self.depend_dp],
+                                    ["search_storage.py", "search_storage.pyc",
+                                    "search_storage/__init__.py"])
+                        else:
+                                raise RuntimeError("Unexpected error:%s" % e)
+
 
         def test_bug_11518(self):
                 """Test that resolving against an installed, cached, manifest
@@ -554,7 +662,7 @@ close""" % { "foo": os.path.join(self.testdata_dir, "foo") }
                             "\n".join(str(e) for e in errs))
                 for e in errs:
                         if isinstance(e,
-                            dependencies.MultiplePackagesRunPathError):
+                            dependencies.MultiplePackagesPathError):
                                 for d in e.res:
                                         if d.attrs["fmri"] not in \
                                             ("pkg:/sat_foo_libc",
@@ -593,7 +701,7 @@ close""" % { "foo": os.path.join(self.testdata_dir, "foo") }
                             "\n".join(str(e) for e in errs))
                 for e in errs:
                         if isinstance(e,
-                            dependencies.MultiplePackagesRunPathError):
+                            dependencies.MultiplePackagesPathError):
                                 for d in e.res:
                                         if d.attrs["fmri"] not in \
                                             ("pkg:/sat_foo_libc",

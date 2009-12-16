@@ -213,7 +213,7 @@ class VariantSets(Variants):
                 """Returns whether all variant combinations for this package
                 have been satisfied."""
 
-                return self.set_sats and not self.not_sat_set
+                return (self.set_sats and not self.not_sat_set) or not self
 
         def get_satisfied(self):
                 """Returns the combinations of variants which have been

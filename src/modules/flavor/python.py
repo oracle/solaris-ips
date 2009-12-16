@@ -44,20 +44,17 @@ class PythonModuleMissingPath(base.DependencyAnalysisError):
                     "in %s") % (self.name, self.localpath)
 
 
-class PythonDependency(base.SinglePathDependency):
+class PythonDependency(base.PublishingDependency):
         """Class representing the dependency created by importing a module
         in python."""
 
-        def __init__(self, *args, **kwargs):
-                attrs = kwargs.get("attrs", {})
-                attrs["%s.type" % self.DEPEND_DEBUG_PREFIX] = "python"
-
-                base.SinglePathDependency.__init__(self, attrs=attrs, *args,
-                    **kwargs)
+        def __init__(self, action, base_names, run_paths, pkg_vars, proto_dir):
+                base.PublishingDependency.__init__(self, action,
+                    base_names, run_paths, pkg_vars, proto_dir, "python")
 
         def __repr__(self):
-                return "PythonDep(%s, %s, %s)" % (self.action, self.dep_path,
-                    self.pkg_vars)
+                return "PythonDep(%s, %s, %s, %s)" % (self.action,
+                    self.base_names, self.run_paths, self.pkg_vars)
 
 
 def process_python_dependencies(proto_dir, action, pkg_vars):
@@ -66,20 +63,20 @@ def process_python_dependencies(proto_dir, action, pkg_vars):
         the action's package was published, produce a list of PythonDependency
         objects."""
 
+        local_file = action.attrs[PD_LOCAL_PATH]
+        
         mf = modulefinder.DepthLimitedModuleFinder(proto_dir)
-        mf.run_script(action.attrs[PD_LOCAL_PATH], depth=1)
+        loaded_modules = mf.run_script(local_file)
         deps = []
         errs = []
-        for m in mf.modules.values():
-                if m.__name__ == "__main__":
-                        # The file at localpath is returned as a loaded module
-                        # under the name __main__.
-                        continue
-                
-                if m.__file__ is not None:
-                        deps.append(PythonDependency(action, m.__file__,
-                            pkg_vars, proto_dir))
-                else:
-                        errs.append(PythonModuleMissingPath(m.__name__,
-                            action.attrs[PD_LOCAL_PATH]))
+
+        for names, dirs in set([
+            (tuple(m.get_file_names()), tuple(m.dirs)) for m in loaded_modules
+        ]):
+                deps.append(PythonDependency(action, names, dirs, pkg_vars,
+                    proto_dir))
+        missing, maybe = mf.any_missing_maybe()
+        for name in missing:
+                errs.append(PythonModuleMissingPath(name,
+                    action.attrs[PD_LOCAL_PATH]))
         return deps, errs

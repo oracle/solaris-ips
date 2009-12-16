@@ -30,10 +30,12 @@ if __name__ == "__main__":
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 
 import pkg.flavor.base as base
+import pkg.flavor.depthlimitedmf as mf
 import pkg.portable as portable
 
 class TestPkgdepBasics(testutils.SingleDepotTestCase):
@@ -80,69 +82,188 @@ file %(file_loc)s group=bin mode=0755 owner=root path=kernel/foobar
 file tmp/file/should/not/exist/here/foo group=bin mode=0755 owner=root path=foo/bar.py
 """
 
-        res_manf_1 = """\
-depend %(depend_debug_prefix)s.file=usr/bin/python fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=script
-depend %(depend_debug_prefix)s.file=usr/lib/python2.6/vendor-packages/pkg/__init__.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python
-depend %(depend_debug_prefix)s.file=usr/lib/python2.6/vendor-packages/pkg/indexer.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python
-depend %(depend_debug_prefix)s.file=usr/lib/python2.6/vendor-packages/pkg/misc.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python
-depend %(depend_debug_prefix)s.file=usr/lib/python2.6/vendor-packages/pkg/search_storage.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python
-depend %(depend_debug_prefix)s.file=var/log/authlog fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=baz %(depend_debug_prefix)s.type=hardlink
-""" % {"depend_debug_prefix":base.Dependency.DEPEND_DEBUG_PREFIX, "dummy_fmri":base.Dependency.DUMMY_FMRI}
+        if "PYTHONPATH" in os.environ:
+                py_path = [
+                    os.path.normpath(fp)
+                    for fp in os.environ["PYTHONPATH"].split(os.pathsep)
+                ]
+        else:
+                py_path = []
 
-        res_full_manf_1 = """\
-hardlink path=baz target=var/log/authlog
-file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py
-file NOHASH group=bin mode=0755 owner=root path=usr/xpg4/lib/libcurses.so.1
-depend %(depend_debug_prefix)s.file=usr/bin/python fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=script
-depend %(depend_debug_prefix)s.file=usr/lib/python2.6/vendor-packages/pkg/__init__.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python
-depend %(depend_debug_prefix)s.file=usr/lib/python2.6/vendor-packages/pkg/indexer.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python
-depend %(depend_debug_prefix)s.file=usr/lib/python2.6/vendor-packages/pkg/misc.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python
-depend %(depend_debug_prefix)s.file=usr/lib/python2.6/vendor-packages/pkg/search_storage.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python
-depend %(depend_debug_prefix)s.file=var/log/authlog fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=baz %(depend_debug_prefix)s.type=hardlink
-""" % {"depend_debug_prefix":base.Dependency.DEPEND_DEBUG_PREFIX, "dummy_fmri":base.Dependency.DUMMY_FMRI}
+        # Remove any paths that start with the defined python paths.
+        new_path = sorted([
+            fp
+            for fp in sys.path
+            if not mf.DepthLimitedModuleFinder.startswith_path(fp, py_path)
+        ])
+
+        @staticmethod
+        def __make_paths(added, paths):
+                return " ".join([
+                    ("%(pfx)s.path=%(p)s/%(added)s" % {
+                        "pfx":
+                            base.Dependency.DEPEND_DEBUG_PREFIX,
+                        "p":p.lstrip("/"),
+                        "added": added
+                    }).rstrip("/")
+                    for p in paths
+                ])
+
+        def make_res_manf_1(self, proto_area):
+                return ("depend %(pfx)s.file=python "
+                    "%(pfx)s.path=usr/bin fmri=%(dummy_fmri)s "
+                    "type=require %(pfx)s.reason="
+                    "usr/lib/python2.6/vendor-packages/pkg/client/indexer.py "
+                    "%(pfx)s.type=script\n"
+
+                    "depend fmri=%(dummy_fmri)s "
+                    "%(pfx)s.file=authlog "
+                    "%(pfx)s.path=var/log "
+                    "type=require %(pfx)s.reason=baz "
+                    "%(pfx)s.type=hardlink\n"
+
+                    "depend fmri=%(dummy_fmri)s "
+                    "%(pfx)s.file=indexer.py "
+                    "%(pfx)s.file=indexer.pyc "
+                    "%(pfx)s.file=indexer.pyo "
+                    "%(pfx)s.file=indexer/__init__.py " +
+                    self.__make_paths("pkg",
+                        [proto_area + "/usr/bin"] + self.new_path) +
+                    " %(pfx)s.reason="
+                    "usr/lib/python2.6/vendor-packages/pkg/client/indexer.py "
+                    "%(pfx)s.type=python type=require\n"
+
+                    "depend fmri=%(dummy_fmri)s "
+                    "%(pfx)s.file=pkg/__init__.py " +
+                    self.__make_paths("",
+                        [proto_area + "/usr/bin"] + self.new_path) +
+                    " %(pfx)s.reason="
+                    "usr/lib/python2.6/vendor-packages/pkg/client/indexer.py "
+                    "%(pfx)s.type=python type=require\n"
+                    "depend fmri=%(dummy_fmri)s "
+                    "%(pfx)s.file=search_storage.py "
+                    "%(pfx)s.file=search_storage.pyc "
+                    "%(pfx)s.file=search_storage.pyo "
+                    "%(pfx)s.file=search_storage/__init__.py " +
+                    self.__make_paths("pkg",
+                        [proto_area + "/usr/bin"] + self.new_path) +
+                    " %(pfx)s.reason="
+                    "usr/lib/python2.6/vendor-packages/pkg/client/indexer.py "
+                    "%(pfx)s.type=python type=require\n"
+
+                    "depend fmri=%(dummy_fmri)s "
+                    "%(pfx)s.file=misc.py "
+                    "%(pfx)s.file=misc.pyc "
+                    "%(pfx)s.file=misc.pyo "
+                    "%(pfx)s.file=misc/__init__.py " +
+                    self.__make_paths("pkg",
+                        [proto_area + "/usr/bin"] + self.new_path) +
+                    " %(pfx)s.reason="
+                    "usr/lib/python2.6/vendor-packages/pkg/client/indexer.py "
+                    "%(pfx)s.type=python type=require\n"
+
+                    )  % {
+                        "pfx":
+                            base.Dependency.DEPEND_DEBUG_PREFIX,
+                        "dummy_fmri":base.Dependency.DUMMY_FMRI
+                    }
+        
+        def make_full_res_manf_1(self, proto_area):
+                return self.make_res_manf_1(proto_area) + self.test_manf_1
 
         err_manf_1 = """\
 Couldn't find %s/usr/xpg4/lib/libcurses.so.1
 """
         res_manf_2 = """\
-depend %(depend_debug_prefix)s.file=libc.so.1 %(depend_debug_prefix)s.path=lib %(depend_debug_prefix)s.path=usr/lib fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/xpg4/lib/libcurses.so.1 variant.arch=foo %(depend_debug_prefix)s.type=elf
-""" % {"depend_debug_prefix":base.Dependency.DEPEND_DEBUG_PREFIX, "dummy_fmri":base.Dependency.DUMMY_FMRI}
+depend %(pfx)s.file=libc.so.1 %(pfx)s.path=lib %(pfx)s.path=usr/lib fmri=%(dummy_fmri)s type=require %(pfx)s.reason=usr/xpg4/lib/libcurses.so.1 variant.arch=foo %(pfx)s.type=elf
+""" % {"pfx":base.Dependency.DEPEND_DEBUG_PREFIX, "dummy_fmri":base.Dependency.DUMMY_FMRI}
 
         res_int_manf = """\
-depend %(depend_debug_prefix)s.file=var/log/syslog fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=usr/foo %(depend_debug_prefix)s.type=hardlink
-""" % {"depend_debug_prefix":base.Dependency.DEPEND_DEBUG_PREFIX, "dummy_fmri":base.Dependency.DUMMY_FMRI}
+depend %(pfx)s.file=syslog %(pfx)s.path=var/log fmri=%(dummy_fmri)s type=require %(pfx)s.reason=usr/foo %(pfx)s.type=hardlink
+""" % {"pfx":base.Dependency.DEPEND_DEBUG_PREFIX, "dummy_fmri":base.Dependency.DUMMY_FMRI}
 
         res_manf_2_missing = "ascii text"
 
         resolve_error = """\
-%(manf_path)s has unresolved dependency 'depend fmri=%(dummy_fmri)s %(depend_debug_prefix)s.file=libc.so.1 %(depend_debug_prefix)s.path=lib %(depend_debug_prefix)s.path=usr/lib %(depend_debug_prefix)s.reason=usr/xpg4/lib/libcurses.so.1 %(depend_debug_prefix)s.type=elf type=require variant.arch=foo' under the following combinations of variants:
+%(manf_path)s has unresolved dependency 'depend fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1 %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=usr/xpg4/lib/libcurses.so.1 %(pfx)s.type=elf type=require variant.arch=foo' under the following combinations of variants:
 variant.arch:foo
 """
 
         test_manf_1_resolved = """\
-depend fmri=%(py_pkg_name)s %(depend_debug_prefix)s.file=usr/bin/python %(depend_debug_prefix)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=script type=require
-depend fmri=%(ips_pkg_name)s %(depend_debug_prefix)s.file=usr/lib/python2.6/vendor-packages/pkg/__init__.py %(depend_debug_prefix)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python type=require
-depend fmri=%(ips_pkg_name)s %(depend_debug_prefix)s.file=usr/lib/python2.6/vendor-packages/pkg/indexer.py %(depend_debug_prefix)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python type=require
-depend fmri=%(ips_pkg_name)s %(depend_debug_prefix)s.file=usr/lib/python2.6/vendor-packages/pkg/misc.py %(depend_debug_prefix)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python type=require
-depend fmri=%(ips_pkg_name)s %(depend_debug_prefix)s.file=usr/lib/python2.6/vendor-packages/pkg/search_storage.py %(depend_debug_prefix)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(depend_debug_prefix)s.type=python type=require
-depend fmri=%(resolve_name)s %(depend_debug_prefix)s.file=var/log/authlog %(depend_debug_prefix)s.reason=baz %(depend_debug_prefix)s.type=hardlink type=require
-depend fmri=%(csl_pkg_name)s %(depend_debug_prefix)s.file=libc.so.1 %(depend_debug_prefix)s.path=lib %(depend_debug_prefix)s.path=usr/lib %(depend_debug_prefix)s.reason=usr/xpg4/lib/libcurses.so.1 %(depend_debug_prefix)s.type=elf type=require
+depend fmri=%(py_pkg_name)s %(pfx)s.file=usr/bin/python %(pfx)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(pfx)s.type=script type=require
+depend fmri=%(ips_pkg_name)s %(pfx)s.file=usr/lib/python2.6/vendor-packages/pkg/__init__.py %(pfx)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(pfx)s.type=python type=require
+depend fmri=%(ips_pkg_name)s %(pfx)s.file=usr/lib/python2.6/vendor-packages/pkg/indexer.py %(pfx)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(pfx)s.type=python type=require
+depend fmri=%(ips_pkg_name)s %(pfx)s.file=usr/lib/python2.6/vendor-packages/pkg/misc.py %(pfx)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(pfx)s.type=python type=require
+depend fmri=%(ips_pkg_name)s %(pfx)s.file=usr/lib/python2.6/vendor-packages/pkg/search_storage.py %(pfx)s.reason=usr/lib/python2.6/vendor-packages/pkg/client/indexer.py %(pfx)s.type=python type=require
+depend fmri=%(resolve_name)s %(pfx)s.file=var/log/authlog %(pfx)s.reason=baz %(pfx)s.type=hardlink type=require
+depend fmri=%(csl_pkg_name)s %(pfx)s.file=libc.so.1 %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=usr/xpg4/lib/libcurses.so.1 %(pfx)s.type=elf type=require
 """
 
         test_manf_1_full_resolved = test_manf_1_resolved + test_manf_1
 
-        res_full_manf_1_mod_proto = res_full_manf_1 + """\
-depend fmri=%(dummy_fmri)s %(depend_debug_prefix)s.file=libc.so.1 %(depend_debug_prefix)s.path=lib %(depend_debug_prefix)s.path=usr/lib %(depend_debug_prefix)s.reason=usr/xpg4/lib/libcurses.so.1 %(depend_debug_prefix)s.type=elf type=require
-""" % {"depend_debug_prefix":base.Dependency.DEPEND_DEBUG_PREFIX, "dummy_fmri":base.Dependency.DUMMY_FMRI}
+        def make_full_res_manf_1_mod_proto(self, proto_area):
+                return self.make_full_res_manf_1(proto_area) + \
+                    """\
+depend fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1 %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=usr/xpg4/lib/libcurses.so.1 %(pfx)s.type=elf type=require
+""" % {
+    "pfx":base.Dependency.DEPEND_DEBUG_PREFIX,
+    "dummy_fmri":base.Dependency.DUMMY_FMRI
+}
+        
+        def make_res_payload_1(self, proto_area):
+                return ("depend fmri=%(dummy_fmri)s "
+                    "%(pfx)s.file=misc.py "
+                    "%(pfx)s.file=misc.pyc "
+                    "%(pfx)s.file=misc.pyo "
+                    "%(pfx)s.file=misc/__init__.py " +
+                    self.__make_paths("pkg",
+                        [proto_area + "/usr/bin"] + self.new_path) +
+                    " %(pfx)s.reason=foo/bar.py "
+                    "%(pfx)s.type=python type=require\n"
 
-        res_payload_1 = """\
-depend %(depend_debug_prefix)s.file=usr/bin/python fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=foo/bar.py %(depend_debug_prefix)s.type=script
-depend %(depend_debug_prefix)s.file=usr/lib/python2.6/vendor-packages/pkg/__init__.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=foo/bar.py %(depend_debug_prefix)s.type=python
-depend %(depend_debug_prefix)s.file=usr/lib/python2.6/vendor-packages/pkg/indexer.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=foo/bar.py %(depend_debug_prefix)s.type=python
-depend %(depend_debug_prefix)s.file=usr/lib/python2.6/vendor-packages/pkg/misc.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=foo/bar.py %(depend_debug_prefix)s.type=python
-depend %(depend_debug_prefix)s.file=usr/lib/python2.6/vendor-packages/pkg/search_storage.py fmri=%(dummy_fmri)s type=require %(depend_debug_prefix)s.reason=foo/bar.py %(depend_debug_prefix)s.type=python
-""" % {"depend_debug_prefix":base.Dependency.DEPEND_DEBUG_PREFIX, "dummy_fmri":base.Dependency.DUMMY_FMRI}
+                    "depend fmri=%(dummy_fmri)s "
+                    "%(pfx)s.file=pkg/__init__.py " +
+                    self.__make_paths("",
+                        [proto_area + "/usr/bin"] + self.new_path) +
+                    " %(pfx)s.reason=foo/bar.py "
+                    "%(pfx)s.type=python type=require\n"
 
+                    "depend fmri=%(dummy_fmri)s "
+                    "%(pfx)s.file=python "
+                    "%(pfx)s.path=usr/bin "
+                    "%(pfx)s.reason=foo/bar.py "
+                    "%(pfx)s.type=script type=require\n"
+                    "depend fmri=%(dummy_fmri)s "
+                    "%(pfx)s.file=search_storage.py "
+                    "%(pfx)s.file=search_storage.pyc "
+                    "%(pfx)s.file=search_storage.pyo "
+                    "%(pfx)s.file=search_storage/__init__.py " +
+                    self.__make_paths("pkg",
+                        [proto_area + "/usr/bin"] + self.new_path) +
+                    " %(pfx)s.reason=foo/bar.py "
+                    "%(pfx)s.type=python type=require\n"
+
+                    "depend fmri=%(dummy_fmri)s "
+                    "%(pfx)s.file=indexer.py "
+                    "%(pfx)s.file=indexer.pyc "
+                    "%(pfx)s.file=indexer.pyo "
+                    "%(pfx)s.file=indexer/__init__.py " +
+                    self.__make_paths("pkg",
+                        [proto_area + "/usr/bin"] + self.new_path) +
+                    " %(pfx)s.reason=foo/bar.py "
+                    "%(pfx)s.type=python type=require\n") % {
+                        "pfx":
+                            base.Dependency.DEPEND_DEBUG_PREFIX,
+                        "dummy_fmri":base.Dependency.DUMMY_FMRI
+                    }
+
+        res_payload_1_tmp = """\
+depend fmri=__TBD pkg.debug.depend.file=misc.py pkg.debug.depend.file=misc.pyc pkg.debug.depend.file=misc.pyo pkg.debug.depend.file=misc/__init__.py pkg.debug.depend.path=export/home/bpytlik/IPS/dep_tests/proto/root_i386/usr/bin/pkg pkg.debug.depend.path=export/home/bpytlik/IPS/dep_tests/src/tests/pkg pkg.debug.depend.path=usr/lib/python2.6/lib-dynload/pkg pkg.debug.depend.path=usr/lib/python2.6/lib-old/pkg pkg.debug.depend.path=usr/lib/python2.6/lib-tk/pkg pkg.debug.depend.path=usr/lib/python2.6/pkg pkg.debug.depend.path=usr/lib/python2.6/plat-sunos5/pkg pkg.debug.depend.path=usr/lib/python2.6/site-packages/pkg pkg.debug.depend.path=usr/lib/python2.6/vendor-packages/gst-0.10/pkg pkg.debug.depend.path=usr/lib/python2.6/vendor-packages/gtk-2.0/pkg pkg.debug.depend.path=usr/lib/python2.6/vendor-packages/pkg pkg.debug.depend.path=usr/lib/python26.zip/pkg pkg.debug.depend.reason=foo/bar.py pkg.debug.depend.type=python type=require
+depend fmri=__TBD pkg.debug.depend.file=pkg/__init__.py pkg.debug.depend.path=export/home/bpytlik/IPS/dep_tests/proto/root_i386/usr/bin pkg.debug.depend.path=export/home/bpytlik/IPS/dep_tests/src/tests pkg.debug.depend.path=usr/lib/python2.6 pkg.debug.depend.path=usr/lib/python2.6/lib-dynload pkg.debug.depend.path=usr/lib/python2.6/lib-old pkg.debug.depend.path=usr/lib/python2.6/lib-tk pkg.debug.depend.path=usr/lib/python2.6/plat-sunos5 pkg.debug.depend.path=usr/lib/python2.6/site-packages pkg.debug.depend.path=usr/lib/python2.6/vendor-packages pkg.debug.depend.path=usr/lib/python2.6/vendor-packages/gst-0.10 pkg.debug.depend.path=usr/lib/python2.6/vendor-packages/gtk-2.0 pkg.debug.depend.path=usr/lib/python26.zip pkg.debug.depend.reason=foo/bar.py pkg.debug.depend.type=python type=require
+depend fmri=__TBD pkg.debug.depend.file=python pkg.debug.depend.path=usr/bin pkg.debug.depend.reason=foo/bar.py pkg.debug.depend.type=script type=require
+depend fmri=__TBD pkg.debug.depend.file=search_storage.py pkg.debug.depend.file=search_storage.pyc pkg.debug.depend.file=search_storage.pyo pkg.debug.depend.file=search_storage/__init__.py pkg.debug.depend.path=export/home/bpytlik/IPS/dep_tests/proto/root_i386/usr/bin/pkg pkg.debug.depend.path=export/home/bpytlik/IPS/dep_tests/src/tests/pkg pkg.debug.depend.path=usr/lib/python2.6/lib-dynload/pkg pkg.debug.depend.path=usr/lib/python2.6/lib-old/pkg pkg.debug.depend.path=usr/lib/python2.6/lib-tk/pkg pkg.debug.depend.path=usr/lib/python2.6/pkg pkg.debug.depend.path=usr/lib/python2.6/plat-sunos5/pkg pkg.debug.depend.path=usr/lib/python2.6/site-packages/pkg pkg.debug.depend.path=usr/lib/python2.6/vendor-packages/gst-0.10/pkg pkg.debug.depend.path=usr/lib/python2.6/vendor-packages/gtk-2.0/pkg pkg.debug.depend.path=usr/lib/python2.6/vendor-packages/pkg pkg.debug.depend.path=usr/lib/python26.zip/pkg pkg.debug.depend.reason=foo/bar.py pkg.debug.depend.type=python type=require
+depend fmri=__TBD pkg.debug.depend.file=indexer.py pkg.debug.depend.file=indexer.pyc pkg.debug.depend.file=indexer.pyo pkg.debug.depend.file=indexer/__init__.py pkg.debug.depend.path=export/home/bpytlik/IPS/dep_tests/proto/root_i386/usr/bin/pkg pkg.debug.depend.path=export/home/bpytlik/IPS/dep_tests/src/tests/pkg pkg.debug.depend.path=usr/lib/python2.6/lib-dynload/pkg pkg.debug.depend.path=usr/lib/python2.6/lib-old/pkg pkg.debug.depend.path=usr/lib/python2.6/lib-tk/pkg pkg.debug.depend.path=usr/lib/python2.6/pkg pkg.debug.depend.path=usr/lib/python2.6/plat-sunos5/pkg pkg.debug.depend.path=usr/lib/python2.6/site-packages/pkg pkg.debug.depend.path=usr/lib/python2.6/vendor-packages/gst-0.10/pkg pkg.debug.depend.path=usr/lib/python2.6/vendor-packages/gtk-2.0/pkg pkg.debug.depend.path=usr/lib/python2.6/vendor-packages/pkg pkg.debug.depend.path=usr/lib/python26.zip/pkg pkg.debug.depend.reason=foo/bar.py pkg.debug.depend.type=python type=require
+"""        
         two_variant_deps = """\
 set name=variant.foo value=bar value=baz
 set name=variant.num value=one value=two value=three
@@ -199,24 +320,24 @@ depend fmri=pkg:/s-v-bar pkg.debug.depend.file=var/log/file2 pkg.debug.depend.re
 """
 
         payload_elf_sub_stdout = """\
-depend fmri=%(dummy_fmri)s %(depend_debug_prefix)s.file=libc.so.1%(replaced_path)s %(depend_debug_prefix)s.path=lib %(depend_debug_prefix)s.path=usr/lib %(depend_debug_prefix)s.reason=bar/foo %(depend_debug_prefix)s.type=elf type=require\
+depend fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1%(replaced_path)s %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=bar/foo %(pfx)s.type=elf type=require\
 """ % {
-    "depend_debug_prefix":base.Dependency.DEPEND_DEBUG_PREFIX,
+    "pfx":base.Dependency.DEPEND_DEBUG_PREFIX,
     "dummy_fmri":base.Dependency.DUMMY_FMRI,
     "replaced_path":"%(replaced_path)s"
 }
 
         kernel_manf_stdout = """\
-depend fmri=%(dummy_fmri)s %(depend_debug_prefix)s.file=libc.so.1 %(depend_debug_prefix)s.path=kernel %(depend_debug_prefix)s.path=usr/kernel %(depend_debug_prefix)s.reason=kernel/foobar %(depend_debug_prefix)s.type=elf type=require\
+depend fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1 %(pfx)s.path=kernel %(pfx)s.path=usr/kernel %(pfx)s.reason=kernel/foobar %(pfx)s.type=elf type=require\
 """ % {
-    "depend_debug_prefix":base.Dependency.DEPEND_DEBUG_PREFIX,
+    "pfx":base.Dependency.DEPEND_DEBUG_PREFIX,
     "dummy_fmri":base.Dependency.DUMMY_FMRI
 }
 
         kernel_manf_stdout2 = """\
-depend fmri=%(dummy_fmri)s %(depend_debug_prefix)s.file=libc.so.1 %(depend_debug_prefix)s.path=baz %(depend_debug_prefix)s.path=foo/bar %(depend_debug_prefix)s.reason=kernel/foobar %(depend_debug_prefix)s.type=elf type=require\
+depend fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1 %(pfx)s.path=baz %(pfx)s.path=foo/bar %(pfx)s.reason=kernel/foobar %(pfx)s.type=elf type=require\
 """ % {
-    "depend_debug_prefix":base.Dependency.DEPEND_DEBUG_PREFIX,
+    "pfx":base.Dependency.DEPEND_DEBUG_PREFIX,
     "dummy_fmri":base.Dependency.DUMMY_FMRI
 }
 
@@ -225,36 +346,36 @@ Couldn't find %(path_pref)s/tmp/file/should/not/exist/here/foo
 """
 
         double_plat_error = """\
-%(image_dir)s/tmp_pkgdep_elfs/elf_test (which will be installed at bar/foo) had this token, $PLATFORM, in its run path:/platform/$PLATFORM/foo.  It is not currently possible to automatically expand this token. Please specify its value on the command line.
-%(image_dir)s/tmp_pkgdep_elfs/elf_test (which will be installed at bar/foo) had this token, $PLATFORM, in its run path:/isadir/$PLATFORM/baz.  It is not currently possible to automatically expand this token. Please specify its value on the command line."""
+%(image_dir)s/proto/elf_test (which will be installed at bar/foo) had this token, $PLATFORM, in its run path:/platform/$PLATFORM/foo.  It is not currently possible to automatically expand this token. Please specify its value on the command line.
+%(image_dir)s/proto/elf_test (which will be installed at bar/foo) had this token, $PLATFORM, in its run path:/isadir/$PLATFORM/baz.  It is not currently possible to automatically expand this token. Please specify its value on the command line."""
 
         double_plat_stdout = """\
-depend fmri=%(dummy_fmri)s %(depend_debug_prefix)s.file=libc.so.1 %(depend_debug_prefix)s.path=lib %(depend_debug_prefix)s.path=usr/lib %(depend_debug_prefix)s.reason=bar/foo %(depend_debug_prefix)s.type=elf type=require\
+depend fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1 %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=bar/foo %(pfx)s.type=elf type=require\
 """ % {
-    "depend_debug_prefix":base.Dependency.DEPEND_DEBUG_PREFIX,
+    "pfx":base.Dependency.DEPEND_DEBUG_PREFIX,
     "dummy_fmri":base.Dependency.DUMMY_FMRI
 }
 
         double_plat_isa_error = """\
-%(image_dir)s/tmp_pkgdep_elfs/elf_test (which will be installed at bar/foo) had this token, $ISALIST, in its run path:/$ISALIST/$PLATFORM/baz.  It is not currently possible to automatically expand this token. Please specify its value on the command line.\
+%(image_dir)s/proto/elf_test (which will be installed at bar/foo) had this token, $ISALIST, in its run path:/$ISALIST/$PLATFORM/baz.  It is not currently possible to automatically expand this token. Please specify its value on the command line.\
 """
 
         double_plat_isa_stdout = """\
-depend fmri=%(dummy_fmri)s %(depend_debug_prefix)s.file=libc.so.1 %(depend_debug_prefix)s.path=platform/pfoo/foo %(depend_debug_prefix)s.path=lib %(depend_debug_prefix)s.path=usr/lib %(depend_debug_prefix)s.reason=bar/foo %(depend_debug_prefix)s.type=elf type=require\
+depend fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1 %(pfx)s.path=platform/pfoo/foo %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=bar/foo %(pfx)s.type=elf type=require\
 """ % {
-    "depend_debug_prefix":base.Dependency.DEPEND_DEBUG_PREFIX,
+    "pfx":base.Dependency.DEPEND_DEBUG_PREFIX,
     "dummy_fmri":base.Dependency.DUMMY_FMRI
 }
 
         double_double_stdout = """\
-depend fmri=%(dummy_fmri)s %(depend_debug_prefix)s.file=libc.so.1 %(depend_debug_prefix)s.path=platform/pfoo/foo %(depend_debug_prefix)s.path=platform/pfoo2/foo %(depend_debug_prefix)s.path=isadir/pfoo/baz %(depend_debug_prefix)s.path=isadir/pfoo2/baz %(depend_debug_prefix)s.path=isadir/pfoo/baz %(depend_debug_prefix)s.path=isadir/pfoo2/baz %(depend_debug_prefix)s.path=lib %(depend_debug_prefix)s.path=usr/lib %(depend_debug_prefix)s.reason=bar/foo %(depend_debug_prefix)s.type=elf type=require\
+depend fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1 %(pfx)s.path=platform/pfoo/foo %(pfx)s.path=platform/pfoo2/foo %(pfx)s.path=isadir/pfoo/baz %(pfx)s.path=isadir/pfoo2/baz %(pfx)s.path=isadir/pfoo/baz %(pfx)s.path=isadir/pfoo2/baz %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=bar/foo %(pfx)s.type=elf type=require\
 """ % {
-    "depend_debug_prefix":base.Dependency.DEPEND_DEBUG_PREFIX,
+    "pfx":base.Dependency.DEPEND_DEBUG_PREFIX,
     "dummy_fmri":base.Dependency.DUMMY_FMRI
 }
 
         two_v_deps_resolve_error = """\
-%(manf_path)s has unresolved dependency 'depend fmri=%(dummy_fmri)s %(depend_debug_prefix)s.file=var/log/authlog %(depend_debug_prefix)s.reason=baz %(depend_debug_prefix)s.type=hardlink type=require' under the following combinations of variants:
+%(manf_path)s has unresolved dependency 'depend fmri=%(dummy_fmri)s %(pfx)s.file=var/log/authlog %(pfx)s.reason=baz %(pfx)s.type=hardlink type=require' under the following combinations of variants:
 variant.foo:baz variant.num:three
 """
         usage_msg = """\
@@ -292,30 +413,53 @@ file NOHASH path=platform/foo/baz/no_such_named_file
 """
 
         run_path_errors = """\
-The file dependency depend fmri=%(dummy_fmri)s %(depend_debug_prefix)s.file=no_such_named_file %(depend_debug_prefix)s.path=platform/foo/baz %(depend_debug_prefix)s.path=platform/bar/baz %(depend_debug_prefix)s.path=lib %(depend_debug_prefix)s.path=usr/lib %(depend_debug_prefix)s.reason=foo/bar %(depend_debug_prefix)s.type=elf type=require has run paths which resolve to multiple packages. The actions are as follows:
-      depend fmri=pkg:/sat_bar_libc %(depend_debug_prefix)s.file=no_such_named_file %(depend_debug_prefix)s.path=platform/foo/baz %(depend_debug_prefix)s.path=platform/bar/baz %(depend_debug_prefix)s.path=lib %(depend_debug_prefix)s.path=usr/lib %(depend_debug_prefix)s.reason=foo/bar %(depend_debug_prefix)s.type=elf type=require
-      depend fmri=pkg:/sat_foo_libc %(depend_debug_prefix)s.file=no_such_named_file %(depend_debug_prefix)s.path=platform/foo/baz %(depend_debug_prefix)s.path=platform/bar/baz %(depend_debug_prefix)s.path=lib %(depend_debug_prefix)s.path=usr/lib %(depend_debug_prefix)s.reason=foo/bar %(depend_debug_prefix)s.type=elf type=require
-%(unresolved_path)s has unresolved dependency 'depend fmri=%(dummy_fmri)s %(depend_debug_prefix)s.file=no_such_named_file %(depend_debug_prefix)s.path=platform/foo/baz %(depend_debug_prefix)s.path=platform/bar/baz %(depend_debug_prefix)s.path=lib %(depend_debug_prefix)s.path=usr/lib %(depend_debug_prefix)s.reason=foo/bar %(depend_debug_prefix)s.type=elf type=require' under the following combinations of variants:
+The file dependency depend fmri=%(dummy_fmri)s %(pfx)s.file=no_such_named_file %(pfx)s.path=platform/foo/baz %(pfx)s.path=platform/bar/baz %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=foo/bar %(pfx)s.type=elf type=require has paths which resolve to multiple packages. The actions are as follows:
+	depend fmri=pkg:/sat_bar_libc %(pfx)s.file=platform/bar/baz/no_such_named_file %(pfx)s.reason=foo/bar %(pfx)s.type=elf type=require
+	depend fmri=pkg:/sat_foo_libc %(pfx)s.file=platform/foo/baz/no_such_named_file %(pfx)s.reason=foo/bar %(pfx)s.type=elf type=require
+%(unresolved_path)s has unresolved dependency 'depend fmri=__TBD %(pfx)s.file=no_such_named_file %(pfx)s.path=platform/foo/baz %(pfx)s.path=platform/bar/baz %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=foo/bar %(pfx)s.type=elf type=require' under the following combinations of variants:
 """ % {
-    "depend_debug_prefix":base.Dependency.DEPEND_DEBUG_PREFIX,
+    "pfx":base.Dependency.DEPEND_DEBUG_PREFIX,
     "dummy_fmri":base.Dependency.DUMMY_FMRI,
     "unresolved_path":"%(unresolved_path)s"
 }
 
         amb_path_errors = """\
-The file dependency depend fmri=%(dummy_fmri)s %(depend_debug_prefix)s.file=no_such_named_file %(depend_debug_prefix)s.path=platform/foo/baz %(depend_debug_prefix)s.path=platform/bar/baz %(depend_debug_prefix)s.path=lib %(depend_debug_prefix)s.path=usr/lib %(depend_debug_prefix)s.reason=foo/bar %(depend_debug_prefix)s.type=elf type=require depends on a path delivered by multiple packages. Those packages are:pkg:/sat_bar_libc2 pkg:/sat_bar_libc
-%(unresolved_path)s has unresolved dependency 'depend fmri=%(dummy_fmri)s %(depend_debug_prefix)s.file=no_such_named_file %(depend_debug_prefix)s.path=platform/foo/baz %(depend_debug_prefix)s.path=platform/bar/baz %(depend_debug_prefix)s.path=lib %(depend_debug_prefix)s.path=usr/lib %(depend_debug_prefix)s.reason=foo/bar %(depend_debug_prefix)s.type=elf type=require' under the following combinations of variants:
+The file dependency depend fmri=%(dummy_fmri)s %(pfx)s.file=no_such_named_file %(pfx)s.path=platform/foo/baz %(pfx)s.path=platform/bar/baz %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=foo/bar %(pfx)s.type=elf type=require depends on a path delivered by multiple packages. Those packages are:pkg:/sat_bar_libc2 pkg:/sat_bar_libc
+%(unresolved_path)s has unresolved dependency 'depend fmri=%(dummy_fmri)s %(pfx)s.file=no_such_named_file %(pfx)s.path=platform/foo/baz %(pfx)s.path=platform/bar/baz %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=foo/bar %(pfx)s.type=elf type=require' under the following combinations of variants:
 """ % {
-    "depend_debug_prefix":base.Dependency.DEPEND_DEBUG_PREFIX,
+    "pfx":base.Dependency.DEPEND_DEBUG_PREFIX,
     "dummy_fmri":base.Dependency.DUMMY_FMRI,
     "unresolved_path":"%(unresolved_path)s"
 }
+
+        python_text = """\
+#!/usr/bin/python
+
+import pkg.indexer as indexer
+import pkg.search_storage as ss
+from pkg.misc import EmptyI
+"""
+
+        p24_test_manf_1 = """\
+file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.4/vendor-packages/pkg/client/indexer.py
+"""
+
+        p24_res_full_manf_1 = """\
+file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.4/vendor-packages/pkg/client/indexer.py
+depend %(pfx)s.file=usr/bin/python fmri=%(dummy_fmri)s type=require %(pfx)s.reason=usr/lib/python2.4/vendor-packages/pkg/client/indexer.py %(pfx)s.type=script
+depend %(pfx)s.file=usr/lib/python2.4/vendor-packages/pkg/__init__.py fmri=%(dummy_fmri)s type=require %(pfx)s.reason=usr/lib/python2.4/vendor-packages/pkg/client/indexer.py %(pfx)s.type=python
+depend %(pfx)s.file=usr/lib/python2.4/vendor-packages/pkg/indexer.py fmri=%(dummy_fmri)s type=require %(pfx)s.reason=usr/lib/python2.4/vendor-packages/pkg/client/indexer.py %(pfx)s.type=python
+depend %(pfx)s.file=usr/lib/python2.4/vendor-packages/pkg/misc.py fmri=%(dummy_fmri)s type=require %(pfx)s.reason=usr/lib/python2.4/vendor-packages/pkg/client/indexer.py %(pfx)s.type=python
+depend %(pfx)s.file=usr/lib/python2.4/vendor-packages/pkg/search_storage.py fmri=%(dummy_fmri)s type=require %(pfx)s.reason=usr/lib/python2.4/vendor-packages/pkg/client/indexer.py %(pfx)s.type=python
+""" % {"pfx":base.Dependency.DEPEND_DEBUG_PREFIX, "dummy_fmri":base.Dependency.DUMMY_FMRI}
+
         def setUp(self):
                 testutils.SingleDepotTestCase.setUp(self)
-                self.manf_dirs = os.path.join(self.img_path, "tmp_pkgdep_manfs")
+                self.image_create(self.dc.get_depot_url())
+                self.manf_dirs = os.path.join(self.img_path, "manfs")
                 os.makedirs(self.manf_dirs)
-                self.elf_dirs = os.path.join(self.img_path, "tmp_pkgdep_elfs")
-                os.makedirs(self.elf_dirs)
+                self.proto_dir = os.path.join(self.img_path, "proto")
+                os.makedirs(self.proto_dir)
         
         def make_manifest(self, str):
                 t_fd, t_path = tempfile.mkstemp(dir=self.manf_dirs)
@@ -348,12 +492,15 @@ The file dependency depend fmri=%(dummy_fmri)s %(depend_debug_prefix)s.file=no_s
                 fh.close()
                 return lines
 
-        def make_elf(self, run_paths):
-                t_fd, t_path = tempfile.mkstemp(suffix=".c", dir=self.elf_dirs)
+        def make_elf(self, run_paths, o_path="elf_test"):
+                t_fd, t_path = tempfile.mkstemp(suffix=".c", dir=self.proto_dir)
                 t_fh = os.fdopen(t_fd, "w")
                 t_fh.write("int main(){}\n")
                 t_fh.close()
-                out_file = os.path.join(self.elf_dirs, "elf_test")
+                out_file = os.path.join(self.proto_dir, o_path)
+                out_dir = os.path.dirname(out_file)
+                if not os.path.exists(out_dir):
+                        os.makedirs(out_dir)
                 cmd = ["/usr/bin/cc", "-o", out_file]
                 for rp in run_paths:
                         cmd.append("-R")
@@ -363,8 +510,19 @@ The file dependency depend fmri=%(dummy_fmri)s %(depend_debug_prefix)s.file=no_s
                 rc = s.wait()
                 if rc != 0:
                         raise RuntimeError("Compile of %s failed. Runpaths "
-                            "were %s" % " ".join(run_paths))
+                            "were %s" % (t_path, " ".join(run_paths)))
                 return out_file[len(self.img_path)+1:]
+
+        def make_text_file(self, o_path, o_text=""):
+                f_path = os.path.join(self.proto_dir, o_path)
+                f_dir = os.path.dirname(f_path)
+                if not os.path.exists(f_dir):
+                        os.makedirs(f_dir)
+
+                fh = open(f_path, "w")
+                fh.write(o_text)
+                fh.close()
+                return f_path
 
         def check_res(self, expected, seen):
                 seen = seen.strip()
@@ -390,40 +548,36 @@ The file dependency depend fmri=%(dummy_fmri)s %(depend_debug_prefix)s.file=no_s
         def test_output(self):
                 """Check that the output is in the format expected."""
 
-                self.pkg("-R / list -Hv SUNWPython")
-                python_pkg_name = self.output.split()[0]
-                python_pkg_name = "/".join([python_pkg_name.split("/")[0],
-                    python_pkg_name.split("/")[-1]])
-
-                self.pkg("-R / list -Hv SUNWipkg")
-                ipkg_pkg_name = self.output.split()[0]
-                ipkg_pkg_name = "/".join([ipkg_pkg_name.split("/")[0],
-                    ipkg_pkg_name.split("/")[-1]])
-
-                self.pkg("-R / list -Hv SUNWcsl")
-                csl_pkg_name = self.output.split()[0]
-                csl_pkg_name = "/".join([csl_pkg_name.split("/")[0],
-                    csl_pkg_name.split("/")[-1]])
-                
                 tp = self.make_manifest(self.test_manf_1)
                 
                 self.pkgdepend("generate %s" % tp, exit=1)
-                self.check_res(self.res_manf_1, self.output)
+                self.check_res(self.make_res_manf_1(testutils.g_proto_area),
+                    self.output)
                 self.check_res(self.err_manf_1 % testutils.g_proto_area,
                     self.errout)
 
                 self.pkgdepend("generate -m %s" % tp, exit=1)
-                self.check_res(self.res_full_manf_1, self.output)
+                self.check_res(
+                    self.make_full_res_manf_1(testutils.g_proto_area),
+                    self.output)
                 self.check_res(self.err_manf_1 % testutils.g_proto_area,
                     self.errout)
 
-                self.pkgdepend("generate -m %s" % tp, proto="/")
-                self.check_res(self.res_full_manf_1_mod_proto, self.output)
+                self.make_text_file(
+                    "usr/lib/python2.6/vendor-packages/pkg/client/indexer.py",
+                    self.python_text)
+                self.make_elf([], "usr/xpg4/lib/libcurses.so.1")
+                
+                self.pkgdepend("generate -m %s" % tp, proto=self.proto_dir)
+                self.check_res(
+                    self.make_full_res_manf_1_mod_proto(testutils.g_proto_area),
+                    self.output)
                 self.check_res("", self.errout)
 
                 tp = self.make_manifest(self.test_manf_2)
+                self.make_text_file("etc/pam.conf", "text")
                 
-                self.pkgdepend("generate %s" % tp, proto="/")
+                self.pkgdepend("generate %s" % tp, proto=self.proto_dir)
                 self.check_res(self.res_manf_2, self.output)
                 self.check_res("", self.errout)
 
@@ -434,15 +588,12 @@ The file dependency depend fmri=%(dummy_fmri)s %(depend_debug_prefix)s.file=no_s
                 self.check_res("%s" % res_path, self.output)
                 self.check_res(self.resolve_error % {
                         "manf_path": res_path,
-                        "depend_debug_prefix":
+                        "pfx":
                             base.Dependency.DEPEND_DEBUG_PREFIX,
-                        "dummy_fmri":base.Dependency.DUMMY_FMRI,
-                        "py_pkg_name": python_pkg_name,
-                        "ips_pkg_name": ipkg_pkg_name,
-                        "csl_pkg_name": csl_pkg_name
+                        "dummy_fmri":base.Dependency.DUMMY_FMRI
                     }, self.errout)
                 
-                self.pkgdepend("generate -M %s" % tp, proto="/")
+                self.pkgdepend("generate -M %s" % tp, proto=self.proto_dir)
                 self.check_res(self.res_manf_2, self.output)
                 self.check_res(self.res_manf_2_missing, self.errout)
 
@@ -450,12 +601,14 @@ The file dependency depend fmri=%(dummy_fmri)s %(depend_debug_prefix)s.file=no_s
                 portable.remove(res_path)
 
                 tp = self.make_manifest(self.int_hardlink_manf)
+
+                self.make_text_file("var/log/syslog", "text")
                 
-                self.pkgdepend("generate %s" % tp, proto="/")
+                self.pkgdepend("generate %s" % tp, proto=self.proto_dir)
                 self.check_res("", self.output)
                 self.check_res("", self.errout)
 
-                self.pkgdepend("generate -I %s" % tp, proto="/")
+                self.pkgdepend("generate -I %s" % tp, proto=self.proto_dir)
                 self.check_res(self.res_int_manf, self.output)
                 self.check_res("", self.errout)
 
@@ -465,11 +618,14 @@ The file dependency depend fmri=%(dummy_fmri)s %(depend_debug_prefix)s.file=no_s
                 """These tests fail because they're resolved using a 2.6 based
                 interpreter, instead of a 2.4 one."""
 
-                tp = self.make_manifest(self.test_manf_1)
+                tp = self.make_manifest(self.p24_test_manf_1)
+                self.make_text_file("usr/lib/python2.4/vendor-packages/pkg/"
+                    "client/indexer.py", self.python_text)
+                self.make_elf([], "usr/xpg4/lib/libcurses.so.1")
                 
-                self.pkgdepend("generate -m %s" % tp, proto="/")
-                self.check_res(self.res_full_manf_1_mod_proto, self.output)
-                self.check_res("", self.errout)
+                self.pkgdepend("generate -m %s" % tp, proto=self.proto_dir)
+                self.check_res(self.p24_res_full_manf_1, self.output)
+                self.check_res("ensure failure", self.errout)
 
                 dependency_mp = self.make_manifest(self.output)
                 provider_mp = self.make_manifest(self.resolve_dep_manf)
@@ -483,12 +639,9 @@ The file dependency depend fmri=%(dummy_fmri)s %(depend_debug_prefix)s.file=no_s
                 lines = self.__read_file(dependency_res_p)
                 self.check_res(self.test_manf_1_resolved % {
                         "resolve_name": os.path.basename(provider_mp),
-                        "depend_debug_prefix":
+                        "pfx":
                             base.Dependency.DEPEND_DEBUG_PREFIX,
-                        "dummy_fmri": base.Dependency.DUMMY_FMRI,
-                        "py_pkg_name": python_pkg_name,
-                        "ips_pkg_name": ipkg_pkg_name,
-                        "csl_pkg_name": csl_pkg_name
+                        "dummy_fmri": base.Dependency.DUMMY_FMRI
                     }, lines)
                 lines = self.__read_file(provider_res_p)
                 self.check_res("", lines)
@@ -509,12 +662,9 @@ The file dependency depend fmri=%(dummy_fmri)s %(depend_debug_prefix)s.file=no_s
                 lines = self.__read_file(dependency_res_p)
                 self.check_res(self.test_manf_1_full_resolved % {
                         "resolve_name": os.path.basename(provider_mp),
-                        "depend_debug_prefix":
+                        "pfx":
                             base.Dependency.DEPEND_DEBUG_PREFIX,
-                        "dummy_fmri":base.Dependency.DUMMY_FMRI,
-                        "py_pkg_name": python_pkg_name,
-                        "ips_pkg_name": ipkg_pkg_name,
-                        "csl_pkg_name": csl_pkg_name
+                        "dummy_fmri":base.Dependency.DUMMY_FMRI
                     }, lines)
                 lines = self.__read_file(provider_res_p)
                 self.check_res(self.resolve_dep_manf, lines)
@@ -533,12 +683,9 @@ The file dependency depend fmri=%(dummy_fmri)s %(depend_debug_prefix)s.file=no_s
                 lines = self.__read_file(dependency_res_p)
                 self.check_res(self.test_manf_1_resolved % {
                         "resolve_name": os.path.basename(provider_mp),
-                        "depend_debug_prefix":
+                        "pfx":
                             base.Dependency.DEPEND_DEBUG_PREFIX,
-                        "dummy_fmri":base.Dependency.DUMMY_FMRI,
-                        "py_pkg_name": python_pkg_name,
-                        "ips_pkg_name": ipkg_pkg_name,
-                        "csl_pkg_name": csl_pkg_name
+                        "dummy_fmri":base.Dependency.DUMMY_FMRI
                     }, lines)
                 lines = self.__read_file(provider_res_p)
                 self.check_res("", lines)
@@ -555,12 +702,9 @@ The file dependency depend fmri=%(dummy_fmri)s %(depend_debug_prefix)s.file=no_s
                 lines = self.__read_file(dependency_res_p)
                 self.check_res(self.test_manf_1_resolved % {
                         "resolve_name": os.path.basename(provider_mp),
-                        "depend_debug_prefix":
+                        "pfx":
                             base.Dependency.DEPEND_DEBUG_PREFIX,
-                        "dummy_fmri":base.Dependency.DUMMY_FMRI,
-                        "py_pkg_name": python_pkg_name,
-                        "ips_pkg_name": ipkg_pkg_name,
-                        "csl_pkg_name": csl_pkg_name
+                        "dummy_fmri":base.Dependency.DUMMY_FMRI
                     }, lines)
                 lines = self.__read_file(provider_res_p)
                 self.check_res("", lines)
@@ -595,7 +739,7 @@ The file dependency depend fmri=%(dummy_fmri)s %(depend_debug_prefix)s.file=no_s
                     }, self.output)
                 self.check_res(self.two_v_deps_resolve_error % {
                         "manf_path": m1_path,
-                        "depend_debug_prefix":
+                        "pfx":
                             base.Dependency.DEPEND_DEBUG_PREFIX,
                         "dummy_fmri":base.Dependency.DUMMY_FMRI
                     }, self.errout)
@@ -639,7 +783,8 @@ The file dependency depend fmri=%(dummy_fmri)s %(depend_debug_prefix)s.file=no_s
 
                 tp = self.make_manifest(self.payload_manf)
                 self.pkgdepend("generate %s" % tp)
-                self.check_res(self.res_payload_1, self.output)
+                self.check_res(self.make_res_payload_1(testutils.g_proto_area),
+                    self.output)
                 self.check_res("", self.errout)
 
         def test_bug_11829(self):

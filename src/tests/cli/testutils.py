@@ -429,8 +429,7 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                 p = subprocess.Popen(cmdline, shell=True, env=newenv,
                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-                self.output = p.stdout.read()
-                self.errout = p.stderr.read()
+                self.output, self.errout = p.communicate()
                 retcode = p.wait()
                 self.debugresult(retcode, self.output)
 

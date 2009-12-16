@@ -30,19 +30,20 @@ import os
 import pkg.flavor.base as base
 import pkg.flavor.python as python
 
-class ScriptDependency(base.SinglePathDependency):
+class ScriptDependency(base.PublishingDependency):
         """Class representing the dependency created by having #! at the top
         of a file."""
 
-        def __init__(self, *args, **kwargs):
-                attrs = kwargs.get("attrs", {})
-                attrs["%s.type" % self.DEPEND_DEBUG_PREFIX] = "script"
-                base.SinglePathDependency.__init__(self, attrs=attrs, *args,
-                    **kwargs)
+        def __init__(self, action, path, pkg_vars, proto_dir):
+                base_names = [os.path.basename(path)]
+                paths = [os.path.dirname(path)]
+                base.PublishingDependency.__init__(self, action,
+                    base_names, paths, pkg_vars, proto_dir, "script")
         
         def __repr__(self):
-                return "PBDep(%s, %s, %s, %s)" % (self.action, self.dep_path,
-                    self.pkg_vars, self.dep_vars)
+                return "PBDep(%s, %s, %s, %s, %s)" % (self.action,
+                    self.base_names, self.run_paths, self.pkg_vars,
+                    self.dep_vars)
 
 def process_script_deps(action, proto_dir, pkg_vars, **kwargs):
         """Given an action and a place to find the file it references, if the

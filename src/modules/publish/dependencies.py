@@ -41,12 +41,15 @@ import pkg.manifest as manifest
 import pkg.portable as portable
 import pkg.variant as variants
 
+paths_prefix = "%s.path" % base.Dependency.DEPEND_DEBUG_PREFIX
+files_prefix = "%s.file" % base.Dependency.DEPEND_DEBUG_PREFIX
+
 class DependencyError(Exception):
         """The parent class for all dependency exceptions."""
         pass
 
-class MultiplePackagesRunPathError(DependencyError):
-        """This exception is used when a file dependency has run paths which
+class MultiplePackagesPathError(DependencyError):
+        """This exception is used when a file dependency has paths which
         cause two packages to deliver files which fulfill the dependency."""
 
         def __init__(self, res, source):
@@ -54,7 +57,7 @@ class MultiplePackagesRunPathError(DependencyError):
                 self.source = source
 
         def __str__(self):
-                return _("The file dependency %s has run paths which resolve "
+                return _("The file dependency %s has paths which resolve "
                     "to multiple packages. The actions are as follows:\n%s" %
                     (self.source, "\n".join(["\t%s" % a for a in self.res])))
 
@@ -329,7 +332,7 @@ def helper(lst, file_dep, dep_vars, orig_dep_vars, pkg_vars):
                 dep_vars.mark_as_satisfied(delivered_vars)
                 attrs = file_dep.attrs.copy()
                 attrs.update({"fmri":str(pfmri)})
-                attrs.update(action_vars)
+                attrs.update(action_vars)                
                 # Add this package as satisfying the dependency.
                 res.append((actions.depend.DependencyAction(**attrs),
                     action_vars))
@@ -340,6 +343,16 @@ def helper(lst, file_dep, dep_vars, orig_dep_vars, pkg_vars):
                 # situation is unresolvable.
                 raise AmbiguousPathError(errs, file_dep)
         return res, dep_vars
+
+def make_paths(file_dep):
+        """Find all the possible paths which could satisfy the dependency
+        'file_dep'."""
+
+        rps = file_dep.attrs.get(paths_prefix, [""])
+        files = file_dep.attrs[files_prefix]
+        if isinstance(files, basestring):
+                files = [files]
+        return [os.path.join(rp, f) for rp in rps for f in files]
 
 def find_package_using_delivered_files(delivered, file_dep, dep_vars,
     orig_dep_vars, pkg_vars):
@@ -360,21 +373,11 @@ def find_package_using_delivered_files(delivered, file_dep, dep_vars,
         'pkg_vars' is the list of variants against which the package delivering
         the action was published."""
 
-        rps = [""]
-        # If the file dependency has any run paths set, place them in 'rps'.
-        if "%s.path" % base.Dependency.DEPEND_DEBUG_PREFIX in file_dep.attrs:
-                rps = file_dep.attrs["%s.path" %
-                    base.Dependency.DEPEND_DEBUG_PREFIX]
-        paths = [
-            os.path.join(rp,
-                file_dep.attrs["%s.file" % base.Dependency.DEPEND_DEBUG_PREFIX])
-            for rp in rps
-        ]
         res = None
         variants_with_matches = []
         errs = []
         multiple_path_errs = {}
-        for p in paths:
+        for p in make_paths(file_dep):
                 delivered_list = []
                 if p in delivered:
                         delivered_list = delivered[p]
@@ -388,6 +391,13 @@ def find_package_using_delivered_files(delivered, file_dep, dep_vars,
                 except AmbiguousPathError, e:
                         errs.append(e)
                 else:
+                        # We know which path satisfies this dependency, so
+                        # remove the list of files and paths, and replace them
+                        # with the single path that works.
+                        for na, nv in new_res:
+                                na.attrs.pop(paths_prefix, None)
+                                na.attrs[files_prefix] = [p]
+
                         if not res:
                                 res = new_res
                                 continue
@@ -399,6 +409,8 @@ def find_package_using_delivered_files(delivered, file_dep, dep_vars,
                                 for new_a, new_v in new_res:
                                         if a.attrs["fmri"] == \
                                             new_a.attrs["fmri"]:
+                                                a.attrs[files_prefix].extend(
+                                                    new_a.attrs[files_prefix])
                                                 continue
                                         # Check to see if there's a
                                         # configuration of variants under which
@@ -412,7 +424,7 @@ def find_package_using_delivered_files(delivered, file_dep, dep_vars,
                                         else:
                                                 res.append((new_a, new_v))
         for a in multiple_path_errs:
-                errs.append(MultiplePackagesRunPathError(multiple_path_errs[a],
+                errs.append(MultiplePackagesPathError(multiple_path_errs[a],
                     file_dep))
 
         # Extract the actions from res, and only return those which don't have
@@ -466,17 +478,8 @@ def find_package_using_search(api_inst, file_dep, dep_vars, orig_dep_vars,
         'pkg_vars' is the list of variants against which the package delivering
         the action was published."""
 
-        rps = [""]
-        # If the file dependency has any run paths set, place them in 'rps'.
-        if "%s.path" % base.Dependency.DEPEND_DEBUG_PREFIX in file_dep.attrs:
-                rps = file_dep.attrs["%s.path" %
-                    base.Dependency.DEPEND_DEBUG_PREFIX]
-        ps = [
-            os.path.normpath(os.path.join("/", rp,
-                file_dep.attrs["%s.file" %
-                base.Dependency.DEPEND_DEBUG_PREFIX]))
-            for rp in rps
-        ]
+        ps = make_paths(file_dep)
+
         res_pkgs = __run_search(ps, api_inst)
 
         res = []

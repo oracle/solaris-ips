@@ -64,19 +64,21 @@ class UnsupportedDynamicToken(base.DependencyAnalysisError):
                     (self.pp, self.ip, self.tok, self.rp)
 
 
-class ElfDependency(base.MultiplePathDependency):
+class ElfDependency(base.PublishingDependency):
         """Class representing a dependency from one file to another library
         as determined by elf."""
 
-        def __init__(self, *args, **kwargs):
+        def __init__(self, action, base_name, run_paths, pkg_vars, proto_dir):
                 self.err_type = self.ERROR
-                attrs = kwargs.get("attrs", {})
-                attrs["%s.type" % self.DEPEND_DEBUG_PREFIX] = "elf"
 
-                base.MultiplePathDependency.__init__(self, attrs=attrs, *args,
-                    **kwargs)
+                base.PublishingDependency.__init__(self, action,
+                    [base_name], run_paths, pkg_vars, proto_dir, "elf")
 
         def is_error(self):
+                """Because elf dependencies can be either warnings or errors,
+                it's necessary to check whether this dependency is an error
+                or not."""
+
                 return self.err_type == self.ERROR
 
         def resolve_internal(self, delivered_base_names, **kwargs):
@@ -84,21 +86,21 @@ class ElfDependency(base.MultiplePathDependency):
                 full path has not been delivered, check whether the base name
                 has. If it has, it's likely that the run path is being set
                 externally. Report a warning, but not an error in this case."""
-                err, vars = base.MultiplePathDependency.resolve_internal(self,
-                    delivered_base_names=delivered_base_names, **kwargs)
+                err, vars = base.PublishingDependency.resolve_internal(
+                    self, delivered_base_names=delivered_base_names, **kwargs)
                 # If the none of the paths pointed to a file with the desired
                 # basename, but a file with that basename was delivered by this
                 # package, then treat the dependency as a warning instead of
                 # an error. The failure to find the path to the right file
                 # may be due to the library search path being set outside the
                 # file that generates the dependency.
-                if err == self.ERROR and vars is None and \
-                    self.base_name in delivered_base_names:
+                if err == self.ERROR and vars.is_satisfied() and \
+                    self.base_names[0] in delivered_base_names:
                         self.err_type = self.WARNING
                         self.attrs["%s.severity" % self.DEPEND_DEBUG_PREFIX] =\
                             "warning"
                         return self.WARNING, self.get_var_diff(
-                            delivered_base_names[self.base_name])
+                            delivered_base_names[self.base_names[0]])
                 else:
                         return err, vars
 
@@ -138,7 +140,9 @@ def expand_variables(paths, dyn_tok_conv):
                 else:
                         res.append(p)
         return res, elist
-        
+
+default_run_paths = ["/lib", "/usr/lib"]
+
 def process_elf_dependencies(action, proto_dir, pkg_vars, dyn_tok_conv,
     kernel_paths, **kwargs):
         """Produce the elf dependencies for the file delivered in the action
@@ -214,10 +218,9 @@ def process_elf_dependencies(action, proto_dir, pkg_vars, dyn_tok_conv,
                                 raise RuntimeError("Unknown arch:%s" %
                                     ei["arch"])
         else:
-                if "/lib" not in rp:
-                        rp.append("/lib")
-                if "/usr/lib" not in rp:
-                        rp.append("/usr/lib")
+                for p in default_run_paths:
+                        if p not in rp:
+                                rp.append(p)
 
         rp, elist = expand_variables(rp, dyn_tok_conv)
 

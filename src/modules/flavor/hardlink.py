@@ -25,22 +25,23 @@
 # Use is subject to license terms.
 #
 
+import os
+
 import pkg.flavor.base as base
 
-class HardlinkDependency(base.SinglePathDependency):
+class HardlinkDependency(base.PublishingDependency):
         """Class representing the dependency by having an action that's a
         hardlink to a path."""
-
-        def __init__(self, *args, **kwargs):
-                attrs = kwargs.get("attrs", {})
-                attrs["%s.type" % self.DEPEND_DEBUG_PREFIX] = "hardlink"
-
-                base.SinglePathDependency.__init__(self, attrs=attrs, *args,
-                    **kwargs)
+        def __init__(self, action, path, pkg_vars, proto_dir):
+                base_names = [os.path.basename(path)]
+                paths = [os.path.dirname(path)]
+                base.PublishingDependency.__init__(self, action,
+                    base_names, paths, pkg_vars, proto_dir, "hardlink")
 
         def __repr__(self):
-                return "HLDep(%s, %s, %s)" % (self.action, self.dep_path,
-                    self.pkg_vars)
+                return "HLDep(%s, %s, %s, %s, %s)" % (self.action,
+                    self.base_names, self.run_paths, self.pkg_vars,
+                    self.dep_vars)
 
 def process_hardlink_deps(action, pkg_vars, proto_dir):
         """Given an action, the variants against which the action's package was

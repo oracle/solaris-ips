@@ -80,11 +80,7 @@ class Dependency(depend.DependencyAction):
                 self.action = action
                 self.pkg_vars = pkg_vars
                 self.proto_dir = proto_dir
-                vs = variant.VariantSets(action.get_variants())
-                if vs == {}:
-                        self.dep_vars = None
-                else:
-                        self.dep_vars = vs
+                self.dep_vars = variant.VariantSets(action.get_variants())
 
                 attrs.update([
                     ("fmri", self.DUMMY_FMRI),
@@ -121,6 +117,13 @@ class Dependency(depend.DependencyAction):
                         if k not in vars:
                                 vars[k] = self.pkg_vars[k]
                 return vars.difference(ext_vars)
+
+        def get_var_set(self):
+                vars = variant.VariantSets(self.action.get_variants())
+                for k in self.pkg_vars:
+                        if k not in vars:
+                                vars[k] = self.pkg_vars[k]
+                return vars
 
         def action_path(self):
                 """Return the path to the file that generated this dependency.
@@ -160,93 +163,17 @@ class Dependency(depend.DependencyAction):
                 return path.lstrip("/")
 
 
-class SinglePathDependency(Dependency):
-        """This class serves as a base for all dependencies which represent an
-        action depending on a specific file."""
+class PublishingDependency(Dependency):
+        """This class serves as a base for all dependencies.  It handles
+        dependencies with multiple files, multiple paths, or both."""
 
-        def __init__(self, action, dep_path, pkg_vars, proto_dir, attrs):
-                """Construct a SinglePathDependency object.
+        def __init__(self, action, base_names, run_paths, pkg_vars, proto_dir,
+            kind):
+                """Construct a PublishingDependency object.
                 
                 'action' is the action which produced this dependency.
 
-                'dep_path' is the path the action depends on.
-
-                'pkg_vars' is the list of variants against which the package
-                delivering the action was published.
-
-                'proto_dir' is the proto area where the file the action delivers
-                lives.
-
-                'attrs' is a dictionary to containing the relevant action tags
-                for the dependency.
-                """
-
-                if dep_path is not None:
-                        self.dep_path = self.make_relative(dep_path, proto_dir)
-                        attrs["%s.file" % self.DEPEND_DEBUG_PREFIX] = \
-                            self.dep_path
-                else:
-                        self.dep_path = None
-                
-                Dependency.__init__(self, action, pkg_vars, proto_dir, attrs)
-
-        def dep_key(self):
-                """Return the a value that represents the path of the
-                dependency. It must be hashable."""
-                return self.dep_path
-
-        def possibly_delivered(self, delivered_files, **kwargs):
-                """Takes a dictionary of files that have been delivered, and
-                returns the path to the file that satisfies this dependency, or
-                None if no such delivered file exists."""
-
-                # Using normpath and realpath are ok here because the dependency
-                # is being checked against the files, directories, and links
-                # delivered in the proto area.
-                if self.dep_path in delivered_files:
-                        return self.dep_path
-                norm_path = os.path.normpath(os.path.join(self.proto_dir,
-                    self.dep_path))
-                if norm_path in delivered_files:
-                        return norm_path
-
-                real_path = os.path.realpath(norm_path)
-                if real_path in delivered_files:
-                        return real_path
-
-                return None
-
-        def resolve_internal(self, delivered_files, **kwargs):
-                """Takes a dictionary of files that have been delivered, and
-                returns a tuple of two values.  The first is either None,
-                meaning the dependency was satisfied, or self.ERROR, meaning the
-                dependency wasn't totally satisfied by the delivered files.  The
-                second value is the set of variants when the dependency isn't
-                satisfied."""
-
-                p = self.possibly_delivered(delivered_files=delivered_files,
-                    **kwargs)
-                if p is not None:
-                        missing_vars = self.get_var_diff(delivered_files[p])
-                        if missing_vars:
-                                return self.ERROR, missing_vars
-                        return None, None
-                else:
-                        return self.ERROR, self.dep_vars
-
-
-class MultiplePathDependency(SinglePathDependency):
-        """This class serves as a base for all dependencies which represent an
-        action depending on a basename with many potential paths to that
-        basename."""
-
-        def __init__(self, action, base_name, run_paths, pkg_vars, proto_dir,
-            attrs):
-                """Construct a SinglePathDependency object.
-                
-                'action' is the action which produced this dependency.
-
-                'base_name' is the name of the file of the dependency.
+                'base_names' is the list of files of the dependency.
 
                 'run_paths' is the list of directory paths to the file of the
                 dependency.
@@ -257,40 +184,77 @@ class MultiplePathDependency(SinglePathDependency):
                 'proto_dir' is the proto area where the file the action delivers
                 lives.
 
-                'attrs' is a dictionary to containing the relevant action tags
-                for the dependency.
+                'kind' is the kind of dependency that this is.
                 """
 
-                self.base_name = base_name
-                self.run_paths = [
+                self.base_names = sorted(base_names)
+                self.run_paths = sorted([
                     self.make_relative(rp, proto_dir) for rp in run_paths
-                ]
-                
-                attrs.update([
-                    ("%s.file" % self.DEPEND_DEBUG_PREFIX, self.base_name),
-                    ("%s.path" % self.DEPEND_DEBUG_PREFIX, self.run_paths)
                 ])
-                
-                SinglePathDependency.__init__(self, action, None, pkg_vars,
-                    proto_dir, attrs)
+
+                attrs = {
+                    "%s.file" % self.DEPEND_DEBUG_PREFIX: self.base_names,
+                    "%s.path" % self.DEPEND_DEBUG_PREFIX: self.run_paths,
+                    "%s.type" % self.DEPEND_DEBUG_PREFIX: kind
+                }
+
+                Dependency.__init__(self, action, pkg_vars, proto_dir, attrs)
 
         def dep_key(self):
                 """Return the a value that represents the path of the
                 dependency. It must be hashable."""
-                return (self.base_name, tuple(self.run_paths))
-                
-        def possibly_delivered(self, delivered_files, delivered_base_names,
-            **kwargs):
-                """Takes a dictionary of files that have been delivered
-                ('delivered_files'), a dictionary of base names that have
-                been delivered ('delivered_base_names'), and returns the path
-                to a file that satisfies this dependency, or None if no such
-                delivered file exists."""
+                return (tuple(self.base_names), tuple(self.run_paths))
 
-                for rp in self.run_paths:
-                        self.dep_path = os.path.join(rp, self.base_name)
-                        p = SinglePathDependency.possibly_delivered(self,
-                            delivered_files=delivered_files)
-                        if p is not None:
-                                return p
+        def _check_path(self, path_to_check, delivered_files):
+                """Takes a dictionary of files that are known to exist, and
+                returns the path to the file that satisfies this dependency, or
+                None if no such delivered file exists."""
+
+                # Using normpath and realpath are ok here because the dependency
+                # is being checked against the files, directories, and links
+                # delivered in the proto area.
+                if path_to_check in delivered_files:
+                        return path_to_check
+                norm_path = os.path.normpath(os.path.join(self.proto_dir,
+                    path_to_check))
+                if norm_path in delivered_files:
+                        return norm_path
+
+                real_path = os.path.realpath(norm_path)
+                if real_path in delivered_files:
+                        return real_path
+
                 return None
+
+        def possibly_delivered(self, delivered_files):
+                """Takes a dictionary of known files, and returns the pathes to
+                the files that satisfy this dependency."""
+
+                res = []
+                for bn in self.base_names:
+                        for rp in self.run_paths:
+                                path_to_check = os.path.join(rp, bn)
+                                p = self._check_path(path_to_check,
+                                    delivered_files)
+                                if p:
+                                        res.append(p)
+                return res
+
+        def resolve_internal(self, delivered_files, *args, **kwargs):
+                """Takes a dictionary of files delivered in the same package,
+                and returns a tuple of two values.  The first is either None,
+                meaning the dependency was satisfied, or self.ERROR, meaning the
+                dependency wasn't totally satisfied by the delivered files.  The
+                second value is the set of variants for which the dependency
+                isn't satisfied.
+
+                '*args' and '**kwargs' are used because subclasses may need
+                more information for their implementations. See pkg.flavor.elf
+                for an example of this."""
+
+                missing_vars = self.get_var_set()
+                for p in self.possibly_delivered(delivered_files):
+                        missing_vars.mark_as_satisfied(delivered_files[p])
+                        if missing_vars.is_satisfied():
+                                return None, missing_vars
+                return self.ERROR, missing_vars
