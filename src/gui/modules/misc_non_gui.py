@@ -27,6 +27,7 @@ import os
 import cPickle
 import logging
 import logging.handlers
+import sys
 
 import pkg.client.api as api
 from pkg.client import global_settings
@@ -53,8 +54,14 @@ def setup_logging(client_name):
             ": %(filename)s: %(module)s: %(lineno)s: %(message)s")
 
         infolog_path = log_path + "_info.log"
-        infolog_exists = os.path.exists(infolog_path)
-        info_h = logging.handlers.RotatingFileHandler(infolog_path, backupCount=5)
+        infolog_exists = False
+
+        try:
+                info_h = logging.handlers.RotatingFileHandler(infolog_path, backupCount=5)
+                infolog_exists = os.path.exists(infolog_path)
+        except IOError:
+                info_h = logging.StreamHandler(sys.stdout)
+
         info_t = _LogFilter(logging.INFO)
         info_h.addFilter(info_t)
         info_h.setFormatter(log_fmt)
@@ -64,8 +71,14 @@ def setup_logging(client_name):
         global_settings.info_log_handler = info_h
 
         errlog_path = log_path + "_error.log"
-        errlog_exists = os.path.exists(errlog_path)
-        err_h = logging.handlers.RotatingFileHandler(errlog_path, backupCount=5)
+        errlog_exists = False
+
+        try:
+                err_h = logging.handlers.RotatingFileHandler(errlog_path, backupCount=5)
+                errlog_exists = os.path.exists(errlog_path)
+        except IOError:
+                err_h = logging.StreamHandler(sys.stderr)
+
         err_h.setFormatter(log_fmt)
         err_h.setLevel(logging.WARNING)
         if errlog_exists:

@@ -1017,7 +1017,7 @@ class Repository(progress.GuiProgressTracker):
                         except (api_errors.PermissionsException,
                             api_errors.PublisherError,
                             api_errors.InvalidDepotResponseException), e:
-                                errors.append((row[enumerations.PUBLISHER_OBJECT], e))
+                                errors.append((row[1], e))
 
                 for row in self.publishers_list:
                         name = row[enumerations.PUBLISHER_NAME]
