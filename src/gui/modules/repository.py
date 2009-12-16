@@ -762,6 +762,8 @@ class Repository(progress.GuiProgressTracker):
                         elif cur_priority == 1 and not enabled:
                                 up_enabled = False
                                 down_enabled = True
+                                if cur_priority == sorted_size - 1:
+                                        down_enabled = False
                         elif cur_priority == sorted_size - 1:
                                 up_enabled = True
                                 down_enabled = False
