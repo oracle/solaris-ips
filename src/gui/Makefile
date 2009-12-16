@@ -191,6 +191,7 @@ STATICSPFILES = \
 	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/dialog-information.png) \
 	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/dialog-warning.png) \
 	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/opensolaris.png) \
+	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/startpage_ignite.png) \
 	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/startpage_learn.png) \
 	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/startpage_share.png) \
 	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/startpage_star.png) \
