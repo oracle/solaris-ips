@@ -1,3 +1,8 @@
+Version 27:
+Compatible with clients using version 25 and 26:
+    The get_manifest function has been added to the api to allow clients to
+    retrieve the manifest directly.
+
 Version 26:
 Compatible with clients using version 25.
     The client API has changed such that an immediate refresh is always

@@ -40,7 +40,7 @@ import pkg.flavor.base as base
 import pkg.portable as portable
 import pkg.publish.dependencies as dependencies
 
-API_VERSION = 26
+API_VERSION = 27
 PKG_CLIENT_NAME = "pkg"
 
 class TestApiDependencies(testutils.SingleDepotTestCase):
@@ -315,14 +315,14 @@ close""" % { "foo": os.path.join(self.testdata_dir, "foo") }
                 self.assertEqual(len(pkg_deps[m2_path]), 0)
                 self.assertEqual(len(errs), 0)
                 for d in pkg_deps[m1_path]:
-                        if d.attrs["fmri"] == p2_name:
+                        if d.attrs["fmri"].startswith(p2_name):
                                 self.assertEqual(
                                     d.attrs["%s.file" % self.depend_dp],
                                     ["usr/lib/python2.6/v-p/pkg/misc.py"])
                         elif d.attrs["fmri"].startswith(p3_name):
                                 self.assertEqual(
                                     d.attrs["%s.file" % self.depend_dp],
-                                    "usr/bin/python2.6")
+                                    ["usr/bin/python2.6"])
                         else:
                                 raise RuntimeError("Got expected fmri "
                                     "%s for in dependency %s" %
@@ -548,11 +548,11 @@ close""" % { "foo": os.path.join(self.testdata_dir, "foo") }
                         if d.attrs["fmri"].startswith(p2_name):
                                 self.assertEqual(
                                     d.attrs["%s.file" % self.depend_dp],
-                                    "var/log/syslog")
+                                    ["var/log/syslog"])
                         else:
-                                raise RuntimeError("Got expected fmri "
-                                    "%s for in dependency %s" %
-                                    (d.attrs["fmri"], d))
+                                raise RuntimeError("Was expecting %s, got fmri "
+                                    "%s for dependency %s" %
+                                    (p2_name, d.attrs["fmri"], d))
 
         def test_bug_12697_and_12896(self):
                 """Test that pkgdep resolve handles multiple run path
