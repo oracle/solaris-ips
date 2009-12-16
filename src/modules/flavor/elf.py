@@ -205,7 +205,10 @@ def process_elf_dependencies(action, proto_dir, pkg_vars, dyn_tok_conv,
                 # Add this platform to the search path.
                 if installed_path.startswith("platform"):
                         rp.append("/platform/%s/kernel" %
-                            installed_path.split("/")[1]) 
+                            installed_path.split("/")[1])
+                else:
+                        for p in dyn_tok_conv.get("$PLATFORM", []):
+                                rp.append("/platform/%s/kernel" % p)
                 # Default kernel search path
                 rp.extend(kernel_paths)
                 # What subdirectory should we look in for 64-bit kernel modules?

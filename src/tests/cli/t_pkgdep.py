@@ -341,6 +341,13 @@ depend fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1 %(pfx)s.path=baz %(pfx)s.path=
     "dummy_fmri":base.Dependency.DUMMY_FMRI
 }
 
+        kernel_manf_stdout_platform = """\
+depend fmri=%(dummy_fmri)s %(depend_debug_prefix)s.file=libc.so.1 %(depend_debug_prefix)s.path=platform/baz/kernel %(depend_debug_prefix)s.path=platform/tp/kernel %(depend_debug_prefix)s.path=kernel %(depend_debug_prefix)s.path=usr/kernel %(depend_debug_prefix)s.reason=kernel/foobar %(depend_debug_prefix)s.type=elf type=require\
+""" % {
+    "depend_debug_prefix":base.Dependency.DEPEND_DEBUG_PREFIX,
+    "dummy_fmri":base.Dependency.DUMMY_FMRI
+}
+
         miss_payload_manf_error = """\
 Couldn't find %(path_pref)s/tmp/file/should/not/exist/here/foo
 """
@@ -845,6 +852,13 @@ depend %(pfx)s.file=usr/lib/python2.4/vendor-packages/pkg/search_storage.py fmri
                     (m_path, self.img_path), use_proto=False)
                 self.check_res("", self.errout)
                 self.check_res(self.kernel_manf_stdout2, self.output)
+
+                # Test for platform substitution in kernel module paths. Bug
+                # 13057
+                self.pkgdepend("generate -D PLATFORM=baz -D PLATFORM=tp %s %s" %
+                    (m_path, self.img_path), use_proto=False)
+                self.check_res("", self.errout)
+                self.check_res(self.kernel_manf_stdout_platform, self.output)
                 
                 # Test unexpanded token 
                 rp = ["/platform/$PLATFORM/foo"]
