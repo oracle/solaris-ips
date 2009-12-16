@@ -216,8 +216,6 @@ class Image(object):
                 # a place to keep info about saved_files; needed by file action
                 self.saved_files = {}
 
-                self.type = None
-
                 # right now we don't explicitly set dir/file modes everywhere;
                 # set umask to proper value to prevent problems w/ overly
                 # locked down umask.
