@@ -35,9 +35,8 @@ import sys
 _ = gettext.gettext
 
 class GenOSFiles:
-    """Simple script to create the the two files ("opensolaris.org" and
-    "opensolaris.org.sections") used by the GUI Package Manager, from 
-    the existing package classification lines.
+    """Simple script to create the file ("opensolaris.org.sections") used by 
+    the GUI Package Manager, from the existing package classification lines.
  
     See bug #4483 for more details.
  
@@ -46,16 +45,14 @@ class GenOSFiles:
       $ python gen_os_files.py
  
     By default, it will automatically overwrite:
-      ../../gui/data/opensolaris.org   and
       ../../gui/data/opensolaris.org.sections
     in the pkg source workspace.
  
     It is expected that this will be run (typically using the 
     "make guiclassification" target in the Makefile), as part of the 
     preparation for turning a new WOS build into a new OpenSolaris 
-    development release. In other words, the new versions of 
-    "opensolaris.org" and "opensolaris.org.sections" will be checked 
-    in as part of that update.
+    development release. In other words, the new version
+    "opensolaris.org.sections" will be checked in as part of that update.
     """
 
     def __init__(self):
@@ -69,10 +66,6 @@ class GenOSFiles:
         # Name of the file containing package categories.
         #
         self.os_cat_name = "../../gui/data/opensolaris.org.sections"
-
-        # Name of the file containing package subcategories.
-        #
-        self.os_subcat_name = "../../gui/data/opensolaris.org"
 
         # Location of the classifications file (override with -c option).
         self.class_file = "./classifications.txt"
@@ -276,11 +269,7 @@ Usage:
 
 -c, --category=category-file-name
       Specify an alternate file name to write out the
-      package category values to.
-
--s, --subcategory=subcategory-file-name
-      Specify an alternate file name to write out the
-      package sub-category values to.""")
+      package category values to.""")
 
         sys.exit(2)
 
@@ -331,20 +320,6 @@ Usage:
             fout.write("[%s]\ncategory = %s\n\n" % (key, sub_categories))
         fout.close()
 
-    def write_subcat_file(self):
-        """Sort the dictionary keys (package names) and write out the
-        sub-category information to the sub-category file.
-        """
-
-        fout = open(self.os_subcat_name, 'w')
-        for key in sorted(self.packages.keys()):
-            build_no, categories, sub_categories = self.packages[key]
-
-            if categories and sub_categories:
-                pkg_sub_str = ",".join(sub_categories)
-                fout.write("[%s]\ncategory = %s\n\n" % (key, pkg_sub_str))
-        fout.close()
-
     def main(self):
         """Read command line options, find a list of all files (as
         opposed to directories) under the prefix directory, and for
@@ -354,8 +329,8 @@ Usage:
         """
 
         try:
-            opts, args = getopt.getopt(sys.argv[1:], "c:dhs:",
-                      ["category=", "debug", "help", "subcategory="])
+            opts, args = getopt.getopt(sys.argv[1:], "c:dh",
+                      ["category=", "debug", "help"])
         except getopt.GetoptError, e:
             self.usage(_("Illegal option -- %s") % e.opt)
 
@@ -366,8 +341,6 @@ Usage:
                 self.debug = True
             if opt in ("-h", "--help"):
                 self.usage()
-            if opt in ("-s", "--subcategory"):
-                self.os_subcat_name = val.strip()
 
         self.init_categories()
 
@@ -384,7 +357,6 @@ Usage:
             sys.stderr.write("Number of keys: %d\n" %
                              len(self.packages.keys()))
 
-        self.write_subcat_file()
         self.write_cat_file()
 
         return 0

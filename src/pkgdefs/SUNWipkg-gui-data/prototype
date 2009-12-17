@@ -4,7 +4,6 @@ d none usr 755 root sys
 d none usr/share 755 root sys
 d none usr/share/package-manager 755 root bin
 d none usr/share/package-manager/data 755 root bin
-f none usr/share/package-manager/data/opensolaris.org 444 root bin
 f none usr/share/package-manager/data/opensolaris.org.sections 444 root bin
 d none usr/share/package-manager/data/startpagebase 755 root bin
 d none usr/share/package-manager/data/startpagebase/C 755 root bin

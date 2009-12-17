@@ -80,7 +80,6 @@ APPHIGHICONS = \
    data/icons/HighContrast/48x48/packagemanager.png
 
 CATALOG = \
-   data/opensolaris.org \
    data/opensolaris.org.sections
 
 DESKTOP = \
