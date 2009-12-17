@@ -29,6 +29,7 @@ import gettext
 import os
 import pkg.fmri
 import pkg.manifest            as manifest
+import pkg.pkgsubprocess       as subprocess
 import pkg.publish.transaction as trans
 import pkg.server.catalog      as catalog
 import pkg.variant             as variant
@@ -39,6 +40,7 @@ import shlex
 import shutil
 import sys
 import tempfile
+import time
 import urllib
 
 from datetime import datetime
@@ -58,7 +60,7 @@ gettext.install("import", "/usr/lib/locale")
 basename_dict = {}   # basenames to action lists
 branch_dict = {}     # 
 cons_dict = {}       # consolidation incorporation dictionaries
-create_repo = False  #
+file_repo = False    #
 curpkg = None        # which IPS package we're currently importing
 def_branch = ""      # default branch
 def_repo = "http://localhost:10000"
@@ -66,6 +68,7 @@ def_vers = "0.5.11"  # default package version
 # default search path
 def_wos_path =  ["/net/netinstall.eng/export/nv/x/latest/Solaris_11/Product"]
 elided_files = {}    # always delete these files; not checked on specific import
+extra_entire_contents = [] # additional entries to be added to "entire"
 fmridict = {}        # all ips FMRIS known, indexed by name
 global_includes = [] # include these for every package
 include_path = []    # where to find inport files - searched in order
@@ -507,7 +510,7 @@ def publish_pkg(pkg):
         # won't happen unless same pkg imported more than once into same ips pkg
         assert len(svr4_traversal_dict) == len(svr4_traversal_list)
 
-        t = trans.Transaction(def_repo, create_repo=create_repo,
+        t = trans.Transaction(def_repo, create_repo=file_repo, refresh_index=False,
             pkg_name=pkg.fmristr(), noexecute=nopublish)
         transaction_id = t.open()
 
@@ -585,7 +588,8 @@ def publish_pkg(pkg):
                         continue
                 if "importer.file" not in a.attrs:
                         # set any unanchored deps to current version
-                        if "@" not in a.attrs["fmri"] and a.attrs["fmri"] in fmridict:
+                        if "@" not in a.attrs["fmri"] and a.attrs["fmri"] in fmridict and \
+                            "importer.no-version" not in a.attrs:
                                 a.attrs["fmri"] = fmridict[a.attrs["fmri"]]
                         depend_actions.append(a)
                         continue
@@ -622,20 +626,18 @@ def publish_pkg(pkg):
         delete_count = 0
         for i, a in enumerate(depend_actions[:]):
                 fmri = str(a.attrs["fmri"])
-                if fmri in depend_dict:
-                        if depend_dict[fmri] != a.attrs["type"]:
-                                print "%s: multiple dependency types on same pkg %s:%s" % (
-                                    pkg.name, fmri, depend_dict)
-                                raise RuntimeError("dependency error")
+                dtype = a.attrs["type"]
+
+                if (fmri, dtype) in depend_dict:
                         del depend_actions[i - delete_count]
                         delete_count += 1
                 else:
-                        depend_dict[fmri] = a.attrs["type"]
+                        depend_dict[(fmri, dtype)] = True
         # pass three - publish
         for a in depend_actions:
                 publish_action(t, pkg, a)
 
-        pkg_fmri, pkg_state = t.close(refresh_index=False)
+        pkg_fmri, pkg_state = t.close(refresh_index=False, add_to_catalog=not file_repo)
         print "%s: %s\n" % (pkg_fmri, pkg_state)
 
 def search_dicts(path):
@@ -1140,14 +1142,16 @@ def SolarisParse(mf):
 			# include the org.opensolaris.consolidation
 			# package property.
                         curpkg.consolidation = lexer.get_token()
-                        if not curpkg.consolidation in cons_dict:
-                                cons_dict[curpkg.consolidation] = []
-                        cons_dict[curpkg.consolidation].append(curpkg.name)
+                        cons_dict.setdefault(curpkg.consolidation, []).append(curpkg.name)
 
                         action = actions.fromstr("set " \
                             "name=org.opensolaris.consolidation value=%s" %
                             curpkg.consolidation)
                         action.attrs["importer.source"] = token
+                        curpkg.actions.append(action)
+                        action = actions.fromstr("depend fmri=consolidation/%s/%s-incorporation "
+                            "type=require importer.no-version=true" % 
+                            (curpkg.consolidation, curpkg.consolidation))
                         curpkg.actions.append(action)
 
                 elif token == "summary":
@@ -1220,11 +1224,37 @@ def SolarisParse(mf):
                 else:
                         raise RuntimeError("Error: unknown token '%s' "
                             "(%s:%s)" % (token, lexer.infile, lexer.lineno))
+def repo_add_content(path_to_repo, path_to_proto):
+        """Fire up depo to add content and rebuild search index"""
+        pythonpath = os.environ.get("PYTHONPATH", "")
+
+        args = (os.path.join(path_to_proto, "usr/lib/pkg.depotd"), 
+                "--add-content",
+                "--exit-ready", 
+                "-d", path_to_repo
+                )
+
+        print "Adding content & rebuilding search indicies synchronously...."
+        print "%s" % str(args)
+        try:
+                proc = subprocess.Popen(args, env=os.environ)
+                ret = proc.wait()
+        except OSError, e:
+                print "cannot execute %s: %s" % (args, e)
+                return 1
+        if ret:
+                print "exited w/ status %d" % ret
+                return 1
+        print "done"
+        return 0
+
+
 def main_func():
-        global create_repo
+        global file_repo
         global def_branch
         global def_repo
         global def_vers
+        global extra_entire_contents
         global just_these_pkgs
         global nopublish
         global publish_all
@@ -1235,7 +1265,7 @@ def main_func():
 
         
         try:
-                _opts, _args = getopt.getopt(sys.argv[1:], "AB:D:I:G:NR:T:b:dj:m:ns:v:w:p:")
+                _opts, _args = getopt.getopt(sys.argv[1:], "AB:D:E:I:G:NR:T:b:dj:m:ns:v:w:p:")
         except getopt.GetoptError, _e:
                 print "unknown option", _e.opt
                 sys.exit(1)
@@ -1262,17 +1292,12 @@ def main_func():
                 elif  opt == "-s":
                         def_repo = arg
                         if def_repo.startswith("file://"):
-                                # When publishing to file:// repositories, automatically
-                                # create the target repository if needed.
-                                create_repo = True
+                                file_repo = True
+
                 elif opt == "-v":
                         def_vers = arg
                 elif opt == "-w":
                         wos_path.append(arg)
-                elif opt == "-D":
-                        elided_files[arg] = True
-                elif opt == "-I":
-                        include_path.extend(arg.split(":"))
                 elif opt == "-A":
                         # Always publish obsoleted and renamed packages.
                         publish_all = True
@@ -1284,6 +1309,17 @@ def main_func():
                                         if len(bfargs) == 2:
                                                 branch_dict[bfargs[0]] = bfargs[1]
                         branch_file.close()
+                elif opt == "-D":
+                        elided_files[arg] = True
+                elif opt == "-E":
+                        if "@" not in arg:
+                                print "-E fmris require a version: %s" % arg
+                                sys.exit(2)
+
+                        extra_entire_contents.append(arg)
+                elif opt == "-I":
+                        include_path.extend(arg.split(":"))
+
                 elif opt == "-G": #another file of global includes
                         global_includes.append(arg)
                 elif opt == "-N":
@@ -1318,7 +1354,7 @@ def main_func():
                         SolarisParse(_mf)
                 sys.exit(0)
 
-
+        start_time = time.clock()
         print "First pass: initial import", datetime.now()
 
         for _mf in filelist:
@@ -1407,10 +1443,15 @@ def main_func():
 
         print "Third pass: dependency id, resolution and publication", datetime.now()
 
+        consolidation_incorporations = []
+        obsoleted_renamed_pkgs = []
+
         # Generate consolidation incorporations
         for cons in cons_dict.keys():
-                curpkg = start_package("consolidation/%s/%s-incorporation" %
-                        (cons, cons))
+                consolidation_incorporation = "consolidation/%s/%s-incorporation" %  (
+                    cons, cons)
+                consolidation_incorporations.append(consolidation_incorporation)
+                curpkg = start_package(consolidation_incorporation)
                 curpkg.summary = "%s consolidation incorporation" % cons
                 curpkg.desc = "This incorporation constrains packages " \
                         "from the %s consolidation." % cons
@@ -1430,7 +1471,7 @@ def main_func():
                                 (name, version))
                         action.attrs["importer.source"] = "depend"
                         curpkg.actions.append(action)
-
+                        obsoleted_renamed_pkgs.append("%s@%s" % (name, version))
                 action = actions.fromstr("set " \
                     "name=org.opensolaris.consolidation value=%s" % cons)
                 action.attrs["importer.source"] = "add"
@@ -1438,6 +1479,62 @@ def main_func():
                 end_package(curpkg)
                 curpkg = None
 
+        # Generate entire consolidation if we're generating any consolidation incorps
+        if consolidation_incorporations:
+                curpkg = start_package("entire")
+                curpkg.summary = "incorporation to lock all system packages to same build" 
+                curpkg.desc = "This package constrains " \
+                    "system package versions to the same build.  WARNING: Proper " \
+                    "system update and correct package selection depend on the " \
+                    "presence of this incorporation.  Removing this package will " \
+                    "result in an unsupported system."
+
+                for incorp in consolidation_incorporations:
+                        action = actions.fromstr("depend fmri=%s type=incorporate" % incorp)
+                        action.attrs["importer.source"] = "auto-generated"
+                        curpkg.actions.append(action)
+                        action = actions.fromstr("depend fmri=%s type=require" % incorp)
+                        action.attrs["importer.source"] = "auto-generated"
+                        action.attrs["importer.no-version"] = "true"
+                        curpkg.actions.append(action)
+
+                for extra in extra_entire_contents:
+                        action = actions.fromstr("depend fmri=%s type=incorporate" % extra)
+                        action.attrs["importer.source"] = "command-line"
+                        curpkg.actions.append(action)
+                        action = actions.fromstr("depend fmri=%s type=require" % extra)
+                        action.attrs["importer.source"] = "command-line"
+                        action.attrs["importer.no-version"] = "true"
+                        curpkg.actions.append(action)
+
+                end_package(curpkg)
+                curpkg = None
+
+
+                incorporated_pkgs = set([
+                                f
+                                for l in cons_dict.values()
+                                for f in l
+                                ]) 
+                incorporated_pkgs |= set(consolidation_incorporations)
+                incorporated_pkgs |= set(["entire", "redistributable"])
+                incorporated_pkgs |= set(obsoleted_renamed_pkgs)
+                                
+                unincorps = set(pkgdict.keys()) - incorporated_pkgs
+                if unincorps:
+                        # look through these; if they have only set actions they're
+                        # ancient obsoleted pkgs - ignore them.
+                        for f in unincorps.copy():
+                                for a in pkgdict[f].actions:
+                                        if a.name != "set":
+                                                break
+                                else:
+                                        unincorps.remove(f)
+
+                        print "The following non-empty unincorporated pkgs are not part of any consolidation"
+                        for f in unincorps:
+                                print f      
+                     
         if just_these_pkgs:
                 newpkgs = set(pkgdict[name]
                               for name in pkgdict.keys()
@@ -1472,8 +1569,17 @@ def main_func():
 
         print "%d/%d packages processed; %.2f%% complete" % (processed, total,
              processed * 100.0 / total)
+
+        if file_repo:
+                code = repo_add_content(def_repo[7:], g_proto_area)
+                if code:
+                        sys.exit(code)
+
         print "Done:", datetime.now()
-
-
+        elapsed = time.clock() - start_time 
+        print "publication took %d:%.2d" % (elapsed/60, elapsed % 60)
+        sys.exit(0)
+        
 if __name__ == "__main__":
         main_func()
+

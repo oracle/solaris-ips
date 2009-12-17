@@ -41,6 +41,7 @@ NONWOS_PKGS=/net/paradise.sfbay/export/integrate_dock/nv/$(NONWOS_DOCK)/all \
 TEST_PKGS=
 REPO=http://localhost:10000
 JUST_THESE_PKGS=
+EXTRA_ENTIRE_CONTENTS=
 
 ALL_PKGS=	../../../packages/$(ARCH)	\
 		$(TEST_PKGS)			\
@@ -113,7 +114,7 @@ GLOBAL_CHATTRS = $(GLOBAL_CHATTRS_$(BUILDID))
 SOLARIS.PY=PYTHONPATH=$(PROTO_AREA)/usr/lib/python2.6/vendor-packages \
 	./importer.py -b 0.$(BUILDID) $(EXTRA_OPTIONS) -T \*.py \
 	$(GLOBAL_CHATTRS:%= -G %) $(ARCH_DEFINES:%= -m %) \
-	-p $(PROTO_AREA)
+	-p $(PROTO_AREA) $(EXTRA_ENTIRE_CONTENTS:%= -E %)
 
 #
 # always remove the following (editable) files from packages we bulk import;
@@ -641,24 +642,12 @@ redist_import:	$(BUILDID)/redist_cluster $(FIX_FILES:%=$(BUILDID)/%)
 	$(SOLARIS.PY) -s $(REPO) $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) \
 		$(JUST_THESE_PKGS:%=-j %) $(INCLUDE_PATH_$(BUILDID):%=-I %) \
 		$(BUILDID)/redist_cluster
-	$(MAKE) $(BUILDID)/entire
 
 %/redist_import:
 	if test -z "$(JUST_THESE_PKGS)"; then \
 		$(MAKE) clobber; \
 	fi
 	$(MAKE) BUILDID=$(@:%/redist_import=%) redist_import
-
-%/entire:
-	$(MAKE) BUILDID=$(@:%/entire=%) entire
-
-$(BUILDID)/entire.incorporation: FRC
-	REPO=$(REPO) ./build_entire_incorporation $(BUILDID) > $@
-
-entire: $(BUILDID)/entire.incorporation
-	PKG_REPO=$(REPO) ./import_manifest_file \
-		entire@0.5.11,5.11-0.`echo $(BUILDID) | tr -d '[a-z]'` \
-		$(BUILDID)/entire.incorporation
 
 $(UNBUNDLED_TARGETS:%=$(BUILDS)/%) $(UNBUNDLED_CLUSTERS:%=$(BUILDS)/%):
 	$(MAKE) BUILDID=$(@D) $(@F)
@@ -682,7 +671,6 @@ $(UNBUNDLED_CLUSTERS): unbundleds/$$(@:%.import=%)
 
 all_unbundleds:	$(UNBUNDLED_TARGETS:%=$(BUILDID)/%)
 	$(MAKE) $(BUILDID)/$(UNBUNDLED_CLUSTERS)
-
 
 #
 # Used to generate the GUI Package Manager classification files from the
