@@ -724,12 +724,8 @@ class ImageInterface(object):
                 license_lst = []
                 for lic in mfst.gen_actions_by_type("license"):
                         if not local:
-                                s = StringIO.StringIO()
-                                hash_val = misc.gunzip_from_stream(
-                                    lic.get_remote_opener(self.__img,
-                                    mfst.fmri)(), s)
-                                text = s.getvalue()
-                                s.close()
+                                text = self.__img.transport.get_content(
+                                    mfst.fmri, lic.hash)
                         else:
                                 text = lic.get_local_opener(self.__img,
                                     mfst.fmri)().read()[:-1]

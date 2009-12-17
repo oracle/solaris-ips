@@ -31,6 +31,7 @@ import os
 import statvfs
 import threading
 import zlib
+import StringIO
 
 import pkg.catalog as catalog
 import pkg.client.api_errors as apx
@@ -472,33 +473,25 @@ class Transport(object):
                         for f in failures:
                                 tfailurex.append(f)
                         raise tfailurex
+
+        def get_content(self, fmri, fhash):
+                """Given a fmri and fhash, return the uncompressed content
+                from the remote object.  This is similar to get_datstream,
+                except that the transport handles retrieving and decompressing
+                the content."""
                
-
-        def get_datastream(self, fmri, fhash):
-                """Given a fmri, and fhash, return a data stream for the remote
-                object.
-
-                Since the caller handles the streaming object, instead
-                of having the transport manage it, the caller must catch
-                TransportError and perform any retry logic that is desired.
-                """
                 self.__lock.acquire()
                 try:
-                        resp = self._get_datastream(fmri, fhash)
+                        content = self._get_content(fmri, fhash)
                 finally:
                         self.__lock.release()
 
-                # Since we're returning a file object that's using the
-                # same engine as the rest of this transport, assign
-                # our lock to the fobj.  It must synchronize with us
-                # too.
-                resp.set_lock(self.__lock)
+                return content
 
-                return resp
-
-        def _get_datastream(self, fmri, fhash):
-                """This is the implementation for get_datastream, which
-                is a wrapper around this function."""
+        def _get_content(self, fmri, fhash):
+                """This is the function that implements get_content.
+                The other function is a wrapper for this one, which handles
+                the transport locking correctly."""
 
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 failures = tx.TransportFailures()
@@ -508,15 +501,31 @@ class Transport(object):
 
                 for d in self.__gen_repos(pub, retry_count):
 
+                        url = d.get_url()
+
                         try:
                                 resp = d.get_datastream(fhash, header)
-                                return resp
+                                s = StringIO.StringIO()
+                                hash_val = misc.gunzip_from_stream(resp, s)
+                                content = s.getvalue()
+                                s.close()
 
-                        except tx.ExcessiveTransientFailure, ex:
+                                return content
+
+                        except tx.ExcessiveTransientFailure, e:
                                 # If an endpoint experienced so many failures
                                 # that we just gave up, grab the list of
                                 # failures that it contains
-                                failures.extend(ex.failures)
+                                failures.extend(e.failures)
+
+                        except zlib.error, e:
+                                exc = tx.TransferContentException(url,
+                                    "zlib.error:%s" %
+                                    (" ".join([str(a) for a in e.args])))
+                                if exc.retryable:
+                                        failures.append(exc)
+                                else:
+                                        raise exc
 
                         except tx.TransportException, e:
                                 if e.retryable:

@@ -412,19 +412,6 @@ class Action(object):
                     (v, self.attrs[v]) for v in self.get_varcet_keys()[0]
                 )))
 
-        def get_remote_opener(self, img, fmri):
-                """Return an opener for the action's datastream which pulls from
-                the server.  The caller may have to decompress the
-                datastream."""
-
-                if not hasattr(self, "hash"):
-                        return None
-
-                def opener():
-                        return img.transport.get_datastream(fmri, self.hash)
-
-                return opener
-
         def verify(self, img, **args):
                 """Returns an empty list if correctly installed in the given
                 image."""
