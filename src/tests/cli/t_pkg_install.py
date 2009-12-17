@@ -2532,7 +2532,7 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
 
                 # Two depots are intentionally started for test2.
                 testutils.ManyDepotTestCase.setUp(self, ["test1", "test2",
-                    "test3", "test2"])
+                    "test3", "test2", "test4"])
 
                 durl1 = self.dcs[1].get_depot_url()
                 self.pkgsend_bulk(durl1, self.foo10 + self.moo10 + \
@@ -2547,6 +2547,9 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
 
                 durl4 = self.dcs[4].get_depot_url()
                 self.pkgsend_bulk(durl4, self.upgrade_np11)
+
+                durl5 = self.dcs[5].get_depot_url()
+                self.pkgsend_bulk(durl5, self.corge10)
 
                 # Create image and hence primary publisher
                 self.image_create(durl1, prefix="test1")
@@ -2931,7 +2934,17 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
                 self.pkg("set-publisher --enable test2")
                 self.pkg("publisher")
                 self.pkg("publisher | egrep sticky", exit=1 )
-                
+         
+        def test_17_dependency_is_from_deleted_publisher(self):
+                self.pkg("set-publisher -O %s test4" % 
+                    self.dcs[5].get_depot_url())
+                self.pkg("install pkg://test4/corge")
+                self.pkg("set-publisher --disable test2")
+                self.pkg("set-publisher --disable test4")
+                self.pkg("list -af")
+                self.pkg("publisher")
+                self.pkg("install baz@1.0", exit=1)
+       
 class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
         """
         If a new essential directory is added to the format of an image it will

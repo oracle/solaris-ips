@@ -433,6 +433,7 @@ cli.t_pkg_install.py TestMultipleDepots.test_13_non_preferred_multimatch|pass
 cli.t_pkg_install.py TestMultipleDepots.test_14_nonsticky_publisher|pass
 cli.t_pkg_install.py TestMultipleDepots.test_15_nonsticky_update|pass
 cli.t_pkg_install.py TestMultipleDepots.test_16_disabled_nonsticky|pass
+cli.t_pkg_install.py TestMultipleDepots.test_17_dependency_is_from_deleted_publisher|pass
 cli.t_pkg_install.py TestPkgInstallActions.test_bad_hardlinks|pass
 cli.t_pkg_install.py TestPkgInstallActions.test_bad_links|pass
 cli.t_pkg_install.py TestPkgInstallActions.test_basics_0|pass
