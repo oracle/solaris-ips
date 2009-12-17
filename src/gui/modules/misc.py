@@ -364,8 +364,9 @@ def get_catalogrefresh_exception_msg(cre):
                 return ""
         msg = _("Catalog refresh error:\n")
         if cre.succeeded < cre.total:
-                msg += _("Only %s out of %s catalogs successfully updated.\n") % \
-                (cre.succeeded, cre.total)
+                msg += _(
+                    "Only %(suc)s out of %(tot)s catalogs successfully updated.\n") % \
+                    {"suc": cre.succeeded, "tot": cre.total}
         msg += "\n"
 
         for pub, err in cre.failed:
