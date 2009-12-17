@@ -26,6 +26,9 @@
 HTTP_PROXY_HOST = '/system/http_proxy/host'
 HTTP_PROXY_PORT = '/system/http_proxy/port'
 HTTP_PROXY_USE = '/system/http_proxy/use_http_proxy'
+HTTP_PROXY_USER = '/system/http_proxy/authentication_user'
+HTTP_PROXY_PASS = '/system/http_proxy/authentication_password'
+HTTP_PROXY_AUTH = '/system/http_proxy/use_authentication'
 HTTP_PROXY_VARIABLE = 'http_proxy'
 HTTPS_PROXY_VARIABLE = 'https_proxy'
 
@@ -37,6 +40,12 @@ import subprocess
 def get_http_proxy():
         host = client.get_string(HTTP_PROXY_HOST)
         port = client.get_int(HTTP_PROXY_PORT)
+        pauth = client.get_bool(HTTP_PROXY_AUTH)
+        if pauth:
+                puser = client.get_string(HTTP_PROXY_USER)
+                ppass = client.get_string(HTTP_PROXY_PASS)
+                authstring = puser + ':' + ppass + "@"
+                return 'http://' + authstring + host + ':' + str(port) + '/'
         return 'http://' + host + ':' + str(port) + '/'
 
 if __name__ == '__main__':
