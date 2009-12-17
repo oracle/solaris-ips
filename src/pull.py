@@ -164,8 +164,8 @@ def get_manifest(src_uri, pfmri, basedir, contents=False):
                 try:
                         raw = file(mpath, "rb").read()
                 except:
-                        abort(err=_("Unable to load manifest '%s' for package "
-                            " '%s'.") % (mpath, pfmri))
+                        abort(err=_("Unable to load manifest '%(mpath)s' for "
+                            "package '%(pfmri)s'.") % locals())
 
         if contents:
                 return raw
@@ -174,8 +174,8 @@ def get_manifest(src_uri, pfmri, basedir, contents=False):
                 m = manifest.CachedManifest(pfmri, basedir, None,
                     contents=raw)
         except:
-                abort(err=_("Unable to parse manifest '%s' for package "
-                    "'%s'") % (mpath, pfmri))
+                abort(err=_("Unable to parse manifest '%(mpath)s' for package "
+                    "'%(pfmri)s'") % locals())
 
         if overwrite:
                 # Overwrite the manifest file so that the on-disk version will
@@ -185,8 +185,8 @@ def get_manifest(src_uri, pfmri, basedir, contents=False):
                         f.write(raw)
                         f.close()
                 except:
-                        abort(err=_("Unable to write manifest '%s' for package "
-                           " '%s'.") % (mpath, pfmri))
+                        abort(err=_("Unable to write manifest '%(mpath)s' for "
+                            "package '%(pfmri)s'.") % locals())
         return m
 
 def get_repo(uri):

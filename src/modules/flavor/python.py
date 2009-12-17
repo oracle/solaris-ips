@@ -40,8 +40,8 @@ class PythonModuleMissingPath(base.DependencyAnalysisError):
                 self.localpath = localpath
 
         def __str__(self):
-                return _("Could not find the file for %s imported "
-                    "in %s") % (self.name, self.localpath)
+                return _("Could not find the file for %(name)s imported "
+                    "in %(localpath)s") % self.__dict__
 
 
 class PythonDependency(base.PublishingDependency):

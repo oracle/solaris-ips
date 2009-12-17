@@ -57,11 +57,11 @@ class UnsupportedDynamicToken(base.DependencyAnalysisError):
                 self.tok = token
 
         def __str__(self):
-                return  _("%s (which will be installed at %s) had this token, "
-                    "%s, in its run path:%s.  It is not currently possible to "
-                    "automatically expand this token. Please specify its value "
-                    "on the command line.") % \
-                    (self.pp, self.ip, self.tok, self.rp)
+                return  _("%(pp)s (which will be installed at %(ip)s) had this "
+                    "token, %(tok)s, in its run path: %(rp)s.  It is not "
+                    "currently possible to automatically expand this token. "
+                    "Please specify its value on the command line.") % \
+                    self.__dict__
 
 
 class ElfDependency(base.PublishingDependency):
