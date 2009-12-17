@@ -3367,7 +3367,7 @@ class PackageManager:
                         err = str(ex)
                         gobject.idle_add(self.error_occurred, err,
                             None, gtk.MESSAGE_INFO)
-                except Exception:
+                except Exception, ex:
                         err = str(ex)
                         gobject.idle_add(self.error_occurred, err,
                             None, gtk.MESSAGE_INFO)
