@@ -1,0 +1,2212 @@
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").  
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+#
+# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Use is subject to license terms.
+#
+msgid ""
+msgstr ""
+       "Project-Id-Version: PACKAGE VERSION\n"
+       "POT-Creation-Date: 2009-04-23 10:17+0900\n"
+       "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+       "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+       "Language-Team: LANGUAGE <LL@li.org>\n"
+       "MIME-Version: 1.0\n"
+       "Content-Type: text/plain; charset=UTF-8\n"
+       "Content-Transfer-Encoding: 8bit\n"
+
+#. When image changes, this message will be marked fuzzy or untranslated for you.
+#. It doesn't matter what you translate it to: it's not used at all.
+#: package-manager.xml:66(None)
+msgid "@@image: 'figures/pm_store.png'; md5=4d451d067ad02bc33cae5b55f35ec60a"
+msgstr "@@image: 'figures/pm_store.png'; md5=4d451d067ad02bc33cae5b55f35ec60a"
+
+#. When image changes, this message will be marked fuzzy or untranslated for you.
+#. It doesn't matter what you translate it to: it's not used at all.
+#: package-manager.xml:86(None)
+msgid "@@image: 'figures/pm_pkglist.png'; md5=1ddfad59d99ad9e513d30fa402a11fe5"
+msgstr "@@image: 'figures/pm_pkglist.png'; md5=1ddfad59d99ad9e513d30fa402a11fe5"
+
+#. When image changes, this message will be marked fuzzy or untranslated for you.
+#. It doesn't matter what you translate it to: it's not used at all.
+#: package-manager.xml:434(None)
+msgid "@@image: 'figures/wi_start.png'; md5=ac56d72dd8f342ac4f04e9d4b2a9f45f"
+msgstr "@@image: 'figures/wi_start.png'; md5=ac56d72dd8f342ac4f04e9d4b2a9f45f"
+
+#. When image changes, this message will be marked fuzzy or untranslated for you.
+#. It doesn't matter what you translate it to: it's not used at all.
+#: package-manager.xml:464(None)
+msgid "@@image: 'figures/update_all.png'; md5=af873a11d59466bf46c49bd3d3a227af"
+msgstr "@@image: 'figures/update_all.png'; md5=af873a11d59466bf46c49bd3d3a227af"
+
+#: package-manager.xml:3(title)
+msgid "OpenSolaris 2009.06 Package Manager Online Help"
+msgstr "OpenSolaris 2009.06 Csomagkezelő Súgó"
+
+#: package-manager.xml:4(firstname)
+msgid "OpenSolaris"
+msgstr "OpenSolaris"
+
+#: package-manager.xml:5(surname)
+msgid "Publications"
+msgstr "Publikációk"
+
+#: package-manager.xml:8(pubsnumber)
+msgid "822-7173"
+msgstr "822-7173"
+
+#: package-manager.xml:10(pubdate)
+msgid "June 2009"
+msgstr "June 2009"
+
+#: package-manager.xml:11(publishername)
+msgid "Sun Microsystems"
+msgstr "Sun Microsystems"
+
+#: package-manager.xml:13(year)
+msgid "2009"
+msgstr "2009"
+
+#: package-manager.xml:15(para)
+msgid ""
+"Sun Microsystems, Inc. has intellectual property rights relating to "
+"technology embodied in the product that is described in this document. In "
+"particular, and without limitation, these intellectual property rights may "
+"include one or more U.S. patents or pending patent applications in the U.S. "
+"and in other countries."
+msgstr ""
+
+#: package-manager.xml:16(para)
+msgid ""
+"U.S. Government Rights – Commercial software. Government users are subject "
+"to the Sun Microsystems, Inc. standard license agreement and applicable "
+"provisions of the FAR and its supplements."
+msgstr ""
+
+#: package-manager.xml:17(para)
+msgid "This distribution may include materials developed by third parties."
+msgstr ""
+
+#: package-manager.xml:18(para)
+msgid ""
+"Parts of the product may be derived from Berkeley BSD systems, licensed from "
+"the University of California. UNIX is a registered trademark in the U.S. and "
+"other countries, exclusively licensed through X/Open Company, Ltd."
+msgstr ""
+
+#: package-manager.xml:19(para)
+msgid ""
+"Sun, Sun Microsystems, the Sun logo, the Solaris logo, the Java Coffee Cup "
+"logo, docs.sun.com, Java, and Solaris are trademarks or registered "
+"trademarks of Sun Microsystems, Inc. or its subsidiaries in the U.S. and "
+"other countries. All SPARC trademarks are used under license and are "
+"trademarks or registered trademarks of SPARC International, Inc. in the U.S. "
+"and other countries. Products bearing SPARC trademarks are based upon an "
+"architecture developed by Sun Microsystems, Inc."
+msgstr ""
+
+#: package-manager.xml:20(para)
+msgid ""
+"The OPEN LOOK and <trademark>Sun</trademark> Graphical User Interface was "
+"developed by Sun Microsystems, Inc. for its users and licensees. Sun "
+"acknowledges the pioneering efforts of Xerox in researching and developing "
+"the concept of visual or graphical user interfaces for the computer "
+"industry. Sun holds a non-exclusive license from Xerox to the Xerox "
+"Graphical User Interface, which license also covers Sun's licensees who "
+"implement OPEN LOOK GUIs and otherwise comply with Sun's written license "
+"agreements."
+msgstr ""
+
+#: package-manager.xml:21(para)
+msgid ""
+"Products covered by and information contained in this publication are "
+"controlled by U.S. Export Control laws and may be subject to the export or "
+"import laws in other countries. Nuclear, missile, chemical or biological "
+"weapons or nuclear maritime end uses or end users, whether direct or "
+"indirect, are strictly prohibited. Export or reexport to countries subject "
+"to U.S. embargo or to entities identified on U.S. export exclusion lists, "
+"including, but not limited to, the denied persons and specially designated "
+"nationals lists is strictly prohibited."
+msgstr ""
+
+#: package-manager.xml:22(para)
+msgid ""
+"DOCUMENTATION IS PROVIDED “AS IS” AND ALL EXPRESS OR IMPLIED CONDITIONS, "
+"REPRESENTATIONS AND WARRANTIES, INCLUDING ANY IMPLIED WARRANTY OF "
+"MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR NON-INFRINGEMENT, ARE "
+"DISCLAIMED, EXCEPT TO THE EXTENT THAT SUCH DISCLAIMERS ARE HELD TO BE "
+"LEGALLY INVALID."
+msgstr ""
+
+#: package-manager.xml:24(para)
+msgid ""
+"Sun Microsystems, Inc. détient les droits de propriété intellectuelle "
+"relatifs à la technologie incorporée dans le produit qui est décrit dans ce "
+"document. En particulier, et ce sans limitation, ces droits de propriété "
+"intellectuelle peuvent inclure un ou plusieurs brevets américains ou des "
+"applications de brevet en attente aux Etats-Unis et dans d'autres pays."
+msgstr ""
+
+#: package-manager.xml:25(para)
+msgid ""
+"Cette distribution peut comprendre des composants développés par des tierces "
+"personnes."
+msgstr ""
+
+#: package-manager.xml:26(para)
+msgid ""
+"Certaines composants de ce produit peuvent être dérivées du logiciel "
+"Berkeley BSD, licenciés par l'Université de Californie. UNIX est une marque "
+"déposée aux Etats-Unis et dans d'autres pays; elle est licenciée "
+"exclusivement par X/Open Company, Ltd."
+msgstr ""
+
+#: package-manager.xml:27(para)
+msgid ""
+"Sun, Sun Microsystems, le logo Sun, le logo Solaris, le logo Java Coffee "
+"Cup, docs.sun.com, Java et Solaris sont des marques de fabrique ou des "
+"marques déposées de Sun Microsystems, Inc., ou ses filiales, aux Etats-Unis "
+"et dans d'autres pays. Toutes les marques SPARC sont utilisées sous licence "
+"et sont des marques de fabrique ou des marques déposées de SPARC "
+"International, Inc. aux Etats-Unis et dans d'autres pays. Les produits "
+"portant les marques SPARC sont basés sur une architecture développée par Sun "
+"Microsystems, Inc."
+msgstr ""
+
+#: package-manager.xml:28(para)
+msgid ""
+"L'interface d'utilisation graphique OPEN LOOK et Sun a été développée par "
+"Sun Microsystems, Inc. pour ses utilisateurs et licenciés. Sun reconnaît les "
+"efforts de pionniers de Xerox pour la recherche et le développement du "
+"concept des interfaces d'utilisation visuelle ou graphique pour l'industrie "
+"de l'informatique. Sun détient une licence non exclusive de Xerox sur "
+"l'interface d'utilisation graphique Xerox, cette licence couvrant également "
+"les licenciés de Sun qui mettent en place l'interface d'utilisation "
+"graphique OPEN LOOK et qui, en outre, se conforment aux licences écrites de "
+"Sun."
+msgstr ""
+
+#: package-manager.xml:29(para)
+msgid ""
+"Les produits qui font l'objet de cette publication et les informations qu'il "
+"contient sont régis par la legislation américaine en matière de contrôle des "
+"exportations et peuvent être soumis au droit d'autres pays dans le domaine "
+"des exportations et importations. Les utilisations finales, ou utilisateurs "
+"finaux, pour des armes nucléaires, des missiles, des armes chimiques ou "
+"biologiques ou pour le nucléaire maritime, directement ou indirectement, "
+"sont strictement interdites. Les exportations ou réexportations vers des "
+"pays sous embargo des Etats-Unis, ou vers des entités figurant sur les "
+"listes d'exclusion d'exportation américaines, y compris, mais de manière non "
+"exclusive, la liste de personnes qui font objet d'un ordre de ne pas "
+"participer, d'une façon directe ou indirecte, aux exportations des produits "
+"ou des services qui sont régis par la legislation américaine en matière de "
+"contrôle des exportations et la liste de ressortissants spécifiquement "
+"designés, sont rigoureusement interdites."
+msgstr ""
+
+#: package-manager.xml:30(para)
+msgid ""
+"LA DOCUMENTATION EST FOURNIE \"EN L'ETAT\" ET TOUTES AUTRES CONDITIONS, "
+"DECLARATIONS ET GARANTIES EXPRESSES OU TACITES SONT FORMELLEMENT EXCLUES, "
+"DANS LA MESURE AUTORISEE PAR LA LOI APPLICABLE, Y COMPRIS NOTAMMENT TOUTE "
+"GARANTIE IMPLICITE RELATIVE A LA QUALITE MARCHANDE, A L'APTITUDE A UNE "
+"UTILISATION PARTICULIERE OU A L'ABSENCE DE CONTREFACON."
+msgstr ""
+
+#: package-manager.xml:33(title)
+msgid "About the Package Manager"
+msgstr "A Csomagkezelőről"
+
+#: package-manager.xml:34(para)
+msgid ""
+"Welcome to the <trademark>OpenSolaris</trademark> 2009.06 Package Manager "
+"online help!"
+msgstr ""
+       "Üdvözöljük az <trademark>OpenSolaris</trademark> 2009.06 Csomagkezelő súgójában!"
+
+#: package-manager.xml:35(para)
+msgid ""
+"Use this help contents to learn how to use the Package Manager. Navigate "
+"through this help by clicking the topics displayed in the sidebar."
+msgstr ""
+       "Ezen súgó segítségével megtanulhatja használni a Csomagkezelőt. Haladjon végig a súgón az oldalsávon található témakörök végigolvasásával."
+
+#: package-manager.xml:36(para)
+msgid ""
+"The OpenSolaris 2009.06 Package Manager application is a graphical user "
+"interface for the Image Packaging System (IPS) software."
+msgstr ""
+       "Az OpenSolaris 2009.06 Csomagkezelő alkalmazás egy grafikus felhasználói felülete az Image Packaging System (IPS) szoftvernek."
+
+#: package-manager.xml:37(para)
+msgid "The Package Manager enables you to perform the following tasks:"
+msgstr "A Csomagkezelő lehetővé teszi a következő feladatok ellátását:"
+
+#: package-manager.xml:38(para)
+msgid "Search, install, and remove packages"
+msgstr "Csomagok keresése, telepítése és eltávolítása"
+
+#: package-manager.xml:40(para)
+msgid "Update your system"
+msgstr "Rendszer frissítse"
+
+#: package-manager.xml:42(para)
+msgid "Add and modify repositories"
+msgstr "Telepítési források hozzáadása és módosítása"
+
+#: package-manager.xml:44(para)
+msgid "Create, remove, and manage boot environments"
+msgstr "Boot environment-ek hozzáadása, eltávolítása és kezelése"
+
+#: package-manager.xml:47(para)
+msgid ""
+"See the <xref linkend=\"glossary\"/> for a definition of the terms used in "
+"this document."
+msgstr ""
+       "Tekintse meg a <xref linkend=\"szójegyzéket\"/> a dokumentumban használt fogalmak magyarázata céljából."
+
+#: package-manager.xml:49(title)
+msgid "About Image Packaging System"
+msgstr "Az Image Packaging System-ről"
+
+#: package-manager.xml:50(para)
+msgid ""
+"Image Packaging System (IPS) is a software delivery system that interacts "
+"with a network repository. The IPS software is a framework which provides "
+"for software lifecycle management including installation, upgrade, and "
+"removal."
+msgstr ""
+       "Image Packaging System (IPS) is a software delivery system that interacts "
+       "with a network repository. The IPS software is a framework which provides "
+       "for software lifecycle management including installation, upgrade, and "
+       "removal."
+
+#: package-manager.xml:51(para)
+msgid "The OpenSolaris 2009.06 release uses IPS as its packaging system."
+msgstr "Az OpenSolaris 2009.06 kiadás csomagkezelő rendszernek az IPS-t használja."
+
+#: package-manager.xml:52(para)
+msgid ""
+"After an initial installation of OpenSolaris 2009.06 operating system, you "
+"will find that many of the software applications that you use on a regular "
+"basis are not immediately available to you. These software applications are "
+"available as packages in a repository for downloading and installing over "
+"the Internet. A repository is a source for packages."
+msgstr ""
+       "After an initial installation of OpenSolaris 2009.06 operating system, you "
+       "will find that many of the software applications that you use on a regular "
+       "basis are not immediately available to you. These software applications are "
+       "available as packages in a repository for downloading and installing over "
+       "the Internet. A repository is a source for packages."
+
+#: package-manager.xml:53(para)
+msgid ""
+"Users can use IPS to install packages from a repository, create and publish "
+"their own IPS packages, mirror an existing repository, and publish existing "
+"packages to a repository."
+msgstr ""
+       "Users can use IPS to install packages from a repository, create and publish "
+       "their own IPS packages, mirror an existing repository, and publish existing "
+       "packages to a repository."
+
+#: package-manager.xml:54(para)
+msgid ""
+"Once you have installed packages, IPS enables you to search, update, and "
+"manage packages on your system."
+msgstr ""
+       "Miután már telepített csomagokat, az IPS lehetővé teszi csomagok keresését, frissítését és kezelését a rendszerén."
+
+#: package-manager.xml:55(para)
+msgid ""
+"With IPS , you can upgrade your system to a newer build of OpenSolaris, "
+"install and update your software to the latest available versions in a "
+"repository, and retrieve packages from mirror repositories."
+msgstr ""
+       "With IPS , you can upgrade your system to a newer build of OpenSolaris, "
+       "install and update your software to the latest available versions in a "
+       "repository, and retrieve packages from mirror repositories."
+
+#: package-manager.xml:56(emphasis)
+msgid ""
+"The Package Manager provides a subset of the tasks that can be performed "
+"from the command-line."
+msgstr ""
+       "A Csomagkezelő a parancssorban végrehajtható műveletek egy részéhez nyújt elérést. "
+
+#: package-manager.xml:58(para)
+msgid ""
+"If the system on which IPS is installed is on the network, IPS can "
+"automatically access the OpenSolaris repository. For the OpenSolaris 2009.06 "
+"release, your IPS client can access the packages from <ulink url=\"http://"
+"pkg.opensolaris.org\"/>."
+msgstr ""
+       "If the system on which IPS is installed is on the network, IPS can "
+       "automatically access the OpenSolaris repository. For the OpenSolaris 2009.06 "
+       "release, your IPS client can access the packages from <ulink url=\"http://"
+       "pkg.opensolaris.org\"/>."
+
+#: package-manager.xml:59(para)
+msgid ""
+"For more information about IPS, see the <ulink url=\"http://dlc.sun.com/osol/"
+"docs/content/2009.06/IMGPACKAGESYS/\">Image Packaging System Guide</ulink> "
+"and the IPS <ulink url=\"http://opensolaris.org/sc/src/pkg/gate/src/man/"
+"\">man pages</ulink>."
+msgstr ""
+       "További információkért az IPS-ről, tekintse meg a <ulink url=\"http://dlc.sun.com/osol/"
+       "docs/content/2009.06/IMGPACKAGESYS/\">Image Packaging System Utmutatót</ulink> és az IPS <ulink url=\"http://opensolaris.org/sc/src/pkg/gate/src/man/"
+       "\">man oldalakat</ulink>."
+
+#: package-manager.xml:60(para)
+msgid ""
+"Visit the <ulink url=\"http://opensolaris.org/os/project/pkg\">project page</"
+"ulink> on opensolaris.org and subscribe to pkg-discuss@sun.com to get "
+"involved with the IPS project."
+msgstr ""
+       "Látogasson el a <ulink url=\"http://opensolaris.org/os/project/pkg\">projekt oldalára</"
+       "ulink> az opensolaris.org-on és iratkozzon fel a pkg-discuss@sun.com listára, hogy bevonja magát az IPS projektben."
+
+#: package-manager.xml:62(title)
+msgid "The Package Manager Window"
+msgstr "A Csomagkezelő ablak"
+
+#: package-manager.xml:63(title)
+msgid "About the Package Manager Window"
+msgstr "A Csomagkezelő ablakról"
+
+#: package-manager.xml:64(para)
+msgid "When you start the Package Manager, the following window is displayed."
+msgstr "A Csomagkezelő indításakor a következő ablak jelenik meg."
+
+#: package-manager.xml:65(title)
+msgid "Package Manager Start Up Window"
+msgstr "Csomagkezelő Kezdő Ablak"
+
+#: package-manager.xml:69(para)
+msgid ""
+"The Start Page provides links to <ulink url=\"http://opensolaris.com"
+"\">opensolaris.com</ulink> page where you can get more information about "
+"OpenSolaris, subscribe to newsletters and join the OpenSolaris community."
+msgstr ""
+       "A Kezdő Oldalon hivatkozásokat tartalmaz a <ulink url=\"http://opensolaris.com"
+       "\">opensolaris.com</ulink> oldalra ahol még több információt találhat az OpenSolaris-ról, feliratkozhat a hírlevelekre és csatlakozhat az OpenSolaris közösséghez."
+
+#: package-manager.xml:70(para)
+msgid ""
+"To close the Start Page and see the list of packages , perform any of the "
+"following actions in the main window of the Package Manager:"
+msgstr ""
+       "A Kezdő Oldal bezárásához és a csomagok listájának megtekintéséhez hajtsa végre a következő lépések bármelyikét a Csomagkezelő fő ablakán:"
+
+#: package-manager.xml:71(para)
+msgid "Select a package category"
+msgstr "Válasszon egy csomag kategóriát"
+
+#: package-manager.xml:73(para)
+msgid "Switch the top level category"
+msgstr "A legfelsőbb szintű kategória megváltoztatása"
+
+#: package-manager.xml:75(para)
+msgid "Switch the <literal>Show</literal> filter"
+msgstr "A <literal>Nézet</literal> szűrő megváltoztatása"
+
+#: package-manager.xml:77(para)
+msgid "Perform a search"
+msgstr "Keresés indítása"
+
+#: package-manager.xml:79(para)
+msgid "Change the repository"
+msgstr "Telepítési forrás megváltoztatása"
+
+#: package-manager.xml:82(para)
+msgid ""
+"Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</"
+"guimenuitem></menuchoice> to return to the Start Page at anytime."
+msgstr ""
+       "Válassza a <menuchoice><guimenu>Nézet</guimenu><guimenuitem>Kezdő Oldal</"
+       "guimenuitem></menuchoice> a Kezdő Oldalhoz való visszatéréshez."
+
+#: package-manager.xml:83(para)
+msgid ""
+"See the <xref linkend=\"edit_prefs\"/> section to turn off the <emphasis "
+"role=\"strong\">initial display</emphasis> of the Start Page when the "
+"Package Manager starts."
+msgstr ""
+       "See the <xref linkend=\"edit_prefs\"/> section to turn off the <emphasis "
+       "role=\"strong\">initial display</emphasis> of the Start Page when the "
+       "Package Manager starts."
+
+#: package-manager.xml:85(title)
+msgid "List of Packages in the Package Manager Window"
+msgstr "Csomagok listája a Csomagkezelő ablakban"
+
+#: package-manager.xml:89(para)
+msgid ""
+"The main window of the Package Manager consists of the following elements :"
+msgstr ""
+       "A Csomagkezelő fő ablaka a következő részekből áll:"
+
+#: package-manager.xml:90(emphasis)
+msgid "Menubar"
+msgstr "Menüsor"
+
+#: package-manager.xml:91(para)
+msgid ""
+"You can access the menus on the menubar to perform all of the commands "
+"related to the Package Manager."
+msgstr ""
+       "You can access the menus on the menubar to perform all of the commands "
+       "related to the Package Manager."
+
+#: package-manager.xml:95(emphasis)
+msgid "Toolbar"
+msgstr "Eszköztár"
+
+#: package-manager.xml:96(para)
+msgid ""
+"The toolbar contains the icons for a subset of the commands that can be "
+"performed by using the menus on the menubar. A<literal>Search</literal> box "
+"is also located on the toolbar."
+msgstr ""
+       "The toolbar contains the icons for a subset of the commands that can be "
+       "performed by using the menus on the menubar. A<literal>Search</literal> box "
+       "is also located on the toolbar."
+
+#: package-manager.xml:99(emphasis)
+msgid "List of Packages by Category"
+msgstr "Csomagok kategóriák szerinti listázása"
+
+#: package-manager.xml:100(para)
+msgid ""
+"You can browse the available packages by category in the left hand side drop-"
+"down menu. The drop-down menu shows the list of categories available such as "
+"<emphasis role=\"strong\">Applications-Desktop</emphasis>, <emphasis role="
+"\"strong\">Applications –Web—based</emphasis>, and <emphasis role=\"strong"
+"\">Operating System</emphasis>."
+msgstr ""
+       "You can browse the available packages by category in the left hand side drop-"
+       "down menu. The drop-down menu shows the list of categories available such as "
+       "<emphasis role=\"strong\">Applications-Desktop</emphasis>, <emphasis role="
+       "\"strong\">Applications –Web—based</emphasis>, and <emphasis role=\"strong"
+       "\">Operating System</emphasis>."
+
+#: package-manager.xml:103(emphasis)
+msgid "List of Packages by Status"
+msgstr "Csomagok állapot szerinti listázása"
+
+#: package-manager.xml:104(para)
+msgid ""
+"The <literal>Show</literal> drop-down menu enables you to filter the list of "
+"packages by the following options :"
+msgstr ""
+       "The <literal>Show</literal> drop-down menu enables you to filter the list of "
+       "packages by the following options :"
+
+#: package-manager.xml:105(para)
+msgid ""
+"<emphasis role=\"strong\">All Packages</emphasis> – Shows the list of all "
+"packages available in the current repository."
+msgstr ""
+       "<emphasis role=\"strong\">Összes csomag</emphasis> – Megjeleníti az összes elérhető csomagot az aktuális telepítési forrásból."
+
+#: package-manager.xml:107(para)
+msgid ""
+"<emphasis role=\"strong\">Installed Packages</emphasis> – Shows the list of "
+"packages installed on your system."
+msgstr ""
+       "<emphasis role=\"strong\">Telepített Csomagok</emphasis> – Megjeleníti a rendszerre telepített csomagok listáját."
+
+#: package-manager.xml:109(para)
+msgid ""
+"<emphasis role=\"strong\">Updates Available</emphasis> — Shows the list of "
+"packages that have newer versions available in the current repository."
+msgstr ""
+       "<emphasis role=\"strong\">Elérhető Frissítések</emphasis> — Megjeleníti az újabb verzióval rendelkező csomagok listáját az aktuális telepítési forrásból."
+
+#: package-manager.xml:111(para)
+msgid ""
+"<emphasis role=\"strong\">Non-installed Packages</emphasis> – Shows the list "
+"of packages that are not installed, but are available in the currently "
+"selected repository."
+msgstr ""
+       "<emphasis role=\"strong\">Non-installed Packages</emphasis> – Shows the list "
+       "of packages that are not installed, but are available in the currently "
+       "selected repository."
+
+#: package-manager.xml:113(para)
+msgid ""
+"<emphasis role=\"strong\">Selected Packages</emphasis> – Shows the list of "
+"packages that you have selected."
+msgstr ""
+       "<emphasis role=\"strong\">Kiválasztott Csomagok</emphasis> – Megjeleníti a kiválasztott csomagok listáját."
+
+#: package-manager.xml:118(emphasis)
+msgid "Package Name and Description"
+msgstr "Csomagnév és leírás"
+
+#: package-manager.xml:119(para)
+msgid ""
+"The list of packages in the selected category, a brief description, and "
+"their status are displayed here."
+msgstr ""
+       "The list of packages in the selected category, a brief description, and "
+       "their status are displayed here."
+
+#: package-manager.xml:122(emphasis)
+msgid "Package Details"
+msgstr "Csomag Részletek"
+
+#: package-manager.xml:123(para)
+msgid ""
+"Click a package name to select it. Details of the selected package, such as "
+"name, version, file dependencies, and license are displayed in this window."
+msgstr ""
+       "Click a package name to select it. Details of the selected package, such as "
+       "name, version, file dependencies, and license are displayed in this window."
+
+#: package-manager.xml:126(emphasis)
+msgid "Repository Drop-down Menu"
+msgstr "Telepítési forrás lenyíló menü"
+
+#: package-manager.xml:127(para)
+msgid ""
+"The list of available repositories is shown in the <literal>Repository</"
+"literal> drop-down menu. Click a repository name to select it."
+msgstr ""
+       "Az elérhető telepítési források listája a <literal>Telepítési Forrás</"
+       "literal> lenyíló menüben található. Kattintson a telepítési forrás nevére a kiválasztáshoz."
+
+#: package-manager.xml:130(emphasis)
+msgid "Search Box"
+msgstr "Kereső mező"
+
+#: package-manager.xml:131(para)
+msgid "Search for a package is provided in the following contexts :"
+msgstr "Csomagok keresése a következő tekintetekben lehetséges :"
+
+#: package-manager.xml:132(para)
+msgid "Search within the current repository"
+msgstr "Keresés az aktuális telepítési forrásban"
+
+#: package-manager.xml:134(para)
+msgid "Search across all configured repositories"
+msgstr "Keresés az összes telepítési forrásban"
+
+#: package-manager.xml:141(title)
+msgid "Start Page Preferences"
+msgstr "A Kezdő Oldal előnyei"
+
+#: package-manager.xml:142(para)
+msgid ""
+"A Start Page is displayed in the main window of the Package Manager when the "
+"application is started. The Start Page provides links to <ulink url=\"http://"
+"opensolaris.com\">opensolaris.com</ulink> page where you can get more "
+"information about OpenSolaris, subscribe to newsletters and join the "
+"OpenSolaris community."
+msgstr ""
+       "A Kezdő Oldal a Csomagkezelő fő ablakában jelenik meg a program indítását követően. A Kezdő Oldal hivatkozást nyújt az <ulink url=\"http://"
+       "opensolaris.com\">opensolaris.com</ulink> oldalra, ahol további információkat találhat az OpenSolaris-ról, feliratkozhat a hírlevelekre és csatlakozhat az OpenSolaris közösséghez."
+
+#: package-manager.xml:143(para)
+msgid ""
+"You can choose to turn off this setting so this page is not displayed when "
+"Package Manager starts."
+msgstr ""
+       "Akár ki is kapcsolhatja ezt a beállítást így nem kerül megjelenítésre az oldal a Csomagkezelő indításakor."
+
+#: package-manager.xml:144(para)
+msgid ""
+"Select <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</"
+"guimenuitem></menuchoice> from the menu and uncheck the <emphasis role="
+"\"strong\">Show Start Page on startup</emphasis> box to disable the Start "
+"Page."
+msgstr ""
+       "Select <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</"
+       "guimenuitem></menuchoice> from the menu and uncheck the <emphasis role="
+       "\"strong\">Show Start Page on startup</emphasis> box to disable the Start "
+       "Page."
+
+#: package-manager.xml:145(para)
+msgid ""
+"Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</"
+"guimenuitem></menuchoice> to go to the Start Page at anytime."
+msgstr ""
+       "Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</"
+       "guimenuitem></menuchoice> to go to the Start Page at anytime."
+
+#: package-manager.xml:148(title)
+msgid "Working With Packages"
+msgstr "Csomagok használata"
+
+#: package-manager.xml:149(title)
+msgid "Install a Package"
+msgstr "Csomag telepítése"
+
+#: package-manager.xml:150(para)
+msgid ""
+"The list of packages is displayed in the main windows of the Package "
+"Manager. Perform the following steps to install a package:"
+msgstr ""
+       "The list of packages is displayed in the main windows of the Package "
+       "Manager. Perform the following steps to install a package:"
+
+#: package-manager.xml:151(para)
+msgid ""
+"To install a single package, click on a package to select it. To install "
+"many packages, check the box next to the packages you want to install."
+msgstr ""
+       "To install a single package, click on a package to select it. To install "
+       "many packages, check the box next to the packages you want to install."
+
+#: package-manager.xml:153(para)
+msgid ""
+"Click the <guibutton>Install/Update</guibutton> icon in the toolbar to start "
+"the package installation process."
+msgstr ""
+       "Click the <guibutton>Install/Update</guibutton> icon in the toolbar to start "
+       "the package installation process."
+
+#: package-manager.xml:154(para)
+msgid ""
+"You can also choose <menuchoice><guimenu>Package</"
+"guimenu><guimenuitem>Install/Update</guimenuitem></menuchoice> to start the "
+"package installation process."
+msgstr ""
+       "You can also choose <menuchoice><guimenu>Package</"
+       "guimenu><guimenuitem>Install/Update</guimenuitem></menuchoice> to start the "
+       "package installation process."
+
+#: package-manager.xml:156(para)
+msgid "View the details or cancel the package installation ."
+msgstr "Tekintse meg a részleteket vagy vesse el a csomag telepítést."
+
+#: package-manager.xml:157(para)
+msgid "Click <guilabel>Show Details</guilabel> to view the details."
+msgstr "Kattintson a <guilabel>Részletek megtekintése</guilabel>-re a részletek megtekintéséhez."
+
+#: package-manager.xml:159(para)
+msgid ""
+"Click <guibutton>Cancel</guibutton> to cancel the package installation. No "
+"changes are made and you are returned to the main window."
+msgstr ""
+       "Click <guibutton>Cancel</guibutton> to cancel the package installation. No "
+       "changes are made and you are returned to the main window."
+
+#: package-manager.xml:163(para)
+msgid ""
+"After the installation has completed, click <guibutton>Close</guibutton> on "
+"the <literal>Installation Completed</literal> dialog box to return to the "
+"main window."
+msgstr ""
+       "After the installation has completed, click <guibutton>Close</guibutton> on "
+       "the <literal>Installation Completed</literal> dialog box to return to the "
+       "main window."
+
+#: package-manager.xml:166(title)
+msgid "Installation Error"
+msgstr "Telepítési Hiba"
+
+#: package-manager.xml:167(para)
+msgid ""
+"If an error occurs during package installation, an error dialog box is "
+"displayed. An <guilabel>Installation Failed</guilabel> message and the "
+"reason for the failure is displayed. Click <guibutton>Close</guibutton> to "
+"close the error dialog box and return to the main window of the Package "
+"Manager."
+msgstr ""
+       "If an error occurs during package installation, an error dialog box is "
+       "displayed. An <guilabel>Installation Failed</guilabel> message and the "
+       "reason for the failure is displayed. Click <guibutton>Close</guibutton> to "
+       "close the error dialog box and return to the main window of the Package "
+       "Manager."
+
+#: package-manager.xml:170(title)
+msgid "Remove a Package"
+msgstr "Csomag eltávolítása"
+
+#: package-manager.xml:171(para)
+msgid "Perform the following steps to remove a package:"
+msgstr "Egy csomag eltávolításához a következő lépéseket hajtsa végre:"
+
+#: package-manager.xml:172(para)
+msgid ""
+"To remove a single package, click on a package to select it. To remove many "
+"packages, check the box next to the packages you want to remove."
+msgstr ""
+       "To remove a single package, click on a package to select it. To remove many "
+       "packages, check the box next to the packages you want to remove."
+
+#: package-manager.xml:174(para)
+msgid ""
+"Click the <guibutton>Remove</guibutton> button in the toolbar to start the "
+"package uninstallation process."
+msgstr ""
+       "Click the <guibutton>Remove</guibutton> button in the toolbar to start the "
+       "package uninstallation process."
+
+#: package-manager.xml:175(para)
+msgid ""
+"You can also choose <menuchoice><guimenu>Package</"
+"guimenu><guimenuitem>Remove</guimenuitem></menuchoice> to remove a package."
+msgstr ""
+       "You can also choose <menuchoice><guimenu>Package</"
+       "guimenu><guimenuitem>Remove</guimenuitem></menuchoice> to remove a package."
+
+#: package-manager.xml:177(para)
+msgid ""
+"Review the packages to be removed and the package dependencies details in "
+"the <literal>Remove Confirmation</literal> dialog box."
+msgstr ""
+       "Review the packages to be removed and the package dependencies details in "
+       "the <literal>Remove Confirmation</literal> dialog box."
+
+#: package-manager.xml:179(para)
+msgid "Uninstall the package or cancel the uninstallation process."
+msgstr "A csomag eltávolítása vagy az eltávolítás elvetése."
+
+#: package-manager.xml:180(para)
+msgid ""
+"Click <guibutton>Proceed</guibutton> to start uninstalling the packages."
+msgstr ""
+       "Kattintson a <guibutton>Végrehajt</guibutton> gombra a csomagok eltávolításának megkezdéséhez."
+
+#: package-manager.xml:182(para)
+msgid ""
+"Click <guibutton>Cancel</guibutton> to cancel the process. No changes are "
+"made and you are returned to the main window."
+msgstr ""
+       "Kattintson a <guibutton>Mégsem</guibutton> gombra a folyamat elvetéséért. Változtatások nem történnek és a főablakba jutunk vissza."
+
+#: package-manager.xml:183(para)
+msgid ""
+"After you click the <guibutton>Proceed</guibutton> button, you cannot undo "
+"the package removal action. However, you can reinstall the package at any "
+"time."
+msgstr ""
+       "Miután rákattintott a <guibutton>Végrehajt</guibutton> gombra már nem vonhatja vissza a csomag eltávolítását. Máskülönben bármikor újra telepítheti a csomagot."
+
+#: package-manager.xml:190(title)
+msgid "Search for a Package"
+msgstr "Csomag keresése"
+
+#: package-manager.xml:191(para)
+msgid "You can search for a package in the following ways :"
+msgstr "A következőképpen kereshet csomagokat:"
+
+#: package-manager.xml:192(para)
+msgid ""
+"<emphasis role=\"strong\">Search the current repository</emphasis> – Search "
+"for a package in the repository currently selected in the "
+"<literal>Repository</literal> drop-down menu. The category selection or the "
+"<literal>Show</literal> filter does not affect the search and the search is "
+"performed on all packages in the currently selected repository."
+msgstr ""
+       "<emphasis role=\"strong\">Search the current repository</emphasis> – Search "
+       "for a package in the repository currently selected in the "
+       "<literal>Repository</literal> drop-down menu. The category selection or the "
+       "<literal>Show</literal> filter does not affect the search and the search is "
+       "performed on all packages in the currently selected repository."
+
+#: package-manager.xml:193(para)
+msgid ""
+"Enter a description, or a partial name in the <literal>Search</literal> box "
+"located on the toolbar. For example, you might type one of the following "
+"search terms to search for <filename>SUNWgnome-games</filename> :"
+msgstr ""
+       "Enter a description, or a partial name in the <literal>Search</literal> box "
+       "located on the toolbar. For example, you might type one of the following "
+       "search terms to search for <filename>SUNWgnome-games</filename> :"
+
+#: package-manager.xml:194(para)
+msgid "SUNWgames"
+msgstr "SUNWgames"
+
+#: package-manager.xml:196(para)
+msgid "games"
+msgstr "játékok"
+
+#: package-manager.xml:198(para)
+msgid "GNOME-games"
+msgstr "GNOME-games"
+
+#: package-manager.xml:201(para)
+msgid ""
+"To search for SunStudio compilers, you might type one of the following terms:"
+msgstr ""
+       "SunStudio fordítók kereséséhez megadhatná a következő szavakat:"
+
+#: package-manager.xml:202(para)
+msgid "compiler"
+msgstr "compiler"
+
+#: package-manager.xml:204(para)
+msgid "tools"
+msgstr "tools"
+
+#: package-manager.xml:208(para)
+msgid ""
+"<emphasis role=\"strong\">Search all repositories</emphasis> – Select the "
+"multi-repository icon in the <literal>Search</literal> box to search for the "
+"package across all configured or registered repositories."
+msgstr ""
+       "<emphasis role=\"strong\">Search all repositories</emphasis> – Select the "
+       "multi-repository icon in the <literal>Search</literal> box to search for the "
+       "package across all configured or registered repositories."
+
+#: package-manager.xml:209(para)
+msgid ""
+"Note the following important considerations when using the multi-repository "
+"search."
+msgstr ""
+       "Note the following important considerations when using the multi-repository "
+       "search."
+
+#: package-manager.xml:210(para)
+msgid ""
+"The multi-repository search currently supports a search based on the package "
+"contents including its description, classification, and the files contained "
+"within the package. However, the correct results are displayed only if the "
+"term used for searching is an <emphasis role=\"strong\">exact</emphasis> "
+"match."
+msgstr ""
+       "The multi-repository search currently supports a search based on the package "
+       "contents including its description, classification, and the files contained "
+       "within the package. However, the correct results are displayed only if the "
+       "term used for searching is an <emphasis role=\"strong\">exact</emphasis> "
+       "match."
+
+#: package-manager.xml:212(para)
+msgid ""
+"<emphasis role=\"strong\">The multi-repository search does not search the "
+"package name</emphasis>."
+msgstr ""
+       "<emphasis role=\"strong\">The multi-repository search does not search the "
+       "package name</emphasis>."
+
+#: package-manager.xml:214(para)
+msgid ""
+"Wild card searching is supported by using the asterisk wild card, "
+"<literal>*</literal>, in the search term. Search using the wild card can be "
+"slower than an exact match search."
+msgstr ""
+       "Wild card searching is supported by using the asterisk wild card, "
+       "<literal>*</literal>, in the search term. Search using the wild card can be "
+       "slower than an exact match search."
+
+#: package-manager.xml:218(para)
+msgid ""
+"Type a description of the package in the box. For example, the "
+"<filename>SUNWdiveintopython</filename> package is a book on Python "
+"programming. The description of the package contains the string "
+"<emphasis>book</emphasis>. To search for this package, you might then type "
+"one of the following terms:"
+msgstr ""
+       "Type a description of the package in the box. For example, the "
+       "<filename>SUNWdiveintopython</filename> package is a book on Python "
+       "programming. The description of the package contains the string "
+       "<emphasis>book</emphasis>. To search for this package, you might then type "
+       "one of the following terms:"
+
+#: package-manager.xml:219(para)
+msgid "python"
+msgstr "python"
+
+#: package-manager.xml:221(para)
+msgid "book"
+msgstr "book"
+
+#: package-manager.xml:224(para)
+msgid ""
+"If you searched for the term <emphasis>diveinto</emphasis> in the multi-"
+"repository search, the <filename>SUNWdiveintopython</filename> package will "
+"not be displayed as the term <emphasis>diveinto</emphasis> is not present as "
+"an independent, complete word in the package contents. However you will find "
+"the package using the <literal>*</literal> wild card. Hence, searching for "
+"the term <literal>diveinto*</literal> will display the "
+"<filename>SUNWdiveintopython</filename> package."
+msgstr ""
+       "If you searched for the term <emphasis>diveinto</emphasis> in the multi-"
+       "repository search, the <filename>SUNWdiveintopython</filename> package will "
+       "not be displayed as the term <emphasis>diveinto</emphasis> is not present as "
+       "an independent, complete word in the package contents. However you will find "
+       "the package using the <literal>*</literal> wild card. Hence, searching for "
+       "the term <literal>diveinto*</literal> will display the "
+       "<filename>SUNWdiveintopython</filename> package."
+
+#: package-manager.xml:228(para)
+msgid ""
+"Use the submenus under the <menuchoice><guimenu>Edit</guimenu></menuchoice> "
+"menu to cut, copy, paste, or clear text in the <literal>Search</literal> box."
+msgstr ""
+       "Use the submenus under the <menuchoice><guimenu>Edit</guimenu></menuchoice> "
+       "menu to cut, copy, paste, or clear text in the <literal>Search</literal> box."
+
+#: package-manager.xml:230(para)
+msgid ""
+"Use the icon on the right side of the <literal>Search</literal> box to clear "
+"the search results."
+msgstr ""
+       "Use the icon on the right side of the <literal>Search</literal> box to clear "
+       "the search results."
+
+#: package-manager.xml:235(title)
+msgid "Update a Package"
+msgstr "Csomag frissítése"
+
+#: package-manager.xml:236(para)
+msgid ""
+"Look for the green icon next to the installed package name. This icon "
+"indicates that updates are available for the package in the currently "
+"selected repository. Select the package and click the <guibutton>Install/"
+"Update</guibutton> button to install the latest version of the package."
+msgstr ""
+       "Look for the green icon next to the installed package name. This icon "
+       "indicates that updates are available for the package in the currently "
+       "selected repository. Select the package and click the <guibutton>Install/"
+       "Update</guibutton> button to install the latest version of the package."
+
+#: package-manager.xml:239(title)
+msgid "Introduction to Boot Environments"
+msgstr "Bevezetés a Boot Environment-ekbe"
+
+#: package-manager.xml:240(para)
+msgid ""
+"A boot environment is an image that is bootable. Upon an initial OpenSolaris "
+"installation, a boot environment is created."
+msgstr ""
+       "A boot environment is an image that is bootable. Upon an initial OpenSolaris "
+       "installation, a boot environment is created."
+
+#: package-manager.xml:241(para)
+msgid ""
+"You can maintain multiple boot environments on your OpenSolaris 2009.06 "
+"system. Use the <command>beadm(1)</command> command from the command—line "
+"interface (CLI) to create, rename, mount or unmount, or destroy these boot "
+"environments."
+msgstr ""
+       "You can maintain multiple boot environments on your OpenSolaris 2009.06 "
+       "system. Use the <command>beadm(1)</command> command from the command—line "
+       "interface (CLI) to create, rename, mount or unmount, or destroy these boot "
+       "environments."
+
+#: package-manager.xml:242(para)
+msgid ""
+"The Package Manager enables you to manage the boot environments created "
+"during the process of updating your image. For more information, see <xref "
+"linkend=\"manage_be\"/> section."
+msgstr ""
+       "The Package Manager enables you to manage the boot environments created "
+       "during the process of updating your image. For more information, see <xref "
+       "linkend=\"manage_be\"/> section."
+
+#: package-manager.xml:243(para)
+msgid ""
+"System administrators can maintain multiple boot environments on their "
+"systems, and each boot environment can have different software versions "
+"installed."
+msgstr ""
+       "System administrators can maintain multiple boot environments on their "
+       "systems, and each boot environment can have different software versions "
+       "installed."
+
+#: package-manager.xml:244(para)
+msgid ""
+"When you use either the Package Manager or the <command>pkg image-update</"
+"command> command to update all the packages in your active OpenSolaris boot "
+"environment, a clone of that boot environment is automatically created. The "
+"packages are updated in the clone rather than in the original boot "
+"environment. After successfully completing the updates, the new clone is "
+"activated. Then, the clone will become the new default boot environment on "
+"system reboot. The original boot environment is also available as an "
+"alternate selection."
+msgstr ""
+       "When you use either the Package Manager or the <command>pkg image-update</"
+       "command> command to update all the packages in your active OpenSolaris boot "
+       "environment, a clone of that boot environment is automatically created. The "
+       "packages are updated in the clone rather than in the original boot "
+       "environment. After successfully completing the updates, the new clone is "
+       "activated. Then, the clone will become the new default boot environment on "
+       "system reboot. The original boot environment is also available as an "
+       "alternate selection."
+
+#: package-manager.xml:245(para)
+msgid ""
+"See the beadm(1) man pages and the <ulink url=\"http://dlc.sun.com/osol/docs/"
+"content/dev/snapupgrade/snap3.html\"><citetitle>Upgrading and Managing Boot "
+"Environments</citetitle></ulink> document to learn more about boot "
+"environments and the <command>beadm(1)</command> command."
+msgstr ""
+       "See the beadm(1) man pages and the <ulink url=\"http://dlc.sun.com/osol/docs/"
+       "content/dev/snapupgrade/snap3.html\"><citetitle>Upgrading and Managing Boot "
+       "Environments</citetitle></ulink> document to learn more about boot "
+       "environments and the <command>beadm(1)</command> command."
+
+#: package-manager.xml:246(title)
+msgid "Update All Packages (Update Your Image)"
+msgstr "Update All Packages (Update Your Image)"
+
+#: package-manager.xml:247(para)
+msgid "Perform the following steps to update all the packages in your image."
+msgstr "Perform the following steps to update all the packages in your image."
+
+#: package-manager.xml:248(para)
+msgid ""
+"Click the <guibutton>Update All</guibutton> icon located on the toolbar to "
+"start the process of updating <emphasis role=\"strong\">all</emphasis> the "
+"packages installed in your image."
+msgstr ""
+       "Click the <guibutton>Update All</guibutton> icon located on the toolbar to "
+       "start the process of updating <emphasis role=\"strong\">all</emphasis> the "
+       "packages installed in your image."
+
+#: package-manager.xml:249(para)
+msgid ""
+"You can also choose <menuchoice><guimenu>Package</guimenu><guisubmenu>Update "
+"All</guisubmenu></menuchoice> to start the process."
+msgstr ""
+       "You can also choose <menuchoice><guimenu>Package</guimenu><guisubmenu>Update "
+       "All</guisubmenu></menuchoice> to start the process."
+
+#: package-manager.xml:250(para)
+msgid ""
+"The <guilabel>Update All</guilabel> icon is enabled when updates are "
+"available to the installed packages."
+msgstr ""
+       "The <guilabel>Update All</guilabel> icon is enabled when updates are "
+       "available to the installed packages."
+
+#: package-manager.xml:253(para)
+msgid ""
+"A <literal>Create New Boot Environment</literal> window is displayed. A name "
+"for the new boot environment is automatically generated."
+msgstr ""
+       "A <literal>Create New Boot Environment</literal> window is displayed. A name "
+       "for the new boot environment is automatically generated."
+
+#: package-manager.xml:255(para)
+msgid ""
+"(optional) You can change the name of the new boot environment if you want."
+msgstr ""
+       "(optional) You can change the name of the new boot environment if you want."
+
+#: package-manager.xml:257(para)
+msgid "Confirm or Cancel the new boot environment."
+msgstr "Az új boot environment megerősítése vagy elvetése."
+
+#: package-manager.xml:258(para)
+msgid ""
+"Click <guibutton>Proceed</guibutton> to create a new boot environment and "
+"proceed with the Update All process."
+msgstr ""
+       "Click <guibutton>Proceed</guibutton> to create a new boot environment and "
+       "proceed with the Update All process."
+
+#: package-manager.xml:260(para) package-manager.xml:488(para)
+msgid "Click <guibutton>Cancel</guibutton> to cancel the process."
+msgstr "Click <guibutton>Cancel</guibutton> to cancel the process."
+
+#: package-manager.xml:263(para)
+msgid ""
+"During the Update All process, a clone of the active boot environment is "
+"created. This clone enables the user to boot into the boot environment state "
+"that existed before the Update All process was started. If the Package "
+"Manager is unable to create a new boot environment, an error message will be "
+"displayed. See the <xref linkend=\"gilfh\"/> section on how to rectify the "
+"error and continue with updating your image."
+msgstr ""
+       "During the Update All process, a clone of the active boot environment is "
+       "created. This clone enables the user to boot into the boot environment state "
+       "that existed before the Update All process was started. If the Package "
+       "Manager is unable to create a new boot environment, an error message will be "
+       "displayed. See the <xref linkend=\"gilfh\"/> section on how to rectify the "
+       "error and continue with updating your image."
+
+#: package-manager.xml:265(para)
+msgid ""
+"If you chose to proceed with the Update All process, the packages are "
+"downloaded and installed."
+msgstr ""
+       "If you chose to proceed with the Update All process, the packages are "
+       "downloaded and installed."
+
+#: package-manager.xml:266(para)
+msgid ""
+"After a successful completion, the <literal>Update All Complete</literal> "
+"dialog box is shown. A link to the Release Notes is provided in the dialog "
+"box. Read the <xref linkend=\"release_notes\"/> before rebooting your system."
+msgstr ""
+       "After a successful completion, the <literal>Update All Complete</literal> "
+       "dialog box is shown. A link to the Release Notes is provided in the dialog "
+       "box. Read the <xref linkend=\"release_notes\"/> before rebooting your system."
+
+#: package-manager.xml:268(para)
+msgid "Click <guibutton>Close</guibutton>."
+msgstr "Click <guibutton>Close</guibutton>."
+
+#: package-manager.xml:269(emphasis) package-manager.xml:507(para)
+msgid "You must reboot your system for the changes to take effect."
+msgstr "Újra kell indítania a rendszert a változások érvényesítéséhez."
+
+#: package-manager.xml:274(title) package-manager.xml:512(title)
+msgid "Update All Errors"
+msgstr "Update All Errors"
+
+#: package-manager.xml:275(para)
+msgid ""
+"A new boot environment clone must be created by the Package Manager for the "
+"Update All process to be completed. An error message is displayed if a boot "
+"environment clone cannot be created. You might see an error message such as "
+"the following :"
+msgstr ""
+       "A new boot environment clone must be created by the Package Manager for the "
+       "Update All process to be completed. An error message is displayed if a boot "
+       "environment clone cannot be created. You might see an error message such as "
+       "the following :"
+
+#: package-manager.xml:276(para) package-manager.xml:514(para)
+msgid ""
+"<literal>Not enough disk space, the selected action cannot be performed. "
+"Click OK to manage your existing BEs and free up disk space or Cancel to "
+"cancel the action</literal>."
+msgstr ""
+       "<literal>Not enough disk space, the selected action cannot be performed. "
+       "Click OK to manage your existing BEs and free up disk space or Cancel to "
+       "cancel the action</literal>."
+
+#: package-manager.xml:277(para)
+msgid ""
+"Click <guibutton>Cancel</guibutton> to cancel the Update All process and "
+"return to the main window."
+msgstr ""
+       "Click <guibutton>Cancel</guibutton> to cancel the Update All process and "
+       "return to the main window."
+
+#: package-manager.xml:278(para) package-manager.xml:516(para)
+msgid ""
+"Perform the following steps if you want to rectify the error and continue "
+"with the Update All process:"
+msgstr ""
+       "Perform the following steps if you want to rectify the error and continue "
+       "with the Update All process:"
+
+#: package-manager.xml:279(para)
+msgid ""
+"Click <guibutton>OK</guibutton> to display the <literal>Boot Environment "
+"Management</literal> dialog box."
+msgstr ""
+       "Click <guibutton>OK</guibutton> to display the <literal>Boot Environment "
+       "Management</literal> dialog box."
+
+#: package-manager.xml:281(para)
+msgid "Select the boot environments that you want to delete."
+msgstr "Válassza ki a törölni kívánt boot environment-eket."
+
+#: package-manager.xml:282(para)
+msgid "You cannot delete the currently active boot environment."
+msgstr "A jelenlegi aktív boot environment nem törölhető."
+
+#: package-manager.xml:284(para)
+msgid ""
+"You do not need to reboot your system if you are only deleting some of your "
+"boot environments."
+msgstr ""
+       "You do not need to reboot your system if you are only deleting some of your "
+       "boot environments."
+
+#: package-manager.xml:289(para)
+msgid "Click <guibutton>OK</guibutton>."
+msgstr "Kattintson az <guibutton>OK</guibutton> gombra."
+
+#: package-manager.xml:291(para)
+msgid ""
+"The <literal>Boot Environment Confirmation</literal> dialog is shown. Review "
+"your changes and click OK to proceed."
+msgstr ""
+       "The <literal>Boot Environment Confirmation</literal> dialog is shown. Review "
+       "your changes and click OK to proceed."
+
+#: package-manager.xml:293(para)
+msgid ""
+"Click the <guibutton>Update All</guibutton> icon to restart the process of "
+"updating all packages."
+msgstr ""
+       "Click the <guibutton>Update All</guibutton> icon to restart the process of "
+       "updating all packages."
+
+#: package-manager.xml:297(title)
+msgid "Manage Boot Environments"
+msgstr "Boot Environment-ek kezelése"
+
+#: package-manager.xml:298(para)
+msgid "Perform the following steps to manage your boot environments:"
+msgstr "Perform the following steps to manage your boot environments:"
+
+#: package-manager.xml:299(para)
+msgid ""
+"Click <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot "
+"Environments</guimenuitem></menuchoice> to open the <literal>Manage Boot "
+"Environments</literal> dialog."
+msgstr ""
+       "Click <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot "
+       "Environments</guimenuitem></menuchoice> to open the <literal>Manage Boot "
+       "Environments</literal> dialog."
+
+#: package-manager.xml:301(para)
+msgid "In this dialog box , you can perform the following actions:"
+msgstr "In this dialog box , you can perform the following actions:"
+
+#: package-manager.xml:302(para)
+msgid ""
+"<emphasis role=\"strong\">Activate a boot environment</emphasis> – Select "
+"the boot environment that you want to be active on system reboot. This will "
+"be the default boot environment <emphasis role=\"strong\">after</emphasis> "
+"you have rebooted your system."
+msgstr ""
+       "<emphasis role=\"strong\">Activate a boot environment</emphasis> – Select "
+       "the boot environment that you want to be active on system reboot. This will "
+       "be the default boot environment <emphasis role=\"strong\">after</emphasis> "
+       "you have rebooted your system."
+
+#: package-manager.xml:304(para)
+msgid ""
+"<emphasis role=\"strong\">Remove old or unused boot environments to free up "
+"disk space</emphasis> – Select the boot environments that you want to delete."
+msgstr ""
+       "<emphasis role=\"strong\">Remove old or unused boot environments to free up "
+       "disk space</emphasis> – Select the boot environments that you want to delete."
+
+#: package-manager.xml:305(para)
+msgid "You cannot the delete the currently active boot environment."
+msgstr "You cannot the delete the currently active boot environment."
+
+#: package-manager.xml:307(para)
+msgid ""
+"If you have selected a boot environment to be renamed, it cannot be deleted."
+msgstr ""
+       "If you have selected a boot environment to be renamed, it cannot be deleted."
+
+#: package-manager.xml:312(para)
+msgid ""
+"<emphasis role=\"strong\">Rename a boot environment</emphasis> – Double-"
+"click the boot environment name that you want to change. Enter the new name "
+"of the boot environment and click <guibutton>OK</guibutton>."
+msgstr ""
+       "<emphasis role=\"strong\">Rename a boot environment</emphasis> – Double-"
+       "click the boot environment name that you want to change. Enter the new name "
+       "of the boot environment and click <guibutton>OK</guibutton>."
+
+#: package-manager.xml:313(para)
+msgid ""
+"If you have selected a boot environment to be deleted, it cannot be renamed."
+msgstr ""
+       "If you have selected a boot environment to be deleted, it cannot be renamed."
+
+#: package-manager.xml:315(para)
+msgid "The currently active boot environment cannot be renamed."
+msgstr "The currently active boot environment cannot be renamed."
+
+#: package-manager.xml:322(para)
+msgid "Accept or decline the changes:"
+msgstr "Változások elfogadása vagy elutasítása:"
+
+#: package-manager.xml:323(para) package-manager.xml:449(para)
+msgid "Click <guibutton>OK</guibutton> to proceed."
+msgstr "Kattintson az <guibutton>OK</guibutton> gombra a végrehajtáshoz."
+
+#: package-manager.xml:325(para)
+msgid ""
+"Click <guibutton>Cancel</guibutton> to cancel all changes and return to the "
+"main window."
+msgstr ""
+       "Click <guibutton>Cancel</guibutton> to cancel all changes and return to the "
+       "main window."
+
+#: package-manager.xml:329(para)
+msgid ""
+"The <literal>Boot Environment Confirmation</literal> dialog is displayed. "
+"Review your changes and click OK to proceed."
+msgstr ""
+       "The <literal>Boot Environment Confirmation</literal> dialog is displayed. "
+       "Review your changes and click OK to proceed."
+
+#: package-manager.xml:330(para)
+msgid ""
+"After you click <guibutton>OK</guibutton>, you cannot undo any changes that "
+"you made to the boot environments."
+msgstr ""
+       "After you click <guibutton>OK</guibutton>, you cannot undo any changes that "
+       "you made to the boot environments."
+
+#: package-manager.xml:332(para)
+msgid ""
+"The changes that you made to the <emphasis role=\"strong\">default boot "
+"environment</emphasis> setting are effective only after system reboot."
+msgstr ""
+       "The changes that you made to the <emphasis role=\"strong\">default boot "
+       "environment</emphasis> setting are effective only after system reboot."
+
+#: package-manager.xml:334(para)
+msgid ""
+"Click <guibutton>Cancel</guibutton> to cancel the changes and return to the "
+"<literal>BE Management</literal> dialog box."
+msgstr ""
+       "Click <guibutton>Cancel</guibutton> to cancel the changes and return to the "
+       "<literal>BE Management</literal> dialog box."
+
+#: package-manager.xml:336(para)
+msgid "Reboot your system to boot into the newly activated boot environment."
+msgstr "Indítsa újra a rendszert az újonnan aktivált boot environment betöltéséhez."
+
+#: package-manager.xml:337(para)
+msgid "Reboot your system only if you changed the active boot environment."
+msgstr "Indítsa újra a rendszert csak akkor, ha megváltoztatta az aktív boot environment-et."
+
+#: package-manager.xml:343(title)
+msgid "Managing Repositories"
+msgstr "Telepítési források kezelése"
+
+#: package-manager.xml:344(title)
+msgid "Add a Repository"
+msgstr "Telepítési forrás hozzáadása"
+
+#: package-manager.xml:345(para)
+msgid "Perform the following steps to add a repository:"
+msgstr "Egy telepítési forrás hozzáadásához a következő lépéseket hajtsa végre:"
+
+#: package-manager.xml:346(para)
+msgid ""
+"Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Repositories</"
+"guimenuitem></menuchoice>."
+msgstr ""
+       "Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Repositories</"
+       "guimenuitem></menuchoice>."
+
+#: package-manager.xml:347(para)
+msgid ""
+"You can also choose <guilabel>Add...</guilabel> from the "
+"<literal>Repository</literal> drop-down menu in the main window of the "
+"Package Manager."
+msgstr ""
+       "You can also choose <guilabel>Add...</guilabel> from the "
+       "<literal>Repository</literal> drop-down menu in the main window of the "
+       "Package Manager."
+
+#: package-manager.xml:349(para)
+msgid ""
+"The <literal>Manage Repositories</literal> dialog box is displayed. Type the "
+"name and the address (URL) of the repository you want to add. Click "
+"<guibutton>Add</guibutton>."
+msgstr ""
+       "The <literal>Manage Repositories</literal> dialog box is displayed. Type the "
+       "name and the address (URL) of the repository you want to add. Click "
+       "<guibutton>Add</guibutton>."
+
+#: package-manager.xml:353(title)
+msgid "Add a Secure Repository"
+msgstr "Biztonságos telepítési forrás hozzáadása"
+
+#: package-manager.xml:354(para)
+msgid ""
+"A secure repository requires a SSL key and certificate for access. Perform "
+"the following steps to add a secure repository:"
+msgstr ""
+       "A secure repository requires a SSL key and certificate for access. Perform "
+       "the following steps to add a secure repository:"
+
+#: package-manager.xml:355(para)
+msgid ""
+"Follow the steps in <xref linkend=\"add_repo\"/> section to add a repository."
+msgstr ""
+       "Kövesse a lépéseket a <xref linkend=\"add_repo\"/> részben a telepítési forrás hozzáadásához."
+
+#: package-manager.xml:357(para)
+msgid ""
+"Follow the steps in the <xref linkend=\"modify_repo\"/> section to add a SSL "
+"key and certificate."
+msgstr ""
+       "Kövesse a lépéseket a <xref linkend=\"modify_repo\"/> részben az SSL kulcs és tanúsítvány hozzáadásához."
+
+#: package-manager.xml:358(para)
+msgid "."
+msgstr "."
+
+#: package-manager.xml:362(title)
+msgid "Remove a Repository"
+msgstr "Telepítési forrás eltávolítása"
+
+#: package-manager.xml:363(para)
+msgid "Perform the following steps to remove a repository:"
+msgstr "Egy telepítési forrás eltávolításához a következő lépéseket hajtsa végre:"
+
+#: package-manager.xml:364(para) package-manager.xml:374(para)
+#: package-manager.xml:384(para)
+msgid ""
+"Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Repositories</"
+"guimenuitem></menuchoice> to open the <literal>Manage Repositories</literal> "
+"dialog."
+msgstr ""
+       "Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Repositories</"
+       "guimenuitem></menuchoice> to open the <literal>Manage Repositories</literal> "
+       "dialog."
+
+#: package-manager.xml:366(para)
+msgid "Select a repository from the list. Click <guibutton>Remove</guibutton>."
+msgstr "Válasszon egy telepítési forrást a listáról. Kattintson az <guibutton>Eltávolítás</guibutton> gombra."
+
+#: package-manager.xml:367(para)
+msgid ""
+"A repository that has been set as preferred repository cannot be removed. To "
+"remove a preferred repository, set a nonpreferred repository as preferred, "
+"and then remove the repository."
+msgstr ""
+       "A preferáltként megjelölt telepítési forrást nem lehet eltávolítani. Preferált telepítési forrást eltávolítása előtt nem preferálttá kell tenni."
+
+#: package-manager.xml:372(title)
+msgid "Set a Preferred Repository"
+msgstr "Preferált telepítési forrás beállítása"
+
+#: package-manager.xml:373(para)
+msgid "Perform the following steps to set a preferred repository:"
+msgstr "A preferált telepítési forrás beállításához hajtsa végre a következő lépéseket:"
+
+#: package-manager.xml:376(para)
+msgid ""
+"Click the radio button next to the repository that you would like to set as "
+"the preferred repository."
+msgstr ""
+       "Click the radio button next to the repository that you would like to set as "
+       "the preferred repository."
+
+#: package-manager.xml:378(para)
+msgid ""
+"Click <guibutton>Close</guibutton> if you are not making any other changes "
+"to the repository information."
+msgstr ""
+       "Click <guibutton>Close</guibutton> if you are not making any other changes "
+       "to the repository information."
+
+#: package-manager.xml:382(title)
+msgid "Modify a Repository"
+msgstr "Telepítési forrás módosítása"
+
+#: package-manager.xml:383(para)
+msgid "Perform the following steps to modify a repository:"
+msgstr "Egy telepítési forrás módosításához a következő lépéseket hajtsa végre:"
+
+#: package-manager.xml:386(para)
+msgid "Select the repository that you want to modify."
+msgstr "Válassza ki azt a telepítési forrást amelyet módosítani szeretne."
+
+#: package-manager.xml:388(para)
+msgid "Click the <guibutton>Modify</guibutton> button."
+msgstr "Kattintson a <guibutton>Módosítás</guibutton> gombra."
+
+#: package-manager.xml:389(para)
+msgid ""
+"The <literal>Modify Repository</literal> dialog box is displayed. You can "
+"perform the following actions in the <literal>Modify Repository</literal> "
+"dialog box:"
+msgstr ""
+       "The <literal>Modify Repository</literal> dialog box is displayed. You can "
+       "perform the following actions in the <literal>Modify Repository</literal> "
+       "dialog box:"
+
+#: package-manager.xml:390(para)
+msgid ""
+"<emphasis role=\"strong\">Change the URL of the repository</emphasis> – Type "
+"a valid URL for the repository."
+msgstr ""
+       "<emphasis role=\"strong\">Change the URL of the repository</emphasis> – Type "
+       "a valid URL for the repository."
+
+#: package-manager.xml:391(para)
+msgid ""
+"You cannot change a repository name after you have added a repository. To "
+"change the repository name, delete the existing repository with the old name "
+"and add a repository with the new name. See the <xref linkend=\"remove_repo"
+"\"/> section for steps on how to remove a repository."
+msgstr ""
+       "You cannot change a repository name after you have added a repository. To "
+       "change the repository name, delete the existing repository with the old name "
+       "and add a repository with the new name. See the <xref linkend=\"remove_repo"
+       "\"/> section for steps on how to remove a repository."
+
+#: package-manager.xml:393(para)
+msgid ""
+"<emphasis role=\"strong\">Add a SSL Key and Certificate</emphasis> – A "
+"secure repository requires a SSL key and certificate for access."
+msgstr ""
+       "<emphasis role=\"strong\">Add a SSL Key and Certificate</emphasis> – A "
+       "secure repository requires a SSL key and certificate for access."
+
+#: package-manager.xml:394(para)
+msgid ""
+"The <emphasis role=\"strong\">Instructions</emphasis> link in the "
+"<literal>Modify Repository</literal> dialog box links to a registration site "
+"which provides instructions for downloading the SSL key and certificate"
+msgstr ""
+       "The <emphasis role=\"strong\">Instructions</emphasis> link in the "
+       "<literal>Modify Repository</literal> dialog box links to a registration site "
+       "which provides instructions for downloading the SSL key and certificate"
+
+#: package-manager.xml:395(para)
+msgid ""
+"In the <literal>Modify Repository</literal> dialog box, click the <emphasis "
+"role=\"strong\">Instructions</emphasis> link to download the key and "
+"certificate. Save them on your system."
+msgstr ""
+       "In the <literal>Modify Repository</literal> dialog box, click the <emphasis "
+       "role=\"strong\">Instructions</emphasis> link to download the key and "
+       "certificate. Save them on your system."
+
+#: package-manager.xml:397(para) package-manager.xml:445(para)
+msgid ""
+"Click the <guibutton>Browse</guibutton> button to locate the SSL key on your "
+"system."
+msgstr ""
+       "Kattintson a <guibutton>Tallózás</guibutton> gombra az SSL kulcs helyének megadásához. "
+
+#: package-manager.xml:399(para) package-manager.xml:447(para)
+msgid ""
+"Click the <guibutton>Browse</guibutton> button to locate the SSL certificate "
+"on your system."
+msgstr ""
+       "Kattintson a <guibutton>Tallózás</guibutton> gombra az SSL tanúsítvány helyének megadásához. "
+
+#: package-manager.xml:403(para)
+msgid ""
+"<emphasis role=\"strong\">Add a Mirror</emphasis> – If a repository has a "
+"mirror, add the repository name and URL, and then click the "
+"<guibutton>Modify</guibutton> button to add the mirror information."
+msgstr ""
+       "<emphasis role=\"strong\">Add a Mirror</emphasis> – If a repository has a "
+       "mirror, add the repository name and URL, and then click the "
+       "<guibutton>Modify</guibutton> button to add the mirror information."
+
+#: package-manager.xml:407(para)
+msgid "Confirm or decline the changes."
+msgstr "A változások megerősítése vagy elvetése."
+
+#: package-manager.xml:408(para)
+msgid ""
+"Click <guibutton>OK</guibutton> to save the changes and return to the "
+"<literal>Manage Repositories</literal> dialog box."
+msgstr ""
+       "Click <guibutton>OK</guibutton> to save the changes and return to the "
+       "<literal>Manage Repositories</literal> dialog box."
+
+#: package-manager.xml:410(para)
+msgid "Click <guibutton>Cancel</guibutton> to cancel your changes."
+msgstr "Kattintson a <guibutton>Mégsem</guibutton> gombra a változásai elvetéséhez."
+
+#: package-manager.xml:417(title)
+msgid "Working With WebInstall"
+msgstr "WebTelepítő használata"
+
+#: package-manager.xml:418(para)
+msgid ""
+"The OpenSolaris 2009.06 Package Manager provides support for users to add "
+"new repositories and optionally, install packages from these repositories "
+"using a simple one-click WebInstall process. A <filename>.p5i</filename> "
+"file which contains the repositories to be added and optionally, the package "
+"or packages that can be installed from these repositories, is required for "
+"the WebInstall process. The information contained in the <filename>.p5i</"
+"filename> file is read and used by the WebInstall process."
+msgstr ""
+       "The OpenSolaris 2009.06 Package Manager provides support for users to add "
+       "new repositories and optionally, install packages from these repositories "
+       "using a simple one-click WebInstall process. A <filename>.p5i</filename> "
+       "file which contains the repositories to be added and optionally, the package "
+       "or packages that can be installed from these repositories, is required for "
+       "the WebInstall process. The information contained in the <filename>.p5i</"
+       "filename> file is read and used by the WebInstall process."
+
+#: package-manager.xml:419(title)
+msgid "How to Use WebInstall to Add Repositories and Install Packages"
+msgstr "Telepítési források hozzáadása és csomagok telepítése a WebInstall használatával"
+
+#: package-manager.xml:420(bridgehead)
+msgid "Before You Begin"
+msgstr "Mielőtt elkezdené"
+
+#: package-manager.xml:420(para)
+msgid ""
+"Locate the <filename>.p5i</filename> file which may be present on your "
+"desktop, the Start page in the Package Manager, or on a website."
+msgstr ""
+       "Locate the <filename>.p5i</filename> file which may be present on your "
+       "desktop, the Start page in the Package Manager, or on a website."
+
+#: package-manager.xml:421(para)
+msgid ""
+"Start the Package manager in WebInstall mode in one of the following ways:"
+msgstr ""
+       "Start the Package manager in WebInstall mode in one of the following ways:"
+
+#: package-manager.xml:422(para)
+msgid ""
+"Click on a <filename>.p5i</filename> file on your desktop, and the "
+"associated application, Package Manager in WebInstall mode, will be launched."
+msgstr ""
+       "Click on a <filename>.p5i</filename> file on your desktop, and the "
+       "associated application, Package Manager in WebInstall mode, will be launched."
+
+#: package-manager.xml:424(para)
+msgid ""
+"Start the Package Manager from the command-line along with a path to the "
+"<filename>.p5i</filename> file. For example, type the following command at "
+"the command-line:"
+msgstr ""
+       "Start the Package Manager from the command-line along with a path to the "
+       "<filename>.p5i</filename> file. For example, type the following command at "
+       "the command-line:"
+
+#: package-manager.xml:425(replaceable)
+msgid "path_to_pi5_file/file.p5i"
+msgstr "útvonal_a_pi5_fájlhoz/fájl.p5i"
+
+#: package-manager.xml:425(command)
+msgid "$ pfexec packagemanager/<placeholder-1/>"
+msgstr "$ pfexec packagemanager/<placeholder-1/>"
+
+#: package-manager.xml:427(para)
+msgid ""
+"Click on a URL location that contains a link to <filename>.p5i</filename> "
+"file. If you are using this method to start the WebInstall, the <filename>."
+"p5i</filename> file <emphasis role=\"strong\">must</emphasis> be located on "
+"a web server that has registered the new mime type. Only then, the web "
+"server can manage the <filename>.p5i</filename> automatically and start "
+"Package Manager in WebInstall mode."
+msgstr ""
+       "Click on a URL location that contains a link to <filename>.p5i</filename> "
+       "file. If you are using this method to start the WebInstall, the <filename>."
+       "p5i</filename> file <emphasis role=\"strong\">must</emphasis> be located on "
+       "a web server that has registered the new mime type. Only then, the web "
+       "server can manage the <filename>.p5i</filename> automatically and start "
+       "Package Manager in WebInstall mode."
+
+#: package-manager.xml:428(para)
+msgid ""
+"If the <filename>.p5i</filename> is located on a web server that does not "
+"have the new mime type registered, save the <filename>.p5i</filename> file "
+"to your desktop and then click on it to launch Web Install."
+msgstr ""
+       "If the <filename>.p5i</filename> is located on a web server that does not "
+       "have the new mime type registered, save the <filename>.p5i</filename> file "
+       "to your desktop and then click on it to launch Web Install."
+
+#: package-manager.xml:432(para)
+msgid ""
+"The following example window that shows a list of repositories that will be "
+"added and the packages that will be installed. Review the information."
+msgstr ""
+       "The following example window that shows a list of repositories that will be "
+       "added and the packages that will be installed. Review the information."
+
+#: package-manager.xml:433(title)
+msgid "Package Manager WebInstaller"
+msgstr "Csomagkezelő Webtelepítő"
+
+#: package-manager.xml:438(para)
+msgid "Confirm or cancel the WebInstall process."
+msgstr "A WebInstall folyamat megerősítése vagy elvetése."
+
+#: package-manager.xml:439(para)
+msgid ""
+"Click <guibutton>Proceed</guibutton> to add the new repositories and install "
+"the packages."
+msgstr ""
+       "Kattintson a <guibutton>Végrehajt</guibutton> gombra új telepítési forrás hozzáadásához és csomagok telepítéséhez."
+
+#: package-manager.xml:440(para)
+msgid ""
+"Click <guibutton>Cancel</guibutton> to cancel the process. The Package "
+"Manager application exits."
+msgstr ""
+       "Click <guibutton>Cancel</guibutton> to cancel the process. The Package "
+       "Manager application exits."
+
+#: package-manager.xml:442(para)
+msgid ""
+"(Optional) If the repositories that are to be added are secure repositories, "
+"an SSL key and certificate is required. An <literal>Add New Repositories</"
+"literal> dialog box is displayed."
+msgstr ""
+       "(Optional) If the repositories that are to be added are secure repositories, "
+       "an SSL key and certificate is required. An <literal>Add New Repositories</"
+       "literal> dialog box is displayed."
+
+#: package-manager.xml:443(para)
+msgid ""
+"Click the <emphasis role=\"strong\">Instructions</emphasis> link in the "
+"<literal>Add New Repositories</literal> dialog box to download the SSL key "
+"and certificate."
+msgstr ""
+       "Click the <emphasis role=\"strong\">Instructions</emphasis> link in the "
+       "<literal>Add New Repositories</literal> dialog box to download the SSL key "
+       "and certificate."
+
+#: package-manager.xml:452(para)
+msgid "The <literal>Adding New Repositories</literal> status bar is displayed."
+msgstr "The <literal>Adding New Repositories</literal> status bar is displayed."
+
+#: package-manager.xml:454(para)
+msgid ""
+"(Optional) If packages are being installed, the <literal>Install/Update</"
+"literal> dialog box is displayed. Click <guibutton>Cancel</guibutton> to "
+"cancel the package installation."
+msgstr ""
+       "(Optional) If packages are being installed, the <literal>Install/Update</"
+       "literal> dialog box is displayed. Click <guibutton>Cancel</guibutton> to "
+       "cancel the package installation."
+
+#: package-manager.xml:455(para)
+msgid "The application will close when all packages are installed."
+msgstr "Az alkalmazás bezáródik miután az összes csomag telepítése befejeződött."
+
+#: package-manager.xml:460(title)
+msgid "Working With the Update Manager"
+msgstr "A Frissítéskezelő használata"
+
+#: package-manager.xml:461(title)
+msgid "About The Update Manager"
+msgstr "A Frissítéskezelőről"
+
+#: package-manager.xml:462(para)
+msgid ""
+"The Update Manager is a separate application that starts from the desktop "
+"when updates to the installed packages are available in the repository."
+msgstr ""
+       "The Update Manager is a separate application that starts from the desktop "
+       "when updates to the installed packages are available in the repository."
+
+#: package-manager.xml:463(title)
+msgid "Update Manager Main Window"
+msgstr "Frissítéskezelő fő ablaka"
+
+#: package-manager.xml:467(para)
+msgid ""
+"You can use the Update Manager application to update the installed packages "
+"in your image."
+msgstr ""
+       "You can use the Update Manager application to update the installed packages "
+       "in your image."
+
+#: package-manager.xml:468(para)
+msgid ""
+"For the OpenSolaris 2009.06 release, the Update Manager updates <emphasis "
+"role=\"strong\">all</emphasis> installed packages in the image. This action "
+"is equivalent to running the <command>pkg image-update</command> command "
+"from the command-line."
+msgstr ""
+       "For the OpenSolaris 2009.06 release, the Update Manager updates <emphasis "
+       "role=\"strong\">all</emphasis> installed packages in the image. This action "
+       "is equivalent to running the <command>pkg image-update</command> command "
+       "from the command-line."
+
+#: package-manager.xml:471(title)
+msgid "Using the Update Manager"
+msgstr "Frissítés Kezelő használata"
+
+#: package-manager.xml:472(para)
+msgid ""
+"When updates are available to the installed packages, a notification icon is "
+"displayed in the notification panel on the OpenSolaris desktop."
+msgstr ""
+       "When updates are available to the installed packages, a notification icon is "
+       "displayed in the notification panel on the OpenSolaris desktop."
+
+#: package-manager.xml:473(para)
+msgid ""
+"You can also click <menuchoice><guimenu>System</"
+"guimenu><guisubmenu>Administration</guisubmenu><guimenuitem>Update Manager</"
+"guimenuitem></menuchoice> to manually launch the Update Manager."
+msgstr ""
+       "You can also click <menuchoice><guimenu>System</"
+       "guimenu><guisubmenu>Administration</guisubmenu><guimenuitem>Update Manager</"
+       "guimenuitem></menuchoice> to manually launch the Update Manager."
+
+#: package-manager.xml:474(para)
+msgid ""
+"When you are notified of a software update, perform the following steps to "
+"begin the process of updating your system:"
+msgstr ""
+       "Amikor szoftver frissítésről értesül, hajtsa végre a következő lépéseket a rendszer frissítésének elkezdéséhez:"
+
+#: package-manager.xml:475(para)
+msgid ""
+"Click the notification icon on the desktop to display the <literal>Update "
+"Manager</literal> window."
+msgstr ""
+       "Kattintson az értesítés ikonra a deszktopon a <literal>Frissítéskezelő</literal> ablak megnyitásához."
+
+#: package-manager.xml:477(para)
+msgid ""
+"Click the <guibutton>Update All</guibutton> button in the <literal>Update "
+"Manager</literal> window."
+msgstr ""
+       "Kattintson a <guibutton>Mindet frissít</guibutton> gombra a <literal>Frissítéskezelő</literal> ablakában."
+
+#: package-manager.xml:478(para)
+msgid ""
+"Select a package and click the <guilabel>Details</guilabel> panel if you "
+"want to view more information about the package."
+msgstr ""
+       "Select a package and click the <guilabel>Details</guilabel> panel if you "
+       "want to view more information about the package."
+
+#: package-manager.xml:481(para)
+msgid ""
+"The <literal>Update All</literal> dialog box is displayed. Proceed with the "
+"Update All process or cancel the action."
+msgstr ""
+       "The <literal>Update All</literal> dialog box is displayed. Proceed with the "
+       "Update All process or cancel the action."
+
+#: package-manager.xml:482(para)
+msgid ""
+"Click <guibutton>Proceed</guibutton> to create a new boot environment and "
+"update all packages in the current image."
+msgstr ""
+       "Click <guibutton>Proceed</guibutton> to create a new boot environment and "
+       "update all packages in the current image."
+
+#: package-manager.xml:483(para)
+msgid ""
+"During the Update All process, a clone of the active boot environment is "
+"created. This clone enables the user to boot into the boot environment state "
+"that existed before the Update All process was started."
+msgstr ""
+       "During the Update All process, a clone of the active boot environment is "
+       "created. This clone enables the user to boot into the boot environment state "
+       "that existed before the Update All process was started."
+
+#: package-manager.xml:484(para)
+msgid ""
+"If the Package Manager is unable to create a new boot environment, an error "
+"message will be displayed. See the <xref linkend=\"gileh\"/> section on how "
+"to rectify the error and continue with updating your image."
+msgstr ""
+       "If the Package Manager is unable to create a new boot environment, an error "
+       "message will be displayed. See the <xref linkend=\"gileh\"/> section on how "
+       "to rectify the error and continue with updating your image."
+
+#: package-manager.xml:485(para)
+msgid ""
+"A name for the new boot environment is automatically generated. You can "
+"accept the name generated by the system, or provide your own name for the "
+"boot environment."
+msgstr ""
+       "A name for the new boot environment is automatically generated. You can "
+       "accept the name generated by the system, or provide your own name for the "
+       "boot environment."
+
+#: package-manager.xml:492(para)
+msgid ""
+"If you chose to proceed, the <literal>Installing Updates</literal> windows "
+"are displayed. The package installation process consists of four stages:"
+msgstr ""
+       "If you chose to proceed, the <literal>Installing Updates</literal> windows "
+       "are displayed. The package installation process consists of four stages:"
+
+#: package-manager.xml:493(para)
+msgid "Prepare"
+msgstr "Előkészítés"
+
+#: package-manager.xml:495(para)
+msgid "Download."
+msgstr "Letöltés."
+
+#: package-manager.xml:497(para)
+msgid "Install."
+msgstr "Telepítés."
+
+#: package-manager.xml:500(para)
+msgid ""
+"You can choose to cancel the process only during the <emphasis role=\"strong"
+"\">Prepare</emphasis> and <emphasis role=\"strong\">Download</emphasis> "
+"stages. Click the <guibutton>Cancel</guibutton> button to cancel the "
+"installation process. No changes are made and you are returned to the main "
+"window of the Update Manager."
+msgstr ""
+       "You can choose to cancel the process only during the <emphasis role=\"strong"
+       "\">Prepare</emphasis> and <emphasis role=\"strong\">Download</emphasis> "
+       "stages. Click the <guibutton>Cancel</guibutton> button to cancel the "
+       "installation process. No changes are made and you are returned to the main "
+       "window of the Update Manager."
+
+#: package-manager.xml:501(para)
+msgid ""
+"If an error occurs during any of the stages, the <guilabel>Details</"
+"guilabel> panel is expanded and the details of the error are displayed. An "
+"error status indicator is shown next to the failed stage."
+msgstr ""
+       "If an error occurs during any of the stages, the <guilabel>Details</"
+       "guilabel> panel is expanded and the details of the error are displayed. An "
+       "error status indicator is shown next to the failed stage."
+
+#: package-manager.xml:504(para)
+msgid ""
+"Click the <guilabel>Details</guilabel> panel to view more information about "
+"each of the installation processes."
+msgstr ""
+       "Click the <guilabel>Details</guilabel> panel to view more information about "
+       "each of the installation processes."
+
+#: package-manager.xml:506(para)
+msgid ""
+"Read the <xref linkend=\"release_notes\"/> before rebooting your system."
+msgstr ""
+       "Olvasd el a <xref linkend=\"release_notes\"/> mielőtt újraindítanád a rendszert."
+
+#: package-manager.xml:513(para)
+msgid ""
+"A new boot environment clone <emphasis role=\"strong\">must</emphasis> be "
+"created for the Update All process to be completed. The following error "
+"message is displayed if a boot environment clone cannot be created due to "
+"space restrictions :"
+msgstr ""
+       "A new boot environment clone <emphasis role=\"strong\">must</emphasis> be "
+       "created for the Update All process to be completed. The following error "
+       "message is displayed if a boot environment clone cannot be created due to "
+       "space restrictions :"
+
+#: package-manager.xml:515(para)
+msgid ""
+"Click <guibutton>No</guibutton> to cancel the Update All process and return "
+"to the Update Manager main window."
+msgstr ""
+       "Click <guibutton>No</guibutton> to cancel the Update All process and return "
+       "to the Update Manager main window."
+
+#: package-manager.xml:517(para)
+msgid ""
+"Click <guibutton>Yes</guibutton> in the error dialog box to go to the "
+"<literal>Boot Environment Management</literal> dialog."
+msgstr ""
+       "Click <guibutton>Yes</guibutton> in the error dialog box to go to the "
+       "<literal>Boot Environment Management</literal> dialog."
+
+#: package-manager.xml:519(para)
+msgid ""
+"Go to step 2 in the <xref linkend=\"gilfh\"/> section. Follow the "
+"instructions to delete old or unused boot environments and free up disk "
+"space."
+msgstr ""
+       "Go to step 2 in the <xref linkend=\"gilfh\"/> section. Follow the "
+       "instructions to delete old or unused boot environments and free up disk "
+       "space."
+
+#: package-manager.xml:521(para)
+msgid ""
+"Click the <guibutton>Update All</guibutton> button in the <literal>Update "
+"Manager</literal> window to restart the process of updating all packages."
+msgstr ""
+       "Click the <guibutton>Update All</guibutton> button in the <literal>Update "
+       "Manager</literal> window to restart the process of updating all packages."
+
+#: package-manager.xml:526(title) package-manager.xml:530(ulink)
+msgid "Release Notes"
+msgstr "Kiadási Megjegyzések"
+
+#: package-manager.xml:527(para)
+msgid ""
+"The OpenSolaris 2009.06 Release Notes are available at the following "
+"locations:"
+msgstr ""
+       "Az OpenSolaris 2009.06 Kiadási Megjegyzések elérhetőek a következő helyen:"
+
+#: package-manager.xml:528(para)
+msgid ""
+"x86 <ulink url=\"http://opensolaris.org/os/project/indiana/resources/"
+"relnotes/200811/x86/\">Release Notes</ulink>"
+msgstr ""
+       "x86 <ulink url=\"http://opensolaris.org/os/project/indiana/resources/"
+       "relnotes/200811/x86/\">Kiadási Megjegyzések</ulink>"
+
+#: package-manager.xml:530(trademark)
+msgid "SPARC"
+msgstr "SPARC"
+
+#: package-manager.xml:534(title)
+msgid "Package Manager Screencast"
+msgstr "Csomagkezelő képernyő vetítés"
+
+#: package-manager.xml:535(para)
+msgid ""
+"A screencast that shows Package Manager usage for beginners is available. "
+"Click the link below to go to the screencast."
+msgstr ""
+       "A Csomagkezelő használatát kezdők felhasználók számára bemutató képernyő vetítés elérhető."
+       "Kattintson a vetítéshez az alábbi hivatkozásra."
+
+#: package-manager.xml:536(ulink)
+msgid "OpenSolaris 2009.06 Package Manager Screencast"
+msgstr "OpenSolaris 2009.06 Csomagkezelő képernyő vetítés"
+
+#: package-manager.xml:539(title)
+msgid "Image Packaging System Glossary"
+msgstr "Image Packaging System Szójegyzet"
+
+#: package-manager.xml:540(glossterm)
+msgid "publisher"
+msgstr "Kiadó"
+
+#: package-manager.xml:541(para)
+msgid ""
+"A person, group, or corporation that designs, creates, and publishes a "
+"package to a repository. The repository in turn serves the packages from the "
+"(default) publisher, for downloading purposes. The developer-quality "
+"packages managed by Sun and made available through <ulink url=\"http://pkg."
+"opensolaris.com/dev\">http://pkg.opensolaris.com/dev</ulink> is an example "
+"of a publisher."
+msgstr ""
+       "A person, group, or corporation that designs, creates, and publishes a "
+       "package to a repository. The repository in turn serves the packages from the "
+       "(default) publisher, for downloading purposes. The developer-quality "
+       "packages managed by Sun and made available through <ulink url=\"http://pkg."
+       "opensolaris.com/dev\">http://pkg.opensolaris.com/dev</ulink> is an example "
+       "of a publisher."
+
+#: package-manager.xml:542(para)
+msgid ""
+"The term <emphasis role=\"strong\">authority</emphasis> has been replaced "
+"with the term <emphasis role=\"strong\">publisher</emphasis> from the "
+"OpenSolaris 2009.06 release onwards."
+msgstr ""
+       "The term <emphasis role=\"strong\">authority</emphasis> has been replaced "
+       "with the term <emphasis role=\"strong\">publisher</emphasis> from the "
+       "OpenSolaris 2009.06 release onwards."
+
+#: package-manager.xml:545(glossterm)
+msgid "boot environment"
+msgstr "boot environment"
+
+#: package-manager.xml:546(para)
+msgid ""
+"For an OpenSolaris release, a boot environment is an instance of a bootable "
+"OpenSolaris environment. The root file system and all other file systems of "
+"the boot environment that contain system software are required to be ZFS "
+"datasets."
+msgstr ""
+       "For an OpenSolaris release, a boot environment is an instance of a bootable "
+       "OpenSolaris environment. The root file system and all other file systems of "
+       "the boot environment that contain system software are required to be ZFS "
+       "datasets."
+
+#: package-manager.xml:547(para)
+msgid ""
+"The active boot environment is the one that is currently booted. Many boot "
+"environments can present on an OpenSolaris system and an inactive boot "
+"environment can be in a state of waiting for activation upon system reboot."
+msgstr ""
+       "The active boot environment is the one that is currently booted. Many boot "
+       "environments can present on an OpenSolaris system and an inactive boot "
+       "environment can be in a state of waiting for activation upon system reboot."
+
+#: package-manager.xml:550(glossterm)
+msgid "clone"
+msgstr "klón"
+
+#: package-manager.xml:551(para)
+msgid "An exact copy."
+msgstr "Egy pontos másolat."
+
+#: package-manager.xml:552(para)
+msgid ""
+"A clone could be an exact copy of an operating system, a file system, or a "
+"volume. This copy has 100% compatibility with the original."
+msgstr ""
+       "Egy klón pontos másolata lehet egy operációs rendszernek, egy fájlrendszernek vagy egy kötetnek. Ezen másolat 100 százalékosan kompatibilis az eredetivel."
+
+#: package-manager.xml:555(glossterm)
+msgid "dataset"
+msgstr "adathalmaz"
+
+#: package-manager.xml:556(para)
+msgid ""
+"A generic name for the following ZFS entities: clones, file systems, "
+"snapshots, or volumes. Each dataset is identified by a unique name in the "
+"ZFS namespace."
+msgstr ""
+       "Általános neve a következő ZFS egységeknek:"
+       "klón, fájl rendszer, pillanatkép vagy kötet. Minden egyes adathalmazt egyedi névvel azonosítunk a ZFS névtérben."
+
+#: package-manager.xml:559(glossterm)
+msgid "image"
+msgstr "image"
+
+#: package-manager.xml:560(para)
+msgid ""
+"A collection of software in a package that comprises an entire or partial "
+"operating system. The package is suitable for installation."
+msgstr ""
+       "A collection of software in a package that comprises an entire or partial "
+       "operating system. The package is suitable for installation."
+
+#: package-manager.xml:561(para)
+msgid ""
+"An image is a location on your system where packages and their associated "
+"files, directories, links, and dependencies can be installed."
+msgstr ""
+       "An image is a location on your system where packages and their associated "
+       "files, directories, links, and dependencies can be installed."
+
+#: package-manager.xml:564(glossterm)
+msgid "package"
+msgstr "csomag"
+
+#: package-manager.xml:565(para)
+msgid ""
+"A collection of files, directories, links, drivers, and dependencies in a "
+"defined format."
+msgstr ""
+       "A collection of files, directories, links, drivers, and dependencies in a "
+       "defined format."
+
+#: package-manager.xml:568(glossterm)
+msgid "preferred repository"
+msgstr "preferált telepítési forrás"
+
+#: package-manager.xml:569(para)
+msgid ""
+"A default repository that is the source for packages. If a user does not "
+"explicitly specify a repository when installing and updating packages, the "
+"preferred repository is chosen as the source for packages."
+msgstr ""
+       "A default repository that is the source for packages. If a user does not "
+       "explicitly specify a repository when installing and updating packages, the "
+       "preferred repository is chosen as the source for packages."
+
+#: package-manager.xml:572(glossterm)
+msgid "repository"
+msgstr "telepítési forrás"
+
+#: package-manager.xml:573(para)
+msgid ""
+"A location where packages are available for downloading. A publisher can "
+"publish packages to many repositories."
+msgstr ""
+       "Egy hely ahonnan a csomagok letölthetőek. A publikáló több csomagot is publikálhat számos telepítési forrásba."
+
+#. Put one translator per line, in the form of NAME <EMAIL>, YEAR1, YEAR2.
+#: package-manager.xml:0(None)
+msgid "translator-credits"
+msgstr "translator-credits"
