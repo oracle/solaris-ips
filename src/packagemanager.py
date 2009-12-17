@@ -75,6 +75,7 @@ ICON_LOCATION = "usr/share/package-manager/icons"
 START_PAGE_CACHE_LANG_BASE = "var/pkg/gui_cache/startpagebase/%s/%s"
 START_PAGE_LANG_BASE = "usr/share/package-manager/data/startpagebase/%s/%s"
 START_PAGE_HOME = "startpage.html" # Default page
+START_PAGE_IMAGES_BASE = "/usr/share/package-manager/data/startpagebase/C"
 
 # StartPage Action support for url's on StartPage pages
 PM_ACTION = 'pm-action'          # Action field for StartPage url's
@@ -103,8 +104,8 @@ EXTERNAL_PROTOCOL = 'protocol' # External field: optional protocol scheme,
 DEFAULT_PROTOCOL = 'http'
 INFORMATION_PAGE_HEADER = (
             "<table border='0' cellpadding='3' style='table-layout:fixed' >"
-            "<TR><TD><IMG SRC = 'dialog-information.png' style='border-style: none' "
-            )                  
+            "<TR><TD><IMG SRC = '%s/dialog-information.png' style='border-style: none' "
+            ) % START_PAGE_IMAGES_BASE                  
 
 import getopt
 import pwd
@@ -1177,10 +1178,10 @@ class PackageManager:
                     "<html><head></head><body><font color='#000000'>\
                     <a href='stub'></a></font>\
                     <a href='pm?%s=internal&uri=%s'>\
-                    <IMG SRC = 'startpage_star.png' \
+                    <IMG SRC = '%s/startpage_star.png' \
                     style='border-style: none'></a> <br><br>\
                     <h2><font color='#0000FF'>Warning: Unable to \
-                    load URL</font></h2><br>%s</body></html>")
+                    load URL</font></h2><br>%s</body></html>") % START_PAGE_IMAGES_BASE
                     % (PM_ACTION, START_PAGE_HOME, link))
                 self.document.close_stream()
 
@@ -2149,12 +2150,12 @@ class PackageManager:
         def __setup_search_wildcard_page(self):
                 header = _(
                     "<table border='0' cellpadding='3' style='table-layout:fixed' >"
-                    "<TR><TD><IMG SRC = 'dialog-warning.png' style='border-style: "
+                    "<TR><TD><IMG SRC = '%s/dialog-warning.png' style='border-style: "
                     "none' alt='[Warning]' title='Warning' ALIGN='bottom'></TD>"
                     "<TD><h3><b>Search Warning</b></h3><TD></TD></TR>"
                     "<TR><TD></TD><TD>Search using only the wildcard character, "
                     "<b>*</b>, is not supported in All Publishers</TD></TR>"
-                    )
+                    ) % START_PAGE_IMAGES_BASE
                 body = _("<TR><TD></TD><TD<TD></TD></TR><TR><TD></TD><TD<TD></TD></TR>"
                     "<TR><TD></TD><TD<TD><b>Suggestions:</b><br></TD></TR>"
                     "<TR><TD></TD><TD<TD>"
