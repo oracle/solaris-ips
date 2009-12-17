@@ -792,7 +792,7 @@ class PackageManager:
 
         @staticmethod
         def __on_confirm_help_button_clicked(widget):
-                gui_misc.display_help("webinstall")
+                gui_misc.display_help("webinstall-export")
 
         def __on_confirm_cancel_button_clicked(self, widget):
                 self.w_exportconfirm_dialog.hide()
@@ -2795,7 +2795,7 @@ class PackageManager:
 
         @staticmethod
         def __on_preferenceshelp_clicked(widget):
-                gui_misc.display_help("pm_win")
+                gui_misc.display_help("pkg-mgr-prefs")
 
         def __on_startpage_checkbutton_toggled(self, widget):
                 self.show_startpage = self.w_startpage_checkbutton.get_active()

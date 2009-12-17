@@ -352,4 +352,4 @@ class RenameBeAfterUpdateAll:
 
         @staticmethod
         def __on_ua_help_button_clicked(widget):
-                gui_misc.display_help("intro_be")
+                gui_misc.display_help("intro-be")

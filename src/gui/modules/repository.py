@@ -1465,15 +1465,15 @@ class Repository(progress.GuiProgressTracker):
 
         @staticmethod
         def __on_add_pub_help_clicked(widget):
-                gui_misc.display_help("add_repo")
+                gui_misc.display_help("add-publisher")
 
         @staticmethod
         def __on_manage_help_clicked(widget):
-                gui_misc.display_help("manage_repo")
+                gui_misc.display_help("manage-publisher")
 
         @staticmethod
         def __on_modify_repo_help_clicked(widget):
-                gui_misc.display_help("manage_repo")
+                gui_misc.display_help("manage-publisher")
 
         @staticmethod
         def __update_publisher_details(pub, details_view):

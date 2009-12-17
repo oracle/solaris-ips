@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "http://www.oasis-open.org/docbook/xml/4.0/docbookx.dtd">
-<book id="pkgmgr" label="fcs" lang="en"><title>OpenSolaris 2009.06 Package Manager Online Help</title>
+<book id="pkgmgr" label="fcs" lang="en"><title>OpenSolaris 2010.03 Package Manager Online Help</title>
 <bookinfo><authorgroup><author><firstname>OpenSolaris</firstname>
 <surname>Publications</surname>
 </author>
@@ -13,33 +13,37 @@
 <copyright><year>2009</year>
 </copyright>
 <legalnotice><para>Sun Microsystems, Inc. has intellectual property rights relating to technology embodied in the product that is described in this document. In particular, and without limitation, these intellectual property rights may include one or more U.S. patents or pending patent applications in the U.S. and in other countries.</para>
-<para>U.S. Government Rights – Commercial software. Government users are subject to the Sun Microsystems, Inc. standard license agreement and applicable provisions of the FAR and its supplements.</para>
+<para>U.S. Government Rights &#8211; Commercial software. Government users are subject to the Sun Microsystems, Inc. standard license agreement and applicable provisions of the FAR and its supplements.</para>
 <para>This distribution may include materials developed by third parties.</para>
 <para>Parts of the product may be derived from Berkeley BSD systems, licensed from the University of California. UNIX is a registered trademark in the U.S. and other countries, exclusively licensed through X/Open Company, Ltd.</para>
-<para>Sun, Sun Microsystems, the Sun logo, the Solaris logo, the Java Coffee Cup logo, docs.sun.com, Java, and Solaris are trademarks or registered trademarks of Sun Microsystems, Inc. or its subsidiaries in the U.S. and other countries. All SPARC trademarks are used under license and are trademarks or registered trademarks of SPARC International, Inc. in the U.S. and other countries. Products bearing SPARC trademarks are based upon an architecture developed by Sun Microsystems, Inc. </para>
+<para>Sun, Sun Microsystems, the Sun logo, the Solaris logo, the Java Coffee Cup logo, docs.sun.com,  Java, and Solaris are trademarks or registered trademarks of Sun Microsystems, Inc. or its subsidiaries in the U.S. and other countries. All SPARC trademarks are used under license and are trademarks or registered trademarks of SPARC International, Inc. in the U.S. and other countries. Products bearing SPARC trademarks are based upon an architecture developed by Sun Microsystems, Inc. </para>
 <para>The OPEN LOOK and <trademark>Sun</trademark> Graphical User Interface was developed by Sun Microsystems, Inc. for its users and licensees. Sun acknowledges the pioneering efforts of Xerox in researching and developing the concept of visual or graphical user interfaces for the computer industry. Sun holds a non-exclusive license from Xerox to the Xerox Graphical User Interface, which license also covers Sun's licensees who implement OPEN LOOK GUIs and otherwise comply with Sun's written license agreements.</para>
 <para>Products covered by and information contained in this publication are controlled by U.S. Export Control laws and may be subject to the export or import laws in other countries. Nuclear, missile, chemical or biological weapons or nuclear maritime end uses or end users, whether direct or indirect, are strictly prohibited. Export or reexport to countries subject to U.S. embargo or to entities identified on U.S. export exclusion lists, including, but not limited to, the denied persons and specially designated nationals lists is strictly prohibited.</para>
-<para>DOCUMENTATION IS PROVIDED “AS IS” AND ALL EXPRESS OR IMPLIED CONDITIONS, REPRESENTATIONS AND WARRANTIES, INCLUDING ANY IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR NON-INFRINGEMENT, ARE DISCLAIMED, EXCEPT TO THE EXTENT THAT SUCH DISCLAIMERS ARE HELD TO BE LEGALLY INVALID.</para>
+<para>DOCUMENTATION IS PROVIDED &#8220;AS IS&#8221; AND ALL EXPRESS OR IMPLIED CONDITIONS, REPRESENTATIONS AND WARRANTIES, INCLUDING ANY IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR NON-INFRINGEMENT, ARE DISCLAIMED, EXCEPT TO THE EXTENT THAT SUCH DISCLAIMERS ARE HELD TO BE LEGALLY INVALID.</para>
 <para lang="fr"></para>
-<para>Sun Microsystems, Inc. détient les droits de propriété intellectuelle relatifs à la technologie incorporée dans le produit qui est décrit dans ce document. En particulier, et ce sans limitation, ces droits de propriété intellectuelle peuvent inclure un ou plusieurs brevets américains ou des applications de brevet en attente aux Etats-Unis et dans d'autres pays.</para>
-<para>Cette distribution peut comprendre des composants développés par des tierces personnes.</para>
-<para>Certaines composants de ce produit peuvent être dérivées du logiciel Berkeley BSD, licenciés par l'Université de Californie. UNIX est une marque déposée aux Etats-Unis et dans d'autres pays; elle est licenciée exclusivement par X/Open Company, Ltd. </para>
-<para>Sun, Sun Microsystems, le logo Sun, le logo Solaris, le logo Java Coffee Cup, docs.sun.com, Java et Solaris sont des marques de fabrique ou des marques déposées de Sun Microsystems, Inc., ou ses filiales, aux Etats-Unis et dans d'autres pays. Toutes les marques SPARC sont utilisées sous licence et sont des marques de fabrique ou des marques déposées de SPARC International, Inc. aux Etats-Unis et dans d'autres pays. Les produits portant les marques SPARC sont basés sur une architecture développée par Sun Microsystems, Inc. </para>
-<para>L'interface d'utilisation graphique OPEN LOOK et Sun a été développée par Sun Microsystems, Inc. pour ses utilisateurs et licenciés. Sun reconnaît les efforts de pionniers de Xerox pour la recherche et le développement du concept des interfaces d'utilisation visuelle ou graphique pour l'industrie de l'informatique. Sun détient une licence non exclusive de Xerox sur l'interface d'utilisation graphique Xerox, cette licence couvrant également les licenciés de Sun qui mettent en place l'interface d'utilisation graphique OPEN LOOK et qui, en outre, se conforment aux licences écrites de Sun.</para>
-<para>Les produits qui font l'objet de cette publication et les informations qu'il contient sont régis par la legislation américaine en matière de contrôle des exportations et peuvent être soumis au droit d'autres pays dans le domaine des exportations et importations. Les utilisations finales, ou utilisateurs finaux, pour des armes nucléaires, des missiles, des armes chimiques ou biologiques ou pour le nucléaire maritime, directement ou indirectement, sont strictement interdites. Les exportations ou réexportations vers des pays sous embargo des Etats-Unis, ou vers des entités figurant sur les listes d'exclusion d'exportation américaines, y compris, mais de manière non exclusive, la liste de personnes qui font objet d'un ordre de ne pas participer, d'une façon directe ou indirecte, aux exportations des produits ou des services qui sont régis par la legislation américaine en matière de contrôle des exportations et la liste de ressortissants spécifiquement designés, sont rigoureusement interdites.</para>
+<para>Sun Microsystems, Inc. d&#233;tient les droits de propri&#233;t&#233; intellectuelle relatifs &#224; la technologie incorpor&#233;e dans le produit qui est d&#233;crit dans ce document. En particulier, et ce sans limitation, ces droits de propri&#233;t&#233; intellectuelle peuvent inclure un ou plusieurs brevets am&#233;ricains ou des applications de brevet en attente aux Etats-Unis et dans d'autres pays.</para>
+<para>Cette distribution peut comprendre des composants d&#233;velopp&#233;s par des tierces personnes.</para>
+<para>Certaines composants de ce produit peuvent &#234;tre d&#233;riv&#233;es du logiciel Berkeley BSD, licenci&#233;s par l'Universit&#233; de Californie. UNIX est une marque d&#233;pos&#233;e aux Etats-Unis et dans d'autres pays; elle est licenci&#233;e exclusivement par X/Open Company, Ltd. </para>
+<para>Sun, Sun Microsystems, le logo Sun, le logo Solaris, le logo Java Coffee Cup, docs.sun.com,  Java et Solaris sont des marques de fabrique ou des marques d&#233;pos&#233;es de Sun Microsystems, Inc., ou ses filiales, aux Etats-Unis et dans d'autres pays. Toutes les marques SPARC sont utilis&#233;es sous licence et sont des marques de fabrique ou des marques d&#233;pos&#233;es de SPARC International, Inc. aux Etats-Unis et dans d'autres pays. Les produits portant les marques SPARC sont bas&#233;s sur une architecture d&#233;velopp&#233;e par Sun Microsystems, Inc. </para>
+<para>L'interface d'utilisation graphique OPEN LOOK et Sun a &#233;t&#233; d&#233;velopp&#233;e par Sun Microsystems, Inc. pour ses utilisateurs et licenci&#233;s. Sun reconna&#238;t les efforts de pionniers de Xerox pour la recherche et le d&#233;veloppement du concept des interfaces d'utilisation visuelle ou graphique pour l'industrie de l'informatique. Sun d&#233;tient une licence non exclusive de Xerox sur l'interface d'utilisation graphique Xerox, cette licence couvrant &#233;galement les licenci&#233;s de Sun qui mettent en place l'interface d'utilisation graphique OPEN LOOK et qui, en outre, se conforment aux licences &#233;crites de Sun.</para>
+<para>Les produits qui font l'objet de cette publication et les informations qu'il contient sont r&#233;gis par la legislation am&#233;ricaine en mati&#232;re de contr&#244;le des exportations et peuvent &#234;tre soumis au droit d'autres pays dans le domaine des exportations et importations. Les utilisations finales, ou utilisateurs finaux, pour des armes nucl&#233;aires, des missiles, des armes chimiques ou biologiques ou pour le nucl&#233;aire maritime, directement ou indirectement, sont strictement interdites. Les exportations ou r&#233;exportations vers des pays sous embargo des Etats-Unis, ou vers des entit&#233;s figurant sur les listes d'exclusion d'exportation am&#233;ricaines, y compris, mais de mani&#232;re non exclusive, la liste de personnes qui font objet d'un ordre de ne pas participer, d'une fa&#231;on directe ou indirecte, aux exportations des produits ou des services qui sont r&#233;gis par la legislation am&#233;ricaine en mati&#232;re de contr&#244;le des exportations et la liste de ressortissants sp&#233;cifiquement design&#233;s, sont rigoureusement interdites.</para>
 <para>LA DOCUMENTATION EST FOURNIE "EN L'ETAT" ET TOUTES AUTRES CONDITIONS, DECLARATIONS ET GARANTIES EXPRESSES OU TACITES SONT FORMELLEMENT EXCLUES, DANS LA MESURE AUTORISEE PAR LA LOI APPLICABLE, Y COMPRIS NOTAMMENT TOUTE GARANTIE IMPLICITE RELATIVE A LA QUALITE MARCHANDE, A L'APTITUDE A UNE UTILISATION PARTICULIERE OU A L'ABSENCE DE CONTREFACON. </para>
 </legalnotice>
 </bookinfo>
 <chapter><title>About the Package Manager</title>
-<para>Welcome to the <trademark>OpenSolaris</trademark> 2009.06 Package Manager online help!</para>
-<para>Use this help contents to learn how to use the Package Manager. Navigate through this help by clicking the topics displayed in the sidebar.</para>
-<para>The OpenSolaris 2009.06 Package Manager application is a graphical user interface for the Image Packaging System (IPS) software.</para>
+<para>Welcome to the <trademark>OpenSolaris</trademark> 2010.03 Package Manager online help!</para>
+<para>Use the help contents to learn how to use the Package Manager. Navigate through this help by clicking the topics displayed in the sidebar.</para>
+<para>The OpenSolaris 2010.03 Package Manager application is a graphical user interface for the Image Packaging System (IPS) software. The Package Manager provides a subset of the functionality offered by the command-line (CLI) clients provided with IPS.</para>
+<figure id="gjldi"><title>Package Manager</title>
+<mediaobject><imageobject><imagedata fileref="figures/pkgmgr-main.png" /></imageobject>
+</mediaobject>
+</figure>
 <para>The Package Manager enables you to perform the following tasks:</para>
-<itemizedlist><listitem><para>Search, install, and remove packages</para>
+<itemizedlist><listitem><para>Install, remove, and search for packages</para>
 </listitem>
 <listitem><para>Update your system</para>
 </listitem>
-<listitem><para>Add and modify repositories</para>
+<listitem><para>Add and manage publishers</para>
 </listitem>
 <listitem><para>Create, remove, and manage boot environments</para>
 </listitem>
@@ -48,149 +52,189 @@
 </note>
 <sect1 id="gikcw"><title>About Image Packaging System</title>
 <para>Image Packaging System (IPS) is a software delivery system that interacts with a network repository. The IPS software is a framework which provides for software lifecycle management including installation, upgrade, and removal.</para>
-<para>The OpenSolaris 2009.06 release uses IPS as its packaging system.</para>
-<para>After an initial installation of OpenSolaris 2009.06 operating system, you will find that many of the software applications that you use on a regular basis are not immediately available to you. These software applications are available as packages in a repository for downloading and installing over the Internet. A repository is a source for packages.</para>
+<para>The OpenSolaris 2010.03 release uses IPS as its packaging system.</para>
+<para>After an initial installation of the OpenSolaris 2010.03 operating system, you will find that some of the software applications that you use on a regular basis are not immediately available to you. These software applications are available as packages in a repository for downloading and installing over the network. A repository is a source for packages.</para>
 <para>Users can use IPS to install packages from a repository, create and publish their own IPS packages, mirror an existing repository, and publish existing packages to a repository.</para>
 <para>Once you have installed packages, IPS enables you to search, update, and manage packages on your system.</para>
 <para>With IPS , you can upgrade your system to a newer build of OpenSolaris, install and update your software to the latest available versions in a repository, and retrieve packages from mirror repositories. </para>
 <note><para><emphasis role="strong">The Package Manager provides a subset of the tasks that can be performed from the command-line.</emphasis></para>
 </note>
-<para>If the system on which IPS is installed is on the network, IPS can automatically access the OpenSolaris repository. For the OpenSolaris 2009.06 release, your IPS client can access the packages from <ulink url="http://pkg.opensolaris.org"></ulink>. </para>
-<para>For more information about IPS, see the <ulink url="http://dlc.sun.com/osol/docs/content/2009.06/IMGPACKAGESYS/">Image Packaging System Guide</ulink> and the IPS <ulink url="http://opensolaris.org/sc/src/pkg/gate/src/man/">man pages</ulink>.</para>
-<para>Visit the <ulink url="http://opensolaris.org/os/project/pkg">project page</ulink> on opensolaris.org and subscribe to pkg-discuss@sun.com to get involved with the IPS project.</para>
+<para>If the system on which IPS is installed is on the network, IPS can automatically access the OpenSolaris publisher. For the OpenSolaris 2010.03 release, your IPS client can access the packages from <ulink url="http://pkg.opensolaris.org"></ulink>. </para>
+<para>For more IPS documentation, see the <ulink url="http://docs.sun.com/source/820-7679/index.html"><citetitle>Image Packaging System Guide</citetitle></ulink> and the <filename>pkg</filename> <ulink url="http://opensolaris.org/sc/src/pkg/gate/src/man/">man pages</ulink>.</para>
+<para>For more information about IPS, visit the <ulink url="http://opensolaris.org/os/project/pkg">project page</ulink>.</para>
 </sect1>
-<sect1 id="pm_win"><title>The Package Manager Window</title>
-<sect2 id="gijpl"><title>About the Package Manager Window</title>
-<para>When you start the Package Manager, the following window is displayed. </para>
-<figure id="gijpx"><title>Package Manager Start Up Window</title>
-<mediaobject><imageobject><imagedata fileref="figures/pm_store.png" /></imageobject>
+<sect1 id="pm-win"><title>Getting Started With Package Manager</title>
+<para>When you start the Package Manager, a Start Page similar to the example below is displayed:</para>
+<figure id="gijpx"><title>Package Manager Start Page</title>
+<mediaobject><imageobject><imagedata fileref="figures/startpage_new.png" /></imageobject>
 </mediaobject>
 </figure>
-<para>The Start Page provides links to <ulink url="http://opensolaris.com">opensolaris.com</ulink> page where you can get more information about OpenSolaris, subscribe to newsletters and join the OpenSolaris community.</para>
-<para>To close the Start Page and see the list of packages , perform any of the following actions in the main window of the Package Manager:</para>
+<para>The Start Page provides a list of featured packages that can be installed. It includes a list of some of the most popular and recent packages downloaded by the OpenSolaris community of users. The Recommended list of packages point to software applications that are frequently downloaded by the OpenSolaris user. Click the package links to install the packages.</para>
+<para>The Start Page also provides links to more information about the OpenSolaris project, subscribe to newsletters and join the OpenSolaris community.</para>
+<para>To close the Start Page and see the list of packages in the selected publisher, perform any of the following actions in the main window of the Package Manager:</para>
 <itemizedlist><listitem><para>Select a package category</para>
 </listitem>
-<listitem><para>Switch the top level category</para>
-</listitem>
-<listitem><para>Switch the <literal>Show</literal> filter</para>
+<listitem><para>Change the <emphasis role="strong">View</emphasis> drop-down menu</para>
 </listitem>
 <listitem><para>Perform a search</para>
 </listitem>
-<listitem><para>Change the repository</para>
+<listitem><para>Change the publisher</para>
 </listitem>
 </itemizedlist>
 <para>Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</guimenuitem></menuchoice> to return to the Start Page at anytime.</para>
-<note><para>See the <xref linkend="edit_prefs"/> section to turn off the <emphasis role="strong">initial display</emphasis> of the Start Page when the Package Manager starts.</para>
+<note><para>See <xref linkend="edit-prefs"/> to turn off the <emphasis role="strong">initial display</emphasis> of the start page when the Package Manager starts.</para>
 </note>
-<figure id="gilgx"><title>List of Packages in the Package Manager Window</title>
-<mediaobject><imageobject><imagedata fileref="figures/pm_pkglist.png" /></imageobject>
+<sect2 id="gjlbj"><title>About The Package Manager Window</title>
+<figure id="gilgx"><title>Package Manager Main View</title>
+<mediaobject><imageobject><imagedata fileref="figures/pkgmgr-main.png" /></imageobject>
 </mediaobject>
 </figure>
 <para>The main window of the Package Manager consists of the following elements :</para>
 <variablelist><varlistentry><term><emphasis role="strong">Menubar</emphasis></term>
-<listitem><para>You can access the menus on the menubar to perform all of the commands related to the Package Manager.</para>
+<listitem><para>The menubar contains the menus and sub-menus required to perform all of the commands related to the Package Manager.</para>
 <para></para>
 </listitem>
 </varlistentry>
 <varlistentry><term><emphasis role="strong">Toolbar</emphasis></term>
-<listitem><para>The toolbar contains the icons for a subset of the commands that can be performed by using the menus on the menubar. A<literal>Search</literal> box is also located on the toolbar.</para>
+<listitem><para>The toolbar contains the icons for a subset of the commands that can be performed by using the menus on the menubar. A <emphasis role="strong">Search</emphasis> field is also located on the toolbar. You can perform the following actions from the toolbar :</para>
+<itemizedlist><listitem><para><emphasis role="strong">Updates</emphasis> &#8211; Click <emphasis role="strong">Updates</emphasis> to check for and install the latest updates.</para>
 </listitem>
-</varlistentry>
-<varlistentry><term><emphasis role="strong">List of Packages by Category</emphasis></term>
-<listitem><para>You can browse the available packages by category in the left hand side drop-down menu. The drop-down menu shows the list of categories available such as <emphasis role="strong">Applications-Desktop</emphasis>, <emphasis role="strong">Applications –Web—based</emphasis>, and <emphasis role="strong">Operating System</emphasis>.</para>
+<listitem><para><emphasis role="strong">Install/Update</emphasis> &#8211; Select a package and click <emphasis role="strong">Install/Update</emphasis> to install or update a package.</para>
 </listitem>
-</varlistentry>
-<varlistentry><term><emphasis role="strong">List of Packages by Status</emphasis></term>
-<listitem><para>The <literal>Show</literal> drop-down menu enables you to filter the list of packages by the following options :</para>
-<itemizedlist><listitem><para><emphasis role="strong">All Packages</emphasis> – Shows the list of all packages available in the current repository.</para>
+<listitem><para><emphasis role="strong">Refresh</emphasis> &#8211; Click <emphasis role="strong">Refresh</emphasis> to reload the list of packages.</para>
 </listitem>
-<listitem><para><emphasis role="strong">Installed Packages</emphasis> – Shows the list of packages installed on your system.</para>
+<listitem><para><emphasis role="strong">Remove</emphasis> &#8211; Select a package and click <emphasis role="strong">Remove</emphasis> to remove a package.</para>
 </listitem>
-<listitem><para><emphasis role="strong">Updates Available</emphasis> — Shows the list of packages that have newer versions available in the current repository.</para>
-</listitem>
-<listitem><para><emphasis role="strong">Non-installed Packages</emphasis> – Shows the list of packages that are not installed, but are available in the currently selected repository.</para>
-</listitem>
-<listitem><para><emphasis role="strong">Selected Packages</emphasis> – Shows the list of packages that you have selected.</para>
+<listitem><para><emphasis role="strong">Search for a Package</emphasis> &#8211; Type the name or description of a package in the <emphasis role="strong">Search</emphasis> field to search for a package. See the <xref linkend="search-pkg"/> section for examples on how to search for a package.</para>
 </listitem>
 </itemizedlist>
 </listitem>
 </varlistentry>
-<varlistentry><term><emphasis role="strong">Package Name and Description</emphasis></term>
-<listitem><para>The list of packages in the selected category, a brief description, and their status are displayed here.</para>
+<varlistentry><term><emphasis role="strong">Publisher Drop-Down Menu</emphasis></term>
+<listitem><para>The list of available publishers is shown in the <emphasis role="strong">Publisher</emphasis> drop-down menu. Users can perform the following tasks from the publisher drop-down menu :</para>
+<itemizedlist><listitem><para><emphasis role="strong">Select a publisher</emphasis></para>
+</listitem>
+<listitem><para><emphasis role="strong">View the list of packages installed from all publishers</emphasis></para>
+</listitem>
+<listitem><para><emphasis role="strong">Search for package across all publishers</emphasis></para>
+</listitem>
+<listitem><para><emphasis role="strong">Add a publisher</emphasis></para>
+</listitem>
+</itemizedlist>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">List of Packages by Category</emphasis></term>
+<listitem><para>You can browse the available packages by category in the left hand side panel. Click on a category to see the sub-categories of packages available. There are six main categories that are displayed in the Package Manager:</para>
+<itemizedlist><listitem><para><emphasis role="strong">Applications</emphasis></para>
+</listitem>
+<listitem><para><emphasis role="strong">Desktop (GNOME)</emphasis></para>
+</listitem>
+<listitem><para><emphasis role="strong">Development</emphasis></para>
+</listitem>
+<listitem><para><emphasis role="strong">Drivers</emphasis></para>
+</listitem>
+<listitem><para><emphasis role="strong">System</emphasis></para>
+</listitem>
+<listitem><para><emphasis role="strong">Web Services</emphasis></para>
+</listitem>
+</itemizedlist>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Recent Searches</emphasis></term>
+<listitem><para>The Package Manager saves your recent package searches. Click the Recent Searches in the left hand side panel to view the packages you searched for recently.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">List of Packages by Status</emphasis></term>
+<listitem><para>The <emphasis role="strong">View</emphasis> drop-down menu enables you to view package status with the following options :</para>
+<itemizedlist><listitem><para><emphasis role="strong">All Packages</emphasis> &#8211; Shows the list of all packages available within the current publisher.</para>
+</listitem>
+<listitem><para><emphasis role="strong">Installed Packages</emphasis> &#8211; Shows the list of packages installed within the current publisher on your system.</para>
+</listitem>
+<listitem><para><emphasis role="strong">Updates</emphasis> &#8212; Shows the list of packages that have newer versions available within the current publisher.</para>
+</listitem>
+<listitem><para><emphasis role="strong">Not Installed Packages</emphasis> &#8211; Shows the list of packages that are not installed, but are available in the currently selected publisher.</para>
+</listitem>
+<listitem><para><emphasis role="strong">Selected Packages</emphasis> &#8211; Shows the list of packages that you have selected.</para>
+</listitem>
+</itemizedlist>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Package Name, Status, and Description</emphasis></term>
+<listitem><para>The list of packages in the selected category, a brief description, and their status are displayed in here.</para>
+<para>The Publisher name is also displayed here in the following instances : </para>
+<itemizedlist><listitem><para>When the <emphasis role="strong">Pubisher</emphasis> drop-down menu is set to All Publishers (Installed)</para>
+</listitem>
+<listitem><para>When search results are displayed for the All Publishers (Search) option</para>
+</listitem>
+<listitem><para>When a recent search result is displayed</para>
+</listitem>
+</itemizedlist>
 </listitem>
 </varlistentry>
 <varlistentry><term><emphasis role="strong">Package Details</emphasis></term>
 <listitem><para>Click a package name to select it. Details of the selected package, such as name, version, file dependencies, and license are displayed in this window.</para>
 </listitem>
 </varlistentry>
-<varlistentry><term><emphasis role="strong">Repository Drop-down Menu</emphasis></term>
-<listitem><para>The list of available repositories is shown in the <literal>Repository</literal> drop-down menu. Click a repository name to select it.</para>
-</listitem>
-</varlistentry>
-<varlistentry><term><emphasis role="strong">Search Box</emphasis></term>
-<listitem><para>Search for a package is provided in the following contexts :</para>
-<itemizedlist><listitem><para>Search within the current repository</para>
-</listitem>
-<listitem><para>Search across all configured repositories</para>
-</listitem>
-</itemizedlist>
-</listitem>
-</varlistentry>
 </variablelist>
 </sect2>
-<sect2 id="edit_prefs"><title>Start Page Preferences</title>
+</sect1>
+<sect1 id="pkg-mgr-prefs"><title>Package Manager Settings</title>
+<para>Use the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> to change the Package Manager settings. The following sections discuss the preferences that can be changed by the user.</para>
+<sect2 id="edit-prefs"><title>Start Page Preferences</title>
 <para>A Start Page is displayed in the main window of the Package Manager when the application is started. The Start Page provides links to <ulink url="http://opensolaris.com">opensolaris.com</ulink> page where you can get more information about OpenSolaris, subscribe to newsletters and join the OpenSolaris community.</para>
 <para>You can choose to turn off this setting so this page is not displayed when Package Manager starts.</para>
-<para>Select <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> from the menu and uncheck the <emphasis role="strong">Show Start Page on startup</emphasis> box to disable the Start Page.</para>
-<para>Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</guimenuitem></menuchoice> to go to the Start Page at anytime.</para>
+<para>Select <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> from the main menu and uncheck the <emphasis role="strong">Show Start Page on Startup</emphasis> to disable the Start Page. This dialog is checked by default.</para>
+<para>Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</guimenuitem></menuchoice> from the main menu to go to the Start Page at anytime.</para>
+</sect2>
+<sect2 id="gjktu"><title>Exit Preferences</title>
+<para>The Package Manager application can remember some of its current settings if the <emphasis role="strong">Remember current state on exit</emphasis> option in the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> is checked.</para>
+<para>The following settings are saved:</para>
+<itemizedlist><listitem><para><emphasis role="strong">Vertical separators</emphasis> &#8211; The size of the columns in the main window the Package Manager</para>
+</listitem>
+<listitem><para><emphasis role="strong">Window size</emphasis> &#8211; The size of the Package Manager window</para>
+</listitem>
+<listitem><para><emphasis role="strong">Current publisher</emphasis> &#8211; The publisher that is selected when the Package Manager is closed</para>
+</listitem>
+</itemizedlist>
+</sect2>
+<sect2 id="gjkug"><title>Confirmation Dialog Preferences</title>
+<para>When a package is selected for installation, update, or removal, a confirmation dialog is displayed that displays the list of packages and the action to be performed. Under the <emphasis role="strong">Show Confirmation Dialog</emphasis> uncheck <emphasis role="strong">On Updates</emphasis>, <emphasis role="strong">On Package Install/Update</emphasis>, and <emphasis role="strong">On Package Remove</emphasis> to turn these settings off.</para>
 </sect2>
 </sect1>
 <sect1><title>Working With Packages</title>
-<sect2 id="install_pkg"><title>Install a Package</title>
-<para>The list of packages is displayed in the main windows of the Package Manager. Perform the following steps to install a package:</para>
-<orderedlist><listitem><para>To install a single package, click on a package to select it. To install many packages, check the box next to the packages you want to install.</para>
+<sect2 id="install-pkg"><title>Install a Package</title>
+<para>The list of packages and their status is displayed in the main window of the Package Manager. Perform the following steps to install a package:</para>
+<orderedlist><listitem><para>Check the box next to the package or packages to select it. Double-clicking the package also selects the package.</para>
 </listitem>
-<listitem><para>Click the <guibutton>Install/Update</guibutton> icon in the toolbar to start the package installation process.</para>
+<listitem><para>Click <guibutton>Install/Update</guibutton> to start the package installation process.</para>
 <para>You can also choose <menuchoice><guimenu>Package</guimenu><guimenuitem>Install/Update</guimenuitem></menuchoice> to start the package installation process.</para>
 </listitem>
-<listitem><para>View the details or cancel the package installation .</para>
-<itemizedlist><listitem><para>Click <guilabel>Show Details</guilabel> to view the details.</para>
+<listitem><para>Click <guilabel>Details</guilabel> to view the installation details or <guibutton>Cancel</guibutton> to cancel the package installation.</para>
 </listitem>
-<listitem><para>Click <guibutton>Cancel</guibutton> to cancel the package installation. No changes are made and you are returned to the main window. </para>
-</listitem>
-</itemizedlist>
-</listitem>
-<listitem><para>After the installation has completed, click <guibutton>Close</guibutton> on the <literal>Installation Completed</literal> dialog box to return to the main window.</para>
+<listitem><para>After the installation has completed, click <guibutton>Close</guibutton>.</para>
 </listitem>
 </orderedlist>
 <subtopic id="gilxb"><title>Installation Error</title>
-<para>If an error occurs during package installation, an error dialog box is displayed. An <guilabel>Installation Failed</guilabel> message and the reason for the failure is displayed. Click <guibutton>Close</guibutton> to close the error dialog box and return to the main window of the Package Manager.</para>
+<para>If an error occurs during package installation, an error dialog with the error message is displayed along with the reason for failure. Click <guibutton>Close</guibutton> to close the error dialog.</para>
 </subtopic>
 </sect2>
-<sect2 id="remove_pkg"><title>Remove a Package</title>
+<sect2 id="remove-pkg"><title>Remove a Package</title>
 <para>Perform the following steps to remove a package:</para>
-<orderedlist><listitem><para>To remove a single package, click on a package to select it. To remove many packages, check the box next to the packages you want to remove.</para>
+<orderedlist><listitem><para>Check the box next to a package to select it. Double-clicking the package also selects the package.</para>
 </listitem>
-<listitem><para>Click the <guibutton>Remove</guibutton> button in the toolbar to start the package uninstallation process.</para>
+<listitem><para>Click <guibutton>Remove</guibutton> to start the package uninstallation process.</para>
 <para>You can also choose <menuchoice><guimenu>Package</guimenu><guimenuitem>Remove</guimenuitem></menuchoice> to remove a package.</para>
 </listitem>
-<listitem><para>Review the packages to be removed and the package dependencies details in the <literal>Remove Confirmation</literal> dialog box.</para>
+<listitem><para>Review the packages to be removed and the package dependencies details in the <emphasis role="strong">Remove Confirmation</emphasis> dialog.</para>
 </listitem>
-<listitem><para>Uninstall the package or cancel the uninstallation process.</para>
-<itemizedlist><listitem><para>Click <guibutton>Proceed</guibutton> to start uninstalling the packages.</para>
-</listitem>
-<listitem><para>Click <guibutton>Cancel</guibutton> to cancel the process. No changes are made and you are returned to the main window.</para>
-<note><para>After you click the <guibutton>Proceed</guibutton> button, you cannot undo the package removal action. However, you can reinstall the package at any time.</para>
-</note>
-</listitem>
-</itemizedlist>
+<listitem><para>Click <guibutton>Proceed</guibutton> to start removing the packages or <guibutton>Cancel</guibutton> to cancel the process. </para>
 </listitem>
 </orderedlist>
 </sect2>
-<sect2 id="search_pkg"><title>Search for a Package</title>
+<sect2 id="search-pkg"><title>Search for a Package</title>
 <para>You can search for a package in the following ways :</para>
-<itemizedlist><listitem><para><emphasis role="strong">Search the current repository</emphasis> – Search for a package in the repository currently selected in the <literal>Repository</literal> drop-down menu. The category selection or the <literal>Show</literal> filter does not affect the search and the search is performed on all packages in the currently selected repository.</para>
-<para>Enter a description, or a partial name in the <literal>Search</literal> box located on the toolbar. For example, you might type one of the following search terms to search for <filename>SUNWgnome-games</filename> :</para>
+<itemizedlist><listitem><para><emphasis role="strong">Search the current publisher</emphasis> &#8211; Search for a package in the publisher currently selected in the <emphasis role="strong"> Publisher</emphasis> drop-down menu. If you do not know the status of the package you are searching for, set the <emphasis role="strong">View</emphasis> drop-down menu to <emphasis role="strong">All Packages</emphasis>.</para>
+<para>Enter a description, or a partial name in the <emphasis role="strong">Search</emphasis> field. For example, you might type one of the following search terms to search for <filename>SUNWgnome-games</filename> :</para>
 <itemizedlist><listitem><para>SUNWgames</para>
 </listitem>
 <listitem><para>games</para>
@@ -205,78 +249,111 @@
 </listitem>
 </itemizedlist>
 </listitem>
-<listitem><para><emphasis role="strong">Search all repositories</emphasis> – Select the multi-repository icon in the <literal>Search</literal> box to search for the package across all configured or registered repositories.</para>
-<para>Note the following important considerations when using the multi-repository search.</para>
-<itemizedlist><listitem><para>The multi-repository search currently supports a search based on the package contents including its description, classification, and the files contained within the package. However, the correct results are displayed only if the term used for searching is an <emphasis role="strong">exact</emphasis> match.</para>
-</listitem>
-<listitem><para><emphasis role="strong">The multi-repository search does not search the package name</emphasis>.</para>
-</listitem>
-<listitem><para>Wild card searching is supported by using the asterisk wild card, <literal>*</literal>, in the search term. Search using the wild card can be slower than an exact match search.</para>
-</listitem>
-</itemizedlist>
-<para></para>
-<para>Type a description of the package in the box. For example, the <filename>SUNWdiveintopython</filename> package is a book on Python programming. The description of the package contains the string <emphasis>book</emphasis>. To search for this package, you might then type one of the following terms:</para>
+<listitem><para><emphasis role="strong">Search all publishers</emphasis> &#8211; Choose <emphasis role="strong">All Publishers(Search)</emphasis> from the <emphasis role="strong">Publisher</emphasis> drop-down menu to search for a package across all configured publishers. If you do not know the status of the package you are searching for, set the <emphasis role="strong">View</emphasis> drop-down menu to <emphasis role="strong">All Packages</emphasis>.</para>
+<para>Type a description of the package in the <emphasis role="strong">Search</emphasis> field. For example, the <filename>SUNWdiveintopython</filename> package is a book on Python programming. The description of the package contains the string <emphasis>book</emphasis>. To search for this package, you might then type one of the following terms:</para>
 <itemizedlist><listitem><para>python</para>
 </listitem>
 <listitem><para>book</para>
 </listitem>
 </itemizedlist>
-<note><para>If you searched for the term <emphasis>diveinto</emphasis> in the multi-repository search, the <filename>SUNWdiveintopython</filename> package will not be displayed as the term <emphasis>diveinto</emphasis> is not present as an independent, complete word in the package contents. However you will find the package using the <literal>*</literal> wild card. Hence, searching for the term <literal>diveinto*</literal> will display the <filename>SUNWdiveintopython</filename> package.</para>
+<note><para>If you searched for the term <emphasis>diveinto</emphasis> when searching for the <filename>SUNWdiveintopython</filename> package, the results will not be displayed as the term <emphasis>diveinto</emphasis> is not present as an independent, complete word in the package contents. However you will find the package using the <literal>*</literal> wild card. Hence, searching for the term <literal>diveinto*</literal> will display the <filename>SUNWdiveintopython</filename> package.</para>
 </note>
 </listitem>
 </itemizedlist>
-<tip><itemizedlist><listitem><para>Use the submenus under the <menuchoice><guimenu>Edit</guimenu></menuchoice> menu to cut, copy, paste, or clear text in the <literal>Search</literal> box.</para>
+<tip><para>Use the submenus under the <menuchoice><guimenu>Edit</guimenu></menuchoice> menu to cut, copy, or paste text in the <emphasis role="strong">Search</emphasis> field.</para>
+</tip>
+<para>The following operators are supported for a package search:</para>
+<variablelist><varlistentry><term><emphasis role="strong">The AND operator</emphasis></term>
+<listitem><para> When the search term is separated by spaces or the AND operator, the Package Manager will search for packages containing <emphasis role="strong">all</emphasis> the search terms.</para>
 </listitem>
-<listitem><para>Use the icon on the right side of the <literal>Search</literal> box to clear the search results.</para>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Double Quotes</emphasis></term>
+<listitem><para>When a search term is placed within double quotes, the Package Manager will search for packages that <emphasis role="strong">match the search term exactly</emphasis>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">Wildcard *</emphasis></term>
+<listitem><para>Including a wildcard in your search term enables you to search for partial package names. For example, when you enter <emphasis>boo*</emphasis> in your search term, the packages displayed could include <emphasis>boot</emphasis> and <emphasis>book</emphasis> in the package name and description.</para>
+<note><para>Wildcard searching can be slower than an exact match search or a search based on package description.</para>
+</note>
+</listitem>
+</varlistentry>
+<varlistentry><term><emphasis role="strong">The OR operator</emphasis></term>
+<listitem><para>When a search term is separated by the OR operator, the Package Manager searches for packages that contain any of the search terms.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</sect2>
+<sect2 id="gjmtb"><title>Cancel Package Search</title>
+<para>If you want to cancel a search, use the Cancel Search icon at the bottom of the main window of the Package Manager. This icon is visible on the status bar only during a search operation.</para>
+</sect2>
+<sect2 id="update-pkg"><title>Update a Package</title>
+<para>Look for the Updates icon next to the installed package name. This icon indicates that updates are available for the package in the currently selected publisher. You can also choose one of the following views to display a list of packages that have updates available :</para>
+<itemizedlist><listitem><para>Select the <menuchoice><guimenuitem>Updates</guimenuitem></menuchoice> option in the <emphasis role="strong">View</emphasis> drop-down menu to list all packages that have updates available in the currently selected publisher.</para>
+</listitem>
+<listitem><para>Select the <menuchoice><guimenuitem>Updates</guimenuitem></menuchoice> option in the <emphasis role="strong">View</emphasis> drop-down menu and the <emphasis role="strong">All Publishers (Installed)</emphasis> in the <emphasis role="strong">Publisher</emphasis> drop-down menu to list all packages that have updates available from all publishers.</para>
 </listitem>
 </itemizedlist>
-</tip>
+<note><para>Updating a package may fail sometimes, due to inherent dependencies of the package you have selected for installation or update. You may need to update all packages on your system to get the latest updates.</para>
+</note>
+<para>Select the package or packages you want to update and click <guibutton>Install/Update</guibutton> to install the latest version of the package. Use the <emphasis role="strong">Updates</emphasis> icon on the toolbar to update all packages on your system.</para>
 </sect2>
-<sect2 id="update_pkg"><title>Update a Package</title>
-<para>Look for the green icon next to the installed package name. This icon indicates that updates are available for the package in the currently selected repository. Select the package and click the <guibutton>Install/Update</guibutton> button to install the latest version of the package.</para>
+<sect2 id="package-version"><title>Package Version Information</title>
+<para>Select a package in the main window of the Package Manager and right-click your mouse to view the package version information. There are three types of package versions :</para>
+<orderedlist><listitem><para><emphasis role="strong">Installable Version</emphasis> &#8211; The version of a package that is available for installation or an update. This version may be older than the latest available version of the package due to package dependencies on the system. Hence you may not be able to install the latest available version of the package unless you update your system using the <emphasis role="strong">Updates</emphasis> icon on the toolbar.</para>
+</listitem>
+<listitem><para><emphasis role="strong">Installed Version</emphasis> &#8211; The version of the package installed on the system.</para>
+</listitem>
+<listitem><para><emphasis role="strong">Latest Version</emphasis> &#8211; This is the latest version of the package available for installation or update. The latest version can be installed if your system is up-to-date.</para>
+</listitem>
+</orderedlist>
+</sect2>
+<sect2 id="gjlak"><title>View Installed Packages From All Publishers</title>
+<para>Choose the <emphasis role="strong">All Publishers (Installed)</emphasis> from the <emphasis role="strong">Publisher</emphasis> drop-down menu filter to view a list of all packages that you have installed from all publishers.</para>
+<note><para>You cannot search for a package from the <emphasis role="strong">All Publishers (Installed)</emphasis> option. Switch to <emphasis role="strong">All Publishers (Search)</emphasis> to search for a package.</para>
+</note>
 </sect2>
 </sect1>
-<sect1 id="intro_be"><title>Introduction to Boot Environments</title>
+<sect1 id="intro-be"><title>Introduction to Boot Environments</title>
 <para>A boot environment is an image that is bootable. Upon an initial OpenSolaris installation, a boot environment is created.</para>
-<para> You can maintain multiple boot environments on your OpenSolaris 2009.06 system. Use the <command>beadm(1)</command> command from the command—line interface (CLI) to create, rename, mount or unmount, or destroy these boot environments.</para>
-<para>The Package Manager enables you to manage the boot environments created during the process of updating your image. For more information, see <xref linkend="manage_be"/> section.</para>
-<para>System administrators can maintain multiple boot environments on their systems, and each boot environment can have different software versions installed.</para>
+<para> You can maintain multiple boot environments on your OpenSolaris 2010.03 system. Use the <command>beadm(1)</command> command from the command&#45;line interface (CLI) to create, rename, mount or unmount, or destroy these boot environments.</para>
+<para>The Package Manager enables you to manage the boot environments created during the process of updating your image. For more information, see <xref linkend="manage-be"/> section.</para>
+<para>Users can maintain multiple boot environments on their systems, and each boot environment can have different software versions installed.</para>
 <para>When you use either the Package Manager or the <command>pkg image-update</command> command to update all the packages in your active OpenSolaris boot environment, a clone of that boot environment is automatically created. The packages are updated in the clone rather than in the original boot environment. After successfully completing the updates, the new clone is activated. Then, the clone will become the new default boot environment on system reboot. The original boot environment is also available as an alternate selection.</para>
-<para> See the beadm(1) man pages and the <ulink url="http://dlc.sun.com/osol/docs/content/dev/snapupgrade/snap3.html"><citetitle>Upgrading and Managing Boot Environments</citetitle></ulink> document to learn more about boot environments and the <command>beadm(1)</command> command.</para>
+<para id="gjkqr"> See the beadm(1) man pages and the <ulink url="http://docs.sun.com/source/820-7679/index.html"><citetitle>Upgrading and Managing Boot Environments</citetitle></ulink> document to learn more about boot environments and the <command>beadm(1)</command> command.</para>
 <sect2 id="update_all"><title>Update All Packages (Update Your Image)</title>
 <para>Perform the following steps to update all the packages in your image.</para>
-<orderedlist><listitem><para>Click the <guibutton>Update All</guibutton> icon located on the toolbar to start the process of updating <emphasis role="strong">all</emphasis> the packages installed in your image.</para>
-<para>You can also choose <menuchoice><guimenu>Package</guimenu><guisubmenu>Update All</guisubmenu></menuchoice> to start the process.</para>
-<note><para>The <guilabel>Update All</guilabel> icon is enabled when updates are available to the installed packages.</para>
+<orderedlist><listitem><para>Click <guibutton>Updates</guibutton> to start the process of updating <emphasis role="strong">all</emphasis> the packages installed in your image.</para>
+<para>You can also choose <menuchoice><guimenu>Package</guimenu><guisubmenu>Updates</guisubmenu></menuchoice> to start the process.</para>
+<note><para>If no updates are available to your installed packages, a <emphasis role="strong">No Updates Available</emphasis> message is displayed after you click <guibutton>Updates</guibutton>.</para>
 </note>
 </listitem>
-<listitem><para>A <literal>Create New Boot Environment</literal> window is displayed. A name for the new boot environment is automatically generated.</para>
+<listitem><para>The process of updating all the packages installed on your system is completed in three phases:</para>
+<itemizedlist><listitem><para><emphasis role="strong">Preparation</emphasis></para>
 </listitem>
-<listitem><para>(optional) You can change the name of the new boot environment if you want.</para>
+<listitem><para><emphasis role="strong">Download</emphasis></para>
 </listitem>
-<listitem><para>Confirm or Cancel the new boot environment.</para>
-<itemizedlist><listitem><para>Click <guibutton>Proceed</guibutton> to create a new boot environment and proceed with the Update All process.</para>
-</listitem>
-<listitem><para>Click <guibutton>Cancel</guibutton> to cancel the process.</para>
+<listitem><para><emphasis role="strong">Install</emphasis></para>
 </listitem>
 </itemizedlist>
-<note><para>During the Update All process, a clone of the active boot environment is created. This clone enables the user to boot into the boot environment state that existed before the Update All process was started. If the Package Manager is unable to create a new boot environment, an error message will be displayed. See the <xref linkend="gilfh"/> section on how to rectify the error and continue with updating your image.</para>
-</note>
-<para>If you chose to proceed with the Update All process, the packages are downloaded and installed.</para>
-<para>After a successful completion, the <literal>Update All Complete</literal> dialog box is shown. A link to the Release Notes is provided in the dialog box. Read the <xref linkend="release_notes"/> before rebooting your system.</para>
+<para>Click on the <emphasis>Details</emphasis> tab displayed in each of the phases to view more information.</para>
 </listitem>
-<listitem><para> Click <guibutton>Close</guibutton>. </para>
-<note><para><emphasis role="strong">You must reboot your system for the changes to take effect.</emphasis></para>
+<listitem><para>After the update process is completed successfully, an <emphasis role="strong">Update All Complete</emphasis> dialog is displayed. A new boot environment is created which consists of the updated packages. The new boot environment is given a default name by the Package Manager, you can change the given boot environment name.</para>
+<note><para>If the Package Manager is unable to create a new boot environment, an error message is displayed. See the <xref linkend="gilfh"/> section on how to rectify the error and continue with updating your image.</para>
+</note>
+</listitem>
+<listitem><para> Click <guibutton>Restart Now</guibutton> to reboot your system immediately.</para>
+<para>Click <guibutton>Restart Later</guibutton> to restart your system at a later time. <emphasis role="strong">You must reboot your system for the changes to take effect.</emphasis></para>
+<note><para>During the Update All process, a clone of the active boot environment is created. You can boot into the clone to return to the boot environment state that existed before the Update All process was started.</para>
 </note>
 </listitem>
 </orderedlist>
 </sect2>
 <sect2 id="gilfh"><title>Update All Errors</title>
-<para>A new boot environment clone must be created by the Package Manager for the Update All process to be completed. An error message is displayed if a boot environment clone cannot be created. You might see an error message such as the following :</para>
-<para><literal>Not enough disk space, the selected action cannot be performed. Click OK to manage your existing BEs and free up disk space or Cancel to cancel the action</literal>.</para>
-<para>Click <guibutton>Cancel</guibutton> to cancel the Update All process and return to the main window.</para>
+<para>A new boot environment clone must be created by the Package Manager for the Updates process to be completed. An error message is displayed if a boot environment clone cannot be created. You might see an error message such as the following :</para>
+<para><literal>Not enough disk space, the Update All action cannot be performed. Choose Manage BE to manage your boot environments and free up disk space.</literal>.</para>
+<para>Click <guibutton>Close</guibutton> to cancel the Update All process.</para>
 <para>Perform the following steps if you want to rectify the error and continue with the Update All process: </para>
-<orderedlist><listitem><para>Click <guibutton>OK</guibutton> to display the <literal>Boot Environment Management</literal> dialog box.</para>
+<orderedlist><listitem><para>Click <guibutton>Manage BE</guibutton> to display the <emphasis role="strong">Manage Boot Environment</emphasis> dialog.</para>
 </listitem>
 <listitem><para>Select the boot environments that you want to delete.</para>
 <note><itemizedlist><listitem><para>You cannot delete the currently active boot environment.</para>
@@ -288,20 +365,20 @@
 </listitem>
 <listitem><para>Click <guibutton>OK</guibutton>.</para>
 </listitem>
-<listitem><para>The <literal>Boot Environment Confirmation</literal> dialog is shown. Review your changes and click OK to proceed.</para>
+<listitem><para>The <emphasis role="strong">Boot Environment Confirmation</emphasis> dialog is shown. Review your changes and click OK to proceed.</para>
 </listitem>
-<listitem><para>Click the <guibutton>Update All</guibutton> icon to restart the process of updating all packages.</para>
+<listitem><para>Click <guibutton>Update All</guibutton> to restart the process of updating all packages.</para>
 </listitem>
 </orderedlist>
 </sect2>
-<sect2 id="manage_be"><title>Manage Boot Environments</title>
+<sect2 id="manage-be"><title>Manage Boot Environments</title>
 <para>Perform the following steps to manage your boot environments:</para>
-<orderedlist><listitem><para>Click <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot Environments</guimenuitem></menuchoice> to open the <literal>Manage Boot Environments</literal> dialog.</para>
+<orderedlist><listitem><para>Click <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot Environments</guimenuitem></menuchoice> to open the <emphasis role="strong">Manage Boot Environments</emphasis> dialog.</para>
 </listitem>
-<listitem><para id="gijqg">In this dialog box , you can perform the following actions:</para>
-<itemizedlist><listitem><para><emphasis role="strong">Activate a boot environment</emphasis> – Select the boot environment that you want to be active on system reboot. This will be the default boot environment <emphasis role="strong">after</emphasis> you have rebooted your system.</para>
+<listitem><para id="gijqg">In this dialog, you can perform the following actions:</para>
+<itemizedlist><listitem><para><emphasis role="strong">Activate a boot environment</emphasis> &#8211; Select the boot environment you want to be active on system reboot. This is the default boot environment <emphasis role="strong">after</emphasis> you have rebooted your system.</para>
 </listitem>
-<listitem><para><emphasis role="strong">Remove old or unused boot environments to free up disk space</emphasis> – Select the boot environments that you want to delete.</para>
+<listitem><para><emphasis role="strong">Remove old or unused boot environments to free up disk space</emphasis> &#8211; Select the boot environnment or boot environments you want to delete.</para>
 <note><itemizedlist><listitem><para>You cannot the delete the currently active boot environment.</para>
 </listitem>
 <listitem><para>If you have selected a boot environment to be renamed, it cannot be deleted.</para>
@@ -309,7 +386,7 @@
 </itemizedlist>
 </note>
 </listitem>
-<listitem><para><emphasis role="strong">Rename a boot environment</emphasis> – Double-click the boot environment name that you want to change. Enter the new name of the boot environment and click <guibutton>OK</guibutton>. </para>
+<listitem><para><emphasis role="strong">Rename a boot environment</emphasis> &#8211; Double-click the boot environment name you want torename. Enter the new name of the boot environment and click <guibutton>OK</guibutton>.</para>
 <note><itemizedlist><listitem><para>If you have selected a boot environment to be deleted, it cannot be renamed.</para>
 </listitem>
 <listitem><para>The currently active boot environment cannot be renamed.</para>
@@ -319,19 +396,14 @@
 </listitem>
 </itemizedlist>
 </listitem>
-<listitem><para>Accept or decline the changes:</para>
-<itemizedlist><listitem><para>Click <guibutton>OK</guibutton> to proceed.</para>
+<listitem><para>Click <guibutton>OK</guibutton> to proceed or <guibutton>Cancel</guibutton> to cancel all changes.</para>
 </listitem>
-<listitem><para>Click <guibutton>Cancel</guibutton> to cancel all changes and return to the main window.</para>
-</listitem>
-</itemizedlist>
-</listitem>
-<listitem><para>The <literal>Boot Environment Confirmation</literal> dialog is displayed. Review your changes and click OK to proceed.</para>
+<listitem><para>The <emphasis role="strong">Boot Environment Confirmation</emphasis> dialog is displayed. Review your changes and click OK to proceed.</para>
 <warning role="caution"><para>After you click <guibutton>OK</guibutton>, you cannot undo any changes that you made to the boot environments.</para>
 </warning>
 <note><para>The changes that you made to the <emphasis role="strong">default boot environment</emphasis> setting are effective only after system reboot.</para>
 </note>
-<para>Click <guibutton>Cancel</guibutton> to cancel the changes and return to the <literal>BE Management</literal> dialog box.</para>
+<para>Click <guibutton>Cancel</guibutton> to cancel the changes.</para>
 </listitem>
 <listitem><para>Reboot your system to boot into the newly activated boot environment.</para>
 <note><para>Reboot your system only if you changed the active boot environment.</para>
@@ -340,145 +412,218 @@
 </orderedlist>
 </sect2>
 </sect1>
-<sect1 id="manage_repo"><title>Managing Repositories</title>
-<sect2 id="add_repo"><title>Add a Repository</title>
-<para>Perform the following steps to add a repository:</para>
-<orderedlist><listitem><para>Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Repositories</guimenuitem></menuchoice>.</para>
-<para>You can also choose <guilabel>Add...</guilabel> from the <literal>Repository</literal> drop-down menu in the main window of the Package Manager.</para>
+<sect1 id="manage-publisher"><title>Add and Manage Publishers</title>
+<para>The <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> dialog enables the user to add and manage the configured publishers. A publisher is a person, group, or corporation that designs, creates, and publishes a package to a repository. A repository is a source for packages. Every publisher has a origin URI (Universal Resource Identifier) associated with it. Read the following sections to learn how to add and manage publishers on your system.</para>
+<sect2 id="add-publisher"><title>Add a Publisher</title>
+<para>Perform the following steps to add a publisher and its associated URI:</para>
+<orderedlist><listitem><para>Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Add Publishers</guimenuitem></menuchoice>.</para>
+<para>You can also choose the <guibutton>Add..</guibutton> option from the <emphasis role="strong">Publisher</emphasis> drop-down menu or select <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> and then click <emphasis>Add..</emphasis> in the <emphasis role="strong">Manage Publishers</emphasis> dialog.</para>
 </listitem>
-<listitem><para> The <literal>Manage Repositories</literal> dialog box is displayed. Type the name and the address (URL) of the repository you want to add. Click <guibutton>Add</guibutton>.</para>
+<listitem><para>The <emphasis role="strong">Add Publisher</emphasis> dialog is displayed. Enter the name of the publisher and the associated URI. If the publisher is a secure publisher, the <emphasis role="strong">SSL Key</emphasis> and <emphasis role="strong">SSL Certificate</emphasis> fields are displayed. Follow the steps in the <xref linkend="modify-publisher"/> section to add an SSL key and certificate.</para>
+</listitem>
+<listitem><para>Click <guibutton>Add</guibutton>.</para>
+</listitem>
+<listitem><para>The <emphasis role="strong">Adding Publisher</emphasis> dialog is displayed. Click Cancel to cancel the process.</para>
+</listitem>
+<listitem><para>The <emphasis role="strong">Adding Publisher Complete</emphasis> dialog is displayed if the publisher is added successfully.</para>
+</listitem>
+</orderedlist>
+<blockquote><para>An <emphasis role="strong">Adding Publisher Error</emphasis> is displayed if the publisher could not be added. Click <emphasis role="strong">Details</emphasis> to get more information about the error.</para>
+</blockquote>
+</sect2>
+<sect2 id="remove-publisher"><title>Remove a Publisher</title>
+<para>Perform the following steps to remove a publisher:</para>
+<orderedlist><listitem><para>Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice>.</para>
+</listitem>
+<listitem><para>Click on a publisher from the list to select it. Click <guibutton>Remove</guibutton>.</para>
+</listitem>
+<listitem><para>The <emphasis role="strong">Manage Publishers Confirmation</emphasis> dialog is displayed.</para>
+</listitem>
+<listitem><para>Click <guibutton>OK</guibutton> to save the changes and remove the publisher or <guibutton>Cancel</guibutton> to return to the <emphasis role="strong">Manage Publishers</emphasis> dialog without making any changes.</para>
 </listitem>
 </orderedlist>
 </sect2>
-<sect2 id="add_secure_repo"><title>Add a Secure Repository</title>
-<para>A secure repository requires a SSL key and certificate for access. Perform the following steps to add a secure repository:</para>
-<orderedlist><listitem><para>Follow the steps in <xref linkend="add_repo"/> section to add a repository.</para>
+<sect2 id="set-pub-order"><title>Set Publisher Priority</title>
+<para>Perform the following steps to set or change the publisher priority:</para>
+<orderedlist><listitem><para>Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> to open the <emphasis role="strong">Manage Publishers</emphasis> dialog.</para>
 </listitem>
-<listitem><para>Follow the steps in the <xref linkend="modify_repo"/> section to add a SSL key and certificate.</para>
-<para>.</para>
+<listitem><para>The list of configured publishers is displayed. Click the arrows to change the priority of the publishers. The publisher with the highest priority is displayed at the top of the list.</para>
+<para><emphasis role="strong">Packages are searched within the publishers in the order of priority, the publisher with the highest priority is searched first.</emphasis></para>
+</listitem>
+<listitem><para>Click <guibutton>OK</guibutton> to save your changes or <guibutton>Cancel</guibutton> to return to the <emphasis role="strong">Manage Publishers</emphasis> dialog without making any changes.</para>
 </listitem>
 </orderedlist>
 </sect2>
-<sect2 id="remove_repo"><title>Remove a Repository</title>
-<para>Perform the following steps to remove a repository:</para>
-<orderedlist><listitem><para>Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Repositories</guimenuitem></menuchoice> to open the <literal>Manage Repositories</literal> dialog.</para>
+<sect2 id="modify-publisher-alias"><title>Modify Publisher Alias</title>
+<para>Perform the following steps to modify the alias of a publisher:</para>
+<orderedlist><listitem><para>Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice>.</para>
 </listitem>
-<listitem><para>Select a repository from the list. Click <guibutton>Remove</guibutton>.</para>
-<note><para>A repository that has been set as preferred repository cannot be removed. To remove a preferred repository, set a nonpreferred repository as preferred, and then remove the repository.</para>
+<listitem><para>Select the publisher whose alias you want to modify. Click <guibutton>Modify..</guibutton>.</para>
+</listitem>
+<listitem><para>The <emphasis role="strong">Modify Publisher</emphasis> dialog is displayed. Modify or enter a new name of the alias in the <emphasis role="strong">Alias</emphasis> field.</para>
+</listitem>
+<listitem><para>Click <guibutton>OK</guibutton> to save your changes or <guibutton>Cancel</guibutton> to return to the <emphasis role="strong">Manage Publishers</emphasis> dialog without making any changes.</para>
+</listitem>
+<listitem><para>Click <guibutton>OK</guibutton> in the <emphasis role="strong">Manage Publishers</emphasis> dialog to exit the dialog. Note that clicking <guibutton>Cancel</guibutton> in the <emphasis role="strong">Manage Publishers</emphasis> dialog will not undo the changes made in the <emphasis role="strong">Modify Publishers</emphasis> dialog.</para>
+</listitem>
+</orderedlist>
+</sect2>
+<sect2 id="gjkza"><title>Add Publisher Origins</title>
+<para>Perform the following steps to add an origin or origins associated with a publisher:</para>
+<orderedlist><listitem><para>Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice>.</para>
+</listitem>
+<listitem><para>Select the publisher whose origin you want to modify. The <emphasis role="strong">Details</emphasis> tab in the <emphasis role="strong">Manage Publishers</emphasis> dialog displays the origin associated with the publisher.</para>
+</listitem>
+<listitem><para>Click <guibutton>Modify..</guibutton>.</para>
+<para> The <emphasis role="strong">Modify Publisher</emphasis> dialog is displayed. Enter the name of the new origin you want to associate with the publisher in the <emphasis role="strong">Origin</emphasis> field. Click <guibutton>Add</guibutton>. The list of associated origins is displayed in the table.</para>
+<note><para>You cannot change the origin URI after the origin has been added.</para>
 </note>
 </listitem>
-</orderedlist>
-</sect2>
-<sect2 id="set_pref_repo"><title>Set a Preferred Repository</title>
-<para>Perform the following steps to set a preferred repository:</para>
-<orderedlist><listitem><para>Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Repositories</guimenuitem></menuchoice> to open the <literal>Manage Repositories</literal> dialog.</para>
+<listitem><para>(optional) If the origin you have added is a secure origin, add the SSL Key and SSL certificate. <guibutton>Browse</guibutton> to locate the SSL Key and SSL Certificate on your system.</para>
 </listitem>
-<listitem><para>Click the radio button next to the repository that you would like to set as the preferred repository.</para>
+<listitem><para>Click <guibutton>OK</guibutton> to save your changes or <guibutton>Cancel</guibutton> to return to the <emphasis role="strong">Manage Publishers</emphasis> dialog without making any changes.</para>
 </listitem>
-<listitem><para>Click <guibutton>Close</guibutton> if you are not making any other changes to the repository information.</para>
+<listitem><para>Click <guibutton>OK</guibutton> in the <emphasis role="strong">Manage Publishers</emphasis> dialog to exit the dialog. Note that clicking <guibutton>Cancel</guibutton> in the <emphasis role="strong">Manage Publishers</emphasis> dialog will not undo the changes made in the <emphasis role="strong">Modify Publishers</emphasis> dialog.</para>
 </listitem>
 </orderedlist>
 </sect2>
-<sect2 id="modify_repo"><title>Modify a Repository</title>
-<para>Perform the following steps to modify a repository:</para>
-<orderedlist><listitem><para>Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Repositories</guimenuitem></menuchoice> to open the <literal>Manage Repositories</literal> dialog.</para>
+<sect2 id="gjkyy"><title>Remove Publisher Origins</title>
+<para>Perform the following steps to remove an origin or origins associated with a publisher:</para>
+<orderedlist><listitem><para>Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice>.</para>
 </listitem>
-<listitem><para>Select the repository that you want to modify.</para>
+<listitem><para>Select the publisher whose origin you want to remove. The <emphasis role="strong">Details</emphasis> tab in the <emphasis role="strong">Manage Publishers</emphasis> dialog displays the origin or origins associated with the publisher.</para>
 </listitem>
-<listitem><para>Click the <guibutton>Modify</guibutton> button.</para>
-<para> The <literal>Modify Repository</literal> dialog box is displayed. You can perform the following actions in the <literal>Modify Repository</literal> dialog box:</para>
-<itemizedlist><listitem><para><emphasis role="strong">Change the URL of the repository</emphasis> – Type a valid URL for the repository.</para>
-<para>You cannot change a repository name after you have added a repository. To change the repository name, delete the existing repository with the old name and add a repository with the new name. See the <xref linkend="remove_repo"/> section for steps on how to remove a repository.</para>
+<listitem><para>Click <guibutton>Modify..</guibutton>.</para>
+<para> The <emphasis role="strong">Modify Publisher</emphasis> dialog is displayed. The list of associated origins is displayed in the table.</para>
 </listitem>
-<listitem><para><emphasis role="strong">Add a SSL Key and Certificate</emphasis> – A secure repository requires a SSL key and certificate for access.</para>
-<para>The <emphasis role="strong">Instructions</emphasis> link in the <literal>Modify Repository</literal> dialog box links to a registration site which provides instructions for downloading the SSL key and certificate</para>
-<orderedlist><listitem><para>In the <literal>Modify Repository</literal> dialog box, click the <emphasis role="strong">Instructions</emphasis> link to download the key and certificate. Save them on your system.</para>
+<listitem><para>Select the origin you want to remove. Click <guibutton>Remove</guibutton>.</para>
+<note><para>If only one origin is associated with a publisher, it cannot be removed.</para>
+</note>
 </listitem>
-<listitem><para>Click the <guibutton>Browse</guibutton> button to locate the SSL key on your system.</para>
+<listitem><para>Click <guibutton>OK</guibutton> to save your changes or <guibutton>Cancel</guibutton> to return to the <emphasis role="strong">Manage Publishers</emphasis> dialog without making any changes.</para>
 </listitem>
-<listitem><para>Click the <guibutton>Browse</guibutton> button to locate the SSL certificate on your system.</para>
+<listitem><para>Click <guibutton>OK</guibutton> in the <emphasis role="strong">Manage Publishers</emphasis> dialog to exit the dialog. Note that clicking <guibutton>Cancel</guibutton> in the <emphasis role="strong">Manage Publishers</emphasis> dialog will not undo the changes made in the <emphasis role="strong">Modify Publishers</emphasis> dialog.</para>
 </listitem>
 </orderedlist>
+</sect2>
+<sect2 id="gjkyr"><title>Add Publisher Mirrors</title>
+<para>Perform the following steps to add a mirror for a publisher:</para>
+<orderedlist><listitem><para>Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice>.</para>
 </listitem>
-<listitem><para><emphasis role="strong">Add a Mirror</emphasis> – If a repository has a mirror, add the repository name and URL, and then click the <guibutton>Modify</guibutton> button to add the mirror information.</para>
+<listitem><para>Select the publisher for which you want to add the mirror.</para>
 </listitem>
-</itemizedlist>
+<listitem><para>Click <guibutton>Modify..</guibutton>.</para>
+<para> The <emphasis role="strong">Modify Publisher</emphasis> dialog is displayed.</para>
 </listitem>
-<listitem><para>Confirm or decline the changes.</para>
-<itemizedlist><listitem><para>Click <guibutton>OK</guibutton> to save the changes and return to the <literal>Manage Repositories</literal> dialog box.</para>
+<listitem><para>Enter the URI for the mirror in the <emphasis>Mirror</emphasis> field. Click <guibutton>Add</guibutton>.</para>
 </listitem>
-<listitem><para>Click <guibutton>Cancel</guibutton> to cancel your changes.</para>
+<listitem><para>Click <guibutton>OK</guibutton> to save your changes or <guibutton>Cancel</guibutton> to return to the <emphasis role="strong">Manage Publishers</emphasis> dialog without making any changes.</para>
 </listitem>
-</itemizedlist>
+<listitem><para>Click <guibutton>OK</guibutton> in the <emphasis role="strong">Manage Publishers</emphasis> dialog to exit the dialog. Note that clicking <guibutton>Cancel</guibutton> in the <emphasis role="strong">Manage Publishers</emphasis> dialog will not undo the changes made in the <emphasis role="strong">Modify Publishers</emphasis> dialog.</para>
+</listitem>
+</orderedlist>
+</sect2>
+<sect2 id="gjlab"><title>Remove Publisher Mirrors</title>
+<para>Perform the following steps to remove a mirror associated with a publisher:</para>
+<orderedlist><listitem><para>Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice>.</para>
+</listitem>
+<listitem><para>Select the publisher for which you want to remove the mirror.</para>
+</listitem>
+<listitem><para>Click <guibutton>Modify..</guibutton>.</para>
+<para> The <emphasis role="strong">Modify Publisher</emphasis> dialog is displayed. The list of associated mirrors is displayed in the table.</para>
+</listitem>
+<listitem><para>Select the mirror you want to remove. Click <guibutton>Remove</guibutton>.</para>
+</listitem>
+<listitem><para>Click <guibutton>OK</guibutton> to save your changes or <guibutton>Cancel</guibutton> to return to the <emphasis role="strong">Manage Publishers</emphasis> dialog without making any changes.</para>
+</listitem>
+<listitem><para>Click <guibutton>OK</guibutton> in the <emphasis role="strong">Manage Publishers</emphasis> dialog to exit the dialog. Note that clicking <guibutton>Cancel</guibutton> in the <emphasis role="strong">Manage Publishers</emphasis> dialog will not undo the changes made in the <emphasis role="strong">Modify Publishers</emphasis> dialog.</para>
 </listitem>
 </orderedlist>
 </sect2>
 </sect1>
 <sect1><title>Working With WebInstall</title>
-<para>The OpenSolaris 2009.06 Package Manager provides support for users to add new repositories and optionally, install packages from these repositories using a simple one-click WebInstall process. A <filename>.p5i</filename> file which contains the repositories to be added and optionally, the package or packages that can be installed from these repositories, is required for the WebInstall process. The information contained in the <filename>.p5i</filename> file is read and used by the WebInstall process.</para>
-<sect2 id="webinstall"><title>How to Use WebInstall to Add Repositories and Install Packages</title>
-<bridgehead>Before You Begin</bridgehead><para>Locate the <filename>.p5i</filename> file which may be present on your desktop, the Start page in the Package Manager, or on a website.</para>
-<procedure><step><para>Start the Package manager in WebInstall mode in one of the following ways:</para>
+<para>The OpenSolaris 2010.03 Package Manager provides support for users to add new publishers and optionally, install packages from these publishers using a simple one-click WebInstall process. A <filename>.p5i</filename> file which contains the publishers to be added and optionally, the packages that can be installed from these publishers, is required for the WebInstall process. The information contained in the <filename>.p5i</filename> file is read and used by the WebInstall process.</para>
+<sect2 id="webinstall-export"><title>Export Package Selections as WebInstall Files</title>
+<para>If you want to distribute some of the packages available on your system to others for easy installation and distribution, you can export the references to the packages, using the WebInstall process. The <menuchoice><guisubmenu>File</guisubmenu><guimenuitem>Export Selections</guimenuitem></menuchoice> feature enables you to create a <filename>.p5i</filename> file containing the installation instructions for the selected packages. The <filename>.p5i</filename> file is can then be distributed for use. See the <xref linkend="webinstall"/> section on how to install packages from a <filename>.p5i</filename>.</para>
+<para>The following procedure lists the steps to create a <filename>.p5i</filename> file and export your files.</para>
+<orderedlist><listitem><para>From the <emphasis role="strong">Publisher</emphasis> drop-down menu, select the publisher from which you want to include the packages in the <filename>.p5i</filename> file.</para>
+</listitem>
+<listitem><para>Check the box next to the package or packages to select it. The packages selected are highlighted.</para>
+</listitem>
+<listitem><para>Click <menuchoice><guisubmenu>File</guisubmenu><guimenuitem>Export Selections</guimenuitem></menuchoice> to display the <emphasis role="strong">Export Selections Confirmation</emphasis> window.</para>
+</listitem>
+<listitem><para>Click <guibutton>OK</guibutton> to confirm the selections and proceed or <guibutton>Cancel</guibutton> to cancel the selections.</para>
+</listitem>
+<listitem><para>The <emphasis role="strong">Export Selections</emphasis> window is displayed.</para>
+</listitem>
+<listitem><para>A default name for the <filename>p5i</filename> file with the extension <filename>.p5i</filename> is provided. Click inside the <emphasis role="strong">Name</emphasis> field to change the name of the <filename>p5i</filename> file.</para>
+</listitem>
+<listitem><para>The file is saved in the <filename>/tmp</filename> folder by default. Click the <emphasis role="strong">Browse for other folders</emphasis> tab to select your own folder.</para>
+</listitem>
+<listitem><para>Choose the <filename>p5i Files</filename> option in the drop-down menu located at the bottom right hand side of the window.</para>
+</listitem>
+</orderedlist>
+</sect2>
+<sect2 id="webinstall"><title>How to Use WebInstall to Add Publishers and Install Packages</title>
+<para>The WebInstall process enables you to install packages through a <filename>p5i</filename> file. </para>
+<orderedlist><listitem><para>Locate the <filename>.p5i</filename> file which may be present on your desktop, the Start page in the Package Manager, or on a website.</para>
+</listitem>
+<listitem><para>Start the Package Manager in WebInstall mode in one of the following ways:</para>
 <itemizedlist><listitem><para>Click on a <filename>.p5i</filename> file on your desktop, and the associated application, Package Manager in WebInstall mode, will be launched.</para>
 </listitem>
 <listitem><para>Start the Package Manager from the command-line along with a path to the <filename>.p5i</filename> file. For example, type the following command at the command-line:</para>
-<para><command>$ pfexec packagemanager/<replaceable>path_to_pi5_file/file.p5i</replaceable></command></para>
+<para><command>$ pfexec packagemanager/<replaceable>path_to_p5i_file/file.p5i</replaceable></command></para>
 </listitem>
-<listitem><para>Click on a URL location that contains a link to <filename>.p5i</filename> file. If you are using this method to start the WebInstall, the <filename>.p5i</filename> file <emphasis role="strong">must</emphasis> be located on a web server that has registered the new mime type. Only then, the web server can manage the <filename>.p5i</filename> automatically and start Package Manager in WebInstall mode.</para>
+<listitem><para>Click on a URL location that contains a link to <filename>.p5i</filename> file. If you are using this method to start WebInstall, the <filename>.p5i</filename> file <emphasis role="strong">must</emphasis> be located on a web server that has registered the new mime type. Only then, the web server can manage the <filename>.p5i</filename> automatically and start Package Manager in WebInstall mode.</para>
 <para>If the <filename>.p5i</filename> is located on a web server that does not have the new mime type registered, save the <filename>.p5i</filename> file to your desktop and then click on it to launch Web Install.</para>
 </listitem>
 </itemizedlist>
-</step>
-<step><para>The following example window that shows a list of repositories that will be added and the packages that will be installed. Review the information.</para>
-<figure id="gilwx"><title>Package Manager WebInstaller</title>
-<mediaobject><imageobject><imagedata fileref="figures/wi_start.png" /></imageobject>
+</listitem>
+<listitem><para>You will see a window similar to the example window shown below. The window shows a list of publishers that will be added and the packages that will be installed. Review the information.</para>
+<mediaobject><imageobject><imagedata fileref="figures/webinstall.png" /></imageobject>
 </mediaobject>
-</figure>
-</step>
-<step><para>Confirm or cancel the WebInstall process.</para>
-<para>Click <guibutton>Proceed</guibutton> to add the new repositories and install the packages.</para>
-<para>Click <guibutton>Cancel</guibutton> to cancel the process. The Package Manager application exits.</para>
-</step>
-<step><para>(Optional) If the repositories that are to be added are secure repositories, an SSL key and certificate is required. An <literal>Add New Repositories</literal> dialog box is displayed.</para>
-<itemizedlist><listitem><para>Click the <emphasis role="strong">Instructions</emphasis> link in the <literal>Add New Repositories</literal> dialog box to download the SSL key and certificate. </para>
 </listitem>
-<listitem><para>Click the <guibutton>Browse</guibutton> button to locate the SSL key on your system.</para>
+<listitem><para>Confirm or cancel the WebInstall process.</para>
+<para>Click <guibutton>Proceed</guibutton> to add the new publishers and install the packages.</para>
 </listitem>
-<listitem><para>Click the <guibutton>Browse</guibutton> button to locate the SSL certificate on your system.</para>
+<listitem><para>The <emphasis role="strong">Add Publisher</emphasis> dialog is displayed. The name and URI of the publisher is already entered.</para>
+<para>The <emphasis role="strong">Adding Publisher Complete</emphasis> dialog is displayed if the publisher has been added successfully.</para>
+</listitem>
+<listitem><para>(Optional) If the publishers to be added are secure publishers, an SSL key and certificate is required. Browse to locate the SSL Key and SSL Certificate on your system.</para>
 </listitem>
 <listitem><para>Click <guibutton>OK</guibutton> to proceed.</para>
 </listitem>
-</itemizedlist>
-<para>The <literal>Adding New Repositories</literal> status bar is displayed.</para>
-</step>
-<step><para>(Optional) If packages are being installed, the <literal>Install/Update</literal> dialog box is displayed. Click <guibutton>Cancel</guibutton> to cancel the package installation.</para>
+<listitem><para>If packages are being installed, the <emphasis role="strong">Install/Update</emphasis> dialog is displayed.</para>
 <para>The application will close when all packages are installed.</para>
-</step>
-</procedure>
+</listitem>
+</orderedlist>
+</sect2>
+<sect2 id="gjkga"><title>Using WebInstall With a Disabled Publisher</title>
+<para>Sometimes a <filename>.p5i</filename> file may contain packages from a disabled publisher. In such cases WebInstall opens up an <emphasis role="strong">Enable Publisher</emphasis> dialog which allows the user to enable the publisher before installing packages.</para>
 </sect2>
 </sect1>
 <sect1 id="um_info"><title>Working With the Update Manager</title>
 <sect2 id="gijqh"><title>About The Update Manager</title>
-<para>The Update Manager is a separate application that starts from the desktop when updates to the installed packages are available in the repository.</para>
+<para>The Update Manager is a separate application that starts from the desktop when updates to the installed packages are available in the publisher.</para>
 <figure id="gijqi"><title>Update Manager Main Window</title>
-<mediaobject><imageobject><imagedata fileref="figures/update_all.png" /></imageobject>
+<mediaobject><imageobject><imagedata fileref="figures/update_all_new.png" /></imageobject>
 </mediaobject>
 </figure>
-<para>You can use the Update Manager application to update the installed packages in your image.</para>
-<note><para>For the OpenSolaris 2009.06 release, the Update Manager updates <emphasis role="strong">all</emphasis> installed packages in the image. This action is equivalent to running the <command>pkg image-update</command> command from the command-line.</para>
+<para>You can use the Update Manager application to update the installed packages in your image. The Update Manager uses the publisher that is currently set in the Package Manager to install the latest image.</para>
+<note><para>For the OpenSolaris 2010.03 release, the Update Manager updates <emphasis role="strong">all</emphasis> installed packages in the image. This action is equivalent to running the <command>pkg image-update</command> command from the command-line.</para>
 </note>
 </sect2>
-<sect2 id="using_um"><title>Using the Update Manager</title>
+<sect2 id="um-info"><title>Using the Update Manager</title>
 <para>When updates are available to the installed packages, a notification icon is displayed in the notification panel on the OpenSolaris desktop.</para>
 <para> You can also click <menuchoice><guimenu>System</guimenu><guisubmenu>Administration</guisubmenu><guimenuitem>Update Manager</guimenuitem></menuchoice> to manually launch the Update Manager.</para>
 <para>When you are notified of a software update, perform the following steps to begin the process of updating your system:</para>
-<orderedlist><listitem><para>Click the notification icon on the desktop to display the <literal>Update Manager</literal> window.</para>
+<orderedlist><listitem><para>Click the notification icon on the desktop to display the <emphasis role="strong">Update Manager</emphasis> window.</para>
 </listitem>
-<listitem><para>Click the <guibutton>Update All</guibutton> button in the <literal>Update Manager</literal> window.</para>
+<listitem><para>Click <guibutton>Update All</guibutton> in the <emphasis role="strong">Update Manager</emphasis> window.</para>
 <note><para>Select a package and click the <guilabel>Details</guilabel> panel if you want to view more information about the package.</para>
 </note>
 </listitem>
-<listitem><para>The <literal>Update All</literal> dialog box is displayed. Proceed with the Update All process or cancel the action.</para>
+<listitem><para>The <emphasis role="strong">Update All</emphasis> dialog is displayed. Proceed with the Update All process or cancel the action.</para>
 <itemizedlist><listitem><para>Click <guibutton>Proceed</guibutton> to create a new boot environment and update all packages in the current image.</para>
 <para>During the Update All process, a clone of the active boot environment is created. This clone enables the user to boot into the boot environment state that existed before the Update All process was started. </para>
 <para>If the Package Manager is unable to create a new boot environment, an error message will be displayed. See the <xref linkend="gileh"/> section on how to rectify the error and continue with updating your image.</para>
@@ -489,7 +634,7 @@
 </listitem>
 </itemizedlist>
 </listitem>
-<listitem><para>If you chose to proceed, the <literal>Installing Updates</literal> windows are displayed. The package installation process consists of four stages:</para>
+<listitem><para>If you chose to proceed, the <emphasis role="strong">Installing Updates</emphasis> windows are displayed. The package installation process consists of four stages:</para>
 <orderedlist><listitem><para>Prepare</para>
 </listitem>
 <listitem><para>Download.</para>
@@ -497,11 +642,10 @@
 <listitem><para>Install.</para>
 </listitem>
 </orderedlist>
-<para>You can choose to cancel the process only during the <emphasis role="strong">Prepare</emphasis> and <emphasis role="strong">Download</emphasis> stages. Click the <guibutton>Cancel</guibutton> button to cancel the installation process. No changes are made and you are returned to the main window of the Update Manager.</para>
+<para>You can choose to cancel the process only during the <emphasis role="strong">Prepare</emphasis> and <emphasis role="strong">Download</emphasis> stages.</para>
+<para>Click the <guilabel>Details</guilabel> panel to view more information about each of the installation processes.</para>
 <note><para>If an error occurs during any of the stages, the <guilabel>Details</guilabel> panel is expanded and the details of the error are displayed. An error status indicator is shown next to the failed stage.</para>
 </note>
-</listitem>
-<listitem><para>Click the <guilabel>Details</guilabel> panel to view more information about each of the installation processes.</para>
 </listitem>
 <listitem><para>Read the <xref linkend="release_notes"/> before rebooting your system.</para>
 <warning role="caution"><para>You must reboot your system for the changes to take effect.</para>
@@ -511,35 +655,29 @@
 </sect2>
 <sect2 id="gileh"><title>Update All Errors</title>
 <para>A new boot environment clone <emphasis role="strong">must</emphasis> be created for the Update All process to be completed. The following error message is displayed if a boot environment clone cannot be created due to space restrictions :</para>
-<para><literal>Not enough disk space, the selected action cannot be performed. Click OK to manage your existing BEs and free up disk space or Cancel to cancel the action</literal>.</para>
-<para>Click <guibutton>No</guibutton> to cancel the Update All process and return to the Update Manager main window.</para>
+<para><literal>Not enough disk space, the Update All action cannot be performed. Choose Manage BE to manage your boot environments and free up disk space.</literal>.</para>
+<para>Click <guibutton>Close</guibutton> to cancel the Update All process.</para>
 <para>Perform the following steps if you want to rectify the error and continue with the Update All process: </para>
-<orderedlist><listitem><para>Click <guibutton>Yes</guibutton> in the error dialog box to go to the <literal>Boot Environment Management</literal> dialog.</para>
+<orderedlist><listitem><para>Click <guibutton>Manage BE</guibutton> in the error dialog to go to the <emphasis role="strong">Manage Boot Environments</emphasis> dialog.</para>
 </listitem>
 <listitem><para>Go to step 2 in the <xref linkend="gilfh"/> section. Follow the instructions to delete old or unused boot environments and free up disk space.</para>
 </listitem>
-<listitem><para>Click the <guibutton>Update All</guibutton> button in the <literal>Update Manager</literal> window to restart the process of updating all packages.</para>
+<listitem><para>Click <guibutton>Update All</guibutton> in the <emphasis role="strong">Update Manager</emphasis> window to restart the process of updating all packages.</para>
 </listitem>
 </orderedlist>
 </sect2>
-</sect1>
-<sect1 id="release_notes"><title>Release Notes</title>
-<para>The OpenSolaris 2009.06 Release Notes are available at the following locations:</para>
-<itemizedlist><listitem><para>x86 <ulink url="http://opensolaris.org/os/project/indiana/resources/relnotes/200811/x86/">Release Notes</ulink></para>
-</listitem>
-<listitem><para><trademark class="registered">SPARC</trademark> <ulink url="http://opensolaris.org/os/project/indiana/resources/relnotes/200906/sparc">Release Notes</ulink></para>
-</listitem>
-</itemizedlist>
-</sect1>
-<sect1 id="gimfg"><title>Package Manager Screencast</title>
-<para>A screencast that shows Package Manager usage for beginners is available. Click the link below to go to the screencast.</para>
-<para><ulink url="http://webcast-west.sun.com/interactive/09D02034/index.html">OpenSolaris 2009.06 Package Manager Screencast</ulink></para>
+<sect2 id="release_notes"><title>2010.03 Release Notes</title>
+<para>The Release Notes for 2010.03 are available at the following location: <ulink url="http://docs.sun.com/source/820-7679/index.html"></ulink>.</para>
+</sect2>
 </sect1>
 </chapter>
 <glossary id="glossary"><title>Image Packaging System Glossary</title>
 <glossentry><glossterm>publisher</glossterm>
-<glossdef lang="en"><para>A person, group, or corporation that designs, creates, and publishes a package to a repository. The repository in turn serves the packages from the (default) publisher, for downloading purposes. The developer-quality packages managed by Sun and made available through <ulink url="http://pkg.opensolaris.com/dev">http://pkg.opensolaris.com/dev</ulink> is an example of a publisher.</para>
-<para>The term <emphasis role="strong">authority</emphasis> has been replaced with the term <emphasis role="strong">publisher</emphasis> from the OpenSolaris 2009.06 release onwards.</para>
+<glossdef lang="en"><para>A person, group, or corporation that designs, creates, and publishes a package to a repository. The repository in turn serves the packages from the (default) publisher, for downloading purposes.</para>
+</glossdef>
+</glossentry>
+<glossentry><glossterm>repository</glossterm>
+<glossdef><para>A location where clients can publish and retrieve package content such as files contained within the package, and package metadata which includes information about the package such as its name and description.</para>
 </glossdef>
 </glossentry>
 <glossentry><glossterm>boot environment</glossterm>
@@ -565,13 +703,14 @@
 <glossdef><para>A collection of files, directories, links, drivers, and dependencies in a defined format.</para>
 </glossdef>
 </glossentry>
-<glossentry><glossterm>preferred repository</glossterm>
-<glossdef><para>A default repository that is the source for packages. If a user does not explicitly specify a repository when installing and updating packages, the preferred repository is chosen as the source for packages.</para>
+<glossentry><glossterm>origin</glossterm>
+<glossdef><para>Location of a package repository specified by a URI.</para>
 </glossdef>
 </glossentry>
-<glossentry><glossterm>repository</glossterm>
-<glossdef><para>A location where packages are available for downloading. A publisher can publish packages to many repositories.</para>
+<glossentry><glossterm>alias</glossterm>
+<glossdef><para>An alternate name for a publisher.</para>
 </glossdef>
 </glossentry>
 </glossary>
 </book>
+

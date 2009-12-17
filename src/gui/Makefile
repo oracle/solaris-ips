@@ -181,10 +181,10 @@ PYMODS = \
 PYCMODS = $(PYMODS:%.py=%.pyc)
 
 STATICHELPFILES = \
-	$(C_ONLY_HELP_LOCALES:%=help/%/figures/update_all.png) \
-	$(C_ONLY_HELP_LOCALES:%=help/%/figures/pm_pkglist.png) \
-	$(C_ONLY_HELP_LOCALES:%=help/%/figures/pm_store.png) \
-	$(C_ONLY_HELP_LOCALES:%=help/%/figures/wi_start.png)
+	$(C_ONLY_HELP_LOCALES:%=help/%/figures/pkgmgr-main.png) \
+	$(C_ONLY_HELP_LOCALES:%=help/%/figures/startpage_new.png) \
+	$(C_ONLY_HELP_LOCALES:%=help/%/figures/update_all_new.png) \
+	$(C_ONLY_HELP_LOCALES:%=help/%/figures/webinstall.png)
 
 STATICSPFILES = \
 	$(SP_LOCALES:%=data/startpagebase/%/startpage.html) \

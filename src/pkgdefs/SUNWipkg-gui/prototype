@@ -50,10 +50,10 @@ d none usr/share/gnome/help/package-manager 755 root bin
 d none usr/share/gnome/help/package-manager/C 755 root bin
 f none usr/share/gnome/help/package-manager/C/package-manager.xml 444 root bin
 d none usr/share/gnome/help/package-manager/C/figures 755 root bin
-f none usr/share/gnome/help/package-manager/C/figures/pm_pkglist.png 444 root bin
-f none usr/share/gnome/help/package-manager/C/figures/pm_store.png 444 root bin
-f none usr/share/gnome/help/package-manager/C/figures/update_all.png 444 root bin
-f none usr/share/gnome/help/package-manager/C/figures/wi_start.png 444 root bin
+f none usr/share/gnome/help/package-manager/C/figures/pkgmgr-main.png 444 root bin
+f none usr/share/gnome/help/package-manager/C/figures/startpage_new.png 444 root bin
+f none usr/share/gnome/help/package-manager/C/figures/update_all_new.png 444 root bin
+f none usr/share/gnome/help/package-manager/C/figures/webinstall.png 444 root bin
 d none usr/share/icons 755 root other
 d none usr/share/icons/HighContrast 755 root other
 d none usr/share/icons/HighContrast/48x48 755 root other

@@ -248,7 +248,7 @@ class Beadmin:
 
         def __on_help_bebutton_clicked(self, widget):
                 if self.parent != None:
-                        gui_misc.display_help("manage_be")
+                        gui_misc.display_help("manage-be")
                 else:
                         gui_misc.display_help()
                 
