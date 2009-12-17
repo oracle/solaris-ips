@@ -157,6 +157,8 @@ class Popen(subprocess.Popen):
 
                         self.pid = posix_spawnp(executable, args, sfa, env)
 
+                        self._child_created = True
+
                         # Parent
                         if p2cread and p2cwrite:
                                 os.close(p2cread)
