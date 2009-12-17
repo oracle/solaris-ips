@@ -3803,7 +3803,7 @@ class PackageManager:
         def __setup_repositories_combobox(self, api_o):
                 previous_publisher = None
                 previous_saved_name = None
-                if not self.first_run and not self.force_reload_packages:
+                if not self.first_run:
                         previous_publisher = self.__get_selected_publisher()
                         if self.saved_repository_combobox_active != -1:
                                 itr = self.repositories_list.iter_nth_child(None,
