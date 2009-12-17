@@ -204,8 +204,7 @@ def set_package_details(pkg_name, local_info, remote_info, textview,
                     "build": local_info.build_release,
                     "branch": local_info.branch}
                 labs["available"] =  _("Latest Version:")
-                if (local_info.build_release != remote_info.build_release or
-                    local_info.branch != remote_info.branch):
+                if not same_pkg_versions(local_info, remote_info):
                         text["available"] = yes_text % \
                             {"version": remote_info.version,
                             "build": remote_info.build_release,
@@ -308,6 +307,14 @@ def __add_line_to_generalinfo(text_buffer, index, label, text,
                 text_buffer.get_end_iter()
                 text_buffer.insert_pixbuf(end_itr, resized_icon)
                 text_buffer.insert(end_itr, " %s\n" % text)
+
+def same_pkg_versions(info1, info2):
+        if info1 == None or info2 == None:
+                return False
+
+        return info1.version == info2.version and \
+                info1.build_release == info2.build_release and \
+                info1.branch == info2.branch
 
 def resize_icon(icon, font_size):
         width = icon.get_width()

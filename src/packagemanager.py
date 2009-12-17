@@ -3428,7 +3428,7 @@ class PackageManager:
 
                 installed_only = False
                 if local_info:
-                        if self.__same_pkg_versions(local_info, remote_info):
+                        if gui_misc.same_pkg_versions(local_info, remote_info):
                                 installed_only = True
 
                 if not installed_only:
@@ -3456,15 +3456,6 @@ class PackageManager:
                     plan_pkg, name)
                 return
 
-        @staticmethod
-        def __same_pkg_versions(info1, info2):
-                if info1 == None or info2 == None:
-                        return False
-                        
-                return info1.version == info2.version and \
-                        info1.build_release == info2.build_release and \
-                        info1.branch == info2.branch
-
         def __hide_pkg_version_details(self):
                 self.w_info_expander.hide()
                 self.w_version_info_dialog.set_size_request(-1, -1)
@@ -3487,7 +3478,7 @@ class PackageManager:
                             {"version": local_info.version,
                             "build": local_info.build_release,
                             "branch": local_info.branch}
-                        if self.__same_pkg_versions(local_info, remote_info):
+                        if gui_misc.same_pkg_versions(local_info, remote_info):
                                 # Installed and up to date
                                 installable_label = \
                                     _("Installed package is up-to-date")
@@ -3505,7 +3496,7 @@ class PackageManager:
                                         # Installed with later version and can upgrade to
                                         # Upgradeable Version: <version>
                                         # Upgradeable == Latest Version
-                                        if self.__same_pkg_versions(plan_pkg, 
+                                        if gui_misc.same_pkg_versions(plan_pkg,
                                             remote_info):
                                                 installable_label = installable_fmt % \
                                                     {"version": plan_pkg.version,
@@ -3532,7 +3523,7 @@ class PackageManager:
                                 # Not installed with later version available to install
                                 # Installable: <version>
                                 # Installable == Latest Version
-                                if self.__same_pkg_versions(plan_pkg, remote_info):
+                                if gui_misc.same_pkg_versions(plan_pkg, remote_info):
                                         installable_label = installable_fmt % \
                                             {"version": plan_pkg.version,
                                             "build": plan_pkg.build_release,
