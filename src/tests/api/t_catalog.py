@@ -1226,6 +1226,69 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 returned = nc.get_entry_actions(f, [nc.DEPENDENCY])
                 self.assertEqual(list(returned), [])
 
+        def test_10_destroy(self):
+
+                pkg_src_list = [
+                    fmri.PkgFmri("pkg://opensolaris.org/"
+                        "test@1.0,5.11-1:20000101T120010Z"),
+                    fmri.PkgFmri("pkg://opensolaris.org/"
+                        "test@1.0,5.11-1.1:20000101T120020Z"),
+                    fmri.PkgFmri("pkg://opensolaris.org/"
+                        "apkg@1.0,5.11-1:20000101T120040Z"),
+                    fmri.PkgFmri("pkg://extra/"
+                        "apkg@1.0,5.11-1:20000101T120040Z"),
+                    fmri.PkgFmri("pkg://extra/zpkg@1.0,5.11-1:20000101T120040Z")
+                ]
+
+                def manifest_cb(cat, f):
+                        if f.pkg_name == "apkg":
+                                m = manifest.Manifest()
+                                m.set_content("", signatures=True)
+                                return m
+                        return self.__gen_manifest(f)
+
+                def ret_man(f):
+                        return manifest_cb(None, f)
+
+                # First, create a catalog (with callback) and populate it
+                # using only FMRIs.
+                cpath = self.create_test_dir("test-10")
+                nc = catalog.Catalog(meta_root=cpath)
+                for f in pkg_src_list:
+                        nc.add_package(f, manifest=ret_man(f))
+
+                # Now verify that destroy really destroys the catalog.
+                nc.destroy()
+
+                # Verify that destroy actually emptied the catalog.
+                self.assertEqual(nc.package_count, 0)
+                self.assertEqual(list(nc.fmris()), [])
+                self.assertEqual(nc.parts, {})
+                self.assertEqual(nc.updates, {})
+                self.assertEqual(nc.signatures, { "catalog.attrs": {} })
+
+                # Next, re-create the catalog and then delete a few arbitrary
+                # parts (specifically, the attrs file).
+                cpath = self.create_test_dir("test-10")
+                nc = catalog.Catalog(manifest_cb=manifest_cb, meta_root=cpath)
+                for f in pkg_src_list:
+                        nc.add_package(f, manifest=ret_man(f))
+                nc.save()
+
+                # Now remove arbitrary files.
+                for fname in ("catalog.attrs", "catalog.dependency.C",
+                    "catalog.summary.C"):
+                        pname = os.path.join(nc.meta_root, fname)
+                        portable.remove(pname)
+
+                # Verify that destroy actually removes the files.
+                nc = catalog.Catalog(meta_root=cpath)
+                nc.destroy()
+
+                for fname in os.listdir(nc.meta_root):
+                        self.assertFalse(fname.startswith("catalog.") or \
+                            fname.startswith("update."))
+
 
 class TestEmptyCatalog(pkg5unittest.Pkg5TestCase):
         """Basic functionality tests for empty catalogs."""

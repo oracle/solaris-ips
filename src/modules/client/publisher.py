@@ -1149,7 +1149,13 @@ pkg unset-publisher %s
                 # determine whether the last_modified date alone can be
                 # relied on.  This works around some oddities with empty
                 # v0 catalogs.
-                if v1_cat.package_version_count:
+                try:
+                        # Could be 'None'
+                        n0_pkgs = int(v0_cat.npkgs())
+                except (TypeError, ValueError):
+                        n0_pkgs = 0
+
+                if n0_pkgs != v1_cat.package_version_count:
                         if v0_lm == self.catalog.last_modified:
                                 # Already converted.
                                 return
@@ -1157,6 +1163,8 @@ pkg unset-publisher %s
                         # avoids many of the problems that could happen due to
                         # deficiencies in the v0 implementation.
                         v1_cat.destroy()
+                        self.__catalog = None
+                        v1_cat = self.catalog
 
                 # Now populate the v1 Catalog with the v0 Catalog's data.
                 v1_cat.batch_mode = True

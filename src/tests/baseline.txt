@@ -11,6 +11,7 @@ api.t_catalog.py TestCatalog.test_06_operations|pass
 api.t_catalog.py TestCatalog.test_07_updates|pass
 api.t_catalog.py TestCatalog.test_08_append|pass
 api.t_catalog.py TestCatalog.test_09_actions|pass
+api.t_catalog.py TestCatalog.test_10_destroy|pass
 api.t_catalog.py TestEmptyCatalog.test_01_attrs|pass
 api.t_catalog.py TestEmptyCatalog.test_02_extract_matching_fmris|pass
 api.t_catalog.py TestEmptyCatalog.test_03_actions|pass

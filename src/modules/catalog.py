@@ -447,6 +447,13 @@ class CatalogPart(CatalogPartBase):
                 self.signatures = {}
                 return entry
 
+        def destroy(self):
+                """Removes any on-disk files that exist for the catalog part and
+                discards all content."""
+
+                self.__data = {}
+                return CatalogPartBase.destroy(self)
+
         def entries(self, cb=None, last=False, ordered=False, pubs=EmptyI):
                 """A generator function that produces tuples of the form
                 (fmri, entry) as it iterates over the contents of the catalog
@@ -2114,11 +2121,37 @@ class Catalog(object):
                         ulog = self.__get_update(name, cache=False)
                         ulog.destroy()
 
-                self._attrs.destroy()
                 self._attrs = CatalogAttrs(meta_root=self.meta_root,
                     sign=self.__sign)
                 self.__parts = {}
                 self.__updates = {}
+                self._attrs.destroy()
+
+                if not self.meta_root or not os.path.exists(self.meta_root):
+                        return
+
+                # Finally, ensure that if there are any leftover files from
+                # an interrupted destroy in the past that they are removed
+                # as well.
+                for fname in os.listdir(self.meta_root):
+                        if not fname.startswith("catalog.") and \
+                            not fname.startswith("update."):
+                                continue
+
+                        pname = os.path.join(self.meta_root, fname)
+                        if not os.path.isfile(pname):
+                                continue
+
+                        try:
+                                portable.remove(pname)
+                        except EnvironmentError, e:
+                                if e.errno == errno.EACCES:
+                                        raise api_errors.PermissionsException(
+                                            e.filename)
+                                if e.errno == errno.EROFS:
+                                        raise api_errors.ReadOnlyFileSystemException(
+                                            e.filename)
+                                raise
 
         def entries(self, info_needed=EmptyI, last=False, locales=None,
             ordered=False, pubs=EmptyI):
