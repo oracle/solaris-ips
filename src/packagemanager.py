@@ -3355,6 +3355,7 @@ class PackageManager:
         def __do_refresh(self, pubs=None, immediate=False, ignore_transport_ex=False):
                 success = False
                 try:
+                        self.api_o.reset()
                         self.api_o.refresh(pubs=pubs, immediate=immediate)
                         success = True
                 except api_errors.CatalogRefreshException, cre:
