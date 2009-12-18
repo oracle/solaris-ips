@@ -449,7 +449,7 @@ fi
 # the system, we can't do this test without first configuring the image.
 #
 printf "$m_incorp\n"
-$PKG list -a pkg://$publisher/$entire_fmri > /dev/null 2>&1
+$PKG list -af pkg://$publisher/$entire_fmri > /dev/null 2>&1
 if [[ $? -ne 0 ]]; then
 	fail_fatal "$f_no_entire_in_pref" $entire_fmri $publisher
 fi
