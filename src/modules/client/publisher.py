@@ -952,33 +952,62 @@ class Publisher(object):
                 pubs = self.catalog.publishers()
 
                 if self.prefix not in pubs:
-                        origin = self.selected_repository.origins[0]
-                        logger.warning(_("\nThe catalog retrieved for "
-                            "publisher '%(prefix)s' only contains package data "
-                            "for these publisher(s): %(pubs)s.  To resolve "
-                            "this issue, update this publisher to use the "
-                            "correct repository origin, or add one of the "
-                            "listed publishers using this publisher's "
-                            "repository origin."
-                            "\n\n"
-                            "To correct the repository origin, execute the "
-                            "following command as a privileged user:"
-                            "\n\n"
-                            "pkg set-publisher -O <url> %(prefix)s"
-                            "\n\n"
-                            "To add a new publisher using this publisher's "
-                            "repository origin, execute the following command "
-                            "as a privileged user:"
-                            "\n\n"
-                            "pkg set-publisher -O %(origin)s <publisher>"
-                            "\n\n"
-                            "After the new publisher has been added, this one "
-                            "should be removed by executing the following "
-                            "command as a privileged user:"
-                            "\n\n"
-                            "pkg unset-publisher %(prefix)s\n") % {
-                            "origin": origin, "prefix": self.prefix,
-                            "pubs": ", ".join(pubs) })
+                        origins = self.selected_repository.origins
+                        origin = origins[0]
+                        logger.error(_("""
+Unable to retrieve package data for publisher '%(prefix)s' from one
+of the following origin(s):
+
+%(origins)s
+
+The catalog retrieved from one of the origin(s) listed above only
+contains package data for: %(pubs)s.
+""") % { "origins": "\n".join(str(o) for o in origins), "prefix": self.prefix,
+    "pubs": ", ".join(pubs) })
+
+                        if global_settings.client_name != "pkg":
+                                logger.error(_("""\
+This is either a result of invalid origin information being provided
+for publisher '%s', or because the wrong publisher name was
+provided when this publisher was added.
+""") % self.prefix)
+                                # Remaining messages are for pkg client only.
+                                return
+
+                        logger.error(_("""\
+To resolve this issue, correct the origin information provided for
+publisher '%(prefix)s' using the pkg set-publisher subcommand, or re-add
+the publisher using the correct name and remove the '%(prefix)s'
+publisher.
+""") % { "prefix": self.prefix })
+
+                        if len(pubs) == 1:
+                                logger.warning(_("""\
+To re-add this publisher with the correct name, execute the following
+commands as a privileged user:
+
+pkg set-publisher -P -g %(origin)s %(pub)s
+pkg unset-publisher %(prefix)s
+""") % { "origin": origin, "prefix": self.prefix, "pub": list(pubs)[0] })
+                                return
+
+                        logger.warning(_("""\
+The origin(s) listed above contain package data for more than one
+publisher, but this issue can likely be resolved by executing one
+of the following commands as a privileged user:
+"""))
+
+                        for pfx in pubs:
+                                logger.warning(_("pkg set-publisher -P -g "
+                                    "%(origin)s %(pub)s\n") % {
+                                    "origin": origin, "pub": pfx })
+
+                        logger.warning(_("""\
+Afterwards, the old publisher should be removed by executing the
+following command as a privileged user:
+
+pkg unset-publisher %s
+""") % self.prefix)
 
         def add_repository(self, repository):
                 """Adds the provided repository object to the publisher and
