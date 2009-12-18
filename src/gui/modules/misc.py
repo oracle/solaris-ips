@@ -278,10 +278,11 @@ def set_package_details_text(labs, text, textview, installed_icon,
         __add_line_to_generalinfo(infobuffer, i, labs["ins"],
             text["ins"], icon, font_size_in_pixel)
         i += 1
-        if installed and text["available"] != _("No"):
-                __add_line_to_generalinfo(infobuffer, i,
-                    labs["available"], text["available"],
-                    update_available_icon, font_size_in_pixel)
+        if installed:
+                if text["available"] != _("No"):
+                        __add_line_to_generalinfo(infobuffer, i,
+                            labs["available"], text["available"],
+                            update_available_icon, font_size_in_pixel)
         else:
                 __add_line_to_generalinfo(infobuffer, i,
                     labs["available"], text["available"])
