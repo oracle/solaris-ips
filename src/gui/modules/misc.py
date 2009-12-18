@@ -389,8 +389,8 @@ def get_catalogrefresh_exception_msg(cre):
                 else:
                         msg += str(err)
 
-        if cre.message:
-                msg += cre.message
+        if cre.errmessage:
+                msg += cre.errmessage
 
         return msg
 

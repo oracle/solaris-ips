@@ -287,12 +287,12 @@ class ActionExecutionError(ApiException):
 
 
 class CatalogRefreshException(ApiException):
-        def __init__(self, failed, total, succeeded, message=None):
+        def __init__(self, failed, total, succeeded, errmessage=None):
                 ApiException.__init__(self)
                 self.failed = failed
                 self.total = total
                 self.succeeded = succeeded
-                self.message = message
+                self.errmessage = errmessage
 
 
 class CatalogError(ApiException):

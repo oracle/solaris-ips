@@ -456,8 +456,8 @@ class InstallUpdate(progress.GuiProgressTracker):
                 except api_errors.CatalogRefreshException, e:
                         msg = _("Please check the network "
                             "connection.\nIs the repository accessible?")
-                        if e.message and len(e.message) > 0:
-                                msg = e.message
+                        if e.errmessage and len(e.errmessage) > 0:
+                                msg = e.errmessage
                         self.__g_error_stage(msg)
                         return
                 except api_errors.TransportError, ex:

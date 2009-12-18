@@ -1,3 +1,10 @@
+Version 28:
+Incompatible with clients using versions 0-27:
+    CatalogRefreshException.message was changed to
+    CatalogRefreshException.errmessage to work around a change
+    introduced in python2.5 and removed in python2.6 (Exception.message,
+    if used, triggers a deprecation warning).
+
 Version 27:
 Compatible with clients using version 25 and 26:
     The get_manifest function has been added to the api to allow clients to

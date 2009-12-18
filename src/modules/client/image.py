@@ -2414,7 +2414,7 @@ class Image(object):
                                         newimg.refresh_publishers(
                                             progtrack=progtrack)
                                 except api_errors.CatalogRefreshException, cre:
-                                        cre.message = \
+                                        cre.errmessage = \
                                             _("SUNWipkg update check failed.")
                                         raise
                         img = newimg

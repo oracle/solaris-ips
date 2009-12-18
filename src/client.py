@@ -81,7 +81,7 @@ from pkg.client.history import (RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
     RESULT_FAILED_OUTOFMEMORY)
 from pkg.misc import EmptyI, msg, PipeError
 
-CLIENT_API_VERSION = 26
+CLIENT_API_VERSION = 28
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -2026,8 +2026,8 @@ def display_catalog_failures(cre, ignore_perms_failure=False):
                         logger.error("   ")
                         logger.error(str(err))
 
-        if cre.message:
-                logger.error(cre.message)
+        if cre.errmessage:
+                logger.error(cre.errmessage)
 
         return succeeded
 
