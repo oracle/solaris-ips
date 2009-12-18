@@ -1940,6 +1940,7 @@ class PackageManager:
                 
                 self.__save_setup_before_search()
                 first_run = self.first_run
+                self.first_run = False
                 self.__clear_before_search(False)
                 # Show the Search all page if not showing the Start Page on startup
                 show_search_all_page = not first_run or (first_run 
