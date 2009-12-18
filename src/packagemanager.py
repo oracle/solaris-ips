@@ -2058,7 +2058,7 @@ class PackageManager:
                 header += ngettext(
                     "There is one package in this category, "
                     "however it is not visible in the selected View:\n"
-                    "<li style='padding-left:7px'><b>%(filter)s</b></li>",
+                    "<li style='padding-left:7px'><b>%s</b></li>",
                     "There are a number of packages in this category, "
                     "however they are not visible in the selected View:\n"
                     "<li style='padding-left:7px'><b>%s</b></li>",
