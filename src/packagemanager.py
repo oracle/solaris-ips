@@ -3824,6 +3824,7 @@ class PackageManager:
                         selected_repos.append(repo)
                 i = 0
                 active = 0
+                self.pubs_disabled_status = {}
                 for pub in api_o.get_publishers():
                         self.pubs_disabled_status[pub.prefix] = pub.disabled
                         if pub.disabled:
