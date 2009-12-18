@@ -431,6 +431,14 @@ def end_package(pkg):
                 pkg.actions.append(actions.attribute.AttributeAction(None,
                     name="info.classification", value=pkg.classification))
 
+        # add dependency on consolidation incorporation if not obsolete
+        if pkg.consolidation and not pkg.obsolete_branch:
+                action = actions.fromstr(
+                    "depend fmri=consolidation/%s/%s-incorporation "
+                    "type=require importer.no-version=true" % 
+                    (pkg.consolidation, pkg.consolidation))
+                pkg.actions.append(action)
+
         # add legacy actions
         if pkg.name != "SUNWipkg":
                 for p in pkg.srcpkgs:
@@ -1148,10 +1156,6 @@ def SolarisParse(mf):
                             "name=org.opensolaris.consolidation value=%s" %
                             curpkg.consolidation)
                         action.attrs["importer.source"] = token
-                        curpkg.actions.append(action)
-                        action = actions.fromstr("depend fmri=consolidation/%s/%s-incorporation "
-                            "type=require importer.no-version=true" % 
-                            (curpkg.consolidation, curpkg.consolidation))
                         curpkg.actions.append(action)
 
                 elif token == "summary":
