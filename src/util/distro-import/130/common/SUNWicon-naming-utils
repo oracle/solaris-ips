@@ -1,0 +1,6 @@
+package SUNWicon-naming-utils
+consolidation "gnome"
+classification "Desktop (GNOME)/Theming"
+import SUNWicon-naming-utils
+depend SUNWperl-xml-parser
+end package

@@ -1,0 +1,12 @@
+package SUNWvim
+consolidation "sfw"
+classification "System/Text Tools"
+import SUNWvim
+add link path=usr/bin/ex target=vim
+add link path=usr/bin/vi target=vim
+add link path=usr/bin/view target=vim
+add link path=usr/share/man/man1/ex.1 target=vim.1
+add link path=usr/share/man/man1/vi.1 target=vim.1
+add link path=usr/share/man/man1/view.1 target=vim.1
+version 7.2.308
+end package

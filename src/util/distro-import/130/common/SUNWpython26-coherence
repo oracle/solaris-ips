@@ -1,0 +1,8 @@
+package SUNWpython26-coherence
+consolidation "gnome"
+classification "Development/Python"
+import SUNWpython26-coherence
+import SUNWpython26-coherence-root
+depend SUNWpython26-twisted
+depend SUNWpython26-zope-interface
+end package

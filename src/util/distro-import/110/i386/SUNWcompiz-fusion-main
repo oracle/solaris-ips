@@ -1,4 +1,5 @@
 package SUNWcompiz-fusion-main
+consolidation "gnome"
 classification "Applications/Plug-ins and Run-times"
 import SUNWcompiz-fusion-main
 import SUNWcompiz-fusion-main-devel

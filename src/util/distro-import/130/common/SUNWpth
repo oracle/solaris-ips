@@ -1,0 +1,6 @@
+package SUNWpth
+consolidation "sfw"
+classification "System/Libraries"
+import SUNWpth
+version 2.0.7
+end package

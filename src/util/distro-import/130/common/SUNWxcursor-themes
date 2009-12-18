@@ -1,0 +1,6 @@
+package SUNWxcursor-themes
+consolidation "X"
+classification "System/X11"
+import SUNWxcursor-themes
+version 1.0.2
+end package

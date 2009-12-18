@@ -1,0 +1,8 @@
+package OSOLvpanels-hypervisor
+consolidation "vpanels"
+classification "Applications/Configuration and Preferences"
+classification "System/Virtualization"
+import OSOLvpin-hypervisor
+depend OSOLvpanels
+depend SUNWxvm
+end package

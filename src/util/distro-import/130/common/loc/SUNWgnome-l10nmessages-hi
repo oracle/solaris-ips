@@ -1,0 +1,5 @@
+package SUNWgnome-l10nmessages-hi
+consolidation "gnome_l10n"
+classification "Desktop (GNOME)/Localizations"
+import SUNWgnome-l10nmessages-hi
+end package

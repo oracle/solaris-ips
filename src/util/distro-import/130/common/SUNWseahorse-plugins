@@ -1,0 +1,6 @@
+package SUNWseahorse-plugins
+consolidation "gnome"
+classification "System/Security"
+import SUNWseahorse-plugins
+import SUNWseahorse-plugins-root
+end package

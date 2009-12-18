@@ -1,0 +1,4 @@
+package SUNWpcmem
+consolidation "osnet"
+obsoleted 130
+end package

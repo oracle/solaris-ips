@@ -1,0 +1,6 @@
+package SUNWgnupg
+consolidation "sfw"
+classification "Applications/System Utilities"
+import SUNWgnupg
+version 2.0.13
+end package

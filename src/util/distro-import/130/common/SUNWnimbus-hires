@@ -1,0 +1,5 @@
+package SUNWnimbus-hires
+consolidation "gnome"
+classification "Desktop (GNOME)/Theming"
+import SUNWnimbus-hires
+end package

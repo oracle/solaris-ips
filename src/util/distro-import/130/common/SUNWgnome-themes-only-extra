@@ -1,0 +1,5 @@
+package SUNWgnome-themes-only-extra
+consolidation "gnome"
+classification "Desktop (GNOME)/Theming"
+import SUNWgnome-themes-only-extra
+end package

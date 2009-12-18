@@ -1,4 +1,5 @@
 package SUNWdesktop-search-firefox
 consolidation "gnome"
-obsoleted 130
+classification "Applications/Plug-ins and Run-times"
+import SUNWdesktop-search-firefox
 end package

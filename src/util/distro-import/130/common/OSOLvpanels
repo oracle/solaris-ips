@@ -1,0 +1,7 @@
+package OSOLvpanels
+consolidation "vpanels"
+classification "Applications/Configuration and Preferences"
+import OSOLvpin
+depend SUNWgnome-base-libs-java
+depend SUNWjhrt
+end package

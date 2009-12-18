@@ -1,0 +1,5 @@
+package SUNWtango-icon-theme
+consolidation "gnome"
+classification "Desktop (GNOME)/Theming"
+import SUNWtango-icon-theme
+end package

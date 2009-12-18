@@ -1,0 +1,5 @@
+package SUNWbeadm
+consolidation "install"
+classification "System/Core"
+import SUNWbeadm
+end package

@@ -1,0 +1,4 @@
+package OSOLvpanels-mysql
+consolidation "vpanels"
+obsoleted 130
+end package

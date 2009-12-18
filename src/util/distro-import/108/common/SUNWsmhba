@@ -1,4 +1,5 @@
 package SUNWsmhba
+consolidation "osnet"
 classification "System/Libraries"
 import SUNWsmhba
 import SUNWsmhbar

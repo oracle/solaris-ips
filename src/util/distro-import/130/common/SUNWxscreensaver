@@ -1,0 +1,7 @@
+package SUNWxscreensaver
+consolidation "gnome"
+classification "System/X11"
+import SUNWxscreensaver
+import SUNWgnome-screensaver-root
+version 5.1
+end package

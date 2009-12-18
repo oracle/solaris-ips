@@ -3,4 +3,5 @@ consolidation "install"
 classification "System/Core"
 import SUNWdistro-const
 depend SUNWinstall
+depend_path /usr/bin/rmformat
 end package

@@ -1,0 +1,6 @@
+package SUNWgnome-themes-hires
+consolidation "gnome"
+depend SUNWhicolor-icon-theme
+depend SUNWnimbus-hires
+renamed 130
+end package

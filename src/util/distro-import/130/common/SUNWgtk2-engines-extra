@@ -1,0 +1,9 @@
+package SUNWgtk2-engines-extra
+consolidation "gnome"
+classification "Desktop (GNOME)/Theming"
+import SUNWgtk2-engines-extra exclude \
+    usr/share/doc/SUNWgtk2-engines/gtk-engines-2.18.4/COPYING.bz2 \
+    usr/share/doc/SUNWgtk2-engines/gtk-engines-2.18.4/ChangeLog.bz2 \
+    usr/share/doc/SUNWgtk2-engines/gtk-engines-2.18.4/NEWS.bz2 \
+    usr/share/doc/SUNWgtk2-engines/gtk-engines-2.18.4/po/ChangeLog.bz2
+end package

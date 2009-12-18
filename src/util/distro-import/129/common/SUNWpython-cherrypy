@@ -1,0 +1,6 @@
+package SUNWpython-cherrypy
+consolidation "ips"
+classification "Development/Python"
+import SUNWpython-cherrypy
+version 3.1.2
+end package

@@ -1,0 +1,5 @@
+package SUNWgnome-backgrounds
+consolidation "gnome"
+classification "Desktop (GNOME)/Theming"
+import SUNWgnome-backgrounds
+end package
