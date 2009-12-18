@@ -316,7 +316,7 @@ depend fmri=pkg:/s-v-bar pkg.debug.depend.file=var/log/file2 pkg.debug.depend.re
 """
 
         payload_elf_sub_error = """\
-%(payload_path)s (which will be installed at %(installed_path)s) had this token, %(tok)s, in its run path:%(rp)s.  It is not currently possible to automatically expand this token. Please specify its value on the command line.\
+%(payload_path)s (which will be installed at %(installed_path)s) had this token, %(tok)s, in its run path: %(rp)s.  It is not currently possible to automatically expand this token. Please specify its value on the command line.\
 """
 
         payload_elf_sub_stdout = """\
@@ -353,8 +353,8 @@ Couldn't find %(path_pref)s/tmp/file/should/not/exist/here/foo
 """
 
         double_plat_error = """\
-%(image_dir)s/proto/elf_test (which will be installed at bar/foo) had this token, $PLATFORM, in its run path:/platform/$PLATFORM/foo.  It is not currently possible to automatically expand this token. Please specify its value on the command line.
-%(image_dir)s/proto/elf_test (which will be installed at bar/foo) had this token, $PLATFORM, in its run path:/isadir/$PLATFORM/baz.  It is not currently possible to automatically expand this token. Please specify its value on the command line."""
+%(image_dir)s/proto/elf_test (which will be installed at bar/foo) had this token, $PLATFORM, in its run path: /platform/$PLATFORM/foo.  It is not currently possible to automatically expand this token. Please specify its value on the command line.
+%(image_dir)s/proto/elf_test (which will be installed at bar/foo) had this token, $PLATFORM, in its run path: /isadir/$PLATFORM/baz.  It is not currently possible to automatically expand this token. Please specify its value on the command line."""
 
         double_plat_stdout = """\
 depend fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1 %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=bar/foo %(pfx)s.type=elf type=require\
@@ -364,7 +364,7 @@ depend fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1 %(pfx)s.path=lib %(pfx)s.path=
 }
 
         double_plat_isa_error = """\
-%(image_dir)s/proto/elf_test (which will be installed at bar/foo) had this token, $ISALIST, in its run path:/$ISALIST/$PLATFORM/baz.  It is not currently possible to automatically expand this token. Please specify its value on the command line.\
+%(image_dir)s/proto/elf_test (which will be installed at bar/foo) had this token, $ISALIST, in its run path: /$ISALIST/$PLATFORM/baz.  It is not currently possible to automatically expand this token. Please specify its value on the command line.\
 """
 
         double_plat_isa_stdout = """\
