@@ -11,4 +11,5 @@ add user username=gdm uid=50 group=gdm gcos-field="GDM Reserved UID" \
     home-dir=/var/lib/gdm
 chattr etc/gdm/custom.conf \
     original_name=SUNWgnome-display-mgr:etc/X11/gdm/custom.conf
+depend SUNWconsolekit
 end package
