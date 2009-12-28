@@ -798,9 +798,15 @@ from %(imgroot)s/etc/driver_aliases." % \
                         errors.append("minor node permission '%s' missing "
                             "from etc/minor_perm" % a)
 
-                onfs_policy = set(onfs.attrlist("policy"))
                 # Canonicalize "*" minorspecs to empty
-                policylist = list(self.attrlist("policy"))
+                policylist = list(onfs.attrlist("policy"))
+                for i, p in enumerate(policylist):
+                        f = p.split()
+                        if f[0] == "*":
+                                policylist[i] = " ".join(f[1:])
+                onfs_policy = set(policylist)
+
+                policylist = self.attrlist("policy")
                 for i, p in enumerate(policylist):
                         f = p.split()
                         if f[0] == "*":
