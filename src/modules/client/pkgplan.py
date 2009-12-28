@@ -31,8 +31,10 @@ from pkg.client import global_settings
 logger = global_settings.logger
 
 import pkg.actions.directory as directory
+import pkg.client.api_errors as apx
 import pkg.manifest as manifest
 from pkg.misc import expanddirs, get_pkg_otw_size, EmptyI
+
 
 class PkgPlan(object):
         """A package plan takes two package FMRIs and an Image, and produces the
@@ -59,6 +61,7 @@ class PkgPlan(object):
                 self.__xferfiles = -1
 
                 self.__destination_filters = []
+                self.__license_status = {}
 
                 self.check_cancelation = check_cancelation
 
@@ -69,6 +72,21 @@ class PkgPlan(object):
                         s += "  %s -> %s\n" % (src, dest)
 
                 return s
+
+        def __add_license(self, src, dest):
+                """Adds a license status entry for the given src and dest
+                license actions.
+
+                'src' should be None or the source action for a license.
+
+                'dest' must be the destination action for a license."""
+
+                self.__license_status[dest.attrs["license"]] = {
+                    "src": src,
+                    "dest": dest,
+                    "accepted": False,
+                    "displayed": False,
+                }
 
         def propose(self, of, om, df, dm):
                 """Propose origin and dest fmri, manifest"""
@@ -151,12 +169,48 @@ class PkgPlan(object):
                 # Add any repair actions to the update list
                 self.actions[1].extend(self.__repair_actions)
 
-                #
+                for src, dest in itertools.chain(self.gen_update_actions(),
+                    self.gen_install_actions()):
+                        if dest.name == "license":
+                                self.__add_license(src, dest)
+
                 # We cross a point of no return here, and throw away the origin
                 # and destination manifests; we also delete them from the
                 # image cache.
                 self.__origin_mfst = None
                 self.__destination_mfst = None
+
+        def get_licenses(self):
+                """A generator function that yields tuples of the form (license,
+                entry).  Where 'entry' is a dict containing the license status
+                information."""
+
+                for lic, entry in self.__license_status.iteritems():
+                        yield lic, entry
+
+        def set_license_status(self, plicense, accepted=None, displayed=None):
+                """Sets the license status for the given license entry.
+
+                'plicense' should be the value of the license attribute for the
+                destination license action.
+
+                'accepted' is an optional parameter that can be one of three
+                values:
+                        None    leaves accepted status unchanged
+                        False   sets accepted status to False
+                        True    sets accepted status to True
+
+                'displayed' is an optional parameter that can be one of three
+                values:
+                        None    leaves displayed status unchanged
+                        False   sets displayed status to False
+                        True    sets displayed status to True"""
+
+                entry = self.__license_status[plicense]
+                if accepted is not None:
+                        entry["accepted"] = accepted
+                if displayed is not None:
+                        entry["displayed"] = displayed
 
         def get_legacy_info(self):
                 """ Returns information needed by the legacy action to
@@ -176,13 +230,6 @@ class PkgPlan(object):
 
                 return (self.__xferfiles, self.__xfersize)
 
-        def will_xfer(self):
-                nf, nb = self.get_xferstats()
-                if nf > 0:
-                        return True
-                else:
-                        return False
-
         def get_xfername(self):
                 if self.destination_fmri:
                         return self.destination_fmri.get_name()
@@ -198,6 +245,19 @@ class PkgPlan(object):
                 methods, as well as any package-wide steps that need to be taken
                 at such a time.
                 """
+
+                # Determine if license acceptance requirements have been met as
+                # early as possible.
+                errors = []
+                for lic, entry in self.get_licenses():
+                        dest = entry["dest"]
+                        if (dest.must_accept and not entry["accepted"]) or \
+                            (dest.must_display and not entry["displayed"]):
+                                errors.append(apx.LicenseAcceptanceError(
+                                    self.destination_fmri, **entry))
+
+                if errors:
+                        raise apx.PkgLicenseErrors(errors)
 
                 for src, dest in itertools.chain(*self.actions):
                         if dest:
@@ -219,7 +279,7 @@ class PkgPlan(object):
                         if dest and dest.needsdata(src):
                                 mfile.add_action(dest)
 
-                mfile.wait_files() 
+                mfile.wait_files()
                 self.__progtrack.download_end_pkg()
 
         def gen_install_actions(self):
@@ -246,7 +306,7 @@ class PkgPlan(object):
                         raise
 
         def execute_update(self, src, dest):
-                """ handle action updates"""                                
+                """ handle action updates"""
                 try:
                         dest.install(self, src)
                 except Exception, e:

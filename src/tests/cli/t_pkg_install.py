@@ -3316,9 +3316,6 @@ class TestPkgInstallObsolete(testutils.SingleDepotTestCase):
 
         persistent_depot = True
 
-        def setUp(self):
-                testutils.SingleDepotTestCase.setUp(self)
-
         def test_basic(self):
                 foo1 = """
                     open foo@1
@@ -4137,6 +4134,111 @@ class TestPkgInstallMultiObsolete(testutils.ManyDepotTestCase):
                 self.pkg("set-publisher -O " + durl2 + " test2")
 
                 self.pkg("install stem", exit=1)
+
+
+class TestPkgInstallLicense(testutils.SingleDepotTestCase):
+        """Tests involving one or more packages that require license acceptance
+        or display."""
+
+        persistent_depot = True
+
+        baz10 = """
+            open baz@1.0,5.11-0
+            add license $test_prefix/copyright.baz license=copyright.baz
+            close """
+
+        # First iteration has just a copyright.
+        licensed10 = """
+            open licensed@1.0,5.11-0
+            add depend type=require fmri=baz@1.0
+            add license $test_prefix/copyright.licensed license=copyright.licensed
+            close """
+
+        # Second iteration has copyright that must-display and a new license
+        # that doesn't require acceptance.
+        licensed12 = """
+            open licensed@1.2,5.11-0
+            add depend type=require fmri=baz@1.0
+            add file $test_prefix/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
+            add license $test_prefix/copyright.licensed license=copyright.licensed must-display=True
+            add license $test_prefix/license.licensed license=license.licensed
+            close """
+
+        # Third iteration now requires acceptance of license.
+        licensed13 = """
+            open licensed@1.3,5.11-0
+            add depend type=require fmri=baz@1.0
+            add file $test_prefix/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
+            add license $test_prefix/copyright.licensed license=copyright.licensed must-display=True
+            add license $test_prefix/license.licensed license=license.licensed must-accept=True
+            close """
+
+        misc_files = ["copyright.baz", "copyright.licensed", "libc.so.1",
+            "license.licensed", "license.licensed.addendum"]
+
+        def setUp(self):
+                testutils.SingleDepotTestCase.setUp(self, publisher="bobcat")
+
+                for p in ("baz10", "licensed10", "licensed12", "licensed13"):
+                        val = getattr(self, p).replace("$test_prefix",
+                            self.get_test_prefix())
+                        setattr(self, p, val)
+
+                for p in self.misc_files:
+                        fpath = os.path.join(self.get_test_prefix(), p)
+                        f = open(fpath, "wb")
+                        # write the name of the file into the file, so that
+                        # all files have differing contents
+                        f.write(fpath)
+                        f.close()
+                        self.debug("wrote %s" % fpath)
+
+                durl = self.dc.get_depot_url()
+                plist = self.pkgsend_bulk(durl, self.licensed10 + \
+                    self.licensed12 + self.licensed13 + self.baz10)
+
+        def test_01_install_update(self):
+                """Verifies that install and image-update handle license
+                acceptance and display."""
+
+                durl = self.dc.get_depot_url()
+                self.image_create(durl, prefix="bobcat")
+
+                # First, test the basic install case to see if a license that
+                # does not require viewing or acceptance will be installed.
+                self.pkg("install licensed@1.0")
+                self.pkg("list")
+                self.pkg("info licensed@1.0 baz@1.0")
+
+                # Verify that --licenses include the license in output.
+                self.pkg("install -n --licenses licensed@1.2 | "
+                    "grep '/license.licensed'")
+
+                # Verify that licenses are not included in -n output if
+                # --licenses is not provided.
+                self.pkg("install -n licensed@1.2 | grep '/copyright.licensed'",
+                    exit=1)
+
+                # Next, check that an upgrade succeeds when a license requires
+                # display and that the license will be displayed.
+                self.pkg("install licensed@1.2 | grep '/copyright.licensed'")
+
+                # Next, check that an image-update fails if the user has not
+                # specified --accept and a license requires acceptance.
+                self.pkg("image-update -v", exit=6)
+
+                # Verify that licenses are not included in -n output if
+                # --licenses is not provided.
+                self.pkg("image-update -n | grep '/copyright.licensed", exit=1)
+
+                # Verify that --licenses include the license in output.
+                self.pkg("image-update -n --licenses | "
+                    "grep '/license.licensed'")
+
+                # Next, check that an image-update succeeds if the user has
+                # specified --accept and a license requires acceptance.
+                self.pkg("image-update -v --accept")
+                self.pkg("info licensed@1.3")
 
 
 if __name__ == "__main__":

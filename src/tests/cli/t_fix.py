@@ -28,42 +28,59 @@ if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 
 import os
+import shutil
 import time
 import unittest
 
 class TestFix(testutils.SingleDepotTestCase):
+
+        # Don't need to restart depot for every test.
+        persistent_depot = True
+
         amber10 = """
             open amber@1.0,5.11-0
             add dir mode=0755 owner=root group=bin path=/etc
-            add file /tmp/amber1 mode=0644 owner=root group=bin path=/etc/amber1
-            add file /tmp/amber2 mode=0644 owner=root group=bin path=/etc/amber2
+            add file $test_prefix/amber1 mode=0644 owner=root group=bin path=/etc/amber1
+            add file $test_prefix/amber2 mode=0644 owner=root group=bin path=/etc/amber2
             add hardlink path=/etc/amber.hardlink target=/etc/amber1
-            close
-        """
+            close """
 
-        misc_files = ["/tmp/amber1", "/tmp/amber2"]
+        licensed13 = """
+            open licensed@1.3,5.11-0
+            add file $test_prefix/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
+            add license $test_prefix/copyright.licensed license=copyright.licensed must-display=True
+            add license $test_prefix/license.licensed license=license.licensed must-accept=True
+            close """
+
+        misc_files = ["copyright.licensed", "libc.so.1", "license.licensed",
+            "license.licensed.addendum", "amber1", "amber2"]
 
         def setUp(self):
                 testutils.SingleDepotTestCase.setUp(self)
+
+                for p in ("amber10", "licensed13"):
+                        val = getattr(self, p).replace("$test_prefix",
+                            self.get_test_prefix())
+                        setattr(self, p, val)
+
                 for p in self.misc_files:
-                        f = open(p, "w")
+                        fpath = os.path.join(self.get_test_prefix(), p)
+                        f = open(fpath, "wb")
                         # write the name of the file into the file, so that
                         # all files have differing contents
-                        f.write(p)
+                        f.write(fpath)
                         f.close()
-                        self.debug("wrote %s" % p)
-                
-        def tearDown(self):
-                testutils.SingleDepotTestCase.tearDown(self)
-                for p in self.misc_files:
-                        os.remove(p)
+                        self.debug("wrote %s" % fpath)
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.amber10 + self.licensed13)
 
         def test_fix1(self):
                 """Basic fix test: install the amber package, modify one of the
                 files, and make sure it gets fixed.  """
 
                 durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.amber10)
+                shutil.rmtree(self.img_path, True)
                 self.image_create(durl)
                 self.pkg("install amber@1.0")
 
@@ -71,7 +88,7 @@ class TestFix(testutils.SingleDepotTestCase):
                     "main_dict.ascii.v2")
                 orig_mtime = os.stat(index_file).st_mtime
                 time.sleep(1)
-                
+
                 victim = "etc/amber2"
                 # Initial size
                 size1 = self.file_size(victim)
@@ -85,7 +102,7 @@ class TestFix(testutils.SingleDepotTestCase):
 
                 # Fix the package
                 self.pkg("fix amber")
-                
+
                 # Make sure it's the same size as the original
                 size2 = self.file_size(victim)
                 self.assertEqual(size1, size2)
@@ -99,7 +116,7 @@ class TestFix(testutils.SingleDepotTestCase):
                 hardlinks that point to it updated"""
 
                 durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.amber10)
+                shutil.rmtree(self.img_path, True)
                 self.image_create(durl)
                 self.pkg("install amber@1.0")
 
@@ -117,6 +134,48 @@ class TestFix(testutils.SingleDepotTestCase):
                 # Make sure the inode of the link is now different
                 self.assertEqual(i1, i2)
 
+        def test_fix3_license(self):
+                """Verify that fix works with licenses that require acceptance
+                and/or display."""
+
+                durl = self.dc.get_depot_url()
+                shutil.rmtree(self.img_path, True)
+                self.image_create(durl)
+                self.pkg("install --accept licensed@1.3")
+
+                victim = "lib/libc.so.1"
+
+                # Initial size
+                size1 = self.file_size(victim)
+
+                # Corrupt the file
+                self.file_append(victim, "foobar")
+
+                # Make sure the size actually changed
+                size2 = self.file_size(victim)
+                self.assertNotEqual(size1, size2)
+
+                # Verify that the fix will fail since the license requires
+                # acceptance.
+                self.pkg("fix licensed", exit=6)
+
+                # Verify that when the fix failed, it displayed the license
+                # that required display.
+                self.pkg("fix licensed | grep '/copyright.licensed'")
+                self.pkg("fix licensed | grep -v '/license.licensed'")
+
+                # Verify that fix will display all licenses when it fails,
+                # if provided the --licenses option.
+                self.pkg("fix --licenses licensed | grep '/license.licensed'")
+
+                # Finally, verify that fix will succeed when a package requires
+                # license acceptance if provided the --accept option.
+                self.pkg("fix --accept licensed")
+
+                # Make sure it's the same size as the original
+                size2 = self.file_size(victim)
+                self.assertEqual(size1, size2)
+
         def file_inode(self, path):
                 file_path = os.path.join(self.get_img_path(), path)
                 st = os.stat(file_path)
@@ -132,6 +191,7 @@ class TestFix(testutils.SingleDepotTestCase):
                 f = file(file_path, "a+")
                 f.write("\n%s\n" % string)
                 f.close
+
 
 if __name__ == "__main__":
         unittest.main()

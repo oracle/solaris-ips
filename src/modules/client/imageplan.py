@@ -511,11 +511,8 @@ class ImagePlan(object):
 
                 assert self.state == EVALUATED_PKGS, self
 
-                if self.__noexecute and not verbose:
-                        return # optimize performance if no one cares
-
                 # prefetch manifests
-                prefetch_list = [] # manifest, intents to be prefetched
+                prefetch_mfsts = [] # manifest, intents to be prefetched
                 eval_list = []     # oldfmri, oldintent, newfmri, newintent
                                    # prefetched intents omitted
 
@@ -524,15 +521,15 @@ class ImagePlan(object):
                         old_in, new_in = self.__create_intent(oldfmri, newfmri)
                         if oldfmri:
                                 if not self.image.has_manifest(oldfmri):
-                                        prefetch_list.append((oldfmri, old_in))
+                                        prefetch_mfsts.append((oldfmri, old_in))
                                         old_in = None # so we don't send it twice
                         if newfmri:
                                 if not self.image.has_manifest(newfmri):
-                                        prefetch_list.append((newfmri, new_in))
+                                        prefetch_mfsts.append((newfmri, new_in))
                                         new_in = None
                         eval_list.append((oldfmri, old_in, newfmri, new_in))
 
-                self.image.transport.prefetch_manifests(prefetch_list, 
+                self.image.transport.prefetch_manifests(prefetch_mfsts, 
                     progtrack=self.__progtrack,
                     ccancel=self.__check_cancelation)
 
@@ -666,9 +663,8 @@ class ImagePlan(object):
                 self.update_actions.sort(key = lambda obj:obj[2])
                 self.install_actions.sort(key = lambda obj:obj[2])
 
-                npkgs = 0
-                nfiles = 0
-                nbytes = 0
+                # Pre-calculate size of data retrieval for preexecute().
+                npkgs = nfiles = nbytes = 0
                 for p in self.pkg_plans:
                         nf, nb = p.get_xferstats()
                         nbytes += nb
@@ -679,14 +675,12 @@ class ImagePlan(object):
                         # makes the pkg stats consistent between download and
                         # install.
                         npkgs += 1
-
                 self.__progtrack.download_set_goal(npkgs, nfiles, nbytes)
 
+                # Evaluation complete.
                 self.__progtrack.evaluate_done(self.__target_install_count, \
                     self.__target_update_count, self.__target_removal_count)
-
                 self.state = EVALUATED_OK
-
 
         def nothingtodo(self):
                 """ Test whether this image plan contains any work to do """
@@ -754,11 +748,31 @@ class ImagePlan(object):
                 # helps the stats engine by only considering the performance of
                 # bulk downloads.
                 self.image.transport.stats.reset()
-                try:
-                        try:
-                                for p in self.pkg_plans:
-                                        p.preexecute()
 
+                lic_errors = []
+                try:
+                        # Check for license acceptance issues first to avoid
+                        # wasted time in the download phase and so failure
+                        # can occur early.
+                        for p in self.pkg_plans:
+                                try:
+                                        p.preexecute()
+                                except api_errors.PkgLicenseErrors, e:
+                                        # Accumulate all license errors.
+                                        lic_errors.append(e)
+                                except EnvironmentError, e:
+                                        if e.errno == errno.EACCES:
+                                                raise api_errors.PermissionsException(
+                                                    e.filename)
+                                        if e.errno == errno.EROFS:
+                                                raise api_errors.ReadOnlyFileSystemException(
+                                                    e.filename)
+                                        raise
+
+                        if lic_errors:
+                                raise api_errors.PlanLicenseErrors(lic_errors)
+
+                        try:
                                 for p in self.pkg_plans:
                                         p.download()
                         except EnvironmentError, e:

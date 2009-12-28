@@ -229,14 +229,52 @@ DESCRIPTION
     The 'license' action represents a license or other informational
     file associated with the package contents.  A package may deliver
     licenses, disclaimers, or other guidance to the package installer
-    through the use of the license action.  The payload of the license
-    action will be delivered into the image metadata directory
-    associated with the package.
+    through the use of the license action.
+    
+    The payload of the license action will be delivered into the image
+    metadata directory related to the package, and should only contain
+    human-readable textual data.  It should not contain HTML or any
+    other form of markup. License actions, through attributes, may
+    indicate to clients that the related payload must be displayed
+    and/or require "acceptance" of it.  Please note that the exact
+    method of display and/or acceptance is at the discretion of
+    clients.
 
     The following attributes are recognized:
 
-    license  The keyword identifying the license type, for use in
-             filter and query operations.
+    license         This attribute provides a meaningful description
+                    for the license to assist users in determining
+                    the contents without reading the license text
+                    itself.  Some example values might include:
+
+                    "ABC Co. Copyright Notice"
+                    "ABC Co. Custom License"
+                    "Common Development and Distribution License 1.0 (CDDL)"
+                    "GNU General Public License 2.0 (GPL)"
+                    "GNU General Public License 2.0 (GPL) Only"
+                    "MIT License"
+                    "Mozilla Public License 1.1 (MPL)"
+                    "Simplified BSD License"
+
+                    Wherever possible, including the version of the
+                    license in the description is recommended as shown
+                    above.  This value must be unique within a package.
+
+    must-accept     When "true", this license must be accepted by a
+                    user before the related package can be installed
+                    or updated.  Omission of this attribute will be
+                    considered equivalent to "false".  The method of
+                    acceptance (interactive, configuration-based,
+                    etc.) is at the discretion of clients.
+
+    must-display    When "true", the action's payload must be displayed
+                    by clients during packaging operations.  Omission of
+                    this value is considered equivalent to "false".
+                    This attribute should not be used for copyright
+                    notices, only actual licenses or other material
+                    that must be displayed during operations.  The
+                    method of display is at the discretion of
+                    clients.
 
     The 'license' attribute is the key attribute for the license action.
 

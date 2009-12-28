@@ -61,6 +61,15 @@ class ProgressTracker(object):
         def __init__(self):
                 self.reset()
 
+        def reset_download(self):
+                self.dl_goal_nfiles = 0
+                self.dl_cur_nfiles = 0
+                self.dl_goal_nbytes = 0
+                self.dl_cur_nbytes = 0
+                self.dl_goal_npkgs = 0
+                self.dl_cur_npkgs = 0
+                self.dl_cur_pkg = "None"
+
         def reset(self):
                 self.cat_cur_catalog = None
 
@@ -76,13 +85,7 @@ class ProgressTracker(object):
                 self.eval_goal_update_npkgs = 0
                 self.eval_goal_remove_npkgs = 0
 
-                self.dl_goal_nfiles = 0
-                self.dl_cur_nfiles = 0
-                self.dl_goal_nbytes = 0
-                self.dl_cur_nbytes = 0
-                self.dl_goal_npkgs = 0
-                self.dl_cur_npkgs = 0
-                self.dl_cur_pkg = "None"
+                self.reset_download()
 
                 self.act_cur_nactions = 0
                 self.act_goal_nactions = 0
@@ -751,6 +754,12 @@ class FancyUNIXProgressTracker(ProgressTracker):
         def dl_output_done(self):
                 self.dl_cur_pkg = "Completed"
                 self.dl_output(force=True)
+
+                # Reset.
+                self.dl_started = False
+                self.spinner = 0
+                self.curstrlen = 0
+
                 try:
                         print
                         print

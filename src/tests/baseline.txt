@@ -1,4 +1,5 @@
 api.t_action.py TestActions.test_action_errors|pass
+api.t_action.py TestActions.test_action_license|pass
 api.t_action.py TestActions.test_action_parser|pass
 api.t_action.py TestActions.test_action_tostr|pass
 api.t_bootenv.py TestBootEnv.test_api_consistency|pass
@@ -233,6 +234,7 @@ api.t_version.py TestVersion.testversionsuccessor8|pass
 api.t_version.py TestVersion.testversionsuccessor9|pass
 cli.t_actuators.py TestPkgActuators.test_actuators|pass
 cli.t_api.py TestPkgApi.test_bad_orderings|pass
+cli.t_api.py TestPkgApi.test_license|pass
 cli.t_api.py TestPkgApi.test_properties|pass
 cli.t_api.py TestPkgApi.test_publisher_apis|pass
 cli.t_api.py TestPkgApi.test_refresh_transition|pass
@@ -318,6 +320,7 @@ cli.t_change_variant.py TestPkgChangeVariant.test_cv_11_arch_and_zone_2|pass
 cli.t_colliding_links.py TestPkgCollidingLinks.test_1|pass
 cli.t_fix.py TestFix.test_fix1|pass
 cli.t_fix.py TestFix.test_fix2|pass
+cli.t_fix.py TestFix.test_fix3_license|pass
 cli.t_pkg_R_option.py TestROption.test_1|pass
 cli.t_pkg_R_option.py TestROption.test_bad_cli_options|pass
 cli.t_pkg_api_install.py TestPkgApiInstall.test_bad_fmris|pass
@@ -476,6 +479,7 @@ cli.t_pkg_install.py TestPkgInstallBasics.test_nonrecursive_dependent_uninstall|
 cli.t_pkg_install.py TestPkgInstallBasics.test_recursive_uninstall|pass
 cli.t_pkg_install.py TestPkgInstallCircularDependencies.test_anchored_circular_dependencies|pass
 cli.t_pkg_install.py TestPkgInstallCircularDependencies.test_unanchored_circular_dependencies|pass
+cli.t_pkg_install.py TestPkgInstallLicense.test_01_install_update|pass
 cli.t_pkg_install.py TestPkgInstallMultiObsolete.test_01|pass
 cli.t_pkg_install.py TestPkgInstallMultiObsolete.test_02|pass
 cli.t_pkg_install.py TestPkgInstallObsolete.test_basic|pass

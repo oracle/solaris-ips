@@ -7,34 +7,38 @@ NAME
 SYNOPSIS
      /usr/bin/pkg [options] command [cmd_options] [operands]
 
-     /usr/bin/pkg install [-nvq] [--no-refresh] [--no-index] pkg_fmri ...
+     /usr/bin/pkg install [-nvq] [--accept] [--licenses] [--no-refresh]
+         [--no-index] pkg_fmri ...
      /usr/bin/pkg uninstall [-nrvq] [--no-index] pkg_fmri ...
 
      /usr/bin/pkg verify [-Hvq] [pkg_fmri_pattern ...]
-     /usr/bin/pkg fix [pkg_fmri_pattern ...]
+     /usr/bin/pkg fix [--accept] [--licenses] [pkg_fmri_pattern ...]
      /usr/bin/pkg info [-lr] [--license] [pkg_fmri_pattern ...]
      /usr/bin/pkg contents [-Hmr] [-a attribute=pattern ...] [-s sort_key]
          [-o attribute ...] [-t action_type ...] [pkg_fmri_pattern ...]
      /usr/bin/pkg list [-Hafnsuv] [--no-refresh] [pkg_fmri_pattern ...]
-     /usr/bin/pkg search [-alprHI] [-o attribute ...] [-s repo_uri] query
+     /usr/bin/pkg search [-alprHI] [-o attribute ...] [-s repo_uri]
+         query
 
      /usr/bin/pkg refresh [--full] [publisher ...]
 
-     /usr/bin/pkg image-create [-fFPUz] [--force] [--full|--partial|--user]
-         [--zone] [-k ssl_key] [-c ssl_cert] [--no-refresh] 
-         [--variant <variant_spec>=<instance>] [-g|--origin ...] [-m|--mirror ...]
-         [--facet <facet_spec>=[True|False]] (-p|--publisher) name=uri dir
+     /usr/bin/pkg image-create [-fFPUz] [--force]
+         [--full|--partial|--user] [--zone] [-k ssl_key] [-c ssl_cert]
+         [--no-refresh]  [--variant <variant_spec>=<instance>]
+         [-g|--origin ...] [-m|--mirror ...]
+         [--facet <facet_spec>=[True|False]]
+         (-p|--publisher) name=uri dir
 
-     /usr/bin/pkg image-update [-fnvq] [--be-name name] [--no-refresh]
-         [--no-index]
+     /usr/bin/pkg image-update [-fnvq] [--accept] [--be-name name]
+         [--licenses] [--no-refresh] [--no-index]
 
      /usr/bin/pkg variant [<variant_spec>]
-     /usr/bin/pkg change-variant [-nvq] [--be-name name]
-         <variant_spec>=<instance> ...
+     /usr/bin/pkg change-variant [-nvq] [--accept] [--be-name name]
+         [--licenses] <variant_spec>=<instance> ...
 
      /usr/bin/pkg facet [<facet_spec>] 
-     /usr/bin/pkg change-facet [-nvq] [--be-name name] 
-         <facet_spec>=[True|False|None] ...
+     /usr/bin/pkg change-facet [-nvq] [--accept] [--be-name name] 
+         [--licenses] <facet_spec>=[True|False|None] ...
 
      /usr/bin/pkg set-property propname propvalue
      /usr/bin/pkg unset-property propname ...
@@ -144,7 +148,8 @@ SUBCOMMANDS
 
           With --facet, set the specified facet to the indicated value.
 
-     image-update [-fnvq] [--be-name name] [--no-index] [--no-refresh]
+     image-update [-fnvq] [--accept] [--be-name name] [--licenses]
+       [--no-index] [--no-refresh]
           Update all installed packages in the current image to the
           latest available version.
 
@@ -156,9 +161,17 @@ SUBCOMMANDS
           With the -v option, issue verbose progress messages during the
           requested operation.  With the -q option, be completely silent.
 
+          With --accept, you indicate that you agree to and accept the
+          terms of the licenses of the packages that are updated or
+          installed.  If you do not provide this option, and any package
+          licenses require acceptance, the operation will fail.
+
           With --be-name, rename the newly created boot environment to be the
           argument given.  This option is only valid if a new boot environment
           is created during image update. See also beadm(1m).
+
+          With --licenses, display all of the licenses for the packages that
+          will be installed or updated as part of this operation.
 
           With --no-index, do not update the search indices after the operation
           has completed successfully.
@@ -175,7 +188,8 @@ SUBCOMMANDS
           With --full, retrieve all publisher metadata instead of attempting an
           incremental update.
 
-     install [-nvq] [--no-index] [--no-refresh] pkg_fmri ...
+     install [-nvq] [--accept] [--licenses] [--no-index] [--no-refresh]
+       pkg_fmri ...
      uninstall [-nrvq] [--no-index] pkg_fmri ...
           Install or remove the package specified by pkg_fmri or
           matching pkg_fmri as a substring.  With the -n option, execute
@@ -187,6 +201,14 @@ SUBCOMMANDS
           In the case of uninstall, the -r option will recursively
           uninstall any packages which are dependent on the initial
           package.
+
+          With --accept, you indicate that you agree to and accept the
+          terms of the licenses of the packages that are updated or
+          installed.  If you do not provide this option, and any package
+          licenses require acceptance, the operation will fail.
+
+          With --licenses, display all of the licenses for the packages that
+          will be installed or updated as part of this operation.
 
           With --no-index, do not update the search indices after the operation
           has completed successfully.
@@ -427,7 +449,7 @@ SUBCOMMANDS
           Display the current values of all variants, or with arguments,
           only the variants specified
 
-     change-variant [-nvq] [--be-name name]
+     change-variant [-nvq] [--accept] [--be-name name] [--licenses]
        <variant_spec>=<instance> [<variant_spec>=<instance> ...]
           Change the specified variants in the current image.
 
@@ -436,6 +458,14 @@ SUBCOMMANDS
 
           With the -v option, issue verbose progress messages during the
           requested operation.  With the -q option, be completely silent.
+
+          With --accept, you indicate that you agree to and accept the
+          terms of the licenses of the packages that are updated or
+          installed.  If you do not provide this option, and any package
+          licenses require acceptance, the operation will fail.
+
+          With --licenses, display all of the licenses for the packages that
+          will be installed or updated as part of this operation.
 
           With --be-name, rename the newly created boot environment to be the
           argument given.  This option is only valid if a new boot environment
@@ -446,7 +476,7 @@ SUBCOMMANDS
           argument(s), evalute if each facet would be true or false and print
           the result.
 
-     change-facet [-nvq] [--be-name name]
+     change-facet [-nvq] [--accept] [--be-name name] [--licenses]
        <facet_spec>=[True|False|None] ...
 
           Change the specified facets in the current image.
@@ -457,6 +487,14 @@ SUBCOMMANDS
           With the -v option, issue verbose progress messages during the
           requested operation.  With the -q option, be completely silent.
 
+          With --accept, you indicate that you agree to and accept the
+          terms of the licenses of the packages that are updated or
+          installed.  If you do not provide this option, and any package
+          licenses require acceptance, the operation will fail.
+
+          With --licenses, display all of the licenses for the packages that
+          will be installed or updated as part of this operation.
+
           With --be-name, rename the newly created boot environment to be the
           argument given.  This option is only valid if a new boot environment
           is created during the operation. See also beadm(1m).
@@ -464,8 +502,16 @@ SUBCOMMANDS
           Facets may be set to True or False.  Setting one to None removes
           that facet specification from the current image.
      
-     fix [pkg_fmri_pattern ...]
+     fix [--accept] [--licenses] [pkg_fmri_pattern ...]
           Fix any errors reported by pkg verify.
+
+          With --accept, you indicate that you agree to and accept the
+          terms of the licenses of the packages that are updated or
+          installed.  If you do not provide this option, and any package
+          licenses require acceptance, the operation will fail.
+
+          With --licenses, display all of the licenses for the packages that
+          will be installed or updated as part of this operation.
 
      set-property propname propvalue
           Update an existing image property or add a new image property;
@@ -702,6 +748,10 @@ EXIT STATUS
 
      5     The requested operation cannot be performed on a live
            image.
+
+     6     The requested operation cannot be completed as the licenses
+           for the packages being installed or updated have not been
+           accepted.
 
 FILES
      var/pkg                    Metadata location for full and partial

@@ -40,7 +40,7 @@ import tempfile
 import time
 import unittest
 
-API_VERSION = 28
+API_VERSION = 29
 PKG_CLIENT_NAME = "pkg"
 
 class TestPkgApi(testutils.SingleDepotTestCase):
@@ -58,6 +58,37 @@ class TestPkgApi(testutils.SingleDepotTestCase):
 
         bar10 = """
             open bar@1.0,5.11-0
+            close """
+
+        baz10 = """
+            open baz@1.0,5.11-0
+            add license $test_prefix/copyright.baz license=copyright.baz
+            close """
+
+        # First iteration has just a copyright.
+        licensed10 = """
+            open licensed@1.0,5.11-0
+            add depend type=require fmri=baz@1.0
+            add license $test_prefix/copyright.licensed license=copyright.licensed
+            close """
+
+        # Second iteration has copyright that must-display and a new license
+        # that doesn't require acceptance.
+        licensed12 = """
+            open licensed@1.2,5.11-0
+            add depend type=require fmri=baz@1.0
+            add file $test_prefix/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
+            add license $test_prefix/copyright.licensed license=copyright.licensed must-display=True
+            add license $test_prefix/license.licensed license=license.licensed
+            close """
+
+        # Third iteration now requires acceptance of license.
+        licensed13 = """
+            open licensed@1.3,5.11-0
+            add depend type=require fmri=baz@1.0
+            add file $test_prefix/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
+            add license $test_prefix/copyright.licensed license=copyright.licensed must-display=True
+            add license $test_prefix/license.licensed license=license.licensed must-accept=True
             close """
 
         p5i_bobcat = """{
@@ -96,13 +127,17 @@ class TestPkgApi(testutils.SingleDepotTestCase):
 """
 
 
-        misc_files = [ "libc.so.1" ]
+        misc_files = ["copyright.baz", "copyright.licensed", "libc.so.1",
+            "license.licensed", "license.licensed.addendum"]
 
         def setUp(self):
                 testutils.SingleDepotTestCase.setUp(self, publisher="bobcat")
 
-                self.foo12 = self.foo12.replace("$test_prefix",
-                    self.get_test_prefix())
+                for p in ("foo12", "baz10", "licensed10", "licensed12",
+                    "licensed13"):
+                        val = getattr(self, p).replace("$test_prefix",
+                            self.get_test_prefix())
+                        setattr(self, p, val)
 
                 for p in self.misc_files:
                         fpath = os.path.join(self.get_test_prefix(), p)
@@ -114,8 +149,8 @@ class TestPkgApi(testutils.SingleDepotTestCase):
                         self.debug("wrote %s" % fpath)
 
         def tearDown(self):
-                for p in self.misc_files:
-                        os.remove(os.path.join(self.get_test_prefix(), p))
+                #for p in self.misc_files:
+                #        os.remove(os.path.join(self.get_test_prefix(), p))
                 testutils.SingleDepotTestCase.tearDown(self)
 
         def __try_bad_installs(self, api_obj):
@@ -535,3 +570,256 @@ class TestPkgApi(testutils.SingleDepotTestCase):
 
                 self.assertRaises(api_errors.InvalidP5IFile, api_obj.parse_p5i,
                     location=lcpath)
+
+        def test_license(self):
+                """ Send various packages and then verify that install and
+                update operations will raise the correct exceptions or
+                enforce the requirements of the license actions within. """
+
+                durl = self.dc.get_depot_url()
+                plist = self.pkgsend_bulk(durl, self.licensed10 + \
+                    self.licensed12 + self.licensed13 + self.bar10 + self.baz10)
+                self.image_create(durl, prefix="bobcat")
+
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+
+                # First, test the basic install case to see if expected license
+                # data is returned.
+                api_obj.plan_install(["licensed@1.0"])
+
+                def lic_sort(a, b):
+                        adest = a[2]
+                        bdest = b[2]
+                        return cmp(adest.license, bdest.license)
+
+                plan = api_obj.describe()
+                lics = sorted(plan.get_licenses(), cmp=lic_sort)
+
+                # Expect one license action for each package: "licensed", and
+                # its dependency "baz".
+                self.assertEqual(len(lics), 2)
+
+                # Now verify license entry for "baz@1.0" and "licensed@1.0".
+                for i, p in enumerate([plist[4], plist[0]]):
+                        pfmri = fmri.PkgFmri(p)
+                        dest_fmri, src, dest, accepted, displayed = lics[i]
+
+                        # Expect license information to be for this package.
+                        self.assertEqual(pfmri, dest_fmri)
+
+                        # This is an install, not an update, so there should be
+                        # no src.
+                        self.assertEqual(src, None)
+
+                        # dest should be a LicenseInfo object.
+                        self.assertEqual(type(dest), api.LicenseInfo)
+
+                        # Verify the identity of the LicenseInfo objects.
+                        self.assertEqual(dest.license,
+                            "copyright.%s" % pfmri.pkg_name)
+
+                        # The license hasn't been accepted yet.
+                        self.assertEqual(accepted, False)
+
+                        # The license hasn't beend displayed yet.
+                        self.assertEqual(displayed, False)
+
+                        # The license action doesn't require acceptance.
+                        self.assertEqual(dest.must_accept, False)
+
+                        # The license action doesn't require display.
+                        self.assertEqual(dest.must_display, False)
+
+                        # Verify license text.
+                        text = os.path.join(self.get_test_prefix(),
+                            dest.license)
+                        self.assertEqual(dest.get_text(), text)
+
+                # Install the packages.
+                api_obj.prepare()
+                api_obj.execute_plan()
+                api_obj.reset()
+
+                # Next, check that an upgrade produces expected license data.
+                api_obj.plan_install(["licensed@1.2"])
+
+                plan = api_obj.describe()
+                lics = sorted(plan.get_licenses(), cmp=lic_sort)
+
+                # Expect two license actions, both of which should be for the
+                # licensed@1.2 package.
+                self.assertEqual(len(lics), 2)
+
+                # Now verify license entries for "licensed@1.2".
+                pfmri = fmri.PkgFmri(plist[1])
+                for dest_fmri, src, dest, accepted, displayed in lics:
+                        # License information should only be for "licensed@1.2".
+                        self.assertEqual(pfmri, dest_fmri)
+
+                        must_accept = False
+                        must_display = False
+                        if dest.license.startswith("copyright"):
+                                # This is an an update, so src should be a
+                                # LicenseInfo object.
+                                self.assertEqual(type(src), api.LicenseInfo)
+
+                                # In this version, copyright must be displayed
+                                # for dest.
+                                must_display = True
+
+                        # dest should be a LicenseInfo object.
+                        self.assertEqual(type(dest), api.LicenseInfo)
+
+                        # Verify LicenseInfo attributes.
+                        self.assertEqual(accepted, False)
+                        self.assertEqual(displayed, False)
+                        self.assertEqual(dest.must_accept, must_accept)
+                        self.assertEqual(dest.must_display, must_display)
+
+                        # Verify license text.
+                        text = os.path.join(self.get_test_prefix(),
+                            dest.license)
+                        self.assertEqual(dest.get_text(), text)
+
+                # Attempt to prepare plan; this should raise a license
+                # exception.
+                self.assertRaises(api_errors.PlanLicenseErrors,
+                    api_obj.prepare)
+
+                # Plan will have to be re-created first before continuing.
+                api_obj.reset()
+                api_obj.plan_install(["licensed@1.2"])
+                plan = api_obj.describe()
+
+                # Set the copyright as having been displayed.
+                api_obj.set_plan_license_status(pfmri, "copyright.licensed",
+                    displayed=True)
+                lics = sorted(plan.get_licenses(pfmri=pfmri), cmp=lic_sort)
+
+                # Verify displayed was updated and accepted remains False.
+                dest_fmri, src, dest, accepted, displayed = lics[0]
+                self.assertEqual(src.license, "copyright.licensed")
+                self.assertEqual(accepted, False)
+                self.assertEqual(displayed, True)
+
+                # Prepare should succeed this time; so execute afterwards.
+                api_obj.prepare()
+                api_obj.execute_plan()
+                api_obj.reset()
+
+                # Next, check that an image-update produces expected license
+                # data.
+                api_obj.plan_update_all(sys.argv[0])
+
+                plan = api_obj.describe()
+                lics = sorted(plan.get_licenses(), cmp=lic_sort)
+
+                # Expect two license actions, both of which should be for the
+                # licensed@1.3 package.
+                self.assertEqual(len(lics), 2)
+
+                # Now verify license entries for "licensed@1.3".
+                pfmri = fmri.PkgFmri(plist[2])
+                for dest_fmri, src, dest, accepted, displayed in lics:
+                        # License information should only be for "licensed@1.3".
+                        self.assertEqual(pfmri, dest_fmri)
+
+                        must_accept = False
+                        must_display = False
+
+                        # This is an an update, so src should be a LicenseInfo
+                        # object.
+                        self.assertEqual(type(src), api.LicenseInfo)
+
+                        if dest.license.startswith("copyright."):
+                                # copyright must be displayed for dest.
+                                must_display = True
+                        elif dest.license.startswith("license."):
+                                # license must be accepted for dest.
+                                must_accept = True
+
+                        # dest should be a LicenseInfo object.
+                        self.assertEqual(type(dest), api.LicenseInfo)
+
+                        # Verify LicenseInfo attributes.
+                        self.assertEqual(accepted, False)
+                        self.assertEqual(displayed, False)
+                        self.assertEqual(dest.must_accept, must_accept)
+                        self.assertEqual(dest.must_display, must_display)
+
+                        # Verify license text.
+                        text = os.path.join(self.get_test_prefix(),
+                            dest.license)
+                        self.assertEqual(dest.get_text(), text)
+
+                # Attempt to prepare plan; this should raise a license
+                # exception.
+                self.assertRaises(api_errors.PlanLicenseErrors,
+                    api_obj.prepare)
+
+                # Plan will have to be re-created first before continuing.
+                api_obj.reset()
+                api_obj.plan_update_all(sys.argv[0])
+                plan = api_obj.describe()
+                lics = sorted(plan.get_licenses(pfmri=pfmri), cmp=lic_sort)
+
+                # Set the license status of only one license.
+                api_obj.set_plan_license_status(pfmri, "license.licensed",
+                    accepted=True)
+                lics = sorted(plan.get_licenses(pfmri=pfmri), cmp=lic_sort)
+
+                # Verify only license.licensed was updated.
+                dest_fmri, src, dest, accepted, displayed = lics[0]
+                self.assertEqual(src.license, "copyright.licensed")
+                self.assertEqual(accepted, False)
+                self.assertEqual(displayed, False)
+
+                dest_fmri, src, dest, accepted, displayed = lics[1]
+                self.assertEqual(src.license, "license.licensed")
+                self.assertEqual(accepted, True)
+                self.assertEqual(displayed, False)
+
+                # Attempt to prepare plan; this should raise a license
+                # exception since the copyright wasn't displayed.
+                self.assertRaises(api_errors.PlanLicenseErrors,
+                    api_obj.prepare)
+
+                # Plan will have to be re-created first before continuing.
+                api_obj.reset()
+                api_obj.plan_update_all(sys.argv[0])
+                plan = api_obj.describe()
+
+                # Set the correct license status for all licenses.
+                api_obj.set_plan_license_status(pfmri, "copyright.licensed",
+                    displayed=True)
+                api_obj.set_plan_license_status(pfmri, "license.licensed",
+                    accepted=True)
+                lics = sorted(plan.get_licenses(pfmri=pfmri), cmp=lic_sort)
+
+                # Verify status for both license actions.
+                dest_fmri, src, dest, accepted, displayed = lics[0]
+                self.assertEqual(src.license, "copyright.licensed")
+                self.assertEqual(accepted, False)
+                self.assertEqual(displayed, True)
+
+                dest_fmri, src, dest, accepted, displayed = lics[1]
+                self.assertEqual(src.license, "license.licensed")
+                self.assertEqual(accepted, True)
+                self.assertEqual(displayed, False)
+
+                # Prepare should succeed this time; so execute afterwards.
+                api_obj.prepare()
+                api_obj.execute_plan()
+                api_obj.reset()
+
+
+                # Finally, verify that an uninstall won't trigger license
+                # errors as acceptance should never be applied to it.
+                api_obj.plan_uninstall(["*"], False)
+                api_obj.prepare()
+                api_obj.execute_plan()
+                api_obj.reset()
+
+

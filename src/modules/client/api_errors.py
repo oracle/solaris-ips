@@ -60,6 +60,82 @@ class PlanExistsException(ApiException):
                 ApiException.__init__(self)
                 self.plan_type = plan_type
 
+
+class PlanPrepareException(ApiException):
+        """Base exception class for plan preparation errors."""
+        pass
+
+
+class LicenseAcceptanceError(ApiException):
+        """Used to indicate that license-related errors occurred during
+        plan evaluation or execution."""
+
+        def __init__(self, pfmri, src=None, dest=None, accepted=None,
+            displayed=None):
+                ApiException.__init__(self)
+                self.fmri = pfmri
+                self.src = src
+                self.dest = dest
+                self.accepted = accepted
+                self.displayed = displayed
+
+
+class PkgLicenseErrors(PlanPrepareException):
+        """Used to indicate that plan evaluation or execution failed due
+        to license-related errors for a package."""
+
+        def __init__(self, errors):
+                """'errors' should be a list of LicenseAcceptanceError
+                exceptions."""
+
+                PlanPrepareException.__init__(self)
+                self.__errors = errors
+
+        @property
+        def errors(self):
+                """A list of LicenseAcceptanceError exceptions."""
+                return self.__errors
+
+
+class PlanLicenseErrors(PlanPrepareException):
+        """Used to indicate that image plan evaluation or execution failed due
+        to license-related errors."""
+
+        def __init__(self, pp_errors):
+                """'errors' should be a list of PkgLicenseErrors exceptions."""
+
+                PlanPrepareException.__init__(self)
+                self.__errors = pkgs = {}
+                for pp_err in pp_errors:
+                        for e in pp_err.errors:
+                                pkgs.setdefault(str(e.fmri), []).append(e)
+
+        @property
+        def errors(self):
+                """Returns a dictionary indexed by package FMRI string of
+                lists of LicenseAcceptanceError exceptions."""
+
+                return self.__errors
+
+        def __str__(self):
+                """Returns a string representation of the license errors."""
+
+                output = ""
+                for sfmri in self.__errors:
+                        output += ("-" * 40) + "\n"
+                        output += _("Package: %s\n\n") % sfmri
+                        for e in self.__errors[sfmri]:
+                                lic_name = e.dest.attrs["license"]
+                                output += _("License: %s\n") % lic_name
+                                if e.dest.must_accept and not e.accepted:
+                                        output += _("  License requires "
+                                            "acceptance.")
+                                if e.dest.must_display and not e.displayed:
+                                        output += _("  License must be viewed.")
+                                output += "\n"
+                return output
+
+
 class ActuatorException(ApiException):
         def __init__(self, e):
                 ApiException.__init__(self)
@@ -68,14 +144,18 @@ class ActuatorException(ApiException):
         def __str__(self):
                 return str(self.exception)
 
+
 class PrematureExecutionException(ApiException):
         pass
 
-class AlreadyPreparedException(ApiException):
+
+class AlreadyPreparedException(PlanPrepareException):
         pass
+
 
 class AlreadyExecutedException(ApiException):
         pass
+
 
 class ImageplanStateException(ApiException):
         def __init__(self, state):

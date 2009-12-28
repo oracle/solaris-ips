@@ -81,7 +81,7 @@ from pkg.client.history import (RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
     RESULT_FAILED_OUTOFMEMORY)
 from pkg.misc import EmptyI, msg, PipeError
 
-CLIENT_API_VERSION = 28
+CLIENT_API_VERSION = 29
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -95,6 +95,7 @@ EXIT_BADOPT  = 2
 EXIT_PARTIAL = 3
 EXIT_NOP     = 4
 EXIT_NOTLIVE = 5
+EXIT_LICENSE = 6
 
 
 logger = global_settings.logger
@@ -451,7 +452,17 @@ def get_tracker(quiet=False):
 
 def fix_image(img, args):
         progresstracker = get_tracker(False)
-        fmris, notfound, illegals = img.installed_fmris_from_args(args)
+
+        opts, pargs = getopt.getopt(args, "", ["accept", "licenses"])
+
+        accept = show_licenses = False
+        for opt, arg in opts:
+                if opt == "--accept":
+                        accept = True
+                elif opt == "--licenses":
+                        show_licenses = True
+
+        fmris, notfound, illegals = img.installed_fmris_from_args(pargs)
 
         any_errors = False
         repairs = []
@@ -481,7 +492,22 @@ def fix_image(img, args):
                 except RuntimeError:
                         pass # Error is printed by the BootEnv call.
                 try:
-                        success = img.repair(repairs, progresstracker)
+                        success = img.repair(repairs, progresstracker,
+                            accept=accept, show_licenses=show_licenses)
+                except api_errors.PlanLicenseErrors, e:
+                        # Prepend a newline because otherwise the exception will
+                        # be printed on the same line as the spinner.
+                        logger.error("\n")
+                        error(_("The following packages require their "
+                            "licenses to be accepted before they can be "
+                            "repaired: "))
+                        logger.error(str(e))
+                        logger.error(_("To indicate that you agree to and "
+                            "accept the terms of the licenses of the packages "
+                            "listed above, use the --accept option.  To "
+                            "display all of the related licenses, use the "
+                            "--licenses option."))
+                        return EXIT_LICENSE
                 except api_errors.RebootNeededOnLiveImageException:
                         error(_("Requested \"fix\" operation would affect "
                             "files that cannot be modified in live image.\n"
@@ -586,28 +612,82 @@ installed on the system.\n"""))
                 return EXIT_OOPS
         return EXIT_OK
 
-def __api_prepare(operation, api_inst):
+def accept_plan_licenses(api_inst):
+        """Helper function that marks all licenses for the current plan as
+        accepted if they require acceptance."""
+
+        plan = api_inst.describe()
+        for pfmri, src, dest, accepted, displayed in plan.get_licenses():
+                if not dest.must_accept:
+                        continue
+                api_inst.set_plan_license_status(pfmri, dest.license,
+                    accepted=True)
+
+def display_plan_licenses(api_inst, all=False):
+        """Helper function to display licenses for the current plan.
+
+        'all' is an optional boolean value indicating whether all licenses
+        should be displayed or only those that have must-display=true."""
+
+        plan = api_inst.describe()
+
+        logger.info("\n")
+        for pfmri, src, dest, accepted, displayed in plan.get_licenses():
+                if not all and not dest.must_display:
+                        continue
+                elif not all and dest.must_display and displayed:
+                        # License already displayed, so doesn't need to be
+                        # displayed again.
+                        continue
+
+                lic = dest.license
+                logger.info("-" * 60)
+                logger.info(_("Package: %s") % pfmri)
+                logger.info(_("License: %s\n") % lic)
+                logger.info(dest.get_text())
+                logger.info("\n")
+
+                # Mark license as having been displayed.
+                api_inst.set_plan_license_status(pfmri, lic, displayed=True)
+
+def __api_prepare(operation, api_inst, accept=False, show_licenses=False):
         # Exceptions which happen here are printed in the above level, with
         # or without some extra decoration done here.
         # XXX would be nice to kick the progress tracker.
         try:
+                display_plan_licenses(api_inst, all=show_licenses)
+                if accept:
+                        accept_plan_licenses(api_inst)
                 api_inst.prepare()
         except api_errors.PermissionsException, e:
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
                 error("\n" + str(e))
-                return False
+                return EXIT_OOPS
         except api_errors.TransportError, e:
                 # move past the progress tracker line.
                 msg("\n")
                 raise e
+        except api_errors.PlanLicenseErrors, e:
+                # Prepend a newline because otherwise the exception will
+                # be printed on the same line as the spinner.
+                logger.error("\n")
+                error(_("The following packages require their "
+                    "licenses to be accepted before they can be installed "
+                    "or updated: "))
+                logger.error(str(e))
+                logger.error(_("To indicate that you agree to and accept the "
+                    "terms of the licenses of the packages listed above, "
+                    "use the --accept option.  To display all of the related "
+                    "licenses, use the --licenses option."))
+                return EXIT_LICENSE
         except KeyboardInterrupt:
                 raise
         except:
                 error(_("\nAn unexpected error happened while preparing for " \
                     "%s:") % operation)
                 raise
-        return True
+        return EXIT_OK
 
 def __api_execute_plan(operation, api_inst, raise_ActionExecutionError=True):
         try:
@@ -724,9 +804,10 @@ def change_variant(img, args):
         the image contents as necessary."""
 
         op = "change-variant"
-        opts, pargs = getopt.getopt(args, "nvq", ["be-name="])
+        opts, pargs = getopt.getopt(args, "nvq", ["accept", "be-name=",
+            "licenses"])
 
-        quiet = noexecute = verbose = False
+        accept = quiet = noexecute = show_licenses = verbose = False
         be_name = None
         for opt, arg in opts:
                 if opt == "-n":
@@ -735,8 +816,12 @@ def change_variant(img, args):
                         verbose = True
                 elif opt == "-q":
                         quiet = True
+                elif opt == "--accept":
+                        accept = True
                 elif opt == "--be-name":
                         be_name = arg
+                elif opt == "--licenses":
+                        show_licenses = True
 
         if verbose and quiet:
                 usage(_("%s: -v and -q may not be combined") % op)
@@ -768,8 +853,9 @@ def change_variant(img, args):
 
         stuff_to_do = None
         try:
-                stuff_to_do = api_inst.plan_change_varcets(variants, facets=None,
-                    noexecute=noexecute, verbose=verbose, be_name=be_name)
+                stuff_to_do = api_inst.plan_change_varcets(variants,
+                    facets=None, noexecute=noexecute, verbose=verbose,
+                    be_name=be_name)
         except:
                 if not __api_plan_exception(op, noexecute=noexecute):
                         return EXIT_OOPS
@@ -779,13 +865,16 @@ def change_variant(img, args):
                 return EXIT_NOP
 
         if noexecute:
-                return EXIT_OOPS
-
+                if show_licenses:
+                        display_plan_licenses(api_inst, all=True)
+                return EXIT_OK
 
         # Exceptions which happen here are printed in the above level, with
         # or without some extra decoration done here.
-        if not __api_prepare("change-variant", api_inst):
-                return EXIT_OOPS
+        ret_code = __api_prepare("change-variant", api_inst, accept=accept,
+            show_licenses=show_licenses)
+        if ret_code != EXIT_OK:
+                return ret_code
 
         ret_code = __api_execute_plan("change-variant", api_inst)
 
@@ -796,9 +885,10 @@ def change_facet(img, args):
         image as necessary"""
 
         op = "change-facet"
-        opts, pargs = getopt.getopt(args, "nvq", ["be-name="])
+        opts, pargs = getopt.getopt(args, "nvq", ["accept", "be-name=",
+            "licenses"])
 
-        quiet = noexecute = verbose = False
+        accept = quiet = noexecute = show_licenses = verbose = False
         be_name = None
         for opt, arg in opts:
                 if opt == "-n":
@@ -807,8 +897,12 @@ def change_facet(img, args):
                         verbose = True
                 elif opt == "-q":
                         quiet = True
+                elif opt == "--accept":
+                        accept = True
                 elif opt == "--be-name":
                         be_name = arg
+                elif opt == "--licenses":
+                        show_licenses = True
 
         if verbose and quiet:
                 usage(_("%s: -v and -q may not be combined") % op)
@@ -864,13 +958,16 @@ def change_facet(img, args):
                 return EXIT_NOP
 
         if noexecute:
+                if show_licenses:
+                        display_plan_licenses(api_inst, all=True)
                 return EXIT_OK
-
 
         # Exceptions which happen here are printed in the above level, with
         # or without some extra decoration done here.
-        if not __api_prepare(op, api_inst):
-                return EXIT_OOPS
+        ret_code = __api_prepare(op, api_inst, accept=accept,
+            show_licenses=show_licenses)
+        if ret_code != EXIT_OK:
+                return ret_code
 
         ret_code = __api_execute_plan(op, api_inst)
 
@@ -884,10 +981,10 @@ def image_update(img, args):
         # XXX Leaf package refinements.
 
         op = "image-update"
-        opts, pargs = getopt.getopt(args, "fnvq", ["be-name=", "no-refresh",
-            "no-index"])
+        opts, pargs = getopt.getopt(args, "fnvq", ["accept", "be-name=",
+            "licenses", "no-refresh", "no-index"])
 
-        force = quiet = noexecute = verbose = False
+        accept = force = quiet = noexecute = show_licenses = verbose = False
         refresh_catalogs = update_index = True
         be_name = None
         for opt, arg in opts:
@@ -899,12 +996,16 @@ def image_update(img, args):
                         quiet = True
                 elif opt == "-f":
                         force = True
+                elif opt == "--accept":
+                        accept = True
+                elif opt == "--be-name":
+                        be_name = arg
+                elif opt == "--licenses":
+                        show_licenses = True
                 elif opt == "--no-refresh":
                         refresh_catalogs = False
                 elif opt == "--no-index":
                         update_index = False
-                elif opt == "--be-name":
-                        be_name = arg
 
         if verbose and quiet:
                 usage(_("-v and -q may not be combined"), cmd="image-update")
@@ -932,10 +1033,14 @@ def image_update(img, args):
                 return EXIT_NOP
 
         if noexecute:
+                if show_licenses:
+                        display_plan_licenses(api_inst, all=True)
                 return EXIT_OK
 
-        if not __api_prepare(op, api_inst):
-                return EXIT_OOPS
+        ret_code = __api_prepare(op, api_inst, accept=accept,
+            show_licenses=show_licenses)
+        if ret_code != EXIT_OK:
+                return ret_code
 
         ret_code = __api_execute_plan(op, api_inst)
 
@@ -953,9 +1058,10 @@ def install(img, args):
 
         # XXX Publisher-catalog issues.
         op = "install"
-        opts, pargs = getopt.getopt(args, "nvq", ["no-refresh", "no-index"])
+        opts, pargs = getopt.getopt(args, "nvq", ["accept", "licenses",
+            "no-refresh", "no-index"])
 
-        quiet = noexecute = verbose = False
+        accept = quiet = noexecute = show_licenses = verbose = False
         refresh_catalogs = update_index = True
 
         for opt, arg in opts:
@@ -965,6 +1071,10 @@ def install(img, args):
                         verbose = True
                 elif opt == "-q":
                         quiet = True
+                elif opt == "--accept":
+                        accept = True
+                elif opt == "--licenses":
+                        show_licenses = True
                 elif opt == "--no-refresh":
                         refresh_catalogs = False
                 elif opt == "--no-index":
@@ -997,12 +1107,16 @@ def install(img, args):
                 return EXIT_NOP
 
         if noexecute:
+                if show_licenses:
+                        display_plan_licenses(api_inst, all=True)
                 return EXIT_OK
 
         # Exceptions which happen here are printed in the above level, with
         # or without some extra decoration done here.
-        if not __api_prepare(op, api_inst):
-                return EXIT_OOPS
+        ret_code = __api_prepare(op, api_inst, accept=accept,
+            show_licenses=show_licenses)
+        if ret_code != EXIT_OK:
+                return ret_code
 
         ret_code = __api_execute_plan(op, api_inst,
             raise_ActionExecutionError=False)
@@ -1055,8 +1169,9 @@ def uninstall(img, args):
 
         # Exceptions which happen here are printed in the above level, with
         # or without some extra decoration done here.
-        if not __api_prepare(op, api_inst):
-                return EXIT_OOPS
+        ret_code = __api_prepare(op, api_inst)
+        if ret_code != EXIT_OK:
+                return ret_code
 
         return __api_execute_plan(op, api_inst)
 

@@ -151,6 +151,45 @@ Incorrect attribute list.
                 self.assertAttributeValue(a, "name", "foo")
                 self.assertAttributeValue(a, "value", ["ab", "c", ""])
 
+                # An action with its key attribute and extra attributes that
+                # are not used by the package system.
+                a = action.fromstr('license license="Common Development and '
+                    'Distribution License 1.0 (CDDL)" custom="foo" '
+                    'bool_val=true')
+                self.assertAttributes(a, ["license", "custom", "bool_val"])
+                self.assertAttributeValue(a, "license", 'Common Development '
+                    'and Distribution License 1.0 (CDDL)')
+                self.assertAttributeValue(a, "custom", "foo")
+                self.assertAttributeValue(a, "bool_val", "true")
+
+        def test_action_license(self):
+                """Test license action attributes."""
+
+                # Verify license attributes for must-accept / must-display
+                # contain expected values.
+                a = action.fromstr('license license="Common Development and '
+                    'Distribution License 1.0 (CDDL)" custom="foo" '
+                    'bool_val=true')
+                self.assertEqual(a.must_accept, False)
+                self.assertEqual(a.must_display, False)
+
+                a = action.fromstr('license license="Common Development and '
+                    'Distribution License 1.0 (CDDL)" must-accept=true '
+                    'must-display=False')
+                self.assertEqual(a.must_accept, True)
+                self.assertEqual(a.must_display, False)
+
+                a = action.fromstr('license license="Common Development and '
+                    'Distribution License 1.0 (CDDL)" must-accept=True '
+                    'must-display=true')
+                self.assertEqual(a.must_accept, True)
+                self.assertEqual(a.must_display, True)
+
+                a = action.fromstr('license license="Common Development and '
+                    'Distribution License 1.0 (CDDL)" must-accept=True ')
+                self.assertEqual(a.must_accept, True)
+                self.assertEqual(a.must_display, False)
+
         def test_action_tostr(self):
                 str(action.fromstr("file 12345 name=foo path=/tmp/foo"))
                 str(action.fromstr("file 12345 name=foo attr=bar path=/tmp/foo"))

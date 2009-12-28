@@ -1,3 +1,25 @@
+Version 29:
+Incompatible with clients using versions 0-28:
+    The ImageInterface class has changed as follows:
+        * set_plan_license_status() was added.  This is used to indicate
+          whether licenses for the packages being operated on have been
+          accepted or displayed.  Clients must do this if the related
+          license requires acceptance or display.
+
+    The LicenseInfo class has changed as follows:
+        * get_text() may now trigger a remote retrieval of the license
+          payload if needed to return the text.
+
+        * The related package FMRI and license attributes are now
+          properties: fmri, license, must_accept, and must_display.
+
+    The PlanDescription class has changed as follows:
+        * get_changes() is now a generator function.
+
+        * get_licenses() was added to allow clients to retrieve the
+          list of licenses related to the plan's operations as well
+          as the current accepted and displayed status of each.
+
 Version 28:
 Incompatible with clients using versions 0-27:
     CatalogRefreshException.message was changed to
@@ -6,9 +28,9 @@ Incompatible with clients using versions 0-27:
     if used, triggers a deprecation warning).
 
 Version 27:
-Compatible with clients using version 25 and 26:
-    The get_manifest function has been added to the api to allow clients to
-    retrieve the manifest directly.
+Compatible with clients using versions 25-26:
+    The get_manifest function has been added to the api to allow clients
+    to retrieve the manifest directly.
 
 Version 26:
 Compatible with clients using version 25.

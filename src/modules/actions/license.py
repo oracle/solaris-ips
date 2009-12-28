@@ -32,8 +32,9 @@ packaging object.  This contains a payload of the license text, and a single
 attribute, 'license', which is the name of the license.  Licenses are
 installed on the system in the package's directory."""
 
-import os
 import errno
+import os
+import StringIO
 from stat import S_IWRITE, S_IREAD
 
 import generic
@@ -132,19 +133,6 @@ class LicenseAction(generic.Action):
                         if e.errno != errno.ENOENT:
                                 raise
 
-        def get_local_opener(self, img, fmri):
-                """Return an opener for the license text from the local disk."""
-
-                path = os.path.normpath(os.path.join(img.imgdir, "pkg",
-                    fmri.get_dir_path(), "license." + self.attrs["license"]))
-
-                def opener():
-                        # XXX Do we check to make sure that what's there is what
-                        # we think is there (i.e., re-hash)?
-                        return file(path, "rb")
-
-                return opener
-
         def generate_indices(self):
                 """Generates the indices needed by the search dictionary.  See
                 generic.py for a more detailed explanation."""
@@ -155,3 +143,51 @@ class LicenseAction(generic.Action):
                         indices.append(("license", "content", self.hash, None))
 
                 return indices
+
+        def get_text(self, img, fmri):
+                """Retrieves and returns the payload of the license (which
+                should be text).  This may require remote retrieval of
+                resources and so this could raise a TransportError or other
+                ApiException."""
+
+                opener = self.get_local_opener(img, fmri)
+                if opener:
+                        # License installed already; return its content.
+                        return opener().read()
+
+                try:
+                        return img.transport.get_content(fmri, self.hash)
+                finally:
+                        img.cleanup_downloads()
+
+        def get_local_opener(self, img, fmri):
+                """Return an opener for the license text from the local disk or
+                None if the data for the text is not on-disk."""
+
+                path = os.path.normpath(os.path.join(img.imgdir, "pkg",
+                    fmri.get_dir_path(), "license." + self.attrs["license"]))
+
+                if not os.path.exists(path):
+                        return None
+
+                def opener():
+                        # XXX Do we check to make sure that what's there is what
+                        # we think is there (i.e., re-hash)?
+                        return file(path, "rb")
+
+                return opener
+
+        @property
+        def must_accept(self):
+                """Returns a boolean value indicating whether this license
+                action requires acceptance of its payload by clients."""
+
+                return self.attrs.get("must-accept", "").lower() == "true"
+
+        @property
+        def must_display(self):
+                """Returns a boolean value indicating whether this license
+                action requires its payload to be displayed by clients."""
+
+                return self.attrs.get("must-display", "").lower() == "true"
+

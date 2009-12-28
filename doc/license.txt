@@ -1,0 +1,523 @@
+pkg(5): image packaging system
+
+LICENSE ACTIONS ACCEPTANCE PROPOSAL
+
+1.  Overview
+
+    License actions provide a way to deliver the textual data
+    contained within licenses, copyright notices, disclaimers, or
+    other legally-related documents that need to be associated with
+    the contents of a package.  They also provide a way for packages
+    to provide guidance to pkg(5) clients as to how this information
+    should be presented or if it requires acceptance by the user
+    before the package can be delivered into an image.
+
+    This proposal has the following core goals for the implementation
+    of license acceptance functionality:
+
+    * Support for non-interactive and interactive package operations
+
+    * Enablement of package creators to provide guidance to pkg(5)
+      client API consumers as to how licensing or other informational
+      data should be presented and interacted with
+
+    * Enablement of administrators and users to query and report on
+      the licensing or other informational data related to packages
+      contained within an image
+
+    * Enablement of administrators and users to restrict what packages
+      can be delivered into an image based on the package's provided
+      licensing information.
+
+    To achieve these goals, changes must be made to the following
+    pkg(5) components:
+
+    * License Actions
+
+    * Image configuration
+
+    * Client API
+
+    * BUI: pkg.depotd(1m)
+
+    * CLI: pkg(1), pkgsend(1)
+
+    * GUI: packagemanager(1), updatemanager(1)
+
+    This proposal omits the GUI programs as a separate team will
+    develop and deliver the enhancements related to the changes
+    discussed here.
+
+2.  License Action attribute changes and additions
+
+    Currently, the license attribute of license actions is not
+    restrictive enough in what characters are allowed for the
+    name of the license.  To ensure cross-platform compatibility
+    and consistent naming, it is proposed that the license
+    attribute's definition be amended as follows:
+
+    license     This attribute provides a description for the license
+                to help describe the license in a meaningful way. Some
+                examples might include:
+
+                - "GPL v2 only"
+                - "GPL with Specific Exception"
+
+                A recommended list of descriptions for common open-
+                source licenses, ang guidelines for custom licenses
+                will be added to the license action documentation to
+                encourage consistency.  This value must be unique
+                within a package.
+
+    To support license acceptance functionality, new attributes for
+    license actions are needed to allow packages to provide guidance
+    to pkg(5) API consumers:
+
+    class           This optional attribute is primarily for use in
+                    filter and query operations.  It is intended that
+                    only short, descriptive text be used here.  As
+                    such, the content of this value will be limited to
+                    the characters [A-Za-z][A-Za-z0-9 _-.,]*.  While
+                    this value is optional, its usage is strongly
+                    encouraged, and so a recommended list of classes
+                    for common open-source licenses, and guidelines
+                    for custom licenses will be added to the license
+                    action documentation.  This value must be unique
+                    within a package.
+
+    must-accept     A boolean value indicating whether this license
+                    must be accepted by a user before the related
+                    package can be installed or updated.  Acceptable
+                    values are "true" or "false".  Omission of this
+                    attribute must be considered equivalent to
+                    "false".  The reason for this is that many
+                    licenses (especially copyleft ones) do not
+                    require this and clients should not prompt for it
+                    unless provided guidance to do so by the package
+                    creator.
+
+    must-display    A boolean value indicating whether the content of
+                    the action's payload must be displayed by clients
+                    during packaging operations.  Omission of this
+                    value must be considered equivalent to "false".
+
+3.  Image configuration additions
+
+    Note that changes proposed in this section implicitly depend on
+    on upcoming changes to the image configuration format for the
+    client.  As such, how policies, etc. are stored is not discussed
+    here other than to note that they will be stored within the image
+    configuration.
+
+    To enable administrators and users to effectively manage the
+    packages contained within an image, users need to be able to
+    define, on a per-publisher basis, what the behaviour of the
+    packaging system and clients should be in the following key
+    areas related to licenses:
+
+    * filtering
+
+        Administrators and users need to be able to define a policy
+        that can be used to determine what packages are delivered into
+        an image based on licensing information defined in packages.
+
+    * acceptance
+
+        Administrators and users need to be able to define a policy
+        that can be used to determine what behaviour clients should
+        exhibit when encountering a license that requires explicit
+        acceptance.
+
+    It is believed that a clear delineation between image properties
+    (which describe the image itself) and policies (which provide
+    guidance to pkg(5) clients) will be helpful to end-users from a
+    usage and documentation standpoint.  As such, a new policy system
+    has been devised to allow users to provide guidance to the pkg(5)
+    system and clients on a per-publisher (and/or global) level based
+    on the policy in question.  Per-publisher values will override
+    the global value based on the publisher of the package that is
+    being evaluated by the client API.
+ 
+    The following new policies will be created, and can all be set at
+    a global or per-publisher level:
+
+    license-policy  A keyword indicating what the behaviour of clients
+                    should be when the license of a package requires
+                    acceptance.  The following keywords are supported:
+
+                    accept      Automatically accepts any license with
+                                must-accept=true after license
+                                filtering has been applied.
+
+                    decline     Automatically declines any license
+                                with must-accept=false after license
+                                filtering has been applied.
+
+                    explicit    Requires explicit acceptance of any
+                                licenses with must-accept=true by the
+                                user after licensing filtering has
+                                been applied.  This could be
+                                implemented as an interactive prompt,
+                                or by a failure of the client with a
+                                requirement to pass an explicit
+                                command-line option for acceptance.
+                                This is the default value.
+
+    license-accept  A list of values that will be used to mark any
+                    license with a matching description or class as
+                    accepted automatically if they require acceptance.
+                    This value is undefined by default.
+
+    license-decline A list of values that will be used to mark any
+                    license with a matching description or class as
+                    declined automatically, regardless of whether they
+                    require acceptance.  This value is undefined by
+                    default.
+
+    license-display A keyword indicating what the behaviour of the
+                    client should be when displaying the text of
+                    license actions.  The following keywords are
+                    supported:
+
+                    all     Suggests clients display the text of all
+                            license actions, but must display the text
+                            of license actions that have
+                            must-display=true.
+
+                    auto    The default value for the image
+                            configuration, which indicates that
+                            clients must display the text of license
+                            actions that have must-display=true.
+
+    The following, existing image properties will become policies and
+    can only be set on a global basis:
+
+    flush-content-cache-on-success
+    pursue-latest
+    require-optional
+
+    The following, existing image properties will become policies and
+    can be set on a global or per-publisher basis:
+
+    send-uuid
+
+    The following, existing image properties will be removed as they
+    were never implemented and are being replaced by functionality
+    discussed in this proposal:
+
+    display-copyrights
+
+    Finally, it should be noted that the existing 'property' subcommands
+    cannot be used to alter or view policies and the proposed 'policy'
+    subcommands likewise cannot be used to alter or view properties.
+
+4.  Client API
+
+4.1  pkg.client.api
+
+    The client API, to enable license acceptance functionality
+    enforcement and control for clients, will need to change in
+    the following ways:
+
+    * Plan creation will be changed to analyze and determine license
+      acceptance and or build a list of licenses and their acceptance
+      status for packages being installed or updated. 
+
+    * The ImagePlan object will have a new method named 'get_licenses'
+      added.  After plan creation is finished, consumers may call this
+      method to retrieve a list of tuples containing a LicenseInfo
+      object, whether the license is allowed by image policy, and the
+      current acceptance status of the license as detailed later.  The
+      default acceptance status of a license will be 'declined' unless
+      otherwise defined by image policy or operation policy.
+
+    * The ImagePlan object will have a new method named
+     'set_license_status' which will allow callers to mark the explicit
+      acceptance of a package's license by a user:
+
+        set_license_status(fmri, class=None, description=None, status)
+
+      Either 'class' or 'description' must be provided.
+
+    * To allow pkg.client.api consumers access to set_license_status
+      and get_licenses(), equivalent wrapper functions will be added
+      to the PlanDescription object provided by the API.
+
+    * Two new exceptions will be added to pkg.client.api_errors.  The
+      first will be named 'PlanExecutionError' and be used as a base
+      exception class for all plan execution errors.  The second
+      exception will be named 'PlanExecutionLicenseError' and will
+      inherit from the first exception, while being used to indicate
+      that a licensing related error occurred.
+
+    * Plan execution will be changed to verify that each license
+      that has must-accept=True has been marked as accepted.  If
+      any license has not been marked as accepted, and requires
+      acceptance, a 'PlanExecutionLicenseError' will be raised.
+
+    * Plan execution will be changed to record each package that is
+      part of the operation using pkg.client.history.  The full FMRI,
+      the classes and descriptions identifying the licenses contained
+      within the package, and acceptance status of each license within
+      a package will be recorded.  The following statuses will be used
+      to indicate a package's license acceptance:
+
+        * accepted
+            Indicates that the license was accepted through the API,
+            presumably by the user.
+
+        * accepted-policy
+            Indicates that the license was automatically accepted
+            based on image policy.
+
+        * declined
+            Indicates that the license required acceptance and was not
+            marked as accepted.
+
+        * declined-policy
+            Indicates that the license was automatically rejected
+            based on image policy.
+
+        * not-applicable
+            Indicates that the license did not require acceptance and
+            was not declined by policy.
+
+4.2  pkg.client.history
+
+    To ease logging of license acceptance information, and to
+    accurately reflect operation failure, the following changes will
+    be made to pkg.client.history:
+
+    * New operation result constants will be added:
+
+        RESULT_FAILED_LICENSE_DECLINED
+            Used to indicate that an operation failed because a
+            license that required acceptance was not marked as
+            accepted.
+
+        RESULT_FAILED_LICENSE_POLICY
+            Used to indicate that an operation failed because a
+            license was declined based on image policy.
+
+    * log_operation_error() will be changed to ensure that the new
+      'PlanExecutionLicenseError' triggers an appropriate failure
+      result as noted above.
+
+        LOG_PKG_OP_INSTALL
+        LOG_PKG_OP_UPDATE
+        LOG_PKG_OP_REMOVE
+
+    * A new method to log license status information about a package
+      will be added:
+
+        log_pkg_license(class=None, description=None, status)
+
+      Either 'class' or 'description' must be provided.
+
+    * A new method to log operation information about a package will
+      be added:
+
+        log_pkg_operation(operation, old_fmri, new_fmri)
+
+5. BUI
+
+5.1. pkg.depotd(1m)
+
+    The pkg.depotd(1m) server that pkg(5) provides will be changed
+    such that its output matches that of the CLI when listing licenses
+    as much as possible, such as showing the "license" attribute of
+    a license action.
+
+6.  CLI
+
+6.1.  pkg(1)
+
+    The pkg(1) client that pkg(5) provides needs to be enhanced to
+    provide the following functionality:
+
+
+    * A mechanism to temporarily override client behaviour, provide
+      intial policy values during image-creation, or to provide
+      explicit user intent (such as license acceptance).
+
+        A new command-line option as shown below will be added to the
+        pkg(1) client that will allow its usage with applicable sub-
+        commands.  Policy names not applicable to the corresponding
+        subcommand will effectively be ignored (such as pursue-latest
+        with the 'fix' subcommand).
+
+        --policy <policy-name>=<policy-value>
+
+      The following subcommands will allow this option:
+
+        * contents
+        * fix
+        * history 
+        * image-update
+        * info
+        * install
+        * list
+        * uninstall
+        * verify
+
+      image-create will also support the --policy option, but instead of
+      being used as a temporary override, it will be used to specify the
+      permanent defaults for the image being created.
+
+    * Graceful, informative failure due to license-related exceptions
+
+      If a license-related exception occurs during plan execution, a
+      failure message similar to the following will be displayed:
+
+        The following packages are not permitted by image policy
+        due to the current image's license policies:
+
+        --------------------------------------------------
+        License A
+        --------------------------------------------------
+        Foo
+        Bar
+
+        The following packages contain licenses that require
+        acceptance before they can be installed (use --accept
+        to accept these licenses):
+
+        --------------------------------------------------
+        License B
+        --------------------------------------------------
+        Baz
+        Quux
+
+      Note that it may be possible for the same license to be marked
+      as requiring acceptance in one package and not another, and so
+      the display above may indicate the same license more than
+      once.
+
+    * Display of licenses that require it during packaging operations
+ 
+      pkg(1) will be changed to retrieve and display the text of
+      any licenses that must be displayed or have been requested
+      for display after plan creation.  The default value is based
+      on image policy as noted in section 3.
+
+      The display of the license text will be the same as the
+      proposed output for the 'info' subcommand as noted below.
+
+    * Improvement of license display by 'info' subcommand
+
+      Currently, the info subcommand will display license text for
+      one or more given FMRIs but does so without any visual
+      separation other than a newline between distinct license text
+      output, does not indicate which package the license belongs
+      to, and does not provide any clear indication of the identity
+      of a license (e.g. CDDL, BSD, etc.).
+
+      The output of this subcommand will be changed so that the
+      description and class of the license will be shown and a visual
+      separator will be placed between the output of each license.
+      The revised output is anticipated to be similar to this:
+
+        ------------------------------------------------------------
+        Package: Foo
+        License: copyright
+
+        Copyright 2009 Example Company, Inc.  All Rights Reserved.
+
+        ------------------------------------------------------------
+        Package: Foo
+        License: Termsv1 "Example Company's License Description v1"
+
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+        Vivamus in risus sem, id blandit justo. Maecenas nulla massa,
+        mollis sed lobortis a, placerat vel elit. Quisque eleifend leo
+        ipsum. Donec feugiat gravida molestie. Nulla facilisi. Nullam
+        sit amet ligula sed mauris tempor fermentum quis at purus.
+
+        ------------------------------------------------------------
+        Package: Bar
+        License: Termsv2 "Example Company's License Description v2"
+
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+        Vivamus in risus sem, id blandit justo. Maecenas nulla massa,
+        mollis sed lobortis a, placerat vel elit.
+
+    * A set-policy subcommand will be added to allow setting policy
+      values that functions as follows:
+
+        set-policy [-p publisher] policy-name policy-value ... ...
+
+      If -p is not provided, the global policy value will be changed.
+
+      One or more pairs of policy name and policy value may be provided
+      provided to this command to allow setting multiple values using a
+      single command invocation.
+
+      Some options may not be set at the publisher level and this will
+      result in an error message such as:
+
+      $ pkg set-policy -p opensolaris.org flush-content-cache-on-success
+      pkg: set-policy: flush-content-cache-on-success is a global policy
+      and cannot be set on a per-publisher basis.
+
+    * An unset-policy subcommand will be added to allow unsetting or
+      resetting policy values that functions as follows:
+
+        unset-policy [-p publisher] policy-name ... 
+
+      If -p is not provided, the global policy value will be changed.
+
+      Some options may not be set at the publisher level and this will
+      result in an error message such as:
+
+      $ pkg unset-policy -p opensolaris.org \
+          flush-content-cache-on-success
+      pkg: unset-policy: flush-content-cache-on-success is a global
+      policy and cannot be unset on a per-publisher basis.
+
+    * A policy subcommand will be added for retrieving policy values
+      that functions as follows:
+
+        policy [-H] [-p publisher] policy-name ...
+
+      If -p is not provided, then all matching policy values will be
+      shown instead of those of a specific publisher. 'All' may be
+      specified to show global values that do not apply to a specific
+      publisher.
+
+      If -H is provided, headers will be omitted.
+
+      One or more policy names may be specified separated by whitespace.
+      If no policy-names are specified, all policies will be displayed.
+
+      Example output:
+
+        $ pkg policy
+        PUBLISHER           POLICY          VALUE
+        All                 license-accept  
+        All                 license-decline 
+        All                 license-display auto
+        All                 license-policy  decline
+        opensolaris.org     license-accept  accept
+
+        $ pkg policy license-accept
+        PUBLISHER           POLICY          VALUE
+        All                 license-accept  
+        opensolaris.org     license-accept  accept
+
+        $ pkg policy license-accept license-display
+        PUBLISHER           POLICY          VALUE
+        All                 license-accept  
+        All                 license-display auto
+        opensolaris.org     license-accept  accept
+
+        $ pkg policy license-accept -H
+        All                 license-accept  
+        opensolaris.org     license-accept  accept
+
+        $ pkg policy license-accept -p All
+        PUBLISHER           POLICY          VALUE
+        All                 license-accept  decline
+
+        $ pkg policy license-accept -p opensolaris.org
+        PUBLISHER           POLICY          VALUE
+        opensolaris.org     license-accept  accept

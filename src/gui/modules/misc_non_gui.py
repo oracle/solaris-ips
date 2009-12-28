@@ -34,7 +34,7 @@ from pkg.client import global_settings
 
 # The current version of the Client API the PM, UM and
 # WebInstall GUIs have been tested against and are known to work with.
-CLIENT_API_VERSION = 28
+CLIENT_API_VERSION = 29
 
 class _LogFilter(logging.Filter):
         def __init__(self, max_level=logging.CRITICAL):

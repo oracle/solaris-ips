@@ -28,7 +28,6 @@
 import copy
 import fnmatch
 import os
-import StringIO
 import sys
 import threading
 import urllib
@@ -39,6 +38,7 @@ import pkg.client.bootenv as bootenv
 import pkg.client.history as history
 import pkg.client.image as image
 import pkg.client.indexer as indexer
+import pkg.client.progress as progress
 import pkg.client.publisher as publisher
 import pkg.client.query_parser as query_p
 import pkg.fmri as fmri
@@ -51,7 +51,7 @@ import pkg.version
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 28
+CURRENT_API_VERSION = 29
 CURRENT_P5I_VERSION = 1
 
 logger = global_settings.logger
@@ -278,7 +278,7 @@ class ImageInterface(object):
                         if not noexecute:
                                 self.__plan_type = self.__INSTALL
 
-                        self.__plan_desc = PlanDescription(self.__img.imageplan)
+                        self.__plan_desc = PlanDescription(self.__img)
                         if self.__img.imageplan.nothingtodo() or noexecute:
                                 self.log_operation_end(
                                     result=history.RESULT_NOTHING_TO_DO)
@@ -321,7 +321,7 @@ class ImageInterface(object):
                         if not noexecute:
                                 self.__plan_type = self.__UNINSTALL
 
-                        self.__plan_desc = PlanDescription(self.__img.imageplan)
+                        self.__plan_desc = PlanDescription(self.__img)
                         if noexecute:
                                 self.log_operation_end(
                                     result=history.RESULT_NOTHING_TO_DO)
@@ -397,7 +397,7 @@ class ImageInterface(object):
                         if not noexecute:
                                 self.__plan_type = self.__IMAGE_UPDATE
 
-                        self.__plan_desc = PlanDescription(self.__img.imageplan)
+                        self.__plan_desc = PlanDescription(self.__img)
 
                         if self.__img.imageplan.nothingtodo() or noexecute:
                                 self.log_operation_end(
@@ -448,7 +448,7 @@ class ImageInterface(object):
                         if not noexecute:
                                 self.__plan_type = self.__IMAGE_UPDATE
 
-                        self.plan_desc = PlanDescription(self.__img.imageplan)
+                        self.__plan_desc = PlanDescription(self.__img)
 
                         if self.__img.imageplan.nothingtodo() or noexecute:
                                 self.log_operation_end(
@@ -470,7 +470,8 @@ class ImageInterface(object):
 
         def describe(self):
                 """Returns None if no plan is ready yet, otherwise returns
-                a PlanDescription"""
+                a PlanDescription."""
+
                 return self.__plan_desc
 
         def prepare(self):
@@ -682,6 +683,38 @@ class ImageInterface(object):
                         # is supplied.
                         pass
 
+        def set_plan_license_status(self, pfmri, plicense, accepted=None,
+            displayed=None):
+                """Sets the license status for the given package FMRI and
+                license entry.
+
+                'accepted' is an optional parameter that can be one of three
+                values:
+                        None    leaves accepted status unchanged
+                        False   sets accepted status to False
+                        True    sets accepted status to True
+
+                'displayed' is an optional parameter that can be one of three
+                values:
+                        None    leaves displayed status unchanged
+                        False   sets displayed status to False
+                        True    sets displayed status to True"""
+
+                self.__activity_lock.acquire()
+                try:
+                        self.__disable_cancel()
+                        if not self.__img.imageplan:
+                                raise api_errors.PlanMissingException()
+
+                        for pp in self.__img.imageplan.pkg_plans:
+                                if pp.destination_fmri == pfmri:
+                                        pp.set_license_status(plicense,
+                                            accepted=accepted,
+                                            displayed=displayed)
+                                        break
+                finally:
+                        self.__activity_lock.release()
+
         def refresh(self, full_refresh=False, pubs=None, immediate=False):
                 """Refreshes the metadata (e.g. catalog) for one or more
                 publishers.
@@ -717,19 +750,13 @@ class ImageInterface(object):
                         self.__img.cleanup_downloads()
                         self.__activity_lock.release()
 
-        def __licenses(self, mfst, local):
+        def __licenses(self, pfmri, mfst):
                 """Private function. Returns the license info from the
-                manifest mfst. Local controls whether the information is
-                retrieved locally."""
+                manifest mfst."""
                 license_lst = []
                 for lic in mfst.gen_actions_by_type("license"):
-                        if not local:
-                                text = self.__img.transport.get_content(
-                                    mfst.fmri, lic.hash)
-                        else:
-                                text = lic.get_local_opener(self.__img,
-                                    mfst.fmri)().read()[:-1]
-                        license_lst.append(LicenseInfo(text))
+                        license_lst.append(LicenseInfo(self.__img,
+                            pfmri, lic))
                 return license_lst
 
         def get_pkg_categories(self, installed=False, pubs=misc.EmptyI):
@@ -1320,10 +1347,11 @@ class ImageInterface(object):
         def info(self, fmri_strings, local, info_needed):
                 """Gathers information about fmris.  fmri_strings is a list
                 of fmri_names for which information is desired.  local
-                determines whether to retrieve the information locally.  It
-                returns a dictionary of lists.  The keys for the dictionary are
-                the constants specified in the class definition.  The values are
-                lists of PackageInfo objects or strings."""
+                determines whether to retrieve the information locally
+                (if possible).  It returns a dictionary of lists.  The keys
+                for the dictionary are the constants specified in the class
+                definition.  The values are lists of PackageInfo objects or
+                strings."""
 
                 # Currently, this is mostly a wapper for activity locking.
                 self.__activity_lock.acquire()
@@ -1480,7 +1508,7 @@ class ImageInterface(object):
                             PackageInfo.LICENSES]) | act_opts) & info_needed:
                                 mfst = self.__img.get_manifest(f)
                                 if PackageInfo.LICENSES in info_needed:
-                                        licenses = self.__licenses(mfst, local)
+                                        licenses = self.__licenses(f, mfst)
 
                                 if PackageInfo.SIZE in info_needed:
                                         size = mfst.get_size(excludes=excludes)
@@ -1608,7 +1636,6 @@ class ImageInterface(object):
                 # operation.
                 self.__cancel_cv.notify_all()
                 self.__cancel_lock.release()
-
 
         def __cancel_done(self):
                 """A private method that wakes any threads that have been
@@ -2283,31 +2310,124 @@ class Query(query_p.Query):
 
 
 class PlanDescription(object):
-        """A class which describes the changes the plan will make. It
-        provides a list of tuples of PackageInfo's. The first item in the
-        tuple is the package that is being changed. The second item in the
-        tuple is the package that will be in the image after the change."""
-        def __init__(self, imageplan):
-                self.__pkgs = \
-                        [ (PackageInfo.build_from_fmri(pp.origin_fmri),
-                          PackageInfo.build_from_fmri(pp.destination_fmri))
-                          for pp
-                          in imageplan.pkg_plans ]
+        """A class which describes the changes the plan will make."""
+
+        def __init__(self, img):
+                self.__plan = img.imageplan
+                self.__img = img
 
         def get_changes(self):
-                return self.__pkgs
+                """A generation function that yields tuples of PackageInfo
+                objects of the form (src_pi, dest_pi).
+
+                If 'src_pi' is None, then 'dest_pi' is the package being
+                installed.
+
+                If 'src_pi' is not None, and 'dest_pi' is None, 'src_pi'
+                is the package being removed.
+
+                If 'src_pi' is not None, and 'dest_pi' is not None,
+                then 'src_pi' is the original version of the package,
+                and 'dest_pi' is the new version of the package it is
+                being upgraded to."""
+
+                for pp in self.__plan.pkg_plans:
+                        yield (PackageInfo.build_from_fmri(pp.origin_fmri),
+                            PackageInfo.build_from_fmri(pp.destination_fmri))
+
+        def get_licenses(self, pfmri=None):
+                """A generator function that yields information about the
+                licenses related to the current plan in tuples of the form
+                (dest_fmri, src, dest, accepted, displayed) for the given
+                package FMRI or all packages in the plan.  This is only
+                available for licenses that are being installed or updated.
+
+                'dest_fmri' is the FMRI of the package being installed.
+
+                'src' is a LicenseInfo object if the license of the related
+                package is being updated; otherwise it is None.
+
+                'dest' is the LicenseInfo object for the license that is being
+                installed.
+
+                'accepted' is a boolean value indicating that the license has
+                been marked as accepted for the current plan.
+
+                'displayed' is a boolean value indicating that the license has
+                been marked as displayed for the current plan."""
+
+                for pp in self.__plan.pkg_plans:
+                        dfmri = pp.destination_fmri
+                        if pfmri and dfmri != pfmri:
+                                continue
+
+                        for lid, entry in pp.get_licenses():
+                                src = entry["src"]
+                                src_li = None
+                                if src:
+                                        src_li = LicenseInfo(self.__img,
+                                            pp.origin_fmri, src)
+
+                                dest = entry["dest"]
+                                dest_li = None
+                                if dest:
+                                        dest_li = LicenseInfo(self.__img,
+                                            pp.destination_fmri, dest)
+
+                                yield (pp.destination_fmri, src_li, dest_li,
+                                    entry["accepted"], entry["displayed"])
+
+                        if pfmri:
+                                break
+
 
 class LicenseInfo(object):
         """A class representing the license information a package
         provides."""
-        def __init__(self, text):
-                self.__text = text
 
-        def get_text(self):
-                return self.__text
+        def __init__(self, img, pfmri, act):
+                self.__action = act
+                self.__fmri = pfmri
+                self.__img = img
 
         def __str__(self):
-                return self.__text
+                return self.get_text()
+
+        def get_text(self):
+                """Retrieves and returns the payload of the license (which
+                should be text).  This may require remote retrieval of
+                resources and so this could raise a TransportError or other
+                ApiException."""
+
+                return self.__action.get_text(self.__img, self.__fmri)
+
+        @property
+        def fmri(self):
+                """The FMRI of the package this license is for."""
+
+                return self.__fmri
+
+        @property
+        def license(self):
+                """The keyword identifying this license within its related
+                package."""
+
+                return self.__action.attrs["license"]
+
+        @property
+        def must_accept(self):
+                """A boolean value indicating whether the license requires
+                acceptance."""
+
+                return self.__action.must_accept
+
+        @property
+        def must_display(self):
+                """A boolean value indicating whether the license must be
+                displayed during install or update operations."""
+
+                return self.__action.must_display
+
 
 class PackageCategory(object):
         def __init__(self, scheme, category):

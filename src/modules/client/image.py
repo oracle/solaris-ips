@@ -829,7 +829,7 @@ class Image(object):
                 ic.read(self.imgdir)
                 self.cfg_cache = ic
 
-        def repair(self, repairs, progtrack):
+        def repair(self, repairs, progtrack, accept=False, show_licenses=False):
                 """Repair any actions in the fmri that failed a verify."""
                 # XXX: This (lambda x: False) is temporary until we move pkg fix
                 # into the api and can actually use the
@@ -853,6 +853,31 @@ class Image(object):
                 ip.evaluate()
                 if ip.reboot_needed() and self.is_liveroot():
                         raise api_errors.RebootNeededOnLiveImageException()
+
+                logger.info("\n")
+                for pp in ip.pkg_plans:
+                        for lic, entry in pp.get_licenses():
+                                dest = entry["dest"]
+                                lic = dest.attrs["license"]
+                                if show_licenses or dest.must_display:
+                                        # Display license if required.
+                                        logger.info("-" * 60)
+                                        logger.info(_("Package: %s") % \
+                                            pp.destination_fmri)
+                                        logger.info(_("License: %s\n") % lic)
+                                        logger.info(dest.get_text(self,
+                                            pp.destination_fmri))
+                                        logger.info("\n")
+
+                                # Mark license as having been displayed.
+                                pp.set_license_status(lic, displayed=True)
+
+                                if dest.must_accept and accept:
+                                        # Mark license as accepted if
+                                        # required and requested.
+                                        pp.set_license_status(lic,
+                                            accepted=accept)
+
                 ip.preexecute()
                 ip.execute()
 
