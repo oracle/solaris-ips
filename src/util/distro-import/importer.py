@@ -1371,7 +1371,7 @@ def main_func():
         # packages per consolidation.  The version portion of the fmri 
         # will contain the branch that the package was obsoleted or renamed at.
         or_pkgs_per_con = {}
-        for pkg in pkgdict:
+        for pkg in pkgdict.keys():
                 obs_branch = pkgdict[pkg].obsolete_branch
                 rename_branch = pkgdict[pkg].rename_branch
 
