@@ -2211,11 +2211,11 @@ class PackageManager:
                         if pkg[enumerations.MARK_COLUMN] != marked:
                                 pkg[enumerations.MARK_COLUMN] = marked
                 if self.saved_category_list == self.category_list:
+                        self.__restore_category_state()
                         self.__init_tree_views(self.saved_application_list,
                             None, None,
                             self.saved_application_list_filter,
                             self.saved_application_list_sort)
-                        self.__restore_category_state()
                 else:
                         self.__init_tree_views(self.saved_application_list,
                             self.saved_category_list, self.saved_section_list,
