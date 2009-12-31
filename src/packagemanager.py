@@ -247,6 +247,7 @@ class PackageManager:
                 self.__fix_initial_values()
 
                 self.set_section = 0
+                self.after_install_remove = False
                 self.in_search_mode = False
                 self.in_recent_search = False
                 self.recent_searches = {}
@@ -4901,6 +4902,7 @@ class PackageManager:
                 self.adding_recent_search = False
                 
         def __clear_recent_searches(self):
+                self.after_install_remove = False
                 category_tree = self.w_categories_treeview.get_model()
                 if category_tree == None:
                         return                        
@@ -4922,21 +4924,13 @@ class PackageManager:
                 if selection and sel_path and rs_path and len(sel_path) > 0 and \
                         len(rs_path) > 0 and sel_path[0] == rs_path[0]:
                         self.__restore_setup_for_browse()
-                               
-        def __restore_recent_search(self, sel_category):
-                if not sel_category:
-                        return
-                if not self.is_all_publishers:
-                        self.__save_setup_before_search(single_search=True)
 
-                application_list = sel_category[enumerations.SECTION_LIST_OBJECT]
-                text = sel_category[enumerations.CATEGORY_DESCRIPTION]
-
+        def __update_recent_search_states(self, application_list):
                 pkg_stems = []
                 pkg_stem_states = {}
                 for row in application_list:
                         pkg_stems.append(row[enumerations.STEM_COLUMN])
-                #Check for changes in pacakge installation status
+                #Check for changes in package installation status
                 try:
                         info = self.api_o.info(pkg_stems, True, frozenset(
                                     [api.PackageInfo.STATE, api.PackageInfo.IDENTITY]))
@@ -4986,7 +4980,19 @@ class PackageManager:
                                 row[enumerations.STATUS_ICON_COLUMN] = \
                                         self.not_installed_icon
                         tmp_app_list.append(row)
+                return tmp_app_list
 
+        def __restore_recent_search(self, sel_category):
+                if not sel_category:
+                        return
+                if not self.is_all_publishers:
+                        self.__save_setup_before_search(single_search=True)
+
+                application_list = sel_category[enumerations.SECTION_LIST_OBJECT]
+                text = sel_category[enumerations.CATEGORY_DESCRIPTION]
+                if self.after_install_remove:
+                        application_list = self.__update_recent_search_states(
+                            application_list)
                 self.__clear_before_search(show_list=True, in_setup=False,
                     unselect_cat=False)
                 self.in_search_mode = True
@@ -4994,7 +5000,7 @@ class PackageManager:
                 self.__set_search_text_mode(enumerations.SEARCH_STYLE_NORMAL)
                 self.w_searchentry.set_text(text)
                 self.__set_main_view_package_list()
-                self.__init_tree_views(tmp_app_list, None, None, None, None,
+                self.__init_tree_views(application_list, None, None, None, None,
                     enumerations.NAME_COLUMN)
 
         def __restore_category_state(self):
@@ -5355,6 +5361,7 @@ class PackageManager:
         def update_package_list(self, update_list):
                 if update_list == None and self.img_timestamp:
                         return
+                self.after_install_remove = True
                 visible_publisher = self.__get_selected_publisher()
                 default_publisher = self.default_publisher
                 self.__do_refresh(ignore_transport_ex=True)
