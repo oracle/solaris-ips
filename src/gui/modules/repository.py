@@ -407,13 +407,16 @@ class Repository(progress.GuiProgressTracker):
                 publishers_list_filter.set_visible_func(self.__publishers_filter)
                 self.w_publishers_treeview.set_model(publishers_list_sort)
 
-        def __prepare_publisher_list(self):
-                self.no_changes = 0
-                self.priority_changes = []
-                pubs = self.api_o.get_publishers(duplicate=True)
+        def __prepare_publisher_list(self, restore_changes = False):
                 sorted_model = self.w_publishers_treeview.get_model()
+                selection = self.w_publishers_treeview.get_selection()
+                selected_rows = selection.get_selected_rows()
+                self.w_publishers_treeview.set_model(None)
+                pubs = self.api_o.get_publishers(duplicate=True)
                 if not sorted_model:
                         return
+                filtered_model = sorted_model.get_model()
+                model = filtered_model.get_model()
 
                 if len(pubs) > 1:
                         so = self.api_o.get_pub_search_order()
@@ -423,23 +426,43 @@ class Repository(progress.GuiProgressTracker):
                             for name in so
                             if name in pub_dict
                             ]
-                self.w_publishers_treeview.set_model(None)
-                filtered_model = sorted_model.get_model()
-                model = filtered_model.get_model()
-                model.clear()
-                j = 0
-                for pub in pubs:
-                        name = pub.prefix
-                        alias = pub.alias
-                        # BUG: alias should be either "None" or None.
-                        # in the list it's "None", but when adding pub it's None
-                        if not alias or len(alias) == 0 or alias == "None":
-                                alias = name
-                        publisher_row = [j, j, name, alias, not pub.disabled, 
-                            pub, False, False]
-                        model.insert(j, publisher_row)
-                        j += 1
+
+                if restore_changes == False:
+                        self.no_changes = 0
+                        self.priority_changes = []
+                        model.clear()
+
+                        j = 0
+                        for pub in pubs:
+                                name = pub.prefix
+                                alias = pub.alias
+                                # BUG: alias should be either "None" or None.
+                                # in the list it's "None", but when adding pub it's None
+                                if not alias or len(alias) == 0 or alias == "None":
+                                        alias = name
+                                publisher_row = [j, j, name, alias, not pub.disabled, 
+                                    pub, False, False]
+                                model.insert(j, publisher_row)
+                                j += 1
+                else:
+                        j = 0
+                        for publisher_row in model:
+                                pub = pubs[j]
+                                name = pub.prefix
+                                alias = pub.alias
+                                if not alias or len(alias) == 0 or alias == "None":
+                                        alias = name
+                                publisher_row[enumerations.PUBLISHER_ALIAS] = alias
+                                publisher_row[enumerations.PUBLISHER_OBJECT] = pub
+                                j += 1
+
                 self.w_publishers_treeview.set_model(sorted_model)
+
+                if restore_changes:
+                        # We do have gtk.SELECTION_SINGLE mode, so if exists, we are
+                        # interested only in the first selected path. 
+                        if len(selected_rows) > 1 and len(selected_rows[1]) > 0:
+                                selection.select_path(selected_rows[1][0])
 
         def __validate_url(self, url_widget, w_ssl_key = None, w_ssl_cert = None):
                 self.__validate_url_generic(url_widget, self.w_add_error_label, 
@@ -1079,9 +1102,7 @@ class Repository(progress.GuiProgressTracker):
                         gobject.idle_add(self.__g_delete_widget_handler_hide,
                             self.w_modify_repository_dialog, None)
                         if self.action == enumerations.MANAGE_PUBLISHERS:
-                                gobject.idle_add(self.__prepare_publisher_list)
-                                selection = self.w_publishers_treeview.get_selection()
-                                gobject.idle_add(selection.select_path, 0)
+                                gobject.idle_add(self.__prepare_publisher_list, True)
                                 self.no_changes += 1
 
         def __run_with_prog_in_thread(self, func, parent_window = None,
