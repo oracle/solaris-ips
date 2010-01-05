@@ -5365,11 +5365,6 @@ class PackageManager:
                 visible_publisher = self.__get_selected_publisher()
                 default_publisher = self.default_publisher
                 self.__do_refresh(ignore_transport_ex=True)
-                if not self.img_timestamp:
-                        self.img_timestamp = self.cache_o.get_index_timestamp()
-                        self.__on_reload(None)
-                        return
-                self.img_timestamp = self.cache_o.get_index_timestamp()
                 visible_list = update_list.get(visible_publisher)
                 if self.is_all_publishers or self.is_all_publishers_installed \
                     or self.in_recent_search:
@@ -5415,6 +5410,11 @@ class PackageManager:
                                                 if self.info_cache.has_key(pkg_stem):
                                                         del self.info_cache[pkg_stem]
                                                 self.__remove_pkg_stem_from_list(pkg_stem)
+                if not self.img_timestamp:
+                        self.img_timestamp = self.cache_o.get_index_timestamp()
+                        self.__on_reload(None)
+                        return
+                self.img_timestamp = self.cache_o.get_index_timestamp()
                 if self.is_all_publishers_installed:
                         return
                 # We need to reset status descriptions if a11y is enabled
