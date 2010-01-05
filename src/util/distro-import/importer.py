@@ -340,26 +340,40 @@ def pkg_path(pkgname):
                 raise RuntimeError("package %s not found" % pkgname)
 
 def check_pkg_actions(pkg):
-        path_dict = {}
+        local_path_dict = {}
         # build dictionary of actions in pk by path
         for a in pkg.actions:
                 if "path" in a.attrs:
-                        path_dict.setdefault(a.attrs["path"], []).append(a)
-        errors = check_pathdict_actions(path_dict, remove_dups=True)
+                        local_path_dict.setdefault(a.attrs["path"], []).append(a)
+        errors = check_pathdict_actions(local_path_dict, remove_dups=True)
         if errors:
                 for e in errors:
                         print e
                 raise RuntimeError("Package %s: errors occurred" % pkg.name)
-        return path_dict
+        return local_path_dict
 
-def check_pathdict_actions(path_dict, remove_dups=False):
+def check_pathdict_actions(my_path_dict, remove_dups=False):
         # investigate all paths w/ multiple actions
         errorlist = []
-        for p in path_dict:
-                if len(path_dict[p]) == 1:
+        for p in my_path_dict:
+                # check to make sure all higher parts of path are indeed directories -
+                # avoid publishing through symlinks
+                tmp = p
+
+                while True:
+                        tmp = os.path.dirname(tmp)
+                        if tmp:
+                                if tmp in my_path_dict: # don't worry about implicit dirs for now
+                                        a = my_path_dict[tmp][0]# just check the first one
+                                        if a.name != "dir":
+                                                errorlist.append("action %s path component %s is not directory: %s" %
+                                                    (my_path_dict[p], tmp, a))
+                        else:
+                                break
+                if len(my_path_dict[p]) == 1:
                         continue
 
-                dups = path_dict[p]
+                dups = my_path_dict[p]
                 # make sure all are the same type
                 if len(set((d.name for d in dups))) > 1:
                         errorlist.append("Multiple actions on different types with the same path:\n\t%s\n" %
@@ -402,7 +416,7 @@ def check_pathdict_actions(path_dict, remove_dups=False):
                                                 d.attrs["importer.deleteme"] = "True"
                                                 if 1 or show_debug:
                                                         print "removing %s as hollow dup" % d
-                return errorlist
+        return errorlist
 
 def start_package(pkgname):
         set_macro("PKGNAME", urllib.quote(pkgname, ""))
@@ -1371,6 +1385,8 @@ def main_func():
         # packages per consolidation.  The version portion of the fmri 
         # will contain the branch that the package was obsoleted or renamed at.
         or_pkgs_per_con = {}
+        obs_or_renamed_pkgs = {}
+
         for pkg in pkgdict.keys():
                 obs_branch = pkgdict[pkg].obsolete_branch
                 rename_branch = pkgdict[pkg].rename_branch
@@ -1381,6 +1397,7 @@ def main_func():
                         ver_tokens[-1] = obs_branch
                         ver_string = ".".join(ver_tokens)
                         or_pkgs_per_con.setdefault(cons, {})[pkg] = ver_string
+                        obs_or_renamed_pkgs[pkg] = (pkgdict[pkg].fmristr(), "obsolete")
 
                         if publish_all:
                                 pkgdict[pkg].version = ver_string
@@ -1393,6 +1410,7 @@ def main_func():
                         ver_tokens[-1] = rename_branch
                         ver_string = ".".join(ver_tokens)
                         or_pkgs_per_con.setdefault(cons, {})[pkg] = ver_string
+                        obs_or_renamed_pkgs[pkg] = (pkgdict[pkg].fmristr(), "renamed")
 
                         if publish_all:
                                 pkgdict[pkg].version = ver_string
@@ -1404,19 +1422,52 @@ def main_func():
         print "Second pass: global crosschecks", datetime.now()
         # perform global crosschecks
         #
+        path_dict.clear()
+
         for pkg in pkgdict.values():
                 for action in pkg.actions:
                         if "path" not in action.attrs:
                                 continue
-                        path_dict.setdefault(action.attrs["path"], []).append(action)
+                        path = action.attrs["path"]
+                        path_dict.setdefault(path, []).append(action)
                         if action.name in ["file", "link", "hardlink"]:
-                                basename_dict.setdefault(os.path.basename(action.attrs["path"]), []).append(action)
-                                pkgpath_dict.setdefault(action.attrs["path"], []).append(action.attrs["importer.ipspkg"])
+                                basename_dict.setdefault(os.path.basename(path), []).append(action)
+                                pkgpath_dict.setdefault(path, []).append(action.attrs["importer.ipspkg"])
         errors = check_pathdict_actions(path_dict)
         if errors:
                 for e in errors:
-                        print e
+                        print "Fail: %s" % e
                 sys.exit(1)
+        # check for require dependencies on obsolete or renamed pkgs
+
+        errors = []
+        warns = []
+        for pack in pkgdict.values():
+                for action in pack.actions:
+                        if action.name != "depend":
+                                continue
+                        if action.attrs["type"] == "require" and "fmri" in action.attrs:
+                                fmri = action.attrs["fmri"].split("@")[0] # remove version
+                                if fmri.startswith("pkg:/"): # remove pkg:/ if exists
+                                        fmri = fmri[5:] 
+                                if fmri in obs_or_renamed_pkgs:
+                                        tup = obs_or_renamed_pkgs[fmri]
+                                        s = "Pkg %s has 'require' dependency on pkg %s, which is %s" % (
+                                            (pack.fmristr(),) + tup)
+                                        if tup[1] == "obsolete":
+                                                errors.append(s)
+                                        else:
+                                                warns.append(s)
+
+        if warns:
+                for w in warns:
+                        print "Warn: %s" % w
+        if errors:
+                for e in errors:
+                        print "Fail: %s" % e
+                sys.exit(1)
+
+
         print "packages being published are self consistent"
         if reference_uris:
                 print "downloading and checking external references"
@@ -1441,7 +1492,7 @@ def main_func():
                 errors = check_pathdict_actions(path_dict)
                 if errors:
                         for e in errors:
-                                print e
+                                print "Fail: %s" % e
                         sys.exit(1)
                 print "external packages checked for conflicts"
 
