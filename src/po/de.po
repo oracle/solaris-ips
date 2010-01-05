@@ -4692,7 +4692,7 @@ msgstr "%(current)s of %(total)s heruntergeladen"
 #: ../gui/modules/progress.py:119
 #, python-format
 msgid "Package %d of %d: %s\n"
-msgstr "Paket %%d von %%d: %s\n"
+msgstr "Paket %d von %d: %s\n"
 
 #: ../gui/modules/progress.py:129 ../gui/modules/progress.py:141
 #, python-format
