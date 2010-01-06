@@ -388,7 +388,7 @@ msgstr "Nicht installiert"
 
 #: ../client.py:1357
 msgid "          Name:"
-msgstr "                            Name:"
+msgstr "          Name:"
 
 #: ../client.py:1359
 msgid "       Summary:"
@@ -400,11 +400,11 @@ msgstr "   Beschreibung:"
 
 #: ../client.py:1371
 msgid "      Category:"
-msgstr "                     Kategorie:"
+msgstr "      Kategorie:"
 
 #: ../client.py:1378
 msgid "         State:"
-msgstr "                          Status:"
+msgstr "         Status:"
 
 #: ../client.py:1381
 msgid "    Renamed to:"
@@ -413,31 +413,31 @@ msgstr "    Umbenannt in:"
 #. XXX even more info on the publisher would be nice?
 #: ../client.py:1386
 msgid "     Publisher:"
-msgstr "            Herausgeber:"
+msgstr "     Herausgeber:"
 
 #: ../client.py:1387
 msgid "       Version:"
-msgstr "                         Version:"
+msgstr "       Version:"
 
 #: ../client.py:1388
 msgid " Build Release:"
-msgstr "               Build-Release:"
+msgstr " Build-Release:"
 
 #: ../client.py:1389
 msgid "        Branch:"
-msgstr "                           Zweig:"
+msgstr "        Zweig:"
 
 #: ../client.py:1390
 msgid "Packaging Date:"
-msgstr "         Packaging-Datum:"
+msgstr "Packaging-Datum:"
 
 #: ../client.py:1391
 msgid "          Size:"
-msgstr "                           Größe:"
+msgstr "          Größe:"
 
 #: ../client.py:1392
 msgid "          FMRI:"
-msgstr "                             FMRI:"
+msgstr "          FMRI:"
 
 #: ../client.py:1400
 msgid ""
@@ -597,7 +597,7 @@ msgstr "              SSL-Schlüssel:"
 
 #: ../client.py:2230
 msgid "             SSL Cert:"
-msgstr "              SSL-Zert.:"
+msgstr "             SSL-Zert.:"
 
 #: ../client.py:2242
 msgid " Cert. Effective Date:"
@@ -629,7 +629,7 @@ msgstr "          Client-UUID:"
 
 #: ../client.py:2283
 msgid "      Catalog Updated:"
-msgstr "       Aktualisierter Katalog:"
+msgstr "      Aktualisierter Katalog:"
 
 #: ../client.py:2285 ../client.py:2287
 msgid "              Enabled:"
@@ -1448,11 +1448,11 @@ msgstr "Repository ändern"
 
 #: ../gui/data/packagemanager.glade.h:58 ../gui/modules/misc.py:172
 msgid "Name:"
-msgstr "                            Name:"
+msgstr "Name:"
 
 #: ../gui/data/packagemanager.glade.h:59
 msgid "Name: "
-msgstr "                            Name: "
+msgstr "Name: "
 
 #: ../gui/data/packagemanager.glade.h:61
 msgid "Preferences"
@@ -1569,7 +1569,7 @@ msgstr "Geben Sie den Herausgebernamen und die URL an"
 
 #: ../gui/data/packagemanager.glade.h:89
 msgid "Start _Page"
-msgstr "Start_seite "
+msgstr "Start_seite"
 
 #: ../gui/data/packagemanager.glade.h:90
 msgid "The following will be added to your system:"
@@ -1581,7 +1581,7 @@ msgstr "Dies ist ein sicheres Repository."
 
 #: ../gui/data/packagemanager.glade.h:92
 msgid "This is a secure repository. Refer to the posted"
-msgstr "Dies ist ein sicheres Repository. "
+msgstr "Dies ist ein sicheres Repository."
 
 #: ../gui/data/packagemanager.glade.h:93
 msgid ""
@@ -1597,7 +1597,7 @@ msgstr "Geben Sie Text für die Suche nach dem Paket ein."
 
 #: ../gui/data/packagemanager.glade.h:96
 msgid "URL:"
-msgstr "URL: "
+msgstr "URL:"
 
 #: ../gui/data/packagemanager.glade.h:97 ../gui/modules/installupdate.py:222
 msgid "Update All"
@@ -1669,7 +1669,7 @@ msgstr "_Ändern..."
 
 #: ../gui/data/packagemanager.glade.h:114
 msgid "_Name:"
-msgstr "_Name: "
+msgstr "_Name:"
 
 #: ../gui/data/packagemanager.glade.h:115
 msgid "_Name: "
@@ -1697,7 +1697,7 @@ msgstr "_Suchen"
 
 #: ../gui/data/packagemanager.glade.h:121
 msgid "_URL:"
-msgstr "_URL: "
+msgstr "_URL:"
 
 #: ../gui/data/packagemanager.glade.h:122
 msgid "_URL: "
@@ -2090,7 +2090,7 @@ msgstr "<b>Folgende Startumgebungen konnten nicht umbenannt werden:</b>\n"
 #: ../gui/modules/beadmin.py:399
 #, python-format
 msgid "%s <b>to</b> %s\n"
-msgstr "%s < <b>>in</</b> %s\n"
+msgstr "%s <b>in</b> %s\n"
 
 #: ../gui/modules/beadmin.py:416
 msgid "BE error"
@@ -4484,8 +4484,7 @@ msgstr "Update-Manager-Benachrichtigung"
 #: ../updatemanager.py:237
 #, python-format
 msgid "GUI will not respond to any event! %s. Check updatemanager.py signals"
-msgstr "GUI reagiert auf kein Ereignis! %s. Überprüfen Sie die Signale von "
-       "updatemanager."
+msgstr "GUI reagiert auf kein Ereignis! %s. Überprüfen Sie die Signale von updatemanager."
 
 #: ../updatemanager.py:305
 msgid ""
@@ -4616,11 +4615,11 @@ msgstr "Fehler"
 
 #: ../gui/modules/misc.py:174
 msgid "Size:"
-msgstr "                           Größe:"
+msgstr "Größe:"
 
 #: ../gui/modules/misc.py:175
 msgid "Category:"
-msgstr "                     Kategorie:"
+msgstr "Kategorie:"
 
 #: ../gui/modules/misc.py:176
 msgid "Installed:"
@@ -4636,7 +4635,7 @@ msgstr "Letzte Version:"
 
 #: ../gui/modules/misc.py:179
 msgid "Publisher:"
-msgstr "            Herausgeber:"
+msgstr "Herausgeber:"
 
 #: ../gui/modules/misc.py:189
 #, python-format

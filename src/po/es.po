@@ -385,11 +385,11 @@ msgstr "No instalado"
 
 #: ../client.py:1357
 msgid "          Name:"
-msgstr "                         Nombre:"
+msgstr "          Nombre:"
 
 #: ../client.py:1359
 msgid "       Summary:"
-msgstr "                       Resumen:"
+msgstr "       Resumen:"
 
 #: ../client.py:1361
 msgid "   Description:"
@@ -397,11 +397,11 @@ msgstr "   Descripción:"
 
 #: ../client.py:1371
 msgid "      Category:"
-msgstr "                      Categoría:"
+msgstr "      Categoría:"
 
 #: ../client.py:1378
 msgid "         State:"
-msgstr "                          Estado:"
+msgstr "         Estado:"
 
 #: ../client.py:1381
 msgid "    Renamed to:"
@@ -414,15 +414,15 @@ msgstr "     Editor:"
 
 #: ../client.py:1387
 msgid "       Version:"
-msgstr "                         Versión:"
+msgstr "       Versión:"
 
 #: ../client.py:1388
 msgid " Build Release:"
-msgstr "                         Versión:"
+msgstr " Versión:"
 
 #: ../client.py:1389
 msgid "        Branch:"
-msgstr "                  Ramificación:"
+msgstr "        Ramificación:"
 
 #: ../client.py:1390
 msgid "Packaging Date:"
@@ -430,11 +430,11 @@ msgstr "Fecha de empaquetado:"
 
 #: ../client.py:1391
 msgid "          Size:"
-msgstr "                         Tamaño:"
+msgstr "          Tamaño:"
 
 #: ../client.py:1392
 msgid "          FMRI:"
-msgstr "                              FMRI:"
+msgstr "          FMRI:"
 
 #: ../client.py:1400
 msgid ""
@@ -1448,11 +1448,11 @@ msgstr "Modificar depósito"
 
 #: ../gui/data/packagemanager.glade.h:58 ../gui/modules/misc.py:172
 msgid "Name:"
-msgstr "                         Nombre:"
+msgstr "Nombre:"
 
 #: ../gui/data/packagemanager.glade.h:59
 msgid "Name: "
-msgstr "                         Nombre: "
+msgstr "Nombre: "
 
 #: ../gui/data/packagemanager.glade.h:61
 msgid "Preferences"
@@ -1896,7 +1896,7 @@ msgstr "The path for the last set of selections exported from packagemanager."
 #: ../gui/modules/webinstall.py:131
 #, python-format
 msgid "GUI will not respond to any event! %s. Check webinstall.py signals"
-msgstr "La GUI no responderá a ningún evento %s.                             Compruebe las señales de webinstall.py"
+msgstr "La GUI no responderá a ningún evento %s. Compruebe las señales de webinstall.py"
 
 #: ../gui/modules/webinstall.py:142
 msgid ""
@@ -2020,7 +2020,7 @@ msgstr "Administración de entornos de arranque"
 #: ../gui/modules/beadmin.py:161
 #, python-format
 msgid "GUI will not respond to any event! %s. Check beadmin.py signals"
-msgstr "La GUI no responderá a ningún evento %s.                             Compruebe las señales de beadmin.py"
+msgstr "La GUI no responderá a ningún evento %s. Compruebe las señales de beadmin.py"
 
 #: ../gui/modules/beadmin.py:170
 msgid "Boot Environment Confirmation"
@@ -2126,7 +2126,7 @@ msgstr "Instalando..."
 #: ../gui/modules/installupdate.py:188
 #, python-format
 msgid "GUI will not respond to any event! %s. Check installupdate.py signals"
-msgstr "La GUI no responderá a ningún evento %s.                             Compruebe las señales de installupdate.py"
+msgstr "La GUI no responderá a ningún evento %s. Compruebe las señales de installupdate.py"
 
 #. We are not showing the download stage in the main stage list
 #: ../gui/modules/installupdate.py:203
@@ -2418,7 +2418,7 @@ msgstr "Manage Publishers Confirmation"
 #: ../gui/modules/repository.py:357
 #, python-format
 msgid "GUI will not respond to any event! %s. Check repository.py signals"
-msgstr "La GUI no responderá a ningún evento %s.                             Compruebe las señales de repository.py"
+msgstr "La GUI no responderá a ningún evento %s. Compruebe las señales de repository.py"
 
 #: ../gui/modules/repository.py:394 ../packagemanager.py:1349
 msgid "Publisher"
@@ -4629,11 +4629,11 @@ msgstr "Error"
 
 #: ../gui/modules/misc.py:174
 msgid "Size:"
-msgstr "                         Tamaño:"
+msgstr "Tamaño:"
 
 #: ../gui/modules/misc.py:175
 msgid "Category:"
-msgstr "                      Categoría:"
+msgstr "Categoría:"
 
 #: ../gui/modules/misc.py:176
 msgid "Installed:"
