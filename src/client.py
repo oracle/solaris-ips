@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 # pkg - package system client utility
@@ -1374,7 +1374,7 @@ def search(img, args):
                 page_again = True
                 widths = []
                 st = None
-                ssu = None
+                err = None
                 header_attrs = attrs
                 while page_again:
                         unprocessed_res = []
@@ -1437,8 +1437,8 @@ def search(img, args):
                                                         page_timeout = min(
                                                             page_timeout * 2,
                                                             max_timeout)
-                        except api_errors.SlowSearchUsed, e:
-                                ssu = e
+                        except api_errors.ApiException, e:
+                                err = e
                         lines = produce_lines(unprocessed_res, attrs,
                             show_all=True)
                         old_widths = widths[:]
@@ -1453,8 +1453,8 @@ def search(img, args):
                                     widths, justs, line) %
                                     tuple(line)).rstrip())
                         st = time.time()
-                if ssu:
-                        raise ssu
+                if err:
+                        raise err
 
 
         except (api_errors.IncorrectIndexFileHash,
@@ -1476,7 +1476,7 @@ def search(img, args):
                 error(e)
                 return EXIT_OOPS
         if good_res and bad_res:
-                retcode = EXIT_NOP
+                retcode = EXIT_PARTIAL
         elif bad_res:
                 retcode = EXIT_OOPS
         elif good_res:

@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import testutils
@@ -2302,6 +2302,7 @@ class TestApiSearchMulti(testutils.ManyDepotTestCase):
 
         example_pkg10 = """
             open example_pkg@1.0,5.11-0
+            add dir mode=0755 owner=root group=bin path=/bin/example_dir
             close """
 
         res_alternate_server_local = set([
@@ -2335,16 +2336,37 @@ class TestApiSearchMulti(testutils.ManyDepotTestCase):
                                     str(proposed_answer - correct_answer)
                         self.assert_(correct_answer == proposed_answer)
 
+        @staticmethod
+        def _extract_action_from_res(it, err):
+                res = []
+                if err:
+                        try:
+                                for query_num, auth, (version, return_type,
+                                    (pkg_name, piece, act)) in it:
+                                        res.append((fmri.PkgFmri(str(
+                                            pkg_name)).get_short_fmri(), piece,
+                                            TestApiSearchBasics._replace_act(
+                                            act)),)
+                        except err, e:
+                                return res
+                        else:
+                                raise RuntimeError(
+                                    "Didn't get expected error:%s" % err)
+                else:
+                        return TestApiSearchBasics._extract_action_from_res(it)
+                        
+
         def _search_op(self, api_obj, remote, token, test_value,
             case_sensitive=False, return_actions=True, num_to_return=None,
-            start_point=None, servers=None):
+            start_point=None, servers=None, expected_err=None):
                 search_func = api_obj.local_search
                 query = api.Query(token, case_sensitive, return_actions,
                     num_to_return, start_point)
                 if remote:
                         search_func = api_obj.remote_search
-                        res = set(TestApiSearchBasics._extract_action_from_res(
-                            search_func([query], servers=servers)))
+                        res = set(self._extract_action_from_res(
+                            search_func([query], servers=servers),
+                            expected_err))
                 else:
                         res = set(TestApiSearchBasics._extract_action_from_res(
                             search_func([query])))
@@ -2414,5 +2436,22 @@ class TestApiSearchMulti(testutils.ManyDepotTestCase):
                                     " a client uuid, expected to find %s." %
                                     (d, found, num_expected[d]))
 
+        def test_bug_12739(self):
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+
+                self._search_op(api_obj, True, "example_dir",
+                    set([("pkg:/example_pkg@1.0-0", "basename",
+                        "dir group=bin mode=0755 owner=root "
+                        "path=bin/example_dir")]))
+                self.dcs[1].stop()
+                self._search_op(api_obj, True, "example_dir",
+                    set([("pkg:/example_pkg@1.0-0", "basename",
+                        "dir group=bin mode=0755 owner=root "
+                        "path=bin/example_dir")]),
+                        expected_err=api_errors.ProblematicSearchServers)
+                self.pkg("search example_dir", exit=3)
+                
 if __name__ == "__main__":
         unittest.main()

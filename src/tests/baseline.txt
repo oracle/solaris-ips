@@ -292,6 +292,7 @@ cli.t_api_search.py TestApiSearchBasicsRestartingDepot.test_bug_8318|pass
 cli.t_api_search.py TestApiSearchBasicsRestartingDepot.test_local_image_update|pass
 cli.t_api_search.py TestApiSearchMulti.test_bug_2955|pass
 cli.t_api_search.py TestApiSearchMulti.test_bug_8318|pass
+cli.t_api_search.py TestApiSearchMulti.test_bug_12739|pass
 cli.t_change_facet.py TestPkgChangeFacet.test_1|pass
 cli.t_change_variant.py TestPkgChangeVariant.test_cv_01_none_1|pass
 cli.t_change_variant.py TestPkgChangeVariant.test_cv_01_none_2|pass
