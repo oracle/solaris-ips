@@ -25,7 +25,6 @@
 
 #include <Python.h>
 
-#include <sys/systeminfo.h>
 #include <sys/types.h>
 #include <stdlib.h>
 
@@ -194,7 +193,7 @@ typedef struct
 
 
 static void msat_dealloc(msat_solver *self);
-static PyMethodDef msat_methods[];
+extern PyMethodDef msat_methods[];
 static int msat_init(msat_solver * self, PyObject *args, PyObject *kwds);
 static PyObject *
 msat_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
@@ -515,7 +514,7 @@ msat_dereference(msat_solver *self, PyObject *args)
  * to build clauses, or should we just leave that to the caller?
  */
 
-static PyMethodDef msat_methods[] = {
+PyMethodDef msat_methods[] = {
 	{ "reset", (PyCFunction) msat_reset,
 		METH_VARARGS,
 		"Reset solver after solution failure"},
