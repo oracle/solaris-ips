@@ -700,7 +700,8 @@ class CurlTransportEngine(TransportEngine):
                 if treq.sslkey:
                         hdl.setopt(pycurl.SSLKEY, treq.sslkey)
                 # Options that apply when SSL is enabled
-                if treq.sslcert or treq.sslkey:
+                proto = urlparse.urlsplit(treq.url)[0]
+                if proto == "https":
                         # Verify that peer's CN matches CN on certificate
                         hdl.setopt(pycurl.SSL_VERIFYHOST, 2)
 
@@ -712,7 +713,7 @@ class CurlTransportEngine(TransportEngine):
                         else:
                                 hdl.setopt(pycurl.SSL_VERIFYPEER, 0)
 
-        def __shutdown(self):
+        def shutdown(self):
                 """Shutdown the transport engine, perform cleanup."""
 
                 self.reset()

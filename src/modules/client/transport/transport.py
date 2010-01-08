@@ -90,12 +90,32 @@ class Transport(object):
                 transport and its associated components."""
 
                 if not self.__engine:
-                        # Not configured, just init and return
-                        self.__setup()
+                        # Don't reset if not configured
                         return
 
-                self.__engine.reset()
-                self.__repo_cache.clear_cache()
+                self.__lock.acquire()
+                try:
+                        self.__engine.reset()
+                        self.__repo_cache.clear_cache()
+                finally:
+                        self.__lock.release()
+
+        def shutdown(self):
+                """Shuts down any portions of the transport that can
+                actively be connected to remote endpoints."""
+
+                if not self.__engine:
+                        # Already shut down
+                        return
+
+                self.__lock.acquire()
+                try:
+                        self.__engine.shutdown()
+                        self.__engine = None
+                        self.__repo_cache = None
+                        self.cache_store = None
+                finally:
+                        self.__lock.release()
 
         def do_search(self, pub, data, ccancel=None):
                 """Perform a search request.  Returns a file-like object
@@ -127,6 +147,10 @@ class Transport(object):
 
                 if isinstance(pub, publisher.Publisher):
                         header = self.__build_header(uuid=self.__get_uuid(pub))
+
+                # Call setup if the transport isn't configured or was shutdown.
+                if not self.__engine:
+                        self.__setup()
 
                 # If captive portal test hasn't been executed, run it
                 # prior to this operation.
@@ -204,6 +228,10 @@ class Transport(object):
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 header = self.__build_header(uuid=self.__get_uuid(pub))
                 croot = pub.catalog_root
+
+                # Call setup if the transport isn't configured or was shutdown.
+                if not self.__engine:
+                        self.__setup()
 
                 # If captive portal test hasn't been executed, run it
                 # prior to this operation.
@@ -337,6 +365,10 @@ class Transport(object):
                         completed_dir = pub.catalog_root
                 download_dir = self.__img.incoming_download_dir()
 
+                # Call setup if the transport isn't configured or was shutdown.
+                if not self.__engine:
+                        self.__setup()
+
                 # If captive portal test hasn't been executed, run it
                 # prior to this operation.
                 self._captive_portal_test()
@@ -345,10 +377,6 @@ class Transport(object):
                 # the directories.
                 self._makedirs(download_dir)
                 self._makedirs(completed_dir)
-
-                # Call setup if the transport isn't configured yet.
-                if not self.__engine:
-                        self.__setup()
 
                 # Call statvfs to find the blocksize of download_dir's
                 # filesystem.
@@ -499,6 +527,10 @@ class Transport(object):
                 pub = self.__img.get_publisher(pub_prefix)
                 header = self.__build_header(uuid=self.__get_uuid(pub))
 
+                # Call setup if the transport isn't configured or was shutdown.
+                if not self.__engine:
+                        self.__setup()
+
                 for d in self.__gen_repos(pub, retry_count):
 
                         url = d.get_url()
@@ -558,6 +590,10 @@ class Transport(object):
                 header = self.__build_header(intent=intent,
                     uuid=self.__get_uuid(pub))
 
+                # Call setup if the transport isn't configured or was shutdown.
+                if not self.__engine:
+                        self.__setup()
+
                 for d in self.__gen_origins(pub, retry_count):
 
                         # If a transport exception occurs,
@@ -609,6 +645,10 @@ class Transport(object):
                 mcontent = None
                 header = self.__build_header(intent=intent,
                     uuid=self.__get_uuid(pub))
+
+                # Call setup if the transport isn't configured or was shutdown.
+                if not self.__engine:
+                        self.__setup()
 
                 # If captive portal test hasn't been executed, run it
                 # prior to this operation.
@@ -692,6 +732,10 @@ class Transport(object):
 
                 download_dir = self.__img.incoming_download_dir()
 
+                # Call setup if the transport isn't configured or was shutdown.
+                if not self.__engine:
+                        self.__setup()
+
                 # If captive portal test hasn't been executed, run it
                 # prior to this operation.
                 self._captive_portal_test()
@@ -699,10 +743,6 @@ class Transport(object):
                 # Check if the download_dir exists.  If it doesn't create
                 # the directories.
                 self._makedirs(download_dir)
-
-                # Call setup if the transport isn't configured yet.
-                if not self.__engine:
-                        self.__setup()
 
                 # Call statvfs to find the blocksize of download_dir's
                 # filesystem.
@@ -1079,6 +1119,10 @@ class Transport(object):
                 download_dir = self.__img.incoming_download_dir()
                 pub = mfile.get_publisher()
 
+                # Call setup if the transport isn't configured or was shutdown.
+                if not self.__engine:
+                        self.__setup()
+
                 # If captive portal test hasn't been executed, run it
                 # prior to this operation.
                 self._captive_portal_test()
@@ -1086,10 +1130,6 @@ class Transport(object):
                 # Check if the download_dir exists.  If it doesn't create
                 # the directories.
                 self._makedirs(download_dir)
-
-                # Call setup if the transport isn't configured yet.
-                if not self.__engine:
-                        self.__setup()
 
                 # Call statvfs to find the blocksize of download_dir's
                 # filesystem.
@@ -1149,6 +1189,10 @@ class Transport(object):
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 failures = tx.TransportFailures()
                 header = self.__build_header(uuid=self.__get_uuid(pub))
+
+                # Call setup if the transport isn't configured or was shutdown.
+                if not self.__engine:
+                        self.__setup()
 
                 # If captive portal test hasn't been executed, run it
                 # prior to this operation.
@@ -1236,6 +1280,7 @@ class Transport(object):
                 """The pub argument may either be a Publisher or a
                 RepositoryURI object."""
 
+                # Call setup if the transport isn't configured or was shutdown.
                 if not self.__engine:
                         self.__setup()
 
@@ -1259,6 +1304,7 @@ class Transport(object):
                 argument.  The operation must support the version
                 given in as an integer to the 'version' argument."""
 
+                # Call setup if the transport isn't configured or was shutdown.
                 if not self.__engine:
                         self.__setup()
 
@@ -1285,7 +1331,12 @@ class Transport(object):
                                         yield repo
 
         def __gen_repos(self, pub, count):
+                """Generate a list of all repositories for a given publisher.
+                This is used for content operations, whereas __gen_origins
+                or __gen_origins_byversion should be used for metadata
+                operations."""
 
+                # Call setup if the transport isn't configured or was shutdown.
                 if not self.__engine:
                         self.__setup()
 
@@ -1307,6 +1358,7 @@ class Transport(object):
                 CHUNK_SMALL = 10
                 CHUNK_LARGE = 100
 
+                # Call setup if the transport isn't configured or was shutdown.
                 if not self.__engine:
                         self.__setup()
 
@@ -1451,7 +1503,7 @@ class Transport(object):
                 if not fmri:
                         return None
 
-                # Call setup if the transport isn't configured yet.
+                # Call setup if the transport isn't configured or was shutdown.
                 if not self.__engine:
                         self.__setup()
                 

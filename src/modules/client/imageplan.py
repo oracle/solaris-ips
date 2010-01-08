@@ -785,6 +785,7 @@ class ImagePlan(object):
                                 raise
 
                         self.__progtrack.download_done()
+                        self.image.transport.shutdown()
                 except:
                         self.state = PREEXECUTED_ERROR
                         raise

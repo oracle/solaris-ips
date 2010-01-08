@@ -1602,6 +1602,7 @@ class ImageInterface(object):
                 self.__progresstracker.reset()
 
                 self.__img.cleanup_downloads()
+                self.__img.transport.shutdown()
                 # Recreate the image object using the path the api
                 # object was created with instead of the current path.
                 self.__img = image.Image(self.__img_path,
