@@ -160,7 +160,7 @@
       <applyto>/apps/packagemanager/preferences/startpage_url</applyto>
       <owner>packagemanager</owner>
       <type>string</type>
-      <default>http://dlc.sun.com/osol/packagemanager/downloads/200906</default>
+      <default>http://dlc.sun.com/osol/packagemanager/downloads/201003</default>
       <locale name="C">
          <short>Start Page Update URL</short>
          <long>
