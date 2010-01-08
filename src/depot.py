@@ -119,15 +119,24 @@ class LogSink(object):
                 pass
 
 
-def usage(text):
+def usage(text=None, retcode=2, full=False):
+        """Optionally emit a usage message and then exit using the specified
+        exit code."""
+
         if text:
                 emsg(text)
+
+        if not full:
+                # The full usage message isn't desired.
+                emsg(_("Try `pkg.depotd --help or -?' for more "
+                    "information."))
+                sys.exit(retcode)
 
         print """\
 Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
            [-t socket_timeout] [--cfg-file] [--content-root]
-           [--disable-ops op[/1][,...]] [--debug] [--log-access dest]
-           [--log-errors dest] [--mirror] [--nasty]
+           [--disable-ops op[/1][,...]] [--debug feature_list]
+           [--log-access dest] [--log-errors dest] [--mirror] [--nasty]
            [--set-property <section.property>=<value>]
            [--proxy-base url] [--readonly] [--rebuild] [--ssl-cert-file]
            [--ssl-dialog] [--ssl-key-file] [--sort-file-max-size size]
@@ -148,11 +157,11 @@ Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
                         provided as an argument, or to disable all search
                         operations, simply 'search'.
         --debug         The name of a debug feature to enable; or a whitespace
-                        or comma separated list of features to enable.  Possible
-                        values are: headers.
-        --exit-ready    Go through normal startup processing (including rebuilding
-                        catalog or indices, if requested) but exit when ready
-                        to start serving packages.
+                        or comma separated list of features to enable.
+                        Possible values are: headers.
+        --exit-ready    Perform startup processing (including rebuilding
+                        catalog or indices, if requested) and exit when
+                        ready to start serving packages.
         --log-access    The destination for any access related information
                         logged by the depot process.  Possible values are:
                         stderr, stdout, none, or an absolute pathname.  The
@@ -201,8 +210,15 @@ Usage: /usr/lib/pkg.depotd [-d repo_dir] [-p port] [-s threads]
                         access.  Used with --readonly to allow server to
                         create needed files, such as search indices, without
                         needing write access to the package information.
-"""
-        sys.exit(2)
+
+Options:
+        --help or -?
+
+Environment:
+        PKG_REPO                Used as default repo_dir if -d not provided.
+        PKG_DEPOT_CONTENT       Used as default content_root if --content-root
+                                not provided."""
+        sys.exit(retcode)
 
 class OptionError(Exception):
         """Option exception. """
@@ -269,16 +285,18 @@ if __name__ == "__main__":
         opt = None
         repo_props = {}
         try:
-                long_opts = ["add-content", "cfg-file=", "content-root=", "debug=",
-                    "disable-ops=", "exit-ready", "mirror", "nasty=", "set-property=",
-                    "proxy-base=", "readonly", "rebuild", "refresh-index",
-                    "ssl-cert-file=", "ssl-dialog=", "ssl-key-file=",
-                    "sort-file-max-size=", "writable-root="]
+                long_opts = ["add-content", "cfg-file=", "content-root=",
+                    "debug=", "disable-ops=", "exit-ready", "help", "mirror",
+                    "nasty=", "set-property=", "proxy-base=", "readonly",
+                    "rebuild", "refresh-index", "ssl-cert-file=", "ssl-dialog=",
+                    "ssl-key-file=", "sort-file-max-size=", "writable-root="]
 
                 for opt in log_opts:
                         long_opts.append("%s=" % opt.lstrip('--'))
-                opts, pargs = getopt.getopt(sys.argv[1:], "d:np:s:t:",
+                opts, pargs = getopt.getopt(sys.argv[1:], "d:np:s:t:?",
                     long_opts)
+
+                show_usage = False
                 for opt, arg in opts:
                         if opt == "-n":
                                 sys.exit(0)
@@ -353,6 +371,8 @@ if __name__ == "__main__":
                                             "You must specify a log " \
                                             "destination."
                                 log_routes[opt.lstrip("--log-")] = arg
+                        elif opt in ("--help", "-?"):
+                                show_usage = True
                         elif opt == "--mirror":
                                 mirror = True
                         elif opt == "--nasty":
@@ -497,12 +517,16 @@ if __name__ == "__main__":
                 usage("pkg.depotd: illegal option value: %s specified " \
                     "for option: %s" % (arg, opt))
 
+        if show_usage:
+                usage(retcode=0, full=True)
+
         if rebuild and add_content:
                 usage("--add-content cannot be used with --rebuild")
         if rebuild and reindex:
                 usage("--refresh-index cannot be used with --rebuild")
         if (rebuild or add_content) and (readonly or mirror):
-                usage("--readonly and --mirror cannot be used with --rebuild or --add-content")
+                usage("--readonly and --mirror cannot be used with --rebuild "
+                    "or --add-content")
         if reindex and mirror:
                 usage("--mirror cannot be used with --refresh-index")
         if reindex and readonly and not writable_root:
