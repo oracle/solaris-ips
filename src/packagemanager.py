@@ -1822,6 +1822,11 @@ class PackageManager:
 
         def __on_mainwindow_key_press_event(self, widget, event):
                 if self.is_busy_cursor_set():
+                        if event.type == gtk.gdk.KEY_PRESS:
+                                keyname = gtk.gdk.keyval_name(event.keyval)
+                                if keyname == "Escape" and self.api_o.can_be_canceled():
+                                        Thread(target = self.api_o.cancel,
+                                            args = ()).start()
                         return True
                 else:
                         return False
