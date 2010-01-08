@@ -27,8 +27,8 @@ import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 
-import unittest
 import os
+import unittest
 
 class TestCommandLine(testutils.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -46,6 +46,7 @@ class TestCommandLine(testutils.SingleDepotTestCase):
                 self.pkg("uninstall", exit=2)
                 self.pkg("uninstall foo@x.y", exit=1)
                 self.pkg("uninstall pkg:/foo@bar.baz", exit=1)
+                self.image_destroy()
 
         foo12 = """
             open foo@1.2,5.11-0
@@ -62,6 +63,7 @@ class TestCommandLine(testutils.SingleDepotTestCase):
                 self.pkg("install foo")
                 os.chdir(os.path.join(self.get_img_path(), "tmp"))
                 self.pkg("uninstall foo")
+                self.image_destroy()
 
         foob20 = """
             open foob@2.0,5.11-0
@@ -93,6 +95,37 @@ class TestCommandLine(testutils.SingleDepotTestCase):
                 self.pkg("uninstall foob", exit=1)
                 self.pkg("uninstall bazb foob barb")
                 self.pkg("verify")
+                self.image_destroy()
+
+        quux10 = """
+            open quux@1.0,5.11-0
+            close """
+
+        renamed10 = """
+            open renamed@1.0,5.11-0
+            add set name=pkg.renamed value=true
+            add depend type=require fmri=quux@1.0
+            close """
+
+        def test_uninstalled_state(self):
+                """Uninstalling a package that is no longer known should result
+                in its removal from the output of pkg list -a, even if it has
+                been renamed, etc.""" 
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.quux10 + self.renamed10)
+                self.image_create(durl)
+                self.pkg("install -v renamed")
+                self.pkg("verify")
+                self.pkg("set-publisher -P -g %s bogus" % durl)
+                self.pkg("unset-publisher test")
+                self.pkg("info quux@1.0 renamed@1.0")
+                self.pkg("uninstall renamed")
+                self.pkg("list -a renamed@1.0", exit=1)
+                self.pkg("uninstall quux")
+                self.pkg("list -a quux@1.0", exit=1)
+                self.image_destroy()
+
 
 if __name__ == "__main__":
         unittest.main()

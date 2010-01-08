@@ -975,13 +975,6 @@ class Image(object):
 
                 if self.PKG_STATE_KNOWN not in states and \
                     self.PKG_STATE_INSTALLED not in states:
-                        # Package is no longer known or installed, so isn't
-                        # upgradable.
-                        states.discard(self.PKG_STATE_UPGRADABLE)
-
-                if not states or (len(states) == 1 and
-                    (self.PKG_STATE_V0 in states or
-                    self.PKG_STATE_V1 in states)):
                         # This entry is no longer available and has no
                         # meaningful state information, so should be
                         # discarded.
