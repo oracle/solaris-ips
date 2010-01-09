@@ -693,10 +693,8 @@ class Repository(object):
                 forked = False
 
                 try:
-                        fmris_to_index = set(cat.fmris())
-
-                        indexer.Indexer.check_for_updates(self.index_root,
-                            fmris_to_index)
+                        fmris_to_index = indexer.Indexer.check_for_updates(
+                            self.index_root, cat)
 
                         pub = self.cfg.get_property("publisher", "prefix")
                         if fmris_to_index:
@@ -1236,12 +1234,8 @@ class Repository(object):
                         raise RepositoryMirrorError()
 
                 c = self.catalog
-                # XXX this is pretty gross; the indexer needs to take a
-                # generator.
-                fmris_to_index = set(c.fmris())
-
-                indexer.Indexer.check_for_updates(self.index_root,
-                    fmris_to_index)
+                fmris_to_index = indexer.Indexer.check_for_updates(
+                    self.index_root, c)
 
                 if fmris_to_index:
                         self.__index_log("Updating search indices")

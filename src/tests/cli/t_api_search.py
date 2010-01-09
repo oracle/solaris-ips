@@ -46,6 +46,7 @@ import pkg.fmri as fmri
 import pkg.indexer as indexer
 import pkg.portable as portable
 import pkg.search_storage as ss
+import pkg.server.repository as srepo
 
 API_VERSION = 29
 PKG_CLIENT_NAME = "pkg"
@@ -2297,6 +2298,45 @@ class TestApiSearchBasicsRestartingDepot(TestApiSearchBasics):
                             "client uuid, expected to find %s.") %
                             (found, num_expected))
 
+        def test_bug_13485(self):
+                """Test that indexer.Indexer's check_for_updates function works
+                as excepted. This needs to be a separate test because other
+                tests are likely to conintue working while reindexing more
+                frequently than they should."""
+
+                durl = self.dc.get_depot_url()
+                depotpath = self.dc.get_repodir()
+                ind_dir = os.path.join(depotpath, "index")
+                repo = srepo.Repository(repo_root=depotpath, read_only=True,
+                    fork_allowed=False, refresh_index=False)
+
+                # Check that an empty index works correctly.
+                fmris = indexer.Indexer.check_for_updates(ind_dir, repo.catalog)
+                self.assertEqual(set(), fmris)
+
+                self.pkgsend_bulk(durl, self.example_pkg10)
+                self.__wait_for_indexing(os.path.join(ind_dir, "TMP"))
+                repo = srepo.Repository(repo_root=depotpath, fork_allowed=False)
+                self.assertEqual(len(set(repo.catalog.fmris())), 1)
+                # Check that after publishing one package, no packages need
+                # indexing.
+                fmris = indexer.Indexer.check_for_updates(ind_dir, repo.catalog)
+                self.assertEqual(set(), fmris)
+                
+                back_dir = ind_dir + ".BACKUP"
+                shutil.copytree(ind_dir, back_dir)
+                self.pkgsend_bulk(durl, self.example_pkg10)
+                repo = srepo.Repository(repo_root=depotpath, fork_allowed=False)
+                self.assertEqual(len(set(repo.catalog.fmris())), 2)
+                # Check that publishing a second package also works.
+                fmris = indexer.Indexer.check_for_updates(ind_dir, repo.catalog)
+                self.assertEqual(set(), fmris)
+
+                # Check that a package that was publisher but not index is
+                # reported.
+                fmris = indexer.Indexer.check_for_updates(back_dir,
+                    repo.catalog)
+                self.assertEqual(len(fmris), 1)
 
 class TestApiSearchMulti(testutils.ManyDepotTestCase):
 

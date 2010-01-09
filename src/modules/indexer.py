@@ -825,13 +825,16 @@ class Indexer(object):
                             self.file_version_number)
 
         @staticmethod
-        def check_for_updates(index_root, fmri_set):
-                """ Checks fmri_set to see which members have not been indexed.
-                It modifies fmri_set.
+        def check_for_updates(index_root, cat):
+                """Check to see whether the catalog has fmris which have not
+                been indexed.
 
-                The "index_root" parameter is the directory which contains the
-                index."""
+                'index_root' is the path to the index to check against.
 
+                'cat' is the catalog to check for new fmris."""
+
+                fmri_set = set((f.remove_publisher() for f in cat.fmris()))
+                
                 data =  ss.IndexStoreSet("full_fmri_list")
                 try:
                         data.open(index_root)
@@ -845,6 +848,7 @@ class Indexer(object):
                         data.read_and_discard_matching_from_argument(fmri_set)
                 finally:
                         data.close_file_handle()
+                return fmri_set
 
         def _migrate(self, source_dir=None, dest_dir=None, fast_update=False):
                 """Moves the indexes from a temporary directory to the

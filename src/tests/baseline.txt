@@ -284,6 +284,7 @@ cli.t_api_search.py TestApiSearchBasicsPersistentDepot.test_bug_9845_08|pass
 cli.t_api_search.py TestApiSearchBasicsPersistentDepot.test_bug_9845_09|pass
 cli.t_api_search.py TestApiSearchBasicsPersistentDepot.test_bug_9845_10|pass
 cli.t_api_search.py TestApiSearchBasicsPersistentDepot.test_bug_9845_11|pass
+cli.t_api_search.py TestApiSearchBasicsRestartingDepot.test_bug_13485|pass
 cli.t_api_search.py TestApiSearchBasicsRestartingDepot.test_bug_4048_1|pass
 cli.t_api_search.py TestApiSearchBasicsRestartingDepot.test_bug_4048_2|pass
 cli.t_api_search.py TestApiSearchBasicsRestartingDepot.test_bug_7358_1|pass

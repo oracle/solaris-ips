@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -197,6 +197,10 @@ class PkgFmri(object):
                         self.publisher = "%s_%s" % (PREF_PUB_PFX, publisher)
                 else:
                         self.publisher = publisher
+
+        def remove_publisher(self):
+                self.publisher = None
+                return self
 
         def has_publisher(self):
                 """Returns true if the FMRI has a publisher."""
