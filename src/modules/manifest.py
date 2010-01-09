@@ -25,9 +25,9 @@
 # Use is subject to license terms.
 #
 
-import os
 import errno
 import hashlib
+import os
 import tempfile
 from itertools import groupby, chain, repeat
 
@@ -36,7 +36,7 @@ import pkg.client.api_errors as api_errors
 import pkg.portable as portable
 import pkg.variant as variant
 
-from pkg.misc import EmptyI, expanddirs, PKG_FILE_MODE
+from pkg.misc import EmptyI, expanddirs, PKG_FILE_MODE, PKG_DIR_MODE
 from pkg.actions.attribute import AttributeAction
 
 class Manifest(object):
@@ -300,7 +300,7 @@ class Manifest(object):
                                 l = accumulate + l
                                 accumulate = ""
 
-                        if not l or l[0] == "#":  # ignore blank lines & comments
+                        if not l or l[0] == "#": # ignore blank lines & comments
                                 continue
 
                         try:
@@ -516,10 +516,29 @@ class Manifest(object):
                 t_dir = os.path.dirname(mfst_path)
                 t_prefix = os.path.basename(mfst_path) + "."
 
-                if not os.path.exists(t_dir):
-                        os.makedirs(t_dir)
+                try:
+                        os.makedirs(t_dir, mode=PKG_DIR_MODE)
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES:
+                                raise api_errors.PermissionsException(
+                                    e.filename)
+                        if e.errno == errno.EROFS:
+                                raise api_errors.ReadOnlyFileSystemException(
+                                    e.filename)
+                        if e.errno != errno.EEXIST:
+                                raise
 
-                fd, fn = tempfile.mkstemp(dir=t_dir, prefix=t_prefix)
+                try:
+                        fd, fn = tempfile.mkstemp(dir=t_dir, prefix=t_prefix)
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES:
+                                raise api_errors.PermissionsException(
+                                    e.filename)
+                        if e.errno == errno.EROFS:
+                                raise api_errors.ReadOnlyFileSystemException(
+                                    e.filename)
+                        raise
+
                 mfile = os.fdopen(fd, "wb")
 
                 #
@@ -529,8 +548,18 @@ class Manifest(object):
                 #
                 mfile.write(self.tostr_unsorted())
                 mfile.close()
-                os.chmod(fn, PKG_FILE_MODE)
-                portable.rename(fn, mfst_path)
+
+                try:
+                        os.chmod(fn, PKG_FILE_MODE)
+                        portable.rename(fn, mfst_path)
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES:
+                                raise api_errors.PermissionsException(
+                                    e.filename)
+                        if e.errno == errno.EROFS:
+                                raise api_errors.ReadOnlyFileSystemException(
+                                    e.filename)
+                        raise
 
         def get_variants(self, name):
                 if name not in self.attributes:
