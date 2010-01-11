@@ -238,19 +238,15 @@ def list_inventory(img, args):
                         display_headers = False
                 elif opt == "-a":
                         ltypes.add(opt)
-                        pkg_list = api.ImageInterface.LIST_INSTALLED_NEWEST
                 elif opt == "-f":
                         ltypes.add(opt)
-                        pkg_list = api.ImageInterface.LIST_ALL
                         variants = True
                 elif opt == "-n":
                         ltypes.add(opt)
-                        pkg_list = api.ImageInterface.LIST_NEWEST
                 elif opt == "-s":
                         summary = True
                 elif opt == "-u":
                         ltypes.add(opt)
-                        pkg_list = api.ImageInterface.LIST_UPGRADABLE
                 elif opt == "-v":
                         verbose = True
                 elif opt == "--no-refresh":
@@ -265,6 +261,15 @@ def list_inventory(img, args):
         if "-f" in ltypes and "-a" not in ltypes:
                 usage(_("-f may only be used in combination with -a"),
                     cmd="list")
+
+        if "-f" in ltypes:
+                pkg_list = api.ImageInterface.LIST_ALL
+        elif "-a" in ltypes:
+                pkg_list = api.ImageInterface.LIST_INSTALLED_NEWEST
+        elif "-n" in ltypes:
+                pkg_list = api.ImageInterface.LIST_NEWEST
+        elif "-u" in ltypes:
+                pkg_list = api.ImageInterface.LIST_UPGRADABLE
 
         for ltype, permitted in allowed:
                 if ltype in ltypes:

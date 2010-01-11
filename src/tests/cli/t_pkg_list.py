@@ -150,6 +150,11 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
 
+                # Put options in different order to ensure output still matches.
+                self.pkg("list -faH")
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
+
         def test_list_01(self):
                 """List all "foo@1.0" from auth "test1"."""
                 self.pkg("list -afH pkg://test1/foo@1.0,5.11-0")
@@ -157,7 +162,7 @@ class TestPkgList(testutils.ManyDepotTestCase):
                     "foo 1.0-0 known u----\n"
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
-                
+
         def test_list_02(self):
                 """List all "foo@1.0", regardless of publisher, with "pkg:/"
                 prefix."""
@@ -200,12 +205,12 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 self.pkg("list -aH foo")
                 expected = \
                     "foo         1.2.1-0 known -----\n" \
-                    "foo (test2) 1.2.1-0 known -----\n" 
+                    "foo (test2) 1.2.1-0 known -----\n"
                 output = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
 
-                
+
         def test_list_05(self):
                 """Show foo@1.0 from both depots, but 1.1 only from test2."""
                 self.pkg("list -aHf foo@1.0-0 pkg://test2/foo@1.1-0")
@@ -225,7 +230,7 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 output = self.reduceSpaces(self.output)
                 expected = self.reduceSpaces(expected)
                 self.assertEqualDiff(expected, output)
-                
+
         def test_list_06(self):
                 """Show versions 1.0 and 1.1 of foo only from publisher test2."""
                 self.pkg("list -aHf pkg://test2/foo")
