@@ -58,6 +58,8 @@ f none usr/lib/python2.6/vendor-packages/pkg/actions/unknown.py 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/actions/unknown.pyc 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/actions/user.py 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/actions/user.pyc 444 root bin
+f none usr/lib/python2.6/vendor-packages/pkg/api_common.py 444 root bin
+f none usr/lib/python2.6/vendor-packages/pkg/api_common.pyc 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/arch.so 755 root bin
 d none usr/lib/python2.6/vendor-packages/pkg/bundle 755 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/bundle/DirectoryBundle.py 444 root bin

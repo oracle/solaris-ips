@@ -20,20 +20,28 @@
 # CDDL HEADER END
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
 import cherrypy
 import itertools
+import os
+import StringIO
+
 import pkg.catalog
 import pkg.fmri
+import pkg.manifest as manifest
+import pkg.misc as misc
 import pkg.server.api_errors as api_errors
 import pkg.server.repository as srepo
 import pkg.server.query_parser as qp
 import pkg.version as version
 
-CURRENT_API_VERSION = 6
+from pkg.api_common import (PackageInfo, LicenseInfo, PackageCategory,
+    _get_pkg_cat_data)
+
+CURRENT_API_VERSION = 7
 
 class BaseInterface(object):
         """This class represents a base API object that is provided by the
@@ -58,7 +66,7 @@ class _Interface(object):
         """Private base class used for api interface objects.
         """
         def __init__(self, version_id, base):
-                compatible_versions = set([6])
+                compatible_versions = set([6, CURRENT_API_VERSION])
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
                             version_id)
@@ -73,6 +81,12 @@ class CatalogInterface(_Interface):
         clients may use.
         """
 
+        # Constants used to reference specific values that info can return.
+        INFO_FOUND = 0
+        INFO_MISSING = 1
+        INFO_MULTI_MATCH = 2
+        INFO_ILLEGALS = 3
+
         def fmris(self):
                 """A generator function that produces FMRIs as it iterates
                 over the contents of the server's catalog."""
@@ -81,6 +95,17 @@ class CatalogInterface(_Interface):
                 except srepo.RepositoryMirrorError:
                         return iter(())
                 return self._repo.catalog.fmris()
+
+        def get_entry_all_variants(self, pfmri):
+                """A generator function that yields tuples of the format
+                (var_name, variants); where var_name is the name of the
+                variant and variants is a list of the variants for that
+                name."""
+                try:
+                        c = self._repo.catalog
+                except srepo.RepositoryMirrorError:
+                        return iter(((), {}))
+                return self._repo.catalog.get_entry_all_variants(pfmri)
 
         def get_matching_pattern_fmris(self, patterns):
                 """Returns a tuple of a sorted list of PkgFmri objects, newest
@@ -115,6 +140,138 @@ class CatalogInterface(_Interface):
                         return tuple(), {}
                 return pkg.catalog.extract_matching_fmris(c.fmris(),
                     versions=versions)
+
+        def info(self, fmri_strings, info_needed, excludes=misc.EmptyI):
+                """Gathers information about fmris.  fmri_strings is a list
+                of fmri_names for which information is desired. It
+                returns a dictionary of lists.  The keys for the dictionary are
+                the constants specified in the class definition.  The values are
+                lists of PackageInfo objects or strings."""
+
+                bad_opts = info_needed - PackageInfo.ALL_OPTIONS
+                if bad_opts:
+                        raise api_errors.UnrecognizedOptionsToInfo(bad_opts)
+
+                fmris = []
+                notfound = []
+                multiple_matches = []
+                illegals = []
+
+                for pattern in fmri_strings:
+                        try:
+                                pfmri = None
+                                pfmri = self.get_matching_pattern_fmris(pattern)
+                        except pkg.fmri.IllegalFmri, e:
+                                illegals.append(pattern)
+                                continue
+                        else:
+                                fmris.extend(pfmri[0])
+                                if not pfmri:
+                                        notfound.append(pattern);
+                                elif len(pfmri[0]) > 1 :
+                                        multiple_matches.append((pattern,
+                                            pfmri[0]))
+
+                repo_cat = self._repo.catalog
+                
+                # Set of options that can use catalog data.
+                cat_opts = frozenset([PackageInfo.SUMMARY,
+                    PackageInfo.CATEGORIES, PackageInfo.DESCRIPTION,
+                    PackageInfo.DEPENDENCIES])
+
+                # Set of options that require manifest retrieval.
+                act_opts = PackageInfo.ACTION_OPTIONS - \
+                    frozenset([PackageInfo.DEPENDENCIES])
+
+                pis = []
+                for f in fmris:
+                        pub = name = version = release = None
+                        build_release = branch = packaging_date = None
+                        if PackageInfo.IDENTITY in info_needed:
+                                pub, name, version = f.tuple()
+                                pub = pkg.fmri.strip_pub_pfx(pub)
+                                release = version.release
+                                build_release = version.build_release
+                                branch = version.branch
+                                packaging_date = \
+                                    version.get_timestamp().strftime("%c")
+
+                        pref_pub = None
+                        if PackageInfo.PREF_PUBLISHER in info_needed:
+                                pref_pub = f.get_publisher()
+
+                        states = None
+
+                        links = hardlinks = files = dirs = dependencies = None
+                        summary = size = licenses = cat_info = description = \
+                            None
+
+                        if cat_opts & info_needed:
+                                summary, description, cat_info, dependencies = \
+                                    _get_pkg_cat_data(repo_cat, info_needed,
+                                        excludes=excludes, pfmri=f)
+                                if cat_info is not None:
+                                        cat_info = [
+                                            PackageCategory(scheme, cat)
+                                            for scheme, cat in cat_info
+                                        ]
+
+                        if (frozenset([PackageInfo.SIZE,
+                            PackageInfo.LICENSES]) | act_opts) & info_needed:
+                                mfst = manifest.Manifest()
+                                mfst.set_fmri(None, f)
+                                try:
+                                        mpath = os.path.join(self._repo.pkg_root,
+                                            f.get_dir_path())
+                                except pkg.fmri.FmriError, e:
+                                        notfound.append(f)
+                                        continue
+
+                                if not os.path.exists(mpath):
+                                        notfound.append(f)
+                                        continue
+
+                                mfst.set_content(file(mpath).read())
+                                
+                                if PackageInfo.LICENSES in info_needed:
+                                        licenses = self.__licenses(mfst)
+
+                                if PackageInfo.SIZE in info_needed:
+                                        size = mfst.get_size(excludes=excludes)
+
+                                if act_opts & info_needed:
+                                        if PackageInfo.LINKS in info_needed:
+                                                links = list(
+                                                    mfst.gen_key_attribute_value_by_type(
+                                                    "link", excludes))
+                                        if PackageInfo.HARDLINKS in info_needed:
+                                                hardlinks = list(
+                                                    mfst.gen_key_attribute_value_by_type(
+                                                    "hardlink", excludes))
+                                        if PackageInfo.FILES in info_needed:
+                                                files = list(
+                                                    mfst.gen_key_attribute_value_by_type(
+                                                    "file", excludes))
+                                        if PackageInfo.DIRS in info_needed:
+                                                dirs = list(
+                                                    mfst.gen_key_attribute_value_by_type(
+                                                    "dir", excludes))
+
+                        pis.append(PackageInfo(pkg_stem=name, summary=summary,
+                            category_info_list=cat_info, states=states,
+                            publisher=pub, preferred_publisher=pref_pub,
+                            version=release, build_release=build_release,
+                            branch=branch, packaging_date=packaging_date,
+                            size=size, pfmri=str(f), licenses=licenses,
+                            links=links, hardlinks=hardlinks, files=files,
+                            dirs=dirs, dependencies=dependencies,
+                            description=description))
+                return {
+                    self.INFO_FOUND: pis,
+                    self.INFO_MISSING: notfound,
+                    self.INFO_MULTI_MATCH: multiple_matches,
+                    self.INFO_ILLEGALS: illegals
+                }
 
         @property
         def last_modified(self):
@@ -282,7 +439,21 @@ class CatalogInterface(_Interface):
                 functionality is available for the catalog.
                 """
                 return self._repo.search_available
-
+        
+        def __licenses(self, mfst):
+                """Private function. Returns the license info from the
+                manifest mfst."""
+                license_lst = []
+                for lic in mfst.gen_actions_by_type("license"):
+                        s = StringIO.StringIO()
+                        lpath = self._repo.cache_store.lookup(lic.hash)
+                        lfile = file(lpath, "rb")
+                        misc.gunzip_from_stream(lfile, s)
+                        text = s.getvalue()
+                        s.close()
+                        license_lst.append(LicenseInfo(mfst.fmri, lic,
+                            text=text))
+                return license_lst
 
 class ConfigInterface(_Interface):
         """This class presents a read-only interface to configuration

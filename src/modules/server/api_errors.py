@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 class ApiException(Exception):
@@ -38,6 +38,7 @@ class ApiException(Exception):
         def __str__(self):
                 return str(self.data)
 
+
 class VersionException(ApiException):
         """Exception used to indicate that the client's requested api version
         is not supported.
@@ -52,9 +53,20 @@ class VersionException(ApiException):
                     "expected: '%s'." % (self.received_version,
                     self.expected_version)
 
+
 class RedirectException(ApiException):
         """Used to indicate that the client should be redirected to a new
         URI.
         """
         pass
 
+
+class UnrecognizedOptionsToInfo(ApiException):
+        def __init__(self, opts):
+                ApiException.__init__(self)
+                self._opts = opts
+
+        def __str__(self):
+                s = _("Info does not recognize the following options: %s") % \
+                    ", ".join(str(o) for o in self._opts)
+                return s

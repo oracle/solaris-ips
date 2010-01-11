@@ -1,3 +1,22 @@
+Version 7:
+    Compatible with clients using version 6.
+
+    CatalogInterface has changed as follows:
+        * A new function named 'info' was added to provide a way to
+          retrieved package information.  It returns a PackageInfo
+          object representing the set of available package information.
+          See pydoc 'pkg.client.api.PackageInfo' for more information.
+
+        * A new function named 'get_entry_all_variants' was added to
+          provide access to the list of variants for a given package.
+
+    pkg.server.api changed as follows:
+        * New classes representing package metadata and license
+          information were added to pkg.api_common.
+
+    pkg.server.api_errors changed as follows:
+        * A new exception named 'UnrecognizedOptionsToInfo' was added.
+
 Version 6:
 Incompatible with clients using versions 0-5.
     CatalogInterface:
