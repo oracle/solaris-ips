@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -4102,7 +4102,7 @@ class PackageManager:
                 version_fmt = _("%(version)s (Build %(build)s-%(branch)s)")
                 i = 0
                 for x in info.dependencies:
-                        if states != None:
+                        if states != None and len(states) > 0:
                                 name = fmri.extract_pkg_name(x)
                                 version = version_fmt % \
                                     {"version": states[i].version,
@@ -4123,7 +4123,17 @@ class PackageManager:
                                     found))
                                 i += 1
                         else:
-                                names.append(x)
+                                build_rel = "0"
+                                pkg_fmri = fmri.PkgFmri(x, build_release=build_rel)
+                                branch = pkg_fmri.version.branch
+                                version_stripped = pkg_fmri.get_version().split("-%s"
+                                    % branch)[0]
+                                version = version_fmt % \
+                                     {"version": version_stripped,
+                                     "build": build_rel,
+                                     "branch": branch}
+                                names.append((pkg_fmri.pkg_name, version,
+                                    _("(not installed)"), False))
 
                 depbuffer = self.w_dependencies_textview.get_buffer()
                 depbuffer.set_text("")
