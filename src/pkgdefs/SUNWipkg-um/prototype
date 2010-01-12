@@ -22,6 +22,10 @@ d none usr/share 755 root sys
 d none usr/share/applications 755 root other
 f none usr/share/applications/updatemanager.desktop 444 root other
 d none usr/share/icons 755 root other
+d none usr/share/icons/HighContrast 755 root other
+d none usr/share/icons/HighContrast/48x48 755 root other
+d none usr/share/icons/HighContrast/48x48/apps 755 root other
+f none usr/share/icons/HighContrast/48x48/apps/updatemanager.png 444 root other
 d none usr/share/icons/hicolor 755 root other
 d none usr/share/icons/hicolor/48x48 755 root other
 d none usr/share/icons/hicolor/48x48/apps 755 root other
@@ -31,6 +35,16 @@ d none usr/share/man/cat1 755 root bin
 f none usr/share/man/cat1/pm-updatemanager.1 444 root bin
 d none usr/share/update-manager 755 root bin
 d none usr/share/update-manager/icons 755 root bin
+d none usr/share/update-manager/icons/HighContrast 755 root bin
+d none usr/share/update-manager/icons/HighContrast/24x24 755 root bin
+d none usr/share/update-manager/icons/HighContrast/24x24/actions 755 root bin
+f none usr/share/update-manager/icons/HighContrast/24x24/actions/updatemanager.png 444 root other
+d none usr/share/update-manager/icons/HighContrast/36x36 755 root bin
+d none usr/share/update-manager/icons/HighContrast/36x36/actions 755 root bin
+f none usr/share/update-manager/icons/HighContrast/36x36/actions/updatemanager.png 444 root other
+d none usr/share/update-manager/icons/HighContrast/48x48 755 root bin
+d none usr/share/update-manager/icons/HighContrast/48x48/actions 755 root bin
+f none usr/share/update-manager/icons/HighContrast/48x48/actions/updatemanager.png 444 root other
 d none usr/share/update-manager/icons/hicolor 755 root bin
 d none usr/share/update-manager/icons/hicolor/24x24 755 root bin
 d none usr/share/update-manager/icons/hicolor/24x24/actions 755 root bin

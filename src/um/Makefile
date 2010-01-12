@@ -35,9 +35,13 @@ ROOTSHARE = $(ROOT)/share/update-manager
 ROOTUSRLIB = $(ROOT)/lib
 
 ROOTAPPICONSHARE = $(ROOT)/share/icons/hicolor/48x48/apps
+ROOTAPPHIGHICONSHARE = $(ROOT)/share/icons/HighContrast/48x48/apps
 ROOTAUTOSTARTSHARE = $(ROOTETC)/xdg/autostart
 ROOTDESKTOPSHARE = $(ROOT)/share/applications
 ROOTGCONFSHARE = $(ROOTETC)/gconf/schemas
+ROOTHIGHICON24SHARE = $(ROOTSHARE)/icons/HighContrast/24x24/actions
+ROOTHIGHICON36SHARE = $(ROOTSHARE)/icons/HighContrast/36x36/actions
+ROOTHIGHICON48SHARE = $(ROOTSHARE)/icons/HighContrast/48x48/actions
 ROOTICON24SHARE = $(ROOTSHARE)/icons/hicolor/24x24/actions
 ROOTICON36SHARE = $(ROOTSHARE)/icons/hicolor/36x36/actions
 ROOTICON48SHARE = $(ROOTSHARE)/icons/hicolor/48x48/actions
@@ -49,9 +53,13 @@ ROOTSVCSHARE = $(ROOTLIB)/svc/method
 
 ROOTDIRS = \
    $(ROOTAPPICONSHARE) \
+   $(ROOTAPPHIGHICONSHARE) \
    $(ROOTAUTOSTARTSHARE) \
    $(ROOTDESKTOPSHARE) \
    $(ROOTGCONFSHARE) \
+   $(ROOTHIGHICON24SHARE) \
+   $(ROOTHIGHICON36SHARE) \
+   $(ROOTHIGHICON48SHARE) \
    $(ROOTICON24SHARE) \
    $(ROOTICON36SHARE) \
    $(ROOTICON48SHARE) \
@@ -61,7 +69,10 @@ ROOTDIRS = \
    $(ROOTSVCSHARE)
 
 APPICONS = \
-   data/updatemanager.png
+   data/icons/48x48/updatemanager.png
+
+APPHIGHICONS = \
+   data/icons/HighContrast/48x48/updatemanager.png
 
 AUTOSTART = \
    data/updatemanagernotifier.desktop
@@ -71,6 +82,15 @@ DESKTOP = \
 
 GCONF = \
    data/updatemanager-preferences.schemas
+
+HIGHICONS24 = \
+   data/icons/HighContrast/24x24/updatemanager.png
+
+HIGHICONS36 = \
+   data/icons/HighContrast/36x36/updatemanager.png
+
+HIGHICONS48 = \
+   data/icons/HighContrast/48x48/updatemanager.png
 
 ICONS24 = \
    data/icons/24x24/updatemanager.png
@@ -94,12 +114,17 @@ SVC = \
 # Define the paths to all of the stuff we'll install.
 #
 ROOTAPPICONS = $(APPICONS:data/%=$(ROOTAPPICONSHARE)/%)
+ROOTAPPHIGHICONS = $(APPHIGHICONS:data/%=$(ROOTAPPHIGHICONSHARE)/%)
 
 ROOTAUTOSTART = $(AUTOSTART:data/%=$(ROOTAUTOSTARTSHARE)/%)
 
 ROOTDESKTOP = $(DESKTOP:data/%=$(ROOTDESKTOPSHARE)/%)
 
 ROOTGCONF = $(GCONF:data/%=$(ROOTGCONFSHARE)/%)
+
+ROOTHIGHICONS24 = $(HIGHICONS24:data/icons/HighContrast/24x24/%=$(ROOTHIGHICON24SHARE)/%)
+ROOTHIGHICONS36 = $(HIGHICONS36:data/icons/HighContrast/36x36/%=$(ROOTHIGHICON36SHARE)/%)
+ROOTHIGHICONS48 = $(HIGHICONS48:data/icons/HighContrast/48x48/%=$(ROOTHIGHICON48SHARE)/%)
 
 ROOTICONS24 = $(ICONS24:data/icons/24x24/%=$(ROOTICON24SHARE)/%)
 ROOTICONS36 = $(ICONS36:data/icons/36x36/%=$(ROOTICON36SHARE)/%)
@@ -113,9 +138,13 @@ ROOTSVC = $(SVC:%=$(ROOTSVCSHARE)/%)
 
 ROOTCOMPONENTS = \
    $(ROOTAPPICONS) \
+   $(ROOTAPPHIGHICONS) \
    $(ROOTAUTOSTART) \
    $(ROOTDESKTOP) \
    $(ROOTGCONF) \
+   $(ROOTHIGHICONS24) \
+   $(ROOTHIGHICONS36) \
+   $(ROOTHIGHICONS48) \
    $(ROOTICONS24) \
    $(ROOTICONS36) \
    $(ROOTICONS48) \
@@ -163,7 +192,8 @@ link:
 	ln -sf $(PWD)/data/updatemanagernotifier.desktop /etc/xdg/autostart/updatemanagernotifier.desktop
 	ln -sf $(PWD)/data/updatemanager-preferences.schemas /etc/gconf/schemas/updatemanage-preferences.schemas
 	ln -sf $(PWD)/data/icons /usr/share/update-manager/icons/hicolor
-	ln -sf $(PWD)/data/icons/updatemanager.png /usr/share/icons/hicolor/48x48/apps/updatemanager.png
+	ln -sf $(PWD)/data/icons/48x48/updatemanager.png /usr/share/icons/hicolor/48x48/apps/updatemanager.png
+	ln -sf $(PWD)/data/icons/HighContrast/48x48/updatemanager.png /usr/share/icons/HighContrast/48x48/apps/updatemanager.png
 	ln -sf $(PWD)/data/updatemanager.desktop /usr/share/applications/updatemanager.desktop
 
 link-clean:
@@ -175,9 +205,13 @@ link-clean:
 	rm -f /lib/svc/method/pkg-update
 	rm -f /usr/share/applications/updatemanager.desktop
 	rm -f /usr/share/icons/hicolor/48x48/apps/updatemanager.png
+	rm -f /usr/share/icons/HighContrast/48x48/apps/updatemanager.png
 
 $(ROOTDIRS):
 	$(INSTALL) -d -m 0755 $@
+
+$(ROOTAPPHIGHICONSHARE)/%: $(ROOTDIRS) data/%
+	$(INSTALL) -f $(ROOTAPPHIGHICONSHARE) -m 0644 $<
 
 $(ROOTAPPICONSHARE)/%: $(ROOTDIRS) data/%
 	$(INSTALL) -f $(ROOTAPPICONSHARE) -m 0644 $<
@@ -190,6 +224,15 @@ $(ROOTDESKTOPSHARE)/%: $(ROOTDIRS) data/%
 
 $(ROOTGCONFSHARE)/%: $(ROOTDIRS) data/%
 	$(INSTALL) -f $(ROOTGCONFSHARE) -m 0644 $<
+
+$(ROOTHIGHICON24SHARE)/%: $(ROOTDIRS) data/icons/HighContrast/24x24/%
+	$(INSTALL) -f $(ROOTHIGHICON24SHARE) -m 0644 $<
+
+$(ROOTHIGHICON36SHARE)/%: $(ROOTDIRS) data/icons/HighContrast/36x36/%
+	$(INSTALL) -f $(ROOTHIGHICON36SHARE) -m 0644 $<
+
+$(ROOTHIGHICON48SHARE)/%: $(ROOTDIRS) data/icons/HighContrast/48x48/%
+	$(INSTALL) -f $(ROOTHIGHICON48SHARE) -m 0644 $<
 
 $(ROOTICON24SHARE)/%: $(ROOTDIRS) data/icons/24x24/%
 	$(INSTALL) -f $(ROOTICON24SHARE) -m 0644 $<

@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -120,7 +120,7 @@ class Updatemanager:
                 self.package_selection = None
                 self.update_all_proceed = False
                 self.application_path = None
-                self.icon_theme = gtk.IconTheme()
+                self.icon_theme = gtk.icon_theme_get_default()
                 pkg_icon_location = os.path.join(self.application_dir, PKG_ICON_LOCATION)
                 self.icon_theme.append_search_path(pkg_icon_location)
                 self.pkg_installed_icon = gui_misc.get_icon(self.icon_theme,
