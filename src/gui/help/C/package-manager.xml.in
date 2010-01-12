@@ -51,15 +51,14 @@
 <note><para>See the <xref linkend="glossary"/> for a definition of the terms used in this document.</para>
 </note>
 <sect1 id="gikcw"><title>About Image Packaging System</title>
-<para>Image Packaging System (IPS) is a software delivery system that interacts with a network repository. The IPS software is a framework which provides for software lifecycle management including installation, upgrade, and removal.</para>
-<para>The OpenSolaris 2010.03 release uses IPS as its packaging system.</para>
+<para>Image Packaging System (IPS) is a framework which provides for software lifecycle management including installation, upgrade, and removal. The OpenSolaris 2010.03 release uses IPS as its packaging system. </para>
 <para>After an initial installation of the OpenSolaris 2010.03 operating system, you will find that some of the software applications that you use on a regular basis are not immediately available to you. These software applications are available as packages in a repository for downloading and installing over the network. A repository is a source for packages.</para>
-<para>Users can use IPS to install packages from a repository, create and publish their own IPS packages, mirror an existing repository, and publish existing packages to a repository.</para>
+<para>IPS provides a set of software tools that can be used to install packages from a repository, create and publish their own IPS packages, mirror an existing repository, and publish existing packages to a repository.</para>
 <para>Once you have installed packages, IPS enables you to search, update, and manage packages on your system.</para>
 <para>With IPS , you can upgrade your system to a newer build of OpenSolaris, install and update your software to the latest available versions in a repository, and retrieve packages from mirror repositories. </para>
 <note><para><emphasis role="strong">The Package Manager provides a subset of the tasks that can be performed from the command-line.</emphasis></para>
 </note>
-<para>If the system on which IPS is installed is on the network, IPS can automatically access the OpenSolaris publisher. For the OpenSolaris 2010.03 release, your IPS client can access the packages from <ulink url="http://pkg.opensolaris.org"></ulink>. </para>
+<para>For the OpenSolaris 2010.03 release, if the system on which IPS is installed is on the network, IPS can automatically retrieve packages provided by the OpenSolaris publisher from the package repository located at <ulink url="http://pkg.opensolaris.org"></ulink>. </para>
 <para>For more IPS documentation, see the <ulink url="http://docs.sun.com/source/820-7679/index.html"><citetitle>Image Packaging System Guide</citetitle></ulink> and the <filename>pkg</filename> <ulink url="http://opensolaris.org/sc/src/pkg/gate/src/man/">man pages</ulink>.</para>
 <para>For more information about IPS, visit the <ulink url="http://opensolaris.org/os/project/pkg">project page</ulink>.</para>
 </sect1>
@@ -413,7 +412,8 @@
 </sect2>
 </sect1>
 <sect1 id="manage-publisher"><title>Add and Manage Publishers</title>
-<para>The <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> dialog enables the user to add and manage the configured publishers. A publisher is a person, group, or corporation that designs, creates, and publishes a package to a repository. A repository is a source for packages. Every publisher has a origin URI (Universal Resource Identifier) associated with it. Read the following sections to learn how to add and manage publishers on your system.</para>
+<para>The <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> dialog enables the user to add and manage the configured publishers. A publisher is a person, group, or corporation that designs, creates, and publishes a package to a repository. Every publisher has a package repository where its package data can be found. The locations that contain package data for a publisher's repository are defined through the use of origins and mirrors. Origins are used to provide locations that contain the complete set of package data for a publisher, while mirrors are used to provide locations that only contain package files. Origins and mirrors are defined using URIs (Universal Resource Identifiers), such as <ulink url="http://pkg.opensolaris.org/release"></ulink>.</para>
+<para>Read the following sections to learn how to add and manage publishers on your system.</para>
 <sect2 id="add-publisher"><title>Add a Publisher</title>
 <para>Perform the following steps to add a publisher and its associated URI:</para>
 <orderedlist><listitem><para>Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Add Publishers</guimenuitem></menuchoice>.</para>
@@ -655,7 +655,7 @@
 </sect2>
 <sect2 id="gileh"><title>Update All Errors</title>
 <para>A new boot environment clone <emphasis role="strong">must</emphasis> be created for the Update All process to be completed. The following error message is displayed if a boot environment clone cannot be created due to space restrictions :</para>
-<para><literal>Not enough disk space, the Update All action cannot be performed. Choose Manage BE to manage your boot environments and free up disk space.</literal>.</para>
+<para><literal>Not enough disk space, the Update All action cannot be performed. Choose Manage BE to manage your boot environments and free up disk space</literal>.</para>
 <para>Click <guibutton>Close</guibutton> to cancel the Update All process.</para>
 <para>Perform the following steps if you want to rectify the error and continue with the Update All process: </para>
 <orderedlist><listitem><para>Click <guibutton>Manage BE</guibutton> in the error dialog to go to the <emphasis role="strong">Manage Boot Environments</emphasis> dialog.</para>
@@ -673,7 +673,7 @@
 </chapter>
 <glossary id="glossary"><title>Image Packaging System Glossary</title>
 <glossentry><glossterm>publisher</glossterm>
-<glossdef lang="en"><para>A person, group, or corporation that designs, creates, and publishes a package to a repository. The repository in turn serves the packages from the (default) publisher, for downloading purposes.</para>
+<glossdef lang="en"><para>A person, group, or corporation that provides packages. Packages for a publisher are found in a repository, from which the package system retrieves package data.</para>
 </glossdef>
 </glossentry>
 <glossentry><glossterm>repository</glossterm>
@@ -681,7 +681,7 @@
 </glossdef>
 </glossentry>
 <glossentry><glossterm>boot environment</glossterm>
-<glossdef><para>For an OpenSolaris release, a boot environment is an instance of a bootable OpenSolaris environment. The root file system and all other file systems of the boot environment that contain system software are required to be ZFS datasets.</para>
+<glossdef><para>For an OpenSolaris 2010.03 release, a boot environment is an instance of a bootable OpenSolaris environment. The root file system and all other file systems of the boot environment that contain system software are required to be ZFS datasets.</para>
 <para>The active boot environment is the one that is currently booted. Many boot environments can present on an OpenSolaris system and an inactive boot environment can be in a state of waiting for activation upon system reboot.</para>
 </glossdef>
 </glossentry>
@@ -704,13 +704,16 @@
 </glossdef>
 </glossentry>
 <glossentry><glossterm>origin</glossterm>
-<glossdef><para>Location of a package repository specified by a URI.</para>
+<glossdef><para>Location of a package repository specified by a URI, that contains a complete set of package data.</para>
 </glossdef>
 </glossentry>
 <glossentry><glossterm>alias</glossterm>
 <glossdef><para>An alternate name for a publisher.</para>
 </glossdef>
 </glossentry>
+<glossentry><glossterm>mirror</glossterm>
+<glossdef><para>Location of a package repository, specified by a URI, that contains only package files.</para>
+</glossdef>
+</glossentry>
 </glossary>
 </book>
-
