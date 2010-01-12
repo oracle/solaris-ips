@@ -1511,16 +1511,19 @@ def main_func():
                 curpkg.desc = "This incorporation constrains packages " \
                         "from the %s consolidation." % cons
 
+                # Add packages that aren't renamed or obsoleted
+                or_pkgs = or_pkgs_per_con.get(cons, {})
+
                 for depend in cons_dict[cons]:
-                        action = actions.fromstr(
-                            "depend fmri=%s type=incorporate" % depend)
-                        action.attrs["importer.source"] = "depend"
-                        curpkg.actions.append(action)
+                        if depend not in or_pkgs:
+                                action = actions.fromstr(
+                                    "depend fmri=%s type=incorporate" % depend)
+                                action.attrs["importer.source"] = "depend"
+                                curpkg.actions.append(action)
 
                 # Add in the obsoleted and renamed packages for this
                 # consolidation.
-                for name in or_pkgs_per_con.get(cons, {}):
-                        version = or_pkgs_per_con[cons][name]
+                for name, version in or_pkgs.iteritems():
                         action = actions.fromstr(
                             "depend fmri=%s@%s type=incorporate" %
                                 (name, version))

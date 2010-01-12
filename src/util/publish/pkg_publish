@@ -6,9 +6,6 @@
 dir=$1
 repo=$2
 
-fmri=`cat $dir/fmri`
-eval `pkgsend -s $repo open $fmri`
-pkgsend -s $repo include -d $dir $dir/manifest
-pkgsend -s $repo close
- 
+pkgsend -s $repo publish --fmri-in-manifest --no-catalog --no-index -d $dir $dir/manifest
+
 
