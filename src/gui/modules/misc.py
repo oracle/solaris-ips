@@ -198,14 +198,14 @@ def set_package_details(pkg_name, local_info, remote_info, textview,
         text["name"] = pkg_name
         text["desc"] = description
         if installed:
-                yes_text = _("Yes, %(version)s (Build %(build)s-%(branch)s)")
-                text["ins"] = yes_text % \
+                ver_text = _("%(version)s (Build %(build)s-%(branch)s)")
+                text["ins"] = ver_text % \
                     {"version": local_info.version,
                     "build": local_info.build_release,
                     "branch": local_info.branch}
                 labs["available"] =  _("Latest Version:")
                 if not same_pkg_versions(local_info, remote_info):
-                        text["available"] = yes_text % \
+                        text["available"] = ver_text % \
                             {"version": remote_info.version,
                             "build": remote_info.build_release,
                             "branch": remote_info.branch}
