@@ -1293,7 +1293,7 @@ class PackageManager:
                             self.recent_searches_cat_iter)
                         while rs_iter:
                                 rs_value = category_tree.get_value(rs_iter,
-                                    enumerations.CATEGORY_NAME)
+                                    enumerations.CATEGORY_VISIBLE_NAME)
                                 if rs_value == recent_search:
                                         path = category_tree.get_path(rs_iter)
                                         self.w_categories_treeview.set_cursor(path)
@@ -1389,8 +1389,10 @@ class PackageManager:
                 return gtk.TreeStore(
                         gobject.TYPE_INT,         # enumerations.CATEGORY_ID
                         gobject.TYPE_STRING,      # enumerations.CATEGORY_NAME
+                        gobject.TYPE_STRING,      # enumerations.CATEGORY_VISIBLE_NAME
                         gobject.TYPE_STRING,      # enumerations.CATEGORY_DESCRIPTION
                         gobject.TYPE_PYOBJECT,    # enumerations.SECTION_LIST_OBJECT
+                        gobject.TYPE_BOOLEAN,     # enumerations.CATEGORY_IS_VISIBLE
                         )
 
         @staticmethod
@@ -1558,16 +1560,16 @@ class PackageManager:
                 category_selection = self.w_categories_treeview.get_selection()
                 if category_list != None:
                         ##CATEGORIES TREEVIEW
-                        enumerations.CATEGORY_NAME_renderer = gtk.CellRendererText()
+                        enumerations.CATEGORY_VISIBLE_NAME_r = gtk.CellRendererText()
                         column = gtk.TreeViewColumn(_('Name'),
-                            enumerations.CATEGORY_NAME_renderer,
-                            markup = enumerations.CATEGORY_NAME)
-                        enumerations.CATEGORY_NAME_renderer.set_property("xalign", 0.0)
+                            enumerations.CATEGORY_VISIBLE_NAME_r,
+                            markup = enumerations.CATEGORY_VISIBLE_NAME)
+                        enumerations.CATEGORY_VISIBLE_NAME_r.set_property("xalign", 0.0)
                         self.w_categories_treeview.append_column(column)
                         #Added selection listener
                         category_selection.set_mode(gtk.SELECTION_SINGLE)
                         self.w_categories_treeview.set_search_column(
-                            enumerations.CATEGORY_NAME)
+                            enumerations.CATEGORY_VISIBLE_NAME)
 
                 if section_list != None:
                         self.section_list = section_list
@@ -3397,7 +3399,8 @@ class PackageManager:
                         if debug_perf:
                                 b = time.time()
                                 print "Time to add", b - a, b
-                        category_list.prepend(None, [0, _('All'), None, None])
+                        category_list.prepend(None, [0, _('All'), _('All'), None,
+                            None, True])
 
                 return application_list, category_list, section_list
 
@@ -4762,9 +4765,8 @@ class PackageManager:
         def __add_categories_to_sections(self, sections, category_list, section_list):
                 for pub in sections:
                         for section in sections[pub]:
-                                for category in sections[pub][section].split(","):
-                                        self.__add_category_to_section(_(category),
-                                            _(section), category_list, section_list)
+                                self.__add_category_to_section(sections[pub][section],
+                                    _(section), category_list, section_list)
 
                 # Sort the Categories into alphabetical order
                 if len(category_list) > 0:
@@ -4780,18 +4782,21 @@ class PackageManager:
                 if category_list == None:
                         return
                 for cat in cats:
-                        names = cat[1].split('/', 2)
-                        if len(names) > 1:
-                                self.__add_package_to_category(names[1],
+                        if len(cat[1]) > 1:
+                                self.__add_package_to_category(cat[1],
                                     row_iter, application_list,
                                     category_list)
 
         @staticmethod
         def __add_package_to_category(category_name, package, 
             application_list, category_list):
-                if not package or category_name == 'All':
+                category_names = category_name.split('/', 2)
+                if len(category_names) < 2:
                         return
-                if not category_name:
+                category_visible_name = category_names[1]
+                if not package or category_visible_name == 'All':
+                        return
+                if not category_visible_name:
                         return
                 category_id = None
                 for category in category_list:
@@ -4801,7 +4806,7 @@ class PackageManager:
                 if not category_id:                       # Category not exists
                         category_id = len(category_list) + 1
                         category_list.append(None, [category_id, category_name,
-                            None, None])
+                            category_visible_name, None, None, True])
                 if application_list.get_value(package,
                     enumerations.CATEGORY_LIST_COLUMN):
                         a = application_list.get_value(package,
@@ -4815,8 +4820,8 @@ class PackageManager:
 
         def __add_categories_to_tree(self, category_list, section_list):
                 category_tree = self.__get_new_category_liststore()
-                cat_iter = category_tree.append(None,
-                            [ 0, _("All Categories"), None, None])
+                cat_iter = category_tree.append(None, [ 0, _("All Categories"),
+                    _("All Categories"), None, None, True])
 
                 self.section_categories_list = {}
                 #Build dic of section ids and categories they contain
@@ -4850,22 +4855,25 @@ class PackageManager:
                         if self.set_section == sec_id:
                                 visible_default_section_path = (count,)
                         count += count
-                        
+                        section_name = "<b>" + section[enumerations.SECTION_NAME] + "</b>"
                         cat_iter = category_tree.append(None,
                             [ SECTION_ID_OFFSET + section[enumerations.SECTION_ID], 
-                            "<b>" + section[enumerations.SECTION_NAME] + "</b>",
-                            None, None])
+                            section_name, section_name, None, None, True])
 
                         if not sec_id in self.section_categories_list:
                                 continue
                         
                         category_ids = self.section_categories_list[sec_id]
                         for cat_id in category_ids.keys():
-                                category_tree.append(cat_iter, category_ids[cat_id])
+                                if category_ids[cat_id][
+                                    enumerations.CATEGORY_IS_VISIBLE]:
+                                        category_tree.append(cat_iter,
+                                            category_ids[cat_id])
+                recent_search_name = "<span foreground='#757575'><b>" + \
+                    _("Recent Searches") + "</b></span>"
                 self.recent_searches_cat_iter = category_tree.append(None,
-                    [RECENT_SEARCH_ID,
-                    "<span foreground='#757575'><b>" + _("Recent Searches") +
-                    "</b></span>", None, None])
+                    [RECENT_SEARCH_ID, recent_search_name, recent_search_name,
+                    None, None, True])
                 if self.recent_searches and len(self.recent_searches) > 0:
                         for recent_search in self.recent_searches_list:
                                 category_tree.append(self.recent_searches_cat_iter, 
@@ -4891,23 +4899,25 @@ class PackageManager:
                         (len(application_list), text, pub_prefix)
                 if not (recent_search in self.recent_searches):
                         cat_iter = category_tree.append(self.recent_searches_cat_iter,
-                            [RECENT_SEARCH_ID + 1, recent_search, text, application_list])
+                            [RECENT_SEARCH_ID + 1, recent_search, recent_search, 
+                            text, application_list, True])
                         self.recent_searches[recent_search] = \
-                                [RECENT_SEARCH_ID + 1, recent_search, text,
-                                application_list]
+                                [RECENT_SEARCH_ID + 1, recent_search, recent_search,
+                                 text, application_list, True]
                         self.recent_searches_list.append(recent_search)
                 else:
                         rs_iter = category_tree.iter_children(
                             self.recent_searches_cat_iter)
                         while rs_iter:
                                 rs_value = category_tree.get_value(rs_iter,
-                                    enumerations.CATEGORY_NAME)
+                                    enumerations.CATEGORY_VISIBLE_NAME)
                                 if rs_value == recent_search:
                                         category_tree.remove(rs_iter)
                                         break
                                 rs_iter = category_tree.iter_next(rs_iter)
                         cat_iter = category_tree.append(self.recent_searches_cat_iter,
-                            [RECENT_SEARCH_ID + 1, recent_search, text, application_list])
+                            [RECENT_SEARCH_ID + 1, recent_search, recent_search, 
+                            text, application_list, True])
                         self.recent_searches_list.remove(recent_search)
                         self.recent_searches_list.append(recent_search)
                 path = category_tree.get_path(cat_iter)
@@ -5041,21 +5051,29 @@ class PackageManager:
                 return
 
         @staticmethod
-        def __add_category_to_section(category_name, section_name, category_list,
+        def __add_category_to_section(categories_list, section_name, category_list,
             section_list):
                 '''Adds the section to section list in category. If there is no such
                 section, than it is not added. If there was already section than it
                 is skipped. Sections must be case sensitive'''
-                if not category_name:
+                if not categories_list:
                         return
                 for section in section_list:
                         if section[enumerations.SECTION_NAME] == section_name:
                                 section_id = section[enumerations.SECTION_ID]
                                 for category in category_list:
-                                        category[enumerations.CATEGORY_NAME] = \
-                                            _(category[enumerations.CATEGORY_NAME])
-                                        if category[enumerations.CATEGORY_NAME] == \
-                                            category_name:
+                                        localized_section = _(category[
+                                            enumerations.CATEGORY_NAME].split("/")[0])
+                                        category[enumerations.CATEGORY_VISIBLE_NAME] = \
+                                            _(category[
+                                            enumerations.CATEGORY_VISIBLE_NAME])
+                                        visible_id = enumerations.CATEGORY_IS_VISIBLE
+                                        if localized_section == \
+                                            section[enumerations.SECTION_NAME]:
+                                                if not category[
+                                                    enumerations.CATEGORY_VISIBLE_NAME] \
+                                                    in categories_list:
+                                                        category[visible_id] = False
                                                 section_lst = category[ \
                                                     enumerations.SECTION_LIST_OBJECT]
                                                 section[enumerations.SECTION_ENABLED] = \

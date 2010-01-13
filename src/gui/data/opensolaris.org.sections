@@ -5,7 +5,7 @@ category = Builds,Releases,Developer Tools,AMP Stack,Office Tools
 category = Accessories,Configuration and Preferences,Games,Graphics and Imaging,Internet,Office,Panels and Applets,Plug-ins and Run-times,Sound and Video,System Utilities,Universal Access
 
 [Desktop (GNOME)]
-category = Documentation,File Managers,Libraries,Localizations (Desktop),Scripts,Sessions,Theming,Trusted Extensions,Window Managers
+category = Documentation,File Managers,Libraries,Localizations,Scripts,Sessions,Theming,Trusted Extensions,Window Managers
 
 [Development]
 category = C,C++,Databases,Distribution Tools,Editors,GNOME and GTK+,GNU,High Performance Computing,Integrated Development Environments,Java,Other Languages,PHP,Perl,Python,Ruby,Source Code Management,Suites,System,X11
@@ -14,7 +14,7 @@ category = C,C++,Databases,Distribution Tools,Editors,GNOME and GTK+,GNU,High Pe
 category = Display,Media,Networking,Other Peripherals,Ports,Storage
 
 [System]
-category = Administration and Configuration,Core,Databases (System),Enterprise Management,File System,Fonts,Hardware,Internationalization,Libraries (System),Localizations (System),Media,Multimedia Libraries,Packaging,Printing,Security,Services,Shells,Software Management,Text Tools,Trusted,Virtualization,X11 (System)
+category = Administration and Configuration,Core,Databases,Enterprise Management,File System,Fonts,Hardware,Internationalization,Libraries,Localizations,Media,Multimedia Libraries,Packaging,Printing,Security,Services,Shells,Software Management,Text Tools,Trusted,Virtualization,X11
 
 [Web Services]
 category = Application and Web Servers,Communications

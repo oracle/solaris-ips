@@ -39,7 +39,6 @@ l10n_categories = [
   N_("Configuration and Preferences"),
   N_("Core"),
   N_("Databases"),
-  N_("Databases (System)"),
   N_("Developer Tools"),
   N_("Display"),
   N_("Distribution Tools"),
@@ -60,9 +59,7 @@ l10n_categories = [
   N_("Internet"),
   N_("Java"),
   N_("Libraries"),
-  N_("Libraries (System)"),
-  N_("Localizations (Desktop)"),
-  N_("Localizations (System)"),
+  N_("Localizations"),
   N_("Media"),
   N_("Multimedia Libraries"),
   N_("Networking"),
@@ -99,6 +96,5 @@ l10n_categories = [
   N_("Virtualization"),
   N_("Window Managers"),
   N_("X11"),
-  N_("X11 (System)"),
   None
 ]

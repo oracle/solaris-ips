@@ -53,9 +53,11 @@ UPDATABLE,
 (
 CATEGORY_ID,
 CATEGORY_NAME,
+CATEGORY_VISIBLE_NAME,
 CATEGORY_DESCRIPTION,
 SECTION_LIST_OBJECT,     #List with the sections to which category belongs 
-) = range(4)
+CATEGORY_IS_VISIBLE,
+) = range(6)
 
 #Sections
 (

@@ -102,17 +102,6 @@ class GenOSFiles:
         that for that build number, this package was not classified.
         """
 
-        # The following adjustments are made because the GUI Package
-        # Manager code is currently unable to handle sub-categories
-        # with the same name in different categories:
-        #
-        # Desktop (GNOME)/Localizations
-        #                      -> Desktop (GNOME)/Localizations (Desktop)
-        # System/Databases     -> System/Databases (System)
-        # System/Libraries     -> System/Libraries (System)
-        # System/Localizations -> System/Localizations (System)
-        # System/X11           -> System/X11 (System)
-        #
         if self.package_name:
             for i, (category, sub_category) in \
                 enumerate(zip(categories, sub_categories)):
@@ -123,29 +112,6 @@ class GenOSFiles:
                         self.package_name)
                     sys.stderr.write(" classification %s/%s not valid\n" % 
                         (category, sub_category))
-
-                old_sub_category = sub_category
-
-                if category == "Desktop (GNOME)" and \
-                   sub_category == "Localizations":
-                    sub_categories[i] = "Localizations (Desktop)"
-
-                elif category == "System" and sub_category == "Databases":
-                    sub_categories[i] = "Databases (System)"
-
-                elif category == "System" and sub_category == "Libraries":
-                    sub_categories[i] = "Libraries (System)"
-
-                elif category == "System" and sub_category == "Localizations":
-                    sub_categories[i] = "Localizations (System)"
-
-                elif category == "System" and sub_category == "X11":
-                    sub_categories[i] = "X11 (System)"
-
-                if self.debug:
-                    if old_sub_category != sub_category:
-                        sys.stderr.write("CHANGED: sub_category: %s\n" %
-                                         sub_category)
 
                 if sub_category and len(sub_category) == 0:
                     message = "**** Package %s: empty sub-category\n" % \
