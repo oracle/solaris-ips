@@ -4264,10 +4264,8 @@ class PackageManager:
                         self.info_cache[pkg_stem] = (labs, text, inst_str,
                             local_info, dep_info, installed_dep_info)
 
-        def __update_package_license(self, licenses, license_id):
-                if self.showing_empty_details or (license_id !=
-                    self.last_show_licenses_id):
-                        return
+        @staticmethod
+        def setup_package_license(licenses):
                 lic = ""
                 lic_u = ""
                 if licenses == None:
@@ -4281,8 +4279,14 @@ class PackageManager:
                         except UnicodeDecodeError:
                                 lic_u = _("License could not be shown "
                                     "due to conversion problem.")
+                return lic_u
+
+        def __update_package_license(self, licenses, license_id):
+                if self.showing_empty_details or (license_id !=
+                    self.last_show_licenses_id):
+                        return
                 licbuffer = self.w_license_textview.get_buffer()
-                licbuffer.set_text(lic_u)
+                licbuffer.set_text(self.setup_package_license(licenses))
 
         def __show_licenses(self):
                 self.show_licenses_id = 0

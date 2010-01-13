@@ -32,6 +32,7 @@ import datetime
 import traceback
 from gettext import ngettext
 from threading import Thread
+from threading import Condition
 try:
         import gobject
         import gtk
@@ -75,7 +76,9 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.w_main_window = main_window
                 if self.icon_confirm_dialog == None and self.w_main_window != None:
                         self.icon_confirm_dialog = self.w_main_window.get_icon()
+                self.license_cv = Condition()
                 self.list_of_packages = list_of_packages
+                self.accept_license_done = False
                 self.action = action
                 self.canceling = False
                 self.current_stage_name = None
@@ -171,6 +174,25 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.w_progressbar.set_pulse_step(0.02)
                 self.w_release_notes.hide()
 
+                w_license_dialog = gtk.glade.XML(parent.gladefile, "license_dialog")
+                self.w_license_dialog = w_license_dialog.get_widget("license_dialog")
+                self.w_license_label = w_license_dialog.get_widget("instruction_label")
+                self.w_license_text = w_license_dialog.get_widget("textview1")
+                self.w_license_accept_checkbutton = \
+                    w_license_dialog.get_widget("license_accept_checkbutton")
+                self.w_license_accept_button = \
+                    w_license_dialog.get_widget("license_accept_button")
+                self.w_license_reject_button = \
+                    w_license_dialog.get_widget("license_reject_button")
+                self.accept_text = gui_misc.get_stockbutton_label_label(
+                    self.w_license_accept_button)
+                gui_misc.change_stockbutton_label(self.w_license_reject_button,
+                    _("_Reject"))
+                self.current_license_no = 0
+                self.packages_with_license = None
+                self.packages_with_license_result = []
+                self.n_licenses = 0
+
                 try:
                         dic_createplan = \
                             {
@@ -179,8 +201,17 @@ class InstallUpdate(progress.GuiProgressTracker):
                                 "on_createplandialog_delete_event": \
                                     self.__on_createplandialog_delete,
                             }
-
-
+                        dic_license = \
+                            {
+                                "on_license_reject_button_clicked": \
+                                    self.__on_license_reject_button_clicked,
+                                "on_license_accept_button_clicked": \
+                                    self.__on_license_accept_button_clicked,
+                                "on_license_accept_checkbutton_toggled": \
+                                    self.__on_license_accept_checkbutton_toggled,
+                                "on_license_dialog_delete_event": \
+                                    self.__on_license_dialog_delete,
+                            }
                         dic_confirmdialog = \
                             {
                                 "on_confirmdialog_delete_event": \
@@ -195,6 +226,7 @@ class InstallUpdate(progress.GuiProgressTracker):
 
                         w_tree_confirmdialog.signal_autoconnect(dic_confirmdialog)
                         w_tree_dialog.signal_autoconnect(dic_createplan)
+                        w_license_dialog.signal_autoconnect(dic_license)
 
                 except AttributeError, error:
                         print _("GUI will not respond to any event! %s. "
@@ -202,6 +234,9 @@ class InstallUpdate(progress.GuiProgressTracker):
                             % error
 
                 gui_misc.set_modal_and_transient(self.w_dialog, self.w_main_window)
+                self.w_license_dialog.set_icon(self.icon_confirm_dialog)
+                gui_misc.set_modal_and_transient(self.w_license_dialog,
+                    self.w_dialog)
 
                 if self.action == enumerations.REMOVE:
                         # For the remove, we are not showing the download stage
@@ -398,8 +433,6 @@ class InstallUpdate(progress.GuiProgressTracker):
         def __proceed_with_stages(self, continue_operation = False):
                 if continue_operation == False:
                         self.__start_stage_one()
-                        gui_misc.set_modal_and_transient(self.w_dialog,
-                            self.w_main_window)
                         self.w_dialog.show()
                 Thread(target = self.__proceed_with_stages_thread_ex,
                     args = (continue_operation, )).start()
@@ -709,9 +742,24 @@ class InstallUpdate(progress.GuiProgressTracker):
                 for entry in dic:
                         liststore.append([entry, dic[entry][0], dic[entry][1]])
 
+        def __handle_licenses(self):
+                self.packages_with_license = \
+                    self.__get_packages_for_license_check()
+                self.n_licenses = len(self.packages_with_license)
+                if self.n_licenses > 0:
+                        gobject.idle_add(self.__do_ask_license)
+                        self.license_cv.acquire()
+                        while not self.accept_license_done:
+                                self.license_cv.wait()
+                        self.license_cv.release()
+                        self.__do_accept_licenses()
+                return
+
         def __continue_with_stages_thread(self):
                 self.__afterplan_information()
                 self.prev_pkg = None
+                self.__handle_licenses()
+
                 # The api.prepare() mostly is downloading the files so we are
                 # Not showing this stage in the main stage dialog. If download
                 # is necessary, then we are showing it in the details view
@@ -719,7 +767,12 @@ class InstallUpdate(progress.GuiProgressTracker):
                         self.__start_stage_two()
                         self.__start_substage(None,
                             bounce_progress=False)
-                self.api_o.prepare()
+                try:
+                        self.api_o.prepare()
+                except api_errors.PlanLicenseErrors:
+                        gobject.idle_add(self.w_dialog.hide)
+                        self.stop_bouncing_progress()
+                        return
                 self.__start_stage_three()
                 self.__start_substage(None,
                     bounce_progress=False)
@@ -1069,3 +1122,95 @@ class InstallUpdate(progress.GuiProgressTracker):
                         notfound = e.notfound
                 return notfound
 
+
+        def __do_ask_license(self):
+                item = self.packages_with_license[self.current_license_no]
+                pfmri = item[0]
+                dest = item[2]
+                pkg_name = pfmri.get_name()
+                lic = dest.license
+                if dest.must_accept:
+                        gui_misc.change_stockbutton_label(self.w_license_accept_button,
+                            _("A_ccept"))
+                        self.w_license_label.set_text(
+                            _("You must accept the terms of the license before "
+                            "downloading this package."))
+                        self.w_license_accept_checkbutton.show()
+                        self.w_license_reject_button.show()
+                        self.w_license_accept_checkbutton.grab_focus()
+                        self.w_license_accept_checkbutton.set_active(False)
+                        self.w_license_accept_button.set_sensitive(False)
+                else:
+                        if self.accept_text != None:
+                                gui_misc.change_stockbutton_label(
+                                    self.w_license_accept_button,
+                                     self.accept_text)
+                        self.w_license_label.set_text(
+                            _("You must view the terms of the license before "
+                            "downloading this package."))
+                        self.w_license_accept_checkbutton.hide()
+                        self.w_license_reject_button.hide()
+                        self.w_license_accept_button.set_sensitive(True)
+                        self.w_license_accept_button.grab_focus()
+                lic_buffer = self.w_license_text.get_buffer()
+                lic_buffer.set_text(lic)
+                title = _("%s License") % pkg_name
+                self.w_license_dialog.set_title(title)
+                self.w_license_dialog.show()
+                return
+
+        def __do_accept_licenses(self):
+                for item, accepted_value in self.packages_with_license_result:
+                        pfmri = item[0]
+                        dest = item[2]
+                        lic = dest.license
+                        self.api_o.set_plan_license_status(pfmri, lic, 
+                            displayed=True, accepted=accepted_value)
+
+        def __get_packages_for_license_check(self):
+                pkg_list = []
+                plan = self.api_o.describe()
+                for item in plan.get_licenses():
+                        dest = item[2]
+                        if dest.must_display or dest.must_accept:
+                                pkg_list.append(item)
+                return pkg_list
+
+        def __on_license_reject_button_clicked(self, widget):
+                self.packages_with_license_result.append(
+                    (self.packages_with_license[self.current_license_no],
+                    False))
+                self.w_license_dialog.hide()
+                self.license_cv.acquire()
+                self.accept_license_done = True
+                self.license_cv.notify()
+                self.license_cv.release()
+
+        def __on_license_accept_button_clicked(self, widget):
+                result = None
+                item = self.packages_with_license[self.current_license_no]
+                dest = item[2]
+                if dest.must_accept:
+                        result = True
+                self.packages_with_license_result.append(
+                    (item, result))
+                self.w_license_dialog.hide()
+                self.current_license_no += 1
+                if self.current_license_no < self.n_licenses:
+                        gobject.idle_add(self.__do_ask_license)
+                else:
+                        self.license_cv.acquire()
+                        self.accept_license_done = True
+                        self.license_cv.notify()
+                        self.license_cv.release()
+
+        def __on_license_dialog_delete(self, widget, event):
+                if self.w_license_reject_button.get_property('visible'):
+                        self.__on_license_reject_button_clicked(None)
+                else:
+                        self.__on_license_accept_button_clicked(None)
+                return True
+
+        def __on_license_accept_checkbutton_toggled(self, widget):
+                ret = self.w_license_accept_checkbutton.get_active()
+                self.w_license_accept_button.set_sensitive(ret)
