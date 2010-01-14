@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -84,6 +84,43 @@ def get_publishers_for_output(api_o):
         except Exception:
                 pass
         return publisher_str
+
+from pkg.gui.misc_non_gui import get_log_dir as ge_log_dir
+from pkg.gui.misc_non_gui import get_log_error_ext as ge_log_error_ext
+from pkg.gui.misc_non_gui import get_log_info_ext as ge_log_info_ext
+
+from pkg.client import global_settings
+
+PKG_CLIENT_NAME_PM = "packagemanager"
+PKG_CLIENT_NAME_WI = "packagemanager-webinstall"
+PKG_CLIENT_NAME_UM = "updatemanager"
+
+def get_log_dir():
+        return ge_log_dir()
+
+def get_log_error_ext():
+        return ge_log_error_ext()
+
+def get_log_info_ext():
+        return ge_log_info_ext()
+
+def get_pm_name():
+        return PKG_CLIENT_NAME_PM
+
+def get_wi_name():
+        return PKG_CLIENT_NAME_WI
+
+def get_um_name():
+        return PKG_CLIENT_NAME_UM
+
+def notify_log_error(app):
+        if global_settings.client_name == PKG_CLIENT_NAME_PM:
+                gobject.idle_add(__notify_log_error, app)
+
+def __notify_log_error(app):
+        app.error_logged = True
+        app.w_infosearch_frame.show()
+        app.w_infosearch_button.set_tooltip_text(_("Errors logged: click to view"))
 
 def setup_logging(client_name):
         su_logging(client_name)

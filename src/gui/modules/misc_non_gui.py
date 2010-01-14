@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -36,6 +36,18 @@ from pkg.client import global_settings
 # The current version of the Client API the PM, UM and
 # WebInstall GUIs have been tested against and are known to work with.
 CLIENT_API_VERSION = 29
+LOG_DIR = "/var/tmp"
+LOG_ERROR_EXT = "_error.log"
+LOG_INFO_EXT = "_info.log"
+
+def get_log_dir():
+        return LOG_DIR
+
+def get_log_error_ext():
+        return LOG_ERROR_EXT
+
+def get_log_info_ext():
+        return LOG_INFO_EXT
 
 class _LogFilter(logging.Filter):
         def __init__(self, max_level=logging.CRITICAL):
@@ -49,19 +61,15 @@ def get_version():
         return pkg.VERSION
 
 def setup_logging(client_name):
-        # TBD: for now just put the logs in /var/tmp
-        # GUI can consume and present them to the user
-        log_path = os.path.join("/var/tmp", client_name)
+        log_path = os.path.join(LOG_DIR, client_name)
         log_fmt = logging.Formatter(
-            "%(asctime)s: %(levelname)s: " + client_name +
-            ": %(filename)s: %(module)s: %(lineno)s: %(message)s")
+            "<b>%(levelname)s:</b> " + client_name + \
+            "\n%(asctime)s: %(filename)s: %(module)s: %(lineno)s:\n%(message)s")
 
-        infolog_path = log_path + "_info.log"
-        infolog_exists = False
-
+        infolog_path = log_path + LOG_INFO_EXT
         try:
-                info_h = logging.handlers.RotatingFileHandler(infolog_path, backupCount=5)
-                infolog_exists = os.path.exists(infolog_path)
+                info_h = logging.handlers.RotatingFileHandler(infolog_path,
+                    maxBytes=1000000, backupCount=1)
         except IOError:
                 info_h = logging.StreamHandler(sys.stdout)
 
@@ -69,23 +77,17 @@ def setup_logging(client_name):
         info_h.addFilter(info_t)
         info_h.setFormatter(log_fmt)
         info_h.setLevel(logging.INFO)
-        if infolog_exists:
-                info_h.doRollover()
         global_settings.info_log_handler = info_h
 
-        errlog_path = log_path + "_error.log"
-        errlog_exists = False
-
+        errlog_path = log_path + LOG_ERROR_EXT
         try:
-                err_h = logging.handlers.RotatingFileHandler(errlog_path, backupCount=5)
-                errlog_exists = os.path.exists(errlog_path)
+                err_h = logging.handlers.RotatingFileHandler(errlog_path,
+                    maxBytes=1000000, backupCount=1)
         except IOError:
                 err_h = logging.StreamHandler(sys.stderr)
 
         err_h.setFormatter(log_fmt)
         err_h.setLevel(logging.WARNING)
-        if errlog_exists:
-                err_h.doRollover()
         global_settings.error_log_handler = err_h
 
 def shutdown_logging():

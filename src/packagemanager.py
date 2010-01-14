@@ -67,8 +67,6 @@ SEARCH_TXT_BLACK_STYLE = "#000000"
 GDK_2BUTTON_PRESS = 5     # gtk.gdk._2BUTTON_PRESS causes pylint warning
 GDK_RIGHT_BUTTON = 3      # normally button 3 = right click
 
-PKG_CLIENT_NAME = "packagemanager"
-
 # Location for themable icons
 ICON_LOCATION = "usr/share/package-manager/icons"
 # Load Start Page from lang dir if available
@@ -163,6 +161,8 @@ import pkg.gui.parseqs as parseqs
 import pkg.gui.webinstall as webinstall
 from pkg.client import global_settings
 
+logger = global_settings.logger
+
 # Put _() in the global namespace
 import __builtin__
 __builtin__._ = gettext.gettext
@@ -172,6 +172,7 @@ DISPLAY_LINK,
 CLICK_LINK,
 ) = range(2)
 
+REGEX_BOLD_MARKUP = re.compile(r'^<b>')
 REGEX_STRIP_MARKUP = re.compile(r'<.*?>')
 REGEX_STRIP_RESULT = re.compile(r'\(\d+\) ?')
 
@@ -257,7 +258,7 @@ class PackageManager:
                 self.adding_recent_search = False
                 self.recent_searches_list = []
                 
-                global_settings.client_name = PKG_CLIENT_NAME
+                global_settings.client_name = gui_misc.get_pm_name()
 
                 # This call only affects sockets created by Python.  The
                 # transport framework uses the defaults in global_settings,
@@ -364,6 +365,7 @@ class PackageManager:
                 self.__image_activity_lock = Lock()
                 self.category_expanded_paths = {}
                 self.category_active_paths = {}
+                self.error_logged = False
                 
                 self.use_cache = False # Turns off Details Description cache
                                        # Search history cache is always on
@@ -411,6 +413,19 @@ class PackageManager:
                 w_confirm_image.set_from_stock(gtk.STOCK_DIALOG_INFO,
                     gtk.ICON_SIZE_DND)
                 self.__setup_export_selection_dialog()
+
+                w_log = gtk.glade.XML(self.gladefile,
+                    "view_log_dialog")
+                self.w_view_log_dialog = \
+                    w_log.get_widget("view_log_dialog")
+                self.w_view_log_dialog.set_icon(self.window_icon)
+                self.w_view_log_dialog.set_title(_("Logs"))
+                self.w_log_info_textview = w_log.get_widget("log_info_textview")
+                self.w_log_errors_textview = w_log.get_widget("log_errors_textview")
+                infobuffer = self.w_log_info_textview.get_buffer()
+                infobuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)                
+                infobuffer = self.w_log_errors_textview.get_buffer()
+                infobuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)                
                 
                 w_version_info = gtk.glade.XML(self.gladefile,
                     "version_info_dialog")
@@ -616,6 +631,7 @@ class PackageManager:
                                     self.__on_select_updates,
                                 "on_edit_deselect_activate":self.__on_deselect,
                                 "on_edit_preferences_activate":self.__on_preferences,
+                                "on_log_activate":self.__on_log_activate,
                                 # XXX disabled until new API
                                 "on_package_update_all_activate":self.__on_update_all,
                                 #toolbar signals
@@ -684,13 +700,23 @@ class PackageManager:
                                     self.__on_info_help_button_clicked,
                                 "on_version_info_dialog_delete_event": \
                                     self.__on_version_info_dialog_delete_event,
-                            }        
+                            }
+                            
+                        dic_log = \
+                            {
+                                "on_log_close_button_clicked": \
+                                    self.__on_log_close_button_clicked,
+                                "on_view_log_dialog_delete_event": \
+                                    self.__on_log_dialog_delete_event
+                            }
+                            
                         w_tree_confirm.signal_autoconnect(dic_confirm)
                         w_tree_main.signal_autoconnect(dic_mainwindow)
                         w_tree_preferences.signal_autoconnect(dic_preferences)
                         w_tree_api_search_error.signal_autoconnect(
                             dic_api_search_error)
                         w_version_info.signal_autoconnect(dic_version_info)
+                        w_log.signal_autoconnect(dic_log)
                 except AttributeError, error:
                         print _(
                             "GUI will not respond to any event! %s. "
@@ -721,8 +747,9 @@ class PackageManager:
                             NOTEBOOK_PACKAGE_LIST_PAGE)
                 self.api_search_error_dialog.set_transient_for(self.w_main_window)
                 self.w_version_info_dialog.set_transient_for(self.w_main_window)
+                self.w_view_log_dialog.set_transient_for(self.w_main_window)
                 self.__setup_text_signals()
-                gui_misc.setup_logging(PKG_CLIENT_NAME)
+                gui_misc.setup_logging(gui_misc.get_pm_name())
                 
         def __set_initial_sizes(self):
                 if self.initial_app_width >= MIN_APP_WIDTH and \
@@ -1080,7 +1107,11 @@ class PackageManager:
                             (pub, _("unsupported search"), err))
 
         def __on_infosearch_button_clicked(self, widget):
-                self.__handle_api_search_error(True)
+                if len(self.current_repos_with_search_errors) > 0:
+                        self.__handle_api_search_error(True)
+                        return
+                if self.error_logged:
+                        self.__on_log_activate(None)
 
         def __handle_api_search_error(self, show_all=False):
                 if self.exiting:
@@ -1098,6 +1129,9 @@ class PackageManager:
                         return
 
                 self.w_infosearch_button.set_size_request(26, 22)
+                self.w_infosearch_button.set_tooltip_text(
+                    _("Search Errors: click to view"))
+
                 self.w_infosearch_frame.show()
                 infobuffer = self.api_search_error_textview.get_buffer()
                 infobuffer.set_text("")
@@ -3423,6 +3457,88 @@ class PackageManager:
                                                 confirmation_list.append(
                                                     [pkg_name, pub_name,
                                                     desc, status])
+                                                    
+        def __on_log_dialog_delete_event(self, widget, event):
+                self.__on_log_close_button_clicked(None)
+                return True
+                
+        def __on_log_close_button_clicked(self, widget):
+                self.w_view_log_dialog.hide()
+                
+        def __on_log_activate(self, widget):                                
+                if self.error_logged:
+                        self.error_logged = False
+                        self.w_infosearch_frame.hide()
+                textbuffer = self.w_log_errors_textview.get_buffer()
+                textbuffer.set_text(_("Loading ..."))
+                textbuffer = self.w_log_info_textview.get_buffer()
+                textbuffer.set_text(_("Loading ..."))
+                self.w_view_log_dialog.show()
+                gobject.idle_add(self.__load_err_view_log)
+                gobject.idle_add(self.__load_info_view_log)
+                
+        def __load_err_view_log(self):
+                textbuffer = self.w_log_errors_textview.get_buffer()
+                textbuffer.set_text("")
+                textiter = textbuffer.get_end_iter()
+                log_dir = gui_misc.get_log_dir()
+                log_err_ext = gui_misc.get_log_error_ext()
+                pm_err_log = os.path.join(log_dir, gui_misc.get_pm_name() + log_err_ext)
+                wi_err_log = os.path.join(log_dir, gui_misc.get_wi_name() + log_err_ext)
+                um_err_log = os.path.join(log_dir, gui_misc.get_um_name() + log_err_ext)
+
+                self.__write_to_view_log(pm_err_log, 
+                    textbuffer, textiter, _("None: ") + gui_misc.get_pm_name() + "\n")
+                self.__write_to_view_log(wi_err_log, 
+                    textbuffer, textiter, _("None: ") + gui_misc.get_wi_name() + "\n")
+                self.__write_to_view_log(um_err_log, 
+                    textbuffer, textiter, _("None: ") + gui_misc.get_um_name() + "\n")
+
+        def __load_info_view_log(self):
+                textbuffer = self.w_log_info_textview.get_buffer()
+                textbuffer.set_text("")
+                textiter = textbuffer.get_end_iter()
+                log_dir = gui_misc.get_log_dir()
+                log_info_ext = gui_misc.get_log_info_ext()
+                pm_info_log = os.path.join(log_dir, gui_misc.get_pm_name() + log_info_ext)
+                wi_info_log = os.path.join(log_dir, gui_misc.get_wi_name() + log_info_ext)
+                um_info_log = os.path.join(log_dir, gui_misc.get_um_name() + log_info_ext)
+
+                self.__write_to_view_log(pm_info_log, 
+                    textbuffer, textiter, _("None: ") + gui_misc.get_pm_name() + "\n")
+                self.__write_to_view_log(wi_info_log, 
+                    textbuffer, textiter, _("None: ") + gui_misc.get_wi_name() + "\n")
+                self.__write_to_view_log(um_info_log, 
+                    textbuffer, textiter, _("None: ") + gui_misc.get_um_name() + "\n")
+
+        @staticmethod
+        def __write_to_view_log(path, textbuffer, textiter, nomessages):
+                infile = None
+                try:
+                        infile = open(path, "r")
+                except IOError:
+                        textbuffer.insert_with_tags_by_name(textiter, nomessages, "bold")
+                        return
+                if infile == None:
+                        textbuffer.insert_with_tags_by_name(textiter, nomessages, "bold")
+                        return
+                        
+                lines = infile.readlines()
+                if len(lines) == 0:
+                        textbuffer.insert_with_tags_by_name(textiter, nomessages, "bold")
+                        return                        
+                for line in lines:
+                        if re.match(REGEX_BOLD_MARKUP, line):
+                                line = re.sub(REGEX_STRIP_MARKUP, "", line)
+                                textbuffer.insert_with_tags_by_name(textiter, line,
+                                    "bold")
+                        else:
+                                textbuffer.insert(textiter, line)
+                try:
+                        infile.close()
+                except IOError:
+                        pass
+        
         def __on_version_info(self, widget):
                 model, itr = self.package_selection.get_selected()
                 if itr:
@@ -5572,9 +5688,8 @@ def __display_unknown_err(trace):
         message_format=dmsg)
 
         dmsg = _("Please let the developers know about this problem by\n"
-                    "filing a bug together with the error details listed below at:\n"
-                    "\nhttp://defect.opensolaris.org"
-                    )
+                    "filing a bug together with the error details listed below at:")
+        dmsg += "\n\nhttp://defect.opensolaris.org"
         md.format_secondary_text(dmsg)
         md.set_title(_('Unexpected Error'))
         

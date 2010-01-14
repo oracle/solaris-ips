@@ -53,6 +53,7 @@ import pkg.gui.enumerations as enumerations
 import pkg.gui.misc as gui_misc
 import pkg.misc as misc
 from pkg.client import global_settings
+logger = global_settings.logger
 
 # Put _() in the global namespace
 import __builtin__
@@ -64,7 +65,6 @@ IMAGE_DIR_COMMAND = "svcprop -p update/image_dir svc:/application/pkg/update"
 PKG_ICON_LOCATION = "usr/share/package-manager/icons"
 ICON_LOCATION = "usr/share/update-manager/icons"
 CHECK_FOR_UPDATES = "/usr/lib/pm-checkforupdates"
-PKG_CLIENT_NAME = "updatemanager" # API client name
 SHOW_INFO_DELAY = 500           # Delay in milliseconds before showing selected
                                 # package information
 UPDATES_FETCH_DELAY = 200       # Time to wait before fetching updates, allows gtk main
@@ -85,7 +85,7 @@ UM_STEM,
 
 class Updatemanager:
         def __init__(self):
-                global_settings.client_name = PKG_CLIENT_NAME
+                global_settings.client_name = gui_misc.get_um_name()
                     
                 try:
                         self.application_dir = os.environ["UPDATE_MANAGER_ROOT"]
@@ -218,7 +218,7 @@ class Updatemanager:
  
                 self.w_um_dialog.show_all()
                 self.w_um_dialog.resize(620, 500)
-                gui_misc.setup_logging(PKG_CLIENT_NAME)
+                gui_misc.setup_logging(gui_misc.get_um_name())
 
         def __set_cancel_state(self, status):
                 if status:
