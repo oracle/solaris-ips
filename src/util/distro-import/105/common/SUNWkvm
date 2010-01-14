@@ -5,11 +5,4 @@ $(i386_ONLY)import SUNWkvm.i
 $(sparc_ONLY)import SUNWkvm.u
 $(sparc_ONLY)import SUNWkvm.v
 $(sparc_ONLY)import SUNWkvmt200.v
-# BEGIN NON-REDISTRIBUTABLE
-$(sparc_ONLY)drop usr/platform/SUNW,Netra-T12
-$(sparc_ONLY)drop usr/platform/SUNW,Netra-T12/lib
-$(sparc_ONLY)drop usr/platform/SUNW,Netra-T12/lib/cfgadm
-$(sparc_ONLY)drop usr/platform/SUNW,Netra-T12/lib/fs
-$(sparc_ONLY)drop usr/platform/SUNW,Netra-T12/sbin
-# END NON-REDISTRIBUTABLE
 end package

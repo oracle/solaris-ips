@@ -1,15 +1,6 @@
 package SUNWpicl
 consolidation "osnet"
 classification "System/Core"
-import SUNWpiclu
-# BEGIN NON-REDISTRIBUTABLE
-$(sparc_ONLY)drop usr/platform/SUNW,Netra-T12
-$(sparc_ONLY)drop usr/platform/SUNW,Netra-T12/lib
-$(sparc_ONLY)drop usr/platform/SUNW,Netra-T12/lib/libprtdiag_psr.so.1
-$(sparc_ONLY)drop usr/platform/SUNW,Netra-T12/lib/picl
-$(sparc_ONLY)drop usr/platform/SUNW,Netra-T12/lib/picl/plugins
-$(sparc_ONLY)drop usr/platform/SUNW,Netra-T12/lib/picl/plugins/libpiclfrutree.so
-$(sparc_ONLY)drop usr/platform/SUNW,Netra-T12/lib/picl/plugins/libpiclfrutree.so.1
-# END NON-REDISTRIBUTABLE
 import SUNWpiclr
+import SUNWpiclu
 end package

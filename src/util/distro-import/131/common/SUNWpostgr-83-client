@@ -1,0 +1,6 @@
+package SUNWpostgr-83-client
+consolidation "sfw"
+classification "System/Databases"
+import SUNWpostgr-83-client
+version 8.3.9
+end package

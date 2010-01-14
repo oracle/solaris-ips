@@ -1,0 +1,4 @@
+package BRCMbnx
+consolidation "osnet"
+obsoleted 131
+end package

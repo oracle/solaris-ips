@@ -1,0 +1,7 @@
+package SUNWphp52
+consolidation "sfw"
+classification "Development/PHP"
+import SUNWphp52r
+import SUNWphp52u
+version 5.2.12
+end package

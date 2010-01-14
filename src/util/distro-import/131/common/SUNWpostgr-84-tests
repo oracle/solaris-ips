@@ -1,0 +1,6 @@
+package SUNWpostgr-84-tests
+consolidation "sfw"
+classification "Development/Databases"
+import SUNWpostgr-84-tests
+version 8.4.2
+end package

@@ -1,0 +1,7 @@
+package SUNWbind
+consolidation "sfw"
+classification "System/Services"
+import SUNWbind
+import SUNWbindr
+version 9.6.1.2
+end package

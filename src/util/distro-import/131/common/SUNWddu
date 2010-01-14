@@ -1,0 +1,6 @@
+package SUNWddu
+consolidation "hcts"
+classification "System/Hardware"
+import SUNWddu
+depend SUNWgnome-python26-libs
+end package

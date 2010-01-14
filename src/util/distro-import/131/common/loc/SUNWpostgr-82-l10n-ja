@@ -1,0 +1,6 @@
+package SUNWpostgr-82-l10n-ja
+consolidation "l10n"
+classification "System/Databases"
+import SUNWpostgr-82-l10n-ja
+version 8.2.15
+end package

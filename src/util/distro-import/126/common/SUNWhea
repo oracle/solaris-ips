@@ -11,8 +11,6 @@ $(sparc_ONLY)drop usr/include/sys/scsi/adapters/ispcmd.h
 $(sparc_ONLY)drop usr/include/sys/scsi/adapters/ispmail.h
 $(sparc_ONLY)drop usr/include/sys/scsi/adapters/ispreg.h
 $(sparc_ONLY)drop usr/include/sys/scsi/adapters/ispvar.h
-$(sparc_ONLY)drop usr/platform/SUNW,Netra-T12
-$(sparc_ONLY)drop usr/platform/SUNW,Netra-T12/include
 # END NON-REDISTRIBUTABLE
 #
 # Until 6893530 is resolved in ON, replace the affected header files with

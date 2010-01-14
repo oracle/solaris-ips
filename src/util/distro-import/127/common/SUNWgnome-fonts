@@ -1,0 +1,5 @@
+package SUNWgnome-fonts
+consolidation "gnome"
+classification "System/Fonts"
+import SUNWgnome-fonts
+end package

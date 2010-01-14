@@ -1,3 +1,5 @@
 package SUNWxcu4t
+consolidation "sunpro"
+classification "Development/Source Code Management"
 import SUNWxcu4t
 end package

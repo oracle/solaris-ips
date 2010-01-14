@@ -1,0 +1,6 @@
+package SUNWpostgr-84-docs
+consolidation "sfw"
+classification "System/Databases"
+import SUNWpostgr-84-docs
+version 8.4.2
+end package

@@ -1,0 +1,5 @@
+package SUNWttf-arabeyes
+consolidation "l10n"
+classification "System/Fonts"
+import SUNWttf-arabeyes
+end package

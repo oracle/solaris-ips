@@ -1,0 +1,10 @@
+package SUNWn2cp
+consolidation "osnet"
+classification "System/Hardware"
+import SUNWn2cp.v
+
+add driver name=n2cp \
+    alias="SUNW,n2-cwq" \
+    alias="SUNW,vf-cwq" \
+    alias="SUNW,kt-cwq"
+end package

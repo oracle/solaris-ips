@@ -1,0 +1,8 @@
+package SUNWgnome-media-player
+consolidation "gnome"
+classification "Applications/Sound and Video"
+import SUNWgnome-media-player
+import SUNWgnome-media-player-root
+depend SUNWgst-python26
+depend SUNWpython26-coherence
+end package

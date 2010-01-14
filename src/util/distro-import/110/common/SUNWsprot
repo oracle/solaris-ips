@@ -1,5 +1,5 @@
 package SUNWsprot
 consolidation "sunpro"
-classification "System/Core"
+classification "Development/Source Code Management"
 import SUNWsprot
 end package

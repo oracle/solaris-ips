@@ -3,6 +3,10 @@ consolidation "gnome"
 classification "Development/Python"
 import SUNWpython26-coherence
 import SUNWpython26-coherence-root
+add group groupname=upnp gid=52
+add user username=upnp password=NP uid=52 group=upnp \
+    gcos-field="UPnP Server Reserved UID" home-dir=/var/coherence \
+    login-shell=/bin/ksh
 depend SUNWpython26-twisted
 depend SUNWpython26-zope-interface
 end package
