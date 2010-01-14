@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -655,13 +655,6 @@ class IndexStoreDictMutable(IndexStoreBase):
                 return self._dict.keys()
 
         @staticmethod
-        def __unquote(str):
-                if str[0] == "1":
-                        return urllib.unquote(str[1:])
-                else:
-                        return str[1:]
-
-        @staticmethod
         def __quote(str):
                 if " " in str:
                         return "1" + urllib.quote(str)
@@ -674,9 +667,12 @@ class IndexStoreDictMutable(IndexStoreBase):
                 """
                 self._dict.clear()
                 for line in self._file_handle:
-                        res = line.split(" ")
-                        token = self.__unquote(res[0])
-                        offset = int(res[1])
+                        token, offset = line.split(" ")
+                        if token[0] == "1":
+                                token = urllib.unquote(token[1:])
+                        else:
+                                token = token[1:]
+                        offset = int(offset)
                         self._dict[token] = offset
                 IndexStoreBase.read_dict_file(self)
 

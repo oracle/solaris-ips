@@ -1731,6 +1731,11 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
                         self._search_op(api_obj, remote,
                             "'Applications/Sound and Video'",
                             self.res_cat2_pkg10, case_sensitive=False)
+                        # This is a test for bug 11002 which ensures that the
+                        # unquoting is being performed correctly.
+                        self._search_op(api_obj, remote,
+                            "'Applications/Sound%20and%20Video'",
+                            set(), case_sensitive=False)
                         self._search_op(api_obj, remote, "Developer/C",
                             self.res_cat2_pkg10_2, case_sensitive=False)
                         self._search_op(api_obj, remote, "Developer",
