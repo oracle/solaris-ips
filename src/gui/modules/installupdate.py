@@ -866,31 +866,11 @@ class InstallUpdate(progress.GuiProgressTracker):
                 msg_3 = _("pkg version: ")
                 self.update_details_text("%s" % msg_3,
                     "bold","level1")
-                self.update_details_text("%s\n\n" % pkg.VERSION, "level2")
+                self.update_details_text("%s\n\n" % gui_misc.get_version(), "level2")
                 publisher_header = _("List of configured publishers:")
                 self.update_details_text("%s" % publisher_header,
                     "bold","level1")
-                pref_pub = self.api_o.get_preferred_publisher()
-                fmt = "\n%s\t%s\t%s (%s)"
-                publisher_str = ""
-                for pub in self.api_o.get_publishers():
-                        pstatus = " "
-                        if pub == pref_pub:
-                                # Preferred
-                                pstatus = "P"
-                        elif pub.disabled:
-                                # Disabled
-                                pstatus = "D"
-                        else:
-                                # Enabled, but not preferred
-                                pstatus = "E"
-                        r = pub.selected_repository
-                        for uri in r.origins:
-                                # Origin
-                                publisher_str += fmt % (pstatus, "O", pub.prefix, uri)
-                        for uri in r.mirrors:
-                                # Mirror
-                                publisher_str += fmt % (pstatus, "M", pub.prefix, uri)
+                publisher_str = gui_misc.get_publishers_for_output(self.api_o)
                 self.update_details_text("%s\n" % publisher_str,
                     "level2")
                 gobject.idle_add(self.w_expander.set_expanded, True)

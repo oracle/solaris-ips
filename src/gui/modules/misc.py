@@ -49,6 +49,41 @@ import pkg.client.api as api
 from pkg.gui.misc_non_gui import get_api_object as ngao
 from pkg.gui.misc_non_gui import setup_logging as su_logging
 from pkg.gui.misc_non_gui import shutdown_logging as sd_logging
+from pkg.gui.misc_non_gui import get_version as g_version
+
+def get_version():
+        return g_version()        
+                
+def get_publishers_for_output(api_o):
+        publisher_str = ""
+        fmt = "\n%s\t%s\t%s (%s)"
+        try:
+                pref_pub = api_o.get_preferred_publisher()
+                for pub in api_o.get_publishers():
+                        pstatus = " "
+                        if pub == pref_pub:
+                                # Preferred
+                                pstatus = "P"
+                        elif pub.disabled:
+                                # Disabled
+                                pstatus = "D"
+                        else:
+                                # Enabled, but not preferred
+                                pstatus = "E"
+                        r = pub.selected_repository
+                        for uri in r.origins:
+                                # Origin
+                                publisher_str += fmt % \
+                                        (pstatus, "O", pub.prefix, uri)
+                        for uri in r.mirrors:
+                                # Mirror
+                                publisher_str += fmt % \
+                                        (pstatus, "M", pub.prefix, uri)
+        except api_errors.ApiException:
+                pass
+        except Exception:
+                pass
+        return publisher_str
 
 def setup_logging(client_name):
         su_logging(client_name)

@@ -29,6 +29,7 @@ import logging
 import logging.handlers
 import sys
 
+import pkg
 import pkg.client.api as api
 from pkg.client import global_settings
 
@@ -44,6 +45,8 @@ class _LogFilter(logging.Filter):
         def filter(self, record):
                 return record.levelno <= self.max_level
 
+def get_version():
+        return pkg.VERSION
 
 def setup_logging(client_name):
         # TBD: for now just put the logs in /var/tmp

@@ -128,6 +128,8 @@ from threading import Thread
 from threading import Lock
 from collections import deque
 from gettext import ngettext
+import traceback
+from cStringIO import StringIO
 
 try:
         import gobject
@@ -3733,21 +3735,30 @@ class PackageManager:
                             enumerations.REPOSITORY_NAME)
                 return name
 
-        def __main_application_quit(self, restart = False):
-                '''quits the main gtk loop'''
+        def __shutdown_part1(self):
                 self.cancelled = True
                 self.exiting = True
                 self.__progress_pulse_stop()
 
+                self.w_main_window.hide()
+                gui_misc.shutdown_logging()
+
+        def __shutdown_part2(self):
+                if self.api_o.can_be_canceled():
+                        Thread(target = self.api_o.cancel, args = ()).start()
+                self.__do_exit()
+                gobject.timeout_add(1000, self.__do_exit)
+
+        def __main_application_quit(self, restart = False):
+                '''quits the main gtk loop'''
                 save_width, save_height = self.w_main_window.get_size()
                 save_hpos = self.w_main_hpaned.get_position()
                 save_vpos = self.w_main_vpaned.get_position()
-
-                self.w_main_window.hide()
+                
+                self.__shutdown_part1()
                 pub = ""
                 start_insearch = False
                 width = height = hpos = vpos = -1
-                gui_misc.shutdown_logging()
                 if self.save_state:
                         if self.is_all_publishers:
                                 start_insearch = True
@@ -3789,10 +3800,7 @@ class PackageManager:
                 if len(self.search_completion) > 0 and self.cache_o != None:
                         self.cache_o.dump_search_completion_info(self.search_completion)
 
-                if self.api_o.can_be_canceled():
-                        Thread(target = self.api_o.cancel, args = ()).start()
-                self.__do_exit()
-                gobject.timeout_add(1000, self.__do_exit)
+                self.__shutdown_part2()
                 return True
 
         @staticmethod
@@ -5528,17 +5536,111 @@ class PackageManager:
         def start(self):
                 self.set_busy_cursor()
                 Thread(target = self.__get_api_object).start() 
+        
+        def unhandled_exception_shutdown(self):
+                self.__shutdown_part1()
+                self.__shutdown_part2()
 
 ###############################################################################
 #-----------------------------------------------------------------------------#
 # Main
 #-----------------------------------------------------------------------------#
 
+def installThreadExcepthook():
+        """
+        Workaround for sys.excepthook python thread bug from:
+        Bug: sys.excepthook doesn't work in threads
+        http://bugs.python.org/issue1230540#msg91244
+        """
+        init_old = threading.Thread.__init__
+        def init(self, *ite_args, **ite_kwargs):
+                init_old(self, *ite_args, **ite_kwargs)
+                run_old = self.run
+                def run_with_except_hook(*rweh_args, **rweh_kwargs):
+                        try:
+                                run_old(*rweh_args, **rweh_kwargs)
+                        except (KeyboardInterrupt, SystemExit):
+                                raise
+                        except:
+                                sys.excepthook(*sys.exc_info())
+                self.run = run_with_except_hook
+        threading.Thread.__init__ = init
+    
+def __display_unknown_err(trace):
+        dmsg = _("An unknown error occurred")
+        md = gtk.MessageDialog(type=gtk.MESSAGE_ERROR, buttons=gtk.BUTTONS_CLOSE,
+        message_format=dmsg)
+
+        dmsg = _("Please let the developers know about this problem by\n"
+                    "filing a bug together with the error details listed below at:\n"
+                    "\nhttp://defect.opensolaris.org"
+                    )
+        md.format_secondary_text(dmsg)
+        md.set_title(_('Unexpected Error'))
+        
+        textview = gtk.TextView()
+        textview.show()
+        textview.set_editable (False)
+        sw = gtk.ScrolledWindow()
+        sw.show()
+        sw.set_policy (gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        sw.add (textview)        
+        fr = gtk.Frame()
+        fr.show()
+        fr.set_shadow_type(gtk.SHADOW_IN)
+        fr.add(sw)
+        md.get_content_area().add(fr)
+
+        textbuffer = textview.get_buffer()
+        textbuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)
+        textbuffer.create_tag("level1", left_margin=30, right_margin=10)
+        textiter = textbuffer.get_end_iter()
+        textbuffer.insert_with_tags_by_name(textiter, _("Error details:\n"), "bold")
+        textbuffer.insert_with_tags_by_name(textiter, trace.getvalue(), "level1")
+
+        publisher_str = ""
+        if packagemanager:
+                publisher_str = \
+                        gui_misc.get_publishers_for_output(packagemanager.api_o)
+                if publisher_str != "":
+                        textbuffer.insert_with_tags_by_name(textiter, 
+                            _("\nList of configured publishers:"), "bold")
+                        textbuffer.insert_with_tags_by_name(
+                            textiter, publisher_str + "\n", "level1")
+        
+        if publisher_str == "":
+                textbuffer.insert_with_tags_by_name(textiter, 
+                    _("\nPlease include output from:\n"), "bold")
+                textbuffer.insert(textiter, "$ pkg publisher\n")  
+                
+        ver = gui_misc.get_version()
+        textbuffer.insert_with_tags_by_name(textiter,
+            _("\npkg version:\n"), "bold")
+        textbuffer.insert_with_tags_by_name(textiter, ver + "\n", "level1")
+
+        md.set_size_request(550, 400)
+        md.set_resizable(True)
+        md.run()
+        
+        md.destroy()
+
+        if packagemanager:
+                packagemanager.unhandled_exception_shutdown()
+        else:
+                sys.exit()
+
+def global_exception_handler(exctyp, value, tb):
+        trace = StringIO()
+        traceback.print_exception (exctyp, value, tb, None, trace)
+        gobject.idle_add(__display_unknown_err, trace)
+
 def main():
         gtk.main()
         return 0
 
+sys.excepthook = global_exception_handler
 if __name__ == '__main__':
+        installThreadExcepthook()
         debug = False
         debug_perf = False
         max_filter_length = 0
