@@ -174,7 +174,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.w_progressbar.set_pulse_step(0.02)
                 self.w_release_notes.hide()
 
-                w_license_dialog = gtk.glade.XML(parent.gladefile, "license_dialog")
+                w_license_dialog = gtk.glade.XML(gladefile, "license_dialog")
                 self.w_license_dialog = w_license_dialog.get_widget("license_dialog")
                 self.w_license_label = w_license_dialog.get_widget("instruction_label")
                 self.w_license_text = w_license_dialog.get_widget("textview1")
