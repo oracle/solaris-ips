@@ -508,7 +508,7 @@ class Transport(object):
 
                 self.__lock.acquire()
                 try:
-                        publisher_info = self._get_getpublisherinfo(pub,
+                        publisher_info = self._get_publisherinfo(pub,
                             ccancel=ccancel)
                 finally:
                         self.__lock.release()
