@@ -316,6 +316,55 @@ class TestPkgImageCreateBasics(testutils.ManyDepotTestCase):
                         # the old state information didn't get properly removed.
                         assert pl.startswith("catalog.")
 
+        def test_9_bad_image_state(self):
+                """Verify that the pkg(1) command handles invalid image state
+                gracefully."""
+
+                # Publish a package.
+                self.pkgsend_bulk(self.durl1, """
+                open foo@0.0
+                close
+                """)
+
+                # First, create a new image.
+                self.image_create(self.durl1, prefix="test1")
+
+                # Verify pkg info works as expected.
+                self.pkg("info -r foo")
+
+                # Now invalidate the existing image data.
+                state_path = os.path.join(self.get_img_path(),
+                    "var", "pkg", "state")
+                kfile_path = os.path.join(state_path, "known", "catalog.attrs")
+                ifile_path = os.path.join(state_path, "installed",
+                    "catalog.attrs")
+
+                self.pkg("install foo")
+
+                with open(kfile_path, "w") as f:
+                        f.write("InvalidCatalogFile")
+                        f.flush()
+
+                # Should work since known catalog file was corrupted, not the
+                # installed catalog file.
+                self.pkg("info foo")
+
+                # These should all fail as they depend on the known catalog
+                # file.
+                self.pkg("list -a", exit=1)
+                self.pkg("install -nv foo", exit=1)
+                self.pkg("image-update -nv", exit=1)
+                self.pkg("info -r foo", exit=1)
+
+                with open(ifile_path, "w") as f:
+                        f.write("InvalidCatalogFile")
+                        f.flush()
+
+                # Should fail since installed catalog file is corrupt.
+                self.pkg("info foo", exit=1)
+                self.pkg("list", exit=1)
+
+
 class TestImageCreateNoDepot(testutils.CliTestCase):
         persistent_depot = True
         def test_bad_image_create(self):

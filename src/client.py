@@ -77,8 +77,8 @@ import pkg.version as version
 from pkg.client import global_settings
 from pkg.client.debugvalues import DebugValues
 from pkg.client.history import (RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
-    RESULT_FAILED_CONFIGURATION, RESULT_FAILED_TRANSPORT, RESULT_FAILED_UNKNOWN,
-    RESULT_FAILED_OUTOFMEMORY)
+    RESULT_FAILED_CONFIGURATION, RESULT_FAILED_STORAGE, RESULT_FAILED_TRANSPORT,
+    RESULT_FAILED_UNKNOWN, RESULT_FAILED_OUTOFMEMORY)
 from pkg.misc import EmptyI, msg, PipeError
 
 CLIENT_API_VERSION = 29
@@ -88,7 +88,7 @@ JUST_UNKNOWN = 0
 JUST_LEFT = -1
 JUST_RIGHT = 1
 
-#pkg exit codes
+# pkg exit codes
 EXIT_OK      = 0
 EXIT_OOPS    = 1
 EXIT_BADOPT  = 2
@@ -3308,6 +3308,13 @@ def handle_errors(func, non_wrap_print=True, *args, **kwargs):
                     "operation."))
                 logger.error(_("Details follow:\n\n%s") % __e)
                 print_proxy_config()
+                __ret = EXIT_OOPS
+        except api_errors.InvalidCatalogFile, __e:
+                if __img:
+                        __img.history.abort(RESULT_FAILED_STORAGE)
+                logger.error(_("""
+An error was encountered while attempting to read image state information
+to perform the requested operation.  Details follow:\n\n%s""") % __e)
                 __ret = EXIT_OOPS
         except api_errors.InvalidDepotResponseException, __e:
                 if __img:

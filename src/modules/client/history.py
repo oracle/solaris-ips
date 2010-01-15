@@ -59,7 +59,7 @@ RESULT_FAILED_CONFIGURATION = ["Failed", "Configuration"]
 RESULT_FAILED_CONSTRAINED = ["Failed", "Constrained"]
 # Indicates that a search operation failed.
 RESULT_FAILED_SEARCH = ["Failed", "Search"]
-# Indicates that there was a problem writing a file or a permissions error.
+# Indicates that there was a problem reading, writing, or accessing a file.
 RESULT_FAILED_STORAGE = ["Failed", "Storage"]
 # Indicates that a transport error caused the operation to fail.
 RESULT_FAILED_TRANSPORT = ["Failed", "Transport"]
@@ -76,6 +76,7 @@ DISCARDED_OPERATIONS = ["contents", "info", "list"]
 # Cross-reference table for errors and results.  Entries should be ordered
 # most-specific to least-specific.
 error_results = {
+    api_errors.InvalidCatalogFile: RESULT_FAILED_STORAGE,
     api_errors.BENamingNotSupported: RESULT_FAILED_BAD_REQUEST,
     api_errors.InvalidBENameException: RESULT_FAILED_BAD_REQUEST,
     api_errors.CertificateError: RESULT_FAILED_CONFIGURATION,

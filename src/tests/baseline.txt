@@ -291,9 +291,9 @@ cli.t_api_search.py TestApiSearchBasicsRestartingDepot.test_bug_7358_1|pass
 cli.t_api_search.py TestApiSearchBasicsRestartingDepot.test_bug_7358_2|pass
 cli.t_api_search.py TestApiSearchBasicsRestartingDepot.test_bug_8318|pass
 cli.t_api_search.py TestApiSearchBasicsRestartingDepot.test_local_image_update|pass
+cli.t_api_search.py TestApiSearchMulti.test_bug_12739|pass
 cli.t_api_search.py TestApiSearchMulti.test_bug_2955|pass
 cli.t_api_search.py TestApiSearchMulti.test_bug_8318|pass
-cli.t_api_search.py TestApiSearchMulti.test_bug_12739|pass
 cli.t_change_facet.py TestPkgChangeFacet.test_1|pass
 cli.t_change_variant.py TestPkgChangeVariant.test_cv_01_none_1|pass
 cli.t_change_variant.py TestPkgChangeVariant.test_cv_01_none_2|pass
@@ -389,6 +389,7 @@ cli.t_pkg_image_create.py TestPkgImageCreateBasics.test_6_relative_root_create|p
 cli.t_pkg_image_create.py TestPkgImageCreateBasics.test_766|pass
 cli.t_pkg_image_create.py TestPkgImageCreateBasics.test_7_image_create_no_refresh|pass
 cli.t_pkg_image_create.py TestPkgImageCreateBasics.test_8_image_upgrade|pass
+cli.t_pkg_image_create.py TestPkgImageCreateBasics.test_9_bad_image_state|pass
 cli.t_pkg_image_create.py TestPkgImageCreateBasics.test_basic|pass
 cli.t_pkg_image_create.py TestPkgImageCreateBasics.test_image_create_bad_opts|pass
 cli.t_pkg_image_update.py TestImageUpdate.test_01_after_pub_removal|pass

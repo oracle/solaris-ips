@@ -285,7 +285,7 @@ class CatalogPartBase(object):
                         raise api_errors.RetrievalError(e)
                 except ValueError, e:
                         # Not a valid catalog file.
-                        raise api_errors.InvalidCatalogFile(e)
+                        raise api_errors.InvalidCatalogFile(location)
 
                 self.loaded = True
                 # Signature data, if present, should be removed from the struct
