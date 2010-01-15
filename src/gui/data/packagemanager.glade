@@ -974,19 +974,13 @@
                           <widget class="GtkEventBox" id="startpage_eventbox">
                             <property name="visible">True</property>
                             <child>
-                              <widget class="GtkFrame" id="startpage_frame">
+                              <widget class="GtkScrolledWindow" id="startpage_scrolled_window">
                                 <property name="visible">True</property>
-                                <property name="border_width">1</property>
-                                <property name="label_xalign">0</property>
-                                <property name="shadow_type">none</property>
+                                <property name="can_focus">True</property>
+                                <property name="hscrollbar_policy">automatic</property>
+                                <property name="vscrollbar_policy">automatic</property>
                                 <child>
                                   <placeholder/>
-                                </child>
-                                <child>
-                                  <placeholder/>
-                                  <packing>
-                                    <property name="type">label_item</property>
-                                  </packing>
                                 </child>
                               </widget>
                             </child>

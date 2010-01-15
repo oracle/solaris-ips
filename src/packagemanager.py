@@ -478,8 +478,8 @@ class PackageManager:
                     "bold", weight=pango.WEIGHT_BOLD)
                 self.w_general_info_label = \
                     w_tree_main.get_widget("general_info_label")
-                self.w_startpage_frame = \
-                    w_tree_main.get_widget("startpage_frame")
+                self.w_startpage_scrolled_window = \
+                    w_tree_main.get_widget("startpage_scrolled_window")
                 self.w_startpage_eventbox = \
                     w_tree_main.get_widget("startpage_eventbox")
                 self.w_startpage_eventbox.modify_bg(gtk.STATE_NORMAL,
@@ -1050,7 +1050,7 @@ class PackageManager:
                                 self.document.clear()
                         self.w_main_view_notebook.set_current_page(
                                 NOTEBOOK_PACKAGE_LIST_PAGE)
-                self.w_startpage_frame.add(self.view)
+                self.w_startpage_scrolled_window.add(self.view)
 
         # Stub handler required by GtkHtml widget
         def __request_object(self, *vargs):
