@@ -231,7 +231,7 @@ class HTTPRepo(TransportRepo):
 
                 return self._annotate_exceptions(errors)
 
-        def get_datastream(self, fhash, header=None):
+        def get_datastream(self, fhash, header=None, ccancel=None):
                 """Get a datastream from a repo.  The name of the
                 file is given in fhash."""
 
@@ -240,7 +240,13 @@ class HTTPRepo(TransportRepo):
                 baseurl = urlparse.urljoin(self._repouri.uri, methodstr)
                 requesturl = urlparse.urljoin(baseurl, fhash)
 
-                return self._fetch_url(requesturl, header)
+                return self._fetch_url(requesturl, header, ccancel=ccancel)
+
+        def get_publisherinfo(self, header=None, ccancel=None):
+                """Get publisher/0 information from the repository."""
+
+                requesturl = urlparse.urljoin(self._repouri.uri, "publisher/0/")
+                return self._fetch_url(requesturl, header, ccancel=ccancel)
 
         def get_manifest(self, mfst, header=None, ccancel=None):
                 """Get a manifest from repo.  The name of the
@@ -403,7 +409,7 @@ class HTTPRepo(TransportRepo):
                 Returns a fileobject."""
 
                 requesturl = urlparse.urljoin(self._repouri.uri, "versions/0/")
-                return self._fetch_url(requesturl, header, ccancel=None)
+                return self._fetch_url(requesturl, header, ccancel=ccancel)
 
         def has_version_data(self):
                 """Returns true if this repo knows its version information."""

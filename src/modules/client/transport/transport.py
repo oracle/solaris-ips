@@ -31,7 +31,7 @@ import os
 import statvfs
 import threading
 import zlib
-import StringIO
+import cStringIO
 
 import pkg.catalog as catalog
 import pkg.client.api_errors as apx
@@ -502,7 +502,57 @@ class Transport(object):
                                 tfailurex.append(f)
                         raise tfailurex
 
-        def get_content(self, fmri, fhash):
+        def get_publisherinfo(self, pub, ccancel=None):
+                """Given a publisher pub, return the publisher/0
+                information in a StringIO object.""" 
+
+                self.__lock.acquire()
+                try:
+                        publisher_info = self._get_getpublisherinfo(pub,
+                            ccancel=ccancel)
+                finally:
+                        self.__lock.release()
+
+                return publisher_info
+
+        def _get_publisherinfo(self, pub, ccancel=None):
+                """Implementation of get_publisherinfo.  This routine
+                implements the method, the other is an external interface
+                and lock wrapper."""
+
+                retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
+                failures = tx.TransportFailures()
+                header = self.__build_header(uuid=self.__get_uuid(pub))
+
+                # Call setup if the transport isn't configured or was shutdown.
+                if not self.__engine:
+                        self.__setup()
+
+                for d in self.__gen_origins_byversion(pub, retry_count,
+                    "publisher", 0, ccancel=ccancel):
+
+                        try:
+                                resp = d.get_publisherinfo(header,
+                                    ccancel=ccancel)
+
+                                infostr = resp.read()
+                                s = cStringIO.StringIO(infostr)
+                                return s
+
+                        except tx.ExcessiveTransientFailure, e:
+                                # If an endpoint experienced so many failures
+                                # that we just gave up, grab the list of
+                                # failures that it contains
+                                failures.extend(e.failures)
+
+                        except tx.TransportException, e:
+                                if e.retryable:
+                                        failures.append(e)
+                                else:
+                                        raise
+                raise failures
+
+        def get_content(self, fmri, fhash, ccancel=None):
                 """Given a fmri and fhash, return the uncompressed content
                 from the remote object.  This is similar to get_datstream,
                 except that the transport handles retrieving and decompressing
@@ -510,13 +560,14 @@ class Transport(object):
                
                 self.__lock.acquire()
                 try:
-                        content = self._get_content(fmri, fhash)
+                        content = self._get_content(fmri, fhash,
+                            ccancel=ccancel)
                 finally:
                         self.__lock.release()
 
                 return content
 
-        def _get_content(self, fmri, fhash):
+        def _get_content(self, fmri, fhash, ccancel=None):
                 """This is the function that implements get_content.
                 The other function is a wrapper for this one, which handles
                 the transport locking correctly."""
@@ -536,8 +587,9 @@ class Transport(object):
                         url = d.get_url()
 
                         try:
-                                resp = d.get_datastream(fhash, header)
-                                s = StringIO.StringIO()
+                                resp = d.get_datastream(fhash, header,
+                                    ccancel=ccancel)
+                                s = cStringIO.StringIO()
                                 hash_val = misc.gunzip_from_stream(resp, s)
                                 content = s.getvalue()
                                 s.close()
