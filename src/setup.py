@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -51,6 +51,24 @@ from distutils.sysconfig import get_python_inc
 import distutils.file_util as file_util
 import distutils.dir_util as dir_util
 import distutils.util as util
+
+osname = platform.uname()[0].lower()
+ostype = arch = 'unknown'
+if osname == 'sunos':
+        arch = platform.processor()
+        ostype = "posix"
+elif osname == 'linux':
+        arch = "linux_" + platform.machine()
+        ostype = "posix"
+elif osname == 'windows':
+        arch = osname
+        ostype = "windows"
+elif osname == 'darwin':
+        arch = osname
+        ostype = "posix"
+elif osname == 'aix':
+        arch = "aix"
+        ostype = "posix"
 
 # 3rd party software required for the build
 CP = 'CherryPy'
@@ -112,24 +130,9 @@ PCARC = '%s-%s.tar.gz' % (PC, PCVER)
 PCDIR = '%s-%s' % (PC, PCVER)
 PCURL = 'http://pycurl.sourceforge.net/download/%s' % PCARC
 PCHASH = '3fb59eca1461331bb9e9e8d6fe3b23eda961a416'
-
-osname = platform.uname()[0].lower()
-ostype = arch = 'unknown'
-if osname == 'sunos':
-        arch = platform.processor()
-        ostype = "posix"
-elif osname == 'linux':
-        arch = "linux_" + platform.machine()
-        ostype = "posix"
-elif osname == 'windows':
-        arch = osname
-        ostype = "windows"
-elif osname == 'darwin':
-        arch = osname
-        ostype = "posix"
-elif osname == 'aix':
-        arch = "aix"
-        ostype = "posix"
+PCENVIRON = {}
+if osname in ("sunos", "linux", "darwin"):
+        PCENVIRON = {'CFLAGS': '-O3'}
 
 pwd = os.path.normpath(sys.path[0])
 
@@ -474,7 +477,7 @@ class install_func(_install):
                 prep_sw(PLY, PLYARC, PLYDIR, PLYURL, PLYHASH)
                 install_sw(PLY, PLYDIR, PLYIDIR)
                 prep_sw(PC, PCARC, PCDIR, PCURL, PCHASH)
-                install_sw(PC, PCDIR, PCIDIR)
+                install_sw(PC, PCDIR, PCIDIR, extra_env=PCENVIRON)
                 prep_sw(COV, COVARC, COVDIR, COVURL, COVHASH)
                 install_sw(COV, COVDIR, COVIDIR)
 
@@ -616,19 +619,25 @@ def install_ldtp(swname, swdir, swidir):
                 run_cmd(args_config, swdir)
                 run_cmd(args_make_install, swdir)
 
-def install_sw(swname, swdir, swidir):
+def install_sw(swname, swdir, swidir, extra_env=None):
         swdir = os.path.join(extern_dir, swdir)
         swinst_dir = os.path.join(root_dir, py_install_dir, swidir)
+        inst_env = os.environ.copy()
+        if extra_env:
+                inst_env.update(extra_env)
+
         if not os.path.exists(swinst_dir):
                 print "installing %s" % swname
                 args = ['python2.6', 'setup.py', 'install',
                     '--root=%s' % root_dir,
                     '--install-lib=%s' % py_install_dir,
                     '--install-data=%s' % py_install_dir]
-                run_cmd(args, swdir)
+                run_cmd(args, swdir, env=inst_env)
 
-def run_cmd(args, swdir):
-                ret = subprocess.Popen(args, cwd = swdir).wait()
+def run_cmd(args, swdir, env=None):
+                if env is None:
+                        env = os.environ
+                ret = subprocess.Popen(args, cwd=swdir, env=env).wait()
                 if ret != 0:
                         print >> sys.stderr, \
                             "install failed and returned %d." % ret
