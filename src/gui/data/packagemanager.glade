@@ -4029,8 +4029,8 @@ Specify the location of these files.</property>
     <property name="window_position">center-on-parent</property>
     <property name="type_hint">dialog</property>
     <property name="program_name">Package Manager</property>
-    <property name="version">2009.06</property>
-    <property name="copyright" translatable="yes">Copyright 2009 Sun Microsystems, Inc.  
+    <property name="version">2010.03</property>
+    <property name="copyright" translatable="yes">Copyright 2010 Sun Microsystems, Inc.  
 All rights reserved.
 Use is subject to license terms.</property>
     <property name="license">COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
@@ -4377,6 +4377,7 @@ venue lying in Santa Clara County, California.
     <property name="authors">Ann Kanodia &lt;Ann.Kanodia@sun.com&gt;
 Frank Ludolph &lt;Frank.Ludolph@Sun.Com&gt;
 Jenya Gestrin &lt;Jenya.Gestrin@Sun.Com&gt;
+Joanmarie Diggs &lt;Joanmarie.Diggs@Gmail.Com&gt;
 John Hawk &lt;johnthawk@excite.com&gt;
 John Rice &lt;John.Rice@Sun.Com&gt;
 Jyothi Srinath &lt;Jyothi.Srinath@Sun.COM&gt;
