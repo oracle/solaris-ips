@@ -541,6 +541,10 @@ class BooleanQuery(object):
                         else:
                                 raise BooleanQueryException(self.rc, self.lc)
 
+        def add_field_restrictions(self, *params):
+                self.lc.add_field_restrictions(*params)
+                self.rc.add_field_restrictions(*params)
+
         def set_info(self, **kwargs):
                 """This function passes information to the terms prior to
                 search being executed.  For a boolean query, it only needs to
@@ -740,6 +744,9 @@ class PhraseQuery(object):
         def __str__(self):
                 return "'" + self.full_str + "'"
 
+        def add_field_restrictions(self, *params):
+                self.query.add_field_restrictions(*params)
+
         def set_info(self, case_sensitive, **kwargs):
                 """This function passes information to the terms prior to
                 search being executed.  It only needs to pass whatever
@@ -809,25 +816,7 @@ class FieldQuery(object):
                 # needed filtering as it does the search.
                 self.query = query
                 self.return_type = Query.RETURN_ACTIONS
-                self.query.pkg_name, self.query.action_type, self.query.key = \
-                    params
-                self.query.action_type_wildcard = self.__is_wildcard(
-                    self.query.action_type)
-                self.query.key_wildcard = self.__is_wildcard(self.query.key)
-                self.query.pkg_name_wildcard = \
-                    self.__is_wildcard(self.query.pkg_name)
-                self.query.pkg_name_match = None
-                # Because users will rarely want to search on package names
-                # by fully specifying them out to their time stamps, package
-                # name search is treated as a prefix match.  To accomplish
-                # this, a star is appended to the package name if it doesn't
-                # already end in one.
-                if not self.query.pkg_name_wildcard:
-                        if not self.query.pkg_name.endswith("*"):
-                                self.query.pkg_name += "*"
-                        self.query.pkg_name_match = \
-                            re.compile(fnmatch.translate(self.query.pkg_name),
-                                re.I).match
+                self.query.add_field_restrictions(*params)
 
         def __repr__(self):
                 return "( PN:%s AT:%s ST:%s Q:%s)" % (self.query.pkg_name,
@@ -843,10 +832,6 @@ class FieldQuery(object):
 
                 self.query.set_info(**kwargs)
 
-        @staticmethod
-        def __is_wildcard(s):
-                return s is None or s == '*' or s == ''
-                
         def search(self, restriction, *args):
                 """Perform a search for the structured query.  The child has
                 been modified so that it is able to do the structured query
@@ -1007,6 +992,33 @@ class TermQuery(object):
                         return ""
                 return v
 
+        def add_field_restrictions(self, pkg_name, action_type, key):
+                """Add the information needed to restrict the search domain
+                to the specified fields."""
+
+                self.pkg_name = pkg_name
+                self.action_type = action_type
+                self.key = key
+                self.action_type_wildcard = \
+                    self.__is_wildcard(self.action_type)
+                self.key_wildcard = self.__is_wildcard(self.key)
+                self.pkg_name_wildcard = self.__is_wildcard(self.pkg_name)
+                # Because users will rarely want to search on package names
+                # by fully specifying them out to their time stamps, package
+                # name search is treated as a prefix match.  To accomplish
+                # this, a star is appended to the package name if it doesn't
+                # already end in one.
+                if not self.pkg_name_wildcard:
+                        if not self.pkg_name.endswith("*"):
+                                self.pkg_name += "*"
+                        self.pkg_name_match = \
+                            re.compile(fnmatch.translate(self.pkg_name),
+                                re.I).match
+
+        @staticmethod
+        def __is_wildcard(s):
+                return s is None or s == '*' or s == ''
+                
         def add_trailing_wildcard(self):
                 """Ensures that the search is a prefix match.  Primarily used
                 by the PhraseQuery class."""

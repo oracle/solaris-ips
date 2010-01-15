@@ -139,6 +139,19 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
 """
         bogus_fmri = fmri.PkgFmri("bogus_pkg@1.0,5.11-0:20090326T233451Z")
 
+        bug_8492_manf_1 = """
+open b1@1.0,5.11-0
+add set description="Image Packaging System"
+close """
+
+        bug_8492_manf_2 = """
+open b2@1.0,5.11-0
+add set description="Image Packaging System"
+close """
+
+        res_8492_1 = set([('pkg:/b1@1.0-0', 'image packaging', 'set name=description value="Image Packaging System"')])
+        res_8492_2 = set([('pkg:/b2@1.0-0', 'image packaging', 'set name=description value="Image Packaging System"')])
+        
         remote_fmri_string = ('pkg:/example_pkg@1.0-0', 'test/example_pkg',
             'set name=pkg.fmri value=pkg://test/example_pkg@1.0,5.11-0:')
 
@@ -1873,6 +1886,36 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
                 portable.rename(orig_fn, dest_fn)
                 self.assertRaises(api_errors.WrapSuccessfulIndexingException,
                     self._do_uninstall, api_obj, ["example_pkg"])
+
+        def test_bug_8492(self):
+                """Tests that field queries and phrase queries work together.
+                """
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.bug_8492_manf_1)
+                self.pkgsend_bulk(durl, self.bug_8492_manf_2)
+                self.image_create(durl)
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+
+                self._search_op(api_obj, True, "set::'image packaging'",
+                    self.res_8492_1 | self.res_8492_2)
+                self._search_op(api_obj, True, "b1:set::'image packaging'",
+                    self.res_8492_1)
+
+                self._do_install(api_obj, ["b1", "b2"])
+
+                self._search_op(api_obj, False, "set::'image packaging'",
+                    self.res_8492_1 | self.res_8492_2)
+                self._search_op(api_obj, False, "b2:set::'image packaging'",
+                    self.res_8492_2)
+
+                api_obj.rebuild_search_index()
+
+                self._search_op(api_obj, True, "set::'image packaging'",
+                    self.res_8492_1 | self.res_8492_2)
+                self._search_op(api_obj, True, "b1:set::'image packaging'",
+                    self.res_8492_1)
 
         def test_bug_9729_1(self):
                 """Test that installing more than
