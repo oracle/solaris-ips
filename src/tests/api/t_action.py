@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import unittest
@@ -292,6 +292,9 @@ Incorrect attribute list.
 
                 # Missing key attribute 'fmri'.
                 self.assertInvalid("depend type=require")
+
+                # 'data' used as an attribute key
+                self.assertInvalid("file 1234 path=/tmp/foo data=rubbish")
 
                 # Missing required attribute 'path'.
                 self.assertRaises(action.InvalidActionError, action.fromstr,

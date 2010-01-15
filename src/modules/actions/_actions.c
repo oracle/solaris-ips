@@ -20,7 +20,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
@@ -29,6 +29,7 @@
 #include <string.h>
 
 static PyObject *MalformedActionError;
+static PyObject *InvalidActionError;
 
 static int
 add_to_attrs(PyObject *attrs, PyObject *key, PyObject *attr)
@@ -81,13 +82,25 @@ set_malformederr(const char *str, int pos, const char *msg)
 	return (NULL);
 }
 
+static void *
+set_invaliderr(const char *str, const char *msg)
+{
+	PyObject *val;
+
+	if ((val = Py_BuildValue("ss", str, msg)) != NULL) {
+		PyErr_SetObject(InvalidActionError, val);
+		Py_DECREF(val);
+	}
+	return (NULL);
+}
+
 /*ARGSUSED*/
 static PyObject *
 _fromstr(PyObject *self, PyObject *args)
 {
-	char *s, *str, *slashmap = NULL;
+	char *s, *str, *keystr, *slashmap = NULL;
 	int strl;
-	int i, ks, vs;
+	int i, ks, vs, keysize;
 	char quote;
 	PyObject *type = NULL;
 	PyObject *hash = NULL;
@@ -103,6 +116,7 @@ _fromstr(PyObject *self, PyObject *args)
 	} state;
 
 #define malformed(msg) set_malformederr(str, i, (msg))
+#define invalid(msg) set_invaliderr(str, (msg))
 
 	if (PyArg_ParseTuple(args, "s#", &str, &strl) == 0) {
 		PyErr_SetString(PyExc_ValueError, "could not parse argument");
@@ -126,6 +140,9 @@ _fromstr(PyObject *self, PyObject *args)
 	}
 	for (i = s - str; str[i]; i++) {
 		if (state == KEY) {
+			keysize = i - ks;
+			keystr = &str[ks];
+
 			if (str[i] == ' ' || str[i] == '\t') {
 				if (PyDict_Size(attrs) > 0 || hash != NULL) {
 					Py_DECREF(type);
@@ -135,14 +152,23 @@ _fromstr(PyObject *self, PyObject *args)
 				}
 				else {
 					if ((hash = PyString_FromStringAndSize(
-						&str[ks], i - ks)) == NULL)
+						keystr, keysize)) == NULL)
 						return (NULL);
 					state = WS;
 				}
 			} else if (str[i] == '=') {
 				if ((key = PyString_FromStringAndSize(
-					&str[ks], i - ks)) == NULL)
+					keystr, keysize)) == NULL)
 					return (NULL);
+
+				if (keysize == 4 && strncmp(keystr, "data", keysize) == 0) {
+					Py_DECREF(key);
+					Py_DECREF(type);
+					Py_DECREF(attrs);
+					Py_XDECREF(hash);
+					return (invalid("invalid key: 'data'"));
+				}
+
 				if (i == ks) {
 					Py_DECREF(key);
 					Py_DECREF(type);
@@ -331,4 +357,6 @@ init_actions(void)
 
 	MalformedActionError = \
 		PyObject_GetAttrString(pkg_actions, "MalformedActionError");
+	InvalidActionError = \
+		PyObject_GetAttrString(pkg_actions, "InvalidActionError");
 }

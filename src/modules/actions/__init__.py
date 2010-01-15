@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -243,6 +243,14 @@ def internalizelist(atype, args, ahash=None, basedirs=None):
                 p2 = " ".join(args[kvi:])
                 raise MalformedActionError("%s %s %s" % (atype, p1, p2),
                     len(p1) + 2, "attribute '%s'" % kv)
+
+        # keys called 'data' cause problems due to the named parameter being
+        # passed to the action constructor below. Check for these. Note that
+        # _fromstr also checks for this.
+        if "data" in attrs:
+                astr = atype + " " + " ".join(args)
+                raise InvalidActionError(astr,
+                        "%s action cannot have a 'data' attribute" % atype)
 
         action = types[atype](data=None, **attrs)
 
