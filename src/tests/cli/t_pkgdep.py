@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import testutils
@@ -513,11 +513,13 @@ depend %(pfx)s.file=usr/lib/python2.4/vendor-packages/pkg/search_storage.py fmri
                         cmd.append("-R")
                         cmd.append(rp)
                 cmd.append(t_path)
-                s = subprocess.Popen(cmd)
-                rc = s.wait()
+                s = subprocess.Popen(cmd, stderr=subprocess.PIPE)
+                out, err = s.communicate()
+                rc = s.returncode
                 if rc != 0:
                         raise RuntimeError("Compile of %s failed. Runpaths "
-                            "were %s" % (t_path, " ".join(run_paths)))
+                            "were %s\nCommand was:\n%s\nError was:\n%s" %
+                            (t_path, " ".join(run_paths), " ".join(cmd), err))
                 return out_file[len(self.img_path)+1:]
 
         def make_text_file(self, o_path, o_text=""):

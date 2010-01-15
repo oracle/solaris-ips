@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import cli.testutils as testutils
@@ -204,11 +204,13 @@ from pkg_test.misc_test import EmptyI
                 if static:
                         cmd.append("-static")
                 cmd.append(t_path)
-                s = subprocess.Popen(cmd)
-                rc = s.wait()
+                s = subprocess.Popen(cmd, stderr=subprocess.PIPE)
+                out, err = s.communicate()
+                rc = s.returncode
                 if rc != 0:
-                        raise RuntimeError("Compile of %s failed. Runpaths "
-                            "were %s" % " ".join(run_paths))
+                        raise RuntimeError("Compile of %s failed.\nCommand "
+                            "was:\n%s\nError was:\n%s" %
+                            (t_path, " ".join(cmd), err))
                 return out_file
 
         def __path_to_key(self, path):
