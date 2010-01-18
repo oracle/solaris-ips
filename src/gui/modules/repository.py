@@ -880,6 +880,8 @@ class Repository(progress.GuiProgressTracker):
                         errors.append((pub, e))
                 except api_errors.InvalidDepotResponseException, e:
                         errors.append((pub, e))
+                except api_errors.CertificateError, e:
+                        errors.append((pub, e))
                 except (api_errors.PermissionsException,
                     api_errors.PublisherError), e:
                         errors.append((pub, e))
