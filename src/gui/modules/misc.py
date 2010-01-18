@@ -120,7 +120,7 @@ def notify_log_error(app):
 def __notify_log_error(app):
         app.error_logged = True
         app.w_infosearch_frame.show()
-        app.w_infosearch_button.set_tooltip_text(_("Errors logged: click to view"))
+        app.w_infosearch_frame.set_tooltip_text(_("Errors logged: click to view"))
 
 def setup_logging(client_name):
         su_logging(client_name)

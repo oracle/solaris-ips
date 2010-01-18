@@ -494,7 +494,6 @@ class PackageManager:
     
                 self.w_statusbar_hbox = w_tree_main.get_widget("statusbar_hbox")
                 self.w_infosearch_frame = w_tree_main.get_widget("infosearch_frame")
-                self.w_infosearch_button = w_tree_main.get_widget("infosearch_button")
 
                 self.w_progress_frame = w_tree_main.get_widget("progress_frame")
                 self.w_status_progressbar = w_tree_main.get_widget("status_progressbar")
@@ -644,8 +643,8 @@ class PackageManager:
                                 "on_help_start_page_activate":self.__on_startpage,
                                 "on_details_notebook_switch_page": \
                                     self.__on_notebook_change,
-                                "on_infosearch_button_clicked": \
-                                    self.__on_infosearch_button_clicked,
+                                "on_infosearch_eventbox_button_press_event": \
+                                    self.__on_infosearch_button_press_event,
                                 "on_applicationtreeview_button_press_event": \
                                     self.__on_applicationtreeview_button_and_key_events,
                                 "on_applicationtreeview_query_tooltip": \
@@ -1106,7 +1105,7 @@ class PackageManager:
                         self.current_repos_with_search_errors.append(
                             (pub, _("unsupported search"), err))
 
-        def __on_infosearch_button_clicked(self, widget):
+        def __on_infosearch_button_press_event(self, widget, event):
                 if len(self.current_repos_with_search_errors) > 0:
                         self.__handle_api_search_error(True)
                         return
@@ -1128,8 +1127,7 @@ class PackageManager:
                         self.w_infosearch_frame.hide()
                         return
 
-                self.w_infosearch_button.set_size_request(26, 22)
-                self.w_infosearch_button.set_tooltip_text(
+                self.w_infosearch_frame.set_tooltip_text(
                     _("Search Errors: click to view"))
 
                 self.w_infosearch_frame.show()
@@ -4769,7 +4767,6 @@ class PackageManager:
                         gobject.idle_add(self.error_occurred, err, None,
                             gtk.MESSAGE_INFO)
                         gobject.idle_add(self.unset_busy_cursor)
-                raise Exception
                 return self.__add_pkgs_to_lists(pkgs_from_api, pubs, application_list,
                     category_list, section_list)
 
