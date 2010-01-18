@@ -4769,7 +4769,7 @@ class PackageManager:
                         gobject.idle_add(self.error_occurred, err, None,
                             gtk.MESSAGE_INFO)
                         gobject.idle_add(self.unset_busy_cursor)
-
+                raise Exception
                 return self.__add_pkgs_to_lists(pkgs_from_api, pubs, application_list,
                     category_list, section_list)
 
@@ -5685,27 +5685,35 @@ def installThreadExcepthook():
     
 def __display_unknown_err(trace):
         dmsg = _("An unknown error occurred")
-        md = gtk.MessageDialog(type=gtk.MESSAGE_ERROR, buttons=gtk.BUTTONS_CLOSE,
-        message_format=dmsg)
+        md = gtk.MessageDialog(type=gtk.MESSAGE_ERROR, message_format=dmsg)
+        close_btn = md.add_button(gtk.STOCK_CLOSE, 100)
+        md.set_default_response(100)
 
         dmsg = _("Please let the developers know about this problem by\n"
                     "filing a bug together with the error details listed below at:")
-        dmsg += "\n\nhttp://defect.opensolaris.org"
         md.format_secondary_text(dmsg)
         md.set_title(_('Unexpected Error'))
-        
+
+        uri_btn = gtk.LinkButton(
+            "http://defect.opensolaris.org/bz/enter_bug.cgi?product=pkg",
+            "defect.opensolaris.org")
+        uri_btn.set_relief(gtk.RELIEF_NONE)
+        uri_btn.set_size_request(160, -1)
+        align = gtk.Alignment(0, 0, 0, 0)
+        align.set_padding(0, 0, 56, 0)
+        align.add(uri_btn)
         textview = gtk.TextView()
         textview.show()
-        textview.set_editable (False)
+        textview.set_editable(False)
         sw = gtk.ScrolledWindow()
-        sw.show()
-        sw.set_policy (gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        sw.add (textview)        
+        sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        sw.add(textview)
         fr = gtk.Frame()
-        fr.show()
         fr.set_shadow_type(gtk.SHADOW_IN)
         fr.add(sw)
-        md.get_content_area().add(fr)
+        ca = md.get_content_area()
+        ca.pack_start(align, False, False, 0)
+        ca.pack_start(fr)
 
         textbuffer = textview.get_buffer()
         textbuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)
@@ -5736,6 +5744,8 @@ def __display_unknown_err(trace):
 
         md.set_size_request(550, 400)
         md.set_resizable(True)
+        close_btn.grab_focus()
+        md.show_all()
         md.run()
         
         md.destroy()
