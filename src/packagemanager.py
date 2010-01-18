@@ -2525,7 +2525,7 @@ class PackageManager:
                 application_list = self.__get_new_application_liststore()
                 for name, pub in search_result:
                         application_list.append(
-                            [False, None, name, '...', enumerations.NOT_INSTALLED, None, 
+                            [False, None, name, '...', api.PackageInfo.KNOWN, None, 
                             self.__get_pkg_stem(name, pub), None, True, None, 
                             pub])
                 return application_list
