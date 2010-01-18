@@ -285,7 +285,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                                 to_update = gtk.ListStore(str, str, str)
                                 for cpk in self.confirmation_list:
                                         if cpk[enumerations.CONFIRM_STATUS] == \
-                                            enumerations.UPDATABLE:
+                                            api.PackageInfo.UPGRADABLE:
                                                 to_update.append(
                                                     [cpk[enumerations.CONFIRM_NAME], 
                                                     cpk[enumerations.CONFIRM_PUB],

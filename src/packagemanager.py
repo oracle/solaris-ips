@@ -1690,11 +1690,11 @@ class PackageManager:
 
         def __set_accessible_status(self, model, itr):
                 status = model.get_value(itr, enumerations.STATUS_COLUMN)
-                if status == enumerations.INSTALLED:
+                if status == api.PackageInfo.INSTALLED:
                         desc = _("Installed")
-                elif status == enumerations.NOT_INSTALLED:
+                elif status == api.PackageInfo.KNOWN:
                         desc = _("Not Installed")
-                elif status == enumerations.UPDATABLE:
+                elif status == api.PackageInfo.UPGRADABLE:
                         desc = _("Updates Available")
                 else:
                         desc = None
@@ -2791,7 +2791,7 @@ class PackageManager:
                             sort_filt_model.convert_path_to_child_path(sorted_path)
                         path = filt_model.convert_path_to_child_path(filtered_path)
                         if model.get_value(app_iter, \
-                            enumerations.STATUS_COLUMN) == enumerations.UPDATABLE:
+                            enumerations.STATUS_COLUMN) == api.PackageInfo.UPGRADABLE:
                                 list_of_paths.append(path)
                         iter_next = sort_filt_model.iter_next(iter_next)
                 for path in list_of_paths:
@@ -3159,11 +3159,11 @@ class PackageManager:
                         row = list(treeview.get_model()[path])
                         if row:
                                 status = row[enumerations.STATUS_COLUMN]
-                                if status == enumerations.INSTALLED:
+                                if status == api.PackageInfo.INSTALLED:
                                         tip = _("Installed")
-                                elif status == enumerations.NOT_INSTALLED:
+                                elif status == api.PackageInfo.KNOWN:
                                         tip = _("Not installed")
-                                elif status == enumerations.UPDATABLE:
+                                elif status == api.PackageInfo.UPGRADABLE:
                                         tip = _("Updates Available")
 
                 if tip != "":
@@ -3448,8 +3448,8 @@ class PackageManager:
                                 break
                         for pkg_stem in pkgs:
                                 status = pkgs.get(pkg_stem)[0]
-                                if status == enumerations.NOT_INSTALLED or \
-                                    status == enumerations.UPDATABLE:
+                                if status == api.PackageInfo.KNOWN or \
+                                    status == api.PackageInfo.UPGRADABLE:
                                         install_update.append(pkg_stem)
                                         if self.show_install:
                                                 desc = pkgs.get(pkg_stem)[1]
@@ -3784,8 +3784,8 @@ class PackageManager:
                                 break
                         for pkg_stem in pkgs:
                                 status = pkgs.get(pkg_stem)[0]
-                                if status == enumerations.INSTALLED or \
-                                    status == enumerations.UPDATABLE:
+                                if status == api.PackageInfo.INSTALLED or \
+                                    status == api.PackageInfo.UPGRADABLE:
                                         remove_list.append(pkg_stem)
                                         if self.show_remove:
                                                 desc = pkgs.get(pkg_stem)[1]
@@ -4074,13 +4074,14 @@ class PackageManager:
                 if self.selected_pkgs.get(pub) == None:
                         self.selected_pkgs[pub] = {}
                 self.selected_pkgs.get(pub)[stem] = [status, description, name]
-                if status == enumerations.NOT_INSTALLED or \
-                    status == enumerations.UPDATABLE:
+                if status == api.PackageInfo.KNOWN or \
+                    status == api.PackageInfo.UPGRADABLE:
                         if self.to_install_update.get(pub) == None:
                                 self.to_install_update[pub] = 1
                         else:
                                 self.to_install_update[pub] += 1
-                if status == enumerations.UPDATABLE or status == enumerations.INSTALLED:
+                if status == api.PackageInfo.UPGRADABLE or \
+                    status == api.PackageInfo.INSTALLED:
                         if self.to_remove.get(pub) == None:
                                 self.to_remove[pub] = 1
                         else:
@@ -4122,14 +4123,14 @@ class PackageManager:
                         status = None
                         if stem in pkgs:
                                 status = pkgs.pop(stem)[0]
-                        if status == enumerations.NOT_INSTALLED or \
-                            status == enumerations.UPDATABLE:
+                        if status == api.PackageInfo.KNOWN or \
+                            status == api.PackageInfo.UPGRADABLE:
                                 if self.to_install_update.get(pub) == None:
                                         self.to_install_update[pub] = 0
                                 else:
                                         self.to_install_update[pub] -= 1
-                        if status == enumerations.UPDATABLE or \
-                            status == enumerations.INSTALLED:
+                        if status == api.PackageInfo.UPGRADABLE or \
+                            status == api.PackageInfo.INSTALLED:
                                 if self.to_remove.get(pub) == None:
                                         self.to_remove[pub] = 0
                                 else:
@@ -4491,14 +4492,14 @@ class PackageManager:
                 remote_info = None
                 if not self.showing_empty_details and (info_id ==
                     self.last_show_info_id) and (pkg_status ==
-                    enumerations.INSTALLED or pkg_status ==
-                    enumerations.UPDATABLE):
+                    api.PackageInfo.INSTALLED or pkg_status ==
+                    api.PackageInfo.UPGRADABLE):
                         local_info = gui_misc.get_pkg_info(self.api_o, pkg_stem,
                             True)
                 if not self.showing_empty_details and (info_id ==
                     self.last_show_info_id) and (pkg_status ==
-                    enumerations.NOT_INSTALLED or pkg_status ==
-                    enumerations.UPDATABLE):
+                    api.PackageInfo.KNOWN or pkg_status ==
+                    api.PackageInfo.UPGRADABLE):
                         remote_info = gui_misc.get_pkg_info(self.api_o, pkg_stem,
                             False)
                 if not self.showing_empty_details and (info_id ==
@@ -4623,12 +4624,12 @@ class PackageManager:
                         return True
                 status = model.get_value(itr, enumerations.STATUS_COLUMN)
                 if filter_id == enumerations.FILTER_INSTALLED:
-                        return (status == enumerations.INSTALLED or status == \
-                            enumerations.UPDATABLE)
+                        return (status == api.PackageInfo.INSTALLED or status == \
+                            api.PackageInfo.UPGRADABLE)
                 elif filter_id == enumerations.FILTER_UPDATES:
-                        return status == enumerations.UPDATABLE
+                        return status == api.PackageInfo.UPGRADABLE
                 elif filter_id == enumerations.FILTER_NOT_INSTALLED:
-                        return status == enumerations.NOT_INSTALLED
+                        return status == api.PackageInfo.KNOWN
 
         def __is_pkg_repository_visible(self, model, itr):
                 if len(self.repositories_list) <= 1:
@@ -4705,7 +4706,7 @@ class PackageManager:
                 if model == None:
                         return
                 for row in model:
-                        if row[enumerations.STATUS_COLUMN] == enumerations.UPDATABLE:
+                        if row[enumerations.STATUS_COLUMN] == api.PackageInfo.UPGRADABLE:
                                 if not row[enumerations.MARK_COLUMN]:
                                         self.w_selectupdates_menuitem. \
                                             set_sensitive(True)
@@ -4820,13 +4821,13 @@ class PackageManager:
                         if api.PackageInfo.INSTALLED in result.states:
                                 if api.PackageInfo.UPGRADABLE in result.states:
                                         status_icon = self.update_available_icon
-                                        pkg_state = enumerations.UPDATABLE
+                                        pkg_state = api.PackageInfo.UPGRADABLE
                                 else:
                                         status_icon = self.installed_icon
-                                        pkg_state = enumerations.INSTALLED
+                                        pkg_state = api.PackageInfo.INSTALLED
                         else:
                                 status_icon = self.not_installed_icon
-                                pkg_state = enumerations.NOT_INSTALLED
+                                pkg_state = api.PackageInfo.KNOWN
                         pkg_name = gui_misc.get_pkg_name(pkg_name)
                         marked = False
                         pkgs = self.selected_pkgs.get(pkg_pub)
@@ -4859,14 +4860,14 @@ class PackageManager:
                         pkg_stem = pkg_fmri.get_pkg_stem()
                         pkg_name = gui_misc.get_pkg_name(pkg_name)
                         if api.PackageInfo.INSTALLED in states:
-                                pkg_state = enumerations.INSTALLED
+                                pkg_state = api.PackageInfo.INSTALLED
                                 if api.PackageInfo.UPGRADABLE in states:
                                         status_icon = self.update_available_icon
-                                        pkg_state = enumerations.UPDATABLE
+                                        pkg_state = api.PackageInfo.UPGRADABLE
                                 else:
                                         status_icon = self.installed_icon
                         else:
-                                pkg_state = enumerations.NOT_INSTALLED
+                                pkg_state = api.PackageInfo.KNOWN
                                 status_icon = self.not_installed_icon
                         marked = False
                         pkgs = self.selected_pkgs.get(pkg_pub)
@@ -5092,10 +5093,10 @@ class PackageManager:
                                     include_scheme = True)
                                 if api.PackageInfo.INSTALLED in info_s.states:
                                         pkg_stem_states[pkg_stem] = \
-                                                enumerations.INSTALLED
+                                                api.PackageInfo.INSTALLED
                                 else:
                                         pkg_stem_states[pkg_stem] = \
-                                                enumerations.NOT_INSTALLED
+                                                api.PackageInfo.KNOWN
                 except (api_errors.TransportError):
                         pass
                 except (api_errors.InvalidDepotResponseException):
@@ -5121,7 +5122,7 @@ class PackageManager:
                                 row[enumerations.STATUS_COLUMN] = \
                                         pkg_stem_states[pkg_stem]
                                 if pkg_stem_states[pkg_stem] == \
-                                        enumerations.NOT_INSTALLED:
+                                        api.PackageInfo.KNOWN:
                                         row[enumerations.STATUS_ICON_COLUMN] = \
                                                 self.not_installed_icon
                                 else:
@@ -5129,7 +5130,7 @@ class PackageManager:
                                                 self.installed_icon
                         else:
                                 row[enumerations.STATUS_COLUMN] = \
-                                        enumerations.NOT_INSTALLED
+                                        api.PackageInfo.KNOWN
                                 row[enumerations.STATUS_ICON_COLUMN] = \
                                         self.not_installed_icon
                         tmp_app_list.append(row)
@@ -5491,17 +5492,17 @@ class PackageManager:
                         if (package_info and
                             api.PackageInfo.INSTALLED in package_info.states):
                                 row[enumerations.STATUS_COLUMN] = \
-                                    enumerations.INSTALLED
+                                    api.PackageInfo.INSTALLED
                                 row[enumerations.STATUS_ICON_COLUMN] = \
                                     self.installed_icon
                         else:
                                 row[enumerations.STATUS_COLUMN] = \
-                                    enumerations.UPDATABLE
+                                    api.PackageInfo.UPGRADABLE
                                 row[enumerations.STATUS_ICON_COLUMN] = \
                                     self.update_available_icon
                 else:
                         row[enumerations.STATUS_COLUMN] = \
-                            enumerations.NOT_INSTALLED
+                            api.PackageInfo.KNOWN
                         row[enumerations.STATUS_ICON_COLUMN] = \
                             self.not_installed_icon
                 row[enumerations.MARK_COLUMN] = False
