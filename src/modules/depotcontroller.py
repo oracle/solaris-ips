@@ -19,17 +19,17 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
+import httplib
 import os
+import pkg.pkgsubprocess as subprocess
 import sys
 import signal
 import time
 import urllib2
-import httplib
-import pkg.pkgsubprocess as subprocess
 
 from pkg.misc import versioned_urlopen
 
@@ -44,7 +44,7 @@ class DepotController(object):
         STARTING = 1
         RUNNING = 2
 
-        def __init__(self, wrapper=None, env=None):
+        def __init__(self, wrapper_start=None, wrapper_end="", env=None):
                 self.__add_content = False
                 self.__auto_port = True
                 self.__cfg_file = None
@@ -67,13 +67,25 @@ class DepotController(object):
                 self.__writable_root = None
                 self.__sort_file_max_size = None
                 self.__starttime = 0
-                self.__wrapper = []
+                self.__wrapper_start = []
+                self.__wrapper_end = wrapper_end
                 self.__env = {}
-                if wrapper:
-                        self.__wrapper = wrapper
+                if wrapper_start:
+                        self.__wrapper_start = wrapper_start
                 if env:
                         self.__env = env
                 return
+
+        def get_wrapper(self):
+                return self.__wrapper_start, self.__wrapper_end
+
+        def set_wrapper(self, start, end):
+                self.__wrapper_start = start
+                self.__wrapper_end = end
+
+        def unset_wrapper(self):
+                self.__wrapper_start = []
+                self.__wrapper_end = ""
 
         def set_depotd_path(self, path):
                 self.__depot_path = path
@@ -145,7 +157,7 @@ class DepotController(object):
 
         def set_norefresh_index(self):
                 self.__refresh_index = False
-        
+
         def get_state(self):
                 return self.__state
 
@@ -165,7 +177,7 @@ class DepotController(object):
                 return self.__writable_root
 
         def set_sort_file_max_size(self, sort):
-                self.__sort_file_max_size = sort 
+                self.__sort_file_max_size = sort
 
         def get_sort_file_max_size(self):
                 return self.__sort_file_max_size
@@ -214,7 +226,7 @@ class DepotController(object):
                 """ Return the equivalent command line invocation (as an
                     array) for the depot as currently configured. """
 
-                args = self.__wrapper[:]
+                args = self.__wrapper_start[:]
                 args.append(self.__depot_path)
                 if self.__depot_content_root:
                         args.append("--content-root")
@@ -258,6 +270,7 @@ class DepotController(object):
                 # Always log access and error information.
                 args.append("--log-access=stdout")
                 args.append("--log-errors=stderr")
+                args.append(self.__wrapper_end)
 
                 return args
 
@@ -277,10 +290,12 @@ class DepotController(object):
                 self.__state = self.STARTING
 
                 self.__output = open(self.__logpath, "w", 0)
+                cmdline = " ".join(args)
 
                 newenv = os.environ.copy()
                 newenv.update(self.__env)
-                self.__depot_handle = subprocess.Popen(args=args, env=newenv,
+                self.__depot_handle = subprocess.Popen(cmdline, env=newenv,
+                    shell=True,
                     stdin=subprocess.PIPE,
                     stdout=self.__output,
                     stderr=self.__output,
@@ -288,13 +303,13 @@ class DepotController(object):
                 if self.__depot_handle == None:
                         raise DepotStateException("Could not start Depot")
                 self.__starttime = time.time()
-                
+
         def start(self):
                 self.__initial_start()
 
                 if self.__refresh_index:
                         return
-                
+
                 sleeptime = 0.05
                 contact = False
                 while sleeptime <= 40.0:
@@ -309,7 +324,7 @@ class DepotController(object):
                                 break
                         time.sleep(sleeptime)
                         sleeptime *= 2
-                
+
                 if contact == False:
                         self.kill()
                         self.__state = self.HALTED
@@ -318,9 +333,9 @@ class DepotController(object):
 
                 self.__state = self.RUNNING
 
-        def start_expected_fail(self):
+        def start_expected_fail(self, exit=2):
                 self.__initial_start()
-                
+
                 sleeptime = 0.05
                 died = False
                 rc = None
@@ -332,14 +347,14 @@ class DepotController(object):
                                 break
                         time.sleep(sleeptime)
                         sleeptime *= 2
-                
-                if died and rc == 2:
+
+                if died and rc == exit:
                         self.__state = self.HALTED
                         return True
                 else:
                         self.stop()
                         return False
-                        
+
         def refresh(self):
                 if self.__depot_handle == None:
                         # XXX might want to remember and return saved
@@ -353,7 +368,7 @@ class DepotController(object):
                 """kill the depot; letting it live for
                 a little while helps get reliable death"""
 
-                lifetime = time.time() - self.__starttime 
+                lifetime = time.time() - self.__starttime
                 if lifetime < 1.0:
                         time.sleep(1.0 - lifetime)
 

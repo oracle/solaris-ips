@@ -365,9 +365,7 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                 if not self.in_debug_mode() and os.path.exists(self.img_path):
                         shutil.rmtree(self.img_path)
 
-        def pkg(self, command, exit=0, comment="", prefix="", su_wrap=None):
-                wrapper = self.coverage_cmd
-
+        def get_su_wrapper(self, su_wrap=None):
                 if su_wrap:
                         if su_wrap == True:
                                 su_wrap = get_su_wrap_user()
@@ -379,6 +377,12 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                 else:
                         su_wrap = ""
                         su_end = ""
+                return su_wrap, su_end
+
+        def pkg(self, command, exit=0, comment="", prefix="", su_wrap=None):
+                wrapper = self.coverage_cmd
+
+                su_wrap, su_end = self.get_su_wrapper(su_wrap=su_wrap)
                 if prefix:
                         cmdline = "%s;%s%s %s/usr/bin/pkg %s%s" % (prefix,
                             su_wrap, wrapper, g_proto_area, command, su_end)
@@ -700,7 +704,8 @@ class CliTestCase(pkg5unittest.Pkg5TestCase):
                 self.debug("start_depot: depot logging to %s" % logpath)
 
                 dc = depotcontroller.DepotController(
-                    wrapper=self.coverage_cmd.split(), env=self.coverage_env)
+                    wrapper_start=self.coverage_cmd.split(),
+                    env=self.coverage_env)
                 dc.set_depotd_path(g_proto_area + "/usr/lib/pkg.depotd")
                 dc.set_depotd_content_root(g_proto_area + "/usr/share/lib/pkg")
                 for f in debug_features:

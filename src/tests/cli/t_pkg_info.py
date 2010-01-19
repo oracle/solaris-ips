@@ -20,18 +20,18 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import testutils
 if __name__ == "__main__":
 	testutils.setup_environment("../../../proto")
 
-import unittest
+import difflib
 import os
 import re
 import shutil
-import difflib
+import unittest
 
 class TestPkgInfoBasics(testutils.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -172,6 +172,7 @@ class TestPkgInfoBasics(testutils.SingleDepotTestCase):
                 self.pkg("info emerald 2>&1 | grep 'no packages matching'")
                 self.pkg("info 'j*'")
                 self.pkg("info '*a*'")
+                self.pkg("info jade", su_wrap=True)
 
                 # Check remote info
                 self.pkg("info -r jade | grep 'State: Installed'")
@@ -180,8 +181,18 @@ class TestPkgInfoBasics(testutils.SingleDepotTestCase):
                 self.pkg("info -r turquoise | grep 'State: Not installed'")
                 self.pkg("info -r turquoise | grep '      Category: System/Security/Foo/bar/Baz'")
                 self.pkg("info -r turquoise | grep '      Category: System/Security/Foo/bar/Baz (org.opensolaris.category.2008)'", exit=1)
-#                 self.pkg("info -r turquoise | grep '   Description: Short desc'")
+                self.pkg("info -r turquoise | grep '   Description: Short desc'")
                 self.pkg("info -r turquoise")
+
+                # Now remove the manifest for turquoise and retry the info -r for
+                # an unprivileged user.
+                mpath = os.path.join(self.get_img_path(), "var", "pkg", "pkg",
+                    "turquoise")
+                shutil.rmtree(mpath)
+                self.assertFalse(os.path.exists(mpath))
+                self.pkg("info -r turquoise", su_wrap=True)
+
+                # Verify output.
                 lines = self.output.split("\n")
                 self.assertEqual(lines[2], "   Description: Short desc")
                 self.assertEqual(lines[3],

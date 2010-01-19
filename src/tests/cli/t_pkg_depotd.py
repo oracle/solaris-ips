@@ -264,9 +264,11 @@ class TestPkgDepot(testutils.SingleDepotTestCase):
 
         def test_repo_create(self):
                 """Verify that starting a depot server in readonly mode with
-                a non-existent or empty repo_dir fails.  Then verify that
-                starting a depot with the same directory in publishing mode
-                works and then a readonly depot again after that works."""
+                a non-existent or empty repo_dir fails and that permissions
+                errors are handled correctly during creation.  Then verify
+                that starting a depot with the same directory in publishing
+                mode works and then a readonly depot again after that works.
+                """
 
                 dpath = os.path.join(self.get_test_prefix(), "repo_create")
 
@@ -294,8 +296,21 @@ class TestPkgDepot(testutils.SingleDepotTestCase):
                 self.dc.stop()
                 self.assert_(not self.dc.is_alive())
 
-                # Next, test readwrite (publishing) mode with an empty repo_dir.
+                # Next, test readwrite (publishing) mode with a non-existent
+                # repo_dir for an unprivileged user.
                 shutil.rmtree(dpath)
+                self.dc.set_readwrite()
+                wr_start, wr_end = self.dc.get_wrapper()
+                su_wrap, su_end = self.get_su_wrapper(su_wrap=True)
+                try:
+                        self.dc.set_wrapper([su_wrap], su_end)
+                        self.dc.start_expected_fail(exit=1)
+                finally:
+                        # Even if this test fails, this wrapper must be reset.
+                        self.dc.set_wrapper(wr_start, wr_end)
+                self.assert_(not self.dc.is_alive())
+
+                # Next, test readwrite (publishing) mode with an empty repo_dir.
                 os.makedirs(dpath, misc.PKG_DIR_MODE)
                 self.dc.set_readwrite()
                 self.dc.start()

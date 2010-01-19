@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -691,9 +691,11 @@ if __name__ == "__main__":
         except rc.PropertyError, _e:
                 emsg("pkg.depotd: repository configuration error: %s" % _e)
                 sys.exit(1)
-        except (search_errors.IndexingException,
-            api_errors.PermissionsException), _e:
-                emsg(str(_e), "INDEX")
+        except search_errors.IndexingException, _e:
+                emsg("pkg.depotd: %s" % str(_e), "INDEX")
+                sys.exit(1)
+        except api_errors.PermissionsException, _e:
+                emsg("pkg.depotd: %s" % str(_e))
                 sys.exit(1)
 
         if reindex:

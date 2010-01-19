@@ -423,6 +423,9 @@ def list_inventory(img, args):
 
                 api_inst.log_operation_end()
                 return EXIT_OK
+        except api_errors.PermissionsException, e:
+                error(e)
+                return EXIT_OOPS
         except api_errors.InventoryException, e:
                 if e.illegal:
                         for i in e.illegal:
@@ -754,7 +757,9 @@ def __api_alloc(img, quiet=False):
         except api_errors.ImageNotFoundException, e:
                 error(_("No image rooted at '%s'") % e.user_dir)
                 return None
-
+        except api_errors.PermissionsException, e:
+                error(e)
+                return None
         return api_inst
 
 def __api_plan_exception(op, noexecute):
@@ -1540,7 +1545,6 @@ def info(img, args):
                 notfound = ret[api.ImageInterface.INFO_MISSING]
                 illegals = ret[api.ImageInterface.INFO_ILLEGALS]
                 multi_match = ret[api.ImageInterface.INFO_MULTI_MATCH]
-
         except api_errors.PermissionsException, e:
                 error(e)
                 return EXIT_OOPS
@@ -3211,6 +3215,9 @@ def main_func():
                         error(_(m) % e.user_dir)
                 else:
                         error(_("No image found."))
+                return EXIT_OOPS
+        except api_errors.PermissionsException, e:
+                error(e)
                 return EXIT_OOPS
 
         cmds = {

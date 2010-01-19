@@ -311,7 +311,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 self.assert_(correct_answer == proposed_answer)
 
         def _search_op(self, remote, token, test_value, case_sensitive=False,
-            return_actions=True, exit=0):
+            return_actions=True, exit=0, su_wrap=False):
                 outfile = os.path.join(self.testdata_dir, "res")
                 if remote:
                         token = "-r " + token
@@ -382,6 +382,14 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 self._search_op(True, "OPENSSL", self.res_remote_openssl)
                 self._search_op(True, "OpEnSsL", self.res_remote_openssl)
                 self._search_op(True, "OpEnS*", self.res_remote_openssl)
+
+                # Verify that search will work for an unprivileged user even if
+                # the download directory doesn't exist.
+                cache_dir = os.path.join(self.img_path, "var", "pkg",
+                    "download")
+                shutil.rmtree(cache_dir)
+                self.assertFalse(os.path.exists(cache_dir))
+                self._search_op(True, "fo*", self.res_remote_foo, su_wrap=True)
 
                 # These tests are included because a specific bug
                 # was found during development. This prevents regression back

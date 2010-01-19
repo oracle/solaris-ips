@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -394,8 +394,11 @@ class Image(object):
                         os.makedirs(self.dl_cache_incoming)
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES or e.errno == errno.EROFS:
-                                self.dl_cache_incoming = tempfile.mkdtemp(
-                                    prefix="incoming-%d-" % os.getpid())
+                                self.dl_cache_dir = tempfile.mkdtemp(
+                                    prefix="download-%d-" % os.getpid())
+                                self.dl_cache_incoming = os.path.normpath(
+                                    os.path.join(self.dl_cache_dir,
+                                    "incoming-%d" % os.getpid()))
                 else:
                         os.removedirs(self.dl_cache_incoming)
 

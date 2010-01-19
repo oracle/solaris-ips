@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -299,6 +299,7 @@ class TestPkgImageCreateBasics(testutils.ManyDepotTestCase):
                 # an unprivileged user.  Each must be done with and without
                 # the publisher prefix to test that these are stripped and
                 # read properly (because of the publisher preferred prefix).
+                self.pkg("publisher -a", su_wrap=True)
                 self.pkg("info pkg://test1/quux corge", su_wrap=True)
                 self.pkg("info pkg://test2/corge quux", su_wrap=True)
 
@@ -363,6 +364,16 @@ class TestPkgImageCreateBasics(testutils.ManyDepotTestCase):
                 # Should fail since installed catalog file is corrupt.
                 self.pkg("info foo", exit=1)
                 self.pkg("list", exit=1)
+
+        def test_10_unprivileged(self):
+                """Verify that pkg correctly handles permission errors during
+                image-create."""
+
+                p = os.path.join(self.get_test_prefix(), "unpriv_test_10")
+                os.mkdir(p)
+
+                self.pkg("image-create -p test1=%s %s/image" % (
+                    self.durl1, p), su_wrap=True, exit=1)
 
 
 class TestImageCreateNoDepot(testutils.CliTestCase):

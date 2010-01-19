@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 """centralized object for insert, lookup, and removal of files.
@@ -43,10 +43,11 @@ provides a way to generate all hashes stored by the FileManager."""
 import errno
 import os
 
+import pkg.client.api_errors as apx
 import pkg.portable as portable
 import pkg.file_layout.layout as layout
 
-class NeedToModifyReadOnlyFileManager(Exception):
+class NeedToModifyReadOnlyFileManager(apx.ApiException):
         """This exception is raised when the caller attempts to modify a
         read-only FileManager."""
 
@@ -59,15 +60,9 @@ class NeedToModifyReadOnlyFileManager(Exception):
                 The "create" parameter describes what kind of modification
                 was being attempted."""
 
-                Exception.__init__(self)
+                apx.ApiException.__init__(self)
                 self.ent = thing_to_change
                 self.create = create
-
-        def __unicode__(self):
-                # To workaround python issues 6108 and 2517, this provides a
-                # a standard wrapper for this class' exceptions so that they
-                # have a chance of being stringified correctly.
-                return str(self)
 
         def __str__(self):
                 return _("The FileManager cannot %(cre)s %(ent)s because it "
@@ -75,38 +70,22 @@ class NeedToModifyReadOnlyFileManager(Exception):
                     { "cre": self.create, "ent":self.ent }
 
 
-class FMPermissionsException(Exception):
+class FMPermissionsException(apx.PermissionsException):
         """This exception is raised when a FileManager does not have the
         permissions to operate as needed on the file system."""
 
-        def __init__(self, filename):
-                Exception.__init__(self)
-                self.filename = filename
-
-        def __unicode__(self):
-                # To workaround python issues 6108 and 2517, this provides a
-                # a standard wrapper for this class' exceptions so that they
-                # have a chance of being stringified correctly.
-                return str(self)
-
         def __str__(self):
                 return _("FileManager was unable to create %s or the "
-                    "directories containing it.") % self.filename
+                    "directories containing it.") % self.path
 
 
-class UnrecognizedFilePaths(Exception):
+class UnrecognizedFilePaths(apx.ApiException):
         """This exception is raised when files are found under the FileManager's
         root which cannot be accounted for."""
 
         def __init__(self, filepaths):
-                Exception.__init__(self)
+                apx.ApiException.__init__(self)
                 self.fps = filepaths
-
-        def __unicode__(self):
-                # To workaround python issues 6108 and 2517, this provides a
-                # a standard wrapper for this class' exceptions so that they
-                # have a chance of being stringified correctly.
-                return str(self)
 
         def __str__(self):
                 return _("The following paths were found but cannot be "

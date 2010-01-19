@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -400,6 +400,31 @@ class TestPkgList(testutils.ManyDepotTestCase):
                 # Reset test2's origin.
                 durl2 = self.dcs[2].get_depot_url()
                 self.pkg("set-publisher -O %s test2" % durl2)
+
+        def test_list_11_v0_repo(self):
+                """Verify that pkg list works with a v0 repository, especially
+                for unprivileged users."""
+
+                dc = self.dcs[1]
+                durl = dc.get_depot_url()
+                dc.stop()
+                dc.set_disable_ops(["catalog/1"])
+                dc.start()
+
+                self.pkg("refresh --full")
+
+                # This should work for an unprivileged user, even though it
+                # requires manifest retrieval (because of the v0 repo).
+                self.pkg("list -a", su_wrap=True)
+
+                # This should work for a privileged user.
+                self.pkg("list -a")
+
+                dc.stop()
+                dc.unset_disable_ops()
+                dc.start()
+
+                self.pkg("refresh --full")
 
         def test_list_matching(self):
                 """List all versions of package foo, regardless of publisher."""

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -719,12 +719,9 @@ class CachedManifest(Manifest):
                         self.store(self.__file_path("manifest"))
                         self.__storebytype()
                         return True
-
-                except  EnvironmentError, e:
+                except api_errors.PermissionsException:
                         # this allows us to try to cache new manifests
-                        # when non-root w/o failures
-                        if e.errno not in (errno.EROFS, errno.EACCES):
-                                raise
+                        # when non-root w/o failures.
                         return False
 
         def __storebytype(self):
