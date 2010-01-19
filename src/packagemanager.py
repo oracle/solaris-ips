@@ -426,6 +426,7 @@ class PackageManager:
                 infobuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)                
                 infobuffer = self.w_log_errors_textview.get_buffer()
                 infobuffer.create_tag("bold", weight=pango.WEIGHT_BOLD)                
+                self.w_log_close_button = w_log.get_widget("log_close_button")
                 
                 w_version_info = gtk.glade.XML(self.gladefile,
                     "version_info_dialog")
@@ -744,9 +745,13 @@ class PackageManager:
                 else:
                         self.w_main_view_notebook.set_current_page(
                             NOTEBOOK_PACKAGE_LIST_PAGE)
-                self.api_search_error_dialog.set_transient_for(self.w_main_window)
-                self.w_version_info_dialog.set_transient_for(self.w_main_window)
-                self.w_view_log_dialog.set_transient_for(self.w_main_window)
+                gui_misc.set_modal_and_transient(self.api_search_error_dialog,
+                    self.w_main_window)
+                gui_misc.set_modal_and_transient(self.w_version_info_dialog,
+                    self.w_main_window)
+                gui_misc.set_modal_and_transient(self.w_view_log_dialog,
+                    self.w_main_window)
+
                 self.__setup_text_signals()
                 gui_misc.setup_logging(gui_misc.get_pm_name())
                 
@@ -1095,12 +1100,14 @@ class PackageManager:
                 self.current_repos_with_search_errors = []
 
                 for pub, err in error.failed_servers:
-                        self.current_repos_with_search_errors.append(
-                            (pub, _("failed to respond"), err))
+                        logger.error(_("Publisher:") + " " + pub + ": " +
+                            _("failed to respond") + "\n" + str(err))
+                        gui_misc.notify_log_error(self)
                 for pub in error.invalid_servers:
-                        self.current_repos_with_search_errors.append(
-                            (pub, _("invalid response"),
-                                _("A valid response was not returned.")))
+                        logger.error(_("Publisher:") + " " + pub + ": " +
+                            _("invalid response") + "\n" +
+                            _("A valid response was not returned."))
+                        gui_misc.notify_log_error(self)
                 for pub, err in error.unsupported_servers:
                         self.current_repos_with_search_errors.append(
                             (pub, _("unsupported search"), err))
@@ -1116,7 +1123,8 @@ class PackageManager:
                 if self.exiting:
                         return
                 if len(self.current_repos_with_search_errors) == 0:
-                        self.w_infosearch_frame.hide()
+                        if not self.error_logged:
+                                self.w_infosearch_frame.hide()
                         return
 
                 repo_count = 0
@@ -1124,7 +1132,8 @@ class PackageManager:
                         if show_all or (pub not in self.gconf_not_show_repos):
                                 repo_count += 1
                 if repo_count == 0:
-                        self.w_infosearch_frame.hide()
+                        if not self.error_logged:
+                                self.w_infosearch_frame.hide()
                         return
 
                 self.w_infosearch_frame.set_tooltip_text(
@@ -3471,6 +3480,7 @@ class PackageManager:
                 textbuffer.set_text(_("Loading ..."))
                 textbuffer = self.w_log_info_textview.get_buffer()
                 textbuffer.set_text(_("Loading ..."))
+                self.w_log_close_button.grab_focus()
                 self.w_view_log_dialog.show()
                 gobject.idle_add(self.__load_err_view_log)
                 gobject.idle_add(self.__load_info_view_log)
@@ -3485,13 +3495,15 @@ class PackageManager:
                 wi_err_log = os.path.join(log_dir, gui_misc.get_wi_name() + log_err_ext)
                 um_err_log = os.path.join(log_dir, gui_misc.get_um_name() + log_err_ext)
 
-                self.__write_to_view_log(pm_err_log, 
-                    textbuffer, textiter, _("None: ") + gui_misc.get_pm_name() + "\n")
-                self.__write_to_view_log(wi_err_log, 
-                    textbuffer, textiter, _("None: ") + gui_misc.get_wi_name() + "\n")
                 self.__write_to_view_log(um_err_log, 
                     textbuffer, textiter, _("None: ") + gui_misc.get_um_name() + "\n")
-
+                self.__write_to_view_log(wi_err_log, 
+                    textbuffer, textiter, _("None: ") + gui_misc.get_wi_name() + "\n")
+                self.__write_to_view_log(pm_err_log, 
+                    textbuffer, textiter, _("None: ") + gui_misc.get_pm_name() + "\n")
+                gobject.idle_add(self.w_log_errors_textview.scroll_to_iter, textiter,
+                    0.0)
+                    
         def __load_info_view_log(self):
                 textbuffer = self.w_log_info_textview.get_buffer()
                 textbuffer.set_text("")
@@ -3502,12 +3514,13 @@ class PackageManager:
                 wi_info_log = os.path.join(log_dir, gui_misc.get_wi_name() + log_info_ext)
                 um_info_log = os.path.join(log_dir, gui_misc.get_um_name() + log_info_ext)
 
-                self.__write_to_view_log(pm_info_log, 
-                    textbuffer, textiter, _("None: ") + gui_misc.get_pm_name() + "\n")
-                self.__write_to_view_log(wi_info_log, 
-                    textbuffer, textiter, _("None: ") + gui_misc.get_wi_name() + "\n")
                 self.__write_to_view_log(um_info_log, 
                     textbuffer, textiter, _("None: ") + gui_misc.get_um_name() + "\n")
+                self.__write_to_view_log(wi_info_log, 
+                    textbuffer, textiter, _("None: ") + gui_misc.get_wi_name() + "\n")
+                self.__write_to_view_log(pm_info_log, 
+                    textbuffer, textiter, _("None: ") + gui_misc.get_pm_name() + "\n")
+                gobject.idle_add(self.w_log_info_textview.scroll_to_iter, textiter, 0.0)
 
         @staticmethod
         def __write_to_view_log(path, textbuffer, textiter, nomessages):

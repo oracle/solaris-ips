@@ -2655,6 +2655,8 @@
     <property name="title" translatable="yes">Search Publisher Errors</property>
     <property name="modal">True</property>
     <property name="window_position">center-on-parent</property>
+    <property name="type_hint">dialog</property>
+    <property name="deletable">False</property>
     <property name="transient_for">mainwindow</property>
     <signal name="delete_event" handler="on_remote_search_error_delete_event"/>
     <child>
@@ -5994,8 +5996,11 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
   </widget>
   <widget class="GtkDialog" id="view_log_dialog">
     <property name="border_width">5</property>
+    <property name="modal">True</property>
+    <property name="window_position">center-on-parent</property>
     <property name="destroy_with_parent">True</property>
-    <property name="type_hint">normal</property>
+    <property name="type_hint">dialog</property>
+    <property name="deletable">False</property>
     <property name="has_separator">False</property>
     <signal name="delete_event" handler="on_view_log_dialog_delete_event"/>
     <child internal-child="vbox">
@@ -6053,6 +6058,8 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                       <widget class="GtkTextView" id="log_errors_textview">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
+                        <property name="editable">False</property>
+                        <property name="left_margin">6</property>
                         <property name="text" translatable="yes">Loading ...</property>
                       </widget>
                     </child>
@@ -6080,6 +6087,8 @@ Padraig O'Briain &lt;Padraig.Obriain@Sun.Com&gt;</property>
                         <property name="height_request">400</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
+                        <property name="editable">False</property>
+                        <property name="left_margin">6</property>
                         <property name="text" translatable="yes">Loading ...</property>
                       </widget>
                     </child>
