@@ -19,9 +19,14 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
+
+DEFAULT_CONFIRMATION_WIDTH = 550                # Width & height of single confirmation
+DEFAULT_CONFIRMATION_HEIGHT = 200               # frame. The confirmation dialog may
+                                                # consist of frames for packages to be 
+                                                # installed, removed or updated.
 
 import errno
 import os
@@ -42,7 +47,6 @@ try:
 except ImportError:
         sys.exit(1)
 
-import pkg
 import pkg.gui.progress as progress
 import pkg.misc as misc
 import pkg.client.history as history
@@ -107,14 +111,20 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.w_confirm_dialog = w_tree_confirmdialog.get_widget("confirmdialog")
                 self.w_install_expander = \
                     w_tree_confirmdialog.get_widget("install_expander")
+                self.w_install_frame = \
+                    w_tree_confirmdialog.get_widget("frame1")
                 self.w_install_treeview = \
                     w_tree_confirmdialog.get_widget("install_treeview")
                 self.w_update_expander = \
                     w_tree_confirmdialog.get_widget("update_expander")
+                self.w_update_frame = \
+                    w_tree_confirmdialog.get_widget("frame2")
                 self.w_update_treeview = \
                     w_tree_confirmdialog.get_widget("update_treeview")
                 self.w_remove_expander = \
                     w_tree_confirmdialog.get_widget("remove_expander")
+                self.w_remove_frame = \
+                    w_tree_confirmdialog.get_widget("frame3")
                 self.w_remove_treeview = \
                     w_tree_confirmdialog.get_widget("remove_treeview")
                 self.w_confirm_ok_button =  \
@@ -347,22 +357,24 @@ class InstallUpdate(progress.GuiProgressTracker):
         @staticmethod
         def __init_confirmation_tree_view(treeview):
                 name_renderer = gtk.CellRendererText()
+                name_renderer.set_property("ellipsize", pango.ELLIPSIZE_END)
                 column = gtk.TreeViewColumn(_('Name'), name_renderer,
                     text = enumerations.CONFIRM_NAME)
-                column.set_resizable(False)
+                column.set_resizable(True)
+                column.set_min_width(150)
                 column.set_sort_column_id(0)
                 column.set_sort_indicator(True)
                 treeview.append_column(column)
                 publisher_renderer = gtk.CellRendererText()
                 column = gtk.TreeViewColumn(_('Publisher'), publisher_renderer,
                     text = enumerations.CONFIRM_PUB)
-                column.set_resizable(False)
+                column.set_resizable(True)
                 column.set_sort_column_id(1)
                 column.set_sort_indicator(True)
                 treeview.append_column(column)
-                name_renderer = gtk.CellRendererText()
-                name_renderer.set_property("ellipsize", pango.ELLIPSIZE_END)
-                column = gtk.TreeViewColumn(_('Description'), name_renderer,
+                description_renderer = gtk.CellRendererText()
+                description_renderer.set_property("ellipsize", pango.ELLIPSIZE_END)
+                column = gtk.TreeViewColumn(_('Description'), description_renderer,
                     text = enumerations.CONFIRM_DESC)
                 column.set_resizable(True)
                 column.set_sort_column_id(2)
@@ -691,7 +703,14 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.__dic_to_liststore(dic_to_install, to_install)
                 self.__dic_to_liststore(dic_to_remove, to_remove)
 
-                if len(to_update) > 0:
+                len_to_update = len(to_update)
+                len_to_install = len(to_install)
+                len_to_remove = len(to_remove)
+
+                self.__resize_confirm_frames(len_to_update,
+                    len_to_install, len_to_remove)
+
+                if len_to_update > 0:
                         self.__init_confirmation_tree_view(
                             self.w_update_treeview)
                         to_update.set_default_sort_func(lambda *args: -1) 
@@ -701,7 +720,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 else:
                         self.w_update_expander.hide()
 
-                if len(to_install) > 0:
+                if len_to_install > 0:
                         self.__init_confirmation_tree_view(
                             self.w_install_treeview)
                         to_install.set_default_sort_func(lambda *args: -1) 
@@ -711,7 +730,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 else:
                         self.w_install_expander.hide()
 
-                if len(to_remove) > 0:
+                if len_to_remove > 0:
                         self.__init_confirmation_tree_view(
                             self.w_remove_treeview)
                         to_remove.set_default_sort_func(lambda *args: -1) 
@@ -736,6 +755,23 @@ class InstallUpdate(progress.GuiProgressTracker):
                             bounce_progress=False)
                 self.w_dialog.hide()
                 self.w_confirm_dialog.show()
+
+
+        def __resize_confirm_frames(self, len_to_update, len_to_install, len_to_remove):
+                calculated_height = DEFAULT_CONFIRMATION_HEIGHT
+
+                if len_to_update > 0 and len_to_remove > 0 and len_to_install > 0:
+                        calculated_height = (calculated_height/4)*2
+                elif (len_to_update > 0 and len_to_remove > 0) or (len_to_update > 0 and
+                    len_to_install > 0) or (len_to_remove > 0 and len_to_install > 0):
+                        calculated_height = (calculated_height/3)*2
+
+                self.w_install_frame.set_size_request(DEFAULT_CONFIRMATION_WIDTH,
+                    calculated_height)
+                self.w_update_frame.set_size_request(DEFAULT_CONFIRMATION_WIDTH,
+                    calculated_height)
+                self.w_remove_frame.set_size_request(DEFAULT_CONFIRMATION_WIDTH,
+                    calculated_height)
 
         @staticmethod
         def __dic_to_liststore(dic, liststore):
@@ -1060,13 +1096,16 @@ class InstallUpdate(progress.GuiProgressTracker):
                 return pkg_name + "@" + pkg_version
 
         def __update_descriptions(self, to_update, to_install, to_remove):
-                pkgs_table = to_update.keys() + to_install.keys() + to_remove.keys()
+                pkgs_table = to_update.keys() + to_install.keys()
                 info = None
                 try:
                         info = self.api_o.info(pkgs_table, False,
                             frozenset([api.PackageInfo.SUMMARY,
                             api.PackageInfo.IDENTITY]))
-                        for info_s in info.get(0):
+                        info_r = self.api_o.info(to_remove.keys(), True,
+                            frozenset([api.PackageInfo.SUMMARY,
+                            api.PackageInfo.IDENTITY]))
+                        for info_s in (info.get(0) + info_r.get(0)):
                                 stem = info_s.pkg_stem
                                 if stem in to_update:
                                         to_update[stem][1] = info_s.summary
