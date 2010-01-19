@@ -4767,9 +4767,23 @@ class PackageManager:
                         gobject.idle_add(self.error_occurred, err, None,
                             gtk.MESSAGE_INFO)
                         gobject.idle_add(self.unset_busy_cursor)
-                return self.__add_pkgs_to_lists(pkgs_from_api, pubs, application_list,
-                    category_list, section_list)
+                except api_errors.ApiException, apiex:
+                        err = str(apiex)
+                        gobject.idle_add(self.error_occurred, err, _('Unexpected Error'))
+                        gobject.idle_add(self.unset_busy_cursor)
 
+                try:    
+                        self.__add_pkgs_to_lists(pkgs_from_api, pubs, application_list,
+                            category_list, section_list)
+                except api_errors.TransportError, tpex:
+                        err = str(tpex)
+                        logger.error(err)
+                        gui_misc.notify_log_error(self)
+                except api_errors.ApiException, apiex:
+                        err = str(apiex)
+                        gobject.idle_add(self.error_occurred, err, _('Unexpected Error'))
+                        gobject.idle_add(self.unset_busy_cursor)
+                        
         def __get_categories_for_pubs(self, pubs):
                 sections = {}
                 #ImageInfo for categories
