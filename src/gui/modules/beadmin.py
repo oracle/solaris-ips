@@ -168,6 +168,8 @@ class Beadmin:
                 sel.set_mode(gtk.SELECTION_SINGLE)
                 self.w_beconfirmation_dialog.set_title(
                     _("Boot Environment Confirmation"))
+                gui_misc.set_modal_and_transient(self.w_beadmin_dialog,
+                    self.parent.w_main_window)
                 self.w_beadmin_dialog.show_all()
                 self.w_progress_dialog.set_title(
                     _("Loading Boot Environment Information"))

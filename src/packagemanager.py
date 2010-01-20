@@ -751,6 +751,8 @@ class PackageManager:
                     self.w_main_window)
                 gui_misc.set_modal_and_transient(self.w_view_log_dialog,
                     self.w_main_window)
+                gui_misc.set_modal_and_transient(self.w_preferencesdialog,
+                    self.w_main_window)
 
                 self.__setup_text_signals()
                 gui_misc.setup_logging(gui_misc.get_pm_name())
