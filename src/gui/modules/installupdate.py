@@ -1139,15 +1139,15 @@ class InstallUpdate(progress.GuiProgressTracker):
                 return None
 
         def __installed_fmris_from_args(self, args_f):
-                found = []
-                notfound = []
+                not_found = False
                 try:
-                        for m in self.api_o.img.inventory(args_f):
-                                found.append(m[0])
-                except api_errors.InventoryException, e:
-                        notfound = e.notfound
-                return notfound
-
+                        res = self.api_o.info(args_f, True,
+                            frozenset([api.PackageInfo.STATE]))
+                        if not res or len(res[0]) != len(args_f):
+                                not_found = True 
+                except api_errors.ApiException:
+                        not_found = True
+                return not_found
 
         def __do_ask_license(self):
                 item = self.packages_with_license[self.current_license_no]
