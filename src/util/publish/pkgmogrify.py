@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -37,6 +37,7 @@ macros  = {}
 includes = []
 appends  = []
 transforms = []
+printinfo = []
 
 
 
@@ -49,7 +50,7 @@ def usage(errmsg="", exitcode=2):
         
         print _(
             "/usr/bin/pkgmogrify [-v] [-I includedir ...] [-D macro=value ...] "
-            "[ -O outputfile] [inputfile ...]")
+            "[-O outputfile] [-P printfile] [inputfile ...]")
         sys.exit(exitcode)
 
 def add_transform(transform, filename, lineno):
@@ -112,6 +113,15 @@ def add_transform(transform, filename, lineno):
                                 action.attrs[attr] = value
                         return action
                 operation = default_func
+
+        if op[0] == "abort":
+            if len(op) > 1:
+                raise RuntimeError, \
+                    _("transform (%s) has 'abort' operation syntax error"
+                    ) % transform
+            def abort_func(action):
+                sys.exit(0)
+            operation = abort_func
 
         if op[0] == "add":
                 try:
@@ -206,6 +216,17 @@ def add_transform(transform, filename, lineno):
                         return action
 
                 operation = delete_func
+
+        if op[0] == "print":
+            if len(op) != 2:
+                raise RuntimeError, \
+                    _("transform (%s) has 'print' operation syntax error"
+                    ) % transform
+            msg = op[1]
+            def print_func(action):
+                printinfo.append("%s" % msg)
+                return action
+            operation = print_func
 
         transforms.append((types, attrdict, operation, filename, lineno, transform))
 
@@ -356,10 +377,11 @@ def main_func():
         gettext.install("pkgmogrify", "/usr/lib/locale")
 
         outfilename = None
+        printfilename = None
         verbose = False
 
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "vD:I:O:?", ["help"])
+                opts, pargs = getopt.getopt(sys.argv[1:], "vD:I:O:P:?", ["help"])
                 for opt, arg in opts:
                         if opt == "-D":
                                 if "=" not in arg:
@@ -372,6 +394,8 @@ def main_func():
                                 includes.append(arg)
                         if opt == "-O":
                                 outfilename = arg
+                        if opt == "-P":
+                                printfilename = arg
                         if opt == "-v":                                
                                 verbose = True
 
@@ -413,6 +437,17 @@ def main_func():
                         error("File %s line %d: %s" % (filename, lineno, e))
 
         try:
+                if printfilename == None:
+                        printfile = sys.stdout
+                else:
+                        printfile = file(printfilename, "w")
+
+                for p in printinfo:
+                    print >> printfile, "%s" % p
+        except IOError, e:
+                error(_("Cannot write extra data %s") % e)
+
+        try:
                 if outfilename == None:
                         outfile = sys.stdout
                 else:
@@ -424,7 +459,6 @@ def main_func():
                                         print >> outfile, "%s" % l
                         if action:
                                 print >> outfile, "%s" % action
-
         except IOError, e:
                 error(_("Cannot write output %s") % e)
                 
@@ -442,5 +476,3 @@ if __name__ == "__main__":
                 exit_code = 99
 
         sys.exit(exit_code)
-
-        

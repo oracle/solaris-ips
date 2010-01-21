@@ -6,7 +6,7 @@ NAME
 
 SYNOPSIS
      /usr/bin/pkgmogrify [-v] [-I includedir ...] [-D macro=value ...] 
-           [ -O outputfile] [inputfile ...]
+           [-O outputfile] [-P printfile] [inputfile ...]
 
 DESCRIPTION
      pkgmogrify provides for the automated editing of package manifests 
@@ -58,8 +58,17 @@ OPTIONS
           directives.
     
      -O outputfile 
-          Write output to the specified file.  The file is not written
-          if an error occurs.
+          Write manifest output to the specified file.  The file is not
+          written if an error occurs or if a transform directive
+          causes an abort operation.  By default, manifest output is
+          written to stdout.
+
+     -P printfile
+          Write output resulting from transform directive print
+          operations to the specified file.  The file is not written
+          if an error occurs or if a transform directive causes an
+          abort operation.  By default, print output is written to
+          stdout.
 
      -v   Write out comments into output manifest showing effect of
           transforms to aid debugging.
@@ -107,6 +116,8 @@ EMBEDDED DIRECTIVES
 
      Operation synatx is of the form:
 
+     abort				# immediately exit with status 0
+        				# and no manifest or print output
      drop				# discard this action
      edit attribute regexp replace	# apply regexp to value of attribute;
               	      		        # if match occurs, substitute replace for
@@ -114,7 +125,10 @@ EMBEDDED DIRECTIVES
      delete attribute regexp            # remove attribute values matching regexp
      set attribute value		# set specified attribute to value
      add attribute value		# add value to attribute
-     default attribute value            # if attribute is missing, add w/ specified value
+     default attribute value            # if attribute is missing, add with
+					# specified value
+     print message			# send message to output file
+					# specified via -P
 
      The order of processing is as follows:
      
