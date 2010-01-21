@@ -51,6 +51,18 @@ from pkg.gui.misc_non_gui import setup_logging as su_logging
 from pkg.gui.misc_non_gui import shutdown_logging as sd_logging
 from pkg.gui.misc_non_gui import get_version as g_version
 
+from pkg.gui.misc_non_gui import get_log_dir as ge_log_dir
+from pkg.gui.misc_non_gui import get_log_error_ext as ge_log_error_ext
+from pkg.gui.misc_non_gui import get_log_info_ext as ge_log_info_ext
+
+from pkg.client import global_settings
+
+PKG_CLIENT_NAME_PM = "packagemanager"
+PKG_CLIENT_NAME_WI = "packagemanager-webinstall"
+PKG_CLIENT_NAME_UM = "updatemanager"
+
+logger = global_settings.logger
+
 def get_version():
         return g_version()        
                 
@@ -84,16 +96,6 @@ def get_publishers_for_output(api_o):
         except Exception:
                 pass
         return publisher_str
-
-from pkg.gui.misc_non_gui import get_log_dir as ge_log_dir
-from pkg.gui.misc_non_gui import get_log_error_ext as ge_log_error_ext
-from pkg.gui.misc_non_gui import get_log_info_ext as ge_log_info_ext
-
-from pkg.client import global_settings
-
-PKG_CLIENT_NAME_PM = "packagemanager"
-PKG_CLIENT_NAME_WI = "packagemanager-webinstall"
-PKG_CLIENT_NAME_UM = "updatemanager"
 
 def get_log_dir():
         return ge_log_dir()
@@ -397,15 +399,21 @@ def resize_icon(icon, font_size):
             font_size,
             gtk.gdk.INTERP_BILINEAR)
 
-def get_pkg_info(api_o, pkg_stem, local):
+def get_pkg_info(app, api_o, pkg_stem, local):
         info = None
         try:
                 info = api_o.info([pkg_stem], local,
                     api.PackageInfo.ALL_OPTIONS -
                     frozenset([api.PackageInfo.LICENSES]))
-        except (api_errors.TransportError):
+        except api_errors.TransportError, tpex:
+                err = str(tpex)
+                logger.error(err)
+                notify_log_error(app)
                 return info
-        except (api_errors.InvalidDepotResponseException):
+        except api_errors.InvalidDepotResponseException, idex:
+                err = str(idex)
+                logger.error(err)
+                notify_log_error(app)
                 return info
  
         pkgs_info = None
@@ -440,7 +448,6 @@ def get_catalogrefresh_exception_msg(cre):
                 msg += _(
                     "Only %(suc)s out of %(tot)s catalogs successfully updated.\n") % \
                     {"suc": cre.succeeded, "tot": cre.total}
-        msg += "\n"
 
         for pub, err in cre.failed:
                 if isinstance(err, urllib2.HTTPError):

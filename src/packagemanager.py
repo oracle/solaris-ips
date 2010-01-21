@@ -2580,13 +2580,15 @@ class PackageManager:
                                           api.PackageInfo.STATE, 
                                           api.PackageInfo.SUMMARY]))
                                 results = res.get(0)
-                        except api_errors.TransportError, ex:
-                                err = str(ex)
-                                gobject.idle_add(self.error_occurred, err)
-                        except api_errors.InvalidDepotResponseException, ex:
-                                err = str(ex)
-                                gobject.idle_add(self.error_occurred, err)
-                        except Exception:
+                        except api_errors.TransportError, tpex:
+                                err = str(tpex)
+                                logger.error(err)
+                                gui_misc.notify_log_error(self)
+                        except api_errors.InvalidDepotResponseException, idex:
+                                err = str(idex)
+                                logger.error(err)
+                                gui_misc.notify_log_error(self)
+                        except Exception, ex:
                                 err = str(ex)
                                 gobject.idle_add(self.error_occurred, err)
                 finally:
@@ -3405,19 +3407,24 @@ class PackageManager:
                 else:
                         self.__do_refresh(pubs=[pub])
 
-        def __do_refresh(self, pubs=None, immediate=False, ignore_transport_ex=False):
+        def __do_refresh(self, pubs=None, immediate=False):
                 success = False
                 try:
                         self.api_o.reset()
                         self.api_o.refresh(pubs=pubs, immediate=immediate)
                         success = True
                 except api_errors.CatalogRefreshException, cre:
-                        if ignore_transport_ex == False:
-                                self.__catalog_refresh_message(cre)
-                except api_errors.InvalidDepotResponseException, idrex:
-                        err = str(idrex)
-                        gobject.idle_add(self.error_occurred, err,
-                            None, gtk.MESSAGE_INFO)
+                        crerr = gui_misc.get_catalogrefresh_exception_msg(cre)
+                        logger.error(crerr)
+                        gui_misc.notify_log_error(self)
+                except api_errors.TransportError, tpex:
+                        err = str(tpex)
+                        logger.error(err)
+                        gui_misc.notify_log_error(self)
+                except api_errors.InvalidDepotResponseException, idex:
+                        err = str(idex)
+                        logger.error(err)
+                        gui_misc.notify_log_error(self)
                 except api_errors.ApiException, ex:
                         err = str(ex)
                         gobject.idle_add(self.error_occurred, err,
@@ -3562,8 +3569,8 @@ class PackageManager:
 
         def __get_info(self, pkg_stem, name):
                 self.api_o.reset()
-                local_info = gui_misc.get_pkg_info(self.api_o, pkg_stem, True)
-                remote_info = gui_misc.get_pkg_info(self.api_o, pkg_stem, False)
+                local_info = gui_misc.get_pkg_info(self, self.api_o, pkg_stem, True)
+                remote_info = gui_misc.get_pkg_info(self, self.api_o, pkg_stem, False)
                 if self.exiting:
                         return
                 plan_pkg = None
@@ -4440,10 +4447,14 @@ class PackageManager:
                 try:
                         info = self.api_o.info([selected_pkgstem],
                             True, frozenset([api.PackageInfo.LICENSES]))
-                except (api_errors.TransportError):
-                        pass
-                except (api_errors.InvalidDepotResponseException):
-                        pass
+                except api_errors.TransportError, tpex:
+                        err = str(tpex)
+                        logger.error(err)
+                        gui_misc.notify_log_error(self)
+                except api_errors.InvalidDepotResponseException, idex:
+                        err = str(idex)
+                        logger.error(err)
+                        gui_misc.notify_log_error(self)
                 if self.showing_empty_details or (license_id != 
                     self.last_show_licenses_id):
                         return
@@ -4452,10 +4463,14 @@ class PackageManager:
                         # Get license from remote
                                 info = self.api_o.info([selected_pkgstem],
                                     False, frozenset([api.PackageInfo.LICENSES]))
-                        except (api_errors.TransportError):
-                                pass
-                        except (api_errors.InvalidDepotResponseException):
-                                pass
+                        except api_errors.TransportError, tpex:
+                                err = str(tpex)
+                                logger.error(err)
+                                gui_misc.notify_log_error(self)
+                        except api_errors.InvalidDepotResponseException, idex:
+                                err = str(idex)
+                                logger.error(err)
+                                gui_misc.notify_log_error(self)
                 if self.showing_empty_details or (license_id != 
                     self.last_show_licenses_id):
                         return
@@ -4507,13 +4522,13 @@ class PackageManager:
                     self.last_show_info_id) and (pkg_status ==
                     api.PackageInfo.INSTALLED or pkg_status ==
                     api.PackageInfo.UPGRADABLE):
-                        local_info = gui_misc.get_pkg_info(self.api_o, pkg_stem,
+                        local_info = gui_misc.get_pkg_info(self, self.api_o, pkg_stem,
                             True)
                 if not self.showing_empty_details and (info_id ==
                     self.last_show_info_id) and (pkg_status ==
                     api.PackageInfo.KNOWN or pkg_status ==
                     api.PackageInfo.UPGRADABLE):
-                        remote_info = gui_misc.get_pkg_info(self.api_o, pkg_stem,
+                        remote_info = gui_misc.get_pkg_info(self, self.api_o, pkg_stem,
                             False)
                 if not self.showing_empty_details and (info_id ==
                     self.last_show_info_id):
@@ -4539,10 +4554,14 @@ class PackageManager:
                                             True,
                                             frozenset([api.PackageInfo.STATE,
                                             api.PackageInfo.IDENTITY]))
-                                except (api_errors.TransportError):
-                                        pass
-                                except (api_errors.InvalidDepotResponseException):
-                                        pass
+                                except api_errors.TransportError, tpex:
+                                        err = str(tpex)
+                                        logger.error(err)
+                                        gui_misc.notify_log_error(self)
+                                except api_errors.InvalidDepotResponseException, idex:
+                                        err = str(idex)
+                                        logger.error(err)
+                                        gui_misc.notify_log_error(self)
                         gobject.idle_add(self.__update_package_info, pkg,
                             local_info, remote_info, dep_info, installed_dep_info,
                             info_id)
@@ -5123,10 +5142,14 @@ class PackageManager:
                                 else:
                                         pkg_stem_states[pkg_stem] = \
                                                 api.PackageInfo.KNOWN
-                except (api_errors.TransportError):
-                        pass
-                except (api_errors.InvalidDepotResponseException):
-                        pass
+                except api_errors.TransportError, tpex:
+                        err = str(tpex)
+                        logger.error(err)
+                        gui_misc.notify_log_error(self)
+                except api_errors.InvalidDepotResponseException, idex:
+                        err = str(idex)
+                        logger.error(err)
+                        gui_misc.notify_log_error(self)
 
                 #Create a new result list updated with current installation status
                 tmp_app_list = self.__get_new_application_liststore()
@@ -5552,7 +5575,7 @@ class PackageManager:
                 self.after_install_remove = True
                 visible_publisher = self.__get_selected_publisher()
                 default_publisher = self.default_publisher
-                self.__do_refresh(ignore_transport_ex=True)
+                self.__do_refresh()
                 visible_list = update_list.get(visible_publisher)
                 if self.is_all_publishers or self.is_all_publishers_installed \
                     or self.in_recent_search:
@@ -5611,18 +5634,6 @@ class PackageManager:
                 self.__enable_disable_selection_menus()
                 self.__enable_disable_install_remove()
                 self.update_statusbar()
-
-        def __catalog_refresh_message(self, cre):
-                total = cre.total
-                succeeded = cre.succeeded
-                ermsg = _("Network problem.\n\n")
-                ermsg += _("Details:\n")
-                ermsg += _("%s/%s catalogs successfully updated:\n") % (
-                    succeeded, total)
-                for pub, err in cre.failed:
-                        ermsg += "%s: %s\n" % (pub["origin"], str(err))
-                gobject.idle_add(self.error_occurred, ermsg,
-                    None, gtk.MESSAGE_INFO)
 
         def __reset_home_dir(self):
                 # We reset the HOME directory in case the user called us

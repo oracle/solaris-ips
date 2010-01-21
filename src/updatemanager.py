@@ -501,10 +501,10 @@ class Updatemanager:
                 local_info = None
                 remote_info = None
                 if info_id == self.last_show_info_id:
-                        local_info = gui_misc.get_pkg_info(self.__get_api_obj(),
+                        local_info = gui_misc.get_pkg_info(self, self.__get_api_obj(),
                             stem, True) 
                 if info_id == self.last_show_info_id:
-                        remote_info = gui_misc.get_pkg_info(self.__get_api_obj(),
+                        remote_info = gui_misc.get_pkg_info(self, self.__get_api_obj(),
                             stem, False) 
                 if info_id == self.last_show_info_id:
                         gobject.idle_add(self.__update_package_info, stem,

@@ -56,6 +56,9 @@ import pkg.gui.beadmin as beadm
 import pkg.gui.uarenamebe as uarenamebe
 import pkg.gui.misc as gui_misc
 import pkg.gui.enumerations as enumerations
+from pkg.client import global_settings
+
+logger = global_settings.logger
 
 class InstallUpdate(progress.GuiProgressTracker):
         def __init__(self, list_of_packages, parent, image_directory,
@@ -1113,10 +1116,14 @@ class InstallUpdate(progress.GuiProgressTracker):
                                         to_install[stem][1] = info_s.summary
                                 elif stem in to_remove:
                                         to_remove[stem][1] = info_s.summary
-                except (api_errors.TransportError):
-                        pass
-                except (api_errors.InvalidDepotResponseException):
-                        pass
+                except api_errors.TransportError, tpex:
+                        err = str(tpex)
+                        logger.error(err)
+                        gui_misc.notify_log_error(self.parent)
+                except api_errors.InvalidDepotResponseException, idex:
+                        err = str(idex)
+                        logger.error(err)
+                        gui_misc.notify_log_error(self.parent)
 
         @staticmethod
         def get_datetime(date_time):

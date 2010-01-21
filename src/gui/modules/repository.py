@@ -48,6 +48,9 @@ import pkg.misc as misc
 import pkg.gui.enumerations as enumerations
 import pkg.gui.misc as gui_misc
 import pkg.gui.progress as progress
+from pkg.client import global_settings
+
+logger = global_settings.logger
 
 ERROR_FORMAT = "<span color = \"red\">%s</span>"
 
@@ -1523,8 +1526,7 @@ class Repository(progress.GuiProgressTracker):
                         desc_itr = details_buffer.get_end_iter()
                         details_buffer.insert(desc_itr, "%s\n" % description)
 
-        @staticmethod
-        def __show_errors(errors, msg_type=gtk.MESSAGE_ERROR, title = None):
+        def __show_errors(self, errors, msg_type=gtk.MESSAGE_ERROR, title = None):
                 error_msg = ""
                 if title != None:
                         msg_title = title
@@ -1532,12 +1534,14 @@ class Repository(progress.GuiProgressTracker):
                         msg_title = _("Publisher error")
                 for err in errors:
                         if isinstance(err[1], api_errors.CatalogRefreshException):
-                                error_msg += gui_misc.get_catalogrefresh_exception_msg(
-                                    err[1])
+                                crerr = gui_misc.get_catalogrefresh_exception_msg(err[1])
+                                logger.error(crerr)
+                                gui_misc.notify_log_error(self.parent)
                         else:
                                 error_msg += str(err[1])
-                        error_msg += "\n\n"
-                gui_misc.error_occurred(None, error_msg, msg_title, msg_type)
+                                error_msg += "\n\n"
+                if error_msg != "":
+                        gui_misc.error_occurred(None, error_msg, msg_title, msg_type)
 
         @staticmethod
         def __keybrowse(w_parent, key_entry, cert_entry):
