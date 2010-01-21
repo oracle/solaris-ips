@@ -151,6 +151,10 @@ f none usr/lib/python2.6/vendor-packages/pkg/flavor/base.py 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/flavor/base.pyc 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/flavor/depthlimitedmf.py 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/flavor/depthlimitedmf.pyc 444 root bin
+f none usr/lib/python2.6/vendor-packages/pkg/flavor/depthlimitedmf24.py 444 root bin
+f none usr/lib/python2.6/vendor-packages/pkg/flavor/depthlimitedmf24.pyc 444 root bin
+l none usr/lib/python2.6/vendor-packages/pkg/flavor/depthlimitedmf25.py=depthlimitedmf24.py
+l none usr/lib/python2.6/vendor-packages/pkg/flavor/depthlimitedmf25.pyc=depthlimitedmf24.pyc
 f none usr/lib/python2.6/vendor-packages/pkg/flavor/elf.py 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/flavor/elf.pyc 444 root bin
 f none usr/lib/python2.6/vendor-packages/pkg/flavor/hardlink.py 444 root bin

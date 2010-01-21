@@ -58,8 +58,11 @@ clobber: clean $(SUBDIRS)
 check: protoproto pkgproto
 	diff protoproto pkgproto | grep "^<" | nawk '{print $$3} END {exit NR != 0}'
 	
+# Find and sort are in the pipline below because when pkgproto encounters two 
+# files hardlinked together, it is not consistent about which is the file and
+# which is the hardlink in its output.
 protoproto: FRC
-	(cd $(ROOT) && pkgproto . | nawk '{print $$1, $$3}' | sort +1) > $@
+	(cd $(ROOT) && find . | sort | pkgproto | nawk '{print $$1, $$3}' | sort +1) > $@
 
 PROTOS = $(SUBDIRS:%=%/prototype)
 
@@ -69,7 +72,7 @@ PROTOS = $(SUBDIRS:%=%/prototype)
 # file entries for the subsequent comparison to suceed.
 #
 pkgproto: $(PROTOS)
-	nawk '$$1 ~ /[sdef]/ {print $$1, $$3}' $(PROTOS) | sed 's/^e/f/' | \
+	nawk '$$1 ~ /[lsdef]/ {print $$1, $$3}' $(PROTOS) | sed 's/^e/f/' | \
 	    sort +1 -u > $@
 
 FRC:

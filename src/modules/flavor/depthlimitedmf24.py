@@ -6,13 +6,26 @@
 # Use is subject to license terms.
 
 
-"""A version of ModuleFinder which limits the depth of exploration for loaded
-modules and discovers where a module might be loaded instead of determining
-which path contains a module to be loaded."""
+"""A standalone version of ModuleFinder which limits the depth of exploration
+for loaded modules and discovers where a module might be loaded instead of
+determining which path contains a module to be loaded.  It is designed to be run
+by python2.4 or python2.5 against 2.4 or 2.5 modules.  To communicate its
+results to the process which ran it, it prints output to stdout.  The format is
+to start a line with 'DEP ' if it contains information about a dependency, and
+'ERR ' if it contains information about a module it couldn't analyze."""
 
+# This module cannot import other pkg modules because running the 2.4 or 2.5
+# interpreter will overwrite the pyc files for some of the other flavor modules.
+# With 2.6, the -B option can be added to the command line invocation for the
+# subprocess and the interpreter won't overwrite pyc files.
+
+import dis
 import modulefinder
 import os
 import sys
+
+from modulefinder import LOAD_CONST, IMPORT_NAME, STORE_NAME, STORE_GLOBAL, \
+    STORE_OPS
 
 python_path = "PYTHONPATH"
 
@@ -125,20 +138,28 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
                 return res
 
         def scan_code(self, co, m):
-                """Scan the code looking for import statements."""
-
                 res = []
                 code = co.co_code
-                if sys.version_info >= (2, 5):
-                        scanner = self.scan_opcodes_25
-                else:
-                        scanner = self.scan_opcodes
-                for what, args in scanner(co):
-                        if what == "store":
-                                name, = args
-                                m.globalnames[name] = 1
-                        elif what in ("import", "absolute_import"):
-                                fromlist, name = args
+                n = len(code)
+                i = 0
+                fromlist = None
+                while i < n:
+                        c = code[i]
+                        i = i+1
+                        op = ord(c)
+                        if op >= dis.HAVE_ARGUMENT:
+                                oparg = ord(code[i]) + ord(code[i+1])*256
+                                i = i+2
+                        if op == LOAD_CONST:
+                                # An IMPORT_NAME is always preceded by a
+                                # LOAD_CONST, it's a tuple of "from" names, or
+                                # None for a regular import.  The tuple may
+                                # contain "*" for "from <mod> import *"
+                                fromlist = co.co_consts[oparg]
+                        elif op == IMPORT_NAME:
+                                assert fromlist is None or \
+                                    type(fromlist) is tuple
+                                name = co.co_names[oparg]
                                 have_star = 0
                                 if fromlist is not None:
                                         if "*" in fromlist:
@@ -146,29 +167,16 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
                                         fromlist = [
                                             f for f in fromlist if f != "*"
                                         ]
-                                if what == "absolute_import": level = 0
-                                else: level = -1
                                 res.extend(self._safe_import_hook(name, m,
-                                    fromlist, level=level))
-                        elif what == "relative_import":
-                                level, fromlist, name = args
-                                if name:
-                                        res.extend(self._safe_import_hook(name,
-                                            m, fromlist, level=level))
-                                else:
-                                        parent = self.determine_parent(m,
-                                            level=level)
-                                        res.extend(self._safe_import_hook(
-                                            parent.__name__, None, fromlist,
-                                            level=0))
-                        else:
-                                # We don't expect anything else from the
-                                # generator.
-                                raise RuntimeError(what)
-
+                                    fromlist))
+                        elif op in STORE_OPS:
+                                # keep track of all global names that are
+                                # assigned to
+                                name = co.co_names[oparg]
+                                m.globalnames[name] = 1
                 for c in co.co_consts:
-                        if isinstance(c, type(co)):
-                                res.extend(self.scan_code(c, m))
+                    if isinstance(c, type(co)):
+                        res.extend(self.scan_code(c, m))
                 return res
 
 
@@ -199,7 +207,7 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
                 """Find all the modules that importing name will import."""
 
                 self.msg(3, "import_hook", name, caller, fromlist, level)
-                parent = self.determine_parent(caller, level=level)
+                parent = self.determine_parent(caller)
                 q, tail = self.find_head_package(parent, name)
                 if not tail:
                         # If q is a builtin module, don't report it because it
@@ -274,3 +282,15 @@ class DepthLimitedModuleFinder(modulefinder.ModuleFinder):
                         res[i].make_package()
                 self.msgout(4, "load_tail ->", m)
                 return res
+
+
+if __name__ == "__main__":
+        mf = DepthLimitedModuleFinder(sys.argv[1])
+        loaded_modules = mf.run_script(sys.argv[2])
+        for res in set([
+            (tuple(m.get_file_names()), tuple(m.dirs)) for m in loaded_modules
+        ]):
+                print "DEP %s" % (res,)
+        missing, maybe =  mf.any_missing_maybe()
+        for name in missing:
+                print "ERR %s" % name,

@@ -352,6 +352,8 @@ def make_paths(file_dep):
         files = file_dep.attrs[files_prefix]
         if isinstance(files, basestring):
                 files = [files]
+        if isinstance(rps, basestring):
+                rps = [rps]
         return [os.path.join(rp, f) for rp in rps for f in files]
 
 def find_package_using_delivered_files(delivered, file_dep, dep_vars,
@@ -432,11 +434,9 @@ def find_package_using_delivered_files(delivered, file_dep, dep_vars,
         return [a for a, v in res if a not in multiple_path_errs], dep_vars, \
             errs
 
-def find_package(api_inst, delivered, installed, file_dep, pkg_vars):
+def find_package(delivered, installed, file_dep, pkg_vars):
         """Find the packages which resolve the dependency. It returns a list of
         dependency actions with the fmri tag resolved.
-
-        'api_inst' is an ImageInterface which references the current image.
 
         'delivered' is a dictionary mapping paths to a list of fmri, variants
         pairs.
@@ -528,7 +528,7 @@ def resolve_deps(manifest_paths, api_inst):
                         pkg_deps[mp] = None
                         continue
                 pkg_res = [
-                    (d, find_package(api_inst, delivered_files, installed_files,
+                    (d, find_package(delivered_files, installed_files,
                         d, pkg_vars))
                     for d in mfst.gen_actions_by_type("depend")
                     if is_file_dependency(d)

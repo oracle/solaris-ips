@@ -105,7 +105,6 @@ def generate(args):
         kernel_paths = []
         platform_paths = []
         dyn_tok_conv = {}
-        import sys
 
         for opt, arg in opts:
                 if opt == "-D":

@@ -172,6 +172,13 @@ brand_dir = 'usr/lib/brand/ipkg'
 execattrd_dir = 'etc/security/exec_attr.d'
 authattrd_dir = 'etc/security/auth_attr.d'
 
+# A list of source, destination tuples of modules which should be hardlinked
+# together if the os supports it and otherwise copied.
+hardlink_modules = [
+    ("%s/pkg/flavor/depthlimitedmf24" % py_install_dir,
+    "%s/pkg/flavor/depthlimitedmf25" % py_install_dir)
+]
+
 scripts_sunos = {
         scripts_dir: [
                 ['client.py', 'pkg'],
@@ -427,6 +434,21 @@ class install_func(_install):
                         file_util.copy_file(f + ".txt", f, update=1)
 
                 _install.run(self)
+
+                for o_src, o_dest in hardlink_modules:
+                        for e in [".py", ".pyc"]:
+                                src = util.change_root(self.root_dir, o_src + e)
+                                dest = util.change_root(
+                                    self.root_dir, o_dest + e)
+                                if ostype == "posix":
+                                        if os.path.exists(dest) and \
+                                            os.stat(src)[stat.ST_INO] != \
+                                            os.stat(dest)[stat.ST_INO]:
+                                                os.remove(dest)
+                                        file_util.copy_file(src, dest,
+                                            link="hard", update=1)
+                                else:
+                                        file_util.copy_file(src, dest, update=1)
 
                 for d, files in scripts[osname].iteritems():
                         for (srcname, dstname) in files:

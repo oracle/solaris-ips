@@ -21,11 +21,12 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
 import os
+import stat
 
 import pkg.flavor.base as base
 import pkg.flavor.python as python
@@ -60,22 +61,29 @@ def process_script_deps(action, proto_dir, pkg_vars, **kwargs):
         l = f.readline()
         f.close()
 
+        deps = []
+        elist = []
+        script_path = None
         # add #! dependency
         if l.startswith("#!"):
-                # usedlist omits leading /
-                p = (l[2:].split()[0]) # first part of string is path (removes
-                # options)
-                # we don't handle dependencies through links, so fix up the
-                # common one
-                p = p.strip()
-                if p.startswith("/bin"):
-                        p = os.path.join("/usr", p)
-                deps = [ScriptDependency(action, p, pkg_vars, proto_dir)]
-                elist = []
+                # Determine whether the file will be delivered executable.
+                ex_bit = int(action.attrs.get("mode", "0"), 8) & \
+                    (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+                if ex_bit:
+                        # usedlist omits leading /
+                        p = (l[2:].split()[0])
+                        # first part of string is path (removes options)
+                        # we don't handle dependencies through links, so fix up
+                        # the common one
+                        p = p.strip()
+                        if p.startswith("/bin"):
+                                p = os.path.join("/usr", p)
+                        deps.append(ScriptDependency(action, p, pkg_vars,
+                            proto_dir))
+                        script_path = l
                 if "python" in l:
                         ds, errs = python.process_python_dependencies(proto_dir,
-                            action, pkg_vars)
+                            action, pkg_vars, script_path)
                         elist.extend(errs)
                         deps.extend(ds)
-                return deps, elist
-        return [], []
+        return deps, elist

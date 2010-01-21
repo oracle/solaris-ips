@@ -41,7 +41,12 @@ sys.path.insert(0, path_to_parent)
 import pkg5unittest
 
 import pkg.catalog as catalog
+import pkg.flavor.base as base
+import pkg.flavor.depthlimitedmf as dlmf
 import pkg.flavor.elf as elf
+import pkg.flavor.hardlink as hl
+import pkg.flavor.python as py
+import pkg.flavor.script as scr
 import pkg.fmri as fmri
 import pkg.portable as portable
 import pkg.publish.dependencies as dependencies
@@ -719,3 +724,19 @@ from pkg_test.misc_test import EmptyI
                     self.int_hardlink_manf_test_symlink)
                 ds, es, ms = dependencies.list_implicit_deps(t_path,
                     self.proto_dir, {}, [])
+
+        def test_str_methods(self):
+                """Test the str methods of objects in the flavor space."""
+
+                str(base.MissingFile("fp"))
+                str(elf.BadElfFile("fp", "ex"))
+                str(elf.UnsupportedDynamicToken("/proto_path", "/install",
+                    "run_path", "tok"))
+                str(py.PythonModuleMissingPath("foo", "bar"))
+                str(py.PythonMismatchedVersion("2.4", "2.6", "foo", "bar"))
+                str(py.PythonSubprocessError(2, "foo", "bar"))
+                str(py.PythonSubprocessBadLine("cmd", ["l1", "l2"]))
+                mi = dlmf.ModuleInfo("name", ["/d1", "/d2"])
+                str(mi)
+                mi.make_package()
+                str(mi)

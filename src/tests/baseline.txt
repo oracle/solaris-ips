@@ -26,6 +26,7 @@ api.t_dependencies.py TestDependencyAnalyzer.test_ext_script|pass
 api.t_dependencies.py TestDependencyAnalyzer.test_int_elf|pass
 api.t_dependencies.py TestDependencyAnalyzer.test_int_hardlink|pass
 api.t_dependencies.py TestDependencyAnalyzer.test_int_script|pass
+api.t_dependencies.py TestDependencyAnalyzer.test_str_methods|pass
 api.t_dependencies.py TestDependencyAnalyzer.test_symlinks|pass
 api.t_dependencies.py TestDependencyAnalyzer.test_variants_1|pass
 api.t_dependencies.py TestDependencyAnalyzer.test_variants_2|pass
@@ -573,12 +574,13 @@ cli.t_pkgdep.py TestPkgdepBasics.test_bug_10518|pass
 cli.t_pkgdep.py TestPkgdepBasics.test_bug_11517|pass
 cli.t_pkgdep.py TestPkgdepBasics.test_bug_11805|pass
 cli.t_pkgdep.py TestPkgdepBasics.test_bug_11829|pass
-cli.t_pkgdep.py TestPkgdepBasics.test_bug_11989|fail
 cli.t_pkgdep.py TestPkgdepBasics.test_bug_12697|pass
 cli.t_pkgdep.py TestPkgdepBasics.test_bug_12816|pass
 cli.t_pkgdep.py TestPkgdepBasics.test_bug_12896|pass
+cli.t_pkgdep.py TestPkgdepBasics.test_bug_13059|pass
 cli.t_pkgdep.py TestPkgdepBasics.test_opts|pass
 cli.t_pkgdep.py TestPkgdepBasics.test_output|pass
+cli.t_pkgdep.py TestPkgdepBasics.test_python_combinations|pass
 cli.t_pkgdep.py TestPkgdepBasics.test_resolve_screen_out|pass
 cli.t_pkgdep_resolve.py TestApiDependencies.test_bug_11518|pass
 cli.t_pkgdep_resolve.py TestApiDependencies.test_bug_12697_and_12896|pass
