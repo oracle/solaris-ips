@@ -4805,7 +4805,6 @@ class PackageManager:
                         err = str(apiex)
                         gobject.idle_add(self.error_occurred, err, _('Unexpected Error'))
                         gobject.idle_add(self.unset_busy_cursor)
-
                 try:    
                         self.__add_pkgs_to_lists(pkgs_from_api, pubs, application_list,
                             category_list, section_list)
@@ -5783,10 +5782,31 @@ def __display_unknown_err(trace):
         md.set_resizable(True)
         close_btn.grab_focus()
         md.show_all()
-        md.run()
-        
+        md.run()        
         md.destroy()
 
+def __display_unknown_err_ex(trace):
+        try:
+                __display_unknown_err(trace)
+        except MemoryError:
+                print trace
+        except Exception:
+                pass
+        if packagemanager:
+                packagemanager.unhandled_exception_shutdown()
+        else:
+                sys.exit()
+
+def __display_memory_err():
+        try:
+                dmsg = misc.out_of_memory()
+                msg_stripped = dmsg.replace("\n", " ")
+                gui_misc.error_occurred(None, msg_stripped, _("Package Manager"),
+                    gtk.MESSAGE_ERROR)
+        except MemoryError:
+                print dmsg
+        except Exception:
+                pass
         if packagemanager:
                 packagemanager.unhandled_exception_shutdown()
         else:
@@ -5795,7 +5815,10 @@ def __display_unknown_err(trace):
 def global_exception_handler(exctyp, value, tb):
         trace = StringIO()
         traceback.print_exception (exctyp, value, tb, None, trace)
-        gobject.idle_add(__display_unknown_err, trace)
+        if exctyp is MemoryError:
+                gobject.idle_add(__display_memory_err)
+        else:
+                gobject.idle_add(__display_unknown_err_ex, trace)
 
 def main():
         gtk.main()
