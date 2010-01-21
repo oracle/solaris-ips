@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -63,6 +63,11 @@ class TestPkgApi(testutils.SingleDepotTestCase):
         baz10 = """
             open baz@1.0,5.11-0
             add license $test_prefix/copyright.baz license=copyright.baz
+            close """
+
+        quux10 = """
+            open quux@1.0,5.11-0
+            add depend type=require fmri=foo@1.0
             close """
 
         # First iteration has just a copyright.
@@ -309,15 +314,15 @@ class TestPkgApi(testutils.SingleDepotTestCase):
 
                 # First create the image and get v1 catalog.
                 durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.foo10)
+                self.pkgsend_bulk(durl, self.foo10 + self.quux10)
                 self.image_create(durl, prefix="bobcat")
 
                 progresstracker = progress.NullProgressTracker()
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
                     progresstracker, lambda x: False, PKG_CLIENT_NAME)
                 img = api_obj.img
-                cat = img.get_catalog(img.IMG_CATALOG_KNOWN)
-                entry = [e for f, e in cat.entries()][0]
+                kcat = img.get_catalog(img.IMG_CATALOG_KNOWN)
+                entry = [e for f, e in kcat.entries()][0]
                 states = entry["metadata"]["states"]
                 self.assert_(img.PKG_STATE_V1 in states)
                 self.assert_(img.PKG_STATE_V0 not in states)
@@ -328,12 +333,67 @@ class TestPkgApi(testutils.SingleDepotTestCase):
                 self.dc.stop()
                 self.dc.start()
                 api_obj.refresh(immediate=True)
+                api_obj.reset()
+                img = api_obj.img
 
-                cat = img.get_catalog(img.IMG_CATALOG_KNOWN)
-                entry = [e for f, e in cat.entries()][0]
+                kcat = img.get_catalog(img.IMG_CATALOG_KNOWN)
+                entry = [e for f, e in kcat.entries()][0]
                 states = entry["metadata"]["states"]
                 self.assert_(img.PKG_STATE_V1 not in states)
                 self.assert_(img.PKG_STATE_V0 in states)
+
+                # Verify that there is no dependency information present
+                # in the known or installed catalog.
+                icat = img.get_catalog(img.IMG_CATALOG_INSTALLED)
+                for cat in kcat, icat:
+                        dpart = cat.get_part("catalog.dependency.C")
+                        dep_acts = [
+                            acts
+                            for t, entry in dpart.tuple_entries()
+                            for acts in entry.get("actions", [])
+                        ]
+                        self.assertEqual(dep_acts, [])
+
+                # Now install a package, and verify that the entries in the
+                # known catalog for installed packages exist in the installed
+                # catalog and are identical.
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+                img = api_obj.img
+
+                # Get image catalogs.
+                kcat = img.get_catalog(img.IMG_CATALOG_KNOWN)
+                icat = img.get_catalog(img.IMG_CATALOG_INSTALLED)
+
+                # Verify quux package is only in known catalog.
+                self.assertTrue("quux" in kcat.names())
+                self.assertTrue("foo" in kcat.names())
+                self.assertTrue("quux" not in icat.names())
+                self.assertTrue("foo" not in icat.names())
+
+                # Install the packages.
+                api_obj.plan_install(["quux@1.0"])
+                api_obj.prepare()
+                api_obj.execute_plan()
+                api_obj.reset()
+
+                # Get image catalogs.
+                kcat = img.get_catalog(img.IMG_CATALOG_KNOWN)
+                icat = img.get_catalog(img.IMG_CATALOG_INSTALLED)
+
+                # Verify quux package is in both catalogs.
+                self.assertTrue("quux" in kcat.names())
+                self.assertTrue("foo" in kcat.names())
+                self.assertTrue("quux" in icat.names())
+                self.assertTrue("foo" in icat.names())
+
+                # Verify state info.
+                for cat in kcat, icat:
+                        entry = [e for f, e in cat.entries()][0]
+                        states = entry["metadata"]["states"]
+                        self.assert_(img.PKG_STATE_INSTALLED in states)
+                        self.assert_(img.PKG_STATE_V0 in states)
 
                 # Finally, transition back to v1 catalog.  This requires
                 # creating a new api object since transport will think that
@@ -348,11 +408,61 @@ class TestPkgApi(testutils.SingleDepotTestCase):
                 api_obj.refresh(immediate=True)
                 img = api_obj.img
 
-                cat = img.get_catalog(img.IMG_CATALOG_KNOWN)
-                entry = [e for f, e in cat.entries()][0]
-                states = entry["metadata"]["states"]
-                self.assert_(img.PKG_STATE_V1 in states)
-                self.assert_(img.PKG_STATE_V0 not in states)
+                # Get image catalogs.
+                kcat = img.get_catalog(img.IMG_CATALOG_KNOWN)
+                icat = img.get_catalog(img.IMG_CATALOG_INSTALLED)
+
+                # Verify quux package is in both catalogs.
+                self.assertTrue("quux" in kcat.names())
+                self.assertTrue("foo" in kcat.names())
+                self.assertTrue("quux" in icat.names())
+                self.assertTrue("foo" in icat.names())
+
+                # Verify state info.
+                for f, entry in kcat.entries():
+                        states = entry["metadata"]["states"]
+                        self.assert_(img.PKG_STATE_V1 in states)
+                        self.assert_(img.PKG_STATE_V0 not in states)
+
+                # Verify that there is dependency information present
+                # in the known and installed catalog.
+                for cat in kcat, icat:
+                        dpart = cat.get_part("catalog.dependency.C")
+                        entries = [(t, entry) for t, entry in dpart.tuple_entries()]
+                        dep_acts = [
+                            acts
+                            for t, entry in dpart.tuple_entries()
+                            for acts in entry.get("actions", [])
+                            if t[1] == "quux"
+                        ]
+                        self.assertNotEqual(dep_acts, [])
+
+                # Verify that every installed package is in known and has
+                # identical entries and that every installed package in
+                # the installed catalog is in the known catalog and has
+                # entries.
+                for src, dest in ((kcat, icat), (icat, kcat)):
+                        src_base = src.get_part("catalog.base.C",
+                            must_exist=True)
+                        self.assertNotEqual(src_base, None)
+
+                        for f, bentry in src_base.entries():
+                                states = bentry["metadata"]["states"]
+                                if img.PKG_STATE_INSTALLED not in states:
+                                        continue
+
+                                for name in src.parts:
+                                        spart = src.get_part(name,
+                                            must_exist=True)
+                                        self.assertNotEqual(spart, None)
+
+                                        dpart = dest.get_part(name,
+                                            must_exist=True)
+                                        self.assertNotEqual(dpart, None)
+
+                                        sentry = spart.get_entry(pfmri=f)
+                                        dentry = dpart.get_entry(pfmri=f)
+                                        self.assertEqual(sentry, dentry)
 
         def test_properties(self):
                 """Verify that properties of the ImageInterface api object are
@@ -813,7 +923,6 @@ class TestPkgApi(testutils.SingleDepotTestCase):
                 api_obj.prepare()
                 api_obj.execute_plan()
                 api_obj.reset()
-
 
                 # Finally, verify that an uninstall won't trigger license
                 # errors as acceptance should never be applied to it.

@@ -1313,6 +1313,24 @@ class Image(object):
                    for name in cat.parts
                 )
 
+                # Build list of installed packages based on actual state
+                # information just in case there is a state issue from an
+                # older client.
+                inst_stems = {}
+                for t, entry in old_icat.tuple_entries():
+                        states = entry["metadata"]["states"]
+                        if self.PKG_STATE_INSTALLED not in states:
+                                continue
+                        pub, stem, ver = t
+                        inst_stems.setdefault(pub, {})
+                        inst_stems[pub].setdefault(stem, {})
+                        inst_stems[pub][stem][ver] = False
+
+                # Create the new installed catalog in a temporary location.
+                icat = pkg.catalog.Catalog(batch_mode=True,
+                    meta_root=os.path.join(tmp_state_root,
+                    self.IMG_CATALOG_INSTALLED), sign=False)
+
                 for pfx, cat, name, spart in sparts:
                         # 'spart' is the source part.
                         if spart is None:
@@ -1321,6 +1339,7 @@ class Image(object):
 
                         # New known part.
                         nkpart = kcat.get_part(name)
+                        nipart = icat.get_part(name)
                         base = name.startswith("catalog.base.")
 
                         # Avoid accessor overhead since this will be
@@ -1329,6 +1348,13 @@ class Image(object):
 
                         for t, sentry in spart.tuple_entries(pubs=[pfx]):
                                 pub, stem, ver = t
+
+                                installed = False
+                                if pub in inst_stems and \
+                                    stem in inst_stems[pub] and \
+                                    ver in inst_stems[pub][stem]:
+                                        installed = True
+                                        inst_stems[pub][stem][ver] = True
 
                                 # copy() is too slow here and catalog entries
                                 # are shallow so this should be sufficient.
@@ -1339,6 +1365,10 @@ class Image(object):
                                         nkpart.add(metadata=entry,
                                             op_time=op_time, pub=pub, stem=stem,
                                             ver=ver)
+                                        if installed:
+                                                nipart.add(metadata=entry,
+                                                    op_time=op_time, pub=pub,
+                                                    stem=stem, ver=ver)
                                         continue
 
                                 # Only the base catalog part stores package
@@ -1350,6 +1380,9 @@ class Image(object):
                                 else:
                                         # Assume V1 catalog source.
                                         states.append(self.PKG_STATE_V1)
+
+                                if installed:
+                                        states.append(self.PKG_STATE_INSTALLED)
 
                                 nver, snver = newest.get(stem, (None, None))
                                 if snver is not None and ver != snver:
@@ -1381,20 +1414,20 @@ class Image(object):
                                                             self.PKG_STATE_RENAMED)
                                 mdata["states"] = states
 
-                                # Add base entry.
+                                # Add base entries.
                                 nkpart.add(metadata=entry, op_time=op_time,
                                     pub=pub, stem=stem, ver=ver)
-
-                # Create the new installed catalog in a temporary location.
-                icat = pkg.catalog.Catalog(batch_mode=True,
-                    meta_root=os.path.join(tmp_state_root,
-                    self.IMG_CATALOG_INSTALLED), sign=False)
+                                if installed:
+                                        nipart.add(metadata=entry,
+                                            op_time=op_time, pub=pub, stem=stem,
+                                            ver=ver)
 
                 # Now add installed packages to list of known packages using
                 # previous state information.  While doing so, track any
                 # new entries as the versions for the stem of the entry will
                 # need to be passed to finalize() for sorting.
                 final_fmris = []
+
                 for name in old_icat.parts:
                         # Old installed part.
                         ipart = old_icat.get_part(name, must_exist=True)
@@ -1411,10 +1444,15 @@ class Image(object):
                         for t, entry in ipart.tuple_entries():
                                 pub, stem, ver = t
 
+                                if pub not in inst_stems or \
+                                    stem not in inst_stems[pub] or \
+                                    ver not in inst_stems[pub][stem] or \
+                                    inst_stems[pub][stem][ver]:
+                                        # Entry is no longer valid or is already
+                                        # known.
+                                        continue
+
                                 if base:
-                                        # Initially assume that package isn't
-                                        # known when attempting to add the
-                                        # installed package to list of known.
                                         mdata = entry["metadata"]
                                         states = set(mdata["states"])
                                         states.discard(self.PKG_STATE_KNOWN)
@@ -1429,44 +1467,10 @@ class Image(object):
                                                     self.PKG_STATE_UPGRADABLE)
                                         mdata["states"] = list(states)
 
-                                # Try to add the installed package to the new
-                                # catalog part.  If it succeeds, then the
-                                # package is no longer available, but must
-                                # remain in the image cataogs.
-                                update = False
-                                try:
-                                        nkpart.add(metadata=entry,
-                                            op_time=op_time, pub=pub, stem=stem,
-                                            ver=ver)
-                                except api_errors.DuplicateCatalogEntry:
-                                        # Entry already exists so needs update.
-                                        update = True
-
-                                if not base or not update:
-                                        # If this isn't a base part or the
-                                        # known catalog part doesn't need
-                                        # updating, then the installed part
-                                        # needs a new entry.
-                                        nipart.add(metadata=entry,
-                                            op_time=op_time, pub=pub, stem=stem,
-                                            ver=ver)
-                                        continue
-
-                                # entry needs to be updated with existing state
-                                # information.
-                                kentry = nkpart.get_entry(pub=pub, stem=stem,
-                                    ver=ver)
-                                mdata = kentry["metadata"]
-                                kstates = mdata["states"]
-
-                                # The package is installed obviously since the
-                                # iteration is being done over the installed
-                                # catalog part's entries.
-                                kstates.append(self.PKG_STATE_INSTALLED)
-
-                                # Now that the known part has been updated,
-                                # add an entry to the installed part.
-                                nipart.add(metadata=kentry, op_time=op_time,
+                                # Add entries.
+                                nkpart.add(metadata=entry, op_time=op_time,
+                                    pub=pub, stem=stem, ver=ver)
+                                nipart.add(metadata=entry, op_time=op_time,
                                     pub=pub, stem=stem, ver=ver)
                                 final_fmris.append(pkg.fmri.PkgFmri(
                                     "%s@%s" % (stem, ver), publisher=pub))
