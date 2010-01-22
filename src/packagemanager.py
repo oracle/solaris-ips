@@ -4403,7 +4403,7 @@ class PackageManager:
                                 inst_str += ''.join("%s%s\n" % (
                                     self.api_o.root, x))
                 self.__set_installedfiles_text(inst_str)
-                self.__set_dependencies_text(local_info, dep_info, 
+                self.__set_dependencies_text(local_info, dep_info,
                     installed_dep_info)
                 if self.use_cache:
                         self.info_cache[pkg_stem] = (labs, text, inst_str,
@@ -4539,6 +4539,7 @@ class PackageManager:
                         dep_info = None
                         installed_dep_info = None
                         if info and info.dependencies:
+                                gobject.idle_add(self.set_busy_cursor)
                                 try:
                                         dep_info = self.api_o.info(
                                             info.dependencies,
@@ -4562,6 +4563,8 @@ class PackageManager:
                                         err = str(idex)
                                         logger.error(err)
                                         gui_misc.notify_log_error(self)
+                                finally:
+                                        gobject.idle_add(self.unset_busy_cursor)
                         gobject.idle_add(self.__update_package_info, pkg,
                             local_info, remote_info, dep_info, installed_dep_info,
                             info_id)
