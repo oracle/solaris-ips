@@ -61,10 +61,10 @@ class TestApiSearchBasics(testutils.SingleDepotTestCase):
             add file /tmp/example_file mode=0555 owner=root group=bin path=/bin/example_path
             add set name=com.sun.service.incorporated_changes value="6556919 6627937"
             add set name=com.sun.service.random_test value=42 value=79
-            add set name=com.sun.service.bug_ids value="4641790 4725245 4817791 4851433 4897491 4913776 6178339 6556919 6627937"
+            add set name=com.sun.service.bug_ids value=4641790 value=4725245 value=4817791 value=4851433 value=4897491 value=4913776 value=6178339 value=6556919 value=6627937
             add set name=com.sun.service.keywords value="sort null -n -m -t sort 0x86 separator"
             add set name=com.sun.service.info_url value=http://service.opensolaris.com/xml/pkg/SUNWcsu@0.5.11,5.11-1:20080514I120000Z
-            add set description='FOOO bAr O OO OOO'
+            add set name=description value='FOOO bAr O OO OOO' value="whee fun"
             add set name='weirdness' value='] [ * ?'
             add signature pkg.sig_bit1=sig_bit_val1 pkg.sig_bit2=sig_bit_val2
             close """
@@ -149,8 +149,8 @@ open b2@1.0,5.11-0
 add set description="Image Packaging System"
 close """
 
-        res_8492_1 = set([('pkg:/b1@1.0-0', 'image packaging', 'set name=description value="Image Packaging System"')])
-        res_8492_2 = set([('pkg:/b2@1.0-0', 'image packaging', 'set name=description value="Image Packaging System"')])
+        res_8492_1 = set([('pkg:/b1@1.0-0', 'Image Packaging System', 'set name=description value="Image Packaging System"')])
+        res_8492_2 = set([('pkg:/b2@1.0-0', 'Image Packaging System', 'set name=description value="Image Packaging System"')])
         
         remote_fmri_string = ('pkg:/example_pkg@1.0-0', 'test/example_pkg',
             'set name=pkg.fmri value=pkg://test/example_pkg@1.0,5.11-0:')
@@ -176,17 +176,17 @@ close """
         ])
 
         res_remote_bug_id = set([
-            ("pkg:/example_pkg@1.0-0", "4851433", 'set name=com.sun.service.bug_ids value="4641790 4725245 4817791 4851433 4897491 4913776 6178339 6556919 6627937"')
+            ("pkg:/example_pkg@1.0-0", "4851433", 'set name=com.sun.service.bug_ids value=4641790 value=4725245 value=4817791 value=4851433 value=4897491 value=4913776 value=6178339 value=6556919 value=6627937')
         ])
 
         res_remote_bug_id_4725245 = set([
-            ("pkg:/example_pkg@1.0-0", "4725245", 'set name=com.sun.service.bug_ids value="4641790 4725245 4817791 4851433 4897491 4913776 6178339 6556919 6627937"')
+            ("pkg:/example_pkg@1.0-0", "4725245", 'set name=com.sun.service.bug_ids value=4641790 value=4725245 value=4817791 value=4851433 value=4897491 value=4913776 value=6178339 value=6556919 value=6627937')
         ])
 
 
         res_remote_inc_changes = set([
-            ("pkg:/example_pkg@1.0-0", "6556919", 'set name=com.sun.service.incorporated_changes value="6556919 6627937"'),
-            ("pkg:/example_pkg@1.0-0", "6556919", 'set name=com.sun.service.bug_ids value="4641790 4725245 4817791 4851433 4897491 4913776 6178339 6556919 6627937"')
+            ("pkg:/example_pkg@1.0-0", "6556919 6627937", 'set name=com.sun.service.incorporated_changes value="6556919 6627937"'),
+            ("pkg:/example_pkg@1.0-0", "6556919", 'set name=com.sun.service.bug_ids value=4641790 value=4725245 value=4817791 value=4851433 value=4897491 value=4913776 value=6178339 value=6556919 value=6627937')
         ])
 
         res_remote_random_test = set([
@@ -198,11 +198,7 @@ close """
         ])
 
         res_remote_keywords = set([
-            ("pkg:/example_pkg@1.0-0", "separator", 'set name=com.sun.service.keywords value="sort null -n -m -t sort 0x86 separator"')
-        ])
-
-        res_remote_keywords_sort_phrase = set([
-            ("pkg:/example_pkg@1.0-0", "sort 0x86", 'set name=com.sun.service.keywords value="sort null -n -m -t sort 0x86 separator"')
+            ("pkg:/example_pkg@1.0-0", "sort null -n -m -t sort 0x86 separator", 'set name=com.sun.service.keywords value="sort null -n -m -t sort 0x86 separator"')
         ])
 
         res_remote_wildcard = res_remote_path.union(set([
@@ -218,27 +214,11 @@ close """
         ]) | res_remote_path
 
         res_remote_foo = set([
-            ('pkg:/example_pkg@1.0-0', 'FOOO', 'set name=description value="FOOO bAr O OO OOO"')
+            ('pkg:/example_pkg@1.0-0', 'FOOO bAr O OO OOO', 'set name=description value="FOOO bAr O OO OOO" value="whee fun"')
         ])
 
-        res_remote_bar = set([
-            ('pkg:/example_pkg@1.0-0', 'bAr', 'set name=description value="FOOO bAr O OO OOO"')
-        ])
-
-        res_remote_star = set([
-            ('pkg:/example_pkg@1.0-0', '*', 'set name=weirdness value="] [ * ?"')
-        ])
-
-        res_remote_mark = set([
-            ('pkg:/example_pkg@1.0-0', '?', 'set name=weirdness value="] [ * ?"')
-        ])
-
-        res_remote_left_brace = set([
-            ('pkg:/example_pkg@1.0-0', '[', 'set name=weirdness value="] [ * ?"')
-        ])
-
-        res_remote_right_brace = set([
-            ('pkg:/example_pkg@1.0-0', ']', 'set name=weirdness value="] [ * ?"')
+        res_remote_weird = set([
+            ('pkg:/example_pkg@1.0-0', '] [ * ?', 'set name=weirdness value="] [ * ?"')
         ])
 
         local_fmri_string = ('pkg:/example_pkg@1.0-0', 'test/example_pkg',
@@ -267,7 +247,6 @@ close """
         res_local_glob.add(local_fmri_string)
 
         res_local_foo = copy.copy(res_remote_foo)
-        res_local_bar = copy.copy(res_remote_bar)
 
         res_local_openssl = copy.copy(res_remote_openssl)
 
@@ -308,15 +287,14 @@ close """
         ])
 
         res_fat10_i386 = set([
-            ('pkg:/fat@1.0-0', 'i386', 'set name=description value="i386 variant" variant.arch=i386'),
-            ('pkg:/fat@1.0-0', 'variant', 'set name=description value="i386 variant" variant.arch=i386'),
+            ('pkg:/fat@1.0-0', 'i386 variant', 'set name=description value="i386 variant" variant.arch=i386'),
+            ('pkg:/fat@1.0-0', 'i386 variant', 'set name=description value="i386 variant" variant.arch=i386'),
             ('pkg:/fat@1.0-0', 'i386', 'set name=variant.arch value=sparc value=i386'),
         ])
 
         res_fat10_sparc = set([
-            ('pkg:/fat@1.0-0', 'sparc', 'set name=description value="sparc variant" variant.arch=sparc'),
-            ('pkg:/fat@1.0-0', 'sparc', 'set name=variant.arch value=sparc value=i386'),
-            ('pkg:/fat@1.0-0', 'variant', 'set name=description value="sparc variant" variant.arch=sparc')
+            ('pkg:/fat@1.0-0', 'sparc variant', 'set name=description value="sparc variant" variant.arch=sparc'),
+            ('pkg:/fat@1.0-0', 'sparc', 'set name=variant.arch value=sparc value=i386')
         ])
 
         fat_10_fmri_string = set([('pkg:/fat@1.0-0', 'test/fat', 'set name=pkg.fmri value=pkg://test/fat@1.0,5.11-0:')])
@@ -387,7 +365,7 @@ close
         res_bug_983 = set([
             ("pkg:/SUNWgmake@3.81-0.89", "basename", "link path=usr/sfw/bin/gmake target=../../bin/gmake"),
             ('pkg:/SUNWgmake@3.81-0.89', 'basename', 'file 820157a2043e3135f342b238129b556aade20347 chash=bfa46fc98d1ca97f1260090797d35a35e76096a3 elfarch=i386 elfbits=32 elfhash=68cca393e816e6adcbac1e8ffe9c618de70413e0 group=bin mode=0555 owner=root path=usr/bin/gmake pkg.csize=38 pkg.size=18'),
-            ('pkg:/SUNWgmake@3.81-0.89', 'gmake', 'set name=description value="gmake - GNU make"')
+            ('pkg:/SUNWgmake@3.81-0.89', 'gmake - GNU make', 'set name=description value="gmake - GNU make"')
         ])
 
         res_983_csl_dependency = set([
@@ -675,12 +653,12 @@ close
                 self._search_op(api_obj, True, "separator",
                     self.res_remote_keywords)
                 self._search_op(api_obj, True, "\"sort 0x86\"",
-                    self.res_remote_keywords_sort_phrase)
+                    self.res_remote_keywords)
                 self._search_op(api_obj, True, "*example*",
                     self.res_remote_glob)
                 self._search_op(api_obj, True, "fooo", self.res_remote_foo)
                 self._search_op(api_obj, True, "fo*", self.res_remote_foo)
-                self._search_op(api_obj, True, "bar", self.res_remote_bar)
+                self._search_op(api_obj, True, "bar", self.res_remote_foo)
                 self._search_op(api_obj, True, "openssl",
                     self.res_remote_openssl)
                 self._search_op(api_obj, True, "OPENSSL",
@@ -739,11 +717,11 @@ close
                 self._search_op(api_obj, True, "separator",
                     self.res_remote_keywords)
                 self._search_op(api_obj, True, "\"sort 0x86\"",
-                    self.res_remote_keywords_sort_phrase)
+                    self.res_remote_keywords)
                 self._search_op(api_obj, True, "*example*",
                     self.res_remote_glob)
                 self._search_op(api_obj, True, "fooo", self.res_remote_foo)
-                self._search_op(api_obj, True, "bar", self.res_remote_bar)
+                self._search_op(api_obj, True, "bar", self.res_remote_foo)
                 self._search_op(api_obj, True, "OpEnSsL",
                     self.res_remote_openssl)
 
@@ -818,12 +796,12 @@ close
                 self._search_op(api_obj, False, "separator",
                     self.res_local_keywords)
                 self._search_op(api_obj, False, "\"sort 0x86\"",
-                    self.res_remote_keywords_sort_phrase)
+                    self.res_remote_keywords)
                 self._search_op(api_obj, False, "*example*",
                     self.res_local_glob)
                 self._search_op(api_obj, False, "fooo", self.res_local_foo)
                 self._search_op(api_obj, False, "fo*", self.res_local_foo)
-                self._search_op(api_obj, False, "bar", self.res_local_bar)
+                self._search_op(api_obj, False, "bar", self.res_local_foo)
                 self._search_op(api_obj, False, "openssl",
                     self.res_local_openssl)
                 self._search_op(api_obj, False, "OPENSSL",
@@ -886,11 +864,11 @@ close
                 self._search_op(api_obj, False, "separator",
                     self.res_local_keywords)
                 self._search_op(api_obj, False, "\"sort 0x86\"",
-                    self.res_remote_keywords_sort_phrase)
+                    self.res_remote_keywords)
                 self._search_op(api_obj, False, "*example*",
                     self.res_local_glob)
                 self._search_op(api_obj, False, "fooo", self.res_local_foo)
-                self._search_op(api_obj, False, "bar", self.res_local_bar)
+                self._search_op(api_obj, False, "bar", self.res_local_foo)
                 self._search_op(api_obj, False, "OpEnSsL",
                     self.res_local_openssl)
                 # These tests are included because a specific bug
@@ -965,12 +943,12 @@ close
                 self._search_op_slow(api_obj, False, "separator",
                     self.res_local_keywords)
                 self._search_op_slow(api_obj, False, "\"sort 0x86\"",
-                    self.res_remote_keywords_sort_phrase)
+                    self.res_remote_keywords)
                 self._search_op_slow(api_obj, False, "*example*",
                     self.res_local_glob)
                 self._search_op_slow(api_obj, False, "fooo", self.res_local_foo)
                 self._search_op_slow(api_obj, False, "fo*", self.res_local_foo)
-                self._search_op_slow(api_obj, False, "bar", self.res_local_bar)
+                self._search_op_slow(api_obj, False, "bar", self.res_local_foo)
                 self._search_op_slow(api_obj, False, "openssl",
                     self.res_local_openssl)
                 self._search_op_slow(api_obj, False, "OPENSSL",
@@ -1289,7 +1267,7 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
                 self._search_op(api_obj, False, "bar", set(), True)
                 self._search_op(api_obj, False, "FOOO", self.res_local_foo,
                     True)
-                self._search_op(api_obj, False, "bAr", self.res_local_bar, True)
+                self._search_op(api_obj, False, "bAr", self.res_local_foo, True)
 
         def test_060_missing_files(self):
                 """Test to check for stack trace when files missing.
@@ -1401,12 +1379,10 @@ class TestApiSearchBasicsPersistentDepot(TestApiSearchBasics):
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
                     progresstracker, lambda x: False, PKG_CLIENT_NAME)
 
-                self._search_op(api_obj, True, "[*]", self.res_remote_star)
-                self._search_op(api_obj, True, "[?]", self.res_remote_mark)
-                self._search_op(api_obj, True, "[[]",
-                    self.res_remote_left_brace)
-                self._search_op(api_obj, True, "[]]",
-                    self.res_remote_right_brace)
+                self._search_op(api_obj, True, "[*]", self.res_remote_weird)
+                self._search_op(api_obj, True, "[?]", self.res_remote_weird)
+                self._search_op(api_obj, True, "[[]", self.res_remote_weird)
+                self._search_op(api_obj, True, "[]]", self.res_remote_weird)
                 self._search_op(api_obj, True, "FO[O]O", self.res_remote_foo)
                 self._search_op(api_obj, True, "FO[?O]O", self.res_remote_foo)
                 self._search_op(api_obj, True, "FO[*O]O", self.res_remote_foo)

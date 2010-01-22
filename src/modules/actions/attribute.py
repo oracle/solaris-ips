@@ -80,12 +80,20 @@ class AttributeAction(generic.Action):
                         except ValueError:
                                 pass
 
-                if self.attrs["name"] == "description" or \
-                    " " in self.attrs["value"]:
-                        return [
-                            (self.name, self.attrs["name"], w, None)
-                            for w in self.attrs["value"].split()
-                        ]
+                if isinstance(self.attrs["value"], list):
+                        tmp = []
+                        for v in self.attrs["value"]:
+                                assert isinstance(v, basestring)
+                                if " " in v:
+                                        words = v.split()
+                                        for w in words:
+                                                tmp.append((self.name,
+                                                    self.attrs["name"], w,
+                                                    v))
+                                else:
+                                        tmp.append((self.name,
+                                            self.attrs["name"], v, None))
+                        return  tmp
                 elif self.attrs["name"] in ("fmri", "pkg.fmri"):
                         fmri_obj = fmri.PkgFmri(self.attrs["value"])
 
@@ -102,20 +110,12 @@ class AttributeAction(generic.Action):
                             ]
                             
                         ]
-                elif isinstance(self.attrs["value"], list):
-                        tmp = []
-                        for v in self.attrs["value"]:
-                                assert isinstance(v, basestring)
-                                if " " in v:
-                                        words = v.split()
-                                        for w in words:
-                                                tmp.append((self.name,
-                                                    self.attrs["name"], w,
-                                                    None))
-                                else:
-                                        tmp.append((self.name,
-                                            self.attrs["name"], v, None))
-                        return  tmp
+                elif " " in self.attrs["value"]:
+                        v = self.attrs["value"]
+                        return [
+                            (self.name, self.attrs["name"], w, v)
+                            for w in v.split()
+                        ]
                 else:
                         return [
                             (self.name, self.attrs["name"],

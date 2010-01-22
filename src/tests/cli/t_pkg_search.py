@@ -99,20 +99,14 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
 
         res_remote_bug_id = set([
             headers,
-            "com.sun.service.bug_ids set       4851433                   pkg:/example_pkg@1.0-0\n"
-
-        ])
-
-        res_remote_bug_id_4725245 = set([
-            headers,
-            "com.sun.service.bug_ids set       4725245                   pkg:/example_pkg@1.0-0\n"
+            "com.sun.service.bug_ids set       4641790 4725245 4817791 4851433 4897491 4913776 6178339 6556919 6627937                   pkg:/example_pkg@1.0-0\n"
 
         ])
 
         res_remote_inc_changes = set([
             headers,
-            "com.sun.service.incorporated_changes set       6556919                   pkg:/example_pkg@1.0-0\n",
-            "com.sun.service.bug_ids set       6556919                   pkg:/example_pkg@1.0-0\n"
+            "com.sun.service.incorporated_changes set       6556919 6627937                   pkg:/example_pkg@1.0-0\n",
+            "com.sun.service.bug_ids set       4641790 4725245 4817791 4851433 4897491 4913776 6178339 6556919 6627937                   pkg:/example_pkg@1.0-0\n"
 
         ])
 
@@ -128,12 +122,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
 
         res_remote_keywords = set([
             headers,
-            "com.sun.service.keywords set       separator                 pkg:/example_pkg@1.0-0\n"
-        ])
-
-        res_remote_keywords_sort_phrase = set([
-            headers,
-            "com.sun.service.keywords set       sort 0x86                 pkg:/example_pkg@1.0-0\n"
+            "com.sun.service.keywords set       sort null -n -m -t sort 0x86 separator                 pkg:/example_pkg@1.0-0\n"
         ])
 
         res_remote_wildcard = set([
@@ -154,12 +143,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
 
         res_remote_foo = set([
             headers,
-            "description set       FOOO                      pkg:/example_pkg@1.0-0\n"
-        ])
-
-        res_remote_bar = set([
-            headers,
-            "description set       bAr                       pkg:/example_pkg@1.0-0\n"
+            "description set       FOOO bAr O OO OOO                      pkg:/example_pkg@1.0-0\n"
         ])
 
         res_local_pkg = set([
@@ -185,7 +169,6 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
         res_local_glob = copy.copy(res_remote_glob)
 
         res_local_foo = copy.copy(res_remote_foo)
-        res_local_bar = copy.copy(res_remote_bar)
 
         res_local_openssl = copy.copy(res_remote_openssl)
 
@@ -216,7 +199,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
 
         res_bogus_number_result = set([
             headers,
-            'com.sun.service.incorporated_changes set       6627937                   pkg:/bogus_pkg@1.0-0\n'
+            'com.sun.service.incorporated_changes set       6556919 6627937                   pkg:/bogus_pkg@1.0-0\n'
         ])
 
         misc_files = ['/tmp/example_file']
@@ -366,18 +349,18 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 self._search_op(True, "'(4851433 AND 4725245) OR example_path'",
                     self.res_remote_bug_id | self.res_remote_path)
                 self._search_op(True, "4851433 OR 4725245",
-                    self.res_remote_bug_id | self.res_remote_bug_id_4725245)
+                    self.res_remote_bug_id | self.res_remote_bug_id)
                 self._search_op(True, "6556919", self.res_remote_inc_changes)
                 self._search_op(True, "6556?19", self.res_remote_inc_changes)
                 self._search_op(True, "42", self.res_remote_random_test)
                 self._search_op(True, "79", self.res_remote_random_test_79)
                 self._search_op(True, "separator", self.res_remote_keywords)
                 self._search_op(True, "'\"sort 0x86\"'",
-                    self.res_remote_keywords_sort_phrase)
+                    self.res_remote_keywords)
                 self._search_op(True, "*example*", self.res_remote_glob)
                 self._search_op(True, "fooo", self.res_remote_foo)
                 self._search_op(True, "fo*", self.res_remote_foo)
-                self._search_op(True, "bar", self.res_remote_bar)
+                self._search_op(True, "bar", self.res_remote_foo)
                 self._search_op(True, "openssl", self.res_remote_openssl)
                 self._search_op(True, "OPENSSL", self.res_remote_openssl)
                 self._search_op(True, "OpEnSsL", self.res_remote_openssl)
@@ -448,18 +431,18 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                     "'(4851433 AND 4725245) OR example_path'",
                     self.res_remote_bug_id | self.res_local_path)
                 self._search_op(False, "4851433 OR 4725245",
-                    self.res_remote_bug_id | self.res_remote_bug_id_4725245)
+                    self.res_remote_bug_id | self.res_remote_bug_id)
                 self._search_op(False, "6556919", self.res_local_inc_changes)
                 self._search_op(False, "65569??", self.res_local_inc_changes)
                 self._search_op(False, "42", self.res_local_random_test)
                 self._search_op(False, "79", self.res_local_random_test_79)
                 self._search_op(False, "separator", self.res_local_keywords)
                 self._search_op(False, "'\"sort 0x86\"'",
-                    self.res_remote_keywords_sort_phrase)
+                    self.res_remote_keywords)
                 self._search_op(False, "*example*", self.res_local_glob)
                 self._search_op(False, "fooo", self.res_local_foo)
                 self._search_op(False, "fo*", self.res_local_foo)
-                self._search_op(False, "bar", self.res_local_bar)
+                self._search_op(False, "bar", self.res_local_foo)
                 self._search_op(False, "openssl", self.res_local_openssl)
                 self._search_op(False, "OPENSSL", self.res_local_openssl)
                 self._search_op(False, "OpEnSsL", self.res_local_openssl)
