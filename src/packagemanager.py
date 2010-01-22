@@ -1243,11 +1243,9 @@ class PackageManager:
         def __handle_browse_publisher(self, index):
                 if index == -1:
                         return
-                self.saved_repository_combobox_active = index
-                self.__set_searchentry_to_prompt()
-                self.__restore_setup_for_browse()
                 self.w_repository_combobox.grab_focus()
-
+                self.w_repository_combobox.set_active(index)
+                
         def __handle_search_all_publishers(self, term):
                 self.__set_search_start()
                 self.is_all_publishers_installed = False
