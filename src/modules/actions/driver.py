@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -748,10 +748,15 @@ from %(imgroot)s/etc/driver_aliases." % \
                         return act
 
         def verify(self, img, **args):
-                """Verify that the driver is installed as specified."""
+                """Returns a tuple of lists of the form (errors, warnings,
+                info).  The error list will be empty if the action has been
+                correctly installed in the given image."""
 
+                errors = []
+                warnings = []
+                info = []
                 if img.is_zone():
-                        return []
+                        return errors, warnings, info
 
                 name = self.attrs["name"]
 
@@ -762,41 +767,41 @@ from %(imgroot)s/etc/driver_aliases." % \
                         if isinstance(err, IOError):
                                 errors[i] = "%s: %s" % (err.args[2], err)
                         elif isinstance(err, RuntimeError):
-                                errors[i] = "etc/name_to_major: more than " \
-                                    "one entry for '%s' is present" % name
+                                errors[i] = _("etc/name_to_major: more than "
+                                    "one entry for '%s' is present") % name
 
                 if not onfs:
                         errors[0:0] = [
-                            "etc/name_to_major: '%s' entry not present" % name
+                            _("etc/name_to_major: '%s' entry not present") % name
                         ]
-                        return errors
+                        return errors, warnings, info
 
                 onfs_aliases = set(onfs.attrlist("alias"))
                 mfst_aliases = set(self.attrlist("alias"))
                 for a in onfs_aliases - mfst_aliases:
-                        errors.append("extra alias '%s' found in "
-                            "etc/driver_aliases" % a)
+                        warnings.append(_("extra alias '%s' found in "
+                            "etc/driver_aliases") % a)
                 for a in mfst_aliases - onfs_aliases:
-                        errors.append("alias '%s' missing from "
-                        "etc/driver_aliases" % a)
+                        errors.append(_("alias '%s' missing from "
+                        "etc/driver_aliases") % a)
 
                 onfs_classes = set(onfs.attrlist("class"))
                 mfst_classes = set(self.attrlist("class"))
                 for a in onfs_classes - mfst_classes:
-                        errors.append("extra class '%s' found in "
-                            "etc/driver_classes" % a)
+                        warnings.append(_("extra class '%s' found in "
+                            "etc/driver_classes") % a)
                 for a in mfst_classes - onfs_classes:
-                        errors.append("class '%s' missing from "
-                            "etc/driver_classes" % a)
+                        errors.append(_("class '%s' missing from "
+                            "etc/driver_classes") % a)
 
                 onfs_perms = set(onfs.attrlist("perms"))
                 mfst_perms = set(self.attrlist("perms"))
                 for a in onfs_perms - mfst_perms:
-                        errors.append("extra minor node permission '%s' found "
-                            "in etc/minor_perm" % a)
+                        warnings.append(_("extra minor node permission '%s' "
+                            "found in etc/minor_perm") % a)
                 for a in mfst_perms - onfs_perms:
-                        errors.append("minor node permission '%s' missing "
-                            "from etc/minor_perm" % a)
+                        errors.append(_("minor node permission '%s' missing "
+                            "from etc/minor_perm") % a)
 
                 # Canonicalize "*" minorspecs to empty
                 policylist = list(onfs.attrlist("policy"))
@@ -813,22 +818,22 @@ from %(imgroot)s/etc/driver_aliases." % \
                                 policylist[i] = " ".join(f[1:])
                 mfst_policy = set(policylist)
                 for a in onfs_policy - mfst_policy:
-                        errors.append("extra device policy '%s' found in "
-                            "etc/security/device_policy" % a)
+                        warnings.append(_("extra device policy '%s' found in "
+                            "etc/security/device_policy") % a)
                 for a in mfst_policy - onfs_policy:
-                        errors.append("device policy '%s' missing from "
-                            "etc/security/device_policy" % a)
+                        errors.append(_("device policy '%s' missing from "
+                            "etc/security/device_policy") % a)
 
                 onfs_privs = set(onfs.attrlist("privs"))
                 mfst_privs = set(self.attrlist("privs"))
                 for a in onfs_privs - mfst_privs:
-                        errors.append("extra device privilege '%s' found in "
-                            "etc/security/extra_privs" % a)
+                        warnings.append(_("extra device privilege '%s' found "
+                            "in etc/security/extra_privs") % a)
                 for a in mfst_privs - onfs_privs:
-                        errors.append("device privilege '%s' missing from "
-                            "etc/security/extra_privs" % a)
+                        errors.append(_("device privilege '%s' missing from "
+                            "etc/security/extra_privs") % a)
 
-                return errors
+                return errors, warnings, info
 
         def remove(self, pkgplan):
                 image = pkgplan.image

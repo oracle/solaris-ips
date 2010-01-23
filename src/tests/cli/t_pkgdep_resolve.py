@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import testutils
@@ -40,7 +40,7 @@ import pkg.flavor.base as base
 import pkg.portable as portable
 import pkg.publish.dependencies as dependencies
 
-API_VERSION = 29
+API_VERSION = 30
 PKG_CLIENT_NAME = "pkg"
 
 class TestApiDependencies(testutils.SingleDepotTestCase):

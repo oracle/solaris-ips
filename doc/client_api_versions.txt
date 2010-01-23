@@ -1,3 +1,10 @@
+Version 30:
+Incompatible with clients using versions 0-29:
+    The ProgressTracker class has changed as follows:
+        * ver_output_warning() and ver_output_info() were added so that
+          callers can choose to output warning and info verification
+          messages separately from errors.
+
 Version 29:
 Incompatible with clients using versions 0-28:
     The ImageInterface class has changed as follows:

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -46,7 +46,7 @@ import pkg.fmri as fmri
 import pkg.misc as misc
 import pkg.version as version
 
-API_VERSION = 29
+API_VERSION = 30
 PKG_CLIENT_NAME = "pkg"
 
 class TestApiList(testutils.ManyDepotTestCase):

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -101,6 +101,14 @@ class LicenseAction(generic.Action):
                 return True
 
         def verify(self, img, pkg_fmri, **args):
+                """Returns a tuple of lists of the form (errors, warnings,
+                info).  The error list will be empty if the action has been
+                correctly installed in the given image."""
+
+                errors = []
+                warnings = []
+                info = []
+
                 path = os.path.normpath(os.path.join(img.imgdir,
                     "pkg", pkg_fmri.get_dir_path(),
                     "license." + self.attrs["license"]))
@@ -110,15 +118,16 @@ class LicenseAction(generic.Action):
                                 chash, cdata = misc.get_data_digest(path)
                         except EnvironmentError, e:
                                 if e.errno == errno.ENOENT:
-                                        return [_("License file %s does not "
-                                            "exist.") % path]
+                                        errors.append(_("License file %s does "
+                                            "not exist.") % path)
+                                        return errors, warnings, info
                                 raise
 
                         if chash != self.hash:
-                                return [_("Hash: '%(found)s' should be "
+                                errors.append(_("Hash: '%(found)s' should be "
                                     "'%(expected)s'") % { "found": chash,
-                                    "expected": self.hash}]
-                return []
+                                    "expected": self.hash})
+                return errors, warnings, info
 
         def remove(self, pkgplan):
                 path = os.path.normpath(os.path.join(pkgplan.image.imgdir,

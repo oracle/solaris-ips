@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -354,14 +354,14 @@ class Action(object):
                         # intermediate directories being explicitly created by
                         # the packaging system; otherwise intermediate
                         # directories will not get their permissions corrected.
-                        stat = os.stat(path)
-                        mode = kw.get("mode", stat.st_mode)
-                        uid = kw.get("uid", stat.st_uid)
-                        gid = kw.get("gid", stat.st_gid)
+                        fs = os.stat(path)
+                        mode = kw.get("mode", fs.st_mode)
+                        uid = kw.get("uid", fs.st_uid)
+                        gid = kw.get("gid", fs.st_gid)
                         try:
-                                if mode != stat.st_mode:
+                                if mode != fs.st_mode:
                                         os.chmod(path, mode)
-                                if uid != stat.st_uid or gid != stat.st_gid:
+                                if uid != fs.st_uid or gid != fs.st_gid:
                                         portable.chown(path, uid, gid)
                         except  OSError, e:
                                 if e.errno != errno.EPERM and \
@@ -369,22 +369,22 @@ class Action(object):
                                         raise
                         return
 
-                stat = os.stat(os.path.join(*pathlist[:i]))
+                fs = os.stat(os.path.join(*pathlist[:i]))
                 for i, e in g:
                         p = os.path.join(*pathlist[:i])
-                        os.mkdir(p, stat.st_mode)
-                        os.chmod(p, stat.st_mode)
+                        os.mkdir(p, fs.st_mode)
+                        os.chmod(p, fs.st_mode)
                         try:
-                                portable.chown(p, stat.st_uid, stat.st_gid)
+                                portable.chown(p, fs.st_uid, fs.st_gid)
                         except OSError, e:
                                 if e.errno != errno.EPERM:
                                         raise
 
                 # Create the leaf with any requested permissions, substituting
                 # missing perms with the parent's perms.
-                mode = kw.get("mode", stat.st_mode)
-                uid = kw.get("uid", stat.st_uid)
-                gid = kw.get("gid", stat.st_gid)
+                mode = kw.get("mode", fs.st_mode)
+                uid = kw.get("uid", fs.st_uid)
+                gid = kw.get("gid", fs.st_gid)
                 os.mkdir(path, mode)
                 os.chmod(path, mode)
                 try:
@@ -413,13 +413,18 @@ class Action(object):
                 )))
 
         def verify(self, img, **args):
-                """Returns an empty list if correctly installed in the given
-                image."""
-                return []
+                """Returns a tuple of lists of the form (errors, warnings,
+                info).  The error list will be empty if the action has been
+                correctly installed in the given image."""
+                return [], [], []
 
         def verify_fsobj_common(self, img, ftype):
+                """Common verify logic for filesystem objects."""
 
                 errors = []
+                warnings = []
+                info = []
+
                 abort = False
                 def ftype_to_name(ftype):
                         assert ftype is not None
@@ -453,37 +458,48 @@ class Action(object):
                         lstat = os.lstat(path)
                 except OSError, e:
                         if e.errno == errno.ENOENT:
-                                errors.append("Missing: %s does not exist" %
+                                errors.append(_("Missing: %s does not exist") %
                                     ftype_to_name(ftype))
                         elif e.errno == errno.EACCES:
-                                errors.append("Skipping: Permission denied")
+                                errors.append(_("Skipping: Permission denied"))
                         else:
-                                errors.append("Unexpected OSError: %s" % e)
+                                errors.append(_("Unexpected Error: %s") % e)
                         abort = True
 
                 if abort:
-                        return lstat, errors, abort
+                        return lstat, errors, warnings, info, abort
 
                 if ftype is not None and ftype != stat.S_IFMT(lstat.st_mode):
-                        errors.append("File Type: '%s' should be '%s'" %
-                            (ftype_to_name(stat.S_IFMT(lstat.st_mode)),
-                             ftype_to_name(ftype)))
+                        errors.append(_("File Type: '%(found)s' should be "
+                            "'%(expected)s'") % {
+                            "found": ftype_to_name(stat.S_IFMT(lstat.st_mode)),
+                            "expected": ftype_to_name(ftype) })
                         abort = True
 
                 if owner is not None and lstat.st_uid != owner:
-                        errors.append("Owner: '%s (%d)' should be '%s (%d)'" %
-                            (img.get_name_by_uid(lstat.st_uid, True),
-                            lstat.st_uid, self.attrs["owner"], owner))
+                        errors.append(_("Owner: '%(found_name)s "
+                            "(%(found_id)d)' should be '%(expected_name)s "
+                            "(%(expected_id)d)'") % {
+                            "found_name": img.get_name_by_uid(lstat.st_uid,
+                            True), "found_id": lstat.st_uid,
+                            "expected_name": self.attrs["owner"],
+                            "expected_id": owner })
 
                 if group is not None and lstat.st_gid != group:
-                        errors.append("Group: '%s (%s)' should be '%s (%s)'" %
-                            (img.get_name_by_gid(lstat.st_gid, True),
-                            lstat.st_gid, self.attrs["group"], group))
+                        errors.append(_("Group: '%(found_name)s "
+                            "(%(found_id)s)' should be '%(expected_name)s "
+                            "(%(expected_id)s)'") % {
+                            "found_name": img.get_name_by_gid(lstat.st_gid,
+                            True), "found_id": lstat.st_gid,
+                            "expected_name": self.attrs["group"],
+                            "expected_id": group })
 
                 if mode is not None and stat.S_IMODE(lstat.st_mode) != mode:
-                        errors.append("Mode: 0%.3o should be 0%.3o" %
-                            (stat.S_IMODE(lstat.st_mode), mode))
-                return lstat, errors, abort
+                        errors.append(_("Mode: 0%(found).3o should be "
+                            "0%(expected).3o") % {
+                            "found": stat.S_IMODE(lstat.st_mode),
+                            "expected": mode })
+                return lstat, errors, warnings, info, abort
 
         def needsdata(self, orig):
                 """Returns True if the action transition requires a

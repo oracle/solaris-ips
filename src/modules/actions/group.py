@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -31,8 +31,6 @@ This module contains the UserAction class, which represents a user
 packaging object.  This contains the attributes necessary to create
 a new user."""
 
-import os
-import errno
 import generic
 try:
         from pkg.cfgfiles import *
@@ -47,8 +45,8 @@ class GroupAction(generic.Action):
         group passwds is not supported"""
         name = "group"
         key_attr = "groupname"
-        attributes = [ "groupname", "gid"] 
-                       
+        attributes = [ "groupname", "gid"]
+
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
 
@@ -66,24 +64,29 @@ class GroupAction(generic.Action):
                         # the group action is ignored if cfgfiles is not available
                         return
 
-                groupname = self.attrs["groupname"]
-
                 template = self.extract(["groupname", "gid"])
-                
+
                 gr = GroupFile(pkgplan.image.get_root())
 
                 cur_attrs = gr.getvalue(template)
-                
+
                 # XXX needs modification if more attrs are used
-                if not cur_attrs: 
-                    gr.setvalue(template)
-                    gr.writefile()
+                if not cur_attrs:
+                        gr.setvalue(template)
+                        gr.writefile()
 
         def verify(self, img, **args):
-                """" verify user action installation """
+                """Returns a tuple of lists of the form (errors, warnings,
+                info).  The error list will be empty if the action has been
+                correctly installed in the given image."""
+
+                errors = []
+                warnings = []
+                info = []
                 if not have_cfgfiles:
-                        # the user action is ignored if cfgfiles is not available
-                        return []
+                        # The user action is ignored if cfgfiles is not
+                        # available.
+                        return errors, warnings, info
 
                 gr = GroupFile(img.get_root())
 
@@ -112,24 +115,27 @@ class GroupAction(generic.Action):
                 # Ignore "user-list", as it is only modified by user actions
                 should_be.pop("user-list", None)
 
-                return [
-                    "%s: '%s' should be '%s'" %
-                        (a, cur_attrs[a], should_be[a])
+                errors = [
+                    _("%(entry)s: '%(found)s' should be '%(expected)s'") % {
+                        "entry": a, "found": cur_attrs[a],
+                        "expected": should_be[a] }
                     for a in should_be
                     if cur_attrs[a] != should_be[a]
                 ]
+                return errors, warnings, info
 
         def remove(self, pkgplan):
                 """client-side method that removes this group"""
                 if not have_cfgfiles:
-                        # the user action is ignored if cfgfiles is not available
+                        # The user action is ignored if cfgfiles is not
+                        # available.
                         return
                 gr = GroupFile(pkgplan.image.get_root())
                 cur_attrs = gr.getvalue(self.attrs)
                 # groups need to be first added, last removed
                 if not cur_attrs["user-list"]:
-                    gr.removevalue(self.attrs)
-                    gr.writefile()
+                        gr.removevalue(self.attrs)
+                        gr.writefile()
 
         def generate_indices(self):
                 """Generates the indices needed by the search dictionary.  See

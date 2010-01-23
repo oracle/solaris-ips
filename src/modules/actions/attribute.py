@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -55,12 +55,6 @@ class AttributeAction(generic.Action):
                 if "name" not in self.attrs or "value" not in self.attrs:
                         raise pkg.actions.InvalidActionError(str(self),
                             'Missing "name" or "value" attribute')
-
-        def verify(self, img, **args):
-                """Since there's no install method, this class is always
-                installed correctly."""
-
-                return []
 
         def generate_indices(self):
                 """Generates the indices needed by the search dictionary.  See

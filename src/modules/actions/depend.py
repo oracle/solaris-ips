@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -175,16 +175,27 @@ class DependencyAction(generic.Action):
                 self.attrs["fmri"] = cleanfmri
 
         def verify(self, image, **args):
-                # XXX Exclude and range between min and max not yet handled
+                """Returns a tuple of lists of the form (errors, warnings,
+                info).  The error list will be empty if the action has been
+                correctly installed in the given image."""
 
+                errors = []
+                warnings = []
+                info = []
+
+                # XXX Exclude and range between min and max not yet handled
                 def __min_version():
-                        return pkg.version.Version("0", image.attrs["Build-Release"])
+                        return pkg.version.Version("0",
+                            image.attrs["Build-Release"])
 
                 ctype = self.attrs["type"]
-                pfmri = fmri.PkgFmri(self.attrs["fmri"], image.attrs["Build-Release"])
+                pfmri = fmri.PkgFmri(self.attrs["fmri"],
+                    image.attrs["Build-Release"])
 
                 if ctype not in self.known_types:
-                        return ["Unknown type (%s) in depend action" % ctype]
+                        errors.append(
+                            _("Unknown type (%s) in depend action") % ctype)
+                        return errors, warnings, info
 
                 installed_version = image.get_version_installed(pfmri)
 
@@ -212,18 +223,27 @@ class DependencyAction(generic.Action):
                         if min_fmri and min_fmri.version and \
                             min_fmri.version.is_successor(vi,
                             pkg.version.CONSTRAINT_NONE):
-                                return ["%s dependency %s is downrev (%s)" %
-                                    (ctype, min_fmri, installed_version)]
+                                errors.append(
+                                    _("%(dep_type)s dependency %(dep_val)s "
+                                    "is downrev (%(inst_ver)s)") % {
+                                    "dep_type": ctype, "dep_val": min_fmri,
+                                    "inst_ver": installed_version })
+                                return errors, warnings, info
+
                         if max_fmri and max_fmri.version and  \
                             vi > max_fmri.version and \
                             not vi.is_successor(max_fmri.version,
                             pkg.version.CONSTRAINT_AUTO):
-                                return ["%s dependency %s is uprev (%s)" %
-                                    (ctype, max_fmri, installed_version)]
+                                errors.append(
+                                    _("%(dep_type)s dependency %(dep_val)s "
+                                    "is uprev (%(inst_ver)s)") % {
+                                    "dep_type": ctype, "dep_val": max_fmri,
+                                    "inst_ver": installed_version })
                 elif required:
-                        return ["Required dependency %s is not installed" % pfmri]
+                        errors.append(_("Required dependency %s is not "
+                            "installed") % pfmri)
 
-                return []
+                return errors, warnings, info
 
         def generate_indices(self):
                 """Generates the indices needed by the search dictionary.  See

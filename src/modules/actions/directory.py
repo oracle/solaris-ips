@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -110,11 +110,13 @@ class DirectoryAction(generic.Action):
                                         raise
 
         def verify(self, img, **args):
-                """ make sure directory is correctly installed"""
+                """Returns a tuple of lists of the form (errors, warnings,
+                info).  The error list will be empty if the action has been
+                correctly installed in the given image."""
 
-                lstat, errors, abort = \
+                lstat, errors, warnings, info, abort = \
                     self.verify_fsobj_common(img, stat.S_IFDIR)
-                return errors
+                return errors, warnings, info
 
         def remove(self, pkgplan):
                 localpath = os.path.normpath(self.attrs["path"])

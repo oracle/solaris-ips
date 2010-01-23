@@ -567,6 +567,7 @@ cli.t_pkg_uninstall.py TestCommandLine.test_dependencies|pass
 cli.t_pkg_uninstall.py TestCommandLine.test_pkg_bogus_opts|pass
 cli.t_pkg_uninstall.py TestCommandLine.test_rmdir_cwd|pass
 cli.t_pkg_uninstall.py TestCommandLine.test_uninstalled_state|pass
+cli.t_pkg_verify.py TestPkgVerify.test_0_verify|pass
 cli.t_pkg_verify.py TestPkgVerify.test_bug_1463|pass
 cli.t_pkg_verify.py TestPkgVerify.test_pkg_verify_bad_opts|pass
 cli.t_pkg_version.py TestPkgVersion.test_pkg_version_bad_opts|pass

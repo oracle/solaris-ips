@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -93,16 +93,19 @@ class HardLinkAction(link.LinkAction):
                                 raise ActionExecutionError(self, e)
 
         def verify(self, img, **args):
+                """Returns a tuple of lists of the form (errors, warnings,
+                info).  The error list will be empty if the action has been
+                correctly installed in the given image."""
 
                 #
                 # We only allow hard links to regular files, so the hard
                 # link should lstat() as a regular file.
                 #
-                lstat, errors, abort = \
+                lstat, errors, warnings, info, abort = \
                     self.verify_fsobj_common(img, stat.S_IFREG)
                 if abort:
                         assert errors
-                        return errors
+                        return errors, warnings, info
 
                 target = self.get_target_path()
                 path = os.path.normpath(os.path.sep.join(
@@ -111,20 +114,19 @@ class HardLinkAction(link.LinkAction):
                     (img.get_root(), target)))
 
                 if not os.path.exists(target):
-                        errors.append("Target '%s' does not exist" %
+                        errors.append(_("Target '%s' does not exist") %
                             self.attrs["target"])
 
                 # No point in continuing if no target
                 if errors:
-                        return errors
+                        return errors, warnings, info
 
                 try:
                         if os.stat(path).st_ino != os.stat(target).st_ino:
-                                errors.append("Broken: Path and Target (%s) "
-                                    "inodes not the same" %
+                                errors.append(_("Broken: Path and Target (%s) "
+                                    "inodes not the same") %
                                     self.get_target_path())
-
                 except OSError, e:
-                        errors.append("Unexpected OSError: %s" % e)
+                        errors.append(_("Unexpected Error: %s") % e)
 
-                return errors
+                return errors, warnings, info

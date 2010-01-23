@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -89,34 +89,37 @@ class LinkAction(generic.Action):
                 os.symlink(target, path)
 
         def verify(self, img, **args):
-                """client-side method to verify install of self"""
+                """Returns a tuple of lists of the form (errors, warnings,
+                info).  The error list will be empty if the action has been
+                correctly installed in the given image."""
+
                 path = self.attrs["path"]
                 target = self.attrs["target"]
 
                 path = os.path.normpath(os.path.sep.join(
                     (img.get_root(), path)))
 
-                lstat, errors, abort = \
+                lstat, errors, warnings, info, abort = \
                     self.verify_fsobj_common(img, stat.S_IFLNK)
 
                 if abort:
                         assert errors
-                        return errors
+                        return errors, warnings, info
 
                 atarget = os.readlink(path)
 
                 if target != atarget:
-                        errors.append("Target: '%s' should be '%s'" %
-                            (atarget, target))
-
-                return errors
+                        errors.append(_("Target: '%(found)s' should be "
+                            "'%(expected)s'") % { "found": atarget,
+                            "expected": target })
+                return errors, warnings, info
 
         def remove(self, pkgplan):
                 path = os.path.normpath(os.path.sep.join(
                     (pkgplan.image.get_root(), self.attrs["path"])))
                 try:
                         os.unlink(path)
-                except OSError,e:
+                except OSError, e:
                         if e.errno != errno.ENOENT:
                                 raise
 

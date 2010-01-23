@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -153,6 +153,12 @@ class ProgressTracker(object):
 
         def verify_yield_error(self, actname, errors):
                 self.ver_output_error(actname, errors)
+
+        def verify_yield_warning(self, actname, warnings):
+                self.ver_output_warning(actname, warnings)
+
+        def verify_yield_info(self, actname, info):
+                self.ver_output_info(actname, info)
 
         def verify_done(self):
                 self.ver_cur_fmri = None
@@ -298,6 +304,14 @@ class ProgressTracker(object):
                 raise NotImplementedError("ver_output_error() not implemented "
                     "in superclass")
 
+        def ver_output_warning(self, actname, warnings):
+                raise NotImplementedError("ver_output_warning() not "
+                    "implemented in superclass")
+
+        def ver_output_info(self, actname, info):
+                raise NotImplementedError("ver_output_info() not "
+                    "implemented in superclass")
+
         def ver_output_done(self):
                 raise NotImplementedError("ver_output_done() not implemented "
                     "in superclass")
@@ -381,6 +395,12 @@ class QuietProgressTracker(ProgressTracker):
         def ver_output_error(self, actname, errors):
                 return
 
+        def ver_output_warning(self, actname, warnings):
+                return
+
+        def ver_output_info(self, actname, info):
+                return
+
         def dl_output(self):
                 return
 
@@ -453,6 +473,12 @@ class CommandLineProgressTracker(ProgressTracker):
                 return
 
         def ver_output_error(self, actname, errors):
+                return
+
+        def ver_output_warning(self, actname, warnings):
+                return
+
+        def ver_output_info(self, actname, info):
                 return
 
         def ver_output_done(self):
@@ -698,6 +724,14 @@ class FancyUNIXProgressTracker(ProgressTracker):
                         if e.errno == errno.EPIPE:
                                 raise PipeError, e
                         raise
+
+        def ver_output_warning(self, actname, warnings):
+                # Display logic is the same as that for errors.
+                return self.ver_output_error(actname, warnings)
+
+        def ver_output_info(self, actname, info):
+                # Display logic is the same as that for errors.
+                return self.ver_output_error(actname, info)
 
         def ver_output_done(self):
                 try:

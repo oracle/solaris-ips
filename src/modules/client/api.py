@@ -43,7 +43,6 @@ import pkg.client.bootenv as bootenv
 import pkg.client.history as history
 import pkg.client.image as image
 import pkg.client.indexer as indexer
-import pkg.client.progress as progress
 import pkg.client.publisher as publisher
 import pkg.client.query_parser as query_p
 import pkg.fmri as fmri
@@ -58,7 +57,7 @@ from pkg.api_common import (PackageInfo, LicenseInfo, PackageCategory,
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 29
+CURRENT_API_VERSION = 30
 CURRENT_P5I_VERSION = 1
 
 logger = global_settings.logger

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -107,7 +107,7 @@ class FileAction(generic.Action):
                             mode=misc.PKG_DIR_MODE)
 
                 # XXX If we're upgrading, do we need to preserve file perms from
-                # exisiting file?
+                # existing file?
 
                 # check if we have a save_file active; if so, simulate file
                 # being already present rather than installed from scratch
@@ -211,12 +211,18 @@ class FileAction(generic.Action):
                                 os.chmod(final_path, mode)
 
         def verify(self, img, **args):
-                """ verify that file is present and if preserve attribute
-                not present, that hashes match"""
+                """Returns a tuple of lists of the form (errors, warnings,
+                info).  The error list will be empty if the action has been
+                correctly installed in the given image.
+
+                In detail, this verifies that the file is present, and if
+                the preserve attribute is not present, that the hashes
+                and other attributes of the file match."""
+
                 path = os.path.normpath(os.path.sep.join(
                     (img.get_root(), self.attrs["path"])))
 
-                lstat, errors, abort = \
+                lstat, errors, warnings, info, abort = \
                     self.verify_fsobj_common(img, stat.S_IFREG)
                 if lstat:
                         if not stat.S_ISREG(lstat.st_mode):
@@ -224,17 +230,21 @@ class FileAction(generic.Action):
 
                 if abort:
                         assert errors
-                        return errors
+                        return errors, warnings, info
 
-                if path.lower().endswith("/cat") and args["verbose"] == True:
-                        errors.append("Warning: package may contain bobcat!  "
+                if path.lower().endswith("/bobcat") and args["verbose"] == True:
+                        # Returned as a purely informational (untranslated)
+                        # message so that no client should interpret it as a
+                        # reason to fail verification.
+                        info.append("Warning: package may contain bobcat!  "
                             "(http://xkcd.com/325/)")
 
                 if "timestamp" in self.attrs and lstat.st_mtime != \
                     misc.timestamp_to_time(self.attrs["timestamp"]):
-                        errors.append("Timestamp: %s should be %s" %
-                            (misc.time_to_timestamp(lstat.st_mtime),
-                            self.attrs["timestamp"]))
+                        errors.append(_("Timestamp: %(found)s should be "
+                            "%(expected)s") % {
+                            "found": misc.time_to_timestamp(lstat.st_mtime),
+                            "expected": self.attrs["timestamp"] })
 
                 # avoid checking pkg.size if elfhash present;
                 # different size files may have the same elfhash
@@ -242,14 +252,15 @@ class FileAction(generic.Action):
                     "pkg.size" in self.attrs and    \
                     "elfhash" not in self.attrs and \
                     lstat.st_size != int(self.attrs["pkg.size"]):
-                        errors.append("Size: %d bytes should be %d" % \
-                            (lstat.st_size, int(self.attrs["pkg.size"])))
+                        errors.append(_("Size: %(found)d bytes should be "
+                            "%(expected)d") % { "found": lstat.st_size,
+                            "expected": int(self.attrs["pkg.size"]) })
 
                 if "preserve" in self.attrs:
-                        return errors
+                        return errors, warnings, info
 
                 if args["forever"] != True:
-                        return errors
+                        return errors, warnings, info
 
                 #
                 # Check file contents
@@ -271,8 +282,10 @@ class FileAction(generic.Action):
 
                                 if elfhash is not None and \
                                     elfhash != self.attrs["elfhash"]:
-                                        elferror = "Elfhash: %s should be %s" % \
-                                            (elfhash, self.attrs["elfhash"])
+                                        elferror = _("Elfhash: %(found)s "
+                                            "should be %(expected)s") % {
+                                            "found": elfhash,
+                                            "expected": self.attrs["elfhash"] }
 
                         # If we failed to compute the content hash, or the
                         # content hash failed to verify, try the file hash.
@@ -287,21 +300,21 @@ class FileAction(generic.Action):
                                         if elferror:
                                                 errors.append(elferror)
                                         else:
-                                                errors.append("Hash: %s should be %s" % \
-                                                    (hashvalue, self.hash))
+                                                errors.append(_("Hash: "
+                                                    "%(found)s should be "
+                                                    "%(expected)s") % {
+                                                    "found": hashvalue,
+                                                    "expected": self.hash })
                                         self.replace_required = True
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES:
-                                errors.append("Skipping: Permission Denied")
+                                errors.append(_("Skipping: Permission Denied"))
                         else:
-                                errors.append("Unexpected Error %s" % e)
-                except KeyboardInterrupt:
-                        # This is not really unexpected...
-                        raise
+                                errors.append(_("Unexpected Error: %s") % e)
                 except Exception, e:
-                        errors.append("Unexpected Exception: %s" % e)
+                        errors.append(_("Unexpected Exception: %s") % e)
 
-                return errors
+                return errors, warnings, info
 
         # If we're not upgrading, or the file contents have changed,
         # retrieve the file and write it to a temporary location.
@@ -332,7 +345,7 @@ class FileAction(generic.Action):
                         # Make file writable so it can be deleted
                         os.chmod(path, stat.S_IWRITE|stat.S_IREAD)
                         portable.remove(path)
-                except OSError,e:
+                except OSError, e:
                         if e.errno != errno.ENOENT:
                                 raise
 

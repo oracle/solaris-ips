@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -42,7 +42,7 @@ import pkg.misc as misc
 import pkg.publish.dependencies as dependencies
 from pkg.misc import msg, emsg, PipeError
 
-CLIENT_API_VERSION = 29
+CLIENT_API_VERSION = 30
 PKG_CLIENT_NAME = "pkgdepend"
 
 DEFAULT_SUFFIX = ".res"

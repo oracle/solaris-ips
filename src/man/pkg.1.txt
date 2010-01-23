@@ -437,13 +437,18 @@ SUBCOMMANDS
           for the image's publishers to retrieve publisher metadata (e.g.
           catalogs).
 
-     verify [-Hqv] [pkg_fmri_pattern ...]
+     verify [-Hvq] [pkg_fmri_pattern ...]
           Validate the installation of packages in the current image.
-          With -v, do more verbose reporting.  With -q, print nothing, but
-          return failure if there are any verification problems.  File hashes
-          are always checked.
+          Please note that verification of installed package content is
+          based on a custom content analysis that may return different
+          results than those of other programs.
 
-          The -H option causes the headers to be omitted.
+          With -v, include informational messages regarding packages.
+
+          With -q, print nothing, but return failure if there are any
+          fatal errors.
+
+          With -H, omit the headers from the verification output.
 
      variant [<variant_spec> ...]
           Display the current values of all variants, or with arguments,
@@ -503,7 +508,10 @@ SUBCOMMANDS
           that facet specification from the current image.
      
      fix [--accept] [--licenses] [pkg_fmri_pattern ...]
-          Fix any errors reported by pkg verify.
+          Fix any errors reported by pkg verify.  Please note that
+          verification of installed package content is based on a
+          custom content analysis that may return different results
+          than those of other programs.
 
           With --accept, you indicate that you agree to and accept the
           terms of the licenses of the packages that are updated or

@@ -81,7 +81,7 @@ from pkg.client.history import (RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
     RESULT_FAILED_UNKNOWN, RESULT_FAILED_OUTOFMEMORY)
 from pkg.misc import EmptyI, msg, PipeError
 
-CLIENT_API_VERSION = 29
+CLIENT_API_VERSION = 30
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -472,22 +472,43 @@ def fix_image(img, args):
 
         fmris, notfound, illegals = img.installed_fmris_from_args(pargs)
 
-        any_errors = False
         repairs = []
         for f, fstate in fmris:
-                failed_actions = []
-                for err in img.verify(f, progresstracker,
-                    verbose=True, forever=True):
-                        if not failed_actions:
-                                msg("Verifying: %-50s %7s" %
-                                    (f.get_pkg_stem(), "ERROR"))
-                        act = err[0]
-                        failed_actions.append(act)
+                entries = []
+
+                # Since every entry returned by verify might not be
+                # something needing repair, the relevant information
+                # for each package must be accumulated first to find
+                # an overall success/failure result and then the
+                # related messages output for it.
+                for act, errors, warnings, pinfo in img.verify(f,
+                    progresstracker, verbose=True, forever=True):
+                        if not errors:
+                                # Fix will silently skip packages that
+                                # don't have errors, but will display
+                                # the additional messages if there
+                                # is at least one error.
+                                continue
+
+                        # Informational messages are ignored by fix.
+                        entries.append((act, errors, warnings ))
+
+                if not entries:
+                        # Nothing to fix for this package.
+                        continue
+
+                msg(_("Verifying: %(pkg_name)-50s %(result)7s") % {
+                    "pkg_name": f.get_pkg_stem(), "result": _("ERROR") })
+
+                failed = []
+                for act, errors, warnings in entries:
+                        failed.append(act)
                         msg("\t%s" % act.distinguished_name())
-                        for x in err[1]:
+                        for x in errors:
                                 msg("\t\t%s" % x)
-                if failed_actions:
-                        repairs.append((f, failed_actions))
+                        for x in warnings:
+                                msg("\t\t%s" % x)
+                repairs.append((f, failed))
 
         # Repair anything we failed to verify
         if repairs:
@@ -564,37 +585,54 @@ def verify_image(img, args):
                 return EXIT_OOPS
 
         any_errors = False
-
-        header = False
         for f, fstate in fmris:
-                pkgerr = False
-                for err in img.verify(f, progresstracker,
-                    verbose=verbose, forever=forever):
-                        #
-                        # Eventually this code should probably
-                        # move into the progresstracker
-                        #
-                        if not pkgerr:
-                                if display_headers and not header:
-                                        msg("%-50s %7s" % ("PACKAGE", "STATUS"))
-                                        header = True
+                entries = []
+                result = _("OK")
+                failed = False
 
-                                if not quiet:
-                                        msg("%-50s %7s" % (f.get_pkg_stem(),
-                                            "ERROR"))
-                                pkgerr = True
+                # Since every entry returned by verify might not be
+                # something needing repair, the relevant information
+                # for each package must be accumulated first to find
+                # an overall success/failure result and then the
+                # related messages output for it.
+                for act, errors, warnings, pinfo in img.verify(f,
+                    progresstracker, verbose=verbose, forever=forever):
+                        if errors:
+                                failed = True
+                                if quiet:
+                                        # Nothing more to do.
+                                        break
+                                result = _("ERROR")
+                        elif not failed and warnings:
+                                result = _("WARNING")
 
-                        if not quiet:
-                                msg("\t%s" % err[0].distinguished_name())
-                                for x in err[1]:
+                        entries.append((act, errors, warnings, pinfo))
+
+                any_errors = any_errors or failed
+                if (not failed and not verbose) or quiet:
+                        # Nothing more to do.
+                        continue
+
+                # Could this be moved into the progresstracker?
+                if display_headers:
+                        display_headers = False
+                        msg(_("Verifying: %(pkg_name)-50s %(result)7s") % {
+                            "pkg_name": _("PACKAGE"), "result": _("STATUS") })
+
+                msg(_("%(pkg_name)-50s %(result)7s") % {
+                    "pkg_name": f.get_pkg_stem(), "result": result })
+
+                for act, errors, warnings, pinfo in entries:
+                        msg("\t%s" % act.distinguished_name())
+                        for x in errors: 
+                                msg("\t\t%s" % x)
+                        for x in warnings:
+                                msg("\t\t%s" % x)
+                        if verbose:
+                                # Only display informational messages if
+                                # verbose is True.
+                                for x in pinfo:
                                         msg("\t\t%s" % x)
-                if verbose and not pkgerr:
-                        if display_headers and not header:
-                                msg("%-50s %7s" % ("PACKAGE", "STATUS"))
-                                header = True
-                        msg("%-50s %7s" % (f.get_pkg_stem(), "OK"))
-
-                any_errors = any_errors or pkgerr
 
         if fmris:
                 progresstracker.verify_done()

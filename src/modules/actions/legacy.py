@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -36,9 +36,7 @@ import os
 import errno
 import time
 
-from stat import *
 import generic
-
 from pkg import misc
 
 class LegacyAction(generic.Action):
@@ -51,11 +49,13 @@ class LegacyAction(generic.Action):
                 generic.Action.__init__(self, data, **attrs)
 
         def directory_references(self):
-                return [os.path.normpath(os.path.join("var/sadm/pkg", self.attrs["pkg"]))]
+                return [os.path.normpath(os.path.join("var/sadm/pkg",
+                    self.attrs["pkg"]))]
 
         def install(self, pkgplan, orig):
                 """Client-side method that installs the dummy package files.
-                Use per-pkg hardlinks to create reference count for pkginfo file"""
+                Use per-pkg hardlinks to create reference count for pkginfo
+                file"""
 
                 pkgdir = os.path.join(pkgplan.image.get_root(), "var/sadm/pkg",
                     self.attrs["pkg"])
@@ -102,8 +102,8 @@ class LegacyAction(generic.Action):
                 # uninstall easier
 
                 if not orig:
-                        linkfile = os.path.join(pkgdir,
-                            "pkginfo.%d" % (os.stat(pkginfo)[ST_NLINK] + 1))
+                        linkfile = os.path.join(pkgdir, "pkginfo.%d" %
+                            (os.stat(pkginfo).st_nlink + 1))
                         os.link(pkginfo, linkfile)
 
                 # the svr4 pkg commands need contents file to work, but the
@@ -122,20 +122,28 @@ class LegacyAction(generic.Action):
                 os.chmod(pkginfo, misc.PKG_FILE_MODE)
 
         def verify(self, img, **args):
+                """Returns a tuple of lists of the form (errors, warnings,
+                info).  The error list will be empty if the action has been
+                correctly installed in the given image."""
+
+                errors = []
+                warnings = []
+                info = []
+
                 pkgdir = os.path.join(img.get_root(), "var/sadm/pkg",
                     self.attrs["pkg"])
 
-                # XXX this could be a better check & exactly validate pkginfo contents
-
+                # XXX this could be a better check & exactly validate pkginfo
+                # contents
                 if not os.path.isdir(pkgdir):
-                        return ["Missing directory var/sadm/pkg/%s" %
-                            self.attrs["pkg"]]
-                pkginfo = os.path.join(pkgdir, "pkginfo")
+                        errors.append(_("Missing directory var/sadm/pkg/%s") %
+                            self.attrs["pkg"])
+                        return errors, warnings, info
 
                 if not os.path.isfile(os.path.join(pkgdir, "pkginfo")):
-                        return ["Missing file var/sadm/pkg/%s/pkginfo" %
-                            self.attrs["pkg"]]
-                return []
+                        errors.append(_("Missing file "
+                            "var/sadm/pkg/%s/pkginfo") % self.attrs["pkg"])
+                return errors, warnings, info
 
         def remove(self, pkgplan):
 
@@ -147,7 +155,7 @@ class LegacyAction(generic.Action):
                 pkginfo = os.path.join(pkgdir, "pkginfo")
 
                 if os.path.isfile(pkginfo):
-                        link_count = os.stat(pkginfo)[ST_NLINK]
+                        link_count = os.stat(pkginfo).st_nlink
                         linkfile = os.path.join(pkgdir,
                             "pkginfo.%d" % (link_count))
 

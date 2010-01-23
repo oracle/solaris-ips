@@ -20,40 +20,143 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 
-import unittest
 import os
+import pkg.portable as portable
+import unittest
 
 class TestPkgVerify(testutils.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
         persistent_depot = True
 
+        foo10 = """
+            open foo@1.0,5.11-0
+            add dir mode=0755 owner=root group=sys path=/etc
+            add dir mode=0755 owner=root group=sys path=/etc/security
+            add dir mode=0755 owner=root group=sys path=/usr
+            add dir mode=0755 owner=root group=bin path=/usr/bin
+            add file $test_prefix/bobcat mode=0644 owner=root group=bin path=/usr/bin/bobcat
+            add file $test_prefix/dricon_maj path=/etc/name_to_major mode=644 owner=root group=sys preserve=true
+            add file $test_prefix/dricon_da path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
+            add file $test_prefix/dricon_cls path=/etc/driver_classes mode=644 owner=root group=sys preserve=true
+            add file $test_prefix/dricon_mp path=/etc/minor_perm mode=644 owner=root group=sys preserve=true
+            add file $test_prefix/dricon_dp path=/etc/security/device_policy mode=644 owner=root group=sys preserve=true
+            add file $test_prefix/dricon_ep path=/etc/security/extra_privs mode=644 owner=root group=sys preserve=true
+            add driver name=zigit alias=pci8086,1234
+            close
+            """
+
+        misc_files = [
+            ("bobcat", None),
+            ("dricon_da", """zigit "pci8086,1234"\n"""),
+            ("dricon_maj", """zigit 103\n"""),
+            ("dricon_cls", """\n"""),
+            ("dricon_mp", """\n"""),
+            ("dricon_dp", """\n"""),
+            ("dricon_ep", """\n""")
+        ]
+
+        def setUp(self):
+                testutils.SingleDepotTestCase.setUp(self)
+
+                for p in ("foo10",):
+                        val = getattr(self, p).replace("$test_prefix",
+                            self.get_test_prefix())
+                        setattr(self, p, val)
+
+                for p, v in self.misc_files:
+                        fpath = os.path.join(self.get_test_prefix(), p)
+                        f = open(fpath, "wb")
+
+                        if not v:
+                                # write the name of the file into the file, so that
+                                # all files have differing contents
+                                v = fpath
+                        f.write(v)
+                        f.close()
+                        self.debug("wrote %s" % fpath)
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.foo10)
+
         def test_pkg_verify_bad_opts(self):
                 """ test pkg verify with bad options """
-			
-		durl = self.dc.get_depot_url()
+
+                durl = self.dc.get_depot_url()
                 self.image_create(durl)
 
                 self.pkg("verify -vq", exit=2)
-                
+
         def test_bug_1463(self):
-            """When multiple FMRIs are given to pkg verify,
-            if any of them aren't installed it should fail."""
-            pkg1 = """
-                open foo@1.0,5.11-0
-                close
-            """
-            durl = self.dc.get_depot_url()
-            self.pkgsend_bulk(durl, pkg1)
-            self.image_create(durl)
-            self.pkg("install foo")
-            self.pkg("verify foo nonexistent", exit=1)
+                """When multiple FMRIs are given to pkg verify,
+                if any of them aren't installed it should fail."""
+
+                durl = self.dc.get_depot_url()
+                self.image_create(durl)
+                self.pkg("install foo")
+                self.pkg("verify foo nonexistent", exit=1)
+                self.pkg("uninstall foo")
+
+        def test_0_verify(self):
+                """Ensure that verify returns failure as expected when packages
+                are not correctly installed."""
+
+                # XXX either this should be more comprehensive or more testing
+                # needs to be added somewhere else appropriate.
+                durl = self.dc.get_depot_url()
+                self.image_create(durl)
+
+                # Should fail since foo is not installed.
+                self.pkg("verify foo", exit=1)
+
+                # Now install package.
+                self.pkg("install foo")
+
+                # Should not fail since informational messages are not
+                # fatal.
+                self.pkg("verify foo")
+
+                # Informational messages should not be output unless -v
+                # is provided.
+                self.pkg("verify foo | grep bobcat", exit=1)
+                self.pkg("verify -v foo | grep bobcat")
+
+                # Get path to installed file.
+                fpath = os.path.join(self.get_img_path(), "usr", "bin",
+                    "bobcat")
+
+                # Should fail since file is missing.
+                portable.remove(fpath)
+                self.pkg("verify foo", exit=1)
+
+                # Now verify that verify warnings are not fatal.
+                self.pkg("fix")
+
+                fpath = os.path.join(self.get_img_path(), "etc",
+                    "driver_aliases")
+
+                with open(fpath, "ab+") as f:
+                        out = ""
+                        for l in f:
+                                if l.find("zigit") != -1:
+                                        nl = l.replace("1234", "4321")
+                                        out += nl
+                                out += l
+                        f.truncate(0)
+                        f.write(out)
+
+                # Verify should find the extra alias...
+                self.pkg("verify -v foo | grep 4321")
+
+                # ...but it should not be treated as a fatal error.
+                self.pkg("verify foo")
+
 
 if __name__ == "__main__":
         unittest.main()

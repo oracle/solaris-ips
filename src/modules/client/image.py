@@ -767,18 +767,37 @@ class Image(object):
                 self.history.log_operation_end()
 
         def verify(self, fmri, progresstracker, **args):
-                """generator that returns any errors in installed pkgs
-                as tuple of action, list of errors"""
+                """Generator that returns a tuple of the form (action, errors,
+                warnings, info) if there are any error, warning, or other
+                messages about an action contained within the specified
+                package.  Where the returned messages are lists of strings
+                indicating fatal problems, potential issues (that can be
+                ignored), or extra information to be displayed respectively.
+
+                'fmri' is the fmri of the package to verify.
+
+                'progresstracker' is a ProgressTracker object.
+
+                'args' is a dicti of additional keyword arguments to be passed
+                to each action verification routine."""
 
                 for act in self.get_manifest(fmri).gen_actions(
                     self.list_excludes()):
-                        errors = act.verify(self, pkg_fmri=fmri, **args)
+                        errors, warnings, info = act.verify(self, pkg_fmri=fmri,
+                            **args)
                         progresstracker.verify_add_progress(fmri)
                         actname = act.distinguished_name()
                         if errors:
                                 progresstracker.verify_yield_error(actname,
                                     errors)
-                                yield (act, errors)
+                        if warnings:
+                                progresstracker.verify_yield_warning(actname,
+                                    warnings)
+                        if info:
+                                progresstracker.verify_yield_info(actname,
+                                    info)
+                        if errors or warnings or info:
+                                yield act, errors, warnings, info
 
         def __call_imageplan_evaluate(self, ip, verbose=False):
                 # A plan can be requested without actually performing an
