@@ -90,12 +90,41 @@ file tmp/file/should/not/exist/here/foo group=bin mode=0755 owner=root path=foo/
         else:
                 py_path = []
 
-        # Remove any paths that start with the defined python paths.
-        new_path = sorted([
-            fp
-            for fp in sys.path
-            if not mf.DepthLimitedModuleFinder.startswith_path(fp, py_path)
-        ])
+        def get_ver_paths(self, ver, proto):
+                """To determine what the correct results should be for several
+                tests, it's necessary to discover what the sys.path is for the
+                version of python the test uses."""
+
+                cur_ver = "%s.%s" % sys.version_info[0:2]
+                if cur_ver == ver:
+                        # Add the directory from which pkgdepend will be run.
+                        res =  [os.path.join(proto, "usr","bin")]
+                        # Remove any paths that start with the defined python
+                        # paths.
+                        res.extend(
+                            sorted([
+                            fp for fp in sys.path
+                            if not mf.DepthLimitedModuleFinder.startswith_path(
+                                fp, self.py_path)
+                            ]))
+                        return res
+                        
+                sp = subprocess.Popen(
+                    "python%s -c 'import sys; print sys.path'" % ver,
+                    shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                out, err = sp.communicate()
+                if err:
+                        raise RuntimeError("Error running python%s:%s" %
+                            (ver, err))
+                # The first item in sys.path is empty when sys.path is examined
+                # by running python via the -c option. When running an
+                # executable python script, the first item is the directory
+                # containing the script.
+                return sorted([
+                    fp for fp in eval(out)[1:]
+                    if not mf.DepthLimitedModuleFinder.startswith_path(fp,
+                        self.py_path)
+                ])
 
         @staticmethod
         def __make_paths(added, paths):
@@ -112,62 +141,20 @@ file tmp/file/should/not/exist/here/foo group=bin mode=0755 owner=root path=foo/
         def make_res_manf_1(self, proto_area):
                 return ("depend %(pfx)s.file=python "
                     "%(pfx)s.path=usr/bin fmri=%(dummy_fmri)s "
-                    "type=require %(pfx)s.reason="
-                    "usr/lib/python2.6/vendor-packages/pkg/client/indexer.py "
+                    "type=require %(pfx)s.reason=%(reason)s "
                     "%(pfx)s.type=script\n"
 
                     "depend fmri=%(dummy_fmri)s "
                     "%(pfx)s.file=authlog "
                     "%(pfx)s.path=var/log "
                     "type=require %(pfx)s.reason=baz "
-                    "%(pfx)s.type=hardlink\n"
-
-                    "depend fmri=%(dummy_fmri)s "
-                    "%(pfx)s.file=indexer.py "
-                    "%(pfx)s.file=indexer.pyc "
-                    "%(pfx)s.file=indexer.pyo "
-                    "%(pfx)s.file=indexer/__init__.py " +
-                    self.__make_paths("pkg",
-                        [proto_area + "/usr/bin"] + self.new_path) +
-                    " %(pfx)s.reason="
-                    "usr/lib/python2.6/vendor-packages/pkg/client/indexer.py "
-                    "%(pfx)s.type=python type=require\n"
-
-                    "depend fmri=%(dummy_fmri)s "
-                    "%(pfx)s.file=pkg/__init__.py " +
-                    self.__make_paths("",
-                        [proto_area + "/usr/bin"] + self.new_path) +
-                    " %(pfx)s.reason="
-                    "usr/lib/python2.6/vendor-packages/pkg/client/indexer.py "
-                    "%(pfx)s.type=python type=require\n"
-                    "depend fmri=%(dummy_fmri)s "
-                    "%(pfx)s.file=search_storage.py "
-                    "%(pfx)s.file=search_storage.pyc "
-                    "%(pfx)s.file=search_storage.pyo "
-                    "%(pfx)s.file=search_storage/__init__.py " +
-                    self.__make_paths("pkg",
-                        [proto_area + "/usr/bin"] + self.new_path) +
-                    " %(pfx)s.reason="
-                    "usr/lib/python2.6/vendor-packages/pkg/client/indexer.py "
-                    "%(pfx)s.type=python type=require\n"
-
-                    "depend fmri=%(dummy_fmri)s "
-                    "%(pfx)s.file=misc.py "
-                    "%(pfx)s.file=misc.pyc "
-                    "%(pfx)s.file=misc.pyo "
-                    "%(pfx)s.file=misc/__init__.py " +
-                    self.__make_paths("pkg",
-                        [proto_area + "/usr/bin"] + self.new_path) +
-                    " %(pfx)s.reason="
-                    "usr/lib/python2.6/vendor-packages/pkg/client/indexer.py "
-                    "%(pfx)s.type=python type=require\n"
-
-                    )  % {
-                        "pfx":
-                            base.Dependency.DEPEND_DEBUG_PREFIX,
-                        "dummy_fmri":base.Dependency.DUMMY_FMRI
-                    }
-        
+                    "%(pfx)s.type=hardlink\n" +
+                    self.make_pyver_python_res("2.6", proto_area)) % {
+                    "pfx": base.Dependency.DEPEND_DEBUG_PREFIX,
+                    "dummy_fmri": base.Dependency.DUMMY_FMRI,
+                    "reason": "%(reason)s"
+                }
+                
         def make_full_res_manf_1(self, proto_area):
                 return self.make_res_manf_1(proto_area) + self.test_manf_1
 
@@ -200,49 +187,15 @@ depend fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1 %(pfx)s.path=lib %(pfx)s.path=
         
         def make_res_payload_1(self, proto_area):
                 return ("depend fmri=%(dummy_fmri)s "
-                    "%(pfx)s.file=misc.py "
-                    "%(pfx)s.file=misc.pyc "
-                    "%(pfx)s.file=misc.pyo "
-                    "%(pfx)s.file=misc/__init__.py " +
-                    self.__make_paths("pkg",
-                        [proto_area + "/usr/bin"] + self.new_path) +
-                    " %(pfx)s.reason=usr/lib/python2.6/foo/bar.py "
-                    "%(pfx)s.type=python type=require\n"
-
-                    "depend fmri=%(dummy_fmri)s "
-                    "%(pfx)s.file=pkg/__init__.py " +
-                    self.__make_paths("",
-                        [proto_area + "/usr/bin"] + self.new_path) +
-                    " %(pfx)s.reason=usr/lib/python2.6/foo/bar.py "
-                    "%(pfx)s.type=python type=require\n"
-
-                    "depend fmri=%(dummy_fmri)s "
                     "%(pfx)s.file=python "
                     "%(pfx)s.path=usr/bin "
-                    "%(pfx)s.reason=usr/lib/python2.6/foo/bar.py "
-                    "%(pfx)s.type=script type=require\n"
-                    "depend fmri=%(dummy_fmri)s "
-                    "%(pfx)s.file=search_storage.py "
-                    "%(pfx)s.file=search_storage.pyc "
-                    "%(pfx)s.file=search_storage.pyo "
-                    "%(pfx)s.file=search_storage/__init__.py " +
-                    self.__make_paths("pkg",
-                        [proto_area + "/usr/bin"] + self.new_path) +
-                    " %(pfx)s.reason=usr/lib/python2.6/foo/bar.py "
-                    "%(pfx)s.type=python type=require\n"
-
-                    "depend fmri=%(dummy_fmri)s "
-                    "%(pfx)s.file=indexer.py "
-                    "%(pfx)s.file=indexer.pyc "
-                    "%(pfx)s.file=indexer.pyo "
-                    "%(pfx)s.file=indexer/__init__.py " +
-                    self.__make_paths("pkg",
-                        [proto_area + "/usr/bin"] + self.new_path) +
-                    " %(pfx)s.reason=usr/lib/python2.6/foo/bar.py "
-                    "%(pfx)s.type=python type=require\n") % {
+                    "%(pfx)s.reason=%(reason)s "
+                    "%(pfx)s.type=script type=require\n" +
+                    self.make_pyver_python_res("2.6", proto_area)) % {
                         "pfx":
                             base.Dependency.DEPEND_DEBUG_PREFIX,
-                        "dummy_fmri":base.Dependency.DUMMY_FMRI
+                        "dummy_fmri":base.Dependency.DUMMY_FMRI,
+                        "reason": "%(reason)s"
                     }
 
         two_variant_deps = """\
@@ -451,45 +404,81 @@ file NOHASH group=bin mode=0755 owner=root path=usr/lib/python%(py_ver)s/vendor-
         pyver_test_manf_1_non_ex = """\
 file NOHASH group=bin mode=0644 owner=root path=usr/lib/python%(py_ver)s/vendor-packages/pkg/client/indexer.py \
 """
-        pyver_24_python_res = """
-depend fmri=%(dummy_fmri)s %(pfx)s.file=indexer.py %(pfx)s.file=indexer.pyc %(pfx)s.file=indexer.pyo %(pfx)s.file=indexer/__init__.py %(pfx)s.path=%(cwd)s/pkg %(pfx)s.path=usr/lib/python2.4/lib-dynload/pkg %(pfx)s.path=usr/lib/python2.4/lib-tk/pkg %(pfx)s.path=usr/lib/python2.4/pkg %(pfx)s.path=usr/lib/python2.4/plat-sunos5/pkg %(pfx)s.path=usr/lib/python2.4/site-packages/pkg %(pfx)s.path=usr/lib/python2.4/vendor-packages/gst-0.10/pkg %(pfx)s.path=usr/lib/python2.4/vendor-packages/gtk-2.0/pkg %(pfx)s.path=usr/lib/python2.4/vendor-packages/pkg %(pfx)s.path=usr/lib/python24.zip/pkg %(pfx)s.reason=%(reason)s %(pfx)s.type=python type=require
-depend fmri=%(dummy_fmri)s %(pfx)s.file=misc.py %(pfx)s.file=misc.pyc %(pfx)s.file=misc.pyo %(pfx)s.file=misc/__init__.py %(pfx)s.path=%(cwd)s/pkg %(pfx)s.path=usr/lib/python2.4/lib-dynload/pkg %(pfx)s.path=usr/lib/python2.4/lib-tk/pkg %(pfx)s.path=usr/lib/python2.4/pkg %(pfx)s.path=usr/lib/python2.4/plat-sunos5/pkg %(pfx)s.path=usr/lib/python2.4/site-packages/pkg %(pfx)s.path=usr/lib/python2.4/vendor-packages/gst-0.10/pkg %(pfx)s.path=usr/lib/python2.4/vendor-packages/gtk-2.0/pkg %(pfx)s.path=usr/lib/python2.4/vendor-packages/pkg %(pfx)s.path=usr/lib/python24.zip/pkg %(pfx)s.reason=%(reason)s %(pfx)s.type=python type=require
-depend fmri=%(dummy_fmri)s %(pfx)s.file=pkg/__init__.py %(pfx)s.path=%(cwd)s %(pfx)s.path=usr/lib/python2.4 %(pfx)s.path=usr/lib/python2.4/lib-dynload %(pfx)s.path=usr/lib/python2.4/lib-tk %(pfx)s.path=usr/lib/python2.4/plat-sunos5 %(pfx)s.path=usr/lib/python2.4/site-packages %(pfx)s.path=usr/lib/python2.4/vendor-packages %(pfx)s.path=usr/lib/python2.4/vendor-packages/gst-0.10 %(pfx)s.path=usr/lib/python2.4/vendor-packages/gtk-2.0 %(pfx)s.path=usr/lib/python24.zip %(pfx)s.reason=%(reason)s %(pfx)s.type=python type=require
-depend fmri=%(dummy_fmri)s %(pfx)s.file=search_storage.py %(pfx)s.file=search_storage.pyc %(pfx)s.file=search_storage.pyo %(pfx)s.file=search_storage/__init__.py %(pfx)s.path=%(cwd)s/pkg %(pfx)s.path=usr/lib/python2.4/lib-dynload/pkg %(pfx)s.path=usr/lib/python2.4/lib-tk/pkg %(pfx)s.path=usr/lib/python2.4/pkg %(pfx)s.path=usr/lib/python2.4/plat-sunos5/pkg %(pfx)s.path=usr/lib/python2.4/site-packages/pkg %(pfx)s.path=usr/lib/python2.4/vendor-packages/gst-0.10/pkg %(pfx)s.path=usr/lib/python2.4/vendor-packages/gtk-2.0/pkg %(pfx)s.path=usr/lib/python2.4/vendor-packages/pkg %(pfx)s.path=usr/lib/python24.zip/pkg %(pfx)s.reason=%(reason)s %(pfx)s.type=python type=require
-""" % {
-    "pfx": base.Dependency.DEPEND_DEBUG_PREFIX,
-    "dummy_fmri": base.Dependency.DUMMY_FMRI,
-    "cwd": os.getcwd().lstrip("/"),
-    "reason": "%(reason)s"
-}
+        def make_pyver_python_res(self, ver, proto_area=None):
+                """Create the python dependency results with paths expected for
+                the pyver tests.
 
-        pyver_24_script_full_manf_1 = """
+                Because the paths that should be found depend both on the
+                version of python and what is found by the site module, it's
+                necessary to make the results depend on the sys.path that's
+                discovered.
+                """
+                vp = self.get_ver_paths(ver, proto_area)
+                pkg_path = self.__make_paths("pkg", vp)
+                return ("depend fmri=%(dummy_fmri)s "
+                    "%(pfx)s.file=indexer.py "
+                    "%(pfx)s.file=indexer.pyc "
+                    "%(pfx)s.file=indexer.pyo "
+                    "%(pfx)s.file=indexer/__init__.py " +
+                    pkg_path +
+                    " %(pfx)s.reason=%(reason)s "
+                    "%(pfx)s.type=python type=require\n"
+                        
+                    "depend fmri=%(dummy_fmri)s "
+                    "%(pfx)s.file=misc.py "
+                    "%(pfx)s.file=misc.pyc "
+                    "%(pfx)s.file=misc.pyo "
+                    "%(pfx)s.file=misc/__init__.py " +
+                    pkg_path +
+                    " %(pfx)s.reason=%(reason)s "
+                    "%(pfx)s.type=python type=require\n"
+                        
+                    "depend fmri=%(dummy_fmri)s "
+                    "%(pfx)s.file=pkg/__init__.py " +
+                    self.__make_paths("", vp) +
+                    " %(pfx)s.reason=%(reason)s "
+                    "%(pfx)s.type=python type=require\n"
+                        
+                    "depend fmri=%(dummy_fmri)s "
+                    "%(pfx)s.file=search_storage.py "
+                    "%(pfx)s.file=search_storage.pyc "
+                    "%(pfx)s.file=search_storage.pyo "
+                    "%(pfx)s.file=search_storage/__init__.py " +
+                    pkg_path +
+                    " %(pfx)s.reason=%(reason)s "
+                    "%(pfx)s.type=python type=require\n") % {
+                    "pfx": base.Dependency.DEPEND_DEBUG_PREFIX,
+                    "dummy_fmri": base.Dependency.DUMMY_FMRI,
+                    "reason": "%(reason)s"
+               }
+
+        pyver_24_script_full_manf_1 = """\
 file NOHASH group=bin mode=0755 owner=root path=%(reason)s
-depend fmri=%(dummy_fmri)s %(pfx)s.file=python%(bin_ver)s %(pfx)s.path=usr/bin %(pfx)s.reason=%(reason)s %(pfx)s.type=script type=require\
+depend fmri=%(dummy_fmri)s %(pfx)s.file=python%(bin_ver)s %(pfx)s.path=usr/bin %(pfx)s.reason=%(reason)s %(pfx)s.type=script type=require
 """ % {
     "pfx": base.Dependency.DEPEND_DEBUG_PREFIX,
     "dummy_fmri": base.Dependency.DUMMY_FMRI,
-    "cwd": os.getcwd().lstrip("/"),
     "reason": "%(reason)s",
     "bin_ver": "%(bin_ver)s"
 }
-        
-        pyver_res_full_manf_1 = {}
-        pyver_res_full_manf_1["2.4"] = pyver_24_script_full_manf_1 + \
-            pyver_24_python_res
 
-        # 2.5 needs a separate entry from 2.4 because the default module search
-        # paths changed between the versions.
-        pyver_res_full_manf_1["2.5"] = """
+        pyver_25_script_full_manf_1 = """\
 file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.5/vendor-packages/pkg/client/indexer.py
-depend fmri=%(dummy_fmri)s %(pfx)s.file=indexer.py %(pfx)s.file=indexer.pyc %(pfx)s.file=indexer.pyo %(pfx)s.file=indexer/__init__.py %(pfx)s.path=%(cwd)s/pkg %(pfx)s.path=usr/lib/python2.5/lib-dynload/pkg %(pfx)s.path=usr/lib/python2.5/lib-tk/pkg %(pfx)s.path=usr/lib/python2.5/pkg %(pfx)s.path=usr/lib/python2.5/plat-sunos5/pkg %(pfx)s.path=usr/lib/python2.5/site-packages/pkg %(pfx)s.path=usr/lib/python2.5/vendor-packages/pkg %(pfx)s.path=usr/lib/python25.zip/pkg %(pfx)s.reason=usr/lib/python2.5/vendor-packages/pkg/client/indexer.py %(pfx)s.type=python type=require
-depend fmri=%(dummy_fmri)s %(pfx)s.file=misc.py %(pfx)s.file=misc.pyc %(pfx)s.file=misc.pyo %(pfx)s.file=misc/__init__.py %(pfx)s.path=%(cwd)s/pkg %(pfx)s.path=usr/lib/python2.5/lib-dynload/pkg %(pfx)s.path=usr/lib/python2.5/lib-tk/pkg %(pfx)s.path=usr/lib/python2.5/pkg %(pfx)s.path=usr/lib/python2.5/plat-sunos5/pkg %(pfx)s.path=usr/lib/python2.5/site-packages/pkg %(pfx)s.path=usr/lib/python2.5/vendor-packages/pkg %(pfx)s.path=usr/lib/python25.zip/pkg %(pfx)s.reason=usr/lib/python2.5/vendor-packages/pkg/client/indexer.py %(pfx)s.type=python type=require
-depend fmri=%(dummy_fmri)s %(pfx)s.file=pkg/__init__.py %(pfx)s.path=%(cwd)s %(pfx)s.path=usr/lib/python2.5 %(pfx)s.path=usr/lib/python2.5/lib-dynload %(pfx)s.path=usr/lib/python2.5/lib-tk %(pfx)s.path=usr/lib/python2.5/plat-sunos5 %(pfx)s.path=usr/lib/python2.5/site-packages %(pfx)s.path=usr/lib/python2.5/vendor-packages %(pfx)s.path=usr/lib/python25.zip %(pfx)s.reason=usr/lib/python2.5/vendor-packages/pkg/client/indexer.py %(pfx)s.type=python type=require
 depend fmri=%(dummy_fmri)s %(pfx)s.file=python %(pfx)s.path=usr/bin %(pfx)s.reason=usr/lib/python2.5/vendor-packages/pkg/client/indexer.py %(pfx)s.type=script type=require
-depend fmri=%(dummy_fmri)s %(pfx)s.file=search_storage.py %(pfx)s.file=search_storage.pyc %(pfx)s.file=search_storage.pyo %(pfx)s.file=search_storage/__init__.py %(pfx)s.path=%(cwd)s/pkg %(pfx)s.path=usr/lib/python2.5/lib-dynload/pkg %(pfx)s.path=usr/lib/python2.5/lib-tk/pkg %(pfx)s.path=usr/lib/python2.5/pkg %(pfx)s.path=usr/lib/python2.5/plat-sunos5/pkg %(pfx)s.path=usr/lib/python2.5/site-packages/pkg %(pfx)s.path=usr/lib/python2.5/vendor-packages/pkg %(pfx)s.path=usr/lib/python25.zip/pkg %(pfx)s.reason=usr/lib/python2.5/vendor-packages/pkg/client/indexer.py %(pfx)s.type=python type=require
-""" % {"pfx":base.Dependency.DEPEND_DEBUG_PREFIX, "dummy_fmri":base.Dependency.DUMMY_FMRI, "cwd":os.getcwd().lstrip("/")}
+""" % {
+    "pfx": base.Dependency.DEPEND_DEBUG_PREFIX,
+    "dummy_fmri": base.Dependency.DUMMY_FMRI
+}
 
-        # pyver_resolve_dep_manf = {}
+        def pyver_res_full_manf_1(self, ver, proto):
+                """Build the full manifest results for the pyver tests."""
+
+                if ver == "2.4":
+                        tmp = self.pyver_24_script_full_manf_1
+                else:
+                        tmp = self.pyver_25_script_full_manf_1
+                return tmp + self.make_pyver_python_res(ver, proto)
+
         pyver_resolve_dep_manf = """
 file NOHASH group=bin mode=0444 owner=root path=usr/lib/python%(py_ver)s/vendor-packages/pkg/indexer.py
 file NOHASH group=bin mode=0444 owner=root path=usr/lib/python%(py_ver)s/vendor-packages/pkg/__init__.py
@@ -506,8 +495,8 @@ depend fmri=%(res_manf)s %(pfx)s.file=usr/bin/python %(pfx)s.reason=usr/lib/pyth
 depend fmri=%(res_manf)s %(pfx)s.file=usr/lib/python%(py_ver)s/lib-tk/pkg/search_storage.py %(pfx)s.reason=usr/lib/python%(py_ver)s/vendor-packages/pkg/client/indexer.py %(pfx)s.type=python type=require
 """
 
-        pyver_mismatch_results = """
-depend fmri=%(dummy_fmri)s %(pfx)s.file=python2.6 %(pfx)s.path=usr/bin %(pfx)s.reason=usr/lib/python2.4/vendor-packages/pkg/client/indexer.py %(pfx)s.type=script type=require \
+        pyver_mismatch_results = """\
+depend fmri=%(dummy_fmri)s %(pfx)s.file=python2.6 %(pfx)s.path=usr/bin %(pfx)s.reason=usr/lib/python2.4/vendor-packages/pkg/client/indexer.py %(pfx)s.type=script type=require
 """ % {"pfx":base.Dependency.DEPEND_DEBUG_PREFIX, "dummy_fmri":base.Dependency.DUMMY_FMRI}
 
         pyver_mismatch_errs = """
@@ -616,28 +605,30 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 """Check that the output is in the format expected."""
 
                 tp = self.make_manifest(self.test_manf_1)
+                fp = "usr/lib/python2.6/vendor-packages/pkg/client/indexer.py" 
                 
                 self.pkgdepend("generate %s" % tp, exit=1)
-                self.check_res(self.make_res_manf_1(testutils.g_proto_area),
+                self.check_res(self.make_res_manf_1(
+                        testutils.g_proto_area) % {"reason": fp},
                     self.output)
                 self.check_res(self.err_manf_1 % testutils.g_proto_area,
                     self.errout)
 
                 self.pkgdepend("generate -m %s" % tp, exit=1)
                 self.check_res(
-                    self.make_full_res_manf_1(testutils.g_proto_area),
+                    self.make_full_res_manf_1(
+                        testutils.g_proto_area) % {"reason": fp},
                     self.output)
                 self.check_res(self.err_manf_1 % testutils.g_proto_area,
                     self.errout)
 
-                self.make_text_file(
-                    "usr/lib/python2.6/vendor-packages/pkg/client/indexer.py",
-                    self.python_text)
+                self.make_text_file(fp, self.python_text)
                 self.make_elf([], "usr/xpg4/lib/libcurses.so.1")
                 
                 self.pkgdepend("generate -m %s" % tp, proto=self.proto_dir)
                 self.check_res(
-                    self.make_full_res_manf_1_mod_proto(testutils.g_proto_area),
+                    self.make_full_res_manf_1_mod_proto(
+                        testutils.g_proto_area)  % {"reason": fp},
                     self.output)
                 self.check_res("", self.errout)
 
@@ -719,8 +710,9 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 fp = "usr/lib/python2.4/vendor-packages/pkg/client/indexer.py"
                 self.make_text_file(fp, self.pyver_python_text % "2.6")
                 self.pkgdepend("generate %s" % tp, proto=self.proto_dir, exit=1)
-                self.check_res(self.pyver_mismatch_results + \
-                    self.pyver_24_python_res % {"reason": fp, "bin_ver": "2.6"},
+                self.check_res(self.pyver_mismatch_results +
+                    self.make_pyver_python_res("2.4", self.proto_dir) %
+                        {"reason": fp, "bin_ver": "2.6"},
                     self.output)
                 self.check_res(self.pyver_mismatch_errs % self.proto_dir,
                     self.errout)
@@ -732,7 +724,7 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 self.make_text_file(fp, self.pyver_python_text % "")
                 self.pkgdepend("generate -m %s" % tp, proto=self.proto_dir)
                 self.check_res(
-                    self.pyver_res_full_manf_1["2.4"] %
+                    self.pyver_res_full_manf_1("2.4", self.proto_dir) %
                         {"reason": fp, "bin_ver": ""},
                     self.output)
                 self.check_res("", self.errout)
@@ -743,7 +735,7 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 self.make_text_file(fp, self.pyver_python_text % "2.4")
                 self.pkgdepend("generate -m %s" % tp, proto=self.proto_dir)
                 self.check_res(
-                    self.pyver_res_full_manf_1["2.4"] %
+                    self.pyver_res_full_manf_1("2.4", self.proto_dir) %
                         {"reason": fp, "bin_ver": "2.4"},
                     self.output)
                 self.check_res("", self.errout)
@@ -767,7 +759,9 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 fp = "usr/lib/python2.4/vendor-packages/pkg/client/indexer.py"
                 self.make_text_file(fp, self.pyver_python_text % "2.6")
                 self.pkgdepend("generate %s" % tp, proto=self.proto_dir)
-                self.check_res(self.pyver_24_python_res % {"reason": fp},
+                self.check_res(
+                    self.make_pyver_python_res("2.4", self.proto_dir) %
+                        {"reason": fp},
                     self.output)
                 self.check_res("", self.errout)
 
@@ -777,7 +771,9 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 fp = "usr/lib/python2.4/vendor-packages/pkg/client/indexer.py"
                 self.make_text_file(fp, self.pyver_python_text % "")
                 self.pkgdepend("generate %s" % tp, proto=self.proto_dir)
-                self.check_res(self.pyver_24_python_res % {"reason": fp},
+                self.check_res(
+                    self.make_pyver_python_res("2.4", self.proto_dir) %
+                        {"reason": fp},
                     self.output)
                 self.check_res("", self.errout)
 
@@ -813,8 +809,9 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                         # Run generate and check the output.
                         self.pkgdepend("generate -m %s" % tp,
                             proto=self.proto_dir)
-                        self.check_res(self.pyver_res_full_manf_1[py_ver] %
-                            {"bin_ver": "", "reason":fp},
+                        self.check_res(
+                            self.pyver_res_full_manf_1(py_ver, self.proto_dir) %
+                                {"bin_ver": "", "reason":fp},
                             self.output)
                         self.check_res("", self.errout)
 
@@ -914,7 +911,8 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
 
                 tp = self.make_manifest(self.payload_manf)
                 self.pkgdepend("generate %s" % tp)
-                self.check_res(self.make_res_payload_1(testutils.g_proto_area),
+                self.check_res(self.make_res_payload_1(testutils.g_proto_area) %\
+                        {"reason": "usr/lib/python2.6/foo/bar.py"},
                     self.output)
                 self.check_res("", self.errout)
 
