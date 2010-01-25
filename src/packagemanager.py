@@ -3105,7 +3105,8 @@ class PackageManager:
                         expanded
 
         def __save_active_category(self, path):
-                if not path or len(path) == 0 or self.__in_recent_searches(path):
+                if self.first_run or not path or len(path) == 0 or \
+                        self.__in_recent_searches(path):
                         return                
                 self.category_active_paths[self.last_visible_publisher] = path
                 self.saved_section_active = path[0]
@@ -3931,8 +3932,16 @@ class PackageManager:
                         else:
                                 pub = self.__get_selected_publisher()
 
-                if len(self.search_completion) > 0 and self.cache_o != None:
-                        self.cache_o.dump_search_completion_info(self.search_completion)
+                if self.cache_o != None:
+                        if len(self.search_completion) > 0:
+                                self.cache_o.dump_search_completion_info(
+                                    self.search_completion)
+                        if len(self.category_active_paths) > 0:
+                                self.cache_o.dump_categories_active_dict(
+                                    self.category_active_paths)
+                        if len(self.category_expanded_paths) > 0:
+                                self.cache_o.dump_categories_expanded_dict(
+                                    self.category_expanded_paths)
 
                 self.__shutdown_part2()
                 return True
@@ -4539,28 +4548,31 @@ class PackageManager:
                         if info and info.dependencies:
                                 gobject.idle_add(self.set_busy_cursor)
                                 try:
-                                        dep_info = self.api_o.info(
-                                            info.dependencies,
-                                            False,
-                                            frozenset([api.PackageInfo.STATE,
-                                            api.PackageInfo.IDENTITY]))
-                                        temp_info = []
-                                        for depend in info.dependencies:
-                                                name = fmri.extract_pkg_name(depend)
-                                                temp_info.append(name)
-                                        installed_dep_info = self.api_o.info(
-                                            temp_info,
-                                            True,
-                                            frozenset([api.PackageInfo.STATE,
-                                            api.PackageInfo.IDENTITY]))
-                                except api_errors.TransportError, tpex:
-                                        err = str(tpex)
-                                        logger.error(err)
-                                        gui_misc.notify_log_error(self)
-                                except api_errors.InvalidDepotResponseException, idex:
-                                        err = str(idex)
-                                        logger.error(err)
-                                        gui_misc.notify_log_error(self)
+                                        try:
+                                                dep_info = self.api_o.info(
+                                                    info.dependencies,
+                                                    False,
+                                                    frozenset([api.PackageInfo.STATE,
+                                                    api.PackageInfo.IDENTITY]))
+                                                temp_info = []
+                                                for depend in info.dependencies:
+                                                        name = fmri.extract_pkg_name(
+                                                            depend)
+                                                        temp_info.append(name)
+                                                installed_dep_info = self.api_o.info(
+                                                    temp_info,
+                                                    True,
+                                                    frozenset([api.PackageInfo.STATE,
+                                                    api.PackageInfo.IDENTITY]))
+                                        except api_errors.TransportError, tpex:
+                                                err = str(tpex)
+                                                logger.error(err)
+                                                gui_misc.notify_log_error(self)
+                                        except api_errors.InvalidDepotResponseException, \
+                                                idex:
+                                                err = str(idex)
+                                                logger.error(err)
+                                                gui_misc.notify_log_error(self)
                                 finally:
                                         gobject.idle_add(self.unset_busy_cursor)
                         gobject.idle_add(self.__update_package_info, pkg,
@@ -5056,7 +5068,9 @@ class PackageManager:
                 self.w_categories_treeview.set_model(category_tree)
                 
                 #Initial startup expand default Section if available
-                if visible_default_section_path and self.first_run:
+                if visible_default_section_path and self.first_run and \
+                        len(self.category_active_paths) == 0 and \
+                        len(self.category_expanded_paths) == 0:
                         self.w_categories_treeview.expand_row(
                             visible_default_section_path, False)
                         return
@@ -5205,6 +5219,12 @@ class PackageManager:
                 self.__set_main_view_package_list()
                 self.__init_tree_views(application_list, None, None, None, None,
                     enumerations.NAME_COLUMN)
+
+        def __setup_category_state(self):
+                if self.cache_o == None:
+                        return
+                self.cache_o.load_categories_active_dict(self.category_active_paths)
+                self.cache_o.load_categories_expanded_dict(self.category_expanded_paths)
 
         def __restore_category_state(self):
                 #Restore expanded Category state
@@ -5682,6 +5702,7 @@ class PackageManager:
                 self.cache_o = self.__get_cache_obj(self.api_o)
                 self.img_timestamp = self.cache_o.get_index_timestamp()
                 self.__setup_search_completion()
+                self.__setup_category_state()
                 gobject.idle_add(self.__got_api_object)
 
         def __got_api_object(self):

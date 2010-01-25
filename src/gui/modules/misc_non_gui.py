@@ -115,12 +115,19 @@ def get_api_object(img_dir, progtrack):
         return api_o
 
 def read_cache_file(file_path):
-        fh = open(file_path, 'r')
-        data = cPickle.load(fh)
-        fh.close()
+        data = []
+        try:
+                fh = open(file_path, 'r')
+                data = cPickle.load(fh)
+                fh.close()
+        except IOError:
+                pass
         return data
 
 def dump_cache_file(file_path, data):
-        fh = open(file_path,"w")
-        cPickle.dump(data, fh, True)
-        fh.close()
+        try:
+                fh = open(file_path,"w")
+                cPickle.dump(data, fh, True)
+                fh.close()
+        except IOError:
+                pass

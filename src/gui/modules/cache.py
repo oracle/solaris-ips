@@ -30,7 +30,7 @@ try:
 except ImportError:
         sys.exit(1)
 from threading import Thread
-import pkg.gui.misc_non_gui as gui_misc
+import pkg.gui.misc_non_gui as nongui_misc
 
 CACHE_VERSION = 11
 
@@ -39,7 +39,7 @@ class CacheListStores:
                 self.api_o = api_o
 
         def __get_cache_dir(self):
-                return gui_misc.get_cache_dir(self.api_o)
+                return nongui_misc.get_cache_dir(self.api_o)
 
         def get_index_timestamp(self):
                 img = self.api_o.img
@@ -48,6 +48,92 @@ class CacheListStores:
                         return os.path.getmtime(index_path)
                 except (OSError, IOError):
                         return None
+
+        def __dump_categories_expanded_dict(self, cat_exp_dict):
+                #CED entry: {('opensolaris.org', (6,)): True}
+                cache_dir = self.__get_cache_dir()
+                if not cache_dir:
+                        return
+                catexs = []
+                for key in cat_exp_dict.keys():
+                        name, path = key
+                        path1 = -1
+                        if len(path) > 0:
+                                path1 = path[0]
+                        catex = {}
+                        catex["name"] = name
+                        catex["path1"] = path1
+                        catexs.append(catex)                
+                
+                nongui_misc.dump_cache_file(
+                    os.path.join(cache_dir, "pm_cat_exp.cpl"),
+                    catexs)
+                    
+        def __load_categories_expanded_dict(self, cat_exp_dict):
+                cache_dir = self.__get_cache_dir()
+                if not cache_dir:
+                        return
+                catexs = nongui_misc.read_cache_file(
+                    os.path.join(cache_dir, "pm_cat_exp.cpl"))
+                for catex in catexs:
+                        name = catex.get("name")
+                        path1 = catex.get("path1")
+                        if path1 != -1:
+                                cat_exp_dict[name, (path1,)] = True
+
+        def dump_categories_expanded_dict(self, cat_exp_dict):
+                Thread(target = self.__dump_categories_expanded_dict,
+                    args = (cat_exp_dict, )).start()
+
+        def load_categories_expanded_dict(self, cat_exp_dict):
+                Thread(target = self.__load_categories_expanded_dict,
+                    args = (cat_exp_dict, )).start()
+
+        def __dump_categories_active_dict(self, cat_ac_dict):
+                cache_dir = self.__get_cache_dir()
+                if not cache_dir:
+                        return
+                catacs = []
+                for name, path in cat_ac_dict.iteritems():
+                        path1 = -1
+                        path2 = -1
+                        if len(path) == 1:
+                                path1 = path[0]
+                        elif len(path) > 1:
+                                path1 = path[0]
+                                path2 = path[1]                        
+                        catac = {}
+                        catac["name"] = name
+                        catac["path1"] = path1
+                        catac["path2"] = path2
+                        catacs.append(catac)
+                
+                nongui_misc.dump_cache_file(
+                    os.path.join(cache_dir, "pm_cat_ac.cpl"),
+                    catacs)
+                    
+        def __load_categories_active_dict(self, cat_ac_dict):
+                cache_dir = self.__get_cache_dir()
+                if not cache_dir:
+                        return
+                catacs = nongui_misc.read_cache_file(
+                    os.path.join(cache_dir, "pm_cat_ac.cpl"))
+                for catac in catacs:
+                        name = catac.get("name")
+                        path1 = catac.get("path1")
+                        path2 = catac.get("path2")
+                        if path1 != -1 and path2 != -1:
+                                cat_ac_dict[name] = (path1, path2)
+                        elif path1 != -1:
+                                cat_ac_dict[name] = (path1,)
+
+        def dump_categories_active_dict(self, cat_ac_dict):
+                Thread(target = self.__dump_categories_active_dict,
+                    args = (cat_ac_dict, )).start()
+
+        def load_categories_active_dict(self, cat_ac_dict):
+                Thread(target = self.__load_categories_active_dict,
+                    args = (cat_ac_dict, )).start()
 
         def __dump_search_completion_info(self, completion_list):
                 cache_dir = self.__get_cache_dir()
@@ -59,7 +145,7 @@ class CacheListStores:
                         txt["text"] = text[0]
                         texts.append(txt)
                 try:
-                        gui_misc.dump_cache_file(
+                        nongui_misc.dump_cache_file(
                             os.path.join(cache_dir, ".__search__completion.cpl"), texts)
                 except IOError:
                         return
@@ -70,7 +156,7 @@ class CacheListStores:
                         return
                 texts = []
                 try:
-                        texts = gui_misc.read_cache_file(
+                        texts = nongui_misc.read_cache_file(
                             os.path.join(cache_dir, ".__search__completion.cpl"))
                 except IOError:
                         return gtk.ListStore(str)
