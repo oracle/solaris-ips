@@ -92,6 +92,7 @@ class TestPkgContentsBasics(testutils.SingleDepotTestCase):
                 self.pkg("contents -s", exit=2)
                 self.pkg("contents -t", exit=2)
                 self.pkg("contents foo@x.y", exit=1)
+                self.pkg("contents -a foo", exit=2)
 
         def test_contents_empty_image(self):
                 """local pkg contents should fail in an empty image; remote

@@ -1931,7 +1931,11 @@ def list_contents(img, args):
                 if opt == "-H":
                         display_headers = False
                 elif opt == "-a":
-                        attr, match = arg.split("=")
+                        try:
+                                attr, match = arg.split("=", 1)
+                        except ValueError:
+                                usage(_("-a takes an argument of the form "
+                                    "<attribute>=<pattern>"), cmd="contents")
                         attr_match.setdefault(attr, []).append(match)
                 elif opt == "-o":
                         attrs.extend(arg.split(","))
@@ -2398,6 +2402,11 @@ def publisher_set(img, args):
                         if ssl_key is not None:
                                 ssl_key = os.path.abspath(
                                     img.get_root() + os.sep + ssl_key)
+                else:
+                        if ssl_cert and not os.path.isabs(ssl_cert):
+                                ssl_cert = os.path.normpath(orig_cwd + os.sep + ssl_cert)
+                        if ssl_key and not os.path.isabs(ssl_key):
+                                ssl_key = os.path.normpath(orig_cwd + os.sep + ssl_key)
 
                 # Assume the user wanted to update the ssl_cert or ssl_key
                 # information for *all* of the currently selected
@@ -3153,6 +3162,17 @@ def main_func():
         global_settings.client_name = PKG_CLIENT_NAME
 
         global __img
+        global orig_cwd
+
+        try:
+                orig_cwd = os.getcwd()
+        except OSError, e:
+                try:
+                        orig_cwd = os.environ["PWD"]
+                        if not orig_cwd or orig_cwd[0] != "/":
+                                orig_cwd = None
+                except KeyError:
+                                orig_cwd = None
 
         try:
                 opts, pargs = getopt.getopt(sys.argv[1:], "R:D:?",
@@ -3226,16 +3246,8 @@ def main_func():
                         mydir = os.environ["PKG_IMAGE"]
                         pkg_image_used = True
                 except KeyError:
-                        try:
-                                provided_image_dir = False
-                                mydir = os.getcwd()
-                        except OSError, e:
-                                try:
-                                        mydir = os.environ["PWD"]
-                                        if not mydir or mydir[0] != "/":
-                                                mydir = None
-                                except KeyError:
-                                        mydir = None
+                        provided_image_dir = False
+                        mydir = orig_cwd
 
         if mydir == None:
                 error(_("Could not find image.  Use the -R option or set "
