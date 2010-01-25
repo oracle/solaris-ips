@@ -1161,19 +1161,6 @@ class Image(object):
                         return True
                 return False
 
-        def older_version_installed(self, fmri):
-                """This method is used by the package plan to determine if an
-                older version of the package is installed.  This takes the
-                destination fmri and checks if an older package exists."""
-
-                v = self.get_version_installed(fmri)
-
-                assert fmri.has_publisher()
-
-                if v:
-                        return v
-                return None
-
         def get_pkg_state(self, pfmri):
                 """Returns the list of states a package is in for this image."""
 

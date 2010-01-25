@@ -239,6 +239,12 @@ class DependencyAction(generic.Action):
                                     "is uprev (%(inst_ver)s)") % {
                                     "dep_type": ctype, "dep_val": max_fmri,
                                     "inst_ver": installed_version })
+                        if required and image.PKG_STATE_OBSOLETE in \
+                            image.get_pkg_state(installed_version):
+                                errors.append(
+                                    _("%s dependency on an obsolete package (%s);"
+                                    "this package must be uninstalled manually") % 
+                                    (ctype, installed_version))                                  
                 elif required:
                         errors.append(_("Required dependency %s is not "
                             "installed") % pfmri)
