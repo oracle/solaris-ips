@@ -177,13 +177,13 @@ class CurlTransportEngine(TransportEngine):
                                 decay = httpcode in tx.decayable_http_errors
                                 repostats.record_error(decayable=decay)
                                 errors_seen += 1
+                                proto_reason = None
                                 if proto in tx.proto_code_map:
                                         # Look up protocol error code map
                                         # from transport exception's table.
                                         pmap = tx.proto_code_map[proto]
-                                        proto_reason = pmap[httpcode]
-                                else:
-                                        proto_reason = None
+                                        if httpcode in pmap:
+                                                proto_reason = pmap[httpcode]
                                 ex = tx.TransportProtoError(proto, httpcode,
                                     url, reason=proto_reason, repourl=urlstem)
                         elif en == pycurl.E_OPERATION_TIMEOUTED:
@@ -251,13 +251,14 @@ class CurlTransportEngine(TransportEngine):
                                 repostats.clear_consecutive_errors()
                                 success.append(url)
                         else:
+                                proto_reason = None
+
                                 if proto in tx.proto_code_map:
                                         # Look up protocol error code map
                                         # from transport exception's table.
                                         pmap = tx.proto_code_map[proto]
-                                        proto_reason = pmap[httpcode]
-                                else:
-                                        proto_reason = None
+                                        if httpcode in pmap:
+                                                proto_reason = pmap[httpcode]
                                 ex = tx.TransportProtoError(proto,
                                     httpcode, url, reason=proto_reason,
                                     repourl=urlstem)

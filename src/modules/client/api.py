@@ -138,7 +138,7 @@ class ImageInterface(object):
                 self.__can_be_canceled = False
                 self.__canceling = False
                 self.__activity_lock = pkg.nrlock.NRLock()
-                self.__cancel_lock =  threading.Lock()
+                self.__cancel_lock = pkg.nrlock.NRLock()
                 self.__cancel_cv = threading.Condition(self.__cancel_lock)
 
         @property
@@ -204,9 +204,7 @@ class ImageInterface(object):
 
                 self.__activity_lock.acquire()
                 try:
-                        self.__cancel_lock.acquire()
-                        self.__set_can_be_canceled(True)
-                        self.__cancel_lock.release()
+                        self.__enable_cancel()
                         if self.__plan_type is not None:
                                 raise api_errors.PlanExistsException(
                                     self.__plan_type)
@@ -499,9 +497,7 @@ class ImageInterface(object):
                             self.__plan_type == self.__UNINSTALL or \
                             self.__plan_type == self.__IMAGE_UPDATE
 
-                        self.__cancel_lock.acquire()
-                        self.__set_can_be_canceled(True)
-                        self.__cancel_lock.release()
+                        self.__enable_cancel()
 
                         try:
                                 self.__img.imageplan.preexecute()
@@ -708,7 +704,12 @@ class ImageInterface(object):
 
                 self.__activity_lock.acquire()
                 try:
-                        self.__disable_cancel()
+                        try:
+                                self.__disable_cancel()
+                        except api_errors.CanceledException:
+                                self.__cancel_done()
+                                raise
+
                         if not self.__img.imageplan:
                                 raise api_errors.PlanMissingException()
 
@@ -1532,14 +1533,40 @@ class ImageInterface(object):
                         self.__set_can_be_canceled(False)
                 self.__cancel_lock.release()
 
+        def __enable_cancel(self):
+                """Sets can_be_canceled to True while grabbing the cancel
+                locks.  The caller must still hold the activity lock while
+                calling this function."""
+
+                self.__cancel_lock.acquire()
+                self.__set_can_be_canceled(True)
+                self.__cancel_lock.release()
+
         def __set_can_be_canceled(self, status):
                 """Private method. Handles the details of changing the
                 cancelable state."""
-                if self.__can_be_canceled != status:
-                        self.__can_be_canceled = status
-                        if self.__cancel_state_callable:
-                                self.__cancel_state_callable(
-                                    self.__can_be_canceled)
+                assert self.__cancel_lock._is_owned()
+
+                # If caller requests a change to current state there is
+                # nothing to do.
+                if self.__can_be_canceled == status:
+                        return
+
+                if status == True:
+                        # Callers must hold activity lock for operations
+                        # that they will make cancelable.
+                        assert self.__activity_lock._is_owned()
+                        # In any situation where the caller holds the activity
+                        # lock and wants to set cancelable to true, a cancel
+                        # should not already be in progress.  This is because
+                        # it should not be possible to invoke cancel until
+                        # this routine has finished.  Assert that we're not
+                        # canceling.
+                        assert not self.__canceling
+
+                self.__can_be_canceled = status
+                if self.__cancel_state_callable:
+                        self.__cancel_state_callable(self.__can_be_canceled)
 
         def reset(self):
                 """Resets the API back the the initial state. Note:
@@ -1602,7 +1629,9 @@ class ImageInterface(object):
                 sleeping, waiting for a cancellation to finish."""
 
                 self.__cancel_lock.acquire()
-                self.__cancel_cv.notify_all()
+                if self.__canceling:
+                        self.__canceling = False
+                        self.__cancel_cv.notify_all()
                 self.__cancel_lock.release()
 
         def cancel(self):
@@ -1627,7 +1656,6 @@ class ImageInterface(object):
                 self.__canceling = True
                 # Wait until the cancelled operation wakes us up.
                 self.__cancel_cv.wait()
-                self.__canceling = False
                 self.__cancel_lock.release()
                 return True
 
@@ -1734,15 +1762,54 @@ class ImageInterface(object):
 
                 The servers argument is a list of servers in two possible
                 forms: the old deprecated form of a publisher, in a
-                dictionary, or a Publisher object. """
+                dictionary, or a Publisher object.
+
+                A call to this function returns a generator that holds
+                API locks.  Callers must either iterate through all of the
+                results, or call close() on the resulting object.  Otherwise
+                it is possible to get deadlocks or NRLock reentrance
+                exceptions."""
+
+                clean_exit = True
+                canceled = False
+
+                self.__activity_lock.acquire()
+                self.__enable_cancel()
+
+                try:
+                        for r in self._remote_search(query_str_and_args_lst,
+                            servers): 
+                                yield r
+                except GeneratorExit:
+                        return
+                except api_errors.CanceledException:
+                        canceled = True
+                        raise
+                except Exception:
+                        clean_exit = False
+                        raise
+                finally:
+                        if canceled:
+                                self.__cancel_done()
+                        elif clean_exit:
+                                try:
+                                        self.__disable_cancel()
+                                except api_errors.CanceledException:
+                                        self.__cancel_done()
+                                        self.__activity_lock.release()
+                                        raise
+                        else:
+                                self.__cancel_cleanup_exception()
+                        self.__activity_lock.release()
+
+        def _remote_search(self, query_str_and_args_lst, servers=None):
+                """This is the implementation of remote_search.  The other
+                function is a wrapper that handles locking and exception
+                handling.  This is a generator function."""
 
                 failed = []
                 invalid = []
                 unsupported = []
-
-                self.__cancel_lock.acquire()
-                self.__set_can_be_canceled(True)
-                self.__cancel_lock.release()
 
                 if not servers:
                         servers = self.__img.gen_publishers()
@@ -1763,10 +1830,8 @@ class ImageInterface(object):
                                 else:
                                         new_qs.append(q)
                         except query_p.BooleanQueryException, e:
-                                self.__cancel_cleanup_exception()
                                 raise api_errors.BooleanQueryException(e)
                         except query_p.ParseError, e:
-                                self.__cancel_cleanup_exception()
                                 raise api_errors.ParseError(e)
 
                 query_str_and_args_lst = new_qs
@@ -1775,7 +1840,6 @@ class ImageInterface(object):
                         descriptive_name = None
 
                         if self.__canceling:
-                                self.__cancel_done()
                                 raise api_errors.CanceledException()
 
                         if isinstance(pub, dict):
@@ -1795,7 +1859,6 @@ class ImageInterface(object):
                                     query_str_and_args_lst,
                                     ccancel=self.__check_cancelation)
                         except api_errors.CanceledException:
-                                self.__cancel_done()
                                 raise
                         except api_errors.NegativeSearchResult:
                                 continue
@@ -1809,7 +1872,6 @@ class ImageInterface(object):
                                 ex = self._validate_search(
                                     query_str_and_args_lst)
                                 if ex:
-                                        self.__cancel_cleanup_exception()
                                         raise ex
                                 failed.append((descriptive_name, e))
                                 continue
@@ -1821,18 +1883,14 @@ class ImageInterface(object):
                                 for line in res:
                                         yield self.__parse_v_1(line, pub, 1)
                         except api_errors.CanceledException:
-                                self.__cancel_done()
                                 raise
                         except api_errors.TransportError, e:
                                 failed.append((descriptive_name, e))
                                 continue
 
                 if failed or invalid or unsupported:
-                        self.__cancel_cleanup_exception()
                         raise api_errors.ProblematicSearchServers(failed,
                             invalid, unsupported)
-
-                self.__disable_cancel()
 
         @staticmethod
         def __unconvert_return_type(v):
@@ -1980,15 +2038,17 @@ class ImageInterface(object):
                 dt = None
                 self.__activity_lock.acquire()
                 try:
-                        self.__cancel_lock.acquire()
-                        self.__set_can_be_canceled(True)
-                        self.__cancel_lock.release()
+                        self.__enable_cancel()
                         try:
                                 dt = pub.catalog.last_modified
                         except:
                                 self.__reset_unlock()
                                 raise
-                        self.__disable_cancel()
+                        try:
+                                self.__disable_cancel()
+                        except api_errors.CanceledException:
+                                self.__cancel_done()
+                                raise
                 finally:
                         self.__activity_lock.release()
                 return dt

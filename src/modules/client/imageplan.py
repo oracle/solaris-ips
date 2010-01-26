@@ -413,6 +413,21 @@ class ImagePlan(object):
                                         ))
                 return self.__symlinks
 
+        @staticmethod
+        def default_keyfunc(name, act):
+                """This is the default function used by get_actions when
+                the caller provides no key."""
+
+                attr_name = pkg.actions.types[name].key_attr
+                return act.attrs[attr_name]
+
+        @staticmethod
+        def hardlink_keyfunc(name, act):
+                """Keyfunc used in evaluate when calling get_actions
+                for hardlinks."""
+
+                return act.get_target_path()
+
         def get_actions(self, name, key=None):
                 """Return a dictionary of actions of the type given by 'name'
                 describing the target image.  If 'key' is given and not None,
@@ -421,15 +436,14 @@ class ImagePlan(object):
                 argument which returns the key.  This dictionary is cached for
                 quick future lookups."""
                 if key is None:
-                        attr_name = pkg.actions.types[name].key_attr
-                        key = lambda act: act.attrs[attr_name]
+                        key = self.default_keyfunc
 
                 if (name, key) in self.__cached_actions:
                         return self.__cached_actions[(name, key)]
 
                 d = {}
                 for act in self.gen_new_installed_actions_bytype(name):
-                        t = key(act)
+                        t = key(name, act)
                         d.setdefault(t, []).append(act)
                 self.__cached_actions[(name, key)] = d
                 return self.__cached_actions[(name, key)]
@@ -636,8 +650,7 @@ class ImagePlan(object):
 
                 self.__progtrack.evaluate_progress()
                 # Go over update actions
-                l_actions = self.get_actions("hardlink",
-                    lambda a: a.get_target_path())
+                l_actions = self.get_actions("hardlink", self.hardlink_keyfunc)
                 l_refresh = []
                 for a in self.update_actions:
                         # For any files being updated that are the target of
@@ -925,6 +938,7 @@ class ImagePlan(object):
                 self.__fmri_changes  = []
                 self.__directories   = []
                 self.__actuators     = []
+                self.__cached_actions = {}
 
                 # Perform the incremental update to the search indexes
                 # for all changed packages

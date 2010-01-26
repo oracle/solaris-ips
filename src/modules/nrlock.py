@@ -23,13 +23,6 @@
 # Use is subject to license terms.
 #
 
-"""Interface and implementation for Non-Reentrant locks.  Derived from
-RLocks (which are reentrant locks).  The default Python base locking
-type, threading.Lock(), is non-reentrant but it doesn't support any
-operations other than aquire() and release(), and we'd like to be able
-to support things like RLocks._is_owned() so that we can "assert" lock
-ownership assumptions in our code."""
-
 import threading
 
 # Rename some stuff so "from pkg.nrlock import *" is safe
@@ -39,19 +32,22 @@ def NRLock(*args, **kwargs):
     return _NRLock(*args, **kwargs)
 
 class _NRLock(threading._RLock):
+    """Interface and implementation for Non-Reentrant locks.  Derived from
+    RLocks (which are reentrant locks).  The default Python base locking
+    type, threading.Lock(), is non-reentrant but it doesn't support any
+    operations other than aquire() and release(), and we'd like to be able
+    to support things like RLocks._is_owned() so that we can "assert" lock
+    ownership assumptions in our code."""
 
     def __init__(self, verbose=None):
-        self.__rlock = threading.RLock(verbose)
-
-    def __repr__(self):
-        self.__rlock.__repr__()
+        threading._RLock.__init__(self, verbose)
 
     def acquire(self, blocking=1):
-        assert not self.__rlock._is_owned(), "recursive NRLock acquire"
-        return self.__rlock.acquire(blocking)
+        if self._is_owned():
+            raise NRLockException()
+        return threading._RLock.acquire(self, blocking)
 
-    def release(self):
-        return self.__rlock.release()
+class NRLockException(Exception):
 
-    def _is_owned(self):
-        return self.__rlock._is_owned()
+    def __str__(self):
+        return "recursive NRLock acquire" 
