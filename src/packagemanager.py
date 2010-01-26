@@ -1397,7 +1397,9 @@ class PackageManager:
                 self.link_load_page = text
                 self.document.clear()
                 self.document.open_stream('text/html')
-                display = "<html><head></head><body>%s</body></html>" % text
+                display = ("<html><head><meta http-equiv='Content-Type' "
+                        "content='text/html; charset=UTF-8'></head><body>%s</body>"
+                        "</html>" % text)
                 self.document.write_stream(display)
                 self.document.close_stream()
 
