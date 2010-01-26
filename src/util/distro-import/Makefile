@@ -40,6 +40,11 @@ NONWOS_PKGS=/net/paradise.sfbay/export/integrate_dock/nv/$(NONWOS_DOCK)/all \
 
 TEST_PKGS=
 REPO=http://localhost:10000
+
+BUILDID_NORESPIN=/usr/bin/echo $(BUILDID) | sed -e 's/\([0-9]\)[a-z]*$$/\1/g'
+REF_REPO=http://ipkg.sfbay/release
+REF_URIS=$(REF_REPO)@entire@0.5.11,5.11-0.$(BUILDID_NORESPIN:sh)
+
 JUST_THESE_PKGS=
 EXTRA_ENTIRE_CONTENTS=
 
@@ -672,24 +677,19 @@ $(UNBUNDLED_TARGETS:%=$(BUILDS)/%) $(UNBUNDLED_CLUSTERS:%=$(BUILDS)/%):
 	$(MAKE) BUILDID=$(@D) $(@F)
 
 $(UNBUNDLED_TARGETS): unbundleds/$$(@:%.import=%)
-	rm -f redist_cluster; ln -s $(BUILDID)/redist_cluster redist_cluster
 	$(SOLARIS.PY) -s $(REPO) $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) \
-		`$(SOLARIS.PY) -N $(INCLUDE_PATH_$(BUILDID):%=-I %) unbundleds/$(@:%.import=%)` \
-		$(INCLUDE_PATH_$(BUILDID):%=-I %) unbundleds/$(@:%.import=%) \
-		redist_cluster
+		$(INCLUDE_PATH_$(BUILDID):%=-I %) \
+		$(REF_URIS:%=-R %) unbundleds/$(@:%.import=%)
 
 $(UNBUNDLED_CLUSTERS): unbundleds/$$(@:%.import=%)
-	rm -f redist_cluster; ln -s $(BUILDID)/redist_cluster redist_cluster
 	$(SOLARIS.PY) -s $(REPO) $(ALL_PKGS:%=-w %) $(ELIDED_FILES:%=-D %) \
-		`$(SOLARIS.PY) -N $(INCLUDE_PATH_$(BUILDID):%=-I %) unbundleds/$(@:%.import=%)` \
-		$(INCLUDE_PATH_$(BUILDID):%=-I %) unbundleds/$(@:%.import=%) \
-		$(UNBUNDLED_TARGETS:%.import=unbundleds/%) redist_cluster
+		$(INCLUDE_PATH_$(BUILDID):%=-I %) \
+		$(REF_URIS:%=-R %) unbundleds/$(@:%.import=%)
 
 %/all_unbundleds:
 	$(MAKE) BUILDID=$(@D) $(@F)
 
-all_unbundleds:	$(UNBUNDLED_TARGETS:%=$(BUILDID)/%)
-	$(MAKE) $(BUILDID)/$(UNBUNDLED_CLUSTERS)
+all_unbundleds:	$(UNBUNDLED_TARGETS) $(UNBUNDLED_CLUSTERS)
 
 #
 # Used to generate the GUI Package Manager classification files from the

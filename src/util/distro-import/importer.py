@@ -1482,6 +1482,16 @@ def main_func():
                                 for action in get_manifest(server, pfmri).gen_actions(excludes):
                                         if "path" not in action.attrs:
                                                 continue
+                                        if action.name == "unknown":
+                                                # we don't care about unknown actions -
+                                                # mispublished packages with eg. SVR4
+                                                # pkginfo files result in duplicate paths,
+                                                # causing errors in check_pathdict_actions
+                                                # "Multiple actions on different types
+                                                # with the same path"
+                                                print "INFO: ignoring action in %s: %s" \
+                                                    % (pfmri_str, str(action))
+                                                continue
                                         action.attrs["importer.ipspkg"] = pfmri_str
                                         path_dict.setdefault(action.attrs["path"], []).append(action)
                                         if action.name in ["file", "link", "hardlink"]:
