@@ -5260,18 +5260,14 @@ class PackageManager:
                         if section[enumerations.SECTION_NAME] == section_name:
                                 section_id = section[enumerations.SECTION_ID]
                                 for category in category_list:
-                                        localized_section = _(category[
+                                        localized_top_cat = _(category[
                                             enumerations.CATEGORY_NAME].split("/")[0])
                                         category[enumerations.CATEGORY_VISIBLE_NAME] = \
                                             _(category[
                                             enumerations.CATEGORY_VISIBLE_NAME])
                                         visible_id = enumerations.CATEGORY_IS_VISIBLE
-                                        if localized_section == \
-                                            section[enumerations.SECTION_NAME]:
-                                                if not category[
-                                                    enumerations.CATEGORY_VISIBLE_NAME] \
-                                                    in categories_list:
-                                                        category[visible_id] = False
+                                        if localized_top_cat == \
+                                                section[enumerations.SECTION_NAME]:
                                                 section_lst = category[ \
                                                     enumerations.SECTION_LIST_OBJECT]
                                                 section[enumerations.SECTION_ENABLED] = \
