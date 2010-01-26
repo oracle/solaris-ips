@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -456,10 +456,10 @@ class ImagePlan(object):
                 else:
                         return manifest.NullCachedManifest
 
-        def __create_intent(self, old_fmri, new_fmri):
+        def __create_intent(self, old_fmri, new_fmri, enabled_publishers):
                 """Return intent strings (or None).  Given a pair
                 of fmris describing a package operation, this
-                routines returns intent strings to be passed to
+                routine returns intent strings to be passed to
                 originating publisher describing manifest
                 operations.  We never send publisher info to
                 prevent cross-publisher leakage of info."""
@@ -479,8 +479,11 @@ class ImagePlan(object):
                         new_fmri = new_fmri.get_fmri(anarchy=True)# don't send pub
                 else:
                         reference = self.__references.get(old_fmri, None)
-                        old_fmri = old_fmri.get_fmri(anarchy=True)# don't send pub
-
+                        # don't try to send intent info to disabled publisher
+                        if old_fmri.get_publisher() in enabled_publishers:
+                                old_fmri = old_fmri.get_fmri(anarchy=True)# don't send pub
+                        else:
+                                old_fmri = None
                 info = {
                     "operation": self.__planned_op,
                     "old_fmri" : old_fmri,
@@ -494,8 +497,11 @@ class ImagePlan(object):
                 ])
 
                 if new_fmri:
-                        return None, s # only report new on upgrade
-                return s, None         # handle uninstall
+                        return None, s    # only report new on upgrade
+                elif old_fmri:
+                        return s, None    # uninstall w/ enabled pub
+                else:
+                        return None, None # uninstall w/ disabled pub
 
         def add_actuator(self, phase, name, value):
                 """Add an actuator to the plan.
@@ -529,10 +535,15 @@ class ImagePlan(object):
                 prefetch_mfsts = [] # manifest, intents to be prefetched
                 eval_list = []     # oldfmri, oldintent, newfmri, newintent
                                    # prefetched intents omitted
+                enabled_publishers = set([
+                                a.prefix
+                                for a in self.image.gen_publishers()
+                                ])
 
                 for oldfmri, newfmri in self.__fmri_changes:
                         self.__progtrack.evaluate_progress(oldfmri)
-                        old_in, new_in = self.__create_intent(oldfmri, newfmri)
+                        old_in, new_in = self.__create_intent(oldfmri, newfmri,
+                            enabled_publishers)
                         if oldfmri:
                                 if not self.image.has_manifest(oldfmri):
                                         prefetch_mfsts.append((oldfmri, old_in))
