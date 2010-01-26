@@ -55,7 +55,9 @@ class CacheListStores:
                 if not cache_dir:
                         return
                 catexs = []
-                for key in cat_exp_dict.keys():
+                for key, val in cat_exp_dict.iteritems():
+                        if not val:
+                                continue
                         name, path = key
                         path1 = -1
                         if len(path) > 0:
