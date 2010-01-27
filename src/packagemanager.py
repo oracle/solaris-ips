@@ -340,7 +340,8 @@ class PackageManager:
                     PUBLISHER_ALL : _("All Publishers (Search)"),
                     PUBLISHER_ADD : _("Add...")
                     }
-                self.pubs_disabled_status = {}
+                self.pubs_info = {}
+                self.pubs_display_name = {}
                 self.last_visible_publisher = None
                 self.publisher_changed = True
                 self.search_start = 0
@@ -1235,7 +1236,7 @@ class PackageManager:
                 index = -1
                 model = self.w_repository_combobox.get_model()
                 for entry in model:
-                        if entry[enumerations.REPOSITORY_NAME] == pub_name:
+                        if entry[enumerations.REPOSITORY_PREFIX] == pub_name:
                                 index = entry[enumerations.REPOSITORY_ID]
                                 break
                 return index
@@ -1285,8 +1286,11 @@ class PackageManager:
                 if search_action and search_action.find(INTERNAL_SEARCH_VIEW_PUB) > -1:
                         pub = re.findall(r'<b>(.*)<\/b>', search_action)[0]
                         if handle_what == DISPLAY_LINK:
+                                pub_name = self.__get_publisher_display_name_from_prefix(
+                                    pub)
                                 return _("View packages in %(s1)s%(pub)s%(e1)s") % \
-                                        {"s1": s1, "pub": pub, "e1": e1}
+                                        {"s1": s1, "pub": \
+                                        pub_name, "e1": e1}
                         index = self.__get_publisher_combobox_index(pub)
                         gobject.idle_add(self.__handle_browse_publisher, index)
                         return
@@ -1460,7 +1464,9 @@ class PackageManager:
         def __get_new_repositories_liststore():
                 return gtk.ListStore(
                         gobject.TYPE_INT,         # enumerations.REPOSITORY_ID
-                        gobject.TYPE_STRING,      # enumerations.REPOSITORY_NAME
+                        gobject.TYPE_STRING,      # enumerations.REPOSITORY_DISPLAY_NAME
+                        gobject.TYPE_STRING,      # enumerations.REPOSITORY_PREFIX
+                        gobject.TYPE_STRING,      # enumerations.REPOSITORY_ALIAS
                         )
 
         def __init_application_tree_view(self, application_list,
@@ -1684,7 +1690,7 @@ class PackageManager:
                 cell = gtk.CellRendererText()
                 self.w_repository_combobox.pack_start(cell, True)
                 self.w_repository_combobox.add_attribute(cell, 'text',
-                    enumerations.REPOSITORY_NAME)
+                    enumerations.REPOSITORY_DISPLAY_NAME)
                 self.w_repository_combobox.set_row_separator_func(
                     self.combobox_id_separator)
 
@@ -2021,14 +2027,26 @@ class PackageManager:
                 pub_browse_list = ""
                 model = self.w_repository_combobox.get_model()
                 for pub in model:
-                        pub_name = pub[enumerations.REPOSITORY_NAME]
-                        if (pub_name and pub_name not in self.publisher_options.values()):
-                                body += "<li style='padding-left:7px'>%s</li>" % pub_name 
+                        prefix = pub[enumerations.REPOSITORY_PREFIX]
+                        if (prefix and prefix not in self.publisher_options.values()):
+                                pub_alias = pub[enumerations.REPOSITORY_ALIAS]
+                                if pub_alias != None and len(pub_alias) > 0:
+                                        pub_name = "%s (%s)" % (
+                                            pub_alias, prefix)
+                                else:
+                                        pub_name = prefix
+                                body += "<li style='padding-left:7px'>%s</li>" \
+                                    % pub_name
                                 pub_browse_list += "<li style='padding-left:7px'><a href="
                                 pub_browse_list += "'pm?pm-action=internal&search=%s" % \
                                         INTERNAL_SEARCH_VIEW_PUB
-                                pub_browse_list += " <b>%s</b>'>%s</a></li>" % \
-                                        (pub_name, pub_name)
+                                if pub_alias != None and len(pub_alias) > 0:
+                                        pub_browse_list += " <b>%s</b>'>%s</a></li>" % \
+                                                (prefix, pub_alias)
+                                else:
+                                        pub_browse_list += " <b>%s</b>'>%s</a></li>" % \
+                                                (prefix, pub_name)
+                              
                 body += "<TD></TD></TR>"
                 body += _("<TR><TD></TD><TD></TD></TR>"
                     "<TR><TD></TD><TD>Click on the Publishers below to view their list "
@@ -2168,11 +2186,12 @@ class PackageManager:
                 return description
                 
         def __setup_search_zero_results_page(self, pub, text):
+                name =  self.__get_publisher_name_from_prefix(pub)
                 header = INFORMATION_PAGE_HEADER
                 header += _("alt='[Information]' title='Information' ALIGN='bottom'></TD>"
                     "<TD><h3><b>Search Results</b></h3><TD></TD></TR>"
                     "<TR><TD></TD><TD>No packages found in <b>%(pub)s</b> "
-                    "matching <b>%(text)s</b></TD></TR>") % {"pub": pub, "text": text}
+                    "matching <b>%(text)s</b></TD></TR>") % {"pub": name, "text": text}
 
                 body = _("<TR><TD></TD><TD<TD></TD></TR><TR><TD></TD><TD<TD></TD></TR>"
                     "<TR><TD></TD><TD<TD><b>Suggestions:</b><br></TD></TR>"
@@ -2397,7 +2416,7 @@ class PackageManager:
                 pargs.append(search_str)
                 if search_all:
                         servers = None
-                        pub_prefix = self.api_o.get_preferred_publisher()
+                        pub_prefix = self.api_o.get_preferred_publisher().prefix
                 else:
                         pub_prefix = self.__get_selected_publisher()
                         if pub_prefix != None:
@@ -2420,7 +2439,8 @@ class PackageManager:
                                 ("".join(pargs), case_sensitive, return_actions)
 
                 last_name = ""
-                self.search_all_pub_being_searched = pub_prefix
+                self.search_all_pub_being_searched = \
+                    self.__get_publisher_display_name_from_prefix(pub_prefix)
 
                 # Sorting results by Name gives best overall appearance and flow
                 sort_col = enumerations.NAME_COLUMN
@@ -2445,7 +2465,9 @@ class PackageManager:
                                         #Ignore Status when fetching
                                         application_list = \
                                                 self.__get_min_list_from_search(result)
-                                        self.search_all_pub_being_searched = active_pub
+                                        self.search_all_pub_being_searched = \
+                                            self.__get_publisher_display_name_from_prefix(
+                                            active_pub)
                                         self.in_setup = True
                                         gobject.idle_add(self.__init_tree_views, 
                                             application_list, None, None, None, None,
@@ -2503,12 +2525,8 @@ class PackageManager:
                 if self.w_filter_combobox.get_active() == enumerations.FILTER_ALL:
                         return
 
-                if search_all:
-                        gobject.idle_add(self.__check_zero_results_afterfilter, text,
-                            len(application_list))
-                else:
-                        gobject.idle_add(self.__check_zero_results_afterfilter, text,
-                            len(application_list))
+                gobject.idle_add(self.__check_zero_results_afterfilter, text,
+                    len(application_list))
 
         def __check_zero_results_afterfilter(self, text, num):
                 if self.length_visible_list != 0:
@@ -2532,13 +2550,31 @@ class PackageManager:
                 gobject.idle_add(self.__set_empty_details_panel)
                 gobject.idle_add(self.__init_tree_views, application_list, None, None)
 
+        def __get_publisher_display_name_from_prefix(self, prefix):
+                if self.pubs_display_name.has_key(prefix):
+                        return self.pubs_display_name[prefix]
+                else:
+                        return prefix
+
+        def __get_publisher_name_from_prefix(self, prefix):
+                if self.pubs_info.has_key(prefix):
+                        item  = self.pubs_info[prefix]
+                else:
+                        return prefix
+                alias = item[1]
+                if alias != None and len(alias) > 0:
+                        return alias
+                else:
+                        return prefix 
+
         def __get_min_list_from_search(self, search_result):
                 application_list = self.__get_new_application_liststore()
                 for name, pub in search_result:
+                        pub_name = self.__get_publisher_name_from_prefix(pub)
                         application_list.append(
                             [False, None, name, '...', api.PackageInfo.KNOWN, None, 
                             self.__get_pkg_stem(name, pub), None, True, None, 
-                            pub])
+                            pub_name])
                 return application_list
 
         def __get_full_list_from_search(self, search_result):
@@ -3378,7 +3414,7 @@ class PackageManager:
                 if pub_iter == None:
                         return None
                 return self.repositories_list.get_value(pub_iter, \
-                            enumerations.REPOSITORY_NAME)
+                            enumerations.REPOSITORY_PREFIX)
 
         def __setup_publisher(self, publishers):
                 self.saved_filter_combobox_active = self.initial_show_filter
@@ -3869,7 +3905,7 @@ class PackageManager:
                         itr = self.repositories_list.iter_nth_child(None,
                             index)
                         name = self.repositories_list.get_value(itr,
-                            enumerations.REPOSITORY_NAME)
+                            enumerations.REPOSITORY_PREFIX)
                 return name
 
         def __shutdown_part1(self):
@@ -3964,6 +4000,20 @@ class PackageManager:
                                         return True
                 return False
 
+        @staticmethod
+        def __alias_clash(pubs, prefix, alias):
+                clash = False
+                if alias != None and len(alias) > 0:
+                        for pub in pubs:
+                                if pub.disabled:
+                                        continue
+                                if pub.prefix == prefix:
+                                        continue
+                                if alias == pub.prefix or alias == pub.alias:
+                                        clash = True
+                                        break
+                return clash
+
         def __setup_repositories_combobox(self, api_o):
                 previous_publisher = None
                 previous_saved_name = None
@@ -3974,7 +4024,7 @@ class PackageManager:
                                     self.saved_repository_combobox_active)
                                 previous_saved_name = \
                                    self.repositories_list.get_value(itr, 
-                                   enumerations.REPOSITORY_NAME)
+                                   enumerations.REPOSITORY_PREFIX)
                 self.__disconnect_repository_model()
                 self.repositories_list = self.__get_new_repositories_liststore()
                 default_pub = api_o.get_preferred_publisher().prefix
@@ -3987,33 +4037,46 @@ class PackageManager:
                         selected_repos.append(repo)
                 i = 0
                 active = 0
-                self.pubs_disabled_status = {}
-                for pub in api_o.get_publishers():
-                        self.pubs_disabled_status[pub.prefix] = pub.disabled
+                self.pubs_info = {}
+                self.pubs_display_name = {}
+                pubs = api_o.get_publishers()
+                for pub in pubs:
+                        self.pubs_info[pub.prefix] = (pub.disabled, pub.alias)
                         if pub.disabled:
                                 continue
+                        alias = pub.alias
                         prefix = pub.prefix
+                        if self.__alias_clash(pubs, prefix, alias):
+                                display_name = "%s (%s)" % (alias, prefix)
+                        elif alias == None or len(alias) == 0:
+                                display_name = prefix
+                        else:
+                                display_name = alias
+                        self.pubs_display_name[pub.prefix] = display_name
                         if cmp(prefix, self.default_publisher) == 0:
                                 active = i
-                        self.repositories_list.append([i, prefix, ])
+                        self.repositories_list.append([i, display_name, prefix, alias ])
                         enabled_repos.append(prefix)
                         i = i + 1
-                self.repositories_list.append([-1, "", ])
+                self.repositories_list.append([-1, "", None, None, ])
                 i = i + 1
                 self.repo_combobox_all_pubs_installed_index = i
                 self.repositories_list.append(
                     [self.repo_combobox_all_pubs_installed_index, 
-                    self.publisher_options[PUBLISHER_INSTALLED], ])
+                    self.publisher_options[PUBLISHER_INSTALLED],
+                    self.publisher_options[PUBLISHER_INSTALLED], None, ])
                 i = i + 1
                 self.repo_combobox_all_pubs_index = i
                 self.repositories_list.append([self.repo_combobox_all_pubs_index, 
-                    self.publisher_options[PUBLISHER_ALL], ])
+                    self.publisher_options[PUBLISHER_ALL],
+                    self.publisher_options[PUBLISHER_ALL], None, ])
                 i = i + 1
-                self.repositories_list.append([-1, "", ])
+                self.repositories_list.append([-1, "", None, None, ])
                 i = i + 1
                 self.repo_combobox_add_index = i
                 self.repositories_list.append([-1,
-                    self.publisher_options[PUBLISHER_ADD], ])
+                    self.publisher_options[PUBLISHER_ADD],
+                    self.publisher_options[PUBLISHER_ADD], None, ])
                 pkgs_to_remove = []
                 for repo_name in selected_repos:
                         if repo_name not in enabled_repos:
@@ -4027,7 +4090,7 @@ class PackageManager:
                 self.same_publisher_on_setup = False
                 if self.first_run:
                         for repo in self.repositories_list:
-                                if (repo[enumerations.REPOSITORY_NAME] == \
+                                if (repo[enumerations.REPOSITORY_PREFIX] == \
                                     self.lastsource and
                                     repo[enumerations.REPOSITORY_ID] != -1):
                                         selected_id = \
@@ -4035,7 +4098,7 @@ class PackageManager:
                                         break
                 else:
                         for repo in self.repositories_list:
-                                if (repo[enumerations.REPOSITORY_NAME] ==
+                                if (repo[enumerations.REPOSITORY_PREFIX] ==
                                     previous_publisher and
                                     repo[enumerations.REPOSITORY_ID] != -1):
                                         selected_id = \
@@ -4046,7 +4109,7 @@ class PackageManager:
                         if self.saved_repository_combobox_active != -1:
                                 self.saved_repository_combobox_active = -1
                                 for repo in self.repositories_list:
-                                        if (repo[enumerations.REPOSITORY_NAME] ==
+                                        if (repo[enumerations.REPOSITORY_PREFIX] ==
                                             previous_saved_name):
                                                 self.saved_repository_combobox_active = \
                                                    repo[enumerations.REPOSITORY_ID]
@@ -4225,8 +4288,7 @@ class PackageManager:
                         gui_misc.set_package_details_text(labs, text,
                             self.w_generalinfo_textview,
                             self.installed_icon, self.not_installed_icon,
-                            self.update_available_icon, 
-                            self.is_all_publishers_installed, self.pubs_disabled_status)
+                            self.update_available_icon) 
                         text = self.info_cache[pkg_stem][
                             enumerations.INFO_INSTALLED_TEXT]
                         self.__set_installedfiles_text(text)
@@ -4386,7 +4448,7 @@ class PackageManager:
                     remote_info, self.w_generalinfo_textview,
                     self.installed_icon, self.not_installed_icon,
                     self.update_available_icon,
-                    self.is_all_publishers_installed, self.pubs_disabled_status)
+                    self.is_all_publishers_installed, self.pubs_info)
                 if not local_info:
                         # Package is not installed
                         local_info = remote_info
@@ -4893,10 +4955,11 @@ class PackageManager:
                         if pkgs != None:
                                 if pkg_stem in pkgs:
                                         marked = True
+                        pub_name = self.__get_publisher_name_from_prefix(pkg_pub)
                         next_app = \
                             [
                                 marked, status_icon, pkg_name, summ, pkg_state,
-                                pkg_fmri, pkg_stem, None, True, None, pkg_pub
+                                pkg_fmri, pkg_stem, None, True, None, pub_name
                             ]
                         application_list.insert(pkg_add, next_app)
                         pkg_add += 1
@@ -4933,10 +4996,11 @@ class PackageManager:
                         if pkgs != None:
                                 if pkg_stem in pkgs:
                                         marked = True
+                        pub_name = self.__get_publisher_name_from_prefix(pkg_pub)
                         next_app = \
                             [
                                 marked, status_icon, pkg_name, summ, pkg_state,
-                                pkg_fmri, pkg_stem, None, True, None, pkg_pub
+                                pkg_fmri, pkg_stem, None, True, None, pub_name
                             ]
                         self.__add_package_to_list(next_app,
                             application_list,
@@ -5084,9 +5148,12 @@ class PackageManager:
                 if category_tree == None:
                         return
                 if self.is_all_publishers:
-                        pub_prefix = _("All Publishers")
+                        pub_name = _("All Publishers")
+                else:
+                        pub_name = self.__get_publisher_display_name_from_prefix(
+                            pub_prefix)
                 recent_search = "(%d) <b>%s</b> %s" % \
-                        (len(application_list), text, pub_prefix)
+	        	(len(application_list), text, pub_name)
                 if not (recent_search in self.recent_searches):
                         cat_iter = category_tree.append(self.recent_searches_cat_iter,
                             [RECENT_SEARCH_ID + 1, recent_search, recent_search, 

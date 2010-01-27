@@ -242,7 +242,7 @@ def error_occurred(parent, error_msg, msg_title = None,
 
 def set_package_details(pkg_name, local_info, remote_info, textview,
     installed_icon, not_installed_icon, update_available_icon, 
-    is_all_publishers_installed=None, pubs_disabled_status=None):
+    is_all_publishers_installed=None, pubs_info=None):
         installed = True
 
         if not local_info:
@@ -307,20 +307,31 @@ def set_package_details(pkg_name, local_info, remote_info, textview,
                                 categories += ", " + ci.__str__(verbose)
 
         text["cat"] = categories
-        text["repository"] = local_info.publisher
-        # pubs_disabled_status: dict of publisher disabled status:
-        # pub_status[pub_name] = True disabled or False enabled
-        if is_all_publishers_installed and pubs_disabled_status != None:
-                if local_info.publisher in pubs_disabled_status:
-                        if pubs_disabled_status[local_info.publisher]:
-                                text["repository"] = local_info.publisher + \
+        pub_name = local_info.publisher
+        if pubs_info != None:
+                try:
+                        item = pubs_info[local_info.publisher]
+                except KeyError:
+                        item = None
+                if item:
+                        alias = item[1]
+                        if alias != None and len(alias) > 0:
+                                pub_name = "%s (%s)" % (
+                                    alias, local_info.publisher)
+        text["repository"] = pub_name
+        # pubs_info: dict of publisher disabled status and aliases:
+        # pub_info[pub_name][0] = True disabled or False enabled
+        # pub_info[pub_name][1] = Alias
+        if is_all_publishers_installed and pubs_info != None:
+                if local_info.publisher in pubs_info:
+                        if pubs_info[local_info.publisher][0]:
+                                text["repository"] = pub_name + \
                                 _(" (disabled)")
                 else:
-                        text["repository"] = local_info.publisher + _(" (removed)")
+                        text["repository"] = pub_name + _(" (removed)")
         set_package_details_text(labs, text, textview, installed_icon,
                 not_installed_icon, update_available_icon)
         return (labs, text)
-
 
 def set_package_details_text(labs, text, textview, installed_icon,
     not_installed_icon, update_available_icon):
