@@ -284,7 +284,10 @@ class InstallUpdate(progress.GuiProgressTracker):
                         else:
                                 self.__proceed_with_stages()
                 elif self.action == enumerations.IMAGE_UPDATE:
-                        self.w_dialog.set_title(_("Update All"))
+                        if global_settings.client_name == gui_misc.get_pm_name():
+                                self.w_dialog.set_title(_("Updates"))
+                        else:
+                                self.w_dialog.set_title(_("Update All"))
                         self.__proceed_with_stages()
                 else:
                         if self.title != None:
@@ -743,8 +746,10 @@ class InstallUpdate(progress.GuiProgressTracker):
                 else:
                         self.w_remove_expander.hide()
 
-
-                operation_txt = _("Update All Confirmation")
+                if global_settings.client_name == gui_misc.get_pm_name():
+                        operation_txt = _("Update Confirmation")
+                else:
+                        operation_txt = _("Update All Confirmation")
                 no_pkgs = len(to_update) + len(to_install) + len(to_remove)
                 install_text = ngettext(
                     "Review the package which will be affected by Update all",
