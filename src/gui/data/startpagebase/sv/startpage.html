@@ -5,9 +5,6 @@
 <style>
     <!--
         /* Css Styles taken from www.opensolaris.com */
-	ul, li {
-		list-style: none;
-	}
 	a img,
 	:link img,
 	:visited img {
@@ -36,92 +33,363 @@
 		font-size: 12px;
 	}
 	a { color: #2888c5; }
-	a.small { font-size: 11px; }
+	a.small { font-size: 12px; }
 	a:visited{ color: #587894;}
 
 	h1{
-		font-size: 16px;
-		font-weight: bold;
+	font-size: 20pt;
+	font-weight: bold;
+	margin-top: 0px;
+	margin-left: 0px;
+	color: #acb0c0;
 	}
 	h1 a,
 	h1 a:hover{
 		text-decoration: none;
 		color: #4A4A4A;
+		margin: 0;
+		padding: 0;
 	}
 	h2{
 		font-size: 14px;
 		font-weight: bold;
 	}
 	h3{
+		text-align: left;
 		font-size: 12px;
+	}
+	h4{
+		text-align: left;
+		margin-top: 0px;
+		margin-left: 0px;
+                margin: 0;
+		padding: 0;
+	}
+	h5{
+		margin-top: 0;
+		margin-right: 0;
+		margin-bottom: 0;
+                margin-left: 1;
+		padding: 1;
+	}
+	h6{
+		text-align: right;
+	}
+        popular-title{
+		color: #77aade;
+		font-family: Arial, Helvetica, sans-serif;
 		font-weight: bold;
+		font-size: 14px;
+        }
+        recent-title{
+		color: #4169a8;
+		font-family: Arial, Helvetica, sans-serif;
+		font-weight: bold;
+		font-size: 14px;
+        }
+        recommended-title{
+		color: #76a542;
+		font-family: Arial, Helvetica, sans-serif;
+		font-weight: bold;
+		font-size: 14px;
+        }
+	h9{
+		font-family: Arial, Helvetica, sans-serif;
+		font-size: 12px;
+	}
+	tr{
+		margin-top: 0px;
+		margin-left: 0px;
+                margin: 0;
+		padding: 0;
+	}
+	td{
+		margin: 0;
+		padding: 0;
 	}
     -->
    </style>
 </head>
 <body>
-<table border="0" cellpadding="3" style='table-layout:fixed' >
-<thead>
+<table border="0" cellpadding="0" cellspacing="0" style="text-align: left">
+	<a href="stub"></a>
+	<tr>
+		<td COLSPAN='2'><h1>Paket som ingår</h1></td>
+	</tr>
+	<tr>
+		<td style="vertical-align: top" >
 
-<tr>
-<th><a href="stub"></a> <!-- Stub required to work around GktHTML anchor bug -->
-<a href="http://www.opensolaris.com/learn"><IMG ALIGN=TOP SRC = "../C/startpage_learn.png" ></a></th>
-<th><a href="http://www.opensolaris.com/use"><IMG ALIGN=TOP SRC = "../C/startpage_use.png" ></a></th>
-<th><a href="http://forums.opensolaris.com"><IMG ALIGN=TOP SRC = "../C/startpage_share.png" ></a></th>
-</tr>
-</thead>
-<tbody>
-<tr>
+		<table border="0" height="100%" width="100%" cellpadding="4" cellspacing="0" style="background-color: #e9f1fa">
+			<tr>
+				<td COLSPAN='4' style="border:solid 1px #d4dce4; border-bottom: 0px; border-right: #b5b7b4">
+				&nbsp;&nbsp;&nbsp;<popular-title>Populära</popular-title>
+				</td>
+			</tr>
+			<tr>
+				<td style="background-color: #f5fafd; border:solid 1px #d4dce4;
+					border-right: 0px; border-bottom: 0px; border-top: 0px">
+					<ul style="margin: 0"><li style="padding-left: 5">
+					<h9><a href="http://fntsample.sourceforge.net">
+					fntsample</a></h9>
+					</ul>
+				</td>
+				<td style="background-color: #f5fafd">
+					<NOT-l10N>Program for making font samples</NOT-l10N>
+				</td>
+				<td style="background-color: #f5fafd; vertical-align: middle; margin: 0; text-align: right;">
+					<h9><a href="http://pkg.opensolaris.org/contrib/p5i/0/fntsample.p5i">
+					installation</a></h9>
+				</td>
+				<td style="border:solid 1px #b5b7b4; border-left: 0px;
+					border-bottom: 0px; border-top: 0px">
+					<IMG SRC = "/usr/share/package-manager/data/startpagebase/C/install.png" />
+				</td>
+			</tr>
+			<tr>
+				<td  style="border:solid 1px #d4dce4;
+					border-right: 0px; border-bottom: 0px; border-top: 0px">
+					<ul style="margin: 0"><li style="padding-left: 5">
+					<h9><a href="http://drupal.org/">
+					drupal6</a></h9>
+					</ul>
+				</td>
+				<td>
+					<NOT-l10N>An open-source content-management platform</NOT-l10N>
+				</td>
+				<td style="vertical-align: middle; margin: 0; text-align: right;">
+					<h9><a href="http://pkg.opensolaris.org/contrib/p5i/0/drupal6.p5i">
+					installation</a></h9>
+				</td>
+				<td style="border:solid 1px #b5b7b4; border-left: 0px;
+					border-bottom: 0px; border-top: 0px">
+					<IMG SRC = "/usr/share/package-manager/data/startpagebase/C/install.png" />
+				</td>
+			</tr>
+			<tr>
+				<td style="background-color: #f5fafd; border:solid 1px #d4dce4;
+					border-right: 0px; border-bottom: 0px; border-top: 0px">
+					<ul style="margin: 0"><li style="padding-left: 5">
+					<h9><a href="http://www.gnuplot.info/">
+					gnuplot</a></h9>
+					</ul>
+				</td>
+				<td style="background-color: #f5fafd">
+					<NOT-l10N>Gnuplot is a command-line driven interactive function ...</NOT-l10N>
+				</td>
+				<td style="background-color: #f5fafd; vertical-align: middle; margin: 0; text-align: right;">
+					<h9><a href="http://pkg.opensolaris.org/contrib/p5i/0/gnuplot.p5i">
+					installation</a></h9>
+				</td>
+				<td style="border:solid 1px #b5b7b4; border-left: 0px;
+					border-bottom: 0px; border-top: 0px">
+					<IMG SRC = "/usr/share/package-manager/data/startpagebase/C/install.png" />
+				</td>
+			</tr>
+			<tr>
+				<td COLSPAN='3' style="text-align: right; border:solid 1px #d4dce4;
+					border-right: 0px; border-top: 0px">
+					<h9><a href="http://pkg.opensolaris.org/contrib/en/catalog.shtml">
+					Mer information ...</a></h9>
+				</td>
+				<td style="text-align: right; border:solid 1px #d4dce4;
+					border-left: 0px; border-top: 0px; border-right: #b5b7b4"></td>
+			</tr>
+		</table>
 
-<td  valign="top">
-<p>
-<p>Online-resurser hj&auml;lper dig att f&aring; ut det mesta av OpenSolaris.</p>
-&gt;&gt;<strong> <a href="http://www.opensolaris.com/learn/features" target="_blank"> Nya funktioner i OpenSolaris</a></strong><br>
-&gt;&gt;<strong> <a href="http://www.sun.com/service/opensolaris/index.jsp" target="_blank"> OpenSolaris support</a></strong><br>
-&gt;&gt;<strong> <a href="http://www.opensolaris.org/os/package" target="_blank"> OpenSolaris databaser</a></strong><br>
-</p>
-</td>
+                </td>
+		<td><h5><IMG SRC = "/usr/share/package-manager/data/startpagebase/C/popular.png" /></h5></td>
+	</tr>
 
-<td  valign="top">
-<p>
-<p>Hur du anpassar ditt system och utvecklar OpenSolaris.</p>
-&gt;&gt;<strong> <a href="http://www.opensolaris.com/use/customize/" target="_blank">Anpassa ditt system</a></strong><br />
-&gt;&gt;<strong> <a href="http://www.opensolaris.org/os/participate/" target="_blank">Utveckla f&ouml;r OpenSolaris</a></strong><br />
-</p>
 
-</td>
-<td  valign="top">
-<p>
-<p>L&auml;s de senaste nyheterna och delta i OpenSolaris Community.</p>
-&gt;&gt;<strong> <a href="https://communications.sun.com/p/OLM2/OpenSolaris/opensolaris_reg.jsp" target="_blank">Prenumerera p&aring; OpenSolaris Ignite</a></strong><br />
-&gt;&gt;<strong> <a href="http://www.sun.com/emrkt/opensolaris/ignite/" target="_blank">Se alla tidigare utg&aring;vor av Ignite back</a></strong><br />
-&gt;&gt;<strong> <a href="http://forums.opensolaris.com" target="_blank">Anslut dig till OpenSolaris forum</a></strong>
-</p>
-</td>
-</tr>
 
-<tr>
-<td></td>
-<td></td>
-<td></td>
-</tr>
 
-<tr>
-<td></td>
-<td></td>
-<td></td>
-</tr>
 
-<tr>
-<td>
-</td>
-<td>&nbsp;<a href="http://www.opensolaris.com"><IMG SRC = "../C/opensolaris.png" ></a>
-</td>
-<td></td>
-</tr>
 
-</tbody>
+	<tr>
+		<td style="vertical-align: top" >
+
+		<table border="0" height="100%" width="100%" cellpadding="4" cellspacing="0" style="background-color: #dbe4ec">
+			<tr>
+				<td COLSPAN='4' style="border:solid 1px #d1d5e5; border-bottom: 0px; border-right: #b5b7b4">
+				&nbsp;&nbsp;&nbsp;<recent-title>Senaste</recent-title>
+				</td>
+			</tr>
+			<tr>
+				<td style="background-color: #ecf1f4; border:solid 1px #d1d5e5;
+					border-right: 0px; border-bottom: 0px; border-top: 0px">
+					<ul style="margin: 0"><li style="padding-left: 5">
+					<h9><a href="http://joomla.org">
+					joomla</a></h9>
+					</ul>
+				</td>
+				<td style="background-color: #ecf1f4">
+					<NOT-l10N>An open-source content-management platform</NOT-l10N>
+				</td>
+				<td style="background-color: #ecf1f4; vertical-align: middle; margin: 0; text-align: right;">
+					<h9><a href="http://pkg.opensolaris.org/contrib/p5i/0/joomla.p5i">
+					installation</a></h9>
+				</td>
+				<td style="border:solid 1px #b5b7b4; border-left: 0px;
+					border-bottom: 0px; border-top: 0px">
+					<IMG SRC = "/usr/share/package-manager/data/startpagebase/C/install.png" />
+				</td>
+			</tr>
+			<tr>
+				<td  style="border:solid 1px #d1d5e5;
+					border-right: 0px; border-bottom: 0px; border-top: 0px">
+					<ul style="margin: 0"><li style="padding-left: 5">
+					<h9><a href="http://www.phpmyadmin.net/">
+					phpMyAdmin</a></h9>
+					</ul>
+				</td>
+				<td>
+					<NOT-l10N>phpMyAdmin is a PHP tool to Administer ...</NOT-l10N>
+				</td>
+				<td style="vertical-align: middle; margin: 0; text-align: right;">
+					<h9><a href="http://pkg.opensolaris.org/contrib/p5i/0/phpMyAdmin.p5i">
+					installation</a></h9>
+				</td>
+				<td style="border:solid 1px #b5b7b4; border-left: 0px;
+					border-bottom: 0px; border-top: 0px">
+					<IMG SRC = "/usr/share/package-manager/data/startpagebase/C/install.png" />
+				</td>
+			</tr>
+			<tr>
+				<td style="background-color: #ecf1f4; border:solid 1px #d1d5e5;
+					border-right: 0px; border-bottom: 0px; border-top: 0px">
+					<ul style="margin: 0"><li style="padding-left: 5">
+					<h9><a href="http://www.xfce.org">
+					xfce4-dev-tools</a></h9>
+					</ul>
+				</td>
+				<td style="background-color: #ecf1f4">
+					<NOT-l10N>Xfce Development Tools</NOT-l10N>
+				</td>
+				<td style="background-color: #ecf1f4; vertical-align: middle; margin: 0; text-align: right;">
+					<h9><a href="http://pkg.opensolaris.org/contrib/p5i/0/xfce4-dev-tools.p5i">
+					installation</a></h9>
+				</td>
+				<td style="border:solid 1px #b5b7b4; border-left: 0px;
+					border-bottom: 0px; border-top: 0px">
+					<IMG SRC = "/usr/share/package-manager/data/startpagebase/C/install.png" />
+				</td>
+			</tr>
+			<tr>
+				<td COLSPAN='3' style="text-align: right; border:solid 1px #d1d5e5;
+					border-right: 0px; border-top: 0px">
+					<h9><a href="http://pkg.opensolaris.org/contrib/en/catalog.shtml">
+					Mer information ...</a></h9>
+				</td>
+				<td style="text-align: right; border:solid 1px #d1d5e5;
+					border-left: 0px; border-top: 0px; border-right: #b5b7b4"></td>
+			</tr>
+		</table>
+
+                </td>
+		<td><h5><IMG SRC = "/usr/share/package-manager/data/startpagebase/C/recent.png" /></h5></td>
+	</tr>
+
+
+
+
+
+	<tr>
+		<td style="vertical-align: top" >
+
+		<table border="0" height="100%" width="100%" cellpadding="4" cellspacing="0" style="background-color: #e7f3e0">
+			<tr>
+				<td COLSPAN='4' style="border:solid 1px #c4ddb4; border-bottom: 0px; border-right: #b5b7b4">
+				&nbsp;&nbsp;&nbsp;<recommended-title>Rekommenderade</recommended-title>
+				</td>
+			</tr>
+			<tr>
+				<td style="background-color: #faf9ef; border:solid 1px #c4ddb4;
+					border-right: 0px; border-bottom: 0px; border-top: 0px">
+					<ul style="margin: 0"><li style="padding-left: 5">
+					<h9><a href="http://netbeans.org">
+					netbeans</a></h9>
+					</ul>
+				</td>
+				<td style="background-color: #faf9ef">
+					<NOT-l10N>An open-source Integrated Development Environment</NOT-l10N>
+				</td>
+				<td style="background-color: #faf9ef; vertical-align: middle; margin: 0; text-align: right;">
+					<h9><a href="http://pkg.opensolaris.org/release/p5i/0/netbeans.p5i">
+					installation</a></h9>
+				</td>
+				<td style="border:solid 1px #b5b7b4; border-left: 0px;
+					border-bottom: 0px; border-top: 0px">
+					<IMG SRC = "/usr/share/package-manager/data/startpagebase/C/install.png" />
+				</td>
+			</tr>
+			<tr>
+				<td  style="border:solid 1px #c4ddb4;
+					border-right: 0px; border-bottom: 0px; border-top: 0px">
+					<ul style="margin: 0"><li style="padding-left: 5">
+					<h9><a href="http://www.openoffice.org/">
+					openoffice</a></h9>
+					</ul>
+				</td>
+				<td>
+					<NOT-l10N>An open-source multilingual office suite</NOT-l10N>
+				</td>
+				<td style="vertical-align: middle; margin: 0; text-align: right;">
+					<h9><a href="http://pkg.opensolaris.org/release/p5i/0/openoffice.p5i">
+					installation</a></h9>
+				</td>
+				<td style="border:solid 1px #b5b7b4; border-left: 0px;
+					border-bottom: 0px; border-top: 0px">
+					<IMG SRC = "/usr/share/package-manager/data/startpagebase/C/install.png" />
+				</td>
+			</tr>
+			<tr>
+				<td style="background-color: #faf9ef; border:solid 1px #c4ddb4;
+					border-right: 0px; border-bottom: 0px; border-top: 0px">
+					<ul style="margin: 0"><li style="padding-left: 5">
+					<h9><a href="http://hub.opensolaris.org/bin/view/Project+webstack/WebHome">
+					amp</a></h9>
+					</ul>
+				</td>
+				<td style="background-color: #faf9ef">
+					<NOT-l10N>AMP (Apache, MySQL, PHP) deployment kit</NOT-l10N>
+				</td>
+				<td style="background-color: #faf9ef; vertical-align: middle; margin: 0; text-align: right;">
+					<h9><a href="http://pkg.opensolaris.org/release/p5i/0/amp.p5i">
+					installation</a></h9>
+				</td>
+				<td style="border:solid 1px #b5b7b4; border-left: 0px;
+					border-bottom: 0px; border-top: 0px">
+					<IMG SRC = "/usr/share/package-manager/data/startpagebase/C/install.png" />
+				</td>
+			</tr>
+			<tr>
+				<td COLSPAN='3' style="text-align: right; border:solid 1px #c4ddb4;
+					border-right: 0px; border-top: 0px">
+					<h9><a href="http://pkg.opensolaris.org/release/en/catalog.shtml">
+					Mer information ...</a></h9>
+				</td>
+				<td style="text-align: right; border:solid 1px #c4ddb4;
+					border-left: 0px; border-top: 0px; border-right: #b5b7b4"></td>
+			</tr>
+		</table>
+
+                </td>
+		<td><h5><IMG SRC = "/usr/share/package-manager/data/startpagebase/C/recommended.png"/></h5></td>
+	</tr>
+
+
+
+
+
+	<tr>
+		<td>
+                     >> <a href="http://jucr.opensolaris.org/">Använda Source Juicer för att bidra med paket</a><br />
+                     >> <a href="http://hub.opensolaris.org/bin/view/Project+pkg/documents">Använda och dela paket</a><br />
+                </td>
+		<td><a href="http://www.opensolaris.com"><IMG SRC = "/usr/share/package-manager/data/startpagebase/C/opensolaris.png" /></a></td>
+	</tr>
 </table>
+
 
 </body>
 </html>

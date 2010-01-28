@@ -19,71 +19,1572 @@
 # CDDL HEADER END
 #
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2009-04-14 18:29+0900\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+       "Project-Id-Version: PACKAGE VERSION\n"
+       "POT-Creation-Date: 2010-01-14 11:47+0900\n"
+       "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+       "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+       "Language-Team: LANGUAGE <LL@li.org>\n"
+       "MIME-Version: 1.0\n"
+       "Content-Type: text/plain; charset=UTF-8\n"
+       "Content-Transfer-Encoding: 8bit\n"
 
 #. When image changes, this message will be marked fuzzy or untranslated for you.
 #. It doesn't matter what you translate it to: it's not used at all.
-#: package-manager.xml:66(None)
-msgid "@@image: 'figures/pm_store.png'; md5=89037626f84480186677a61680dccc2c"
-msgstr "@@image: 'figures/pm_store.png'; md5=89037626f84480186677a61680dccc2c"
+#: package-manager.xml.in.nolegal:38(None) package-manager.xml.in.nolegal:88(None) 
+msgid "@@image: 'figures/pkgmgr-main.png'; md5=e2194180dd5eca2d8e3912fee614e061"
+msgstr "@@image: 'figures/pkgmgr-main.png'; md5=e2194180dd5eca2d8e3912fee614e061"
 
 #. When image changes, this message will be marked fuzzy or untranslated for you.
 #. It doesn't matter what you translate it to: it's not used at all.
-#: package-manager.xml:86(None)
-msgid "@@image: 'figures/pm_pkglist.png'; md5=b9a51d97ff1069102eb7ede47adb6a37"
-msgstr "@@image: 'figures/pm_pkglist.png'; md5=b9a51d97ff1069102eb7ede47adb6a37"
+#: package-manager.xml.in.nolegal:68(None) 
+msgid "@@image: 'figures/startpage_new.png'; md5=9f8516015a79fd2b5c456128482affe4"
+msgstr "@@image: 'figures/startpage_new.png'; md5=9f8516015a79fd2b5c456128482affe4"
 
 #. When image changes, this message will be marked fuzzy or untranslated for you.
 #. It doesn't matter what you translate it to: it's not used at all.
-#: package-manager.xml:427(None)
-msgid "@@image: 'figures/wi_start.png'; md5=3b2ad7761ad183fdfea6081f29893798"
-msgstr "@@image: 'figures/wi_start.png'; md5=3b2ad7761ad183fdfea6081f29893798"
+#: package-manager.xml.in.nolegal:583(None) 
+msgid "@@image: 'figures/webinstall.png'; md5=79f40b964b51261cd0164f64991b576c"
+msgstr "@@image: 'figures/webinstall.png'; md5=79f40b964b51261cd0164f64991b576c"
 
 #. When image changes, this message will be marked fuzzy or untranslated for you.
 #. It doesn't matter what you translate it to: it's not used at all.
-#: package-manager.xml:457(None)
-msgid "@@image: 'figures/update_all.png'; md5=af873a11d59466bf46c49bd3d3a227af"
-msgstr "@@image: 'figures/update_all.png'; md5=af873a11d59466bf46c49bd3d3a227af"
+#: package-manager.xml.in.nolegal:609(None) 
+msgid "@@image: 'figures/update_all_new.png'; md5=3d505052632edfdb38212de7f7ffb22c"
+msgstr "@@image: 'figures/update_all_new.png'; md5=3d505052632edfdb38212de7f7ffb22c"
 
-#: package-manager.xml:3(title)
-msgid "OpenSolaris 2009.06 Package Manager Online Help"
-msgstr "OpenSolaris 2009.06 패키지 관리자 온라인 도움말"
+#: package-manager.xml.in.nolegal:3(title) 
+msgid "OpenSolaris 2010.03 Package Manager Online Help"
+msgstr "OpenSolaris 2010.03 패키지 관리자 온라인 도움말"
 
-#: package-manager.xml:4(firstname)
+#: package-manager.xml.in.nolegal:4(firstname) 
 msgid "OpenSolaris"
 msgstr "OpenSolaris"
 
-#: package-manager.xml:5(surname)
+#: package-manager.xml.in.nolegal:5(surname) 
 msgid "Publications"
 msgstr "설명서"
 
-#: package-manager.xml:8(pubsnumber)
+#: package-manager.xml.in.nolegal:8(pubsnumber) 
 msgid "822-7173"
 msgstr "822-7173"
 
-#: package-manager.xml:10(pubdate)
+#: package-manager.xml.in.nolegal:10(pubdate) 
 msgid "June 2009"
 msgstr "2009년 6월"
 
-#: package-manager.xml:11(publishername)
+#: package-manager.xml.in.nolegal:11(publishername) 
 msgid "Sun Microsystems"
 msgstr "Sun Microsystems"
 
-#: package-manager.xml:13(year)
+#: package-manager.xml.in.nolegal:13(year) 
 msgid "2009"
 msgstr "2009"
+
+#: package-manager.xml.in.nolegal:33(title) 
+msgid "About the Package Manager"
+msgstr "패키지 관리자 정보"
+
+#: package-manager.xml.in.nolegal:34(para) 
+msgid "Welcome to the <trademark>OpenSolaris</trademark> 2010.03 Package Manager online help!"
+msgstr "<trademark>OpenSolaris</trademark> 2010.03 패키지 관리자 온라인 도움말 시작!"
+
+#: package-manager.xml.in.nolegal:35(para) 
+msgid "Use the help contents to learn how to use the Package Manager. Navigate through this help by clicking the topics displayed in the sidebar."
+msgstr "이 도움말 내용을 사용하여 패키지 관리자 사용 방법을 배울 수 있습니다. 사이드바에 표시되는 항목을 눌러 이 도움말을 탐색하십시오."
+
+#: package-manager.xml.in.nolegal:36(para) 
+msgid "The OpenSolaris 2010.03 Package Manager application is a graphical user interface for the Image Packaging System (IPS) software. The Package Manager provides a subset of the functionality offered by the command-line (CLI) clients provided with IPS."
+msgstr "OpenSolaris 2010.03 패키지 관리자 응용 프로그램은 이미지 패키징 시스템(Image Packaging System, IPS) 소프트웨어의 그래픽 사용자 인터페이스입니다. 패키지 관리자는 IPS와 함께 제공된 명령줄(CLI) 클라이언트에서 제공하는 기능의 일부를 제공합니다."
+
+#: package-manager.xml.in.nolegal:37(title) 
+msgid "Package Manager"
+msgstr "패키지 관리자"
+
+#: package-manager.xml.in.nolegal:41(para) 
+msgid "The Package Manager enables you to perform the following tasks:"
+msgstr "패키지 관리자를 사용하면 다음 작업을 수행할 수 있습니다."
+
+#: package-manager.xml.in.nolegal:42(para) 
+msgid "Install, remove, and search for packages"
+msgstr "패키지 설치, 제거 및 검색"
+
+#: package-manager.xml.in.nolegal:44(para) 
+msgid "Update your system"
+msgstr "시스템 업데이트"
+
+#: package-manager.xml.in.nolegal:46(para) 
+msgid "Add and manage publishers"
+msgstr "게시자 추가 및 관리"
+
+#: package-manager.xml.in.nolegal:48(para) 
+msgid "Create, remove, and manage boot environments"
+msgstr "부트 환경 만들기, 제거 및 관리"
+
+#: package-manager.xml.in.nolegal:51(para) 
+msgid "See the <xref linkend=\"glossary\"/> for a definition of the terms used in this document."
+msgstr ""
+       "이 문서에서 사용되는 용어 정의는 <xref linkend=\"glossary\"/>를 "
+       "참조하십시오."
+
+#: package-manager.xml.in.nolegal:53(title) 
+msgid "About Image Packaging System"
+msgstr "이미지 패키징 시스템 정보"
+
+#: package-manager.xml.in.nolegal:54(para) 
+msgid "Image Packaging System (IPS) is a framework which provides for software lifecycle management including installation, upgrade, and removal. The OpenSolaris 2010.03 release uses IPS as its packaging system."
+msgstr "이미지 패키징 시스템(Image Packaging System, IPS)은 설치, 업그레이드 및 제거를 비롯하여 소프트웨어 수명 주기 관리를 제공하는 프레임워크입니다. OpenSolaris 2010.03 릴리스에서는 IPS를 패키징 시스템으로 사용합니다."
+
+#: package-manager.xml.in.nolegal:55(para) 
+msgid "After an initial installation of the OpenSolaris 2010.03 operating system, you will find that some of the software applications that you use on a regular basis are not immediately available to you. These software applications are available as packages in a repository for downloading and installing over the network. A repository is a source for packages."
+msgstr "OpenSolaris 2010.03 운영 체제의 초기 설치 후에는 정기적으로 사용하는 소프트웨어 응용 프로그램 일부를 즉시 사용할 수 없게 됩니다. 이러한 소프트웨어 응용 프로그램은 저장소에서 네트워크를 통해 다운로드하고 설치하여 패키지로 사용할 수 있습니다. 저장소는 패키지의 소스입니다."
+
+#: package-manager.xml.in.nolegal:56(para) 
+msgid "IPS provides a set of software tools that can be used to install packages from a repository, create and publish their own IPS packages, mirror an existing repository, and publish existing packages to a repository."
+msgstr "IPS는 저장소에서 패키지를 설치하고, 사용자 자신의 IPS 패키지를 만들어 게시하며, 기존 저장소를 미러링하고, 기존 패키지를 저장소에 게시하는 데 사용할 수 있는 소프트웨어 도구 세트를 제공합니다."
+
+#: package-manager.xml.in.nolegal:57(para) 
+msgid "Once you have installed packages, IPS enables you to search, update, and manage packages on your system."
+msgstr ""
+       "패키지를 설치하고 나면 IPS를 통해 시스템에서 패키지를 검색, 업데이트 및 "
+       "관리할 수 있습니다."
+
+#: package-manager.xml.in.nolegal:58(para) 
+msgid "With IPS , you can upgrade your system to a newer build of OpenSolaris, install and update your software to the latest available versions in a repository, and retrieve packages from mirror repositories."
+msgstr ""
+       "IPS를 사용하면 시스템을 OpenSolaris의 최신 빌드로 "
+       "업그레이드하고, 소프트웨어를 저장소에서 사용 가능한 최신 버전으로 설치 및 업데이트하고, "
+       "미러 저장소에서 패키지를 검색할 수 있습니다."
+
+#: package-manager.xml.in.nolegal:59(emphasis) 
+msgid "The Package Manager provides a subset of the tasks that can be performed from the command-line."
+msgstr ""
+       "패키지 관리자는 명령줄에서 수행할 수 있는 작업의 일부를 "
+       "제공합니다."
+
+#: package-manager.xml.in.nolegal:61(para) 
+msgid "For the OpenSolaris 2010.03 release, if the system on which IPS is installed is on the network, IPS can automatically retrieve packages provided by the OpenSolaris publisher from the package repository located at <ulink url=\"http://pkg.opensolaris.org\"/>."
+msgstr "OpenSolaris 2010.03 릴리스의 경우 IPS가 설치된 시스템이 네트워크에 연결되면 IPS는 <ulink url=\"http://pkg.opensolaris.org\"/>에 있는 패키지 저장소에서 OpenSolaris 게시자가 제공하는 패키지를 자동으로 검색할 수 있습니다."
+
+#: package-manager.xml.in.nolegal:62(para) 
+msgid "For more IPS documentation, see the <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"><citetitle>Image Packaging System Guide</citetitle></ulink> and the <filename>pkg</filename><ulink url=\"http://opensolaris.org/sc/src/pkg/gate/src/man/\">man pages</ulink>."
+msgstr "자세한 IPS 설명서의 경우 <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"><citetitle>Image Packaging System Guide</citetitle></ulink> 및 <filename>pkg</filename><ulink url=\"http://opensolaris.org/sc/src/pkg/gate/src/man/\">매뉴얼 페이지</ulink>를 참조하십시오."
+
+#: package-manager.xml.in.nolegal:63(para) 
+msgid "For more information about IPS, visit the <ulink url=\"http://opensolaris.org/os/project/pkg\">project page</ulink>."
+msgstr "IPS에 대한 자세한 내용은 <ulink url=\"http://opensolaris.org/os/project/pkg\">프로젝트 페이지</ulink>를 참조하십시오."
+
+#: package-manager.xml.in.nolegal:65(title) 
+msgid "Getting Started With Package Manager"
+msgstr "패키지 관리자 시작"
+
+#: package-manager.xml.in.nolegal:66(para) 
+msgid "When you start the Package Manager, a Start Page similar to the example below is displayed:"
+msgstr "패키지 관리자를 시작하면 아래 예와 비슷한 시작 페이지가 표시됩니다."
+
+#: package-manager.xml.in.nolegal:67(title) 
+msgid "Package Manager Start Page"
+msgstr "패키지 관리자 시작 페이지"
+
+#: package-manager.xml.in.nolegal:71(para) 
+msgid "The Start Page provides a list of featured packages that can be installed. It includes a list of some of the most popular and recent packages downloaded by the OpenSolaris community of users. The Recommended list of packages point to software applications that are frequently downloaded by the OpenSolaris user. Click the package links to install the packages."
+msgstr "시작 페이지에서는 설치 가능한,기능을 갖춘 패키지의 목록을 제공합니다. 여기에는 OpenSolaris 사용자 커뮤니티에서 가장 인기있는 패키지 및 최신의 패키지에 대한 일부 목록이 포함됩니다. 권장 패키지 목록은 OpenSolaris 사용자가 자주 다운로드하는 소프트웨어 응용 프로그램으로 향합니다. 패키지를 설치하려면 패키지 링크를 누르십시오."
+
+#: package-manager.xml.in.nolegal:72(para) 
+msgid "The Start Page also provides links to more information about the OpenSolaris project, subscribe to newsletters and join the OpenSolaris community."
+msgstr "시작 페이지에서는 OpenSolaris 프로젝트에 대한 자세한 정보를 보고 뉴스레터를 구독하며 OpenSolaris 커뮤니티에 가입할 수 있는 링크도 제공합니다."
+
+#: package-manager.xml.in.nolegal:73(para) 
+msgid "To close the Start Page and see the list of packages in the selected publisher, perform any of the following actions in the main window of the Package Manager:"
+msgstr "시작 페이지를 닫고 선택한 게시자의 패키지 목록을 보려면 패키지 관리자의 기본 창에서 다음 작업 중 하나를 수행합니다."
+
+#: package-manager.xml.in.nolegal:74(para) 
+msgid "Select a package category"
+msgstr "패키지 범주 선택"
+
+#: package-manager.xml.in.nolegal:76(para) 
+msgid "Change the <emphasis role=\"strong\">View</emphasis> drop-down menu"
+msgstr "<emphasis role=\"strong\">보기</emphasis> 드롭다운 메뉴 변경"
+
+#: package-manager.xml.in.nolegal:78(para) 
+msgid "Perform a search"
+msgstr "검색 수행"
+
+#: package-manager.xml.in.nolegal:80(para) 
+msgid "Change the publisher"
+msgstr "게시자 변경"
+
+#: package-manager.xml.in.nolegal:83(para) 
+msgid "Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</guimenuitem></menuchoice> to return to the Start Page at anytime."
+msgstr ""
+       "시작 페이지로 돌아가려면 언제든지 <menuchoice><guimenu>보기</guimenu"
+       "><guimenuitem>시작 페이지</guimenuitem></menuchoice>를 선택합니다."
+
+#: package-manager.xml.in.nolegal:84(para) 
+msgid "See <xref linkend=\"edit-prefs\"/> to turn off the <emphasis role=\"strong\">initial display</emphasis> of the start page when the Package Manager starts."
+msgstr "패키지 관리자가 시작될 때 시작 페이지의 <emphasis role=\"strong\">초기 디스플레이</emphasis>를 끄려면 <xref linkend=\"edit-prefs\"/>을 참조하십시오."
+
+#: package-manager.xml.in.nolegal:86(title) 
+msgid "About The Package Manager Window"
+msgstr "패키지 관리자 창 정보"
+
+#: package-manager.xml.in.nolegal:87(title) 
+msgid "Package Manager Main View"
+msgstr "패키지 관리자 기본 보기"
+
+#: package-manager.xml.in.nolegal:91(para) 
+msgid "The main window of the Package Manager consists of the following elements :"
+msgstr ""
+       "패키지 관리자의 기본 창은 다음 요소로 구성됩니다."
+
+#: package-manager.xml.in.nolegal:92(emphasis) 
+msgid "Menubar"
+msgstr "메뉴 표시줄"
+
+#: package-manager.xml.in.nolegal:93(para) 
+msgid "The menubar contains the menus and sub-menus required to perform all of the commands related to the Package Manager."
+msgstr "메뉴 표시줄에는 패키지 관리자와 관련된 모든 명령을 수행하는 데 필요한 메뉴 및 하위 메뉴가 포함되어 있습니다."
+
+#: package-manager.xml.in.nolegal:97(emphasis) 
+msgid "Toolbar"
+msgstr "도구 모음"
+
+#: package-manager.xml.in.nolegal:98(para) 
+msgid "The toolbar contains the icons for a subset of the commands that can be performed by using the menus on the menubar. A <emphasis role=\"strong\">Search</emphasis> field is also located on the toolbar. You can perform the following actions from the toolbar :"
+msgstr "도구 모음에는 메뉴 표시줄의 메뉴를 사용하여 수행할 수 있는 명령 일부에 대한 아이콘이 포함되어 있습니다. <emphasis role=\"strong\">검색</emphasis> 필드도 도구 모음에 있습니다. 도구 모음에서는 다음 작업을 수행할 수 있습니다."
+
+#: package-manager.xml.in.nolegal:99(para) 
+msgid "<emphasis role=\"strong\">Updates</emphasis> – Click <emphasis role=\"strong\">Updates</emphasis> to check for and install the latest updates."
+msgstr "<emphasis role=\"strong\">업데이트</emphasis> – 최신 업데이트를 확인하여 설치하려면 <emphasis role=\"strong\">업데이트</emphasis>를 누릅니다."
+
+#: package-manager.xml.in.nolegal:101(para) 
+msgid "<emphasis role=\"strong\">Install/Update</emphasis> – Select a package and click <emphasis role=\"strong\">Install/Update</emphasis> to install or update a package."
+msgstr "<emphasis role=\"strong\">설치/업데이트</emphasis> – 패키지를 설치하거나 업데이트하려면 패키지를 선택하고 <emphasis role=\"strong\">설치/업데이트</emphasis>를 누릅니다."
+
+#: package-manager.xml.in.nolegal:103(para) 
+msgid "<emphasis role=\"strong\">Refresh</emphasis> – Click <emphasis role=\"strong\">Refresh</emphasis> to reload the list of packages."
+msgstr "<emphasis role=\"strong\">새로 고침</emphasis> – 패키지 목록을 다시 로드하려면 <emphasis role=\"strong\">새로 고침</emphasis>을 누릅니다."
+
+#: package-manager.xml.in.nolegal:105(para) 
+msgid "<emphasis role=\"strong\">Remove</emphasis> – Select a package and click <emphasis role=\"strong\">Remove</emphasis> to remove a package."
+msgstr "<emphasis role=\"strong\">제거</emphasis> – 패키지를 제거하려면 패키지를 선택하고 <emphasis role=\"strong\">제거</emphasis>를 누릅니다."
+
+#: package-manager.xml.in.nolegal:107(para) 
+msgid "<emphasis role=\"strong\">Search for a Package</emphasis> – Type the name or description of a package in the <emphasis role=\"strong\">Search</emphasis> field to search for a package. See the <xref linkend=\"search-pkg\"/> section for examples on how to search for a package."
+msgstr "<emphasis role=\"strong\">패키지 검색</emphasis> – 패키지를 검색하려면 <emphasis role=\"strong\">검색</emphasis> 필드에 패키지의 이름이나 설명을 입력합니다. 패키지 검색 방법에 대한 예는 <xref linkend=\"search-pkg\"/> 절을 참조하십시오."
+
+#: package-manager.xml.in.nolegal:112(emphasis) 
+msgid "Publisher Drop-Down Menu"
+msgstr "게시자 드롭다운 메뉴"
+
+#: package-manager.xml.in.nolegal:113(para) 
+msgid "The list of available publishers is shown in the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu. Users can perform the following tasks from the publisher drop-down menu :"
+msgstr "사용 가능한 게시자 목록은 <emphasis role=\"strong\">게시자</emphasis> 드롭다운 메뉴에 표시됩니다. 사용자는 게시자 드롭다운 메뉴에서 다음 작업을 수행할 수 있습니다."
+
+#: package-manager.xml.in.nolegal:114(emphasis) 
+msgid "Select a publisher"
+msgstr "게시자 선택"
+
+#: package-manager.xml.in.nolegal:116(emphasis) 
+msgid "View the list of packages installed from all publishers"
+msgstr "모든 게시자에서 설치된 패키지 목록 보기"
+
+#: package-manager.xml.in.nolegal:118(emphasis) 
+msgid "Search for package across all publishers"
+msgstr "모든 게시자에서 패키지 검색"
+
+#: package-manager.xml.in.nolegal:120(emphasis) 
+msgid "Add a publisher"
+msgstr "게시자 추가"
+
+#: package-manager.xml.in.nolegal:125(emphasis) 
+msgid "List of Packages by Category"
+msgstr "범주별 패키지 목록"
+
+#: package-manager.xml.in.nolegal:126(para) 
+msgid "You can browse the available packages by category in the left hand side panel. Click on a category to see the sub-categories of packages available. There are six main categories that are displayed in the Package Manager:"
+msgstr "왼쪽 패널에서 사용 가능한 패키지를 범주별로 찾아볼 수 있습니다. 범주를 누르면 사용 가능한 패키지의 하위 범주를 볼 수 있습니다. 패키지 관리자에는 다음과 같은 여섯 가지 기본 범주가 표시됩니다."
+
+#: package-manager.xml.in.nolegal:127(emphasis) 
+msgid "Applications"
+msgstr "응용 프로그램"
+
+#: package-manager.xml.in.nolegal:129(emphasis) 
+msgid "Desktop (GNOME)"
+msgstr "데스크탑(GNOME)"
+
+#: package-manager.xml.in.nolegal:131(emphasis) 
+msgid "Development"
+msgstr "개발"
+
+#: package-manager.xml.in.nolegal:133(emphasis) 
+msgid "Drivers"
+msgstr "드라이버"
+
+#: package-manager.xml.in.nolegal:135(emphasis) 
+msgid "System"
+msgstr "시스템"
+
+#: package-manager.xml.in.nolegal:137(emphasis) 
+msgid "Web Services"
+msgstr "웹 서비스"
+
+#: package-manager.xml.in.nolegal:142(emphasis) 
+msgid "Recent Searches"
+msgstr "최근 검색"
+
+#: package-manager.xml.in.nolegal:143(para) 
+msgid "The Package Manager saves your recent package searches. Click the Recent Searches in the left hand side panel to view the packages you searched for recently."
+msgstr "패키지 관리자에서는 최근 패키지 검색을 저장합니다. 최근에 검색한 패키지를 보려면 왼쪽 패널에서 최근 검색을 누릅니다."
+
+#: package-manager.xml.in.nolegal:146(emphasis) 
+msgid "List of Packages by Status"
+msgstr "상태별 패키지 목록"
+
+#: package-manager.xml.in.nolegal:147(para) 
+msgid "The <emphasis role=\"strong\">View</emphasis> drop-down menu enables you to view package status with the following options :"
+msgstr "<emphasis role=\"strong\">보기</emphasis> 드롭다운 메뉴에서는 다음 옵션을 사용하여 패키지 상태를 볼 수 있습니다."
+
+#: package-manager.xml.in.nolegal:148(para) 
+msgid "<emphasis role=\"strong\">All Packages</emphasis> – Shows the list of all packages available within the current publisher."
+msgstr "<emphasis role=\"strong\">모든 패키지</emphasis> – 현재 게시자 내에서 사용 가능한 모든 패키지 목록을 표시합니다."
+
+#: package-manager.xml.in.nolegal:150(para) 
+msgid "<emphasis role=\"strong\">Installed Packages</emphasis> – Shows the list of packages installed within the current publisher on your system."
+msgstr "<emphasis role=\"strong\">설치된 패키지</emphasis> – 현재 게시자 내에서 시스템에 설치된 패키지 목록을 표시합니다."
+
+#: package-manager.xml.in.nolegal:152(para) 
+msgid "<emphasis role=\"strong\">Updates</emphasis> — Shows the list of packages that have newer versions available within the current publisher."
+msgstr "<emphasis role=\"strong\">업데이트</emphasis> — 현재 게시자 내에서 최신 버전을 사용할 수 있는 패키지 목록을 표시합니다."
+
+#: package-manager.xml.in.nolegal:154(para) 
+msgid "<emphasis role=\"strong\">Not Installed Packages</emphasis> – Shows the list of packages that are not installed, but are available in the currently selected publisher."
+msgstr "<emphasis role=\"strong\">설치되지 않은 패키지</emphasis> – 설치되지 않았지만 현재 선택한 게시자에서 사용할 수 있는 패키지 목록을 표시합니다."
+
+#: package-manager.xml.in.nolegal:156(para) 
+msgid "<emphasis role=\"strong\">Selected Packages</emphasis> – Shows the list of packages that you have selected."
+msgstr ""
+       "<emphasis role=\"strong\">선택된 패키지</emphasis> – 선택한 패키지 목록을 "
+       "표시합니다."
+
+#: package-manager.xml.in.nolegal:161(emphasis) 
+msgid "Package Name, Status, and Description"
+msgstr "패키지 이름, 상태 및 설명"
+
+#: package-manager.xml.in.nolegal:162(para) 
+msgid "The list of packages in the selected category, a brief description, and their status are displayed in here."
+msgstr "선택한 범주의 패키지 목록, 간단한 설명 및 상태가 여기에 표시됩니다."
+
+#: package-manager.xml.in.nolegal:163(para) 
+msgid "The Publisher name is also displayed here in the following instances :"
+msgstr "다음과 같은 경우 게시자 이름도 여기에 표시됩니다."
+
+#: package-manager.xml.in.nolegal:164(para) 
+msgid "When the <emphasis role=\"strong\">Pubisher</emphasis> drop-down menu is set to All Publishers (Installed)"
+msgstr "<emphasis role=\"strong\">게시자</emphasis> 드롭다운 메뉴가 모든 게시자(설치됨)로 설정된 경우"
+
+#: package-manager.xml.in.nolegal:166(para) 
+msgid "When search results are displayed for the All Publishers (Search) option"
+msgstr "모든 게시자(검색) 옵션에 대해 검색 결과가 표시되는 경우"
+
+#: package-manager.xml.in.nolegal:168(para) 
+msgid "When a recent search result is displayed"
+msgstr "최근 검색 결과가 표시되는 경우"
+
+#: package-manager.xml.in.nolegal:173(emphasis) 
+msgid "Package Details"
+msgstr "패키지 세부 사항"
+
+#: package-manager.xml.in.nolegal:174(para) 
+msgid "Click a package name to select it. Details of the selected package, such as name, version, file dependencies, and license are displayed in this window."
+msgstr ""
+       "패키지 이름을 눌러 선택합니다. 이 창에는 선택한 패키지에 대한 "
+       "이름, 버전, 파일 종속성 및 라이센스 등의 세부 정보가 표시됩니다."
+
+#: package-manager.xml.in.nolegal:180(title) 
+msgid "Package Manager Settings"
+msgstr "패키지 관리자 설정"
+
+#: package-manager.xml.in.nolegal:181(para) 
+msgid "Use the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> to change the Package Manager settings. The following sections discuss the preferences that can be changed by the user."
+msgstr "<menuchoice><guimenu>편집</guimenu><guimenuitem>기본 설정</guimenuitem></menuchoice>을 사용하여 패키지 관리자 설정을 변경합니다. 다음 절에서는 사용자가 변경할 수 있는 기본 설정에 대해 설명합니다."
+
+#: package-manager.xml.in.nolegal:182(title) 
+msgid "Start Page Preferences"
+msgstr "시작 페이지 기본 설정"
+
+#: package-manager.xml.in.nolegal:183(para) 
+msgid "A Start Page is displayed in the main window of the Package Manager when the application is started. The Start Page provides links to <ulink url=\"http://opensolaris.com\">opensolaris.com</ulink> page where you can get more information about OpenSolaris, subscribe to newsletters and join the OpenSolaris community."
+msgstr "응용 프로그램이 시작되면 패키지 관리자의 기본 창에 시작 페이지가 "
+       "표시됩니다. 시작 페이지에는 OpenSolaris에 대한 자세한 정보를 얻고,"
+       "뉴스레터를 구독하고, OpenSolaris 커뮤니티에 가입할 수 있는"
+       "<ulink url=\"http://opensolaris.com\">opensolaris.com</ulink> 페이지에 대한 "
+       "링크가 있습니다."
+
+#: package-manager.xml.in.nolegal:184(para) 
+msgid "You can choose to turn off this setting so this page is not displayed when Package Manager starts."
+msgstr ""
+       "패키지 관리자가 시작될 때 이 페이지가 표시되지 않도록 이 설정을 끌 수 "
+       "있습니다."
+
+#: package-manager.xml.in.nolegal:185(para) 
+msgid "Select <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> from the main menu and uncheck the <emphasis role=\"strong\">Show Start Page on Startup</emphasis> to disable the Start Page. This dialog is checked by default."
+msgstr "시작 페이지를 비활성화하려면 주 메뉴에서 <menuchoice><guimenu>편집</guimenu><guimenuitem>기본 설정</guimenuitem></menuchoice>을 선택하고 <emphasis role=\"strong\">시작 시 시작 페이지 표시</emphasis>를 선택 취소합니다. 이 대화 상자는 기본적으로 선택되어 있습니다."
+
+#: package-manager.xml.in.nolegal:186(para) 
+msgid "Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</guimenuitem></menuchoice> from the main menu to go to the Start Page at anytime."
+msgstr "주 메뉴에서 <menuchoice><guimenu>보기</guimenu><guimenuitem>시작 페이지</guimenuitem></menuchoice>를 선택하여 언제든지 시작 페이지로 이동할 수 있습니다."
+
+#: package-manager.xml.in.nolegal:188(title) 
+msgid "Exit Preferences"
+msgstr "기본 설정 종료"
+
+#: package-manager.xml.in.nolegal:189(para) 
+msgid "The Package Manager application can remember some of its current settings if the <emphasis role=\"strong\">Remember current state on exit</emphasis> option in the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> is checked."
+msgstr "<menuchoice><guimenu>편집</guimenu><guimenuitem>기본 설정</guimenuitem></menuchoice>에서 <emphasis role=\"strong\">종료 시 현재 상태 저장</emphasis> 옵션을 선택하면 패키지 관리자 응용 프로그램에서 현재 설정 일부를 저장할 수 있습니다."
+
+#: package-manager.xml.in.nolegal:190(para) 
+msgid "The following settings are saved:"
+msgstr "다음과 같은 설정이 저장됩니다."
+
+#: package-manager.xml.in.nolegal:191(para) 
+msgid "<emphasis role=\"strong\">Vertical separators</emphasis> – The size of the columns in the main window the Package Manager"
+msgstr "<emphasis role=\"strong\">세로 구분선</emphasis> – 패키지 관리자 기본 창의 열 크기"
+
+#: package-manager.xml.in.nolegal:193(para) 
+msgid "<emphasis role=\"strong\">Window size</emphasis> – The size of the Package Manager window"
+msgstr "<emphasis role=\"strong\">창 크기</emphasis> – 패키지 관리자 창의 크기"
+
+#: package-manager.xml.in.nolegal:195(para) 
+msgid "<emphasis role=\"strong\">Current publisher</emphasis> – The publisher that is selected when the Package Manager is closed"
+msgstr "<emphasis role=\"strong\">현재 게시자</emphasis> – 패키지 관리자가 닫힐 때 선택되어 있는 게시자"
+
+#: package-manager.xml.in.nolegal:199(title) 
+msgid "Confirmation Dialog Preferences"
+msgstr "확인 대화 상자 기본 설정"
+
+#: package-manager.xml.in.nolegal:200(para) 
+msgid "When a package is selected for installation, update, or removal, a confirmation dialog is displayed that displays the list of packages and the action to be performed. Under the <emphasis role=\"strong\">Show Confirmation Dialog</emphasis> uncheck <emphasis role=\"strong\">On Updates</emphasis>, <emphasis role=\"strong\">On Package Install/Update</emphasis>, and <emphasis role=\"strong\">On Package Remove</emphasis> to turn these settings off."
+msgstr "설치, 업데이트 또는 제거할 패키지를 선택하면 패키지 목록과 수행할 작업이 표시되는 확인 대화 상자가 표시됩니다. <emphasis role=\"strong\">확인 대화 상자 표시</emphasis>에서 <emphasis role=\"strong\">업데이트 시</emphasis>, <emphasis role=\"strong\">패키지 설치/업데이트 시</emphasis> 및 <emphasis role=\"strong\">패키지 제거 시</emphasis>를 선택 취소하여 이러한 설정을 끕니다."
+
+#: package-manager.xml.in.nolegal:203(title) 
+msgid "Working With Packages"
+msgstr "패키지 작업"
+
+#: package-manager.xml.in.nolegal:204(title) 
+msgid "Install a Package"
+msgstr "패키지 설치"
+
+#: package-manager.xml.in.nolegal:205(para) 
+msgid "The list of packages and their status is displayed in the main window of the Package Manager. Perform the following steps to install a package:"
+msgstr "패키지 목록 및 상태가 패키지 관리자의 기본 창에 표시됩니다. 다음 단계를 수행하여 패키지를 설치합니다."
+
+#: package-manager.xml.in.nolegal:206(para) 
+msgid "Check the box next to the package or packages to select it. Double-clicking the package also selects the package."
+msgstr "패키지 옆에 있는 상자를 선택하여 패키지를 선택합니다. 패키지를 두 번 눌러도 패키지가 선택됩니다."
+
+#: package-manager.xml.in.nolegal:208(para) 
+msgid "Click <guibutton>Install/Update</guibutton> to start the package installation process."
+msgstr "<guibutton>설치/업데이트</guibutton>를 눌러 패키지 설치 프로세스를 시작합니다."
+
+#: package-manager.xml.in.nolegal:209(para) 
+msgid "You can also choose <menuchoice><guimenu>Package</guimenu><guimenuitem>Install/Update</guimenuitem></menuchoice> to start the package installation process."
+msgstr ""
+       "또한 <menuchoice><guimenu>패키지</"
+       "guimenu><guimenuitem>설치/업데이트</guimenuitem></menuchoice>를 선택하여 패키지 설치 프로세스를 "
+       "시작할 수도 있습니다."
+
+#: package-manager.xml.in.nolegal:211(para) 
+msgid "Click <guilabel>Details</guilabel> to view the installation details or <guibutton>Cancel</guibutton> to cancel the package installation."
+msgstr "<guilabel>세부 정보</guilabel>를 눌러 설치 세부 정보를 보거나 <guibutton>취소</guibutton>를 눌러 패키지 설치를 취소합니다."
+
+#: package-manager.xml.in.nolegal:213(para) 
+msgid "After the installation has completed, click <guibutton>Close</guibutton>."
+msgstr "설치가 완료되면 <guibutton>닫기</guibutton>를 누릅니다."
+
+#: package-manager.xml.in.nolegal:216(title) 
+msgid "Installation Error"
+msgstr "설치 오류"
+
+#: package-manager.xml.in.nolegal:217(para) 
+msgid "If an error occurs during package installation, an error dialog with the error message is displayed along with the reason for failure. Click <guibutton>Close</guibutton> to close the error dialog."
+msgstr "패키지 설치 중에 오류가 발생하면 오류 메시지가 포함된 오류 대화 상자가 오류의 원인과 함께 표시됩니다. 오류 대화 상자를 닫으려면 <guibutton>닫기</guibutton>를 누릅니다."
+
+#: package-manager.xml.in.nolegal:220(title) 
+msgid "Remove a Package"
+msgstr "패키지 제거"
+
+#: package-manager.xml.in.nolegal:221(para) 
+msgid "Perform the following steps to remove a package:"
+msgstr "다음 단계를 수행하여 패키지를 제거합니다."
+
+#: package-manager.xml.in.nolegal:222(para) 
+msgid "Check the box next to a package to select it. Double-clicking the package also selects the package."
+msgstr "패키지 옆에 있는 상자를 선택하여 패키지를 선택합니다. 패키지를 두 번 눌러도 패키지가 선택됩니다."
+
+#: package-manager.xml.in.nolegal:224(para) 
+msgid "Click <guibutton>Remove</guibutton> to start the package uninstallation process."
+msgstr "<guibutton>제거</guibutton>를 눌러 패키지 제거 프로세스를 시작합니다."
+
+#: package-manager.xml.in.nolegal:225(para) 
+msgid "You can also choose <menuchoice><guimenu>Package</guimenu><guimenuitem>Remove</guimenuitem></menuchoice> to remove a package."
+msgstr ""
+       "또한 <menuchoice><guimenu>패키지</"
+       "guimenu><guimenuitem>제거</guimenuitem></menuchoice>를 선택하여 패키지를 제거할 수도 있습니다."
+
+#: package-manager.xml.in.nolegal:227(para) 
+msgid "Review the packages to be removed and the package dependencies details in the <emphasis role=\"strong\">Remove Confirmation</emphasis> dialog."
+msgstr "<emphasis role=\"strong\">제거 확인</emphasis> 대화 상자에서 제거할 패키지와 패키지 종속성 세부 정보를 검토합니다."
+
+#: package-manager.xml.in.nolegal:229(para) 
+msgid "Click <guibutton>Proceed</guibutton> to start removing the packages or <guibutton>Cancel</guibutton> to cancel the process."
+msgstr "<guibutton>진행</guibutton>을 눌러 패키지 제거를 시작하거나 <guibutton>취소</guibutton>를 눌러 프로세스를 취소합니다."
+
+#: package-manager.xml.in.nolegal:233(title) 
+msgid "Search for a Package"
+msgstr "패키지 검색"
+
+#: package-manager.xml.in.nolegal:234(para) 
+msgid "You can search for a package in the following ways :"
+msgstr "패키지는 다음과 같은 방법으로 검색할 수 있습니다."
+
+#: package-manager.xml.in.nolegal:235(para) 
+msgid "<emphasis role=\"strong\">Search the current publisher</emphasis> – Search for a package in the publisher currently selected in the <emphasis role=\"strong\"> Publisher</emphasis> drop-down menu. If you do not know the status of the package you are searching for, set the <emphasis role=\"strong\">View</emphasis> drop-down menu to <emphasis role=\"strong\">All Packages</emphasis>."
+msgstr "<emphasis role=\"strong\">현재 게시자 검색</emphasis> – <emphasis role=\"strong\">게시자</emphasis> 드롭다운 메뉴에 현재 선택되어 있는 게시자에서 패키지를 검색합니다. 검색하려는 패키지의 상태를 모르는 경우 <emphasis role=\"strong\">보기</emphasis> 드롭다운 메뉴를 <emphasis role=\"strong\">모든 패키지</emphasis>로 설정합니다."
+
+#: package-manager.xml.in.nolegal:236(para) 
+msgid "Enter a description, or a partial name in the <emphasis role=\"strong\">Search</emphasis> field. For example, you might type one of the following search terms to search for <filename>SUNWgnome-games</filename> :"
+msgstr "<emphasis role=\"strong\">검색</emphasis> 필드에 설명 또는 부분 이름을 입력합니다. 예를 들어 <filename>SUNWgnome-games</filename>를 검색하려면 다음 검색 용어 중 하나를 입력할 수 있습니다."
+
+#: package-manager.xml.in.nolegal:237(para) 
+msgid "SUNWgames"
+msgstr "SUNWgames"
+
+#: package-manager.xml.in.nolegal:239(para) 
+msgid "games"
+msgstr "games"
+
+#: package-manager.xml.in.nolegal:241(para) 
+msgid "GNOME-games"
+msgstr "GNOME-games"
+
+#: package-manager.xml.in.nolegal:244(para) 
+msgid "To search for SunStudio compilers, you might type one of the following terms:"
+msgstr ""
+       "SunStudio 컴파일러를 검색하려면 다음 용어 중 하나를 입력할 수 있습니다."
+
+#: package-manager.xml.in.nolegal:245(para) 
+msgid "compiler"
+msgstr "컴파일러"
+
+#: package-manager.xml.in.nolegal:247(para) 
+msgid "tools"
+msgstr "도구"
+
+#: package-manager.xml.in.nolegal:251(para) 
+msgid "<emphasis role=\"strong\">Search all publishers</emphasis> – Choose <emphasis role=\"strong\">All Publishers(Search)</emphasis> from the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu to search for a package across all configured publishers. If you do not know the status of the package you are searching for, set the <emphasis role=\"strong\">View</emphasis> drop-down menu to <emphasis role=\"strong\">All Packages</emphasis>."
+msgstr "<emphasis role=\"strong\">모든 게시자 검색</emphasis> – <emphasis role=\"strong\">게시자</emphasis> 드롭다운 메뉴에서 <emphasis role=\"strong\">모든 게시자(검색)</emphasis>를 선택하여 구성된 모든 게시자에서 패키지를 검색합니다. 검색하려는 패키지의 상태를 모르는 경우 <emphasis role=\"strong\">보기</emphasis> 드롭다운 메뉴를 <emphasis role=\"strong\">모든 패키지</emphasis>로 설정합니다."
+
+#: package-manager.xml.in.nolegal:252(para) 
+msgid "Type a description of the package in the <emphasis role=\"strong\">Search</emphasis> field. For example, the <filename>SUNWdiveintopython</filename> package is a book on Python programming. The description of the package contains the string <emphasis>book</emphasis>. To search for this package, you might then type one of the following terms:"
+msgstr "<emphasis role=\"strong\">검색</emphasis> 필드에 패키지 설명을 입력합니다. 예를 들어 <filename>SUNWdiveintopython</filename> 패키지는 Python 프로그래밍에 대한 책입니다. 이 패키지 설명에는 문자열 <emphasis>book</emphasis>이 포함되어 있습니다. 이 패키지를 검색하려면 다음 용어 중 하나를 입력할 수 있습니다."
+
+#: package-manager.xml.in.nolegal:253(para) 
+msgid "python"
+msgstr "python"
+
+#: package-manager.xml.in.nolegal:255(para) 
+msgid "book"
+msgstr "book"
+
+#: package-manager.xml.in.nolegal:258(para) 
+msgid "If you searched for the term <emphasis>diveinto</emphasis> when searching for the <filename>SUNWdiveintopython</filename> package, the results will not be displayed as the term <emphasis>diveinto</emphasis> is not present as an independent, complete word in the package contents. However you will find the package using the <literal>*</literal> wild card. Hence, searching for the term <literal>diveinto*</literal> will display the <filename>SUNWdiveintopython</filename> package."
+msgstr "<filename>SUNWdiveintopython</filename> 패키지를 검색할 때 <emphasis>diveinto</emphasis> 용어를 검색하면 <emphasis>diveinto</emphasis> 용어가 패키지 내용에서 완전한 개별 단어로 존재하지 않기 때문에 결과가 표시되지 않습니다. 그러나 <literal>*</literal> 와일드카드를 사용하면 패키지를 찾을 수 있습니다. 따라서 <literal>diveinto*</literal> 용어를 검색하면 <filename>SUNWdiveintopython</filename> 패키지가 표시됩니다."
+
+#: package-manager.xml.in.nolegal:262(para) 
+msgid "Use the submenus under the <menuchoice><guimenu>Edit</guimenu></menuchoice> menu to cut, copy, or paste text in the <emphasis role=\"strong\">Search</emphasis> field."
+msgstr "<menuchoice><guimenu>편집</guimenu></menuchoice> 메뉴의 하위 메뉴를 사용하여 <emphasis role=\"strong\">검색</emphasis> 필드에서 텍스트를 잘라내거나, 복사하거나, 붙여넣을 수 있습니다."
+
+#: package-manager.xml.in.nolegal:264(para) 
+msgid "The following operators are supported for a package search:"
+msgstr "패키지 검색에서는 다음과 같은 연산자가 지원됩니다."
+
+#: package-manager.xml.in.nolegal:265(emphasis) 
+msgid "The AND operator"
+msgstr "AND 연산자"
+
+#: package-manager.xml.in.nolegal:266(para) 
+msgid "When the search term is separated by spaces or the AND operator, the Package Manager will search for packages containing <emphasis role=\"strong\">all</emphasis> the search terms."
+msgstr "검색 용어를 공백이나 AND 연산자로 구분하면 패키지 관리자에서 해당 검색 용어를 <emphasis role=\"strong\">모두</emphasis> 포함하는 패키지를 검색합니다."
+
+#: package-manager.xml.in.nolegal:269(emphasis) 
+msgid "Double Quotes"
+msgstr "큰따옴표"
+
+#: package-manager.xml.in.nolegal:270(para) 
+msgid "When a search term is placed within double quotes, the Package Manager will search for packages that <emphasis role=\"strong\">match the search term exactly</emphasis>."
+msgstr "검색 용어를 큰따옴표로 묶으면 패키지 관리자에서 <emphasis role=\"strong\">검색 용어와 정확하게 일치</emphasis>하는 패키지를 검색합니다."
+
+#: package-manager.xml.in.nolegal:273(emphasis) 
+msgid "Wildcard *"
+msgstr "와일드카드 *"
+
+#: package-manager.xml.in.nolegal:274(para) 
+msgid "Including a wildcard in your search term enables you to search for partial package names. For example, when you enter <emphasis>boo*</emphasis> in your search term, the packages displayed could include <emphasis>boot</emphasis> and <emphasis>book</emphasis> in the package name and description."
+msgstr "검색 용어에 와일드카드를 포함하면 부분적인 패키지 이름을 검색할 수 있습니다. 예를 들어 검색 용어에 <emphasis>boo*</emphasis>를 입력하면 표시되는 패키지의 이름 및 설명에 <emphasis>boot</emphasis> 및 <emphasis>book</emphasis>이 포함될 수 있습니다."
+
+#: package-manager.xml.in.nolegal:275(para) 
+msgid "Wildcard searching can be slower than an exact match search or a search based on package description."
+msgstr "와일드카드 검색을 수행하면 정확한 일치 검색이나 패키지 설명을 기반으로 하는 검색보다 속도가 느릴 수 있습니다."
+
+#: package-manager.xml.in.nolegal:279(emphasis) 
+msgid "The OR operator"
+msgstr "OR 연산자"
+
+#: package-manager.xml.in.nolegal:280(para) 
+msgid "When a search term is separated by the OR operator, the Package Manager searches for packages that contain any of the search terms."
+msgstr "검색 용어를 OR 연산자로 구분하면 패키지 관리자에서 해당 검색 용어 중 임의의 하나를 포함하는 패키지를 검색합니다."
+
+#: package-manager.xml.in.nolegal:285(title) 
+msgid "Cancel Package Search"
+msgstr "패키지 검색 취소"
+
+#: package-manager.xml.in.nolegal:286(para) 
+msgid "If you want to cancel a search, use the Cancel Search icon at the bottom of the main window of the Package Manager. This icon is visible on the status bar only during a search operation."
+msgstr "검색을 취소하려면 패키지 관리자 기본 창의 맨 아래에 있는 검색 취소 아이콘을 사용합니다. 이 아이콘은 검색 작업 중에만 상태 표시줄에 표시됩니다."
+
+#: package-manager.xml.in.nolegal:288(title) 
+msgid "Update a Package"
+msgstr "패키지 업데이트 "
+
+#: package-manager.xml.in.nolegal:289(para) 
+msgid "Look for the Updates icon next to the installed package name. This icon indicates that updates are available for the package in the currently selected publisher. You can also choose one of the following views to display a list of packages that have updates available :"
+msgstr "설치된 패키지 이름 옆에 있는 업데이트 아이콘을 찾습니다. 이 아이콘은 현재 선택한 게시자의 패키지에 업데이트를 사용할 수 있음을 나타냅니다. 다음 보기 중 하나를 선택하여 업데이트를 사용할 수 있는 패키지 목록을 표시할 수도 있습니다."
+
+#: package-manager.xml.in.nolegal:290(para) 
+msgid "Select the <menuchoice><guimenuitem>Updates</guimenuitem></menuchoice> option in the <emphasis role=\"strong\">View</emphasis> drop-down menu to list all packages that have updates available in the currently selected publisher."
+msgstr "<emphasis role=\"strong\">보기</emphasis> 드롭다운 메뉴에서 <menuchoice><guimenuitem>업데이트</guimenuitem></menuchoice> 옵션을 선택하여 현재 선택한 게시자에서 업데이트를 사용할 수 있는 패키지를 모두 나열합니다."
+
+#: package-manager.xml.in.nolegal:292(para) 
+msgid "Select the <menuchoice><guimenuitem>Updates</guimenuitem></menuchoice> option in the <emphasis role=\"strong\">View</emphasis> drop-down menu and the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> in the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu to list all packages that have updates available from all publishers."
+msgstr "<emphasis role=\"strong\">보기</emphasis> 드롭다운 메뉴의 <menuchoice><guimenuitem>업데이트</guimenuitem></menuchoice> 옵션 및 <emphasis role=\"strong\">게시자</emphasis> 드롭다운 메뉴의 <emphasis role=\"strong\">모든 게시자(설치됨)</emphasis>를 선택하여 모든 게시자에서 업데이트를 사용할 수 있는 패키지를 모두 나열합니다."
+
+#: package-manager.xml.in.nolegal:295(para) 
+msgid "Updating a package may fail sometimes, due to inherent dependencies of the package you have selected for installation or update. You may need to update all packages on your system to get the latest updates."
+msgstr "설치 또는 업데이트를 위해 선택한 패키지의 고유한 종속성으로 인해 패키지 업데이트가 실패하기도 합니다. 최신 업데이트를 얻기 위해 시스템의 모든 패키지를 업데이트해야 할 수 있습니다."
+
+#: package-manager.xml.in.nolegal:297(para) 
+msgid "Select the package or packages you want to update and click <guibutton>Install/Update</guibutton> to install the latest version of the package. Use the <emphasis role=\"strong\">Updates</emphasis> icon on the toolbar to update all packages on your system."
+msgstr "업데이트하려는 패키지를 선택하고 <guibutton>설치/업데이트</guibutton>를 눌러 패키지의 최신 버전을 설치합니다. 도구 모음의 <emphasis role=\"strong\">업데이트</emphasis> 아이콘을 사용하여 시스템의 모든 패키지를 업데이트합니다."
+
+#: package-manager.xml.in.nolegal:299(title) 
+msgid "Package Version Information"
+msgstr "패키지 버전 정보"
+
+#: package-manager.xml.in.nolegal:300(para) 
+msgid "Select a package in the main window of the Package Manager and right-click your mouse to view the package version information. There are three types of package versions :"
+msgstr "패키지 관리자의 기본 창에서 패키지를 선택하고 마우스 오른쪽 버튼을 눌러 패키지 버전 정보를 확인합니다. 패키지 버전에는 다음과 같은 세 가지 유형이 있습니다."
+
+#: package-manager.xml.in.nolegal:301(para) 
+msgid "<emphasis role=\"strong\">Installable Version</emphasis> – The version of a package that is available for installation or an update. This version may be older than the latest available version of the package due to package dependencies on the system. Hence you may not be able to install the latest available version of the package unless you update your system using the <emphasis role=\"strong\">Updates</emphasis> icon on the toolbar."
+msgstr "<emphasis role=\"strong\">설치 가능 버전</emphasis> – 설치 또는 업데이트에 사용할 수 있는 패키지의 버전입니다. 이 버전은 시스템에 대한 패키지 종속성으로 인해 패키지의 사용 가능한 최신 버전보다 이전 버전일 수 있습니다. 따라서 도구 모음의 <emphasis role=\"strong\">업데이트</emphasis> 아이콘을 사용하여 시스템을 업데이트하지 않으면 패키지의 사용 가능한 최신 버전을 설치하지 못할 수 있습니다."
+
+#: package-manager.xml.in.nolegal:303(para) 
+msgid "<emphasis role=\"strong\">Installed Version</emphasis> – The version of the package installed on the system."
+msgstr "<emphasis role=\"strong\">설치된 버전</emphasis> – 시스템에 설치된 패키지의 버전입니다."
+
+#: package-manager.xml.in.nolegal:305(para) 
+msgid "<emphasis role=\"strong\">Latest Version</emphasis> – This is the latest version of the package available for installation or update. The latest version can be installed if your system is up-to-date."
+msgstr "<emphasis role=\"strong\">최신 버전</emphasis> – 설치 또는 업데이트에 사용할 수 있는 패키지의 최신 버전입니다. 이 최신 버전은 시스템이 최신 상태인 경우에 설치할 수 있습니다."
+
+#: package-manager.xml.in.nolegal:309(title) 
+msgid "View Installed Packages From All Publishers"
+msgstr "모든 게시자에서 설치된 패키지 보기"
+
+#: package-manager.xml.in.nolegal:310(para) 
+msgid "Choose the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> from the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu filter to view a list of all packages that you have installed from all publishers."
+msgstr "<emphasis role=\"strong\">게시자</emphasis> 드롭다운 메뉴 필터에서 <emphasis role=\"strong\">모든 게시자(설치됨)</emphasis>를 선택하여 모든 게시자에서 설치한 모든 패키지 목록을 봅니다."
+
+#: package-manager.xml.in.nolegal:311(para) 
+msgid "You cannot search for a package from the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> option. Switch to <emphasis role=\"strong\">All Publishers (Search)</emphasis> to search for a package."
+msgstr "<emphasis role=\"strong\">모든 게시자(설치됨)</emphasis> 옵션에서는 패키지를 검색할 수 없습니다. 패키지를 검색하려면 <emphasis role=\"strong\">모든 게시자(검색)</emphasis>로 전환하십시오."
+
+#: package-manager.xml.in.nolegal:315(title) 
+msgid "Introduction to Boot Environments"
+msgstr "부트 환경 소개"
+
+#: package-manager.xml.in.nolegal:316(para) 
+msgid "A boot environment is an image that is bootable. Upon an initial OpenSolaris installation, a boot environment is created."
+msgstr ""
+       "부트 환경은 부트 가능한 이미지입니다. 초기 OpenSolaris 설치 시 "
+       "부트 환경이 만들어집니다."
+
+#: package-manager.xml.in.nolegal:317(para) 
+msgid "You can maintain multiple boot environments on your OpenSolaris 2010.03 system. Use the <command>beadm(1)</command> command from the command-line interface (CLI) to create, rename, mount or unmount, or destroy these boot environments."
+msgstr "OpenSolaris 2010.03 시스템에서 다중 부트 환경을 유지 관리할 수 있습니다. 이러한 부트 환경의 만들기, 이름 바꾸기, 마운트, 마운트 해제 또는 삭제를 수행하려면 명령줄 인터페이스(Command-Line Interface, CLI)에서 <command>beadm(1)</command> 명령을 사용합니다."
+
+#: package-manager.xml.in.nolegal:318(para) 
+msgid "The Package Manager enables you to manage the boot environments created during the process of updating your image. For more information, see <xref linkend=\"manage-be\"/> section."
+msgstr "패키지 관리자를 사용하면 이미지 업데이트 프로세스 중에 만들어진 부트 환경을 관리할 수 있습니다. 자세한 내용은 <xref linkend=\"manage-be\"/> 절을 참조하십시오."
+
+#: package-manager.xml.in.nolegal:319(para) 
+msgid "Users can maintain multiple boot environments on their systems, and each boot environment can have different software versions installed."
+msgstr "사용자는 시스템에서 다중 부트 환경을 유지 관리할 수 있으며, 각 부트 환경에는 다른 소프트웨어 버전이 설치될 수 있습니다."
+
+#: package-manager.xml.in.nolegal:320(para) 
+msgid "When you use either the Package Manager or the <command>pkg image-update</command> command to update all the packages in your active OpenSolaris boot environment, a clone of that boot environment is automatically created. The packages are updated in the clone rather than in the original boot environment. After successfully completing the updates, the new clone is activated. Then, the clone will become the new default boot environment on system reboot. The original boot environment is also available as an alternate selection."
+msgstr ""
+       "패키지 관리자 또는 <command>pkg image-update</"
+       "command> 명령을 사용하여 활성 OpenSolaris 부트 "
+       "환경에서 모든 패키지를 업데이트하는 경우 해당 부트 환경의 복제본이 "
+       "자동으로 만들어집니다. 패키지는 원래 부트 환경이 아닌 복제본에서 "
+       "업데이트됩니다. 업데이트를 성공적으로 완료하고 나면 새 복제본이 "
+       "활성화되며, 시스템 재부트 시 이 복제본이 새로운 기본 부트 환경이 "
+       "됩니다. 원래 부트 환경도 대체 선택으로 "
+       "사용할 수 있습니다."
+
+#: package-manager.xml.in.nolegal:321(para) 
+msgid "See the beadm(1) man pages and the <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"><citetitle>Upgrading and Managing Boot Environments</citetitle></ulink> document to learn more about boot environments and the <command>beadm(1)</command> command."
+msgstr "부트 환경과 <command>beadm(1)</command> 명령에 대해 자세히 알아보려면 beadm(1) 매뉴얼 페이지와 <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"><citetitle>부트 환경 업그레이드 및 관리</citetitle></ulink> 문서를 참조하십시오."
+
+#: package-manager.xml.in.nolegal:322(title) 
+msgid "Update All Packages (Update Your Image)"
+msgstr "모든 패키지 업데이트(이미지 업데이트)"
+
+#: package-manager.xml.in.nolegal:323(para) 
+msgid "Perform the following steps to update all the packages in your image."
+msgstr "다음 단계를 수행하여 현재 이미지의 모든 패키지를 업데이트합니다."
+
+#: package-manager.xml.in.nolegal:324(para) 
+msgid "Click <guibutton>Updates</guibutton> to start the process of updating <emphasis role=\"strong\">all</emphasis> the packages installed in your image."
+msgstr "<guibutton>업데이트</guibutton>를 눌러 이미지에 설치된 <emphasis role=\"strong\">모든</emphasis> 패키지 업데이트 프로세스를 시작합니다."
+
+#: package-manager.xml.in.nolegal:325(para) 
+msgid "You can also choose <menuchoice><guimenu>Package</guimenu><guisubmenu>Updates</guisubmenu></menuchoice> to start the process."
+msgstr "<menuchoice><guimenu>패키지</guimenu><guisubmenu>업데이트</guisubmenu></menuchoice>를 선택하여 프로세스를 시작할 수도 있습니다."
+
+#: package-manager.xml.in.nolegal:326(para) 
+msgid "If no updates are available to your installed packages, a <emphasis role=\"strong\">No Updates Available</emphasis> message is displayed after you click <guibutton>Updates</guibutton>."
+msgstr "설치된 패키지에 사용할 수 있는 업데이트가 없는 경우 <guibutton>업데이트</guibutton>를 누르면 <emphasis role=\"strong\">사용 가능한 업데이트 없음</emphasis> 메시지가 표시됩니다."
+
+#: package-manager.xml.in.nolegal:329(para) 
+msgid "The process of updating all the packages installed on your system is completed in three phases:"
+msgstr "시스템에 설치된 모든 패키지를 업데이트하는 프로세스는 다음 세 단계로 완료됩니다."
+
+#: package-manager.xml.in.nolegal:330(emphasis) 
+msgid "Preparation"
+msgstr "준비"
+
+#: package-manager.xml.in.nolegal:332(emphasis) 
+msgid "Download"
+msgstr "다운로드"
+
+#: package-manager.xml.in.nolegal:334(emphasis) 
+msgid "Install"
+msgstr "설치"
+
+#: package-manager.xml.in.nolegal:337(para) 
+msgid "Click on the <emphasis>Details</emphasis> tab displayed in each of the phases to view more information."
+msgstr "자세한 정보를 보려면 각 단계에 표시되는 <emphasis>세부 정보</emphasis> 탭을 누릅니다."
+
+#: package-manager.xml.in.nolegal:339(para) 
+msgid "After the update process is completed successfully, an <emphasis role=\"strong\">Update All Complete</emphasis> dialog is displayed. A new boot environment is created which consists of the updated packages. The new boot environment is given a default name by the Package Manager, you can change the given boot environment name."
+msgstr "업데이트 프로세스가 성공적으로 완료되면 <emphasis role=\"strong\">모두 업데이트 완료</emphasis> 대화 상자가 표시됩니다. 업데이트된 패키지로 구성되는 새 부트 환경이 만들어집니다. 새 부트 환경은 패키지 관리자에 의해 기본 이름이 지정되며 지정된 부트 환경 이름은 변경할 수 있습니다."
+
+#: package-manager.xml.in.nolegal:340(para) 
+msgid "If the Package Manager is unable to create a new boot environment, an error message is displayed. See the <xref linkend=\"gilfh\"/> section on how to rectify the error and continue with updating your image."
+msgstr "패키지 관리자에서 새 부트 환경을 만들 수 없는 경우 오류 메시지가 표시됩니다. 오류를 수정하고 이미지 업데이트를 계속하는 방법은 <xref linkend=\"gilfh\"/> 절을 참조하십시오."
+
+#: package-manager.xml.in.nolegal:343(para) 
+msgid "Click <guibutton>Restart Now</guibutton> to reboot your system immediately."
+msgstr "시스템을 바로 재부트하려면 <guibutton>지금 재시작</guibutton>을 누릅니다."
+
+#: package-manager.xml.in.nolegal:344(para) 
+msgid "Click <guibutton>Restart Later</guibutton> to restart your system at a later time. <emphasis role=\"strong\">You must reboot your system for the changes to take effect.</emphasis>"
+msgstr "시스템을 나중에 재시작하려면 <guibutton>다음에 재시작</guibutton>을 누릅니다. <emphasis role=\"strong\">변경 사항을 적용하려면 시스템을 재부트해야 합니다.</emphasis>"
+
+#: package-manager.xml.in.nolegal:345(para) 
+msgid "During the Update All process, a clone of the active boot environment is created. You can boot into the clone to return to the boot environment state that existed before the Update All process was started."
+msgstr "모두 업데이트 프로세스 중에 활성 부트 환경의 복제본이 만들어집니다. 사용자는 이 복제본으로 부트하여 모두 업데이트 프로세스가 시작되기 이전의 부트 환경 상태로 돌아갈 수 있습니다."
+
+#: package-manager.xml.in.nolegal:350(title) package-manager.xml.in.nolegal:656(title) 
+msgid "Update All Errors"
+msgstr "모두 업데이트 오류"
+
+#: package-manager.xml.in.nolegal:351(para) 
+msgid "A new boot environment clone must be created by the Package Manager for the Updates process to be completed. An error message is displayed if a boot environment clone cannot be created. You might see an error message such as the following :"
+msgstr "업데이트 프로세스를 완료하려면 패키지 관리자에서 새 부트 환경 복제본을 만들어야 합니다. 부트 환경 복제본을 만들 수 없으면 오류 메시지가 표시됩니다. 다음과 같은 오류 메시지가 표시될 수 있습니다."
+
+#: package-manager.xml.in.nolegal:352(para) 
+msgid "<literal>Not enough disk space, the Update All action cannot be performed. Choose Manage BE to manage your boot environments and free up disk space.</literal>."
+msgstr "<literal>디스크 공간이 부족하여 모두 업데이트 작업을 수행할 수 없습니다. BE 관리를 선택하여 부트 환경을 관리하고 디스크 공간을 해제하십시오.</literal>."
+
+#: package-manager.xml.in.nolegal:353(para) package-manager.xml.in.nolegal:659(para) 
+msgid "Click <guibutton>Close</guibutton> to cancel the Update All process."
+msgstr "모두 업데이트 프로세스를 취소하려면 <guibutton>닫기</guibutton>를 누릅니다."
+
+#: package-manager.xml.in.nolegal:354(para) package-manager.xml.in.nolegal:660(para) 
+msgid "Perform the following steps if you want to rectify the error and continue with the Update All process:"
+msgstr ""
+       "오류를 수정하고 모두 업데이트 프로세스를 계속하려면 "
+       "다음 단계를 수행합니다."
+
+#: package-manager.xml.in.nolegal:355(para) 
+msgid "Click <guibutton>Manage BE</guibutton> to display the <emphasis role=\"strong\">Manage Boot Environment</emphasis> dialog."
+msgstr "<guibutton>BE 관리</guibutton>를 눌러 <emphasis role=\"strong\">부트 환경 관리</emphasis> 대화 상자를 표시합니다."
+
+#: package-manager.xml.in.nolegal:357(para) 
+msgid "Select the boot environments that you want to delete."
+msgstr "삭제할 부트 환경을 선택합니다."
+
+#: package-manager.xml.in.nolegal:358(para) 
+msgid "You cannot delete the currently active boot environment."
+msgstr "현재 활성 상태인 부트 환경은 삭제할 수 없습니다."
+
+#: package-manager.xml.in.nolegal:360(para) 
+msgid "You do not need to reboot your system if you are only deleting some of your boot environments."
+msgstr ""
+       "부트 환경 중 일부만 삭제하는 경우 시스템을 재부트할 "
+       "필요가 없습니다."
+
+#: package-manager.xml.in.nolegal:365(para) 
+msgid "Click <guibutton>OK</guibutton>."
+msgstr "<guibutton>확인</guibutton>을 누릅니다."
+
+#: package-manager.xml.in.nolegal:367(para) 
+msgid "The <emphasis role=\"strong\">Boot Environment Confirmation</emphasis> dialog is shown. Review your changes and click OK to proceed."
+msgstr "<emphasis role=\"strong\">부트 환경 확인</emphasis> 대화 상자가 표시됩니다. 변경 사항을 검토하고 확인을 눌러 계속 진행합니다."
+
+#: package-manager.xml.in.nolegal:369(para) 
+msgid "Click <guibutton>Update All</guibutton> to restart the process of updating all packages."
+msgstr "<guibutton>모두 업데이트</guibutton>를 눌러 모든 패키지 업데이트 프로세스를 재시작합니다."
+
+#: package-manager.xml.in.nolegal:373(title) 
+msgid "Manage Boot Environments"
+msgstr "부트 환경 관리"
+
+#: package-manager.xml.in.nolegal:374(para) 
+msgid "Perform the following steps to manage your boot environments:"
+msgstr "다음 단계를 수행하여 부트 환경을 관리합니다."
+
+#: package-manager.xml.in.nolegal:375(para) 
+msgid "Click <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot Environments</guimenuitem></menuchoice> to open the <emphasis role=\"strong\">Manage Boot Environments</emphasis> dialog."
+msgstr "<menuchoice><guimenu>파일</guimenu><guimenuitem>부트 환경 관리</guimenuitem></menuchoice>를 눌러 <emphasis role=\"strong\">부트 환경 관리</emphasis> 대화 상자를 엽니다."
+
+#: package-manager.xml.in.nolegal:377(para) 
+msgid "In this dialog, you can perform the following actions:"
+msgstr "이 대화 상자에서 다음 작업을 수행할 수 있습니다."
+
+#: package-manager.xml.in.nolegal:378(para) 
+msgid "<emphasis role=\"strong\">Activate a boot environment</emphasis> – Select the boot environment you want to be active on system reboot. This is the default boot environment <emphasis role=\"strong\">after</emphasis> you have rebooted your system."
+msgstr "<emphasis role=\"strong\">부트 환경 활성화</emphasis> – 시스템 재부트 시 활성화할 부트 환경을 선택합니다. 시스템을 재부트한 <emphasis role=\"strong\">후</emphasis>에는 이 부트 환경이 기본 부트 환경이 됩니다."
+
+#: package-manager.xml.in.nolegal:380(para) 
+msgid "<emphasis role=\"strong\">Remove old or unused boot environments to free up disk space</emphasis> – Select the boot environnment or boot environments you want to delete."
+msgstr "<emphasis role=\"strong\">이전 또는 사용되지 않는 부트 환경을 제거하여 디스크 공간 해제</emphasis> – 삭제할 부트 환경을 선택합니다."
+
+#: package-manager.xml.in.nolegal:381(para) 
+msgid "You cannot the delete the currently active boot environment."
+msgstr "현재 활성 상태인 부트 환경은 삭제할 수 없습니다."
+
+#: package-manager.xml.in.nolegal:383(para) 
+msgid "If you have selected a boot environment to be renamed, it cannot be deleted."
+msgstr ""
+       "이름을 바꿀 부트 환경을 선택한 경우에는 삭제할 수 없습니다."
+
+#: package-manager.xml.in.nolegal:388(para) 
+msgid "<emphasis role=\"strong\">Rename a boot environment</emphasis> – Double-click the boot environment name you want torename. Enter the new name of the boot environment and click <guibutton>OK</guibutton>."
+msgstr "<emphasis role=\"strong\">부트 환경 이름 바꾸기</emphasis> – 이름을 바꿀 부트 환경 이름을 두 번 누릅니다. 부트 환경의 새 이름을 입력하고 <guibutton>확인</guibutton>을 누릅니다."
+
+#: package-manager.xml.in.nolegal:389(para) 
+msgid "If you have selected a boot environment to be deleted, it cannot be renamed."
+msgstr ""
+       "삭제할 부트 환경을 선택한 경우에는 이름을 바꿀 수 없습니다."
+
+#: package-manager.xml.in.nolegal:391(para) 
+msgid "The currently active boot environment cannot be renamed."
+msgstr "현재 활성 상태인 부트 환경의 이름은 바꿀 수 없습니다."
+
+#: package-manager.xml.in.nolegal:398(para) 
+msgid "Click <guibutton>OK</guibutton> to proceed or <guibutton>Cancel</guibutton> to cancel all changes."
+msgstr "<guibutton>확인</guibutton>을 눌러 계속하거나 <guibutton>취소</guibutton>를 눌러 모든 변경 사항을 취소합니다."
+
+#: package-manager.xml.in.nolegal:400(para) 
+msgid "The <emphasis role=\"strong\">Boot Environment Confirmation</emphasis> dialog is displayed. Review your changes and click OK to proceed."
+msgstr "<emphasis role=\"strong\">부트 환경 확인</emphasis> 대화 상자가 표시됩니다. 변경 사항을 검토하고 확인을 눌러 계속 진행합니다."
+
+#: package-manager.xml.in.nolegal:401(para) 
+msgid "After you click <guibutton>OK</guibutton>, you cannot undo any changes that you made to the boot environments."
+msgstr ""
+       "<guibutton>확인</guibutton>을 누른 후에는 부트 환경에 수행한 변경 사항을 "
+       "취소할 수 없습니다."
+
+#: package-manager.xml.in.nolegal:403(para) 
+msgid "The changes that you made to the <emphasis role=\"strong\">default boot environment</emphasis> setting are effective only after system reboot."
+msgstr ""
+       "<emphasis role=\"strong\">기본 부트 환경</emphasis> 설정에 수행한 변경 사항은 "
+       "시스템을 재부트해야 적용됩니다."
+
+#: package-manager.xml.in.nolegal:405(para) 
+msgid "Click <guibutton>Cancel</guibutton> to cancel the changes."
+msgstr "변경 사항을 취소하려면 <guibutton>취소</guibutton>를 누릅니다."
+
+#: package-manager.xml.in.nolegal:407(para) 
+msgid "Reboot your system to boot into the newly activated boot environment."
+msgstr "시스템을 재부트하여 새로 활성화된 부트 환경으로 부트합니다."
+
+#: package-manager.xml.in.nolegal:408(para) 
+msgid "Reboot your system only if you changed the active boot environment."
+msgstr "활성 부트 환경을 변경한 경우에만 시스템을 재부트합니다."
+
+#: package-manager.xml.in.nolegal:414(title) 
+msgid "Add and Manage Publishers"
+msgstr "게시자 추가 및 관리"
+
+#: package-manager.xml.in.nolegal:415(para) 
+msgid "The <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> dialog enables the user to add and manage the configured publishers. A publisher is a person, group, or corporation that designs, creates, and publishes a package to a repository. Every publisher has a package repository where its package data can be found. The locations that contain package data for a publisher's repository are defined through the use of origins and mirrors. Origins are used to provide locations that contain the complete set of package data for a publisher, while mirrors are used to provide locations that only contain package files. Origins and mirrors are defined using URIs (Universal Resource Identifiers), such as <ulink url=\"http://pkg.opensolaris.org/release\"/>."
+msgstr "<menuchoice><guimenu>메뉴</guimenu><guimenuitem>게시자 관리</guimenuitem></menuchoice> 대화 상자를 통해 사용자는 구성된 게시자를 추가하고 관리할 수 있습니다. 게시자는 패키지를 설계하고 만들어 저장소에 게시하는 사람, 그룹 또는 회사입니다. 모든 게시자에는 패키지 데이터를 찾을 수 있는 패키지 저장소가 있습니다. 게시자의 저장소에 대한 패키지 데이터가 포함되어 있는 위치는 원본 및 미러 사용을 통해 정의됩니다. 원본은 게시자에 대한 전체 패키지 데이터 세트가 포함된 위치를 제공하는 데 사용되고 미러는 패키지 파일만 포함된 위치를 제공하는 데 사용됩니다. 원본 및 미러는 <ulink url=\"http://pkg.opensolaris.org/release\"/>와 같은 URI(Universal Resource Identifier)를 사용하여 정의됩니다."
+
+#: package-manager.xml.in.nolegal:416(para) 
+msgid "Read the following sections to learn how to add and manage publishers on your system."
+msgstr "시스템에서 게시자를 추가하고 관리하는 방법에 대해 알아보려면 다음 절을 읽어보십시오."
+
+#: package-manager.xml.in.nolegal:417(title) 
+msgid "Add a Publisher"
+msgstr "게시자 추가"
+
+#: package-manager.xml.in.nolegal:418(para) 
+msgid "Perform the following steps to add a publisher and its associated URI:"
+msgstr "다음 단계를 수행하여 게시자 및 관련 URI를 추가합니다."
+
+#: package-manager.xml.in.nolegal:419(para) 
+msgid "Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Add Publishers</guimenuitem></menuchoice>."
+msgstr "<menuchoice><guimenu>파일</guimenu><guimenuitem>게시자 추가</guimenuitem></menuchoice>를 선택합니다."
+
+#: package-manager.xml.in.nolegal:420(para) 
+msgid "You can also choose the <guibutton>Add..</guibutton> option from the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu or select <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> and then click <emphasis>Add..</emphasis> in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog."
+msgstr "<emphasis role=\"strong\">게시자</emphasis> 드롭다운 메뉴에서 <guibutton>추가..</guibutton> 옵션을 선택하거나 <menuchoice><guimenu>파일</guimenu><guimenuitem>게시자 관리</guimenuitem></menuchoice>를 선택한 다음 <emphasis role=\"strong\">게시자 관리</emphasis> 대화 상자에서 <emphasis>추가..</emphasis>를 클릭할 수도 있습니다."
+
+#: package-manager.xml.in.nolegal:422(para) 
+msgid "The <emphasis role=\"strong\">Add Publisher</emphasis> dialog is displayed. Enter the name of the publisher and the associated URI. If the publisher is a secure publisher, the <emphasis role=\"strong\">SSL Key</emphasis> and <emphasis role=\"strong\">SSL Certificate</emphasis> fields are displayed. Follow the steps in the <xref linkend=\"modify-publisher\"/> section to add an SSL key and certificate."
+msgstr "<emphasis role=\"strong\">게시자 추가</emphasis> 대화 상자가 표시됩니다. 게시자의 이름 및 관련 URI를 입력합니다. 보안 게시자일 경우 <emphasis role=\"strong\">SSL 키</emphasis> 및 <emphasis role=\"strong\">SSL 인증서</emphasis> 필드가 표시됩니다. <xref linkend=\"modify-publisher\"/> 절의 단계에 따라 SSL 키 및 인증서를 추가합니다."
+
+#: package-manager.xml.in.nolegal:424(para) 
+msgid "Click <guibutton>Add</guibutton>."
+msgstr "<guibutton>추가</guibutton>를 누릅니다."
+
+#: package-manager.xml.in.nolegal:426(para) 
+msgid "The <emphasis role=\"strong\">Adding Publisher</emphasis> dialog is displayed. Click Cancel to cancel the process."
+msgstr "<emphasis role=\"strong\">게시자 추가</emphasis> 대화 상자가 표시됩니다. 프로세스를 취소하려면 취소를 누릅니다."
+
+#: package-manager.xml.in.nolegal:428(para) 
+msgid "The <emphasis role=\"strong\">Adding Publisher Complete</emphasis> dialog is displayed if the publisher is added successfully."
+msgstr "게시자가 성공적으로 추가되면 <emphasis role=\"strong\">게시자 추가 완료</emphasis> 대화 상자가 표시됩니다."
+
+#: package-manager.xml.in.nolegal:431(para) 
+msgid "An <emphasis role=\"strong\">Adding Publisher Error</emphasis> is displayed if the publisher could not be added. Click <emphasis role=\"strong\">Details</emphasis> to get more information about the error."
+msgstr "게시자를 추가할 수 없는 경우 <emphasis role=\"strong\">게시자 추가 오류</emphasis>가 표시됩니다. 오류에 대한 자세한 내용을 보려면 <emphasis role=\"strong\">세부 정보</emphasis>를 누릅니다."
+
+#: package-manager.xml.in.nolegal:434(title) 
+msgid "Remove a Publisher"
+msgstr "게시자 제거"
+
+#: package-manager.xml.in.nolegal:435(para) 
+msgid "Perform the following steps to remove a publisher:"
+msgstr "다음 단계를 수행하여 게시자를 제거합니다."
+
+#: package-manager.xml.in.nolegal:436(para) package-manager.xml.in.nolegal:459(para) package-manager.xml.in.nolegal:473(para) package-manager.xml.in.nolegal:492(para) package-manager.xml.in.nolegal:511(para) package-manager.xml.in.nolegal:528(para) 
+msgid "Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice>."
+msgstr "<menuchoice><guimenu>파일</guimenu><guimenuitem>게시자 관리</guimenuitem></menuchoice>를 선택합니다."
+
+#: package-manager.xml.in.nolegal:438(para) 
+msgid "Click on a publisher from the list to select it. Click <guibutton>Remove</guibutton>."
+msgstr "목록에서 게시자를 눌러 선택합니다. <guibutton>제거</guibutton>를 누릅니다."
+
+#: package-manager.xml.in.nolegal:440(para) 
+msgid "The <emphasis role=\"strong\">Manage Publishers Confirmation</emphasis> dialog is displayed."
+msgstr "<emphasis role=\"strong\">게시자 관리 확인</emphasis> 대화 상자가 표시됩니다."
+
+#: package-manager.xml.in.nolegal:442(para) 
+msgid "Click <guibutton>OK</guibutton> to save the changes and remove the publisher or <guibutton>Cancel</guibutton> to return to the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog without making any changes."
+msgstr "<guibutton>확인</guibutton>을 눌러 변경 사항을 저장하고 게시자를 제거하거나 <guibutton>취소</guibutton>를 눌러 변경하지 않고 <emphasis role=\"strong\">게시자 관리</emphasis> 대화 상자로 돌아갑니다."
+
+#: package-manager.xml.in.nolegal:446(title) 
+msgid "Set Publisher Priority"
+msgstr "게시자 우선 순위 설정"
+
+#: package-manager.xml.in.nolegal:447(para) 
+msgid "Perform the following steps to set or change the publisher priority:"
+msgstr "다음 단계를 수행하여 게시자 우선 순위를 설정하거나 변경합니다."
+
+#: package-manager.xml.in.nolegal:448(para) 
+msgid "Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> to open the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog."
+msgstr "<menuchoice><guimenu>파일</guimenu><guimenuitem>게시자 관리</guimenuitem></menuchoice>를 선택하여 <emphasis role=\"strong\">게시자 관리</emphasis> 대화 상자를 엽니다."
+
+#: package-manager.xml.in.nolegal:450(para) 
+msgid "The list of configured publishers is displayed. Click the arrows to change the priority of the publishers. The publisher with the highest priority is displayed at the top of the list."
+msgstr "구성된 게시자 목록이 표시됩니다. 화살표를 눌러 게시자의 우선 순위를 변경합니다. 우선 순위가 가장 높은 게시자가 목록의 맨 위에 표시됩니다."
+
+#: package-manager.xml.in.nolegal:451(emphasis) 
+msgid "Packages are searched within the publishers in the order of priority, the publisher with the highest priority is searched first."
+msgstr "패키지는 우선 순위 순서로 게시자 내에서 검색되며 우선 순위가 가장 높은 게시자가 먼저 검색됩니다."
+
+#: package-manager.xml.in.nolegal:453(para) package-manager.xml.in.nolegal:465(para) package-manager.xml.in.nolegal:484(para) package-manager.xml.in.nolegal:503(para) package-manager.xml.in.nolegal:520(para) package-manager.xml.in.nolegal:537(para) 
+msgid "Click <guibutton>OK</guibutton> to save your changes or <guibutton>Cancel</guibutton> to return to the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog without making any changes."
+msgstr "<guibutton>확인</guibutton>을 눌러 변경 사항을 저장하거나 <guibutton>취소</guibutton>를 눌러 변경하지 않고 <emphasis role=\"strong\">게시자 관리</emphasis> 대화 상자로 돌아갑니다."
+
+#: package-manager.xml.in.nolegal:457(title) 
+msgid "Modify Publisher Alias"
+msgstr "게시자 별칭 수정"
+
+#: package-manager.xml.in.nolegal:458(para) 
+msgid "Perform the following steps to modify the alias of a publisher:"
+msgstr "다음 단계를 수행하여 게시자의 별칭을 수정합니다."
+
+#: package-manager.xml.in.nolegal:461(para) 
+msgid "Select the publisher whose alias you want to modify. Click <guibutton>Modify..</guibutton>."
+msgstr "별칭을 수정할 게시자를 선택합니다. <guibutton>수정..</guibutton>을 누릅니다."
+
+#: package-manager.xml.in.nolegal:463(para) 
+msgid "The <emphasis role=\"strong\">Modify Publisher</emphasis> dialog is displayed. Modify or enter a new name of the alias in the <emphasis role=\"strong\">Alias</emphasis> field."
+msgstr "<emphasis role=\"strong\">게시자 수정</emphasis> 대화 상자가 표시됩니다. <emphasis role=\"strong\">별칭</emphasis> 필드에서 별칭을 수정하거나 새 이름을 입력합니다."
+
+#: package-manager.xml.in.nolegal:467(para) package-manager.xml.in.nolegal:486(para) package-manager.xml.in.nolegal:505(para) package-manager.xml.in.nolegal:522(para) package-manager.xml.in.nolegal:539(para) 
+msgid "Click <guibutton>OK</guibutton> in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog to exit the dialog. Note that clicking <guibutton>Cancel</guibutton> in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog will not undo the changes made in the <emphasis role=\"strong\">Modify Publishers</emphasis> dialog."
+msgstr "<emphasis role=\"strong\">게시자 관리</emphasis> 대화 상자에서 <guibutton>확인</guibutton>을 눌러 대화 상자를 종료합니다. <emphasis role=\"strong\">게시자 관리</emphasis> 대화 상자에서 <guibutton>취소</guibutton>를 눌러도 <emphasis role=\"strong\">게시자 수정</emphasis> 대화 상자에서 변경한 사항은 실행 취소되지 않습니다."
+
+#: package-manager.xml.in.nolegal:471(title) 
+msgid "Add Publisher Origins"
+msgstr "게시자 원본 추가"
+
+#: package-manager.xml.in.nolegal:472(para) 
+msgid "Perform the following steps to add an origin or origins associated with a publisher:"
+msgstr "다음 단계를 수행하여 게시자와 연결된 원본을 추가합니다."
+
+#: package-manager.xml.in.nolegal:475(para) 
+msgid "Select the publisher whose origin you want to modify. The <emphasis role=\"strong\">Details</emphasis> tab in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog displays the origin associated with the publisher."
+msgstr "원본을 수정할 게시자를 선택합니다. <emphasis role=\"strong\">게시자 관리</emphasis> 대화 상자의 <emphasis role=\"strong\">세부 정보</emphasis> 탭에 게시자와 연결된 원본이 표시됩니다."
+
+#: package-manager.xml.in.nolegal:477(para) package-manager.xml.in.nolegal:496(para) package-manager.xml.in.nolegal:515(para) package-manager.xml.in.nolegal:532(para) 
+msgid "Click <guibutton>Modify..</guibutton>."
+msgstr "<guibutton>수정..</guibutton>을 누릅니다."
+
+#: package-manager.xml.in.nolegal:478(para) 
+msgid "The <emphasis role=\"strong\">Modify Publisher</emphasis> dialog is displayed. Enter the name of the new origin you want to associate with the publisher in the <emphasis role=\"strong\">Origin</emphasis> field. Click <guibutton>Add</guibutton>. The list of associated origins is displayed in the table."
+msgstr "<emphasis role=\"strong\">게시자 수정</emphasis> 대화 상자가 표시됩니다. 게시자와 연결할 새 원본의 이름을 <emphasis role=\"strong\">원본</emphasis> 필드에 입력합니다. <guibutton>추가</guibutton>를 누릅니다. 연결된 원본 목록이 테이블에 표시됩니다."
+
+#: package-manager.xml.in.nolegal:479(para) 
+msgid "You cannot change the origin URI after the origin has been added."
+msgstr "원본이 추가된 후에는 원본 URI를 변경할 수 없습니다."
+
+#: package-manager.xml.in.nolegal:482(para) 
+msgid "(optional) If the origin you have added is a secure origin, add the SSL Key and SSL certificate. <guibutton>Browse</guibutton> to locate the SSL Key and SSL Certificate on your system."
+msgstr "(선택 사항) 추가한 원본이 보안 원본인 경우 SSL 키 및 SSL 인증서를 추가합니다. <guibutton>찾아보기</guibutton>를 눌러 시스템에서 SSL 키 및 SSL 인증서를 찾습니다."
+
+#: package-manager.xml.in.nolegal:490(title) 
+msgid "Remove Publisher Origins"
+msgstr "게시자 원본 제거"
+
+#: package-manager.xml.in.nolegal:491(para) 
+msgid "Perform the following steps to remove an origin or origins associated with a publisher:"
+msgstr "다음 단계를 수행하여 게시자와 연결된 원본을 제거합니다."
+
+#: package-manager.xml.in.nolegal:494(para) 
+msgid "Select the publisher whose origin you want to remove. The <emphasis role=\"strong\">Details</emphasis> tab in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog displays the origin or origins associated with the publisher."
+msgstr "원본을 제거할 게시자를 선택합니다. <emphasis role=\"strong\">게시자 관리</emphasis> 대화 상자의 <emphasis role=\"strong\">세부 정보</emphasis> 탭에 게시자와 연결된 원본이 표시됩니다."
+
+#: package-manager.xml.in.nolegal:497(para) 
+msgid "The <emphasis role=\"strong\">Modify Publisher</emphasis> dialog is displayed. The list of associated origins is displayed in the table."
+msgstr "<emphasis role=\"strong\">게시자 수정</emphasis> 대화 상자가 표시됩니다. 연결된 원본 목록이 테이블에 표시됩니다."
+
+#: package-manager.xml.in.nolegal:499(para) 
+msgid "Select the origin you want to remove. Click <guibutton>Remove</guibutton>."
+msgstr "제거할 원본을 선택합니다. <guibutton>제거</guibutton>를 누릅니다."
+
+#: package-manager.xml.in.nolegal:500(para) 
+msgid "If only one origin is associated with a publisher, it cannot be removed."
+msgstr "게시자와 연결된 원본이 하나만 있는 경우에는 제거할 수 없습니다."
+
+#: package-manager.xml.in.nolegal:509(title) 
+msgid "Add Publisher Mirrors"
+msgstr "게시자 미러 추가"
+
+#: package-manager.xml.in.nolegal:510(para) 
+msgid "Perform the following steps to add a mirror for a publisher:"
+msgstr "다음 단계를 수행하여 게시자의 미러를 추가합니다."
+
+#: package-manager.xml.in.nolegal:513(para) 
+msgid "Select the publisher for which you want to add the mirror."
+msgstr "미러를 추가할 게시자를 선택합니다."
+
+#: package-manager.xml.in.nolegal:516(para) 
+msgid "The <emphasis role=\"strong\">Modify Publisher</emphasis> dialog is displayed."
+msgstr "<emphasis role=\"strong\">게시자 수정</emphasis> 대화 상자가 표시됩니다."
+
+#: package-manager.xml.in.nolegal:518(para) 
+msgid "Enter the URI for the mirror in the <emphasis>Mirror</emphasis> field. Click <guibutton>Add</guibutton>."
+msgstr "<emphasis>미러</emphasis> 필드에 미러의 URI를 입력합니다. <guibutton>추가</guibutton>를 누릅니다."
+
+#: package-manager.xml.in.nolegal:526(title) 
+msgid "Remove Publisher Mirrors"
+msgstr "게시자 미러 제거"
+
+#: package-manager.xml.in.nolegal:527(para) 
+msgid "Perform the following steps to remove a mirror associated with a publisher:"
+msgstr "다음 단계를 수행하여 게시자와 연결된 미러를 제거합니다."
+
+#: package-manager.xml.in.nolegal:530(para) 
+msgid "Select the publisher for which you want to remove the mirror."
+msgstr "미러를 제거할 게시자를 선택합니다."
+
+#: package-manager.xml.in.nolegal:533(para) 
+msgid "The <emphasis role=\"strong\">Modify Publisher</emphasis> dialog is displayed. The list of associated mirrors is displayed in the table."
+msgstr "<emphasis role=\"strong\">게시자 수정</emphasis> 대화 상자가 표시됩니다. 연결된 미러 목록이 테이블에 표시됩니다."
+
+#: package-manager.xml.in.nolegal:535(para) 
+msgid "Select the mirror you want to remove. Click <guibutton>Remove</guibutton>."
+msgstr "제거할 미러를 선택합니다. <guibutton>제거</guibutton>를 누릅니다."
+
+#: package-manager.xml.in.nolegal:544(title) 
+msgid "Working With WebInstall"
+msgstr "WebInstall 작업"
+
+#: package-manager.xml.in.nolegal:545(para) 
+msgid "The OpenSolaris 2010.03 Package Manager provides support for users to add new publishers and optionally, install packages from these publishers using a simple one-click WebInstall process. A <filename>.p5i</filename> file which contains the publishers to be added and optionally, the packages that can be installed from these publishers, is required for the WebInstall process. The information contained in the <filename>.p5i</filename> file is read and used by the WebInstall process."
+msgstr "OpenSolaris 2010.03 패키지 관리자는 사용자가 새 게시자를 추가하고, 한 번만 누르는 간단한 WebInstall 프로세스를 사용하여 이러한 게시자에서 패키지를 설치(선택 사항)할 수 있도록 지원합니다. WebInstall 프로세스에는"
+       "추가할 게시자 및 이러한 게시자에서 설치할 수 있는 패키지(선택 사항)가 들어 있는 <filename>.p5i</filename> 파일이 필요합니다. <filename>.p5i</filename> 파일에 있는 정보는 WebInstall 프로세스에서 읽고 사용합니다."
+
+#: package-manager.xml.in.nolegal:546(title) 
+msgid "Export Package Selections as WebInstall Files"
+msgstr "패키지 선택 항목을 WebInstall 파일로 내보내기"
+
+#: package-manager.xml.in.nolegal:547(para) 
+msgid "If you want to distribute some of the packages available on your system to others for easy installation and distribution, you can export the references to the packages, using the WebInstall process. The <menuchoice><guisubmenu>File</guisubmenu><guimenuitem>Export Selections</guimenuitem></menuchoice> feature enables you to create a <filename>.p5i</filename> file containing the installation instructions for the selected packages. The <filename>.p5i</filename> file is can then be distributed for use. See the <xref linkend=\"webinstall\"/> section on how to install packages from a <filename>.p5i</filename>."
+msgstr "쉽게 설치하고 배포하기 위해 시스템에서 사용할 수 있는 일부 패키지를 다른 패키지에 배포하려는 경우 WebInstall 프로세스를 사용하여 패키지에 대한 참조를 내보낼 수 있습니다. <menuchoice><guisubmenu>파일</guisubmenu><guimenuitem>선택 항목 내보내기</guimenuitem></menuchoice> 기능을 사용하면 선택한 패키지에 대한 설치 지침이 들어 있는 <filename>.p5i</filename> 파일을 만들 수 있습니다. 그런 다음 <filename>.p5i</filename> 파일을 배포하여 사용할 수 있습니다. <filename>.p5i</filename>에서 패키지를 설치하는 방법은 <xref linkend=\"webinstall\"/> 절을 참조하십시오."
+
+#: package-manager.xml.in.nolegal:548(para) 
+msgid "The following procedure lists the steps to create a <filename>.p5i</filename> file and export your files."
+msgstr "다음 절차에서는 <filename>.p5i</filename> 파일을 만들어 내보내는 단계에 대해 설명합니다."
+
+#: package-manager.xml.in.nolegal:549(para) 
+msgid "From the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu, select the publisher from which you want to include the packages in the <filename>.p5i</filename> file."
+msgstr "<emphasis role=\"strong\">게시자</emphasis> 드롭다운 메뉴에서 패키지를 <filename>.p5i</filename> 파일에 포함시킬 게시자를 선택합니다."
+
+#: package-manager.xml.in.nolegal:551(para) 
+msgid "Check the box next to the package or packages to select it. The packages selected are highlighted."
+msgstr "패키지 옆에 있는 상자를 선택하여 패키지를 선택합니다. 선택한 패키지가 강조 표시됩니다."
+
+#: package-manager.xml.in.nolegal:553(para) 
+msgid "Click <menuchoice><guisubmenu>File</guisubmenu><guimenuitem>Export Selections</guimenuitem></menuchoice> to display the <emphasis role=\"strong\">Export Selections Confirmation</emphasis> window."
+msgstr "<menuchoice><guisubmenu>파일</guisubmenu><guimenuitem>선택 항목 내보내기</guimenuitem></menuchoice>를 눌러 <emphasis role=\"strong\">선택 항목 내보내기 확인</emphasis> 창을 표시합니다."
+
+#: package-manager.xml.in.nolegal:555(para) 
+msgid "Click <guibutton>OK</guibutton> to confirm the selections and proceed or <guibutton>Cancel</guibutton> to cancel the selections."
+msgstr "<guibutton>확인</guibutton>을 눌러 선택 항목을 확인하고 계속하거나 <guibutton>취소</guibutton>를 눌러 선택 항목을 취소합니다."
+
+#: package-manager.xml.in.nolegal:557(para) 
+msgid "The <emphasis role=\"strong\">Export Selections</emphasis> window is displayed."
+msgstr "<emphasis role=\"strong\">선택 항목 내보내기</emphasis> 창이 표시됩니다."
+
+#: package-manager.xml.in.nolegal:559(para) 
+msgid "A default name for the <filename>p5i</filename> file with the extension <filename>.p5i</filename> is provided. Click inside the <emphasis role=\"strong\">Name</emphasis> field to change the name of the <filename>p5i</filename> file."
+msgstr "확장자가 <filename>.p5i</filename>인 <filename>p5i</filename> 파일의 기본 이름이 제공됩니다. <emphasis role=\"strong\">이름</emphasis> 필드를 눌러 <filename>p5i</filename> 파일의 이름을 변경합니다."
+
+#: package-manager.xml.in.nolegal:561(para) 
+msgid "The file is saved in the <filename>/tmp</filename> folder by default. Click the <emphasis role=\"strong\">Browse for other folders</emphasis> tab to select your own folder."
+msgstr "기본적으로 파일은 <filename>/tmp</filename> 폴더에 저장됩니다. <emphasis role=\"strong\">다른 폴더 찾아보기</emphasis> 탭을 눌러 사용자 고유의 폴더를 선택합니다."
+
+#: package-manager.xml.in.nolegal:563(para) 
+msgid "Choose the <filename>p5i Files</filename> option in the drop-down menu located at the bottom right hand side of the window."
+msgstr "창의 오른쪽 아래에 있는 드롭다운 메뉴에서 <filename>p5i 파일</filename> 옵션을 선택합니다."
+
+#: package-manager.xml.in.nolegal:567(title) 
+msgid "How to Use WebInstall to Add Publishers and Install Packages"
+msgstr "WebInstall을 사용하여 게시자를 추가하고 패키지를 설치하는 방법"
+
+#: package-manager.xml.in.nolegal:568(para) 
+msgid "The WebInstall process enables you to install packages through a <filename>p5i</filename> file."
+msgstr "WebInstall 프로세스를 사용하면 <filename>p5i</filename> 파일을 통해 패키지를 설치할 수 있습니다."
+
+#: package-manager.xml.in.nolegal:569(para) 
+msgid "Locate the <filename>.p5i</filename> file which may be present on your desktop, the Start page in the Package Manager, or on a website."
+msgstr ""
+       "사용자의 데스크탑, 패키지 관리자의 시작 페이지 또는 웹 사이트에 있을 수 있는 "
+       "<filename>.p5i</filename> 파일을 찾습니다."
+
+#: package-manager.xml.in.nolegal:571(para) 
+msgid "Start the Package Manager in WebInstall mode in one of the following ways:"
+msgstr "다음 방법 중 하나를 사용하여 WebInstall 모드에서 패키지 관리자를 시작합니다."
+
+#: package-manager.xml.in.nolegal:572(para) 
+msgid "Click on a <filename>.p5i</filename> file on your desktop, and the associated application, Package Manager in WebInstall mode, will be launched."
+msgstr ""
+       "사용자의 데스크탑에서 <filename>.p5i</filename> 파일을 클릭합니다. "
+       "그러면 연관된 응용 프로그램인 패키지 관리자가 WebInstall 모드로 시작됩니다."
+
+#: package-manager.xml.in.nolegal:574(para) 
+msgid "Start the Package Manager from the command-line along with a path to the <filename>.p5i</filename> file. For example, type the following command at the command-line:"
+msgstr ""
+       "명령줄에서 <filename>.p5i</filename> 파일에 대한 경로와 함께 "
+       "패키지 관리자를 시작합니다. 예를 들어 명령줄에 다음 명령을 "
+       "입력합니다."
+
+#: package-manager.xml.in.nolegal:575(replaceable) 
+msgid "path_to_p5i_file/file.p5i"
+msgstr "path_to_p5i_file/file.p5i"
+
+#: package-manager.xml.in.nolegal:575(command) 
+msgid "$ pfexec packagemanager/<placeholder-1/>"
+msgstr "$ pfexec packagemanager/<placeholder-1/>"
+
+#: package-manager.xml.in.nolegal:577(para) 
+msgid "Click on a URL location that contains a link to <filename>.p5i</filename> file. If you are using this method to start WebInstall, the <filename>.p5i</filename> file <emphasis role=\"strong\">must</emphasis> be located on a web server that has registered the new mime type. Only then, the web server can manage the <filename>.p5i</filename> automatically and start Package Manager in WebInstall mode."
+msgstr "<filename>.p5i</filename> 파일에 대한 링크가 포함되어 있는 URL 위치를 누릅니다. 이 방법을 사용하여 WebInstall을 시작하는 경우 <filename>."
+       "p5i</filename> 파일은 새로운 mime 유형을 등록한 웹 서버에 <emphasis role=\"strong\">있어야</emphasis> 합니다. 그래야만 웹 서버에서 <filename>.p5i</filename>를 자동으로 관리하고 WebInstall 모드로 패키지 관리자를 시작할 수 있습니다."
+
+#: package-manager.xml.in.nolegal:578(para) 
+msgid "If the <filename>.p5i</filename> is located on a web server that does not have the new mime type registered, save the <filename>.p5i</filename> file to your desktop and then click on it to launch Web Install."
+msgstr ""
+       "<filename>.p5i</filename>가 새 mime 유형이 등록되지 않은 웹 서버에 "
+       "있는 경우에는 <filename>.p5i</filename> 파일을 데스크탑에 저장한 다음 "
+       "눌러 WebInstall을 시작합니다."
+
+#: package-manager.xml.in.nolegal:582(para) 
+msgid "You will see a window similar to the example window shown below. The window shows a list of publishers that will be added and the packages that will be installed. Review the information."
+msgstr "아래에 표시된 예 창과 유사한 창이 표시됩니다. 창에는 추가할 게시자와 설치할 패키지 목록이 표시됩니다. 정보를 검토합니다."
+
+#: package-manager.xml.in.nolegal:586(para) 
+msgid "Confirm or cancel the WebInstall process."
+msgstr "WebInstall 프로세스를 확인하거나 취소합니다."
+
+#: package-manager.xml.in.nolegal:587(para) 
+msgid "Click <guibutton>Proceed</guibutton> to add the new publishers and install the packages."
+msgstr "새 게시자를 추가하고 패키지를 설치하려면 <guibutton>진행</guibutton>을 누릅니다."
+
+#: package-manager.xml.in.nolegal:589(para) 
+msgid "The <emphasis role=\"strong\">Add Publisher</emphasis> dialog is displayed. The name and URI of the publisher is already entered."
+msgstr "<emphasis role=\"strong\">게시자 추가</emphasis> 대화 상자가 표시됩니다. 게시자의 이름과 URI가 이미 입력되어 있습니다."
+
+#: package-manager.xml.in.nolegal:590(para) 
+msgid "The <emphasis role=\"strong\">Adding Publisher Complete</emphasis> dialog is displayed if the publisher has been added successfully."
+msgstr "게시자가 성공적으로 추가된 경우 <emphasis role=\"strong\">게시자 추가 완료</emphasis> 대화 상자가 표시됩니다."
+
+#: package-manager.xml.in.nolegal:592(para) 
+msgid "(Optional) If the publishers to be added are secure publishers, an SSL key and certificate is required. Browse to locate the SSL Key and SSL Certificate on your system."
+msgstr "(선택 사항) 추가할 게시자가 보안 게시자일 경우 SSL 키 및 인증서가 필요합니다. 찾아보기를 눌러 시스템에서 SSL 키 및 SSL 인증서를 찾습니다."
+
+#: package-manager.xml.in.nolegal:594(para) 
+msgid "Click <guibutton>OK</guibutton> to proceed."
+msgstr "계속하려면 <guibutton>확인</guibutton>을 누릅니다."
+
+#: package-manager.xml.in.nolegal:596(para) 
+msgid "If packages are being installed, the <emphasis role=\"strong\">Install/Update</emphasis> dialog is displayed."
+msgstr "패키지를 설치할 경우 <emphasis role=\"strong\">설치/업데이트</emphasis> 대화 상자가 표시됩니다."
+
+#: package-manager.xml.in.nolegal:597(para) 
+msgid "The application will close when all packages are installed."
+msgstr "모든 패키지가 설치되면 응용 프로그램이 닫힙니다."
+
+#: package-manager.xml.in.nolegal:601(title) 
+msgid "Using WebInstall With a Disabled Publisher"
+msgstr "비활성화된 게시자에서 WebInstall 사용"
+
+#: package-manager.xml.in.nolegal:602(para) 
+msgid "Sometimes a <filename>.p5i</filename> file may contain packages from a disabled publisher. In such cases WebInstall opens up an <emphasis role=\"strong\">Enable Publisher</emphasis> dialog which allows the user to enable the publisher before installing packages."
+msgstr "경우에 따라 <filename>.p5i</filename> 파일에 비활성화된 게시자의 패키지가 포함될 수 있습니다. 이런 경우 WebInstall에서는 패키지를 설치하기 전에 사용자가 게시자를 활성화할 수 있는 <emphasis role=\"strong\">게시자 활성화</emphasis> 대화 상자를 엽니다."
+
+#: package-manager.xml.in.nolegal:605(title) 
+msgid "Working With the Update Manager"
+msgstr "업데이트 관리자 작업"
+
+#: package-manager.xml.in.nolegal:606(title) 
+msgid "About The Update Manager"
+msgstr "업데이트 관리자 정보"
+
+#: package-manager.xml.in.nolegal:607(para) 
+msgid "The Update Manager is a separate application that starts from the desktop when updates to the installed packages are available in the publisher."
+msgstr "업데이트 관리자는 설치된 패키지에 대한 업데이트를 게시자에서 사용할 수 있을 때 데스크탑에서 시작되는 별도의 응용 프로그램입니다."
+
+#: package-manager.xml.in.nolegal:608(title) 
+msgid "Update Manager Main Window"
+msgstr "업데이트 관리자 기본 창"
+
+#: package-manager.xml.in.nolegal:612(para) 
+msgid "You can use the Update Manager application to update the installed packages in your image. The Update Manager uses the publisher that is currently set in the Package Manager to install the latest image."
+msgstr "업데이트 관리자 응용 프로그램을 사용하여 이미지에 있는 설치된 패키지를 업데이트할 수 있습니다. 업데이트 관리자에서는 현재 패키지 관리자에 설정되어 있는 게시자를 사용하여 최신 이미지를 설치합니다."
+
+#: package-manager.xml.in.nolegal:613(para) 
+msgid "For the OpenSolaris 2010.03 release, the Update Manager updates <emphasis role=\"strong\">all</emphasis> installed packages in the image. This action is equivalent to running the <command>pkg image-update</command> command from the command-line."
+msgstr "OpenSolaris 2010.03 릴리스의 경우 업데이트 관리자는 이미지에 있는 <emphasis role=\"strong\">모든</emphasis> 설치된 패키지를 업데이트합니다. 이 작업은 명령줄에서 <command>pkg image-update</command> 명령을 실행하는 것과 같습니다."
+
+#: package-manager.xml.in.nolegal:616(title) 
+msgid "Using the Update Manager"
+msgstr "업데이트 관리자 사용"
+
+#: package-manager.xml.in.nolegal:617(para) 
+msgid "When updates are available to the installed packages, a notification icon is displayed in the notification panel on the OpenSolaris desktop."
+msgstr ""
+       "설치된 패키지에 대한 업데이트를 사용할 수 있는 경우 OpenSolaris 데스크탑의 "
+       "알림 패널에 알림 아이콘이 표시됩니다."
+
+#: package-manager.xml.in.nolegal:618(para) 
+msgid "You can also click <menuchoice><guimenu>System</guimenu><guisubmenu>Administration</guisubmenu><guimenuitem>Update Manager</guimenuitem></menuchoice> to manually launch the Update Manager."
+msgstr ""
+       "또한 <menuchoice><guimenu>시스템</"
+       "guimenu><guisubmenu>관리</guisubmenu><guimenuitem>업데이트 관리자</"
+       "guimenuitem></menuchoice>를 눌러 업데이트 관리자를 수동으로 시작할 수도 있습니다."
+
+#: package-manager.xml.in.nolegal:619(para) 
+msgid "When you are notified of a software update, perform the following steps to begin the process of updating your system:"
+msgstr ""
+       "소프트웨어 업데이트에 대한 알림을 받으면 다음 단계를 수행하여 시스템 "
+       "업데이트 프로세스를 시작합니다."
+
+#: package-manager.xml.in.nolegal:620(para) 
+msgid "Click the notification icon on the desktop to display the <emphasis role=\"strong\">Update Manager</emphasis> window."
+msgstr "데스크탑에서 알림 아이콘을 눌러 <emphasis role=\"strong\">업데이트 관리자</emphasis> 창을 표시합니다."
+
+#: package-manager.xml.in.nolegal:622(para) 
+msgid "Click <guibutton>Update All</guibutton> in the <emphasis role=\"strong\">Update Manager</emphasis> window."
+msgstr "<emphasis role=\"strong\">업데이트 관리자</emphasis> 창에서 <guibutton>모두 업데이트</guibutton>를 누릅니다."
+
+#: package-manager.xml.in.nolegal:623(para) 
+msgid "Select a package and click the <guilabel>Details</guilabel> panel if you want to view more information about the package."
+msgstr ""
+       "패키지에 대한 자세한 내용을 보려면 패키지를 선택하고 "
+       "<guilabel>세부 정보</guilabel> 패널을 누릅니다."
+
+#: package-manager.xml.in.nolegal:626(para) 
+msgid "The <emphasis role=\"strong\">Update All</emphasis> dialog is displayed. Proceed with the Update All process or cancel the action."
+msgstr "<emphasis role=\"strong\">모두 업데이트</emphasis> 대화 상자가 표시됩니다. 모두 업데이트 프로세스를 계속하거나 작업을 취소합니다."
+
+#: package-manager.xml.in.nolegal:627(para) 
+msgid "Click <guibutton>Proceed</guibutton> to create a new boot environment and update all packages in the current image."
+msgstr ""
+       "새 부트 환경을 만들고 현재 이미지에서 모든 패키지를 업데이트하려면 "
+       "<guibutton>진행</guibutton>을 누릅니다."
+
+#: package-manager.xml.in.nolegal:628(para) 
+msgid "During the Update All process, a clone of the active boot environment is created. This clone enables the user to boot into the boot environment state that existed before the Update All process was started."
+msgstr ""
+       "모두 업데이트 프로세스 중에 활성 부트 환경의 복제본이 "
+       "만들어집니다. 사용자는 이 복제본을 사용하여 모두 업데이트 프로세스 시작 "
+       "이전에 있었던 부트 환경 상태로 부트할 수 있습니다."
+
+#: package-manager.xml.in.nolegal:629(para) 
+msgid "If the Package Manager is unable to create a new boot environment, an error message will be displayed. See the <xref linkend=\"gileh\"/> section on how to rectify the error and continue with updating your image."
+msgstr ""
+       "패키지 관리자를 사용하여 새 부트 환경을 만들 수 없는 경우 오류 "
+       "메시지가 표시됩니다. 오류를 수정하고 이미지 업데이트 작업을 계속하는 방법에 "
+       "대해서는 <xref linkend=\"gileh\"/> 절을 참조하십시오."
+
+#: package-manager.xml.in.nolegal:630(para) 
+msgid "A name for the new boot environment is automatically generated. You can accept the name generated by the system, or provide your own name for the boot environment."
+msgstr ""
+       "새 부트 환경에 대한 이름이 자동으로 생성됩니다. 시스템에서 생성한 "
+       "이름을 적용하거나, 부트 환경에 대해 사용자 고유의 이름을 제공할 수 "
+       "있습니다."
+
+#: package-manager.xml.in.nolegal:633(para) 
+msgid "Click <guibutton>Cancel</guibutton> to cancel the process."
+msgstr "프로세스를 취소하려면 <guibutton>취소</guibutton>를 누릅니다."
+
+#: package-manager.xml.in.nolegal:637(para) 
+msgid "If you chose to proceed, the <emphasis role=\"strong\">Installing Updates</emphasis> windows are displayed. The package installation process consists of four stages:"
+msgstr "계속하도록 선택한 경우 <emphasis role=\"strong\">업데이트를 설치하는 중</emphasis> 창이 표시됩니다. 패키지 설치 프로세스는 다음과 같이 4단계로 구성됩니다."
+
+#: package-manager.xml.in.nolegal:638(para) 
+msgid "Prepare"
+msgstr "준비"
+
+#: package-manager.xml.in.nolegal:640(para) 
+msgid "Download."
+msgstr "다운로드"
+
+#: package-manager.xml.in.nolegal:642(para) 
+msgid "Install."
+msgstr "설치"
+
+#: package-manager.xml.in.nolegal:645(para) 
+msgid "You can choose to cancel the process only during the <emphasis role=\"strong\">Prepare</emphasis> and <emphasis role=\"strong\">Download</emphasis> stages."
+msgstr "<emphasis role=\"strong\">준비</emphasis> 및 <emphasis role=\"strong\">다운로드</emphasis> 단계 중에만 프로세스를 취소하도록 선택할 수 있습니다."
+
+#: package-manager.xml.in.nolegal:646(para) 
+msgid "Click the <guilabel>Details</guilabel> panel to view more information about each of the installation processes."
+msgstr ""
+       "<guilabel>세부 정보</guilabel> 패널을 눌러 각 설치 프로세스에 대한 "
+       "자세한 내용을 봅니다."
+
+#: package-manager.xml.in.nolegal:647(para) 
+msgid "If an error occurs during any of the stages, the <guilabel>Details</guilabel> panel is expanded and the details of the error are displayed. An error status indicator is shown next to the failed stage."
+msgstr ""
+       "단계 중에 오류가 발생하면 <guilabel>세부 정보</"
+       "guilabel> 패널이 확장되고 오류의 세부 정보가 표시됩니다. "
+       "실패한 단계 옆에 오류 상태 표시기가 나타납니다."
+
+#: package-manager.xml.in.nolegal:650(para) 
+msgid "Read the <xref linkend=\"release_notes\"/> before rebooting your system."
+msgstr ""
+       "시스템을 재부트하기 전에 <xref linkend=\"release_notes\"/>를 읽어 보십시오."
+
+#: package-manager.xml.in.nolegal:651(para) 
+msgid "You must reboot your system for the changes to take effect."
+msgstr "변경 사항을 적용하려면 시스템을 재부트해야 합니다."
+
+#: package-manager.xml.in.nolegal:657(para) 
+msgid "A new boot environment clone <emphasis role=\"strong\">must</emphasis> be created for the Update All process to be completed. The following error message is displayed if a boot environment clone cannot be created due to space restrictions :"
+msgstr ""
+       "모두 업데이트 프로세스를 완료하려면 새 부트 환경 복제본을 "
+       "<emphasis role=\"strong\">만들어야</emphasis> 합니다. 공간 "
+       "제한으로 인해 부트 환경 복제본을 만들 수 없으면 다음과 같은 오류 메시지가 "
+       "표시됩니다."
+
+#: package-manager.xml.in.nolegal:658(para) 
+msgid "<literal>Not enough disk space, the Update All action cannot be performed. Choose Manage BE to manage your boot environments and free up disk space</literal>."
+msgstr "<literal>디스크 공간이 부족하여 모두 업데이트 작업을 수행할 수 없습니다. BE 관리를 선택하여 부트 환경을 관리하고 디스크 공간을 해제하십시오.</literal>."
+
+#: package-manager.xml.in.nolegal:661(para) 
+msgid "Click <guibutton>Manage BE</guibutton> in the error dialog to go to the <emphasis role=\"strong\">Manage Boot Environments</emphasis> dialog."
+msgstr "오류 대화 상자에서 <guibutton>BE 관리</guibutton>를 눌러 <emphasis role=\"strong\">부트 환경 관리</emphasis> 대화 상자로 이동합니다."
+
+#: package-manager.xml.in.nolegal:663(para) 
+msgid "Go to step 2 in the <xref linkend=\"gilfh\"/> section. Follow the instructions to delete old or unused boot environments and free up disk space."
+msgstr ""
+       "<xref linkend=\"gilfh\"/> 절에서 2단계로 이동합니다. 지침에 따라 "
+       "이전 또는 사용되지 않는 부트 환경을 삭제하여 디스크 여유 공간을 "
+       "확보합니다."
+
+#: package-manager.xml.in.nolegal:665(para) 
+msgid "Click <guibutton>Update All</guibutton> in the <emphasis role=\"strong\">Update Manager</emphasis> window to restart the process of updating all packages."
+msgstr "<emphasis role=\"strong\">업데이트 관리자</emphasis> 창에서 <guibutton>모두 업데이트</guibutton>를 눌러 모든 패키지 업데이트 프로세스를 재시작합니다."
+
+#: package-manager.xml.in.nolegal:669(title) 
+msgid "2010.03 Release Notes"
+msgstr "2010.03 릴리스 노트"
+
+#: package-manager.xml.in.nolegal:670(para) 
+msgid "The Release Notes for 2010.03 are available at the following location: <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"/>."
+msgstr "2010.03에 대한 릴리스 노트는 <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"/>에서 제공됩니다."
+
+#: package-manager.xml.in.nolegal:674(title) 
+msgid "Image Packaging System Glossary"
+msgstr "이미지 패키징 시스템 용어"
+
+#: package-manager.xml.in.nolegal:675(glossterm) 
+msgid "publisher"
+msgstr "게시자"
+
+#: package-manager.xml.in.nolegal:676(para) 
+msgid "A person, group, or corporation that provides packages. Packages for a publisher are found in a repository, from which the package system retrieves package data."
+msgstr "패키지를 제공하는 사람, 그룹 또는 회사입니다. 게시자에 대한 패키지는 저장소에 있으며, 패키지 시스템은 이 저장소에서 패키지 데이터를 검색합니다."
+
+#: package-manager.xml.in.nolegal:679(glossterm) 
+msgid "repository"
+msgstr "저장소"
+
+#: package-manager.xml.in.nolegal:680(para) 
+msgid "A location where clients can publish and retrieve package content such as files contained within the package, and package metadata which includes information about the package such as its name and description."
+msgstr "클라이언트가 패키지 내에 포함된 파일과 같은 패키지 내용 및 이름, 설명과 같은 패키지에 대한 정보가 포함된 패키지 메타데이터를 게시하고 검색할 수 있는 위치입니다."
+
+#: package-manager.xml.in.nolegal:683(glossterm) 
+msgid "boot environment"
+msgstr "부트 환경"
+
+#: package-manager.xml.in.nolegal:684(para) 
+msgid "For an OpenSolaris 2010.03 release, a boot environment is an instance of a bootable OpenSolaris environment. The root file system and all other file systems of the boot environment that contain system software are required to be ZFS datasets."
+msgstr "OpenSolaris 2010.03 릴리스의 경우 부트 환경은 부트 가능한 OpenSolaris 환경의 인스턴스입니다. 루트 파일 시스템과 시스템 소프트웨어가 포함되어 있는 부트 환경의 기타 모든 파일 시스템이 ZFS 데이터 세트여야 합니다."
+
+#: package-manager.xml.in.nolegal:685(para) 
+msgid "The active boot environment is the one that is currently booted. Many boot environments can present on an OpenSolaris system and an inactive boot environment can be in a state of waiting for activation upon system reboot."
+msgstr ""
+       "활성 부트 환경은 현재 부트된 부트 환경입니다. OpenSolaris 시스템에는 "
+       "여러 부트 환경이 있을 수 있으며 비활성 부트 환경은 시스템 재부트 시 "
+       "활성화를 위해 대기 중인 상태일 수 있습니다."
+
+#: package-manager.xml.in.nolegal:688(glossterm) 
+msgid "clone"
+msgstr "복제본"
+
+#: package-manager.xml.in.nolegal:689(para) 
+msgid "An exact copy."
+msgstr "정확히 일치하는 복사본입니다."
+
+#: package-manager.xml.in.nolegal:690(para) 
+msgid "A clone could be an exact copy of an operating system, a file system, or a volume. This copy has 100% compatibility with the original."
+msgstr ""
+       "복제본은 운영 체제, 파일 시스템 또는 볼륨과 정확히 일치하는 복사본일 "
+       "수 있습니다. 이 복사본은 원본과 100% 호환됩니다."
+
+#: package-manager.xml.in.nolegal:693(glossterm) 
+msgid "dataset"
+msgstr "데이터 세트"
+
+#: package-manager.xml.in.nolegal:694(para) 
+msgid "A generic name for the following ZFS entities: clones, file systems, snapshots, or volumes. Each dataset is identified by a unique name in the ZFS namespace."
+msgstr ""
+       "복제본, 파일 시스템, 스냅샷, 볼륨 등의 ZFS 엔티티에 대한 "
+       "일반 이름입니다. 각 데이터 세트는 ZFS 이름 공간에서 "
+       "고유 이름으로 식별됩니다."
+
+#: package-manager.xml.in.nolegal:697(glossterm) 
+msgid "image"
+msgstr "이미지"
+
+#: package-manager.xml.in.nolegal:698(para) 
+msgid "A collection of software in a package that comprises an entire or partial operating system. The package is suitable for installation."
+msgstr ""
+       "전체 또는 부분 운영 체제를 구성하며 패키지로 제공되는 소프트웨어의 모임입니다. "
+       "패키지는 설치에 적합합니다."
+
+#: package-manager.xml.in.nolegal:699(para) 
+msgid "An image is a location on your system where packages and their associated files, directories, links, and dependencies can be installed."
+msgstr ""
+       "이미지는 패키지, 패키지와 연관된 파일, 디렉토리, 링크 및 종속성을 "
+       "설치할 수 있는 시스템의 위치입니다."
+
+#: package-manager.xml.in.nolegal:702(glossterm) 
+msgid "package"
+msgstr "패키지"
+
+#: package-manager.xml.in.nolegal:703(para) 
+msgid "A collection of files, directories, links, drivers, and dependencies in a defined format."
+msgstr ""
+       "파일, 디렉토리, 링크, 드라이버 및 종속성의 모음으로서 "
+       "정의된 형식을 따릅니다."
+
+#: package-manager.xml.in.nolegal:706(glossterm) 
+msgid "origin"
+msgstr "원본"
+
+#: package-manager.xml.in.nolegal:707(para) 
+msgid "Location of a package repository specified by a URI, that contains a complete set of package data."
+msgstr "URI로 지정되며, 전체 패키지 데이터 세트가 포함된 패키지 저장소의 위치입니다."
+
+#: package-manager.xml.in.nolegal:710(glossterm) 
+msgid "alias"
+msgstr "별칭"
+
+#: package-manager.xml.in.nolegal:711(para) 
+msgid "An alternate name for a publisher."
+msgstr "게시자에 대한 대체 이름입니다."
+
+#: package-manager.xml.in.nolegal:714(glossterm) 
+msgid "mirror"
+msgstr "미러"
+
+#: package-manager.xml.in.nolegal:715(para) 
+msgid "Location of a package repository, specified by a URI, that contains only package files."
+msgstr "URI로 지정되며, 패키지 파일만 포함된 패키지 저장소의 위치입니다."
+
+#. Put one translator per line, in the form of NAME <EMAIL>, YEAR1, YEAR2.
+#: package-manager.xml.in.nolegal:0(None) 
+msgid "translator-credits"
+msgstr "Sun Microsystems"
+
 
 #: package-manager.xml:15(para)
 msgid ""
@@ -195,2171 +1696,3 @@ msgstr ""
 "어떠한 책임도 지지 않습니다. 이러한 보증 부인은 법적으로 "
 "허용된 범위 내에서만 적용됩니다."
 
-#: package-manager.xml:24(para)
-msgid ""
-"Sun Microsystems, Inc. détient les droits de propriété intellectuelle "
-"relatifs à la technologie incorporée dans le produit qui est décrit dans ce "
-"document. En particulier, et ce sans limitation, ces droits de propriété "
-"intellectuelle peuvent inclure un ou plusieurs brevets américains ou des "
-"applications de brevet en attente aux Etats-Unis et dans d'autres pays."
-msgstr ""
-"Sun Microsystems, Inc. détient les droits de propriété intellectuelle "
-"relatifs à la technologie incorporée dans le produit qui est décrit dans ce "
-"document. En particulier, et ce sans limitation, ces droits de propriété "
-"intellectuelle peuvent inclure un ou plusieurs brevets américains ou des "
-"applications de brevet en attente aux Etats-Unis et dans d'autres pays."
-
-#: package-manager.xml:25(para)
-msgid ""
-"Cette distribution peut comprendre des composants développés par des tierces "
-"personnes."
-msgstr ""
-"Cette distribution peut comprendre des composants développés par des tierces "
-"personnes."
-
-#: package-manager.xml:26(para)
-msgid ""
-"Certaines composants de ce produit peuvent être dérivées du logiciel "
-"Berkeley BSD, licenciés par l'Université de Californie. UNIX est une marque "
-"déposée aux Etats-Unis et dans d'autres pays; elle est licenciée "
-"exclusivement par X/Open Company, Ltd."
-msgstr ""
-"Certaines composants de ce produit peuvent être dérivées du logiciel "
-"Berkeley BSD, licenciés par l'Université de Californie. UNIX est une marque "
-"déposée aux Etats-Unis et dans d'autres pays; elle est licenciée "
-"exclusivement par X/Open Company, Ltd."
-
-#: package-manager.xml:27(para)
-msgid ""
-"Sun, Sun Microsystems, le logo Sun, le logo Solaris, le logo Java Coffee "
-"Cup, docs.sun.com, Java et Solaris sont des marques de fabrique ou des "
-"marques déposées de Sun Microsystems, Inc., ou ses filiales, aux Etats-Unis "
-"et dans d'autres pays. Toutes les marques SPARC sont utilisées sous licence "
-"et sont des marques de fabrique ou des marques déposées de SPARC "
-"International, Inc. aux Etats-Unis et dans d'autres pays. Les produits "
-"portant les marques SPARC sont basés sur une architecture développée par Sun "
-"Microsystems, Inc."
-msgstr ""
-"Sun, Sun Microsystems, le logo Sun, le logo Solaris, le logo Java Coffee "
-"Cup, docs.sun.com, Java et Solaris sont des marques de fabrique ou des "
-"marques déposées de Sun Microsystems, Inc., ou ses filiales, aux Etats-Unis "
-"et dans d'autres pays. Toutes les marques SPARC sont utilisées sous licence "
-"et sont des marques de fabrique ou des marques déposées de SPARC "
-"International, Inc. aux Etats-Unis et dans d'autres pays. Les produits "
-"portant les marques SPARC sont basés sur une architecture développée par Sun "
-"Microsystems, Inc."
-
-#: package-manager.xml:28(para)
-msgid ""
-"L'interface d'utilisation graphique OPEN LOOK et Sun a été développée par "
-"Sun Microsystems, Inc. pour ses utilisateurs et licenciés. Sun reconnaît les "
-"efforts de pionniers de Xerox pour la recherche et le développement du "
-"concept des interfaces d'utilisation visuelle ou graphique pour l'industrie "
-"de l'informatique. Sun détient une licence non exclusive de Xerox sur "
-"l'interface d'utilisation graphique Xerox, cette licence couvrant également "
-"les licenciés de Sun qui mettent en place l'interface d'utilisation "
-"graphique OPEN LOOK et qui, en outre, se conforment aux licences écrites de "
-"Sun."
-msgstr ""
-"L'interface d'utilisation graphique OPEN LOOK et Sun a été développée par "
-"Sun Microsystems, Inc. pour ses utilisateurs et licenciés. Sun reconnaît les "
-"efforts de pionniers de Xerox pour la recherche et le développement du "
-"concept des interfaces d'utilisation visuelle ou graphique pour l'industrie "
-"de l'informatique. Sun détient une licence non exclusive de Xerox sur "
-"l'interface d'utilisation graphique Xerox, cette licence couvrant également "
-"les licenciés de Sun qui mettent en place l'interface d'utilisation "
-"graphique OPEN LOOK et qui, en outre, se conforment aux licences écrites de "
-"Sun."
-
-#: package-manager.xml:29(para)
-msgid ""
-"Les produits qui font l'objet de cette publication et les informations qu'il "
-"contient sont régis par la legislation américaine en matière de contrôle des "
-"exportations et peuvent être soumis au droit d'autres pays dans le domaine "
-"des exportations et importations. Les utilisations finales, ou utilisateurs "
-"finaux, pour des armes nucléaires, des missiles, des armes chimiques ou "
-"biologiques ou pour le nucléaire maritime, directement ou indirectement, "
-"sont strictement interdites. Les exportations ou réexportations vers des "
-"pays sous embargo des Etats-Unis, ou vers des entités figurant sur les "
-"listes d'exclusion d'exportation américaines, y compris, mais de manière non "
-"exclusive, la liste de personnes qui font objet d'un ordre de ne pas "
-"participer, d'une façon directe ou indirecte, aux exportations des produits "
-"ou des services qui sont régis par la legislation américaine en matière de "
-"contrôle des exportations et la liste de ressortissants spécifiquement "
-"designés, sont rigoureusement interdites."
-msgstr ""
-"Les produits qui font l'objet de cette publication et les informations qu'il "
-"contient sont régis par la legislation américaine en matière de contrôle des "
-"exportations et peuvent être soumis au droit d'autres pays dans le domaine "
-"des exportations et importations. Les utilisations finales, ou utilisateurs "
-"finaux, pour des armes nucléaires, des missiles, des armes chimiques ou "
-"biologiques ou pour le nucléaire maritime, directement ou indirectement, "
-"sont strictement interdites. Les exportations ou réexportations vers des "
-"pays sous embargo des Etats-Unis, ou vers des entités figurant sur les "
-"listes d'exclusion d'exportation américaines, y compris, mais de manière non "
-"exclusive, la liste de personnes qui font objet d'un ordre de ne pas "
-"participer, d'une façon directe ou indirecte, aux exportations des produits "
-"ou des services qui sont régis par la legislation américaine en matière de "
-"contrôle des exportations et la liste de ressortissants spécifiquement "
-"designés, sont rigoureusement interdites."
-
-#: package-manager.xml:30(para)
-msgid ""
-"LA DOCUMENTATION EST FOURNIE \"EN L'ETAT\" ET TOUTES AUTRES CONDITIONS, "
-"DECLARATIONS ET GARANTIES EXPRESSES OU TACITES SONT FORMELLEMENT EXCLUES, "
-"DANS LA MESURE AUTORISEE PAR LA LOI APPLICABLE, Y COMPRIS NOTAMMENT TOUTE "
-"GARANTIE IMPLICITE RELATIVE A LA QUALITE MARCHANDE, A L'APTITUDE A UNE "
-"UTILISATION PARTICULIERE OU A L'ABSENCE DE CONTREFACON."
-msgstr ""
-"LA DOCUMENTATION EST FOURNIE \"EN L'ETAT\" ET TOUTES AUTRES CONDITIONS, "
-"DECLARATIONS ET GARANTIES EXPRESSES OU TACITES SONT FORMELLEMENT EXCLUES, "
-"DANS LA MESURE AUTORISEE PAR LA LOI APPLICABLE, Y COMPRIS NOTAMMENT TOUTE "
-"GARANTIE IMPLICITE RELATIVE A LA QUALITE MARCHANDE, A L'APTITUDE A UNE "
-"UTILISATION PARTICULIERE OU A L'ABSENCE DE CONTREFACON."
-
-#: package-manager.xml:33(title)
-msgid "About the Package Manager"
-msgstr "패키지 관리자 정보"
-
-#: package-manager.xml:34(para)
-msgid ""
-"Welcome to the <trademark>OpenSolaris</trademark> 2009.06 Package Manager "
-"online help!"
-msgstr ""
-"<trademark>OpenSolaris </trademark> 2009.06 패키지 관리자 "
-"온라인 도움말 시작!"
-
-#: package-manager.xml:35(para)
-msgid ""
-"Use this help contents to learn how to use the Package Manager. Navigate "
-"through this help by clicking the topics displayed in the sidebar."
-msgstr ""
-"이 도움말 내용을 사용하여 패키지 관리자 사용 방법을 배울 수 있습니다. "
-"사이드바에 표시되는 항목을 눌러 이 도움말을 탐색하십시오."
-
-#: package-manager.xml:36(para)
-msgid ""
-"The OpenSolaris 2009.06 Package Manager application is a graphical user "
-"interface for the Image Packaging System (IPS) software."
-msgstr ""
-"OpenSolaris 2009.06 패키지 관리자 응용 프로그램은 이미지 패키징 시스템 "
-"(Image Packaging System, IPS) 소프트웨어에 대한 그래픽 사용자 인터페이스입니다."
-
-#: package-manager.xml:37(para)
-msgid "The Package Manager enables you to perform the following tasks:"
-msgstr "패키지 관리자를 사용하면 다음 작업을 수행할 수 있습니다."
-
-#: package-manager.xml:38(para)
-msgid "Search, install, and remove packages"
-msgstr "패키지 검색, 설치 및 제거"
-
-#: package-manager.xml:40(para)
-msgid "Update your system"
-msgstr "시스템 업데이트"
-
-#: package-manager.xml:42(para)
-msgid "Add and modify repositories"
-msgstr "저장소 추가 및 수정"
-
-#: package-manager.xml:44(para)
-msgid "Create, remove, and manage boot environments"
-msgstr "부트 환경 만들기, 제거 및 관리"
-
-#: package-manager.xml:47(para)
-msgid ""
-"See the <xref linkend=\"glossary\"/> for a definition of the terms used in "
-"this document."
-msgstr ""
-"이 문서에서 사용되는 용어 정의는 <xref linkend=\"glossary\"/>를 "
-"참조하십시오."
-
-#: package-manager.xml:49(title)
-msgid "About Image Packaging System"
-msgstr "이미지 패키징 시스템 정보"
-
-#: package-manager.xml:50(para)
-msgid ""
-"Image Packaging System (IPS) is a software delivery system that interacts "
-"with a network repository. The IPS software is a framework which provides "
-"for software lifecycle management including installation, upgrade, and "
-"removal."
-msgstr ""
-"이미지 패키징 시스템(Image Packaging System, IPS)은 네트워크 저장소와 "
-"상호 작용하는 소프트웨어 전달 시스템입니다. IPS 소프트웨어는 설치, 업그레이드 및 "
-"제거를 포함한 소프트웨어 라이프사이클 관리를 제공하는 "
-"프레임워크입니다."
-
-#: package-manager.xml:51(para)
-msgid "The OpenSolaris 2009.06 release uses IPS as its packaging system."
-msgstr "OpenSolaris 2009.06 릴리스는 IPS를 해당 패키징 시스템으로 사용합니다."
-
-#: package-manager.xml:52(para)
-msgid ""
-"After an initial installation of OpenSolaris 2009.06 operating system, you "
-"will find that many of the software applications that you use on a regular "
-"basis are not immediately available to you. These software applications are "
-"available as packages in a repository for downloading and installing over "
-"the Internet. A repository is a source for packages."
-msgstr ""
-"OpenSolaris 2009.06 운영 체제의 초기 설치 후에는 정기적으로 사용하는 "
-"소프트웨어 응용 프로그램 대부분을 즉시 사용할 수 없게 됩니다. 이러한 "
-"소프트웨어 응용 프로그램은 저장소에서 패키지로 사용하여 인터넷을 통해 "
-"다운로드하고 설치할 수 있습니다. 저장소는 패키지의 "
-"소스입니다."
-
-#: package-manager.xml:53(para)
-msgid ""
-"Users can use IPS to install packages from a repository, create and publish "
-"their own IPS packages, mirror an existing repository, and publish existing "
-"packages to a repository."
-msgstr ""
-"사용자는 IPS를 사용하여 저장소에서 패키지를 설치하고, 자체 IPS 패키지를 "
-"만들어 게시하고, 기존 저장소를 미러한 다음 기존 패키지를 저장소에 "
-"게시합니다."
-
-#: package-manager.xml:54(para)
-msgid ""
-"Once you have installed packages, IPS enables you to search, update, and "
-"manage packages on your system."
-msgstr ""
-"패키지를 설치하고 나면 IPS를 통해 시스템에서 패키지를 검색, 업데이트 및 "
-"관리할 수 있습니다."
-
-#: package-manager.xml:55(para)
-msgid ""
-"With IPS , you can upgrade your system to a newer build of OpenSolaris, "
-"install and update your software to the latest available versions in a "
-"repository, and retrieve packages from mirror repositories."
-msgstr ""
-"IPS를 사용하면 시스템을 OpenSolaris의 최신 빌드로 "
-"업그레이드하고, 소프트웨어를 저장소에서 사용 가능한 최신 버전으로 설치 및 업데이트하고, "
-"미러 저장소에서 패키지를 검색할 수 있습니다."
-
-#: package-manager.xml:56(emphasis)
-msgid ""
-"The Package Manager provides a subset of the tasks that can be performed "
-"from the command-line."
-msgstr ""
-"패키지 관리자는 명령줄에서 수행할 수 있는 작업의 일부를 "
-"제공합니다."
-
-#: package-manager.xml:58(para)
-msgid ""
-"If the system on which IPS is installed is on the network, IPS can "
-"automatically access the OpenSolaris repository. For the OpenSolaris 2009.06 "
-"release, your IPS client can access the packages from <ulink url=\"http://"
-"pkg.opensolaris.org\"/>."
-msgstr ""
-"IPS가 설치된 시스템이 네트워크상에 있는 경우 IPS는 자동으로 OpenSolaris "
-"저장소에 액세스할 수 있습니다. OpenSolaris 2009.06 릴리스의 경우 IPS 클라이언트는 <ulink url=\"http://"
-"pkg.opensolaris.org\"/>에서 해당 패키지에 액세스할 "
-"수 있습니다."
-
-#: package-manager.xml:59(para)
-msgid ""
-"For more information about IPS, see the <ulink url=\"http://dlc.sun.com/osol/"
-"docs/content/2009.06/IMGPACKAGESYS/\">Image Packaging System Guide</ulink> "
-"and the IPS <ulink url=\"http://opensolaris.org/sc/src/pkg/gate/src/man/"
-"\">man pages</ulink>."
-msgstr ""
-"IPS에 대한 자세한 내용은 <ulink url=\"http://dlc.sun.com/osol/"
-"docs/content/2009.06/IMGPACKAGESYS/\">이미지 패키징 시스템 설명서</ulink> "
-"및 IPS <ulink url=\"http://opensolaris.org/sc/src/pkg/gate/src/man/"
-"\">매뉴얼 페이지</ulink>를 참조하십시오."
-
-#: package-manager.xml:60(para)
-msgid ""
-"Visit the <ulink url=\"http://opensolaris.org/os/project/pkg\">project page</"
-"ulink> on opensolaris.org and subscribe to pkg-discuss@sun.com to get "
-"involved with the IPS project."
-msgstr ""
-"opensolaris.org의 <ulink url=\"http://opensolaris.org/os/project/pkg\">프로젝트 페이지</"
-"ulink>를 방문하고 pkg-discuss@sun.com에 가입하여 IPS 프로젝트에 "
-"참여하십시오."
-
-#: package-manager.xml:62(title)
-msgid "The Package Manager Window"
-msgstr "패키지 관리자 창"
-
-#: package-manager.xml:63(title)
-msgid "About the Package Manager Window"
-msgstr "패키지 관리자 창 정보"
-
-#: package-manager.xml:64(para)
-msgid "When you start the Package Manager, the following window is displayed."
-msgstr "패키지 관리자를 시작하면 다음 창이 표시됩니다."
-
-#: package-manager.xml:65(title)
-msgid "Package Manager Start Up Window"
-msgstr "패키지 관리자 시작 창"
-
-#: package-manager.xml:69(para)
-msgid ""
-"The Start Page provides links to <ulink url=\"http://opensolaris.com"
-"\">opensolaris.com</ulink> page where you can get more information about "
-"OpenSolaris, subscribe to newsletters and join the OpenSolaris community."
-msgstr ""
-"시작 페이지에는 OpenSolaris에 대한 자세한 정보를 얻고, 뉴스레터를 구독하고, "
-"OpenSolaris 커뮤니티에 가입할 수 있는 <ulink url=\"http://opensolaris.com"
-"\">opensolaris.com</ulink> 페이지에 대한 링크가 있습니다."
-
-#: package-manager.xml:70(para)
-msgid ""
-"To close the Start Page and see the list of packages , perform any of the "
-"following actions in the main window of the Package Manager:"
-msgstr ""
-"시작 페이지를 닫고 패키지 목록을 보려면 패키지 관리자의 기본 창에서 "
-"다음 작업 중 하나를 수행합니다."
-
-#: package-manager.xml:71(para)
-msgid "Select a package category"
-msgstr "패키지 범주 선택"
-
-#: package-manager.xml:73(para)
-msgid "Switch the top level category"
-msgstr "최상위 수준 범주 전환"
-
-#: package-manager.xml:75(para)
-msgid "Switch the <literal>Show</literal> filter"
-msgstr "<literal>표시</literal> 필터 전환"
-
-#: package-manager.xml:77(para)
-msgid "Perform a search"
-msgstr "검색 수행"
-
-#: package-manager.xml:79(para)
-msgid "Change the repository"
-msgstr "저장소 변경"
-
-#: package-manager.xml:82(para)
-msgid ""
-"Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</"
-"guimenuitem></menuchoice> to return to the Start Page at anytime."
-msgstr ""
-"시작 페이지로 돌아가려면 언제든지 <menuchoice><guimenu>보기</guimenu"
-"><guimenuitem>시작 페이지</guimenuitem></menuchoice>를 선택합니다."
-
-#: package-manager.xml:83(para)
-msgid ""
-"See the <xref linkend=\"edit_prefs\"/> section to turn off the <emphasis "
-"role=\"strong\">initial display</emphasis> of the Start Page when the "
-"Package Manager starts."
-msgstr ""
-"패키지 관리자가 시작될 때 시작 페이지의 <emphasis role=\"strong\">초기 "
-"디스플레이</emphasis>를 끄려면 <xref linkend=\"edit_prefs\"/> 절을 "
-"참조하십시오."
-
-#: package-manager.xml:85(title)
-msgid "List of Packages in the Package Manager Window"
-msgstr "패키지 관리자 창의 패키지 목록"
-
-#: package-manager.xml:89(para)
-msgid ""
-"The main window of the Package Manager consists of the following elements :"
-msgstr ""
-"패키지 관리자의 기본 창은 다음 요소로 구성됩니다."
-
-#: package-manager.xml:90(emphasis)
-msgid "Menubar"
-msgstr "메뉴 표시줄"
-
-#: package-manager.xml:91(para)
-msgid ""
-"You can access the menus on the menubar to perform all of the commands "
-"related to the Package Manager."
-msgstr ""
-"메뉴 표시줄의 메뉴에 액세스하여 패키지 관리자와 관련된 모든 명령을 "
-"수행할 수 있습니다."
-
-#: package-manager.xml:95(emphasis)
-msgid "Toolbar"
-msgstr "도구 모음"
-
-#: package-manager.xml:96(para)
-msgid ""
-"The toolbar contains the icons for a subset of the commands that can be "
-"performed by using the menus on the menubar. A<literal>Search</literal> box "
-"is also located on the toolbar."
-msgstr ""
-"도구 모음에는 메뉴 표시줄의 메뉴를 사용하여 수행할 수 있는 일부 명령에 대한 "
-"아이콘이 포함되어 있습니다. <literal>검색</literal> 상자도 도구 모음에 "
-"있습니다."
-
-#: package-manager.xml:99(emphasis)
-msgid "List of Packages by Category"
-msgstr "범주별 패키지 목록"
-
-#: package-manager.xml:100(para)
-msgid ""
-"You can browse the available packages by category in the left hand side drop-"
-"down menu. The drop-down menu shows the list of categories available such as "
-"<emphasis role=\"strong\">Applications-Desktop</emphasis>, <emphasis role="
-"\"strong\">Applications –Web—based</emphasis>, and <emphasis role=\"strong"
-"\">Operating System</emphasis>."
-msgstr ""
-"왼쪽 드롭다운 메뉴에서 범주별로 사용 가능한 패키지를 찾아볼 수"
-"있습니다. 드롭다운 메뉴에는 <emphasis role=\"strong\">응용 프로그램-데스크탑"
-"</emphasis>, <emphasis role=\"strong\">응용 프로그램-"
-"웹 기반</emphasis>, <emphasis role=\"strong\">운영 체제</emphasis> 등 "
-"사용 가능한 범주의 목록이 표시됩니다."
-
-#: package-manager.xml:103(emphasis)
-msgid "List of Packages by Status"
-msgstr "상태별 패키지 목록"
-
-#: package-manager.xml:104(para)
-msgid ""
-"The <literal>Show</literal> drop-down menu enables you to filter the list of "
-"packages by the following options :"
-msgstr ""
-"<literal>표시</literal> 드롭다운 메뉴의 다음 옵션을 기준으로 "
-"패키지 목록을 필터링할 수 있습니다."
-
-#: package-manager.xml:105(para)
-msgid ""
-"<emphasis role=\"strong\">All Packages</emphasis> – Shows the list of all "
-"packages available in the current repository."
-msgstr ""
-"<emphasis role=\"strong\">모든 패키지</emphasis> - 현재 저장소에서 사용 가능한 "
-"모든 패키지 목록을 표시합니다."
-
-#: package-manager.xml:107(para)
-msgid ""
-"<emphasis role=\"strong\">Installed Packages</emphasis> – Shows the list of "
-"packages installed on your system."
-msgstr ""
-"<emphasis role=\"strong\">설치된 패키지</emphasis> – 시스템에 설치된 "
-"패키지 목록을 표시합니다."
-
-#: package-manager.xml:109(para)
-msgid ""
-"<emphasis role=\"strong\">Updates Available</emphasis> — Shows the list of "
-"packages that have newer versions available in the current repository."
-msgstr ""
-"<emphasis role=\"strong\">사용 가능한 업데이트</emphasis> — 현재 저장소에서 최신 버전을 "
-"사용할 수 있는 패키지 목록을 표시합니다."
-
-#: package-manager.xml:111(para)
-msgid ""
-"<emphasis role=\"strong\">Non-installed Packages</emphasis> – Shows the list "
-"of packages that are not installed, but are available in the currently "
-"selected repository."
-msgstr ""
-"<emphasis role=\"strong\">설치되지 않은 패키지</emphasis> – 설치되지는 않았지만 "
-"현재 선택한 저장소에서 사용할 수 있는 패키지 목록을 "
-"표시합니다."
-
-#: package-manager.xml:113(para)
-msgid ""
-"<emphasis role=\"strong\">Selected Packages</emphasis> – Shows the list of "
-"packages that you have selected."
-msgstr ""
-"<emphasis role=\"strong\">선택된 패키지</emphasis> – 선택한 패키지 목록을 "
-"표시합니다."
-
-#: package-manager.xml:118(emphasis)
-msgid "Package Name and Description"
-msgstr "패키지 이름 및 설명"
-
-#: package-manager.xml:119(para)
-msgid ""
-"The list of packages in the selected category, a brief description, and "
-"their status are displayed here."
-msgstr ""
-"여기에는 선택한 범주의 패키지 목록, 간략한 설명 및 "
-"해당 상태가 표시됩니다."
-
-#: package-manager.xml:122(emphasis)
-msgid "Package Details"
-msgstr "패키지 세부 사항"
-
-#: package-manager.xml:123(para)
-msgid ""
-"Click a package name to select it. Details of the selected package, such as "
-"name, version, file dependencies, and license are displayed in this window."
-msgstr ""
-"패키지 이름을 눌러 선택합니다. 이 창에는 선택한 패키지에 대한 "
-"이름, 버전, 파일 종속성 및 라이센스 등의 세부 정보가 표시됩니다."
-
-#: package-manager.xml:126(emphasis)
-msgid "Repository Drop-down Menu"
-msgstr "저장소 드롭다운 메뉴"
-
-#: package-manager.xml:127(para)
-msgid ""
-"The list of available repositories is shown in the <literal>Repository</"
-"literal> drop-down menu. Click a repository name to select it."
-msgstr ""
-"<literal>저장소</literal> 드롭다운 메뉴에는 사용 가능한 저장소 목록이 "
-"표시됩니다. 선택하려면 저장소 이름을 누릅니다."
-
-#: package-manager.xml:130(emphasis)
-msgid "Search Box"
-msgstr "검색 상자"
-
-#: package-manager.xml:131(para)
-msgid "Search for a package is provided in the following contexts :"
-msgstr "패키지는 다음 상황에서 검색할 수 있습니다."
-
-#: package-manager.xml:132(para)
-msgid "Search within the current repository"
-msgstr "현재 저장소 내에서 검색"
-
-#: package-manager.xml:134(para)
-msgid "Search across all configured repositories"
-msgstr "구성된 모든 저장소 전체에서 검색"
-
-#: package-manager.xml:141(title)
-msgid "Start Page Preferences"
-msgstr "시작 페이지 기본 설정"
-
-#: package-manager.xml:142(para)
-msgid ""
-"A Start Page is displayed in the main window of the Package Manager when the "
-"application is started. The Start Page provides links to <ulink url=\"http://"
-"opensolaris.com\">opensolaris.com</ulink> page where you can get more "
-"information about OpenSolaris, subscribe to newsletters and join the "
-"OpenSolaris community."
-msgstr ""
-"응용 프로그램이 시작되면 패키지 관리자의 기본 창에 시작 페이지가 "
-"표시됩니다. 시작 페이지에는 OpenSolaris에 대한 자세한 정보를 얻고, "
-"뉴스레터를 구독하고, OpenSolaris 커뮤니티에 가입할 수 있는 "
-"<ulink url=\"http://opensolaris.com\">opensolaris.com</ulink> 페이지에 대한 "
-"링크가 있습니다."
-
-#: package-manager.xml:143(para)
-msgid ""
-"You can choose to turn off this setting so this page is not displayed when "
-"Package Manager starts."
-msgstr ""
-"패키지 관리자가 시작될 때 이 페이지가 표시되지 않도록 이 설정을 끌 수 "
-"있습니다."
-
-#: package-manager.xml:144(para)
-msgid ""
-"Select <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</"
-"guimenuitem></menuchoice> from the menu and uncheck the <emphasis role="
-"\"strong\">Show Start Page on startup</emphasis> box to disable the Start "
-"Page."
-msgstr ""
-"시작 페이지를 비활성화하려면 메뉴에서 <menuchoice><guimenu>편집</"
-"guimenu><guimenuitem>기본 설정</guimenuitem></menuchoice>을 "
-"선택하고 <emphasis role=\"strong\">시작 시 시작 페이지 표시</emphasis> "
-"상자를 선택 취소합니다."
-
-#: package-manager.xml:145(para)
-msgid ""
-"Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</"
-"guimenuitem></menuchoice> to go to the Start Page at anytime."
-msgstr ""
-"언제든지 시작 페이지로 이동하려면 <menuchoice><guimenu>보기</guimenu"
-"><guimenuitem>시작 페이지</guimenuitem></menuchoice>를 선택합니다."
-
-#: package-manager.xml:148(title)
-msgid "Working With Packages"
-msgstr "패키지 작업"
-
-#: package-manager.xml:149(title)
-msgid "Install a Package"
-msgstr "패키지 설치"
-
-#: package-manager.xml:150(para)
-msgid ""
-"The list of packages is displayed in the main windows of the Package "
-"Manager. Perform the following steps to install a package:"
-msgstr ""
-"패키지 관리자의 기본 창에 패키지 목록이 표시됩니다. 다음 단계를 수행하여 "
-"패키지를 설치합니다."
-
-#: package-manager.xml:151(para)
-msgid ""
-"To install a single package, click on a package to select it. To install "
-"many packages, check the box next to the packages you want to install."
-msgstr ""
-"단일 패키지를 설치하려면 하나의 패키지를 눌러 선택합니다. 여러 패키지를 "
-"설치하려면 설치하려는 패키지 옆의 상자를 선택합니다."
-
-#: package-manager.xml:153(para)
-msgid ""
-"Click the <guibutton>Install/Update</guibutton> icon in the toolbar to start "
-"the package installation process."
-msgstr ""
-"도구 모음에서 <guibutton>설치/업데이트</guibutton> 아이콘을 눌러 패키지 "
-"설치 프로세스를 시작합니다."
-
-#: package-manager.xml:154(para)
-msgid ""
-"You can also choose <menuchoice><guimenu>Package</"
-"guimenu><guimenuitem>Install/Update</guimenuitem></menuchoice> to start the "
-"package installation process."
-msgstr ""
-"또한 <menuchoice><guimenu>패키지</"
-"guimenu><guimenuitem>설치/업데이트</guimenuitem></menuchoice>를 선택하여 패키지 설치 프로세스를 "
-"시작할 수도 있습니다."
-
-#: package-manager.xml:156(para)
-msgid "View the details or cancel the package installation ."
-msgstr "세부 정보를 보거나 패키지 설치를 취소합니다."
-
-#: package-manager.xml:157(para)
-msgid "Click <guilabel>Show Details</guilabel> to view the details."
-msgstr "세부 정보를 보려면 <guilabel>세부 정보 표시</guilabel>를 누릅니다."
-
-#: package-manager.xml:159(para)
-msgid ""
-"Click <guibutton>Cancel</guibutton> to cancel the package installation. No "
-"changes are made and you are returned to the main window."
-msgstr ""
-"패키지 설치를 취소하려면 <guibutton>취소</guibutton>를 누릅니다. 아무 것도 변경되지 않고 "
-"기본 창으로 돌아갑니다."
-
-#: package-manager.xml:163(para)
-msgid ""
-"After the installation has completed, click <guibutton>Close</guibutton> on "
-"the <literal>Installation Completed</literal> dialog box to return to the "
-"main window."
-msgstr ""
-"설치가 완료된 후 <literal>설치 완료</literal> 대화 상자에서 "
-"<guibutton>닫기</guibutton>를 눌러 기본 창으로 "
-"돌아갑니다."
-
-#: package-manager.xml:166(title)
-msgid "Installation Error"
-msgstr "설치 오류"
-
-#: package-manager.xml:167(para)
-msgid ""
-"If an error occurs during package installation, an error dialog box is "
-"displayed. An <guilabel>Installation Failed</guilabel> message and the "
-"reason for the failure is displayed. Click <guibutton>Close</guibutton> to "
-"close the error dialog box and return to the main window of the Package "
-"Manager."
-msgstr ""
-"패키지 설치 중 오류가 발생하면 오류 대화 상자가 표시됩니다. "
-"<guilabel>설치 실패</guilabel> 메시지와 실패에 대한 이유가 "
-"표시됩니다. 오류 대화 상자를 닫고 패키지 관리자의 기본 "
-"창으로 돌아가려면 <guibutton>닫기</guibutton>를 "
-"누릅니다."
-
-#: package-manager.xml:170(title)
-msgid "Remove a Package"
-msgstr "패키지 제거"
-
-#: package-manager.xml:171(para)
-msgid "Perform the following steps to remove a package:"
-msgstr "다음 단계를 수행하여 패키지를 제거합니다."
-
-#: package-manager.xml:172(para)
-msgid ""
-"To remove a single package, click on a package to select it. To remove many "
-"packages, check the box next to the packages you want to remove."
-msgstr ""
-"단일 패키지를 제거하려면 하나의 패키지를 눌러 선택합니다. 여러 패키지를 제거하려면 "
-"제거하려는 패키지 옆의 상자를 선택합니다."
-
-#: package-manager.xml:174(para)
-msgid ""
-"Click the <guibutton>Remove</guibutton> button in the toolbar to start the "
-"package uninstallation process."
-msgstr ""
-"도구 모음에서 <guibutton>제거</guibutton> 버튼을 눌러 패키지 설치 제거 프로세스를 "
-"시작합니다."
-
-#: package-manager.xml:175(para)
-msgid ""
-"You can also choose <menuchoice><guimenu>Package</"
-"guimenu><guimenuitem>Remove</guimenuitem></menuchoice> to remove a package."
-msgstr ""
-"또한 <menuchoice><guimenu>패키지</"
-"guimenu><guimenuitem>제거</guimenuitem></menuchoice>를 선택하여 패키지를 제거할 수도 있습니다."
-
-#: package-manager.xml:177(para)
-msgid ""
-"Review the packages to be removed and the package dependencies details in "
-"the <literal>Remove Confirmation</literal> dialog box."
-msgstr ""
-"<literal>제거 확인</literal> 대화 상자에서 제거될 패키지와 패키지 종속성 "
-"세부 정보를 검토합니다."
-
-#: package-manager.xml:179(para)
-msgid "Uninstall the package or cancel the uninstallation process."
-msgstr "패키지를 설치 제거하거나 설치 제거 프로세스를 취소합니다."
-
-#: package-manager.xml:180(para)
-msgid ""
-"Click <guibutton>Proceed</guibutton> to start uninstalling the packages."
-msgstr ""
-"패키지 설치 제거를 시작하려면 <guibutton>진행</guibutton>을 누릅니다."
-
-#: package-manager.xml:182(para)
-msgid ""
-"Click <guibutton>Cancel</guibutton> to cancel the process. No changes are "
-"made and you are returned to the main window."
-msgstr ""
-"프로세스를 취소하려면 <guibutton>취소</guibutton>를 누릅니다. 아무 것도 변경되지 않고 "
-"기본 창으로 돌아갑니다."
-
-#: package-manager.xml:183(para)
-msgid ""
-"After you click the <guibutton>Proceed</guibutton> button, you cannot undo "
-"the package removal action. However, you can reinstall the package at any "
-"time."
-msgstr ""
-"<guibutton>진행</guibutton> 버튼을 누른 후에는 패키지 제거 작업을 "
-"실행 취소할 수 없습니다. 하지만 언제든지 패키지를 다시 설치할 수 "
-"있습니다."
-
-#: package-manager.xml:190(title)
-msgid "Search for a Package"
-msgstr "패키지 검색"
-
-#: package-manager.xml:191(para)
-msgid "You can search for a package in the following ways :"
-msgstr "패키지는 다음과 같은 방법으로 검색할 수 있습니다."
-
-#: package-manager.xml:192(para)
-msgid ""
-"<emphasis role=\"strong\">Search the current repository</emphasis> – Search "
-"for a package in the repository currently selected in the "
-"<literal>Repository</literal> drop-down menu. The category selection or the "
-"<literal>Show</literal> filter does not affect the search and the search is "
-"performed on all packages in the currently selected repository."
-msgstr ""
-"<emphasis role=\"strong\">현재 저장소 검색</emphasis> – "
-"<literal>저장소</literal> 드롭다운 메뉴에서 현재 선택된 저장소에서 "
-"패키지를 검색합니다. 범주 선택이나 <literal>표시</literal> 필터는 "
-"검색에 영향을 주지 않으며 검색은 현재 선택된 저장소에 있는 모든 "
-"패키지에 대해 수행됩니다."
-
-#: package-manager.xml:193(para)
-msgid ""
-"Enter a description, or a partial name in the <literal>Search</literal> box "
-"located on the toolbar. For example, you might type one of the following "
-"search terms to search for <filename>SUNWgnome-games</filename> :"
-msgstr ""
-"도구 모음에 있는 <literal>검색</literal> 상자에 설명이나 부분 이름을 "
-"입력합니다. 예를 들어 <filename>SUNWgnome-games</filename>를 "
-"검색하기 위해 다음 검색 용어 중 하나를 입력할 수 있습니다."
-
-#: package-manager.xml:194(para)
-msgid "SUNWgames"
-msgstr "SUNWgames"
-
-#: package-manager.xml:196(para)
-msgid "games"
-msgstr "games"
-
-#: package-manager.xml:198(para)
-msgid "GNOME-games"
-msgstr "GNOME-games"
-
-#: package-manager.xml:201(para)
-msgid ""
-"To search for SunStudio compilers, you might type one of the following terms:"
-msgstr ""
-"SunStudio 컴파일러를 검색하려면 다음 용어 중 하나를 입력할 수 있습니다."
-
-#: package-manager.xml:202(para)
-msgid "compiler"
-msgstr "컴파일러"
-
-#: package-manager.xml:204(para)
-msgid "tools"
-msgstr "도구"
-
-#: package-manager.xml:208(para)
-msgid ""
-"<emphasis role=\"strong\">Search all repositories</emphasis> – Select the "
-"multi-repository icon in the <literal>Search</literal> box to search for the "
-"package across all configured or registered repositories."
-msgstr ""
-"<emphasis role=\"strong\">모든 저장소 검색</emphasis> – 구성되거나 등록된 "
-"모든 저장소 전체에서 패키지를 검색하려면 <literal>검색</literal> 상자에서 "
-"다중 저장소 아이콘을 선택합니다."
-
-#: package-manager.xml:209(para)
-msgid ""
-"The multi-repository search currently supports search based on the package "
-"description only."
-msgstr ""
-"현재 다중 저장소 검색은 패키지 설명을 기준으로 하는 검색만 "
-"지원합니다."
-
-#: package-manager.xml:211(para)
-msgid ""
-"Type a description of the package in the box. For example, the "
-"<filename>SUNWdiveintopython</filename> package is a book on Python "
-"programming. The description of the package contains <emphasis>book</"
-"emphasis>. To search for this package, you might then type one of the "
-"following terms:"
-msgstr ""
-"상자에 패키지 설명을 입력합니다. 예를 들어 <filename>"
-"SUNWdiveintopython</filename> 패키지는 Python 프로그래밍에 대한 책입니다. "
-"이 패키지에 대한 설명에는 <emphasis>book</emphasis>이 포함되어 "
-"있습니다. 이 패키지를 검색하려면 다음 용어 중 하나를 입력할 수 "
-"있습니다."
-
-#: package-manager.xml:212(para)
-msgid "python"
-msgstr "python"
-
-#: package-manager.xml:214(para)
-msgid "book"
-msgstr "book"
-
-#: package-manager.xml:217(para)
-msgid ""
-"If you searched for the term <emphasis>dive</emphasis> in the multi-"
-"repository search, the <filename>SUNWdiveintopython</filename> package will "
-"not be displayed as the term is not present in the package description."
-msgstr ""
-"다중 저장소 검색 시 <emphasis>dive</emphasis> 용어를 검색한 경우 "
-"<filename>SUNWdiveintopython</filename> 패키지가 표시되지 않습니다. "
-"해당 용어가 패키지 설명에 없기 때문입니다."
-
-#: package-manager.xml:221(para)
-msgid ""
-"Use the submenus under the <menuchoice><guimenu>Edit</guimenu></menuchoice> "
-"menu to cut, copy, paste, or clear text in the <literal>Search</literal> box."
-msgstr ""
-"<literal>검색</literal> 상자에서 텍스트 잘라내기, 복사, 붙여넣기 또는 지우기를 "
-"수행하려면 <menuchoice><guimenu>편집</guimenu></menuchoice> 메뉴 아래의 "
-"하위 메뉴를 사용합니다."
-
-#: package-manager.xml:223(para)
-msgid ""
-"Use the icon on the right side of the <literal>Search</literal> box to clear "
-"the search results."
-msgstr ""
-"검색 결과를 지우려면 <literal>검색</literal> 상자의 오른쪽에 있는 아이콘을 "
-"사용합니다."
-
-#: package-manager.xml:228(title)
-msgid "Update a Package"
-msgstr "패키지 업데이트 "
-
-#: package-manager.xml:229(para)
-msgid ""
-"Look for the green icon next to the installed package name. This icon "
-"indicates that updates are available for the package in the currently "
-"selected repository. Select the package and click the <guibutton>Install/"
-"Update</guibutton> button to install the latest version of the package."
-msgstr ""
-"설치된 패키지 이름 옆에 있는 녹색 아이콘을 찾습니다. 이 아이콘은 "
-"현재 선택한 저장소에서 패키지에 대해 사용 가능한 업데이트가 "
-"있다는 것을 나타냅니다. 패키지를 선택하고 <guibutton>설치/업데이트</guibutton> "
-"버튼을 눌러 최신 패키지 버전을 설치합니다."
-
-#: package-manager.xml:232(title)
-msgid "Introduction to Boot Environments"
-msgstr "부트 환경 소개"
-
-#: package-manager.xml:233(para)
-msgid ""
-"A boot environment is an image that is bootable. Upon an initial OpenSolaris "
-"installation, a boot environment is created."
-msgstr ""
-"부트 환경은 부트 가능한 이미지입니다. 초기 OpenSolaris 설치 시 "
-"부트 환경이 만들어집니다."
-
-#: package-manager.xml:234(para)
-msgid ""
-"You can maintain multiple boot environments on your OpenSolaris 2009.06 "
-"system. Use the <command>beadm(1)</command> command from the command—line "
-"interface (CLI) to create, rename, mount or unmount, or destroy these boot "
-"environments."
-msgstr ""
-"OpenSolaris 2009.06 시스템에서 멀티 부트 환경을 유지 관리할 수 있습니다. "
-"이러한 부트 환경 만들기, 이름 바꾸기, 마운트, 마운트 해제 또는 삭제를 "
-"수행하려면 명령줄 인터페이스(Command-Line Interface, CLI)에서 "
-"<command>beadm(1)</command> 명령을 사용합니다."
-
-#: package-manager.xml:235(para)
-msgid ""
-"The Package Manager enables you to manage the boot environments created "
-"during the process of updating your image. For more information, see <xref "
-"linkend=\"manage_be\"/> section."
-msgstr ""
-"패키지 관리자를 사용하면 이미지 업데이트 프로세스 중에 만들어진 "
-"부트 환경을 관리할 수 있습니다. 자세한 내용은 <xref "
-"linkend=\"manage_be\"/> 절을 참조하십시오."
-
-#: package-manager.xml:236(para)
-msgid ""
-"System administrators can maintain multiple boot environments on their "
-"systems, and each boot environment can have different software versions "
-"installed."
-msgstr ""
-"시스템 관리자는 시스템에서 멀티 부트 환경을 유지 관리할 수 있으며, "
-"각 부트 환경에는 다양한 소프트웨어 버전이 설치될 수 "
-"있습니다."
-
-#: package-manager.xml:237(para)
-msgid ""
-"When you use either the Package Manager or the <command>pkg image-update</"
-"command> command to update all the packages in your active OpenSolaris boot "
-"environment, a clone of that boot environment is automatically created. The "
-"packages are updated in the clone rather than in the original boot "
-"environment. After successfully completing the updates, the new clone is "
-"activated. Then, the clone will become the new default boot environment on "
-"system reboot. The original boot environment is also available as an "
-"alternate selection."
-msgstr ""
-"패키지 관리자 또는 <command>pkg image-update</"
-"command> 명령을 사용하여 활성 OpenSolaris 부트 "
-"환경에서 모든 패키지를 업데이트하는 경우 해당 부트 환경의 복제본이 "
-"자동으로 만들어집니다. 패키지는 원래 부트 환경이 아닌 복제본에서 "
-"업데이트됩니다. 업데이트를 성공적으로 완료하고 나면 새 복제본이 "
-"활성화되며, 시스템 재부트 시 이 복제본이 새로운 기본 부트 환경이 "
-"됩니다. 원래 부트 환경도 대체 선택으로 "
-"사용할 수 있습니다."
-
-#: package-manager.xml:238(para)
-msgid ""
-"See the beadm(1) man pages and the <ulink url=\"http://dlc.sun.com/osol/docs/"
-"content/dev/snapupgrade/snap3.html\"><citetitle>Upgrading and Managing Boot "
-"Environments</citetitle></ulink> document to learn more about boot "
-"environments and the <command>beadm(1)</command> command."
-msgstr ""
-"부트 환경과 <command>beadm(1)</command> 명령에 대해 자세히 "
-"살펴보려면 beadm(1) 매뉴얼 페이지와 <ulink url=\"http://dlc.sun.com/osol/docs/"
-"content/dev/snapupgrade/snap3.html\"><citetitle>부트 환경 업그레이드 및 "
-"관리</citetitle></ulink> 문서를 참조하십시오."
-
-#: package-manager.xml:239(title)
-msgid "Update All Packages (Update Your Image)"
-msgstr "모든 패키지 업데이트(이미지 업데이트)"
-
-#: package-manager.xml:240(para)
-msgid "Perform the following steps to update all the packages in your image."
-msgstr "다음 단계를 수행하여 현재 이미지의 모든 패키지를 업데이트합니다."
-
-#: package-manager.xml:241(para)
-msgid ""
-"Click the <guibutton>Update All</guibutton> icon located on the toolbar to "
-"start the process of updating <emphasis role=\"strong\">all</emphasis> the "
-"packages installed in your image."
-msgstr ""
-"이미지에 설치된 <emphasis role=\"strong\">모든</emphasis> 패키지 "
-"업데이트 프로세스를 시작하려면 도구 모음에 있는 <guibutton>모두 "
-"업데이트</guibutton> 아이콘을 누릅니다."
-
-#: package-manager.xml:242(para)
-msgid ""
-"You can also choose <menuchoice><guimenu>Package</guimenu><guisubmenu>Update "
-"All</guisubmenu></menuchoice> to start the process."
-msgstr ""
-"또한 <menuchoice><guimenu>패키지</guimenu><guisubmenu>모두 "
-"업데이트</guisubmenu></menuchoice>를 선택하여 프로세스를 시작할 수 있습니다."
-
-#: package-manager.xml:243(para)
-msgid ""
-"The <guilabel>Update All</guilabel> icon is enabled when updates are "
-"available to the installed packages."
-msgstr ""
-"설치된 패키지에 대해 업데이트를 사용할 수 있으면 <guilabel>모두 업데이트</guilabel> "
-"아이콘이 활성화됩니다."
-
-#: package-manager.xml:246(para)
-msgid ""
-"A <literal>Create New Boot Environment</literal> window is displayed. A name "
-"for the new boot environment is automatically generated."
-msgstr ""
-"<literal>새 부트 환경 만들기</literal> 창이 표시됩니다. 새 부트 환경에 대한 "
-"이름이 자동으로 생성됩니다."
-
-#: package-manager.xml:248(para)
-msgid ""
-"(optional) You can change the name of the new boot environment if you want."
-msgstr ""
-"(선택 사항) 원하는 경우 새 부트 환경 이름을 변경할 수 있습니다."
-
-#: package-manager.xml:250(para)
-msgid "Confirm or Cancel the new boot environment."
-msgstr "새 부트 환경을 확인하거나 취소합니다."
-
-#: package-manager.xml:251(para)
-msgid ""
-"Click <guibutton>Proceed</guibutton> to create a new boot environment and "
-"proceed with the Update All process."
-msgstr ""
-"새 부트 환경을 만들고 모두 업데이트 프로세스를 진행하려면 <guibutton>진행"
-"</guibutton>을 누릅니다."
-
-#: package-manager.xml:253(para) package-manager.xml:481(para)
-msgid "Click <guibutton>Cancel</guibutton> to cancel the process."
-msgstr "프로세스를 취소하려면 <guibutton>취소</guibutton>를 누릅니다."
-
-#: package-manager.xml:256(para)
-msgid ""
-"During the Update All process, a clone of the active boot environment is "
-"created. This clone enables the user to boot into the boot environment state "
-"that existed before the Update All process was started. If the Package "
-"Manager is unable to create a new boot environment, an error message will be "
-"displayed. See the <xref linkend=\"gilfh\"/> section on how to rectify the "
-"error and continue with updating your image."
-msgstr ""
-"모두 업데이트 프로세스 중에 활성 부트 환경의 복제본이 "
-"만들어집니다. 사용자는 이 복제본을 사용하여 모두 업데이트 프로세스가 시작되기 "
-"전에 있었던 부트 환경 상태로 부트할 수 있습니다. 패키지 "
-"관리자를 사용하여 새 부트 환경을 만들 수 없는 경우 오류 메시지가 "
-"표시됩니다. 오류를 수정하고 이미지 업데이트 작업을 계속하는 방법에 "
-"대해서는 <xref linkend=\"gilfh\"/> 절을 참조하십시오."
-
-#: package-manager.xml:258(para)
-msgid ""
-"If you chose to proceed with the Update All process, the packages are "
-"downloaded and installed."
-msgstr ""
-"모두 업데이트 프로세스를 진행하도록 선택한 경우 패키지가 다운로드되어 "
-"설치됩니다."
-
-#: package-manager.xml:259(para)
-msgid ""
-"After a successful completion, the <literal>Update All Complete</literal> "
-"dialog box is shown. A link to the Release Notes is provided in the dialog "
-"box. Read the <xref linkend=\"release_notes\"/> before rebooting your system."
-msgstr ""
-"작업이 성공적으로 완료되면 <literal>모두 업데이트 완료</literal> 대화 상자가"
-"표시됩니다. 대화 상자에 릴리스 노트에 대한 링크가 제공됩니다. "
-"시스템을 재부트하기 전에 <xref linkend=\"release_notes\"/>를 읽어보십시오."
-
-#: package-manager.xml:261(para)
-msgid "Click <guibutton>Close</guibutton>."
-msgstr "<guibutton>닫기</guibutton>를 누릅니다."
-
-#: package-manager.xml:262(emphasis) package-manager.xml:500(para)
-msgid "You must reboot your system for the changes to take effect."
-msgstr "변경 사항을 적용하려면 시스템을 재부트해야 합니다."
-
-#: package-manager.xml:267(title) package-manager.xml:505(title)
-msgid "Update All Errors"
-msgstr "모두 업데이트 오류"
-
-#: package-manager.xml:268(para)
-msgid ""
-"A new boot environment clone must be created by the Package Manager for the "
-"Update All process to be completed. An error message is displayed if a boot "
-"environment clone cannot be created. You might see an error message such as "
-"the following :"
-msgstr ""
-"모두 업데이트 프로세스를 완료하려면 패키지 관리자에서 새 부트 환경 "
-"복제본을 만들어야 합니다. 부트 환경 복제본을 만들 수 없으면 "
-"오류 메시지가 표시됩니다. 다음과 같은 오류 메시지가 표시될 "
-"수 있습니다."
-
-#: package-manager.xml:269(para) package-manager.xml:507(para)
-msgid ""
-"<literal>Not enough disk space, the selected action cannot be performed. "
-"Click OK to manage your existing BEs and free up disk space or Cancel to "
-"cancel the action</literal>."
-msgstr ""
-"<literal>디스크 공간이 부족하기 때문에 선택한 작업을 수행할 수 없습니다. "
-"기존 BE를 관리하여 디스크 여유 공간을 확보하려면 확인을 누르고 작업을 취소하려면 "
-"취소를 누릅니다</literal>."
-
-#: package-manager.xml:270(para)
-msgid ""
-"Click <guibutton>Cancel</guibutton> to cancel the Update All process and "
-"return to the main window."
-msgstr ""
-"모두 업데이트 프로세스를 취소하고 기본 창으로 돌아가려면 "
-"<guibutton>취소</guibutton>를 누릅니다."
-
-#: package-manager.xml:271(para) package-manager.xml:509(para)
-msgid ""
-"Perform the following steps if you want to rectify the error and continue "
-"with the Update All process:"
-msgstr ""
-"오류를 수정하고 모두 업데이트 프로세스를 계속하려면 "
-"다음 단계를 수행합니다."
-
-#: package-manager.xml:272(para)
-msgid ""
-"Click <guibutton>OK</guibutton> to display the <literal>Boot Environment "
-"Management</literal> dialog box."
-msgstr ""
-"<literal>부트 환경 관리</literal> 대화 상자를 표시하려면 "
-"<guibutton>확인</guibutton>을 누릅니다."
-
-#: package-manager.xml:274(para)
-msgid "Select the boot environments that you want to delete."
-msgstr "삭제할 부트 환경을 선택합니다."
-
-#: package-manager.xml:275(para)
-msgid "You cannot delete the currently active boot environment."
-msgstr "현재 활성 상태인 부트 환경은 삭제할 수 없습니다."
-
-#: package-manager.xml:277(para)
-msgid ""
-"You do not need to reboot your system if you are only deleting some of your "
-"boot environments."
-msgstr ""
-"부트 환경 중 일부만 삭제하는 경우 시스템을 재부트할 "
-"필요가 없습니다."
-
-#: package-manager.xml:282(para)
-msgid "Click <guibutton>OK</guibutton>."
-msgstr "<guibutton>확인</guibutton>을 누릅니다."
-
-#: package-manager.xml:284(para)
-msgid ""
-"The <literal>Boot Environment Confirmation</literal> dialog is shown. Review "
-"your changes and click OK to proceed."
-msgstr ""
-"<literal>부트 환경 확인</literal> 대화 상자가 표시됩니다. 변경 사항을 검토하고 "
-"계속하려면 확인을 누릅니다."
-
-#: package-manager.xml:286(para)
-msgid ""
-"Click the <guibutton>Update All</guibutton> icon to restart the process of "
-"updating all packages."
-msgstr ""
-"<guibutton>모두 업데이트</guibutton> 아이콘을 눌러 모든 패키지 "
-"업데이트 프로세스를 다시 시작합니다."
-
-#: package-manager.xml:290(title)
-msgid "Manage Boot Environments"
-msgstr "부트 환경 관리"
-
-#: package-manager.xml:291(para)
-msgid "Perform the following steps to manage your boot environments:"
-msgstr "다음 단계를 수행하여 부트 환경을 관리합니다."
-
-#: package-manager.xml:292(para)
-msgid ""
-"Click <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot "
-"Environments</guimenuitem></menuchoice> to open the <literal>Manage Boot "
-"Environments</literal> dialog."
-msgstr ""
-"<menuchoice><guimenu>파일</guimenu><guimenuitem>부트 환경 "
-"관리</guimenuitem></menuchoice>를 눌러 <guilabel>부트 환경 "
-"관리</guilabel> 대화 상자를 엽니다."
-
-#: package-manager.xml:294(para)
-msgid "In this dialog box , you can perform the following actions:"
-msgstr "이 대화 상자에서 다음 작업을 수행할 수 있습니다."
-
-#: package-manager.xml:295(para)
-msgid ""
-"<emphasis role=\"strong\">Activate a boot environment</emphasis> – Select "
-"the boot environment that you want to be active on system reboot. This will "
-"be the default boot environment <emphasis role=\"strong\">after</emphasis> "
-"you have rebooted your system."
-msgstr ""
-"<emphasis role=\"strong\">부트 환경 활성화</emphasis> – 시스템 "
-"재부트 시 활성화할 부트 환경을 선택합니다. 시스템을 재부트한 "
-"<emphasis role=\"strong\">후</emphasis>에는 이 부트 환경이 "
-"기본 부트 환경이 됩니다."
-
-#: package-manager.xml:297(para)
-msgid ""
-"<emphasis role=\"strong\">Remove old or unused boot environments to free up "
-"disk space</emphasis> – Select the boot environments that you want to delete."
-msgstr ""
-"<emphasis role=\"strong\">이전 또는 사용되지 않는 부트 환경을 제거하여 디스크 "
-"여유 공간 확보</emphasis> – 삭제할 부트 환경을 선택합니다."
-
-#: package-manager.xml:298(para)
-msgid "You cannot the delete the currently active boot environment."
-msgstr "현재 활성 상태인 부트 환경은 삭제할 수 없습니다."
-
-#: package-manager.xml:300(para)
-msgid ""
-"If you have selected a boot environment to be renamed, it cannot be deleted."
-msgstr ""
-"이름을 바꿀 부트 환경을 선택한 경우에는 삭제할 수 없습니다."
-
-#: package-manager.xml:305(para)
-msgid ""
-"<emphasis role=\"strong\">Rename a boot environment</emphasis> – Double-"
-"click the boot environment name that you want to change. Enter the new name "
-"of the boot environment and click <guibutton>OK</guibutton>."
-msgstr ""
-"<emphasis role=\"strong\">부트 환경 이름 바꾸기</emphasis> – 변경할 "
-"부트 환경 이름을 두 번 누릅니다. 부트 환경의 새 이름을 입력한 다음 "
-"<guibutton>확인</guibutton>을 누릅니다."
-
-#: package-manager.xml:306(para)
-msgid ""
-"If you have selected a boot environment to be deleted, it cannot be renamed."
-msgstr ""
-"삭제할 부트 환경을 선택한 경우에는 이름을 바꿀 수 없습니다."
-
-#: package-manager.xml:308(para)
-msgid "The currently active boot environment cannot be renamed."
-msgstr "현재 활성 상태인 부트 환경의 이름은 바꿀 수 없습니다."
-
-#: package-manager.xml:315(para)
-msgid "Accept or decline the changes:"
-msgstr "변경 사항에 동의하거나 거부합니다."
-
-#: package-manager.xml:316(para) package-manager.xml:442(para)
-msgid "Click <guibutton>OK</guibutton> to proceed."
-msgstr "계속하려면 <guibutton>확인</guibutton>을 누릅니다."
-
-#: package-manager.xml:318(para)
-msgid ""
-"Click <guibutton>Cancel</guibutton> to cancel all changes and return to the "
-"main window."
-msgstr ""
-"모든 변경 사항을 취소하고 기본 창으로 돌아가려면 <guibutton>취소</guibutton>를 "
-"누릅니다."
-
-#: package-manager.xml:322(para)
-msgid ""
-"The <literal>Boot Environment Confirmation</literal> dialog is displayed. "
-"Review your changes and click OK to proceed."
-msgstr ""
-"<literal>부트 환경 확인</literal> 대화 상자가 표시됩니다. 변경 사항을 "
-"검토하고 계속하려면 확인을 누릅니다."
-
-#: package-manager.xml:323(para)
-msgid ""
-"After you click <guibutton>OK</guibutton>, you cannot undo any changes that "
-"you made to the boot environments."
-msgstr ""
-"<guibutton>확인</guibutton>을 누른 후에는 부트 환경에 수행한 변경 사항을 "
-"취소할 수 없습니다."
-
-#: package-manager.xml:325(para)
-msgid ""
-"The changes that you made to the <emphasis role=\"strong\">default boot "
-"environment</emphasis> setting are effective only after system reboot."
-msgstr ""
-"<emphasis role=\"strong\">기본 부트 환경</emphasis> 설정에 수행한 변경 사항은 "
-"시스템을 재부트해야 적용됩니다."
-
-#: package-manager.xml:327(para)
-msgid ""
-"Click <guibutton>Cancel</guibutton> to cancel the changes and return to the "
-"<literal>BE Management</literal> dialog box."
-msgstr ""
-"변경 사항을 취소하고 <literal>BE 관리</literal> 대화 상자로 "
-"돌아가려면 <guibutton>취소</guibutton>를 누릅니다."
-
-#: package-manager.xml:329(para)
-msgid "Reboot your system to boot into the newly activated boot environment."
-msgstr "시스템을 재부트하여 새로 활성화된 부트 환경으로 부트합니다."
-
-#: package-manager.xml:330(para)
-msgid "Reboot your system only if you changed the active boot environment."
-msgstr "활성 부트 환경을 변경한 경우에만 시스템을 재부트합니다."
-
-#: package-manager.xml:336(title)
-msgid "Managing Repositories"
-msgstr "저장소 관리"
-
-#: package-manager.xml:337(title)
-msgid "Add a Repository"
-msgstr "저장소 추가"
-
-#: package-manager.xml:338(para)
-msgid "Perform the following steps to add a repository:"
-msgstr "다음 단계를 수행하여 저장소를 추가합니다."
-
-#: package-manager.xml:339(para)
-msgid ""
-"Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Repositories</"
-"guimenuitem></menuchoice>."
-msgstr ""
-"<menuchoice><guimenu>파일</guimenu><guimenuitem>저장소 관리</"
-"guimenuitem></menuchoice>를 선택합니다."
-
-#: package-manager.xml:340(para)
-msgid ""
-"You can also choose <guilabel>Add...</guilabel> from the "
-"<literal>Repository</literal> drop-down menu in the main window of the "
-"Package Manager."
-msgstr ""
-"패키지 관리자의 기본 창에 있는 <literal>저장소</literal> 드롭다운 "
-"메뉴에서 <guilabel>추가...</guilabel>를 선택할 수도 "
-"있습니다."
-
-#: package-manager.xml:342(para)
-msgid ""
-"The <literal>Manage Repositories</literal> dialog box is displayed. Type the "
-"name and the address (URL) of the repository you want to add. Click "
-"<guibutton>Add</guibutton>."
-msgstr ""
-"<literal>저장소 관리</literal> 대화 상자가 표시됩니다. 추가할 저장소의 "
-"이름과 주소(URL)를 입력하고 <guibutton>추가</guibutton>를 "
-"누릅니다."
-
-#: package-manager.xml:346(title)
-msgid "Add a Secure Repository"
-msgstr "보안 저장소 추가"
-
-#: package-manager.xml:347(para)
-msgid ""
-"A secure repository requires a SSL key and certificate for access. Perform "
-"the following steps to add a secure repository:"
-msgstr ""
-"보안 저장소에는 액세스를 위한 SSL 키와 인증서가 필요합니다. 다음 단계를 "
-"수행하여 보안 저장소를 추가합니다."
-
-#: package-manager.xml:348(para)
-msgid ""
-"Follow the steps in <xref linkend=\"add_repo\"/> section to add a repository."
-msgstr ""
-"저장소를 추가하려면 <xref linkend=\"add_repo\"/> 절의 단계를 수행합니다."
-
-#: package-manager.xml:350(para)
-msgid ""
-"Follow the steps in the <xref linkend=\"modify_repo\"/> section to add a SSL "
-"key and certificate."
-msgstr ""
-"SSL 키와 인증서를 추가하려면 <xref linkend=\"modify_repo\"/> 절의 단계를 "
-"수행합니다."
-
-#: package-manager.xml:351(para)
-msgid "."
-msgstr "."
-
-#: package-manager.xml:355(title)
-msgid "Remove a Repository"
-msgstr "저장소 제거"
-
-#: package-manager.xml:356(para)
-msgid "Perform the following steps to remove a repository:"
-msgstr "다음 단계를 수행하여 저장소를 제거합니다."
-
-#: package-manager.xml:357(para) package-manager.xml:367(para)
-#: package-manager.xml:377(para)
-msgid ""
-"Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Repositories</"
-"guimenuitem></menuchoice> to open the <literal>Manage Repositories</literal> "
-"dialog."
-msgstr ""
-"<menuchoice><guimenu>파일</guimenu><guimenuitem>저장소 관리</"
-"guimenuitem></menuchoice>를 선택하여 <literal>저장소 관리</literal> 대화 상자를"
-"엽니다."
-
-#: package-manager.xml:359(para)
-msgid "Select a repository from the list. Click <guibutton>Remove</guibutton>."
-msgstr "목록에서 저장소를 선택합니다. <guibutton>제거</guibutton>를 누릅니다."
-
-#: package-manager.xml:360(para)
-msgid ""
-"A repository that has been set as preferred repository cannot be removed. To "
-"remove a preferred repository, set a nonpreferred repository as preferred, "
-"and then remove the repository."
-msgstr ""
-"기본 저장소로 설정된 저장소는 제거할 수 없습니다. "
-"기본 저장소를 제거하려면 기본이 아닌 저장소를 기본으로 "
-"설정한 다음 해당 저장소를 제거합니다."
-
-#: package-manager.xml:365(title)
-msgid "Set a Preferred Repository"
-msgstr "기본 저장소 설정"
-
-#: package-manager.xml:366(para)
-msgid "Perform the following steps to set a preferred repository:"
-msgstr "다음 단계를 수행하여 기본 저장소를 설정합니다."
-
-#: package-manager.xml:369(para)
-msgid ""
-"Click the radio button next to the repository that you would like to set as "
-"the preferred repository."
-msgstr ""
-"기본 저장소로 설정하려는 저장소 옆의 라디오 버튼을 "
-"누릅니다."
-
-#: package-manager.xml:371(para)
-msgid ""
-"Click <guibutton>Close</guibutton> if you are not making any other changes "
-"to the repository information."
-msgstr ""
-"저장소 정보를 변경하지 않으려면 <guibutton>닫기</guibutton>를 "
-"누릅니다."
-
-#: package-manager.xml:375(title)
-msgid "Modify a Repository"
-msgstr "저장소 수정"
-
-#: package-manager.xml:376(para)
-msgid "Perform the following steps to modify a repository:"
-msgstr "다음 단계를 수행하여 저장소를 수정합니다."
-
-#: package-manager.xml:379(para)
-msgid "Select the repository that you want to modify."
-msgstr "수정하려는 저장소를 선택합니다."
-
-#: package-manager.xml:381(para)
-msgid "Click the <guibutton>Modify</guibutton> button."
-msgstr "<guibutton>수정</guibutton> 버튼을 누릅니다."
-
-#: package-manager.xml:382(para)
-msgid ""
-"The <literal>Modify Repository</literal> dialog box is displayed. You can "
-"perform the following actions in the <literal>Modify Repository</literal> "
-"dialog box:"
-msgstr ""
-"<literal>저장소 수정</literal> 대화 상자가 표시됩니다. "
-"<literal>저장소 수정</literal> 대화 상자에서 다음 작업을 수행할 수 "
-"있습니다."
-
-#: package-manager.xml:383(para)
-msgid ""
-"<emphasis role=\"strong\">Change the URL of the repository</emphasis> – Type "
-"a valid URL for the repository."
-msgstr ""
-"<emphasis role=\"strong\">저장소의 URL 변경</emphasis> – 저장소에 대해 유효한 "
-"URL을 입력합니다."
-
-#: package-manager.xml:384(para)
-msgid ""
-"You cannot change a repository name after you have added a repository. To "
-"change the repository name, delete the existing repository with the old name "
-"and add a repository with the new name. See the <xref linkend=\"remove_repo"
-"\"/> section for steps on how to remove a repository."
-msgstr ""
-"저장소를 추가한 후에는 저장소 이름을 변경할 수 없습니다. 저장소 이름을 "
-"변경하려면 이전 이름의 기존 저장소를 삭제하고, 새로운 이름의 저장소를 "
-"추가합니다. 저장소를 제거하는 방법에 대한 단계는 <xref linkend=\"remove_repo"
-"\"/> 절을 참조하십시오."
-
-#: package-manager.xml:386(para)
-msgid ""
-"<emphasis role=\"strong\">Add a SSL Key and Certificate</emphasis> – A "
-"secure repository requires a SSL key and certificate for access."
-msgstr ""
-"<emphasis role=\"strong\">SSL 키 및 인증서 추가</emphasis> – 보안 저장소에는 "
-"액세스를 위한 SSL 키와 인증서가 필요합니다."
-
-#: package-manager.xml:387(para)
-msgid ""
-"The <emphasis role=\"strong\">Instructions</emphasis> link in the "
-"<literal>Modify Repository</literal> dialog box links to a registration site "
-"which provides instructions for downloading the SSL key and certificate"
-msgstr ""
-"<literal>저장소 수정</literal> 대화 상자에 있는 <emphasis role=\"strong\">지침</"
-"emphasis> 링크는 SSL 키 및 인증서 다운로드에 대한 지침을 "
-"제공하는 등록 사이트로 링크됩니다."
-
-#: package-manager.xml:388(para)
-msgid ""
-"In the <literal>Modify Repository</literal> dialog box, click the <emphasis "
-"role=\"strong\">Instructions</emphasis> link to download the key and "
-"certificate. Save them on your system."
-msgstr ""
-"<literal>저장소 수정</literal> 대화 상자에서 <emphasis "
-"role=\"strong\">지침</emphasis> 링크를 눌러 키와 인증서를 다운로드하고 "
-"시스템에 키와 인증서를 저장합니다."
-
-#: package-manager.xml:390(para) package-manager.xml:438(para)
-msgid ""
-"Click the <guibutton>Browse</guibutton> button to locate the SSL key on your "
-"system."
-msgstr ""
-"시스템에서 SSL 키를 찾으려면 <guibutton>찾아보기</guibutton> 버튼을 "
-"누릅니다."
-
-#: package-manager.xml:392(para) package-manager.xml:440(para)
-msgid ""
-"Click the <guibutton>Browse</guibutton> button to locate the SSL certificate "
-"on your system."
-msgstr ""
-"시스템에서 SSL 인증서를 찾으려면 <guibutton>찾아보기</guibutton> 버튼을 "
-"누릅니다."
-
-#: package-manager.xml:396(para)
-msgid ""
-"<emphasis role=\"strong\">Add a Mirror</emphasis> – If a repository has a "
-"mirror, add the repository name and URL, and then click the "
-"<guibutton>Modify</guibutton> button to add the mirror information."
-msgstr ""
-"<emphasis role=\"strong\">미러 추가</emphasis> – 저장소에 미러가 "
-"있는 경우 저장소 이름과 URL을 추가한 다음 <guibutton>수정</guibutton> "
-"버튼을 눌러 미러 정보를 추가합니다."
-
-#: package-manager.xml:400(para)
-msgid "Confirm or decline the changes."
-msgstr "변경 사항을 확인하거나 거부합니다."
-
-#: package-manager.xml:401(para)
-msgid ""
-"Click <guibutton>OK</guibutton> to save the changes and return to the "
-"<literal>Manage Repositories</literal> dialog box."
-msgstr ""
-"변경 사항을 저장하고 <literal>저장소 관리</literal> 대화 상자로 돌아가려면 "
-"<guibutton>확인</guibutton>을 누릅니다."
-
-#: package-manager.xml:403(para)
-msgid "Click <guibutton>Cancel</guibutton> to cancel your changes."
-msgstr "변경 사항을 취소하려면 <guibutton>취소</guibutton>를 누릅니다."
-
-#: package-manager.xml:410(title)
-msgid "Working With WebInstall"
-msgstr "WebInstall 작업"
-
-#: package-manager.xml:411(para)
-msgid ""
-"The OpenSolaris 2009.06 Package Manager provides support for users to add "
-"new repositories and optionally, install packages from these repositories "
-"using a simple one-click WebInstall process. A <filename>.p5i</filename> "
-"file which contains the repositories to be added and optionally, the package "
-"or packages that can be installed from these repositories, is required for "
-"the WebInstall process. The information contained in the <filename>.p5i</"
-"filename> file is read and used by the WebInstall process."
-msgstr ""
-"OpenSolaris 2009.06 패키지 관리자는 사용자가 새 저장소를 추가하고, "
-"한 번만 누르는 간단한 WebInstall 프로세스를 사용하여 이러한 저장소에서 "
-"패키지를 설치(선택 사항)할 수 있도록 지원합니다. WebInstall 프로세스에는 "
-"추가할 저장소와, 이러한 저장소에서 설치할 수 있는 패키지(선택 사항)가 "
-"들어 있는 <filename>.p5i</filename> 파일이 필요합니다. "
-"<filename>.p5i</filename> 파일에 있는 정보는 WebInstall 프로세스에서 "
-"읽고 사용합니다."
-
-#: package-manager.xml:412(title)
-msgid "How to Use WebInstall to Add Repositories and Install Packages"
-msgstr "WebInstall을 사용하여 저장소 추가 및 패키지 설치 방법"
-
-#: package-manager.xml:413(bridgehead)
-msgid "Before You Begin"
-msgstr "시작하기 전에"
-
-#: package-manager.xml:413(para)
-msgid ""
-"Locate the <filename>.p5i</filename> file which may be present on your "
-"desktop, the Start page in the Package Manager, or on a website."
-msgstr ""
-"사용자의 데스크탑, 패키지 관리자의 시작 페이지 또는 웹 사이트에 있을 수 있는 "
-"<filename>.p5i</filename> 파일을 찾습니다."
-
-#: package-manager.xml:414(para)
-msgid ""
-"Start the Package manager in WebInstall mode in one of the following ways:"
-msgstr ""
-"다음 방법 중 하나로 WebInstall 모드에서 패키지 관리자를 시작합니다."
-
-#: package-manager.xml:415(para)
-msgid ""
-"Click on a <filename>.p5i</filename> file on your desktop, and the "
-"associated application, Package Manager in WebInstall mode, will be launched."
-msgstr ""
-"사용자의 데스크탑에서 <filename>.p5i</filename> 파일을 클릭합니다. "
-"그러면 연관된 응용 프로그램인 패키지 관리자가 WebInstall 모드로 시작됩니다."
-
-#: package-manager.xml:417(para)
-msgid ""
-"Start the Package Manager from the command-line along with a path to the "
-"<filename>.p5i</filename> file. For example, type the following command at "
-"the command-line:"
-msgstr ""
-"명령줄에서 <filename>.p5i</filename> 파일에 대한 경로와 함께 "
-"패키지 관리자를 시작합니다. 예를 들어 명령줄에 다음 명령을 "
-"입력합니다."
-
-#: package-manager.xml:418(replaceable)
-msgid "path_to_pi5_file/file.p5i"
-msgstr "path_to_pi5_file/file.p5i"
-
-#: package-manager.xml:418(command)
-msgid "$ pfexec packagemanager/<placeholder-1/>"
-msgstr "$ pfexec packagemanager/<placeholder-1/>"
-
-#: package-manager.xml:420(para)
-msgid ""
-"Click on a URL location that contains a link to <filename>.p5i</filename> "
-"file. If you are using this method to start the WebInstall, the <filename>."
-"p5i</filename> file <emphasis role=\"strong\">must</emphasis> be located on "
-"a web server that has registered the new mime type. Only then, the web "
-"server can manage the <filename>.p5i</filename> automatically and start "
-"Package Manager in WebInstall mode."
-msgstr ""
-"<filename>.p5i</filename> 파일에 대한 링크가 포함되어 있는 URL 위치를 "
-"누릅니다. 이 방법을 사용하여 WebInstall을 시작하려는 경우 <filename>."
-"p5i</filename> 파일은 새로운 mime 유형을 등록한 웹 서버에 "
-"<emphasis role=\"strong\">있어야</emphasis> 합니다. 그래야만 "
-"웹 서버가 <filename>.p5i</filename>를 자동으로 관리하고 WebInstall "
-"모드로 패키지 관리자를 시작할 수 있습니다."
-
-#: package-manager.xml:421(para)
-msgid ""
-"If the <filename>.p5i</filename> is located on a web server that does not "
-"have the new mime type registered, save the <filename>.p5i</filename> file "
-"to your desktop and then click on it to launch Web Install."
-msgstr ""
-"<filename>.p5i</filename>가 새 mime 유형이 등록되지 않은 웹 서버에 "
-"있는 경우에는 <filename>.p5i</filename> 파일을 데스크탑에 저장한 다음 "
-"눌러 WebInstall을 시작합니다."
-
-#: package-manager.xml:425(para)
-msgid ""
-"The following example window that shows a list of repositories that will be "
-"added and the packages that will be installed. Review the information."
-msgstr ""
-"다음 예제 창에는 추가될 저장소와 설치될 패키지 목록이 표시됩니다. "
-"해당 정보를 검토하십시오."
-
-#: package-manager.xml:426(title)
-msgid "Package Manager WebInstaller"
-msgstr "패키지 관리자 WebInstaller"
-
-#: package-manager.xml:431(para)
-msgid "Confirm or cancel the WebInstall process."
-msgstr "WebInstall 프로세스를 확인하거나 취소합니다."
-
-#: package-manager.xml:432(para)
-msgid ""
-"Click <guibutton>Proceed</guibutton> to add the new repositories and install "
-"the packages."
-msgstr ""
-"새 저장소를 추가하고 패키지를 설치하려면 <guibutton>진행</guibutton>을 "
-"누릅니다."
-
-#: package-manager.xml:433(para)
-msgid ""
-"Click <guibutton>Cancel</guibutton> to cancel the process. The Package "
-"Manager application exits."
-msgstr ""
-"프로세스를 취소하려면 <guibutton>취소</guibutton>를 누릅니다. 패키지 관리자 "
-"응용 프로그램이 종료됩니다."
-
-#: package-manager.xml:435(para)
-msgid ""
-"(Optional) If the repositories that are to be added are secure repositories, "
-"an SSL key and certificate is required. An <literal>Add New Repositories</"
-"literal> dialog box is displayed."
-msgstr ""
-"(선택 사항) 추가할 저장소가 보안 저장소인 경우 SSL 키 및 인증서가 "
-"필요합니다. <literal>새 저장소 추가</literal> 대화 상자가 "
-"표시됩니다."
-
-#: package-manager.xml:436(para)
-msgid ""
-"Click the <emphasis role=\"strong\">Instructions</emphasis> link in the "
-"<literal>Add New Repositories</literal> dialog box to download the SSL key "
-"and certificate."
-msgstr ""
-"SSL 키 및 인증서를 다운로드하려면 <literal>새 저장소 추가</literal> "
-"대화 상자에 있는 <emphasis role=\"strong\">지침</emphasis> 링크를 "
-"누릅니다."
-
-#: package-manager.xml:445(para)
-msgid "The <literal>Adding New Repositories</literal> status bar is displayed."
-msgstr "<literal>새 저장소 추가 중</literal> 상태 표시줄이 표시됩니다."
-
-#: package-manager.xml:447(para)
-msgid ""
-"(Optional) If packages are being installed, the <literal>Install/Update</"
-"literal> dialog box is displayed. Click <guibutton>Cancel</guibutton> to "
-"cancel the package installation."
-msgstr ""
-"(선택 사항) 패키지가 설치되는 중이면 <literal>설치/업데이트</"
-"literal> 대화 상자가 표시됩니다. 패키지 설치를 취소하려면 "
-"<guibutton>취소</guibutton>를 누릅니다."
-
-#: package-manager.xml:448(para)
-msgid "The application will close when all packages are installed."
-msgstr "모든 패키지가 설치되면 응용 프로그램이 닫힙니다."
-
-#: package-manager.xml:453(title)
-msgid "Working With the Update Manager"
-msgstr "업데이트 관리자 작업"
-
-#: package-manager.xml:454(title)
-msgid "About The Update Manager"
-msgstr "업데이트 관리자 정보"
-
-#: package-manager.xml:455(para)
-msgid ""
-"The Update Manager is a separate application that starts from the desktop "
-"when updates to the installed packages are available in the repository."
-msgstr ""
-"업데이트 관리자는 설치된 패키지에 대한 업데이트가 저장소에서 사용 가능할 때 "
-"데스크탑에서 시작되는 별도의 응용 프로그램입니다."
-
-#: package-manager.xml:456(title)
-msgid "Update Manager Main Window"
-msgstr "업데이트 관리자 기본 창"
-
-#: package-manager.xml:460(para)
-msgid ""
-"You can use the Update Manager application to update the installed packages "
-"in your image."
-msgstr ""
-"업데이트 관리자 응용 프로그램을 사용하여 이미지에 있는 설치된 패키지를 "
-"업데이트할 수 있습니다."
-
-#: package-manager.xml:461(para)
-msgid ""
-"For the OpenSolaris 2009.06 release, the Update Manager updates <emphasis "
-"role=\"strong\">all</emphasis> installed packages in the image. This action "
-"is equivalent to running the <command>pkg image-update</command> command "
-"from the command-line."
-msgstr ""
-"OpenSolaris 2009.06 릴리스의 경우 업데이트 관리자는 이미지에 있는 <emphasis "
-"role=\"strong\">모든</emphasis> 설치된 패키지를 업데이트합니다. 이 작업은 "
-"명령줄에서 <command>pkg image-update</command> 명령을 실행하는 것과 "
-"같습니다."
-
-#: package-manager.xml:464(title)
-msgid "Using the Update Manager"
-msgstr "업데이트 관리자 사용"
-
-#: package-manager.xml:465(para)
-msgid ""
-"When updates are available to the installed packages, a notification icon is "
-"displayed in the notification panel on the OpenSolaris desktop."
-msgstr ""
-"설치된 패키지에 대한 업데이트를 사용할 수 있는 경우 OpenSolaris 데스크탑의 "
-"알림 패널에 알림 아이콘이 표시됩니다."
-
-#: package-manager.xml:466(para)
-msgid ""
-"You can also click <menuchoice><guimenu>System</"
-"guimenu><guisubmenu>Administration</guisubmenu><guimenuitem>Update Manager</"
-"guimenuitem></menuchoice> to manually launch the Update Manager."
-msgstr ""
-"또한 <menuchoice><guimenu>시스템</"
-"guimenu><guisubmenu>관리</guisubmenu><guimenuitem>업데이트 관리자</"
-"guimenuitem></menuchoice>를 눌러 업데이트 관리자를 수동으로 시작할 수도 있습니다."
-
-#: package-manager.xml:467(para)
-msgid ""
-"When you are notified of a software update, perform the following steps to "
-"begin the process of updating your system:"
-msgstr ""
-"소프트웨어 업데이트에 대한 알림을 받으면 다음 단계를 수행하여 시스템 "
-"업데이트 프로세스를 시작합니다."
-
-#: package-manager.xml:468(para)
-msgid ""
-"Click the notification icon on the desktop to display the <literal>Update "
-"Manager</literal> window."
-msgstr ""
-"<literal>업데이트 관리자</literal> 창을 표시하려면 데스크탑에서 알림 아이콘을"
-"누릅니다."
-
-#: package-manager.xml:470(para)
-msgid ""
-"Click the <guibutton>Update All</guibutton> button in the <literal>Update "
-"Manager</literal> window."
-msgstr ""
-"<literal>업데이트 관리자</literal> 창에서 <guibutton>모두 업데이트</guibutton> "
-"버튼을 누릅니다."
-
-#: package-manager.xml:471(para)
-msgid ""
-"Select a package and click the <guilabel>Details</guilabel> panel if you "
-"want to view more information about the package."
-msgstr ""
-"패키지에 대한 자세한 내용을 보려면 패키지를 선택하고 "
-"<guilabel>세부 정보</guilabel> 패널을 누릅니다."
-
-#: package-manager.xml:474(para)
-msgid ""
-"The <literal>Update All</literal> dialog box is displayed. Proceed with the "
-"Update All process or cancel the action."
-msgstr ""
-"<literal>모두 업데이트</literal> 대화 상자가 표시됩니다. 모두 업데이트 "
-"프로세스를 계속하거나 작업을 취소합니다."
-
-#: package-manager.xml:475(para)
-msgid ""
-"Click <guibutton>Proceed</guibutton> to create a new boot environment and "
-"update all packages in the current image."
-msgstr ""
-"새 부트 환경을 만들고 현재 이미지에서 모든 패키지를 업데이트하려면 "
-"<guibutton>진행</guibutton>을 누릅니다."
-
-#: package-manager.xml:476(para)
-msgid ""
-"During the Update All process, a clone of the active boot environment is "
-"created. This clone enables the user to boot into the boot environment state "
-"that existed before the Update All process was started."
-msgstr ""
-"모두 업데이트 프로세스 중에 활성 부트 환경의 복제본이 "
-"만들어집니다. 사용자는 이 복제본을 사용하여 모두 업데이트 프로세스 시작 "
-"이전에 있었던 부트 환경 상태로 부트할 수 있습니다."
-
-#: package-manager.xml:477(para)
-msgid ""
-"If the Package Manager is unable to create a new boot environment, an error "
-"message will be displayed. See the <xref linkend=\"gileh\"/> section on how "
-"to rectify the error and continue with updating your image."
-msgstr ""
-"패키지 관리자를 사용하여 새 부트 환경을 만들 수 없는 경우 오류 "
-"메시지가 표시됩니다. 오류를 수정하고 이미지 업데이트 작업을 계속하는 방법에 "
-"대해서는 <xref linkend=\"gileh\"/> 절을 참조하십시오."
-
-#: package-manager.xml:478(para)
-msgid ""
-"A name for the new boot environment is automatically generated. You can "
-"accept the name generated by the system, or provide your own name for the "
-"boot environment."
-msgstr ""
-"새 부트 환경에 대한 이름이 자동으로 생성됩니다. 시스템에서 생성한 "
-"이름을 적용하거나, 부트 환경에 대해 사용자 고유의 이름을 제공할 수 "
-"있습니다."
-
-#: package-manager.xml:485(para)
-msgid ""
-"If you chose to proceed, the <literal>Installing Updates</literal> windows "
-"are displayed. The package installation process consists of four stages:"
-msgstr ""
-"계속하도록 선택한 경우 <literal>업데이트를 설치하는 중</literal> 창이 "
-"표시됩니다. 패키지 설치 프로세스는 4단계로 구성됩니다."
-
-#: package-manager.xml:486(para)
-msgid "Prepare"
-msgstr "준비"
-
-#: package-manager.xml:488(para)
-msgid "Download."
-msgstr "다운로드"
-
-#: package-manager.xml:490(para)
-msgid "Install."
-msgstr "설치"
-
-#: package-manager.xml:493(para)
-msgid ""
-"You can choose to cancel the process only during the <emphasis role=\"strong"
-"\">Prepare</emphasis> and <emphasis role=\"strong\">Download</emphasis> "
-"stages. Click the <guibutton>Cancel</guibutton> button to cancel the "
-"installation process. No changes are made and you are returned to the main "
-"window of the Update Manager."
-msgstr ""
-"<emphasis role=\"strong\">준비</emphasis> 및 <emphasis role=\"strong"
-"\">다운로드</emphasis> 단계 중에만 프로세스를 취소하도록 선택할 수 "
-"있습니다. 설치 프로세스를 취소하려면 <guibutton>취소</guibutton> 버튼을 "
-"누릅니다. 아무 것도 변경되지 않고 업데이트 관리자의 기본 창으로 "
-"돌아갑니다."
-
-#: package-manager.xml:494(para)
-msgid ""
-"If an error occurs during any of the stages, the <guilabel>Details</"
-"guilabel> panel is expanded and the details of the error are displayed. An "
-"error status indicator is shown next to the failed stage."
-msgstr ""
-"단계 중에 오류가 발생하면 <guilabel>세부 정보</"
-"guilabel> 패널이 확장되고 오류의 세부 정보가 표시됩니다. "
-"실패한 단계 옆에 오류 상태 표시기가 나타납니다."
-
-#: package-manager.xml:497(para)
-msgid ""
-"Click the <guilabel>Details</guilabel> panel to view more information about "
-"each of the installation processes."
-msgstr ""
-"<guilabel>세부 정보</guilabel> 패널을 눌러 각 설치 프로세스에 대한 "
-"자세한 내용을 봅니다."
-
-#: package-manager.xml:499(para)
-msgid ""
-"Read the <xref linkend=\"release_notes\"/> before rebooting your system."
-msgstr ""
-"시스템을 재부트하기 전에 <xref linkend=\"release_notes\"/>를 읽어 보십시오."
-
-#: package-manager.xml:506(para)
-msgid ""
-"A new boot environment clone <emphasis role=\"strong\">must</emphasis> be "
-"created for the Update All process to be completed. The following error "
-"message is displayed if a boot environment clone cannot be created due to "
-"space restrictions :"
-msgstr ""
-"모두 업데이트 프로세스를 완료하려면 새 부트 환경 복제본을 "
-"<emphasis role=\"strong\">만들어야</emphasis> 합니다. 공간 "
-"제한으로 인해 부트 환경 복제본을 만들 수 없으면 다음과 같은 오류 메시지가 "
-"표시됩니다."
-
-#: package-manager.xml:508(para)
-msgid ""
-"Click <guibutton>No</guibutton> to cancel the Update All process and return "
-"to the Update Manager main window."
-msgstr ""
-"모두 업데이트 프로세스를 취소하고 업데이트 관리자 기본 창으로 "
-"돌아가려면 <guibutton>아니오</guibutton>를 누릅니다."
-
-#: package-manager.xml:510(para)
-msgid ""
-"Click <guibutton>Yes</guibutton> in the error dialog box to go to the "
-"<literal>Boot Environment Management</literal> dialog."
-msgstr ""
-"오류 대화 상자에서 <guibutton>예</guibutton>를 눌러 "
-"<literal>부트 환경 관리</literal> 대화 상자로 이동합니다."
-
-#: package-manager.xml:512(para)
-msgid ""
-"Go to step 2 in the <xref linkend=\"gilfh\"/> section. Follow the "
-"instructions to delete old or unused boot environments and free up disk "
-"space."
-msgstr ""
-"<xref linkend=\"gilfh\"/> 절에서 2단계로 이동합니다. 지침에 따라 "
-"이전 또는 사용되지 않는 부트 환경을 삭제하여 디스크 여유 공간을 "
-"확보합니다."
-
-#: package-manager.xml:514(para)
-msgid ""
-"Click the <guibutton>Update All</guibutton> button in the <literal>Update "
-"Manager</literal> window to restart the process of updating all packages."
-msgstr ""
-"<literal>업데이트 관리자</literal> 창의 <guibutton>모두 업데이트</guibutton> 버튼을 눌러 "
-"모든 패키지 업데이트 프로세스를 다시 시작합니다."
-
-#: package-manager.xml:519(title) package-manager.xml:523(ulink)
-msgid "Release Notes"
-msgstr "릴리스 노트"
-
-#: package-manager.xml:520(para)
-msgid ""
-"The OpenSolaris 2009.06 Release Notes are available at the following "
-"locations:"
-msgstr ""
-"OpenSolaris 2009.06 릴리스 노트는 다음 위치에서 찾아볼 수 "
-"있습니다."
-
-#: package-manager.xml:521(para)
-msgid ""
-"x86 <ulink url=\"http://opensolaris.org/os/project/indiana/resources/"
-"relnotes/200811/x86/\">Release Notes</ulink>"
-msgstr ""
-"x86 <ulink url=\"http://opensolaris.org/os/project/indiana/resources/"
-"relnotes/200811/x86/\">릴리스 노트</ulink>"
-
-#: package-manager.xml:523(trademark)
-msgid "SPARC"
-msgstr "SPARC"
-
-#: package-manager.xml:527(title)
-msgid "Package Manager Screencast"
-msgstr "패키지 관리자 스크린캐스트"
-
-#: package-manager.xml:528(para)
-msgid ""
-"A screencast that shows Package Manager usage for beginners is available. "
-"Click the link below to go to the screencast."
-msgstr ""
-"초보자를 위한 패키지 관리자 사용법을 보여 주는 스크린캐스트를 사용할 수 있습니다. "
-"스크린캐스트로 이동하려면 아래의 링크를 클릭합니다."
-
-#: package-manager.xml:529(ulink)
-msgid "OpenSolaris 2009.06 Package Manager Screencast"
-msgstr "OpenSolaris 2009.06 패키지 관리자 스크린캐스트"
-
-#: package-manager.xml:532(title)
-msgid "Image Packaging System Glossary"
-msgstr "이미지 패키징 시스템 용어"
-
-#: package-manager.xml:533(glossterm)
-msgid "publisher"
-msgstr "출판사"
-
-#: package-manager.xml:534(para)
-msgid ""
-"A person, group, or corporation that designs, creates, and publishes a "
-"package to a repository. The repository in turn serves the packages from the "
-"(default) publisher, for downloading purposes. The developer-quality "
-"packages managed by Sun and made available through <ulink url=\"http://pkg."
-"opensolaris.com/dev\">http://pkg.opensolaris.com/dev</ulink> is an example "
-"of a publisher."
-msgstr ""
-"패키지를 설계하고, 만들고, 저장소에 게시한 사람, 그룹 또는 회사입니다. "
-"저장소는 다운로드를 목적으로 (기본) 출판사로부터 패키지를 차례로 "
-"제공받습니다. Sun에서 관리하고, <ulink url=\"http://pkg."
-"opensolaris.com/dev\">http://pkg.opensolaris.com/dev</ulink>를 "
-"통해 사용할 수 있는 개발자 품질의 패키지가 출판사의 "
-"예입니다."
-
-#: package-manager.xml:535(para)
-msgid ""
-"The term <emphasis role=\"strong\">authority</emphasis> has been replaced "
-"with the term <emphasis role=\"strong\">publisher</emphasis> from the "
-"OpenSolaris 2009.06 release onwards."
-msgstr ""
-"용어 <emphasis role=\"strong\">인증 기관</emphasis>이 OpenSolaris 2009.06 "
-"릴리스 이후부터 용어 <emphasis role=\"strong\">출판사</emphasis>로 "
-"대체되었습니다."
-
-#: package-manager.xml:538(glossterm)
-msgid "boot environment"
-msgstr "부트 환경"
-
-#: package-manager.xml:539(para)
-msgid ""
-"For an OpenSolaris release, a boot environment is an instance of a bootable "
-"OpenSolaris environment. The root file system and all other file systems of "
-"the boot environment that contain system software are required to be ZFS "
-"datasets."
-msgstr ""
-"OpenSolaris 릴리스의 경우 부트 환경이 부트 가능한 OpenSolaris 환경의 "
-"인스턴스입니다. 루트 파일 시스템과 시스템 소프트웨어가 포함되어 "
-"있는 부트 환경의 기타 모든 파일 시스템이 ZFS 데이터 세트여야 "
-"합니다."
-
-#: package-manager.xml:540(para)
-msgid ""
-"The active boot environment is the one that is currently booted. Many boot "
-"environments can present on an OpenSolaris system and an inactive boot "
-"environment can be in a state of waiting for activation upon system reboot."
-msgstr ""
-"활성 부트 환경은 현재 부트된 부트 환경입니다. OpenSolaris 시스템에는 "
-"여러 부트 환경이 있을 수 있으며 비활성 부트 환경은 시스템 재부트 시 "
-"활성화를 위해 대기 중인 상태일 수 있습니다."
-
-#: package-manager.xml:543(glossterm)
-msgid "clone"
-msgstr "복제본"
-
-#: package-manager.xml:544(para)
-msgid "An exact copy."
-msgstr "정확히 일치하는 복사본입니다."
-
-#: package-manager.xml:545(para)
-msgid ""
-"A clone could be an exact copy of an operating system, a file system, or a "
-"volume. This copy has 100% compatibility with the original."
-msgstr ""
-"복제본은 운영 체제, 파일 시스템 또는 볼륨과 정확히 일치하는 복사본일 "
-"수 있습니다. 이 복사본은 원본과 100% 호환됩니다."
-
-#: package-manager.xml:548(glossterm)
-msgid "dataset"
-msgstr "데이터 세트"
-
-#: package-manager.xml:549(para)
-msgid ""
-"A generic name for the following ZFS entities: clones, file systems, "
-"snapshots, or volumes. Each dataset is identified by a unique name in the "
-"ZFS namespace."
-msgstr ""
-"복제본, 파일 시스템, 스냅샷, 볼륨 등의 ZFS 엔티티에 대한 "
-"일반 이름입니다. 각 데이터 세트는 ZFS 이름 공간에서 "
-"고유 이름으로 식별됩니다."
-
-#: package-manager.xml:552(glossterm)
-msgid "image"
-msgstr "이미지"
-
-#: package-manager.xml:553(para)
-msgid ""
-"A collection of software in a package that comprises an entire or partial "
-"operating system. The package is suitable for installation."
-msgstr ""
-"전체 또는 부분 운영 체제를 구성하며 패키지로 제공되는 소프트웨어의 모임입니다. "
-"패키지는 설치에 적합합니다."
-
-#: package-manager.xml:554(para)
-msgid ""
-"An image is a location on your system where packages and their associated "
-"files, directories, links, and dependencies can be installed."
-msgstr ""
-"이미지는 패키지, 패키지와 연관된 파일, 디렉토리, 링크 및 종속성을 "
-"설치할 수 있는 시스템의 위치입니다."
-
-#: package-manager.xml:557(glossterm)
-msgid "package"
-msgstr "패키지"
-
-#: package-manager.xml:558(para)
-msgid ""
-"A collection of files, directories, links, drivers, and dependencies in a "
-"defined format."
-msgstr ""
-"파일, 디렉토리, 링크, 드라이버 및 종속성의 모음으로서 "
-"정의된 형식을 따릅니다."
-
-#: package-manager.xml:561(glossterm)
-msgid "preferred repository"
-msgstr "기본 저장소"
-
-#: package-manager.xml:562(para)
-msgid ""
-"A default repository that is the source for packages. If a user does not "
-"explicitly specify a repository when installing and updating packages, the "
-"preferred repository is chosen as the source for packages."
-msgstr ""
-"패키지의 소스인 기본 저장소입니다. 사용자가 패키지를 "
-"설치하고 업데이트할 때 저장소를 명시적으로 지정하지 않을 경우 "
-"패키지의 소스로 기본 저장소가 선택됩니다."
-
-#: package-manager.xml:565(glossterm)
-msgid "repository"
-msgstr "저장소"
-
-#: package-manager.xml:566(para)
-msgid ""
-"A location where packages are available for downloading. A publisher can "
-"publish packages to many repositories."
-msgstr ""
-"다운로드할 수 있는 패키지의 위치입니다. 출판사는 패키지를 "
-"여러 저장소에 게시할 수 있습니다."
-
-#. Put one translator per line, in the form of NAME <EMAIL>, YEAR1, YEAR2.
-#: package-manager.xml:0(None)
-msgid "translator-credits"
-msgstr "Sun Microsystems"
-
-#: package-manager.xml:209(para)
-msgid ""
-"Note the following important considerations when using the multi-repository "
-"search."
-msgstr ""
-"다중 저장소 검색 사용 시 다음과 같은 중요한 사항을 고려해야 "
-"합니다."
-
-#: package-manager.xml:210(para)
-msgid ""
-"The multi-repository search currently supports a search based on the package "
-"contents including its description, classification, and the files contained "
-"within the package. However, the correct results are displayed only if the "
-"term used for searching is an <emphasis role=\"strong\">exact</emphasis> "
-"match."
-msgstr ""
-"다중 저장소 검색은 현재 설명, 분류 및 패키지 내에 포함된 파일을 "
-"비롯한 패키지 내용을 기반으로 검색을 지원합니다. "
-"그러나 검색에 사용된 용어가 <emphasis role=\"strong\">정확히"
-"</emphasis> 일치하는 경우에만 결과가 올바르게 "
-"표시됩니다."
-
-#: package-manager.xml:212(para)
-msgid ""
-"<emphasis role=\"strong\">The multi-repository search does not search the "
-"package name</emphasis>."
-msgstr ""
-"<emphasis role=\"strong\">다중 저장소 검색은 패키지 이름을 "
-"검색하지 않습니다</emphasis>."
-
-#: package-manager.xml:214(para)
-msgid ""
-"Wild card searching is supported by using the asterisk wild card, "
-"<literal>*</literal>, in the search term. Search using the wild card can be "
-"slower than an exact match search."
-msgstr ""
-"와일드카드 검색은 검색 용어에서 별표 와일드카드(<literal>*</literal>)를 "
-"사용하여 지원됩니다. 와일드카드를 사용한 검색은 정확히 일치하는 검색 "
-"속도보다 느릴 수 있습니다."
-
-#: package-manager.xml:218(para)
-msgid ""
-"Type a description of the package in the box. For example, the "
-"<filename>SUNWdiveintopython</filename> package is a book on Python "
-"programming. The description of the package contains the string "
-"<emphasis>book</emphasis>. To search for this package, you might then type "
-"one of the following terms:"
-msgstr ""
-"상자에 패키지 설명을 입력합니다. 예를 들어 <filename>"
-"SUNWdiveintopython</filename> 패키지는 Python 프로그래밍에 대한 책입니다. "
-"이 패키지에 대한 설명에는 문자열 <emphasis>book</emphasis>이 "
-"포함되어 있습니다. 이 패키지를 검색하려면 다음 용어 중 하나를 입력할 수 "
-"있습니다."
-
-#: package-manager.xml:224(para)
-msgid ""
-"If you searched for the term <emphasis>diveinto</emphasis> in the multi-"
-"repository search, the <filename>SUNWdiveintopython</filename> package will "
-"not be displayed as the term <emphasis>diveinto</emphasis> is not present as "
-"an independent, complete word in the package contents. However you will find "
-"the package using the <literal>*</literal> wild card. Hence, searching for "
-"the term <literal>diveinto*</literal> will display the "
-"<filename>SUNWdiveintopython</filename> package."
-msgstr ""
-"다중 저장소 검색에서 <emphasis>diveinto</emphasis> 용어에 대해 검색했으면 "
-"<filename>SUNWdiveintopython</filename> 패키지는 표시되지 않습니다. "
-"<emphasis>diveinto</emphasis> 용어가 패키지 내용에 완전한 개별적인 단어로 "
-"없기 때문입니다. 그러나 <literal>*</literal> 와일드카드를 사용하면 패키지를 "
-"찾을 수 있습니다. 따라서 <literal>diveinto*</literal> 용어를 검색하면 "
-"<filename>SUNWdiveintopython</filename> 패키지가 "
-" 표시됩니다."

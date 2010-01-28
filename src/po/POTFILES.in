@@ -45,6 +45,7 @@ modules/publish/dependencies.py
 modules/publish/transaction.py
 modules/query_parser.py
 modules/search_errors.py
+modules/server/api_errors.py
 modules/server/catalog.py
 modules/server/depot.py
 modules/server/repository.py

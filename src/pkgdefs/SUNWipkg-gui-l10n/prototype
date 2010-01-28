@@ -19,6 +19,8 @@ d none usr/share/gnome/help/package-manager/fr 755 root bin
 f none usr/share/gnome/help/package-manager/fr/package-manager.xml 444 root bin
 d none usr/share/gnome/help/package-manager/hu 755 root bin
 f none usr/share/gnome/help/package-manager/hu/package-manager.xml 444 root bin
+d none usr/share/gnome/help/package-manager/id 755 root bin
+f none usr/share/gnome/help/package-manager/id/package-manager.xml 444 root bin
 d none usr/share/gnome/help/package-manager/it 755 root bin
 f none usr/share/gnome/help/package-manager/it/package-manager.xml 444 root bin
 d none usr/share/gnome/help/package-manager/ja 755 root bin
@@ -64,6 +66,9 @@ f none usr/share/locale/he/LC_MESSAGES/pkg.mo 444 root other
 d none usr/share/locale/hu 755 root other
 d none usr/share/locale/hu/LC_MESSAGES 755 root other
 f none usr/share/locale/hu/LC_MESSAGES/pkg.mo 444 root other
+d none usr/share/locale/id 755 root other
+d none usr/share/locale/id/LC_MESSAGES 755 root other
+f none usr/share/locale/id/LC_MESSAGES/pkg.mo 444 root other
 d none usr/share/locale/it 755 root other
 d none usr/share/locale/it/LC_MESSAGES 755 root other
 f none usr/share/locale/it/LC_MESSAGES/pkg.mo 444 root other
@@ -100,6 +105,8 @@ f none usr/share/locale/zh_TW/LC_MESSAGES/pkg.mo 444 root other
 d none usr/share/package-manager 755 root bin
 d none usr/share/package-manager/data 755 root bin
 d none usr/share/package-manager/data/startpagebase 755 root bin
+d none usr/share/package-manager/data/startpagebase/ar 755 root bin
+f none usr/share/package-manager/data/startpagebase/ar/startpage.html 444 root bin
 d none usr/share/package-manager/data/startpagebase/ca 755 root bin
 f none usr/share/package-manager/data/startpagebase/ca/startpage.html 444 root bin
 d none usr/share/package-manager/data/startpagebase/cs 755 root bin

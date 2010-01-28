@@ -19,71 +19,1568 @@
 # CDDL HEADER END
 #
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2009-04-14 18:29+0900\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+       "Project-Id-Version: PACKAGE VERSION\n"
+       "POT-Creation-Date: 2010-01-14 11:47+0900\n"
+       "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+       "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+       "Language-Team: LANGUAGE <LL@li.org>\n"
+       "MIME-Version: 1.0\n"
+       "Content-Type: text/plain; charset=UTF-8\n"
+       "Content-Transfer-Encoding: 8bit\n"
 
 #. When image changes, this message will be marked fuzzy or untranslated for you.
 #. It doesn't matter what you translate it to: it's not used at all.
-#: package-manager.xml:66(None)
-msgid "@@image: 'figures/pm_store.png'; md5=89037626f84480186677a61680dccc2c"
-msgstr "@@image: 'figures/pm_store.png'; md5=89037626f84480186677a61680dccc2c"
+#: package-manager.xml.in.nolegal:38(None) package-manager.xml.in.nolegal:88(None) 
+msgid "@@image: 'figures/pkgmgr-main.png'; md5=e2194180dd5eca2d8e3912fee614e061"
+msgstr "@@image: 'figures/pkgmgr-main.png'; md5=e2194180dd5eca2d8e3912fee614e061"
 
 #. When image changes, this message will be marked fuzzy or untranslated for you.
 #. It doesn't matter what you translate it to: it's not used at all.
-#: package-manager.xml:86(None)
-msgid "@@image: 'figures/pm_pkglist.png'; md5=b9a51d97ff1069102eb7ede47adb6a37"
-msgstr "@@image: 'figures/pm_pkglist.png'; md5=b9a51d97ff1069102eb7ede47adb6a37"
+#: package-manager.xml.in.nolegal:68(None) 
+msgid "@@image: 'figures/startpage_new.png'; md5=9f8516015a79fd2b5c456128482affe4"
+msgstr "@@image: 'figures/startpage_new.png'; md5=9f8516015a79fd2b5c456128482affe4"
 
 #. When image changes, this message will be marked fuzzy or untranslated for you.
 #. It doesn't matter what you translate it to: it's not used at all.
-#: package-manager.xml:427(None)
-msgid "@@image: 'figures/wi_start.png'; md5=3b2ad7761ad183fdfea6081f29893798"
-msgstr "@@image: 'figures/wi_start.png'; md5=3b2ad7761ad183fdfea6081f29893798"
+#: package-manager.xml.in.nolegal:583(None) 
+msgid "@@image: 'figures/webinstall.png'; md5=79f40b964b51261cd0164f64991b576c"
+msgstr "@@image: 'figures/webinstall.png'; md5=79f40b964b51261cd0164f64991b576c"
 
 #. When image changes, this message will be marked fuzzy or untranslated for you.
 #. It doesn't matter what you translate it to: it's not used at all.
-#: package-manager.xml:457(None)
-msgid "@@image: 'figures/update_all.png'; md5=af873a11d59466bf46c49bd3d3a227af"
-msgstr "@@image: 'figures/update_all.png'; md5=af873a11d59466bf46c49bd3d3a227af"
+#: package-manager.xml.in.nolegal:609(None) 
+msgid "@@image: 'figures/update_all_new.png'; md5=3d505052632edfdb38212de7f7ffb22c"
+msgstr "@@image: 'figures/update_all_new.png'; md5=3d505052632edfdb38212de7f7ffb22c"
 
-#: package-manager.xml:3(title)
-msgid "OpenSolaris 2009.06 Package Manager Online Help"
-msgstr "OpenSolaris 2009.06 软件包管理器联机帮助"
+#: package-manager.xml.in.nolegal:3(title) 
+msgid "OpenSolaris 2010.03 Package Manager Online Help"
+msgstr "OpenSolaris 2010.03 软件包管理器联机帮助"
 
-#: package-manager.xml:4(firstname)
+#: package-manager.xml.in.nolegal:4(firstname) 
 msgid "OpenSolaris"
 msgstr "OpenSolaris"
 
-#: package-manager.xml:5(surname)
+#: package-manager.xml.in.nolegal:5(surname) 
 msgid "Publications"
 msgstr "出版物"
 
-#: package-manager.xml:8(pubsnumber)
+#: package-manager.xml.in.nolegal:8(pubsnumber) 
 msgid "822-7173"
 msgstr "822-7173"
 
-#: package-manager.xml:10(pubdate)
+#: package-manager.xml.in.nolegal:10(pubdate) 
 msgid "June 2009"
 msgstr "2009 年 6 月"
 
-#: package-manager.xml:11(publishername)
+#: package-manager.xml.in.nolegal:11(publishername) 
 msgid "Sun Microsystems"
 msgstr "Sun Microsystems"
 
-#: package-manager.xml:13(year)
+#: package-manager.xml.in.nolegal:13(year) 
 msgid "2009"
 msgstr "2009"
+
+#: package-manager.xml.in.nolegal:33(title) 
+msgid "About the Package Manager"
+msgstr "关于软件包管理器"
+
+#: package-manager.xml.in.nolegal:34(para) 
+msgid "Welcome to the <trademark>OpenSolaris</trademark> 2010.03 Package Manager online help!"
+msgstr "欢迎使用 <trademark>OpenSolaris</trademark> 2010.03 软件包管理器联机帮助！"
+
+#: package-manager.xml.in.nolegal:35(para) 
+msgid "Use the help contents to learn how to use the Package Manager. Navigate through this help by clicking the topics displayed in the sidebar."
+msgstr "使用帮助内容可学习如何使用软件包管理器。可通过单击侧栏中显示的主题来浏览此帮助。"
+
+#: package-manager.xml.in.nolegal:36(para) 
+msgid "The OpenSolaris 2010.03 Package Manager application is a graphical user interface for the Image Packaging System (IPS) software. The Package Manager provides a subset of the functionality offered by the command-line (CLI) clients provided with IPS."
+msgstr "OpenSolaris 2010.03 软件包管理器应用程序是映像包管理系统 (Image Packaging System, IPS) 软件的图形用户界面。软件包管理器提供了 IPS 随附的命令行 (CLI) 客户机所提供的功能的子集。"
+
+#: package-manager.xml.in.nolegal:37(title) 
+msgid "Package Manager"
+msgstr "软件包管理器"
+
+#: package-manager.xml.in.nolegal:41(para) 
+msgid "The Package Manager enables you to perform the following tasks:"
+msgstr "使用软件包管理器，您可以执行以下任务："
+
+#: package-manager.xml.in.nolegal:42(para) 
+msgid "Install, remove, and search for packages"
+msgstr "安装、删除和搜索软件包"
+
+#: package-manager.xml.in.nolegal:44(para) 
+msgid "Update your system"
+msgstr "更新系统"
+
+#: package-manager.xml.in.nolegal:46(para) 
+msgid "Add and manage publishers"
+msgstr "添加和管理出版者"
+
+#: package-manager.xml.in.nolegal:48(para) 
+msgid "Create, remove, and manage boot environments"
+msgstr "创建、删除和管理引导环境"
+
+#: package-manager.xml.in.nolegal:51(para) 
+msgid "See the <xref linkend=\"glossary\"/> for a definition of the terms used in this document."
+msgstr ""
+       "有关本文档中所使用术语的定义，请参见"
+       "<xref linkend=\"glossary\"/>。"
+
+#: package-manager.xml.in.nolegal:53(title) 
+msgid "About Image Packaging System"
+msgstr "关于映像包管理系统"
+
+#: package-manager.xml.in.nolegal:54(para) 
+msgid "Image Packaging System (IPS) is a framework which provides for software lifecycle management including installation, upgrade, and removal. The OpenSolaris 2010.03 release uses IPS as its packaging system."
+msgstr "映像包管理系统 (Image Packaging System, IPS) 是一个针对软件生命周期管理（包括安装、升级和删除）提供的框架。OpenSolaris 2010.03 发行版使用 IPS 作为其包管理系统。"
+
+#: package-manager.xml.in.nolegal:55(para) 
+msgid "After an initial installation of the OpenSolaris 2010.03 operating system, you will find that some of the software applications that you use on a regular basis are not immediately available to you. These software applications are available as packages in a repository for downloading and installing over the network. A repository is a source for packages."
+msgstr "初始安装·OpenSolaris·2010.03·操作系统后，您将发现定期使用的某些软件应用程序并不能立即使用。这些软件应用程序会作为系统信息库中的软件包提供，可以通过网络进行下载和安装。系统信息库是软件包的源。"
+
+#: package-manager.xml.in.nolegal:56(para) 
+msgid "IPS provides a set of software tools that can be used to install packages from a repository, create and publish their own IPS packages, mirror an existing repository, and publish existing packages to a repository."
+msgstr "IPS 提供了一组软件工具，可用于从系统信息库安装软件包、创建和发布自己的 IPS 软件包、镜像现有系统信息库并将现有软件包发布到系统信息库。"
+
+#: package-manager.xml.in.nolegal:57(para) 
+msgid "Once you have installed packages, IPS enables you to search, update, and manage packages on your system."
+msgstr ""
+       "安装软件包之后，您可以使用 IPS 来搜索、更新和"
+       "管理系统中的软件包。"
+
+#: package-manager.xml.in.nolegal:58(para) 
+msgid "With IPS , you can upgrade your system to a newer build of OpenSolaris, install and update your software to the latest available versions in a repository, and retrieve packages from mirror repositories."
+msgstr ""
+       "使用 IPS，您可以将系统升级至 OpenSolaris 的较新内部版本，"
+       "安装系统信息库中的软件并将其更新至系统信息库中的最新可用"
+       "版本，还可以从镜像系统信息库中检索软件包。"
+
+#: package-manager.xml.in.nolegal:59(emphasis) 
+msgid "The Package Manager provides a subset of the tasks that can be performed from the command-line."
+msgstr ""
+       "软件包管理器提供了可通过命令行执行的"
+       "任务子集。"
+
+#: package-manager.xml.in.nolegal:61(para) 
+msgid "For the OpenSolaris 2010.03 release, if the system on which IPS is installed is on the network, IPS can automatically retrieve packages provided by the OpenSolaris publisher from the package repository located at <ulink url=\"http://pkg.opensolaris.org\"/>."
+msgstr "对于 OpenSolaris 2010.03 发行版，如果安装了 IPS 的系统位于网络上，则 IPS 可以自动从位于 <ulink url=\"http://pkg.opensolaris.org\"/> 的软件包系统信息库中检索 OpenSolaris 出版者提供的软件包。"
+
+#: package-manager.xml.in.nolegal:62(para) 
+msgid "For more IPS documentation, see the <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"><citetitle>Image Packaging System Guide</citetitle></ulink> and the <filename>pkg</filename><ulink url=\"http://opensolaris.org/sc/src/pkg/gate/src/man/\">man pages</ulink>."
+msgstr "有关更多 IPS 文档，请参见<ulink url=\"http://docs.sun.com/source/820-7679/index.html\"><citetitle>映像包管理系统指南</citetitle></ulink>和 <filename>pkg </filename><ulink url=\"http://opensolaris.org/sc/src/pkg/gate/src/man/\">手册页</ulink>。"
+
+#: package-manager.xml.in.nolegal:63(para) 
+msgid "For more information about IPS, visit the <ulink url=\"http://opensolaris.org/os/project/pkg\">project page</ulink>."
+msgstr "有关 IPS 的更多信息，请访问<ulink url=\"http://opensolaris.org/os/project/pkg\">项目页面</ulink>。"
+
+#: package-manager.xml.in.nolegal:65(title) 
+msgid "Getting Started With Package Manager"
+msgstr "软件包管理器入门"
+
+#: package-manager.xml.in.nolegal:66(para) 
+msgid "When you start the Package Manager, a Start Page similar to the example below is displayed:"
+msgstr "启动软件包管理器后，会显示类似于以下示例的起始页面："
+
+#: package-manager.xml.in.nolegal:67(title) 
+msgid "Package Manager Start Page"
+msgstr "软件包管理器起始页面"
+
+#: package-manager.xml.in.nolegal:71(para) 
+msgid "The Start Page provides a list of featured packages that can be installed. It includes a list of some of the most popular and recent packages downloaded by the OpenSolaris community of users. The Recommended list of packages point to software applications that are frequently downloaded by the OpenSolaris user. Click the package links to install the packages."
+msgstr "起始页面提供了可以安装的功能软件包的列表，其中包含 OpenSolaris 社区用户下载的一些最流行和最新的软件包的列表。推荐的软件包列表指向 OpenSolaris 用户经常下载的软件应用程序。单击这些软件包链接即可安装这些软件包。"
+
+#: package-manager.xml.in.nolegal:72(para) 
+msgid "The Start Page also provides links to more information about the OpenSolaris project, subscribe to newsletters and join the OpenSolaris community."
+msgstr "起始页面还提供了其他链接，通过这些链接，可以获取有关 OpenSolaris 项目的更多信息、订阅新闻简报并加入 OpenSolaris 社区。"
+
+#: package-manager.xml.in.nolegal:73(para) 
+msgid "To close the Start Page and see the list of packages in the selected publisher, perform any of the following actions in the main window of the Package Manager:"
+msgstr "要关闭起始页面并查看所选出版者中的软件包列表，请在软件包管理器主窗口中执行以下任何操作："
+
+#: package-manager.xml.in.nolegal:74(para) 
+msgid "Select a package category"
+msgstr "选择软件包类别"
+
+#: package-manager.xml.in.nolegal:76(para) 
+msgid "Change the <emphasis role=\"strong\">View</emphasis> drop-down menu"
+msgstr "更改<emphasis role=\"strong\">查看</emphasis>下拉式菜单"
+
+#: package-manager.xml.in.nolegal:78(para) 
+msgid "Perform a search"
+msgstr "执行搜索"
+
+#: package-manager.xml.in.nolegal:80(para) 
+msgid "Change the publisher"
+msgstr "更改出版者"
+
+#: package-manager.xml.in.nolegal:83(para) 
+msgid "Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</guimenuitem></menuchoice> to return to the Start Page at anytime."
+msgstr ""
+       "选择<menuchoice><guimenu>查看</guimenu><guimenuitem>起始页面</"
+       "guimenuitem></menuchoice>，可随时返回到起始页面。"
+
+#: package-manager.xml.in.nolegal:84(para) 
+msgid "See <xref linkend=\"edit-prefs\"/> to turn off the <emphasis role=\"strong\">initial display</emphasis> of the start page when the Package Manager starts."
+msgstr "要在软件包管理器启动时关闭起始页面的<emphasis role=\"strong\">初始显示</emphasis>，请参见<xref linkend=\"edit-prefs\"/>。"
+
+#: package-manager.xml.in.nolegal:86(title) 
+msgid "About The Package Manager Window"
+msgstr "关于软件包管理器窗口"
+
+#: package-manager.xml.in.nolegal:87(title) 
+msgid "Package Manager Main View"
+msgstr "软件包管理器主视图"
+
+#: package-manager.xml.in.nolegal:91(para) 
+msgid "The main window of the Package Manager consists of the following elements :"
+msgstr ""
+       "软件包管理器的主窗口包含以下几个组成部分："
+
+#: package-manager.xml.in.nolegal:92(emphasis) 
+msgid "Menubar"
+msgstr "菜单条"
+
+#: package-manager.xml.in.nolegal:93(para) 
+msgid "The menubar contains the menus and sub-menus required to perform all of the commands related to the Package Manager."
+msgstr "菜单条包含执行与软件包管理器相关的所有命令所需的菜单和子菜单。"
+
+#: package-manager.xml.in.nolegal:97(emphasis) 
+msgid "Toolbar"
+msgstr "工具栏"
+
+#: package-manager.xml.in.nolegal:98(para) 
+msgid "The toolbar contains the icons for a subset of the commands that can be performed by using the menus on the menubar. A <emphasis role=\"strong\">Search</emphasis> field is also located on the toolbar. You can perform the following actions from the toolbar :"
+msgstr "工具栏包含可使用菜单条上的菜单执行的命令子集的图标。<emphasis role=\"strong\">搜索</emphasis>字段也位于工具栏上。您可以从工具栏执行以下操作："
+
+#: package-manager.xml.in.nolegal:99(para) 
+msgid "<emphasis role=\"strong\">Updates</emphasis> – Click <emphasis role=\"strong\">Updates</emphasis> to check for and install the latest updates."
+msgstr "<emphasis role=\"strong\">更新</emphasis> – 单击<emphasis role=\"strong\">更新</emphasis>可检查和安装最新更新。"
+
+#: package-manager.xml.in.nolegal:101(para) 
+msgid "<emphasis role=\"strong\">Install/Update</emphasis> – Select a package and click <emphasis role=\"strong\">Install/Update</emphasis> to install or update a package."
+msgstr "<emphasis role=\"strong\">安装/更新</emphasis> – 选择软件包并单击<emphasis role=\"strong\">安装/更新</emphasis>可安装或更新软件包。"
+
+#: package-manager.xml.in.nolegal:103(para) 
+msgid "<emphasis role=\"strong\">Refresh</emphasis> – Click <emphasis role=\"strong\">Refresh</emphasis> to reload the list of packages."
+msgstr "<emphasis role=\"strong\">刷新</emphasis> – 单击<emphasis role=\"strong\">刷新</emphasis>可重新装入软件包列表。"
+
+#: package-manager.xml.in.nolegal:105(para) 
+msgid "<emphasis role=\"strong\">Remove</emphasis> – Select a package and click <emphasis role=\"strong\">Remove</emphasis> to remove a package."
+msgstr "<emphasis role=\"strong\">删除</emphasis> – 选择软件包并单击<emphasis role=\"strong\">删除</emphasis>可删除软件包。"
+
+#: package-manager.xml.in.nolegal:107(para) 
+msgid "<emphasis role=\"strong\">Search for a Package</emphasis> – Type the name or description of a package in the <emphasis role=\"strong\">Search</emphasis> field to search for a package. See the <xref linkend=\"search-pkg\"/> section for examples on how to search for a package."
+msgstr "<emphasis role=\"strong\">搜索软件包</emphasis> – 在<emphasis role=\"strong\">搜索</emphasis>字段中键入软件包的名称或描述可搜索软件包。有关如何搜索软件包的示例，请参见<xref linkend=\"search-pkg\"/>一节。"
+
+#: package-manager.xml.in.nolegal:112(emphasis) 
+msgid "Publisher Drop-Down Menu"
+msgstr "出版者下拉式菜单"
+
+#: package-manager.xml.in.nolegal:113(para) 
+msgid "The list of available publishers is shown in the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu. Users can perform the following tasks from the publisher drop-down menu :"
+msgstr "<emphasis role=\"strong\">出版者</emphasis>下拉式菜单中会显示可用出版者的列表。用户可以从出版者下拉式菜单中执行以下任务："
+
+#: package-manager.xml.in.nolegal:114(emphasis) 
+msgid "Select a publisher"
+msgstr "选择出版者"
+
+#: package-manager.xml.in.nolegal:116(emphasis) 
+msgid "View the list of packages installed from all publishers"
+msgstr "查看已从所有出版者安装的软件包的列表"
+
+#: package-manager.xml.in.nolegal:118(emphasis) 
+msgid "Search for package across all publishers"
+msgstr "在所有出版者中搜索软件包"
+
+#: package-manager.xml.in.nolegal:120(emphasis) 
+msgid "Add a publisher"
+msgstr "添加出版者"
+
+#: package-manager.xml.in.nolegal:125(emphasis) 
+msgid "List of Packages by Category"
+msgstr "按类别显示的软件包列表"
+
+#: package-manager.xml.in.nolegal:126(para) 
+msgid "You can browse the available packages by category in the left hand side panel. Click on a category to see the sub-categories of packages available. There are six main categories that are displayed in the Package Manager:"
+msgstr "您可以在左侧面板中按类别浏览可用的软件包。单击某个类别即可查看可用软件包的子类别。软件包管理器中会显示六个主要类别："
+
+#: package-manager.xml.in.nolegal:127(emphasis) 
+msgid "Applications"
+msgstr "应用程序"
+
+#: package-manager.xml.in.nolegal:129(emphasis) 
+msgid "Desktop (GNOME)"
+msgstr "桌面 (GNOME)"
+
+#: package-manager.xml.in.nolegal:131(emphasis) 
+msgid "Development"
+msgstr "开发"
+
+#: package-manager.xml.in.nolegal:133(emphasis) 
+msgid "Drivers"
+msgstr "驱动程序"
+
+#: package-manager.xml.in.nolegal:135(emphasis) 
+msgid "System"
+msgstr "系统"
+
+#: package-manager.xml.in.nolegal:137(emphasis) 
+msgid "Web Services"
+msgstr "Web 服务"
+
+#: package-manager.xml.in.nolegal:142(emphasis) 
+msgid "Recent Searches"
+msgstr "最近的搜索"
+
+#: package-manager.xml.in.nolegal:143(para) 
+msgid "The Package Manager saves your recent package searches. Click the Recent Searches in the left hand side panel to view the packages you searched for recently."
+msgstr "软件包管理器会保存最近的软件包搜索信息。单击左侧面板中的“最近的搜索”可查看您最近搜索的软件包。"
+
+#: package-manager.xml.in.nolegal:146(emphasis) 
+msgid "List of Packages by Status"
+msgstr "按状态显示的软件包列表"
+
+#: package-manager.xml.in.nolegal:147(para) 
+msgid "The <emphasis role=\"strong\">View</emphasis> drop-down menu enables you to view package status with the following options :"
+msgstr "通过<emphasis role=\"strong\">查看</emphasis>下拉式菜单，您可以使用以下选项查看软件包状态："
+
+#: package-manager.xml.in.nolegal:148(para) 
+msgid "<emphasis role=\"strong\">All Packages</emphasis> – Shows the list of all packages available within the current publisher."
+msgstr "<emphasis role=\"strong\">所有软件包</emphasis> – 显示当前出版者内可用的所有软件包的列表。"
+
+#: package-manager.xml.in.nolegal:150(para) 
+msgid "<emphasis role=\"strong\">Installed Packages</emphasis> – Shows the list of packages installed within the current publisher on your system."
+msgstr "<emphasis role=\"strong\">安装的软件包</emphasis> – 显示系统中当前出版者内已安装的软件包的列表。"
+
+#: package-manager.xml.in.nolegal:152(para) 
+msgid "<emphasis role=\"strong\">Updates</emphasis> — Shows the list of packages that have newer versions available within the current publisher."
+msgstr "<emphasis role=\"strong\">更新</emphasis> – 显示当前出版者内提供了更新版本的软件包的列表。"
+
+#: package-manager.xml.in.nolegal:154(para) 
+msgid "<emphasis role=\"strong\">Not Installed Packages</emphasis> – Shows the list of packages that are not installed, but are available in the currently selected publisher."
+msgstr "<emphasis role=\"strong\">未安装的软件包</emphasis> – 显示未安装的但在当前选定的出版者中可用的软件包的列表。"
+
+#: package-manager.xml.in.nolegal:156(para) 
+msgid "<emphasis role=\"strong\">Selected Packages</emphasis> – Shows the list of packages that you have selected."
+msgstr "<emphasis role=\"strong\">选定的软件包</emphasis> – 显示您已选定的软件包的列表。"
+
+#: package-manager.xml.in.nolegal:161(emphasis) 
+msgid "Package Name, Status, and Description"
+msgstr "软件包名称、状态和描述"
+
+#: package-manager.xml.in.nolegal:162(para) 
+msgid "The list of packages in the selected category, a brief description, and their status are displayed in here."
+msgstr "此处显示选定类别的软件包列表、简要描述及其状态。"
+
+#: package-manager.xml.in.nolegal:163(para) 
+msgid "The Publisher name is also displayed here in the following instances :"
+msgstr "在以下情况下，此处还会显示出版者名称："
+
+#: package-manager.xml.in.nolegal:164(para) 
+msgid "When the <emphasis role=\"strong\">Pubisher</emphasis> drop-down menu is set to All Publishers (Installed)"
+msgstr "当<emphasis role=\"strong\">出版者</emphasis>下拉式菜单设置为“所有出版者（已安装）”时"
+
+#: package-manager.xml.in.nolegal:166(para) 
+msgid "When search results are displayed for the All Publishers (Search) option"
+msgstr "当显示“所有出版者（搜索）”选项的搜索结果时"
+
+#: package-manager.xml.in.nolegal:168(para) 
+msgid "When a recent search result is displayed"
+msgstr "当显示最近的搜索结果时"
+
+#: package-manager.xml.in.nolegal:173(emphasis) 
+msgid "Package Details"
+msgstr "软件包详细信息"
+
+#: package-manager.xml.in.nolegal:174(para) 
+msgid "Click a package name to select it. Details of the selected package, such as name, version, file dependencies, and license are displayed in this window."
+msgstr ""
+       "单击某个软件包名称即可将其选中。此窗口中将显示选定软件包"
+       "的详细信息，如名称、版本、文件相关项和许可证。"
+
+#: package-manager.xml.in.nolegal:180(title) 
+msgid "Package Manager Settings"
+msgstr "软件包管理器设置"
+
+#: package-manager.xml.in.nolegal:181(para) 
+msgid "Use the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> to change the Package Manager settings. The following sections discuss the preferences that can be changed by the user."
+msgstr "可使用<menuchoice><guimenu>编辑</guimenu><guimenuitem>首选项</guimenuitem></menuchoice>更改软件包管理器设置。以下几部分讨论了用户可以更改的首选项。"
+
+#: package-manager.xml.in.nolegal:182(title) 
+msgid "Start Page Preferences"
+msgstr "起始页面首选项"
+
+#: package-manager.xml.in.nolegal:183(para) 
+msgid "A Start Page is displayed in the main window of the Package Manager when the application is started. The Start Page provides links to <ulink url=\"http://opensolaris.com\">opensolaris.com</ulink> page where you can get more information about OpenSolaris, subscribe to newsletters and join the OpenSolaris community."
+msgstr ""
+       "启动应用程序时，起始页面将显示在软件包管理器的主"
+       "窗口中。起始页面会提供指向 <ulink url=\"http://"
+       "opensolaris.com\">opensolaris.com</ulink> 页面的链接，"
+       "在该页面中，您可以获得有关 OpenSolaris 的更多信息，订阅"
+       "新闻简报并加入 OpenSolaris 社区。"
+
+#: package-manager.xml.in.nolegal:184(para) 
+msgid "You can choose to turn off this setting so this page is not displayed when Package Manager starts."
+msgstr ""
+       "您可以选择关闭此设置，然后，在软件包管理器启动"
+       "时就不会显示此页面。"
+
+#: package-manager.xml.in.nolegal:185(para) 
+msgid "Select <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> from the main menu and uncheck the <emphasis role=\"strong\">Show Start Page on Startup</emphasis> to disable the Start Page. This dialog is checked by default."
+msgstr "从主菜单中选择<menuchoice><guimenu>编辑</guimenu><guimenuitem>首选项</guimenuitem></menuchoice>，然后取消选中<emphasis role=\"strong\">在启动时显示起始页面</emphasis>以禁用起始页面。缺省情况下此对话框处于选中状态。"
+
+#: package-manager.xml.in.nolegal:186(para) 
+msgid "Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</guimenuitem></menuchoice> from the main menu to go to the Start Page at anytime."
+msgstr "从主菜单中选择<menuchoice><guimenu>查看</guimenu><guimenuitem>起始页面</guimenuitem></menuchoice>，可随时转至起始页面。"
+
+#: package-manager.xml.in.nolegal:188(title) 
+msgid "Exit Preferences"
+msgstr "退出首选项"
+
+#: package-manager.xml.in.nolegal:189(para) 
+msgid "The Package Manager application can remember some of its current settings if the <emphasis role=\"strong\">Remember current state on exit</emphasis> option in the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> is checked."
+msgstr "如果选中了<menuchoice><guimenu>编辑</guimenu><guimenuitem>首选项</guimenuitem></menuchoice>中的<emphasis role=\"strong\">退出时记住当前状态</emphasis>，则软件包管理器应用程序可以记住它的一些当前设置。"
+
+#: package-manager.xml.in.nolegal:190(para) 
+msgid "The following settings are saved:"
+msgstr "将会保存以下设置："
+
+#: package-manager.xml.in.nolegal:191(para) 
+msgid "<emphasis role=\"strong\">Vertical separators</emphasis> – The size of the columns in the main window the Package Manager"
+msgstr "<emphasis role=\"strong\">垂直分隔符</emphasis> – 软件包管理器主窗口中的列大小"
+
+#: package-manager.xml.in.nolegal:193(para) 
+msgid "<emphasis role=\"strong\">Window size</emphasis> – The size of the Package Manager window"
+msgstr "<emphasis role=\"strong\">窗口大小</emphasis> – 软件包管理器窗口的大小"
+
+#: package-manager.xml.in.nolegal:195(para) 
+msgid "<emphasis role=\"strong\">Current publisher</emphasis> – The publisher that is selected when the Package Manager is closed"
+msgstr "<emphasis role=\"strong\">当前出版者</emphasis> – 关闭软件包管理器时选择的出版者"
+
+#: package-manager.xml.in.nolegal:199(title) 
+msgid "Confirmation Dialog Preferences"
+msgstr "确认对话框首选项"
+
+#: package-manager.xml.in.nolegal:200(para) 
+msgid "When a package is selected for installation, update, or removal, a confirmation dialog is displayed that displays the list of packages and the action to be performed. Under the <emphasis role=\"strong\">Show Confirmation Dialog</emphasis> uncheck <emphasis role=\"strong\">On Updates</emphasis>, <emphasis role=\"strong\">On Package Install/Update</emphasis>, and <emphasis role=\"strong\">On Package Remove</emphasis> to turn these settings off."
+msgstr "选择要安装、更新或删除的软件包后，会显示一个确认对话框，其中显示软件包列表和要执行的操作。在<emphasis role=\"strong\">显示确认对话框</emphasis>下，取消选中<emphasis role=\"strong\">更新时</emphasis>、<emphasis role=\"strong\">软件包安装/更新时</emphasis>和<emphasis role=\"strong\">软件包删除时</emphasis>可关闭这些设置。"
+
+#: package-manager.xml.in.nolegal:203(title) 
+msgid "Working With Packages"
+msgstr "使用软件包"
+
+#: package-manager.xml.in.nolegal:204(title) 
+msgid "Install a Package"
+msgstr "安装软件包"
+
+#: package-manager.xml.in.nolegal:205(para) 
+msgid "The list of packages and their status is displayed in the main window of the Package Manager. Perform the following steps to install a package:"
+msgstr "软件包及其状态的列表显示在软件包管理器的主窗口中。请执行以下步骤安装软件包："
+
+#: package-manager.xml.in.nolegal:206(para) 
+msgid "Check the box next to the package or packages to select it. Double-clicking the package also selects the package."
+msgstr "选中软件包旁边的框可选择该软件包。双击该软件包也可选择该软件包。"
+
+#: package-manager.xml.in.nolegal:208(para) 
+msgid "Click <guibutton>Install/Update</guibutton> to start the package installation process."
+msgstr "单击<guibutton>安装/更新</guibutton>以启动软件包安装过程。"
+
+#: package-manager.xml.in.nolegal:209(para) 
+msgid "You can also choose <menuchoice><guimenu>Package</guimenu><guimenuitem>Install/Update</guimenuitem></menuchoice> to start the package installation process."
+msgstr ""
+       "也可以通过选择<menuchoice><guimenu>软件包</"
+       "guimenu><guimenuitem>安装/更新</guimenuitem></menuchoice>来启动"
+       "软件包安装过程。"
+
+#: package-manager.xml.in.nolegal:211(para) 
+msgid "Click <guilabel>Details</guilabel> to view the installation details or <guibutton>Cancel</guibutton> to cancel the package installation."
+msgstr "单击<guilabel>详细信息</guilabel>可查看安装详细信息，或单击<guibutton>取消</guibutton>可取消软件包安装。"
+
+#: package-manager.xml.in.nolegal:213(para) 
+msgid "After the installation has completed, click <guibutton>Close</guibutton>."
+msgstr "安装完成后，单击<guibutton>关闭</guibutton>。"
+
+#: package-manager.xml.in.nolegal:216(title) 
+msgid "Installation Error"
+msgstr "安装错误"
+
+#: package-manager.xml.in.nolegal:217(para) 
+msgid "If an error occurs during package installation, an error dialog with the error message is displayed along with the reason for failure. Click <guibutton>Close</guibutton> to close the error dialog."
+msgstr "如果在软件包安装期间出现错误，会显示一个错误对话框，其中显示错误消息以及失败的原因。单击<guibutton>关闭</guibutton>可关闭错误对话框。"
+
+#: package-manager.xml.in.nolegal:220(title) 
+msgid "Remove a Package"
+msgstr "删除软件包"
+
+#: package-manager.xml.in.nolegal:221(para) 
+msgid "Perform the following steps to remove a package:"
+msgstr "执行以下步骤来删除软件包："
+
+#: package-manager.xml.in.nolegal:222(para) 
+msgid "Check the box next to a package to select it. Double-clicking the package also selects the package."
+msgstr "选中软件包旁边的框可选择该软件包。双击该软件包也可选择该软件包。"
+
+#: package-manager.xml.in.nolegal:224(para) 
+msgid "Click <guibutton>Remove</guibutton> to start the package uninstallation process."
+msgstr "单击<guibutton>删除</guibutton>以启动软件包卸载过程。"
+
+#: package-manager.xml.in.nolegal:225(para) 
+msgid "You can also choose <menuchoice><guimenu>Package</guimenu><guimenuitem>Remove</guimenuitem></menuchoice> to remove a package."
+msgstr ""
+       "也可以通过选择<menuchoice><guimenu>软件包</"
+       "guimenu><guimenuitem>删除</guimenuitem></menuchoice>来删除软件包。"
+
+#: package-manager.xml.in.nolegal:227(para) 
+msgid "Review the packages to be removed and the package dependencies details in the <emphasis role=\"strong\">Remove Confirmation</emphasis> dialog."
+msgstr "在<emphasis role=\"strong\">删除确认</emphasis>对话框中查看要删除的软件包和软件包相关项详细信息。"
+
+#: package-manager.xml.in.nolegal:229(para) 
+msgid "Click <guibutton>Proceed</guibutton> to start removing the packages or <guibutton>Cancel</guibutton> to cancel the process."
+msgstr "单击<guibutton>继续</guibutton>可启动软件包删除过程，或单击<guibutton>取消</guibutton>可取消此过程。"
+
+#: package-manager.xml.in.nolegal:233(title) 
+msgid "Search for a Package"
+msgstr "搜索软件包"
+
+#: package-manager.xml.in.nolegal:234(para) 
+msgid "You can search for a package in the following ways :"
+msgstr "您可以采用以下方式搜索软件包："
+
+#: package-manager.xml.in.nolegal:235(para) 
+msgid "<emphasis role=\"strong\">Search the current publisher</emphasis> – Search for a package in the publisher currently selected in the <emphasis role=\"strong\"> Publisher</emphasis> drop-down menu. If you do not know the status of the package you are searching for, set the <emphasis role=\"strong\">View</emphasis> drop-down menu to <emphasis role=\"strong\">All Packages</emphasis>."
+msgstr "<emphasis role=\"strong\">搜索当前出版者</emphasis> – 在<emphasis role=\"strong\">出版者</emphasis>下拉式菜单中当前选定的出版者中搜索软件包。如果您不知道要搜索的软件包的状态，请将<emphasis role=\"strong\">查看</emphasis>下拉式菜单设置为<emphasis role=\"strong\">所有软件包</emphasis>。"
+
+#: package-manager.xml.in.nolegal:236(para) 
+msgid "Enter a description, or a partial name in the <emphasis role=\"strong\">Search</emphasis> field. For example, you might type one of the following search terms to search for <filename>SUNWgnome-games</filename> :"
+msgstr "在<emphasis role=\"strong\">搜索</emphasis>字段中输入描述或部分名称。例如，您可以键入以下搜索词条之一来搜索 <filename>SUNWgnome-games</filename>："
+
+#: package-manager.xml.in.nolegal:237(para) 
+msgid "SUNWgames"
+msgstr "SUNWgames"
+
+#: package-manager.xml.in.nolegal:239(para) 
+msgid "games"
+msgstr "games"
+
+#: package-manager.xml.in.nolegal:241(para) 
+msgid "GNOME-games"
+msgstr "GNOME-games"
+
+#: package-manager.xml.in.nolegal:244(para) 
+msgid "To search for SunStudio compilers, you might type one of the following terms:"
+msgstr ""
+       "要搜索 SunStudio 编译器，您可以键入以下术语之一："
+
+#: package-manager.xml.in.nolegal:245(para) 
+msgid "compiler"
+msgstr "编译器"
+
+#: package-manager.xml.in.nolegal:247(para) 
+msgid "tools"
+msgstr "工具"
+
+#: package-manager.xml.in.nolegal:251(para) 
+msgid "<emphasis role=\"strong\">Search all publishers</emphasis> – Choose <emphasis role=\"strong\">All Publishers(Search)</emphasis> from the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu to search for a package across all configured publishers. If you do not know the status of the package you are searching for, set the <emphasis role=\"strong\">View</emphasis> drop-down menu to <emphasis role=\"strong\">All Packages</emphasis>."
+msgstr "<emphasis role=\"strong\">搜索所有出版者</emphasis> – 从<emphasis role=\"strong\">出版者</emphasis>下拉式菜单中选择<emphasis role=\"strong\">所有出版者（搜索）</emphasis>可在所有已配置的出版者中搜索软件包。如果您不知道要搜索的软件包的状态，请将<emphasis role=\"strong\">查看</emphasis>下拉式菜单设置为<emphasis role=\"strong\">所有软件包</emphasis>。"
+
+#: package-manager.xml.in.nolegal:252(para) 
+msgid "Type a description of the package in the <emphasis role=\"strong\">Search</emphasis> field. For example, the <filename>SUNWdiveintopython</filename> package is a book on Python programming. The description of the package contains the string <emphasis>book</emphasis>. To search for this package, you might then type one of the following terms:"
+msgstr "在<emphasis role=\"strong\">搜索</emphasis>字段中键入软件包的描述。例如，<filename>SUNWdiveintopython</filename> 软件包是有关 Python 编程的书籍。该软件包的描述中包含<emphasis>书籍</emphasis>一词。要搜索此软件包，您则可以键入以下词条之一："
+
+#: package-manager.xml.in.nolegal:253(para) 
+msgid "python"
+msgstr "python"
+
+#: package-manager.xml.in.nolegal:255(para) 
+msgid "book"
+msgstr "书籍"
+
+#: package-manager.xml.in.nolegal:258(para) 
+msgid "If you searched for the term <emphasis>diveinto</emphasis> when searching for the <filename>SUNWdiveintopython</filename> package, the results will not be displayed as the term <emphasis>diveinto</emphasis> is not present as an independent, complete word in the package contents. However you will find the package using the <literal>*</literal> wild card. Hence, searching for the term <literal>diveinto*</literal> will display the <filename>SUNWdiveintopython</filename> package."
+msgstr "如果在搜索 <filename>SUNWdiveintopython</filename> 软件包时您使用词条 <emphasis>diveinto</emphasis> 进行搜索，则不会显示这些结果，因为词条 <emphasis>diveinto</emphasis> 在软件包内容中不是以独立、完整的字词形式存在的。但是，如果使用 <literal>*</literal> 通配符，将可以搜索到该软件包。因此，搜索词条 <literal>diveinto*</literal> 时将会显示 <filename>SUNWdiveintopython</filename> 软件包。"
+
+#: package-manager.xml.in.nolegal:262(para) 
+msgid "Use the submenus under the <menuchoice><guimenu>Edit</guimenu></menuchoice> menu to cut, copy, or paste text in the <emphasis role=\"strong\">Search</emphasis> field."
+msgstr "使用<menuchoice><guimenu>编辑</guimenu></menuchoice>菜单下的子菜单可剪切、复制或粘贴<emphasis role=\"strong\">搜索</emphasis>字段中的文本。"
+
+#: package-manager.xml.in.nolegal:264(para) 
+msgid "The following operators are supported for a package search:"
+msgstr "软件包搜索支持以下运算符："
+
+#: package-manager.xml.in.nolegal:265(emphasis) 
+msgid "The AND operator"
+msgstr "AND 运算符"
+
+#: package-manager.xml.in.nolegal:266(para) 
+msgid "When the search term is separated by spaces or the AND operator, the Package Manager will search for packages containing <emphasis role=\"strong\">all</emphasis> the search terms."
+msgstr "当搜索词条由空格或 AND 运算符分隔时，软件包管理器将搜索包含<emphasis role=\"strong\">所有</emphasis>搜索词条的软件包。"
+
+#: package-manager.xml.in.nolegal:269(emphasis) 
+msgid "Double Quotes"
+msgstr "双引号"
+
+#: package-manager.xml.in.nolegal:270(para) 
+msgid "When a search term is placed within double quotes, the Package Manager will search for packages that <emphasis role=\"strong\">match the search term exactly</emphasis>."
+msgstr "当搜索词条位于双引号内时，软件包管理器将搜索<emphasis role=\"strong\">与搜索词条完全匹配</emphasis>的软件包。"
+
+#: package-manager.xml.in.nolegal:273(emphasis) 
+msgid "Wildcard *"
+msgstr "通配符 *"
+
+#: package-manager.xml.in.nolegal:274(para) 
+msgid "Including a wildcard in your search term enables you to search for partial package names. For example, when you enter <emphasis>boo*</emphasis> in your search term, the packages displayed could include <emphasis>boot</emphasis> and <emphasis>book</emphasis> in the package name and description."
+msgstr "在搜索词条中包含通配符允许您搜索部分软件包名称。例如，在搜索词条中输入 <emphasis>boo*</emphasis> 时，显示的软件包可能包括软件包名称和描述中有 <emphasis>boot</emphasis> 和 <emphasis>book</emphasis> 的软件包。"
+
+#: package-manager.xml.in.nolegal:275(para) 
+msgid "Wildcard searching can be slower than an exact match search or a search based on package description."
+msgstr "通配符搜索可能会比完全匹配搜索或基于软件包描述的搜索速度慢。"
+
+#: package-manager.xml.in.nolegal:279(emphasis) 
+msgid "The OR operator"
+msgstr "OR 运算符"
+
+#: package-manager.xml.in.nolegal:280(para) 
+msgid "When a search term is separated by the OR operator, the Package Manager searches for packages that contain any of the search terms."
+msgstr "当搜索词条由 OR 运算符分隔时，软件包管理器将搜索包含任何这些搜索词条的软件包。"
+
+#: package-manager.xml.in.nolegal:285(title) 
+msgid "Cancel Package Search"
+msgstr "取消软件包搜索"
+
+#: package-manager.xml.in.nolegal:286(para) 
+msgid "If you want to cancel a search, use the Cancel Search icon at the bottom of the main window of the Package Manager. This icon is visible on the status bar only during a search operation."
+msgstr "如果要取消搜索，请使用软件包管理器主窗口底部的“取消搜索”图标。此图标仅在执行搜索操作期间在状态栏上可见。"
+
+#: package-manager.xml.in.nolegal:288(title) 
+msgid "Update a Package"
+msgstr "更新软件包"
+
+#: package-manager.xml.in.nolegal:289(para) 
+msgid "Look for the Updates icon next to the installed package name. This icon indicates that updates are available for the package in the currently selected publisher. You can also choose one of the following views to display a list of packages that have updates available :"
+msgstr "查找已安装软件包名称旁边的“更新”图标。此图标指示当前选定出版者中已有可用于此软件包的更新。您还可以选择以下视图之一来显示具有可用更新的软件包的列表："
+
+#: package-manager.xml.in.nolegal:290(para) 
+msgid "Select the <menuchoice><guimenuitem>Updates</guimenuitem></menuchoice> option in the <emphasis role=\"strong\">View</emphasis> drop-down menu to list all packages that have updates available in the currently selected publisher."
+msgstr "选择<emphasis role=\"strong\">查看</emphasis>下拉式菜单中的<menuchoice><guimenuitem>更新</guimenuitem></menuchoice>选项可列出当前选定出版者中具有可用更新的所有软件包。"
+
+#: package-manager.xml.in.nolegal:292(para) 
+msgid "Select the <menuchoice><guimenuitem>Updates</guimenuitem></menuchoice> option in the <emphasis role=\"strong\">View</emphasis> drop-down menu and the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> in the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu to list all packages that have updates available from all publishers."
+msgstr "选择<emphasis role=\"strong\">查看</emphasis>下拉式菜单中的<menuchoice><guimenuitem>更新</guimenuitem></menuchoice>选项和<emphasis role=\"strong\">出版者</emphasis>下拉式菜单中的<emphasis role=\"strong\">所有出版者（已安装）</emphasis>可列出所有出版者中具有可用更新的所有软件包。"
+
+#: package-manager.xml.in.nolegal:295(para) 
+msgid "Updating a package may fail sometimes, due to inherent dependencies of the package you have selected for installation or update. You may need to update all packages on your system to get the latest updates."
+msgstr "由于您为安装或更新选择的软件包的固有相关项，有时，更新软件包时可能会失败。您可能需要更新系统中的所有软件包才能获得最新更新。"
+
+#: package-manager.xml.in.nolegal:297(para) 
+msgid "Select the package or packages you want to update and click <guibutton>Install/Update</guibutton> to install the latest version of the package. Use the <emphasis role=\"strong\">Updates</emphasis> icon on the toolbar to update all packages on your system."
+msgstr "选择要更新的软件包，然后单击<guibutton>安装/更新</guibutton>来安装该软件包的最新版本。使用工具栏上的<emphasis role=\"strong\">更新</emphasis>图标可更新系统中的所有软件包。"
+
+#: package-manager.xml.in.nolegal:299(title) 
+msgid "Package Version Information"
+msgstr "软件包版本信息"
+
+#: package-manager.xml.in.nolegal:300(para) 
+msgid "Select a package in the main window of the Package Manager and right-click your mouse to view the package version information. There are three types of package versions :"
+msgstr "在软件包管理器主窗口中选择软件包，然后右键单击鼠标可查看该软件包的版本信息。有三种类型的软件包版本："
+
+#: package-manager.xml.in.nolegal:301(para) 
+msgid "<emphasis role=\"strong\">Installable Version</emphasis> – The version of a package that is available for installation or an update. This version may be older than the latest available version of the package due to package dependencies on the system. Hence you may not be able to install the latest available version of the package unless you update your system using the <emphasis role=\"strong\">Updates</emphasis> icon on the toolbar."
+msgstr "<emphasis role=\"strong\">可安装版本</emphasis> – 此版本的软件包可用于安装或更新。由于系统中的软件包相关项，此版本可能比可用的最新软件包版本低。因此，您可能无法安装可用的最新软件包版本，除非您使用工具栏上的<emphasis role=\"strong\">更新</emphasis>图标更新了系统。"
+
+#: package-manager.xml.in.nolegal:303(para) 
+msgid "<emphasis role=\"strong\">Installed Version</emphasis> – The version of the package installed on the system."
+msgstr "<emphasis role=\"strong\">已安装版本</emphasis> – 系统上已安装的软件包版本。"
+
+#: package-manager.xml.in.nolegal:305(para) 
+msgid "<emphasis role=\"strong\">Latest Version</emphasis> – This is the latest version of the package available for installation or update. The latest version can be installed if your system is up-to-date."
+msgstr "<emphasis role=\"strong\">最新版本</emphasis> – 这是可用于安装或更新的最新软件包版本。如果您的系统是最新的，则可以安装此最新版本。"
+
+#: package-manager.xml.in.nolegal:309(title) 
+msgid "View Installed Packages From All Publishers"
+msgstr "查看已从所有出版者安装的软件包"
+
+#: package-manager.xml.in.nolegal:310(para) 
+msgid "Choose the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> from the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu filter to view a list of all packages that you have installed from all publishers."
+msgstr "从<emphasis role=\"strong\">出版者</emphasis>下拉式菜单过滤器中选择<emphasis role=\"strong\">所有出版者（已安装）</emphasis>可查看已从所有出版者安装的所有软件包的列表。"
+
+#: package-manager.xml.in.nolegal:311(para) 
+msgid "You cannot search for a package from the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> option. Switch to <emphasis role=\"strong\">All Publishers (Search)</emphasis> to search for a package."
+msgstr "您不能从<emphasis role=\"strong\">所有出版者（已安装）</emphasis>选项搜索软件包。请切换到<emphasis role=\"strong\">所有出版者（搜索）</emphasis>来搜索软件包。"
+
+#: package-manager.xml.in.nolegal:315(title) 
+msgid "Introduction to Boot Environments"
+msgstr "引导环境介绍"
+
+#: package-manager.xml.in.nolegal:316(para) 
+msgid "A boot environment is an image that is bootable. Upon an initial OpenSolaris installation, a boot environment is created."
+msgstr ""
+       "引导环境是一个可引导的映像。初始安装 OpenSolaris "
+       "时，将创建引导环境。"
+
+#: package-manager.xml.in.nolegal:317(para) 
+msgid "You can maintain multiple boot environments on your OpenSolaris 2010.03 system. Use the <command>beadm(1)</command> command from the command-line interface (CLI) to create, rename, mount or unmount, or destroy these boot environments."
+msgstr "您可以在 OpenSolaris 2010.03 系统中维护多个引导环境。从命令行界面 (command-line interface, CLI) 中使用 <command>beadm(1)</command> 命令可以创建、重命名、挂载/卸载或销毁这些引导环境。"
+
+#: package-manager.xml.in.nolegal:318(para) 
+msgid "The Package Manager enables you to manage the boot environments created during the process of updating your image. For more information, see <xref linkend=\"manage-be\"/> section."
+msgstr "使用软件包管理器可以管理在更新映像过程中创建的引导环境。有关更多信息，请参见<xref linkend=\"manage-be\"/>一节。"
+
+#: package-manager.xml.in.nolegal:319(para) 
+msgid "Users can maintain multiple boot environments on their systems, and each boot environment can have different software versions installed."
+msgstr "用户可以在其系统上维护多个引导环境，而且每个引导环境中可以安装不同的软件版本。"
+
+#: package-manager.xml.in.nolegal:320(para) 
+msgid "When you use either the Package Manager or the <command>pkg image-update</command> command to update all the packages in your active OpenSolaris boot environment, a clone of that boot environment is automatically created. The packages are updated in the clone rather than in the original boot environment. After successfully completing the updates, the new clone is activated. Then, the clone will become the new default boot environment on system reboot. The original boot environment is also available as an alternate selection."
+msgstr ""
+       "使用软件包管理器或 <command>pkg image-update</"
+       "command> 命令更新活动 OpenSolaris 引导环境中"
+       "的所有软件包时，将自动创建该引导环境的克隆。"
+       "软件包将在克隆中更新，而不是在原始引导环境中更新。"
+       "成功完成更新后，新的克隆将被激活。然后，"
+       "在重新引导系统时，该克隆将成为新的缺省引导"
+       "环境。原始引导环境也会存在，此时用作"
+       "备用选项。"
+
+#: package-manager.xml.in.nolegal:321(para) 
+msgid "See the beadm(1) man pages and the <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"><citetitle>Upgrading and Managing Boot Environments</citetitle></ulink> document to learn more about boot environments and the <command>beadm(1)</command> command."
+msgstr "请参见 beadm(1) 手册页和<ulink url=\"http://docs.sun.com/source/820-7679/index.html\"><citetitle>升级和管理引导环境</citetitle></ulink>文档，以解有关引导环境和 <command>beadm(1)</command> 命令的更多信息。"
+
+#: package-manager.xml.in.nolegal:322(title) 
+msgid "Update All Packages (Update Your Image)"
+msgstr "更新所有软件包（更新映像）"
+
+#: package-manager.xml.in.nolegal:323(para) 
+msgid "Perform the following steps to update all the packages in your image."
+msgstr "执行以下步骤来更新映像中的所有软件包。"
+
+#: package-manager.xml.in.nolegal:324(para) 
+msgid "Click <guibutton>Updates</guibutton> to start the process of updating <emphasis role=\"strong\">all</emphasis> the packages installed in your image."
+msgstr "单击<guibutton>更新</guibutton>可启动更新映像中已安装的<emphasis role=\"strong\">所有</emphasis>软件包的过程。"
+
+#: package-manager.xml.in.nolegal:325(para) 
+msgid "You can also choose <menuchoice><guimenu>Package</guimenu><guisubmenu>Updates</guisubmenu></menuchoice> to start the process."
+msgstr "您也可以通过选择<menuchoice><guimenu>软件包</guimenu><guisubmenu>更新</guisubmenu></menuchoice>来启动此过程。"
+
+#: package-manager.xml.in.nolegal:326(para) 
+msgid "If no updates are available to your installed packages, a <emphasis role=\"strong\">No Updates Available</emphasis> message is displayed after you click <guibutton>Updates</guibutton>."
+msgstr "如果没有可用于已安装软件包的更新，则会在单击<guibutton>更新</guibutton>后显示<emphasis role=\"strong\">无可用更新</emphasis>消息。"
+
+#: package-manager.xml.in.nolegal:329(para) 
+msgid "The process of updating all the packages installed on your system is completed in three phases:"
+msgstr "更新系统中已安装的所有软件包的过程要经过三个阶段才能完成："
+
+#: package-manager.xml.in.nolegal:330(emphasis) 
+msgid "Preparation"
+msgstr "准备"
+
+#: package-manager.xml.in.nolegal:332(emphasis) 
+msgid "Download"
+msgstr "下载"
+
+#: package-manager.xml.in.nolegal:334(emphasis) 
+msgid "Install"
+msgstr "安装"
+
+#: package-manager.xml.in.nolegal:337(para) 
+msgid "Click on the <emphasis>Details</emphasis> tab displayed in each of the phases to view more information."
+msgstr "单击每个阶段中显示的<emphasis>详细信息</emphasis>选项卡可查看更多信息。"
+
+#: package-manager.xml.in.nolegal:339(para) 
+msgid "After the update process is completed successfully, an <emphasis role=\"strong\">Update All Complete</emphasis> dialog is displayed. A new boot environment is created which consists of the updated packages. The new boot environment is given a default name by the Package Manager, you can change the given boot environment name."
+msgstr "更新过程成功完成后，会显示<emphasis role=\"strong\">全部更新完成</emphasis>对话框。这样就创建了一个包含已更新软件包的新引导环境。软件包管理器会为此新引导环境指定一个缺省名称，您可以更改此指定的引导环境名称。"
+
+#: package-manager.xml.in.nolegal:340(para) 
+msgid "If the Package Manager is unable to create a new boot environment, an error message is displayed. See the <xref linkend=\"gilfh\"/> section on how to rectify the error and continue with updating your image."
+msgstr "如果软件包管理器无法创建新的引导环境，则会显示一条错误消息。有关如何纠正错误并继续更新映像的信息，请参见<xref linkend=\"gilfh\"/>一节。"
+
+#: package-manager.xml.in.nolegal:343(para) 
+msgid "Click <guibutton>Restart Now</guibutton> to reboot your system immediately."
+msgstr "单击<guibutton>立即重新启动</guibutton>可立即重新引导您的系统。"
+
+#: package-manager.xml.in.nolegal:344(para) 
+msgid "Click <guibutton>Restart Later</guibutton> to restart your system at a later time. <emphasis role=\"strong\">You must reboot your system for the changes to take effect.</emphasis>"
+msgstr "单击<guibutton>以后重新启动</guibutton>可在以后某个时间重新启动您的系统。<emphasis role=\"strong\">您必须重新引导系统，所做的更改才会生效。</emphasis>"
+
+#: package-manager.xml.in.nolegal:345(para) 
+msgid "During the Update All process, a clone of the active boot environment is created. You can boot into the clone to return to the boot environment state that existed before the Update All process was started."
+msgstr "在“全部更新”过程中，会创建活动引导环境的克隆。您可以引导至此克隆，以返回到“全部更新”过程开始之前存在的引导环境状态。"
+
+#: package-manager.xml.in.nolegal:350(title) package-manager.xml.in.nolegal:656(title) 
+msgid "Update All Errors"
+msgstr "“全部更新”错误"
+
+#: package-manager.xml.in.nolegal:351(para) 
+msgid "A new boot environment clone must be created by the Package Manager for the Updates process to be completed. An error message is displayed if a boot environment clone cannot be created. You might see an error message such as the following :"
+msgstr "软件包管理器必须创建一个新的引导环境克隆，才能完成更新过程。如果无法创建引导环境克隆，则会显示一条错误消息。您可能会看到类似如下错误消息："
+
+#: package-manager.xml.in.nolegal:352(para) 
+msgid "<literal>Not enough disk space, the Update All action cannot be performed. Choose Manage BE to manage your boot environments and free up disk space.</literal>."
+msgstr "<literal>没有足够的磁盘空间，无法执行“全部更新”操作。选择“管理引导环境”可管理您的引导环境，并释放磁盘空间。</literal>"
+
+#: package-manager.xml.in.nolegal:353(para) package-manager.xml.in.nolegal:659(para) 
+msgid "Click <guibutton>Close</guibutton> to cancel the Update All process."
+msgstr "单击<guibutton>关闭</guibutton>可取消“全部更新”过程。"
+
+#: package-manager.xml.in.nolegal:354(para) package-manager.xml.in.nolegal:660(para) 
+msgid "Perform the following steps if you want to rectify the error and continue with the Update All process:"
+msgstr ""
+       "如果要纠正错误并继续执行“全部更新”过程，"
+       "请执行以下步骤："
+
+#: package-manager.xml.in.nolegal:355(para) 
+msgid "Click <guibutton>Manage BE</guibutton> to display the <emphasis role=\"strong\">Manage Boot Environment</emphasis> dialog."
+msgstr "单击<guibutton>管理引导环境</guibutton>以显示<emphasis role=\"strong\">管理引导环境</emphasis>对话框。"
+
+#: package-manager.xml.in.nolegal:357(para) 
+msgid "Select the boot environments that you want to delete."
+msgstr "选择要删除的引导环境。"
+
+#: package-manager.xml.in.nolegal:358(para) 
+msgid "You cannot delete the currently active boot environment."
+msgstr "您无法删除当前处于活动状态的引导环境。"
+
+#: package-manager.xml.in.nolegal:360(para) 
+msgid "You do not need to reboot your system if you are only deleting some of your boot environments."
+msgstr ""
+       "如果只是要删除某些引导环境，则不需要重新引导"
+       "系统。"
+
+#: package-manager.xml.in.nolegal:365(para) 
+msgid "Click <guibutton>OK</guibutton>."
+msgstr "单击<guibutton>确定</guibutton>。"
+
+#: package-manager.xml.in.nolegal:367(para) 
+msgid "The <emphasis role=\"strong\">Boot Environment Confirmation</emphasis> dialog is shown. Review your changes and click OK to proceed."
+msgstr "此时会显示<emphasis role=\"strong\">引导环境确认</emphasis>对话框。查看您所做的更改，然后单击“确定”继续。"
+
+#: package-manager.xml.in.nolegal:369(para) 
+msgid "Click <guibutton>Update All</guibutton> to restart the process of updating all packages."
+msgstr "单击<guibutton>全部更新</guibutton>以重新启动更新所有软件包的过程。"
+
+#: package-manager.xml.in.nolegal:373(title) 
+msgid "Manage Boot Environments"
+msgstr "管理引导环境"
+
+#: package-manager.xml.in.nolegal:374(para) 
+msgid "Perform the following steps to manage your boot environments:"
+msgstr "执行以下步骤来管理您的引导环境："
+
+#: package-manager.xml.in.nolegal:375(para) 
+msgid "Click <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot Environments</guimenuitem></menuchoice> to open the <emphasis role=\"strong\">Manage Boot Environments</emphasis> dialog."
+msgstr "单击<menuchoice><guimenu>文件</guimenu><guimenuitem>管理引导环境</guimenuitem></menuchoice>，以打开<emphasis role=\"strong\">管理引导环境</emphasis>对话框。"
+
+#: package-manager.xml.in.nolegal:377(para) 
+msgid "In this dialog, you can perform the following actions:"
+msgstr "在此对话框中，您可以执行以下操作："
+
+#: package-manager.xml.in.nolegal:378(para) 
+msgid "<emphasis role=\"strong\">Activate a boot environment</emphasis> – Select the boot environment you want to be active on system reboot. This is the default boot environment <emphasis role=\"strong\">after</emphasis> you have rebooted your system."
+msgstr "<emphasis role=\"strong\">激活引导环境</emphasis> – 选择要在系统重新引导时将处于活动状态的引导环境。这是您重新引导系统<emphasis role=\"strong\">之后</emphasis>的缺省引导环境。"
+
+#: package-manager.xml.in.nolegal:380(para) 
+msgid "<emphasis role=\"strong\">Remove old or unused boot environments to free up disk space</emphasis> – Select the boot environnment or boot environments you want to delete."
+msgstr "<emphasis role=\"strong\">删除旧的或未使用的环境以释放磁盘空间</emphasis> – 选择要删除的引导环境。"
+
+#: package-manager.xml.in.nolegal:381(para) 
+msgid "You cannot the delete the currently active boot environment."
+msgstr "您无法删除当前处于活动状态的引导环境。"
+
+#: package-manager.xml.in.nolegal:383(para) 
+msgid "If you have selected a boot environment to be renamed, it cannot be deleted."
+msgstr ""
+       "如果已选择要重命名的引导环境，则无法将其删除。"
+
+#: package-manager.xml.in.nolegal:388(para) 
+msgid "<emphasis role=\"strong\">Rename a boot environment</emphasis> – Double-click the boot environment name you want torename. Enter the new name of the boot environment and click <guibutton>OK</guibutton>."
+msgstr "<emphasis role=\"strong\">重命名引导环境</emphasis> – 双击要重命名的引导环境名称。输入该引导环境的新名称，然后单击<guibutton>确定</guibutton>。"
+
+#: package-manager.xml.in.nolegal:389(para) 
+msgid "If you have selected a boot environment to be deleted, it cannot be renamed."
+msgstr ""
+       "如果已选择要删除的引导环境，则无法对其进行重命名。"
+
+#: package-manager.xml.in.nolegal:391(para) 
+msgid "The currently active boot environment cannot be renamed."
+msgstr "无法对当前处于活动状态的引导环境进行重命名。"
+
+#: package-manager.xml.in.nolegal:398(para) 
+msgid "Click <guibutton>OK</guibutton> to proceed or <guibutton>Cancel</guibutton> to cancel all changes."
+msgstr "单击<guibutton>确定</guibutton>继续，或单击<guibutton>取消</guibutton>可取消所有更改。"
+
+#: package-manager.xml.in.nolegal:400(para) 
+msgid "The <emphasis role=\"strong\">Boot Environment Confirmation</emphasis> dialog is displayed. Review your changes and click OK to proceed."
+msgstr "此时会显示<emphasis role=\"strong\">引导环境确认</emphasis>对话框。查看您所做的更改，然后单击“确定”继续。"
+
+#: package-manager.xml.in.nolegal:401(para) 
+msgid "After you click <guibutton>OK</guibutton>, you cannot undo any changes that you made to the boot environments."
+msgstr ""
+       "单击<guibutton>确定</guibutton>后，便无法撤消"
+       "对引导环境所做的任何更改。"
+
+#: package-manager.xml.in.nolegal:403(para) 
+msgid "The changes that you made to the <emphasis role=\"strong\">default boot environment</emphasis> setting are effective only after system reboot."
+msgstr ""
+       "对<emphasis role=\"strong\">缺省引导环境</emphasis>"
+       "设置所做的更改只有在系统重新引导后才会生效。"
+
+#: package-manager.xml.in.nolegal:405(para) 
+msgid "Click <guibutton>Cancel</guibutton> to cancel the changes."
+msgstr "单击<guibutton>取消</guibutton>可取消所做的更改。"
+
+#: package-manager.xml.in.nolegal:407(para) 
+msgid "Reboot your system to boot into the newly activated boot environment."
+msgstr "重新引导您的系统，以引导至新激活的引导环境。"
+
+#: package-manager.xml.in.nolegal:408(para) 
+msgid "Reboot your system only if you changed the active boot environment."
+msgstr "只有在更改活动引导环境后，才重新引导系统。"
+
+#: package-manager.xml.in.nolegal:414(title) 
+msgid "Add and Manage Publishers"
+msgstr "添加和管理出版者"
+
+#: package-manager.xml.in.nolegal:415(para) 
+msgid "The <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> dialog enables the user to add and manage the configured publishers. A publisher is a person, group, or corporation that designs, creates, and publishes a package to a repository. Every publisher has a package repository where its package data can be found. The locations that contain package data for a publisher's repository are defined through the use of origins and mirrors. Origins are used to provide locations that contain the complete set of package data for a publisher, while mirrors are used to provide locations that only contain package files. Origins and mirrors are defined using URIs (Universal Resource Identifiers), such as <ulink url=\"http://pkg.opensolaris.org/release\"/>."
+msgstr "<menuchoice><guimenu>文件</guimenu><guimenuitem>管理出版者</guimenuitem></menuchoice>对话框允许用户添加和管理所配置的出版者。出版者是设计、创建软件包并将软件包发布到系统信息库的个人、组或公司。每个出版者都具有一个可在其中找到其软件包数据的软件包系统信息库。包含出版者系统信息库的软件包数据的位置通过使用原始位置和镜像进行定义。原始位置用于提供包含出版者的完整软件包数据集的位置，而镜像用于提供仅包含软件包文件的位置。原始位置和镜像是使用 URI（Universal Resource Identifier，统一资源标识符）定义的，例如 <ulink url=\"http://pkg.opensolaris.org/release\"/>。"
+
+#: package-manager.xml.in.nolegal:416(para) 
+msgid "Read the following sections to learn how to add and manage publishers on your system."
+msgstr "请阅读以下几部分以了解如何在系统上添加和管理出版者。"
+
+#: package-manager.xml.in.nolegal:417(title) 
+msgid "Add a Publisher"
+msgstr "添加出版者"
+
+#: package-manager.xml.in.nolegal:418(para) 
+msgid "Perform the following steps to add a publisher and its associated URI:"
+msgstr "执行以下步骤来添加出版者及其关联的 URI："
+
+#: package-manager.xml.in.nolegal:419(para) 
+msgid "Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Add Publishers</guimenuitem></menuchoice>."
+msgstr "选择<menuchoice><guimenu>文件</guimenu><guimenuitem>添加出版者</guimenuitem></menuchoice>。"
+
+#: package-manager.xml.in.nolegal:420(para) 
+msgid "You can also choose the <guibutton>Add..</guibutton> option from the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu or select <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> and then click <emphasis>Add..</emphasis> in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog."
+msgstr "也可以从<emphasis role=\"strong\">出版者</emphasis>下拉式菜单中选择<guibutton>添加...</guibutton> 选项，或选择<menuchoice><guimenu>文件</guimenu><guimenuitem>管理出版者</guimenuitem></menuchoice>，然后在<emphasis role=\"strong\">管理出版者</emphasis>对话框中单击<emphasis>添加...</emphasis>。"
+
+#: package-manager.xml.in.nolegal:422(para) 
+msgid "The <emphasis role=\"strong\">Add Publisher</emphasis> dialog is displayed. Enter the name of the publisher and the associated URI. If the publisher is a secure publisher, the <emphasis role=\"strong\">SSL Key</emphasis> and <emphasis role=\"strong\">SSL Certificate</emphasis> fields are displayed. Follow the steps in the <xref linkend=\"modify-publisher\"/> section to add an SSL key and certificate."
+msgstr "此时会显示<emphasis role=\"strong\">添加出版者</emphasis>对话框。输入出版者的名称及其关联的 URI。如果此出版者是一个安全出版者，则会显示 <emphasis role=\"strong\">SSL 密钥</emphasis>和 <emphasis role=\"strong\">SSL 证书</emphasis>字段。请按照<xref linkend=\"modify-publisher\"/>一节中的步骤添加 SSL 密钥和证书。"
+
+#: package-manager.xml.in.nolegal:424(para) 
+msgid "Click <guibutton>Add</guibutton>."
+msgstr "单击<guibutton>添加</guibutton>。"
+
+#: package-manager.xml.in.nolegal:426(para) 
+msgid "The <emphasis role=\"strong\">Adding Publisher</emphasis> dialog is displayed. Click Cancel to cancel the process."
+msgstr "此时会显示<emphasis role=\"strong\">添加出版者</emphasis>对话框。单击“取消”可取消此过程。"
+
+#: package-manager.xml.in.nolegal:428(para) 
+msgid "The <emphasis role=\"strong\">Adding Publisher Complete</emphasis> dialog is displayed if the publisher is added successfully."
+msgstr "如果成功添加了出版者，则会显示<emphasis role=\"strong\">添加出版者完成</emphasis>对话框。"
+
+#: package-manager.xml.in.nolegal:431(para) 
+msgid "An <emphasis role=\"strong\">Adding Publisher Error</emphasis> is displayed if the publisher could not be added. Click <emphasis role=\"strong\">Details</emphasis> to get more information about the error."
+msgstr "如果无法添加出版者，则会显示<emphasis role=\"strong\">添加出版者错误</emphasis>。单击<emphasis role=\"strong\">详细信息</emphasis>可获取有关该错误的更多信息。"
+
+#: package-manager.xml.in.nolegal:434(title) 
+msgid "Remove a Publisher"
+msgstr "删除出版者"
+
+#: package-manager.xml.in.nolegal:435(para) 
+msgid "Perform the following steps to remove a publisher:"
+msgstr "执行以下步骤来删除出版者："
+
+#: package-manager.xml.in.nolegal:436(para) package-manager.xml.in.nolegal:459(para) package-manager.xml.in.nolegal:473(para) package-manager.xml.in.nolegal:492(para) package-manager.xml.in.nolegal:511(para) package-manager.xml.in.nolegal:528(para) 
+msgid "Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice>."
+msgstr "选择<menuchoice><guimenu>文件</guimenu><guimenuitem>管理出版者</guimenuitem></menuchoice>。"
+
+#: package-manager.xml.in.nolegal:438(para) 
+msgid "Click on a publisher from the list to select it. Click <guibutton>Remove</guibutton>."
+msgstr "从列表中单击一个出版者以将其选中。单击<guibutton>删除</guibutton>。"
+
+#: package-manager.xml.in.nolegal:440(para) 
+msgid "The <emphasis role=\"strong\">Manage Publishers Confirmation</emphasis> dialog is displayed."
+msgstr "此时会显示<emphasis role=\"strong\">管理出版者确认</emphasis>对话框。"
+
+#: package-manager.xml.in.nolegal:442(para) 
+msgid "Click <guibutton>OK</guibutton> to save the changes and remove the publisher or <guibutton>Cancel</guibutton> to return to the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog without making any changes."
+msgstr "单击<guibutton>确定</guibutton>保存所做的更改，并删除此出版者，或单击<guibutton>取消</guibutton>返回到<emphasis role=\"strong\">管理出版者</emphasis>对话框，而不进行任何更改。"
+
+#: package-manager.xml.in.nolegal:446(title) 
+msgid "Set Publisher Priority"
+msgstr "设置出版者优先级"
+
+#: package-manager.xml.in.nolegal:447(para) 
+msgid "Perform the following steps to set or change the publisher priority:"
+msgstr "执行以下步骤来设置或更改出版者优先级："
+
+#: package-manager.xml.in.nolegal:448(para) 
+msgid "Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> to open the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog."
+msgstr "选择<menuchoice><guimenu>文件</guimenu><guimenuitem>管理出版者</guimenuitem></menuchoice>，以打开<emphasis role=\"strong\">管理出版者</emphasis>对话框。"
+
+#: package-manager.xml.in.nolegal:450(para) 
+msgid "The list of configured publishers is displayed. Click the arrows to change the priority of the publishers. The publisher with the highest priority is displayed at the top of the list."
+msgstr "其中会显示已配置的出版者的列表。单击箭头可更改这些出版者的优先级。优先级最高的出版者显示在列表的顶部。"
+
+#: package-manager.xml.in.nolegal:451(emphasis) 
+msgid "Packages are searched within the publishers in the order of priority, the publisher with the highest priority is searched first."
+msgstr "将会按优先级顺序在出版者内搜索软件包，首先搜索优先级最高的出版者。"
+
+#: package-manager.xml.in.nolegal:453(para) package-manager.xml.in.nolegal:465(para) package-manager.xml.in.nolegal:484(para) package-manager.xml.in.nolegal:503(para) package-manager.xml.in.nolegal:520(para) package-manager.xml.in.nolegal:537(para) 
+msgid "Click <guibutton>OK</guibutton> to save your changes or <guibutton>Cancel</guibutton> to return to the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog without making any changes."
+msgstr "单击<guibutton>确定</guibutton>保存所做的更改，或单击<guibutton>取消</guibutton>返回到<emphasis role=\"strong\">管理出版者</emphasis>对话框，而不进行任何更改。"
+
+#: package-manager.xml.in.nolegal:457(title) 
+msgid "Modify Publisher Alias"
+msgstr "修改出版者别名"
+
+#: package-manager.xml.in.nolegal:458(para) 
+msgid "Perform the following steps to modify the alias of a publisher:"
+msgstr "执行以下步骤来修改出版者的别名："
+
+#: package-manager.xml.in.nolegal:461(para) 
+msgid "Select the publisher whose alias you want to modify. Click <guibutton>Modify..</guibutton>."
+msgstr "选择要修改其别名的出版者。单击<guibutton>修改...</guibutton>。"
+
+#: package-manager.xml.in.nolegal:463(para) 
+msgid "The <emphasis role=\"strong\">Modify Publisher</emphasis> dialog is displayed. Modify or enter a new name of the alias in the <emphasis role=\"strong\">Alias</emphasis> field."
+msgstr "此时会显示<emphasis role=\"strong\">修改出版者</emphasis>对话框。在<emphasis role=\"strong\">别名</emphasis>字段中修改别名或输入一个新的别名。"
+
+#: package-manager.xml.in.nolegal:467(para) package-manager.xml.in.nolegal:486(para) package-manager.xml.in.nolegal:505(para) package-manager.xml.in.nolegal:522(para) package-manager.xml.in.nolegal:539(para) 
+msgid "Click <guibutton>OK</guibutton> in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog to exit the dialog. Note that clicking <guibutton>Cancel</guibutton> in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog will not undo the changes made in the <emphasis role=\"strong\">Modify Publishers</emphasis> dialog."
+msgstr "单击<emphasis role=\"strong\">管理出版者</emphasis>对话框中的<guibutton>确定</guibutton>退出此对话框。请注意，单击<emphasis role=\"strong\">管理出版者</emphasis>对话框中的<guibutton>取消</guibutton>不会撤消在<emphasis role=\"strong\">修改出版者</emphasis>对话框中所做的更改。"
+
+#: package-manager.xml.in.nolegal:471(title) 
+msgid "Add Publisher Origins"
+msgstr "添加出版者原始位置"
+
+#: package-manager.xml.in.nolegal:472(para) 
+msgid "Perform the following steps to add an origin or origins associated with a publisher:"
+msgstr "执行以下步骤来添加与出版者关联的原始位置："
+
+#: package-manager.xml.in.nolegal:475(para) 
+msgid "Select the publisher whose origin you want to modify. The <emphasis role=\"strong\">Details</emphasis> tab in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog displays the origin associated with the publisher."
+msgstr "选择要修改其原始位置的出版者。<emphasis role=\"strong\">管理出版者</emphasis>对话框的<emphasis role=\"strong\">详细信息</emphasis>选项卡中会显示与此出版者关联的原始位置。"
+
+#: package-manager.xml.in.nolegal:477(para) package-manager.xml.in.nolegal:496(para) package-manager.xml.in.nolegal:515(para) package-manager.xml.in.nolegal:532(para) 
+msgid "Click <guibutton>Modify..</guibutton>."
+msgstr "单击<guibutton>修改...</guibutton>。"
+
+#: package-manager.xml.in.nolegal:478(para) 
+msgid "The <emphasis role=\"strong\">Modify Publisher</emphasis> dialog is displayed. Enter the name of the new origin you want to associate with the publisher in the <emphasis role=\"strong\">Origin</emphasis> field. Click <guibutton>Add</guibutton>. The list of associated origins is displayed in the table."
+msgstr "此时会显示<emphasis role=\"strong\">修改出版者</emphasis>对话框。在<emphasis role=\"strong\">原始位置</emphasis>字段中输入要与此出版者关联的新原始位置的名称。单击<guibutton>添加</guibutton>。表中会显示关联的原始位置的列表。"
+
+#: package-manager.xml.in.nolegal:479(para) 
+msgid "You cannot change the origin URI after the origin has been added."
+msgstr "添加原始位置之后，无法更改该原始 URI。"
+
+#: package-manager.xml.in.nolegal:482(para) 
+msgid "(optional) If the origin you have added is a secure origin, add the SSL Key and SSL certificate. <guibutton>Browse</guibutton> to locate the SSL Key and SSL Certificate on your system."
+msgstr "（可选）如果您添加的原始位置是安全原始位置，请添加 SSL 密钥和 SSL 证书。请在系统中<guibutton>浏览</guibutton>以找到 SSL 密钥和 SSL 证书。"
+
+#: package-manager.xml.in.nolegal:490(title) 
+msgid "Remove Publisher Origins"
+msgstr "删除出版者原始位置"
+
+#: package-manager.xml.in.nolegal:491(para) 
+msgid "Perform the following steps to remove an origin or origins associated with a publisher:"
+msgstr "执行以下步骤来删除与出版者关联的原始位置："
+
+#: package-manager.xml.in.nolegal:494(para) 
+msgid "Select the publisher whose origin you want to remove. The <emphasis role=\"strong\">Details</emphasis> tab in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog displays the origin or origins associated with the publisher."
+msgstr "选择要删除其原始位置的出版者。<emphasis role=\"strong\">管理出版者</emphasis>对话框的<emphasis role=\"strong\">详细信息</emphasis>选项卡中会显示与此出版者关联的原始位置。"
+
+#: package-manager.xml.in.nolegal:497(para) 
+msgid "The <emphasis role=\"strong\">Modify Publisher</emphasis> dialog is displayed. The list of associated origins is displayed in the table."
+msgstr "此时会显示<emphasis role=\"strong\">修改出版者</emphasis>对话框。关联的原始位置的列表会显示在表中。"
+
+#: package-manager.xml.in.nolegal:499(para) 
+msgid "Select the origin you want to remove. Click <guibutton>Remove</guibutton>."
+msgstr "选择要删除的原始位置。单击<guibutton>删除</guibutton>。"
+
+#: package-manager.xml.in.nolegal:500(para) 
+msgid "If only one origin is associated with a publisher, it cannot be removed."
+msgstr "如果只有一个原始位置与出版者关联，则无法删除此原始位置。"
+
+#: package-manager.xml.in.nolegal:509(title) 
+msgid "Add Publisher Mirrors"
+msgstr "添加出版者镜像"
+
+#: package-manager.xml.in.nolegal:510(para) 
+msgid "Perform the following steps to add a mirror for a publisher:"
+msgstr "执行以下步骤来为出版者添加镜像："
+
+#: package-manager.xml.in.nolegal:513(para) 
+msgid "Select the publisher for which you want to add the mirror."
+msgstr "选择要为其添加镜像的出版者。"
+
+#: package-manager.xml.in.nolegal:516(para) 
+msgid "The <emphasis role=\"strong\">Modify Publisher</emphasis> dialog is displayed."
+msgstr "此时会显示<emphasis role=\"strong\">修改出版者</emphasis>对话框。"
+
+#: package-manager.xml.in.nolegal:518(para) 
+msgid "Enter the URI for the mirror in the <emphasis>Mirror</emphasis> field. Click <guibutton>Add</guibutton>."
+msgstr "在<emphasis>镜像</emphasis>字段中输入镜像的 URI。单击<guibutton>添加</guibutton>。"
+
+#: package-manager.xml.in.nolegal:526(title) 
+msgid "Remove Publisher Mirrors"
+msgstr "删除出版者镜像"
+
+#: package-manager.xml.in.nolegal:527(para) 
+msgid "Perform the following steps to remove a mirror associated with a publisher:"
+msgstr "执行以下步骤来删除与出版者关联的镜像："
+
+#: package-manager.xml.in.nolegal:530(para) 
+msgid "Select the publisher for which you want to remove the mirror."
+msgstr "选择要删除其镜像的出版者。"
+
+#: package-manager.xml.in.nolegal:533(para) 
+msgid "The <emphasis role=\"strong\">Modify Publisher</emphasis> dialog is displayed. The list of associated mirrors is displayed in the table."
+msgstr "此时会显示<emphasis role=\"strong\">修改出版者</emphasis>对话框。表中会显示关联的镜像的列表。"
+
+#: package-manager.xml.in.nolegal:535(para) 
+msgid "Select the mirror you want to remove. Click <guibutton>Remove</guibutton>."
+msgstr "选择要删除的镜像。单击<guibutton>删除</guibutton>。"
+
+#: package-manager.xml.in.nolegal:544(title) 
+msgid "Working With WebInstall"
+msgstr "使用 WebInstall"
+
+#: package-manager.xml.in.nolegal:545(para) 
+msgid "The OpenSolaris 2010.03 Package Manager provides support for users to add new publishers and optionally, install packages from these publishers using a simple one-click WebInstall process. A <filename>.p5i</filename> file which contains the publishers to be added and optionally, the packages that can be installed from these publishers, is required for the WebInstall process. The information contained in the <filename>.p5i</filename> file is read and used by the WebInstall process."
+msgstr "OpenSolaris 2010.03 软件包管理器支持用户使用简单的单击 WebInstall 进程添加新的出版者，并（可选）安装这些出版者的软件包。<filename>.p5i</filename> 文件包含要添加的出版者，以及（可选）可通过这些出版者安装的软件包，WebInstall 进程需要使用该文件。<filename>.p5i</filename> 文件中包含的信息将由 WebInstall 进程读取和使用。"
+
+#: package-manager.xml.in.nolegal:546(title) 
+msgid "Export Package Selections as WebInstall Files"
+msgstr "将所选软件包作为 WebInstall 文件导出"
+
+#: package-manager.xml.in.nolegal:547(para) 
+msgid "If you want to distribute some of the packages available on your system to others for easy installation and distribution, you can export the references to the packages, using the WebInstall process. The <menuchoice><guisubmenu>File</guisubmenu><guimenuitem>Export Selections</guimenuitem></menuchoice> feature enables you to create a <filename>.p5i</filename> file containing the installation instructions for the selected packages. The <filename>.p5i</filename> file is can then be distributed for use. See the <xref linkend=\"webinstall\"/> section on how to install packages from a <filename>.p5i</filename>."
+msgstr "如果要将系统中的一些可用软件包分发到其他系统以便于安装和分发，则可以使用 WebInstall 进程来导出对软件包的引用。<menuchoice><guisubmenu>文件</guisubmenu><guimenuitem>导出选定项</guimenuitem></menuchoice>功能允许您创建 <filename>.p5i</filename> 文件，该文件包含选定的软件包的安装说明。然后可以分发 <filename>.p5i</filename> 文件以供使用。有关如何通过 <filename>.p5i</filename> 安装软件包的信息，请参见<xref linkend=\"webinstall\"/>一节。"
+
+#: package-manager.xml.in.nolegal:548(para) 
+msgid "The following procedure lists the steps to create a <filename>.p5i</filename> file and export your files."
+msgstr "以下过程列出了创建 <filename>.p5i</filename> 文件和导出您的文件的步骤。"
+
+#: package-manager.xml.in.nolegal:549(para) 
+msgid "From the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu, select the publisher from which you want to include the packages in the <filename>.p5i</filename> file."
+msgstr "从<emphasis role=\"strong\">出版者</emphasis>下拉式菜单中，选择要从其中将软件包包含到 <filename>.p5i</filename> 文件中的出版者。"
+
+#: package-manager.xml.in.nolegal:551(para) 
+msgid "Check the box next to the package or packages to select it. The packages selected are highlighted."
+msgstr "选中软件包旁边的框以选择该软件包。选定的软件包会突出显示。"
+
+#: package-manager.xml.in.nolegal:553(para) 
+msgid "Click <menuchoice><guisubmenu>File</guisubmenu><guimenuitem>Export Selections</guimenuitem></menuchoice> to display the <emphasis role=\"strong\">Export Selections Confirmation</emphasis> window."
+msgstr "单击<menuchoice><guisubmenu>文件</guisubmenu><guimenuitem>导出选定项</guimenuitem></menuchoice>，以显示<emphasis role=\"strong\">导出选定项确认</emphasis>窗口。"
+
+#: package-manager.xml.in.nolegal:555(para) 
+msgid "Click <guibutton>OK</guibutton> to confirm the selections and proceed or <guibutton>Cancel</guibutton> to cancel the selections."
+msgstr "单击<guibutton>确定</guibutton>确认所做选择并继续，或单击<guibutton>取消</guibutton>取消所做选择。"
+
+#: package-manager.xml.in.nolegal:557(para) 
+msgid "The <emphasis role=\"strong\">Export Selections</emphasis> window is displayed."
+msgstr "此时会显示<emphasis role=\"strong\">导出选定项</emphasis>窗口。"
+
+#: package-manager.xml.in.nolegal:559(para) 
+msgid "A default name for the <filename>p5i</filename> file with the extension <filename>.p5i</filename> is provided. Click inside the <emphasis role=\"strong\">Name</emphasis> field to change the name of the <filename>p5i</filename> file."
+msgstr "系统为 <filename>p5i</filename> 文件提供了一个缺省名称，扩展名为 <filename>.p5i</filename>。在<emphasis role=\"strong\">名称</emphasis>字段内单击可更改 <filename>p5i</filename> 文件的名称。"
+
+#: package-manager.xml.in.nolegal:561(para) 
+msgid "The file is saved in the <filename>/tmp</filename> folder by default. Click the <emphasis role=\"strong\">Browse for other folders</emphasis> tab to select your own folder."
+msgstr "缺省情况下，此文件将保存在 <filename>/tmp</filename> 文件夹中。单击<emphasis role=\"strong\">浏览查找其他文件夹</emphasis>选项卡可选择您自己的文件夹。"
+
+#: package-manager.xml.in.nolegal:563(para) 
+msgid "Choose the <filename>p5i Files</filename> option in the drop-down menu located at the bottom right hand side of the window."
+msgstr "在该窗口右下侧的下拉式菜单中选择 <filename>p5i 文件</filename>选项。"
+
+#: package-manager.xml.in.nolegal:567(title) 
+msgid "How to Use WebInstall to Add Publishers and Install Packages"
+msgstr "如何使用 WebInstall 添加出版者和安装软件包"
+
+#: package-manager.xml.in.nolegal:568(para) 
+msgid "The WebInstall process enables you to install packages through a <filename>p5i</filename> file."
+msgstr "WebInstall 进程允许您通过 <filename>p5i</filename> 文件安装软件包。"
+
+#: package-manager.xml.in.nolegal:569(para) 
+msgid "Locate the <filename>.p5i</filename> file which may be present on your desktop, the Start page in the Package Manager, or on a website."
+msgstr ""
+       "找到 <filename>.p5i</filename> 文件，该文件可能在"
+       "桌面、软件包管理器中的起始页面，或 Web 站点上。"
+
+#: package-manager.xml.in.nolegal:571(para) 
+msgid "Start the Package Manager in WebInstall mode in one of the following ways:"
+msgstr "采用以下方式之一，在 WebInstall 模式下启动软件包管理器："
+
+#: package-manager.xml.in.nolegal:572(para) 
+msgid "Click on a <filename>.p5i</filename> file on your desktop, and the associated application, Package Manager in WebInstall mode, will be launched."
+msgstr ""
+       "单击桌面上的 <filename>.p5i</filename> 文件，"
+       "处于 WebInstall 模式下的关联应用程序（即软件包管理器）将会启动。"
+
+#: package-manager.xml.in.nolegal:574(para) 
+msgid "Start the Package Manager from the command-line along with a path to the <filename>.p5i</filename> file. For example, type the following command at the command-line:"
+msgstr ""
+       "从命令行启动软件包管理器，并附上 <filename>.p5i"
+       "</filename> 文件的路径。例如，在命令行上键入"
+       "以下命令："
+
+#: package-manager.xml.in.nolegal:575(replaceable) 
+msgid "path_to_p5i_file/file.p5i"
+msgstr "path_to_p5i_file/file.p5i"
+
+#: package-manager.xml.in.nolegal:575(command) 
+msgid "$ pfexec packagemanager/<placeholder-1/>"
+msgstr "$ pfexec packagemanager/<placeholder-1/>"
+
+#: package-manager.xml.in.nolegal:577(para) 
+msgid "Click on a URL location that contains a link to <filename>.p5i</filename> file. If you are using this method to start WebInstall, the <filename>.p5i</filename> file <emphasis role=\"strong\">must</emphasis> be located on a web server that has registered the new mime type. Only then, the web server can manage the <filename>.p5i</filename> automatically and start Package Manager in WebInstall mode."
+msgstr "单击包含指向 <filename>.p5i</filename> 文件的链接的 URL 位置。如果您要使用此方法启动 WebInstall，则 <filename>.p5i</filename> 文件<emphasis role=\"strong\">必须</emphasis>位于已注册新的 MIME 类型的 Web 服务器上。只有这样，Web 服务器才能自动管理 <filename>.p5i</filename> 并在 WebInstall 模式下启动软件包管理器。"
+
+#: package-manager.xml.in.nolegal:578(para) 
+msgid "If the <filename>.p5i</filename> is located on a web server that does not have the new mime type registered, save the <filename>.p5i</filename> file to your desktop and then click on it to launch Web Install."
+msgstr ""
+       "如果 <filename>.p5i</filename> 位于没有注册新的 MIME 类型"
+       "的 Web 服务器上，请将 <filename>.p5i</filename> 文件"
+       "保存到桌面，然后单击该文件以启动 WebInstall。"
+
+#: package-manager.xml.in.nolegal:582(para) 
+msgid "You will see a window similar to the example window shown below. The window shows a list of publishers that will be added and the packages that will be installed. Review the information."
+msgstr "您将看到一个类似于如下所示的示例窗口的窗口。此窗口显示将要添加的出版者以及将要安装的软件包的列表。请查看这些信息。"
+
+#: package-manager.xml.in.nolegal:586(para) 
+msgid "Confirm or cancel the WebInstall process."
+msgstr "确认或取消 WebInstall 进程。"
+
+#: package-manager.xml.in.nolegal:587(para) 
+msgid "Click <guibutton>Proceed</guibutton> to add the new publishers and install the packages."
+msgstr "单击<guibutton>继续</guibutton>以添加新的出版者并安装软件包。"
+
+#: package-manager.xml.in.nolegal:589(para) 
+msgid "The <emphasis role=\"strong\">Add Publisher</emphasis> dialog is displayed. The name and URI of the publisher is already entered."
+msgstr "此时会显示<emphasis role=\"strong\">添加出版者</emphasis>对话框。已经输入了此出版者的名称和 URI。"
+
+#: package-manager.xml.in.nolegal:590(para) 
+msgid "The <emphasis role=\"strong\">Adding Publisher Complete</emphasis> dialog is displayed if the publisher has been added successfully."
+msgstr "如果成功添加了出版者，则会显示<emphasis role=\"strong\">添加出版者完成</emphasis>对话框。"
+
+#: package-manager.xml.in.nolegal:592(para) 
+msgid "(Optional) If the publishers to be added are secure publishers, an SSL key and certificate is required. Browse to locate the SSL Key and SSL Certificate on your system."
+msgstr "（可选）如果要添加的出版者是安全出版者，则需要提供 SSL 密钥和证书。请在系统中浏览以找到 SSL 密钥和 SSL 证书。"
+
+#: package-manager.xml.in.nolegal:594(para) 
+msgid "Click <guibutton>OK</guibutton> to proceed."
+msgstr "单击<guibutton>确定</guibutton>以继续。"
+
+#: package-manager.xml.in.nolegal:596(para) 
+msgid "If packages are being installed, the <emphasis role=\"strong\">Install/Update</emphasis> dialog is displayed."
+msgstr "如果正在安装软件包，则会显示<emphasis role=\"strong\">安装/更新</emphasis>对话框。"
+
+#: package-manager.xml.in.nolegal:597(para) 
+msgid "The application will close when all packages are installed."
+msgstr "安装所有软件包后，应用程序将会关闭。"
+
+#: package-manager.xml.in.nolegal:601(title) 
+msgid "Using WebInstall With a Disabled Publisher"
+msgstr "在已禁用出版者的情况下使用 WebInstall"
+
+#: package-manager.xml.in.nolegal:602(para) 
+msgid "Sometimes a <filename>.p5i</filename> file may contain packages from a disabled publisher. In such cases WebInstall opens up an <emphasis role=\"strong\">Enable Publisher</emphasis> dialog which allows the user to enable the publisher before installing packages."
+msgstr "有时，<filename>.p5i</filename> 文件可能包含来自已禁用的出版者的软件包。在这种情况下，WebInstall 会打开<emphasis role=\"strong\">启用出版者</emphasis>对话框，以允许用户启用此出版者，然后安装软件包。"
+
+#: package-manager.xml.in.nolegal:605(title) 
+msgid "Working With the Update Manager"
+msgstr "使用更新管理器"
+
+#: package-manager.xml.in.nolegal:606(title) 
+msgid "About The Update Manager"
+msgstr "关于更新管理器"
+
+#: package-manager.xml.in.nolegal:607(para) 
+msgid "The Update Manager is a separate application that starts from the desktop when updates to the installed packages are available in the publisher."
+msgstr "更新管理器是一个独立的应用程序，在出版者中有可用于已安装软件包的更新时，它将从桌面启动。"
+
+#: package-manager.xml.in.nolegal:608(title) 
+msgid "Update Manager Main Window"
+msgstr "更新管理器主窗口"
+
+#: package-manager.xml.in.nolegal:612(para) 
+msgid "You can use the Update Manager application to update the installed packages in your image. The Update Manager uses the publisher that is currently set in the Package Manager to install the latest image."
+msgstr "您可以使用更新管理器应用程序更新映像中的已安装软件包。更新管理器使用当前在软件包管理器中设置的出版者安装最新映像。"
+
+#: package-manager.xml.in.nolegal:613(para) 
+msgid "For the OpenSolaris 2010.03 release, the Update Manager updates <emphasis role=\"strong\">all</emphasis> installed packages in the image. This action is equivalent to running the <command>pkg image-update</command> command from the command-line."
+msgstr "对于 OpenSolaris 2010.03 发行版，更新管理器将更新映像中的<emphasis role=\"strong\">所有</emphasis>已安装软件包。此操作等同于从命令行运行 <command>pkg image-update</command> 命令。"
+
+#: package-manager.xml.in.nolegal:616(title) 
+msgid "Using the Update Manager"
+msgstr "使用更新管理器"
+
+#: package-manager.xml.in.nolegal:617(para) 
+msgid "When updates are available to the installed packages, a notification icon is displayed in the notification panel on the OpenSolaris desktop."
+msgstr ""
+       "当已安装软件包具有可用更新时，OpenSolaris 桌面上的"
+       "通知面板中将显示一个通知图标。"
+
+#: package-manager.xml.in.nolegal:618(para) 
+msgid "You can also click <menuchoice><guimenu>System</guimenu><guisubmenu>Administration</guisubmenu><guimenuitem>Update Manager</guimenuitem></menuchoice> to manually launch the Update Manager."
+msgstr ""
+       "也可以通过单击<menuchoice><guimenu>系统</"
+       "guimenu><guisubmenu>管理</guisubmenu><guimenuitem>更新管理器</"
+       "guimenuitem></menuchoice>来手动启动更新管理器。"
+
+#: package-manager.xml.in.nolegal:619(para) 
+msgid "When you are notified of a software update, perform the following steps to begin the process of updating your system:"
+msgstr ""
+       "当您得到软件更新通知时，请执行以下步骤"
+       "开始系统更新过程："
+
+#: package-manager.xml.in.nolegal:620(para) 
+msgid "Click the notification icon on the desktop to display the <emphasis role=\"strong\">Update Manager</emphasis> window."
+msgstr "单击桌面上的通知图标以显示<emphasis role=\"strong\">更新管理器</emphasis>窗口。"
+
+#: package-manager.xml.in.nolegal:622(para) 
+msgid "Click <guibutton>Update All</guibutton> in the <emphasis role=\"strong\">Update Manager</emphasis> window."
+msgstr "在<emphasis role=\"strong\">更新管理器</emphasis>窗口中单击<guibutton>全部更新</guibutton>。"
+
+#: package-manager.xml.in.nolegal:623(para) 
+msgid "Select a package and click the <guilabel>Details</guilabel> panel if you want to view more information about the package."
+msgstr ""
+       "如果要查看有关某个软件包的更多信息，请选择该软件包，然后"
+       "单击<guilabel>详细信息</guilabel>面板。"
+
+#: package-manager.xml.in.nolegal:626(para) 
+msgid "The <emphasis role=\"strong\">Update All</emphasis> dialog is displayed. Proceed with the Update All process or cancel the action."
+msgstr "此时会显示<emphasis role=\"strong\">全部更新</emphasis>对话框。继续执行“全部更新”过程或取消该操作。"
+
+#: package-manager.xml.in.nolegal:627(para) 
+msgid "Click <guibutton>Proceed</guibutton> to create a new boot environment and update all packages in the current image."
+msgstr ""
+       "单击<guibutton>继续</guibutton>以创建新的引导环境并更新"
+       "当前映像中的所有软件包。"
+
+#: package-manager.xml.in.nolegal:628(para) 
+msgid "During the Update All process, a clone of the active boot environment is created. This clone enables the user to boot into the boot environment state that existed before the Update All process was started."
+msgstr ""
+       "在“全部更新”过程中，将会创建活动引导环境的克隆。"
+       "借助此克隆，用户可以引导至“全部更新”过程开始"
+       "之前存在的引导环境状态。"
+
+#: package-manager.xml.in.nolegal:629(para) 
+msgid "If the Package Manager is unable to create a new boot environment, an error message will be displayed. See the <xref linkend=\"gileh\"/> section on how to rectify the error and continue with updating your image."
+msgstr ""
+       "如果软件包管理器无法创建新的引导环境，则会显示一条错误消息。"
+       "有关如何纠正错误并继续更新映像的信息，请参见"
+       "<xref linkend=\"gileh\"/>一节。"
+
+#: package-manager.xml.in.nolegal:630(para) 
+msgid "A name for the new boot environment is automatically generated. You can accept the name generated by the system, or provide your own name for the boot environment."
+msgstr ""
+       "系统会自动生成新引导环境的名称。您可以接受"
+       "系统生成的名称，也可以为引导环境提供您"
+       "自己的名称。"
+
+#: package-manager.xml.in.nolegal:633(para) 
+msgid "Click <guibutton>Cancel</guibutton> to cancel the process."
+msgstr "单击<guibutton>取消</guibutton>可取消此过程。"
+
+#: package-manager.xml.in.nolegal:637(para) 
+msgid "If you chose to proceed, the <emphasis role=\"strong\">Installing Updates</emphasis> windows are displayed. The package installation process consists of four stages:"
+msgstr "如果选择继续，则会显示<emphasis role=\"strong\">正在安装更新</emphasis>窗口。软件包安装过程包含四个阶段："
+
+#: package-manager.xml.in.nolegal:638(para) 
+msgid "Prepare"
+msgstr "准备"
+
+#: package-manager.xml.in.nolegal:640(para) 
+msgid "Download."
+msgstr "下载。"
+
+#: package-manager.xml.in.nolegal:642(para) 
+msgid "Install."
+msgstr "安装。"
+
+#: package-manager.xml.in.nolegal:645(para) 
+msgid "You can choose to cancel the process only during the <emphasis role=\"strong\">Prepare</emphasis> and <emphasis role=\"strong\">Download</emphasis> stages."
+msgstr "您只能在<emphasis role=\"strong\">准备</emphasis>和<emphasis role=\"strong\">下载</emphasis>阶段中选择取消此过程。"
+
+#: package-manager.xml.in.nolegal:646(para) 
+msgid "Click the <guilabel>Details</guilabel> panel to view more information about each of the installation processes."
+msgstr ""
+       "单击<guilabel>详细信息</guilabel>面板以查看有关每个"
+       "安装过程的更多信息。"
+
+#: package-manager.xml.in.nolegal:647(para) 
+msgid "If an error occurs during any of the stages, the <guilabel>Details</guilabel> panel is expanded and the details of the error are displayed. An error status indicator is shown next to the failed stage."
+msgstr ""
+       "如果在任何阶段出现错误，<guilabel>详细信息</"
+       "guilabel>面板将会展开，并且将会显示错误的详细信息。"
+       "错误状态指示符将显示在失败的阶段旁边。"
+
+#: package-manager.xml.in.nolegal:650(para) 
+msgid "Read the <xref linkend=\"release_notes\"/> before rebooting your system."
+msgstr ""
+       "重新引导系统之前，请先阅读<xref linkend=\"release_notes\"/>。"
+
+#: package-manager.xml.in.nolegal:651(para) 
+msgid "You must reboot your system for the changes to take effect."
+msgstr "必须重新引导系统，更改才会生效。"
+
+#: package-manager.xml.in.nolegal:657(para) 
+msgid "A new boot environment clone <emphasis role=\"strong\">must</emphasis> be created for the Update All process to be completed. The following error message is displayed if a boot environment clone cannot be created due to space restrictions :"
+msgstr ""
+       "<emphasis role=\"strong\">必须</emphasis>创建一个新的"
+       "引导环境克隆，“全部更新”过程才能完成。如果由于"
+       "空间限制而无法创建引导环境克隆，则会显示以下"
+       "错误消息："
+
+#: package-manager.xml.in.nolegal:658(para) 
+msgid "<literal>Not enough disk space, the Update All action cannot be performed. Choose Manage BE to manage your boot environments and free up disk space</literal>."
+msgstr "<literal>没有足够的磁盘空间，无法执行“全部更新”操作。选择“管理引导环境”可管理您的引导环境，并释放磁盘空间</literal>。"
+
+#: package-manager.xml.in.nolegal:661(para) 
+msgid "Click <guibutton>Manage BE</guibutton> in the error dialog to go to the <emphasis role=\"strong\">Manage Boot Environments</emphasis> dialog."
+msgstr "单击错误对话框中的<guibutton>管理引导环境</guibutton>以转到<emphasis role=\"strong\">管理引导环境</emphasis>对话框。"
+
+#: package-manager.xml.in.nolegal:663(para) 
+msgid "Go to step 2 in the <xref linkend=\"gilfh\"/> section. Follow the instructions to delete old or unused boot environments and free up disk space."
+msgstr ""
+       "转到<xref linkend=\"gilfh\"/>一节中的步骤 2。"
+       "按照说明删除旧的或未使用的引导环境并释放磁盘"
+       "空间。"
+
+#: package-manager.xml.in.nolegal:665(para) 
+msgid "Click <guibutton>Update All</guibutton> in the <emphasis role=\"strong\">Update Manager</emphasis> window to restart the process of updating all packages."
+msgstr "单击<emphasis role=\"strong\">更新管理器</emphasis>窗口中的<guibutton>全部更新</guibutton>，以重新启动更新所有软件包的过程。"
+
+#: package-manager.xml.in.nolegal:669(title) 
+msgid "2010.03 Release Notes"
+msgstr "2010.03 发行说明"
+
+#: package-manager.xml.in.nolegal:670(para) 
+msgid "The Release Notes for 2010.03 are available at the following location: <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"/>."
+msgstr "可在以下位置找到 2010.03 的发行说明：<ulink url=\"http://docs.sun.com/source/820-7679/index.html\"/>。"
+
+#: package-manager.xml.in.nolegal:674(title) 
+msgid "Image Packaging System Glossary"
+msgstr "映像包管理系统词汇表"
+
+#: package-manager.xml.in.nolegal:675(glossterm) 
+msgid "publisher"
+msgstr "出版者"
+
+#: package-manager.xml.in.nolegal:676(para) 
+msgid "A person, group, or corporation that provides packages. Packages for a publisher are found in a repository, from which the package system retrieves package data."
+msgstr "提供软件包的个人、组或公司。可在系统信息库中找到出版者的软件包，软件包系统从系统信息库中检索软件包数据。"
+
+#: package-manager.xml.in.nolegal:679(glossterm) 
+msgid "repository"
+msgstr "系统信息库"
+
+#: package-manager.xml.in.nolegal:680(para) 
+msgid "A location where clients can publish and retrieve package content such as files contained within the package, and package metadata which includes information about the package such as its name and description."
+msgstr "一个位置，客户机可在该位置发布和检索软件包内容（如软件包中包含的文件）和软件包元数据（包含有关软件包的信息，如软件包名称和描述）。"
+
+#: package-manager.xml.in.nolegal:683(glossterm) 
+msgid "boot environment"
+msgstr "引导环境"
+
+#: package-manager.xml.in.nolegal:684(para) 
+msgid "For an OpenSolaris 2010.03 release, a boot environment is an instance of a bootable OpenSolaris environment. The root file system and all other file systems of the boot environment that contain system software are required to be ZFS datasets."
+msgstr "对于 OpenSolaris 2010.03 发行版，引导环境指的是可引导的 OpenSolaris 环境的实例。包含系统软件的引导环境的根文件系统和所有其他文件系统必需是 ZFS 数据集。"
+
+#: package-manager.xml.in.nolegal:685(para) 
+msgid "The active boot environment is the one that is currently booted. Many boot environments can present on an OpenSolaris system and an inactive boot environment can be in a state of waiting for activation upon system reboot."
+msgstr ""
+       "活动引导环境是当前引导的环境。OpenSolaris 系统"
+       "上可以存在许多引导环境，非活动引导环境可以"
+       "处于等待状态，以供在系统重新引导时激活。"
+
+#: package-manager.xml.in.nolegal:688(glossterm) 
+msgid "clone"
+msgstr "克隆"
+
+#: package-manager.xml.in.nolegal:689(para) 
+msgid "An exact copy."
+msgstr "完全相同的副本。"
+
+#: package-manager.xml.in.nolegal:690(para) 
+msgid "A clone could be an exact copy of an operating system, a file system, or a volume. This copy has 100% compatibility with the original."
+msgstr ""
+       "克隆可以是某个操作系统、文件系统或卷的完全相同的"
+       "副本。此副本与其原版 100% 兼容。"
+
+#: package-manager.xml.in.nolegal:693(glossterm) 
+msgid "dataset"
+msgstr "数据集"
+
+#: package-manager.xml.in.nolegal:694(para) 
+msgid "A generic name for the following ZFS entities: clones, file systems, snapshots, or volumes. Each dataset is identified by a unique name in the ZFS namespace."
+msgstr ""
+       "以下 ZFS 实体的通用名称：克隆、文件系统、"
+       "快照或卷。每个数据集都由 ZFS 名称空间中的"
+       "唯一名称标识。"
+
+#: package-manager.xml.in.nolegal:697(glossterm) 
+msgid "image"
+msgstr "映像"
+
+#: package-manager.xml.in.nolegal:698(para) 
+msgid "A collection of software in a package that comprises an entire or partial operating system. The package is suitable for installation."
+msgstr ""
+       "包含整个或部分操作系统的软件包中的软件集合。"
+       "该软件包适用于安装。"
+
+#: package-manager.xml.in.nolegal:699(para) 
+msgid "An image is a location on your system where packages and their associated files, directories, links, and dependencies can be installed."
+msgstr ""
+       "映像是系统中的一个位置，可以在该位置安装软件包及其关联"
+       "文件、目录、链接和相关项。"
+
+#: package-manager.xml.in.nolegal:702(glossterm) 
+msgid "package"
+msgstr "软件包"
+
+#: package-manager.xml.in.nolegal:703(para) 
+msgid "A collection of files, directories, links, drivers, and dependencies in a defined format."
+msgstr ""
+       "某种已定义格式的文件、目录、链接、驱动程序和相关项的集合。"
+
+#: package-manager.xml.in.nolegal:706(glossterm) 
+msgid "origin"
+msgstr "原始位置"
+
+#: package-manager.xml.in.nolegal:707(para) 
+msgid "Location of a package repository specified by a URI, that contains a complete set of package data."
+msgstr "通过 URI 指定的软件包系统信息库的位置，其中包含一组完整的软件包数据。"
+
+#: package-manager.xml.in.nolegal:710(glossterm) 
+msgid "alias"
+msgstr "别名"
+
+#: package-manager.xml.in.nolegal:711(para) 
+msgid "An alternate name for a publisher."
+msgstr "出版者的备用名称。"
+
+#: package-manager.xml.in.nolegal:714(glossterm) 
+msgid "mirror"
+msgstr "镜像"
+
+#: package-manager.xml.in.nolegal:715(para) 
+msgid "Location of a package repository, specified by a URI, that contains only package files."
+msgstr "通过 URI 指定的软件包系统信息库的位置，其中仅包含软件包文件。"
+
+#. Put one translator per line, in the form of NAME <EMAIL>, YEAR1, YEAR2.
+#: package-manager.xml.in.nolegal:0(None) 
+msgid "translator-credits"
+msgstr "Sun Microsystems"
+
 
 #: package-manager.xml:15(para)
 msgid ""
@@ -195,2170 +1692,3 @@ msgstr ""
 "除非此免责声明的适用范围在法律上"
 "无效。"
 
-#: package-manager.xml:24(para)
-msgid ""
-"Sun Microsystems, Inc. détient les droits de propriété intellectuelle "
-"relatifs à la technologie incorporée dans le produit qui est décrit dans ce "
-"document. En particulier, et ce sans limitation, ces droits de propriété "
-"intellectuelle peuvent inclure un ou plusieurs brevets américains ou des "
-"applications de brevet en attente aux Etats-Unis et dans d'autres pays."
-msgstr ""
-"Sun Microsystems, Inc. détient les droits de propriété intellectuelle "
-"relatifs à la technologie incorporée dans le produit qui est décrit dans ce "
-"document. En particulier, et ce sans limitation, ces droits de propriété "
-"intellectuelle peuvent inclure un ou plusieurs brevets américains ou des "
-"applications de brevet en attente aux Etats-Unis et dans d'autres pays."
-
-#: package-manager.xml:25(para)
-msgid ""
-"Cette distribution peut comprendre des composants développés par des tierces "
-"personnes."
-msgstr ""
-"Cette distribution peut comprendre des composants développés par des tierces "
-"personnes."
-
-#: package-manager.xml:26(para)
-msgid ""
-"Certaines composants de ce produit peuvent être dérivées du logiciel "
-"Berkeley BSD, licenciés par l'Université de Californie. UNIX est une marque "
-"déposée aux Etats-Unis et dans d'autres pays; elle est licenciée "
-"exclusivement par X/Open Company, Ltd."
-msgstr ""
-"Certaines composants de ce produit peuvent être dérivées du logiciel "
-"Berkeley BSD, licenciés par l'Université de Californie. UNIX est une marque "
-"déposée aux Etats-Unis et dans d'autres pays; elle est licenciée "
-"exclusivement par X/Open Company, Ltd."
-
-#: package-manager.xml:27(para)
-msgid ""
-"Sun, Sun Microsystems, le logo Sun, le logo Solaris, le logo Java Coffee "
-"Cup, docs.sun.com, Java et Solaris sont des marques de fabrique ou des "
-"marques déposées de Sun Microsystems, Inc., ou ses filiales, aux Etats-Unis "
-"et dans d'autres pays. Toutes les marques SPARC sont utilisées sous licence "
-"et sont des marques de fabrique ou des marques déposées de SPARC "
-"International, Inc. aux Etats-Unis et dans d'autres pays. Les produits "
-"portant les marques SPARC sont basés sur une architecture développée par Sun "
-"Microsystems, Inc."
-msgstr ""
-"Sun, Sun Microsystems, le logo Sun, le logo Solaris, le logo Java Coffee "
-"Cup, docs.sun.com, Java et Solaris sont des marques de fabrique ou des "
-"marques déposées de Sun Microsystems, Inc., ou ses filiales, aux Etats-Unis "
-"et dans d'autres pays. Toutes les marques SPARC sont utilisées sous licence "
-"et sont des marques de fabrique ou des marques déposées de SPARC "
-"International, Inc. aux Etats-Unis et dans d'autres pays. Les produits "
-"portant les marques SPARC sont basés sur une architecture développée par Sun "
-"Microsystems, Inc."
-
-#: package-manager.xml:28(para)
-msgid ""
-"L'interface d'utilisation graphique OPEN LOOK et Sun a été développée par "
-"Sun Microsystems, Inc. pour ses utilisateurs et licenciés. Sun reconnaît les "
-"efforts de pionniers de Xerox pour la recherche et le développement du "
-"concept des interfaces d'utilisation visuelle ou graphique pour l'industrie "
-"de l'informatique. Sun détient une licence non exclusive de Xerox sur "
-"l'interface d'utilisation graphique Xerox, cette licence couvrant également "
-"les licenciés de Sun qui mettent en place l'interface d'utilisation "
-"graphique OPEN LOOK et qui, en outre, se conforment aux licences écrites de "
-"Sun."
-msgstr ""
-"L'interface d'utilisation graphique OPEN LOOK et Sun a été développée par "
-"Sun Microsystems, Inc. pour ses utilisateurs et licenciés. Sun reconnaît les "
-"efforts de pionniers de Xerox pour la recherche et le développement du "
-"concept des interfaces d'utilisation visuelle ou graphique pour l'industrie "
-"de l'informatique. Sun détient une licence non exclusive de Xerox sur "
-"l'interface d'utilisation graphique Xerox, cette licence couvrant également "
-"les licenciés de Sun qui mettent en place l'interface d'utilisation "
-"graphique OPEN LOOK et qui, en outre, se conforment aux licences écrites de "
-"Sun."
-
-#: package-manager.xml:29(para)
-msgid ""
-"Les produits qui font l'objet de cette publication et les informations qu'il "
-"contient sont régis par la legislation américaine en matière de contrôle des "
-"exportations et peuvent être soumis au droit d'autres pays dans le domaine "
-"des exportations et importations. Les utilisations finales, ou utilisateurs "
-"finaux, pour des armes nucléaires, des missiles, des armes chimiques ou "
-"biologiques ou pour le nucléaire maritime, directement ou indirectement, "
-"sont strictement interdites. Les exportations ou réexportations vers des "
-"pays sous embargo des Etats-Unis, ou vers des entités figurant sur les "
-"listes d'exclusion d'exportation américaines, y compris, mais de manière non "
-"exclusive, la liste de personnes qui font objet d'un ordre de ne pas "
-"participer, d'une façon directe ou indirecte, aux exportations des produits "
-"ou des services qui sont régis par la legislation américaine en matière de "
-"contrôle des exportations et la liste de ressortissants spécifiquement "
-"designés, sont rigoureusement interdites."
-msgstr ""
-"Les produits qui font l'objet de cette publication et les informations qu'il "
-"contient sont régis par la legislation américaine en matière de contrôle des "
-"exportations et peuvent être soumis au droit d'autres pays dans le domaine "
-"des exportations et importations. Les utilisations finales, ou utilisateurs "
-"finaux, pour des armes nucléaires, des missiles, des armes chimiques ou "
-"biologiques ou pour le nucléaire maritime, directement ou indirectement, "
-"sont strictement interdites. Les exportations ou réexportations vers des "
-"pays sous embargo des Etats-Unis, ou vers des entités figurant sur les "
-"listes d'exclusion d'exportation américaines, y compris, mais de manière non "
-"exclusive, la liste de personnes qui font objet d'un ordre de ne pas "
-"participer, d'une façon directe ou indirecte, aux exportations des produits "
-"ou des services qui sont régis par la legislation américaine en matière de "
-"contrôle des exportations et la liste de ressortissants spécifiquement "
-"designés, sont rigoureusement interdites."
-
-#: package-manager.xml:30(para)
-msgid ""
-"LA DOCUMENTATION EST FOURNIE \"EN L'ETAT\" ET TOUTES AUTRES CONDITIONS, "
-"DECLARATIONS ET GARANTIES EXPRESSES OU TACITES SONT FORMELLEMENT EXCLUES, "
-"DANS LA MESURE AUTORISEE PAR LA LOI APPLICABLE, Y COMPRIS NOTAMMENT TOUTE "
-"GARANTIE IMPLICITE RELATIVE A LA QUALITE MARCHANDE, A L'APTITUDE A UNE "
-"UTILISATION PARTICULIERE OU A L'ABSENCE DE CONTREFACON."
-msgstr ""
-"LA DOCUMENTATION EST FOURNIE \"EN L'ETAT\" ET TOUTES AUTRES CONDITIONS, "
-"DECLARATIONS ET GARANTIES EXPRESSES OU TACITES SONT FORMELLEMENT EXCLUES, "
-"DANS LA MESURE AUTORISEE PAR LA LOI APPLICABLE, Y COMPRIS NOTAMMENT TOUTE "
-"GARANTIE IMPLICITE RELATIVE A LA QUALITE MARCHANDE, A L'APTITUDE A UNE "
-"UTILISATION PARTICULIERE OU A L'ABSENCE DE CONTREFACON."
-
-#: package-manager.xml:33(title)
-msgid "About the Package Manager"
-msgstr "关于软件包管理器"
-
-#: package-manager.xml:34(para)
-msgid ""
-"Welcome to the <trademark>OpenSolaris</trademark> 2009.06 Package Manager "
-"online help!"
-msgstr ""
-"欢迎使用 <trademark>OpenSolaris</trademark> 2009.06 软件包管理器"
-"联机帮助！"
-
-#: package-manager.xml:35(para)
-msgid ""
-"Use this help contents to learn how to use the Package Manager. Navigate "
-"through this help by clicking the topics displayed in the sidebar."
-msgstr ""
-"使用本帮助内容可学习如何使用软件包管理器。"
-"可通过单击侧栏中显示的主题来浏览本帮助。"
-
-#: package-manager.xml:36(para)
-msgid ""
-"The OpenSolaris 2009.06 Package Manager application is a graphical user "
-"interface for the Image Packaging System (IPS) software."
-msgstr ""
-"OpenSolaris 2009.06 软件包管理器应用程序是映像包管理"
-"系统 (Image Packaging System, IPS) 软件的图形用户界面。"
-
-#: package-manager.xml:37(para)
-msgid "The Package Manager enables you to perform the following tasks:"
-msgstr "使用软件包管理器，您可以执行以下任务："
-
-#: package-manager.xml:38(para)
-msgid "Search, install, and remove packages"
-msgstr "搜索、安装和删除软件包"
-
-#: package-manager.xml:40(para)
-msgid "Update your system"
-msgstr "更新系统"
-
-#: package-manager.xml:42(para)
-msgid "Add and modify repositories"
-msgstr "添加和修改系统信息库"
-
-#: package-manager.xml:44(para)
-msgid "Create, remove, and manage boot environments"
-msgstr "创建、删除和管理引导环境"
-
-#: package-manager.xml:47(para)
-msgid ""
-"See the <xref linkend=\"glossary\"/> for a definition of the terms used in "
-"this document."
-msgstr ""
-"有关本文档中所使用术语的定义，请参见"
-"<xref linkend=\"glossary\"/>。"
-
-#: package-manager.xml:49(title)
-msgid "About Image Packaging System"
-msgstr "关于映像包管理系统"
-
-#: package-manager.xml:50(para)
-msgid ""
-"Image Packaging System (IPS) is a software delivery system that interacts "
-"with a network repository. The IPS software is a framework which provides "
-"for software lifecycle management including installation, upgrade, and "
-"removal."
-msgstr ""
-"映像包管理系统 (Image Packaging System, IPS) 是与网络"
-"系统信息库进行交互的一种软件交付系统。IPS 软件是为进行"
-"软件生命周期管理（包括安装、升级和删除）而提供的一种"
-"框架。"
-
-#: package-manager.xml:51(para)
-msgid "The OpenSolaris 2009.06 release uses IPS as its packaging system."
-msgstr "OpenSolaris 2009.06 发行版使用 IPS 作为其打包系统。"
-
-#: package-manager.xml:52(para)
-msgid ""
-"After an initial installation of OpenSolaris 2009.06 operating system, you "
-"will find that many of the software applications that you use on a regular "
-"basis are not immediately available to you. These software applications are "
-"available as packages in a repository for downloading and installing over "
-"the Internet. A repository is a source for packages."
-msgstr ""
-"初始安装 OpenSolaris 2009.06 操作系统后，您"
-"将发现定期使用的许多软件应用程序并不能立即"
-"使用。这些软件应用程序会作为系统信息库中的"
-"软件包提供，可以通过 Internet 进行下载和"
-"安装。系统信息库是软件包的源。"
-
-#: package-manager.xml:53(para)
-msgid ""
-"Users can use IPS to install packages from a repository, create and publish "
-"their own IPS packages, mirror an existing repository, and publish existing "
-"packages to a repository."
-msgstr ""
-"用户可以使用 IPS 安装系统信息库中的软件包，创建并发布"
-"自己的 IPS 软件包，镜像现有系统信息库，并将现有"
-"软件包发布到系统信息库。"
-
-#: package-manager.xml:54(para)
-msgid ""
-"Once you have installed packages, IPS enables you to search, update, and "
-"manage packages on your system."
-msgstr ""
-"安装软件包之后，您可以使用 IPS 来搜索、更新和"
-"管理系统中的软件包。"
-
-#: package-manager.xml:55(para)
-msgid ""
-"With IPS , you can upgrade your system to a newer build of OpenSolaris, "
-"install and update your software to the latest available versions in a "
-"repository, and retrieve packages from mirror repositories."
-msgstr ""
-"使用 IPS，您可以将系统升级至 OpenSolaris 的较新内部版本，"
-"安装系统信息库中的软件并将其更新至系统信息库中的最新可用"
-"版本，还可以从镜像系统信息库中检索软件包。"
-
-#: package-manager.xml:56(emphasis)
-msgid ""
-"The Package Manager provides a subset of the tasks that can be performed "
-"from the command-line."
-msgstr ""
-"软件包管理器提供了可通过命令行执行的"
-"任务子集。"
-
-#: package-manager.xml:58(para)
-msgid ""
-"If the system on which IPS is installed is on the network, IPS can "
-"automatically access the OpenSolaris repository. For the OpenSolaris 2009.06 "
-"release, your IPS client can access the packages from <ulink url=\"http://"
-"pkg.opensolaris.org\"/>."
-msgstr ""
-"如果安装 IPS 的系统位于网络上，则 IPS 可以"
-"自动访问 OpenSolaris 系统信息库。对于 OpenSolaris 2009.06 "
-"发行版，IPS 客户机可以从 <ulink url=\"http://"
-"pkg.opensolaris.org\"/> 访问软件包。"
-
-#: package-manager.xml:59(para)
-msgid ""
-"For more information about IPS, see the <ulink url=\"http://dlc.sun.com/osol/"
-"docs/content/2009.06/IMGPACKAGESYS/\">Image Packaging System Guide</ulink> "
-"and the IPS <ulink url=\"http://opensolaris.org/sc/src/pkg/gate/src/man/"
-"\">man pages</ulink>."
-msgstr ""
-"有关 IPS 的更多信息，请参见<ulink url=\"http://dlc.sun.com/osol/"
-"docs/content/2009.06/IMGPACKAGESYS/\">映像包管理系统指南</ulink>"
-"和 IPS <ulink url=\"http://opensolaris.org/sc/src/pkg/gate/src/man/"
-"\">手册页</ulink>。"
-
-#: package-manager.xml:60(para)
-msgid ""
-"Visit the <ulink url=\"http://opensolaris.org/os/project/pkg\">project page</"
-"ulink> on opensolaris.org and subscribe to pkg-discuss@sun.com to get "
-"involved with the IPS project."
-msgstr ""
-"请访问 opensolaris.org 上的<ulink url=\"http://opensolaris.org/os/"
-"project/pkg\">项目页面</ulink>并订阅 pkg-discuss@sun.com 以"
-"参与 IPS 项目。"
-
-#: package-manager.xml:62(title)
-msgid "The Package Manager Window"
-msgstr "软件包管理器窗口"
-
-#: package-manager.xml:63(title)
-msgid "About the Package Manager Window"
-msgstr "关于软件包管理器窗口"
-
-#: package-manager.xml:64(para)
-msgid "When you start the Package Manager, the following window is displayed."
-msgstr "启动软件包管理器时，将显示以下窗口。"
-
-#: package-manager.xml:65(title)
-msgid "Package Manager Start Up Window"
-msgstr "软件包管理器启动窗口"
-
-#: package-manager.xml:69(para)
-msgid ""
-"The Start Page provides links to <ulink url=\"http://opensolaris.com"
-"\">opensolaris.com</ulink> page where you can get more information about "
-"OpenSolaris, subscribe to newsletters and join the OpenSolaris community."
-msgstr ""
-"起始页面会提供指向 <ulink url=\"http://opensolaris.com"
-"\">opensolaris.com</ulink> 页面的链接，在该页面中，您可以获得"
-"有关 OpenSolaris 的更多信息，订阅新闻简报并加入 OpenSolaris 社区。"
-
-#: package-manager.xml:70(para)
-msgid ""
-"To close the Start Page and see the list of packages , perform any of the "
-"following actions in the main window of the Package Manager:"
-msgstr ""
-"要关闭起始页面并查看软件包列表，请在软件包管理器"
-"的主窗口中执行以下任何操作："
-
-#: package-manager.xml:71(para)
-msgid "Select a package category"
-msgstr "选择软件包类别"
-
-#: package-manager.xml:73(para)
-msgid "Switch the top level category"
-msgstr "切换顶层类别"
-
-#: package-manager.xml:75(para)
-msgid "Switch the <literal>Show</literal> filter"
-msgstr "切换<literal>显示</literal>过滤器"
-
-#: package-manager.xml:77(para)
-msgid "Perform a search"
-msgstr "执行搜索"
-
-#: package-manager.xml:79(para)
-msgid "Change the repository"
-msgstr "更改系统信息库"
-
-#: package-manager.xml:82(para)
-msgid ""
-"Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</"
-"guimenuitem></menuchoice> to return to the Start Page at anytime."
-msgstr ""
-"选择<menuchoice><guimenu>查看</guimenu><guimenuitem>起始页面</"
-"guimenuitem></menuchoice>，可随时返回到起始页面。"
-
-#: package-manager.xml:83(para)
-msgid ""
-"See the <xref linkend=\"edit_prefs\"/> section to turn off the <emphasis "
-"role=\"strong\">initial display</emphasis> of the Start Page when the "
-"Package Manager starts."
-msgstr ""
-"要在软件包管理器启动时关闭起始页面的<emphasis "
-"role=\"strong\">初始显示</emphasis>，请参见"
-"<xref linkend=\"edit_prefs\"/>一节。"
-
-#: package-manager.xml:85(title)
-msgid "List of Packages in the Package Manager Window"
-msgstr "软件包管理器窗口中的软件包列表"
-
-#: package-manager.xml:89(para)
-msgid ""
-"The main window of the Package Manager consists of the following elements :"
-msgstr ""
-"软件包管理器的主窗口包含以下几个组成部分："
-
-#: package-manager.xml:90(emphasis)
-msgid "Menubar"
-msgstr "菜单条"
-
-#: package-manager.xml:91(para)
-msgid ""
-"You can access the menus on the menubar to perform all of the commands "
-"related to the Package Manager."
-msgstr ""
-"可以使用菜单条上的菜单来执行"
-"与软件包管理器相关的所有命令。"
-
-#: package-manager.xml:95(emphasis)
-msgid "Toolbar"
-msgstr "工具栏"
-
-#: package-manager.xml:96(para)
-msgid ""
-"The toolbar contains the icons for a subset of the commands that can be "
-"performed by using the menus on the menubar. A<literal>Search</literal> box "
-"is also located on the toolbar."
-msgstr ""
-"工具栏包含可以使用菜单条上的菜单来执行的"
-"部分命令的图标。<literal>搜索</literal>框"
-"也位于工具栏中。"
-
-#: package-manager.xml:99(emphasis)
-msgid "List of Packages by Category"
-msgstr "按类别显示的软件包列表"
-
-#: package-manager.xml:100(para)
-msgid ""
-"You can browse the available packages by category in the left hand side drop-"
-"down menu. The drop-down menu shows the list of categories available such as "
-"<emphasis role=\"strong\">Applications-Desktop</emphasis>, <emphasis role="
-"\"strong\">Applications –Web—based</emphasis>, and <emphasis role=\"strong"
-"\">Operating System</emphasis>."
-msgstr ""
-"您可以按左侧下拉式菜单中的类别浏览可用的软件包。"
-"此下拉式菜单会显示可用类别（如"
-"<emphasis role=\"strong\">桌面应用程序</emphasis>、<emphasis role="
-"\"strong\">基于 Web 的应用程序</emphasis>和<emphasis role=\"strong"
-"\">操作系统</emphasis>）的列表。"
-
-#: package-manager.xml:103(emphasis)
-msgid "List of Packages by Status"
-msgstr "按状态显示的软件包列表"
-
-#: package-manager.xml:104(para)
-msgid ""
-"The <literal>Show</literal> drop-down menu enables you to filter the list of "
-"packages by the following options :"
-msgstr ""
-"使用<literal>显示</literal>下拉式菜单，可按以下选项"
-"过滤软件包列表："
-
-#: package-manager.xml:105(para)
-msgid ""
-"<emphasis role=\"strong\">All Packages</emphasis> – Shows the list of all "
-"packages available in the current repository."
-msgstr ""
-"<emphasis role=\"strong\">所有软件包</emphasis>－显示当前"
-"系统信息库中可用的所有软件包的列表。"
-
-#: package-manager.xml:107(para)
-msgid ""
-"<emphasis role=\"strong\">Installed Packages</emphasis> – Shows the list of "
-"packages installed on your system."
-msgstr ""
-"<emphasis role=\"strong\">安装的软件包</emphasis>－显示系统中已安装的"
-"软件包的列表。"
-
-#: package-manager.xml:109(para)
-msgid ""
-"<emphasis role=\"strong\">Updates Available</emphasis> — Shows the list of "
-"packages that have newer versions available in the current repository."
-msgstr ""
-"<emphasis role=\"strong\">可用的更新</emphasis>－显示当前系统信息库中"
-"提供了更新版本的软件包的列表。"
-
-#: package-manager.xml:111(para)
-msgid ""
-"<emphasis role=\"strong\">Non-installed Packages</emphasis> – Shows the list "
-"of packages that are not installed, but are available in the currently "
-"selected repository."
-msgstr ""
-"<emphasis role=\"strong\">非安装软件包</emphasis>－显示未安装的"
-"但在当前选定系统信息库中可用的"
-"软件包的列表。"
-
-#: package-manager.xml:113(para)
-msgid ""
-"<emphasis role=\"strong\">Selected Packages</emphasis> – Shows the list of "
-"packages that you have selected."
-msgstr ""
-"<emphasis role=\"strong\">选定的软件包</emphasis>－显示您已选定的"
-"软件包的列表。"
-
-#: package-manager.xml:118(emphasis)
-msgid "Package Name and Description"
-msgstr "软件包名称和说明"
-
-#: package-manager.xml:119(para)
-msgid ""
-"The list of packages in the selected category, a brief description, and "
-"their status are displayed here."
-msgstr ""
-"此处将显示选定类别的软件包列表、简要说明"
-"及其状态。"
-
-#: package-manager.xml:122(emphasis)
-msgid "Package Details"
-msgstr "软件包详细信息"
-
-#: package-manager.xml:123(para)
-msgid ""
-"Click a package name to select it. Details of the selected package, such as "
-"name, version, file dependencies, and license are displayed in this window."
-msgstr ""
-"单击某个软件包名称即可将其选中。此窗口中将显示选定软件包"
-"的详细信息，如名称、版本、文件相关项和许可证。"
-
-#: package-manager.xml:126(emphasis)
-msgid "Repository Drop-down Menu"
-msgstr "系统信息库下拉式菜单"
-
-#: package-manager.xml:127(para)
-msgid ""
-"The list of available repositories is shown in the <literal>Repository</"
-"literal> drop-down menu. Click a repository name to select it."
-msgstr ""
-"可用系统信息库的列表显示在<literal>系统信息库</literal>"
-"下拉式菜单中。单击某个系统信息库名称即可将其选中。"
-
-#: package-manager.xml:130(emphasis)
-msgid "Search Box"
-msgstr "搜索框"
-
-#: package-manager.xml:131(para)
-msgid "Search for a package is provided in the following contexts :"
-msgstr "可按以下上下文搜索软件包："
-
-#: package-manager.xml:132(para)
-msgid "Search within the current repository"
-msgstr "在当前系统信息库中进行搜索"
-
-#: package-manager.xml:134(para)
-msgid "Search across all configured repositories"
-msgstr "在所有已配置的系统信息库中进行搜索"
-
-#: package-manager.xml:141(title)
-msgid "Start Page Preferences"
-msgstr "起始页面首选项"
-
-#: package-manager.xml:142(para)
-msgid ""
-"A Start Page is displayed in the main window of the Package Manager when the "
-"application is started. The Start Page provides links to <ulink url=\"http://"
-"opensolaris.com\">opensolaris.com</ulink> page where you can get more "
-"information about OpenSolaris, subscribe to newsletters and join the "
-"OpenSolaris community."
-msgstr ""
-"启动应用程序时，起始页面将显示在软件包管理器的主"
-"窗口中。起始页面会提供指向 <ulink url=\"http://"
-"opensolaris.com\">opensolaris.com</ulink> 页面的链接，"
-"在该页面中，您可以获得有关 OpenSolaris 的更多信息，订阅"
-"新闻简报并加入 OpenSolaris 社区。"
-
-#: package-manager.xml:143(para)
-msgid ""
-"You can choose to turn off this setting so this page is not displayed when "
-"Package Manager starts."
-msgstr ""
-"您可以选择关闭此设置，然后，在软件包管理器启动"
-"时就不会显示此页面。"
-
-#: package-manager.xml:144(para)
-msgid ""
-"Select <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</"
-"guimenuitem></menuchoice> from the menu and uncheck the <emphasis role="
-"\"strong\">Show Start Page on startup</emphasis> box to disable the Start "
-"Page."
-msgstr ""
-"从菜单中选择<menuchoice><guimenu>编辑</guimenu><guimenuitem>"
-"首选项</guimenuitem></menuchoice>，并取消选中<emphasis role="
-"\"strong\">在启动时显示起始页面</emphasis>框，以禁用"
-"起始页面。"
-
-#: package-manager.xml:145(para)
-msgid ""
-"Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</"
-"guimenuitem></menuchoice> to go to the Start Page at anytime."
-msgstr ""
-"选择<menuchoice><guimenu>查看</guimenu><guimenuitem>起始页面</"
-"guimenuitem></menuchoice>，可随时转至起始页面。"
-
-#: package-manager.xml:148(title)
-msgid "Working With Packages"
-msgstr "使用软件包"
-
-#: package-manager.xml:149(title)
-msgid "Install a Package"
-msgstr "安装软件包"
-
-#: package-manager.xml:150(para)
-msgid ""
-"The list of packages is displayed in the main windows of the Package "
-"Manager. Perform the following steps to install a package:"
-msgstr ""
-"软件包列表显示在软件包管理器的主窗口中。"
-"请执行以下步骤安装软件包："
-
-#: package-manager.xml:151(para)
-msgid ""
-"To install a single package, click on a package to select it. To install "
-"many packages, check the box next to the packages you want to install."
-msgstr ""
-"要安装单个软件包，请单击某个软件包将其选中。"
-"要安装许多软件包，请选中要安装的软件包旁边的框。"
-
-#: package-manager.xml:153(para)
-msgid ""
-"Click the <guibutton>Install/Update</guibutton> icon in the toolbar to start "
-"the package installation process."
-msgstr ""
-"单击工具栏中的<guibutton>安装/更新</guibutton>图标以启动"
-"软件包安装过程。"
-
-#: package-manager.xml:154(para)
-msgid ""
-"You can also choose <menuchoice><guimenu>Package</"
-"guimenu><guimenuitem>Install/Update</guimenuitem></menuchoice> to start the "
-"package installation process."
-msgstr ""
-"也可以通过选择<menuchoice><guimenu>软件包</"
-"guimenu><guimenuitem>安装/更新</guimenuitem></menuchoice>来启动"
-"软件包安装过程。"
-
-#: package-manager.xml:156(para)
-msgid "View the details or cancel the package installation ."
-msgstr "查看详细信息或取消软件包安装。"
-
-#: package-manager.xml:157(para)
-msgid "Click <guilabel>Show Details</guilabel> to view the details."
-msgstr "单击<guilabel>显示详细信息</guilabel>可查看详细信息。"
-
-#: package-manager.xml:159(para)
-msgid ""
-"Click <guibutton>Cancel</guibutton> to cancel the package installation. No "
-"changes are made and you are returned to the main window."
-msgstr ""
-"单击<guibutton>取消</guibutton>可取消软件包安装。此时"
-"不会进行任何更改，并返回到主窗口。"
-
-#: package-manager.xml:163(para)
-msgid ""
-"After the installation has completed, click <guibutton>Close</guibutton> on "
-"the <literal>Installation Completed</literal> dialog box to return to the "
-"main window."
-msgstr ""
-"安装完成后，单击<literal>安装已完成</literal>对话"
-"框中的<guibutton>关闭</guibutton>，以返回到"
-"主窗口。"
-
-#: package-manager.xml:166(title)
-msgid "Installation Error"
-msgstr "安装错误"
-
-#: package-manager.xml:167(para)
-msgid ""
-"If an error occurs during package installation, an error dialog box is "
-"displayed. An <guilabel>Installation Failed</guilabel> message and the "
-"reason for the failure is displayed. Click <guibutton>Close</guibutton> to "
-"close the error dialog box and return to the main window of the Package "
-"Manager."
-msgstr ""
-"如果在软件包安装期间出现错误，则会显示一个错误"
-"对话框。其中将显示<guilabel>安装失败</guilabel>"
-"消息和失败的原因。单击<guibutton>关闭</guibutton>"
-"可关闭该错误对话框并返回到软件包管理器的"
-"主窗口。"
-
-#: package-manager.xml:170(title)
-msgid "Remove a Package"
-msgstr "删除软件包"
-
-#: package-manager.xml:171(para)
-msgid "Perform the following steps to remove a package:"
-msgstr "执行以下步骤来删除软件包："
-
-#: package-manager.xml:172(para)
-msgid ""
-"To remove a single package, click on a package to select it. To remove many "
-"packages, check the box next to the packages you want to remove."
-msgstr ""
-"要删除单个软件包，请单击某个软件包将其选中。"
-"要删除许多软件包，请选中要删除的软件包旁边的框。"
-
-#: package-manager.xml:174(para)
-msgid ""
-"Click the <guibutton>Remove</guibutton> button in the toolbar to start the "
-"package uninstallation process."
-msgstr ""
-"单击工具栏中的<guibutton>删除</guibutton>按钮以启动"
-"软件包卸载过程。"
-
-#: package-manager.xml:175(para)
-msgid ""
-"You can also choose <menuchoice><guimenu>Package</"
-"guimenu><guimenuitem>Remove</guimenuitem></menuchoice> to remove a package."
-msgstr ""
-"也可以通过选择<menuchoice><guimenu>软件包</"
-"guimenu><guimenuitem>删除</guimenuitem></menuchoice>来删除软件包。"
-
-#: package-manager.xml:177(para)
-msgid ""
-"Review the packages to be removed and the package dependencies details in "
-"the <literal>Remove Confirmation</literal> dialog box."
-msgstr ""
-"在<literal>删除确认</literal>对话框中查看要删除的软件包"
-"和软件包相关项详细信息。"
-
-#: package-manager.xml:179(para)
-msgid "Uninstall the package or cancel the uninstallation process."
-msgstr "卸载软件包或取消卸载过程。"
-
-#: package-manager.xml:180(para)
-msgid ""
-"Click <guibutton>Proceed</guibutton> to start uninstalling the packages."
-msgstr ""
-"单击<guibutton>继续</guibutton>以开始卸载软件包。"
-
-#: package-manager.xml:182(para)
-msgid ""
-"Click <guibutton>Cancel</guibutton> to cancel the process. No changes are "
-"made and you are returned to the main window."
-msgstr ""
-"单击<guibutton>取消</guibutton>可取消此过程。此时"
-"不会进行任何更改，并返回到主窗口。"
-
-#: package-manager.xml:183(para)
-msgid ""
-"After you click the <guibutton>Proceed</guibutton> button, you cannot undo "
-"the package removal action. However, you can reinstall the package at any "
-"time."
-msgstr ""
-"单击<guibutton>继续</guibutton>按钮后，您将无法"
-"撤消软件包删除操作。但是，您可以随时重新安装"
-"软件包。"
-
-#: package-manager.xml:190(title)
-msgid "Search for a Package"
-msgstr "搜索软件包"
-
-#: package-manager.xml:191(para)
-msgid "You can search for a package in the following ways :"
-msgstr "您可以采用以下方式搜索软件包："
-
-#: package-manager.xml:192(para)
-msgid ""
-"<emphasis role=\"strong\">Search the current repository</emphasis> – Search "
-"for a package in the repository currently selected in the "
-"<literal>Repository</literal> drop-down menu. The category selection or the "
-"<literal>Show</literal> filter does not affect the search and the search is "
-"performed on all packages in the currently selected repository."
-msgstr ""
-"<emphasis role=\"strong\">搜索当前系统信息库</emphasis>－"
-"在<literal>系统信息库</literal>下拉式菜单中"
-"当前选定的系统信息库中搜索软件包。类别选择或"
-"<literal>显示</literal>过滤器不会影响搜索，并且会对"
-"当前选定的系统信息库中的所有软件包执行搜索。"
-
-#: package-manager.xml:193(para)
-msgid ""
-"Enter a description, or a partial name in the <literal>Search</literal> box "
-"located on the toolbar. For example, you might type one of the following "
-"search terms to search for <filename>SUNWgnome-games</filename> :"
-msgstr ""
-"在位于工具栏上的<literal>搜索</literal>框中"
-"输入描述或部分名称。例如，您可以键入以下搜索"
-"术语之一，以搜索 <filename>SUNWgnome-games</filename>："
-
-#: package-manager.xml:194(para)
-msgid "SUNWgames"
-msgstr "SUNWgames"
-
-#: package-manager.xml:196(para)
-msgid "games"
-msgstr "games"
-
-#: package-manager.xml:198(para)
-msgid "GNOME-games"
-msgstr "GNOME-games"
-
-#: package-manager.xml:201(para)
-msgid ""
-"To search for SunStudio compilers, you might type one of the following terms:"
-msgstr ""
-"要搜索 SunStudio 编译器，您可以键入以下术语之一："
-
-#: package-manager.xml:202(para)
-msgid "compiler"
-msgstr "编译器"
-
-#: package-manager.xml:204(para)
-msgid "tools"
-msgstr "工具"
-
-#: package-manager.xml:208(para)
-msgid ""
-"<emphasis role=\"strong\">Search all repositories</emphasis> – Select the "
-"multi-repository icon in the <literal>Search</literal> box to search for the "
-"package across all configured or registered repositories."
-msgstr ""
-"<emphasis role=\"strong\">搜索所有系统信息库</emphasis>－"
-"在<literal>搜索</literal>框中选择多系统信息库图标，可"
-"在所有已配置或已注册的系统信息库中搜索软件包。"
-
-#: package-manager.xml:209(para)
-msgid ""
-"The multi-repository search currently supports search based on the package "
-"description only."
-msgstr ""
-"多系统信息库搜索当前仅支持根据软件包描述"
-"进行搜索。"
-
-#: package-manager.xml:211(para)
-msgid ""
-"Type a description of the package in the box. For example, the "
-"<filename>SUNWdiveintopython</filename> package is a book on Python "
-"programming. The description of the package contains <emphasis>book</"
-"emphasis>. To search for this package, you might then type one of the "
-"following terms:"
-msgstr ""
-"在该框中键入软件包的描述。例如，<filename>"
-"SUNWdiveintopython</filename> 软件包是有关 Python 编程"
-"的书籍。该软件包的描述中包含<emphasis>book</"
-"emphasis>一词。要搜索此软件包，您则可以键入"
-"以下术语之一："
-
-#: package-manager.xml:212(para)
-msgid "python"
-msgstr "python"
-
-#: package-manager.xml:214(para)
-msgid "book"
-msgstr "book"
-
-#: package-manager.xml:217(para)
-msgid ""
-"If you searched for the term <emphasis>dive</emphasis> in the multi-"
-"repository search, the <filename>SUNWdiveintopython</filename> package will "
-"not be displayed as the term is not present in the package description."
-msgstr ""
-"如果您在多系统信息库搜索中搜索术语 <emphasis>dive</emphasis>，"
-"则不会显示 <filename>SUNWdiveintopython</filename> 软件包，"
-"因为该术语在软件包描述中不存在。"
-
-#: package-manager.xml:221(para)
-msgid ""
-"Use the submenus under the <menuchoice><guimenu>Edit</guimenu></menuchoice> "
-"menu to cut, copy, paste, or clear text in the <literal>Search</literal> box."
-msgstr ""
-"可使用<menuchoice><guimenu>编辑</guimenu></menuchoice>菜单下的子菜单"
-"来剪切、复制、粘贴或清除<literal>搜索</literal>框中的文本。"
-
-#: package-manager.xml:223(para)
-msgid ""
-"Use the icon on the right side of the <literal>Search</literal> box to clear "
-"the search results."
-msgstr ""
-"可使用<literal>搜索</literal>框右侧的图标来清除"
-"搜索结果。"
-
-#: package-manager.xml:228(title)
-msgid "Update a Package"
-msgstr "更新软件包"
-
-#: package-manager.xml:229(para)
-msgid ""
-"Look for the green icon next to the installed package name. This icon "
-"indicates that updates are available for the package in the currently "
-"selected repository. Select the package and click the <guibutton>Install/"
-"Update</guibutton> button to install the latest version of the package."
-msgstr ""
-"找到已安装软件包名称旁边的绿色图标。此图标指示"
-"当前选定的系统信息库中有可用于该软件包的更新。"
-"选择该软件包并单击<guibutton>安装/更新</guibutton>"
-"按钮来安装最新版本的软件包。"
-
-#: package-manager.xml:232(title)
-msgid "Introduction to Boot Environments"
-msgstr "引导环境介绍"
-
-#: package-manager.xml:233(para)
-msgid ""
-"A boot environment is an image that is bootable. Upon an initial OpenSolaris "
-"installation, a boot environment is created."
-msgstr ""
-"引导环境是一个可引导的映像。初始安装 OpenSolaris "
-"时，将创建引导环境。"
-
-#: package-manager.xml:234(para)
-msgid ""
-"You can maintain multiple boot environments on your OpenSolaris 2009.06 "
-"system. Use the <command>beadm(1)</command> command from the command—line "
-"interface (CLI) to create, rename, mount or unmount, or destroy these boot "
-"environments."
-msgstr ""
-"可以在 OpenSolaris 2009.06 系统中维护多个引导环境。从"
-"命令行界面 (command line interface, CLI) 中使用 <command>beadm(1)"
-"</command> 命令可以创建、重命名、挂载/卸载或销毁这些引导"
-"环境。"
-
-#: package-manager.xml:235(para)
-msgid ""
-"The Package Manager enables you to manage the boot environments created "
-"during the process of updating your image. For more information, see <xref "
-"linkend=\"manage_be\"/> section."
-msgstr ""
-"使用软件包管理器可以管理在更新映像过程中创建"
-"的引导环境。有关更多信息，请参见<xref "
-"linkend=\"manage_be\"/>一节。"
-
-#: package-manager.xml:236(para)
-msgid ""
-"System administrators can maintain multiple boot environments on their "
-"systems, and each boot environment can have different software versions "
-"installed."
-msgstr ""
-"系统管理员可以在其系统上维护多个引导环境，"
-"而且每个引导环境中可以安装不同的软件"
-"版本。"
-
-#: package-manager.xml:237(para)
-msgid ""
-"When you use either the Package Manager or the <command>pkg image-update</"
-"command> command to update all the packages in your active OpenSolaris boot "
-"environment, a clone of that boot environment is automatically created. The "
-"packages are updated in the clone rather than in the original boot "
-"environment. After successfully completing the updates, the new clone is "
-"activated. Then, the clone will become the new default boot environment on "
-"system reboot. The original boot environment is also available as an "
-"alternate selection."
-msgstr ""
-"使用软件包管理器或 <command>pkg image-update</"
-"command> 命令更新活动 OpenSolaris 引导环境中"
-"的所有软件包时，将自动创建该引导环境的克隆。"
-"软件包将在克隆中更新，而不是在原始引导环境中更新。"
-"成功完成更新后，新的克隆将被激活。然后，"
-"在重新引导系统时，该克隆将成为新的缺省引导"
-"环境。原始引导环境也会存在，此时用作"
-"备用选项。"
-
-#: package-manager.xml:238(para)
-msgid ""
-"See the beadm(1) man pages and the <ulink url=\"http://dlc.sun.com/osol/docs/"
-"content/dev/snapupgrade/snap3.html\"><citetitle>Upgrading and Managing Boot "
-"Environments</citetitle></ulink> document to learn more about boot "
-"environments and the <command>beadm(1)</command> command."
-msgstr ""
-"请参见 beadm(1) 手册页和<ulink url=\"http://dlc.sun.com/osol/docs/"
-"content/dev/snapupgrade/snap3.html\"><citetitle>升级和管理引导"
-"环境</citetitle></ulink>文档，以了解有关引导环境"
-"和 <command>beadm(1)</command> 命令的更多信息。"
-
-#: package-manager.xml:239(title)
-msgid "Update All Packages (Update Your Image)"
-msgstr "更新所有软件包（更新映像）"
-
-#: package-manager.xml:240(para)
-msgid "Perform the following steps to update all the packages in your image."
-msgstr "执行以下步骤来更新映像中的所有软件包。"
-
-#: package-manager.xml:241(para)
-msgid ""
-"Click the <guibutton>Update All</guibutton> icon located on the toolbar to "
-"start the process of updating <emphasis role=\"strong\">all</emphasis> the "
-"packages installed in your image."
-msgstr ""
-"单击位于工具栏上的<guibutton>全部更新</guibutton>图标，"
-"以启动更新映像中安装的<emphasis role=\"strong\">所有</emphasis>"
-"软件包的过程。"
-
-#: package-manager.xml:242(para)
-msgid ""
-"You can also choose <menuchoice><guimenu>Package</guimenu><guisubmenu>Update "
-"All</guisubmenu></menuchoice> to start the process."
-msgstr ""
-"也可以通过选择<menuchoice><guimenu>软件包</guimenu><guimenuitem>全部"
-"更新</guimenuitem></menuchoice>来启动此过程。"
-
-#: package-manager.xml:243(para)
-msgid ""
-"The <guilabel>Update All</guilabel> icon is enabled when updates are "
-"available to the installed packages."
-msgstr ""
-"当已安装软件包有可用更新时，将启用<guilabel>全部更新"
-"</guilabel>图标。"
-
-#: package-manager.xml:246(para)
-msgid ""
-"A <literal>Create New Boot Environment</literal> window is displayed. A name "
-"for the new boot environment is automatically generated."
-msgstr ""
-"此时将显示<literal>创建新的引导环境</literal>窗口。"
-"系统将自动生成新引导环境的名称。"
-
-#: package-manager.xml:248(para)
-msgid ""
-"(optional) You can change the name of the new boot environment if you want."
-msgstr ""
-"（可选）如果需要，您可以更改新引导环境的名称。"
-
-#: package-manager.xml:250(para)
-msgid "Confirm or Cancel the new boot environment."
-msgstr "确认或取消新引导环境。"
-
-#: package-manager.xml:251(para)
-msgid ""
-"Click <guibutton>Proceed</guibutton> to create a new boot environment and "
-"proceed with the Update All process."
-msgstr ""
-"单击<guibutton>继续</guibutton>，以创建新的引导环境"
-"并继续执行“全部更新”过程。"
-
-#: package-manager.xml:253(para) package-manager.xml:481(para)
-msgid "Click <guibutton>Cancel</guibutton> to cancel the process."
-msgstr "单击<guibutton>取消</guibutton>可取消此过程。"
-
-#: package-manager.xml:256(para)
-msgid ""
-"During the Update All process, a clone of the active boot environment is "
-"created. This clone enables the user to boot into the boot environment state "
-"that existed before the Update All process was started. If the Package "
-"Manager is unable to create a new boot environment, an error message will be "
-"displayed. See the <xref linkend=\"gilfh\"/> section on how to rectify the "
-"error and continue with updating your image."
-msgstr ""
-"在“全部更新”过程中，将会创建活动引导环境的克隆。"
-"借助此克隆，用户可以引导至“全部更新”过程开始"
-"之前存在的引导环境状态。如果软件包管理器无法"
-"创建新的引导环境，则会显示一条错误消息。"
-"有关如何纠正错误并继续更新映像的信息，请参见"
-"<xref linkend=\"gilfh\"/>一节。"
-
-#: package-manager.xml:258(para)
-msgid ""
-"If you chose to proceed with the Update All process, the packages are "
-"downloaded and installed."
-msgstr ""
-"如果选择继续执行“全部更新”过程，则将下载并安装"
-"相应的软件包。"
-
-#: package-manager.xml:259(para)
-msgid ""
-"After a successful completion, the <literal>Update All Complete</literal> "
-"dialog box is shown. A link to the Release Notes is provided in the dialog "
-"box. Read the <xref linkend=\"release_notes\"/> before rebooting your system."
-msgstr ""
-"成功完成后，将显示<literal>全部更新完成</literal>"
-"对话框。该对话框中提供了指向发行说明的链接。"
-"重新引导系统之前，请先阅读<xref linkend=\"release_notes\"/>。"
-
-#: package-manager.xml:261(para)
-msgid "Click <guibutton>Close</guibutton>."
-msgstr "单击<guibutton>关闭</guibutton>。"
-
-#: package-manager.xml:262(emphasis) package-manager.xml:500(para)
-msgid "You must reboot your system for the changes to take effect."
-msgstr "必须重新引导系统，更改才会生效。"
-
-#: package-manager.xml:267(title) package-manager.xml:505(title)
-msgid "Update All Errors"
-msgstr "“全部更新”错误"
-
-#: package-manager.xml:268(para)
-msgid ""
-"A new boot environment clone must be created by the Package Manager for the "
-"Update All process to be completed. An error message is displayed if a boot "
-"environment clone cannot be created. You might see an error message such as "
-"the following :"
-msgstr ""
-"软件包管理器必须创建一个新的引导环境克隆，"
-"“全部更新”过程才能完成。如果无法创建引导环境克隆，"
-"则会显示一条错误消息。您可能会看到类似如下的"
-"错误消息："
-
-#: package-manager.xml:269(para) package-manager.xml:507(para)
-msgid ""
-"<literal>Not enough disk space, the selected action cannot be performed. "
-"Click OK to manage your existing BEs and free up disk space or Cancel to "
-"cancel the action</literal>."
-msgstr ""
-"<literal>磁盘空间不足，无法执行选定的操作。"
-"单击“确定”以管理现有 BE 并释放磁盘空间，或单击“取消”"
-"以取消该操作</literal>。"
-
-#: package-manager.xml:270(para)
-msgid ""
-"Click <guibutton>Cancel</guibutton> to cancel the Update All process and "
-"return to the main window."
-msgstr ""
-"单击<guibutton>取消</guibutton>可取消“全部更新”过程，并"
-"返回到主窗口。"
-
-#: package-manager.xml:271(para) package-manager.xml:509(para)
-msgid ""
-"Perform the following steps if you want to rectify the error and continue "
-"with the Update All process:"
-msgstr ""
-"如果要纠正错误并继续执行“全部更新”过程，"
-"请执行以下步骤："
-
-#: package-manager.xml:272(para)
-msgid ""
-"Click <guibutton>OK</guibutton> to display the <literal>Boot Environment "
-"Management</literal> dialog box."
-msgstr ""
-"单击<guibutton>确定</guibutton>以显示<literal>引导环境"
-"管理</literal>对话框。"
-
-#: package-manager.xml:274(para)
-msgid "Select the boot environments that you want to delete."
-msgstr "选择要删除的引导环境。"
-
-#: package-manager.xml:275(para)
-msgid "You cannot delete the currently active boot environment."
-msgstr "您无法删除当前处于活动状态的引导环境。"
-
-#: package-manager.xml:277(para)
-msgid ""
-"You do not need to reboot your system if you are only deleting some of your "
-"boot environments."
-msgstr ""
-"如果只是要删除某些引导环境，则不需要重新引导"
-"系统。"
-
-#: package-manager.xml:282(para)
-msgid "Click <guibutton>OK</guibutton>."
-msgstr "单击<guibutton>确定</guibutton>。"
-
-#: package-manager.xml:284(para)
-msgid ""
-"The <literal>Boot Environment Confirmation</literal> dialog is shown. Review "
-"your changes and click OK to proceed."
-msgstr ""
-"此时将显示<literal>引导环境确认</literal>对话框。请查看"
-"所做更改并单击“确定”继续操作。"
-
-#: package-manager.xml:286(para)
-msgid ""
-"Click the <guibutton>Update All</guibutton> icon to restart the process of "
-"updating all packages."
-msgstr ""
-"单击<guibutton>全部更新</guibutton>图标以重新启动更新所有"
-"软件包的过程。"
-
-#: package-manager.xml:290(title)
-msgid "Manage Boot Environments"
-msgstr "管理引导环境"
-
-#: package-manager.xml:291(para)
-msgid "Perform the following steps to manage your boot environments:"
-msgstr "执行以下步骤来管理您的引导环境："
-
-#: package-manager.xml:292(para)
-msgid ""
-"Click <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot "
-"Environments</guimenuitem></menuchoice> to open the <literal>Manage Boot "
-"Environments</literal> dialog."
-msgstr ""
-"单击<menuchoice><guimenu>文件</guimenu><guimenuitem>管理引导"
-"环境</guimenuitem></menuchoice>，以打开<literal>管理引导"
-"环境</literal>对话框。"
-
-#: package-manager.xml:294(para)
-msgid "In this dialog box , you can perform the following actions:"
-msgstr "在此对话框中，您可以执行以下操作："
-
-#: package-manager.xml:295(para)
-msgid ""
-"<emphasis role=\"strong\">Activate a boot environment</emphasis> – Select "
-"the boot environment that you want to be active on system reboot. This will "
-"be the default boot environment <emphasis role=\"strong\">after</emphasis> "
-"you have rebooted your system."
-msgstr ""
-"<emphasis role=\"strong\">激活引导环境</emphasis>－选择"
-"要在系统重新引导时将处于活动状态的引导环境。重新引导"
-"系统<emphasis role=\"strong\">后</emphasis>，该环境"
-"将成为缺省引导环境。"
-
-#: package-manager.xml:297(para)
-msgid ""
-"<emphasis role=\"strong\">Remove old or unused boot environments to free up "
-"disk space</emphasis> – Select the boot environments that you want to delete."
-msgstr ""
-"<emphasis role=\"strong\">删除旧的或未使用的引导环境以释放"
-"磁盘空间</emphasis>－选择要删除的引导环境。"
-
-#: package-manager.xml:298(para)
-msgid "You cannot the delete the currently active boot environment."
-msgstr "您无法删除当前处于活动状态的引导环境。"
-
-#: package-manager.xml:300(para)
-msgid ""
-"If you have selected a boot environment to be renamed, it cannot be deleted."
-msgstr ""
-"如果已选择要重命名的引导环境，则无法将其删除。"
-
-#: package-manager.xml:305(para)
-msgid ""
-"<emphasis role=\"strong\">Rename a boot environment</emphasis> – Double-"
-"click the boot environment name that you want to change. Enter the new name "
-"of the boot environment and click <guibutton>OK</guibutton>."
-msgstr ""
-"<emphasis role=\"strong\">重命名引导环境</emphasis>－双击"
-"要更改的引导环境名称。输入该引导环境的新名称，"
-"然后单击<guibutton>确定</guibutton>。"
-
-#: package-manager.xml:306(para)
-msgid ""
-"If you have selected a boot environment to be deleted, it cannot be renamed."
-msgstr ""
-"如果已选择要删除的引导环境，则无法对其进行重命名。"
-
-#: package-manager.xml:308(para)
-msgid "The currently active boot environment cannot be renamed."
-msgstr "无法对当前处于活动状态的引导环境进行重命名。"
-
-#: package-manager.xml:315(para)
-msgid "Accept or decline the changes:"
-msgstr "接受或拒绝所做更改："
-
-#: package-manager.xml:316(para) package-manager.xml:442(para)
-msgid "Click <guibutton>OK</guibutton> to proceed."
-msgstr "单击<guibutton>确定</guibutton>以继续。"
-
-#: package-manager.xml:318(para)
-msgid ""
-"Click <guibutton>Cancel</guibutton> to cancel all changes and return to the "
-"main window."
-msgstr ""
-"单击<guibutton>取消</guibutton>可取消所有更改，并返回到"
-"主窗口。"
-
-#: package-manager.xml:322(para)
-msgid ""
-"The <literal>Boot Environment Confirmation</literal> dialog is displayed. "
-"Review your changes and click OK to proceed."
-msgstr ""
-"此时将显示<literal>引导环境确认</literal>对话框。"
-"请查看所做更改并单击“确定”继续操作。"
-
-#: package-manager.xml:323(para)
-msgid ""
-"After you click <guibutton>OK</guibutton>, you cannot undo any changes that "
-"you made to the boot environments."
-msgstr ""
-"单击<guibutton>确定</guibutton>后，便无法撤消"
-"对引导环境所做的任何更改。"
-
-#: package-manager.xml:325(para)
-msgid ""
-"The changes that you made to the <emphasis role=\"strong\">default boot "
-"environment</emphasis> setting are effective only after system reboot."
-msgstr ""
-"对<emphasis role=\"strong\">缺省引导环境</emphasis>"
-"设置所做的更改只有在系统重新引导后才会生效。"
-
-#: package-manager.xml:327(para)
-msgid ""
-"Click <guibutton>Cancel</guibutton> to cancel the changes and return to the "
-"<literal>BE Management</literal> dialog box."
-msgstr ""
-"单击<guibutton>取消</guibutton>可取消更改，并返回到"
-"<literal>引导环境管理</literal>对话框。"
-
-#: package-manager.xml:329(para)
-msgid "Reboot your system to boot into the newly activated boot environment."
-msgstr "重新引导您的系统，以引导至新激活的引导环境。"
-
-#: package-manager.xml:330(para)
-msgid "Reboot your system only if you changed the active boot environment."
-msgstr "只有在更改活动引导环境后，才重新引导系统。"
-
-#: package-manager.xml:336(title)
-msgid "Managing Repositories"
-msgstr "管理系统信息库"
-
-#: package-manager.xml:337(title)
-msgid "Add a Repository"
-msgstr "添加系统信息库"
-
-#: package-manager.xml:338(para)
-msgid "Perform the following steps to add a repository:"
-msgstr "执行以下步骤来添加系统信息库："
-
-#: package-manager.xml:339(para)
-msgid ""
-"Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Repositories</"
-"guimenuitem></menuchoice>."
-msgstr ""
-"选择<menuchoice><guimenu>文件</guimenu><guimenuitem>管理系统信息库</"
-"guimenuitem></menuchoice>。"
-
-#: package-manager.xml:340(para)
-msgid ""
-"You can also choose <guilabel>Add...</guilabel> from the "
-"<literal>Repository</literal> drop-down menu in the main window of the "
-"Package Manager."
-msgstr ""
-"也可以从软件包管理器主窗口中的"
-"<literal>系统信息库</literal>下拉式菜单中"
-"选择<guilabel>添加...</guilabel>。"
-
-#: package-manager.xml:342(para)
-msgid ""
-"The <literal>Manage Repositories</literal> dialog box is displayed. Type the "
-"name and the address (URL) of the repository you want to add. Click "
-"<guibutton>Add</guibutton>."
-msgstr ""
-"此时将显示<literal>管理系统信息库</literal>对话框。键入"
-"要添加的系统信息库的名称和地址 (URL)。单击"
-"<guibutton>添加</guibutton>。"
-
-#: package-manager.xml:346(title)
-msgid "Add a Secure Repository"
-msgstr "添加安全的系统信息库"
-
-#: package-manager.xml:347(para)
-msgid ""
-"A secure repository requires a SSL key and certificate for access. Perform "
-"the following steps to add a secure repository:"
-msgstr ""
-"安全的系统信息库要求使用 SSL 密钥和证书才能进行访问。请执行"
-"以下步骤来添加安全的系统信息库："
-
-#: package-manager.xml:348(para)
-msgid ""
-"Follow the steps in <xref linkend=\"add_repo\"/> section to add a repository."
-msgstr ""
-"按照<xref linkend=\"add_repo\"/>一节中的步骤操作，以添加系统信息库。"
-
-#: package-manager.xml:350(para)
-msgid ""
-"Follow the steps in the <xref linkend=\"modify_repo\"/> section to add a SSL "
-"key and certificate."
-msgstr ""
-"按照<xref linkend=\"modify_repo\"/>一节中的步骤操作，以添加 SSL "
-"密钥和证书。"
-
-#: package-manager.xml:351(para)
-msgid "."
-msgstr "."
-
-#: package-manager.xml:355(title)
-msgid "Remove a Repository"
-msgstr "删除系统信息库"
-
-#: package-manager.xml:356(para)
-msgid "Perform the following steps to remove a repository:"
-msgstr "执行以下步骤来删除系统信息库："
-
-#: package-manager.xml:357(para) package-manager.xml:367(para)
-#: package-manager.xml:377(para)
-msgid ""
-"Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Repositories</"
-"guimenuitem></menuchoice> to open the <literal>Manage Repositories</literal> "
-"dialog."
-msgstr ""
-"选择<menuchoice><guimenu>文件</guimenu><guimenuitem>管理系统信息库</"
-"guimenuitem></menuchoice>以打开<literal>管理系统信息库</literal>"
-"对话框。"
-
-#: package-manager.xml:359(para)
-msgid "Select a repository from the list. Click <guibutton>Remove</guibutton>."
-msgstr "从列表中选择一个系统信息库。单击<guibutton>删除</guibutton>。"
-
-#: package-manager.xml:360(para)
-msgid ""
-"A repository that has been set as preferred repository cannot be removed. To "
-"remove a preferred repository, set a nonpreferred repository as preferred, "
-"and then remove the repository."
-msgstr ""
-"无法删除设置为首选系统信息库的系统信息库。要删除"
-"首选系统信息库，请先将一个非首选系统信息库设置为首选，"
-"然后删除该系统信息库。"
-
-#: package-manager.xml:365(title)
-msgid "Set a Preferred Repository"
-msgstr "设置首选系统信息库"
-
-#: package-manager.xml:366(para)
-msgid "Perform the following steps to set a preferred repository:"
-msgstr "执行以下步骤来设置首选系统信息库："
-
-#: package-manager.xml:369(para)
-msgid ""
-"Click the radio button next to the repository that you would like to set as "
-"the preferred repository."
-msgstr ""
-"单击要设置为首选系统信息库的系统信息库旁边"
-"的单选按钮。"
-
-#: package-manager.xml:371(para)
-msgid ""
-"Click <guibutton>Close</guibutton> if you are not making any other changes "
-"to the repository information."
-msgstr ""
-"如果不对系统信息库信息进行任何其他更改，请单击"
-"<guibutton>关闭</guibutton>。"
-
-#: package-manager.xml:375(title)
-msgid "Modify a Repository"
-msgstr "修改系统信息库"
-
-#: package-manager.xml:376(para)
-msgid "Perform the following steps to modify a repository:"
-msgstr "执行以下步骤来修改系统信息库："
-
-#: package-manager.xml:379(para)
-msgid "Select the repository that you want to modify."
-msgstr "选择要修改的系统信息库。"
-
-#: package-manager.xml:381(para)
-msgid "Click the <guibutton>Modify</guibutton> button."
-msgstr "单击<guibutton>修改</guibutton>按钮。"
-
-#: package-manager.xml:382(para)
-msgid ""
-"The <literal>Modify Repository</literal> dialog box is displayed. You can "
-"perform the following actions in the <literal>Modify Repository</literal> "
-"dialog box:"
-msgstr ""
-"此时将显示<literal>修改系统信息库</literal>对话框。您"
-"可以在<literal>修改系统信息库</literal>对话框中执行"
-"以下操作："
-
-#: package-manager.xml:383(para)
-msgid ""
-"<emphasis role=\"strong\">Change the URL of the repository</emphasis> – Type "
-"a valid URL for the repository."
-msgstr ""
-"<emphasis role=\"strong\">更改系统信息库的 URL</emphasis>－键入"
-"系统信息库的有效 URL。"
-
-#: package-manager.xml:384(para)
-msgid ""
-"You cannot change a repository name after you have added a repository. To "
-"change the repository name, delete the existing repository with the old name "
-"and add a repository with the new name. See the <xref linkend=\"remove_repo"
-"\"/> section for steps on how to remove a repository."
-msgstr ""
-"添加系统信息库后，您将无法更改系统信息库的名称。要更改"
-"系统信息库名称，请删除具有旧名称的现有系统信息库，并添加"
-"具有新名称的系统信息库。有关如何删除系统信息库的步骤，"
-"请参见<xref linkend=\"remove_repo\"/>一节。"
-
-#: package-manager.xml:386(para)
-msgid ""
-"<emphasis role=\"strong\">Add a SSL Key and Certificate</emphasis> – A "
-"secure repository requires a SSL key and certificate for access."
-msgstr ""
-"<emphasis role=\"strong\">添加 SSL 密钥和证书</emphasis>－"
-"安全的系统信息库要求使用 SSL 密钥和证书才能进行访问。"
-
-#: package-manager.xml:387(para)
-msgid ""
-"The <emphasis role=\"strong\">Instructions</emphasis> link in the "
-"<literal>Modify Repository</literal> dialog box links to a registration site "
-"which provides instructions for downloading the SSL key and certificate"
-msgstr ""
-"<literal>修改系统信息库</literal>对话框中的"
-"<emphasis role=\"strong\">说明</emphasis>链接会链接到"
-"注册站点，该站点提供了有关下载 SSL 密钥和证书的说明"
-
-#: package-manager.xml:388(para)
-msgid ""
-"In the <literal>Modify Repository</literal> dialog box, click the <emphasis "
-"role=\"strong\">Instructions</emphasis> link to download the key and "
-"certificate. Save them on your system."
-msgstr ""
-"在<literal>修改系统信息库</literal>对话框中，单击<emphasis "
-"role=\"strong\">说明</emphasis>链接，以下载密钥和证书。"
-"将这些内容保存在系统中。"
-
-#: package-manager.xml:390(para) package-manager.xml:438(para)
-msgid ""
-"Click the <guibutton>Browse</guibutton> button to locate the SSL key on your "
-"system."
-msgstr ""
-"单击<guibutton>浏览</guibutton>按钮，在系统上"
-"找到 SSL 密钥。"
-
-#: package-manager.xml:392(para) package-manager.xml:440(para)
-msgid ""
-"Click the <guibutton>Browse</guibutton> button to locate the SSL certificate "
-"on your system."
-msgstr ""
-"单击<guibutton>浏览</guibutton>按钮，在系统上"
-"找到 SSL 证书。"
-
-#: package-manager.xml:396(para)
-msgid ""
-"<emphasis role=\"strong\">Add a Mirror</emphasis> – If a repository has a "
-"mirror, add the repository name and URL, and then click the "
-"<guibutton>Modify</guibutton> button to add the mirror information."
-msgstr ""
-"<emphasis role=\"strong\">添加镜像</emphasis>－如果系统信息库"
-"具有一个镜像，请添加系统信息库名称和 URL，然后单击"
-"<guibutton>修改</guibutton>按钮以添加镜像信息。"
-
-#: package-manager.xml:400(para)
-msgid "Confirm or decline the changes."
-msgstr "确认或拒绝所做更改。"
-
-#: package-manager.xml:401(para)
-msgid ""
-"Click <guibutton>OK</guibutton> to save the changes and return to the "
-"<literal>Manage Repositories</literal> dialog box."
-msgstr ""
-"单击<guibutton>确定</guibutton>保存更改，并返回到"
-"<literal>管理系统信息库</literal>对话框。"
-
-#: package-manager.xml:403(para)
-msgid "Click <guibutton>Cancel</guibutton> to cancel your changes."
-msgstr "单击<guibutton>取消</guibutton>可取消所做更改。"
-
-#: package-manager.xml:410(title)
-msgid "Working With WebInstall"
-msgstr "使用 WebInstall"
-
-#: package-manager.xml:411(para)
-msgid ""
-"The OpenSolaris 2009.06 Package Manager provides support for users to add "
-"new repositories and optionally, install packages from these repositories "
-"using a simple one-click WebInstall process. A <filename>.p5i</filename> "
-"file which contains the repositories to be added and optionally, the package "
-"or packages that can be installed from these repositories, is required for "
-"the WebInstall process. The information contained in the <filename>.p5i</"
-"filename> file is read and used by the WebInstall process."
-msgstr ""
-"OpenSolaris 2009.06 软件包管理器支持用户使用简单的"
-"单击 WebInstall 进程添加新的系统信息库，并（可选）"
-"安装这些系统信息库中的软件包。<filename>.p5i</filename> "
-"文件包含要添加的系统信息库，以及（可选）可通过"
-"这些系统信息库安装的软件包，WebInstall 进程"
-"需要使用该文件。<filename>.p5i</filename> 文件中"
-"包含的信息将由 WebInstall 进程读取和使用。"
-
-#: package-manager.xml:412(title)
-msgid "How to Use WebInstall to Add Repositories and Install Packages"
-msgstr "如何使用 WebInstall 添加系统信息库和安装软件包"
-
-#: package-manager.xml:413(bridgehead)
-msgid "Before You Begin"
-msgstr "准备工作"
-
-#: package-manager.xml:413(para)
-msgid ""
-"Locate the <filename>.p5i</filename> file which may be present on your "
-"desktop, the Start page in the Package Manager, or on a website."
-msgstr ""
-"找到 <filename>.p5i</filename> 文件，该文件可能在"
-"桌面、软件包管理器中的起始页面，或 Web 站点上。"
-
-#: package-manager.xml:414(para)
-msgid ""
-"Start the Package manager in WebInstall mode in one of the following ways:"
-msgstr ""
-"采用以下方式之一，在 WebInstall 模式下启动软件包管理器："
-
-#: package-manager.xml:415(para)
-msgid ""
-"Click on a <filename>.p5i</filename> file on your desktop, and the "
-"associated application, Package Manager in WebInstall mode, will be launched."
-msgstr ""
-"单击桌面上的 <filename>.p5i</filename> 文件，"
-"处于 WebInstall 模式下的关联应用程序（即软件包管理器）将会启动。"
-
-#: package-manager.xml:417(para)
-msgid ""
-"Start the Package Manager from the command-line along with a path to the "
-"<filename>.p5i</filename> file. For example, type the following command at "
-"the command-line:"
-msgstr ""
-"从命令行启动软件包管理器，并附上 <filename>.p5i"
-"</filename> 文件的路径。例如，在命令行上键入"
-"以下命令："
-
-#: package-manager.xml:418(replaceable)
-msgid "path_to_pi5_file/file.p5i"
-msgstr "path_to_pi5_file/file.p5i"
-
-#: package-manager.xml:418(command)
-msgid "$ pfexec packagemanager/<placeholder-1/>"
-msgstr "$ pfexec packagemanager/<placeholder-1/>"
-
-#: package-manager.xml:420(para)
-msgid ""
-"Click on a URL location that contains a link to <filename>.p5i</filename> "
-"file. If you are using this method to start the WebInstall, the <filename>."
-"p5i</filename> file <emphasis role=\"strong\">must</emphasis> be located on "
-"a web server that has registered the new mime type. Only then, the web "
-"server can manage the <filename>.p5i</filename> automatically and start "
-"Package Manager in WebInstall mode."
-msgstr ""
-"单击包含指向 <filename>.p5i</filename> 文件的链接"
-"的 URL 位置。如果您要使用此方法启动 WebInstall，则 <filename>."
-"p5i</filename> 文件<emphasis role=\"strong\">必须</emphasis>位于"
-"已注册新的 MIME 类型的 Web 服务器上。只有这样，Web "
-"服务器才能自动管理 <filename>.p5i</filename> 并"
-"在 WebInstall 模式下启动软件包管理器。"
-
-#: package-manager.xml:421(para)
-msgid ""
-"If the <filename>.p5i</filename> is located on a web server that does not "
-"have the new mime type registered, save the <filename>.p5i</filename> file "
-"to your desktop and then click on it to launch Web Install."
-msgstr ""
-"如果 <filename>.p5i</filename> 位于没有注册新的 MIME 类型"
-"的 Web 服务器上，请将 <filename>.p5i</filename> 文件"
-"保存到桌面，然后单击该文件以启动 WebInstall。"
-
-#: package-manager.xml:425(para)
-msgid ""
-"The following example window that shows a list of repositories that will be "
-"added and the packages that will be installed. Review the information."
-msgstr ""
-"以下示例窗口中显示了将添加的系统信息库的列表"
-"以及将安装的软件包。请查看这些信息。"
-
-#: package-manager.xml:426(title)
-msgid "Package Manager WebInstaller"
-msgstr "软件包管理器 WebInstaller"
-
-#: package-manager.xml:431(para)
-msgid "Confirm or cancel the WebInstall process."
-msgstr "确认或取消 WebInstall 进程。"
-
-#: package-manager.xml:432(para)
-msgid ""
-"Click <guibutton>Proceed</guibutton> to add the new repositories and install "
-"the packages."
-msgstr ""
-"单击<guibutton>继续</guibutton>以添加新的系统信息库并安装"
-"软件包。"
-
-#: package-manager.xml:433(para)
-msgid ""
-"Click <guibutton>Cancel</guibutton> to cancel the process. The Package "
-"Manager application exits."
-msgstr ""
-"单击<guibutton>取消</guibutton>可取消此进程。软件包"
-"管理器应用程序会退出。"
-
-#: package-manager.xml:435(para)
-msgid ""
-"(Optional) If the repositories that are to be added are secure repositories, "
-"an SSL key and certificate is required. An <literal>Add New Repositories</"
-"literal> dialog box is displayed."
-msgstr ""
-"（可选）如果要添加的系统信息库是安全系统信息库，则"
-"需要 SSL 密钥和证书。此时将显示<literal>添加新的"
-"系统信息库</literal>对话框。"
-
-#: package-manager.xml:436(para)
-msgid ""
-"Click the <emphasis role=\"strong\">Instructions</emphasis> link in the "
-"<literal>Add New Repositories</literal> dialog box to download the SSL key "
-"and certificate."
-msgstr ""
-"单击<literal>添加新的系统信息库</literal>对话框中的"
-"<emphasis role=\"strong\">说明</emphasis>链接，以下载 SSL 密钥"
-"和证书。"
-
-#: package-manager.xml:445(para)
-msgid "The <literal>Adding New Repositories</literal> status bar is displayed."
-msgstr "此时将显示<literal>添加新的系统信息库</literal>状态栏。"
-
-#: package-manager.xml:447(para)
-msgid ""
-"(Optional) If packages are being installed, the <literal>Install/Update</"
-"literal> dialog box is displayed. Click <guibutton>Cancel</guibutton> to "
-"cancel the package installation."
-msgstr ""
-"（可选）如果即将安装软件包，则将显示<literal>安装/更新</"
-"literal>对话框。单击<guibutton>取消</guibutton>可取消"
-"软件包安装。"
-
-#: package-manager.xml:448(para)
-msgid "The application will close when all packages are installed."
-msgstr "安装所有软件包后，应用程序将会关闭。"
-
-#: package-manager.xml:453(title)
-msgid "Working With the Update Manager"
-msgstr "使用更新管理器"
-
-#: package-manager.xml:454(title)
-msgid "About The Update Manager"
-msgstr "关于更新管理器"
-
-#: package-manager.xml:455(para)
-msgid ""
-"The Update Manager is a separate application that starts from the desktop "
-"when updates to the installed packages are available in the repository."
-msgstr ""
-"更新管理器是一个独立的应用程序，当系统信息库中有可用于"
-"已安装软件包的更新时，它将从桌面启动。"
-
-#: package-manager.xml:456(title)
-msgid "Update Manager Main Window"
-msgstr "更新管理器主窗口"
-
-#: package-manager.xml:460(para)
-msgid ""
-"You can use the Update Manager application to update the installed packages "
-"in your image."
-msgstr ""
-"您可以使用更新管理器应用程序来更新映像中的"
-"已安装软件包。"
-
-#: package-manager.xml:461(para)
-msgid ""
-"For the OpenSolaris 2009.06 release, the Update Manager updates <emphasis "
-"role=\"strong\">all</emphasis> installed packages in the image. This action "
-"is equivalent to running the <command>pkg image-update</command> command "
-"from the command-line."
-msgstr ""
-"对于 OpenSolaris 2009.06 发行版，更新管理器将更新映像中"
-"的<emphasis role=\"strong\">所有</emphasis>已安装软件包。"
-"此操作等同于从命令行运行 <command>pkg image-update"
-"</command> 命令。"
-
-#: package-manager.xml:464(title)
-msgid "Using the Update Manager"
-msgstr "使用更新管理器"
-
-#: package-manager.xml:465(para)
-msgid ""
-"When updates are available to the installed packages, a notification icon is "
-"displayed in the notification panel on the OpenSolaris desktop."
-msgstr ""
-"当已安装软件包具有可用更新时，OpenSolaris 桌面上的"
-"通知面板中将显示一个通知图标。"
-
-#: package-manager.xml:466(para)
-msgid ""
-"You can also click <menuchoice><guimenu>System</"
-"guimenu><guisubmenu>Administration</guisubmenu><guimenuitem>Update Manager</"
-"guimenuitem></menuchoice> to manually launch the Update Manager."
-msgstr ""
-"也可以通过单击<menuchoice><guimenu>系统</"
-"guimenu><guisubmenu>管理</guisubmenu><guimenuitem>更新管理器</"
-"guimenuitem></menuchoice>来手动启动更新管理器。"
-
-#: package-manager.xml:467(para)
-msgid ""
-"When you are notified of a software update, perform the following steps to "
-"begin the process of updating your system:"
-msgstr ""
-"当您得到软件更新通知时，请执行以下步骤"
-"开始系统更新过程："
-
-#: package-manager.xml:468(para)
-msgid ""
-"Click the notification icon on the desktop to display the <literal>Update "
-"Manager</literal> window."
-msgstr ""
-"单击桌面上的通知图标以显示<literal>更新"
-"管理器</literal>窗口。"
-
-#: package-manager.xml:470(para)
-msgid ""
-"Click the <guibutton>Update All</guibutton> button in the <literal>Update "
-"Manager</literal> window."
-msgstr ""
-"单击<literal>更新管理器</literal>窗口中的"
-"<guibutton>全部更新</guibutton>按钮。"
-
-#: package-manager.xml:471(para)
-msgid ""
-"Select a package and click the <guilabel>Details</guilabel> panel if you "
-"want to view more information about the package."
-msgstr ""
-"如果要查看有关某个软件包的更多信息，请选择该软件包，然后"
-"单击<guilabel>详细信息</guilabel>面板。"
-
-#: package-manager.xml:474(para)
-msgid ""
-"The <literal>Update All</literal> dialog box is displayed. Proceed with the "
-"Update All process or cancel the action."
-msgstr ""
-"此时将显示<literal>全部更新</literal>对话框。继续执行"
-"“全部更新”过程或取消该操作。"
-
-#: package-manager.xml:475(para)
-msgid ""
-"Click <guibutton>Proceed</guibutton> to create a new boot environment and "
-"update all packages in the current image."
-msgstr ""
-"单击<guibutton>继续</guibutton>以创建新的引导环境并更新"
-"当前映像中的所有软件包。"
-
-#: package-manager.xml:476(para)
-msgid ""
-"During the Update All process, a clone of the active boot environment is "
-"created. This clone enables the user to boot into the boot environment state "
-"that existed before the Update All process was started."
-msgstr ""
-"在“全部更新”过程中，将会创建活动引导环境的克隆。"
-"借助此克隆，用户可以引导至“全部更新”过程开始"
-"之前存在的引导环境状态。"
-
-#: package-manager.xml:477(para)
-msgid ""
-"If the Package Manager is unable to create a new boot environment, an error "
-"message will be displayed. See the <xref linkend=\"gileh\"/> section on how "
-"to rectify the error and continue with updating your image."
-msgstr ""
-"如果软件包管理器无法创建新的引导环境，则会显示一条错误消息。"
-"有关如何纠正错误并继续更新映像的信息，请参见"
-"<xref linkend=\"gileh\"/>一节。"
-
-#: package-manager.xml:478(para)
-msgid ""
-"A name for the new boot environment is automatically generated. You can "
-"accept the name generated by the system, or provide your own name for the "
-"boot environment."
-msgstr ""
-"系统会自动生成新引导环境的名称。您可以接受"
-"系统生成的名称，也可以为引导环境提供您"
-"自己的名称。"
-
-#: package-manager.xml:485(para)
-msgid ""
-"If you chose to proceed, the <literal>Installing Updates</literal> windows "
-"are displayed. The package installation process consists of four stages:"
-msgstr ""
-"如果选择继续，则将显示<literal>正在安装更新</literal>窗口。"
-"软件包安装过程包含四个阶段："
-
-#: package-manager.xml:486(para)
-msgid "Prepare"
-msgstr "准备"
-
-#: package-manager.xml:488(para)
-msgid "Download."
-msgstr "下载。"
-
-#: package-manager.xml:490(para)
-msgid "Install."
-msgstr "安装。"
-
-#: package-manager.xml:493(para)
-msgid ""
-"You can choose to cancel the process only during the <emphasis role=\"strong"
-"\">Prepare</emphasis> and <emphasis role=\"strong\">Download</emphasis> "
-"stages. Click the <guibutton>Cancel</guibutton> button to cancel the "
-"installation process. No changes are made and you are returned to the main "
-"window of the Update Manager."
-msgstr ""
-"您只能选择在<emphasis role=\"strong\">准备</emphasis>"
-"和<emphasis role=\"strong\">下载</emphasis>阶段"
-"取消该过程。单击<guibutton>取消</guibutton>按钮可取消"
-"安装过程。此时不会进行任何更改，并返回到更新管理器"
-"的主窗口。"
-
-#: package-manager.xml:494(para)
-msgid ""
-"If an error occurs during any of the stages, the <guilabel>Details</"
-"guilabel> panel is expanded and the details of the error are displayed. An "
-"error status indicator is shown next to the failed stage."
-msgstr ""
-"如果在任何阶段出现错误，<guilabel>详细信息</"
-"guilabel>面板将会展开，并且将会显示错误的详细信息。"
-"错误状态指示符将显示在失败的阶段旁边。"
-
-#: package-manager.xml:497(para)
-msgid ""
-"Click the <guilabel>Details</guilabel> panel to view more information about "
-"each of the installation processes."
-msgstr ""
-"单击<guilabel>详细信息</guilabel>面板以查看有关每个"
-"安装过程的更多信息。"
-
-#: package-manager.xml:499(para)
-msgid ""
-"Read the <xref linkend=\"release_notes\"/> before rebooting your system."
-msgstr ""
-"重新引导系统之前，请先阅读<xref linkend=\"release_notes\"/>。"
-
-#: package-manager.xml:506(para)
-msgid ""
-"A new boot environment clone <emphasis role=\"strong\">must</emphasis> be "
-"created for the Update All process to be completed. The following error "
-"message is displayed if a boot environment clone cannot be created due to "
-"space restrictions :"
-msgstr ""
-"<emphasis role=\"strong\">必须</emphasis>创建一个新的"
-"引导环境克隆，“全部更新”过程才能完成。如果由于"
-"空间限制而无法创建引导环境克隆，则会显示以下"
-"错误消息："
-
-#: package-manager.xml:508(para)
-msgid ""
-"Click <guibutton>No</guibutton> to cancel the Update All process and return "
-"to the Update Manager main window."
-msgstr ""
-"单击<guibutton>否</guibutton>可取消“全部更新”过程，并返回"
-"到更新管理器主窗口。"
-
-#: package-manager.xml:510(para)
-msgid ""
-"Click <guibutton>Yes</guibutton> in the error dialog box to go to the "
-"<literal>Boot Environment Management</literal> dialog."
-msgstr ""
-"单击错误对话框中的<guibutton>是</guibutton>以转到"
-"<literal>引导环境管理</literal>对话框。"
-
-#: package-manager.xml:512(para)
-msgid ""
-"Go to step 2 in the <xref linkend=\"gilfh\"/> section. Follow the "
-"instructions to delete old or unused boot environments and free up disk "
-"space."
-msgstr ""
-"转到<xref linkend=\"gilfh\"/>一节中的步骤 2。"
-"按照说明删除旧的或未使用的引导环境并释放磁盘"
-"空间。"
-
-#: package-manager.xml:514(para)
-msgid ""
-"Click the <guibutton>Update All</guibutton> button in the <literal>Update "
-"Manager</literal> window to restart the process of updating all packages."
-msgstr ""
-"单击<literal>更新管理器</literal>窗口中的<guibutton>"
-"全部更新</guibutton>按钮以重新启动更新所有软件包的过程。"
-
-#: package-manager.xml:519(title) package-manager.xml:523(ulink)
-msgid "Release Notes"
-msgstr "发行说明"
-
-#: package-manager.xml:520(para)
-msgid ""
-"The OpenSolaris 2009.06 Release Notes are available at the following "
-"locations:"
-msgstr ""
-"OpenSolaris 2009.06 发行说明位于以下"
-"位置："
-
-#: package-manager.xml:521(para)
-msgid ""
-"x86 <ulink url=\"http://opensolaris.org/os/project/indiana/resources/"
-"relnotes/200811/x86/\">Release Notes</ulink>"
-msgstr ""
-"x86 <ulink url=\"http://opensolaris.org/os/project/indiana/resources/"
-"relnotes/200811/x86/\">发行说明</ulink>"
-
-#: package-manager.xml:523(trademark)
-msgid "SPARC"
-msgstr "SPARC"
-
-#: package-manager.xml:527(title)
-msgid "Package Manager Screencast"
-msgstr "软件包管理器截屏视频"
-
-#: package-manager.xml:528(para)
-msgid ""
-"A screencast that shows Package Manager usage for beginners is available. "
-"Click the link below to go to the screencast."
-msgstr ""
-"为初学者提供了显示软件包管理器用法的截屏视频。"
-"单击以下链接可转到该截屏视频。"
-
-#: package-manager.xml:529(ulink)
-msgid "OpenSolaris 2009.06 Package Manager Screencast"
-msgstr "OpenSolaris 2009.06 软件包管理器截屏视频"
-
-#: package-manager.xml:532(title)
-msgid "Image Packaging System Glossary"
-msgstr "映像包管理系统词汇表"
-
-#: package-manager.xml:533(glossterm)
-msgid "publisher"
-msgstr "出版者"
-
-#: package-manager.xml:534(para)
-msgid ""
-"A person, group, or corporation that designs, creates, and publishes a "
-"package to a repository. The repository in turn serves the packages from the "
-"(default) publisher, for downloading purposes. The developer-quality "
-"packages managed by Sun and made available through <ulink url=\"http://pkg."
-"opensolaris.com/dev\">http://pkg.opensolaris.com/dev</ulink> is an example "
-"of a publisher."
-msgstr ""
-"设计、创建软件包并将软件包发布到系统信息库的个人、小组或"
-"公司。系统信息库反过来会提供这些来自（缺省）出版者的"
-"软件包，以便进行下载。由 Sun 管理且可通过 <ulink url="
-"\"http://pkg.opensolaris.com/dev\">http://pkg.opensolaris.com/dev"
-"</ulink> 获得的开发者质量软件包就是出版者的"
-"一个示例。"
-
-#: package-manager.xml:535(para)
-msgid ""
-"The term <emphasis role=\"strong\">authority</emphasis> has been replaced "
-"with the term <emphasis role=\"strong\">publisher</emphasis> from the "
-"OpenSolaris 2009.06 release onwards."
-msgstr ""
-"从 OpenSolaris 2009.06 发行版开始，术语"
-"<emphasis role=\"strong\">授权机构</emphasis>已被替换为"
-"术语<emphasis role=\"strong\">出版者</emphasis>。"
-
-#: package-manager.xml:538(glossterm)
-msgid "boot environment"
-msgstr "引导环境"
-
-#: package-manager.xml:539(para)
-msgid ""
-"For an OpenSolaris release, a boot environment is an instance of a bootable "
-"OpenSolaris environment. The root file system and all other file systems of "
-"the boot environment that contain system software are required to be ZFS "
-"datasets."
-msgstr ""
-"对于 OpenSolaris 发行版，引导环境是可引导 "
-"OpenSolaris 环境的实例。根文件系统和包含系统软件"
-"的引导环境的所有其他文件系统都必须成为 ZFS "
-"数据集。"
-
-#: package-manager.xml:540(para)
-msgid ""
-"The active boot environment is the one that is currently booted. Many boot "
-"environments can present on an OpenSolaris system and an inactive boot "
-"environment can be in a state of waiting for activation upon system reboot."
-msgstr ""
-"活动引导环境是当前引导的环境。OpenSolaris 系统"
-"上可以存在许多引导环境，非活动引导环境可以"
-"处于等待状态，以供在系统重新引导时激活。"
-
-#: package-manager.xml:543(glossterm)
-msgid "clone"
-msgstr "克隆"
-
-#: package-manager.xml:544(para)
-msgid "An exact copy."
-msgstr "完全相同的副本。"
-
-#: package-manager.xml:545(para)
-msgid ""
-"A clone could be an exact copy of an operating system, a file system, or a "
-"volume. This copy has 100% compatibility with the original."
-msgstr ""
-"克隆可以是某个操作系统、文件系统或卷的完全相同的"
-"副本。此副本与其原版 100% 兼容。"
-
-#: package-manager.xml:548(glossterm)
-msgid "dataset"
-msgstr "数据集"
-
-#: package-manager.xml:549(para)
-msgid ""
-"A generic name for the following ZFS entities: clones, file systems, "
-"snapshots, or volumes. Each dataset is identified by a unique name in the "
-"ZFS namespace."
-msgstr ""
-"以下 ZFS 实体的通用名称：克隆、文件系统、"
-"快照或卷。每个数据集都由 ZFS 名称空间中的"
-"唯一名称标识。"
-
-#: package-manager.xml:552(glossterm)
-msgid "image"
-msgstr "映像"
-
-#: package-manager.xml:553(para)
-msgid ""
-"A collection of software in a package that comprises an entire or partial "
-"operating system. The package is suitable for installation."
-msgstr ""
-"包含整个或部分操作系统的软件包中的软件集合。"
-"该软件包适用于安装。"
-
-#: package-manager.xml:554(para)
-msgid ""
-"An image is a location on your system where packages and their associated "
-"files, directories, links, and dependencies can be installed."
-msgstr ""
-"映像是系统中的一个位置，可以在该位置安装软件包及其关联"
-"文件、目录、链接和相关项。"
-
-#: package-manager.xml:557(glossterm)
-msgid "package"
-msgstr "软件包"
-
-#: package-manager.xml:558(para)
-msgid ""
-"A collection of files, directories, links, drivers, and dependencies in a "
-"defined format."
-msgstr ""
-"某种已定义格式的文件、目录、链接、驱动程序和相关项的集合。"
-""
-
-#: package-manager.xml:561(glossterm)
-msgid "preferred repository"
-msgstr "首选系统信息库"
-
-#: package-manager.xml:562(para)
-msgid ""
-"A default repository that is the source for packages. If a user does not "
-"explicitly specify a repository when installing and updating packages, the "
-"preferred repository is chosen as the source for packages."
-msgstr ""
-"作为软件包源的缺省系统信息库。如果用户在安装和"
-"更新软件包时没有显式指定系统信息库，则会将首选"
-"系统信息库选作软件包的源。"
-
-#: package-manager.xml:565(glossterm)
-msgid "repository"
-msgstr "系统信息库"
-
-#: package-manager.xml:566(para)
-msgid ""
-"A location where packages are available for downloading. A publisher can "
-"publish packages to many repositories."
-msgstr ""
-"可供下载软件包的位置。出版者可以"
-"将软件包发布到许多系统信息库。"
-
-#. Put one translator per line, in the form of NAME <EMAIL>, YEAR1, YEAR2.
-#: package-manager.xml:0(None)
-msgid "translator-credits"
-msgstr "Sun Microsystems"
-
-#: package-manager.xml:209(para)
-msgid ""
-"Note the following important considerations when using the multi-repository "
-"search."
-msgstr ""
-"使用多系统信息库搜索时，请注意以下重要"
-"事项。"
-
-#: package-manager.xml:210(para)
-msgid ""
-"The multi-repository search currently supports a search based on the package "
-"contents including its description, classification, and the files contained "
-"within the package. However, the correct results are displayed only if the "
-"term used for searching is an <emphasis role=\"strong\">exact</emphasis> "
-"match."
-msgstr ""
-"多系统信息库搜索当前支持基于软件包内容"
-"（包括其描述、分类以及软件包中包含的文件）"
-"的搜索。但是，仅当用于搜索的词条<emphasis role="
-"\"strong\">完全</emphasis>匹配时，才显示正确的"
-"结果。"
-
-#: package-manager.xml:212(para)
-msgid ""
-"<emphasis role=\"strong\">The multi-repository search does not search the "
-"package name</emphasis>."
-msgstr ""
-"<emphasis role=\"strong\">多系统信息库搜索不对软件包名称"
-"进行搜索</emphasis>。"
-
-#: package-manager.xml:214(para)
-msgid ""
-"Wild card searching is supported by using the asterisk wild card, "
-"<literal>*</literal>, in the search term. Search using the wild card can be "
-"slower than an exact match search."
-msgstr ""
-"在搜索词条中，支持使用星号通配符 <literal>*"
-"</literal> 进行通配符搜索。使用通配符搜索可能"
-"要比完全匹配搜索慢。"
-
-#: package-manager.xml:218(para)
-msgid ""
-"Type a description of the package in the box. For example, the "
-"<filename>SUNWdiveintopython</filename> package is a book on Python "
-"programming. The description of the package contains the string "
-"<emphasis>book</emphasis>. To search for this package, you might then type "
-"one of the following terms:"
-msgstr ""
-"在该框中键入软件包的描述。例如，<filename>"
-"SUNWdiveintopython</filename> 软件包是有关 Python 编程"
-"的书籍。该软件包的描述中包含<emphasis>book</"
-"emphasis>一词。要搜索此软件包，您则可以键入"
-"以下词条之一："
-
-#: package-manager.xml:224(para)
-msgid ""
-"If you searched for the term <emphasis>diveinto</emphasis> in the multi-"
-"repository search, the <filename>SUNWdiveintopython</filename> package will "
-"not be displayed as the term <emphasis>diveinto</emphasis> is not present as "
-"an independent, complete word in the package contents. However you will find "
-"the package using the <literal>*</literal> wild card. Hence, searching for "
-"the term <literal>diveinto*</literal> will display the "
-"<filename>SUNWdiveintopython</filename> package."
-msgstr ""
-"如果在多系统信息库搜索中搜索词条 <emphasis>diveinto</emphasis>，"
-"将不会显示 <filename>SUNWdiveintopython</filename> 软件包"
-"因为词条 <emphasis>diveinto</emphasis> 在软件包内容中"
-"不是以独立、完整的字词形式存在的。但是，如果使用 <literal>"
-"*</literal> 通配符，将可以搜索到该软件包。因此，"
-"搜索词条 <literal>diveinto*</literal> 时将会显示 "
-"<filename>SUNWdiveintopython</filename> 软件包。"
