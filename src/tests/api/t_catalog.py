@@ -21,7 +21,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import datetime
@@ -125,7 +125,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
 
         def __gen_manifest(self, f):
                 m = manifest.Manifest()
-                m.set_content(
+                lines = (
                     "depend fmri=foo@1.0 type=require\n"
                     "set name=facet.devel value=true\n"
                     "set name=info.classification "
@@ -136,24 +136,37 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                     "set name=info.classification "
                     """value="i386 Application" variant.arch=i386\n"""
                     "set name=variant.arch value=i386 value=sparc\n"
-                    "set name=pkg.obsolete value=true\n"
                     "set name=pkg.fmri value=\"%s\"\n"
                     "set name=pkg.summary value=\"Summary %s\"\n"
                     "set name=pkg.summary value=\"Sparc Summary %s\""
                     " variant.arch=sparc\n"
                     "set name=pkg.summary:th value=\"ซอฟต์แวร์ %s\"\n"
                     "set name=pkg.description value=\"Desc %s\"\n" % \
-                    (f, f, f, f, f), signatures=True)
+                    (f, f, f, f, f))
+
+                if f.pkg_name == "zpkg":
+                        lines += "set name=pkg.renamed value=true\n"
+                else:
+                        lines += "set name=pkg.obsolete value=true\n"
+                m.set_content(lines, signatures=True)
+
                 return m
 
         def __test_catalog_actions(self, nc, pkg_src_list):
-                def expected_dependency():
-                        return [
+                def expected_dependency(f):
+                        expected = [
                             "depend fmri=foo@1.0 type=require",
                             "set name=facet.devel value=true",
                             "set name=variant.arch value=i386 value=sparc",
-                            "set name=pkg.obsolete value=true",
                         ]
+
+                        if f.pkg_name == "zpkg":
+                                expected.append("set name=pkg.renamed "
+                                    "value=true")
+                        else:
+                                expected.append("set name=pkg.obsolete "
+                                    "value=true")
+                        return expected
 
                 def expected_summary(f):
                         return [
@@ -256,7 +269,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                                 self.assertEqual([v for v in vars], [])
                                 return
 
-                        expected = expected_dependency()
+                        expected = expected_dependency(f)
                         self.assertEqual(returned, expected)
                         self.assertEqual(var, ["i386", "sparc"])
                         self.assertEqual([(n, vs) for n, vs in vars],
@@ -352,7 +365,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                     str(a)
                     for a in nc.get_entry_actions(f, [nc.DEPENDENCY])
                 ]
-                expected = expected_dependency()
+                expected = expected_dependency(f)
                 self.assertEqual(returned, expected)
 
                 # This case should only return the summary-related actions (but

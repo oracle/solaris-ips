@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 """Interfaces and implementation for the Catalog object, as well as functions
@@ -1520,7 +1520,7 @@ class Catalog(object):
                             attr_name.startswith("variant") or \
                             attr_name.startswith("facet") or \
                             attr_name in ("pkg.obsolete",
-                                "pkg.rename")):
+                                "pkg.renamed")):
                                 if Catalog.DEPENDENCY in info_needed:
                                         yield a
                         elif Catalog.SUMMARY in info_needed and a.name == "set":
