@@ -975,7 +975,10 @@ class Transport(object):
                 # Get publisher information from FMRI.
                 pub = self.__img.get_publisher(fmri.get_publisher())
                 # Use the publisher to get the catalog and its signature info.
-                sigs = dict(pub.catalog.get_entry_signatures(fmri))
+                try:
+                        sigs = dict(pub.catalog.get_entry_signatures(fmri))
+                except apx.UnknownCatalogEntry:
+                        return False
 
                 if sigs and "sha-1" in sigs:
                         chash = sigs["sha-1"]
