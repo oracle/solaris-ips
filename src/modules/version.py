@@ -21,13 +21,14 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
 import calendar
 import datetime
 import time
+import weakref
 
 CONSTRAINT_NONE = 0
 CONSTRAINT_AUTO = 50
@@ -57,6 +58,13 @@ class DotSequence(list):
         versioning.  We define the "major release" value and the "minor release"
         value as the first two numbers in the sequence."""
 
+        #
+        # We employ the Flyweight design pattern for dotsequences, since they
+        # are used immutably, are highly repetitive (0.5.11 over and over) and,
+        # for what they contain, are relatively expensive memory-wise.
+        #
+        __dotseq_pool = weakref.WeakValueDictionary()
+
         @staticmethod
         def dotsequence_val(elem):
                 # Do this first; if the string is zero chars or non-numeric
@@ -68,7 +76,20 @@ class DotSequence(list):
                         raise ValueError, "Zero padded number"
                 return x
 
+        def __new__(cls, dotstring):
+                ds = DotSequence.__dotseq_pool.get(dotstring, None)
+                if ds is not None:
+                        return ds
+
+                ds = list.__new__(cls)
+                cls.__dotseq_pool[dotstring] = ds
+                return ds
+
         def __init__(self, dotstring):
+                # Was I already initialized?  See __new__ above.
+                if len(self) != 0:
+                        return
+
                 try:
                         list.__init__(self,
                             map(DotSequence.dotsequence_val,
@@ -213,6 +234,8 @@ class Version(object):
         Interpretation of the build_release by the client is that, in the case
         b1 < b2, a b1 package can be run on either b1 or b2 systems,while a b2
         package can only be run on a b2 system."""
+
+        __slots__ = ["release", "branch", "build_release", "timestr"]
 
         def __init__(self, version_string, build_string):
                 # XXX If illegally formatted, raise exception.

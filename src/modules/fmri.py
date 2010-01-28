@@ -113,6 +113,8 @@ class PkgFmri(object):
         # Stored in a class variable so that subclasses can override
         valid_pkg_name = g_valid_pkg_name
 
+        __slots__ = ["version", "publisher", "pkg_name"]
+
         def __init__(self, fmri, build_release = None, publisher = None):
                 """XXX pkg:/?pkg_name@version not presently supported."""
                 fmri = fmri.rstrip()
