@@ -1619,21 +1619,34 @@
               </packing>
             </child>
             <child>
-              <widget class="GtkScrolledWindow" id="scrolledwindow11">
+              <widget class="GtkFrame" id="frame1">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="hscrollbar_policy">automatic</property>
-                <property name="vscrollbar_policy">automatic</property>
+                <property name="label_xalign">0</property>
+                <property name="shadow_type">in</property>
                 <child>
-                  <widget class="GtkTreeView" id="betreeview">
+                  <widget class="GtkScrolledWindow" id="scrolledwindow11">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="rules_hint">True</property>
-                    <property name="enable_search">False</property>
-                    <accessibility>
-                      <atkproperty name="AtkObject::accessible-name">Bes</atkproperty>
-                    </accessibility>
+                    <property name="hscrollbar_policy">automatic</property>
+                    <property name="vscrollbar_policy">automatic</property>
+                    <child>
+                      <widget class="GtkTreeView" id="betreeview">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="rules_hint">True</property>
+                        <property name="enable_search">False</property>
+                        <accessibility>
+                          <atkproperty name="AtkObject::accessible-name">Bes</atkproperty>
+                        </accessibility>
+                      </widget>
+                    </child>
                   </widget>
+                </child>
+                <child>
+                  <placeholder/>
+                  <packing>
+                    <property name="type">label_item</property>
+                  </packing>
                 </child>
               </widget>
               <packing>
