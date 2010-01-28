@@ -98,6 +98,8 @@ class RenameBeAfterUpdateAll:
                     w_tree_ua_completed.get_widget("ua_restart_now_button")
                 self.w_ua_ok_image = \
                     w_tree_ua_completed.get_widget("ua_ok_image")
+                self.w_ua_whats_this_button = \
+                    w_tree_ua_completed.get_widget("ua_whats_this_button")
 
                 self.w_progress_dialog = w_xmltree_progress.get_widget("progressdialog")
                 self.w_progressinfo_label = w_xmltree_progress.get_widget("progressinfo")
@@ -136,6 +138,8 @@ class RenameBeAfterUpdateAll:
                                     self.__on_ua_completed_dialog_delete_event,
                                 "on_ua_be_entry_changed" : \
                                     self.__on_ua_be_entry_changed,
+                                "on_ua_whats_this_button_clicked" : \
+                                    self.__on_ua_whats_this_button_clicked,                                
                             }
                         w_tree_ua_completed.signal_autoconnect(dic_be_rename)
                 except AttributeError, error:
@@ -172,6 +176,20 @@ class RenameBeAfterUpdateAll:
 
         def __on_ua_dialog_close(self, widget):
                 self.__proceed_after_update()
+
+        def __on_ua_whats_this_button_clicked(self, widget):
+                msgbox = gtk.MessageDialog(parent = self.w_ua_completed_dialog,
+                    buttons = gtk.BUTTONS_CLOSE,
+                    flags = gtk.DIALOG_MODAL,
+                    type = gtk.MESSAGE_INFO,
+                    message_format = None)
+                msgbox.set_property('text',
+                    _(self.w_ua_whats_this_button.get_tooltip_text()))
+                title = _("Update All")
+
+                msgbox.set_title(title)
+                msgbox.run()
+                msgbox.destroy()
 
         @staticmethod
         def __on_ua_completed_dialog_delete_event(widget, event):

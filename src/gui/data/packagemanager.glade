@@ -2947,19 +2947,36 @@ following name.</property>
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkLabel" id="label2">
+                  <widget class="GtkAlignment" id="alignment1">
                     <property name="visible">True</property>
-                    <property name="has_tooltip">True</property>
-                    <property name="tooltip" translatable="yes">A boot environment (BE) contains the operating
+                    <child>
+                      <widget class="GtkButton" id="ua_whats_this_button">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="tooltip" translatable="yes">A boot environment (BE) contains the operating
 system image and updated packages. The
 system will boot into the new BE on restart.</property>
-                    <property name="label" translatable="yes">&lt;span foreground="blue"&gt;&lt;u&gt;What's this?&lt;/u&gt;&lt;/span&gt;</property>
-                    <property name="use_markup">True</property>
+                        <property name="relief">none</property>
+                        <signal name="clicked" handler="on_ua_whats_this_button_clicked"/>
+                        <child>
+                          <widget class="GtkLabel" id="label2">
+                            <property name="visible">True</property>
+                            <property name="has_tooltip">True</property>
+                            <property name="tooltip" translatable="yes">A boot environment (BE) contains the operating
+system image and updated packages. The
+system will boot into the new BE on restart.</property>
+                            <property name="label" translatable="yes">&lt;span foreground="blue"&gt;&lt;u&gt;What's this?&lt;/u&gt;&lt;/span&gt;</property>
+                            <property name="use_markup">True</property>
+                          </widget>
+                        </child>
+                      </widget>
+                    </child>
                   </widget>
                   <packing>
                     <property name="left_attach">2</property>
                     <property name="right_attach">3</property>
-                    <property name="x_options">GTK_FILL</property>
+                    <property name="x_options"></property>
                   </packing>
                 </child>
                 <child>
