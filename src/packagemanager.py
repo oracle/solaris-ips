@@ -5019,13 +5019,6 @@ class PackageManager:
                         for section in sections[pub]:
                                 self.__add_category_to_section(sections[pub][section],
                                     _(section), category_list, section_list)
-
-                # Sort the Categories into alphabetical order
-                if len(category_list) > 0:
-                        rows = [tuple(r) + (i,) for i, r in enumerate(category_list)]
-                        rows.sort(self.__sort)
-                        r = []
-                        category_list.reorder(None, [r[-1] for r in rows])
                 return
 
         def __add_package_to_list(self, app, application_list, pkg_add,
@@ -5116,11 +5109,21 @@ class PackageManager:
                                 continue
                         
                         category_ids = self.section_categories_list[sec_id]
+                        category_list = self.__get_new_category_liststore()
                         for cat_id in category_ids.keys():
                                 if category_ids[cat_id][
                                     enumerations.CATEGORY_IS_VISIBLE]:
-                                        category_tree.append(cat_iter,
-                                            category_ids[cat_id])
+                                        category_list.append(None, category_ids[cat_id])
+                        # Sort the Categories into alphabetical order
+                        if len(category_list) > 0:
+                                rows = [tuple(r) + (i,) for i, 
+                                    r in enumerate(category_list)]
+                                rows.sort(self.__sort)
+                                r = []
+                                category_list.reorder(None, [r[-1] for r in rows])
+                        for category in category_list:
+                                category_tree.append(cat_iter, category)
+
                 recent_search_name = "<span foreground='#757575'><b>" + \
                     _("Recent Searches") + "</b></span>"
                 self.recent_searches_cat_iter = category_tree.append(None,
@@ -5331,12 +5334,13 @@ class PackageManager:
                                 for category in category_list:
                                         localized_top_cat = _(category[
                                             enumerations.CATEGORY_NAME].split("/")[0])
-                                        category[enumerations.CATEGORY_VISIBLE_NAME] = \
-                                            _(category[
-                                            enumerations.CATEGORY_VISIBLE_NAME])
-                                        visible_id = enumerations.CATEGORY_IS_VISIBLE
                                         if localized_top_cat == \
                                                 section[enumerations.SECTION_NAME]:
+                                                
+                                                vis = \
+                                                    enumerations.CATEGORY_VISIBLE_NAME
+                                                category[vis] = _(category[
+                                                    enumerations.CATEGORY_VISIBLE_NAME])
                                                 section_lst = category[ \
                                                     enumerations.SECTION_LIST_OBJECT]
                                                 section[enumerations.SECTION_ENABLED] = \
@@ -5406,7 +5410,7 @@ class PackageManager:
 
         @staticmethod
         def __sort(a, b):
-                return cmp(a[1], b[1])
+                return cmp(a[2], b[2])
 
         @staticmethod
         def filter_cell_data_function(column, renderer, model, itr, data):
