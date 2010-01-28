@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import testutils
@@ -171,6 +171,10 @@ class TestPkgsendBasics(testutils.SingleDepotTestCase):
                         # Should fail because the action is unknown.
                         self.pkgsend(url,
                             "add bogusaction", exit=1)
+
+                        # Should fail because we never publish unknown actions.
+                        self.pkgsend(url,
+                             "add unknown path=foo", exit=1)
 
         def test_5_bad_open(self):
                 """Verify that a bad open is handled properly.  This could be
@@ -541,6 +545,41 @@ dir path=foo/bar mode=0755 owner=root group=bin
                 self.dc.set_repodir(rpath)
                 self.image_create(dhurl)
                 self.pkg("list -a foo")
+                self.image_destroy()
+
+        def test_16_multiple_manifests(self):
+                """Verify that when sending multiple manifests, the contents
+                of all manifests are published."""
+
+                test_files = []
+
+                # First create two dummy data files.
+                for i in range(2):
+                        fd, fpath = tempfile.mkstemp(dir=self.get_test_prefix())
+                        fp = os.fdopen(fd, "wb")
+                        test_files.append(fpath)
+                        fp.write("foo")
+                        fp.close()
+
+                # create two manifests.
+                for path in test_files:
+                        mf = open(path + ".manifest", "w")
+                        mf.write("file %s mode=0644 owner=root path=/foo%s" %
+                            (path, path))
+                        mf.close()
+
+                # publish
+                url = self.dc.get_depot_url()
+                self.pkgsend(url, "open multiple_mf@1.0")
+                manifests = " ".join([path + ".manifest" for path in test_files])
+                self.pkgsend(url, "include " + manifests)
+                self.pkgsend(url, "close")
+
+                # Finally, verify that both files were published.
+                self.image_create(url)
+                for path in test_files:
+                        self.pkg("contents -r -H -o action.raw -t file multiple_mf |"
+                            " grep %s" % path)
                 self.image_destroy()
 
 if __name__ == "__main__":

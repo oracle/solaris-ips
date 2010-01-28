@@ -613,6 +613,7 @@ cli.t_pkgsend.py TestPkgsendBasics.test_12_bundle_sysv_datastream|pass
 cli.t_pkgsend.py TestPkgsendBasics.test_13_pkgsend_indexcontrol|pass
 cli.t_pkgsend.py TestPkgsendBasics.test_14_obsolete|pass
 cli.t_pkgsend.py TestPkgsendBasics.test_15_test_no_catalog_option|pass
+cli.t_pkgsend.py TestPkgsendBasics.test_16_multiple_manifests|pass
 cli.t_pkgsend.py TestPkgsendBasics.test_1_pkgsend_abandon|pass
 cli.t_pkgsend.py TestPkgsendBasics.test_2_invalid_url|pass
 cli.t_pkgsend.py TestPkgsendBasics.test_3_bad_transaction|pass

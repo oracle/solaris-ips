@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -50,6 +50,8 @@ import pkg.fmri
 import pkg.manifest
 import pkg.publish.transaction as trans
 from pkg.misc import msg, emsg, PipeError
+
+nopub_actions = [ "unknown" ]
 
 def error(text, cmd=None):
         """Emit an error message prefixed by the command name """
@@ -203,6 +205,10 @@ def trans_add(repo_uri, args):
                 
         action, lp = pkg.actions.internalizelist(args[0], args[1:])
 
+        if action.name in nopub_actions:
+                error(_("invalid action for publication: %s") % action, cmd="add")
+                return 1
+
         t = trans.Transaction(repo_uri, trans_id=trans_id)
         t.add(action)
         return 0
@@ -292,6 +298,11 @@ def trans_publish(repo_uri, fargs):
                         continue
                 elif a.name in ["file", "license"]:
                         pkg.actions.set_action_data(a.hash, a, basedirs)
+                elif a.name in nopub_actions:
+                        error(_("invalid action for publication: %s") % action,
+                            cmd="publish")
+                        t.close(abandon=True)
+                        return 1
                 try:
                         t.add(a)
                 except:
@@ -341,7 +352,7 @@ def trans_include(repo_uri, fargs, transaction=None):
                 try:
                         data = f.read()
                 except IOError, e:
-                        error(e, cmd="publish")
+                        error(e, cmd="include")
                         return 1                
                 lines.append(data)
                 linecnt = len(data.splitlines())
@@ -350,7 +361,7 @@ def trans_include(repo_uri, fargs, transaction=None):
 
         m = pkg.manifest.Manifest()
         try:
-                m.set_content(data)
+                m.set_content("\n".join(lines))
         except pkg.actions.ActionError, e:
                 lineno = e.lineno
                 for i, tup in enumerate(linecnts):
@@ -366,6 +377,8 @@ def trans_include(repo_uri, fargs, transaction=None):
                     cmd="include")
                 return 1
 
+        invalid_action = False
+
         for a in m.gen_actions():
                 # don't publish this action
                 if a.name == "set" and a.attrs["name"] in  ["pkg.fmri", "fmri"]:
@@ -373,9 +386,17 @@ def trans_include(repo_uri, fargs, transaction=None):
                 elif a.name in ["file", "license"]:
                         pkg.actions.set_action_data(a.hash, a, basedirs)
 
-                t.add(a)
+                if a.name in nopub_actions:
+                        error(_("invalid action for publication: %s") % str(a),
+                            cmd="include")
+                        invalid_action = True
+                else:
+                        t.add(a)
 
-        return 0
+        if invalid_action:
+                return 3
+        else:
+                return 0
 
 def gen_actions(files, timestamp_files):
         for filename in files:
@@ -391,7 +412,10 @@ def gen_actions(files, timestamp_files):
                                                 del action.attrs["timestamp"]
                                         except KeyError:
                                                 pass
-                        yield action
+                        elif action.name in nopub_actions:
+                                yield (action, True)
+                        else:
+                                yield (action, False)
 
 def trans_import(repo_uri, args):
         try:
@@ -414,8 +438,14 @@ def trans_import(repo_uri, args):
                     cmd="import")
         t = trans.Transaction(repo_uri, trans_id=trans_id)
 
-        for action in gen_actions(pargs, timestamp_files):
-                        t.add(action)
+        for action, err in gen_actions(pargs, timestamp_files):
+                        if err:
+                                error(_("invalid action for publication: %s") %
+                                    action, cmd="import")
+                                t.close(abandon=True)
+                                return 1
+                        else:
+                                t.add(action)
         return 0
 
 def trans_generate(args):
@@ -431,7 +461,7 @@ def trans_generate(args):
                 usage(_("No arguments specified for subcommand."),
                     cmd="generate")
 
-        for action in gen_actions(pargs, timestamp_files):
+        for action, err in gen_actions(pargs, timestamp_files):
                 if "path" in action.attrs and hasattr(action, "hash") \
                     and action.hash == "NOHASH":
                         action.hash = action.attrs["path"]
