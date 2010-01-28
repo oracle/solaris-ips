@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -44,7 +44,6 @@ f_img=$(gettext "failed to create image\n")
 f_pkg=$(gettext "failed to install package\n")
 f_interrupted=$(gettext "Installation cancelled due to interrupt.\n")
 f_bad_publisher=$(gettext "Syntax error in publisher information.")
-f_no_entire=$(gettext "Unable to find 'entire' incorporation in the global zone image.\n")
 f_no_entire_in_pref=$(gettext "Unable to locate the incorporation '%s' in the preferred publisher '%s'.\nUse -P to supply a publisher which contains this package.\n")
 f_key_prop=$(gettext "Unable to propagate key %s to %s")
 f_cert_prop=$(gettext "Unable to propagate cert %s to %s")
@@ -282,14 +281,12 @@ fi
 # Look for the 'entire' incorporation's FMRI in the current image; due to users
 # doing weird machinations with their publishers, we strip off the publisher
 # from the FMRI if it is present.
+# It's ok to not find entire in the current image, since this means the user
+# can install pre-release development bits for testing purposes.
 #
 raw_entire_fmri=$($PKG list -Hv entire | nawk '{print $1}')
 entire_fmri=$(echo $raw_entire_fmri | sed 's@^pkg://[^/]*/@@')
 entire_fmri=$(echo $entire_fmri | sed 's@^pkg:/@@')
-
-if [[ -z $entire_fmri ]]; then
-	fail_incomplete "$f_no_entire"
-fi
 
 #
 # Before installing the zone, set up ZFS dataset hierarchy for the zone root
@@ -389,8 +386,19 @@ $PKG image-create -f --no-refresh --zone --full \
     -p $publisher=$pub_first_origin $pub_add_origins $pub_add_mirrors $secinfo \
     $ZONEROOT || fail_incomplete "$f_img"
 
+# Retrieve publisher attributes and update our new publisher
+attrs=$(get_publisher_attr_args $publisher "origin")
+
+# Change the value of PKG_IMAGE so that future PKG operation will work
+# on the newly created zone rather than the global zone
+
 PKG_IMAGE="$ZONEROOT"
 export PKG_IMAGE
+
+# --no-refresh is used here so that update operations can be
+# coalesced.
+# Update our new publisher
+$PKG set-publisher --no-refresh $attrs $publisher || fail_incomplete "$f_img"
 
 # add extra publishers
 # If cert and key information are ever allowed at the origin or
@@ -403,9 +411,19 @@ if [[ -n "$publishers_extra_origins" ]]; then
 			pub_add_origins="${pub_add_origins}-g $origin "
 		done
 
+		# Retrieve publisher attributes. Since we are retrieving
+		# these attributes from the GLOBAL zone, we must reset
+		# PKG_IMAGE temporarily
+		SAVE_PKG_IMAGE=$PKG_IMAGE
+		PKG_IMAGE=$GZ_IMAGE
+		export PKG_IMAGE
+		attrs=$(get_publisher_attr_args $pub_prefix "origin")
+		# Now restore the save PKG_IMAGE value
+		PKG_IMAGE=$SAVE_PKG_IMAGE
+		export PKG_IMAGE
 		# --no-refresh is used here so that update operations can be
 		# coalesced.
-		$PKG set-publisher --no-refresh \
+		$PKG set-publisher --no-refresh $attrs \
                     ${pub_add_origins}${pub_prefix} || fail_incomplete "$f_img"
 	done
 
@@ -418,9 +436,18 @@ if [[ -n "$publishers_extra_origins" ]]; then
 				pub_add_mirrors="${pub_add_mirrors}-m $mirror "
 			done
 
+			# Retrieve publisher attributes. Since we are retrieving
+			# these attributes from the GLOBAL zone, we must reset
+			# PKG_IMAGE temporarily
+			SAVE_PKG_IMAGE=$PKG_IMAGE
+			PKG_IMAGE=$GZ_IMAGE
+			export PKG_IMAGE
+			attrs=$(get_publisher_attr_args $pub_prefix "mirror")
+			PKG_IMAGE=$SAVE_PKG_IMAGE
+			export PKG_IMAGE
 			# --no-refresh is used here so that update operations
 			# can be coalesced.
-			$PKG set-publisher --no-refresh \
+			$PKG set-publisher --no-refresh $attrs \
 			    ${pub_add_mirrors}${pub_prefix} || \
 			    fail_incomplete "$f_img"
 		done
@@ -438,7 +465,8 @@ if [ -d /var/pkg/download ]; then
 fi
 
 #
-# Check to see if the user's choice of preferred publisher contains the
+# If we found an "entire" incorporation in the current image, then
+# check to see if the user's choice of preferred publisher contains the
 # version of the 'entire' incorporation needed.  This helps us to prevent
 # mishaps in the event the user selected some weirdo publisher as their
 # preferred one, or passed a preferred pub on the command line which doesn't
@@ -448,22 +476,27 @@ fi
 # but since the publisher specified by the user might not be known to
 # the system, we can't do this test without first configuring the image.
 #
-printf "$m_incorp\n"
-$PKG list -af pkg://$publisher/$entire_fmri > /dev/null 2>&1
-if [[ $? -ne 0 ]]; then
-	fail_fatal "$f_no_entire_in_pref" $entire_fmri $publisher
+if [[ -n $entire_fmri ]]; then
+	printf "$m_incorp\n"
+	$PKG list -af pkg://$publisher/$entire_fmri > /dev/null 2>&1
+	if [[ $? -ne 0 ]]; then
+		fail_fatal "$f_no_entire_in_pref" $entire_fmri $publisher
+	fi
 fi
 
 printf "$m_core\n"
 #
-# We have to take baby steps here: first, by installing entire, to
-# constrain everything.  Then, SUNWcsd, to lay down device files which
-# are subsequently needed by driver actions.  Then SUNWcs to lay down
-# /etc/passwd, /etc/group, etc so that subsequent user and group actions
-# work.  This can all hopefully go away once "primordial" actions
-# arrive.
+# We have to take baby steps here: first, by installing entire (if
+# it's present in the current image), to constrain everything.  Then,
+# SUNWcsd, to lay down device files which are subsequently needed by
+# driver actions.  Then SUNWcs to lay down /etc/passwd, /etc/group,
+# etc so that subsequent user and group actions # work.  This can all
+# hopefully go away once "primordial" actions arrive.
 #
-$PKG install -q --no-refresh --no-index $entire_fmri || pkg_err_check "$f_pkg"
+if [[ -n $entire_fmri ]]; then
+	$PKG install -q --no-refresh --no-index $entire_fmri || \
+	    pkg_err_check "$f_pkg"
+fi
 $PKG install --no-refresh --no-index SUNWcsd || pkg_err_check "$f_pkg"
 $PKG install --no-refresh --no-index SUNWcs || pkg_err_check "$f_pkg"
 

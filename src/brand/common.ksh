@@ -19,7 +19,7 @@
 # CDDL HEADER END
 #
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -323,29 +323,86 @@ get_entire_incorp() {
 }
 
 #
-# Emits to stdout the preferred publisher's prefix followed by a '=', and
-# then the list of the requested URLs separated by spaces, followed by a
-# newline after each unique publisher.  It expects two parameters, publisher
-# type ("preferred" or "all") and URL type ("mirror" or
-# "origin".
+# Emits to stdout the extended attributes for a publisher. The
+# attributes are emitted in the order "sticky preferred enabled". It
+# expects two parameters: publisher name and URL type which can be
+# ("mirror" or "origin").
+#
+get_publisher_attrs() {
+	pname=$1
+	utype=$2
+
+	LC_ALL=C $PKG publisher -HF tsv| \
+	    nawk '$5 == "'"$utype"'" && $1 == "'"$pname"'" \
+	    {printf "%s %s %s\n", $2, $3, $4;}'
+	return 0
+}
+
+#
+# Emits to stdout the extended attribute arguments for a publisher. It
+# expects two parameters: publisher name and URL type which can be
+# ("mirror" or "origin").
+#
+get_publisher_attr_args() {
+
+	args=""
+	get_publisher_attrs $1 $2 |
+	while IFS=" " read sticky preferred enabled; do
+		if [ $sticky == "true" ]; then
+			args="--sticky"
+		else
+			args="--non-sticky"
+		fi
+
+		if [ $preferred == "true" ]; then
+			args="$args -P"
+		fi
+
+		if [ $enabled == "true" ]; then
+			args="$args --enable"
+		else
+			args="$args --disable"
+		fi
+	done
+	echo $args
+
+	return 0
+}
+
+#
+# Emits to stdout the publisher's prefix followed by a '=', and then
+# the list of the requested URLs separated by spaces, followed by a
+# newline after each unique publisher.  It expects two parameters,
+# publisher type ("all", "preferred", "non-preferred") and URL type
+# ("mirror" or "origin".
 #
 get_publisher_urls() {
 	ptype=$1
 	utype=$2
 
-	pub_opts="-H"
-	if [ "$ptype" == "preferred" ]; then
-		pub_opts="${pub_opts}P"
-	fi
-
 	__pub_prefix=""
 	__publisher_urls=""
+	ptype_filter=""
 
-	LC_ALL=C $PKG publisher $pub_opts | nawk '$2 == "'"$utype"'" && \
-	    $3 == "online" {printf "%s %s\n", $1, $4;}' | {
+	if [ "$ptype" == "all" ]
+	then
+		ptype_filter=""
+	elif [ "$ptype" == "preferred" ]
+	then
+		ptype_filter="true"
+	elif [ "$ptype" == "non-preferred" ]
+	then
+		ptype_filter="false"
+	fi
+
+	LC_ALL=C $PKG publisher -HF tsv | \
+		nawk '$5 == "'"$utype"'" && \
+		$6 == "online" && \
+		( "'"$ptype_filter"'" == "" || $3 == "'"$ptype_filter"'" ) \
+		{printf "%s %s\n", $1, $7;}' |
 		while IFS=" " read __publisher __publisher_url; do
 			if [[ -n "$__pub_prefix" && \
-			    "$__pub_prefix" != "$__publisher" ]]; then
+				"$__pub_prefix" != "$__publisher" ]]; then
 				# Different publisher so emit accumulation and
 				# clear existing data.
 				echo $__pub_prefix=$__publisher_urls
@@ -354,7 +411,6 @@ get_publisher_urls() {
 			__pub_prefix=$__publisher
 			__publisher_urls="$__publisher_urls$__publisher_url "
 		done
-	}
 
 	if [[ -n "$__pub_prefix" && -n "$__publisher_urls" ]]; then
 		echo $__pub_prefix=$__publisher_urls

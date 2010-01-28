@@ -2509,9 +2509,47 @@ def publisher_list(img, args):
         omit_headers = False
         preferred_only = False
         inc_disabled = True
+        valid_formats = ( "tsv", )
+        format = "default"
+        field_data = {
+            "publisher" : [("default", "tsv"), _("PUBLISHER"), ""],
+            "attrs" : [("default"), "", ""],
+            "type" : [("default", "tsv"), _("TYPE"), ""],
+            "status" : [("default", "tsv"), _("STATUS"), ""],
+            "uri" : [("default", "tsv"), _("URI"), ""],
+            "sticky" : [("tsv"), _("STICKY"), ""],
+            "preferred" : [("tsv"), _("PREFERRED"), ""],
+            "enabled" : [("tsv"), _("ENABLED"), ""]
+        }
+
+        desired_field_order = (_("PUBLISHER"), _(""), _("STICKY"),
+                               _("PREFERRED"), _("ENABLED"), _("TYPE"),
+                               _("STATUS"), _("URI"))
+
+        # Custom sort function for preserving field ordering
+        def sort_fields(one, two):
+                return desired_field_order.index(get_header(one)) - \
+                    desired_field_order.index(get_header(two))
+
+        # Functions for manipulating field_data records
+
+        def filter_default(record):
+                return "default" in record[0]
+
+        def filter_tsv(record):
+                return "tsv" in record[0]
+
+        def get_header(record):
+                return record[1]
+
+        def get_value(record):
+                return record[2]
+
+        def set_value(record, value):
+                record[2] = value
 
         # 'a' is left over
-        opts, pargs = getopt.getopt(args, "HPan")
+        opts, pargs = getopt.getopt(args, "F:HPan")
         for opt, arg in opts:
                 if opt == "-H":
                         omit_headers = True
@@ -2519,6 +2557,14 @@ def publisher_list(img, args):
                         preferred_only = True
                 if opt == "-n":
                         inc_disabled = False
+                if opt == "-F":
+                        format = arg
+                        if format not in valid_formats:
+                                usage(_("Unrecognized format %(format)s."
+                                    " Supported formats: %(valid)s") % \
+                                    { "format": format,
+                                    "valid": valid_formats }, cmd="publisher")
+                                return EXIT_OOPS
 
         api_inst = __api_alloc(img, quiet=True)
         if api_inst == None:
@@ -2563,10 +2609,6 @@ def publisher_list(img, args):
 
         retcode = EXIT_OK
         if len(pargs) == 0:
-                fmt = "%-24s %-12s %-8s %-8s %s"
-                if not omit_headers:
-                        msg(fmt % (_("PUBLISHER"), "", _("TYPE"), _("STATUS"),
-                            _("URI")))
 
                 pref_pub = api_inst.get_preferred_publisher()
                 if preferred_only:
@@ -2586,35 +2628,92 @@ def publisher_list(img, args):
                                 for name in so
                                 if name in pub_dict
                                 ]
+                # Create a formatting string for the default output
+                # format
+                if format == "default":
+                        fmt = "%-24s %-12s %-8s %-8s %s"
+                        filter_func = filter_default
+
+                # Create a formatting string for the tsv output
+                # format
+                if format == "tsv":
+                        fmt = "%s\t%s\t%s\t%s\t%s\t%s\t%s"
+                        filter_func = filter_tsv
+
+                # Extract our list of headers from the field_data
+                # dictionary Make sure they are extracted in the
+                # desired order by using our custom sort function
+                hdrs = map(get_header, sorted(filter(filter_func,
+                           field_data.values()), sort_fields))
+
+                # Output an header if desired
+                if not omit_headers:
+                        msg(fmt % tuple(hdrs))
+
                 for p in pubs:
-                        pfx = p.prefix
-                        pstatus = ""
+                        # Store all our publisher related data in
+                        # field_data ready for output
 
-                        if not p.sticky:
-                                pstatus_list = [_("non-sticky")]
-                        else:
-                                pstatus_list = []
-
-                        if not preferred_only and p == pref_pub:
-                                pstatus_list.append(_("preferred"))
-                        if p.disabled:
-                                pstatus_list.append(_("disabled"))
-                        if pstatus_list:
-                                pstatus = "(%s)" % ", ".join(pstatus_list)
-                        else:
+                        set_value(field_data["publisher"], p.prefix)
+                        # Setup the synthetic attrs field if the
+                        # format is default.
+                        if format == "default":
                                 pstatus = ""
+
+                                if not p.sticky:
+                                        pstatus_list = [_("non-sticky")]
+                                else:
+                                        pstatus_list = []
+
+                                if not preferred_only and p == pref_pub:
+                                        pstatus_list.append(_("preferred"))
+                                if p.disabled:
+                                        pstatus_list.append(_("disabled"))
+                                if pstatus_list:
+                                        pstatus = "(%s)" % \
+                                            ", ".join(pstatus_list)
+                                set_value(field_data["attrs"], pstatus)
+
+                        if p.sticky:
+                                set_value(field_data["sticky"], _("true"))
+                        else:
+                                set_value(field_data["sticky"], _("false"))
+                        if p == pref_pub:
+                                set_value(field_data["preferred"], _("true"))
+                        else:
+                                set_value(field_data["preferred"], _("false"))
+                        if not p.disabled:
+                                set_value(field_data["enabled"], _("true"))
+                        else:
+                                set_value(field_data["enabled"], _("false"))
+
 
                         # Only show the selected repository's information in
                         # summary view.
                         r = p.selected_repository
+
+                        # Update field_data for each origin and output
+                        # a publisher record in our desired format.
                         for uri in r.origins:
                                 # XXX get the real origin status
-                                msg(fmt % (pfx, pstatus, _("origin"), "online",
-                                    uri))
+                                set_value(field_data["type"], _("origin"))
+                                set_value(field_data["status"], _("online"))
+                                set_value(field_data["uri"], str(uri))
+                                values = map(get_value,
+                                             sorted(filter(filter_func,
+                                             field_data.values()), sort_fields))
+                                msg(fmt % tuple(values))
+                        # Update field_data for each mirror and output
+                        # a publisher record in our desired format.
                         for uri in r.mirrors:
                                 # XXX get the real mirror status
-                                msg(fmt % (pfx, pstatus, _("mirror"), "online",
-                                    uri))
+                                set_value(field_data["type"], _("mirror"))
+                                set_value(field_data["status"], _("online"))
+                                set_value(field_data["uri"], str(uri))
+                                values = map(get_value,
+                                             sorted(filter(filter_func,
+                                             field_data.values()), sort_fields))
+                                msg(fmt % tuple(values))
         else:
                 def display_ssl_info(uri):
                         retcode = EXIT_OK
