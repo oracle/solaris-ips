@@ -2422,6 +2422,7 @@ class PackageManager:
                 search_str = SEARCH_STR_FORMAT % text
                 pargs.append(search_str)
                 if search_all:
+                        self.search_all_pub_being_searched = _("All Publishers")
                         servers = None
                         pub_prefix = self.api_o.get_preferred_publisher().prefix
                 else:
@@ -2432,6 +2433,8 @@ class PackageManager:
                                 pub = self.api_o.get_preferred_publisher()
                         origin_uri = self.__get_origin_uri(pub.selected_repository)
                         servers.append({"origin": origin_uri})
+                        self.search_all_pub_being_searched = \
+                                self.__get_publisher_display_name_from_prefix(pub.prefix)
                 if debug:
                         print "Search: pargs %s servers: %s" % (pargs, servers)
 
@@ -2446,9 +2449,6 @@ class PackageManager:
                                 ("".join(pargs), case_sensitive, return_actions)
 
                 last_name = ""
-                self.search_all_pub_being_searched = \
-                    self.__get_publisher_display_name_from_prefix(pub_prefix)
-
                 # Sorting results by Name gives best overall appearance and flow
                 sort_col = enumerations.NAME_COLUMN
                 try:
@@ -2472,9 +2472,6 @@ class PackageManager:
                                         #Ignore Status when fetching
                                         application_list = \
                                                 self.__get_min_list_from_search(result)
-                                        self.search_all_pub_being_searched = \
-                                            self.__get_publisher_display_name_from_prefix(
-                                            active_pub)
                                         self.in_setup = True
                                         gobject.idle_add(self.__init_tree_views, 
                                             application_list, None, None, None, None,
@@ -2497,8 +2494,10 @@ class PackageManager:
                         gobject.idle_add(self.unset_busy_cursor)
                         gobject.idle_add(self.__process_after_cancel)
                         return
-                except Exception, ex:
-                        # We are not interested in this error
+                except Exception, aex:
+                        err = str(aex)
+                        logger.error(err)
+                        gui_misc.notify_log_error(self)
                         self.__process_after_search_failure()
                         return
                 if debug:

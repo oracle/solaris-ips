@@ -650,7 +650,18 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.__start_substage(_("Downloading..."), bounce_progress=False)
                 self.api_o.prepare()
                 self.__start_substage(_("Executing..."), bounce_progress=False)
-                self.api_o.execute_plan()
+                try:
+                        self.api_o.execute_plan()
+                except api_errors.WrapSuccessfulIndexingException:
+                        pass
+                except api_errors.WrapIndexingException, wex:
+                        err = _("\n\nDespite the error while indexing, the "
+                                    "image-update, install, or uninstall\nhas completed "
+                                    "successfuly.")
+                        err = err.replace("\n\n", "")
+                        err += "\n" + str(wex)
+                        logger.error(err)
+                        
                 gobject.idle_add(self.__operations_done)
 
         def __proceed_with_stages_thread(self):
@@ -820,7 +831,18 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.__start_stage_three()
                 self.__start_substage(None,
                     bounce_progress=False)
-                self.api_o.execute_plan()
+                try:
+                        self.api_o.execute_plan()
+                except api_errors.WrapSuccessfulIndexingException:
+                        pass
+                except api_errors.WrapIndexingException, wex:
+                        err = _("\n\nDespite the error while indexing, the "
+                                    "image-update, install, or uninstall\nhas completed "
+                                    "successfuly.")
+                        err = err.replace("\n\n", "")
+                        err += "\n" + str(wex)
+                        logger.error(err)
+                        
                 gobject.idle_add(self.__operations_done)
 
         def __start_stage_one(self):
