@@ -40,7 +40,8 @@ DISPLAY_NAME_COLUMN,
 IS_VISIBLE_COLUMN,       # True indicates that the package is visible in ui
 CATEGORY_LIST_COLUMN,    # list of categories to which package belongs
 PUBLISHER_COLUMN,        # Publisher for this package
-) = range(11)
+PUBLISHER_PREFIX_COLUMN, # Publisher prefix for this package
+) = range(12)
 
 #Categories
 (

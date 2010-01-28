@@ -848,8 +848,14 @@ class PackageManager:
                 textiter = infobuffer.get_end_iter()
                 
                 for pub_name, pkgs in self.selected_pkgs.items():
-                        infobuffer.insert_with_tags_by_name(textiter,
-                            "%s\n" % pub_name, "bold")
+                        name = self.__get_publisher_name_from_prefix(pub_name)
+                        if name == pub_name:
+                                infobuffer.insert_with_tags_by_name(textiter,
+                                    "%s\n" % pub_name, "bold")
+                        else:
+                                infobuffer.insert_with_tags_by_name(textiter,
+                                    "%s" % name, "bold")
+                                infobuffer.insert(textiter, " (%s)\n" % pub_name)
                         for pkg in pkgs.keys():
                                 infobuffer.insert(textiter,
                                     "\t%s\n" % fmri.extract_pkg_name(pkg))
@@ -1430,7 +1436,8 @@ class PackageManager:
                         gobject.TYPE_STRING,      # enumerations.DISPLAY_NAME_COLUMN
                         gobject.TYPE_BOOLEAN,     # enumerations.IS_VISIBLE_COLUMN
                         gobject.TYPE_PYOBJECT,    # enumerations.CATEGORY_LIST_COLUMN
-                        gobject.TYPE_STRING       # enumerations.PUBLISHER_COLUMN
+                        gobject.TYPE_STRING,      # enumerations.PUBLISHER_COLUMN
+                        gobject.TYPE_STRING       # enumerations.PUBLISHER_PREFIX_COLUMN
                         )
 
         @staticmethod
@@ -2269,7 +2276,7 @@ class PackageManager:
                 self.set_section = self.saved_section_active
                 # Reset MARK_COLUMN        
                 for pkg in self.saved_application_list:
-                        pub = pkg[enumerations.PUBLISHER_COLUMN]
+                        pub = pkg[enumerations.PUBLISHER_PREFIX_COLUMN]
                         stem = pkg[enumerations.STEM_COLUMN]
                         marked = False
                         pkgs = None
@@ -2574,7 +2581,7 @@ class PackageManager:
                         application_list.append(
                             [False, None, name, '...', api.PackageInfo.KNOWN, None, 
                             self.__get_pkg_stem(name, pub), None, True, None, 
-                            pub_name])
+                            pub_name, pub])
                 return application_list
 
         def __get_full_list_from_search(self, search_result):
@@ -2796,7 +2803,7 @@ class PackageManager:
                                 pkg_status = model.get_value(itr,
                                     enumerations.STATUS_COLUMN)
                                 pkg_publisher = model.get_value(itr,
-                                    enumerations.PUBLISHER_COLUMN)
+                                    enumerations.PUBLISHER_PREFIX_COLUMN)
                                 pkg_description = model.get_value(itr,
                                     enumerations.DESCRIPTION_COLUMN)
                                 pkg_name = model.get_value(itr,
@@ -2847,7 +2854,7 @@ class PackageManager:
                         pkg_stem = model.get_value(itr, enumerations.STEM_COLUMN)
                         pkg_status = model.get_value(itr, enumerations.STATUS_COLUMN)
                         pkg_publisher = model.get_value(itr,
-                            enumerations.PUBLISHER_COLUMN)
+                            enumerations.PUBLISHER_PREFIX_COLUMN)
                         pkg_description = model.get_value(itr,
                             enumerations.DESCRIPTION_COLUMN)
                         pkg_name = model.get_value(itr,
@@ -3496,6 +3503,8 @@ class PackageManager:
         def __add_install_update_pkgs_for_publishers(self, install_update,
             confirmation_list):
                 for pub_name in self.selected_pkgs:
+                        pub_display_name = self.__get_publisher_display_name_from_prefix(
+                            pub_name)
                         pkgs = self.selected_pkgs.get(pub_name)
                         if not pkgs:
                                 break
@@ -3508,7 +3517,7 @@ class PackageManager:
                                                 desc = pkgs.get(pkg_stem)[1]
                                                 pkg_name = pkgs.get(pkg_stem)[2]
                                                 confirmation_list.append(
-                                                    [pkg_name, pub_name,
+                                                    [pkg_name, pub_display_name,
                                                     desc, status])
                                                     
         def __on_log_dialog_delete_event(self, widget, event):
@@ -3836,6 +3845,8 @@ class PackageManager:
 
         def __add_remove_pkgs_for_publishers(self, remove_list, confirmation_list):
                 for pub_name in self.selected_pkgs:
+                        pub_display_name = self.__get_publisher_display_name_from_prefix(
+                            pub_name)
                         pkgs = self.selected_pkgs.get(pub_name)
                         if not pkgs:
                                 break
@@ -3848,7 +3859,7 @@ class PackageManager:
                                                 desc = pkgs.get(pkg_stem)[1]
                                                 pkg_name = pkgs.get(pkg_stem)[2]
                                                 confirmation_list.append(
-                                                    [pkg_name, pub_name,
+                                                    [pkg_name, pub_display_name,
                                                     desc, status])
 
         def __on_remove(self, widget):
@@ -4143,7 +4154,7 @@ class PackageManager:
                                 self.__remove_pkg_stem_from_list(pkg_stem)
                         else:
                                 pkg_publisher = filterModel.get_value(itr, 
-                                    enumerations.PUBLISHER_COLUMN)
+                                    enumerations.PUBLISHER_PREFIX_COLUMN)
                                 pkg_description = filterModel.get_value(itr, 
                                     enumerations.DESCRIPTION_COLUMN)
                                 pkg_name = filterModel.get_value(itr,
@@ -4848,14 +4859,6 @@ class PackageManager:
                 self.w_deselect_menuitem.set_sensitive(False)
                 return
 
-        def __add_pkgs_to_lists_from_cache(self, pub, application_list,
-            category_list, section_list):
-                if self.cache_o:
-                        self.cache_o.load_application_list(pub, application_list,
-                            self.selected_pkgs)
-                        self.cache_o.load_category_list(pub, category_list)
-                        self.cache_o.load_section_list(pub, section_list)
-
         def __add_pkgs_to_lists_from_api(self, pub, application_list,
             category_list, section_list):
                 pubs = []
@@ -4959,7 +4962,8 @@ class PackageManager:
                         next_app = \
                             [
                                 marked, status_icon, pkg_name, summ, pkg_state,
-                                pkg_fmri, pkg_stem, None, True, None, pub_name
+                                pkg_fmri, pkg_stem, None, True, None, pub_name,
+                                pkg_pub
                             ]
                         application_list.insert(pkg_add, next_app)
                         pkg_add += 1
@@ -5000,7 +5004,8 @@ class PackageManager:
                         next_app = \
                             [
                                 marked, status_icon, pkg_name, summ, pkg_state,
-                                pkg_fmri, pkg_stem, None, True, None, pub_name
+                                pkg_fmri, pkg_stem, None, True, None, pub_name,
+                                pkg_pub
                             ]
                         self.__add_package_to_list(next_app,
                             application_list,
