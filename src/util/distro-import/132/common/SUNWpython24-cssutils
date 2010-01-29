@@ -1,0 +1,5 @@
+package SUNWpython24-cssutils
+consolidation "gnome"
+classification "Development/Python"
+import SUNWpython24-cssutils
+end package

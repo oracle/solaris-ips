@@ -12,6 +12,7 @@ usr/dt/app-defaults/C/Dtksh
 usr/dt/app-defaults/C/Dtterm
 usr/dt/bin
 usr/dt/bin/dtaction
+usr/dt/bin/dtexec
 usr/dt/bin/dtksh
 usr/dt/lib
 usr/dt/lib/$(ARCH64)
@@ -44,6 +45,7 @@ usr/dt/share/man
 usr/dt/share/man/man1
 usr/dt/share/man/man1/dtaction.1
 usr/dt/share/man/man1/dterror.ds.1
+usr/dt/share/man/man1/dtexec.1
 usr/dt/share/man/man1/dtksh.1
 usr/dt/share/man/man4
 usr/dt/share/man/man4/dtactionfile.4

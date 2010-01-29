@@ -1,0 +1,13 @@
+package SUNWrtls
+consolidation "osnet"
+classification "System/Hardware"
+import SUNWrtls
+
+add driver name=rtls \
+    perms="* 0666 root sys" \
+    clone_perms="0666 root sys" \
+    alias="pci10ec,8139" \
+    alias="pci1186,1300" \
+    alias="pci1186,1301" \
+    alias="pci1113,1211"
+end package

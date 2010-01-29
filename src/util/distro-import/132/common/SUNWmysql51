@@ -1,0 +1,8 @@
+package SUNWmysql51
+consolidation "sfw"
+classification "System/Databases"
+import SUNWmysql51r
+import SUNWmysql51u
+version 5.1.37
+depend SUNWmysql-base
+end package

@@ -1,0 +1,6 @@
+package SUNWnet-snmp-utils
+consolidation "sfw"
+renamed 132
+depend SUNWnet-snmp-core
+version 5.4.1
+end package

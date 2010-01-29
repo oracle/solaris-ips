@@ -1,0 +1,33 @@
+package CPQary3
+consolidation "osnet"
+classification "Drivers/Networking"
+import CPQary3
+
+add driver name=cpqary3 \
+    class=scsi \
+    alias="pcie11,4070" \
+    alias="pcie11,4082" \
+    alias="pcie11,4083" \
+    alias="pcie11,409a" \
+    alias="pcie11,409b" \
+    alias="pcie11,409c" \
+    alias="pcie11,409d" \
+    alias="pcie11,4091" \
+    alias="pcie11,4080" \
+    alias="pci103c,3225" \
+    alias="pci103c,3211" \
+    alias="pci103c,3212" \
+    alias="pci103c,3234" \
+    alias="pci103c,3235" \
+    alias="pci103c,3223" \
+    alias="pci103c,3237" \
+    alias="pci103c,323d" \
+    alias="pci103c,3245" \
+    alias="pci103c,3241" \
+    alias="pci103c,3243" \
+    alias="pci103c,3247" \
+    alias="pci103c,324b" \
+    alias="pci103c,324a" \
+    alias="pci103c,3249" \
+    devlink="type=ddi_pseudo;minor1=cpqary3\tcpqary3\M2"
+end package
