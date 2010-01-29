@@ -178,6 +178,7 @@ REGEX_STRIP_RESULT = re.compile(r'\(\d+\) ?')
 
 class PackageManager:
         def __init__(self):
+                self.before_start = True
                 signal.signal(signal.SIGINT, self.__main_application_quit)
                 self.__reset_home_dir()
                 self.api_o = None
@@ -1192,7 +1193,12 @@ class PackageManager:
                 return uri
 
         def __request_url(self, document, url, stream):
-                f = self.__open_url(url)
+                try:
+                        f = self.__open_url(url)
+                except  (IOError, OSError), err:
+                        logger.error(str(err))
+                        gui_misc.notify_log_error(self)
+                        return
                 stream.set_cancel_func(self.__stream_cancel)
                 stream.write(f.read())
 
@@ -3927,7 +3933,7 @@ class PackageManager:
                 gui_misc.shutdown_logging()
 
         def __shutdown_part2(self):
-                if self.api_o.can_be_canceled():
+                if self.api_o and self.api_o.can_be_canceled():
                         Thread(target = self.api_o.cancel, args = ()).start()
                 self.__do_exit()
                 gobject.timeout_add(1000, self.__do_exit)
@@ -3994,10 +4000,10 @@ class PackageManager:
                 self.__shutdown_part2()
                 return True
 
-        @staticmethod
-        def __do_exit():
+        def __do_exit(self):
                 if threading.activeCount() == 1:
-                        gtk.main_quit()
+                        if not self.before_start:
+                                gtk.main_quit()
                         sys.exit(0)
                 return True
 
@@ -5782,6 +5788,7 @@ class PackageManager:
                 self.process_package_list_start()
                 
         def start(self):
+                self.before_start = False
                 self.set_busy_cursor()
                 Thread(target = self.__get_api_object).start() 
         

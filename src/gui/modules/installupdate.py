@@ -587,17 +587,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                         msg = _("Specifying BE Name not supported.\n")
                         self.__g_error_stage(msg)
                         return
-                except (api_errors.UnableToCopyBE,
-                    api_errors.UnableToMountBE,
-                    api_errors.UnableToRenameBE,
-                    api_errors.PermissionsException,
-                    api_errors.PlanCreationException,
-                    api_errors.CertificateError,
-                    api_errors.InvalidBENameException), ex:
-                        msg = str(ex)
-                        self.__g_error_stage(msg)
-                        return
-                except api_errors.BENameGivenOnDeadBE, ex:
+                except api_errors.ApiException, ex:
                         msg = str(ex)
                         self.__g_error_stage(msg)
                         return
