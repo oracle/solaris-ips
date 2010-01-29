@@ -831,18 +831,34 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
 
         gold10 = """
             open gold@1.0,5.11-0
-            add file /tmp/config1 mode=0644 owner=root group=bin path=etc/config1 preserve=true
+            add file /tmp/gold-passwd1 mode=0644 owner=root group=bin path=etc/passwd preserve=true
+            add file /tmp/gold-group mode=0644 owner=root group=bin path=etc/group preserve=true
+            add file /tmp/gold-shadow mode=0600 owner=root group=bin path=etc/shadow preserve=true
+            add file /tmp/gold-ftpusers mode=0644 owner=root group=bin path=etc/ftpd/ftpusers preserve=true
+            add file /tmp/gold-silly mode=0644 owner=root group=bin path=etc/silly
+            add file /tmp/gold-silly mode=0644 owner=root group=bin path=etc/silly2
             close
         """
 
         gold20 = """
             open gold@2.0,5.11-0
-            add file /tmp/config2 mode=0644 owner=root group=bin path=etc/config2 original_name="gold:etc/config1" preserve=true
+            add file /tmp/config2 mode=0644 owner=root group=bin path=etc/config2 original_name="gold:etc/passwd" preserve=true
             close
         """
 
-        gold30 =  """
+        gold30 = """
             open gold@3.0,5.11-0
+            close
+        """
+
+        golduser10 = """
+            open golduser@1.0
+            add user username=Kermit group=adm home-dir=/export/home/Kermit
+            close
+        """
+
+        golduser20 = """
+            open golduser@2.0
             close
         """
 
@@ -853,15 +869,25 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
 
         silver20  = """
             open silver@2.0,5.11-0
-            add file /tmp/config2 mode=0644 owner=root group=bin path=etc/config1 original_name="gold:etc/config1" preserve=true
+            add file /tmp/gold-passwd2 mode=0644 owner=root group=bin path=etc/passwd original_name="gold:etc/passwd" preserve=true
+            add file /tmp/gold-group mode=0644 owner=root group=bin path=etc/group original_name="gold:etc/group" preserve=true
+            add file /tmp/gold-shadow mode=0600 owner=root group=bin path=etc/shadow original_name="gold:etc/shadow" preserve=true
+            add file /tmp/gold-ftpusers mode=0644 owner=root group=bin path=etc/ftpd/ftpusers original_name="gold:etc/ftpd/ftpusers" preserve=true
+            add file /tmp/gold-silly mode=0644 owner=root group=bin path=etc/silly
+            add file /tmp/silver-silly mode=0644 owner=root group=bin path=etc/silly2
             close
         """
         silver30  = """
             open silver@3.0,5.11-0
-            add file /tmp/config2 mode=0644 owner=root group=bin path=etc/config2 original_name="gold:etc/config1" preserve=true
+            add file /tmp/config2 mode=0644 owner=root group=bin path=etc/config2 original_name="gold:etc/passwd" preserve=true
             close
         """
 
+        silveruser = """
+            open silveruser@1.0
+            add user username=Kermit group=adm home-dir=/export/home/Kermit gcos-field="Kermit the Frog"
+            close
+        """
 
 
         iron10 = """
@@ -959,6 +985,9 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
             "/tmp/copyright1", "/tmp/copyright2",
             "/tmp/copyright3", "/tmp/copyright4",
             "/tmp/libc.so.1", "/tmp/sh", "/tmp/config1", "/tmp/config2",
+            "/tmp/gold-passwd1", "/tmp/gold-passwd2", "/tmp/gold-group",
+            "/tmp/gold-shadow", "/tmp/gold-ftpusers", "/tmp/gold-silly",
+            "/tmp/silver-silly",
             "/tmp/dricon_da", "/tmp/dricon2_da", "/tmp/dricon_n2m",
             "/tmp/dripol1_dp", "/tmp/liveroot1", "/tmp/liveroot2"
         ]
@@ -982,9 +1011,55 @@ foobar 2
 """,
             "/tmp/dripol1_dp": """\
 *		read_priv_set=none		write_priv_set=none
-"""
-
+""",
+            "/tmp/gold-passwd1": """\
+root:x:0:0::/root:/usr/bin/bash
+daemon:x:1:1::/:
+bin:x:2:2::/usr/bin:
+sys:x:3:3::/:
+adm:x:4:4:Admin:/var/adm:
+""",
+            "/tmp/gold-passwd2": """\
+root:x:0:0::/root:/usr/bin/bash
+daemon:x:1:1::/:
+bin:x:2:2::/usr/bin:
+sys:x:3:3::/:
+adm:x:4:4:Admin:/var/adm:
+bogus:x:10001:10001:Bogus User:/:
+""",
+            "/tmp/gold-group": """\
+root::0:
+other::1:root
+bin::2:root,daemon
+sys::3:root,bin,adm
+adm::4:root,daemon
+""",
+            "/tmp/gold-shadow": """\
+root:9EIfTNBp9elws:13817::::::
+daemon:NP:6445::::::
+bin:NP:6445::::::
+sys:NP:6445::::::
+adm:NP:6445::::::
+""",
+            "/tmp/gold-ftpusers": """\
+root
+bin
+sys
+adm
+""",
         }
+
+        cat_data = " "
+
+        foo10 = """
+            open foo@1.0,5.11-0
+            close """
+
+        only_attr10 = """
+            open only_attr@1.0,5.11-0
+            add set name=foo value=bar
+            close """
+
 
         def setUp(self):
                 testutils.SingleDepotTestCase.setUp(self)
@@ -1127,7 +1202,7 @@ foobar 2
                 self.pkg("list bronze@3.0")
 
         def test_upgrade3(self):
-                """ test for editable files moving between packages or locations or both"""
+                """Test for editable files moving between packages or locations or both"""
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.silver10)
                 self.pkgsend_bulk(durl, self.silver20)
@@ -1135,62 +1210,60 @@ foobar 2
                 self.pkgsend_bulk(durl, self.gold10)
                 self.pkgsend_bulk(durl, self.gold20)
                 self.pkgsend_bulk(durl, self.gold30)
+                self.pkgsend_bulk(durl, self.golduser10)
+                self.pkgsend_bulk(durl, self.golduser20)
+                self.pkgsend_bulk(durl, self.silveruser)
 
                 self.image_create(durl)
 
-                # first test - move an editable file between packages
-
+                # test 1: move an editable file between packages
                 self.pkg("install gold@1.0 silver@1.0")
                 self.pkg("verify -v")
 
                 # modify config file
-
                 str = "this file has been modified 1"
-                file_path = "etc/config1"
+                file_path = "etc/passwd"
                 self.file_append(file_path, str)
 
-               # make sure /etc/config1 contains correct string
+                # make sure /etc/passwd contains correct string
                 self.file_contains(file_path, str)
 
                 # update packages
-
                 self.pkg("install gold@3.0 silver@2.0")
                 self.pkg("verify -v")
 
-                # make sure /etc/config1 contains still correct string
+                # make sure /etc/passwd contains still correct string
                 self.file_contains(file_path, str)
 
                 self.pkg("uninstall silver gold")
 
-                # test file moving within package
 
+                # test 2: change an editable file's path within a package
                 self.pkg("install gold@1.0")
                 self.pkg("verify -v")
 
                 # modify config file
                 str = "this file has been modified test 2"
-                file_path = "etc/config1"
+                file_path = "etc/passwd"
                 self.file_append(file_path, str)
 
                 self.pkg("install gold@2.0")
                 self.pkg("verify -v")
 
-                 # make sure /etc/config2 contains correct string
-
+                # make sure /etc/config2 contains correct string
                 file_path = "etc/config2"
                 self.file_contains(file_path, str)
 
                 self.pkg("uninstall gold")
                 self.pkg("verify -v")
 
-                # test movement in filesystem and across packages
 
+                # test 3: move an editable file between packages and change its path
                 self.pkg("install gold@1.0 silver@1.0")
                 self.pkg("verify -v")
 
                 # modify config file
-
-                file_path = "etc/config1"
+                file_path = "etc/passwd"
                 str = "this file has been modified test 3"
                 self.file_append(file_path, str)
 
@@ -1198,9 +1271,49 @@ foobar 2
 
                 self.pkg("install gold@3.0 silver@3.0")
                 self.pkg("verify -v")
-                 # make sure /etc/config2 now contains correct string
+
+                # make sure /etc/config2 now contains correct string
                 file_path = "etc/config2"
                 self.file_contains(file_path, str)
+
+                self.pkg("uninstall gold silver")
+
+
+                # test 4: move /etc/passwd between packages and ensure that we
+                # can still uninstall a user at the same time.
+                self.pkg("install gold@1.0 silver@1.0")
+                self.pkg("verify -v")
+
+                # add a user
+                self.pkg("install golduser@1.0")
+
+                # make local changes to the user
+                pwdpath = os.path.join(self.get_img_path(), "etc/passwd")
+
+                pwdfile = file(pwdpath, "r+")
+                lines = pwdfile.readlines()
+                for i, l in enumerate(lines):
+                        if l.startswith("Kermit"):
+                                lines[i] = lines[i].replace("& User",
+                                    "Kermit loves Miss Piggy")
+                pwdfile.seek(0)
+                pwdfile.writelines(lines)
+                pwdfile.close()
+
+                silly_path = os.path.join(self.get_img_path(), "etc/silly")
+                silly_inode = os.stat(silly_path).st_ino
+
+                # update packages
+                self.pkg("install gold@3.0 silver@2.0 golduser@2.0 silveruser")
+
+                # make sure Kermie is still installed and still has our local
+                # changes
+                self.file_contains("etc/passwd",
+                    "Kermit:x:5:4:Kermit loves Miss Piggy:/export/home/Kermit:")
+
+                # also make sure that /etc/silly hasn't been removed and added
+                # again, even though it wasn't marked specially
+                self.assertEqual(os.stat(silly_path).st_ino, silly_inode)
 
         def test_upgrade4(self):
                 """ test to make sure hardlinks are correctly restored when file they point to is updated """

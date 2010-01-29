@@ -43,6 +43,7 @@ class HardLinkAction(link.LinkAction):
         """Class representing a hardlink-type packaging object."""
 
         name = "hardlink"
+        globally_unique = True
 
         def __init__(self, data=None, **attrs):
                 link.LinkAction.__init__(self, data, **attrs)

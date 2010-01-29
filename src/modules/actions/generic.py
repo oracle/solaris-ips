@@ -63,6 +63,10 @@ class Action(object):
         # key_attr would be the driver name.  When 'key_attr' is None, it means
         # that all attributes of the action are distinguishing.
         key_attr = None
+        # 'globally_unique' is True if the key attribute of the action
+        # represents a key which must be unique in the space of all installed
+        # actions of that type.
+        globally_unique = False
 
         # the following establishes the sort order between action types.
         # Directories must precede all

@@ -43,6 +43,7 @@ class DirectoryAction(generic.Action):
         name = "dir"
         attributes = ("mode", "owner", "group", "path")
         key_attr = "path"
+        globally_unique = True
 
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)

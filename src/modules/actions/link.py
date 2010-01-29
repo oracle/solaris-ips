@@ -45,6 +45,7 @@ class LinkAction(generic.Action):
         name = "link"
         attributes = ("path", "target")
         key_attr = "path"
+        globally_unique = True
 
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)

@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import errno
@@ -47,7 +47,7 @@ class PkgPlan(object):
         def __init__(self, image, progtrack, check_cancelation):
                 self.origin_fmri = None
                 self.destination_fmri = None
-                self.actions = []
+                self.actions = manifest.ManifestDifference([], [], [])
                 self.__repair_actions = []
 
                 self.__origin_mfst = manifest.NullCachedManifest
@@ -116,8 +116,8 @@ class PkgPlan(object):
                 raise NotImplementedError()
 
         def get_nactions(self):
-                return len(self.actions[0]) + len(self.actions[1]) + \
-                    len(self.actions[2])
+                return len(self.actions.added) + len(self.actions.changed) + \
+                    len(self.actions.removed)
 
         def update_pkg_set(self, fmri_set):
                 """ updates a set of installed fmris to reflect
@@ -158,7 +158,7 @@ class PkgPlan(object):
                             new_excludes))
 
                         for a in absent_dirs:
-                                self.actions[2].append(
+                                self.actions.removed.append(
                                     [directory.DirectoryAction(path=a), None])
 
                 # Stash information needed by legacy actions.
@@ -167,7 +167,7 @@ class PkgPlan(object):
                     self.__destination_mfst.get("description", "none provided"))
 
                 # Add any repair actions to the update list
-                self.actions[1].extend(self.__repair_actions)
+                self.actions.changed.extend(self.__repair_actions)
 
                 for src, dest in itertools.chain(self.gen_update_actions(),
                     self.gen_install_actions()):
@@ -283,15 +283,15 @@ class PkgPlan(object):
                 self.__progtrack.download_end_pkg()
 
         def gen_install_actions(self):
-                for src, dest in self.actions[0]:
+                for src, dest in self.actions.added:
                         yield src, dest
 
         def gen_removal_actions(self):
-                for src, dest in self.actions[2]:
+                for src, dest in self.actions.removed:
                         yield src, dest
 
         def gen_update_actions(self):
-                for src, dest in self.actions[1]:
+                for src, dest in self.actions.changed:
                         yield src, dest
 
         def execute_install(self, src, dest):

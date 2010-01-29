@@ -43,6 +43,7 @@ class DriverAction(generic.Action):
 
         name = "driver"
         key_attr = "name"
+        globally_unique = True
 
         usr_sbin = None
 

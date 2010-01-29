@@ -44,6 +44,7 @@ class UserAction(generic.Action):
         name = "user"
         key_attr = "username"
         required_attributes = ["username", "group"]
+        globally_unique = True
 
         attributes = [ "username", "password", "uid", "group",
                        "gcos-field", "home-dir", "login-shell",

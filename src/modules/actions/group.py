@@ -46,6 +46,7 @@ class GroupAction(generic.Action):
         name = "group"
         key_attr = "groupname"
         attributes = [ "groupname", "gid"]
+        globally_unique = True
 
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)

@@ -25,6 +25,7 @@
 # Use is subject to license terms.
 #
 
+from collections import namedtuple
 import errno
 import operator
 import os
@@ -588,25 +589,33 @@ class ImagePlan(object):
 
                         self.pkg_plans.append(pp)
 
+                        self.__progtrack.evaluate_progress()
+
                 # we now have a workable set of pkgplans to add/upgrade/remove
                 # now combine all actions together to create a synthetic single
                 # step upgrade operation, and handle editable files moving from
                 # package to package.  See theory comment in execute, below.
 
+                ActionPlan = namedtuple("ActionPlan", "p src dst")
+
                 self.removal_actions = [
-                    (p, src, dest)
+                    ActionPlan(p, src, dest)
                     for p in self.pkg_plans
                     for src, dest in p.gen_removal_actions()
                 ]
 
+                self.__progtrack.evaluate_progress()
+
                 self.update_actions = [
-                    (p, src, dest)
+                    ActionPlan(p, src, dest)
                     for p in self.pkg_plans
                     for src, dest in p.gen_update_actions()
                 ]
 
+                self.__progtrack.evaluate_progress()
+
                 self.install_actions = [
-                    (p, src, dest)
+                    ActionPlan(p, src, dest)
                     for p in self.pkg_plans
                     for src, dest in p.gen_install_actions()
                 ]
@@ -615,42 +624,76 @@ class ImagePlan(object):
 
                 self.__actuators = actuator.Actuator()
 
-                # iterate over copy of removals since we're modding list
-                # keep track of deletion count so later use of index works
-                named_removals = {}
-                deletions = 0
-                for i, a in enumerate(self.removal_actions[:]):
+                ConsolidationEntry = namedtuple("ConsolidationEntry", "idx id")
+
+                # cons_named maps original_name tags to the index into
+                # removal_actions so we can retrieve them later.  cons_generic
+                # maps the (action.name, action.key-attribute-value) tuple to
+                # the same thing.  The reason for both is that cons_named allows
+                # us to deal with files which change their path as well as their
+                # package, while cons_generic doesn't require the "receiving"
+                # package to have marked the file in any special way, plus
+                # obviously it handles all actions even if they don't have
+                # paths.
+                cons_named = {}
+                cons_generic = {}
+                for i, ap in enumerate(self.removal_actions):
+                        self.__progtrack.evaluate_progress()
                         # remove dir removals if dir is still in final image
-                        if a[1].name == "dir" and \
-                            os.path.normpath(a[1].attrs["path"]) in \
+                        if ap.src.name == "dir" and \
+                            os.path.normpath(ap.src.attrs["path"]) in \
                             self.get_directories():
-                                del self.removal_actions[i - deletions]
-                                deletions += 1
+                                self.removal_actions[i] = None
                                 continue
                         # remove link removal if link is still in final image
                         # (implement reference count on removal due to borked pkgs)
-                        if a[1].name == "link" and \
-                            os.path.normpath(a[1].attrs["path"]) in \
+                        if ap.src.name == "link" and \
+                            os.path.normpath(ap.src.attrs["path"]) in \
                             self.__get_symlinks():
-                                del self.removal_actions[i - deletions]
-                                deletions += 1
+                                self.removal_actions[i] = None
                                 continue
                         # store names of files being removed under own name
                         # or original name if specified
-                        if a[1].name == "file":
-                                attrs = a[1].attrs
-                                fname = attrs.get("original_name",
-                                    "%s:%s" % (a[0].origin_fmri.get_name(),
-                                    attrs["path"]))
-                                named_removals[fname] = \
-                                    (i - deletions,
-                                    id(self.removal_actions[i-deletions][1]))
+                        if ap.src.globally_unique:
+                                attrs = ap.src.attrs
+                                # Store the index into removal_actions and the
+                                # id of the action object in that slot.
+                                re = ConsolidationEntry(i, id(ap.src))
+                                cons_generic[(ap.src.name, attrs[ap.src.key_attr])] = re
+                                if ap.src.name == "file":
+                                        fname = attrs.get("original_name",
+                                            "%s:%s" % (ap.p.origin_fmri.get_name(),
+                                            attrs["path"]))
+                                        cons_named[fname] = re
 
-                        self.__actuators.scan_removal(a[1].attrs)
+                        self.__actuators.scan_removal(ap.src.attrs)
 
                 self.__progtrack.evaluate_progress()
 
-                for a in self.install_actions:
+                # Construct a mapping from the install actions in a pkgplan to
+                # the position they have in the plan's list.  This allows us to
+                # remove them efficiently later, if they've been consolidated.
+                #
+                # NOTE: This means that the action ordering in the package plans
+                # must remain fixed, at least for the duration of the imageplan
+                # evaluation.
+                plan_pos = {}
+                for p in self.pkg_plans:
+                        for i, a in enumerate(p.gen_install_actions()):
+                                plan_pos[id(a[1])] = i
+
+                # This keeps track of which pkgplans have had install actions
+                # consolidated away.
+                pp_needs_trimming = []
+
+                # This maps destination actions to the pkgplans they're
+                # associated with, which allows us to create the newly
+                # discovered update ActionPlans.
+                dest_pkgplans = {}
+
+                new_updates = []
+                for i, ap in enumerate(self.install_actions):
+                        self.__progtrack.evaluate_progress()
                         # In order to handle editable files that move their path
                         # or change pkgs, for all new files with original_name
                         # attribute, make sure file isn't being removed by
@@ -658,18 +701,108 @@ class ImagePlan(object):
                         # file, and install to recover cached version... caching
                         # is needed if directories are removed or don't exist
                         # yet.
-                        if (a[2].name == "file" and "original_name" in
-                            a[2].attrs and a[2].attrs["original_name"] in
-                            named_removals):
-                                cache_name = a[2].attrs["original_name"]
-                                index = named_removals[cache_name][0]
-                                assert(id(self.removal_actions[index][1]) ==
-                                       named_removals[cache_name][1])
-                                self.removal_actions[index][1].attrs[
-                                    "save_file"] = cache_name
-                                a[2].attrs["save_file"] = cache_name
+                        if (ap.dst.name == "file" and
+                            "original_name" in ap.dst.attrs and
+                            ap.dst.attrs["original_name"] in cons_named):
+                                cache_name = ap.dst.attrs["original_name"]
+                                index = cons_named[cache_name].idx
+                                ra = self.removal_actions[index].src
+                                assert(id(ra) == cons_named[cache_name].id)
+                                # If the paths match, don't remove and add;
+                                # convert to update.
+                                if ap.dst.attrs["path"] == ra.attrs["path"]:
+                                        new_updates.append((ra, ap.dst))
+                                        # If we delete items here, the indices
+                                        # in cons_named will be bogus, so mark
+                                        # them for later deletion.
+                                        self.removal_actions[index] = None
+                                        self.install_actions[i] = None
+                                        # No need to handle it in cons_generic
+                                        # anymore
+                                        del cons_generic[("file", ra.attrs["path"])]
+                                        dest_pkgplans[id(ap.dst)] = ap.p
+                                else:
+                                        ra.attrs["save_file"] = cache_name
+                                        ap.dst.attrs["save_file"] = cache_name
 
-                        self.__actuators.scan_install(a[2].attrs)
+                        # Similarly, try to prevent files (and other actions)
+                        # from unnecessarily being deleted and re-created if
+                        # they're simply moving between packages, but only if
+                        # they keep their paths (or key-attribute values).
+                        keyval = ap.dst.attrs.get(ap.dst.key_attr, None)
+                        if (ap.dst.name, keyval) in cons_generic:
+                                nkv = ap.dst.name, keyval
+                                index = cons_generic[nkv].idx
+                                ra = self.removal_actions[index].src
+                                assert(id(ra) == cons_generic[nkv].id)
+                                if keyval == ra.attrs[ra.key_attr]:
+                                        new_updates.append((ra, ap.dst))
+                                        self.removal_actions[index] = None
+                                        self.install_actions[i] = None
+                                        dest_pkgplans[id(ap.dst)] = ap.p
+                                        # Add the action to the pkgplan's update
+                                        # list and mark it for removal from the
+                                        # install list.
+                                        ap.p.actions.changed.append((ra, ap.dst))
+                                        ap.p.actions.added[plan_pos[id(ap.dst)]] = None
+                                        pp_needs_trimming.append(ap.p)
+
+                        self.__actuators.scan_install(ap.dst.attrs)
+
+                del cons_generic, cons_named
+                del plan_pos
+
+                # Remove from the pkgplans the install actions which have been
+                # consolidated away.
+                for p in pp_needs_trimming:
+                        # Can't modify the p.actions tuple, so modify the added
+                        # member in-place.
+                        p.actions.added[:] = [
+                            a
+                            for a in p.actions.added
+                            if a is not None
+                        ]
+                del pp_needs_trimming
+
+                # We want to cull out actions where they've not changed at all,
+                # leaving only the changed ones to put into self.update_actions.
+                nu_src = manifest.Manifest()
+                nu_src.set_content((a[0] for a in new_updates),
+                    excludes=self.__old_excludes)
+                nu_dst = manifest.Manifest()
+                self.__progtrack.evaluate_progress()
+                nu_dst.set_content((a[1] for a in new_updates),
+                    excludes=self.__new_excludes)
+                del new_updates
+                self.__progtrack.evaluate_progress()
+                nu_add, nu_chg, nu_rem = nu_dst.difference(nu_src,
+                    self.__old_excludes, self.__new_excludes)
+                self.__progtrack.evaluate_progress()
+                # All the differences should be updates
+                assert not nu_add
+                assert not nu_rem
+                del nu_src, nu_dst
+
+                # Extend update_actions with the new tuples.  The package plan
+                # is the one associated with the action getting installed.
+                self.update_actions.extend([
+                    ActionPlan(dest_pkgplans[id(dst)], src, dst)
+                    for src, dst in nu_chg
+                ])
+
+                del dest_pkgplans, nu_chg
+
+                self.removal_actions = [
+                    a
+                    for a in self.removal_actions
+                    if a is not None
+                ]
+
+                self.install_actions = [
+                    a
+                    for a in self.install_actions
+                    if a is not None
+                ]
 
                 self.__progtrack.evaluate_progress()
                 # Go over update actions
@@ -683,7 +816,7 @@ class ImagePlan(object):
                                 path = a[2].attrs["path"]
                                 if path in l_actions:
                                         l_refresh.extend([
-                                            (a[0], l, l)
+                                            ActionPlan(a[0], l, l)
                                             for l in l_actions[path]
                                         ])
 

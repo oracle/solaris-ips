@@ -25,6 +25,7 @@
 # Use is subject to license terms.
 #
 
+from collections import namedtuple
 import errno
 import hashlib
 import os
@@ -38,6 +39,8 @@ import pkg.variant as variant
 
 from pkg.misc import EmptyI, expanddirs, PKG_FILE_MODE, PKG_DIR_MODE
 from pkg.actions.attribute import AttributeAction
+
+ManifestDifference = namedtuple("ManifestDifference", "added changed removed")
 
 class Manifest(object):
         """A Manifest is the representation of the actions composing a specific
@@ -124,7 +127,7 @@ class Manifest(object):
                         # removed; only added.  In addition, this doesn't need
                         # to be sorted since the caller likely already does
                         # (such as pkgplan/imageplan).
-                        return (
+                        return ManifestDifference(
                             [(None, a) for a in self.gen_actions(self_exclude)],
                             [], [])
 
@@ -163,7 +166,7 @@ class Manifest(object):
                 added.sort(key = addsort)
                 changed.sort(key = addsort)
 
-                return (added, changed, removed)
+                return ManifestDifference(added, changed, removed)
 
         @staticmethod
         def comm(*compare_m):
@@ -312,7 +315,19 @@ class Manifest(object):
                                 raise
 
         def set_content(self, content, excludes=EmptyI, signatures=False):
-                """content is the text representation of the manifest"""
+                """Populate the manifest with actions.
+
+                The "content" parameter can be either the text representation of
+                the manifest, or it can be an iterable generating actions.
+
+                The "excludes" parameter names the variants to exclude from the
+                manifest.
+
+                The "signatures" parameter specifies whether or not a manifest
+                signature should be generated.  This is only possible when
+                "content" is a string.
+                """
+
                 self.actions = []
                 self.actions_bytype = {}
                 self.variants = {}
@@ -951,7 +966,7 @@ class EmptyCachedManifest(Manifest):
                 # The difference for this case is simply everything in the
                 # origin has been removed.  This is an optimization for
                 # uninstall.
-                return ([], [],
+                return ManifestDifference([], [],
                     [(a, None) for a in origin.gen_actions(origin_exclude)])
 
         @staticmethod
