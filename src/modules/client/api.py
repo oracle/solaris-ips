@@ -57,7 +57,7 @@ from pkg.api_common import (PackageInfo, LicenseInfo, PackageCategory,
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 30
+CURRENT_API_VERSION = 31
 CURRENT_P5I_VERSION = 1
 
 logger = global_settings.logger
@@ -93,16 +93,24 @@ class ImageInterface(object):
 
         def __init__(self, img_path, version_id, progresstracker,
             cancel_state_callable, pkg_client_name):
-                """Constructs an ImageInterface. img_path should point to an
-                existing image. version_id indicates the version of the api
-                the client is expecting to use. progresstracker is the
-                progresstracker the client wants the api to use for UI
-                callbacks. cancel_state_callable is a function which the client
-                wishes to have called each time whether the operation can be
-                canceled changes. It can raise VersionException and
+                """Constructs an ImageInterface object.
+                
+                'img_path' is the absolute path to an existing image.
+                
+                'version_id' indicates the version of the api the client is
+                expecting to use.
+
+                'progresstracker' is the ProgressTracker object the client wants
+                the api to use for UI progress callbacks.
+
+                'cancel_state_callable' is a function which the client wishes to
+                have called each time whether the operation can be canceled
+                changes.
+
+                This function can raise VersionException and
                 ImageNotFoundException."""
 
-                compatible_versions = set([CURRENT_API_VERSION])
+                compatible_versions = set([30, CURRENT_API_VERSION])
 
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
@@ -138,8 +146,24 @@ class ImageInterface(object):
                 self.__can_be_canceled = False
                 self.__canceling = False
                 self.__activity_lock = pkg.nrlock.NRLock()
+                self.__blocking_locks = False
+                self.__img.blocking_locks = self.__blocking_locks
                 self.__cancel_lock = pkg.nrlock.NRLock()
                 self.__cancel_cv = threading.Condition(self.__cancel_lock)
+
+        def __set_blocking_locks(self, value):
+                self.__activity_lock.acquire()
+                self.__blocking_locks = value
+                self.__img.blocking_locks = value
+                self.__activity_lock.release()
+
+        blocking_locks = property(lambda self: self.__blocking_locks,
+            __set_blocking_locks, doc="A boolean value indicating whether "
+            "the API should wait until the image interface can be locked if "
+            "it is in use by another thread or process.  Clients should be "
+            "aware that there is no timeout mechanism in place if blocking is "
+            "enabled, and so should take steps to remain responsive to user "
+            "input or provide a way for users to cancel operations.")
 
         @property
         def img(self):
@@ -159,7 +183,6 @@ class ImageInterface(object):
         def check_be_name(be_name):
                 bootenv.BootEnv.check_be_name(be_name)
                 return True
-
 
         def __cert_verify(self, log_op_end=None):
                 """Verify validity of certificates.  Any
@@ -198,16 +221,25 @@ class ImageInterface(object):
                 self.__img.refresh_publishers(immediate=True,
                     progtrack=self.__progresstracker)
 
-        def __plan_common_start(self, operation):
-                """Start planning an operation.  Aquire locks and log
+        def __acquire_activity_lock(self):
+                """Private helper method to aqcuire activity lock."""
+
+                rc = self.__activity_lock.acquire(
+                    blocking=self.__blocking_locks)
+                if not rc:
+                        raise api_errors.ImageLockedError()
+
+        def __plan_common_start(self, operation, noexecute):
+                """Start planning an operation.  Acquire locks and log
                 the start of the operation."""
 
-                self.__activity_lock.acquire()
+                self.__acquire_activity_lock()
                 try:
                         self.__enable_cancel()
                         if self.__plan_type is not None:
                                 raise api_errors.PlanExistsException(
                                     self.__plan_type)
+                        self.__img.lock(allow_unprivileged=noexecute)
                 except:
                         self.__activity_lock.release()
                         raise
@@ -220,6 +252,7 @@ class ImageInterface(object):
 
                 assert self.__activity_lock._is_owned()
                 self.__img.cleanup_downloads()
+                self.__img.unlock()
                 self.__activity_lock.release()
 
         def __plan_common_exception(self, log_op_end=None):
@@ -246,6 +279,12 @@ class ImageInterface(object):
                         self.__cancel_done()
                 elif not log_op_end or exc_type in log_op_end:
                         self.log_operation_end(error=exc_value)
+
+                if exc_type != api_errors.ImageLockedError:
+                        # Must be called before reset_unlock, and only if
+                        # the exception was not a locked error.
+                        self.__img.unlock()
+
                 self.__reset_unlock()
                 self.__activity_lock.release()
                 raise
@@ -253,7 +292,7 @@ class ImageInterface(object):
         def plan_install(self, pkg_list, refresh_catalogs=True,
             noexecute=False, verbose=False, update_index=True):
                 """Contructs a plan to install the packages provided in
-                pkg_list.  pkg_list is a list of packages to install.  
+                pkg_list.  pkg_list is a list of packages to install.
                 refresh_catalogs controls whether the catalogs will
                 automatically be refreshed. noexecute determines whether the
                 history will be recorded after planning is finished.  verbose
@@ -265,7 +304,7 @@ class ImageInterface(object):
                 compatibility with operational history.  The hope is it can be
                 removed in the future."""
 
-                self.__plan_common_start("install")
+                self.__plan_common_start("install", noexecute)
                 try:
                         if refresh_catalogs:
                                 self.__refresh_publishers()
@@ -310,7 +349,7 @@ class ImageInterface(object):
                 the uninstall, it returns True, otherwise it returns False. It
                 can raise NonLeafPackageException and PlanCreationException."""
 
-                self.__plan_common_start("uninstall")
+                self.__plan_common_start("uninstall", noexecute)
 
                 try:
                         self.__img.make_uninstall_plan(pkg_list,
@@ -356,7 +395,7 @@ class ImageInterface(object):
                 CatalogRefreshException, IpkgOutOfDateException,
                 PlanCreationException and PermissionsException."""
 
-                self.__plan_common_start("image-update")
+                self.__plan_common_start("image-update", noexecute)
                 try:
                         self.check_be_name(be_name)
                         self.__be_name = be_name
@@ -393,7 +432,7 @@ class ImageInterface(object):
                         self.__img.make_update_plan(self.__progresstracker,
                             self.__check_cancelation, noexecute,
                             verbose=verbose)
-                            
+
                         assert self.__img.imageplan
 
                         self.__disable_cancel()
@@ -430,7 +469,7 @@ class ImageInterface(object):
                 IpkgOutOfDateException, NetworkUnavailableException,
                 PlanCreationException and PermissionsException."""
 
-                self.__plan_common_start("change-variant")
+                self.__plan_common_start("change-variant", noexecute)
                 if not variants and not facets:
                         raise ValueError, "Nothing to do"
                 try:
@@ -439,7 +478,7 @@ class ImageInterface(object):
 
                         self.__refresh_publishers()
 
-                        self.__img.image_change_varcets(variants, 
+                        self.__img.image_change_varcets(variants,
                             facets,
                             self.__progresstracker,
                             self.__check_cancelation,
@@ -486,7 +525,13 @@ class ImageInterface(object):
                 and PlanMissingException. Should only be called once a
                 plan_X method has been called."""
 
-                self.__activity_lock.acquire()
+                self.__acquire_activity_lock()
+                try:
+                        self.__img.lock()
+                except:
+                        self.__activity_lock.release()
+                        raise
+
                 try:
                         if not self.__img.imageplan:
                                 raise api_errors.PlanMissingException()
@@ -535,20 +580,27 @@ class ImageInterface(object):
                         raise
                 finally:
                         self.__img.cleanup_downloads()
+                        self.__img.unlock()
                         self.__activity_lock.release()
 
         def execute_plan(self):
                 """Executes the plan. This is uncancelable one it begins. It
-                can raise CorruptedIndexException,
+                can raise CorruptedIndexException, ImageLockedError,
                 ProblematicPermissionsIndexException, ImageplanStateException,
                 ImageUpdateOnLiveImageException, and PlanMissingException.
                 Should only be called after the prepare method has been
                 called."""
 
-                self.__activity_lock.acquire()
+                self.__acquire_activity_lock()
                 self.__cancel_lock.acquire()
                 self.__set_can_be_canceled(False)
                 self.__cancel_lock.release()
+                try:
+                        self.__img.lock()
+                except:
+                        self.__activity_lock.release()
+                        raise
+
                 try:
                         if not self.__img.imageplan:
                                 raise api_errors.PlanMissingException()
@@ -652,6 +704,7 @@ class ImageInterface(object):
                         self.__finished_execution(be)
                 finally:
                         self.__img.cleanup_downloads()
+                        self.__img.unlock()
                         self.__activity_lock.release()
 
         def __finished_execution(self, be):
@@ -702,7 +755,7 @@ class ImageInterface(object):
                         False   sets displayed status to False
                         True    sets displayed status to True"""
 
-                self.__activity_lock.acquire()
+                self.__acquire_activity_lock()
                 try:
                         try:
                                 self.__disable_cancel()
@@ -730,7 +783,7 @@ class ImageInterface(object):
                 a full retrieval of publisher metadata (e.g. catalogs) or only
                 an update to the existing metadata should be performed.  When
                 True, 'immediate' is also set to True.
- 
+
                 'pubs' is a list of publisher prefixes or publisher objects
                 to refresh.  Passing an empty list or using the default value
                 implies all publishers.
@@ -744,18 +797,30 @@ class ImageInterface(object):
                 Currently returns an image object, allowing existing code to
                 work while the rest of the API is put into place."""
 
-                self.__activity_lock.acquire()
-                self.__cancel_lock.acquire()
-                self.__set_can_be_canceled(False)
-                self.__cancel_lock.release()
+                self.__acquire_activity_lock()
+                self.__disable_cancel()
                 try:
-                        self.__img.refresh_publishers(full_refresh=full_refresh,
-                            immediate=immediate, pubs=pubs,
-                            progtrack=self.__progresstracker)
+                        self.__img.lock()
+                except:
+                        self.__activity_lock.release()
+                        raise
+
+                try:
+                        self.__refresh(full_refresh=full_refresh, pubs=pubs,
+                            immediate=immediate)
                         return self.__img
                 finally:
+                        self.__img.unlock()
                         self.__img.cleanup_downloads()
                         self.__activity_lock.release()
+
+        def __refresh(self, full_refresh=False, pubs=None, immediate=False):
+                """Private refresh method; caller responsible for locking and
+                cleanup."""
+
+                self.__img.refresh_publishers(full_refresh=full_refresh,
+                    immediate=immediate, pubs=pubs,
+                    progtrack=self.__progresstracker)
 
         def __licenses(self, pfmri, mfst):
                 """Private function. Returns the license info from the
@@ -1215,7 +1280,7 @@ class ImageInterface(object):
                                                 continue
 
                                 if atname == "variant.opensolaris.zone":
-                                        if (is_zone and is_list and 
+                                        if (is_zone and is_list and
                                             "nonglobal" not in atvalue) or \
                                            (is_zone and not is_list and
                                             atvalue != "nonglobal"):
@@ -1314,7 +1379,7 @@ class ImageInterface(object):
                 strings."""
 
                 # Currently, this is mostly a wapper for activity locking.
-                self.__activity_lock.acquire()
+                self.__acquire_activity_lock()
                 try:
                         i = self._info_op(fmri_strings, local, info_needed)
                 finally:
@@ -1459,7 +1524,7 @@ class ImageInterface(object):
                                     _get_pkg_cat_data(img_cat, info_needed,
                                         excludes=excludes, pfmri=f)
                                 if cat_info is not None:
-                                        cat_info = [ 
+                                        cat_info = [
                                             PackageCategory(scheme, cat)
                                             for scheme, cat in cat_info
                                         ]
@@ -1522,7 +1587,7 @@ class ImageInterface(object):
         def __disable_cancel(self):
                 """Sets_can_be_canceled to False in a way that prevents missed
                 wakeups.  This may raise CanceledException, if a
-                cancellation is pending.""" 
+                cancellation is pending."""
 
                 self.__cancel_lock.acquire()
                 if self.__canceling:
@@ -1573,7 +1638,7 @@ class ImageInterface(object):
                 this does not necessarily return the disk to its initial state
                 since the indexes or download cache may have been changed by
                 the prepare method."""
-                self.__activity_lock.acquire()
+                self.__acquire_activity_lock()
                 self.__reset_unlock()
                 self.__activity_lock.release()
 
@@ -1593,6 +1658,7 @@ class ImageInterface(object):
                 # object was created with instead of the current path.
                 self.__img = image.Image(self.__img_path,
                     progtrack=self.__progresstracker)
+                self.__img.blocking_locks = self.__blocking_locks
 
                 self.__plan_desc = None
                 self.__plan_type = None
@@ -1601,7 +1667,7 @@ class ImageInterface(object):
                 self.__be_name = None
 
                 self.__cancel_cleanup_exception()
-                
+
         def __check_cancelation(self):
                 """Private method. Provides a callback method for internal
                 code to use to determine whether the current action has been
@@ -1656,6 +1722,7 @@ class ImageInterface(object):
                 self.__canceling = True
                 # Wait until the cancelled operation wakes us up.
                 self.__cancel_cv.wait()
+                self.__canceling = False
                 self.__cancel_lock.release()
                 return True
 
@@ -1773,9 +1840,8 @@ class ImageInterface(object):
                 clean_exit = True
                 canceled = False
 
-                self.__activity_lock.acquire()
+                self.__acquire_activity_lock()
                 self.__enable_cancel()
-
                 try:
                         for r in self._remote_search(query_str_and_args_lst,
                             servers): 
@@ -1944,7 +2010,7 @@ class ImageInterface(object):
 
         def get_manifest(self, pfmri, all_variants=True, intent=None):
                 return self.__img.get_manifest(pfmri)
-                        
+
         @staticmethod
         def validate_response(res, v):
                 """This function is used to determine whether the first
@@ -2036,7 +2102,7 @@ class ImageInterface(object):
                         return None
 
                 dt = None
-                self.__activity_lock.acquire()
+                self.__acquire_activity_lock()
                 try:
                         self.__enable_cancel()
                         try:
@@ -2078,7 +2144,19 @@ class ImageInterface(object):
                 repository, mirror, or origin.  If False, no attempt will be
                 made to retrieve publisher metadata."""
 
-                self.log_operation_start("update-publisher")
+                self.__acquire_activity_lock()
+                self.__disable_cancel()
+                try:
+                        with self.__img.locked_op("update-publisher"):
+                                return self.__update_publisher(pub,
+                                    refresh_allowed=refresh_allowed)
+                finally:
+                        self.__img.cleanup_downloads()
+                        self.__activity_lock.release()
+
+        def __update_publisher(self, pub, refresh_allowed=True):
+                """Private publisher update method; caller responsible for
+                locking."""
 
                 if pub.disabled and \
                     pub.prefix == self.__img.get_preferred_publisher():
@@ -2157,9 +2235,7 @@ class ImageInterface(object):
                         # If a matching publisher couldn't be found and
                         # replaced, something is wrong (client api usage
                         # error).
-                        e = api_errors.UnknownPublisher(pub)
-                        self.log_operation_end(e)
-                        raise e
+                        raise api_errors.UnknownPublisher(pub)
 
                 def cleanup():
                         new_id, old_pub = orig_pub
@@ -2191,7 +2267,8 @@ class ImageInterface(object):
                                         # publisher needs to be revalidated.
                                         self.__img.transport.valid_publisher_test(
                                             pub)
-                                        self.refresh(pubs=[pub], immediate=True)
+                                        self.__refresh(pubs=[pub],
+                                            immediate=True)
                                 else:
                                         # Something has changed (such as a
                                         # repository origin) for the publisher,
@@ -2202,30 +2279,17 @@ class ImageInterface(object):
                                         # refresh is needed and is allowed, one
                                         # will be performed.
                                         pub.last_refreshed = None
-                except Exception, e:
-                        # If any of the above fails, the original publisher
-                        # information needs to be restored so that state is
-                        # consistent.
-                        cleanup()
-                        self.__img.cleanup_downloads()
-                        self.log_operation_end(error=e)
-                        raise
                 except:
                         # If any of the above fails, the original publisher
                         # information needs to be restored so that state is
                         # consistent.
                         cleanup()
                         self.__img.cleanup_downloads()
-                        exc_type, exc_value, exc_traceback = \
-                            sys.exc_info()
-                        self.log_operation_end(error=exc_type)
                         raise
 
                 # Successful; so save configuration.
                 self.__img.save_config()
                 self.__img.cleanup_downloads()
-                self.log_operation_end()
-                return
 
         def log_operation_end(self, error=None, result=None):
                 """Marks the end of an operation to be recorded in image

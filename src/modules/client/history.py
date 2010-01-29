@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -57,6 +57,8 @@ RESULT_FAILED_CONFIGURATION = ["Failed", "Configuration"]
 # Indicates that the operation failed due to package constraints or because of
 # a restriction enforced by the client (e.g. SUNWipkg out of date).
 RESULT_FAILED_CONSTRAINED = ["Failed", "Constrained"]
+# Indicates an operation failed because the image was already in use.
+RESULT_FAILED_LOCKED = ["Failed", "Locked"]
 # Indicates that a search operation failed.
 RESULT_FAILED_SEARCH = ["Failed", "Search"]
 # Indicates that there was a problem reading, writing, or accessing a file.
@@ -76,6 +78,7 @@ DISCARDED_OPERATIONS = ["contents", "info", "list"]
 # Cross-reference table for errors and results.  Entries should be ordered
 # most-specific to least-specific.
 error_results = {
+    api_errors.ImageLockedError: RESULT_FAILED_LOCKED,
     api_errors.InvalidCatalogFile: RESULT_FAILED_STORAGE,
     api_errors.BENamingNotSupported: RESULT_FAILED_BAD_REQUEST,
     api_errors.InvalidBENameException: RESULT_FAILED_BAD_REQUEST,

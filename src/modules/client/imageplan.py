@@ -169,9 +169,16 @@ class ImagePlan(object):
                         logger.info(_("Planning for %s failed: %s\n") % 
                             (self.__planned_op, self.__pkg_solver.gen_failure_report(verbose)))
 
+        def __plan_op(self, op):
+                """Private helper method used to mark the start of a planned
+                operation."""
+
+                self.__planned_op = op
+                self._image_lm = self.image.get_last_modified()
+
         def plan_install(self, pkgs_to_install):
                 """Determine the fmri changes needed to install the specified pkgs"""
-                self.__planned_op = PLANNED_INSTALL
+                self.__plan_op(PLANNED_INSTALL)
 
                 # get ranking of publishers
                 pub_ranks = self.image.get_publisher_ranks()
@@ -210,7 +217,7 @@ class ImagePlan(object):
                 self.state = EVALUATED_PKGS
 
         def plan_uninstall(self, pkgs_to_uninstall, recursive_removal=False):
-                self.__planned_op = PLANNED_UNINSTALL
+                self.__plan_op(PLANNED_UNINSTALL)
                 proposed_dict, self.__references = self.match_user_fmris(pkgs_to_uninstall, 
                     False, None, None)
                 # merge patterns together
@@ -262,7 +269,7 @@ class ImagePlan(object):
         def plan_update(self):
                 """Determine the fmri changes needed to update all
                 pkgs"""
-                self.__planned_op = PLANNED_UPDATE
+                self.__plan_op(PLANNED_UPDATE)
 
                 # build installed dict
                 installed_dict = dict([
@@ -292,13 +299,13 @@ class ImagePlan(object):
 
         def plan_fix(self, pkgs_to_fix):
                 """Create the list of pkgs to fix"""
-                self.__planned_op = PLANNED_FIX
+                self.__plan_op(PLANNED_FIX)
                 # XXX complete this
 
         def plan_change_varcets(self, variants, facets):
                 """Determine the fmri changes needed to change
                 the specified variants/facets"""
-                self.__planned_op = PLANNED_VARIANT
+                self.__plan_op(PLANNED_VARIANT)
 
                 if variants == None and facets == None: # nothing to do
                         self.state = EVALUATED_PKGS
@@ -531,6 +538,11 @@ class ImagePlan(object):
 
                 assert self.state == EVALUATED_PKGS, self
 
+                if self._image_lm != self.image.get_last_modified():
+                        # State has been modified since plan was created; this
+                        # plan is no longer valid.
+                        raise api_errors.InvalidPlanError()
+
                 # prefetch manifests
                 prefetch_mfsts = [] # manifest, intents to be prefetched
                 eval_list = []     # oldfmri, oldintent, newfmri, newintent
@@ -723,6 +735,12 @@ class ImagePlan(object):
 
                 assert self.state == EVALUATED_OK
 
+                if self._image_lm != self.image.get_last_modified():
+                        # State has been modified since plan was created; this
+                        # plan is no longer valid.
+                        self.state = PREEXECUTED_ERROR
+                        raise api_errors.InvalidPlanError()
+
                 if self.nothingtodo():
                         self.state = PREEXECUTED_OK
                         return
@@ -822,6 +840,12 @@ class ImagePlan(object):
                 execute actions need to be sorted across packages
                 """
                 assert self.state == PREEXECUTED_OK
+
+                if self._image_lm != self.image.get_last_modified():
+                        # State has been modified since plan was created; this
+                        # plan is no longer valid.
+                        self.state = EXECUTED_ERROR
+                        raise api_errors.InvalidPlanError()
 
                 #
                 # what determines execution order?

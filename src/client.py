@@ -77,11 +77,11 @@ import pkg.version as version
 from pkg.client import global_settings
 from pkg.client.debugvalues import DebugValues
 from pkg.client.history import (RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
-    RESULT_FAILED_CONFIGURATION, RESULT_FAILED_STORAGE, RESULT_FAILED_TRANSPORT,
-    RESULT_FAILED_UNKNOWN, RESULT_FAILED_OUTOFMEMORY)
+    RESULT_FAILED_CONFIGURATION, RESULT_FAILED_LOCKED, RESULT_FAILED_STORAGE,
+    RESULT_FAILED_TRANSPORT, RESULT_FAILED_UNKNOWN, RESULT_FAILED_OUTOFMEMORY)
 from pkg.misc import EmptyI, msg, PipeError
 
-CLIENT_API_VERSION = 30
+CLIENT_API_VERSION = 31
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -96,6 +96,7 @@ EXIT_PARTIAL = 3
 EXIT_NOP     = 4
 EXIT_NOTLIVE = 5
 EXIT_LICENSE = 6
+EXIT_LOCKED  = 7
 
 
 logger = global_settings.logger
@@ -523,6 +524,10 @@ def fix_image(img, args):
                 try:
                         success = img.repair(repairs, progresstracker,
                             accept=accept, show_licenses=show_licenses)
+                except api_errors.InvalidPlanError, e:
+                        # Another client has stomped on the repair operation.
+                        logger.error("\n")
+                        logger.error(str(e))
                 except api_errors.PlanLicenseErrors, e:
                         # Prepend a newline because otherwise the exception will
                         # be printed on the same line as the spinner.
@@ -727,6 +732,11 @@ def __api_prepare(operation, api_inst, accept=False, show_licenses=False):
                     "use the --accept option.  To display all of the related "
                     "licenses, use the --licenses option."))
                 return EXIT_LICENSE
+        except api_errors.InvalidPlanError, e:
+                # Prepend a newline because otherwise the exception will
+                # be printed on the same line as the spinner.
+                error("\n" + str(e))
+                return EXIT_OOPS
         except KeyboardInterrupt:
                 raise
         except:
@@ -740,6 +750,11 @@ def __api_execute_plan(operation, api_inst, raise_ActionExecutionError=True):
                 api_inst.execute_plan()
         except RuntimeError, e:
                 error(_("%s failed: %s") % (operation, e))
+                return EXIT_OOPS
+        except api_errors.InvalidPlanError, e:
+                # Prepend a newline because otherwise the exception will
+                # be printed on the same line as the spinner.
+                error("\n" + str(e))
                 return EXIT_OOPS
         except api_errors.ImageUpdateOnLiveImageException:
                 error(_("%s cannot be done on live image") % operation)
@@ -828,6 +843,9 @@ Cannot remove '%s' due to the following packages that depend on it:"""
                         return False
                 if noexecute:
                         return True
+                return False
+        if e_type == api_errors.InvalidPlanError:
+                error("\n" + str(e))
                 return False
         if issubclass(e_type, api_errors.BEException):
                 error(_(e))
@@ -1934,7 +1952,7 @@ def list_contents(img, args):
                         try:
                                 attr, match = arg.split("=", 1)
                         except ValueError:
-                                usage(_("-a takes an argument of the form "
+                                usage(_("-p takes an argument of the form "
                                     "<attribute>=<pattern>"), cmd="contents")
                         attr_match.setdefault(attr, []).append(match)
                 elif opt == "-o":
@@ -3456,6 +3474,11 @@ def handle_errors(func, non_wrap_print=True, *args, **kwargs):
                         __img.history.abort(RESULT_FAILED_BAD_REQUEST)
                 error(__e)
                 __ret = EXIT_OOPS
+        except api_errors.ImageLockedError, __e:
+                if __img:
+                        __img.history.abort(RESULT_FAILED_LOCKED)
+                error(__e)
+                __ret = EXIT_LOCKED
         except api_errors.TransportError, __e:
                 if __img:
                         __img.history.abort(RESULT_FAILED_TRANSPORT)

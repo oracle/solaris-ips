@@ -48,7 +48,7 @@ import pkg.portable as portable
 import pkg.search_storage as ss
 import pkg.server.repository as srepo
 
-API_VERSION = 30
+API_VERSION = 31
 PKG_CLIENT_NAME = "pkg"
 
 class TestApiSearchBasics(testutils.SingleDepotTestCase):

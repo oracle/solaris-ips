@@ -1,3 +1,19 @@
+Version 31:
+Compatible with clients using version 30.
+    All image-modifying operations now lock the image for exclusive use
+    by the current thread and process.  If the lock cannot be obtained,
+    an ImageLockedError exception will be raised.
+
+    The ImageInterface class has changed as follows:
+        * A new property named 'blocking_locks' has been added to allow
+          clients to control image locking behaviour.  See 'pydoc
+          pkg.client.api.ImageInterface' for details.
+
+        * The prepare() and execute_plan() methods will now raise an
+          InvalidPlanError if the image state has changed since the
+          plan was originally created.  This is likely the result of
+          another client or process modifying the image.
+
 Version 30:
 Incompatible with clients using versions 0-29:
     The ProgressTracker class has changed as follows:

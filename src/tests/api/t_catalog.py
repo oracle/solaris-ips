@@ -986,6 +986,26 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 self.assertRaises(api_errors.UnknownCatalogEntry,
                         cat.remove_package, p3_fmri)
 
+                # Verify that update_entry will update base metadata and update
+                # the last_modified timestamp of the catalog and base part.
+                base = cat.get_part("catalog.base.C")
+                orig_cat_lm = cat.last_modified
+                orig_base_lm = base.last_modified
+
+                # Update logging has to be disabled for this to work.
+                cat.log_updates = False
+
+                cat.update_entry(p2_fmri, { "foo": True })
+
+                entry = cat.get_entry(p2_fmri)
+                self.assertEqual(entry["metadata"], { "foo": True })
+
+                self.assert_(cat.last_modified > orig_cat_lm)
+                self.assert_(base.last_modified > orig_base_lm)
+
+                part_lm = cat.parts[base.name]["last-modified"]
+                self.assert_(base.last_modified == part_lm)
+
         def test_07_updates(self):
                 """Verify that catalog updates are applied as expected."""
 

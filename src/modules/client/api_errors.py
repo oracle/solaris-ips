@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -40,6 +40,37 @@ class ApiException(Exception):
                 # have a chance of being stringified correctly.
                 return str(self)
 
+
+class ImageLockedError(ApiException):
+        """Used to indicate that the image is currently locked by another thread
+        or process and cannot be modified."""
+
+        def __init__(self, hostname=None, pid=None, pid_name=None):
+                ApiException.__init__(self)
+                self.hostname = hostname
+                self.pid = pid
+                self.pid_name = pid_name
+
+        def __str__(self):
+                if self.pid is not None and self.pid_name is not None and \
+                    self.hostname is not None:
+                        return _("The image cannot be modified as it is "
+                            "currently in use by another package client: "
+                            "%(pid_name)s on %(host)s, pid %(pid)s.") % {
+                            "pid_name": self.pid_name, "pid": self.pid,
+                            "host": self.hostname }
+                if self.pid is not None and self.pid_name is not None:
+                        return _("The image cannot be modified as it is "
+                            "currently in use by another package client: "
+                            "%(pid_name)s on an unknown host, pid %(pid)s.") % {
+                            "pid_name": self.pid_name, "pid": self.pid }
+                elif self.pid is not None:
+                        return _("The image cannot be modified as it is "
+                            "currently in use by another package client: "
+                            "pid %(pid)s on %(host)s.") % {
+                            "pid": self.pid, "host": self.hostname }
+                return _("The image cannot be modified as it is currently "
+                    "in use by another package client.")
 
 class ImageNotFoundException(ApiException):
         """Used when an image was not found"""
@@ -161,6 +192,16 @@ class ImageplanStateException(ApiException):
         def __init__(self, state):
                 ApiException.__init__(self)
                 self.state = state
+
+
+class InvalidPlanError(ApiException):
+        """Used to indicate that the image plan is no longer valid, likely as a
+        result of an image state change since the plan was created."""
+
+        def __str__(self):
+                return _("The plan for the current operation is no longer "
+                    "valid.  The image has likely been modified by another "
+                    "process or client.  Please try the operation again.")
 
 
 class ImagePkgStateError(ApiException):

@@ -27,6 +27,7 @@
 
 import datetime
 import errno
+import fcntl
 import os
 import platform
 import shutil
@@ -34,6 +35,7 @@ import tempfile
 import time
 import urllib
 
+from contextlib import contextmanager
 from pkg.client import global_settings
 logger = global_settings.logger
 
@@ -184,6 +186,7 @@ class Image(object):
                     "Policy-Require-Optional": False,
                     "Policy-Pursue-Latest": True
                 }
+                self.blocking_locks = False
                 self.cfg_cache = None
                 self.dl_cache_dir = None
                 self.dl_cache_incoming = None
@@ -195,6 +198,9 @@ class Image(object):
                 self.is_user_cache_dir = False
                 self.pkgdir = None
                 self.root = root
+                self.__lock = pkg.nrlock.NRLock()
+                self.__locked = False
+                self.__lockf = None
                 self.__req_dependents = None
 
                 # Transport operations for this image
@@ -244,6 +250,150 @@ class Image(object):
                 # This is used to keep track of what packages have been added
                 # to IMG_CATALOG_KNOWN by set_pkg_state().
                 self.__catalog_new_installs = set()
+
+        @property
+        def locked(self):
+                """Returns a boolean value indicating whether the image is
+                currently locked."""
+
+                return self.__locked
+
+        @contextmanager
+        def locked_op(self, op, allow_unprivileged=False):
+                """Helper method for executing an image-modifying operation
+                that needs locking.  It also automatically handles calling
+                log_operation_start and log_operation_end.  Locking behaviour
+                is controlled by the blocking_locks image property.
+
+                'allow_unprivileged' is an optional boolean value indicating
+                that permissions-related exceptions should be ignored when
+                attempting to obtain the lock as the related operation will
+                still work correctly even though the image cannot (presumably)
+                be modified.
+                """
+
+                error = None
+                self.lock(allow_unprivileged=allow_unprivileged)
+                try:
+                        self.history.log_operation_start(op)
+                        yield
+                except Exception, e:
+                        error = e
+                        raise
+                finally:
+                        self.history.log_operation_end(error=error)
+                        self.unlock()
+
+        def lock(self, allow_unprivileged=False):
+                """Locks the image in preparation for an image-modifying
+                operation.  Raises an ImageLockedError exception on failure.
+                Locking behaviour is controlled by the blocking_locks image
+                property.
+
+                'allow_unprivileged' is an optional boolean value indicating
+                that permissions-related exceptions should be ignored when
+                attempting to obtain the lock as the related operation will
+                still work correctly even though the image cannot (presumably)
+                be modified.
+                """
+
+                blocking = self.blocking_locks
+
+                # First, attempt to obtain a thread lock.
+                if not self.__lock.acquire(blocking=blocking):
+                        raise api_errors.ImageLockedError()
+
+                self.__locked = True
+                try:
+                        # Attempt to obtain a file lock.
+                        self.__lock_process()
+                except api_errors.PermissionsException:
+                        if not allow_unprivileged:
+                                self.__lock.release()
+                                raise
+                except:
+                        # If process lock fails, ensure thread lock is released.
+                        self.__lock.release()
+                        raise
+
+        def __lock_process(self):
+                """Locks the image to prevent modification by other
+                processes."""
+
+                if not os.path.exists(self.imgdir):
+                        # Image structure doesn't exist yet so a file lock
+                        # cannot be obtained.  This path should only happen
+                        # during image-create.
+                        return
+
+                # Attempt to obtain a file lock for the image.
+                lfpath = os.path.join(self.imgdir, "lock")
+
+                lock_type = fcntl.LOCK_EX
+                if not self.blocking_locks:
+                        lock_type |= fcntl.LOCK_NB
+
+                # Attempt an initial open of the lock file.
+                lf = None
+                try:
+                        lf = open(lfpath, "ab+")
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES:
+                                raise api_errors.PermissionsException(
+                                    e.filename)
+                        if e.errno == errno.EROFS:
+                                raise api_errors.ReadOnlyFileSystemException(
+                                    e.filename)
+                        raise
+
+                # Attempt to lock the file.
+                try:
+                        fcntl.lockf(lf, lock_type)
+                except IOError, e:
+                        if e.errno not in (errno.EAGAIN, errno.EACCES):
+                                raise
+
+                        # If the lock failed (because it is likely contended),
+                        # then extract the information about the lock acquirer
+                        # and raise an exception.
+                        pid_data = lf.read().strip()
+                        pid, pid_name, hostname, lock_ts = \
+                            pid_data.split("\n", 4)
+                        raise api_errors.ImageLockedError(pid=pid,
+                            pid_name=pid_name, hostname=hostname)
+
+                # Store lock time as ISO-8601 basic UTC timestamp in lock file.
+                lock_ts = pkg.catalog.now_to_basic_ts()
+
+                # Store information about the lock acquirer and write it.
+                try:
+                        lf.truncate(0)
+                        lf.write("\n".join((str(os.getpid()),
+                            global_settings.client_name,
+                            platform.node(), lock_ts, "\n")))
+                        lf.flush()
+                        self.__lockf = lf
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES:
+                                raise api_errors.PermissionsException(
+                                    e.filename)
+                        if e.errno == errno.EROFS:
+                                raise api_errors.ReadOnlyFileSystemException(
+                                    e.filename)
+                        raise
+
+        def unlock(self):
+                """Unlocks the image."""
+
+                if self.__lockf:
+                        # To avoid race conditions with the next caller waiting
+                        # for the lock file, it is simply truncated instead of
+                        # removed.
+                        self.__lockf.truncate(0)
+                        self.__lockf.close()
+                        self.__lockf = None
+                self.__locked = False
+                self.__lock.release()
 
         def image_type(self, d):
                 """Returns the type of image at directory: d; or None"""
@@ -373,9 +523,19 @@ class Image(object):
                 if not os.path.isabs(self.root):
                         self.root = os.path.abspath(self.root)
 
+                # If current image is locked, then it should be unlocked
+                # and then relocked after the imgdir is changed.  This
+                # ensures that alternate BE scenarios work.
+                relock = self.imgdir and self.__locked
+                if relock:
+                        self.unlock()
+
                 self.imgdir = os.path.join(self.root, self.img_prefix)
                 self.pkgdir = os.path.join(self.imgdir, "pkg")
                 self.history.root_dir = self.imgdir
+
+                if relock:
+                        self.lock()
 
                 if "PKG_CACHEDIR" in os.environ:
                         self.dl_cache_dir = os.path.normpath( \
@@ -425,8 +585,9 @@ class Image(object):
                 and attempts to correct any errors it finds."""
 
                 if not self.__upgraded:
-                        self.__upgrade_image(progtrack=progtrack)
-                        return
+                        with self.locked_op("upgrade-image",
+                            allow_unprivileged=True):
+                                return self.__upgrade_image(progtrack=progtrack)
 
                 # If the image has already been upgraded, first ensure that its
                 # structure is valid.
@@ -523,6 +684,16 @@ class Image(object):
         def get_root(self):
                 return self.root
 
+        def get_last_modified(self):
+                """Returns a UTC datetime object representing the time the
+                image's state last changed or None if unknown."""
+
+                # Always get last_modified time from known catalog.  It's
+                # retrieved from the catalog itself since that is accurate
+                # down to the micrsecond (as opposed to the filesystem which
+                # has an OS-specific resolution).
+                return self.__get_catalog(self.IMG_CATALOG_KNOWN).last_modified
+
         def gen_publishers(self, inc_disabled=False):
                 if not self.cfg_cache:
                         raise CfgCacheError, "empty ImageConfig"
@@ -577,26 +748,22 @@ class Image(object):
                 return False
 
         def remove_publisher(self, prefix=None, alias=None, progtrack=None):
+                """Removes the publisher with the matching identity from the
+                image."""
+
                 if not progtrack:
                         progtrack = progress.QuietProgressTracker()
 
-                self.history.log_operation_start("remove-publisher")
-                try:
+                with self.locked_op("remove-publisher"):
                         pub = self.get_publisher(prefix=prefix,
                             alias=alias)
-                except api_errors.ApiException, e:
-                        self.history.log_operation_end(e)
-                        raise
 
-                if pub.prefix == self.cfg_cache.preferred_publisher:
-                        e = api_errors.RemovePreferredPublisher()
-                        self.history.log_operation_end(error=e)
-                        raise e
+                        if pub.prefix == self.cfg_cache.preferred_publisher:
+                                raise api_errors.RemovePreferredPublisher()
 
-                self.cfg_cache.remove_publisher(pub.prefix)
-                self.remove_publisher_metadata(pub, progtrack=progtrack)
-                self.save_config()
-                self.history.log_operation_end()
+                        self.cfg_cache.remove_publisher(pub.prefix)
+                        self.remove_publisher_metadata(pub, progtrack=progtrack)
+                        self.save_config()
 
         def get_publishers(self):
                 return self.cfg_cache.publishers
@@ -614,35 +781,27 @@ class Image(object):
                 raise api_errors.UnknownPublisher(max(prefix, alias, origin))
 
         def pub_search_before(self, being_moved, staying_put):
-                """Moves publisher "being_moved" to after "staying_put"
-                in search order"""
-                self.__pub_search_common(being_moved, staying_put, after=False)
+                """Moves publisher "being_moved" to before "staying_put"
+                in search order."""
+                with self.locked_op("search-before"):
+                        self.__pub_search_common(being_moved, staying_put,
+                            after=False)
 
         def pub_search_after(self, being_moved, staying_put):
                 """Moves publisher "being_moved" to after "staying_put"
-                in search order"""
-                self.__pub_search_common(being_moved, staying_put, after=True)
+                in search order."""
+                with self.locked_op("search-after"):
+                        self.__pub_search_common(being_moved, staying_put,
+                            after=True)
 
         def __pub_search_common(self, being_moved, staying_put, after=True):
-                """Moves publisher "being_moved" to after "staying_put"
-                in search order"""
-                if after:
-                        r = "search-after"
-                else:
-                        r = "search-before"
+                """Shared logic for altering publisher search order."""
 
-                self.history.log_operation_start(r)
-                try:
-                        bm = self.get_publisher(being_moved).prefix
-                        sp = self.get_publisher(staying_put).prefix
-                except api_errors.ApiException, e:
-                        self.history.log_operation_end(e)
-                        raise
+                bm = self.get_publisher(being_moved).prefix
+                sp = self.get_publisher(staying_put).prefix
 
                 if bm == sp:
-                        e = api_errors.MoveRelativeToSelf()
-                        self.history.log_operation_end(e)
-                        raise e
+                        raise api_errors.MoveRelativeToSelf()
 
                 # compute new order and set it
                 so = self.cfg_cache.publisher_search_order
@@ -653,7 +812,6 @@ class Image(object):
                         so.insert(so.index(sp), bm)
                 self.cfg_cache.change_publisher_search_order(so)
                 self.save_config()
-                self.history.log_operation_end()
 
         def get_preferred_publisher(self):
                 """Returns the prefix of the preferred publisher."""
@@ -673,28 +831,22 @@ class Image(object):
 
                 One of the above parameters must be provided."""
 
-                self.history.log_operation_start("set-preferred-publisher")
-
-                if not pub:
-                        try:
+                with self.locked_op("set-preferred-publisher"):
+                        if not pub:
                                 pub = self.get_publisher(prefix=prefix,
                                     alias=alias)
-                        except api_errors.UnknownPublisher, e:
-                                self.history.log_operation_end(error=e)
-                                raise
 
-                if pub.disabled:
-                        e = api_errors.SetDisabledPublisherPreferred(pub)
-                        self.history.log_operation_end(error=e)
-                        raise e
-                self.cfg_cache.preferred_publisher = pub.prefix
-                self.save_config()
-                self.history.log_operation_end()
+                                if pub.disabled:
+                                        raise api_errors.SetDisabledPublisherPreferred(
+                                            pub)
+                                self.cfg_cache.preferred_publisher = pub.prefix
+                                self.save_config()
 
         def set_property(self, prop_name, prop_value):
                 assert prop_name != "preferred-publisher"
-                self.cfg_cache.properties[prop_name] = prop_value
-                self.save_config()
+                with self.locked_op("set-property"):
+                        self.cfg_cache.properties[prop_name] = prop_value
+                        self.save_config()
 
         def get_property(self, prop_name):
                 return self.cfg_cache.properties[prop_name]
@@ -704,8 +856,9 @@ class Image(object):
 
         def delete_property(self, prop_name):
                 assert prop_name != "preferred-publisher"
-                del self.cfg_cache.properties[prop_name]
-                self.save_config()
+                with self.locked_op("unset-property"):
+                        del self.cfg_cache.properties[prop_name]
+                        self.save_config()
 
         def properties(self):
                 for p in self.cfg_cache.properties:
@@ -721,50 +874,43 @@ class Image(object):
 
                 'progtrack' is an optional ProgressTracker object."""
 
-                self.history.log_operation_start("add-publisher")
+                with self.locked_op("add-publisher"):
+                        for p in self.cfg_cache.publishers.values():
+                                if pub == p or (pub.alias and
+                                    pub.alias == p.alias):
+                                        raise api_errors.DuplicatePublisher(pub)
 
-                for p in self.cfg_cache.publishers.values():
-                        if pub == p or (pub.alias and pub.alias == p.alias):
-                                error = api_errors.DuplicatePublisher(pub)
-                                self.history.log_operation_end(error=error)
-                                raise error
+                        if not progtrack:
+                                progtrack = progress.QuietProgressTracker()
 
-                if not progtrack:
-                        progtrack = progress.QuietProgressTracker()
+                        # Must assign this first before performing any more
+                        # operations.
+                        pub.meta_root = self._get_publisher_meta_root(
+                            pub.prefix)
+                        pub.transport = self.transport
+                        self.cfg_cache.publishers[pub.prefix] = pub
 
-                # Must assign this first before performing any more operations.
-                pub.meta_root = self._get_publisher_meta_root(pub.prefix)
-                pub.transport = self.transport
-                self.cfg_cache.publishers[pub.prefix] = pub
+                        # Ensure that if the publisher's meta directory already
+                        # exists for some reason that the data within is not
+                        # used.
+                        pub.remove_meta_root()
 
-                # Ensure that if the publisher's meta directory already exists
-                # for some reason that the data within is not used.
-                pub.remove_meta_root()
+                        if refresh_allowed:
+                                try:
+                                        # First, verify that the publisher has a
+                                        # valid pkg(5) repository.
+                                        self.transport.valid_publisher_test(pub)
+                                        self.refresh_publishers(pubs=[pub],
+                                            progtrack=progtrack)
+                                except:
+                                        # Remove the newly added publisher since
+                                        # the retrieval failed.
+                                        self.cfg_cache.remove_publisher(
+                                            pub.prefix)
+                                        raise
 
-                if refresh_allowed:
-                        try:
-                                # First, verify that the publisher has a valid
-                                # pkg(5) repository.
-                                self.transport.valid_publisher_test(pub)
-                                self.refresh_publishers(pubs=[pub],
-                                    progtrack=progtrack)
-                        except Exception, e:
-                                # Remove the newly added publisher since the
-                                # retrieval failed.
-                                self.cfg_cache.remove_publisher(pub.prefix)
-                                self.history.log_operation_end(error=e)
-                                raise
-                        except:
-                                # Remove the newly added publisher since the
-                                # retrieval failed.
-                                self.cfg_cache.remove_publisher(pub.prefix)
-                                self.history.log_operation_end(
-                                    result=history.RESULT_FAILED_UNKNOWN)
-                                raise
-
-                # Only after success should the configuration be saved.
-                self.save_config()
-                self.history.log_operation_end()
+                        # Only after success should the configuration be saved.
+                        self.save_config()
 
         def verify(self, fmri, progresstracker, **args):
                 """Generator that returns a tuple of the form (action, errors,
@@ -825,6 +971,9 @@ class Image(object):
 
                 progtrack.evaluate_start()
 
+                # Always start with most current (on-disk) state information.
+                self.__init_catalogs()
+
                 # compute dict of changing variants
                 if variants:
                         variants = dict(set(variants.iteritems()) - \
@@ -851,8 +1000,17 @@ class Image(object):
                 ic.read(self.imgdir)
                 self.cfg_cache = ic
 
-        def repair(self, repairs, progtrack, accept=False, show_licenses=False):
+        def repair(self, *args, **kwargs):
                 """Repair any actions in the fmri that failed a verify."""
+                with self.locked_op("fix"):
+                        return self.__repair(*args, **kwargs)
+
+        def __repair(self, repairs, progtrack, accept=False,
+            show_licenses=False):
+                """Private repair method; caller is responsible for locking."""
+
+                ilm = self.get_last_modified()
+
                 # XXX: This (lambda x: False) is temporary until we move pkg fix
                 # into the api and can actually use the
                 # api::__check_cancelation() function.
@@ -865,11 +1023,16 @@ class Image(object):
                         pp.evaluate(self.list_excludes(), self.list_excludes())
                         pps.append(pp)
                 ip = imageplan.ImagePlan(self, progtrack, lambda: False)
+                ip._image_lm = ilm
                 self.imageplan = ip
 
                 ip.update_index = False
                 ip.state = imageplan.EVALUATED_PKGS
                 progtrack.evaluate_start()
+
+                # Always start with most current (on-disk) state information.
+                self.__init_catalogs()
+
                 ip.pkg_plans = pps
 
                 ip.evaluate()
@@ -1087,6 +1250,12 @@ class Image(object):
                 except KeyError:
                         pass
 
+                return self.__get_catalog(name)
+
+        def __get_catalog(self, name):
+                """Private method to retrieve catalog; this bypasses the
+                normal automatic caching."""
+
                 croot = os.path.join(self.imgdir, "state", name)
                 try:
                         os.makedirs(croot)
@@ -1120,7 +1289,7 @@ class Image(object):
                 self.__catalogs[name] = cat
                 return cat
 
-        def remove_catalogs(self):
+        def __remove_catalogs(self):
                 """Removes all image catalogs and their directories."""
 
                 self.__init_catalogs()
@@ -1254,7 +1423,7 @@ class Image(object):
                 publist = list(self.gen_publishers())
                 if not publist:
                         # No publishers, so nothing can be known or installed.
-                        self.remove_catalogs()
+                        self.__remove_catalogs()
                         progtrack.cache_catalogs_done()
                         return
 
@@ -1364,7 +1533,7 @@ class Image(object):
 
                                 # copy() is too slow here and catalog entries
                                 # are shallow so this should be sufficient.
-                                entry = dict(sentry.iteritems()) 
+                                entry = dict(sentry.iteritems())
                                 if not base:
                                         # Nothing else to do except add the
                                         # entry for non-base catalog parts.
@@ -1503,7 +1672,7 @@ class Image(object):
         def refresh_publishers(self, full_refresh=False, immediate=False,
             pubs=None, progtrack=None):
                 """Refreshes the metadata (e.g. catalog) for one or more
-                publishers.
+                publishers.  Callers are responsible for locking the image.
 
                 'full_refresh' is an optional boolean value indicating whether
                 a full retrieval of publisher metadata (e.g. catalogs) or only
@@ -1679,7 +1848,6 @@ class Image(object):
 
                 # Not technically 'caching', but close enough ...
                 progtrack.cache_catalogs_start()
-                self.history.log_operation_start("upgrade-image")
 
                 # First, load the old package state information.
                 installed_state_dir = "%s/state/installed" % self.imgdir
@@ -1849,7 +2017,6 @@ class Image(object):
                         logger.warning("Package operation performance is "
                             "currently degraded.\nThis can be resolved by "
                             "executing 'pkg refresh' as a privileged user.\n")
-                        self.history.log_operation_end()
                         return
 
                 # This has to be done after the permissions check above.
@@ -1909,7 +2076,6 @@ class Image(object):
                 shutil.rmtree(orig_cat_root, True)
                 shutil.rmtree(orig_state_root, True)
                 progtrack.cache_catalogs_done()
-                self.history.log_operation_end()
 
         def strtofmri(self, myfmri):
                 return pkg.fmri.PkgFmri(myfmri, self.attrs["Build-Release"])
@@ -2352,10 +2518,14 @@ class Image(object):
                 to assemble an appropriate image plan.  This is a helper
                 routine for some common operations in the client.
                 """
+
                 ip = imageplan.ImagePlan(self, progtrack, check_cancelation,
                     noexecute=noexecute)
 
                 progtrack.evaluate_start()
+
+                # Always start with most current (on-disk) state information.
+                self.__init_catalogs()
 
                 try:
                         ip.plan_install(pkg_list)
@@ -2376,6 +2546,9 @@ class Image(object):
                 ip = imageplan.ImagePlan(self, progtrack, check_cancelation,
                     noexecute=noexecute)
 
+                # Always start with most current (on-disk) state information.
+                self.__init_catalogs()
+
                 ip.plan_update()
 
                 self.__call_imageplan_evaluate(ip, verbose)
@@ -2389,6 +2562,9 @@ class Image(object):
 
                 ip = imageplan.ImagePlan(self, progtrack,
                     check_cancelation, noexecute=noexecute)
+
+                # Always start with most current (on-disk) state information.
+                self.__init_catalogs()
 
                 ip.plan_uninstall(fmri_list, recursive_removal)
 
@@ -2441,6 +2617,8 @@ class Image(object):
                                 # If refreshing publisher metadata is allowed,
                                 # then perform a refresh so that a new SUNWipkg
                                 # can be discovered.
+
+                                newimg.lock()
                                 try:
                                         newimg.refresh_publishers(
                                             progtrack=progtrack)
@@ -2448,6 +2626,9 @@ class Image(object):
                                         cre.errmessage = \
                                             _("SUNWipkg update check failed.")
                                         raise
+                                finally:
+                                        newimg.unlock()
+
                         img = newimg
 
                 # XXX call to progress tracker that SUNWipkg is being refreshed

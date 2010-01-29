@@ -3081,6 +3081,14 @@ class Catalog(object):
                         return
                 entry["metadata"] = metadata
 
+                op_time = datetime.datetime.utcnow()
+                attrs = self._attrs
+                attrs.last_modified = op_time
+                attrs.parts[base.name] = {
+                    "last-modified": op_time
+                }
+                base.last_modified = op_time
+
         def validate(self):
                 """Verifies whether the signatures for the contents of the
                 catalog match the current signature data.  Raises the

@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -2102,7 +2102,10 @@ adm:NP:6445::::::
                 self.pkgsend_bulk(durl, self.devicebase + self.basics0 + \
                     self.basics1)
 
-                self.pkg("image-update --no-refresh", su_wrap=True, exit=4)
+                # Modifying operations require permissions needed to create and
+                # manage lock files.
+                self.pkg("image-update --no-refresh", su_wrap=True, exit=1)
+
                 self.pkg("refresh")
                 self.pkg("image-update", su_wrap=True, exit=1)
                 # Should fail since user doesn't have permission to refresh

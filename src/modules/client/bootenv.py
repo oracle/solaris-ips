@@ -319,6 +319,16 @@ Reboot when ready to switch to this updated BE.
 
                 self.__store_image_state()
 
+                relock = False
+                if self.img.locked:
+                        # This is necessary since the lock will
+                        # prevent the boot environment from being
+                        # unmounted during activation.  Normally,
+                        # locking for the image is handled
+                        # automatically.
+                        relock = True
+                        self.img.unlock()
+
                 caught_exception = None
                 cmd = [ "/sbin/bootadm", "update-archive", "-R" ]
                 try:
@@ -328,8 +338,17 @@ Reboot when ready to switch to this updated BE.
                                 activate_be(cmd)
                 except Exception, e:
                         caught_exception = e
+                        if relock:
+                                # Re-lock be image.
+                                relock = False
+                                self.img.lock()
 
                 self.__reset_image_state(failure=caught_exception)
+                if relock:
+                        # Activation was successful so the be image was
+                        # unmounted and the parent image must be re-locked.
+                        self.img.lock()
+
                 if caught_exception:
                         self.img.history.log_operation_error(error=e)
                         raise caught_exception

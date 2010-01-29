@@ -761,6 +761,9 @@ EXIT STATUS
            for the packages being installed or updated have not been
            accepted.
 
+     7     The image is currently in use by another process and cannot
+           be modified.
+
 FILES
      var/pkg                    Metadata location for full and partial
                                 images, relative to image's root
