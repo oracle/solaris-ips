@@ -780,7 +780,7 @@ class test_func(Command):
             ("verbosemode", 'v', "run tests in verbose mode"),
             ("stoponerr", 'x', "stop when a baseline mismatch occurs"),
             ("debugoutput", 'd', "emit debugging output"),
-            ("show_on_expected_fail", 'f',
+            ("showonexpectedfail", 'f',
                 "show all failure info, even for expected fails"),
             ("startattest=", 's', "start at indicated test"),
         ]
@@ -796,7 +796,7 @@ class test_func(Command):
                 self.coverage = 0
                 self.stoponerr = 0
                 self.debugoutput = 0
-                self.show_on_expected_fail = 0
+                self.showonexpectedfail = 0
                 self.startattest = ""
                 self.archivedir = ""
 
