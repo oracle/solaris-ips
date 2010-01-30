@@ -28,6 +28,7 @@
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import os
 import pkg.portable
@@ -36,15 +37,15 @@ import shutil
 import unittest
 
 
-class TestPkgImageCreateBasics(testutils.ManyDepotTestCase):
+class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
         # Only start/stop the depots once (instead of for every test)
-        persistent_depot = True
+        persistent_setup = True
 
         def setUp(self):
                 # Extra instances of test1 are created so that a valid
                 # repository that is different than the actual test1
                 # repository can be used.
-                testutils.ManyDepotTestCase.setUp(self, ["test1", "test2",
+                pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2",
                     "test1", "test1"])
 
                 self.durl1 = self.dcs[1].get_depot_url()
@@ -110,7 +111,7 @@ class TestPkgImageCreateBasics(testutils.ManyDepotTestCase):
                 """
                 self.pkgsend_bulk(self.durl1, pkgsend_data)
 
-                self.assertRaises(testutils.UnexpectedExitCodeException,
+                self.assertRaises(pkg5unittest.UnexpectedExitCodeException,
                     self.image_create, self.durl1, prefix="")
 
         def test_3588(self):
@@ -146,7 +147,7 @@ class TestPkgImageCreateBasics(testutils.ManyDepotTestCase):
                 """Verify that all of the options for specifying publisher
                 information work as expected for image-create."""
 
-                img_path = os.path.join(self.get_test_prefix(), "test_4_img")
+                img_path = os.path.join(self.test_root, "test_4_img")
                 for opt in ("-a", "-p", "--publisher"):
                         self.pkg("image-create %s test1=%s %s" % (opt,
                             self.durl1, img_path))
@@ -188,12 +189,12 @@ class TestPkgImageCreateBasics(testutils.ManyDepotTestCase):
 
                 pwd = os.getcwd()
                 img_path = "test_6_image"
-                abs_img_path = os.path.join(self.get_test_prefix(), img_path)
+                abs_img_path = os.path.join(self.test_root, img_path)
 
                 # Now verify that the image root isn't duplicated within the
                 # specified image root if the specified root doesn't already
                 # exist.
-                os.chdir(self.get_test_prefix())
+                os.chdir(self.test_root)
                 self.pkg("image-create -p test1=%s %s" % (self.durl1,
                     img_path))
                 os.chdir(pwd)
@@ -203,7 +204,7 @@ class TestPkgImageCreateBasics(testutils.ManyDepotTestCase):
 
                 # Now verify that the image root isn't duplicated within the
                 # specified image root if the specified root already exists.
-                os.chdir(self.get_test_prefix())
+                os.chdir(self.test_root)
                 os.mkdir(img_path)
                 self.pkg("image-create -p test1=%s %s" % (self.durl1,
                     img_path))
@@ -315,7 +316,7 @@ class TestPkgImageCreateBasics(testutils.ManyDepotTestCase):
                 for pl in sorted(os.listdir(inst_state_dir)):
                         # If there any other files but catalog files here, then
                         # the old state information didn't get properly removed.
-                        assert pl.startswith("catalog.")
+                        self.assert_(pl.startswith("catalog."))
 
         def test_9_bad_image_state(self):
                 """Verify that the pkg(1) command handles invalid image state
@@ -369,15 +370,15 @@ class TestPkgImageCreateBasics(testutils.ManyDepotTestCase):
                 """Verify that pkg correctly handles permission errors during
                 image-create."""
 
-                p = os.path.join(self.get_test_prefix(), "unpriv_test_10")
+                p = os.path.join(self.test_root, "unpriv_test_10")
                 os.mkdir(p)
 
                 self.pkg("image-create -p test1=%s %s/image" % (
                     self.durl1, p), su_wrap=True, exit=1)
 
 
-class TestImageCreateNoDepot(testutils.CliTestCase):
-        persistent_depot = True
+class TestImageCreateNoDepot(pkg5unittest.CliTestCase):
+        persistent_setup = True
         def test_bad_image_create(self):
                 """ Create image from non-existent server """
 
@@ -388,44 +389,44 @@ class TestImageCreateNoDepot(testutils.CliTestCase):
                 # it will be universally able to be looked up.
                 #
                 durl = "http://localhost:4"
-                self.assertRaises(testutils.UnexpectedExitCodeException, \
+                self.assertRaises(pkg5unittest.UnexpectedExitCodeException, \
                     self.image_create, durl)
 
         def test_765(self):
                 """Bug 765: malformed publisher URL."""
 
                 durl = "bar=baz"
-                self.assertRaises(testutils.UnexpectedExitCodeException, \
+                self.assertRaises(pkg5unittest.UnexpectedExitCodeException, \
                     self.image_create, durl)
 
         def test_763a(self):
                 """Bug 763, traceback 1: no -p option given to image-create."""
 
-                self.assertRaises(testutils.UnexpectedExitCodeException, \
+                self.assertRaises(pkg5unittest.UnexpectedExitCodeException, \
                     self.pkg, "image-create foo")
 
         def test_763c(self):
                 """Bug 763, traceback 3: -p given to image-create, but no
                 publisher specified."""
 
-                self.assertRaises(testutils.UnexpectedExitCodeException, \
+                self.assertRaises(pkg5unittest.UnexpectedExitCodeException, \
                     self.pkg, "image-create -p foo")
 
         def test_bad_publisher_options(self):
                 """More tests that abuse the publisher prefix and URL."""
 
-                self.assertRaises(testutils.UnexpectedExitCodeException, \
+                self.assertRaises(pkg5unittest.UnexpectedExitCodeException, \
                     self.pkg, "image-create -p $%^8" + ("=http://%s1" %
                     self.bogus_url))
 
-                self.assertRaises(testutils.UnexpectedExitCodeException, \
+                self.assertRaises(pkg5unittest.UnexpectedExitCodeException, \
                     self.pkg, "image-create -p test1=http://$%^8")
 
-                self.assertRaises(testutils.UnexpectedExitCodeException, \
+                self.assertRaises(pkg5unittest.UnexpectedExitCodeException, \
                     self.pkg, "image-create -p test1=http://%s1:abcde" %
                     self.bogus_url)
 
-                self.assertRaises(testutils.UnexpectedExitCodeException, \
+                self.assertRaises(pkg5unittest.UnexpectedExitCodeException, \
                     self.pkg, "image-create -p test1=ftp://%s1" %
                     self.bogus_url)
 

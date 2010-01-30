@@ -26,8 +26,9 @@
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
-import errno
+import pkg5unittest
 
+import errno
 import os
 import shutil
 import stat
@@ -35,7 +36,7 @@ import sys
 import tempfile
 import unittest
 
-class TestPkgMogrify(testutils.CliTestCase):
+class TestPkgMogrify(pkg5unittest.CliTestCase):
         pkgcontents = \
             """
 # directories
@@ -80,25 +81,14 @@ link path=usr/X11/lib/libXmu.so target=./libXmu.so.4
         transform_files = []
 
         def setUp(self):
-                self.pid = os.getpid()
-                self.pwd = os.getcwd()
-                self.persistent_depot = False
+                pkg5unittest.CliTestCase.setUp(self)
 
-                self.__test_dir = os.path.join(tempfile.gettempdir(),
-                    "ips.test.%d" % self.pid)
-
-                try:
-                        os.makedirs(self.__test_dir, 0755)
-                except OSError, e:
-                        if e.errno != errno.EEXIST:
-                                raise e
-
-                f = file(os.path.join(self.__test_dir, "source_file"), "wb")
+                f = file(os.path.join(self.test_root, "source_file"), "wb")
                 f.write(self.pkgcontents)
                 f.close()
 
                 for i, s in enumerate(self.transforms):
-                        fname = os.path.join(self.__test_dir,
+                        fname = os.path.join(self.test_root,
                                 "transform_%s" % i)
                         self.transform_files.append(fname)
                         f = file(fname, "wb")
@@ -106,17 +96,13 @@ link path=usr/X11/lib/libXmu.so target=./libXmu.so.4
                         f.close()
 
         def pkgmogrify(self, args, exit=0):
-                cmd="%s/usr/bin/pkgmogrify %s" % (testutils.g_proto_area, args)
+                cmd="%s/usr/bin/pkgmogrify %s" % (pkg5unittest.g_proto_area, args)
                 self.cmdline_run(cmd, exit=exit)
-
-        def tearDown(self):
-                #shutil.rmtree(self.__test_dir)
-                pass
 
         def test_1(self):
                 """demonstrate macros working"""
-                source_file = os.path.join(self.__test_dir, "source_file")
-                output_file = os.path.join(self.__test_dir, "output_file")
+                source_file = os.path.join(self.test_root, "source_file")
+                output_file = os.path.join(self.test_root, "output_file")
 
                 self.pkgmogrify("-Di386_ONLY='#' -DBUILDID=0.126 %s |" \
                         "egrep -v SUNWxorg-mesa" % source_file)
@@ -129,15 +115,15 @@ link path=usr/X11/lib/libXmu.so target=./libXmu.so.4
 
         def test_2(self):
                 """display output to files """
-                source_file = os.path.join(self.__test_dir, "source_file")
-                output_file = os.path.join(self.__test_dir, "output_file")
+                source_file = os.path.join(self.test_root, "source_file")
+                output_file = os.path.join(self.test_root, "output_file")
                 self.pkgmogrify("-Di386_ONLY=' ' -DBUILDID=0.126 -O %s %s ;" \
                         "egrep SUNWxorg-mesa@7.4.4-0.126 %s" %
                         (output_file, source_file, output_file))
 
         def test_3(self):
-                source_file = os.path.join(self.__test_dir, "source_file")
-                output_file = os.path.join(self.__test_dir, "output_file")
+                source_file = os.path.join(self.test_root, "source_file")
+                output_file = os.path.join(self.test_root, "output_file")
                 self.pkgmogrify("-Di386_ONLY='#' -DBUILDID=0.126 %s %s |" \
                         "egrep -v X11" %
                         (self.transform_files[1], source_file))
@@ -151,15 +137,15 @@ link path=usr/X11/lib/libXmu.so target=./libXmu.so.4
                         (self.transform_files[4], source_file))
 
         def test_4(self):
-                source_file = os.path.join(self.__test_dir, "source_file")
-                output_file = os.path.join(self.__test_dir, "output_file")
+                source_file = os.path.join(self.test_root, "source_file")
+                output_file = os.path.join(self.test_root, "output_file")
                 self.pkgmogrify("-Di386_ONLY='#' -DBUILDID=0.126 %s %s |" \
                         "egrep -v xkbprint" %
                         (self.transform_files[2], source_file))
 
         def test_5(self):
-                source_file = os.path.join(self.__test_dir, "source_file")
-                output_file = os.path.join(self.__test_dir, "output_file")
+                source_file = os.path.join(self.test_root, "source_file")
+                output_file = os.path.join(self.test_root, "output_file")
 
                 self.pkgmogrify("-Di386_ONLY='#' -DBUILDID=0.126 %s %s |" \
                     "egrep 'file NOHASH group=bin mode=0555 owner=root " \
@@ -171,7 +157,7 @@ link path=usr/X11/lib/libXmu.so target=./libXmu.so.4
                     self.transform_files[3], source_file))
                 self.pkgmogrify("-Di386_ONLY='#' -DBUILDID=0.126 -I %s %s %s" \
                     " |egrep 'file NOHASH group=bin mode=0755 owner=root " \
-                    "path=usr\/Y11\/bin\/Xserver'" % (self.__test_dir,
+                    "path=usr\/Y11\/bin\/Xserver'" % (self.test_root,
                     self.transform_files[7], source_file))
                 # check multiple modes to the same attribute on same action
                 self.pkgmogrify("-Di386_ONLY='#' -DBUILDID=0.126 %s %s %s |" \
@@ -180,8 +166,8 @@ link path=usr/X11/lib/libXmu.so target=./libXmu.so.4
                     self.transform_files[1], source_file))
 
         def test_6(self):
-                source_file = os.path.join(self.__test_dir, "source_file")
-                output_file = os.path.join(self.__test_dir, "output_file")
+                source_file = os.path.join(self.test_root, "source_file")
+                output_file = os.path.join(self.test_root, "output_file")
                 # check omitted NOHASH
                 self.pkgmogrify("-Di386_ONLY='#' -DBUILDID=0.126 %s %s %s |" \
                     "egrep 'file NOHASH group=bin mode=0555 owner=root " \
@@ -189,8 +175,8 @@ link path=usr/X11/lib/libXmu.so target=./libXmu.so.4
                     self.transform_files[1], source_file))
 
         def test_7(self):
-                source_file = os.path.join(self.__test_dir, "source_file")
-                output_file = os.path.join(self.__test_dir, "output_file")
+                source_file = os.path.join(self.test_root, "source_file")
+                output_file = os.path.join(self.test_root, "output_file")
 
                 # check error handling
                 self.pkgmogrify("-Di386_ONLY='#' -DBUILDID=0.126 --froob",
@@ -200,7 +186,7 @@ link path=usr/X11/lib/libXmu.so target=./libXmu.so.4
                         self.transform_files[8], exit=1)
                 # nested tranform error
                 self.pkgmogrify("-Di386_ONLY='#' -DBUILDID=0.126 -I %s %s" %
-                        (self.__test_dir, self.transform_files[8]), exit=1)
+                        (self.test_root, self.transform_files[8]), exit=1)
                 # bad transform
                 self.pkgmogrify("-Di386_ONLY='#' -DBUILDID=0.126 %s %s" %
                         (self.transform_files[6], source_file), exit=1)
@@ -208,9 +194,9 @@ link path=usr/X11/lib/libXmu.so target=./libXmu.so.4
 
         def test_8(self):
                 """test for graceful exit with no output on abort"""
-                source_file = os.path.join(self.__test_dir, "source_file")
-                no_output = os.path.join(self.__test_dir, "no_output")
-                no_print = os.path.join(self.__test_dir, "no_print")
+                source_file = os.path.join(self.test_root, "source_file")
+                no_output = os.path.join(self.test_root, "no_output")
+                no_print = os.path.join(self.test_root, "no_print")
                 #
                 # add an abort transform that's expected to trigger
                 # this should cover the "exit gracefully" part of abort
@@ -225,9 +211,9 @@ link path=usr/X11/lib/libXmu.so target=./libXmu.so.4
 
         def test_9(self):
                 """test for print output to specified file"""
-                source_file = os.path.join(self.__test_dir, "source_file")
-                output_file = os.path.join(self.__test_dir, "output_file")
-                print_file = os.path.join(self.__test_dir, "print_file")
+                source_file = os.path.join(self.test_root, "source_file")
+                output_file = os.path.join(self.test_root, "output_file")
+                print_file = os.path.join(self.test_root, "print_file")
                 #
                 # generate output for each file action, and count resulting
                 # lines in print file to be sure it matches our expectations
@@ -237,3 +223,6 @@ link path=usr/X11/lib/libXmu.so target=./libXmu.so.4
                         "grep -w '3'" % (print_file, output_file,
                         self.transform_files[10], self.transform_files[11],
                         source_file, print_file))
+
+if __name__ == "__main__":
+        unittest.main()

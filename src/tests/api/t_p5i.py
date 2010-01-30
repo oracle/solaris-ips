@@ -21,9 +21,14 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
+
+import testutils
+if __name__ == "__main__":
+        testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import errno
 import unittest
@@ -39,11 +44,6 @@ import sys
 import tempfile
 import urllib
 import urlparse
-
-# Set the path so that modules above can be found
-path_to_parent = os.path.join(os.path.dirname(__file__), "..")
-sys.path.insert(0, path_to_parent)
-import pkg5unittest
 
 class TestP5I(pkg5unittest.Pkg5TestCase):
         """Class to test the functionality of the pkg.p5i module."""
@@ -90,32 +90,8 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
         misc_files = [ "libc.so.1" ]
 
         def setUp(self):
-                self.pid = os.getpid()
-                self.pwd = os.getcwd()
-
-                self.__test_prefix = os.path.join(tempfile.gettempdir(),
-                    "ips.test.%d" % self.pid)
-
-                try:
-                        os.makedirs(self.__test_prefix,
-                            misc.PKG_DIR_MODE)
-                except OSError, e:
-                        if e.errno != errno.EEXIST:
-                                raise e
-
-                for p in self.misc_files:
-                        fpath = os.path.join(self.get_test_prefix(), p)
-                        f = open(fpath, "wb")
-                        # write the name of the file into the file, so that
-                        # all files have differing contents
-                        f.write(fpath)
-                        f.close()
-
-        def tearDown(self):
-                shutil.rmtree(self.get_test_prefix())
-
-        def get_test_prefix(self):
-                return self.__test_prefix
+                pkg5unittest.Pkg5TestCase.setUp(self)
+                self.make_misc_files(self.misc_files)
 
         def test_parse_write(self):
                 """Verify that the p5i parsing and writing works as expected."""
@@ -181,7 +157,7 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
                 # Verify that parse returns the expected object and information
                 # when provided a file path.
                 fobj.seek(0)
-                (fd1, path1) = tempfile.mkstemp(dir=self.get_test_prefix())
+                (fd1, path1) = tempfile.mkstemp(dir=self.test_root)
                 os.write(fd1, fobj.read())
                 os.close(fd1)
                 validate_results(p5i.parse(location=path1))
@@ -197,7 +173,7 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
 
                 # Verify that appropriate exceptions are raised for p5i
                 # information that can't be retrieved (doesn't exist).
-                nefpath = os.path.join(self.get_test_prefix(), "non-existent")
+                nefpath = os.path.join(self.test_root, "non-existent")
                 self.assertRaises(api_errors.RetrievalError,
                     p5i.parse, location="file://%s" % nefpath)
 
@@ -206,7 +182,7 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
 
                 # Verify that appropriate exceptions are raised for invalid
                 # p5i information.
-                lcpath = os.path.join(self.get_test_prefix(), "libc.so.1")
+                lcpath = os.path.join(self.test_root, "libc.so.1")
                 location = os.path.abspath(lcpath)
                 location = urlparse.urlunparse(("file", "",
                     urllib.pathname2url(location), "", "", ""))
@@ -222,4 +198,3 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
 
 if __name__ == "__main__":
         unittest.main()
-

@@ -20,22 +20,23 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
-from cli import testutils
-
+import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
+import pkg5unittest
+import unittest
 
 try:
         import ldtp
 except ImportError:
         raise ImportError, "SUNWldtp package not installed."
 
-class TestPkgGuiHelp(testutils.SingleDepotTestCase):
+class TestPkgGuiHelp(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
-        persistent_depot = True
+        persistent_setup = True
 
         foo10 = """
             open package1@1.0,5.11-0
@@ -43,41 +44,41 @@ class TestPkgGuiHelp(testutils.SingleDepotTestCase):
             close """
 
         def setUp(self, debug_features=None):
-                testutils.SingleDepotTestCase.setUp(self)
-
-        def tearDown(self):
-                testutils.SingleDepotTestCase.tearDown(self)
-
-        def testPmHelp(self):
+                pkg5unittest.SingleDepotTestCase.setUp(self)
                 repo_url = self.dc.get_depot_url()
                 self.pkgsend_bulk(repo_url, self.foo10)
                 self.image_create(repo_url)
 
-                ldtp.launchapp("%s/usr/bin/packagemanager" % testutils.g_proto_area)
+        def tearDown(self):
+                pkg5unittest.SingleDepotTestCase.tearDown(self)
+
+        def testPmHelp(self):
+                ldtp.launchapp("%s/usr/bin/packagemanager" % pkg5unittest.g_proto_area)
 
                 ldtp.click('frmPackageManager', 'mnuContents')
 
                 # Verify result
                 ldtp.waittillguiexist('*Online Help')
                 self.assertEqual(ldtp.guiexist('*Online Help'), 1)
-                        
+
                 ldtp.selectmenuitem('*Online Help', 'mnuCloseWindow')
 
-                
                 # Quit UpdateManager
                 ldtp.click('frmPackageManager', 'mnuQuit')
 
         def testPmAbout(self):
-
-                ldtp.launchapp("%s/usr/bin/packagemanager" % testutils.g_proto_area)
+                ldtp.launchapp("%s/usr/bin/packagemanager" % pkg5unittest.g_proto_area)
 
                 ldtp.selectmenuitem('frmPackageManager', 'mnuAbout')
 
                 # Verify result
                 self.assertEqual(ldtp.guiexist('About Package Manager'), 1)
-                                
+
                 ldtp.waittillguiexist('dlgAboutPackageManager')
                 ldtp.click('dlgAboutPackageManager', 'btnClose')
-                
+
                 # Quit Package Manager
                 ldtp.selectmenuitem('frmPackageManager', 'mnuQuit')
+
+if __name__ == "__main__":
+	unittest.main()

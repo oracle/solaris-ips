@@ -20,8 +20,13 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+
+import testutils
+if __name__ == "__main__":
+        testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import os
 import re
@@ -36,14 +41,9 @@ import pkg.client.history as history
 import pkg.misc as misc
 import pkg.portable as portable
 
-# Set the path so that modules above can be found
-path_to_parent = os.path.join(os.path.dirname(__file__), "..")
-sys.path.insert(0, path_to_parent)
-import pkg5unittest
-
 class TestHistory(pkg5unittest.Pkg5TestCase):
         # This is to prevent setup() being called for each test.
-        persistent_depot = True
+        persistent_setup = True
 
         __scratch_dir = None
 
@@ -67,19 +67,15 @@ class TestHistory(pkg5unittest.Pkg5TestCase):
         def setUp(self):
                 """Prepare the test for execution.
                 """
-                self.__scratch_dir = tempfile.mkdtemp()
+                pkg5unittest.Pkg5TestCase.setUp(self)
+
+                self.__scratch_dir = tempfile.mkdtemp(dir=self.test_root)
                 # Explicitly convert these to strings as they will be
                 # converted by history to deal with minidom issues.
                 self.__userid = str(portable.get_userid())
                 self.__username = str(portable.get_username())
                 self.__h = history.History(root_dir=self.__scratch_dir)
                 self.__h.client_name = "pkg-test"
-
-        def tearDown(self):
-                """Cleanup after the test execution.
-                """
-                if self.__scratch_dir:
-                        shutil.rmtree(self.__scratch_dir, ignore_errors=True)
 
         def test_00_valid_operation(self):
                 """Verify that operation information can be stored and

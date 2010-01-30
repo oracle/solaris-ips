@@ -28,6 +28,7 @@
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import os
 import pkg.catalog as catalog
@@ -40,9 +41,9 @@ import unittest
 import urllib
 from stat import *
 
-class TestPkgInstallBasics(testutils.SingleDepotTestCase):
+class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
-        persistent_depot = True
+        persistent_setup = True
 
         foo10 = """
             open foo@1.0,5.11-0
@@ -51,14 +52,14 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
         foo11 = """
             open foo@1.1,5.11-0
             add dir mode=0755 owner=root group=bin path=/lib
-            add file /tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1 timestamp="20080731T024051Z"
+            add file tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1 timestamp="20080731T024051Z"
             add signature pkg.sig_bit1=sig_bit_val1 pkg.sig_bit2=sig_bit_val2
             close """
         foo11_timestamp = 1217472051
 
         foo12 = """
             open foo@1.2,5.11-0
-            add file /tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
+            add file tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
             close """
 
         afoo10 = """
@@ -77,14 +78,14 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
             open bar@1.0,5.11-0
             add depend type=require fmri=pkg:/foo@1.0
             add dir mode=0755 owner=root group=bin path=/bin
-            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
 
         bar11 = """
             open bar@1.1,5.11-0
             add depend type=require fmri=pkg:/foo@1.2
             add dir mode=0755 owner=root group=bin path=/bin
-            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
 
         xfoo10 = """
@@ -95,14 +96,14 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
             open xbar@1.0,5.11-0
             add depend type=require fmri=pkg:/xfoo@1.0
             add dir mode=0755 owner=root group=bin path=/bin
-            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
 
         xbar11 = """
             open xbar@1.1,5.11-0
             add depend type=require fmri=pkg:/xfoo@1.2
             add dir mode=0755 owner=root group=bin path=/bin
-            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
 
 
@@ -110,35 +111,35 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
             open bar@1.2,5.11-0
             add depend type=require fmri=pkg:/foo@1.0
             add dir mode=0755 owner=root group=bin path=/bin
-            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
 
         baz10 = """
             open baz@1.0,5.11-0
             add depend type=require fmri=pkg:/foo@1.0
             add dir mode=0755 owner=root group=bin path=/bin
-            add file /tmp/baz mode=0555 owner=root group=bin path=/bin/baz
+            add file tmp/baz mode=0555 owner=root group=bin path=/bin/baz
             close """
 
         deep10 = """
             open deep@1.0,5.11-0
             add depend type=require fmri=pkg:/bar@1.0
             add dir mode=0755 owner=root group=bin path=/bin
-            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
 
         xdeep10 = """
             open xdeep@1.0,5.11-0
             add depend type=require fmri=pkg:/xbar@1.0
             add dir mode=0755 owner=root group=bin path=/bin
-            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
 
         ydeep10 = """
             open ydeep@1.0,5.11-0
             add depend type=require fmri=pkg:/ybar@1.0
             add dir mode=0755 owner=root group=bin path=/bin
-            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
 
         a6018_1 = """
@@ -152,22 +153,11 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
             add depend type=optional fmri=a6018@1
             close """
 
-        misc_files = [ "/tmp/libc.so.1", "/tmp/cat", "/tmp/baz" ]
+        misc_files = [ "tmp/libc.so.1", "tmp/cat", "tmp/baz" ]
 
         def setUp(self):
-                testutils.SingleDepotTestCase.setUp(self)
-                for p in self.misc_files:
-                        f = open(p, "w")
-                        # write the name of the file into the file, so that
-                        # all files have differing contents
-                        f.write(p)
-                        f.close
-                        self.debug("wrote %s" % p)
-
-        def tearDown(self):
-                testutils.SingleDepotTestCase.tearDown(self)
-                for p in self.misc_files:
-                        os.remove(p)
+                pkg5unittest.SingleDepotTestCase.setUp(self)
+                self.make_misc_files(self.misc_files)
 
         def test_cli(self):
                 """Test bad cli options"""
@@ -508,7 +498,7 @@ class TestPkgInstallBasics(testutils.SingleDepotTestCase):
                 self.pkg("install --no-refresh foo")
                 self.dc.start()
 
-class TestPkgInstallAmbiguousPatterns(testutils.SingleDepotTestCase):
+class TestPkgInstallAmbiguousPatterns(pkg5unittest.SingleDepotTestCase):
 
         # An "ambiguous" package name pattern is one which, because of the
         # pattern matching rules, might refer to more than one package.  This
@@ -630,9 +620,9 @@ class TestPkgInstallAmbiguousPatterns(testutils.SingleDepotTestCase):
                 # This is now ambiguous, should fail
                 self.pkg("install foo", exit=1)
 
-class TestPkgInstallCircularDependencies(testutils.SingleDepotTestCase):
+class TestPkgInstallCircularDependencies(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
-        persistent_depot = True
+        persistent_setup = True
 
         pkg10 = """
             open pkg1@1.0,5.11-0
@@ -704,9 +694,9 @@ class TestPkgInstallCircularDependencies(testutils.SingleDepotTestCase):
                 self.pkg("verify -v")
 
 
-class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
+class TestPkgInstallUpgrade(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
-        persistent_depot = True
+        persistent_setup = True
 
         incorp10 = """
             open incorp@1.0,5.11-0
@@ -751,12 +741,12 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
             open amber@1.0,5.11-0
             add dir mode=0755 owner=root group=bin path=/lib
             add dir mode=0755 owner=root group=bin path=/etc
-            add file /tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
+            add file tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
             add link path=/lib/libc.symlink target=/lib/libc.so.1
             add hardlink path=/lib/libc.hardlink target=/lib/libc.so.1
-            add file /tmp/amber1 mode=0444 owner=root group=bin path=/etc/amber1
-            add file /tmp/amber2 mode=0444 owner=root group=bin path=/etc/amber2
-            add license /tmp/copyright1 license=copyright
+            add file tmp/amber1 mode=0444 owner=root group=bin path=/etc/amber1
+            add file tmp/amber2 mode=0444 owner=root group=bin path=/etc/amber2
+            add license tmp/copyright1 license=copyright
             close
         """
 
@@ -770,14 +760,14 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
             open bronze@1.0,5.11-0
             add dir mode=0755 owner=root group=bin path=/usr
             add dir mode=0755 owner=root group=bin path=/usr/bin
-            add file /tmp/sh mode=0555 owner=root group=bin path=/usr/bin/sh
+            add file tmp/sh mode=0555 owner=root group=bin path=/usr/bin/sh
             add link path=/usr/bin/jsh target=./sh
             add hardlink path=/lib/libc.bronze target=/lib/libc.so.1
-            add file /tmp/bronze1 mode=0444 owner=root group=bin path=/etc/bronze1
-            add file /tmp/bronze2 mode=0444 owner=root group=bin path=/etc/bronze2
-            add file /tmp/bronzeA1 mode=0444 owner=root group=bin path=/A/B/C/D/E/F/bronzeA1
+            add file tmp/bronze1 mode=0444 owner=root group=bin path=/etc/bronze1
+            add file tmp/bronze2 mode=0444 owner=root group=bin path=/etc/bronze2
+            add file tmp/bronzeA1 mode=0444 owner=root group=bin path=/A/B/C/D/E/F/bronzeA1
             add depend fmri=pkg:/amber@1.0 type=require
-            add license /tmp/copyright2 license=copyright
+            add license tmp/copyright2 license=copyright
             close
         """
 
@@ -785,14 +775,14 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
             open amber@2.0,5.11-0
             add dir mode=0755 owner=root group=bin path=/usr
             add dir mode=0755 owner=root group=bin path=/usr/bin
-            add file /tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
+            add file tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
             add link path=/lib/libc.symlink target=/lib/libc.so.1
             add hardlink path=/lib/libc.amber target=/lib/libc.bronze
             add hardlink path=/lib/libc.hardlink target=/lib/libc.so.1
-            add file /tmp/amber1 mode=0444 owner=root group=bin path=/etc/amber1
-            add file /tmp/amber2 mode=0444 owner=root group=bin path=/etc/bronze2
+            add file tmp/amber1 mode=0444 owner=root group=bin path=/etc/amber1
+            add file tmp/amber2 mode=0444 owner=root group=bin path=/etc/bronze2
             add depend fmri=pkg:/bronze@2.0 type=require
-            add license /tmp/copyright2 license=copyright
+            add license tmp/copyright2 license=copyright
             close
         """
 
@@ -800,14 +790,14 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
             open bronze@2.0,5.11-0
             add dir mode=0755 owner=root group=bin path=/etc
             add dir mode=0755 owner=root group=bin path=/lib
-            add file /tmp/sh mode=0555 owner=root group=bin path=/usr/bin/sh
-            add file /tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.bronze
+            add file tmp/sh mode=0555 owner=root group=bin path=/usr/bin/sh
+            add file tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.bronze
             add link path=/usr/bin/jsh target=./sh
             add hardlink path=/lib/libc.bronze2.0.hardlink target=/lib/libc.so.1
-            add file /tmp/bronze1 mode=0444 owner=root group=bin path=/etc/bronze1
-            add file /tmp/bronze2 mode=0444 owner=root group=bin path=/etc/amber2
-            add license /tmp/copyright3 license=copyright
-            add file /tmp/bronzeA2 mode=0444 owner=root group=bin path=/A1/B2/C3/D4/E5/F6/bronzeA2
+            add file tmp/bronze1 mode=0444 owner=root group=bin path=/etc/bronze1
+            add file tmp/bronze2 mode=0444 owner=root group=bin path=/etc/amber2
+            add license tmp/copyright3 license=copyright
+            add file tmp/bronzeA2 mode=0444 owner=root group=bin path=/A1/B2/C3/D4/E5/F6/bronzeA2
             add depend fmri=pkg:/amber@2.0 type=require
             close
         """
@@ -816,14 +806,14 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
             open bronze@3.0,5.11-0
             add dir mode=0755 owner=root group=bin path=/etc
             add dir mode=0755 owner=root group=bin path=/lib
-            add file /tmp/sh mode=0555 owner=root group=bin path=/usr/bin/sh
-            add file /tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.bronze
+            add file tmp/sh mode=0555 owner=root group=bin path=/usr/bin/sh
+            add file tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.bronze
             add link path=/usr/bin/jsh target=./sh
             add hardlink path=/lib/libc.bronze2.0.hardlink target=/lib/libc.so.1
-            add file /tmp/bronze1 mode=0444 owner=root group=bin path=/etc/bronze1
-            add file /tmp/bronze2 mode=0444 owner=root group=bin path=/etc/amber2
-            add license /tmp/copyright3 license=copyright
-            add file /tmp/bronzeA2 mode=0444 owner=root group=bin path=/A1/B2/C3/D4/E5/F6/bronzeA2
+            add file tmp/bronze1 mode=0444 owner=root group=bin path=/etc/bronze1
+            add file tmp/bronze2 mode=0444 owner=root group=bin path=/etc/amber2
+            add license tmp/copyright3 license=copyright
+            add file tmp/bronzeA2 mode=0444 owner=root group=bin path=/A1/B2/C3/D4/E5/F6/bronzeA2
             add depend fmri=pkg:/amber@2.0 type=require
             close
         """
@@ -831,18 +821,18 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
 
         gold10 = """
             open gold@1.0,5.11-0
-            add file /tmp/gold-passwd1 mode=0644 owner=root group=bin path=etc/passwd preserve=true
-            add file /tmp/gold-group mode=0644 owner=root group=bin path=etc/group preserve=true
-            add file /tmp/gold-shadow mode=0600 owner=root group=bin path=etc/shadow preserve=true
-            add file /tmp/gold-ftpusers mode=0644 owner=root group=bin path=etc/ftpd/ftpusers preserve=true
-            add file /tmp/gold-silly mode=0644 owner=root group=bin path=etc/silly
-            add file /tmp/gold-silly mode=0644 owner=root group=bin path=etc/silly2
+            add file tmp/gold-passwd1 mode=0644 owner=root group=bin path=etc/passwd preserve=true
+            add file tmp/gold-group mode=0644 owner=root group=bin path=etc/group preserve=true
+            add file tmp/gold-shadow mode=0600 owner=root group=bin path=etc/shadow preserve=true
+            add file tmp/gold-ftpusers mode=0644 owner=root group=bin path=etc/ftpd/ftpusers preserve=true
+            add file tmp/gold-silly mode=0644 owner=root group=bin path=etc/silly
+            add file tmp/gold-silly mode=0644 owner=root group=bin path=etc/silly2
             close
         """
 
         gold20 = """
             open gold@2.0,5.11-0
-            add file /tmp/config2 mode=0644 owner=root group=bin path=etc/config2 original_name="gold:etc/passwd" preserve=true
+            add file tmp/config2 mode=0644 owner=root group=bin path=etc/config2 original_name="gold:etc/passwd" preserve=true
             close
         """
 
@@ -869,17 +859,17 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
 
         silver20  = """
             open silver@2.0,5.11-0
-            add file /tmp/gold-passwd2 mode=0644 owner=root group=bin path=etc/passwd original_name="gold:etc/passwd" preserve=true
-            add file /tmp/gold-group mode=0644 owner=root group=bin path=etc/group original_name="gold:etc/group" preserve=true
-            add file /tmp/gold-shadow mode=0600 owner=root group=bin path=etc/shadow original_name="gold:etc/shadow" preserve=true
-            add file /tmp/gold-ftpusers mode=0644 owner=root group=bin path=etc/ftpd/ftpusers original_name="gold:etc/ftpd/ftpusers" preserve=true
-            add file /tmp/gold-silly mode=0644 owner=root group=bin path=etc/silly
-            add file /tmp/silver-silly mode=0644 owner=root group=bin path=etc/silly2
+            add file tmp/gold-passwd2 mode=0644 owner=root group=bin path=etc/passwd original_name="gold:etc/passwd" preserve=true
+            add file tmp/gold-group mode=0644 owner=root group=bin path=etc/group original_name="gold:etc/group" preserve=true
+            add file tmp/gold-shadow mode=0600 owner=root group=bin path=etc/shadow original_name="gold:etc/shadow" preserve=true
+            add file tmp/gold-ftpusers mode=0644 owner=root group=bin path=etc/ftpd/ftpusers original_name="gold:etc/ftpd/ftpusers" preserve=true
+            add file tmp/gold-silly mode=0644 owner=root group=bin path=etc/silly
+            add file tmp/silver-silly mode=0644 owner=root group=bin path=etc/silly2
             close
         """
         silver30  = """
             open silver@3.0,5.11-0
-            add file /tmp/config2 mode=0644 owner=root group=bin path=etc/config2 original_name="gold:etc/passwd" preserve=true
+            add file tmp/config2 mode=0644 owner=root group=bin path=etc/config2 original_name="gold:etc/passwd" preserve=true
             close
         """
 
@@ -893,14 +883,14 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
         iron10 = """
             open iron@1.0,5.11-0
             add dir mode=0755 owner=root group=bin path=etc
-            add file /tmp/config1 mode=0644 owner=root group=bin path=etc/foo
+            add file tmp/config1 mode=0644 owner=root group=bin path=etc/foo
             add hardlink path=etc/foo.link target=foo
             close
         """
         iron20 = """
             open iron@2.0,5.11-0
             add dir mode=0755 owner=root group=bin path=etc
-            add file /tmp/config2 mode=0644 owner=root group=bin path=etc/foo
+            add file tmp/config2 mode=0644 owner=root group=bin path=etc/foo
             add hardlink path=etc/foo.link target=foo
             close
         """
@@ -916,8 +906,8 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
             open dricon@1
             add dir path=/tmp mode=755 owner=root group=root
             add dir path=/etc mode=755 owner=root group=root
-            add file /tmp/dricon_da path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
-            add file /tmp/dricon_n2m path=/etc/name_to_major mode=644 owner=root group=sys preserve=true
+            add file tmp/dricon_da path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
+            add file tmp/dricon_n2m path=/etc/name_to_major mode=644 owner=root group=sys preserve=true
             close
         """
 
@@ -925,8 +915,8 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
             open dricon@2
             add dir path=/tmp mode=755 owner=root group=root
             add dir path=/etc mode=755 owner=root group=root
-            add file /tmp/dricon2_da path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
-            add file /tmp/dricon_n2m path=/etc/name_to_major mode=644 owner=root group=sys preserve=true
+            add file tmp/dricon2_da path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
+            add file tmp/dricon_n2m path=/etc/name_to_major mode=644 owner=root group=sys preserve=true
             add driver name=zigit alias=pci8086,1234
             close
         """
@@ -935,8 +925,8 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
             open dricon@3
             add dir path=/tmp mode=755 owner=root group=root
             add dir path=/etc mode=755 owner=root group=root
-            add file /tmp/dricon2_da path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
-            add file /tmp/dricon_n2m path=/etc/name_to_major mode=644 owner=root group=sys preserve=true
+            add file tmp/dricon2_da path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
+            add file tmp/dricon_n2m path=/etc/name_to_major mode=644 owner=root group=sys preserve=true
             add driver name=zigit alias=pci8086,1234
             add driver name=figit alias=pci8086,1234
             close
@@ -947,9 +937,9 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
             add dir path=/tmp mode=755 owner=root group=root
             add dir path=/etc mode=755 owner=root group=root
             add dir path=/etc/security mode=755 owner=root group=root
-            add file /tmp/dricon2_da path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
-            add file /tmp/dricon_n2m path=/etc/name_to_major mode=644 owner=root group=sys preserve=true
-            add file /tmp/dripol1_dp path=/etc/security/device_policy mode=644 owner=root group=sys preserve=true
+            add file tmp/dricon2_da path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
+            add file tmp/dricon_n2m path=/etc/name_to_major mode=644 owner=root group=sys preserve=true
+            add file tmp/dripol1_dp path=/etc/security/device_policy mode=644 owner=root group=sys preserve=true
             add driver name=frigit policy="read_priv_set=net_rawaccess write_priv_set=net_rawaccess"
             close
         """
@@ -959,9 +949,9 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
             add dir path=/tmp mode=755 owner=root group=root
             add dir path=/etc mode=755 owner=root group=root
             add dir path=/etc/security mode=755 owner=root group=root
-            add file /tmp/dricon2_da path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
-            add file /tmp/dricon_n2m path=/etc/name_to_major mode=644 owner=root group=sys preserve=true
-            add file /tmp/dripol1_dp path=/etc/security/device_policy mode=644 owner=root group=sys preserve=true
+            add file tmp/dricon2_da path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
+            add file tmp/dricon_n2m path=/etc/name_to_major mode=644 owner=root group=sys preserve=true
+            add file tmp/dripol1_dp path=/etc/security/device_policy mode=644 owner=root group=sys preserve=true
             add driver name=frigit
             close
         """
@@ -969,57 +959,57 @@ class TestPkgInstallUpgrade(testutils.SingleDepotTestCase):
 	liveroot10 = """
             open liveroot@1.0
             add dir path=/etc mode=755 owner=root group=root
-            add file /tmp/liveroot1 path=/etc/liveroot mode=644 owner=root group=sys reboot-needed=true
+            add file tmp/liveroot1 path=/etc/liveroot mode=644 owner=root group=sys reboot-needed=true
             close
         """
 	liveroot20 = """
             open liveroot@2.0
             add dir path=/etc mode=755 owner=root group=root
-            add file /tmp/liveroot2 path=/etc/liveroot mode=644 owner=root group=sys reboot-needed=true
+            add file tmp/liveroot2 path=/etc/liveroot mode=644 owner=root group=sys reboot-needed=true
+            add file tmp/liveroot2 path=/etc/liveroot mode=644 owner=root group=sys reboot-needed=true
             close
         """
 
-        misc_files = [
-            "/tmp/amber1", "/tmp/amber2", "/tmp/bronzeA1",  "/tmp/bronzeA2",
-            "/tmp/bronze1", "/tmp/bronze2",
-            "/tmp/copyright1", "/tmp/copyright2",
-            "/tmp/copyright3", "/tmp/copyright4",
-            "/tmp/libc.so.1", "/tmp/sh", "/tmp/config1", "/tmp/config2",
-            "/tmp/gold-passwd1", "/tmp/gold-passwd2", "/tmp/gold-group",
-            "/tmp/gold-shadow", "/tmp/gold-ftpusers", "/tmp/gold-silly",
-            "/tmp/silver-silly",
-            "/tmp/dricon_da", "/tmp/dricon2_da", "/tmp/dricon_n2m",
-            "/tmp/dripol1_dp", "/tmp/liveroot1", "/tmp/liveroot2"
+        misc_files1 = [
+            "tmp/amber1", "tmp/amber2", "tmp/bronzeA1",  "tmp/bronzeA2",
+            "tmp/bronze1", "tmp/bronze2",
+            "tmp/copyright1", "tmp/copyright2",
+            "tmp/copyright3", "tmp/copyright4",
+            "tmp/libc.so.1", "tmp/sh", "tmp/config1", "tmp/config2",
+            "tmp/gold-passwd1", "tmp/gold-passwd2", "tmp/gold-group",
+            "tmp/gold-shadow", "tmp/gold-ftpusers", "tmp/gold-silly",
+            "tmp/silver-silly",
+            "tmp/liveroot1", "tmp/liveroot2"
         ]
 
-        misc_files_contents = {
-            "/tmp/dricon_da": """\
+        misc_files2 = {
+            "tmp/dricon_da": """\
 wigit "pci8086,1234"
 wigit "pci8086,4321"
 # someother "pci8086,1234"
 foobar "pci8086,9999"
 """,
-            "/tmp/dricon2_da": """\
+            "tmp/dricon2_da": """\
 zigit "pci8086,1234"
 wigit "pci8086,4321"
 # someother "pci8086,1234"
 foobar "pci8086,9999"
 """,
-            "/tmp/dricon_n2m": """\
+            "tmp/dricon_n2m": """\
 wigit 1
 foobar 2
 """,
-            "/tmp/dripol1_dp": """\
+            "tmp/dripol1_dp": """\
 *		read_priv_set=none		write_priv_set=none
 """,
-            "/tmp/gold-passwd1": """\
+            "tmp/gold-passwd1": """\
 root:x:0:0::/root:/usr/bin/bash
 daemon:x:1:1::/:
 bin:x:2:2::/usr/bin:
 sys:x:3:3::/:
 adm:x:4:4:Admin:/var/adm:
 """,
-            "/tmp/gold-passwd2": """\
+            "tmp/gold-passwd2": """\
 root:x:0:0::/root:/usr/bin/bash
 daemon:x:1:1::/:
 bin:x:2:2::/usr/bin:
@@ -1027,21 +1017,21 @@ sys:x:3:3::/:
 adm:x:4:4:Admin:/var/adm:
 bogus:x:10001:10001:Bogus User:/:
 """,
-            "/tmp/gold-group": """\
+            "tmp/gold-group": """\
 root::0:
 other::1:root
 bin::2:root,daemon
 sys::3:root,bin,adm
 adm::4:root,daemon
 """,
-            "/tmp/gold-shadow": """\
+            "tmp/gold-shadow": """\
 root:9EIfTNBp9elws:13817::::::
 daemon:NP:6445::::::
 bin:NP:6445::::::
 sys:NP:6445::::::
 adm:NP:6445::::::
 """,
-            "/tmp/gold-ftpusers": """\
+            "tmp/gold-ftpusers": """\
 root
 bin
 sys
@@ -1062,20 +1052,9 @@ adm
 
 
         def setUp(self):
-                testutils.SingleDepotTestCase.setUp(self)
-                for p in self.misc_files:
-                        f = open(p, "w")
-                        # If no contents are specified, write the name of the
-                        # file into the file, so that all files have differing
-                        # contents
-                        f.write(self.misc_files_contents.get(p, p))
-                        f.close()
-                        self.debug("wrote %s" % p)
-
-        def tearDown(self):
-                testutils.SingleDepotTestCase.tearDown(self)
-                for p in self.misc_files:
-                        os.remove(p)
+                pkg5unittest.SingleDepotTestCase.setUp(self)
+                self.make_misc_files(self.misc_files1)
+                self.make_misc_files(self.misc_files2)
 
         def test_incorp_install(self):
                 """Make sure we don't round up packages we specify on
@@ -1420,11 +1399,12 @@ adm
                         self.assert_(False, "File %s does not contain %s" % (path, string))
 
 
-class TestPkgInstallActions(testutils.SingleDepotTestCase):
+class TestPkgInstallActions(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
-        persistent_depot = True
+        persistent_setup = True
 
-        ftpusers_data = \
+        misc_files = {
+                "ftpusers" :
 """# ident      "@(#)ftpusers   1.6     06/11/21 SMI"
 #
 # List of users denied access to the FTP server, see ftpusers(4).
@@ -1433,30 +1413,32 @@ root
 bin
 sys
 adm
-"""
-        group_data = \
+""",
+                "group" :
 """root::0:
 other::1:root
 bin::2:root,daemon
 sys::3:root,bin,adm
 adm::4:root,daemon
-"""
-        passwd_data = \
+""",
+                "passwd" :
 """root:x:0:0::/root:/usr/bin/bash
 daemon:x:1:1::/:
 bin:x:2:2::/usr/bin:
 sys:x:3:3::/:
 adm:x:4:4:Admin:/var/adm:
-"""
-        shadow_data = \
+""",
+                "shadow" :
 """root:9EIfTNBp9elws:13817::::::
 daemon:NP:6445::::::
 bin:NP:6445::::::
 sys:NP:6445::::::
 adm:NP:6445::::::
-"""
+""",
+                "cat" : " ",
+                "empty" : ""
+        }
 
-        cat_data = " "
 
         foo10 = """
             open foo@1.0,5.11-0
@@ -1517,45 +1499,37 @@ adm:NP:6445::::::
             add dir mode=0755 owner=Kermit group=adm path=/export/home/Kermit
             close """
 
-        empty_data = ""
-
-        misc_files = [ "empty", "ftpusers", "group", "passwd", "shadow", "cat" ]
-
-        testdata_dir = None
-
+        # some of these are subsets-- "always" and "at-end"-- for performance;
+        # we assume that e.g. if a and z work, that bcdef, etc. will too.
         pkg_name_valid_chars = {
             "never": " `~!@#$%^&*()=[{]}\\|;:\",<>?",
-            "always": "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+            "always": "09azAZ",
             "after-first": "_/-.+",
-            "at-end": "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-.+",
+            "at-end": "09azAZ_-.+",
         }
 
         def setUp(self):
 
-                testutils.SingleDepotTestCase.setUp(self)
-                tp = self.get_test_prefix()
-                self.testdata_dir = os.path.join(tp, "testdata")
-                os.mkdir(self.testdata_dir)
-
+                pkg5unittest.SingleDepotTestCase.setUp(self)
 
                 self.only_file10 = """
                     open only_file@1.0,5.11-0
-                    add file """ + self.testdata_dir + """/cat mode=0555 owner=root group=bin path=/cat
+                    add file cat mode=0555 owner=root group=bin path=/cat
                     close """
 
                 self.only_license10 = """
                     open only_license@1.0,5.11-0
-                    add license """ + self.testdata_dir + """/cat license=copyright
+                    add license cat license=copyright
                     close """
 
                 self.basics0 = """
                     open basics@1.0,5.11-0
-                    add file """ + self.testdata_dir + """/passwd mode=0644 owner=root group=sys path=etc/passwd preserve=true
-                    add file """ + self.testdata_dir + """/shadow mode=0400 owner=root group=sys path=etc/shadow preserve=true
-                    add file """ + self.testdata_dir + """/group mode=0644 owner=root group=sys path=etc/group preserve=true
-                    add file """ + self.testdata_dir + """/ftpusers mode=0644 owner=root group=sys path=etc/ftpd/ftpusers preserve=true
-                    add file """ + self.testdata_dir + """/empty mode=0644 owner=root group=sys path=etc/name_to_major preserve=true
-                    add file """ + self.testdata_dir + """/empty mode=0644 owner=root group=sys path=etc/driver_aliases preserve=true
+                    add file passwd mode=0644 owner=root group=sys path=etc/passwd preserve=true
+                    add file shadow mode=0400 owner=root group=sys path=etc/shadow preserve=true
+                    add file group mode=0644 owner=root group=sys path=etc/group preserve=true
+                    add file ftpusers mode=0644 owner=root group=sys path=etc/ftpd/ftpusers preserve=true
+                    add file empty mode=0644 owner=root group=sys path=etc/name_to_major preserve=true
+                    add file empty mode=0644 owner=root group=sys path=etc/driver_aliases preserve=true
                     add dir mode=0755 owner=root group=sys path=etc
                     add dir mode=0755 owner=root group=sys path=etc/ftpd
                     close """
@@ -1573,7 +1547,7 @@ adm:NP:6445::::::
                 self.grouptest = """
                     open grouptest@1.0,5.11-0
                     add dir mode=0755 owner=root group=Kermit path=/usr/Kermit
-                    add file """ + self.testdata_dir + """/empty mode=0755 owner=root group=Kermit path=/usr/local/bin/do_group_nothing
+                    add file empty mode=0755 owner=root group=Kermit path=/usr/local/bin/do_group_nothing
                     add group groupname=lp gid=8
                     add group groupname=staff gid=10
                     add group groupname=Kermit
@@ -1583,7 +1557,7 @@ adm:NP:6445::::::
                 self.usertest10 = """
                     open usertest@1.0,5.11-0
                     add dir mode=0755 owner=Kermit group=Kermit path=/export/home/Kermit
-                    add file """ + self.testdata_dir + """/empty mode=0755 owner=Kermit group=Kermit path=/usr/local/bin/do_user_nothing
+                    add file empty mode=0755 owner=Kermit group=Kermit path=/usr/local/bin/do_user_nothing
                     add depend fmri=pkg:/basics@1.0 type=require
                     add user username=Kermit group=Kermit home-dir=/export/home/Kermit group-list=lp group-list=staff
                     add depend fmri=pkg:/grouptest@1.0 type=require
@@ -1593,7 +1567,7 @@ adm:NP:6445::::::
                 self.usertest11 = """
                     open usertest@1.1,5.11-0
                     add dir mode=0755 owner=Kermit group=Kermit path=/export/home/Kermit
-                    add file """ + self.testdata_dir + """/empty mode=0755 owner=Kermit group=Kermit path=/usr/local/bin/do_user_nothing
+                    add file empty mode=0755 owner=Kermit group=Kermit path=/usr/local/bin/do_user_nothing
                     add depend fmri=pkg:/basics@1.0 type=require
                     add user username=Kermit group=Kermit home-dir=/export/home/Kermit2 group-list=lp group-list=staff group-list=root ftpuser=false
                     add depend fmri=pkg:/grouptest@1.0 type=require
@@ -1608,13 +1582,13 @@ adm:NP:6445::::::
 
                 self.silver10 = """
                     open silver@1.0,5.11-0
-                    add file """ + self.testdata_dir + """/empty mode=0755 owner=root group=root path=/usr/local/bin/silver
+                    add file empty mode=0755 owner=root group=root path=/usr/local/bin/silver
                     add depend fmri=pkg:/basics@1.0 type=require
                     add depend fmri=pkg:/basics1@1.0 type=require
                     close """
                 self.silver20 = """
                     open silver@2.0,5.11-0
-                    add file """ + self.testdata_dir + """/empty mode=0755 owner=Kermit group=Kermit path=/usr/local/bin/silver
+                    add file empty mode=0755 owner=Kermit group=Kermit path=/usr/local/bin/silver
                     add user username=Kermit group=Kermit home-dir=/export/home/Kermit group-list=lp group-list=staff
                     add depend fmri=pkg:/basics@1.0 type=require
                     add depend fmri=pkg:/basics1@1.0 type=require
@@ -1626,13 +1600,13 @@ adm:NP:6445::::::
                     add dir mode=0755 owner=root group=root path=/tmp
                     add dir mode=0755 owner=root group=root path=/etc
                     add dir mode=0755 owner=root group=root path=/etc/security
-                    add file """ + self.testdata_dir + """/empty mode=0600 owner=root group=root path=/etc/devlink.tab preserve=true
-                    add file """ + self.testdata_dir + """/empty mode=0644 owner=root group=sys path=/etc/name_to_major preserve=true
-                    add file """ + self.testdata_dir + """/empty mode=0644 owner=root group=sys path=/etc/driver_aliases preserve=true
-                    add file """ + self.testdata_dir + """/empty mode=0644 owner=root group=sys path=/etc/driver_classes preserve=true
-                    add file """ + self.testdata_dir + """/empty mode=0644 owner=root group=sys path=/etc/minor_perm preserve=true
-                    add file """ + self.testdata_dir + """/empty mode=0644 owner=root group=root path=/etc/security/device_policy preserve=true
-                    add file """ + self.testdata_dir + """/empty mode=0644 owner=root group=sys path=/etc/security/extra_privs preserve=true
+                    add file empty mode=0600 owner=root group=root path=/etc/devlink.tab preserve=true
+                    add file empty mode=0644 owner=root group=sys path=/etc/name_to_major preserve=true
+                    add file empty mode=0644 owner=root group=sys path=/etc/driver_aliases preserve=true
+                    add file empty mode=0644 owner=root group=sys path=/etc/driver_classes preserve=true
+                    add file empty mode=0644 owner=root group=sys path=/etc/minor_perm preserve=true
+                    add file empty mode=0644 owner=root group=root path=/etc/security/device_policy preserve=true
+                    add file empty mode=0644 owner=root group=sys path=/etc/security/extra_privs preserve=true
                     close
                 """
 
@@ -1660,7 +1634,7 @@ adm:NP:6445::::::
 
                 self.badhardlink2 = """
                     open badhardlink2@1.0,5.11-0
-                    add file """ + self.testdata_dir + """/cat mode=0555 owner=root group=bin path=/etc/motd
+                    add file cat mode=0555 owner=root group=bin path=/etc/motd
                     add hardlink path=foo target=/etc/motd
                     close
                 """
@@ -1672,18 +1646,7 @@ adm:NP:6445::::::
                     close
                 """
 
-                for f in self.misc_files:
-                        filename = os.path.join(self.testdata_dir, f)
-                        file_handle = open(filename, 'wb')
-                        try:
-                                file_handle.write(eval("self.%s_data" % f))
-                        finally:
-                                file_handle.close()
-
-        def tearDown(self):
-                testutils.SingleDepotTestCase.tearDown(self)
-                if self.testdata_dir:
-                        shutil.rmtree(self.testdata_dir)
+                self.make_misc_files(self.misc_files)
 
         def test_basics_0(self):
                 """Send basic infrastructure, install and uninstall."""
@@ -1933,30 +1896,22 @@ adm:NP:6445::::::
                 unused."""
 
                 durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.basics0)
                 self.pkgsend_bulk(durl, self.ugidtest)
                 self.image_create(durl)
 
-                os.mkdir(os.path.join(self.get_img_path(), "etc"))
-                os.mkdir(os.path.join(self.get_img_path(), "etc/ftpd"))
-                for f in self.misc_files:
-                        dir = "etc"
-                        if f == "ftpusers":
-                                dir = "etc/ftpd"
-                        filename = os.path.join(self.get_img_path(), dir, f)
-                        file_handle = open(filename, 'wb')
-                        exec("%s_path = \"%s\"" % (f, filename))
-                        try:
-                                file_handle.write(eval("self.%s_data" % f))
-                        finally:
-                                file_handle.close()
+                # This will lay down the sample passwd file, group file, etc.
+                self.pkg("install basics")
 
                 self.pkg("install ugidtest")
-                passwd_file = file(passwd_path)
+                passwd_file = file(os.path.join(self.get_img_path(),
+                    "/etc/passwd"))
                 for line in passwd_file:
                         if line.startswith("dummy"):
                                 self.assert_(line.startswith("dummy:x:5:"))
                 passwd_file.close()
-                group_file = file(group_path)
+                group_file = file(os.path.join(self.get_img_path(),
+                    "/etc/group"))
                 for line in group_file:
                         if line.startswith("dummy"):
                                 self.assert_(line.startswith("dummy::5:"))
@@ -1982,7 +1937,7 @@ adm:NP:6445::::::
                 self.pkg("verify -v")
 
         def test_invalid_open(self):
-                """Send a invalid package definition (invalid fmri); expect
+                """Send invalid package definitions (invalid fmris); expect
                 failure."""
 
                 durl = self.dc.get_depot_url()
@@ -2004,8 +1959,7 @@ adm:NP:6445::::::
                         self.pkgsend(durl, cmd, exit=1)
 
         def test_valid_open(self):
-                """Send a invalid package definition (valid fmri); expect
-                success."""
+                """Send a series of valid packages; expect success."""
 
                 durl = self.dc.get_depot_url()
                 for char in self.pkg_name_valid_chars["always"]:
@@ -2291,9 +2245,9 @@ adm:NP:6445::::::
 
                 self.pkg("install dirshouldbelink", exit=1)
 
-class TestDependencies(testutils.SingleDepotTestCase):
+class TestDependencies(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
-        persistent_depot = True
+        persistent_setup = True
 
         pkg10 = """
             open pkg1@1.0,5.11-0
@@ -2445,7 +2399,7 @@ class TestDependencies(testutils.SingleDepotTestCase):
 
 
         def setUp(self):
-                testutils.SingleDepotTestCase.setUp(self)
+                pkg5unittest.SingleDepotTestCase.setUp(self)
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.pkg10)
                 self.pkgsend_bulk(durl, self.pkg20)
@@ -2567,9 +2521,9 @@ class TestDependencies(testutils.SingleDepotTestCase):
                 self.pkg("install bug_7394_incorp")
                 self.pkg("install pkg1", exit=1)
 
-class TestMultipleDepots(testutils.ManyDepotTestCase):
+class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
-        persistent_depot = True
+        persistent_setup = True
 
         foo10 = """
             open foo@1.0,5.11-0
@@ -2647,7 +2601,7 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
                     depot4 is not mapped during setUp"""
 
                 # Two depots are intentionally started for test2.
-                testutils.ManyDepotTestCase.setUp(self, ["test1", "test2",
+                pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2",
                     "test3", "test2", "test4"])
 
                 durl1 = self.dcs[1].get_depot_url()
@@ -2672,9 +2626,6 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
 
                 # Create second publisher using depot #2
                 self.pkg("set-publisher -O " + durl2 + " test2")
-
-        def tearDown(self):
-                testutils.ManyDepotTestCase.tearDown(self)
 
         def test_01_basics(self):
                 self.pkg("list -a")
@@ -3061,14 +3012,14 @@ class TestMultipleDepots(testutils.ManyDepotTestCase):
                 self.pkg("publisher")
                 self.pkg("install baz@1.0", exit=1)
        
-class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
+class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
         """
         If a new essential directory is added to the format of an image it will
         be necessary to update this test suite. To update this test suite,
         decide in what ways it is necessary to corrupt the image (removing the
         new directory or file, or removing the some or all of contents of the
         new directory for example). Make the necessary changes in
-        testutils.SingleDepotTestCaseCorruptImage to allow the needed
+        pkg5unittest.SingleDepotTestCaseCorruptImage to allow the needed
         corruptions, then add new tests to the suite below. Be sure to add
         tests for both Full and User images, and perhaps Partial images if
         situations are found where these behave differently than Full or User
@@ -3076,35 +3027,24 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
         """
 
         # Only start/stop the depot once (instead of for every test)
-        persistent_depot = True
+        persistent_setup = True
 
         foo11 = """
             open foo@1.1,5.11-0
             add dir mode=0755 owner=root group=bin path=/lib
-            add file /tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
+            add file tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
             close """
 
-        misc_files = [ "/tmp/libc.so.1" ]
+        misc_files = [ "tmp/libc.so.1" ]
 
         PREFIX = "unset PKG_IMAGE; cd %s"
 
         def setUp(self):
-                testutils.SingleDepotTestCaseCorruptImage.setUp(self)
-                for p in self.misc_files:
-                        f = open(p, "w")
-                        # write the name of the file into the file, so that
-                        # all files have differing contents
-                        f.write(p)
-                        f.close()
-                        self.debug("wrote %s" % p)
-
-        def tearDown(self):
-                testutils.SingleDepotTestCaseCorruptImage.tearDown(self)
-                for p in self.misc_files:
-                        os.remove(p)
+                pkg5unittest.SingleDepotTestCaseCorruptImage.setUp(self)
+                self.make_misc_files(self.misc_files)
 
         def pkg(self, command, exit=0, comment=""):
-                testutils.SingleDepotTestCaseCorruptImage.pkg(self, command,
+                pkg5unittest.SingleDepotTestCaseCorruptImage.pkg(self, command,
                     exit=exit, comment=comment, prefix=self.PREFIX % self.dir)
 
         # For each test:
@@ -3427,11 +3367,10 @@ class TestImageCreateCorruptImage(testutils.SingleDepotTestCaseCorruptImage):
                 self.pkg("install foo@1.1")
 
 
-class TestPkgInstallObsolete(testutils.SingleDepotTestCase):
+class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
         """Test cases for obsolete packages."""
 
-        persistent_depot = True
-
+        persistent_setup = True
         def test_basic(self):
                 foo1 = """
                     open foo@1
@@ -4187,7 +4126,7 @@ class TestPkgInstallObsolete(testutils.SingleDepotTestCase):
                 self.pkg("list inc2p2", exit=1)
 
 
-class TestPkgInstallMultiObsolete(testutils.ManyDepotTestCase):
+class TestPkgInstallMultiObsolete(pkg5unittest.ManyDepotTestCase):
         """Tests involving obsolete packages and multiple publishers."""
 
         obs = """
@@ -4201,10 +4140,10 @@ class TestPkgInstallMultiObsolete(testutils.ManyDepotTestCase):
             close
         """
 
-        persistent_depot = True
+        persistent_setup = True
 
         def setUp(self):
-                testutils.ManyDepotTestCase.setUp(self, ["test1", "test2"])
+                pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2"])
 
         def test_01(self):
                 """If an obsolete package is found in a preferred publisher and
@@ -4252,7 +4191,7 @@ class TestPkgInstallMultiObsolete(testutils.ManyDepotTestCase):
                 self.pkg("install stem", exit=1)
 
 
-class TestPkgInstallLicense(testutils.SingleDepotTestCase):
+class TestPkgInstallLicense(pkg5unittest.SingleDepotTestCase):
         """Tests involving one or more packages that require license acceptance
         or display."""
 
@@ -4260,14 +4199,14 @@ class TestPkgInstallLicense(testutils.SingleDepotTestCase):
 
         baz10 = """
             open baz@1.0,5.11-0
-            add license $test_prefix/copyright.baz license=copyright.baz
+            add license copyright.baz license=copyright.baz
             close """
 
         # First iteration has just a copyright.
         licensed10 = """
             open licensed@1.0,5.11-0
             add depend type=require fmri=baz@1.0
-            add license $test_prefix/copyright.licensed license=copyright.licensed
+            add license copyright.licensed license=copyright.licensed
             close """
 
         # Second iteration has copyright that must-display and a new license
@@ -4275,39 +4214,26 @@ class TestPkgInstallLicense(testutils.SingleDepotTestCase):
         licensed12 = """
             open licensed@1.2,5.11-0
             add depend type=require fmri=baz@1.0
-            add file $test_prefix/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
-            add license $test_prefix/copyright.licensed license=copyright.licensed must-display=True
-            add license $test_prefix/license.licensed license=license.licensed
+            add file libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
+            add license copyright.licensed license=copyright.licensed must-display=True
+            add license license.licensed license=license.licensed
             close """
 
         # Third iteration now requires acceptance of license.
         licensed13 = """
             open licensed@1.3,5.11-0
             add depend type=require fmri=baz@1.0
-            add file $test_prefix/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
-            add license $test_prefix/copyright.licensed license=copyright.licensed must-display=True
-            add license $test_prefix/license.licensed license=license.licensed must-accept=True
+            add file libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
+            add license copyright.licensed license=copyright.licensed must-display=True
+            add license license.licensed license=license.licensed must-accept=True
             close """
 
         misc_files = ["copyright.baz", "copyright.licensed", "libc.so.1",
             "license.licensed", "license.licensed.addendum"]
 
         def setUp(self):
-                testutils.SingleDepotTestCase.setUp(self, publisher="bobcat")
-
-                for p in ("baz10", "licensed10", "licensed12", "licensed13"):
-                        val = getattr(self, p).replace("$test_prefix",
-                            self.get_test_prefix())
-                        setattr(self, p, val)
-
-                for p in self.misc_files:
-                        fpath = os.path.join(self.get_test_prefix(), p)
-                        f = open(fpath, "wb")
-                        # write the name of the file into the file, so that
-                        # all files have differing contents
-                        f.write(fpath)
-                        f.close()
-                        self.debug("wrote %s" % fpath)
+                pkg5unittest.SingleDepotTestCase.setUp(self, publisher="bobcat")
+                self.make_misc_files(self.misc_files)
 
                 durl = self.dc.get_depot_url()
                 plist = self.pkgsend_bulk(durl, self.licensed10 + \
@@ -4328,16 +4254,16 @@ class TestPkgInstallLicense(testutils.SingleDepotTestCase):
 
                 # Verify that --licenses include the license in output.
                 self.pkg("install -n --licenses licensed@1.2 | "
-                    "grep '/license.licensed'")
+                    "grep 'license.licensed'")
 
                 # Verify that licenses are not included in -n output if
                 # --licenses is not provided.
-                self.pkg("install -n licensed@1.2 | grep '/copyright.licensed'",
+                self.pkg("install -n licensed@1.2 | grep 'copyright.licensed'",
                     exit=1)
 
                 # Next, check that an upgrade succeeds when a license requires
                 # display and that the license will be displayed.
-                self.pkg("install licensed@1.2 | grep '/copyright.licensed'")
+                self.pkg("install licensed@1.2 | grep 'copyright.licensed'")
 
                 # Next, check that an image-update fails if the user has not
                 # specified --accept and a license requires acceptance.
@@ -4345,11 +4271,11 @@ class TestPkgInstallLicense(testutils.SingleDepotTestCase):
 
                 # Verify that licenses are not included in -n output if
                 # --licenses is not provided.
-                self.pkg("image-update -n | grep '/copyright.licensed", exit=1)
+                self.pkg("image-update -n | grep 'copyright.licensed", exit=1)
 
                 # Verify that --licenses include the license in output.
                 self.pkg("image-update -n --licenses | "
-                    "grep '/license.licensed'")
+                    "grep 'license.licensed'")
 
                 # Next, check that an image-update succeeds if the user has
                 # specified --accept and a license requires acceptance.

@@ -20,12 +20,13 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import os
 import unittest
@@ -33,11 +34,12 @@ import shutil
 
 from pkg import misc
 
-class TestPkgActuators(testutils.SingleDepotTestCase):
+class TestPkgActuators(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
-        persistent_depot = True
+        persistent_setup = True
 
-        svcprop_enabled_data = \
+        misc_files = { \
+                "svcprop_enabled" :
 """general/enabled boolean true
 general/entity_stability astring Unstable
 general/single_instance boolean true
@@ -67,8 +69,9 @@ start/type astring method
 stop/exec astring :true
 stop/timeout_seconds count 0
 stop/type astring method
-"""
-        svcprop_disabled_data = \
+""",
+
+                "svcprop_disabled" :
 """general/enabled boolean false
 general/entity_stability astring Unstable
 general/single_instance boolean true
@@ -98,8 +101,9 @@ start/type astring method
 stop/exec astring :true
 stop/timeout_seconds count 0
 stop/type astring method
-"""
-        svcprop_temp_enabled_data = \
+""",
+
+                "svcprop_temp_enabled" :
 """general/enabled boolean false
 general/entity_stability astring Unstable
 general/single_instance boolean true
@@ -130,8 +134,8 @@ start/type astring method
 stop/exec astring :true
 stop/timeout_seconds count 0
 stop/type astring method
-"""
-        svcprop_temp_disabled_data = \
+""",
+                "svcprop_temp_disabled" :
 """general/enabled boolean true
 general/entity_stability astring Unstable
 general/single_instance boolean true
@@ -162,78 +166,63 @@ start/type astring method
 stop/exec astring :true
 stop/timeout_seconds count 0
 stop/type astring method
-"""
-        empty_data = ""
+""",
 
-        svcprop_data = \
+                "empty": "",
+                "usr/bin/svcprop" :
 """#!/bin/sh
 cat $PKG_TEST_DIR/$PKG_SVCPROP_OUTPUT
 exit $PKG_SVCPROP_EXIT_CODE
-"""
-        svcadm_data = \
+""",
+                "usr/sbin/svcadm" : \
 """#!/bin/sh
 echo $0 "$@" >> $PKG_TEST_DIR/svcadm_arguments
 exit $PKG_SVCADM_EXIT_CODE
 """
-
-
-        misc_files = [ "svcprop_enabled", "svcprop_disabled", "svcprop_temp_enabled", "empty",
-                       "svcprop_temp_enabled", "usr/bin/svcprop", "usr/sbin/svcadm"]
+}
 
         testdata_dir = None
 
         def setUp(self):
 
-                testutils.SingleDepotTestCase.setUp(self)
-                tp = self.get_test_prefix()
-                self.testdata_dir = os.path.join(tp, "testdata")
+                pkg5unittest.SingleDepotTestCase.setUp(self)
+                self.testdata_dir = os.path.join(self.test_root, "testdata")
                 os.mkdir(self.testdata_dir)
+
                 self.pkg_list = []
 
                 self.pkg_list+= ["""
                     open basics@1.0,5.11-0
-                    add file """ + self.testdata_dir + """/empty mode=0644 owner=root group=sys path=/test_restart restart_fmri=svc:system/test_restart_svc
+                    add file testdata/empty mode=0644 owner=root group=sys path=/test_restart restart_fmri=svc:system/test_restart_svc
                     close """]
 
                 self.pkg_list+= ["""
                     open basics@1.1,5.11-0
-                    add file """ + self.testdata_dir + """/empty mode=0655 owner=root group=sys path=/test_restart restart_fmri=svc:system/test_restart_svc
+                    add file testdata/empty mode=0655 owner=root group=sys path=/test_restart restart_fmri=svc:system/test_restart_svc
                     close """]
 
                 self.pkg_list+= ["""
                     open basics@1.2,5.11-0
-                    add file """ + self.testdata_dir + """/empty mode=0646 owner=root group=sys path=/test_restart restart_fmri=svc:system/test_restart_svc
+                    add file testdata/empty mode=0646 owner=root group=sys path=/test_restart restart_fmri=svc:system/test_restart_svc
                     close """]
 
                 self.pkg_list+= ["""
                     open basics@1.3,5.11-0
-                    add file """ + self.testdata_dir + """/empty mode=0657 owner=root group=sys path=/test_restart refresh_fmri=svc:system/test_refresh_svc
+                    add file testdata/empty mode=0657 owner=root group=sys path=/test_restart refresh_fmri=svc:system/test_refresh_svc
                     close """]
 
                 self.pkg_list+= ["""
                     open basics@1.4,5.11-0
-                    add file """ + self.testdata_dir + """/empty mode=0667 owner=root group=sys path=/test_restart suspend_fmri=svc:system/test_suspend_svc
+                    add file testdata/empty mode=0667 owner=root group=sys path=/test_restart suspend_fmri=svc:system/test_suspend_svc
                     close """]
 
                 self.pkg_list+= ["""
                     open basics@1.5,5.11-0
-                    add file """ + self.testdata_dir + """/empty mode=0677 owner=root group=sys path=/test_restart suspend_fmri=svc:system/test_suspend_svc disable_fmri=svc:system/test_disable_svc
+                    add file testdata/empty mode=0677 owner=root group=sys path=/test_restart suspend_fmri=svc:system/test_suspend_svc disable_fmri=svc:system/test_disable_svc
                     close """]
 
-                for f in self.misc_files:
-                        filename = os.path.join(self.testdata_dir, f)
-                        if not os.path.exists(os.path.dirname(filename)):
-                                os.makedirs(os.path.dirname(filename))
-                        file_handle = open(filename, 'wb')
-                        data = "self.%s_data" % os.path.basename(f)
-                        file_handle.write(eval(data))
-                        file_handle.close()
-                        os.chmod(filename, misc.PKG_DIR_MODE)
-
-        def tearDown(self):
-                testutils.SingleDepotTestCase.tearDown(self)
-                if self.testdata_dir:
-                        shutil.rmtree(self.testdata_dir)
+                self.make_misc_files(self.misc_files, prefix="testdata",
+                     mode=0755)
 
         def test_actuators(self):
                 """test actuators"""

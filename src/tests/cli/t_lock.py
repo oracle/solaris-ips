@@ -28,6 +28,7 @@
 import testutils
 if __name__ == "__main__":
 	testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import cStringIO
 import os
@@ -44,7 +45,7 @@ import unittest
 API_VERSION = 31
 PKG_CLIENT_NAME = "pkg"
 
-class TestPkgApi(testutils.SingleDepotTestCase):
+class TestPkgApi(pkg5unittest.SingleDepotTestCase):
         # restart the depot for every test
         persistent_depot = False
 
@@ -57,7 +58,7 @@ class TestPkgApi(testutils.SingleDepotTestCase):
             close """
 
         def setUp(self):
-                testutils.SingleDepotTestCase.setUp(self)
+                pkg5unittest.SingleDepotTestCase.setUp(self)
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.foo10 + self.foo11)
                 self.image_create(durl)

@@ -28,6 +28,7 @@
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import calendar
 import difflib
@@ -49,9 +50,9 @@ import pkg.version as version
 API_VERSION = 31
 PKG_CLIENT_NAME = "pkg"
 
-class TestApiList(testutils.ManyDepotTestCase):
+class TestApiList(pkg5unittest.ManyDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
-        persistent_depot = True
+        persistent_setup = True
 
         packages = [
             "apple@1,5.11-0",
@@ -182,7 +183,7 @@ class TestApiList(testutils.ManyDepotTestCase):
                     installed=installed)
 
         def setUp(self):
-                testutils.ManyDepotTestCase.setUp(self, ["test1", "test2",
+                pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2",
                     "test3"])
 
                 pkg_data = ""

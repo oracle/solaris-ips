@@ -20,13 +20,26 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
+import os
+import sys
+
+# Set the path so that modules can be found
+path_to_parent = os.path.join(os.path.dirname(__file__), "..")
+sys.path.insert(0, path_to_parent)
+
+import pkg5testenv
+
+def setup_environment(proto):
+        pkg5testenv.setup_environment(proto)
+
 try:
-        import pygtk
-        pygtk.require('2.0')
-        import gtk
+        if "DISPLAY" in os.environ:
+                import pygtk
+                pygtk.require('2.0')
+                import gtk
 except ImportError:
         pass
 

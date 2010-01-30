@@ -20,12 +20,13 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import os
 import re
@@ -39,17 +40,17 @@ from stat import *
 # needed to get variant settings
 import pkg.client.imageconfig as imageconfig
 
-class TestPkgChangeVariant(testutils.SingleDepotTestCase):
+class TestPkgChangeVariant(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
-        persistent_depot = True
+        persistent_setup = True
 
         pkg_i386 = """
         open pkg_i386@1.0,5.11-0
         add set name=variant.arch value=i386
         add dir mode=0755 owner=root group=bin path=/shared
         add dir mode=0755 owner=root group=bin path=/unique
-        add file /tmp/pkg_i386/shared/pkg_i386_shared mode=0555 owner=root group=bin path=shared/pkg_arch_shared variant.arch=i386
-        add file /tmp/pkg_i386/unique/pkg_i386 mode=0555 owner=root group=bin path=unique/pkg_i386 variant.arch=i386
+        add file tmp/pkg_i386/shared/pkg_i386_shared mode=0555 owner=root group=bin path=shared/pkg_arch_shared variant.arch=i386
+        add file tmp/pkg_i386/unique/pkg_i386 mode=0555 owner=root group=bin path=unique/pkg_i386 variant.arch=i386
         close"""
 
         pkg_sparc = """
@@ -57,8 +58,8 @@ class TestPkgChangeVariant(testutils.SingleDepotTestCase):
         add set name=variant.arch value=sparc
         add dir mode=0755 owner=root group=bin path=/shared
         add dir mode=0755 owner=root group=bin path=/unique
-        add file /tmp/pkg_sparc/shared/pkg_sparc_shared mode=0555 owner=root group=bin path=shared/pkg_arch_shared variant.arch=sparc
-        add file /tmp/pkg_sparc/unique/pkg_sparc mode=0555 owner=root group=bin path=unique/pkg_sparc variant.arch=sparc
+        add file tmp/pkg_sparc/shared/pkg_sparc_shared mode=0555 owner=root group=bin path=shared/pkg_arch_shared variant.arch=sparc
+        add file tmp/pkg_sparc/unique/pkg_sparc mode=0555 owner=root group=bin path=unique/pkg_sparc variant.arch=sparc
         close"""
 
         pkg_shared = """
@@ -66,13 +67,13 @@ class TestPkgChangeVariant(testutils.SingleDepotTestCase):
         add set name=variant.arch value=sparc value=i386 value=zos
         add dir mode=0755 owner=root group=bin path=/shared
         add dir mode=0755 owner=root group=bin path=/unique
-        add file /tmp/pkg_shared/shared/common mode=0555 owner=root group=bin path=shared/common
-        add file /tmp/pkg_shared/shared/pkg_shared_i386 mode=0555 owner=root group=bin path=shared/pkg_shared variant.arch=i386
-        add file /tmp/pkg_shared/shared/pkg_shared_sparc mode=0555 owner=root group=bin path=shared/pkg_shared variant.arch=sparc
-        add file /tmp/pkg_shared/shared/global_motd mode=0555 owner=root group=bin path=shared/zone_motd variant.opensolaris.zone=global
-        add file /tmp/pkg_shared/shared/nonglobal_motd mode=0555 owner=root group=bin path=shared/zone_motd variant.opensolaris.zone=nonglobal
-        add file /tmp/pkg_shared/unique/global mode=0555 owner=root group=bin path=unique/global variant.opensolaris.zone=global
-        add file /tmp/pkg_shared/unique/nonglobal mode=0555 owner=root group=bin path=unique/nonglobal variant.opensolaris.zone=nonglobal
+        add file tmp/pkg_shared/shared/common mode=0555 owner=root group=bin path=shared/common
+        add file tmp/pkg_shared/shared/pkg_shared_i386 mode=0555 owner=root group=bin path=shared/pkg_shared variant.arch=i386
+        add file tmp/pkg_shared/shared/pkg_shared_sparc mode=0555 owner=root group=bin path=shared/pkg_shared variant.arch=sparc
+        add file tmp/pkg_shared/shared/global_motd mode=0555 owner=root group=bin path=shared/zone_motd variant.opensolaris.zone=global
+        add file tmp/pkg_shared/shared/nonglobal_motd mode=0555 owner=root group=bin path=shared/zone_motd variant.opensolaris.zone=nonglobal
+        add file tmp/pkg_shared/unique/global mode=0555 owner=root group=bin path=unique/global variant.opensolaris.zone=global
+        add file tmp/pkg_shared/unique/nonglobal mode=0555 owner=root group=bin path=unique/nonglobal variant.opensolaris.zone=nonglobal
 
         close"""
 
@@ -101,36 +102,25 @@ class TestPkgChangeVariant(testutils.SingleDepotTestCase):
         ])
 
         misc_files = [
-                "/tmp/pkg_i386/shared/pkg_i386_shared",
-                "/tmp/pkg_i386/unique/pkg_i386",
+                "tmp/pkg_i386/shared/pkg_i386_shared",
+                "tmp/pkg_i386/unique/pkg_i386",
 
-                "/tmp/pkg_sparc/shared/pkg_sparc_shared",
-                "/tmp/pkg_sparc/unique/pkg_sparc",
+                "tmp/pkg_sparc/shared/pkg_sparc_shared",
+                "tmp/pkg_sparc/unique/pkg_sparc",
 
-                "/tmp/pkg_shared/shared/common",
-                "/tmp/pkg_shared/shared/pkg_shared_i386",
-                "/tmp/pkg_shared/shared/pkg_shared_sparc",
-                "/tmp/pkg_shared/shared/global_motd",
-                "/tmp/pkg_shared/shared/nonglobal_motd",
-                "/tmp/pkg_shared/unique/global",
-                "/tmp/pkg_shared/unique/nonglobal"
+                "tmp/pkg_shared/shared/common",
+                "tmp/pkg_shared/shared/pkg_shared_i386",
+                "tmp/pkg_shared/shared/pkg_shared_sparc",
+                "tmp/pkg_shared/shared/global_motd",
+                "tmp/pkg_shared/shared/nonglobal_motd",
+                "tmp/pkg_shared/unique/global",
+                "tmp/pkg_shared/unique/nonglobal"
         ]
 
         def setUp(self):
-                print "setUP"
+                pkg5unittest.SingleDepotTestCase.setUp(self)
 
-                testutils.SingleDepotTestCase.setUp(self)
-
-                for p in self.misc_files:
-                        path = os.path.dirname(p)
-                        if not os.path.exists(path):
-                                os.makedirs(path)
-                        f = open(p, "w")
-                        # write the name of the file into the file, so that
-                        # all files have differing contents
-                        f.write(p)
-                        f.close()
-                        self.debug("wrote %s" % p)
+                self.make_misc_files(self.misc_files)
 
                 depot = self.dc.get_depot_url()
                 self.pkgsend_bulk(depot, self.pkg_i386)
@@ -144,12 +134,6 @@ class TestPkgChangeVariant(testutils.SingleDepotTestCase):
 
                 # verify installed images before we changing variants
                 self.verify_install = False
-
-
-        def tearDown(self):
-                testutils.SingleDepotTestCase.tearDown(self)
-                for p in self.misc_files:
-                        os.remove(p)
 
         def f_verify(self, path, token=None, negate=False):
                 """Verify that the specified path exists and contains

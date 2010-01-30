@@ -20,19 +20,20 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import os
 import unittest
 
-class TestCommandLine(testutils.SingleDepotTestCase):
+class TestCommandLine(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
-        persistent_depot = True
+        persistent_setup = True
 
         def test_pkg_bogus_opts(self):
                 """ pkg bogus option checks """

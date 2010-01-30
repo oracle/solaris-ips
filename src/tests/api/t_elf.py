@@ -20,18 +20,18 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+
+import testutils
+if __name__ == "__main__":
+        testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import unittest
 import pkg.elf as elf
 import os
 import sys
-
-# Set the path so that modules above can be found
-path_to_parent = os.path.join(os.path.dirname(__file__), "..")
-sys.path.insert(0, path_to_parent)
-import pkg5unittest
 
 class TestElf(pkg5unittest.Pkg5TestCase):
 

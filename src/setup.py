@@ -770,6 +770,7 @@ class test_func(Command):
         # list of options stored in initialize_options below. The first entry
         # in each tuple must be the exact name of a member variable.
         user_options = [
+            ("archivedir=", 'a', "archive failed tests <dir>"),
             ("baselinefile=", 'b', "baseline file <file>"),
             ("coverage", "c", "collect code coverage data"),
             ("genbaseline", 'g', "generate test baseline"),
@@ -777,6 +778,11 @@ class test_func(Command):
             ("parseable", 'p', "parseable output"),
             ("timing", "t", "timing file <file>"),
             ("verbosemode", 'v', "run tests in verbose mode"),
+            ("stoponerr", 'x', "stop when a baseline mismatch occurs"),
+            ("debugoutput", 'd', "emit debugging output"),
+            ("show_on_expected_fail", 'f',
+                "show all failure info, even for expected fails"),
+            ("startattest=", 's', "start at indicated test"),
         ]
         description = "Runs unit and functional tests"
 
@@ -788,6 +794,11 @@ class test_func(Command):
                 self.genbaseline = 0
                 self.timing = 0
                 self.coverage = 0
+                self.stoponerr = 0
+                self.debugoutput = 0
+                self.show_on_expected_fail = 0
+                self.startattest = ""
+                self.archivedir = ""
 
         def finalize_options(self):
                 pass

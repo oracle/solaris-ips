@@ -21,9 +21,14 @@
 #
 
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
+
+import testutils
+if __name__ == "__main__":
+        testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import unittest
 import sys
@@ -34,17 +39,13 @@ import tarfile
 import pkg.portable as portable
 import pkg.pkgtarfile as pkgtarfile
 
-# Set the path so that modules above can be found
-path_to_parent = os.path.join(os.path.dirname(__file__), "..")
-sys.path.insert(0, path_to_parent)
-import pkg5unittest
-
 class TestPkgTarFile(pkg5unittest.Pkg5TestCase):
 
         def setUp(self):
-                self.tpath = tempfile.mkdtemp()
+                pkg5unittest.Pkg5TestCase.setUp(self)
+                self.tpath = tempfile.mkdtemp(dir=self.test_root)
 
-                cpath = tempfile.mkdtemp()
+                cpath = tempfile.mkdtemp(dir=self.test_root)
                 filepath = os.path.join(cpath, "foo/bar")
                 filename = "baz"
                 create_path = os.path.join(filepath, filename)
@@ -61,9 +62,6 @@ class TestPkgTarFile(pkg5unittest.Pkg5TestCase):
                 tarfp.close()
                 shutil.rmtree(cpath)
                 
-        def tearDown(self):
-                shutil.rmtree(self.tpath)
-
         def testerrorlevelIsCorrect(self):
                 p = pkgtarfile.PkgTarFile(self.tarfile, 'r')
 

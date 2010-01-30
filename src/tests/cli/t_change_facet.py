@@ -20,12 +20,13 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import os
 import re
@@ -38,46 +39,32 @@ from stat import *
 
 
 
-class TestPkgChangeFacet(testutils.SingleDepotTestCase):
+class TestPkgChangeFacet(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
-        persistent_depot = True
+        persistent_setup = True
 
         pkg_A = """
         open pkg_A@1.0,5.11-0
-        add file /tmp/facets_0 mode=0555 owner=root group=bin path=0         
-        add file /tmp/facets_1 mode=0555 owner=root group=bin path=1 facet.locale.fr=True
-        add file /tmp/facets_2 mode=0555 owner=root group=bin path=2 facet.locale.fr_FR=True
-        add file /tmp/facets_3 mode=0555 owner=root group=bin path=3 facet.locale.fr_CA=True
-        add file /tmp/facets_4 mode=0555 owner=root group=bin path=4 facet.locale.fr_CA=True facet.locale.nl_ZA=True
-        add file /tmp/facets_5 mode=0555 owner=root group=bin path=5 facet.locale.nl=True
-        add file /tmp/facets_6 mode=0555 owner=root group=bin path=6 facet.locale.nl_NA=True
-        add file /tmp/facets_7 mode=0555 owner=root group=bin path=7 facet.locale.nl_ZA=True
+        add file tmp/facets_0 mode=0555 owner=root group=bin path=0         
+        add file tmp/facets_1 mode=0555 owner=root group=bin path=1 facet.locale.fr=True
+        add file tmp/facets_2 mode=0555 owner=root group=bin path=2 facet.locale.fr_FR=True
+        add file tmp/facets_3 mode=0555 owner=root group=bin path=3 facet.locale.fr_CA=True
+        add file tmp/facets_4 mode=0555 owner=root group=bin path=4 facet.locale.fr_CA=True facet.locale.nl_ZA=True
+        add file tmp/facets_5 mode=0555 owner=root group=bin path=5 facet.locale.nl=True
+        add file tmp/facets_6 mode=0555 owner=root group=bin path=6 facet.locale.nl_NA=True
+        add file tmp/facets_7 mode=0555 owner=root group=bin path=7 facet.locale.nl_ZA=True
         close"""
 
-        misc_files = [p for p in pkg_A.split() if p.startswith("/")]
+        misc_files = ["tmp/facets_0", "tmp/facets_1", "tmp/facets_2",
+                      "tmp/facets_3", "tmp/facets_4", "tmp/facets_5",
+                      "tmp/facets_6", "tmp/facets_7"]
 
         def setUp(self):
-                testutils.SingleDepotTestCase.setUp(self)
-
-
-                for p in self.misc_files:
-                        path = os.path.dirname(p)
-                        if not os.path.exists(path):
-                                os.makedirs(path)
-                        f = open(p, "w")
-                        # write the name of the file into the file, so that
-                        # all files have differing contents
-                        f.write(p)
-                        f.close()
-                        self.debug("wrote %s" % p)
+                pkg5unittest.SingleDepotTestCase.setUp(self)
+                self.make_misc_files(self.misc_files)
 
                 depot = self.dc.get_depot_url()
                 self.pkgsend_bulk(depot, self.pkg_A)
-
-        def tearDown(self):
-                testutils.SingleDepotTestCase.tearDown(self)
-                for p in self.misc_files:
-                        os.remove(p)
 
         def assert_file_is_there(self, path, negate=False):
                 """Verify that the specified path exists. If negate is true, 
@@ -153,3 +140,5 @@ class TestPkgChangeFacet(testutils.SingleDepotTestCase):
                         self.assert_file_is_there("%d" % i, negate=(i != 0))
 
  
+if __name__ == "__main__":
+        unittest.main()

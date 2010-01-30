@@ -21,9 +21,14 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
+
+import testutils
+if __name__ == "__main__":
+        testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import copy
 import errno
@@ -38,11 +43,6 @@ import pkg.client.publisher as publisher
 import pkg.misc as misc
 
 
-# Set the path so that modules above can be found.
-path_to_parent = os.path.join(os.path.dirname(__file__), "..")
-sys.path.insert(0, path_to_parent)
-import pkg5unittest
-
 class TestPublisher(pkg5unittest.Pkg5TestCase):
         """Class to test the functionality of the pkg.client.publisher module.
         """
@@ -50,39 +50,16 @@ class TestPublisher(pkg5unittest.Pkg5TestCase):
         misc_files = [ "test.cert", "test.key", "test2.cert", "test2.key" ]
 
         def setUp(self):
-                self.pid = os.getpid()
-                self.pwd = os.getcwd()
-
-                self.__test_prefix = os.path.join(tempfile.gettempdir(),
-                    "ips.test.%d" % self.pid)
-
-                try:
-                        os.makedirs(self.__test_prefix, misc.PKG_DIR_MODE)
-                except OSError, e:
-                        if e.errno != errno.EEXIST:
-                                raise e
-
-                for p in self.misc_files:
-                        fpath = os.path.join(self.get_test_prefix(), p)
-                        f = open(fpath, "wb")
-                        # Write the name of the file into the file, so that
-                        # all files have differing contents.
-                        f.write(fpath)
-                        f.close()
-
-        def tearDown(self):
-                shutil.rmtree(self.get_test_prefix())
-
-        def get_test_prefix(self):
-                return self.__test_prefix
+                pkg5unittest.Pkg5TestCase.setUp(self)
+                self.make_misc_files(self.misc_files)
 
         def test_01_repository_uri(self):
                 """Verify that a RepositoryURI object can be created, copied,
                 modified, and used as expected."""
 
-                nsfile = os.path.join(self.get_test_prefix(), "nosuchfile")
-                tcert = os.path.join(self.get_test_prefix(), "test.cert")
-                tkey = os.path.join(self.get_test_prefix(), "test.key")
+                nsfile = os.path.join(self.test_root, "nosuchfile")
+                tcert = os.path.join(self.test_root, "test.cert")
+                tkey = os.path.join(self.test_root, "test.key")
 
                 uprops = {
                     "priority": 1,
@@ -159,11 +136,11 @@ class TestPublisher(pkg5unittest.Pkg5TestCase):
                 """Verify that a Repository object can be created, copied,
                 modified, and used as expected."""
 
-                tcert = os.path.join(self.get_test_prefix(), "test.cert")
-                tkey = os.path.join(self.get_test_prefix(), "test.key")
+                tcert = os.path.join(self.test_root, "test.cert")
+                tkey = os.path.join(self.test_root, "test.key")
 
-                t2cert = os.path.join(self.get_test_prefix(), "test2.cert")
-                t2key = os.path.join(self.get_test_prefix(), "test2.key")
+                t2cert = os.path.join(self.test_root, "test2.cert")
+                t2key = os.path.join(self.test_root, "test2.key")
 
                 rprops = {
                     "collection_type": publisher.REPO_CTYPE_SUPPLEMENTAL,
@@ -358,7 +335,7 @@ class TestPublisher(pkg5unittest.Pkg5TestCase):
                     "alias": "cat",
                     "client_uuid": "2c6a8ff8-20e5-11de-a818-001fd0979039",
                     "disabled": True,
-                    "meta_root": os.path.join(self.get_test_prefix(), "bobcat"),
+                    "meta_root": os.path.join(self.test_root, "bobcat"),
                     "repositories": [robj, r2obj],
                     "selected_repository": r2obj,
                 }

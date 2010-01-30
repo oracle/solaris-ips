@@ -28,6 +28,7 @@
 import testutils
 if __name__ == "__main__":
 	testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import cStringIO
 import os
@@ -43,9 +44,9 @@ import unittest
 API_VERSION = 31
 PKG_CLIENT_NAME = "pkg"
 
-class TestPkgApi(testutils.SingleDepotTestCase):
+class TestPkgApi(pkg5unittest.SingleDepotTestCase):
         # restart the depot for every test
-        persistent_depot = False
+        persistent_setup = False
 
         foo10 = """
             open foo@1.0,5.11-0
@@ -53,7 +54,7 @@ class TestPkgApi(testutils.SingleDepotTestCase):
 
         foo12 = """
             open foo@1.2,5.11-0
-            add file $test_prefix/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
+            add file libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
             close """
 
         bar10 = """
@@ -62,7 +63,7 @@ class TestPkgApi(testutils.SingleDepotTestCase):
 
         baz10 = """
             open baz@1.0,5.11-0
-            add license $test_prefix/copyright.baz license=copyright.baz
+            add license copyright.baz license=copyright.baz
             close """
 
         quux10 = """
@@ -74,7 +75,7 @@ class TestPkgApi(testutils.SingleDepotTestCase):
         licensed10 = """
             open licensed@1.0,5.11-0
             add depend type=require fmri=baz@1.0
-            add license $test_prefix/copyright.licensed license=copyright.licensed
+            add license copyright.licensed license=copyright.licensed
             close """
 
         # Second iteration has copyright that must-display and a new license
@@ -82,18 +83,18 @@ class TestPkgApi(testutils.SingleDepotTestCase):
         licensed12 = """
             open licensed@1.2,5.11-0
             add depend type=require fmri=baz@1.0
-            add file $test_prefix/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
-            add license $test_prefix/copyright.licensed license=copyright.licensed must-display=True
-            add license $test_prefix/license.licensed license=license.licensed
+            add file libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
+            add license copyright.licensed license=copyright.licensed must-display=True
+            add license license.licensed license=license.licensed
             close """
 
         # Third iteration now requires acceptance of license.
         licensed13 = """
             open licensed@1.3,5.11-0
             add depend type=require fmri=baz@1.0
-            add file $test_prefix/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
-            add license $test_prefix/copyright.licensed license=copyright.licensed must-display=True
-            add license $test_prefix/license.licensed license=license.licensed must-accept=True
+            add file libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
+            add license copyright.licensed license=copyright.licensed must-display=True
+            add license license.licensed license=license.licensed must-accept=True
             close """
 
         p5i_bobcat = """{
@@ -136,27 +137,8 @@ class TestPkgApi(testutils.SingleDepotTestCase):
             "license.licensed", "license.licensed.addendum"]
 
         def setUp(self):
-                testutils.SingleDepotTestCase.setUp(self, publisher="bobcat")
-
-                for p in ("foo12", "baz10", "licensed10", "licensed12",
-                    "licensed13"):
-                        val = getattr(self, p).replace("$test_prefix",
-                            self.get_test_prefix())
-                        setattr(self, p, val)
-
-                for p in self.misc_files:
-                        fpath = os.path.join(self.get_test_prefix(), p)
-                        f = open(fpath, "wb")
-                        # write the name of the file into the file, so that
-                        # all files have differing contents
-                        f.write(fpath)
-                        f.close()
-                        self.debug("wrote %s" % fpath)
-
-        def tearDown(self):
-                #for p in self.misc_files:
-                #        os.remove(os.path.join(self.get_test_prefix(), p))
-                testutils.SingleDepotTestCase.tearDown(self)
+                pkg5unittest.SingleDepotTestCase.setUp(self, publisher="bobcat")
+                self.make_misc_files(self.misc_files)
 
         def __try_bad_installs(self, api_obj):
 
@@ -653,7 +635,7 @@ class TestPkgApi(testutils.SingleDepotTestCase):
                 # Verify that parse returns the expected object and information
                 # when provided a file path.
                 fobj.seek(0)
-                (fd1, path1) = tempfile.mkstemp(dir=self.get_test_prefix())
+                (fd1, path1) = tempfile.mkstemp(dir=self.test_root)
                 os.write(fd1, fobj.read())
                 validate_results(api_obj.parse_p5i(location=path1))
 
@@ -665,7 +647,7 @@ class TestPkgApi(testutils.SingleDepotTestCase):
 
                 # Verify that appropriate exceptions are raised for p5i
                 # information that can't be retrieved (doesn't exist).
-                nefpath = os.path.join(self.get_test_prefix(), "non-existent")
+                nefpath = os.path.join(self.test_root, "non-existent")
                 self.assertRaises(api_errors.RetrievalError,
                     api_obj.parse_p5i, location="file://%s" % nefpath)
 
@@ -674,7 +656,7 @@ class TestPkgApi(testutils.SingleDepotTestCase):
 
                 # Verify that appropriate exceptions are raised for invalid
                 # p5i information.
-                lcpath = os.path.join(self.get_test_prefix(), "libc.so.1")
+                lcpath = os.path.join(self.test_root, "libc.so.1")
                 self.assertRaises(api_errors.InvalidP5IFile, api_obj.parse_p5i,
                     location="file://%s" % lcpath)
 
@@ -743,8 +725,7 @@ class TestPkgApi(testutils.SingleDepotTestCase):
                         self.assertEqual(dest.must_display, False)
 
                         # Verify license text.
-                        text = os.path.join(self.get_test_prefix(),
-                            dest.license)
+                        text = dest.license
                         self.assertEqual(dest.get_text(), text)
 
                 # Install the packages.
@@ -789,8 +770,7 @@ class TestPkgApi(testutils.SingleDepotTestCase):
                         self.assertEqual(dest.must_display, must_display)
 
                         # Verify license text.
-                        text = os.path.join(self.get_test_prefix(),
-                            dest.license)
+                        text = dest.license
                         self.assertEqual(dest.get_text(), text)
 
                 # Attempt to prepare plan; this should raise a license
@@ -860,8 +840,7 @@ class TestPkgApi(testutils.SingleDepotTestCase):
                         self.assertEqual(dest.must_display, must_display)
 
                         # Verify license text.
-                        text = os.path.join(self.get_test_prefix(),
-                            dest.license)
+                        text = dest.license
                         self.assertEqual(dest.get_text(), text)
 
                 # Attempt to prepare plan; this should raise a license
@@ -932,3 +911,6 @@ class TestPkgApi(testutils.SingleDepotTestCase):
                 api_obj.reset()
 
 
+
+if __name__ == "__main__":
+        unittest.main()

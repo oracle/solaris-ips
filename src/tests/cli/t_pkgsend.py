@@ -26,6 +26,7 @@
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import os
 import shutil
@@ -35,8 +36,8 @@ import urllib
 
 from pkg import misc
 
-class TestPkgsendBasics(testutils.SingleDepotTestCase):
-        persistent_depot = False
+class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
+        persistent_setup = False
 
         def test_0_pkgsend_bad_opts(self):
                 """Verify that non-existent or invalid option combinations
@@ -89,7 +90,7 @@ class TestPkgsendBasics(testutils.SingleDepotTestCase):
                         self.pkgsend(scheme, "open notarepo@1.0", exit=1)
 
                 # Create an empty directory to abuse as a repository.
-                junk_repo = os.path.join(self.get_test_prefix(), "junk-repo")
+                junk_repo = os.path.join(self.test_root, "junk-repo")
                 os.makedirs(junk_repo, misc.PKG_DIR_MODE)
 
                 # Point at a valid directory that does not contain a repository.
@@ -123,7 +124,7 @@ class TestPkgsendBasics(testutils.SingleDepotTestCase):
                 os.environ["PKG_TRANS_ID"] = "foobarbaz"
 
                 for url in (dfurl, dhurl):
-                        self.pkgsend(url, "add file /bin/ls path=/bin/ls",
+                        self.pkgsend(url, "add file bin/ls path=/bin/ls",
                             exit=1)
 
         def test_4_bad_actions(self):
@@ -135,8 +136,7 @@ class TestPkgsendBasics(testutils.SingleDepotTestCase):
 
                 dhurl = self.dc.get_depot_url()
                 dfurl = "file://%s" % self.dc.get_repodir()
-                test_dir = self.get_test_prefix()
-                imaginary_file = os.path.join(test_dir, "imaginary_file")
+                imaginary_file = os.path.join(self.test_root, "imaginary_file")
 
                 # Must open transaction using HTTP url first so that transaction
                 # will be seen by the depot server and when using file://.
@@ -153,11 +153,11 @@ class TestPkgsendBasics(testutils.SingleDepotTestCase):
 
                         # Should fail because path attribute is missing.
                         self.pkgsend(url,
-                            "add file /bin/ls", exit=1)
+                            "add file bin/ls", exit=1)
 
                         # Should fail because path attribute is missing a value.
                         self.pkgsend(url,
-                            "add file /bin/ls path=", exit=1)
+                            "add file bin/ls path=", exit=1)
 
                         # Should fail because the file does not exist.
                         self.pkgsend(url,
@@ -210,7 +210,7 @@ class TestPkgsendBasics(testutils.SingleDepotTestCase):
                 """Verify that create-repository works as expected."""
 
                 self.dc.stop()
-                rpath = os.path.join(self.get_test_prefix(), "example_repo")
+                rpath = os.path.join(self.test_root, "example_repo")
                 self.pkgsend("file://%s" % rpath,
                     "create-repository --set-property publisher.prefix=test")
 
@@ -233,13 +233,13 @@ class TestPkgsendBasics(testutils.SingleDepotTestCase):
                 file, that publishing will still work as expected."""
 
                 # First create our dummy data file.
-                fd, fpath = tempfile.mkstemp(dir=self.get_test_prefix())
+                fd, fpath = tempfile.mkstemp(dir=self.test_root)
                 fp = os.fdopen(fd, "wb")
                 fp.write("foo")
                 fp.close()
 
                 # Then, create a link to it.
-                lpath = os.path.join(self.get_test_prefix(), "test_8_foo")
+                lpath = os.path.join(self.test_root, "test_8_foo")
                 os.symlink(fpath, lpath)
 
                 # Next, publish it using both the real path and the linked path
@@ -249,7 +249,7 @@ class TestPkgsendBasics(testutils.SingleDepotTestCase):
                     """open testlinkedfile@1.0
                     add file %s mode=0755 owner=root group=bin path=/tmp/f.foo
                     add file %s mode=0755 owner=root group=bin path=/tmp/l.foo
-                    close""" % (fpath, lpath))
+                    close""" % (os.path.basename(fpath), os.path.basename(lpath)))
 
                 # Finally, verify that both files were published.
                 self.image_create(dhurl)
@@ -260,7 +260,7 @@ class TestPkgsendBasics(testutils.SingleDepotTestCase):
                 self.image_destroy()
 
         def test_9_multiple_dirs(self):
-                rootdir = self.get_test_prefix()
+                rootdir = self.test_root
                 dir_1 = os.path.join(rootdir, "dir_1")
                 dir_2 = os.path.join(rootdir, "dir_2")
                 os.mkdir(dir_1)
@@ -285,7 +285,7 @@ class TestPkgsendBasics(testutils.SingleDepotTestCase):
                 self.image_destroy()
 
         def test_10_bundle_dir(self):
-                rootdir = self.get_test_prefix()
+                rootdir = self.test_root
                 dir1 = os.path.join(rootdir, "foo")
                 os.mkdir(dir1)
                 file(os.path.join(dir1, "bar"), "wb").close()
@@ -299,7 +299,7 @@ class TestPkgsendBasics(testutils.SingleDepotTestCase):
                 self.image_destroy()
 
         def test_11_bundle_sysv_dir(self):
-                rootdir = self.get_test_prefix()
+                rootdir = self.test_root
                 dir1 = os.path.join(rootdir, "foobar")
                 os.mkdir(dir1)
                 file(os.path.join(dir1, "bar"), "wb").close()
@@ -337,7 +337,7 @@ class TestPkgsendBasics(testutils.SingleDepotTestCase):
 
 
         def test_12_bundle_sysv_datastream(self):
-                rootdir = self.get_test_prefix()
+                rootdir = self.test_root
                 dir1 = os.path.join(rootdir, "foobar")
                 os.mkdir(dir1)
                 file(os.path.join(dir1, "bar"), "wb").close()
@@ -383,7 +383,7 @@ class TestPkgsendBasics(testutils.SingleDepotTestCase):
                 dhurl = self.dc.get_depot_url()
                 dfurl = "file://%s" % urllib.pathname2url(self.dc.get_repodir())
 
-                fd, fpath = tempfile.mkstemp(dir=self.get_test_prefix())
+                fd, fpath = tempfile.mkstemp(dir=self.test_root)
 
                 self.image_create(dhurl)
 
@@ -484,7 +484,7 @@ class TestPkgsendBasics(testutils.SingleDepotTestCase):
                     (bob, -1)
                 ]
                 dhurl = self.dc.get_depot_url()
-                junk_repo = os.path.join(self.get_test_prefix(), "obs-junkrepo")
+                junk_repo = os.path.join(self.test_root, "obs-junkrepo")
                 dfurl = "file://" + junk_repo
                 self.pkgsend(dfurl,
                     "create-repository --set-property publisher.prefix=test")
@@ -525,7 +525,7 @@ dir path=foo/bar mode=0755 owner=root group=bin
 """
                 self.dc.stop()
                 rpath = self.dc.get_repodir()
-                fpath = os.path.join(self.get_test_prefix(), "manifest")
+                fpath = os.path.join(self.test_root, "manifest")
                 f = file(fpath, "w")
                 f.write(pkg_manifest)
                 f.close()
@@ -536,7 +536,8 @@ dir path=foo/bar mode=0755 owner=root group=bin
                 self.pkgsend("file://%s publish --fmri-in-manifest --no-catalog %s" % (
                                 rpath, fpath))
                 new_mtime = os.stat(cat_path).st_mtime
-                assert(mtime == new_mtime, "modified times not the same before and after publication")
+                # check that modified times are the same before and after publication
+                self.assertEqual(mtime, new_mtime)
                 self.dc.set_add_content()
                 
                 self.dc.start()
@@ -551,22 +552,17 @@ dir path=foo/bar mode=0755 owner=root group=bin
                 """Verify that when sending multiple manifests, the contents
                 of all manifests are published."""
 
-                test_files = []
-
                 # First create two dummy data files.
-                for i in range(2):
-                        fd, fpath = tempfile.mkstemp(dir=self.get_test_prefix())
-                        fp = os.fdopen(fd, "wb")
-                        test_files.append(fpath)
-                        fp.write("foo")
-                        fp.close()
+                test_files = ["dummy1", "dummy2"]
+                self.make_misc_files(test_files)
 
                 # create two manifests.
                 for path in test_files:
-                        mf = open(path + ".manifest", "w")
-                        mf.write("file %s mode=0644 owner=root path=/foo%s" %
-                            (path, path))
-                        mf.close()
+                        manfpath = path + ".manifest"
+                        self.make_misc_files({
+                            manfpath:
+                                "file %s mode=0644 owner=root path=/foo%s" % \
+                                (path, path)})
 
                 # publish
                 url = self.dc.get_depot_url()

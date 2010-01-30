@@ -20,12 +20,13 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import os
 import re
@@ -36,15 +37,15 @@ import shutil
 import sys
 from stat import *
 
-class TestPkgCollidingLinks(testutils.SingleDepotTestCase):
+class TestPkgCollidingLinks(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
-        persistent_depot = True
+        persistent_setup = True
 
         pkg_A = """
         open pkg_A@1.0,5.11-0
-        add file /tmp/link_target_0 mode=0555 owner=root group=bin path=link_target_0
-        add file /tmp/link_target_1 mode=0555 owner=root group=bin path=link_target_1
-        add file /tmp/link_target_2 mode=0555 owner=root group=bin path=link_target_2
+        add file tmp/link_target_0 mode=0555 owner=root group=bin path=link_target_0
+        add file tmp/link_target_1 mode=0555 owner=root group=bin path=link_target_1
+        add file tmp/link_target_2 mode=0555 owner=root group=bin path=link_target_2
         close"""
 
         pkg_B = """
@@ -62,33 +63,17 @@ class TestPkgCollidingLinks(testutils.SingleDepotTestCase):
         close"""
 
 
-        misc_files = [p for p in pkg_A.split() if p.startswith("/")]
+        misc_files = [p for p in pkg_A.split() if "tmp/link_target" in p]
 
 
         def setUp(self):
-                testutils.SingleDepotTestCase.setUp(self)
-
-                for p in self.misc_files:
-                        path = os.path.dirname(p)
-                        if not os.path.exists(path):
-                                os.makedirs(path)
-                        f = open(p, "w")
-                        # write the name of the file into the file, so that
-                        # all files have differing contents
-                        f.write(p)
-                        f.close()
-                        self.debug("wrote %s" % p)
+                pkg5unittest.SingleDepotTestCase.setUp(self)
+                self.make_misc_files(self.misc_files)
 
                 depot = self.dc.get_depot_url()
                 self.pkgsend_bulk(depot, self.pkg_A)
                 self.pkgsend_bulk(depot, self.pkg_B)
                 self.pkgsend_bulk(depot, self.pkg_C)
-
-        def tearDown(self):
-                testutils.SingleDepotTestCase.tearDown(self)
-                for p in self.misc_files:
-                        os.remove(p)
-
 
         def test_1(self):
                 """Verify symlinks are correctly reference counted
@@ -115,3 +100,6 @@ class TestPkgCollidingLinks(testutils.SingleDepotTestCase):
 
                 self.pkg("uninstall pkg_B pkg_C")
                 self.pkg("verify")
+
+if __name__ == "__main__":
+        unittest.main()

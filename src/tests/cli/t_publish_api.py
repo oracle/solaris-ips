@@ -21,13 +21,14 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
 import testutils
 if __name__ == "__main__":
 	testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import os
 import pkg.fmri as fmri
@@ -35,11 +36,11 @@ import pkg.publish.transaction as trans
 import urlparse
 import urllib
 
-class TestPkgPublicationApi(testutils.SingleDepotTestCase):
+class TestPkgPublicationApi(pkg5unittest.SingleDepotTestCase):
         """Various publication tests."""
 
         # Restart the depot and recreate the repository every test.
-        persistent_depot = False
+        persistent_setup = False
 
         def test_stress_http_publish(self):
                 """Publish lots of packages rapidly ensuring that http
@@ -74,3 +75,6 @@ class TestPkgPublicationApi(testutils.SingleDepotTestCase):
                         pkg_fmri, pkg_state = t.close(refresh_index=True)
                         self.debug("%s: %s" % (pkg_fmri, pkg_state))
 
+
+if __name__ == "__main__":
+        unittest.main()

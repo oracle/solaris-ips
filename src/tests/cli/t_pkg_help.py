@@ -21,27 +21,28 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import unittest
 
-class TestPkgHelp(testutils.CliTestCase):
+class TestPkgHelp(pkg5unittest.CliTestCase):
 
         def test_help(self):
                 """Verify that usage message works regardless of how it is
                 triggered."""
 
-                self.pkg("-?")
+                self.pkg("-\?")
                 self.pkg("--help")
                 self.pkg("help")
 
-                self.pkg("-? bobcat")
+                self.pkg("-\? bobcat")
                 self.pkg("--help bobcat")
                 self.pkg("help bobcat")
 

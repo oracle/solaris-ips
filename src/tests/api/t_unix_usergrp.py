@@ -20,8 +20,13 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+
+import testutils
+if __name__ == "__main__":
+        testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import unittest
 import os
@@ -30,25 +35,17 @@ import sys
 import tempfile
 import pkg.portable as portable
 
-# Set the path so that modules above can be found
-path_to_parent = os.path.join(os.path.dirname(__file__), "..")
-sys.path.insert(0, path_to_parent)
-import pkg5unittest
-
 class TestUserGroup(pkg5unittest.Pkg5TestCase):
 
         def setUp(self):
-                self.tempdir = tempfile.mkdtemp()
-                os.makedirs(os.path.join(self.tempdir, "etc"))
-
-        def tearDown(self):
-                shutil.rmtree(self.tempdir)
+                pkg5unittest.Pkg5TestCase.setUp(self)
+                os.makedirs(os.path.join(self.test_root, "etc"))
 
         def testGroup1(self):
                 if not os.path.exists("/etc/group"):
                         return
 
-                grpfile = file(os.path.join(self.tempdir, "etc", "group"), "w")
+                grpfile = file(os.path.join(self.test_root, "etc", "group"), "w")
                 grpfile.write( \
 """root::0:
 gk::0:
@@ -62,15 +59,15 @@ tty::7:root,adm""")
                 grpfile.close()
 
                 self.assertRaises(KeyError, portable.get_group_by_name,
-                    "ThisShouldNotExist", self.tempdir, True)
+                    "ThisShouldNotExist", self.test_root, True)
 
                 self.assert_(0 == \
-                    portable.get_group_by_name("root", self.tempdir, True))
+                    portable.get_group_by_name("root", self.test_root, True))
                 self.assert_(0 == \
-                    portable.get_group_by_name("gk", self.tempdir, True))
+                    portable.get_group_by_name("gk", self.test_root, True))
 
                 self.assertRaises(KeyError, portable.get_name_by_gid,
-                    12345, self.tempdir, True)
+                    12345, self.test_root, True)
 
         def testGroup2(self):
                 """ Test with a missing group file """
@@ -78,21 +75,21 @@ tty::7:root,adm""")
                         return
 
                 self.assertRaises(KeyError, portable.get_group_by_name,
-                    "ThisShouldNotExist", self.tempdir, True)
+                    "ThisShouldNotExist", self.test_root, True)
 
                 # This should work on unix systems, since we'll "bootstrap"
                 # out to the OS's version.  And AFAIK all unix systems have
                 # a group with gid 0.
-                grpname = portable.get_name_by_gid(0, self.tempdir, True)
+                grpname = portable.get_name_by_gid(0, self.test_root, True)
                 self.assert_(0 == \
-                    portable.get_group_by_name(grpname, self.tempdir, True))
+                    portable.get_group_by_name(grpname, self.test_root, True))
 
         def testGroup3(self):
                 """ Test with corrupt/oddball group file """
                 if not os.path.exists("/etc/group"):
                         return
 
-                grpfile = file(os.path.join(self.tempdir, "etc", "group"), "w")
+                grpfile = file(os.path.join(self.test_root, "etc", "group"), "w")
                 grpfile.write( \
 """root::0:
 blorg
@@ -107,22 +104,22 @@ gk::0:
 +""")
                 grpfile.close()
                 self.assert_("root" == \
-                    portable.get_name_by_gid(0, self.tempdir, True))
+                    portable.get_name_by_gid(0, self.test_root, True))
                 self.assert_(0 == \
-                    portable.get_group_by_name("root", self.tempdir, True))
+                    portable.get_group_by_name("root", self.test_root, True))
                 self.assert_(0 == \
-                    portable.get_group_by_name("gk", self.tempdir, True))
+                    portable.get_group_by_name("gk", self.test_root, True))
                 self.assert_(7 == \
-                    portable.get_group_by_name("tty", self.tempdir, True))
+                    portable.get_group_by_name("tty", self.test_root, True))
 
                 self.assertRaises(KeyError, portable.get_group_by_name,
-                    "ThisShouldNotExist", self.tempdir, True)
+                    "ThisShouldNotExist", self.test_root, True)
 
                 self.assertRaises(KeyError, portable.get_group_by_name,
-                    "corrupt", self.tempdir, True)
+                    "corrupt", self.test_root, True)
 
                 self.assertRaises(KeyError, portable.get_group_by_name,
-                    570, self.tempdir, True)
+                    570, self.test_root, True)
 
         def testGroup4(self):
                 """ Test with a group name line in the group file that
@@ -130,7 +127,7 @@ gk::0:
                 if not os.path.exists("/etc/group"):
                         return
 
-                grpfile = file(os.path.join(self.tempdir, "etc", "group"), "w")
+                grpfile = file(os.path.join(self.test_root, "etc", "group"), "w")
                 grpfile.write( \
 """root::0:
 gk::0:
@@ -143,23 +140,23 @@ tty::7:root,adm
 +""")
                 grpfile.close()
                 self.assert_("root" == \
-                    portable.get_name_by_gid(0, self.tempdir, True))
+                    portable.get_name_by_gid(0, self.test_root, True))
                 self.assert_(0 == \
-                    portable.get_group_by_name("root", self.tempdir, True))
+                    portable.get_group_by_name("root", self.test_root, True))
                 self.assert_(0 == \
-                    portable.get_group_by_name("gk", self.tempdir, True))
+                    portable.get_group_by_name("gk", self.test_root, True))
                 self.assert_(7 == \
-                    portable.get_group_by_name("tty", self.tempdir, True))
+                    portable.get_group_by_name("tty", self.test_root, True))
 
                 self.assertRaises(KeyError, portable.get_group_by_name,
-                    "plusgrp", self.tempdir, True)
+                    "plusgrp", self.test_root, True)
 
 
         def testUser1(self):
                 if not os.path.exists("/etc/passwd"):
                         return
 
-                passwd = file(os.path.join(self.tempdir, "etc", "passwd"), "w")
+                passwd = file(os.path.join(self.test_root, "etc", "passwd"), "w")
                 passwd.write( \
 """root:x:0:0::/root:/usr/bin/bash
 gk:x:0:0::/root:/usr/bin/bash
@@ -173,17 +170,17 @@ moop:x:999:999:moop:/usr/moop:""")
                 passwd.close()
 
                 self.assertRaises(KeyError, portable.get_user_by_name,
-                    "ThisShouldNotExist", self.tempdir, True)
+                    "ThisShouldNotExist", self.test_root, True)
 
                 self.assert_(0 == \
-                    portable.get_user_by_name("root", self.tempdir, True))
+                    portable.get_user_by_name("root", self.test_root, True))
                 self.assert_(0 == \
-                    portable.get_user_by_name("gk", self.tempdir, True))
+                    portable.get_user_by_name("gk", self.test_root, True))
                 self.assert_(999 == \
-                    portable.get_user_by_name("moop", self.tempdir, True))
+                    portable.get_user_by_name("moop", self.test_root, True))
 
                 self.assertRaises(KeyError, portable.get_name_by_uid,
-                    12345, self.tempdir, True)
+                    12345, self.test_root, True)
 
 
         def testUser2(self):
@@ -192,14 +189,14 @@ moop:x:999:999:moop:/usr/moop:""")
                         return
 
                 self.assertRaises(KeyError, portable.get_user_by_name,
-                    "ThisShouldNotExist", self.tempdir, True)
+                    "ThisShouldNotExist", self.test_root, True)
 
                 # This should work on unix systems, since we'll "bootstrap"
                 # out to the OS's version.
                 self.assert_(0 == \
-                    portable.get_user_by_name("root", self.tempdir, True))
+                    portable.get_user_by_name("root", self.test_root, True))
                 self.assert_("root" == \
-                    portable.get_name_by_uid(0, self.tempdir, True))
+                    portable.get_name_by_uid(0, self.test_root, True))
 
 
         def testUser3(self):
@@ -207,7 +204,7 @@ moop:x:999:999:moop:/usr/moop:""")
                 if not os.path.exists("/etc/passwd"):
                         return
 
-                passwd = file(os.path.join(self.tempdir, "etc", "passwd"), "w")
+                passwd = file(os.path.join(self.test_root, "etc", "passwd"), "w")
                 passwd.write( \
 """root:x:0:0::/root:/usr/bin/bash
 daemon:x:1:1::/:
@@ -224,20 +221,20 @@ uucp:x:5:5:uucp Admin:/usr/lib/uucp:
 +""")
                 passwd.close()
                 self.assert_(0 == \
-                    portable.get_user_by_name("root", self.tempdir, True))
+                    portable.get_user_by_name("root", self.test_root, True))
                 self.assert_(0 == \
-                    portable.get_user_by_name("gk", self.tempdir, True))
+                    portable.get_user_by_name("gk", self.test_root, True))
                 self.assert_("uucp" == \
-                    portable.get_name_by_uid(5, self.tempdir, True))
+                    portable.get_name_by_uid(5, self.test_root, True))
 
                 self.assertRaises(KeyError, portable.get_user_by_name,
-                    "ThisShouldNotExist", self.tempdir, True)
+                    "ThisShouldNotExist", self.test_root, True)
 
                 self.assertRaises(KeyError, portable.get_user_by_name,
-                    "corrupt", self.tempdir, True)
+                    "corrupt", self.test_root, True)
 
                 self.assertRaises(KeyError, portable.get_user_by_name,
-                    999, self.tempdir, True)
+                    999, self.test_root, True)
 
         def testUser4(self):
                 """ Test with a user name line in the passwd file that
@@ -245,7 +242,7 @@ uucp:x:5:5:uucp Admin:/usr/lib/uucp:
                 if not os.path.exists("/etc/passwd"):
                         return
 
-                passwd = file(os.path.join(self.tempdir, "etc", "passwd"), "w")
+                passwd = file(os.path.join(self.test_root, "etc", "passwd"), "w")
                 passwd.write( \
 """root:x:0:0::/root:/usr/bin/bash
 gk:x:0:0::/root:/usr/bin/bash
@@ -259,16 +256,16 @@ uucp:x:5:5:uucp Admin:/usr/lib/uucp:
 +""")
                 passwd.close()
                 self.assert_(0 == \
-                    portable.get_user_by_name("root", self.tempdir, True))
+                    portable.get_user_by_name("root", self.test_root, True))
                 self.assert_(0 == \
-                    portable.get_user_by_name("gk", self.tempdir, True))
+                    portable.get_user_by_name("gk", self.test_root, True))
                 self.assert_("root" == \
-                    portable.get_name_by_uid(0, self.tempdir, True))
+                    portable.get_name_by_uid(0, self.test_root, True))
                 self.assert_("uucp" == \
-                    portable.get_name_by_uid(5, self.tempdir, True))
+                    portable.get_name_by_uid(5, self.test_root, True))
 
                 self.assertRaises(KeyError, portable.get_user_by_name,
-                    "plususer", self.tempdir, True)
+                    "plususer", self.test_root, True)
 
 
 if __name__ == "__main__":

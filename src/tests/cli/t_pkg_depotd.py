@@ -20,12 +20,13 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import httplib
 import os
@@ -43,9 +44,9 @@ import pkg.misc as misc
 import pkg.p5i as p5i
 import pkg.server.repositoryconfig as rcfg
 
-class TestPkgDepot(testutils.SingleDepotTestCase):
+class TestPkgDepot(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
-        persistent_depot = True
+        persistent_setup = True
 
         foo10 = """
             open foo@1.0,5.11-0
@@ -60,8 +61,8 @@ class TestPkgDepot(testutils.SingleDepotTestCase):
         quux10 = """
             open quux@1.0,5.11-0
             add dir mode=0755 owner=root group=bin path=/bin
-            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
-            add file /tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
+            add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            add file tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
             close """
 
         info10 = """
@@ -83,22 +84,11 @@ class TestPkgDepot(testutils.SingleDepotTestCase):
             add depend type=require fmri=pkg:/SUNWcsl
             close """
 
-        misc_files = [ "/tmp/libc.so.1", "/tmp/cat" ]
+        misc_files = [ "tmp/libc.so.1", "tmp/cat" ]
 
         def setUp(self):
-                testutils.SingleDepotTestCase.setUp(self)
-                for p in self.misc_files:
-                        f = open(p, "w")
-                        # write the name of the file into the file, so that
-                        # all files have differing contents
-                        f.write(p)
-                        f.close()
-                        self.debug("wrote %s" % p)
-
-        def tearDown(self):
-                testutils.SingleDepotTestCase.tearDown(self)
-                for p in self.misc_files:
-                        os.remove(p)
+                pkg5unittest.SingleDepotTestCase.setUp(self)
+                self.make_misc_files(self.misc_files)
 
         def test_depot_ping(self):
                 """ Ping the depot several times """
@@ -270,7 +260,7 @@ class TestPkgDepot(testutils.SingleDepotTestCase):
                 mode works and then a readonly depot again after that works.
                 """
 
-                dpath = os.path.join(self.get_test_prefix(), "repo_create")
+                dpath = os.path.join(self.test_root, "repo_create")
 
                 opath = self.dc.get_repodir()
                 self.dc.set_repodir(dpath)
@@ -331,21 +321,21 @@ class TestPkgDepot(testutils.SingleDepotTestCase):
                 self.dc.set_repodir(opath)
 
 
-class TestDepotController(testutils.CliTestCase):
+class TestDepotController(pkg5unittest.CliTestCase):
 
         def setUp(self):
-                testutils.CliTestCase.setUp(self)
+                pkg5unittest.CliTestCase.setUp(self)
 
                 self.__dc = dc.DepotController()
                 self.__pid = os.getpid()
                 self.__dc.set_property("publisher", "prefix", "test")
-                self.__dc.set_depotd_path(testutils.g_proto_area + \
+                self.__dc.set_depotd_path(pkg5unittest.g_proto_area + \
                     "/usr/lib/pkg.depotd")
-                self.__dc.set_depotd_content_root(testutils.g_proto_area + \
+                self.__dc.set_depotd_content_root(pkg5unittest.g_proto_area + \
                     "/usr/share/lib/pkg")
 
-                depotpath = os.path.join(self.get_test_prefix(), "depot")
-                logpath = os.path.join(self.get_test_prefix(), self.id())
+                depotpath = os.path.join(self.test_root, "depot")
+                logpath = os.path.join(self.test_root, self.id())
 
                 try:
                         os.makedirs(depotpath, misc.PKG_DIR_MODE)
@@ -356,11 +346,8 @@ class TestDepotController(testutils.CliTestCase):
                 self.__dc.set_logpath(logpath)
 
         def tearDown(self):
-                testutils.CliTestCase.tearDown(self)
-
+                pkg5unittest.CliTestCase.tearDown(self)
                 self.__dc.kill()
-                shutil.rmtree(self.__dc.get_repodir())
-                os.remove(self.__dc.get_logpath())
 
         def testStartStop(self):
                 self.__dc.set_port(12000)
@@ -371,7 +358,7 @@ class TestDepotController(testutils.CliTestCase):
                         self.assert_(not self.__dc.is_alive())
 
         def test_cfg_file(self):
-                cfg_file = os.path.join(self.get_test_prefix(), "cfg2")
+                cfg_file = os.path.join(self.test_root, "cfg2")
                 fh = open(cfg_file, "w")
                 fh.close()
                 self.__dc.set_port(12000)
@@ -381,19 +368,13 @@ class TestDepotController(testutils.CliTestCase):
         def test_writable_root(self):
                 """Tests whether the index and feed cache file are written to
                 the writable root parameter."""
-                for p in TestPkgDepot.misc_files:
-                        f = open(p, "w")
-                        # write the name of the file into the file, so that
-                        # all files have differing contents
-                        f.write(p)
-                        f.close()
-                        self.debug("wrote %s" % p)
+                self.make_misc_files(TestPkgDepot.misc_files)
 
-                writable_root = os.path.join(self.get_test_prefix(),
+                writable_root = os.path.join(self.test_root,
                     "writ_root")
                 index_dir = os.path.join(writable_root, "index")
                 feed = os.path.join(writable_root, "feed.xml")
-                base_dir = os.path.join(self.get_test_prefix(), "depot")
+                base_dir = os.path.join(self.test_root, "depot")
                 o_index_dir = os.path.join(base_dir, "index")
                 o_feed = os.path.join(base_dir, "feed.xml")
 
@@ -457,8 +438,6 @@ class TestDepotController(testutils.CliTestCase):
                 get_feed(durl)
                 check_state(True)
                 self.pkg("search -r cat")
-                for p in TestPkgDepot.misc_files:
-                        os.remove(p)
 
         def testBadArgs(self):
                 self.__dc.set_port(12000)
@@ -543,10 +522,10 @@ class TestDepotController(testutils.CliTestCase):
                 self.assertFalse(self.__dc.is_alive())
 
 
-class TestDepotOutput(testutils.SingleDepotTestCase):
+class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
         # Since these tests are output sensitive, the depots should be purged
         # after each one is run.
-        persistent_depot = False
+        persistent_setup = False
 
         quux10 = """
             open quux@1.0,5.11-0
@@ -600,7 +579,7 @@ class TestDepotOutput(testutils.SingleDepotTestCase):
         }
 
         def setUp(self):
-                testutils.SingleDepotTestCase.setUp(self)
+                pkg5unittest.SingleDepotTestCase.setUp(self)
 
                 # All of the tests will start depot if needed.
                 self.dc.stop()
@@ -609,11 +588,8 @@ class TestDepotOutput(testutils.SingleDepotTestCase):
                 # tests will set as needed.
                 self.dc.clear_property("publisher", "prefix")
 
-                self.tpath = tempfile.mkdtemp()
-
-        def tearDown(self):
-                testutils.SingleDepotTestCase.tearDown(self)
-                shutil.rmtree(self.tpath)
+                self.tpath = tempfile.mkdtemp(prefix="tpath",
+                    dir=self.test_root)
 
         def test_0_depot_bui_output(self):
                 """Verify that a non-error response and valid HTML is returned

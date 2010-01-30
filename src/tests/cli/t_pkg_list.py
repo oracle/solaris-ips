@@ -28,6 +28,7 @@
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import calendar
 import difflib
@@ -37,9 +38,9 @@ import shutil
 import simplejson as json
 import unittest
 
-class TestPkgList(testutils.ManyDepotTestCase):
+class TestPkgList(pkg5unittest.ManyDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
-        persistent_depot = True
+        persistent_setup = True
 
         foo1 = """
             open foo@1,5.11-0
@@ -70,7 +71,7 @@ class TestPkgList(testutils.ManyDepotTestCase):
             close """
 
         def setUp(self):
-                testutils.ManyDepotTestCase.setUp(self, ["test1", "test2",
+                pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2",
                     "test3"])
 
                 durl1 = self.dcs[1].get_depot_url()
@@ -111,9 +112,6 @@ class TestPkgList(testutils.ManyDepotTestCase):
                     "\n".join(difflib.unified_diff(
                         expected.splitlines(), actual.splitlines(),
                         "Expected output", "Actual output", lineterm="")))
-
-        def tearDown(self):
-                testutils.ManyDepotTestCase.tearDown(self)
 
         def test_pkg_list_cli_opts(self):
 

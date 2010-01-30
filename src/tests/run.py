@@ -1,4 +1,4 @@
-#!/usr/bin/python2.6
+#!/usr/bin/python2.6 -u
 #
 # CDDL HEADER START
 #
@@ -20,23 +20,37 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import os
 import sys
-# We need to execute this from the tests directory
-if os.path.basename(os.getcwd()) != "tests":
+
+# We need cwd to be the same dir as our program.
+if os.path.dirname(__file__) != "" and \
+    os.path.dirname(__file__) != ".":
         os.putenv('PYEXE', sys.executable)
-        os.chdir(os.path.join(os.getcwd(), "tests"))
+        os.chdir(os.path.dirname(__file__))
         import subprocess
         cmd = [sys.executable, "run.py"]
         cmd.extend(sys.argv[1:]) # Skip argv[0]
         sys.exit(subprocess.call(cmd))
 
+#
+# Some modules we use are located in our own proto area.  So before doing
+# any more imports, setup the environment we need.
+#
+
+# Make sure current directory is in the path
+sys.path.insert(0, ".")
+
+import pkg5testenv
+if __name__ == "__main__":
+        pkg5testenv.setup_environment("../../proto")
+
 import baseline
+import fcntl
 import getopt
-import pkg5unittest
 import platform
 import re
 import shutil
@@ -44,15 +58,11 @@ import subprocess
 import tempfile
 import types
 import unittest
+import warnings
+
+import pkg5unittest
+from pkg5unittest import OUTPUT_DOTS, OUTPUT_VERBOSE, OUTPUT_PARSEABLE
 import coverage
-
-# Make sure current directory is in the path
-sys.path.insert(0, ".")
-
-import cli.testutils
-
-if __name__ == "__main__":
-        cli.testutils.setup_environment("../../proto")
 
 osname = platform.uname()[0].lower()
 arch = 'unknown' 
@@ -71,7 +81,8 @@ ostype = os.name
 if ostype == '':
         ostype = 'unknown'
 
-def find_tests(testdir, testpats, startatpat=False):
+
+def find_tests(testdir, testpats, startatpat=False, output=OUTPUT_DOTS):
         # Test pattern to match against
         pats = [ re.compile("%s" % pat, re.IGNORECASE) for pat in testpats ]
         startatpat = re.compile("%s" % startattest, re.IGNORECASE)
@@ -88,25 +99,42 @@ def find_tests(testdir, testpats, startatpat=False):
                         return True
                 return False
 
+        def _vprint(*text):
+                if output == OUTPUT_VERBOSE or output == OUTPUT_PARSEABLE:
+                        print ' '.join([str(l) for l in text]),
+
         loader = unittest.TestLoader()
         suite = unittest.TestSuite()
         testclasses = []
         # "testdir" will be "api", "cli", etc., so find all the files in that 
         # directory that match the pattern "t_*.py".
-        for f in os.listdir(testdir):
+        _vprint("# Loading %s tests:\n" % testdir)
+        curlinepos = 0
+        for f in sorted(os.listdir(testdir)):
+                if curlinepos == 0:
+                        _vprint("#        ")
+                        curlinepos += 9
+
                 if not (f.startswith("t_") and f.endswith(".py")):
                         continue
                 name = os.path.join(testdir, f)
                 name = name.replace(".py", "")
                 name = '.'.join(name.split(os.path.sep))
+                # "api.t_filter" -> ["api", "t_filter"]
+                suitename, filename = name.split(".")
+
                 try:
                         obj = __import__(name)
                 except ImportError, e:
-                        print "Skipping %s: %s" % (name, e.__str__())
+                        print "Skipping %s: %s" % (name, str(e))
                         continue
-                print "Loading tests from: %s" % name
-                # "api.t_filter" -> ["api", "t_filter"]
-                suitename, filename = name.split(".")
+
+                if curlinepos != 0 and (curlinepos + len(filename) + 1) >= 78:
+                        _vprint("\n#        ")
+                        curlinepos = 9
+                _vprint("%s" % filename,)
+                curlinepos += len(filename) + 1
+
                 # file object (t_filter, etc)
                 fileobj = getattr(obj, filename)
                 # Get all the classes from the file
@@ -116,6 +144,10 @@ def find_tests(testdir, testpats, startatpat=False):
                         # Make sure it's a test case
                         if not _istest(classobj):
                                 continue
+
+                        # We tack this in for pretty-printing.
+                        classobj._Pkg5TestCase__suite_name = suitename
+
                         for attrname in dir(classobj):
                                 methobj = getattr(classobj, attrname)
                                 # Make sure its a test method
@@ -135,6 +167,7 @@ def find_tests(testdir, testpats, startatpat=False):
                                 if not found:
                                         delattr(classobj, attrname)
                         testclasses.append(classobj)
+        _vprint("\n#\n")
                         
         for cobj in testclasses:
                 suite.addTest(unittest.makeSuite(cobj, 'test',
@@ -147,22 +180,36 @@ def usage():
                 % sys.argv[0]
         print >> sys.stderr, "       %s [-chptvx] [-b filename] [-s regexp] "\
                 "[-o regexp]" % sys.argv[0]
-        print >> sys.stderr, "   -c             Collect code coverage data"
-        print >> sys.stderr, "   -g             Generate result baseline"
-        print >> sys.stderr, "   -h             This help message"
-        print >> sys.stderr, "   -p             Parseable output format"
-        print >> sys.stderr, "   -t             Generate timing info file"
-        print >> sys.stderr, "   -v             Verbose output"
-        print >> sys.stderr, "   -x             Stop after the first failure"
-        print >> sys.stderr, "   -b <filename>  Baseline filename"
-        print >> sys.stderr, "   -o <regexp>    Run only tests that match regexp"
-        print >> sys.stderr, "   -s <regexp>    Run tests starting at regexp"
-        print >> sys.stderr, ""
-        sys.exit(1)
+        print >> sys.stderr, \
+"""   -a <dir>       Archive failed test cases to <dir>/$pid/$testcasename
+   -c             Collect code coverage data
+   -d             Show debug output, including commands run, and outputs
+   -f             Show fail/error information even when test is expected to fail
+   -g             Generate result baseline
+   -h             This help message
+   -p             Parseable output format
+   -t             Generate timing info file
+   -v             Verbose output
+   -x             Stop after the first baseline mismatch
+   -b <filename>  Baseline filename
+   -o <regexp>    Run only tests that match regexp
+   -s <regexp>    Run tests starting at regexp
+"""
+        sys.exit(2)
 
 if __name__ == "__main__":
+        # Make all warnings be errors.
+        warnings.simplefilter('error')
+
         try:
-                opts, pargs = getopt.getopt(sys.argv[1:], "cghptvxb:o:s:",
+
+                #
+                # !!! WARNING !!!
+                #
+                # If you add options here, you need to also update setup.py's
+                # test_func to include said options.
+                #
+                opts, pargs = getopt.getopt(sys.argv[1:], "a:cdfghptvxb:o:s:",
                     ["generate-baseline", "parseable", "timing", "verbose",
                     "baseline-file", "only"])
         except getopt.GetoptError, e:
@@ -172,18 +219,26 @@ if __name__ == "__main__":
         bfile = os.path.join(os.getcwd(), "baseline.txt")
         generate = False
         onlyval = []
-        output = pkg5unittest.OUTPUT_DOTS
+        output = OUTPUT_DOTS
         bailonfail = False
         startattest = ""
         timing_file = False
         do_coverage = False
+        debug_output = False
+        show_on_expected_fail = False
+        archive_dir = None
+
         for opt, arg in opts:
                 if opt == "-v":
-                        output = pkg5unittest.OUTPUT_VERBOSE
+                        output = OUTPUT_VERBOSE
                 if opt == "-p":
-                        output = pkg5unittest.OUTPUT_PARSEABLE
+                        output = OUTPUT_PARSEABLE
                 if opt == "-c":
                         do_coverage = True
+                if opt == "-d":
+                        pkg5unittest.g_debug_output = True
+                if opt == "-f":
+                        show_on_expected_fail = True
                 if opt == "-g":
                         generate = True
                 if opt == "-b":
@@ -196,6 +251,8 @@ if __name__ == "__main__":
                         timing_file = True
                 if opt == "-s":
                         startattest = arg
+                if opt == "-a":
+                        archive_dir = arg
                 if opt == "-h":
 			usage()
         if (bailonfail or startattest) and generate:
@@ -210,6 +267,12 @@ if __name__ == "__main__":
                 cov_file = "%s/pkg5" % covdir
                 cov = coverage.coverage(data_file=cov_file, data_suffix=True)
                 cov.start()
+
+        # Allow relative archive dir, but first convert it to abs. paths.
+        if archive_dir is not None:
+                archive_dir = os.path.abspath(archive_dir)
+                if not os.path.exists(archive_dir):
+                        os.makedirs(archive_dir)
 
         import pkg.portable
 
@@ -226,8 +289,8 @@ if __name__ == "__main__":
                             ppriv, "-s", "A-sys_linkdir", str(os.getpid())
                         ])
 
-        api_suite = find_tests("api", onlyval, startattest)
-        cli_suite = find_tests("cli", onlyval, startattest)
+        api_suite = find_tests("api", onlyval, startattest, output)
+        cli_suite = find_tests("cli", onlyval, startattest, output)
 
         suites = []
         suites.append(api_suite)
@@ -235,12 +298,21 @@ if __name__ == "__main__":
                 suites.append(cli_suite)
                 import gui.testutils
                 if not gui.testutils.check_for_gtk():
-                        print "GTK not present, GUI tests disabled."
+                        print "# GTK not present or $DISPLAY not " \
+                            "set, GUI tests disabled."
                 elif not gui.testutils.check_if_a11y_enabled():
-                        print "Accessibility not enabled, GUI tests disabled."
+                        print "# Accessibility not enabled, GUI tests disabled."
                 else:
-                        gui_suite = find_tests("gui", onlyval, startattest)
+                        gui_suite = find_tests("gui", onlyval,
+                            startattest, output)
                         suites.append(gui_suite)
+
+        # This is primarily of interest to developers altering the test suite,
+        # so don't enable it for now.  The testsuite suite tends to emit a bunch
+        # of harmless but noisy errors to the screen due to the way it exercises
+        # various corner cases.
+        #testsuite_suite = find_tests("testsuite", onlyval, startattest, output)
+        #suites.append(testsuite_suite)
 
         # Initialize the baseline results and load them
         baseline = baseline.BaseLine(bfile, generate)
@@ -249,7 +321,7 @@ if __name__ == "__main__":
         # Make sure we capture stdout
         testlogfd, testlogpath = tempfile.mkstemp(suffix='.pkg-test.log')
         testlogfp = os.fdopen(testlogfd, "w")
-        print "logging to %s" % testlogpath
+        print "# logging to %s" % testlogpath
         sys.stdout = testlogfp
 
         if timing_file:
@@ -269,17 +341,25 @@ if __name__ == "__main__":
         
         # Run the python test suites
         runner = pkg5unittest.Pkg5TestRunner(baseline, output=output,
-            timing_file=timing_file, bailonfail=bailonfail,
-            coverage=(cov_cmd, cov_env))
+            timing_file=timing_file,
+            bailonfail=bailonfail,
+            coverage=(cov_cmd, cov_env),
+            show_on_expected_fail=show_on_expected_fail,
+            archive_dir=archive_dir)
         exitval = 0
         for x in suites:
                 try:
-                    res = runner.run(x)
+                        res = runner.run(x)
                 except pkg5unittest.Pkg5TestCase.failureException, e:
-                    exitval = 1
-                    print >> sys.stderr, e
-                    break
-                if res.failures:
+                        exitval = 1
+                        print >> sys.stderr
+                        print >> sys.stderr, e
+                        break
+                except pkg5unittest.TestStopException, e:
+                        exitval = 1
+                        print >> sys.stderr
+                        break
+                if res.mismatches:
                         exitval = 1
 
         testlogfp.close()
@@ -299,7 +379,7 @@ if __name__ == "__main__":
                 os.rename("%s/pkg5" % covdir, ".coverage")
                 shutil.rmtree(covdir)
                 print >> sys.stderr, "Generating html coverage report"
-                vp = cli.testutils.g_proto_area + "/usr/lib/python2.6/vendor-packages"
+                vp = pkg5unittest.g_proto_area + "/usr/lib/python2.6/vendor-packages"
                 omits = [
                     # External modules
                     "%s/cherrypy" % vp,

@@ -20,19 +20,20 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import unittest
 import os
 
-class TestImageUpdate(testutils.ManyDepotTestCase):
+class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
-        persistent_depot = True
+        persistent_setup = True
 
         foo10 = """
             open foo@1.0,5.11-0
@@ -99,7 +100,7 @@ class TestImageUpdate(testutils.ManyDepotTestCase):
             close """
 
         def setUp(self):
-                testutils.ManyDepotTestCase.setUp(self, ["test1", "test2",
+                pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2",
                     "test3", "test4", "test5"])
                 durl1 = self.dcs[1].get_depot_url()
                 durl2 = self.dcs[2].get_depot_url()

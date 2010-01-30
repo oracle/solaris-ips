@@ -28,6 +28,7 @@
 import testutils
 if __name__ == "__main__":
 	testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import os
 import time
@@ -41,9 +42,9 @@ import pkg.client.progress as progress
 API_VERSION = 31
 PKG_CLIENT_NAME = "pkg"
 
-class TestPkgApiInstall(testutils.SingleDepotTestCase):
+class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
-        persistent_depot = False
+        persistent_setup = False
 
         foo10 = """
             open foo@1.0,5.11-0
@@ -52,27 +53,27 @@ class TestPkgApiInstall(testutils.SingleDepotTestCase):
         foo11 = """
             open foo@1.1,5.11-0
             add dir mode=0755 owner=root group=bin path=/lib
-            add file /tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1 timestamp="20080731T024051Z"
+            add file tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1 timestamp="20080731T024051Z"
             close """
         foo11_timestamp = 1217472051
 
         foo12 = """
             open foo@1.2,5.11-0
-            add file /tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
+            add file tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
             close """
 
         bar10 = """
             open bar@1.0,5.11-0
             add depend type=require fmri=pkg:/foo@1.0
             add dir mode=0755 owner=root group=bin path=/bin
-            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
 
         bar11 = """
             open bar@1.1,5.11-0
             add depend type=require fmri=pkg:/foo@1.2
             add dir mode=0755 owner=root group=bin path=/bin
-            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
 
         xfoo10 = """
@@ -83,14 +84,14 @@ class TestPkgApiInstall(testutils.SingleDepotTestCase):
             open xbar@1.0,5.11-0
             add depend type=require fmri=pkg:/xfoo@1.0
             add dir mode=0755 owner=root group=bin path=/bin
-            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
 
         xbar11 = """
             open xbar@1.1,5.11-0
             add depend type=require fmri=pkg:/xfoo@1.2
             add dir mode=0755 owner=root group=bin path=/bin
-            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
 
 
@@ -98,54 +99,42 @@ class TestPkgApiInstall(testutils.SingleDepotTestCase):
             open bar@1.2,5.11-0
             add depend type=require fmri=pkg:/foo@1.0
             add dir mode=0755 owner=root group=bin path=/bin
-            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat 
+            add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat 
             close """
 
         baz10 = """
             open baz@1.0,5.11-0
             add depend type=require fmri=pkg:/foo@1.0
             add dir mode=0755 owner=root group=bin path=/bin
-            add file /tmp/baz mode=0555 owner=root group=bin path=/bin/baz
+            add file tmp/baz mode=0555 owner=root group=bin path=/bin/baz
             close """
 
         deep10 = """
             open deep@1.0,5.11-0
             add depend type=require fmri=pkg:/bar@1.0
             add dir mode=0755 owner=root group=bin path=/bin
-            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
         
         xdeep10 = """
             open xdeep@1.0,5.11-0
             add depend type=require fmri=pkg:/xbar@1.0
             add dir mode=0755 owner=root group=bin path=/bin
-            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
 
         ydeep10 = """
             open ydeep@1.0,5.11-0
             add depend type=require fmri=pkg:/ybar@1.0
             add dir mode=0755 owner=root group=bin path=/bin
-            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
 
-        misc_files = [ "/tmp/libc.so.1", "/tmp/cat", "/tmp/baz" ]
+        misc_files = [ "tmp/libc.so.1", "tmp/cat", "tmp/baz" ]
 
         def setUp(self):
-                testutils.SingleDepotTestCase.setUp(self)
-                for p in self.misc_files:
-                        f = open(p, "w")
-                        # write the name of the file into the file, so that
-                        # all files have differing contents
-                        f.write(p)
-                        f.close
-                        self.debug("wrote %s" % p)
-
-        def tearDown(self):
-                self.debug("In teardown")
-                testutils.SingleDepotTestCase.tearDown(self)
-                for p in self.misc_files:
-                        os.remove(p)
+                pkg5unittest.SingleDepotTestCase.setUp(self)
+                self.make_misc_files(self.misc_files)
 
         @staticmethod
         def __do_install(api_obj, fmris):
@@ -496,29 +485,29 @@ class TestPkgApiInstall(testutils.SingleDepotTestCase):
                         return e.missing_matches
 
 
-                testutils.eval_assert_raises(api_errors.PlanCreationException,
+                pkg5unittest.eval_assert_raises(api_errors.PlanCreationException,
                     check_unfound, api_obj.plan_install, ["foo"])
 
                 api_obj.reset()
-                testutils.eval_assert_raises(api_errors.PlanCreationException,
+                pkg5unittest.eval_assert_raises(api_errors.PlanCreationException,
                     check_missing, api_obj.plan_uninstall, ["foo"], False)
 
                 api_obj.reset()
-                testutils.eval_assert_raises(api_errors.PlanCreationException,
+                pkg5unittest.eval_assert_raises(api_errors.PlanCreationException,
                     check_illegal, api_obj.plan_install, ["@/foo"])
                 
                 api_obj.reset()
-                testutils.eval_assert_raises(api_errors.PlanCreationException,
+                pkg5unittest.eval_assert_raises(api_errors.PlanCreationException,
                     check_illegal, api_obj.plan_uninstall, ["/foo"], False)
 
                 self.pkgsend_bulk(durl, self.foo10)
 
                 api_obj.refresh(False)
-                testutils.eval_assert_raises(api_errors.PlanCreationException,
+                pkg5unittest.eval_assert_raises(api_errors.PlanCreationException,
                     check_missing, api_obj.plan_uninstall, ["foo"], False)
 
                 api_obj.reset()
-                testutils.eval_assert_raises(api_errors.PlanCreationException,
+                pkg5unittest.eval_assert_raises(api_errors.PlanCreationException,
                     check_illegal, api_obj.plan_uninstall, ["/foo"], False)
 
                 api_obj.reset()
@@ -527,7 +516,7 @@ class TestPkgApiInstall(testutils.SingleDepotTestCase):
                 self.__do_uninstall(api_obj, ["foo"])
 
                 api_obj.reset()                
-                testutils.eval_assert_raises(api_errors.PlanCreationException,
+                pkg5unittest.eval_assert_raises(api_errors.PlanCreationException,
                     check_missing, api_obj.plan_uninstall, ["foo"], False)
 
         def test_bug_4109(self):
@@ -541,7 +530,7 @@ class TestPkgApiInstall(testutils.SingleDepotTestCase):
                         return e.illegal
 
                 api_obj.reset()
-                testutils.eval_assert_raises(api_errors.PlanCreationException,
+                pkg5unittest.eval_assert_raises(api_errors.PlanCreationException,
                     check_illegal, api_obj.plan_install, ["/foo"])
 
         def test_catalog_v0(self):

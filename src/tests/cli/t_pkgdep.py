@@ -26,6 +26,7 @@
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import os
 import shutil
@@ -38,8 +39,7 @@ import pkg.flavor.base as base
 import pkg.flavor.depthlimitedmf as mf
 import pkg.portable as portable
 
-class TestPkgdepBasics(testutils.SingleDepotTestCase):
-        persistent_depot = True
+class TestPkgdepBasics(pkg5unittest.SingleDepotTestCase):
 
         test_manf_1 = """\
 hardlink path=baz target=var/log/authlog
@@ -50,17 +50,17 @@ file NOHA\
 SH group=bin mode=0755 owner=root path=u\
 sr/xpg4/lib/libcurses.so.1
 """
-        test_manf_2 = """
+        test_manf_2 = """\
 file NOHASH group=bin mode=0755 owner=root path=usr/xpg4/lib/libcurses.so.1 variant.arch=foo
 file NOHASH group=bin mode=0755 owner=root path=etc/pam.conf
 """
 
-        int_hardlink_manf = """ \
+        int_hardlink_manf = """\
 hardlink path=usr/foo target=../var/log/syslog
 file NOHASH group=sys mode=0644 owner=root path=var/log/syslog
 """
 
-        resolve_dep_manf = """
+        resolve_dep_manf = """\
 file NOHASH group=sys mode=0600 owner=root path=var/log/authlog preserve=true
 """
 
@@ -102,11 +102,11 @@ file tmp/file/should/not/exist/here/foo group=bin mode=0755 owner=root path=foo/
                         # Remove any paths that start with the defined python
                         # paths.
                         res.extend(
-                            sorted([
+                            sorted(set([
                             fp for fp in sys.path
                             if not mf.DepthLimitedModuleFinder.startswith_path(
                                 fp, self.py_path)
-                            ]))
+                            ])))
                         return res
                         
                 sp = subprocess.Popen(
@@ -120,14 +120,17 @@ file tmp/file/should/not/exist/here/foo group=bin mode=0755 owner=root path=foo/
                 # by running python via the -c option. When running an
                 # executable python script, the first item is the directory
                 # containing the script.
-                return sorted([
+                return sorted(set([
                     fp for fp in eval(out)[1:]
                     if not mf.DepthLimitedModuleFinder.startswith_path(fp,
                         self.py_path)
-                ])
+                ]))
 
         @staticmethod
         def __make_paths(added, paths):
+                """ Append a dependency path for "added" to each of
+                the paths in the list "paths" """
+
                 return " ".join([
                     ("%(pfx)s.path=%(p)s/%(added)s" % {
                         "pfx":
@@ -261,6 +264,13 @@ depend fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1%(replaced_path)s %(pfx)s.path=
     "replaced_path":"%(replaced_path)s"
 }
 
+        #
+        # You may wonder why libc.so.1 is here as a dependency-- it's an
+        # artifact of the way we compile our dummy module, and serves as
+        # a "something to depend on".  In this way, the sample elf file
+        # depends on libc.so.1 in the same way that a kernel module might
+        # depend on another kernel module.
+        #
         kernel_manf_stdout = """\
 depend fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1 %(pfx)s.path=kernel %(pfx)s.path=usr/kernel %(pfx)s.reason=kernel/foobar %(pfx)s.type=elf type=require\
 """ % {
@@ -287,8 +297,8 @@ Couldn't find %(path_pref)s/tmp/file/should/not/exist/here/foo
 """
 
         double_plat_error = """\
-%(image_dir)s/proto/elf_test (which will be installed at bar/foo) had this token, $PLATFORM, in its run path: /platform/$PLATFORM/foo.  It is not currently possible to automatically expand this token. Please specify its value on the command line.
-%(image_dir)s/proto/elf_test (which will be installed at bar/foo) had this token, $PLATFORM, in its run path: /isadir/$PLATFORM/baz.  It is not currently possible to automatically expand this token. Please specify its value on the command line."""
+%(proto_dir)s/elf_test (which will be installed at bar/foo) had this token, $PLATFORM, in its run path: /platform/$PLATFORM/foo.  It is not currently possible to automatically expand this token. Please specify its value on the command line.
+%(proto_dir)s/elf_test (which will be installed at bar/foo) had this token, $PLATFORM, in its run path: /isadir/$PLATFORM/baz.  It is not currently possible to automatically expand this token. Please specify its value on the command line."""
 
         double_plat_stdout = """\
 depend fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1 %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=bar/foo %(pfx)s.type=elf type=require\
@@ -298,7 +308,7 @@ depend fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1 %(pfx)s.path=lib %(pfx)s.path=
 }
 
         double_plat_isa_error = """\
-%(image_dir)s/proto/elf_test (which will be installed at bar/foo) had this token, $ISALIST, in its run path: /$ISALIST/$PLATFORM/baz.  It is not currently possible to automatically expand this token. Please specify its value on the command line.\
+%(proto_dir)s/elf_test (which will be installed at bar/foo) had this token, $ISALIST, in its run path: /$ISALIST/$PLATFORM/baz.  It is not currently possible to automatically expand this token. Please specify its value on the command line.\
 """
 
         double_plat_isa_stdout = """\
@@ -414,6 +424,7 @@ file NOHASH group=bin mode=0644 owner=root path=usr/lib/python%(py_ver)s/vendor-
                 discovered.
                 """
                 vp = self.get_ver_paths(ver, proto_area)
+                self.debug("ver_paths is %s" % vp)
                 pkg_path = self.__make_paths("pkg", vp)
                 return ("depend fmri=%(dummy_fmri)s "
                     "%(pfx)s.file=indexer.py "
@@ -508,19 +519,15 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
 """
 
         def setUp(self):
-                testutils.SingleDepotTestCase.setUp(self)
+                pkg5unittest.SingleDepotTestCase.setUp(self)
+                #
+                # To test pkgdepend resolve properly, we need an image.
+                # Side by side with the image, we create a testing proto area.
+                #
                 self.image_create(self.dc.get_depot_url())
-                self.manf_dirs = os.path.join(self.img_path, "manfs")
-                os.makedirs(self.manf_dirs)
-                self.proto_dir = os.path.join(self.img_path, "proto")
-                os.makedirs(self.proto_dir)
-        
-        def make_manifest(self, str):
-                t_fd, t_path = tempfile.mkstemp(dir=self.manf_dirs)
-                t_fh = os.fdopen(t_fd, "w")
-                t_fh.write(str)
-                t_fh.close()
-                return t_path
+
+                self.test_proto_dir = os.path.join(self.test_root, "proto")
+                os.makedirs(self.test_proto_dir)
 
         @staticmethod
         def __compare_res(b1, b2):
@@ -546,39 +553,23 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 fh.close()
                 return lines
 
-        def make_elf(self, run_paths, o_path="elf_test"):
-                t_fd, t_path = tempfile.mkstemp(suffix=".c", dir=self.proto_dir)
-                t_fh = os.fdopen(t_fd, "w")
-                t_fh.write("int main(){}\n")
-                t_fh.close()
-                out_file = os.path.join(self.proto_dir, o_path)
-                out_dir = os.path.dirname(out_file)
-                if not os.path.exists(out_dir):
-                        os.makedirs(out_dir)
-                cmd = ["/usr/bin/cc", "-o", out_file]
-                for rp in run_paths:
-                        cmd.append("-R")
-                        cmd.append(rp)
-                cmd.append(t_path)
-                s = subprocess.Popen(cmd, stderr=subprocess.PIPE)
-                out, err = s.communicate()
-                rc = s.returncode
-                if rc != 0:
-                        raise RuntimeError("Compile of %s failed. Runpaths "
-                            "were %s\nCommand was:\n%s\nError was:\n%s" %
-                            (t_path, " ".join(run_paths), " ".join(cmd), err))
-                return out_file[len(self.img_path)+1:]
+        def make_proto_text_file(self, path, contents=""):
+                #
+                # We add a newline if it is missing because file(1) is sensitive
+                # to files which lack them.
+                #
+                contents = contents + "\n"
+                self.make_misc_files({ path: contents }, prefix="proto")
 
-        def make_text_file(self, o_path, o_text=""):
-                f_path = os.path.join(self.proto_dir, o_path)
-                f_dir = os.path.dirname(f_path)
-                if not os.path.exists(f_dir):
-                        os.makedirs(f_dir)
+        def make_elf(self, run_paths=[], output_path="elf_test"):
+                out_file = os.path.join(self.test_proto_dir, output_path)
 
-                fh = open(f_path, "w")
-                fh.write(o_text)
-                fh.close()
-                return f_path
+                # Make sure to quote the runpaths, as they may contain tokens
+                # like $PLATFORM which we do not want the shell to evaluate.
+                self.c_compile("int main(){}\n",
+                    ["-R'%s'" % rp for rp in run_paths], out_file)
+
+                return out_file[len(self.test_proto_dir)+1:]
 
         def check_res(self, expected, seen):
                 seen = seen.strip()
@@ -590,16 +581,18 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 seen_but_not_expected = self.__compare_res(seen, expected)
                 expected_but_not_seen = self.__compare_res(expected, seen)
                 self.assertEqual(seen_but_not_expected, expected_but_not_seen)
-        
+
         def test_opts(self):
                 """Ensure that incorrect arguments don't cause a traceback."""
 
-                self.pkgdepend("generate", exit=2)
-                self.pkgdepend("generate foo", proto="", exit=2)
-                self.pkgdepend("generate -z foo bar", exit=2)
-                self.pkgdepend("generate no_such_file_should_exist", exit=2)
-                self.pkgdepend("generate -?")
-                self.pkgdepend("generate --help")
+                proto = pkg5unittest.g_proto_area
+                self.pkgdepend_generate("", proto=proto, exit=2)
+                self.pkgdepend_generate("foo", proto="", exit=2)
+                self.pkgdepend_generate("-z foo bar", proto=proto, exit=2)
+                self.pkgdepend_generate("no_such_file_should_exist",
+                    proto=proto, exit=2)
+                self.pkgdepend_generate("-\?", proto="")
+                self.pkgdepend_generate("--help", proto="")
                 
         def test_output(self):
                 """Check that the output is in the format expected."""
@@ -607,42 +600,43 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 tp = self.make_manifest(self.test_manf_1)
                 fp = "usr/lib/python2.6/vendor-packages/pkg/client/indexer.py" 
                 
-                self.pkgdepend("generate %s" % tp, exit=1)
+                self.pkgdepend_generate("%s" % tp,
+                    proto=pkg5unittest.g_proto_area, exit=1)
                 self.check_res(self.make_res_manf_1(
-                        testutils.g_proto_area) % {"reason": fp},
+                        pkg5unittest.g_proto_area) % {"reason": fp},
                     self.output)
-                self.check_res(self.err_manf_1 % testutils.g_proto_area,
+                self.check_res(self.err_manf_1 % pkg5unittest.g_proto_area,
                     self.errout)
 
-                self.pkgdepend("generate -m %s" % tp, exit=1)
+                self.pkgdepend_generate("-m %s" % tp,
+                    proto=pkg5unittest.g_proto_area, exit=1)
                 self.check_res(
                     self.make_full_res_manf_1(
-                        testutils.g_proto_area) % {"reason": fp},
+                        pkg5unittest.g_proto_area) % {"reason": fp},
                     self.output)
-                self.check_res(self.err_manf_1 % testutils.g_proto_area,
+                self.check_res(self.err_manf_1 % pkg5unittest.g_proto_area,
                     self.errout)
 
-                self.make_text_file(fp, self.python_text)
+                self.make_proto_text_file(fp, self.python_text)
                 self.make_elf([], "usr/xpg4/lib/libcurses.so.1")
                 
-                self.pkgdepend("generate -m %s" % tp, proto=self.proto_dir)
+                self.pkgdepend_generate("-m %s" % tp, proto=self.test_proto_dir)
                 self.check_res(
                     self.make_full_res_manf_1_mod_proto(
-                        testutils.g_proto_area)  % {"reason": fp},
+                        pkg5unittest.g_proto_area)  % {"reason": fp},
                     self.output)
                 self.check_res("", self.errout)
 
                 tp = self.make_manifest(self.test_manf_2)
-                self.make_text_file("etc/pam.conf", "text")
+                self.make_proto_text_file("etc/pam.conf", "text")
                 
-                self.pkgdepend("generate %s" % tp, proto=self.proto_dir)
+                self.pkgdepend_generate("%s" % tp, proto=self.test_proto_dir)
                 self.check_res(self.res_manf_2, self.output)
                 self.check_res("", self.errout)
 
                 res_path = self.make_manifest(self.output)
 
-                self.pkgdepend("resolve -o %s" %
-                    res_path, use_proto=False, exit=1)
+                self.pkgdepend_resolve("-o %s" % res_path, exit=1)
                 self.check_res("%s" % res_path, self.output)
                 self.check_res(self.resolve_error % {
                         "manf_path": res_path,
@@ -651,7 +645,7 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                         "dummy_fmri":base.Dependency.DUMMY_FMRI
                     }, self.errout)
                 
-                self.pkgdepend("generate -M %s" % tp, proto=self.proto_dir)
+                self.pkgdepend_generate("-M %s" % tp, proto=self.test_proto_dir)
                 self.check_res(self.res_manf_2, self.output)
                 self.check_res(self.res_manf_2_missing, self.errout)
 
@@ -660,13 +654,13 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
 
                 tp = self.make_manifest(self.int_hardlink_manf)
 
-                self.make_text_file("var/log/syslog", "text")
+                self.make_proto_text_file("var/log/syslog", "text")
                 
-                self.pkgdepend("generate %s" % tp, proto=self.proto_dir)
+                self.pkgdepend_generate("%s" % tp, proto=self.test_proto_dir)
                 self.check_res("", self.output)
                 self.check_res("", self.errout)
 
-                self.pkgdepend("generate -I %s" % tp, proto=self.proto_dir)
+                self.pkgdepend_generate("-I %s" % tp, proto=self.test_proto_dir)
                 self.check_res(self.res_int_manf, self.output)
                 self.check_res("", self.errout)
 
@@ -708,23 +702,24 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 tp = self.make_manifest(self.pyver_test_manf_1 %
                     {"py_ver":"2.4"})
                 fp = "usr/lib/python2.4/vendor-packages/pkg/client/indexer.py"
-                self.make_text_file(fp, self.pyver_python_text % "2.6")
-                self.pkgdepend("generate %s" % tp, proto=self.proto_dir, exit=1)
+                self.make_proto_text_file(fp, self.pyver_python_text % "2.6")
+                self.pkgdepend_generate("%s" % tp, proto=self.test_proto_dir,
+                     exit=1)
                 self.check_res(self.pyver_mismatch_results +
-                    self.make_pyver_python_res("2.4", self.proto_dir) %
+                    self.make_pyver_python_res("2.4", self.test_proto_dir) %
                         {"reason": fp, "bin_ver": "2.6"},
                     self.output)
-                self.check_res(self.pyver_mismatch_errs % self.proto_dir,
+                self.check_res(self.pyver_mismatch_errs % self.test_proto_dir,
                     self.errout)
 
                 # Test line 2 (X D !F)
                 tp = self.make_manifest(self.pyver_test_manf_1 %
                     {"py_ver":"2.4"})
                 fp = "usr/lib/python2.4/vendor-packages/pkg/client/indexer.py"
-                self.make_text_file(fp, self.pyver_python_text % "")
-                self.pkgdepend("generate -m %s" % tp, proto=self.proto_dir)
+                self.make_proto_text_file(fp, self.pyver_python_text % "")
+                self.pkgdepend_generate("-m %s" % tp, proto=self.test_proto_dir)
                 self.check_res(
-                    self.pyver_res_full_manf_1("2.4", self.proto_dir) %
+                    self.pyver_res_full_manf_1("2.4", self.test_proto_dir) %
                         {"reason": fp, "bin_ver": ""},
                     self.output)
                 self.check_res("", self.errout)
@@ -732,10 +727,10 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 # Test line 3 (X !D F)
                 tp = self.make_manifest(self.py_in_usr_bin_manf)
                 fp = "usr/bin/pkg"
-                self.make_text_file(fp, self.pyver_python_text % "2.4")
-                self.pkgdepend("generate -m %s" % tp, proto=self.proto_dir)
+                self.make_proto_text_file(fp, self.pyver_python_text % "2.4")
+                self.pkgdepend_generate("-m %s" % tp, proto=self.test_proto_dir)
                 self.check_res(
-                    self.pyver_res_full_manf_1("2.4", self.proto_dir) %
+                    self.pyver_res_full_manf_1("2.4", self.test_proto_dir) %
                         {"reason": fp, "bin_ver": "2.4"},
                     self.output)
                 self.check_res("", self.errout)
@@ -743,24 +738,24 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 # Test line 4 (X !D !F)
                 tp = self.make_manifest(self.py_in_usr_bin_manf)
                 fp = "usr/bin/pkg"
-                self.make_text_file(fp, self.pyver_python_text % "")
-                self.pkgdepend("generate -m %s" % tp, proto=self.proto_dir,
+                self.make_proto_text_file(fp, self.pyver_python_text % "")
+                self.pkgdepend_generate("-m %s" % tp, proto=self.test_proto_dir,
                     exit=1)
                 self.check_res(
                     self.pyver_24_script_full_manf_1 %
                         {"reason": fp, "bin_ver": ""},
                     self.output)
-                self.check_res(self.pyver_unspecified_ver_err % self.proto_dir,
+                self.check_res(self.pyver_unspecified_ver_err % self.test_proto_dir,
                     self.errout)
 
                 # Test line 5 (!X D F)
                 tp = self.make_manifest(self.pyver_test_manf_1_non_ex %
                     {"py_ver":"2.4"})
                 fp = "usr/lib/python2.4/vendor-packages/pkg/client/indexer.py"
-                self.make_text_file(fp, self.pyver_python_text % "2.6")
-                self.pkgdepend("generate %s" % tp, proto=self.proto_dir)
+                self.make_proto_text_file(fp, self.pyver_python_text % "2.6")
+                self.pkgdepend_generate("%s" % tp, proto=self.test_proto_dir)
                 self.check_res(
-                    self.make_pyver_python_res("2.4", self.proto_dir) %
+                    self.make_pyver_python_res("2.4", self.test_proto_dir) %
                         {"reason": fp},
                     self.output)
                 self.check_res("", self.errout)
@@ -769,10 +764,10 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 tp = self.make_manifest(self.pyver_test_manf_1_non_ex %
                     {"py_ver":"2.4"})
                 fp = "usr/lib/python2.4/vendor-packages/pkg/client/indexer.py"
-                self.make_text_file(fp, self.pyver_python_text % "")
-                self.pkgdepend("generate %s" % tp, proto=self.proto_dir)
+                self.make_proto_text_file(fp, self.pyver_python_text % "")
+                self.pkgdepend_generate("%s" % tp, proto=self.test_proto_dir)
                 self.check_res(
-                    self.make_pyver_python_res("2.4", self.proto_dir) %
+                    self.make_pyver_python_res("2.4", self.test_proto_dir) %
                         {"reason": fp},
                     self.output)
                 self.check_res("", self.errout)
@@ -780,16 +775,16 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 # Test line 7 (!X !D F)
                 tp = self.make_manifest(self.py_in_usr_bin_manf_non_ex)
                 fp = "usr/bin/pkg"
-                self.make_text_file(fp, self.pyver_python_text % "2.4")
-                self.pkgdepend("generate %s" % tp, proto=self.proto_dir)
+                self.make_proto_text_file(fp, self.pyver_python_text % "2.4")
+                self.pkgdepend_generate("%s" % tp, proto=self.test_proto_dir)
                 self.check_res("", self.output)
                 self.check_res("", self.errout)
 
                 # Test line 8 (!X !D !F)
                 tp = self.make_manifest(self.py_in_usr_bin_manf_non_ex)
                 fp = "usr/bin/pkg"
-                self.make_text_file(fp, self.pyver_python_text % "")
-                self.pkgdepend("generate %s" % tp, proto=self.proto_dir)
+                self.make_proto_text_file(fp, self.pyver_python_text % "")
+                self.pkgdepend_generate("%s" % tp, proto=self.test_proto_dir)
                 self.check_res("", self.output)
                 self.check_res("", self.errout)
 
@@ -804,13 +799,13 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                             self.pyver_test_manf_1 % {"py_ver":py_ver})
                         fp = "usr/lib/python%s/vendor-packages/pkg/" \
                             "client/indexer.py" % py_ver 
-                        self.make_text_file(fp, self.python_text)
+                        self.make_proto_text_file(fp, self.python_text)
 
                         # Run generate and check the output.
-                        self.pkgdepend("generate -m %s" % tp,
-                            proto=self.proto_dir)
+                        self.pkgdepend_generate("-m %s" % tp,
+                            proto=self.test_proto_dir)
                         self.check_res(
-                            self.pyver_res_full_manf_1(py_ver, self.proto_dir) %
+                            self.pyver_res_full_manf_1(py_ver, self.test_proto_dir) %
                                 {"bin_ver": "", "reason":fp},
                             self.output)
                         self.check_res("", self.errout)
@@ -822,9 +817,8 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                             self.pyver_resolve_dep_manf % {"py_ver":py_ver})
 
                         # Run resolver and check the output.
-                        self.pkgdepend(
-                            "resolve %s %s" % (dependency_mp, provider_mp),
-                            use_proto=False)
+                        self.pkgdepend_resolve(
+                            "%s %s" % (dependency_mp, provider_mp))
                         self.check_res("", self.output)
                         self.check_res("", self.errout)
                         dependency_res_p = dependency_mp + ".res"
@@ -855,9 +849,8 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 p2_name = "s-v-bar"
                 p3_name = "s-v-baz-one"
                 p4_name = "s-v-baz-two"
-                self.pkgdepend("resolve -o %s" %
-                    " ".join([m1_path, m2_path, m3_path, m4_path]),
-                    use_proto=False, exit=1)
+                self.pkgdepend_resolve("-o %s" %
+                    " ".join([m1_path, m2_path, m3_path, m4_path]), exit=1)
 
                 self.check_res(self.two_v_deps_output % {
                         "m1_path": m1_path,
@@ -873,29 +866,31 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                     }, self.errout)
 
         def test_bug_10518(self):
-
+                """ pkgdepend should exit 2 on input args of the wrong type """
                 m_path = self.make_manifest(self.test_manf_1)
 
-                self.pkgdepend("generate / %s " % m_path,
-                    use_proto=False, exit=2)
+                # Try feeding a directory where a manifest should be--
+                # a typical scenario we play out here is a user
+                # inverting the first and second args.
+                self.pkgdepend_generate("/", proto=m_path, exit=2)
                 self.check_res(
                     "pkgdepend: The manifest file / could not be found.\n" +
                     self.usage_msg, self.errout)
 
-                self.pkgdepend("resolve -o / ", use_proto=False, exit=2)
+                self.pkgdepend_resolve("-o /", exit=2)
                 self.check_res(
                     "pkgdepend: The manifest file / could not be found.\n" +
                     self.usage_msg, self.errout)
 
         def test_bug_11517(self):
+                """ Test the pkgdepend handles bad global options """
 
                 m_path = None
                 ill_usage = 'pkgdepend: illegal global option -- M\n'
                 try:
                         m_path = self.make_manifest(self.test_manf_1)
 
-                        self.pkgdepend("resolve -M -o %s " % m_path,
-                            use_proto=False, exit=2)
+                        self.pkgdepend_resolve("-M -o %s " % m_path, exit=2)
                         self.check_res(ill_usage + self.usage_msg,
                             self.errout)
                 finally:
@@ -909,45 +904,42 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 dependencies analyzed correctly and that the correct path is
                 used for internal dependency resolution."""
 
+                proto = pkg5unittest.g_proto_area
                 tp = self.make_manifest(self.payload_manf)
-                self.pkgdepend("generate %s" % tp)
-                self.check_res(self.make_res_payload_1(testutils.g_proto_area) %\
+                self.pkgdepend_generate("%s" % tp, proto=proto)
+                self.check_res(self.make_res_payload_1(proto) %\
                         {"reason": "usr/lib/python2.6/foo/bar.py"},
                     self.output)
                 self.check_res("", self.errout)
 
         def test_bug_11829(self):
+                """ pkgdep should gracefully deal with a non-manifest """
 
                 m_path = None
                 nonsense = "This is a nonsense manifest"
-                try:
-                        m_path = self.make_manifest(nonsense)
-                        
-                        self.pkgdepend("generate %s /" % m_path,
-                            use_proto=False, exit=1)
-                        self.check_res('pkgdepend: Could not parse manifest ' + 
-                            '%s because of the following line:\n' % m_path +
-                            nonsense, self.errout)
+                m_path = self.make_manifest(nonsense)
+                
+                self.pkgdepend_generate("%s" % m_path,
+                    proto=self.test_proto_dir, exit=1)
+                self.check_res('pkgdepend: Could not parse manifest ' + 
+                    '%s because of the following line:\n' % m_path +
+                    nonsense, self.errout)
 
-                        self.pkgdepend("resolve -o %s " % m_path, 
-                            use_proto=False, exit=1)
-                        self.check_res("pkgdepend: Could not parse one or "
-                            "more manifests because of the following line:\n" +
-                            nonsense, self.errout)
-                finally:
-                        if m_path:
-                                portable.remove(m_path)
+                self.pkgdepend_resolve("-o %s " % m_path, exit=1)
+                self.check_res("pkgdepend: Could not parse one or "
+                    "more manifests because of the following line:\n" +
+                    nonsense, self.errout)
 
         def __run_dyn_tok_test(self, run_paths, replaced_path, dep_args):
                 """Using the provided run paths, produces a elf binary with
                 those paths set and checks to make sure that pkgdep run with
                 the provided arguments performs the substitution correctly."""
-
+                
                 elf_path = self.make_elf(run_paths)
                 m_path = self.make_manifest(self.elf_sub_manf %
                     {"file_loc": elf_path})
-                self.pkgdepend("generate %s %s %s" %
-                    (dep_args, m_path, self.img_path), use_proto=False)
+                self.pkgdepend_generate("%s %s" % (dep_args, m_path),
+                    proto=self.test_proto_dir)
                 self.check_res(self.payload_elf_sub_stdout %
                     {"replaced_path": \
                         (" %s.path=%s" %
@@ -965,33 +957,35 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 elf_path = self.make_elf([])
                 m_path = self.make_manifest(self.kernel_manf %
                     {"file_loc":elf_path})
-                self.pkgdepend("generate %s %s" % (m_path, self.img_path),
-                    use_proto=False)
+                self.pkgdepend_generate("%s" % m_path,
+                    proto=self.test_proto_dir)
                 self.check_res("", self.errout)
                 self.check_res(self.kernel_manf_stdout, self.output)
 
-                self.pkgdepend("generate -k baz -k foo/bar %s %s" %
-                    (m_path, self.img_path), use_proto=False)
+                self.pkgdepend_generate("-k baz -k foo/bar %s" % m_path,
+                    proto=self.test_proto_dir)
                 self.check_res("", self.errout)
                 self.check_res(self.kernel_manf_stdout2, self.output)
 
-                # Test for platform substitution in kernel module paths. Bug
-                # 13057
-                self.pkgdepend("generate -D PLATFORM=baz -D PLATFORM=tp %s %s" %
-                    (m_path, self.img_path), use_proto=False)
+                self.debug("Test for platform substitution in kernel " \
+                    "module paths. Bug 13057")
+
+                self.pkgdepend_generate("-D PLATFORM=baz -D PLATFORM=tp %s" %
+                    m_path, proto=self.test_proto_dir)
                 self.check_res("", self.errout)
                 self.check_res(self.kernel_manf_stdout_platform, self.output)
                 
-                # Test unexpanded token 
+                self.debug("Test unexpanded token")
+
                 rp = ["/platform/$PLATFORM/foo"]
                 elf_path = self.make_elf(rp)
                 m_path = self.make_manifest(self.elf_sub_manf %
                     {"file_loc": elf_path})
-                self.pkgdepend("generate %s %s" % (m_path, self.img_path),
-                    use_proto=False, exit=1)
+                self.pkgdepend_generate("%s" % m_path, proto=self.test_proto_dir,
+                    exit=1)
                 self.check_res((self.payload_elf_sub_error %
                     {
-                        "payload_path": os.path.join(self.img_path, elf_path),
+                        "payload_path": os.path.join(self.test_proto_dir, elf_path),
                         "installed_path": "bar/foo",
                         "tok": "$PLATFORM",
                         "rp": rp[0]
@@ -1003,40 +997,44 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                     {"replaced_path": ""}, self.output)
 
                 # Test token expansion
+                self.debug("test token expansion: $PLATFORM")
                 self.__run_dyn_tok_test(["/platform/$PLATFORM/foo"],
                     "platform/pfoo/foo", "-D PLATFORM=pfoo")
 
+                self.debug("test token expansion: $ISALIST")
                 self.__run_dyn_tok_test(["/foo/bar/$ISALIST/baz"],
                     "foo/bar/SUBL/baz", "-D '$ISALIST=SUBL'")
 
+                self.debug("test token expansion: $PLATFORM and $ISALIST")
                 self.__run_dyn_tok_test(["/foo/$PLATFORM/$ISALIST/baz"],
                     "foo/pfoo/bar/SUBL/baz",
                     "-D ISALIST=SUBL -D PLATFORM=pfoo/bar")
 
+                self.debug("test token expansion: multiple $PLATFORM")
                 self.__run_dyn_tok_test(
                     ["/$PLATFORM/$PLATFORM/$ISALIST/$PLATFORM"],
                     "bar/bar/SUBL/bar", "-D ISALIST=SUBL -D PLATFORM=bar")
 
-                # Test multiple run paths and multiple subs
+                self.debug("Test multiple run paths and multiple subs")
                 rp = ["/platform/$PLATFORM/foo", "/$ISALIST/$PLATFORM/baz"]
                 elf_path = self.make_elf(rp)
                 m_path = self.make_manifest(self.elf_sub_manf %
                     {"file_loc": elf_path})
-                self.pkgdepend("generate -D ISALIST=isadir %s %s" %
-                    (m_path, self.img_path), use_proto=False, exit=1)
+                self.pkgdepend_generate("-D ISALIST=isadir %s" % m_path,
+                    proto=self.test_proto_dir, exit=1)
                 self.check_res(self.double_plat_error %
-                    {"image_dir": self.img_path}, self.errout)
+                    {"proto_dir": self.test_proto_dir}, self.errout)
                 self.check_res(self.double_plat_stdout, self.output)
 
-                self.pkgdepend("generate -D PLATFORM=pfoo %s %s" %
-                    (m_path, self.img_path), use_proto=False, exit=1)
+                self.pkgdepend_generate("-D PLATFORM=pfoo %s" % m_path,
+                    proto=self.test_proto_dir, exit=1)
                 self.check_res(self.double_plat_isa_error %
-                    {"image_dir": self.img_path}, self.errout)
+                    {"proto_dir": self.test_proto_dir}, self.errout)
                 self.check_res(self.double_plat_isa_stdout, self.output)
 
-                self.pkgdepend("generate -D PLATFORM=pfoo -D PLATFORM=pfoo2 "
-                    "-D ISALIST=isadir -D ISALIST=isadir %s %s" %
-                    (m_path, self.img_path), use_proto=False)
+                self.pkgdepend_generate("-D PLATFORM=pfoo -D PLATFORM=pfoo2 "
+                    "-D ISALIST=isadir -D ISALIST=isadir %s" % m_path,
+                    proto=self.test_proto_dir)
                 self.check_res("", self.errout)
                 self.check_res(self.double_double_stdout, self.output)
                 
@@ -1045,10 +1043,10 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 uses the right path."""
 
                 m_path = self.make_manifest(self.miss_payload_manf)
-                self.pkgdepend("generate %s %s" % (m_path, self.img_path),
-                    use_proto=False, exit=1)
+                self.pkgdepend_generate("%s" % m_path,
+                    proto=self.test_proto_dir, exit=1)
                 self.check_res(self.miss_payload_manf_error %
-                    {"path_pref":self.img_path}, self.errout)
+                    {"path_pref":self.test_proto_dir}, self.errout)
                 self.check_res("", self.output)
 
         def test_bug_12896(self):
@@ -1060,16 +1058,20 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 bar2_path = self.make_manifest(self.sat_bar_libc2)
                 foo_path = self.make_manifest(self.sat_foo_libc)
 
-                self.pkgdepend("resolve -o %s %s %s" %
-                    (col_path, bar_path, foo_path), use_proto=False, exit=1)
+                self.pkgdepend_resolve("-o %s %s %s" %
+                    (col_path, bar_path, foo_path), exit=1)
                 self.check_res("\n\n".join([col_path, bar_path, foo_path]),
                     self.output)
                 self.check_res(self.run_path_errors %
                     {"unresolved_path": col_path}, self.errout)
 
-                self.pkgdepend("resolve -o %s %s %s" %
-                    (col_path, bar_path, bar2_path), use_proto=False, exit=1)
+                self.pkgdepend_resolve("-o %s %s %s" %
+                    (col_path, bar_path, bar2_path), exit=1)
                 self.check_res("\n\n".join([col_path, bar_path, bar2_path]),
                     self.output)
                 self.check_res(self.amb_path_errors %
                     {"unresolved_path": col_path}, self.errout)
+
+
+if __name__ == "__main__":
+        unittest.main()

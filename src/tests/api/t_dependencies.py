@@ -23,9 +23,10 @@
 # Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
-import cli.testutils as testutils
+import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import os
 import shutil
@@ -33,12 +34,6 @@ import subprocess
 import sys
 import tempfile
 import unittest
-
-# Set the path so that modules above can be found
-path_to_parent = os.path.join(os.path.dirname(__file__), "..")
-sys.path.insert(0, path_to_parent)
-
-import pkg5unittest
 
 import pkg.catalog as catalog
 import pkg.flavor.base as base
@@ -153,70 +148,35 @@ from pkg_test.misc_test import EmptyI
 
         def setUp(self):
                 pkg5unittest.Pkg5TestCase.setUp(self)
-                self.image_dir = None
-                self.pid = os.getpid()
-                self.pwd = os.getcwd()
 
-                self.__test_prefix = os.path.join(tempfile.gettempdir(),
-                    "ips.test.%d" % self.pid)
-                self.proto_dir = os.path.join(self.__test_prefix, "proto")
-                self.manf_dir = os.path.join(self.__test_prefix, "manfs")
+                self.proto_dir = os.path.join(self.test_root, "proto")
                 os.makedirs(self.proto_dir)
-                os.makedirs(self.manf_dir)
 
-        def tearDown(self):
-                pkg5unittest.Pkg5TestCase.tearDown(self)
-                shutil.rmtree(self.__test_prefix)
+        def make_proto_text_file(self, path, contents=""):
+                self.make_misc_files({ path: contents }, prefix="proto")
 
         def make_python_test_files(self, py_version):
                 pdir = "usr/lib/python%s/vendor-packages" % py_version
                 for p in ["pkg_test/indexer_test/foobar",
                     "pkg_test/search_storage_test", "pkg_test/misc_test"]:
-                        self.make_text_file("%s/%s.py" % (pdir, p))
-                self.make_text_file("%s/pkg_test/__init__.py" % pdir,
+                        self.make_proto_text_file("%s/%s.py" % (pdir, p))
+                self.make_proto_text_file("%s/pkg_test/__init__.py" % pdir,
                     "#!/usr/bin/python\n")
-                self.make_text_file("%s/pkg_test/indexer_test/__init__.py" %
+                self.make_proto_text_file("%s/pkg_test/indexer_test/__init__.py" %
                     pdir, "#!/usr/bin/python")
                 
-        def make_manifest(self, str):
-                t_fd, t_path = tempfile.mkstemp(dir=self.manf_dir)
-                t_fh = os.fdopen(t_fd, "w")
-                t_fh.write(str)
-                t_fh.close()
-                return t_path
-
-        def make_text_file(self, o_path, o_text=""):
-                f_path = os.path.join(self.proto_dir, o_path)
-                f_dir = os.path.dirname(f_path)
-                if not os.path.exists(f_dir):
-                        os.makedirs(f_dir)
-
-                fh = open(f_path, "w")
-                fh.write(o_text)
-                fh.close()
-                return f_path
-
         def make_elf(self, final_path, static=False):
-                t_fd, t_path = tempfile.mkstemp(suffix=".c", dir=self.proto_dir)
                 out_file = os.path.join(self.proto_dir, final_path)
-                out_dir = os.path.dirname(out_file)
-                if not os.path.exists(out_dir):
-                        os.makedirs(out_dir)
-                t_fh = os.fdopen(t_fd, "w")
-                t_fh.write("int main(){}\n")
-                t_fh.close()
-                cmd = ["/usr/bin/cc", "-o", out_file]
+
+                opts = []
+                # In some cases we want to generate an elf binary with no
+                # dependencies of its own.  We use -c (supress linking) for
+                # this purpose.
                 if static:
-                        cmd.append("-static")
-                cmd.append(t_path)
-                s = subprocess.Popen(cmd, stderr=subprocess.PIPE)
-                out, err = s.communicate()
-                rc = s.returncode
-                if rc != 0:
-                        raise RuntimeError("Compile of %s failed.\nCommand "
-                            "was:\n%s\nError was:\n%s" %
-                            (t_path, " ".join(cmd), err))
-                return out_file
+                        opts.extend(["-c"])
+                self.c_compile("int main(){}\n", opts, out_file)
+
+                return out_file[len(self.proto_dir)+1:]
 
         def __path_to_key(self, path):
                 if path == self.paths["libc_path"]:
@@ -264,7 +224,7 @@ from pkg_test.misc_test import EmptyI
                 dependencies is set."""
 
                 t_path = self.make_manifest(self.int_hardlink_manf)
-                self.make_text_file(self.paths["syslog_path"])
+                self.make_proto_text_file(self.paths["syslog_path"])
                 ds, es, ms = \
                     dependencies.list_implicit_deps(t_path, self.proto_dir, {},
                         [])
@@ -308,7 +268,7 @@ from pkg_test.misc_test import EmptyI
                         self.assertEqual(d.action.attrs["path"],
                             self.paths["script_path"])
                 t_path = self.make_manifest(self.ext_script_manf)
-                self.make_text_file(self.paths["script_path"], self.script_text)
+                self.make_proto_text_file(self.paths["script_path"], self.script_text)
                 _check_res(dependencies.list_implicit_deps(t_path,
                     self.proto_dir, {}, []))
                 _check_res(dependencies.list_implicit_deps(t_path,
@@ -321,7 +281,7 @@ from pkg_test.misc_test import EmptyI
 
                 t_path = self.make_manifest(self.int_script_manf)
                 self.make_elf(self.paths["ksh_path"])
-                self.make_text_file(self.paths["script_path"], self.script_text)
+                self.make_proto_text_file(self.paths["script_path"], self.script_text)
                 ds, es, ms = dependencies.list_implicit_deps(t_path,
                     self.proto_dir, {}, [])
                 if es != []:
@@ -396,7 +356,7 @@ from pkg_test.misc_test import EmptyI
                                 raise RuntimeError("Got errors in results:" +
                                     "\n".join([str(s) for s in es]))
                         self.assertEqual(ms, {})
-                        self.assert_(len(ds) == 1)
+                        self.assertEqual(len(ds), 1)
                         d = ds[0]
                         self.assert_(d.is_error())
                         self.assert_(d.dep_vars.is_satisfied())
@@ -464,7 +424,7 @@ from pkg_test.misc_test import EmptyI
                 self.__debug = True
                 t_path = self.make_manifest(self.ext_python_manf)
                 self.make_python_test_files(2.6)
-                self.make_text_file(self.paths["indexer_path"],
+                self.make_proto_text_file(self.paths["indexer_path"],
                     self.python_text)
                 _check_all_res(dependencies.list_implicit_deps(t_path,
                     self.proto_dir, {}, []))
@@ -515,7 +475,7 @@ from pkg_test.misc_test import EmptyI
                 t_path = self.make_manifest(self.ext_python_manf)
                 self.make_python_test_files(2.6)
                 # Check that absolute imports still work.
-                self.make_text_file(self.paths["indexer_path"],
+                self.make_proto_text_file(self.paths["indexer_path"],
                     self.python_abs_text)
                 _check_all_res(dependencies.list_implicit_deps(t_path,
                     self.proto_dir, {}, []))
@@ -563,7 +523,7 @@ from pkg_test.misc_test import EmptyI
                 self.__debug = True
                 t_path = self.make_manifest(self.ext_python_pkg_manf)
                 self.make_python_test_files(2.6)
-                self.make_text_file(self.paths["pkg_path"], self.python_text)
+                self.make_proto_text_file(self.paths["pkg_path"], self.python_text)
                 _check_all_res(dependencies.list_implicit_deps(t_path,
                     self.proto_dir, {}, []))
                 _check_all_res(dependencies.list_implicit_deps(t_path,
@@ -575,7 +535,7 @@ from pkg_test.misc_test import EmptyI
                 for the other set of variants."""
 
                 t_path = self.make_manifest(self.variant_manf_1)
-                self.make_text_file(self.paths["script_path"], self.script_text)
+                self.make_proto_text_file(self.paths["script_path"], self.script_text)
                 self.make_elf(self.paths["ksh_path"])
                 ds, es, ms = dependencies.list_implicit_deps(t_path,
                     self.proto_dir, {}, [])
@@ -618,7 +578,7 @@ from pkg_test.misc_test import EmptyI
                 dependency, an external dependency is not reported."""
 
                 t_path = self.make_manifest(self.variant_manf_2)
-                self.make_text_file(self.paths["script_path"], self.script_text)
+                self.make_proto_text_file(self.paths["script_path"], self.script_text)
                 self.make_elf(self.paths["ksh_path"])
                 ds, es, ms = dependencies.list_implicit_deps(t_path,
                     self.proto_dir, {}, [])    
@@ -667,7 +627,7 @@ from pkg_test.misc_test import EmptyI
                 reported as an external dependency."""
 
                 t_path = self.make_manifest(self.variant_manf_3)
-                self.make_text_file(self.paths["script_path"], self.script_text)
+                self.make_proto_text_file(self.paths["script_path"], self.script_text)
                 self.make_elf(self.paths["ksh_path"])
                 ds, es, ms = dependencies.list_implicit_deps(t_path,
                     self.proto_dir, {}, [])
@@ -740,3 +700,5 @@ from pkg_test.misc_test import EmptyI
                 str(mi)
                 mi.make_package()
                 str(mi)
+if __name__ == "__main__":
+        unittest.main()

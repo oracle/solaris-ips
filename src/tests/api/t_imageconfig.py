@@ -20,8 +20,13 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+
+import testutils
+if __name__ == "__main__":
+        testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import unittest
 import os
@@ -30,18 +35,10 @@ import sys
 import tempfile
 import pkg.client.imageconfig as imageconfig
 
-# Set the path so that modules above can be found
-path_to_parent = os.path.join(os.path.dirname(__file__), "..")
-sys.path.insert(0, path_to_parent)
-import pkg5unittest
 
 class TestImageConfig(pkg5unittest.Pkg5TestCase):
-        def setUp(self):
-                self.sample_dir = tempfile.mkdtemp()
-                cfgfile = os.path.join(self.sample_dir, imageconfig.CFG_FILE)
-                f = open(cfgfile, "w")
 
-                f.write("""\
+        misc_files = { imageconfig.CFG_FILE : """\
 [policy]
 Display-Copyrights: False
 
@@ -64,19 +61,16 @@ repo.registered: True
 repo.registration_uri: http://zruty.sfbay:10001/reg.html
 repo.related_uris:
 sort_policy: priority
-""")
-                f.close()
-                self.ic = imageconfig.ImageConfig(self.sample_dir, "publisher")
+""" }
 
-        def tearDown(self):
-                try:
-                        shutil.rmtree(self.sample_dir)
-                except:
-                        pass
+        def setUp(self):
+                pkg5unittest.Pkg5TestCase.setUp(self)
+                self.make_misc_files(self.misc_files)
+                self.ic = imageconfig.ImageConfig(self.test_root, "publisher")
 
         def test_0_read(self):
                 """Verify that read works and that values are read properly."""
-                self.ic.read(self.sample_dir)
+                self.ic.read(self.test_root)
 
                 pub = self.ic.publishers["sfbay.sun.com"]
                 self.assertEqual(pub.alias, "zruty")
@@ -101,7 +95,7 @@ sort_policy: priority
                 self.assertNotEqual(pub.client_uuid, None)
 
         def test_1_unicode(self):
-                self.ic.read(self.sample_dir)
+                self.ic.read(self.test_root)
                 ustr = u'abc\u3041def'
                 self.ic.properties['name'] = ustr
                 newdir = tempfile.mkdtemp()
@@ -116,18 +110,18 @@ sort_policy: priority
                 #
                 #  See what happens if the conf file is missing.
                 #
-                shutil.rmtree(self.sample_dir)
-                self.assertRaises(RuntimeError, self.ic.read, self.sample_dir)
+                shutil.rmtree(self.test_root)
+                self.assertRaises(RuntimeError, self.ic.read, self.test_root)
 
         def test_3_reread(self):
                 """Verify that the uuid determined during the first read is the
                 same as the uuid in the second read."""
-                self.ic.read(self.sample_dir)
+                self.ic.read(self.test_root)
                 pub = self.ic.publishers["sfbay.sun.com"]
                 uuid = pub.client_uuid
 
-                ic2 = imageconfig.ImageConfig(self.sample_dir, "publisher")
-                ic2.read(self.sample_dir)
+                ic2 = imageconfig.ImageConfig(self.test_root, "publisher")
+                ic2.read(self.test_root)
                 pub2 = ic2.publishers["sfbay.sun.com"]
                 self.assertEqual(pub2.client_uuid, uuid)
 

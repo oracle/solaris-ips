@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -105,8 +105,8 @@ class ElfDependency(base.PublishingDependency):
                         return err, vars
 
         def __repr__(self):
-                return "ElfDep(%s, %s, %s, %s)" % (self.action, self.base_name,
-                    self.run_paths, self.pkg_vars)
+                return "ElfDep(%s, %s, %s, %s)" % (self.action,
+                    self.base_names[0], self.run_paths, self.pkg_vars)
 
 def expand_variables(paths, dyn_tok_conv):
         """Replace dynamic tokens, such as $PLATFORM, in the paths in the

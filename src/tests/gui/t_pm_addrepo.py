@@ -20,53 +20,49 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
-from cli import testutils
-
+import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
+import pkg5unittest
+import unittest
 
 try:
         import ldtp
 except ImportError:
         raise ImportError, "SUNWldtp package not installed."
 
-class TestPkgGuiAddRepoBasics(testutils.SingleDepotTestCase):
-
-        persistent_depot = False
+class TestPkgGuiAddRepoBasics(pkg5unittest.SingleDepotTestCase):
 
         foo10 = """
             open package1@1.0,5.11-0
             add set name="description" value="Some package1 description"
-            close """        
-
-        def setUp(self, debug_features=None):
-                testutils.SingleDepotTestCase.setUp(self)
-
-        def tearDown(self):
-                testutils.SingleDepotTestCase.tearDown(self)
+            close """
 
         def testAddRepository(self):
                 repo_name = 'testadd'
                 repo_url = self.dc.get_depot_url()
                 self.pkgsend_bulk(repo_url, self.foo10)
                 self.image_create(repo_url)
-        
-                ldtp.launchapp("%s/usr/bin/packagemanager" % testutils.g_proto_area)
-                                
+
+                ldtp.launchapp("%s/usr/bin/packagemanager" % pkg5unittest.g_proto_area)
+
                 ldtp.selectmenuitem('frmPackageManager', 'mnuManageRepositories')
-                
+
                 ldtp.waittillguiexist('dlgManageRepositories')
 
-                ldtp.settextvalue("dlgManageRepositories", "txtName", repo_name)        
+                ldtp.settextvalue("dlgManageRepositories", "txtName", repo_name)
                 ldtp.settextvalue("dlgManageRepositories", "txtURL", repo_url)
                 ldtp.click('dlgManageRepositories', 'btnAdd')
-        
+
                 ldtp.click('dlgManageRepositories', 'btnClose')
-        
+
                 # Verify result
-                self.pkg('publisher | grep %s' % repo_name)        
+                self.pkg('publisher | grep %s' % repo_name)
                 # Quit Package Manager
                 ldtp.selectmenuitem('frmPackageManager', 'mnuQuit')
+
+if __name__ == "__main__":
+	unittest.main()

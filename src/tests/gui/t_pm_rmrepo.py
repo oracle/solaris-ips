@@ -20,22 +20,21 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
-from cli import testutils
-
+import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
+import pkg5unittest
+import unittest
 
 try:
         import ldtp
 except ImportError:
         raise ImportError, "SUNWldtp package not installed."
 
-class TestPkgGuiRmRepoBasics(testutils.ManyDepotTestCase):
-
-        persistent_depot = False
+class TestPkgGuiRmRepoBasics(pkg5unittest.ManyDepotTestCase):
 
         foo1 = """
             open foo@1,5.11-0
@@ -46,7 +45,7 @@ class TestPkgGuiRmRepoBasics(testutils.ManyDepotTestCase):
             close """
 
         def setUp(self):
-                testutils.ManyDepotTestCase.setUp(self, ["test1", "test2"])
+                pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2"])
 
                 durl1 = self.dcs[1].get_depot_url()
                 self.pkgsend_bulk(durl1, self.foo1)
@@ -57,13 +56,10 @@ class TestPkgGuiRmRepoBasics(testutils.ManyDepotTestCase):
                 self.image_create(durl1, prefix="test1")
                 self.pkg("set-publisher -O " + durl2 + " test2")
 
-        def tearDown(self):
-                testutils.ManyDepotTestCase.tearDown(self)
-        
         def testRmRepository(self):
                 repo_name = "test2"
 
-                ldtp.launchapp("%s/usr/bin/packagemanager" % testutils.g_proto_area)
+                ldtp.launchapp("%s/usr/bin/packagemanager" % pkg5unittest.g_proto_area)
 
                 ldtp.selectmenuitem('frmPackageManager', 'mnuManageRepositories')
                 
@@ -82,3 +78,6 @@ class TestPkgGuiRmRepoBasics(testutils.ManyDepotTestCase):
 
                 # Quit Package Manager
                 ldtp.selectmenuitem('frmPackageManager', 'mnuQuit')
+
+if __name__ == "__main__":
+	unittest.main()

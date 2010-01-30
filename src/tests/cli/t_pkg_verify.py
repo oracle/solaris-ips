@@ -26,14 +26,13 @@
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import os
 import pkg.portable as portable
 import unittest
 
-class TestPkgVerify(testutils.SingleDepotTestCase):
-        # Only start/stop the depot once (instead of for every test)
-        persistent_depot = True
+class TestPkgVerify(pkg5unittest.SingleDepotTestCase):
 
         foo10 = """
             open foo@1.0,5.11-0
@@ -41,46 +40,30 @@ class TestPkgVerify(testutils.SingleDepotTestCase):
             add dir mode=0755 owner=root group=sys path=/etc/security
             add dir mode=0755 owner=root group=sys path=/usr
             add dir mode=0755 owner=root group=bin path=/usr/bin
-            add file $test_prefix/bobcat mode=0644 owner=root group=bin path=/usr/bin/bobcat
-            add file $test_prefix/dricon_maj path=/etc/name_to_major mode=644 owner=root group=sys preserve=true
-            add file $test_prefix/dricon_da path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
-            add file $test_prefix/dricon_cls path=/etc/driver_classes mode=644 owner=root group=sys preserve=true
-            add file $test_prefix/dricon_mp path=/etc/minor_perm mode=644 owner=root group=sys preserve=true
-            add file $test_prefix/dricon_dp path=/etc/security/device_policy mode=644 owner=root group=sys preserve=true
-            add file $test_prefix/dricon_ep path=/etc/security/extra_privs mode=644 owner=root group=sys preserve=true
+            add file bobcat mode=0644 owner=root group=bin path=/usr/bin/bobcat
+            add file dricon_maj path=/etc/name_to_major mode=644 owner=root group=sys preserve=true
+            add file dricon_da path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
+            add file dricon_cls path=/etc/driver_classes mode=644 owner=root group=sys preserve=true
+            add file dricon_mp path=/etc/minor_perm mode=644 owner=root group=sys preserve=true
+            add file dricon_dp path=/etc/security/device_policy mode=644 owner=root group=sys preserve=true
+            add file dricon_ep path=/etc/security/extra_privs mode=644 owner=root group=sys preserve=true
             add driver name=zigit alias=pci8086,1234
             close
             """
 
-        misc_files = [
-            ("bobcat", None),
-            ("dricon_da", """zigit "pci8086,1234"\n"""),
-            ("dricon_maj", """zigit 103\n"""),
-            ("dricon_cls", """\n"""),
-            ("dricon_mp", """\n"""),
-            ("dricon_dp", """\n"""),
-            ("dricon_ep", """\n""")
-        ]
+        misc_files = {
+           "bobcat": "",
+           "dricon_da": """zigit "pci8086,1234"\n""",
+           "dricon_maj": """zigit 103\n""",
+           "dricon_cls": """\n""",
+           "dricon_mp": """\n""",
+           "dricon_dp": """\n""",
+           "dricon_ep": """\n"""
+        }
 
         def setUp(self):
-                testutils.SingleDepotTestCase.setUp(self)
-
-                for p in ("foo10",):
-                        val = getattr(self, p).replace("$test_prefix",
-                            self.get_test_prefix())
-                        setattr(self, p, val)
-
-                for p, v in self.misc_files:
-                        fpath = os.path.join(self.get_test_prefix(), p)
-                        f = open(fpath, "wb")
-
-                        if not v:
-                                # write the name of the file into the file, so that
-                                # all files have differing contents
-                                v = fpath
-                        f.write(v)
-                        f.close()
-                        self.debug("wrote %s" % fpath)
+                pkg5unittest.SingleDepotTestCase.setUp(self)
+                self.make_misc_files(self.misc_files)
 
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.foo10)

@@ -20,12 +20,13 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import errno
 import os
@@ -39,33 +40,17 @@ import pkg.file_layout.layout as layout
 
 path_to_pub_util = "../util/publish"
 
-class TestFileManager(testutils.CliTestCase):
+class TestFileManager(pkg5unittest.CliTestCase):
 
         def setUp(self):
-                self.pid = os.getpid()
-                self.pwd = os.getcwd()
-
-                self.__base_test_dir = os.path.join(tempfile.gettempdir(),
-                    "ips.test.%d" % self.pid)
-
-                self.__test_dir = os.path.join(self.__base_test_dir,
-                    "migrate_test")
-
-                try:
-                        os.makedirs(self.__test_dir, 0755)
-                except OSError, e:
-                        if e.errno != errno.EEXIST:
-                                raise e
-
-        def tearDown(self):
-                shutil.rmtree(self.__base_test_dir)
+                pkg5unittest.CliTestCase.setUp(self)
 
         @staticmethod
         def old_hash(s):
                 return os.path.join(s[0:2], s[2:8], s)
 
         def touch_old_file(self, s):
-                p = os.path.join(self.__test_dir, self.old_hash(s))
+                p = os.path.join(self.test_root, self.old_hash(s))
                 if not os.path.exists(os.path.dirname(p)):
                         os.makedirs(os.path.dirname(p))
                 fh = open(p, "wb")
@@ -92,7 +77,7 @@ class TestFileManager(testutils.CliTestCase):
 
                 old_paths = [self.touch_old_file(h) for h in hashes]
 
-                self.update_file_layout(self.__test_dir)
+                self.update_file_layout(self.test_root)
                 for p in old_paths:
                         if os.path.exists(p):
                                 raise RuntimeError("%s should not exist" % p)
@@ -101,13 +86,13 @@ class TestFileManager(testutils.CliTestCase):
                                     "exist")
                 l = layout.get_preferred_layout()
                 for h in hashes:
-                        if not os.path.exists(os.path.join(self.__test_dir,
+                        if not os.path.exists(os.path.join(self.test_root,
                             l.lookup(h))):
                                 raise RuntimeError("file for %s is missing" % h)
 
-                self.update_file_layout(self.__test_dir)
+                self.update_file_layout(self.test_root)
                 for h in hashes:
-                        if not os.path.exists(os.path.join(self.__test_dir,
+                        if not os.path.exists(os.path.join(self.test_root,
                             l.lookup(h))):
                                 raise RuntimeError("file for %s is missing" % h)
 
@@ -117,8 +102,11 @@ class TestFileManager(testutils.CliTestCase):
 
                 self.update_file_layout("", exit=2)
                 self.update_file_layout("%s %s" %
-                    (self.__test_dir, self.__test_dir), exit=2)
+                    (self.test_root, self.test_root), exit=2)
                 self.update_file_layout("/foo/doesntexist/", exit=2)
 
-                empty_dir = tempfile.mkdtemp(dir=self.__test_dir)
+                empty_dir = tempfile.mkdtemp(dir=self.test_root)
                 self.update_file_layout(empty_dir)
+                 
+if __name__ == "__main__":
+        unittest.main()

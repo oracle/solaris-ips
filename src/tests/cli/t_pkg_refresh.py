@@ -20,12 +20,13 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import testutils
 if __name__ == "__main__":
 	testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import difflib
 import os
@@ -37,7 +38,7 @@ import unittest
 
 import pkg.catalog as catalog
 
-class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
+class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
 
         foo1 = """
             open foo@1,5.11-0
@@ -64,7 +65,7 @@ class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
             close """
 
         def setUp(self):
-                testutils.ManyDepotTestCase.setUp(self, ["test1", "test2",
+                pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2",
                     "test1"])
 
                 self.durl1 = self.dcs[1].get_depot_url()
@@ -317,8 +318,8 @@ class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
 
                 self.image_create(self.durl1, prefix="test1")
 
-                key_fh, key_path = tempfile.mkstemp(dir=self.get_test_prefix())
-                cert_fh, cert_path = tempfile.mkstemp(dir=self.get_test_prefix())
+                key_fh, key_path = tempfile.mkstemp(dir=self.test_root)
+                cert_fh, cert_path = tempfile.mkstemp(dir=self.test_root)
 
                 self.pkg("set-publisher --no-refresh -O https://%s1 test1" %
                     self.bogus_url)
@@ -436,7 +437,7 @@ class TestPkgRefreshMulti(testutils.ManyDepotTestCase):
                 # will induce a full refresh.
 
                 # Preserve a copy of the existing repository.
-                tdir = tempfile.mkdtemp(dir=self.get_test_prefix())
+                tdir = tempfile.mkdtemp(dir=self.test_root)
                 trpath = os.path.join(tdir, os.path.basename(dc.get_repodir()))
                 shutil.copytree(dc.get_repodir(), trpath)
 

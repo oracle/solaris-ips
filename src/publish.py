@@ -43,6 +43,7 @@ import gettext
 import os
 import sys
 import traceback
+import warnings
 
 import pkg.actions
 import pkg.bundle
@@ -547,6 +548,10 @@ def main_func():
 # so that we can more easily detect these in testing of the CLI commands.
 #
 if __name__ == "__main__":
+        
+        # Make all warnings be errors.
+        warnings.simplefilter('error')
+
         try:
                 __ret = main_func()
         except (pkg.actions.ActionError, trans.TransactionError,

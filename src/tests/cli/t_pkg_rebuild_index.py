@@ -20,19 +20,20 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import unittest
 import os
 
-class TestPkgRebuildIndex(testutils.SingleDepotTestCase):
+class TestPkgRebuildIndex(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
-        persistent_depot = True
+        persistent_setup = True
 
         def test_rebuild_index_bad_opts(self):
                 """Test pkg with bad options."""

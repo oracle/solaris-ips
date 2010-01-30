@@ -26,12 +26,12 @@
 import testutils
 if __name__ == "__main__":
 	testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import os
 import shutil
 import sys
 import tempfile
-import testutils
 import unittest
 
 import pkg.client.api as api
@@ -43,9 +43,9 @@ import pkg.publish.dependencies as dependencies
 API_VERSION = 31
 PKG_CLIENT_NAME = "pkg"
 
-class TestApiDependencies(testutils.SingleDepotTestCase):
+class TestApiDependencies(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
-        persistent_depot = False
+        persistent_setup = False
 
         depend_dp = base.Dependency.DEPEND_DEBUG_PREFIX
 
@@ -202,38 +202,24 @@ set name=fmri value=pkg:/sat_pyc
 file NOHASH group=bin mode=0755 owner=root path=usr/lib/python2.6/vendor-packages/pkg/search_storage.pyc
 """
         
-        misc_files = ["foo"]
-        
-        def setUp(self):
-                testutils.SingleDepotTestCase.setUp(self)
-                tp = self.get_test_prefix()
-                self.testdata_dir = os.path.join(tp, "manifest_dir")
-                os.mkdir(self.testdata_dir)
-                for n in self.misc_files:
-                        f = open(os.path.join(self.testdata_dir, n), "w")
-                        # Write the name of the file into the file, so that
-                        # all files have differing contents.
-                        f.write(n + "\n")
-                        f.close()
-
-                self.inst_pkg = """\
+        inst_pkg = """\
 open example2_pkg@1.0,5.11-0
-add file %(foo)s mode=0555 owner=root group=bin path=/usr/bin/python2.6
-close""" % { "foo": os.path.join(self.testdata_dir, "foo") }
+add file tmp/foo mode=0555 owner=root group=bin path=/usr/bin/python2.6
+close"""
 
-                self.var_pkg = """\
+        var_pkg = """\
 open variant_pkg@1.0,5.11-0
 add set name=variant.foo value=bar value=baz
-add file %(foo)s group=sys mode=0644 owner=root path=var/log/syslog
-close""" % { "foo": os.path.join(self.testdata_dir, "foo") }
+add file tmp/foo group=sys mode=0644 owner=root path=var/log/syslog
+close"""
 
-        def tearDown(self):
-                testutils.SingleDepotTestCase.tearDown(self)
-                for n in self.misc_files:
-                        os.remove(os.path.join(self.testdata_dir, n))
-                shutil.rmtree(self.testdata_dir)
 
-        def make_image(self):
+        misc_files = ["tmp/foo"]
+        
+        def setUp(self):
+                pkg5unittest.SingleDepotTestCase.setUp(self)
+                self.make_misc_files(self.misc_files)
+
                 self.durl = self.dc.get_depot_url()
                 self.image_create(self.durl)
                 progresstracker = progress.NullProgressTracker()
@@ -262,18 +248,10 @@ close""" % { "foo": os.path.join(self.testdata_dir, "foo") }
                 api_obj.execute_plan()
                 api_obj.reset()
 
-        def make_manifest(self, str):
-                t_fd, t_path = tempfile.mkstemp(dir=self.testdata_dir)
-                t_fh = os.fdopen(t_fd, "w")
-                t_fh.write(str)
-                t_fh.close()
-                return t_path
-        
         def test_resolve_cross_package(self):
                 """test that cross dependencies between published packages
                 works."""
 
-                self.make_image()
                 m1_path = self.make_manifest(self.hardlink1_manf_deps)
                 m2_path = self.make_manifest(self.hardlink2_manf_deps)
                 p1_name = os.path.basename(m1_path)
@@ -297,7 +275,6 @@ close""" % { "foo": os.path.join(self.testdata_dir, "foo") }
                 resolver picks up the name of the package if it's defined in
                 the package."""
                 
-                self.make_image()
 
                 self.pkgsend_bulk(self.durl, self.inst_pkg)
                 self.api_obj.refresh(immediate=True)
@@ -332,7 +309,6 @@ close""" % { "foo": os.path.join(self.testdata_dir, "foo") }
                 """Test that variants declared on the actions work correctly
                 when resolving dependencies."""
 
-                self.make_image()
                 m1_path = self.make_manifest(self.simple_variant_deps)
                 m2_path = self.make_manifest(self.simple_v_deps_bar)
                 m3_path = self.make_manifest(self.simple_v_deps_baz)
@@ -365,7 +341,6 @@ close""" % { "foo": os.path.join(self.testdata_dir, "foo") }
                 """Test that variants declared on the packages work correctly
                 when resolving dependencies."""
 
-                self.make_image()
                 m1_path = self.make_manifest(self.simple_variant_deps)
                 m2_path = self.make_manifest(self.simple_v_deps_bar2)
                 m3_path = self.make_manifest(self.simple_v_deps_baz2)
@@ -396,7 +371,6 @@ close""" % { "foo": os.path.join(self.testdata_dir, "foo") }
                 """Test that variants declared on the packages work correctly
                 when resolving dependencies."""
 
-                self.make_image()
                 m1_path = self.make_manifest(self.two_variant_deps)
                 m2_path = self.make_manifest(self.two_v_deps_bar)
                 m3_path = self.make_manifest(self.two_v_deps_baz_one)
@@ -454,8 +428,6 @@ close""" % { "foo": os.path.join(self.testdata_dir, "foo") }
                         d = pkg_deps[one_dep][0]
                         self.assertEqual(d.attrs["fmri"], exp_pkg)
                 
-                self.make_image()
-
                 col_path = self.make_manifest(self.multi_file_dep_manf)
                 # This manifest provides two files that satisfy col_path's
                 # file dependencies.
@@ -530,7 +502,6 @@ close""" % { "foo": os.path.join(self.testdata_dir, "foo") }
                 """Test that resolving against an installed, cached, manifest
                 works with variants."""
 
-                self.make_image()
 
                 self.pkgsend_bulk(self.durl, self.var_pkg)
                 self.api_obj.refresh(immediate=True)
@@ -575,8 +546,6 @@ close""" % { "foo": os.path.join(self.testdata_dir, "foo") }
                         d = pkg_deps[one_dep][0]
                         self.assertEqual(d.attrs["fmri"], exp_pkg)
                 
-                self.make_image()
-
                 col_path = self.make_manifest(self.collision_manf)
                 col_path_num_var = self.make_manifest(
                     self.collision_manf_num_var)
@@ -759,3 +728,6 @@ close""" % { "foo": os.path.join(self.testdata_dir, "foo") }
                                     "no_such_named_file")
                         else:
                                 raise RuntimeError("Unexpected error:%s" % e)
+
+if __name__ == "__main__":
+        unittest.main()

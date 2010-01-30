@@ -20,8 +20,13 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+
+import testutils
+if __name__ == "__main__":
+        testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import unittest
 import os
@@ -32,11 +37,6 @@ import shutil
 
 import pkg.misc as misc
 from pkg.actions.generic import Action
-
-# Set the path so that modules above can be found
-path_to_parent = os.path.join(os.path.dirname(__file__), "..")
-sys.path.insert(0, path_to_parent)
-import pkg5unittest
 
 class TestMisc(pkg5unittest.Pkg5TestCase):
 
@@ -81,7 +81,6 @@ class TestMisc(pkg5unittest.Pkg5TestCase):
                 self.assertFalse(misc.valid_pub_url("!@#$%^&*(*)"))
                 self.assertTrue(misc.valid_pub_url(
                     "http://pkg.opensolaris.org/dev"))
-
 
 if __name__ == "__main__":
         unittest.main()

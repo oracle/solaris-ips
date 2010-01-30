@@ -20,12 +20,13 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import testutils
 if __name__ == "__main__":
 	testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import unittest
 import os
@@ -33,43 +34,39 @@ import re
 import shutil
 import difflib
 
-class TestPkgContentsBasics(testutils.SingleDepotTestCase):
+class TestPkgContentsBasics(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
-        persistent_depot = True
+        persistent_setup = True
 
         bronze10 = """
             open bronze@1.0,5.11-0
             add dir mode=0755 owner=root group=bin path=/usr
             add dir mode=0755 owner=root group=bin path=/usr/bin
-            add file /tmp/sh mode=0555 owner=root group=bin path=/usr/bin/sh
+            add file tmp/sh mode=0555 owner=root group=bin path=/usr/bin/sh
             add link path=/usr/bin/jsh target=./sh
-            add file /tmp/bronze1 mode=0444 owner=root group=bin path=/etc/bronze1
-            add file /tmp/bronze2 mode=0444 owner=root group=bin path=/etc/bronze2
-            add file /tmp/bronzeA1 mode=0444 owner=root group=bin path=/A/B/C/D/E/F/bronzeA1
-            add license /tmp/copyright1 license=copyright
+            add file tmp/bronze1 mode=0444 owner=root group=bin path=/etc/bronze1
+            add file tmp/bronze2 mode=0444 owner=root group=bin path=/etc/bronze2
+            add file tmp/bronzeA1 mode=0444 owner=root group=bin path=/A/B/C/D/E/F/bronzeA1
+            add license tmp/copyright1 license=copyright
             close
         """
 
-        misc_files = [ "/tmp/bronzeA1",  "/tmp/bronzeA2",
-                    "/tmp/bronze1", "/tmp/bronze2",
-                    "/tmp/copyright1", "/tmp/sh"]
+        # wire file contents to well known values so we're sure we
+        # know their hashes.
+        misc_files = {
+                "tmp/bronzeA1": "magic1",
+                "tmp/bronzeA2": "magic2",
+                "tmp/bronze1": "magic3",
+                "tmp/bronze2": "magic4",
+                "tmp/copyright1": "magic5",
+                "tmp/sh": "magic6",
+        }
 
         def setUp(self):
-                testutils.SingleDepotTestCase.setUp(self)
-                for p in self.misc_files:
-                        f = open(p, "w")
-                        # write the name of the file into the file, so that
-                        # all files have differing contents
-                        f.write(p)
-                        f.close()
-                        self.debug("wrote %s" % p)
+                pkg5unittest.SingleDepotTestCase.setUp(self)
+                self.make_misc_files(self.misc_files)
 
                 self.pkgsend_bulk(self.dc.get_depot_url(), self.bronze10)
-
-        def tearDown(self):
-                testutils.SingleDepotTestCase.tearDown(self)
-                for p in self.misc_files:
-                        os.remove(p)
 
         def assertEqualDiff(self, expected, actual):
                 self.assertEqual(expected, actual,
@@ -143,20 +140,20 @@ class TestPkgContentsBasics(testutils.SingleDepotTestCase):
                 # Basic -a
                 self.pkg("contents -H -o action.hash -a path=usr/bin/sh")
                 self.assert_(self.output.rstrip() ==
-                    "f2b5bfd72a6b759e4e47599f828a174a0668b243")
+                    "422bdb3eb2d613367933194e3f11220aebe56226")
 
                 # -a with a pattern
                 self.pkg("contents -H -o action.hash -a path=etc/bronze*")
                 self.assert_(self.output.splitlines() == [
-                    "28f75bcd652b188fbe0a7938265aa5d9196cb7e8",
-                    "3bb4541b7c38be84b76994cce8bc8233d5bc9720"])
+                    "02cdf31d12ccfb6d35e4b8eeff10535e22da3f7e",
+                    "b14e4cdfee720f1eab645bcbfb76eca153301715"])
 
                 # Multiple -a
                 self.pkg("contents -H -o action.hash -a path=etc/bronze1 "
                     "-a mode=0555")
                 self.assert_(self.output.splitlines() == [
-                    "28f75bcd652b188fbe0a7938265aa5d9196cb7e8",
-                    "f2b5bfd72a6b759e4e47599f828a174a0668b243"])
+                    "02cdf31d12ccfb6d35e4b8eeff10535e22da3f7e",
+                    "422bdb3eb2d613367933194e3f11220aebe56226"])
 
                 # Non-matching pattern should exit 1
                 self.pkg("contents -a path=usr/bin/notthere", 1)

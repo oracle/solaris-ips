@@ -20,8 +20,13 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+
+import testutils
+if __name__ == "__main__":
+        testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import itertools
 import datetime
@@ -32,12 +37,6 @@ import sys
 import tempfile
 import time
 import unittest
-
-# Set the path so that modules above can be found
-path_to_parent = os.path.join(os.path.dirname(__file__), "..")
-sys.path.insert(0, path_to_parent)
-
-import pkg5unittest
 
 import pkg.variant as variant
 
@@ -89,3 +88,5 @@ class TestVariants(pkg5unittest.Pkg5TestCase):
                 v1.remove_identical(v5)
                 self.__check_equal(v1, dict([(3, ["b", "c"])]))
 
+if __name__ == "__main__":
+        unittest.main()

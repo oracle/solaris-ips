@@ -21,13 +21,14 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import os
 import unittest
@@ -45,14 +46,14 @@ import pkg.fmri as fmri
 import pkg.portable as portable
 import pkg.search_storage as ss
 
-class TestPkgSearchBasics(testutils.SingleDepotTestCase):
+class TestPkgSearchBasics(pkg5unittest.SingleDepotTestCase):
 
         example_pkg10 = """
             open example_pkg@1.0,5.11-0
             add dir mode=0755 owner=root group=bin path=/bin
             add dir mode=0755 owner=root group=bin path=/bin/example_dir
             add dir mode=0755 owner=root group=bin path=/usr/lib/python2.6/vendor-packages/OpenSSL
-            add file /tmp/example_file mode=0555 owner=root group=bin path=/bin/example_path
+            add file tmp/example_file mode=0555 owner=root group=bin path=/bin/example_path
             add set name=com.sun.service.incorporated_changes value="6556919 6627937"
             add set name=com.sun.service.random_test value=42 value=79
             add set name=com.sun.service.bug_ids value="4641790 4725245 4817791 4851433 4897491 4913776 6178339 6556919 6627937"
@@ -202,7 +203,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
             'com.sun.service.incorporated_changes set       6556919 6627937                   pkg:/bogus_pkg@1.0-0\n'
         ])
 
-        misc_files = ['/tmp/example_file']
+        misc_files = { "tmp/example_file": "magic" }
 
         res_local_pkg_ret_pkg = set([
             pkg_headers,
@@ -216,7 +217,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
 
         res_remote_file = set([
             'path       file      bin/example_path          pkg:/example_pkg@1.0-0\n',
-            '820157a2043e3135f342b238129b556aade20347 file      bin/example_path          pkg:/example_pkg@1.0-0\n'
+            'b40981aab75932c5b2f555f50769d878e44913d7 file      bin/example_path          pkg:/example_pkg@1.0-0\n'
         ]) | res_remote_path
 
 
@@ -229,7 +230,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
              headers,
              'path       file      bin/example_path          pkg:/example_pkg@1.0-0\n',
              'basename   file      bin/example_path          pkg:/example_pkg@1.0-0\n',
-             '820157a2043e3135f342b238129b556aade20347 file      bin/example_path          pkg:/example_pkg@1.0-0\n'
+             'b40981aab75932c5b2f555f50769d878e44913d7 file      bin/example_path          pkg:/example_pkg@1.0-0\n'
         ])
 
         o_headers = \
@@ -242,7 +243,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
             "file bin/example_path example_pkg " \
             "pkg:/example_pkg@1.0-0 bin/example_path " \
             "basename 0555 root bin " \
-            "file 820157a2043e3135f342b238129b556aade20347 chash=bfa46fc98d1ca97f1260090797d35a35e76096a3 group=bin mode=0555 owner=root path=bin/example_path pkg.csize=38 pkg.size=18\n"
+            "file b40981aab75932c5b2f555f50769d878e44913d7 chash=6a4299897fca0c4d0d18870da29a0dc7ae23b79c group=bin mode=0555 owner=root path=bin/example_path pkg.csize=25 pkg.size=5\n"
 
         o_results = o_results_no_pub.rstrip() + " test\n"
 
@@ -258,23 +259,9 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
         res_pkg_options_local = set([pkg_headers, pkg_results_no_pub])
 
         def setUp(self):
-                for p in self.misc_files:
-                        f = open(p, "w")
-                        # Write the name of the file into the file, so that
-                        # all files have differing contents.
-                        f.write(p + "\n")
-                        f.close()
-                testutils.SingleDepotTestCase.setUp(self)
-                tp = self.get_test_prefix()
-                self.testdata_dir = os.path.join(tp, "search_results")
-                os.mkdir(self.testdata_dir)
+                pkg5unittest.SingleDepotTestCase.setUp(self)
+                self.make_misc_files(self.misc_files)
                 self.init_mem_setting = None
-
-        def tearDown(self):
-                testutils.SingleDepotTestCase.tearDown(self)
-                for p in self.misc_files:
-                        os.remove(p)
-                shutil.rmtree(self.testdata_dir)
 
         def _check(self, proposed_answer, correct_answer):
                 if correct_answer == proposed_answer:
@@ -295,7 +282,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
 
         def _search_op(self, remote, token, test_value, case_sensitive=False,
             return_actions=True, exit=0, su_wrap=False):
-                outfile = os.path.join(self.testdata_dir, "res")
+                outfile = os.path.join(self.test_root, "res")
                 if remote:
                         token = "-r " + token
                 else:
@@ -388,7 +375,7 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 self.pkg("search -a -r 'e* OR <e*>'", exit=1)
 
         def _run_local_tests(self):
-                outfile = os.path.join(self.testdata_dir, "res")
+                outfile = os.path.join(self.test_root, "res")
 
                 # This finds something because the client side
                 # manifest has had the name of the package inserted
@@ -639,10 +626,10 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 urllib2.urlopen("%s/en/search.shtml?token=Intel(R)&"
                     "action=Search" % durl)
 
-                testutils.eval_assert_raises(urllib2.HTTPError,
+                pkg5unittest.eval_assert_raises(urllib2.HTTPError,
                     lambda x: x.code == 400, urllib2.urlopen,
                     "%s/search/1/False_2_None_None_Intel%%28R%%29" % durl)
-                testutils.eval_assert_raises(urllib2.HTTPError,
+                pkg5unittest.eval_assert_raises(urllib2.HTTPError,
                     lambda x: x.code == 400, urllib2.urlopen,
                     "%s/search/1/False_2_None_None_foo%%20%%3Cbar%%3E" % durl)
 

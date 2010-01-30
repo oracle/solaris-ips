@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -35,6 +35,7 @@ import tempfile
 import traceback
 import urllib
 import urlparse
+import warnings
 
 import pkg.catalog as catalog
 import pkg.client.progress as progress
@@ -789,6 +790,10 @@ def main_func():
         return 0
 
 if __name__ == "__main__":
+
+        # Make all warnings be errors.
+        warnings.simplefilter('error')
+
         try:
                 __ret = main_func()
         except (pkg.actions.ActionError, trans.TransactionError,

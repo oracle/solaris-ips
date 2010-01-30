@@ -226,7 +226,13 @@ class DepotController(object):
                 """ Return the equivalent command line invocation (as an
                     array) for the depot as currently configured. """
 
-                args = self.__wrapper_start[:]
+                args = []
+
+                # The depot may fork off children of its own, so we place
+                # them all together in a process group.  This allows us to
+                # nuke everything later on.
+                args.append("setpgrp")
+                args.extend(self.__wrapper_start[:])
                 args.append(self.__depot_path)
                 if self.__depot_content_root:
                         args.append("--content-root")
@@ -305,55 +311,67 @@ class DepotController(object):
                 self.__starttime = time.time()
 
         def start(self):
-                self.__initial_start()
+                try:
+                        self.__initial_start()
 
-                if self.__refresh_index:
-                        return
+                        if self.__refresh_index:
+                                return
 
-                sleeptime = 0.05
-                contact = False
-                while sleeptime <= 40.0:
-                        rc = self.__depot_handle.poll()
-                        if rc is not None:
-                                raise DepotStateException("Depot exited "
-                                    "unexpectedly while starting "
-                                    "(exit code %d)" % rc)
+                        begintime = time.time()
 
-                        if self.is_alive():
-                                contact = True
-                                break
-                        time.sleep(sleeptime)
-                        sleeptime *= 2
+                        sleeptime = 0.0
+                        check_interval = 0.20
+                        contact = False
+                        while (time.time() - begintime) <= 40.0:
+                                rc = self.__depot_handle.poll()
+                                if rc is not None:
+                                        raise DepotStateException("Depot exited "
+                                            "unexpectedly while starting "
+                                            "(exit code %d)" % rc)
 
-                if contact == False:
-                        self.kill()
-                        self.__state = self.HALTED
-                        raise DepotStateException("Depot did not respond to "
-                            "repeated attempts to make contact")
+                                if self.is_alive():
+                                        contact = True
+                                        break
+                                time.sleep(check_interval)
 
-                self.__state = self.RUNNING
+                        if contact == False:
+                                self.kill()
+                                self.__state = self.HALTED
+                                raise DepotStateException("Depot did not respond to "
+                                    "repeated attempts to make contact")
+
+                        self.__state = self.RUNNING
+                except KeyboardInterrupt:
+                        if self.__depot_handle:
+                                self.kill(now=True)
+                        raise
 
         def start_expected_fail(self, exit=2):
-                self.__initial_start()
+                try:
+                        self.__initial_start()
 
-                sleeptime = 0.05
-                died = False
-                rc = None
-                while sleeptime <= 10.0:
+                        sleeptime = 0.05
+                        died = False
+                        rc = None
+                        while sleeptime <= 10.0:
 
-                        rc = self.__depot_handle.poll()
-                        if rc is not None:
-                                died = True
-                                break
-                        time.sleep(sleeptime)
-                        sleeptime *= 2
+                                rc = self.__depot_handle.poll()
+                                if rc is not None:
+                                        died = True
+                                        break
+                                time.sleep(sleeptime)
+                                sleeptime *= 2
 
-                if died and rc == exit:
-                        self.__state = self.HALTED
-                        return True
-                else:
-                        self.stop()
-                        return False
+                        if died and rc == exit:
+                                self.__state = self.HALTED
+                                return True
+                        else:
+                                self.stop()
+                                return False
+                except KeyboardInterrupt:
+                        if self.__depot_handle:
+                                self.kill(now=True)
+                        raise
 
         def refresh(self):
                 if self.__depot_handle == None:
@@ -364,55 +382,31 @@ class DepotController(object):
                 os.kill(self.__depot_handle.pid, signal.SIGUSR1)
                 return self.__depot_handle.poll()
 
-        def kill(self):
+        def kill(self, now=False):
                 """kill the depot; letting it live for
                 a little while helps get reliable death"""
-
-                lifetime = time.time() - self.__starttime
-                if lifetime < 1.0:
-                        time.sleep(1.0 - lifetime)
 
                 if self.__depot_handle == None:
                         # XXX might want to remember and return saved
                         # exit status
                         return 0
 
-                status = -1
+                try:
+                        lifetime = time.time() - self.__starttime
+                        if now == False and lifetime < 1.0:
+                                time.sleep(1.0 - lifetime)
 
-                wait_to_exit = 5.0
-                sleeptime = 0.05
-                firsttime = True
-
-                while wait_to_exit > 0:
-                        status = self.__depot_handle.poll()
-                        if status is not None:
-                                break
-
-                        #
-                        # No status, Depot process seems to be running
-                        # XXX could also check liveness with a kill.
-                        #
-                        if firsttime:
-                                # XXX porting issue
-                                os.kill(self.__depot_handle.pid, signal.SIGTERM)
-                                firsttime = False
-
-                        time.sleep(sleeptime)
-                        wait_to_exit -= sleeptime
-                        sleeptime *= 2
-                else:
-                        assert status is None
-                        print >> sys.stderr, \
-                            "Depot did not shut down, trying kill -9 %d" % \
-                            self.__depot_handle.pid
-                        os.kill(self.__depot_handle.pid, signal.SIGKILL)
-                        #self.__depot_handle.wait()
-                        status = self.__depot_handle.poll()
-
-                # XXX do something useful with status
-                self.__state = self.HALTED
-                self.__depot_handle = None
-                return status
+                finally:
+                        # By sticking in this finally: block we ensure that even
+                        # if the kill gets ctrl-c'd, we'll at least take a good
+                        # final whack at the depot by killing -9 its process group.
+                        try:
+                                os.kill(-1 * self.__depot_handle.pid, signal.SIGKILL)
+                        except OSError:
+                                pass
+                        self.__state = self.HALTED
+                        self.__depot_handle.wait()
+                        self.__depot_handle = None
 
         def stop(self):
                 if self.__state == self.HALTED:

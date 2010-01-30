@@ -32,6 +32,7 @@ import locale
 import os
 import sys
 import traceback
+import warnings
 
 import pkg
 import pkg.actions as actions
@@ -475,6 +476,10 @@ def main_func():
 # so that we can more easily detect these in testing of the CLI commands.
 #
 if __name__ == "__main__":
+
+        # Make all warnings be errors.
+        warnings.simplefilter('error')
+
         try:
                 __ret = main_func()
         except api_errors.MissingFileArgumentException, e:

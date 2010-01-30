@@ -28,6 +28,7 @@
 import testutils
 if __name__ == "__main__":
 	testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import unittest
 import os
@@ -43,9 +44,9 @@ import pkg.client.progress as progress
 API_VERSION = 31
 PKG_CLIENT_NAME = "pkg"
 
-class TestApiInfo(testutils.SingleDepotTestCase):
+class TestApiInfo(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
-        persistent_depot = True
+        persistent_setup = True
 
         def test_info_local_remote(self):
                 self.image_create(self.dc.get_depot_url())
@@ -63,11 +64,8 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                 self.assertRaises(api_errors.UnrecognizedOptionsToInfo,
                     api_obj.info, [], True, set('a'))
 
-                misc_files = ["/tmp/copyright1", "/tmp/example_file"]
-                for p in misc_files:
-                        f = open(p, "w")
-                        f.write(p)
-                        f.close()
+                misc_files = ["tmp/copyright1", "tmp/example_file"]
+                self.make_misc_files(misc_files)
 
                 pkg1 = """
                     open jade@1.0,5.11-0
@@ -92,11 +90,11 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                     open example_pkg@1.0,5.11-0
                     add depend fmri=pkg:/amber@2.0 type=require
                     add dir mode=0755 owner=root group=bin path=/bin
-                    add file /tmp/example_file mode=0555 owner=root group=bin path=/bin/example_path
+                    add file tmp/example_file mode=0555 owner=root group=bin path=/bin/example_path
                     add hardlink path=/bin/example_path2 target=/bin/example_path
                     add link path=/bin/example_path3 target=/bin/example_path
                     add set description='FOOO bAr O OO OOO'
-                    add license /tmp/copyright1 license=copyright
+                    add license tmp/copyright1 license=copyright
                     add set name=info.classification value=org.opensolaris.category.2008:System/Security/Foo/bar/Baz
                     add set pkg.description="DESCRIPTION 1"
                     close """
@@ -205,7 +203,8 @@ class TestApiInfo(testutils.SingleDepotTestCase):
                 self.assert_(res.packaging_date is not None)
                 total_size = 0
                 for p in misc_files:
-                        total_size += len(p)
+                        total_size += \
+                            os.stat(os.path.join(self.test_root, p)).st_size
                 self.assertEqual(res.size, total_size)
                 self.assert_(res.licenses is not None)
                 self.assert_(res.links is not None)

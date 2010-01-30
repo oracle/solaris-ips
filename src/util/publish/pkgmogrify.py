@@ -29,9 +29,10 @@ import os
 import re
 import shlex
 import sys
+import warnings
+
 import pkg.actions
 from pkg.misc import PipeError
-
 
 macros  = {}
 includes = []
@@ -465,6 +466,10 @@ def main_func():
         return 0
 
 if __name__ == "__main__":
+
+        # Make all warnings be errors.
+        warnings.simplefilter('error')
+
         try:
                 exit_code = main_func()        
         except (PipeError, KeyboardInterrupt):

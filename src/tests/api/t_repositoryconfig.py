@@ -20,8 +20,13 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+
+import testutils
+if __name__ == "__main__":
+        testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import unittest
 import copy
@@ -30,11 +35,6 @@ import sys
 import tempfile
 
 import pkg.server.repositoryconfig as rcfg
-
-# Set the path so that modules above can be found
-path_to_parent = os.path.join(os.path.dirname(__file__), "..")
-sys.path.insert(0, path_to_parent)
-import pkg5unittest
 
 class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
         """Class to test the functionality of RepositoryConfig.
@@ -147,7 +147,9 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
         def setUp(self):
                 """Setup our tests.
                 """
-                fd, self.sample_conf = tempfile.mkstemp()
+                pkg5unittest.Pkg5TestCase.setUp(self)
+
+                fd, self.sample_conf = tempfile.mkstemp(dir=self.test_root)
                 f = os.fdopen(fd, "w")
 
                 self.remove = [self.sample_conf]
@@ -274,7 +276,7 @@ class TestRepositoryConfig(pkg5unittest.Pkg5TestCase):
                 write().  Calling set for a read-only value should raise a
                 ValueError exception.
                 """
-                fd, sample_conf = tempfile.mkstemp()
+                fd, sample_conf = tempfile.mkstemp(dir=self.test_root)
                 self.remove.append(sample_conf)
                 rc = rcfg.RepositoryConfig()
                 props = self.__props

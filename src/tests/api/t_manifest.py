@@ -20,7 +20,7 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import unittest
@@ -44,6 +44,8 @@ import pkg5unittest
 class TestManifest(pkg5unittest.Pkg5TestCase):
 
         def setUp(self):
+                pkg5unittest.Pkg5TestCase.setUp(self)
+
                 self.m1 = manifest.Manifest();
                 self.m1_contents = """\
 set com.sun,test=true

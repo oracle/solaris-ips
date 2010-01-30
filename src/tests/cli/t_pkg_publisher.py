@@ -21,21 +21,22 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import unittest
 import os
 import tempfile
 
-class TestPkgPublisherBasics(testutils.SingleDepotTestCase):
+class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
-        persistent_depot = True
+        persistent_setup = True
 
         def test_pkg_publisher_bogus_opts(self):
                 """ pkg bogus option checks """
@@ -217,9 +218,8 @@ class TestPkgPublisherBasics(testutils.SingleDepotTestCase):
 
                 # Now change the first publisher to a https URL so that
                 # certificate failure cases can be tested.
-                key_fh, key_path = tempfile.mkstemp(dir=self.get_test_prefix())
-                cert_fh, cert_path = tempfile.mkstemp(
-                    dir=self.get_test_prefix())
+                key_fh, key_path = tempfile.mkstemp(dir=self.test_root)
+                cert_fh, cert_path = tempfile.mkstemp(dir=self.test_root)
 
                 self.pkg("set-publisher --no-refresh -O https://%s1 test1" %
                     self.bogus_url)
@@ -239,9 +239,9 @@ class TestPkgPublisherBasics(testutils.SingleDepotTestCase):
                 self.pkg("publisher test1", su_wrap=True, exit=3)
 
 
-class TestPkgPublisherMany(testutils.ManyDepotTestCase):
+class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
-        persistent_depot = True
+        persistent_setup = True
 
         foo1 = """
             open foo@1,5.11-0
@@ -256,7 +256,7 @@ class TestPkgPublisherMany(testutils.ManyDepotTestCase):
             close """
 
         def setUp(self):
-                testutils.ManyDepotTestCase.setUp(self, ["test1", "test2", "test3", 
+                pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2", "test3", 
                     "test1", "test1"])
 
                 durl1 = self.dcs[1].get_depot_url()
@@ -271,9 +271,6 @@ class TestPkgPublisherMany(testutils.ManyDepotTestCase):
                 self.image_create(durl1, prefix="test1")
                 self.pkg("set-publisher -O " + durl2 + " test2")
                 self.pkg("set-publisher -O " + durl3 + " test3")
-
-        def tearDown(self):
-                testutils.ManyDepotTestCase.tearDown(self)
 
         def __test_mirror_origin(self, etype, add_opt, remove_opt):
                 durl1 = self.dcs[1].get_depot_url()

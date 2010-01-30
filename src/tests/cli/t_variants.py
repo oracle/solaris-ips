@@ -20,12 +20,13 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import os
 import re
@@ -34,70 +35,56 @@ import unittest
 import shutil
 from stat import *
 
-class TestPkgVariants(testutils.SingleDepotTestCase):
+class TestPkgVariants(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
-        persistent_depot = True
+        persistent_setup = True
 
         bronze10 = """
         open bronze@1.0,5.11-0
         add set name=variant.arch value=sparc value=i386 value=zos
         add dir mode=0755 owner=root group=bin path=/etc
-        add file /tmp/bronze_sparc/etc/motd mode=0555 owner=root group=bin path=etc/motd variant.arch=sparc
-        add file /tmp/bronze_i386/etc/motd mode=0555 owner=root group=bin path=etc/motd variant.arch=i386
-        add file /tmp/bronze_zos/etc/motd mode=0555 owner=root group=bin path=etc/motd variant.arch=zos
-        add file /tmp/bronze_zone/etc/nonglobal_motd mode=0555 owner=root group=bin path=etc/zone_motd variant.opensolaris.zone=nonglobal
-        add file /tmp/bronze_zone/etc/global_motd mode=0555 owner=root group=bin path=etc/zone_motd variant.opensolaris.zone=global
-        add file /tmp/bronze_zone/etc/sparc_nonglobal mode=0555 owner=root group=bin path=etc/zone_arch variant.arch=sparc variant.opensolaris.zone=nonglobal
-        add file /tmp/bronze_zone/etc/i386_nonglobal mode=0555 owner=root group=bin path=etc/zone_arch variant.arch=i386 variant.opensolaris.zone=nonglobal
-        add file /tmp/bronze_zone/etc/zos_nonglobal mode=0555 owner=root group=bin path=etc/zone_arch variant.arch=zos variant.opensolaris.zone=nonglobal
-        add file /tmp/bronze_zone/etc/sparc_global mode=0555 owner=root group=bin path=etc/zone_arch variant.arch=sparc variant.opensolaris.zone=global
-        add file /tmp/bronze_zone/etc/i386_global mode=0555 owner=root group=bin path=etc/zone_arch variant.arch=i386 variant.opensolaris.zone=global
-        add file /tmp/bronze_zone/etc/zos_global mode=0555 owner=root group=bin path=etc/zone_arch variant.arch=zos variant.opensolaris.zone=global
-        add file /tmp/bronze_zone/false mode=0555 owner=root group=bin path=etc/isdebug variant.debug.kernel=false 
-        add file /tmp/bronze_zone/true mode=0555 owner=root group=bin path=etc/isdebug variant.debug.kernel=true
+        add file tmp/bronze_sparc/etc/motd mode=0555 owner=root group=bin path=etc/motd variant.arch=sparc
+        add file tmp/bronze_i386/etc/motd mode=0555 owner=root group=bin path=etc/motd variant.arch=i386
+        add file tmp/bronze_zos/etc/motd mode=0555 owner=root group=bin path=etc/motd variant.arch=zos
+        add file tmp/bronze_zone/etc/nonglobal_motd mode=0555 owner=root group=bin path=etc/zone_motd variant.opensolaris.zone=nonglobal
+        add file tmp/bronze_zone/etc/global_motd mode=0555 owner=root group=bin path=etc/zone_motd variant.opensolaris.zone=global
+        add file tmp/bronze_zone/etc/sparc_nonglobal mode=0555 owner=root group=bin path=etc/zone_arch variant.arch=sparc variant.opensolaris.zone=nonglobal
+        add file tmp/bronze_zone/etc/i386_nonglobal mode=0555 owner=root group=bin path=etc/zone_arch variant.arch=i386 variant.opensolaris.zone=nonglobal
+        add file tmp/bronze_zone/etc/zos_nonglobal mode=0555 owner=root group=bin path=etc/zone_arch variant.arch=zos variant.opensolaris.zone=nonglobal
+        add file tmp/bronze_zone/etc/sparc_global mode=0555 owner=root group=bin path=etc/zone_arch variant.arch=sparc variant.opensolaris.zone=global
+        add file tmp/bronze_zone/etc/i386_global mode=0555 owner=root group=bin path=etc/zone_arch variant.arch=i386 variant.opensolaris.zone=global
+        add file tmp/bronze_zone/etc/zos_global mode=0555 owner=root group=bin path=etc/zone_arch variant.arch=zos variant.opensolaris.zone=global
+        add file tmp/bronze_zone/false mode=0555 owner=root group=bin path=etc/isdebug variant.debug.kernel=false 
+        add file tmp/bronze_zone/true mode=0555 owner=root group=bin path=etc/isdebug variant.debug.kernel=true
         close"""
 
         silver10 = """
         open silver@1.0,5.11-0
         add set name=variant.arch value=i386
         add dir mode=0755 owner=root group=bin path=/etc
-        add file /tmp/bronze_i386/etc/motd mode=0555 owner=root group=bin path=etc/motd variant.arch=i386
+        add file tmp/bronze_i386/etc/motd mode=0555 owner=root group=bin path=etc/motd variant.arch=i386
         close"""
 
         misc_files = [ 
-                "/tmp/bronze_sparc/etc/motd",
-                "/tmp/bronze_i386/etc/motd",
-                "/tmp/bronze_zos/etc/motd",
-                "/tmp/bronze_zone/etc/nonglobal_motd",
-                "/tmp/bronze_zone/etc/global_motd",
-                "/tmp/bronze_zone/etc/i386_nonglobal",
-                "/tmp/bronze_zone/etc/sparc_nonglobal",
-                "/tmp/bronze_zone/etc/zos_nonglobal",
-                "/tmp/bronze_zone/etc/i386_global",
-                "/tmp/bronze_zone/etc/sparc_global",
-                "/tmp/bronze_zone/etc/zos_global",
-                "/tmp/bronze_zone/false",
-                "/tmp/bronze_zone/true",
+                "tmp/bronze_sparc/etc/motd",
+                "tmp/bronze_i386/etc/motd",
+                "tmp/bronze_zos/etc/motd",
+                "tmp/bronze_zone/etc/nonglobal_motd",
+                "tmp/bronze_zone/etc/global_motd",
+                "tmp/bronze_zone/etc/i386_nonglobal",
+                "tmp/bronze_zone/etc/sparc_nonglobal",
+                "tmp/bronze_zone/etc/zos_nonglobal",
+                "tmp/bronze_zone/etc/i386_global",
+                "tmp/bronze_zone/etc/sparc_global",
+                "tmp/bronze_zone/etc/zos_global",
+                "tmp/bronze_zone/false",
+                "tmp/bronze_zone/true",
                 ]
 
         def setUp(self):
-                print "setUP"
-                testutils.SingleDepotTestCase.setUp(self)
-                for p in self.misc_files:
-                        path = os.path.dirname(p)
-                        if not os.path.exists(path):
-                                os.makedirs(path)
-                        f = open(p, "w")
-                        # write the name of the file into the file, so that
-                        # all files have differing contents
-                        f.write(p)
-                        f.close()
-                        self.debug("wrote %s" % p)
-                
-        def tearDown(self):
-                testutils.SingleDepotTestCase.tearDown(self)
-                for p in self.misc_files:
-                        os.remove(p)
+                self.debug("setUp")
+                pkg5unittest.SingleDepotTestCase.setUp(self)
+                self.make_misc_files(self.misc_files)
 
         def test_variant_1(self):
                 self.__test_common("no-change", "no-change")

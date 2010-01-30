@@ -24,6 +24,11 @@
 # Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
+import testutils
+if __name__ == "__main__":
+        testutils.setup_environment("../../../proto")
+import pkg5unittest
+
 import datetime
 import errno
 import os
@@ -33,12 +38,6 @@ import sys
 import tempfile
 import time
 import unittest
-
-# Set the path so that modules above can be found
-path_to_parent = os.path.join(os.path.dirname(__file__), "..")
-sys.path.insert(0, path_to_parent)
-
-import pkg5unittest
 
 import pkg.actions
 import pkg.fmri as fmri
@@ -54,18 +53,9 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
         """Tests for all catalog functionality."""
 
         def setUp(self):
-                self.pid = os.getpid()
-                self.pwd = os.getcwd()
+                pkg5unittest.Pkg5TestCase.setUp(self)
 
-                self.__test_prefix = os.path.join(tempfile.gettempdir(),
-                    "ips.test.%d" % self.pid)
-
-                try:
-                        os.makedirs(self.__test_prefix, misc.PKG_DIR_MODE)
-                except OSError, e:
-                        if e.errno != errno.EEXIST:
-                                raise e
-                self.paths = [self.__test_prefix]
+                self.paths = [self.test_root]
                 self.c = catalog.Catalog(log_updates=True)
                 self.nversions = 0
 
@@ -104,18 +94,11 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
 
                 self.npkgs = len(stems)
 
-        def tearDown(self):
-                for path in self.paths:
-                        shutil.rmtree(path)
-
-        def get_test_prefix(self):
-                return self.__test_prefix
-
         def create_test_dir(self, name):
                 """Creates a temporary directory with the specified name for
                 test usage and returns its absolute path."""
 
-                target = os.path.join(self.__test_prefix, name)
+                target = os.path.join(self.test_root, name)
                 try:
                         os.makedirs(target, misc.PKG_DIR_MODE)
                 except OSError, e:
@@ -402,10 +385,6 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 returned = nc.categories(excludes=excludes)
                 expected = expected_categories(f)
                 self.assertEqual(returned, expected)
-
-        def debug(self, value):
-                import sys
-                print >> sys.__stderr__, value
 
         def test_01_attrs(self):
                 self.assertEqual(self.npkgs, self.c.package_count)
@@ -1015,7 +994,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                 orig.save()
 
                 # Next, duplicate the original for testing, and load it.
-                dup1_path = os.path.join(self.get_test_prefix(), "test-07-dup1")
+                dup1_path = os.path.join(self.test_root, "test-07-dup1")
                 shutil.copytree(cpath, dup1_path)
                 dup1 = catalog.Catalog(meta_root=dup1_path)
                 dup1.validate()

@@ -21,13 +21,14 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import difflib
 import os
@@ -46,9 +47,9 @@ import urlparse
 import unittest
 import zlib
 
-class TestPkgrecvMulti(testutils.ManyDepotTestCase):
+class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
         # Cleanup after every test.
-        persistent_depot = False
+        persistent_setup = False
 
         scheme10 = """
             open pkg:/scheme@1.0,5.11-0
@@ -76,14 +77,14 @@ class TestPkgrecvMulti(testutils.ManyDepotTestCase):
             open bronze@1.0,5.11-0
             add dir mode=0755 owner=root group=bin path=/usr
             add dir mode=0755 owner=root group=bin path=/usr/bin
-            add file /tmp/sh mode=0555 owner=root group=bin path=/usr/bin/sh
+            add file tmp/sh mode=0555 owner=root group=bin path=/usr/bin/sh
             add link path=/usr/bin/jsh target=./sh
             add hardlink path=/lib/libc.bronze target=/lib/libc.so.1
-            add file /tmp/bronze1 mode=0444 owner=root group=bin path=/etc/bronze1
-            add file /tmp/bronze2 mode=0444 owner=root group=bin path=/etc/bronze2
-            add file /tmp/bronzeA1 mode=0444 owner=root group=bin path=/A/B/C/D/E/F/bronzeA1
+            add file tmp/bronze1 mode=0444 owner=root group=bin path=/etc/bronze1
+            add file tmp/bronze2 mode=0444 owner=root group=bin path=/etc/bronze2
+            add file tmp/bronzeA1 mode=0444 owner=root group=bin path=/A/B/C/D/E/F/bronzeA1
             add depend fmri=pkg:/amber@1.0 type=require
-            add license /tmp/copyright2 license=copyright
+            add license tmp/copyright2 license=copyright
             close
         """
 
@@ -91,22 +92,22 @@ class TestPkgrecvMulti(testutils.ManyDepotTestCase):
             open bronze@2.0,5.11-0
             add dir mode=0755 owner=root group=bin path=/etc
             add dir mode=0755 owner=root group=bin path=/lib
-            add file /tmp/sh mode=0555 owner=root group=bin path=/usr/bin/sh
-            add file /tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.bronze
+            add file tmp/sh mode=0555 owner=root group=bin path=/usr/bin/sh
+            add file tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.bronze
             add link path=/usr/bin/jsh target=./sh
             add hardlink path=/lib/libc.bronze2.0.hardlink target=/lib/libc.so.1
-            add file /tmp/bronze1 mode=0444 owner=root group=bin path=/etc/bronze1
-            add file /tmp/bronze2 mode=0444 owner=root group=bin path=/etc/amber2
-            add license /tmp/copyright3 license=copyright
-            add file /tmp/bronzeA2 mode=0444 owner=root group=bin path=/A1/B2/C3/D4/E5/F6/bronzeA2
+            add file tmp/bronze1 mode=0444 owner=root group=bin path=/etc/bronze1
+            add file tmp/bronze2 mode=0444 owner=root group=bin path=/etc/amber2
+            add license tmp/copyright3 license=copyright
+            add file tmp/bronzeA2 mode=0444 owner=root group=bin path=/A1/B2/C3/D4/E5/F6/bronzeA2
             add depend fmri=pkg:/amber@2.0 type=require
             close 
         """
 
-        misc_files = [ "/tmp/bronzeA1",  "/tmp/bronzeA2",
-                    "/tmp/bronze1", "/tmp/bronze2",
-                    "/tmp/copyright2", "/tmp/copyright3",
-                    "/tmp/libc.so.1", "/tmp/sh"]
+        misc_files = [ "tmp/bronzeA1",  "tmp/bronzeA2",
+                    "tmp/bronze1", "tmp/bronze2",
+                    "tmp/copyright2", "tmp/copyright3",
+                    "tmp/libc.so.1", "tmp/sh"]
 
         def setUp(self):
                 """ Start two depots.
@@ -114,15 +115,9 @@ class TestPkgrecvMulti(testutils.ManyDepotTestCase):
                     depot1 is mapped to publisher test1 (preferred)
                     depot2 is mapped to publisher test2 """
 
-                testutils.ManyDepotTestCase.setUp(self, ["test1", "test2"])
+                pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2"])
 
-                for p in self.misc_files:
-                        f = open(p, "w")
-                        # write the name of the file into the file, so that
-                        # all files have differing contents
-                        f.write(p)
-                        f.close()
-                        self.debug("wrote %s" % p)
+                self.make_misc_files(self.misc_files)
 
                 self.dpath1 = self.dcs[1].get_repodir()
                 self.durl1 = self.dcs[1].get_depot_url()
@@ -138,13 +133,7 @@ class TestPkgrecvMulti(testutils.ManyDepotTestCase):
 
                 self.dpath2 = self.dcs[2].get_repodir()
                 self.durl2 = self.dcs[2].get_depot_url()
-                self.tempdir = tempfile.mkdtemp(dir=self.get_test_prefix())
-
-        def tearDown(self):
-                testutils.ManyDepotTestCase.tearDown(self)
-                for p in self.misc_files:
-                        os.remove(p)
-                shutil.rmtree(self.tempdir)
+                self.tempdir = tempfile.mkdtemp(dir=self.test_root)
 
         @staticmethod
         def get_repo(uri):
@@ -187,7 +176,7 @@ class TestPkgrecvMulti(testutils.ManyDepotTestCase):
                 self.pkgrecv(command="-h", exit=0)
 
                 # Verify that a non-existent repository results in failure.
-                npath = os.path.join(self.get_test_prefix(), "nochance")
+                npath = os.path.join(self.test_root, "nochance")
                 self.pkgrecv(self.durl1, "-d file://%s foo" % npath,  exit=1)
 
                 # Test list newest.
@@ -280,7 +269,7 @@ class TestPkgrecvMulti(testutils.ManyDepotTestCase):
                                     misc.get_data_digest(new))
 
                 # Second, pkgrecv to the pkg to a file repository.
-                npath = tempfile.mkdtemp(dir=self.get_test_prefix())
+                npath = tempfile.mkdtemp(dir=self.test_root)
                 self.pkgsend("file://%s" % npath,
                     "create-repository --set-property publisher.prefix=test1")
                 self.pkgrecv(self.durl1, "-d file://%s %s" % (npath, f))
@@ -352,7 +341,7 @@ class TestPkgrecvMulti(testutils.ManyDepotTestCase):
                 # Fifth, pkgrecv the pkg to a file repository and compare the
                 # manifest of a package published with the scheme (pkg:/) given.
                 f = fmri.PkgFmri(self.published[6], None)
-                npath = tempfile.mkdtemp(dir=self.get_test_prefix())
+                npath = tempfile.mkdtemp(dir=self.test_root)
                 self.pkgsend("file://%s" % npath,
                     "create-repository --set-property publisher.prefix=test1")
                 self.pkgrecv(self.durl1, "-d file://%s %s" % (npath, f))
@@ -497,4 +486,3 @@ class TestPkgrecvMulti(testutils.ManyDepotTestCase):
 
 if __name__ == "__main__":
         unittest.main()
-

@@ -21,13 +21,14 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import os
 import re
@@ -35,9 +36,9 @@ import shutil
 import time
 import unittest
 
-class TestPkgHistory(testutils.ManyDepotTestCase):
+class TestPkgHistory(pkg5unittest.ManyDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
-        persistent_depot = True
+        persistent_setup = True
 
         foo1 = """
             open foo@1,5.11-0
@@ -53,7 +54,7 @@ class TestPkgHistory(testutils.ManyDepotTestCase):
             close """
 
         def setUp(self):
-                testutils.ManyDepotTestCase.setUp(self, ["test1", "test2"])
+                pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2"])
 
                 durl1 = self.dcs[1].get_depot_url()
                 self.pkgsend_bulk(durl1, self.foo1)
@@ -69,9 +70,6 @@ class TestPkgHistory(testutils.ManyDepotTestCase):
                 self.dcs[2].set_norebuild()
 
                 self.image_create(durl1, prefix="test1")
-
-        def tearDown(self):
-                testutils.ManyDepotTestCase.tearDown(self)
 
         def test_1_history_options(self):
                 """Verify all history options are accepted or rejected as

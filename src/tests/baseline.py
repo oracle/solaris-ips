@@ -20,68 +20,59 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import os
 import sys
 import unittest
 
-class BaseLine(object):
-        """Test result baseline for determining which tests failed against
-        the current state of the source tree.
-        """
+BASELINE_MATCH=0
+BASELINE_MISMATCH=1
 
+class BaseLine(object):
+        """Test result baseline recording and checking. """
         sep1 = '=' * 70
         sep2 = '-' * 70
 
-        # dict of "test name" -> "result"
-        results = {}
-
-        # Filename to store the results
-        filename = ""
-
-        # 'generating' keeps track of whether we are currently generating
-        # a baseline or not: if either the baseline doesn't exist or the
-        # "-g" option is specified on the commandline.
-        #
-        generating = False     
-
-        # List of tuples (name, result) for failed tests
-        failed_list = []
-
         def __init__(self, filename="baseline.txt", generate=False):
-                self.filename = filename
-                self.generating = generate
 
-        def handleresult(self, name, result):
+                # filename from which to get or store baseline results
+                self.__filename = filename
+                # 'generating' keeps track of whether we are currently
+                # generating a baseline or not: if either the baseline doesn't
+                # exist or the "-g" option is specified on the commandline.
+                self.__generating = generate
+                # List of tuples (name, result) for failed tests
+                self.__failed_list = []
+                # dict of "test name" -> "result"
+                self.__results = {}
+
+        def handleresult(self, name, actualresult):
                 """Add a result if we're generating the baseline file,
-                otherwise check it against the current result set."""
-                rv = True
-                if self.generating:
-                        self.results[name] = result
-                else:
-                        rv = self.checkresult(name, result)
-                        if rv != True:
-                                self.failed_list.append((name, result))
-                return rv
+                otherwise check it against the current result set.
+                Returns a value to indicate whether the result matched
+                the baseline."""
 
-        def getresult(self, name):
-                """Retrieve a result by test name."""
-                return self.results.get(name, None)
+                if self.__generating:
+                        self.__results[name] = actualresult
+                        return BASELINE_MATCH
 
-        def checkresult(self, name, result):
-                """Check a name/result pair against the current result set,
-                adding this test to the list of failures if it doesn't
-                match."""
-                if self.generating:
-                        return True
-                res = self.getresult(name)
-                return (cmp(res, result) == 0)
+                if self.expectedresult(name) != actualresult:
+                        self.__failed_list.append((name, actualresult))
+                        return BASELINE_MISMATCH
+                return BASELINE_MATCH
+
+        def expectedresult(self, name):
+                # The assumption if we're generating, or if we don't
+                # have a result in baseline, is that the test should pass.
+                if self.__generating:
+                        return "pass"
+                return self.__results.get(name, "pass")
 
         def getfailures(self):
                 """Return the list of failed tests."""
-                return self.failed_list
+                return self.__failed_list
 
         def reportfailures(self):
                 """Display all test cases that failed to match the baseline
@@ -102,40 +93,40 @@ class BaseLine(object):
         def store(self):
                 """Store the result set."""
                 # Only store the result set if we're generating a baseline
-                if not self.generating:
+                if not self.__generating:
                         return
                 try:
-                        f = file(self.filename, "w")
+                        f = file(self.__filename, "w")
                 except IOError, (err, msg):
                         print >> sys.stderr, "ERROR: storing baseline:"
                         print >> sys.stderr, "Failed to open %s: %s" % \
-                                (self.filename, msg)
+                                (self.__filename, msg)
                         return 
 
 		# Sort the results to make baseline diffs easier
-		results_sorted = self.results.keys()
+		results_sorted = self.__results.keys()
 		results_sorted.sort()
-	
+                print >> sys.stderr, "# Writing baseline to %s." % self.__filename	
                 for s in results_sorted:
                         f.write("%s|%s%s" %
-                            (s, self.results[s], os.linesep))
+                            (s, self.__results[s], os.linesep))
                 f.flush()
                 f.close()
 
         def load(self):
                 """Load the result set."""
-                if not os.path.exists(self.filename):
-                        self.generating = True
+                if not os.path.exists(self.__filename):
+                        self.__generating = True
                         return
 
                 try:
-                        f = file(self.filename, "r")
+                        f = file(self.__filename, "r")
                 except IOError, (err, msg):
                         print >> sys.stderr, "ERROR: loading baseline:"
                         print >> sys.stderr, "Failed to open %s: %s" % \
-                                (self.filename, msg)
+                                (self.__filename, msg)
                         return
                 for line in f.readlines():
                         n, r = line.split('|')
-                        self.results[n] = r.rstrip('\n')
+                        self.__results[n] = r.rstrip('\n')
                 f.close()

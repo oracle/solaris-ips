@@ -28,6 +28,7 @@
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import os
 import time
@@ -42,7 +43,7 @@ import pkg.client.progress as progress
 API_VERSION = 31
 PKG_CLIENT_NAME = "pkg"
 
-class TestPkgIntent(testutils.SingleDepotTestCase):
+class TestPkgIntent(pkg5unittest.SingleDepotTestCase):
 
         foo10 = """
             open foo@1.0,5.11-0
@@ -51,60 +52,49 @@ class TestPkgIntent(testutils.SingleDepotTestCase):
         foo11 = """
             open foo@1.1,5.11-0
             add dir mode=0755 owner=root group=bin path=/lib
-            add file /tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1 timestamp="20080731T024051Z"
+            add file tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1 timestamp="20080731T024051Z"
             close """
         foo11_timestamp = 1217472051
 
         foo12 = """
             open foo@1.2,5.11-0
-            add file /tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
+            add file tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
             close """
 
         bar10 = """
             open bar@1.0,5.11-0
             add depend type=require fmri=pkg:/foo@1.0
             add dir mode=0755 owner=root group=bin path=/bin
-            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
 
         bar11 = """
             open bar@1.1,5.11-0
             add depend type=require fmri=pkg:/foo@1.2
             add dir mode=0755 owner=root group=bin path=/bin
-            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
 
         bar12 = """
             open bar@1.2,5.11-0
             add depend type=require fmri=pkg:/foo@1.0
             add dir mode=0755 owner=root group=bin path=/bin
-            add file /tmp/cat mode=0555 owner=root group=bin path=/bin/cat 
+            add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat 
             close """
 
         baz10 = """
             open baz@1.0,5.11-0
             add depend type=require fmri=pkg:/bar@1.0
             add dir mode=0755 owner=root group=bin path=/bin
-            add file /tmp/baz mode=0555 owner=root group=bin path=/bin/baz
+            add file tmp/baz mode=0555 owner=root group=bin path=/bin/baz
             close """
 
-        misc_files = [ "/tmp/libc.so.1", "/tmp/cat", "/tmp/baz" ]
+        misc_files = [ "tmp/libc.so.1", "tmp/cat", "tmp/baz" ]
 
         def setUp(self):
-                testutils.SingleDepotTestCase.setUp(self,
+                pkg5unittest.SingleDepotTestCase.setUp(self,
                     debug_features=["headers"])
-                for p in self.misc_files:
-                        f = open(p, "w")
-                        # write the name of the file into the file, so that
-                        # all files have differing contents
-                        f.write(p)
-                        f.close
-                        self.debug("wrote %s" % p)
-
-        def tearDown(self):
-                testutils.SingleDepotTestCase.tearDown(self)
-                for p in self.misc_files:
-                        os.remove(p)
+                self.make_misc_files(self.misc_files)
 
         def get_intent_entries(self):
                 """Scan logpath looking for request header log entries for

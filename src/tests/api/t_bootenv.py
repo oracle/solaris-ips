@@ -21,23 +21,21 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
+
+import testutils
+if __name__ == "__main__":
+        testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import unittest
 import os
 import sys
 import pkg.client.bootenv as bootenv
 
-# Set the path so that modules above can be found
-path_to_parent = os.path.join(os.path.dirname(__file__), "..")
-sys.path.insert(0, path_to_parent)
-import pkg5unittest
-
 class TestBootEnv(pkg5unittest.Pkg5TestCase):
-        def setUp(self):
-                pass
                 
         def test_api_consistency(self):
                 """Make sure every public method in BootEnv exists in

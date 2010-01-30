@@ -20,8 +20,13 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+
+import testutils
+if __name__ == "__main__":
+        testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import errno
 import os
@@ -30,32 +35,10 @@ import sys
 import tempfile
 import unittest
 
-# Set the path so that modules above can be found
-path_to_parent = os.path.join(os.path.dirname(__file__), "..")
-sys.path.insert(0, path_to_parent)
-
-import pkg5unittest
-
 import pkg.file_layout.file_manager as file_manager
 import pkg.file_layout.layout as layout
 
 class TestFileManager(pkg5unittest.Pkg5TestCase):
-
-        def setUp(self):
-                self.pid = os.getpid()
-                self.pwd = os.getcwd()
-
-                self.__test_dir = os.path.join(tempfile.gettempdir(),
-                    "ips.test.%d" % self.pid)
-
-                try:
-                        os.makedirs(self.__test_dir, 0755)
-                except OSError, e:
-                        if e.errno != errno.EEXIST:
-                                raise e
-
-        def tearDown(self):
-                shutil.rmtree(self.__test_dir)
 
         @staticmethod
         def old_hash(s):
@@ -64,7 +47,7 @@ class TestFileManager(pkg5unittest.Pkg5TestCase):
         def touch_old_file(self, s, data=None):
                 if data is None:
                         data = s
-                p = os.path.join(self.__test_dir, self.old_hash(s))
+                p = os.path.join(self.test_root, self.old_hash(s))
                 if not os.path.exists(os.path.dirname(p)):
                         os.makedirs(os.path.dirname(p))
                 fh = open(p, "wb")
@@ -116,8 +99,8 @@ class TestFileManager(pkg5unittest.Pkg5TestCase):
 
                 # Test that a read only FileManager won't modify the file
                 # system.
-                fm = file_manager.FileManager(self.__test_dir, readonly=True)
-                self.assertEqual(os.listdir(self.__test_dir), [])
+                fm = file_manager.FileManager(self.test_root, readonly=True)
+                self.assertEqual(os.listdir(self.test_root), [])
 
                 unmoved = "4b7c923af3a047d4685a39ad7bc9b0382ccde671"
 
@@ -128,7 +111,7 @@ class TestFileManager(pkg5unittest.Pkg5TestCase):
                     set([unmoved]))
 
                 # Test a FileManager that can write to the file system.
-                fm = file_manager.FileManager(self.__test_dir, False)
+                fm = file_manager.FileManager(self.test_root, False)
 
                 hash1 = "584b6ab7d7eb446938a02e57101c3a2fecbfb3cb"
                 hash2 = "584b6ab7d7eb446938a02e57101c3a2fecbfb3cc"
@@ -149,7 +132,7 @@ class TestFileManager(pkg5unittest.Pkg5TestCase):
                 self.assert_(os.path.isfile(p1))
                 self.assert_(os.path.isdir(os.path.dirname(p1)))
                 self.assertEqual(fm.lookup(hash1),
-                    os.path.join(self.__test_dir, l.lookup(hash1)))
+                    os.path.join(self.test_root, l.lookup(hash1)))
                 self.assert_(not os.path.exists(p1))
                 self.assert_(not os.path.exists(os.path.dirname(p1)))
                 fm.remove(hash1)
@@ -165,7 +148,7 @@ class TestFileManager(pkg5unittest.Pkg5TestCase):
                 self.assert_(os.path.isfile(p1))
                 self.assert_(os.path.isdir(os.path.dirname(p1)))
                 self.assertEqual(fm.lookup(hash1),
-                    os.path.join(self.__test_dir, l.lookup(hash1)))
+                    os.path.join(self.test_root, l.lookup(hash1)))
                 self.assert_(not os.path.exists(p1))
                 self.assert_(os.path.exists(os.path.dirname(p1)))
                 fm.remove(hash2)
@@ -204,7 +187,7 @@ class TestFileManager(pkg5unittest.Pkg5TestCase):
 
                 # Test that walking with a different set of layouts works as
                 # expected.
-                fm2 = file_manager.FileManager(self.__test_dir, readonly=True,
+                fm2 = file_manager.FileManager(self.test_root, readonly=True,
                     layouts=[layout.get_preferred_layout()])
 
                 fs = set([hash1, hash4, hash3])
@@ -212,13 +195,13 @@ class TestFileManager(pkg5unittest.Pkg5TestCase):
                         for i in fm2.walk():
                                 fs.remove(i)
                 except file_manager.UnrecognizedFilePaths, e:
-                        self.assertEqual(e.fps, [p[len(self.__test_dir) + 1:]])
+                        self.assertEqual(e.fps, [p[len(self.test_root) + 1:]])
                 self.assertEqual(fs, set())
 
                 # Test removing a file works and removes the containing
                 # directory and that remove removes all instances of a hash
                 # from the file manager.
-                hash3_loc = os.path.join(self.__test_dir, l.lookup(hash3))
+                hash3_loc = os.path.join(self.test_root, l.lookup(hash3))
                 v0_hash3_loc = self.touch_old_file(hash3)
 
                 self.assert_(os.path.isfile(hash3_loc))
@@ -231,7 +214,7 @@ class TestFileManager(pkg5unittest.Pkg5TestCase):
                 self.assert_(not os.path.exists(os.path.dirname(v0_hash3_loc)))
                 self.assert_(os.path.isfile(fm.lookup(hash1)))
 
-                rh2_fd, raw_hash_2_loc = tempfile.mkstemp(dir=self.__test_dir)
+                rh2_fd, raw_hash_2_loc = tempfile.mkstemp(dir=self.test_root)
                 rh2_fh = os.fdopen(rh2_fd, "w")
                 rh2_fh.write(hash2)
                 rh2_fh.close()
@@ -277,25 +260,25 @@ class TestFileManager(pkg5unittest.Pkg5TestCase):
                         self.touch_old_file(fhash)
 
                 # Migrate it to the v1 layout.
-                fm = file_manager.FileManager(self.__test_dir, False)
+                fm = file_manager.FileManager(self.test_root, False)
                 for fhash in fm.walk():
                         self.assertEqual(fm.lookup(fhash),
-                            os.path.join(self.__test_dir, l1.lookup(fhash)))
+                            os.path.join(self.test_root, l1.lookup(fhash)))
 
                 # After migration verify that no v0 parent directories remain.
                 for fhash in fm.walk():
                         self.assertFalse(os.path.exists(os.path.dirname(
-                            os.path.join(self.__test_dir, l0.lookup(fhash)))))
+                            os.path.join(self.test_root, l0.lookup(fhash)))))
 
                 # Re-create the FileManager using v0 as the preferred layout.
-                fm = file_manager.FileManager(self.__test_dir, False,
+                fm = file_manager.FileManager(self.test_root, False,
                     layouts=[l0, l1])
 
                 # Test that looking up a file stored under the v1 layout is
                 # correctly moved to the v0 layout.
                 for fhash in fm.walk():
                         self.assertEqual(fm.lookup(fhash),
-                            os.path.join(self.__test_dir, l0.lookup(fhash)))
+                            os.path.join(self.test_root, l0.lookup(fhash)))
 
         def test_3_replace(self):
                 """Verify that insert will replace an existing file even though
@@ -315,10 +298,10 @@ class TestFileManager(pkg5unittest.Pkg5TestCase):
 
                 # Migrate it to the v1 layout and verify that each
                 # file contains the expected data.
-                fm = file_manager.FileManager(self.__test_dir, False)
+                fm = file_manager.FileManager(self.test_root, False)
                 for fhash in fm.walk():
                         loc = fm.lookup(fhash)
-                        self.assertEqual(loc, os.path.join(self.__test_dir,
+                        self.assertEqual(loc, os.path.join(self.test_root,
                             l1.lookup(fhash)))
 
                         f = open(loc, "rb")
@@ -328,10 +311,10 @@ class TestFileManager(pkg5unittest.Pkg5TestCase):
                 # Now replace each file using the old hashnames and verify
                 # that the each contains the expected data.
                 for fhash in fm.walk():
-                        loc = os.path.join(self.__test_dir, l1.lookup(fhash))
+                        loc = os.path.join(self.test_root, l1.lookup(fhash))
                         self.assertTrue(os.path.exists(loc))
 
-                        npath = os.path.join(self.__test_dir, "new-%s" % fhash)
+                        npath = os.path.join(self.test_root, "new-%s" % fhash)
                         nfile = open(npath, "wb")
                         nfile.write("new-%s" % fhash)
                         nfile.close()
@@ -342,3 +325,5 @@ class TestFileManager(pkg5unittest.Pkg5TestCase):
                         self.assertEqual(f.read(), "new-%s" % fhash)
                         f.close()
 
+if __name__ == "__main__":
+        unittest.main()

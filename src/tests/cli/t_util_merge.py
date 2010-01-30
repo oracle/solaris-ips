@@ -21,13 +21,14 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import difflib
 import os
@@ -49,9 +50,9 @@ import zlib
 
 path_to_pub_util = "../util/publish"
 
-class TestUtilMerge(testutils.ManyDepotTestCase):
+class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
         # Cleanup after every test.
-        persistent_depot = False
+        persistent_setup = False
 
         scheme10 = """
             open pkg:/scheme@1.0,5.11-0
@@ -79,14 +80,14 @@ class TestUtilMerge(testutils.ManyDepotTestCase):
             open bronze@1.0,5.11-0
             add dir mode=0755 owner=root group=bin path=/usr
             add dir mode=0755 owner=root group=bin path=/usr/bin
-            add file /tmp/sh mode=0555 owner=root group=bin path=/usr/bin/sh
+            add file tmp/sh mode=0555 owner=root group=bin path=/usr/bin/sh
             add link path=/usr/bin/jsh target=./sh
             add hardlink path=/lib/libc.bronze target=/lib/libc.so.1
-            add file /tmp/bronze1 mode=0444 owner=root group=bin path=/etc/bronze1
-            add file /tmp/bronze2 mode=0444 owner=root group=bin path=/etc/bronze2
-            add file /tmp/bronzeA1 mode=0444 owner=root group=bin path=/A/B/C/D/E/F/bronzeA1
+            add file tmp/bronze1 mode=0444 owner=root group=bin path=/etc/bronze1
+            add file tmp/bronze2 mode=0444 owner=root group=bin path=/etc/bronze2
+            add file tmp/bronzeA1 mode=0444 owner=root group=bin path=/A/B/C/D/E/F/bronzeA1
             add depend fmri=pkg:/amber@1.0 type=require
-            add license /tmp/copyright2 license=copyright
+            add license tmp/copyright2 license=copyright
             close
         """
 
@@ -94,22 +95,22 @@ class TestUtilMerge(testutils.ManyDepotTestCase):
             open bronze@2.0,5.11-0
             add dir mode=0755 owner=root group=bin path=/etc
             add dir mode=0755 owner=root group=bin path=/lib
-            add file /tmp/sh mode=0555 owner=root group=bin path=/usr/bin/sh
-            add file /tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.bronze
+            add file tmp/sh mode=0555 owner=root group=bin path=/usr/bin/sh
+            add file tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.bronze
             add link path=/usr/bin/jsh target=./sh
             add hardlink path=/lib/libc.bronze2.0.hardlink target=/lib/libc.so.1
-            add file /tmp/bronze1 mode=0444 owner=root group=bin path=/etc/bronze1
-            add file /tmp/bronze2 mode=0444 owner=root group=bin path=/etc/amber2
-            add license /tmp/copyright3 license=copyright
-            add file /tmp/bronzeA2 mode=0444 owner=root group=bin path=/A1/B2/C3/D4/E5/F6/bronzeA2
+            add file tmp/bronze1 mode=0444 owner=root group=bin path=/etc/bronze1
+            add file tmp/bronze2 mode=0444 owner=root group=bin path=/etc/amber2
+            add license tmp/copyright3 license=copyright
+            add file tmp/bronzeA2 mode=0444 owner=root group=bin path=/A1/B2/C3/D4/E5/F6/bronzeA2
             add depend fmri=pkg:/amber@2.0 type=require
             close 
         """
 
-        misc_files = [ "/tmp/bronzeA1",  "/tmp/bronzeA2",
-                    "/tmp/bronze1", "/tmp/bronze2",
-                    "/tmp/copyright2", "/tmp/copyright3",
-                    "/tmp/libc.so.1", "/tmp/sh"]
+        misc_files = [ "tmp/bronzeA1",  "tmp/bronzeA2",
+                    "tmp/bronze1", "tmp/bronze2",
+                    "tmp/copyright2", "tmp/copyright3",
+                    "tmp/libc.so.1", "tmp/sh"]
 
         def setUp(self):
                 """ Start two depots.
@@ -117,14 +118,8 @@ class TestUtilMerge(testutils.ManyDepotTestCase):
                     depot1 is mapped to publisher test1 (preferred)
                     depot2 is mapped to publisher test2 """
 
-                testutils.ManyDepotTestCase.setUp(self, ["os.org", "os.org"])
-                for p in self.misc_files:
-                        f = open(p, "w")
-                        # write the name of the file into the file, so that
-                        # all files have differing contents
-                        f.write(p)
-                        f.close()
-                        self.debug("wrote %s" % p)
+                pkg5unittest.ManyDepotTestCase.setUp(self, ["os.org", "os.org"])
+                self.make_misc_files(self.misc_files)
 
                 # Publish a set of packages to one repository.
                 self.dpath1 = self.dcs[1].get_repodir()
@@ -144,12 +139,7 @@ class TestUtilMerge(testutils.ManyDepotTestCase):
                 self.published += self.pkgsend_bulk(self.durl2, self.amber10 + \
                     self.amber20 + self.bronze10 + self.bronze20)
 
-                self.merge_dir = tempfile.mkdtemp(dir=self.get_test_prefix())
-
-        def tearDown(self):
-                testutils.ManyDepotTestCase.tearDown(self)
-                for p in self.misc_files:
-                        os.remove(p)
+                self.merge_dir = tempfile.mkdtemp(dir=self.test_root)
 
         def assertEqualDiff(self, expected, actual):
                 self.assertEqual(expected, actual,
@@ -252,4 +242,3 @@ class TestUtilMerge(testutils.ManyDepotTestCase):
 
 if __name__ == "__main__":
         unittest.main()
-

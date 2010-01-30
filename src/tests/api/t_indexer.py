@@ -20,11 +20,15 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
-import unittest
+import testutils
+if __name__ == "__main__":
+        testutils.setup_environment("../../../proto")
 import pkg5unittest
+
+import unittest
 import pkg.indexer as indexer
 
 import os
@@ -34,15 +38,12 @@ import stat
 import shutil
 
 class TestIndexer(pkg5unittest.Pkg5TestCase):
-        def setUp(self):
-            pass
 
         def test_indexworkingsize(self):
             limit = 200
 
-            tmpdir = tempfile.mkdtemp()
-            ind = indexer.Indexer(tmpdir, None,
-                None, sort_file_max_size=limit)
+            ind = indexer.Indexer(self.test_root, None, None,
+                sort_file_max_size=limit)
 
             os.mkdir(ind._tmp_dir)
 
@@ -73,16 +74,13 @@ class TestIndexer(pkg5unittest.Pkg5TestCase):
 
             # Each file should be under the limit
             for file in os.listdir(ind._tmp_dir):
-                assert os.stat(os.path.join(ind._tmp_dir, file)).st_size <= \
-                    limit
-
-            shutil.rmtree(tmpdir)
+                self.assert_(os.stat(os.path.join(ind._tmp_dir, file)).st_size <= \
+                    limit)
 
 
         def test_indexworkingsize0(self):
-            tmpdir = tempfile.mkdtemp()
-            ind = indexer.Indexer(tmpdir, None,
-                None, sort_file_max_size=0)
+            ind = indexer.Indexer(self.test_root, None, None,
+                sort_file_max_size=0)
 
             os.mkdir(ind._tmp_dir)
 
@@ -114,15 +112,13 @@ class TestIndexer(pkg5unittest.Pkg5TestCase):
             # The first file is already opened by us, so it will fail the
             # <= 0 test by indexer, and indexer will create a new one. Hence,
             # sort.0 will be of size 0
-            assert os.stat(os.path.join(ind._tmp_dir , "sort.0")).st_size == 0
+            self.assert_(os.stat(os.path.join(ind._tmp_dir , "sort.0")).st_size == 0)
 
             # Each file should have at most 1 line in it ( the smallest
             # atomic unit  that the indexer can write to a file )
             for file in os.listdir(ind._tmp_dir):
-                assert len(open(os.path.join(ind._tmp_dir, 
-                    file)).readlines()) <= 1
+                self.assert_(len(open(os.path.join(ind._tmp_dir, \
+                    file)).readlines()) <= 1)
 
-            shutil.rmtree(tmpdir)
- 
 if __name__ == "__main__":
         unittest.main()

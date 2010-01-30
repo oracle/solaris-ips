@@ -20,67 +20,54 @@
 # CDDL HEADER END
 #
 
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 import testutils
 if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import os
 import shutil
 import time
 import unittest
 
-class TestFix(testutils.SingleDepotTestCase):
+class TestFix(pkg5unittest.SingleDepotTestCase):
 
         # Don't need to restart depot for every test.
-        persistent_depot = True
+        persistent_setup = True
 
         amber10 = """
             open amber@1.0,5.11-0
             add dir mode=0755 owner=root group=bin path=/etc
-            add file $test_prefix/amber1 mode=0644 owner=root group=bin path=/etc/amber1
-            add file $test_prefix/amber2 mode=0644 owner=root group=bin path=/etc/amber2
+            add file amber1 mode=0644 owner=root group=bin path=/etc/amber1
+            add file amber2 mode=0644 owner=root group=bin path=/etc/amber2
             add hardlink path=/etc/amber.hardlink target=/etc/amber1
             close """
 
         licensed13 = """
             open licensed@1.3,5.11-0
-            add file $test_prefix/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
-            add license $test_prefix/copyright.licensed license=copyright.licensed must-display=True
-            add license $test_prefix/license.licensed license=license.licensed must-accept=True
+            add file libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
+            add license copyright.licensed license=copyright.licensed must-display=True
+            add license license.licensed license=license.licensed must-accept=True
             close """
 
-        misc_files = ["copyright.licensed", "libc.so.1", "license.licensed",
-            "license.licensed.addendum", "amber1", "amber2"]
+        misc_files = [ "copyright.licensed", "license.licensed", "libc.so.1",
+            "license.licensed", "license.licensed.addendum", "amber1", "amber2"]
 
         def setUp(self):
-                testutils.SingleDepotTestCase.setUp(self)
-
-                for p in ("amber10", "licensed13"):
-                        val = getattr(self, p).replace("$test_prefix",
-                            self.get_test_prefix())
-                        setattr(self, p, val)
-
-                for p in self.misc_files:
-                        fpath = os.path.join(self.get_test_prefix(), p)
-                        f = open(fpath, "wb")
-                        # write the name of the file into the file, so that
-                        # all files have differing contents
-                        f.write(fpath)
-                        f.close()
-                        self.debug("wrote %s" % fpath)
-
+                pkg5unittest.SingleDepotTestCase.setUp(self)
+                self.make_misc_files(self.misc_files)
                 durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.amber10 + self.licensed13)
+                self.pkgsend_bulk(durl, self.amber10)
+                self.pkgsend_bulk(durl, self.licensed13)
 
         def test_fix1(self):
                 """Basic fix test: install the amber package, modify one of the
                 files, and make sure it gets fixed.  """
 
                 durl = self.dc.get_depot_url()
-                shutil.rmtree(self.img_path, True)
                 self.image_create(durl)
                 self.pkg("install amber@1.0")
 
@@ -116,7 +103,6 @@ class TestFix(testutils.SingleDepotTestCase):
                 hardlinks that point to it updated"""
 
                 durl = self.dc.get_depot_url()
-                shutil.rmtree(self.img_path, True)
                 self.image_create(durl)
                 self.pkg("install amber@1.0")
 
@@ -139,7 +125,6 @@ class TestFix(testutils.SingleDepotTestCase):
                 and/or display."""
 
                 durl = self.dc.get_depot_url()
-                shutil.rmtree(self.img_path, True)
                 self.image_create(durl)
                 self.pkg("install --accept licensed@1.3")
 
@@ -161,12 +146,12 @@ class TestFix(testutils.SingleDepotTestCase):
 
                 # Verify that when the fix failed, it displayed the license
                 # that required display.
-                self.pkg("fix licensed | grep '/copyright.licensed'")
-                self.pkg("fix licensed | grep -v '/license.licensed'")
+                self.pkg("fix licensed | grep 'copyright.licensed'")
+                self.pkg("fix licensed | grep -v 'license.licensed'")
 
                 # Verify that fix will display all licenses when it fails,
                 # if provided the --licenses option.
-                self.pkg("fix --licenses licensed | grep '/license.licensed'")
+                self.pkg("fix --licenses licensed | grep 'license.licensed'")
 
                 # Finally, verify that fix will succeed when a package requires
                 # license acceptance if provided the --accept option.

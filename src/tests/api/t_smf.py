@@ -20,8 +20,13 @@
 # CDDL HEADER END
 #
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
+
+import testutils
+if __name__ == "__main__":
+        testutils.setup_environment("../../../proto")
+import pkg5unittest
 
 import unittest
 import tempfile
@@ -29,37 +34,26 @@ import os
 import sys
 import pkg.smf as smf
 
-# Set the path so that modules above can be found
-path_to_parent = os.path.join(os.path.dirname(__file__), "..")
-sys.path.insert(0, path_to_parent)
-import pkg5unittest
-
 class TestSMF(pkg5unittest.Pkg5TestCase):
 
-	def setUp(self):
-		fd_passwd, self.passwd_tmp = tempfile.mkstemp()
-		fd_xml, self.xml_tmp = tempfile.mkstemp()
-		fd_s1, self.smf1_tmp = tempfile.mkstemp()
-		fd_s2, self.smf2_tmp = tempfile.mkstemp()
+        misc_files = { "passwd" : """\
+root:x:0:0:Super-User:/:/bin/bash
+daemon:x:1:1::/:
+""",
 
-                f = os.fdopen(fd_passwd, "w")
-		f.write("root:x:0:0:Super-User:/:/bin/bash\n")
-		f.write("daemon:x:1:1::/:")
-		f.close()
-
-                f = os.fdopen(fd_xml, "w")
-		f.write("""<?xml version="1.0" encoding="ISO-8859-1"?>
+            "helloworld.xml" : """\
+<?xml version="1.0" encoding="ISO-8859-1"?>
 <?xml-stylesheet type="text/xsl" href="HelloWorld.xsl" ?>
 <!-- Hello World in XML -->
-<text><string>Hello, World</string></text>""")
-		f.close()
+<text><string>Hello, World</string></text>
+""",
 
-		#
-		# This is a single-instance SMF manifest with pseudo contents;
-		# we can process this with get_info and easily test the results
-		#
-                f = os.fdopen(fd_s1, "w")
-		f.write("""<?xml version="1.0"?>
+	    #
+            # This is a single-instance SMF manifest with pseudo
+            # contents; we can process this with get_info and easily
+            # test the results
+	    #
+            "sample_mfst1.xml" : """<?xml version="1.0"?>
 <!DOCTYPE service_bundle SYSTEM
     "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
 <service_bundle type='manifest' name='test'>
@@ -87,15 +81,14 @@ class TestSMF(pkg5unittest.Pkg5TestCase):
 	<service_fmri value='svc:/milestone/multi-user' />
 </dependent>
 </service>
-</service_bundle>""")
-		f.close()
+</service_bundle>""",
 
-		#
-		# This is a multi-instance SMF manifest with pseudo contents;
-		# we can process this with get_info and easily test the results
-		#
-                f = os.fdopen(fd_s2, "w")
-		f.write("""<?xml version="1.0"?>
+	    #
+            # This is a multi-instance SMF manifest with pseudo
+            # contents; we can process this with get_info and easily
+            # test the results
+	    #
+            "sample_mfst2.xml" : """<?xml version="1.0"?>
 <!DOCTYPE service_bundle SYSTEM
     "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
 <service_bundle type='manifest' name='test'>
@@ -146,33 +139,32 @@ class TestSMF(pkg5unittest.Pkg5TestCase):
 	</dependent>
 </instance>
 </service>
-</service_bundle>""")
-		f.close()
+</service_bundle>""" }
 
+	def setUp(self):
+                pkg5unittest.Pkg5TestCase.setUp(self)
+                self.make_misc_files(self.misc_files)
 
-	def tearDown(self):
-		os.remove(self.passwd_tmp)
-		os.remove(self.xml_tmp)
-		os.remove(self.smf1_tmp)
-		os.remove(self.smf2_tmp)
-
-
+                self.passwd = os.path.join(self.test_root, "passwd")
+                self.xml = os.path.join(self.test_root, "helloworld.xml")
+                self.smf1 = os.path.join(self.test_root, "sample_mfst1.xml")
+                self.smf2 = os.path.join(self.test_root, "sample_mfst2.xml")
 
 	def test_is_smf_manifest1(self):
 		""" ASSERT: a miscellaneous text file is not a manifest """
-		self.assertEqual(smf.is_smf_manifest(self.passwd_tmp), False)
+		self.assertEqual(smf.is_smf_manifest(self.passwd), False)
 
 	def test_is_smf_manifest2(self):
 		""" ASSERT: a miscellaneous xml file is not a manifest """
-		self.assertEqual(smf.is_smf_manifest(self.xml_tmp), False)
+		self.assertEqual(smf.is_smf_manifest(self.xml), False)
 
 	def test_is_smf_manifest3(self):
 		""" ASSERT: an single-instance manifest is identified """
-		self.assertEqual(smf.is_smf_manifest(self.smf1_tmp), True)
+		self.assertEqual(smf.is_smf_manifest(self.smf1), True)
 
 	def test_is_smf_manifest3(self):
 		""" ASSERT: an multi-instance manifest is identified """
-		self.assertEqual(smf.is_smf_manifest(self.smf2_tmp), True)
+		self.assertEqual(smf.is_smf_manifest(self.smf2), True)
 
 # XXX not sure what the desired behaviour is.  Currently it throws an
 # exception.  Is that ok?
@@ -187,7 +179,7 @@ class TestSMF(pkg5unittest.Pkg5TestCase):
 		""" ASSERT: get_info returns values corresponding to sample
 		    manifest """
 
-		info = smf.get_info(self.smf1_tmp)
+		info = smf.get_info(self.smf1)
 		self.assertEqual(info,
 		    {'imposes':
 		        [('optional_all', ['svc:/milestone/multi-user'])],
@@ -199,7 +191,7 @@ class TestSMF(pkg5unittest.Pkg5TestCase):
                     })
 
 	#
-	# Even though smf2_tmp provides multiple services, the
+	# Even though smf2 provides multiple services, the
 	# "info" object should compact the set of things which
 	# are imposed and required.
 
@@ -207,7 +199,7 @@ class TestSMF(pkg5unittest.Pkg5TestCase):
 #	def test_get_info_2(self):
 #		""" ASSERT: get_info weeds out duplicated information """
 #
-#		info = smf.get_info(self.smf2_tmp)
+#		info = smf.get_info(self.smf2)
 #		self.assertEqual(info,
 #		    {'imposes':
 #		        [('optional_all', ['svc:/milestone/multi-user'])],
