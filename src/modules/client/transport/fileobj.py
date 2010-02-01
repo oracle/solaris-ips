@@ -21,10 +21,11 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
+import uuid as uuidm
 import pkg.client.transport.exception as tx
 
 class StreamingFileObj(object):
@@ -45,22 +46,40 @@ class StreamingFileObj(object):
                 self.__done = False
                 self.__check_cancelation = ccancel
                 self.__lock = DummyLock()
+                self.__uuid = uuidm.uuid4().int
 
         def __del__(self):
+                release = False
                 try:
-                        self.close()
+                        if not self.__done:
+                                if not self.__lock._is_owned():
+                                        self.__lock.acquire()
+                                        release = True
+                                self.__engine.orphaned_request(self.__url,
+                                    self.__uuid)
                 except AttributeError:
                         # Ignore attribute error if instance is deleted
                         # before initialization completes.
                         pass
+                finally:
+                        if release:
+                                self.__lock.release()
 
         # File object methods
 
         def close(self):
-                self.__buf = ""
+                # Caller shouldn't hold lock when calling this method
+                assert not self.__lock._is_owned()
+
                 if not self.__done:
-                        self.__engine.remove_request(self.__url)
-                        self.__done = True
+                        self.__lock.acquire()
+                        try:
+                                self.__engine.remove_request(self.__url,
+                                    self.__uuid)
+                                self.__done = True
+                        finally:
+                                self.__lock.release()
+                self.__buf = ""
                 self.__engine = None
                 self.__url = None
 
@@ -73,6 +92,9 @@ class StreamingFileObj(object):
                 """Read size bytes from the remote connection.
                 If size isn't specified, read all of the data from
                 the remote side."""
+
+                # Caller shouldn't hold lock when calling this method
+                assert not self.__lock._is_owned()
 
                 if size < 0:
                         while self.__fill_buffer():
@@ -104,6 +126,9 @@ class StreamingFileObj(object):
         def readline(self, size=-1):
                 """Read a line from the remote host.  If size is
                 specified, read to newline or size, whichever is smaller."""
+
+                # Caller shouldn't hold lock when calling this method
+                assert not self.__lock._is_owned()
 
                 if size < 0:
                         curdata = self.__buf
@@ -163,6 +188,9 @@ class StreamingFileObj(object):
                 an approximate size, in bytes, of the total amount of data,
                 as lines, that should be returned to the caller."""
 
+                # Caller shouldn't hold lock when calling this method
+                assert not self.__lock._is_owned()
+
                 read = 0
                 lines = []
                 while True:
@@ -197,6 +225,10 @@ class StreamingFileObj(object):
 
         def set_lock(self, lock):
                 self.__lock = lock
+
+        @property
+        def uuid(self):
+                return self.__uuid
 
         # Header and message methods
 
@@ -348,10 +380,20 @@ class DummyLock(object):
         """This has the same external interface as threading.Lock,
         but performs no locking.  This is a placeholder object for situations
         where we want to be able to do locking, but don't always need a
-        lock object present."""
+        lock object present.  The object has a held value, that is used
+        for _is_owned.  This is informational and doesn't actually
+        provide mutual exclusion in any way whatsoever."""
+
+        def __init__(self):
+                self.held = False
 
         def acquire(self, blocking=1):
+                self.held = True
                 return True
 
         def release(self):
+                self.held = False
                 return
+
+        def _is_owned(self):
+                return self.held

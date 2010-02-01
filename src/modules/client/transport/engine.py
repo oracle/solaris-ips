@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -70,6 +70,8 @@ class CurlTransportEngine(TransportEngine):
                 self.__failures = []
                 # List of URLs successfully transferred
                 self.__success = []
+                # List of Orphaned URLs.
+                self.__orphans = set()
                 # Set default file buffer size at 128k, callers override
                 # this setting after looking at VFS block size.
                 self.__file_bufsz = 131072
@@ -90,6 +92,7 @@ class CurlTransportEngine(TransportEngine):
                         eh.success = False
                         eh.fileprog = None
                         eh.filetime = -1
+                        eh.uuid = None
                         self.__chandles.append(eh)
 
                 # copy handles into handle freelist
@@ -164,6 +167,7 @@ class CurlTransportEngine(TransportEngine):
 
                         httpcode = h.getinfo(pycurl.RESPONSE_CODE)
                         url = h.url
+                        uuid = h.uuid
                         urlstem = h.repourl
                         proto = urlparse.urlsplit(url)[0]
 
@@ -185,20 +189,21 @@ class CurlTransportEngine(TransportEngine):
                                         if httpcode in pmap:
                                                 proto_reason = pmap[httpcode]
                                 ex = tx.TransportProtoError(proto, httpcode,
-                                    url, reason=proto_reason, repourl=urlstem)
+                                    url, reason=proto_reason, repourl=urlstem,
+                                    uuid=uuid)
                         elif en == pycurl.E_OPERATION_TIMEOUTED:
                                 decay = en in tx.decayable_pycurl_errors
                                 repostats.record_error(decayable=decay,
                                     timeout=True)
                                 errors_seen += 1
                                 ex = tx.TransportFrameworkError(en, url, em,
-                                    repourl=urlstem)
+                                    repourl=urlstem, uuid=uuid)
                         else:
                                 decay = en in tx.decayable_pycurl_errors
                                 repostats.record_error(decayable=decay)
                                 errors_seen += 1
                                 ex = tx.TransportFrameworkError(en, url, em,
-                                    repourl=urlstem)
+                                    repourl=urlstem, uuid=uuid)
 
                         if ex and ex.retryable:
                                 failures.append(ex) 
@@ -243,6 +248,7 @@ class CurlTransportEngine(TransportEngine):
 
                         httpcode = h.getinfo(pycurl.RESPONSE_CODE)
                         url = h.url
+                        uuid = h.uuid
                         urlstem = h.repourl
                         proto = urlparse.urlsplit(url)[0]
 
@@ -261,7 +267,7 @@ class CurlTransportEngine(TransportEngine):
                                                 proto_reason = pmap[httpcode]
                                 ex = tx.TransportProtoError(proto,
                                     httpcode, url, reason=proto_reason,
-                                    repourl=urlstem)
+                                    repourl=urlstem, uuid=uuid)
 
                                 # If code >= 400, record this as an error.
                                 # Handlers above the engine get to decide
@@ -281,7 +287,7 @@ class CurlTransportEngine(TransportEngine):
                                             "from server" 
                                         ex = tx.TransportProtoError(proto,
                                             url=url, reason=reason,
-                                            repourl=urlstem)
+                                            repourl=urlstem, uuid=uuid)
                                         ex.retryable = True 
 
                                 # Stash retryable failures, arrange
@@ -407,7 +413,8 @@ class CurlTransportEngine(TransportEngine):
                 t = TransportRequest(url, writefunc=fobj.get_write_func(),
                     hdrfunc=fobj.get_header_func(), header=header,
                     sslcert=sslcert, sslkey=sslkey, repourl=repourl,
-                    compressible=compressible, progfunc=progfunc)
+                    compressible=compressible, progfunc=progfunc,
+                    uuid=fobj.uuid)
 
                 self.__req_q.appendleft(t)
 
@@ -429,7 +436,7 @@ class CurlTransportEngine(TransportEngine):
                 t = TransportRequest(url, writefunc=fobj.get_write_func(),
                     hdrfunc=fobj.get_header_func(), header=header,
                     httpmethod="HEAD", sslcert=sslcert, sslkey=sslkey,
-                    repourl=repourl, progfunc=progfunc)
+                    repourl=repourl, progfunc=progfunc, uuid=fobj.uuid)
 
                 self.__req_q.appendleft(t)
 
@@ -467,6 +474,13 @@ class CurlTransportEngine(TransportEngine):
                         if timeout:
                                 self.__mhandle.select(timeout)
 
+                # If object deletion has given the transport engine orphaned
+                # requests to purge, do this first, in case the cleanup yields
+                # free handles.
+                while self.__orphans:
+                        url, uuid = self.__orphans.pop()
+                        self.remove_request(url, uuid)
+
                 while self.__freehandles and self.__req_q:
                         t = self.__req_q.pop()
                         eh = self.__freehandles.pop(-1)
@@ -477,8 +491,17 @@ class CurlTransportEngine(TransportEngine):
 
                 self.__cleanup_requests()
 
+        def orphaned_request(self, url, uuid):
+                """Add the URL to the list of orphaned requests.  Any URL in
+                list will be removed from the transport next time run() is
+                invoked.  This is used by the fileobj's __del__ method
+                to prevent unintended modifications to transport state
+                when StreamingFileObjs that aren't close()'d get cleaned
+                up."""
 
-        def remove_request(self, url):
+                self.__orphans.add((url, uuid))
+
+        def remove_request(self, url, uuid):
                 """In order to remove a request, it may be necessary
                 to walk all of the items in the request queue, all of the
                 currently active handles, and the list of any transient
@@ -486,25 +509,21 @@ class CurlTransportEngine(TransportEngine):
                 if absolutely necessary."""
 
                 for h in self.__chandles:
-                        if h.url == url and h not in self.__freehandles:
+                        if h.url == url and h.uuid == uuid and \
+                            h not in self.__freehandles:
                                 self.__mhandle.remove_handle(h)
                                 self.__teardown_handle(h)
                                 self.__freehandles.append(h)
                                 return
 
                 for i, t in enumerate(self.__req_q):
-                        if t.url == url:
+                        if t.url == url and t.uuid == uuid:
                                 del self.__req_q[i]
                                 return
 
                 for ex in self.__failures:
-                        if ex.url == url:
+                        if ex.url == url and ex.uuid == uuid:
                                 self.__failures.remove(ex)
-                                return
-
-                for s in self.__success:
-                        if s == url:
-                                self.__success.remove(s)
                                 return
 
         def reset(self):
@@ -521,6 +540,7 @@ class CurlTransportEngine(TransportEngine):
                 self.__req_q = deque()
                 self.__failures = []
                 self.__success = []
+                self.__orphans = set()
 
         def send_data(self, url, data, header=None, sslcert=None, sslkey=None,
             repourl=None, ccancel=None):
@@ -543,7 +563,7 @@ class CurlTransportEngine(TransportEngine):
                 t = TransportRequest(url, writefunc=fobj.get_write_func(),
                     hdrfunc=fobj.get_header_func(), header=header, data=data,
                     httpmethod="POST", sslcert=sslcert, sslkey=sslkey,
-                    repourl=repourl, progfunc=progfunc)
+                    repourl=repourl, progfunc=progfunc, uuid=fobj.uuid)
 
                 self.__req_q.appendleft(t)
 
@@ -636,6 +656,7 @@ class CurlTransportEngine(TransportEngine):
                 # Set request url.  Also set attribute on handle.
                 hdl.setopt(pycurl.URL, treq.url)
                 hdl.url = treq.url
+                hdl.uuid = treq.uuid
                 # The repourl is the url stem that identifies the
                 # repository. This is useful to have around for coalescing
                 # error output, and statistics reporting.
@@ -767,6 +788,7 @@ class CurlTransportEngine(TransportEngine):
                 hdl.success = False
                 hdl.filepath = None
                 hdl.fileprog = None
+                hdl.uuid = None
                 hdl.filetime = -1
 
 
@@ -778,7 +800,7 @@ class TransportRequest(object):
         def __init__(self, url, filepath=None, writefunc=None,
             hdrfunc=None, header=None, data=None, httpmethod="GET",
             progclass=None, progtrack=None, sslcert=None, sslkey=None,
-            repourl=None, compressible=False, progfunc=None):
+            repourl=None, compressible=False, progfunc=None, uuid=None):
                 """Create a TransportRequest with the following parameters:
 
                 url - The url that the transport engine should retrieve
@@ -829,7 +851,10 @@ class TransportRequest(object):
                 provide a path to the SSL certificate here.
 
                 sslkey - If the request is using SSL, liks HTTPS for example,
-                provide a path to the SSL key here."""
+                provide a path to the SSL key here.
+
+                uuid - In order to remove the request from the list of
+                many possible requests, supply a unique identifier in uuid."""
 
                 self.url = url
                 self.filepath = filepath
@@ -845,3 +870,4 @@ class TransportRequest(object):
                 self.sslcert = sslcert
                 self.sslkey = sslkey
                 self.compressible = compressible
+                self.uuid = uuid

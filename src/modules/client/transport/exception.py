@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -121,7 +121,7 @@ class TransportProtoError(TransportException):
         """Raised when errors occur in the transport protocol."""
 
         def __init__(self, proto, code=None, url=None, reason=None,
-            repourl=None):
+            repourl=None, uuid=None):
                 TransportException.__init__(self)
                 self.proto = proto
                 self.code = code
@@ -129,6 +129,7 @@ class TransportProtoError(TransportException):
                 self.urlstem = repourl
                 self.reason = reason
                 self.retryable = self.code in retryable_proto_errors[self.proto]
+                self.uuid = uuid
 
         def __str__(self):
                 s = "%s protocol error" % self.proto
@@ -158,13 +159,15 @@ class TransportProtoError(TransportException):
 class TransportFrameworkError(TransportException):
         """Raised when errors occur in the transport framework."""
 
-        def __init__(self, code, url=None, reason=None, repourl=None):
+        def __init__(self, code, url=None, reason=None, repourl=None,
+            uuid=None):
                 TransportException.__init__(self)
                 self.code = code
                 self.url = url
                 self.urlstem = repourl
                 self.reason = reason
                 self.retryable = self.code in retryable_pycurl_errors
+                self.uuid = uuid
 
         def __str__(self):
                 s = "Framework error: code: %d" % self.code

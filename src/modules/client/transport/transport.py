@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -29,7 +29,6 @@ import errno
 import httplib
 import os
 import statvfs
-import threading
 import zlib
 import cStringIO
 
@@ -45,6 +44,7 @@ import pkg.file_layout.file_manager as file_manager
 import pkg.fmri
 import pkg.manifest as manifest
 import pkg.misc as misc
+import pkg.nrlock as nrlock
 import pkg.portable as portable
 import pkg.updatelog as updatelog
 
@@ -66,7 +66,7 @@ class Transport(object):
                 self.__cadir = None
                 self.__portal_test_executed = False
                 self.__repo_cache = None
-                self.__lock = threading.Lock()
+                self.__lock = nrlock.NRLock()
                 self.stats = tstats.RepoChooser()
                 self.cache_store = None
 
@@ -1460,7 +1460,7 @@ class Transport(object):
                             "errors:\n%s" % e)
 
                 if not self._valid_versions_test(vd):
-                        url = getattr(e, "url", pub["origin"])
+                        url = pub["origin"]
                         raise apx.InvalidDepotResponseException(url,
                             "Invalid or unparseable version information.")
 
