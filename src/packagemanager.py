@@ -1233,15 +1233,18 @@ class PackageManager:
         def __link_load_error(self, link):
                 self.document.clear()
                 self.document.open_stream('text/html')
-                self.document.write_stream(_(
+                # The replace startpage_star.png is done as a change after
+                # l10n code freeze.
+                self.document.write_stream((_(
                     "<html><head></head><body><font color='#000000'>\
                     <a href='stub'></a></font>\
                     <a href='pm?%s=internal&uri=%s'>\
                     <IMG SRC = '%s/startpage_star.png' \
                     style='border-style: none'></a> <br><br>\
                     <h2><font color='#0000FF'>Warning: Unable to \
-                    load URL</font></h2><br>%s</body></html>") % START_PAGE_IMAGES_BASE
-                    % (PM_ACTION, START_PAGE_HOME, link))
+                    load URL</font></h2><br>%s</body></html>") % (PM_ACTION,
+                    START_PAGE_HOME, START_PAGE_IMAGES_BASE, link)
+                    ).replace("/startpage_star.png' ","/dialog-warning.png' "))
                 self.document.close_stream()
 
         def __get_publisher_combobox_index(self, pub_name):
