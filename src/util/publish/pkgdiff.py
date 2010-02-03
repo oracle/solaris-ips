@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -149,7 +149,7 @@ def main_func():
         # License action still causes spurious diffs... elide to get exit
         # code correct
         if not diffs or (len(diffs) == 1 and 
-            diffs[0][0] == diffs[0][0]): # no changes detected at all
+            diffs[0][0] == diffs[0][1]): # no real changes detected at all
                 return 0
        
         # define some ordering functions so that output is easily readable
@@ -182,7 +182,7 @@ def main_func():
         diffs = sorted(diffs, key=tuple_key, cmp=compare)
 
         # handle list attributes
-        def attrval(attrs, k):                
+        def attrval(attrs, k, elide_iter=tuple()):                
                 def q(s):
                         if " " in s or s == "":
                                 return '"%s"' % s
@@ -191,7 +191,8 @@ def main_func():
 
                 v = attrs[k]
                 if isinstance(v, list) or isinstance(v, set):
-                        out = " ".join(["%s=%s" % (k, q(lmt)) for lmt in v])
+                        out = " ".join(["%s=%s" % 
+                            (k, q(lmt)) for lmt in sorted(v) if lmt not in elide_iter])
                 elif " " in v or v == "":
                         out = k + "=\"" + v + "\""
                 else:
@@ -234,10 +235,16 @@ def main_func():
                                     set(new.differences(old))))                                
 
                         for a in sorted(attrdiffs):
+                                if a in old.attrs and a in new.attrs and \
+                                    isinstance(old.attrs[a], list) and \
+                                    isinstance(new.attrs[a], list):
+                                        elide_set = set(old.attrs[a]) & set(new.attrs[a]) 
+                                else:
+                                        elide_set = set()
                                 if a in old.attrs:
-                                        s.append("  - %s" % attrval(old.attrs, a))
+                                        s.append("  - %s" % attrval(old.attrs, a, elide_iter=elide_set))
                                 if a in new.attrs:
-                                        s.append("  + %s" % attrval(new.attrs, a))
+                                        s.append("  + %s" % attrval(new.attrs, a, elide_iter=elide_set))
                         # print out part of action that is the same
                         if s:
                                 print "%s %s %s" % (old.name, 

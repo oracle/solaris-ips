@@ -266,7 +266,13 @@ class Action(object):
                         return True
 
                 for a in self.attrs:
-                        if self.attrs[a] != other.attrs[a]:
+                        x = self.attrs[a]
+                        y = other.attrs[a]
+                        if isinstance(x, list) and \
+                            isinstance(y, list):
+                                if sorted(x) != sorted(y):
+                                        return True
+                        elif x != y:
                                 return True
 
                 if hasattr(self, "hash"):
@@ -282,10 +288,13 @@ class Action(object):
                 sset = set(self.attrs.keys())
                 oset = set(other.attrs.keys())
                 l = list(sset.symmetric_difference(oset))
-                l.extend([ k
-                           for k in sset.intersection(oset)
-                           if self.attrs[k] != other.attrs[k]
-                           ])
+                for k in sset & oset: # over attrs in both dicts
+                        if isinstance(self.attrs[k], list) and \
+                            isinstance(other.attrs[k], list):
+                                if sorted(self.attrs[k]) != sorted(other.attrs[k]):
+                                        l.append(k)
+                        elif self.attrs[k] != other.attrs[k]:
+                                l.append(k)
                 return (l)
 
         def generate_indices(self):
