@@ -1072,6 +1072,16 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 self.check_res(self.amb_path_errors %
                     {"unresolved_path": col_path}, self.errout)
 
+        def test_bug_14116(self):
+                foo_path = self.make_proto_text_file("bar/foo", "#!perl -w\n\n")
+                m_path = self.make_manifest(self.elf_sub_manf %
+                    {"file_loc": "bar/foo"})
+                self.pkgdepend_generate(m_path, proto=self.test_proto_dir,
+                    exit=1)
+                self.check_res(self.output, "")
+                self.check_res(self.errout, "%s/bar/foo says it should be run "
+                    "with 'perl' which is a relative path." %
+                    self.test_proto_dir)
 
 if __name__ == "__main__":
         unittest.main()

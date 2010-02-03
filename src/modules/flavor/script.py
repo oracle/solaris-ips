@@ -31,6 +31,21 @@ import stat
 import pkg.flavor.base as base
 import pkg.flavor.python as python
 
+from pkg.portable import PD_LOCAL_PATH
+
+class ScriptNonAbsPath(base.DependencyAnalysisError):
+        """Exception that is raised when a file uses a relative path for the
+        binary with which it should be run."""
+
+        def __init__(self, lp, bin):
+                Exception.__init__(self)
+                self.lp = lp
+                self.bin = bin
+
+        def __str__(self):
+                return _("%(lp)s says it should be run with '%(bin)s' which is "
+                    "a relative path.") % vars(self)
+
 class ScriptDependency(base.PublishingDependency):
         """Class representing the dependency created by having #! at the top
         of a file."""
@@ -52,8 +67,6 @@ def process_script_deps(action, proto_dir, pkg_vars, **kwargs):
         Further, if the file is of a known type, it is further analyzed and
         any dependencies found are added to the list returned."""
 
-        # localpath is path to actual file
-        # path is path in installed image
         if action.name != "file":
                 return []
 
@@ -70,17 +83,21 @@ def process_script_deps(action, proto_dir, pkg_vars, **kwargs):
                 ex_bit = int(action.attrs.get("mode", "0"), 8) & \
                     (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
                 if ex_bit:
-                        # usedlist omits leading /
                         p = (l[2:].split()[0])
                         # first part of string is path (removes options)
                         # we don't handle dependencies through links, so fix up
                         # the common one
                         p = p.strip()
-                        if p.startswith("/bin"):
-                                p = os.path.join("/usr", p)
-                        deps.append(ScriptDependency(action, p, pkg_vars,
-                            proto_dir))
-                        script_path = l
+                        if not os.path.isabs(p):
+                                elist.append(ScriptNonAbsPath(
+                                    action.attrs[PD_LOCAL_PATH], p))
+                        else:
+                                if p.startswith("/bin"):
+                                        # Use p[1:] to strip off the leading /.
+                                        p = os.path.join("/usr", p[1:])
+                                deps.append(ScriptDependency(action, p,
+                                    pkg_vars, proto_dir))
+                                script_path = l
                 if "python" in l:
                         ds, errs = python.process_python_dependencies(proto_dir,
                             action, pkg_vars, script_path)
