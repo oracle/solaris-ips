@@ -2639,6 +2639,10 @@ class PackageManager:
                                 err = str(idex)
                                 logger.error(err)
                                 gui_misc.notify_log_error(self)
+                        except api_errors.ImageLockedError, ex:
+                                err = str(ex)
+                                logger.error(err)
+                                gui_misc.notify_log_error(self)
                         except Exception, ex:
                                 err = str(ex)
                                 gobject.idle_add(self.error_occurred, err)
@@ -4551,6 +4555,13 @@ class PackageManager:
                         err = str(idex)
                         logger.error(err)
                         gui_misc.notify_log_error(self)
+                except api_errors.ImageLockedError, ex:
+                        err = str(ex)
+                        logger.error(err)
+                        gui_misc.notify_log_error(self)
+                except Exception, ex:
+                        err = str(ex)
+                        gobject.idle_add(self.error_occurred, err)
                 if self.showing_empty_details or (license_id != 
                     self.last_show_licenses_id):
                         return
@@ -4567,6 +4578,13 @@ class PackageManager:
                                 err = str(idex)
                                 logger.error(err)
                                 gui_misc.notify_log_error(self)
+                        except api_errors.ImageLockedError, ex:
+                                err = str(ex)
+                                logger.error(err)
+                                gui_misc.notify_log_error(self)
+                        except Exception, ex:
+                                err = str(ex)
+                                gobject.idle_add(self.error_occurred, err)
                 if self.showing_empty_details or (license_id != 
                     self.last_show_licenses_id):
                         return
@@ -4662,6 +4680,13 @@ class PackageManager:
                                                 err = str(idex)
                                                 logger.error(err)
                                                 gui_misc.notify_log_error(self)
+                                        except api_errors.ImageLockedError, ex:
+                                                err = str(ex)
+                                                logger.error(err)
+                                                gui_misc.notify_log_error(self)
+                                        except Exception, ex:
+                                                err = str(ex)
+                                                gobject.idle_add(self.error_occurred, err)
                                 finally:
                                         gobject.idle_add(self.unset_busy_cursor)
                         gobject.idle_add(self.__update_package_info, pkg,
@@ -5255,6 +5280,13 @@ class PackageManager:
                         err = str(idex)
                         logger.error(err)
                         gui_misc.notify_log_error(self)
+                except api_errors.ImageLockedError, ex:
+                        err = str(ex)
+                        logger.error(err)
+                        gui_misc.notify_log_error(self)
+                except Exception, ex:
+                        err = str(ex)
+                        gobject.idle_add(self.error_occurred, err)
 
                 #Create a new result list updated with current installation status
                 tmp_app_list = self.__get_new_application_liststore()

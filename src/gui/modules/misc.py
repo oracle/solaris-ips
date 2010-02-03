@@ -426,13 +426,8 @@ def get_pkg_info(app, api_o, pkg_stem, local):
                 info = api_o.info([pkg_stem], local,
                     api.PackageInfo.ALL_OPTIONS -
                     frozenset([api.PackageInfo.LICENSES]))
-        except api_errors.TransportError, tpex:
-                err = str(tpex)
-                logger.error(err)
-                notify_log_error(app)
-                return info
-        except api_errors.InvalidDepotResponseException, idex:
-                err = str(idex)
+        except api_errors.ApiException, ex:
+                err = str(ex)
                 logger.error(err)
                 notify_log_error(app)
                 return info
