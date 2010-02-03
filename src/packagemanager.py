@@ -4342,10 +4342,16 @@ class PackageManager:
                 for x in info.dependencies:
                         if states != None and len(states) > 0:
                                 name = fmri.extract_pkg_name(x)
-                                version = version_fmt % \
-                                    {"version": states[i].version,
-                                    "build": states[i].build_release,
-                                    "branch": states[i].branch}
+                                if i < len(states):
+                                        version = version_fmt % \
+                                            {"version": states[i].version,
+                                            "build": states[i].build_release,
+                                            "branch": states[i].branch}
+                                else:
+                                        version = version_fmt % \
+                                            {"version": '0',
+                                            "build": '0',
+                                            "branch": '0'}
                                 found = False
                                 for state in installed_states:
                                         if name ==  fmri.extract_pkg_name(state.fmri):
