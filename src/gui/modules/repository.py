@@ -592,8 +592,8 @@ class Repository(progress.GuiProgressTracker):
                 style = self.w_repositorymodify_name.get_style()
                 font_size_in_pango_unit = style.font_desc.get_size()
                 font_size_in_pixel = font_size_in_pango_unit / pango.SCALE 
-                ssl_error_len = len(_("SSL Key not found at specified location")) * \
-                        font_size_in_pixel
+                ssl_error = unicode(_("SSL Key not found at specified location"))
+                ssl_error_len = len(ssl_error) * font_size_in_pixel
                 if ssl_error_len > MODIFY_DIALOG_SSL_WIDTH_DEFAULT:
                         new_dialog_width = ssl_error_len * \
                                 (float(MODIFY_DIALOG_WIDTH_DEFAULT)/

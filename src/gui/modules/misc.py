@@ -335,19 +335,25 @@ def set_package_details(pkg_name, local_info, remote_info, textview,
 
 def set_package_details_text(labs, text, textview, installed_icon,
     not_installed_icon, update_available_icon):
-        max_len = 0
-        for lab in labs:
-                if len(labs[lab]) > max_len:
-                        max_len = len(labs[lab])
-
         style = textview.get_style()
         font_size_in_pango_unit = style.font_desc.get_size()
         font_size_in_pixel = font_size_in_pango_unit / pango.SCALE
         tab_array = pango.TabArray(2, True)
-        tab_array.set_tab(1, pango.TAB_LEFT, max_len * font_size_in_pixel)
-        textview.set_tabs(tab_array)
 
         infobuffer = textview.get_buffer()
+        infobuffer.set_text("")
+        max_test_len = 0
+        for lab in labs:
+                __add_label_to_generalinfo(infobuffer, 0, labs[lab])
+                bounds = infobuffer.get_bounds()
+                start = textview.get_iter_location(bounds[0])
+                end = textview.get_iter_location(bounds[1])
+                test_len = end[0] - start[0]
+                if test_len > max_test_len:
+                        max_test_len = test_len
+                infobuffer.set_text("")
+        tab_array.set_tab(1, pango.TAB_LEFT, max_test_len + font_size_in_pixel)
+        textview.set_tabs(tab_array)
         infobuffer.set_text("")
         i = 0
         __add_line_to_generalinfo(infobuffer, i, labs["name"], text["name"])
@@ -379,6 +385,10 @@ def set_package_details_text(labs, text, textview, installed_icon,
         i += 1
         __add_line_to_generalinfo(infobuffer, i, labs["repository"],
             text["repository"])
+
+def __add_label_to_generalinfo(text_buffer, index, label):
+        itr = text_buffer.get_iter_at_line(index)
+        text_buffer.insert_with_tags_by_name(itr, label, "bold")
 
 def __add_line_to_generalinfo(text_buffer, index, label, text,
     icon = None, font_size = 1):
