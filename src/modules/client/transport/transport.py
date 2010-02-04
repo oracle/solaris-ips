@@ -469,7 +469,7 @@ class Transport(object):
                                 try:
                                         self._verify_catalog(s, download_dir)
                                 except tx.InvalidContentException, e:
-                                        repostats.record_error()
+                                        repostats.record_error(content=True)
                                         failedreqs.append(e.request)
                                         failures.append(e)
                                         if not flist:
@@ -606,6 +606,8 @@ class Transport(object):
                                 exc = tx.TransferContentException(url,
                                     "zlib.error:%s" %
                                     (" ".join([str(a) for a in e.args])))
+                                repostats = self.stats[url]
+                                repostats.record_error(content=True)
                                 if exc.retryable:
                                         failures.append(exc)
                                 else:
