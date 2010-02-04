@@ -91,19 +91,19 @@ class AttributeAction(generic.Action):
                 elif self.attrs["name"] in ("fmri", "pkg.fmri"):
                         fmri_obj = fmri.PkgFmri(self.attrs["value"])
 
+                        lst = [
+                            fmri_obj.get_pkg_stem(include_scheme=False),
+                            str(fmri_obj.version.build_release),
+                            str(fmri_obj.version.release),
+                            str(fmri_obj.version.timestr)
+                        ]
+                        lst.extend(fmri_obj.hierarchical_names())
                         return [
                             (self.name, self.attrs["name"], w,
                             fmri_obj.get_pkg_stem(include_scheme=False))
-                            for w in [
-                                fmri_obj.get_pkg_stem(include_scheme=False),
-                                fmri_obj.get_pkg_stem(include_scheme=False,
-                                    anarchy=True),
-                                str(fmri_obj.version.build_release),
-                                str(fmri_obj.version.release),
-                                str(fmri_obj.version.timestr)
-                            ]
-                            
+                            for w in lst
                         ]
+
                 elif " " in self.attrs["value"]:
                         v = self.attrs["value"]
                         return [

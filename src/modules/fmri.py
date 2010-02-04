@@ -305,6 +305,16 @@ class PkgFmri(object):
                 return "%s%s/%s@%s" % (pkg_str, publisher, self.pkg_name,
                                 self.version)
 
+        def hierarchical_names(self):
+                """Generate the different hierarchical names that could be used
+                to reference this fmri."""
+
+                names = self.pkg_name.split("/")
+                res = names[-1:]
+                for n in reversed(names[:-1]):
+                        res.append("%s/%s" % (n, res[-1]))
+                return res
+
         def __str__(self):
                 """Return as specific an FMRI representation as possible."""
                 return self.get_fmri()

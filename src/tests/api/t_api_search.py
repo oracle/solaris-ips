@@ -133,6 +133,10 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
 """
         bogus_fmri = fmri.PkgFmri("bogus_pkg@1.0,5.11-0:20090326T233451Z")
 
+        hierarchical_named_pkg = """
+open pa/pb/pc/pfoo@1.0,5.11-0
+close """
+
         bug_8492_manf_1 = """
 open b1@1.0,5.11-0
 add set description="Image Packaging System"
@@ -412,6 +416,10 @@ close
              'dir group=bin mode=0755 owner=root path=badfoo/')
         ])
 
+        hierarchical_named_pkg_res = set([
+            ("pkg:/pa/pb/pc/pfoo@1.0-0", "test/pa/pb/pc/pfoo", "set name=pkg.fmri value=pkg://test/pa/pb/pc/pfoo@1.0,5.11-0:")
+        ])
+
         fast_add_after_install = set([
             "VERSION: 2\n",
             "pkg22@1.0,5.11",
@@ -464,11 +472,11 @@ close
                         self.debug("Correct Answer : " + str(correct_answer))
                         if isinstance(correct_answer, set) and \
                             isinstance(proposed_answer, set):
-                                print >> sys.stderr, "Missing: " + \
-                                    str(correct_answer - proposed_answer)
-                                print >> sys.stderr, "Extra  : " + \
-                                    str(proposed_answer - correct_answer)
-                        self.assert_(correct_answer == proposed_answer)
+                                self.debug("Missing: " +
+                                    str(correct_answer - proposed_answer))
+                                self.debug("Extra  : " +
+                                    str(proposed_answer - correct_answer))
+                        self.assertEqual(correct_answer, proposed_answer)
 
         @staticmethod
         def _replace_act(act):
@@ -2025,6 +2033,40 @@ class TestApiSearchBasicsP(TestApiSearchBasics):
                         expected_code),
                     urllib2.urlopen, durl + "/search/1/" + q_str)
 
+        def test_bug_14177(self):
+                def run_tests(api_obj, remote):
+                        self._search_op(api_obj, remote, "pfoo",
+                            self.hierarchical_named_pkg_res,
+                            case_sensitive=False)
+                        self._search_op(api_obj, remote, "pc/pfoo",
+                            self.hierarchical_named_pkg_res,
+                            case_sensitive=False)
+                        self._search_op(api_obj, remote, "pb/pc/pfoo",
+                            self.hierarchical_named_pkg_res,
+                            case_sensitive=False)
+                        self._search_op(api_obj, remote, "pa/pb/pc/pfoo",
+                            self.hierarchical_named_pkg_res,
+                            case_sensitive=False)
+                        self._search_op(api_obj, remote, "test/pa/pb/pc/pfoo",
+                            self.hierarchical_named_pkg_res,
+                            case_sensitive=False)
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.hierarchical_named_pkg)
+                self.image_create(durl)
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+
+                remote = True
+                run_tests(api_obj, remote)
+                self._do_install(api_obj, ["pfoo"])
+                remote = False
+                run_tests(api_obj, remote)
+                api_obj.rebuild_search_index()
+                api_obj.reset()
+                run_tests(api_obj, remote)
+
 
 class TestApiSearchBasics_nonP(TestApiSearchBasics):
         def setUp(self):
@@ -2386,11 +2428,11 @@ class TestApiSearchMulti(pkg5unittest.ManyDepotTestCase):
                         self.debug("Correct Answer : " + str(correct_answer))
                         if isinstance(correct_answer, set) and \
                             isinstance(proposed_answer, set):
-                                print >> sys.stderr, "Missing: " + \
-                                    str(correct_answer - proposed_answer)
-                                print >> sys.stderr, "Extra  : " + \
-                                    str(proposed_answer - correct_answer)
-                        self.assert_(correct_answer == proposed_answer)
+                                self.debug("Missing: " +
+                                    str(correct_answer - proposed_answer))
+                                self.debug("Extra  : " +
+                                    str(proposed_answer - correct_answer))
+                        self.assertEqual(correct_answer, proposed_answer)
 
         @staticmethod
         def _extract_action_from_res(it, err):
