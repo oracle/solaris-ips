@@ -1443,6 +1443,8 @@ def search(img, args):
                 st = None
                 err = None
                 header_attrs = attrs
+                last_line = None
+                shown_headers = False
                 while page_again:
                         unprocessed_res = []
                         page_again = False
@@ -1507,18 +1509,24 @@ def search(img, args):
                         except api_errors.ApiException, e:
                                 err = e
                         lines = produce_lines(unprocessed_res, attrs,
-                            show_all=True)
+                            show_all=True, remove_consec_dup_lines=True,
+                            last_res=last_line)
+                        if not lines:
+                                continue
                         old_widths = widths[:]
                         widths = calc_widths(lines, attrs, widths)
                         # If headers are being displayed and the layout of the
                         # columns have changed, print the headers again using
                         # the new widths.
-                        if display_headers and old_widths[:-1] != widths[:-1]:
+                        if display_headers and (not shown_headers or
+                            old_widths[:-1] != widths[:-1]):
+                                shown_headers = True
                                 print_headers(header_attrs, widths, justs)
                         for line in lines:
                                 msg((create_output_format(display_headers,
                                     widths, justs, line) %
                                     tuple(line)).rstrip())
+                        last_line = lines[-1]
                         st = time.time()
                 if err:
                         raise err
@@ -1737,7 +1745,8 @@ def calc_justs(attrs):
                 return JUST_UNKNOWN
         return [ __chose_just(attr) for attr in attrs ]
         
-def produce_lines(actionlist, attrs, action_types=None, show_all=False):
+def produce_lines(actionlist, attrs, action_types=None, show_all=False,
+    remove_consec_dup_lines=False, last_res=None):
         """Produces a list of n tuples (where n is the length of attrs)
         containing the relevant information about the actions.
 
@@ -1755,9 +1764,20 @@ def produce_lines(actionlist, attrs, action_types=None, show_all=False):
 
         The "show_all" parameter determines whether an action that lacks one
         or more of the desired attributes will be displayed or not.
+
+        The "remove_dup_lines" parameter whether consecutive duplicate lines
+        should be removed from the results.
+
+        The "last_res" paramter is a seed to compare the first result against
+        for duplicate removal.
         """
 
+        # Assert that if last_res is set, we should be removing duplicate
+        # lines.
+        assert(not last_res or remove_dup_lines)
         lines = []
+        if last_res:
+                lines.append(last_res)
         for pfmri, action, pub, match, match_type in actionlist:
                 if action_types and action.name not in action_types:
                         continue
@@ -1794,8 +1814,12 @@ def produce_lines(actionlist, attrs, action_types=None, show_all=False):
 
                         line.append(a)
 
-                if line and [l for l in line if str(l) != ""] or show_all:
+                if (line and [l for l in line if str(l) != ""] or show_all) \
+                    and (not remove_consec_dup_lines or not lines or
+                    lines[-1] != line):
                         lines.append(line)
+        if last_res:
+                lines.pop(0)
         return lines
 
 def default_left(v):

@@ -678,5 +678,36 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 self._search_op(False, "-H -o %s example_path" % o_options,
                     [self.o_results_no_pub])
 
+        def test_bug_12271_14088(self):
+                """Check that consecutive duplicate lines are removed and
+                that having a single option to -o still prints the header."""
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.example_pkg10)
+
+                self.image_create(durl)
+                
+                self.pkg("search 'example_pkg:set:pkg.fmri:'")
+                self.assertEqual(len(self.output.splitlines()), 2)
+
+                self.pkg("search -o pkg.shortfmri '*6*'")
+                self.assertEqual(len(self.output.splitlines()), 2)
+
+                self.pkg("install example_pkg")
+
+                self.pkg("search -l 'example_pkg:set:pkg.fmri:'")
+                self.assertEqual(len(self.output.splitlines()), 2)
+
+                self.pkg("search -l -o pkg.shortfmri,action.key '*6*'")
+                expected_number_of_lines = 9
+                # If 6 happens to appear in the timestamp, then that will match
+                # as well.
+                if "pkg.fmri" in self.output:
+                        expected_number_of_lines += 1
+                self.debug("Expected number of lines:%s" %
+                    expected_number_of_lines)
+                self.assertEqual(len(self.output.splitlines()),
+                    expected_number_of_lines)
+
 if __name__ == "__main__":
         unittest.main()
