@@ -7,28 +7,32 @@ NAME
 SYNOPSIS
      /usr/bin/pkgdepend [options] command [cmd_options] [operands]
 
-     /usr/bin/pkgdepend generate [-IMm] [-D name=value] [-k path] manifest_path 
+     /usr/bin/pkgdepend generate [-IMm] [-D name=value] [-k path] manifest_path
          proto_dir
 
-     /usr/bin/pkgdepend resolve [-dMos] manifest_path ...
+     /usr/bin/pkgdepend resolve [-dmos] manifest_path ...
 
 DESCRIPTION
-     The pkgdepend command allows the user to produce the files upon which a
-     package depends due to its contents, or resolve those dependencies into
-     the packages which contain the files depended upon. The typical use is to
-     use the production phase to independently generate the dependencies for
-     all packages being published, then pass all those manifests to the
-     resolve phase so it can resolve any dependencies between the packages
-     being published as well as resolving against the reference set of 
-     packages. Currently, the reference set of packages is defined as the
-     packages currently installed on the publisher's system.
+     pkgdepend(1) is used to generate and resolve dependencies for
+     packages.  A package may depend upon files from other packages.
+     pkgdepend(1) is typically used in two passes:  file dependency
+     generation and file-to-package resolution.
+
+     The generate subcommand examines a package's content and discovers
+     what external files the package needs.
+
+     The resolve subcommand takes the list of files from the generate
+     step, and figures out the name of the packages, limited to some
+     reference set of packages, that contain the dependent files.
+     Currently, the reference set of packages is defined as the packages
+     currently installed on the publisher's system.
 
 OPTIONS
      The following options are supported:
 
      -R dir
-          Operate on the image rooted at dir, rather than the one discovered
-          automatically.
+          Operate on the image rooted at dir, rather than the one
+          discovered automatically.
 
      --help or -?
           Displays a usage message.
@@ -37,82 +41,105 @@ SUBCOMMANDS
      The following subcommands are supported:
 
      generate [-IMm] [-D name=value] [-k path] manifest_path proto_dir
-          Produce the dependencies on files of the manifest specified by 
+          Produce the dependencies on files of the manifest specified by
           manifest_path, whose contents are found in proto_dir.
 
-          With -I, the dependencies which are satisified within the manifest
-          given will be shown.
+          With -I, the dependencies which are satisfied within the
+          manifest given will be shown.
 
-          With -M, a list of those file types which could not be analyzed 
-          will be displayed. 
+          With -M, a list of those file types which could not be
+          analyzed will be displayed.
 
-          With -m, the original manifest will be repeated with any 
+          With -m, the original manifest will be repeated with any
           discovered dependencies added after.
 
-          For each -D, add the 'value' as a way to expand the token 'name' in
-          run paths for elf file dependencies.
+          For each -D, add the 'value' as a way to expand the token
+          'name' in run paths for elf file dependencies.
 
-          For each -k, add the path given to the list of paths in which to look 
-          for kernel modules.  Using the -k argument removes the default paths
-          which are /kernel and /usr/kernel.
+          For each -k, add the path given to the list of paths in which
+          to look for kernel modules.  Using the -k argument removes the
+          default paths which are /kernel and /usr/kernel.
 
      resolve [-mo] [-d output_dir] [-s suffix] manifest_path ...
-          Transform dependencies on files into dependencies on the packages
-          which deliver those files.  Dependencies are first resolved against
-          the manifests given on the command line and then against the packages
-          installed on the system.  By default, the dependencies for each 
-          manifest are placed in a file whose name is determined by appending
-          ".res" to the manifest's path.
+          Transform dependencies on files into dependencies on the
+          packages which deliver those files.  Dependencies are first
+          resolved against the manifests given on the command line and
+          then against the packages installed on the system.  By
+          default, the dependencies for each manifest are placed in a
+          file whose name is determined by appending ".res" to the
+          manifest's path.
 
-          With -m, repeat the manifest, with any dependencies produced by
-          the generate step removed, before adding the resolved 
+          With -m, repeat the manifest, with any dependencies produced
+          by the generate step removed, before adding the resolved
           dependencies.
 
-          With -o, write the results to standard out.
+          With -o, write the results to standard output.
 
-          With -d, write the resolved dependencies for each manifest 
-          provided in a separate file in output_dir.  By default, each file
-          will have the same basename as the manifest that was the source
-          of the dependencies written to that file.
+          With -d, write the resolved dependencies for each manifest
+          provided in a separate file in output_dir.  By default, each
+          file will have the same basename as the manifest that was the
+          source of the dependencies written to that file.
 
-          With -s, for each output file, append the given suffix (a "." 
-          will be added to the argument if not provided) to the basename of 
-          the file that was the source of the resolved dependencies.
-
+          With -s, for each output file, append the given suffix (a "."
+          will be added to the argument if not provided) to the basename
+          of the file that was the source of the resolved dependencies.
 
 EXAMPLES
-     Example 1: Generate the dependencies for the manifest written in foo,
-     whose content directory is in ./bar/baz and store the results in 
-     foo.fdeps.
+     Example 1: Generate the dependencies for the manifest written in
+     foo, whose content directory is in ./bar/baz and store the results
+     in foo.fdeps.
 
      $ pkgdepend generate foo ./bar/baz > foo.fdeps
 
-     Example 2: Resolve the file dependencies in foo.fdeps, and bar.fdeps 
-     against each other, and the packages currently installed on the system.
+     Example 2: Resolve the file dependencies in foo.fdeps, and
+     bar.fdeps against each other, and the packages currently installed
+     on the system.
 
      $ pkgdepend resolve foo.fdeps bar.fdeps
-     $ ls *.res
-       foo.fdeps.res     bar.fdeps.res
+     $ ls *.res foo.fdeps.res bar.fdeps.res
 
-     Example 3: Generate the file dependencies for two manifests (foo and 
-     bar) and retain all the information in the original manifests. Then 
-     resolve the file dependencies and place the resulting manifests, which
-     could be used with pkgsend publish, in ./res
+     Example 3: Generate the file dependencies for two manifests (foo
+     and bar) and retain all the information in the original manifests.
+     Then resolve the file dependencies and place the resulting
+     manifests, which could be used with pkgsend publish, in ./res
 
      $ pkgdepend generate -m foo > ./deps/foo
      $ pkgdepend generate -m bar > ./deps/bar
      $ pkgdepend resolve -m -d ./res ./deps/foo ./deps/bar
-     $ ls ./res
-       foo     bar
+     $ ls ./res foo     bar
 
-     Example 4: Replace all $PLATFORM tokens in the run paths in elf files with
-     sun4v and sun4u while generating the dependences for the manifest written 
-     in foo whose content directory is in /.
+     Example 4: Replace all $PLATFORM tokens in the run paths in elf
+     files with sun4v and sun4u while generating the dependences for the
+     manifest written in foo whose content directory is in /.
 
      $ pkgdepend generate -D 'PLATFORM=sun4v' -D 'PLATFORM=sun4u' foo /
 
-     Example 5: Use /kmod as the directory in which to find kernel modules when
-     generating the dependencies for the manifest written in foo whose content 
-     directory is in /.
+     Example 5: Use /kmod as the directory in which to find kernel
+     modules when generating the dependencies for the manifest written
+     in foo whose content directory is in /.
 
      $ pkgdepend generate -k /kmod foo /
+
+EXIT STATUS
+     The following exit values are returned:
+
+     0     Everything worked.
+
+     1     Something bad happened.
+
+     2     Invalid command line options were specified.
+
+ATTRIBUTES
+     See attributes(5) for descriptions of the  following  attri-
+     butes:
+     ____________________________________________________________
+    |       ATTRIBUTE TYPE        |       ATTRIBUTE VALUE       |
+    |_____________________________|_____________________________|
+    | Availability                | SUNWipkg                    |
+    |                             | pkg:/package/pkg            |
+    |_____________________________|_____________________________|
+    | Interface Stability         | None / Under Development    |
+    |_____________________________|_____________________________|
+
+SEE ALSO
+     attributes(5), pkg(5)

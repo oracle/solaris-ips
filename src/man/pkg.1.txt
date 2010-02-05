@@ -11,33 +11,34 @@ SYNOPSIS
          [--no-index] pkg_fmri ...
      /usr/bin/pkg uninstall [-nrvq] [--no-index] pkg_fmri ...
 
-     /usr/bin/pkg verify [-Hvq] [pkg_fmri_pattern ...]
-     /usr/bin/pkg fix [--accept] [--licenses] [pkg_fmri_pattern ...]
-     /usr/bin/pkg info [-lr] [--license] [pkg_fmri_pattern ...]
+     /usr/bin/pkg image-update [-fnvq] [--accept] [--be-name name]
+         [--licenses] [--no-refresh] [--no-index]
+
+     /usr/bin/pkg refresh [--full] [publisher ...]
+
      /usr/bin/pkg contents [-Hmr] [-a attribute=pattern ...] [-s sort_key]
          [-o attribute ...] [-t action_type ...] [pkg_fmri_pattern ...]
+     /usr/bin/pkg info [-lr] [--license] [pkg_fmri_pattern ...]
      /usr/bin/pkg list [-Hafnsuv] [--no-refresh] [pkg_fmri_pattern ...]
      /usr/bin/pkg search [-alprHI] [-o attribute ...] [-s repo_uri]
          query
 
-     /usr/bin/pkg refresh [--full] [publisher ...]
+     /usr/bin/pkg verify [-Hvq] [pkg_fmri_pattern ...]
+     /usr/bin/pkg fix [--accept] [--licenses] [pkg_fmri_pattern ...]
 
      /usr/bin/pkg image-create [-fFPUz] [--force]
          [--full|--partial|--user] [--zone] [-k ssl_key] [-c ssl_cert]
-         [--no-refresh]  [--variant <variant_spec>=<instance>]
+         [--no-refresh] [--variant <variant_spec>=<instance>]
          [-g|--origin ...] [-m|--mirror ...]
          [--facet <facet_spec>=[True|False]]
          (-p|--publisher) name=uri dir
-
-     /usr/bin/pkg image-update [-fnvq] [--accept] [--be-name name]
-         [--licenses] [--no-refresh] [--no-index]
 
      /usr/bin/pkg variant [<variant_spec>]
      /usr/bin/pkg change-variant [-nvq] [--accept] [--be-name name]
          [--licenses] <variant_spec>=<instance> ...
 
-     /usr/bin/pkg facet [<facet_spec>] 
-     /usr/bin/pkg change-facet [-nvq] [--accept] [--be-name name] 
+     /usr/bin/pkg facet [<facet_spec>]
+     /usr/bin/pkg change-facet [-nvq] [--accept] [--be-name name]
          [--licenses] <facet_spec>=[True|False|None] ...
 
      /usr/bin/pkg set-property propname propvalue
@@ -116,8 +117,8 @@ SUBCOMMANDS
 
      image-create [-fFPUz] [--force] [--full|--partial|--user] [--zone]
        [-k ssl_key] [-c ssl_cert] [--no-refresh] [-g|--origin ...]
-       [--variant <variant_spec>=<instance>] ...
-       [--facet <facet_spec>=[True|False]] ...
+       [--variant <variant_spec>=<instance> ...]
+       [--facet <facet_spec>=[True|False] ...]
        [-m|--mirror ...] (-p|--publisher) name=origin_uri dir
           Create, at location given by dir, an image suitable for package
           operations.  The default image type is user, as given by the -U
@@ -199,8 +200,9 @@ SUBCOMMANDS
           progress messages during the requested operation.
 
           In the case of uninstall, the -r option will recursively
-          uninstall any packages which are dependent on the initial
-          package.
+          uninstall any packages that contain 'require' dependencies on
+          the initial package.  (Packages containing 'optional' or
+          'incorporate' dependencies are not included in the removal.)
 
           With --accept, you indicate that you agree to and accept the
           terms of the licenses of the packages that are updated or
@@ -315,7 +317,10 @@ SUBCOMMANDS
      search [-alprHI] [-o attribute ...] [-s repo_uri] query
           Search for matches to the query, and display the results.
           Which tokens are indexed are action-dependent, but may
-          include content hashes and pathnames.
+          include content hashes and pathnames.  By default, queries are
+          interpreted as a series of terms to be matched exactly.  The
+          '?' and '*' characters can be used as glob(3C)-style
+          wildcards, allowing more flexible query matches.
 
           By default, and with -a, perform the search and display information
           about the matching actions.
@@ -506,7 +511,7 @@ SUBCOMMANDS
 
           Facets may be set to True or False.  Setting one to None removes
           that facet specification from the current image.
-     
+
      fix [--accept] [--licenses] [pkg_fmri_pattern ...]
           Fix any errors reported by pkg verify.  Please note that
           verification of installed package content is based on a
@@ -543,7 +548,7 @@ SUBCOMMANDS
        [-m mirror_to_add | --add-mirror=mirror_to_add]
        [-M mirror_to_remove | --remove-mirror=mirror_to_remove]
        [--search-before publisher] [--search-after publisher]
-       [--sticky] [--non-sticky] [--enable] [--disable] [--no-refresh] 
+       [--sticky] [--non-sticky] [--enable] [--disable] [--no-refresh]
        [--reset-uuid] publisher
 
           Update an existing publisher or add an additional package
@@ -565,11 +570,11 @@ SUBCOMMANDS
           With --sticky, return to the default behavior of always sourcing
           updates from the same publisher that provided the package originally.
 
-          With --search-before, alter the publisher search order so that 
+          With --search-before, alter the publisher search order so that
           the publisher being modified is now searched before the specified
           publisher.
 
-          With --search-after, alter the publisher search order so that 
+          With --search-after, alter the publisher search order so that
           the publisher being modified is now searched after the specified
           publisher.
 
@@ -678,7 +683,7 @@ EXAMPLES
      file  0755 469616 lib/amd64/libzfs.so.1
      file  0644  62057 lib/amd64/llib-lzfs.ln
      link              lib/libzfs.so                       libzfs.so.1
-     [ ... ]
+     ....
 
      Example 5:  List the contents of SUNWfirefox and SUNWthunderbird,
      limiting the display to just the package name and path attributes of
@@ -701,9 +706,9 @@ EXAMPLES
      Example 6:  Search the package database for the token "bge".
 
      $ pkg search bge
-     INDEX          ACTION    VALUE             PACKAGE
-     basename       file      kernel/drv/bge    pkg:/SUNWbge@0.5.11-0.79
-     driver_name    driver    bge               pkg:/SUNWbge@0.5.11-0.79
+     INDEX       ACTION VALUE                   PACKAGE
+     basename    file   kernel/drv/bge          pkg:/SUNWbge@0.5.11-0.79
+     driver_name driver bge                     pkg:/SUNWbge@0.5.11-0.79
 
      The token shows up in the package SUNWbge both as the basename for the
      file action representing /kernel/drv/bge and as a driver name.
@@ -711,20 +716,18 @@ EXAMPLES
      Example 7: Search for installed packages which depend on SUNWipkg.
 
      $ pkg search -l 'depend::SUNWipkg'
-     INDEX      ACTION    VALUE                     PACKAGE
-     incorporate depend    SUNWipkg@0.5.11-0.111     pkg:/entire@0.5.11-0.111
-     require    depend    SUNWipkg@0.5.11-0.111     pkg:/slim_install@0.1-0.111
-     require    depend    SUNWipkg@0.5.11-0.111     pkg:/SUNWipkg-brand@0.5.11-0.111
+     INDEX       ACTION VALUE                   PACKAGE
+     incorporate depend SUNWipkg@0.5.11-0.111   pkg:/entire@0.5.11-0.111
+     require     depend SUNWipkg@0.5.11-0.111   pkg:/slim_install@0.1-0.111
+     require     depend SUNWipkg@0.5.11-0.111   pkg:/SUNWipkg-brand@0.5.11-0.111
 
      Example 8: Search for all incorporate dependencies in installed packages.
 
      $ pkg search -l 'depend:incorporate:'
-     INDEX      ACTION    VALUE                     PACKAGE
-     incorporate depend    BRCMbnx@0.5.11-0.111      pkg:/entire@0.5.11-0.111
-     incorporate depend    BRCMbnx@0.5.11-0.111      pkg:/entire@0.5.11-0.111
-     incorporate depend    FSWxorg-fonts@0.5.11-0.111 pkg:/entire@0.5.11-0.111
-     incorporate depend    FSWxorg-fonts-core@0.5.11-0.111 pkg:/entire@0.5.11-0.111
-     [ ... ]
+     INDEX       ACTION VALUE                   PACKAGE
+     incorporate depend BRCMbnx@0.5.11-0.111    pkg:/entire@0.5.11-0.111
+     incorporate depend BRCMbnx@0.5.11-0.111    pkg:/entire@0.5.11-0.111
+     ....
 
      Example 9:  Add new publisher example.org, with a repository located at
      http://www.example.org/repo:
@@ -765,18 +768,32 @@ EXIT STATUS
            be modified.
 
 FILES
-     var/pkg                    Metadata location for full and partial
-                                images, relative to image's root
-                                directory.
+     A pkg(5) image can be located arbitrarily within a larger file
+     system.  In the following, the token $IMAGE_ROOT is used to
+     distinguish relative paths.  For a typical system installation,
+     $IMAGE_ROOT is equivalent to "/".
 
-     .org.opensolaris,pkg       Metadata location for user images,
-                                relative to image's root directory.
+     $IMAGE_ROOT/var/pkg        Metadata directory for a full or partial
+                                image.
 
-     Metadata is stored in an equivalent tree and format for any image
-     type, starting at $META as above.
+     $IMAGE_ROOT/.org.opensolaris,pkg
+                                Metadata directory for a user image.
 
-     $META/catalog              Directory of catalogs from defined
-                                publishers.
+     Within a particular image's metadata, certain files and directories
+     can contain information useful during repair and recovery.  We use
+     the token $IMAGE_META to refer to the top-level directory
+     containing the metadata.  $IMAGE_META is typically one of the two
+     paths given above.
+
+     $IMAGE_META/lost+found     Location of conflicting directories and
+                                files moved during a package operation.
+
+     $IMAGE_META/publisher      Contains a directory for each publisher.
+                                Each directory stores publisher-specific
+                                metadata.
+
+     Other paths within the $IMAGE_META directory hierarchy are Private,
+     and are subject to change.
 
 ATTRIBUTES
      See attributes(5) for descriptions of the  following  attri-
@@ -785,11 +802,13 @@ ATTRIBUTES
     |       ATTRIBUTE TYPE        |       ATTRIBUTE VALUE       |
     |_____________________________|_____________________________|
     | Availability                | SUNWipkg                    |
+    |                             | pkg:/package/pkg            |
+    |_____________________________|_____________________________|
     | Interface Stability         | None / Under Development    |
     |_____________________________|_____________________________|
 
 SEE ALSO
-     pkgsend(1), pkg.depotd(1M), attributes(5), pkg(5)
+     pkgsend(1), pkg.depotd(1M), glob(3C), attributes(5), pkg(5)
 
 NOTES
      The image packaging system is an under-development feature.
@@ -797,16 +816,17 @@ NOTES
      to change.  Development is hosted in the OpenSolaris community
      at:
 
-     http://opensolaris.org/os/project/pkg/
+     http://hub.opensolaris.org/bin/view/Project+pkg/
 
      At present, user images are not restricted to relocatable
      packages--but they will be.
 
-     The pkg(1) command recognizes use of the http_proxy environment
-     variable to select a suitable HTTP proxy server.  At present,
-     particular care is needed when using local repository URIs--such as
-     http://localhost:10000/--with the http_proxy environment variable;
-     this behaviour may change in a future version of image packaging.
+     The pkg(1) command recognizes use of the http_proxy and https_proxy
+     environment variables to select a suitable HTTP or HTTPS proxy
+     server.  At present, particular care is needed when using local
+     repository URIs--such as http://localhost:10000/--with the
+     http_proxy environment variable; this behaviour may change in a
+     future version of image packaging.
 
-     Although HTTPS servers may validate client SSL certificates, the
-     client does not currently validate the server's.
+     At present, pkg(1), on directory removal, will move unpackaged
+     contents of that directory to $IMAGE_META/lost+found.

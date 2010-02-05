@@ -86,7 +86,7 @@ def usage(usage_error=None, retcode=2):
 
         msg(_("""\
 Usage:
-        pkgrecv [-s src_repo_uri] [-d (path|dest_uri)] [-k] [-m] [-n] [-r]
+        pkgrecv [-s src_repo_uri] [-d (path|dest_uri)] [-kr] [-m match]
             (fmri|pattern) ...
         pkgrecv [-s src_repo_uri] -n
 
@@ -111,8 +111,8 @@ Options:
                             all-versions
                                 includes all matching versions, not just latest
         -n              List the most recent versions of the packages available
-                        from the specified repository and exit (all other
-                        options except -s will be ignored).
+                        from the specified repository and exit.  (All other
+                        options except -s will be ignored.)
         -r              Recursively evaluates all dependencies for the provided
                         list of packages and adds them to the list.
         -s src_repo_uri A URI representing the location of a pkg(5)

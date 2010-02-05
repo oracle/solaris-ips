@@ -14,7 +14,6 @@ DESCRIPTION
      such as drivers, services, and users.
 
   Package FMRIs and Versions
-
      Each package is represented by a fault management resource identifier
      (FMRI) with the scheme 'pkg:'.  The full FMRI for a package consists
      of the scheme, a publisher, the package name, and a version string in
@@ -147,6 +146,13 @@ DESCRIPTION
      has the same four standard attributes as the file action, and 'path'
      is the key attribute.
 
+     If a package operation triggers a directory removal, the client can
+     take two possible actions.  It will either preserve the directory,
+     or will move its contents into $IMAGE_META/lost+found.  See FILES
+     for more information about $IMAGE_META.  Directory removal
+     typically occurs during an uninstall operation, but it may also
+     occur during an update from one version to another.
+
   Link Actions
      The 'link' action represents a symbolic link.  It has two standard
      attributes:
@@ -217,9 +223,9 @@ DESCRIPTION
            If the value is 'exclude', then the package is non-functional if
            the dependent package is present on the system.
 
-           If the value is 'incorporate', then the dependency is required,
-           but in addition, the version of the dependent package is
-           constrained.  See 'Constraints and Freezing' below.
+           If the value is 'incorporate', then the dependency is
+           optional, but the version of the dependent package will
+           become constrained.  See 'Constraints and Freezing' below.
 
      fmri  The FMRI representing the depended-upon package.
 
@@ -230,7 +236,7 @@ DESCRIPTION
     file associated with the package contents.  A package may deliver
     licenses, disclaimers, or other guidance to the package installer
     through the use of the license action.
-    
+
     The payload of the license action will be delivered into the image
     metadata directory related to the package, and should only contain
     human-readable textual data.  It should not contain HTML or any
@@ -479,20 +485,22 @@ DESCRIPTION
 
   Properties
      Images can have one or more properties associated with them.
-     These properties can be used to store information about the purpose, 
+     These properties can be used to store information about the purpose,
      content and behavior of the image.
 
-  Policy
-     Policies are defined by image properties with boolean values.  The 
+  Image Policies
+     Policies are defined by image properties with boolean values.  The
      supported policies include:
 
         flush-content-cache-on-success
-            When true, the cache of downloaded files is erased after a 
-            successful install of a package.  Default value: False
+            When true, the cache of downloaded files is erased after a
+            successful install of a package.  Default value: False.
 
         send-uuid
-            When true, a unique identifier (UUID) that identifies the image
-            to the publisher is sent on all requests.  Default value: False 
+            When true, a unique identifier (UUID) that identifies the
+            image to the publisher is sent on all requests.  Default
+            value: True.
+
 
 ATTRIBUTES
      See attributes(5) for descriptions of the  following  attri-
@@ -500,8 +508,40 @@ ATTRIBUTES
      ____________________________________________________________
     |       ATTRIBUTE TYPE        |       ATTRIBUTE VALUE       |
     |_____________________________|_____________________________|
-    | Availability                |                             |
+    | Availability                | SUNWipkg                    |
+    |                             | pkg:/package/pkg            |
     |_____________________________|_____________________________|
+    | Interface Stability         | None / Under Development    |
+    |_____________________________|_____________________________|
+
+FILES
+     Since pkg(5) images can be located arbitrarily within a larger file
+     system, we use the token $IMAGE_ROOT to distinguish relative paths.
+     For a typical system installation, $IMAGE_ROOT is equivalent to
+     "/".
+
+     $IMAGE_ROOT/var/pkg
+         Metadata directory for a full or partial image.
+
+     $IMAGE_ROOT/.org.opensolaris,pkg
+         Metadata directory for a user image.
+
+     Within a particular image's metadata, certain files and directories
+     can contain information useful during repair and recovery.  We use
+     the token $IMAGE_META to refer to the top-level directory
+     containing the metadata.  $IMAGE_META is typically one of the two
+     paths given above.
+
+     $IMAGE_META/lost+found
+         Location of conflicting directories and files moved during a
+         package operation.
+
+     $IMAGE_META/publisher
+         Contains a directory for each publisher.  Each directory stores
+         publisher-specific metadata.
+
+     Other paths within the $IMAGE_META directory hierarchy are Private,
+     and are subject to change.
 
 SEE ALSO
      pkg(1), pkgsend(1), pkg.depotd(1M), svcadm(1M), pkginfo(4),
@@ -513,4 +553,4 @@ NOTES
      to change.  Development is hosted in the OpenSolaris community
      at
 
-         http://opensolaris.org/os/project/pkg/
+         http://hub.opensolaris.org/bin/view/Project+pkg/

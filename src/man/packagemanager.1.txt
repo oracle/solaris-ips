@@ -2,7 +2,7 @@ User Commands                                 packagemanager(1)
 
 
 NAME
-     packagemanager - GUI for the Image Packaging System 
+     packagemanager - GUI for the Image Packaging System
 
 SYNOPSIS
      /usr/bin/packagemanager [options]
@@ -12,8 +12,8 @@ SYNOPSIS
      /usr/bin/packagemanager [file]
 
 DESCRIPTION
-     packagemanager is the graphical user interface for the Image Packaging
-     System (IPS) software.
+     packagemanager(1) is the graphical user interface for pkg(5), the
+     Image Packaging System software.
 
      The Package Manager enables you to perform the following tasks:
 
@@ -23,9 +23,9 @@ DESCRIPTION
 
      - Create, remove and manage boot environments.
 
-     If file operand is specified and its suffix is .p5i, packagemanager
-     will launch in Web Install mode, which will add one or more publishers
-     and a number of packages for each publisher.
+     If file operand is specified and its suffix is .p5i,
+     packagemanager(1) will launch in Web Install mode, which will add
+     one or more publishers and a number of packages for each publisher.
 
 OPTIONS
      The following options are supported:
@@ -34,30 +34,31 @@ OPTIONS
           Displays a usage message.
 
      --info-install or -i file
-          Allows you to specify a .p5i file to run packagemanager in
-          Web Install mode. The file which is specified must have suffix .p5i.
+          Allows you to specify a .p5i file to run packagemanager(1) in
+          Web Install mode. The file which is specified must have suffix
+          .p5i.
 
      ---image-dir or -R dir
           Operate on the image rooted at dir, rather than the one discovered
           automatically.
 
      ---update-all or -U
-          Update all packages. When the user chooses Updates option in 
-          packagemanager and the packages containing pkg or packagemanager
-          need to be updated before doing image update, packagemanager is
+          Update all packages. When the user chooses Updates option in
+          packagemanager(1) and the packages containing the pkg(1) or
+          packagemanager(1) clients need to be updated before an image
+          update can be successfully performed, packagemanager(1) is
           called with this option after the packages have been updated.
 
-
 EXAMPLES
-     Example 1:  Invoke packagemanager on the current image.
+     Example 1:  Invoke packagemanager(1) on the current image.
 
      $ packagemanager
 
-     Example 2:  Invoke packagemanager in image stored at /aux0/example_root.
+     Example 2:  Invoke packagemanager(1) in image stored at /aux0/example_root.
 
-     $ packagemanager -R /aux0/example_root 
+     $ packagemanager -R /aux0/example_root
 
-     Example 3:  Invoke packagemanager in Web Install mode.
+     Example 3:  Invoke packagemanager(1) in Web Install mode.
 
      $ packagemanager ~/test.p5i
 
@@ -71,9 +72,30 @@ EXIT STATUS
      2     Invalid command line options were specified.
 
 FILES
-     /var/pkg/gui-cache         Location for cached package data maintained
-                                by packagemanager to speed up program 
-                                start-up and switching between publishers.
+     Since pkg(5) images can be located arbitrarily within a larger file
+     system, we use the token $IMAGE_ROOT to distinguish relative paths.
+     For a typical system installation, $IMAGE_ROOT is equivalent to
+     "/".
+
+     $IMAGE_ROOT/var/pkg        Metadata directory for a full or partial
+                                image.
+
+     $IMAGE_ROOT/.org.opensolaris,pkg
+                                Metadata directory for a user image.
+
+     Within a particular image's metadata, certain files and directories
+     can contain information useful during repair and recovery.  We use
+     the token $IMAGE_META to refer to the top-level directory
+     containing the metadata.  $IMAGE_META is typically one of the two
+     paths given above.
+
+     $IMAGE_META/gui-cache      Location for cached metadata maintained
+                                by packagemanager(1) to speed up program
+                                start-up and switching between
+                                publishers.
+
+     Other paths within the $IMAGE_META directory hierarchy are Private,
+     and are subject to change.
 
 ATTRIBUTES
      See attributes(5) for descriptions of the  following  attri-
@@ -82,11 +104,14 @@ ATTRIBUTES
     |       ATTRIBUTE TYPE        |       ATTRIBUTE VALUE       |
     |_____________________________|_____________________________|
     | Availability                | SUNWipkg-gui                |
+    |                             | pkg:/package/pkg/           |
+    |                             |             packagemanager  |
+    |_____________________________|_____________________________|
     | Interface Stability         | None / Under Development    |
     |_____________________________|_____________________________|
 
 SEE ALSO
-     pkg(1), attributes(5)
+     pfexec(1), pkg(1), attributes(5), pkg(5)
 
 NOTES
      The image packaging system is an under-development feature.
@@ -94,8 +119,10 @@ NOTES
      to change.  Development is hosted in the OpenSolaris community
      at:
 
-     http://opensolaris.org/os/project/pkg/
+     http://hub.opensolaris.org/bin/view/Project+pkg/
 
-     packagemanager needs to be invoked with enough privilege to operate
-     on an image you do not own. You will normally invoke packagemanager
-     using pexec.
+     packagemanager(1) needs to be invoked with sufficient privilege to
+     operate on an image's files and directories.  Typically,
+     packagemanager(1) is invoked using gksu(1) as follows:
+
+     $ gksu dbus-launch /usr/bin/packagemanager

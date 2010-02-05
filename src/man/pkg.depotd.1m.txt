@@ -92,6 +92,12 @@ DESCRIPTION
                                 client before closing a connection.  The
                                 default value is 60.
 
+     pkg/sort_file_max_size
+                                (count) The maximum size of the indexer
+                                sort file. Used to limit the amount of
+                                RAM the depot uses for indexing, or
+                                increase it for speed.
+
      pkg/ssl_cert_file          (astring) The absolute pathname to a PEM-
                                 encoded Certificate file.  The default
                                 value is none.  This property must be used
@@ -185,12 +191,6 @@ OPTIONS
      --mirror                   Overrides pkg/mirror and sets it to be
                                 true.
 
-     --set-property             Used to specify initial repository
-                                configuration property values or to
-                                update existing ones; can be specified
-                                multiple times.  If used with --readonly
-                                this acts as a temporary override.
-
      --proxy-base url           Overrides pkg/proxy_base with the value
                                 given by url.  Ignored if empty value is
                                 provided.
@@ -200,8 +200,24 @@ OPTIONS
 
      --rebuild                  Any existing repository catalog will be
                                 destroyed and then recreated on startup.
-                                This option may not be combined with the
+                                Since the publication transaction
+                                history in the updatelog will be lost,
+                                this option resets the updatelog and
+                                associated syndication feeds.  The
+                                --add-content option should be used if
+                                an incremental update is desired.
+
+                                --rebuild may not be combined with the
                                 --mirror or --readonly options.
+
+     --set-property             Used to specify initial repository
+                                configuration property values or to
+                                update existing ones; can be specified
+                                multiple times.  If used with --readonly
+                                this acts as a temporary override.
+
+     --sort-file-max-size bytes Overrides pkg/sort_file_max_size with the
+                                value given by bytes.
 
      --ssl-cert-file source     Overrides pkg/ssl_cert_file with the
                                 value given by source.
@@ -350,11 +366,14 @@ ATTRIBUTES
      ____________________________________________________________
     |       ATTRIBUTE TYPE        |       ATTRIBUTE VALUE       |
     |_____________________________|_____________________________|
-    | Availability                |                             |
+    | Availability                | SUNWipkg                    |
+    |                             | pkg:/package/pkg            |
+    |_____________________________|_____________________________|
+    | Interface Stability         | None / Under Development    |
     |_____________________________|_____________________________|
 
 SEE ALSO
-     pkg(1), pkgsend(1), attributes(5), smf(5)
+     pkg(1), pkgsend(1), syslogd(1M), attributes(5), smf(5)
 
 NOTES
      The image packaging system is an under-development feature.
@@ -362,7 +381,7 @@ NOTES
      to change.  Development is hosted in the OpenSolaris community
      at:
 
-     http://opensolaris.org/os/project/pkg/
+     http://hub.opensolaris.org/bin/view/Project+pkg/
 
      The pkd.depotd service is managed by the service  management
      facility, smf(5), under the service identifier:
@@ -376,4 +395,3 @@ NOTES
      Changes to configuration require a restart of the depot server process
      so that they can be reflected in operations and output.  This must be
      done when the server is not operating in read-only or mirror mode.
-

@@ -5,7 +5,7 @@ NAME
      pkgdiff - compare pkg manifests
 
 SYNOPSIS
-     /usr/bin/pkgdiff [-i attribute] [-o attribute] ...  file1 file2 
+     /usr/bin/pkgdiff [-i attribute] [-o attribute] ...  file1 file2
 
 
 DESCRIPTION
@@ -19,25 +19,25 @@ DESCRIPTION
      - <complete action> if this action is in file1 but not in file2
 
      actionname keyvalue <variant values, if any>
-       - attribute1=value1         if this attribute,value is in file1 
+       - attribute1=value1         if this attribute,value is in file1
                                    but not in file2
        + attribute2=value2         if this attribute,value is in file2
                                    but not in file1
 
-     Note that actions with different variants but the same type & 
-     key attribute value (usually path) are treated as separate actions
-     for purposes of comparison, so actions changing attributes will
-     appear in their complete form rather than as attribute changes.
+     Note that actions with different variants but the same type and key
+     attribute value are treated as separate actions for purposes of
+     comparison, so actions changing attributes will appear in their
+     complete form rather than as attribute changes.
 
 OPTIONS
 
      -i attribute    Ignore this attribute if present during comparisons
-     	                  File hash values may be ignored with -i hash.  May not be used
-     	                  with -o option.
+                     File hash values may be ignored with -i hash.  May
+                     not be used with -o option.
 
-     -o attribute   Only report differences in this attribute.   May not be
-     	                  used with -i option.  Will elide any action changes that don't 
-                          affect this attribute on an action.
+     -o attribute    Only report differences in this attribute.   May
+                     not be used with -i option.  Will elide any action
+                     changes that don't affect this attribute on an action.
 
 EXIT STATUS
      The following exit values are returned:
@@ -55,7 +55,10 @@ ATTRIBUTES
      ____________________________________________________________
     |       ATTRIBUTE TYPE        |       ATTRIBUTE VALUE       |
     |_____________________________|_____________________________|
-    | Availability                |                             |
+    | Availability                | SUNWipkg                    |
+    |                             | pkg:/package/pkg            |
+    |_____________________________|_____________________________|
+    | Interface Stability         | None / Under Development    |
     |_____________________________|_____________________________|
 
 SEE ALSO
@@ -67,4 +70,4 @@ NOTES
      to change.  Development is hosted in the OpenSolaris community
      at
 
-     http://opensolaris.org/os/project/pkg/
+     http://hub.opensolaris.org/bin/view/Project+pkg/

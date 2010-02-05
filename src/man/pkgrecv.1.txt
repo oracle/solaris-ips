@@ -5,9 +5,8 @@ NAME
      pkgrecv - image packaging system content retrieval utility
 
 SYNOPSIS
-     /usr/bin/pkgrecv [-s src_uri] [-d (path|dest_uri)] [-k] [-m] [-n] [-r]
+     /usr/bin/pkgrecv [-s src_uri] [-d (path|dest_uri)] [-kr] [-m match]
          (fmri|pattern) ...
-
      /usr/bin/pkgrecv [-s src_uri] -n
 
 DESCRIPTION
@@ -45,8 +44,8 @@ OPTIONS
                              includes all matching versions, not just latest
 
      -n              List the most recent versions of the packages available
-                     from the specified repository and exit (all other
-                     options except -s will be ignored).
+                     from the specified repository and exit.  (All other
+                     options except -s will be ignored.)
 
      -r              Recursively retrieves all dependencies for the provided
                      list of packages.

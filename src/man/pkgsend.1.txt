@@ -9,14 +9,17 @@ SYNOPSIS
 
      /usr/bin/pkgsend create-repository
          --set-property <section.property>=<value> ...
+     /usr/bin/pkgsend refresh-index
+
      /usr/bin/pkgsend open [-en] pkg_fmri
      /usr/bin/pkgsend add action arguments
-     /usr/bin/pkgsend import [-T pattern] bundlefile ...
      /usr/bin/pkgsend include [-d basedir] ... [manifest] ...
-     /usr/bin/pkgsend publish [ -d basedir] ... [--no-index] 
+     /usr/bin/pkgsend publish [ -d basedir] ... [--no-index]
           [--fmri-in-manifest | pkg_fmri] [--no-catalog] [manifest] ...
      /usr/bin/pkgsend close [-A | --no-index] [--no-catalog]
-     /usr/bin/pkgsend refresh-index
+
+     /usr/bin/pkgsend generate [ -T pattern] bundlefile ...
+     /usr/bin/pkgsend import [-T pattern] bundlefile ...
 
 DESCRIPTION
      pkgsend allows the publication of new packages and new package
@@ -99,25 +102,26 @@ SUBCOMMANDS
           Close current transaction.  With -A, abandon the current
           transaction.  With --no-index, do not update the
           repository's search indices.  With --no-catalog, do not add
-          to catalog which for now is only effective w/ file:// scheme
+          to catalog which for now is only effective with file:// scheme
           repositories.  This improves performance when publishing
           many packages at once; the repository will need to be
           started with a --add-content flag (see pkg.depotd(1M) man
           page) to catalog and index the new content.
 
-     publish [ -d basedir] ... [--no-index] [--fmri-in-manifest | fmri] 
+     publish [ -d basedir] ... [--no-index] [--fmri-in-manifest | fmri]
           [--no-catalog] [manifest] ...
-             
-          Combines open, include and close in a single operation.  -d and --no-index
-	  options behave as described for include and close subcommands.  With
-          --fmri-in-manifest, use the fmri specified in the package manifest
-	  w/ a set action name of "pkg.fmri".  Otherwise the fmri must be 
-          specified on the command line.  With --no-catalog (which
-	  has effect only w/ file:// scheme repositories), do not update the
-          catalog with the new package.  This improves performance when 
-          publishing many packages at once; the repository will need to be started
-          with a --add-content flag (see pkg.depotd(1M) man page) to catalog and
-          index the new content.
+
+          Combines open, include and close in a single operation.  -d
+          and --no-index options behave as described for include and
+          close subcommands.  With --fmri-in-manifest, use the fmri
+          specified in the package manifest w/ a set action name of
+          "pkg.fmri".  Otherwise the fmri must be specified on the
+          command line.  With --no-catalog (which has effect only w/
+          file:// scheme repositories), do not update the catalog with
+          the new package.  This improves performance when publishing
+          many packages at once; the repository will need to be started
+          with a --add-content flag (see pkg.depotd(1M) man page) to
+          catalog and index the new content.
 
      generate [ -T pattern] bundlefile ...
           Read each given bundlefile (such as an SVR4 package, directory,
@@ -210,10 +214,11 @@ ACTIONS
 
      user username=<username> password=<password> uid=<uid> \
        group=<group> gcos-field=<gcos> home-dir=<homedir> \
-       login-shell=<login-shell> group-list=<groups> \
-       ftpuser={true|false} lastchng=<lastchange> min=<mindays> \
-       max=<maxdays> warn=<warndays> inactive=<inactivedays> \
-       expire=<expiredate> flag=<flag> [ property_list ]
+       login-shell=<login-shell> group-list=<group> \
+       [ group-list=<group> ... ] ftpuser={true|false} \
+       lastchng=<lastchange> min=<mindays> max=<maxdays> \
+       warn=<warndays> inactive=<inactivedays> expire=<expiredate> \
+       flag=<flag> [ property_list ]
           Deliver a user account, as defined in passwd(4), shadow(4),
           group(4), and ftpusers(4).  If the user ID, or uid, is
           omitted, then the first free user ID under 100 will be
@@ -222,8 +227,10 @@ ACTIONS
           condition can be ensured by having a group action deliver the
           group definition in the same package as the user action, or by
           having a depend action that expresses a requirement on a
-          package possessing a group action.  See pkg(5) for additional
-          details.
+          package possessing a group action.  The group-list property
+          delivers one group to the group(4) entry for the specified
+          user.  Multiple groups are delivered by multiple assignments
+          to group-list.  See pkg(5) for additional details.
 
 EXAMPLES
      Example 1:  Create a trivial package.
@@ -238,6 +245,15 @@ EXAMPLES
 
      $ pkgsend -s file:///tmp/example_repo create-repository \
          --set-property publisher.prefix=opensolaris.org
+
+     Example 3:  Create a package that delivers two groups and a user.
+
+     $ eval `pkgsend open groups-and-user@1.0-1`
+     $ pkgsend add group groupname=maingrp
+     $ pkgsend add group groupname=auxgrp
+     $ pkgsend add user ftpuser=false gcos-field="Example User" \
+          group=maingrp group-list=auxgrp password=NP username=exuser
+     $ pkgsend close
 
 EXIT STATUS
      The following exit values are returned:
