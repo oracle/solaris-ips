@@ -30,7 +30,6 @@ if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
-import difflib
 import os
 import pkg.catalog as catalog
 import pkg.fmri as fmri
@@ -38,7 +37,6 @@ import pkg.manifest as manifest
 import pkg.misc as misc
 import pkg.server.repository as repo
 import pkg.server.repositoryconfig as rc
-import re
 import shutil
 import sys
 import tempfile
@@ -140,13 +138,6 @@ class TestUtilMerge(pkg5unittest.ManyDepotTestCase):
                     self.amber20 + self.bronze10 + self.bronze20)
 
                 self.merge_dir = tempfile.mkdtemp(dir=self.test_root)
-
-        def assertEqualDiff(self, expected, actual):
-                self.assertEqual(expected, actual,
-                    "Actual output differed from expected output.\n" +
-                    "\n".join(difflib.unified_diff(
-                        expected.splitlines(), actual.splitlines(),
-                        "Expected output", "Actual output", lineterm="")))
 
         @staticmethod
         def get_repo(uri):

@@ -30,9 +30,9 @@ if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
-import unittest
 import os
 import tempfile
+import unittest
 
 class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -238,6 +238,35 @@ class TestPkgPublisherBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("publisher test1", exit=3)
                 self.pkg("publisher test1", su_wrap=True, exit=3)
 
+        def test_publisher_tsv_format(self):
+                """Ensure tsv formatted output is correct."""
+
+                durl = self.dc.get_depot_url()
+                self.image_create(durl)
+
+                self.pkg("set-publisher --no-refresh -O https://%s1 test1" %
+                    self.bogus_url)
+                self.pkg("set-publisher --no-refresh -O http://%s2 test2" %
+                    self.bogus_url)
+
+                base_string= ("test\ttrue\ttrue\ttrue\torigin\tonline\t"
+                    "http://localhost:12001/\n"
+                    "test1\ttrue\tfalse\ttrue\torigin\tonline\t"
+                    "https://test.invalid1/\n"
+                    "test2\ttrue\tfalse\ttrue\torigin\tonline\t"
+                    "http://test.invalid2/\n")
+                # With headers
+                self.pkg("publisher -F tsv")
+                expected = "PUBLISHER\tSTICKY\tPREFERRED\tENABLED" \
+                    "\tTYPE\tSTATUS\tURI\n" + base_string
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
+
+                # Without headers
+                self.pkg("publisher -HF tsv")
+                expected = base_string
+                output = self.reduceSpaces(self.output)
+                self.assertEqualDiff(expected, output)
 
 class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
         # Only start/stop the depot once (instead of for every test)

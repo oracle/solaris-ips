@@ -28,9 +28,7 @@ if __name__ == "__main__":
 	testutils.setup_environment("../../../proto")
 import pkg5unittest
 
-import difflib
 import os
-import re
 import shutil
 import unittest
 
@@ -60,17 +58,6 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                 self.make_misc_files(self.misc_files)
 
                 self.pkgsend_bulk(self.dc.get_depot_url(), self.bronze10)
-
-        def assertEqualDiff(self, expected, actual):
-                self.assertEqual(expected, actual,
-                    "Actual output differed from expected output.\n" +
-                    "\n".join(difflib.unified_diff(
-                        expected.splitlines(), actual.splitlines(),
-                        "Expected output", "Actual output", lineterm="")))
-
-        def reduceSpaces(self, string):
-                """Reduce runs of spaces down to a single space."""
-                return re.sub(" +", " ", string)
 
         def test_pkg_info_bad_fmri(self):
                 """Test bad frmi's with pkg info."""

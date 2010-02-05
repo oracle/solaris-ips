@@ -30,9 +30,7 @@ import pkg5unittest
 
 import unittest
 import os
-import re
 import shutil
-import difflib
 
 class TestPkgContentsBasics(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
@@ -67,17 +65,6 @@ class TestPkgContentsBasics(pkg5unittest.SingleDepotTestCase):
                 self.make_misc_files(self.misc_files)
 
                 self.pkgsend_bulk(self.dc.get_depot_url(), self.bronze10)
-
-        def assertEqualDiff(self, expected, actual):
-                self.assertEqual(expected, actual,
-                    "Actual output differed from expected output.\n" +
-                    "\n".join(difflib.unified_diff(
-                        expected.splitlines(), actual.splitlines(),
-                        "Expected output", "Actual output", lineterm="")))
-
-        def reduceSpaces(self, string):
-                """Reduce runs of spaces down to a single space."""
-                return re.sub(" +", " ", string)
 
 	def test_contents_bad_opts(self):
 

@@ -25,6 +25,7 @@
 
 import baseline
 import copy
+import difflib
 import errno
 import gettext
 import os
@@ -38,6 +39,7 @@ import time
 import unittest
 import platform
 import pwd
+import re
 import textwrap
 
 EmptyI = tuple()
@@ -478,6 +480,19 @@ class Pkg5TestCase(unittest.TestCase):
                 t_fh.close()
                 self.debugfilecreate(content, t_path)
                 return t_path
+
+        def reduceSpaces(self, string):
+                """Reduce runs of spaces down to a single space."""
+                return re.sub(" +", " ", string)
+        
+        def assertEqualDiff(self, expected, actual):
+                """Compare two strings."""
+                self.assertEqual(expected, actual,
+                    "Actual output differed from expected output.\n" +
+                    "\n".join(difflib.unified_diff(
+                        expected.splitlines(), actual.splitlines(),
+                        "Expected output", "Actual output", lineterm="")))
+        
 
 class _Pkg5TestResult(unittest._TextTestResult):
         baseline = None

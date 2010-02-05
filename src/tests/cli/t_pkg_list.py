@@ -31,9 +31,7 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import calendar
-import difflib
 import os
-import re
 import shutil
 import simplejson as json
 import unittest
@@ -101,17 +99,6 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 # Next, create the image and configure publishers.
                 self.image_create(durl1, prefix="test1")
                 self.pkg("set-publisher -O " + durl2 + " test2")
-
-        def reduceSpaces(self, string):
-                """Reduce runs of spaces down to a single space."""
-                return re.sub(" +", " ", string)
-
-        def assertEqualDiff(self, expected, actual):
-                self.assertEqual(expected, actual,
-                    "Actual output differed from expected output.\n" +
-                    "\n".join(difflib.unified_diff(
-                        expected.splitlines(), actual.splitlines(),
-                        "Expected output", "Actual output", lineterm="")))
 
         def test_pkg_list_cli_opts(self):
 

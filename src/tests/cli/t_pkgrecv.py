@@ -30,7 +30,6 @@ if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
-import difflib
 import os
 import pkg.catalog as catalog
 import pkg.fmri as fmri
@@ -38,7 +37,6 @@ import pkg.manifest as manifest
 import pkg.misc as misc
 import pkg.server.repository as repo
 import pkg.server.repositoryconfig as rc
-import re
 import shutil
 import tempfile
 import time
@@ -147,18 +145,6 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                         raise repo.RepositoryError(_("The specified "
                             "repository's configuration data is not "
                             "valid:\n%s") % e)
-
-        @staticmethod
-        def reduceSpaces(string):
-                """Reduce runs of spaces down to a single space."""
-                return re.sub(" +", " ", string)
-
-        def assertEqualDiff(self, expected, actual):
-                self.assertEqual(expected, actual,
-                    "Actual output differed from expected output.\n" +
-                    "\n".join(difflib.unified_diff(
-                        expected.splitlines(), actual.splitlines(),
-                        "Expected output", "Actual output", lineterm="")))
 
         def test_0_opts(self):
                 """Verify that various basic options work as expected and that
