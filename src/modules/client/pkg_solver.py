@@ -955,32 +955,65 @@ class PkgSolver(object):
                                 raise TypeError, "List of integers, not %s, expected" % c
 
         def __get_installed_unbound_inc_list(self, proposed_fmris, excludes=EmptyI):
-                """Return the list of incorporations that are installed and do not
-                have any other pkg depending on any specific version being installed,
-                along w/ the list of constrained fmris"""
-                pkgs = {}
+                """Return the list of incorporations that are to not to change 
+                during this install operation, and the lists of fmris they constrain."""
+
                 incorps = set()
                 versioned_dependents = set()
-                proposed_names = proposed_fmris.keys()
                 pkg_cons = {}
+                install_holds = {}
+
+                # determine installed packages that contain incorporation dependencies, 
+                # determine those packages that are depended on by explict version, 
+                # and those that have pkg.depend.install-hold values.
 
                 for f in self.__installed_fmris.values():
-                        pkgs[f.pkg_name] = f
-                        for d in self.__get_dependency_actions(f, excludes):
-                                fmri = pkg.fmri.PkgFmri(d.attrs["fmri"], "5.11")
-                                if d.attrs["type"] == "incorporate":
-                                        incorps.add(f.pkg_name)
-                                        pkg_cons.setdefault(f, []).append(fmri)
-                                if "@" in d.attrs["fmri"]:
-                                        versioned_dependents.add(fmri.pkg_name)
+                        for d in self.__catalog.get_entry_actions(f,
+                            [catalog.Catalog.DEPENDENCY],
+                            excludes=excludes):
+                                if d.name == "depend":
+                                        fmri = pkg.fmri.PkgFmri(d.attrs["fmri"], "5.11")
+                                        if d.attrs["type"] == "incorporate":
+                                                incorps.add(f.pkg_name)
+                                                pkg_cons.setdefault(f, []).append(fmri)
+                                        if "@" in d.attrs["fmri"]:
+                                                versioned_dependents.add(fmri.pkg_name)
+                                elif d.name == "set" and d.attrs["name"] == "pkg.depend.install-hold":
+                                        install_holds[f.pkg_name] = d.attrs["value"]
 
+                # find install holds that appear on command line and are thus relaxed
+                relaxed_holds = set([
+                        install_holds[name]
+                        for name in proposed_fmris
+                        if name in install_holds
+                        ])
+                # add any other install holds that are relaxed because they have values
+                # that start w/ the relaxed ones...
+                relaxed_holds |= set([
+                        hold
+                        for hold in install_holds.values()
+                        if [ r for r in relaxed_holds if hold.startswith(r + ".") ]
+                        ])
+                # versioned_dependents contains all the packages that are depended on
+                # w/ a explicit version.  We now modify this list so that it does not
+                # contain any packages w/ install_holds, unless those holds were 
+                # relaxed.  
+                versioned_dependents -= set([
+                    pkg_name
+                    for pkg_name, hold_value in install_holds.iteritems()
+                    if hold_value not in relaxed_holds
+                    ])
+                # Build the list of fmris that 1) contain incorp. dependencies
+                # 2) are not in the set of versioned_dependents and 3) do
+                # not explicitly appear on the install command line.
                 ret = [
-                    pkgs[f] 
-                    for f in incorps - versioned_dependents
-                    if f not in proposed_names
+                    self.__installed_fmris[pkg_name] 
+                    for pkg_name in incorps - versioned_dependents 
+                    if pkg_name not in proposed_fmris
                 ]
-
-                con_list = [
+                # For each incorporation above that will not change, return a list
+                # of the fmris that incorporation constrains
+                con_lists = [
                         [
                         i
                         for i in pkg_cons[inc]
@@ -988,7 +1021,7 @@ class PkgSolver(object):
                         for inc in ret
                         ]
 
-                return ret, con_list                
+                return ret, con_lists
 
         def __filter_publishers(self, pkg_name):
                 """Given a list of fmris for various versions of

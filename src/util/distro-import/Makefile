@@ -26,6 +26,9 @@
 
 #set default
 ARCH=i386
+ARCH_INITIAL_i386=x
+ARCH_INITIAL_sparc=s
+ARCH_INITIAL=$(ARCH_INITIAL_$(ARCH))
 NATIVE_ARCH:sh = uname -p
 PROTO_AREA=../../../proto/root_$(NATIVE_ARCH)
 
@@ -33,7 +36,9 @@ PROTO_AREA=../../../proto/root_$(NATIVE_ARCH)
 # Needs to point to filesystem on Solaris install dvd
 # replace as needed with a local solaris install image
 #
-WOS_PKGS=/net/netinstall.sfbay/export/nv/x/$(BUILDID)/Solaris_11/Product
+WOS_PKGS_BASE=/net/paradise.sfbay/export/integrate_dock/nv/nv$(ARCH_INITIAL)_wos_$(BUILDID)
+WOS_PKGS=$(WOS_PKGS_BASE)/$(ARCH)
+WOS_EXTRA_PKGS=$(WOS_PKGS_BASE)/all
 NONWOS_DOCK=nv_osoldev
 NONWOS_PKGS=/net/paradise.sfbay/export/integrate_dock/nv/$(NONWOS_DOCK)/all \
             /net/paradise.sfbay/export/integrate_dock/nv/$(NONWOS_DOCK)/$(ARCH)
@@ -51,6 +56,7 @@ EXTRA_ENTIRE_CONTENTS=
 ALL_PKGS=	../../../packages/$(ARCH)	\
 		$(TEST_PKGS)			\
 		$(NONWOS_PKGS)			\
+		$(WOS_EXTRA_PKGS)		\
 		$(WOS_PKGS) .
 
 POUND_SIGN:sh=				echo \\043

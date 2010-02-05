@@ -128,6 +128,7 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                     (f, f, f, f, f))
 
                 if f.pkg_name == "zpkg":
+                        lines += "set name=pkg.depend.install-hold value=test\n"
                         lines += "set name=pkg.renamed value=true\n"
                 else:
                         lines += "set name=pkg.obsolete value=true\n"
@@ -144,6 +145,8 @@ class TestCatalog(pkg5unittest.Pkg5TestCase):
                         ]
 
                         if f.pkg_name == "zpkg":
+                                expected.append("set name=pkg.depend.install-hold "
+                                    "value=test")
                                 expected.append("set name=pkg.renamed "
                                     "value=true")
                         else:

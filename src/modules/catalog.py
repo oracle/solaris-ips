@@ -1519,6 +1519,7 @@ class Catalog(object):
                         if (a.name == "depend" or \
                             attr_name.startswith("variant") or \
                             attr_name.startswith("facet") or \
+                            attr_name.startswith("pkg.depend.") or \
                             attr_name in ("pkg.obsolete",
                                 "pkg.renamed")):
                                 if Catalog.DEPENDENCY in info_needed:
@@ -1858,6 +1859,7 @@ class Catalog(object):
                                 name = act.attrs["name"]
                                 if name.startswith("variant") or \
                                     name.startswith("facet") or \
+                                    name.startswith("pkg.depend.") or \
                                     name in ("pkg.obsolete", "pkg.renamed"):
                                         # variant and facet data goes to the
                                         # dependency catalog part.

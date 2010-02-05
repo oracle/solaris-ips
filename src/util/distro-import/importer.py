@@ -1523,6 +1523,8 @@ def main_func():
 
                 # Add packages that aren't renamed or obsoleted
                 or_pkgs = or_pkgs_per_con.get(cons, {})
+                curpkg.actions.append(actions.fromstr(
+                    "set name=pkg.depend.install-hold value=core-os.%s" % cons))
 
                 for depend in cons_dict[cons]:
                         if depend not in or_pkgs:
@@ -1556,6 +1558,8 @@ def main_func():
                     "system update and correct package selection depend on the " \
                     "presence of this incorporation.  Removing this package will " \
                     "result in an unsupported system."
+                curpkg.actions.append(actions.fromstr(
+                    "set name=pkg.depend.install-hold value=core-os"))
 
                 for incorp in consolidation_incorporations:
                         action = actions.fromstr("depend fmri=%s type=incorporate" % incorp)

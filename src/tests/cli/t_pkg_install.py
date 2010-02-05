@@ -2316,29 +2316,51 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
 
         leaf_template = """
             open pkg%s%s@%s,5.11-0
-            add depend type=require fmri=pkg:/%s_incorp
+            add depend type=require fmri=pkg:/%s_incorp%s
             close
         """
+        install_hold = "add set name=pkg.depend.install-hold value=test"
+
         leaf_expansion = [
-                ("A","_0", "1.0", "A"),
-                ("A","_1", "1.0", "A"),
-                ("A","_2", "1.0", "A"),
-                ("A","_3", "1.0", "A"),
+                ("A","_0", "1.0", "A", ""),
+                ("A","_1", "1.0", "A", ""),
+                ("A","_2", "1.0", "A", ""),
+                ("A","_3", "1.0", "A", ""),
 
-                ("B","_0", "1.0", "B"),
-                ("B","_1", "1.0", "B"),
-                ("B","_2", "1.0", "B"),
-                ("B","_3", "1.0", "B"),
+                ("B","_0", "1.0", "B", ""),
+                ("B","_1", "1.0", "B", ""),
+                ("B","_2", "1.0", "B", ""),
+                ("B","_3", "1.0", "B", ""),
 
-                ("A","_0", "1.1", "A"),
-                ("A","_1", "1.1", "A"),
-                ("A","_2", "1.1", "A"),
-                ("A","_3", "1.1", "A"),
+                ("A","_0", "1.1", "A", "@1.1"),
+                ("A","_1", "1.1", "A", "@1.1"),
+                ("A","_2", "1.1", "A", "@1.1"),
+                ("A","_3", "1.1", "A", "@1.1"),
 
-                ("B","_0", "1.1", "B"),
-                ("B","_1", "1.1", "B"),
-                ("B","_2", "1.1", "B"),
-                ("B","_3", "1.1", "B")
+                ("B","_0", "1.1", "B", "@1.1"),
+                ("B","_1", "1.1", "B", "@1.1"),
+                ("B","_2", "1.1", "B", "@1.1"),
+                ("B","_3", "1.1", "B", "@1.1"),
+
+                ("A","_0", "1.2", "A", "@1.2"),
+                ("A","_1", "1.2", "A", "@1.2"),
+                ("A","_2", "1.2", "A", "@1.2"),
+                ("A","_3", "1.2", "A", "@1.2"),
+
+                ("B","_0", "1.2", "B", "@1.2"),
+                ("B","_1", "1.2", "B", "@1.2"),
+                ("B","_2", "1.2", "B", "@1.2"),
+                ("B","_3", "1.2", "B", "@1.2"),
+
+                ("A","_0", "1.3", "A", ""),
+                ("A","_1", "1.3", "A", ""),
+                ("A","_2", "1.3", "A", ""),
+                ("A","_3", "1.3", "A", ""),
+
+                ("B","_0", "1.3", "B", ""),
+                ("B","_1", "1.3", "B", ""),
+                ("B","_2", "1.3", "B", ""),
+                ("B","_3", "1.3", "B", "")
                 ]
 
         incorps = [ """
@@ -2365,6 +2387,7 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
             add depend type=incorporate fmri=pkg:/pkgA_1@1.1
             add depend type=incorporate fmri=pkg:/pkgA_2@1.1
             add depend type=incorporate fmri=pkg:/pkgA_3@1.1
+            add set name=pkg.depend.install-hold value=test
             close
         """, 
 
@@ -2374,6 +2397,47 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
             add depend type=incorporate fmri=pkg:/pkgB_1@1.1
             add depend type=incorporate fmri=pkg:/pkgB_2@1.1
             add depend type=incorporate fmri=pkg:/pkgB_3@1.1
+            add set name=pkg.depend.install-hold value=test
+            close
+        """, 
+
+        """
+            open A_incorp@1.2,5.11-0
+            add depend type=incorporate fmri=pkg:/pkgA_0@1.2
+            add depend type=incorporate fmri=pkg:/pkgA_1@1.2
+            add depend type=incorporate fmri=pkg:/pkgA_2@1.2
+            add depend type=incorporate fmri=pkg:/pkgA_3@1.2
+            add set name=pkg.depend.install-hold value=test.A
+            close
+        """, 
+
+        """
+            open B_incorp@1.2,5.11-0
+            add depend type=incorporate fmri=pkg:/pkgB_0@1.2
+            add depend type=incorporate fmri=pkg:/pkgB_1@1.2
+            add depend type=incorporate fmri=pkg:/pkgB_2@1.2
+            add depend type=incorporate fmri=pkg:/pkgB_3@1.2
+            add set name=pkg.depend.install-hold value=test.B
+            close
+        """, 
+
+        """
+            open A_incorp@1.3,5.11-0
+            add depend type=incorporate fmri=pkg:/pkgA_0@1.3
+            add depend type=incorporate fmri=pkg:/pkgA_1@1.3
+            add depend type=incorporate fmri=pkg:/pkgA_2@1.3
+            add depend type=incorporate fmri=pkg:/pkgA_3@1.3
+            add set name=pkg.depend.install-hold value=test.A
+            close
+        """, 
+
+        """
+            open B_incorp@1.3,5.11-0
+            add depend type=incorporate fmri=pkg:/pkgB_0@1.3
+            add depend type=incorporate fmri=pkg:/pkgB_1@1.3
+            add depend type=incorporate fmri=pkg:/pkgB_2@1.3
+            add depend type=incorporate fmri=pkg:/pkgB_3@1.3
+            add set name=pkg.depend.install-hold value=test.B
             close
         """, 
 
@@ -2381,6 +2445,7 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
             open incorp@1.0,5.11-0
             add depend type=incorporate fmri=pkg:/A_incorp@1.0
             add depend type=incorporate fmri=pkg:/B_incorp@1.0
+            add set name=pkg.depend.install-hold value=test
             close
         """,
 
@@ -2388,8 +2453,25 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
             open incorp@1.1,5.11-0
             add depend type=incorporate fmri=pkg:/A_incorp@1.1
             add depend type=incorporate fmri=pkg:/B_incorp@1.1
+            add set name=pkg.depend.install-hold value=test
             close
-        """]
+        """,
+
+        """
+            open incorp@1.2,5.11-0
+            add depend type=incorporate fmri=pkg:/A_incorp@1.2
+            add depend type=incorporate fmri=pkg:/B_incorp@1.2
+            add set name=pkg.depend.install-hold value=test
+            close
+        """, 
+        """
+            open incorp@1.3,5.11-0
+            add depend type=incorporate fmri=pkg:/A_incorp@1.3
+            add depend type=exclude fmri=pkg:/pkgB_0
+            add set name=pkg.depend.install-hold value=test
+            close
+        """
+        ]
                     
         bug_7394_incorp = """
             open bug_7394_incorp@1.0,5.11-0
@@ -2503,7 +2585,7 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 self.pkg("install -v pkgA_0@1.0 pkgA_1")
                 self.pkg("list")
                 self.pkg("verify pkgA_0@1.0 pkgA_1@1.0 A_incorp@1.0")
-                self.pkg("image-update -v")
+                self.pkg("install A_incorp@1.1")
                 self.pkg("list pkgA_0@1.1 pkgA_1@1.1 A_incorp@1.1")
                 self.pkg("uninstall '*'")
                 # try nested incorporations
@@ -2514,12 +2596,39 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 self.pkg("install -v A_incorp@1.1", exit=1) # fixed by incorp@1.0
                 # try image update
                 self.pkg("image-update -v")
-                self.pkg("list incorp@1.1 pkgA_0@1.1 pkgB_0@1.1 A_incorp@1.1 B_incorp@1.1")
+                self.pkg("list incorp@1.2")
+                self.pkg("list pkgA_0@1.2")
+                self.pkg("list pkgB_0@1.2")
+                self.pkg("list A_incorp@1.2")
+                self.pkg("list B_incorp@1.2")
                 self.pkg("uninstall '*'")
                 # what happens when incorporation specified
                 # a package that isn't in the catalog
                 self.pkg("install bug_7394_incorp")
                 self.pkg("install pkg1", exit=1)
+                self.pkg("uninstall '*'")
+                # test pkg.depend.install-hold feature
+                self.pkg("install -v A_incorp@1.1  pkgA_1")
+                self.pkg("list pkgA_1@1.1")
+                self.pkg("list A_incorp@1.1")
+                # next attempt will fail because incorporations prevent motion even though
+                # explicit dependency exists from pkg to incorporation.
+                self.pkg("install pkgA_1@1.2", exit=1)
+                # test to see if we could install both; presence of incorp causes relaxation
+                # of pkg.depend.install-hold
+                self.pkg("install -nv A_incorp@1.2 pkgA_1@1.2")
+                # this attempt also succeeds because pkg.depend.install-hold is relaxed 
+                # since A_incorp is on command line
+                self.pkg("install A_incorp@1.2")
+                self.pkg("list pkgA_1@1.2")
+                self.pkg("list A_incorp@1.2")
+                # now demonstrate w/ version 1.2 subincorps that master incorp
+                # prevents upgrade since pkg.depend.install-hold of master != other incorps
+                self.pkg("install incorp@1.2")
+                self.pkg("install A_incorp@1.3", exit=1)
+                self.pkg("install incorp@1.3")
+                self.pkg("list pkgA_1@1.3")
+                self.pkg("list A_incorp@1.3")
 
 class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
