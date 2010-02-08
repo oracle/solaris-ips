@@ -31,8 +31,10 @@ interface with the pkg(5) system.
 Refer to pkg.api_common for additional core class documentation."""
 
 import copy
+import errno
 import fnmatch
 import os
+import shutil
 import sys
 import threading
 import urllib
@@ -42,6 +44,7 @@ import pkg.client.api_errors as api_errors
 import pkg.client.bootenv as bootenv
 import pkg.client.history as history
 import pkg.client.image as image
+import pkg.client.imagetypes as imgtypes
 import pkg.client.indexer as indexer
 import pkg.client.publisher as publisher
 import pkg.client.query_parser as query_p
@@ -57,8 +60,14 @@ from pkg.api_common import (PackageInfo, LicenseInfo, PackageCategory,
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 31
+CURRENT_API_VERSION = 32
 CURRENT_P5I_VERSION = 1
+
+# Image type constants.
+IMG_TYPE_NONE = imgtypes.IMG_NONE # No image.
+IMG_TYPE_ENTIRE = imgtypes.IMG_ENTIRE # Full image ('/').
+IMG_TYPE_PARTIAL = imgtypes.IMG_PARTIAL  # Not yet implemented.
+IMG_TYPE_USER = imgtypes.IMG_USER # Not '/'; some other location.
 
 logger = global_settings.logger
 
@@ -94,23 +103,26 @@ class ImageInterface(object):
         def __init__(self, img_path, version_id, progresstracker,
             cancel_state_callable, pkg_client_name):
                 """Constructs an ImageInterface object.
-                
+
                 'img_path' is the absolute path to an existing image.
-                
+
                 'version_id' indicates the version of the api the client is
                 expecting to use.
 
                 'progresstracker' is the ProgressTracker object the client wants
                 the api to use for UI progress callbacks.
 
-                'cancel_state_callable' is a function which the client wishes to
-                have called each time whether the operation can be canceled
+                'cancel_state_callable' is an optional function reference that
+                will be called if the cancellable status of an operation
                 changes.
+
+                'pkg_client_name' is a string containing the name of the client,
+                such as "pkg" or "packagemanager".
 
                 This function can raise VersionException and
                 ImageNotFoundException."""
 
-                compatible_versions = set([30, CURRENT_API_VERSION])
+                compatible_versions = set([CURRENT_API_VERSION])
 
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
@@ -170,6 +182,18 @@ class ImageInterface(object):
                 """Private; public access to this property will be removed at
                 a later date.  Do not use."""
                 return self.__img
+
+        @property
+        def img_type(self):
+                """Returns the IMG_TYPE constant for the image's type."""
+                if not self.__img:
+                        return None
+                return self.__img.image_type(self.__img.root)
+
+        @property
+        def is_zone(self):
+                """A boolean value indicating whether the image is a zone."""
+                return self.__img.is_zone()
 
         @property
         def root(self):
@@ -592,10 +616,8 @@ class ImageInterface(object):
                 called."""
 
                 self.__acquire_activity_lock()
-                self.__cancel_lock.acquire()
-                self.__set_can_be_canceled(False)
-                self.__cancel_lock.release()
                 try:
+                        self.__disable_cancel()
                         self.__img.lock()
                 except:
                         self.__activity_lock.release()
@@ -798,20 +820,20 @@ class ImageInterface(object):
                 work while the rest of the API is put into place."""
 
                 self.__acquire_activity_lock()
-                self.__disable_cancel()
                 try:
+                        self.__disable_cancel()
                         self.__img.lock()
-                except:
-                        self.__activity_lock.release()
+                        try:
+                                self.__refresh(full_refresh=full_refresh,
+                                    pubs=pubs, immediate=immediate)
+                                return self.__img
+                        finally:
+                                self.__img.unlock()
+                                self.__img.cleanup_downloads()
+                except api_errors.CanceledException:
+                        self.__cancel_done()
                         raise
-
-                try:
-                        self.__refresh(full_refresh=full_refresh, pubs=pubs,
-                            immediate=immediate)
-                        return self.__img
                 finally:
-                        self.__img.unlock()
-                        self.__img.cleanup_downloads()
                         self.__activity_lock.release()
 
         def __refresh(self, full_refresh=False, pubs=None, immediate=False):
@@ -1844,7 +1866,7 @@ class ImageInterface(object):
                 self.__enable_cancel()
                 try:
                         for r in self._remote_search(query_str_and_args_lst,
-                            servers): 
+                            servers):
                                 yield r
                 except GeneratorExit:
                         return
@@ -2069,6 +2091,45 @@ class ImageInterface(object):
                         return copy.copy(pub)
                 return pub
 
+        def get_publisherdata(self, pub=None, repo=None):
+                """Attempts to retrieve publisher configuration information from
+                the specified publisher's repository or the provided repository.
+                If successful, it will either return an empty list (in the case
+                that the repository supports the operation, but doesn't offer
+                configuration information) or a list of Publisher objects.
+                If this operation is not supported by the publisher or the
+                specified repository, an UnsupportedRepositoryOperation
+                exception will be raised.
+
+                'pub' is an optional Publisher object.
+
+                'repo' is an optional RepositoryURI object.
+
+                Either 'pub' or 'repo' must be provided."""
+
+                assert (pub or repo) and not (pub and repo)
+
+                # Transport accepts either type of object, but a distinction is
+                # made in the client API for clarity.
+                pub = max(pub, repo)
+
+                self.__activity_lock.acquire()
+                try:
+                        self.__enable_cancel()
+                        data = self.__img.transport.get_publisherdata(pub,
+                            ccancel=self.__check_cancelation)
+                        self.__disable_cancel()
+                        return data
+                except api_errors.CanceledException:
+                        self.__cancel_done()
+                        raise
+                except:
+                        self.__cancel_cleanup_exception()
+                        raise
+                finally:
+                        self.__img.cleanup_downloads()
+                        self.__activity_lock.release()
+
         def get_publishers(self, duplicate=False):
                 """Returns a list of the publisher objects for the current
                 image.
@@ -2145,11 +2206,14 @@ class ImageInterface(object):
                 made to retrieve publisher metadata."""
 
                 self.__acquire_activity_lock()
-                self.__disable_cancel()
                 try:
+                        self.__disable_cancel()
                         with self.__img.locked_op("update-publisher"):
                                 return self.__update_publisher(pub,
                                     refresh_allowed=refresh_allowed)
+                except api_errors.CanceledException, e:
+                        self.__cancel_done()
+                        raise
                 finally:
                         self.__img.cleanup_downloads()
                         self.__activity_lock.release()
@@ -2162,6 +2226,19 @@ class ImageInterface(object):
                     pub.prefix == self.__img.get_preferred_publisher():
                         raise api_errors.SetPreferredPublisherDisabled(
                             pub.prefix)
+
+                def origins_changed(oldr, newr):
+                        old_origins = set([
+                            (o.uri, o.ssl_cert,
+                                o.ssl_key)
+                            for o in oldr.origins
+                        ])
+                        new_origins = set([
+                            (o.uri, o.ssl_cert,
+                                o.ssl_key)
+                            for o in newr.origins
+                        ])
+                        return new_origins - old_origins
 
                 def need_refresh(oldo, newo):
                         if newo.disabled:
@@ -2179,20 +2256,12 @@ class ImageInterface(object):
                                 # then some have been added or removed.
                                 return True
 
-                        matched = 0
-                        for oldr in oldo.repositories:
-                                for newr in newo.repositories:
-                                        if newr._source_object_id == id(oldr):
-                                                matched += 1
-                                                if oldr.origins != newr.origins:
-                                                        return True
-
-                        if matched != len(newo.repositories):
-                                # If not all of the repositories match up, then
-                                # one has been added or removed.
+                        oldr = oldo.selected_repository
+                        newr = newo.selected_repository
+                        if newr._source_object_id != id(oldr):
+                                # Selected repository has changed.
                                 return True
-
-                        return False
+                        return len(origins_changed(oldr, newr)) != 0
 
                 refresh_catalog = False
                 disable = False
@@ -2266,6 +2335,9 @@ class ImageInterface(object):
                 if not repo.origins:
                         raise api_errors.PublisherOriginRequired(pub.prefix)
 
+                validate = origins_changed(orig_pub[-1].selected_repository,
+                    pub.selected_repository)
+
                 try:
                         if disable:
                                 # Remove the publisher's metadata (such as
@@ -2277,36 +2349,46 @@ class ImageInterface(object):
                         elif not pub.disabled and not refresh_catalog:
                                 refresh_catalog = pub.needs_refresh
 
-                        if refresh_catalog:
-                                if refresh_allowed:
-                                        # One of the publisher's repository
-                                        # origins may have changed, so the
-                                        # publisher needs to be revalidated.
+                        if refresh_catalog and refresh_allowed:
+                                # One of the publisher's repository origins may
+                                # have changed, so the publisher needs to be
+                                # revalidated.
+
+                                if validate:
                                         self.__img.transport.valid_publisher_test(
                                             pub)
-                                        self.__refresh(pubs=[pub],
-                                            immediate=True)
-                                else:
-                                        # Something has changed (such as a
-                                        # repository origin) for the publisher,
-                                        # so a refresh should occur, but isn't
-                                        # currently allowed.  As such, clear the
-                                        # last_refreshed time so that the next
-                                        # time the client checks to see if a
-                                        # refresh is needed and is allowed, one
-                                        # will be performed.
-                                        pub.last_refreshed = None
+
+                                # Validate all new origins against publisher
+                                # configuration.
+                                for uri, ssl_cert, ssl_key in validate:
+                                        repo = publisher.RepositoryURI(uri,
+                                            ssl_cert=ssl_cert, ssl_key=ssl_key)
+                                        pub.validate_config(repo)
+
+                                self.__refresh(pubs=[pub], immediate=True)
+                        elif refresh_catalog:
+                                # Something has changed (such as a repository
+                                # origin) for the publisher, so a refresh should
+                                # occur, but isn't currently allowed.  As such,
+                                # clear the last_refreshed time so that the next
+                                # time the client checks to see if a refresh is
+                                # needed and is allowed, one will be performed.
+                                pub.last_refreshed = None
+                except Exception, e:
+                        # If any of the above fails, the original publisher
+                        # information needs to be restored so that state is
+                        # consistent.
+                        cleanup()
+                        raise
                 except:
                         # If any of the above fails, the original publisher
                         # information needs to be restored so that state is
                         # consistent.
                         cleanup()
-                        self.__img.cleanup_downloads()
                         raise
 
                 # Successful; so save configuration.
                 self.__img.save_config()
-                self.__img.cleanup_downloads()
 
         def log_operation_end(self, error=None, result=None):
                 """Marks the end of an operation to be recorded in image
@@ -2330,14 +2412,16 @@ class ImageInterface(object):
                 history."""
                 self.__img.history.log_operation_start(name)
 
-        def parse_p5i(self, fileobj=None, location=None):
-                """Reads the pkg(5) publisher json formatted data at 'location'
+        def parse_p5i(self, data=None, fileobj=None, location=None):
+                """Reads the pkg(5) publisher JSON formatted data at 'location'
                 or from the provided file-like object 'fileobj' and returns a
                 list of tuples of the format (publisher object, pkg_names).
                 pkg_names is a list of strings representing package names or
                 FMRIs.  If any pkg_names not specific to a publisher were
                 provided, the last tuple returned will be of the format (None,
                 pkg_names).
+
+                'data' is an optional string containing the p5i data.
 
                 'fileobj' is an optional file-like object that must support a
                 'read' method for retrieving data.
@@ -2347,13 +2431,13 @@ class ImageInterface(object):
                 If it is a URI string, supported protocol schemes are 'file',
                 'ftp', 'http', and 'https'.
 
-                'fileobj' or 'location' must be provided."""
+                'data' or 'fileobj' or 'location' must be provided."""
 
-                return p5i.parse(fileobj=fileobj, location=location)
+                return p5i.parse(data=data, fileobj=fileobj, location=location)
 
         def write_p5i(self, fileobj, pkg_names=None, pubs=None):
                 """Writes the publisher, repository, and provided package names
-                to the provided file-like object 'fileobj' in json p5i format.
+                to the provided file-like object 'fileobj' in JSON p5i format.
 
                 'fileobj' is only required to have a 'write' method that accepts
                 data to be written as a parameter.
@@ -2481,3 +2565,221 @@ class PlanDescription(object):
 
                         if pfmri:
                                 break
+
+def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
+    cancel_state_callable=None, facets=misc.EmptyDict, force=False,
+    mirrors=misc.EmptyI, origins=misc.EmptyI, prefix=None, refresh_allowed=True,
+    repo_uri=None, ssl_cert=None, ssl_key=None, user_provided_dir=False,
+    progtrack=None, variants=misc.EmptyDict):
+        """Creates an image at the specified location.
+
+        'pkg_client_name' is a string containing the name of the client,
+        such as "pkg" or "packagemanager".
+
+        'version_id' indicates the version of the api the client is
+        expecting to use.
+
+        'root' is the absolute path of the directory where the image will
+        be created.  If it does not exist, it will be created.
+
+        'imgtype' is an IMG_TYPE constant representing the type of image
+        to create.
+
+        'is_zone' is a boolean value indicating whether the image being
+        created is for a zone.
+
+        'cancel_state_callable' is an optional function reference that will
+        be called if the cancellable status of an operation changes.
+
+        'facets' is a dictionary of facet names and values to set during
+        the image creation process.
+
+        'force' is an optional boolean value indicating that if an image
+        already exists at the specified 'root' that it should be overwritten.
+
+        'mirrors' is an optional list of URI strings that should be added to
+        all publishers configured during image creation as mirrors.
+
+        'origins' is an optional list of URI strings that should be added to
+        all publishers configured during image creation as origins.
+
+        'prefix' is an optional publisher prefix to configure as a publisher
+        for the new image if origins is provided, or to restrict which publisher
+        will be configured if 'repo_uri' is provided.  If this prefix does not
+        match the publisher configuration retrieved from the repository, an
+        UnknownRepositoryPublishers exception will be raised.  If not provided,
+        'refresh_allowed' cannot be False.
+
+        'refresh_allowed' is an optional boolean value indicating whether
+        publisher configuration data and metadata can be retrieved during
+        image creation.  If False, 'repo_uri' cannot be specified and
+        a 'prefix' must be provided.
+
+        'repo_uri' is an optional URI string of a package repository to
+        retrieve publisher configuration information from.  If the target
+        repository supports this, all publishers found will be added to the
+        image and any origins or mirrors will be added to all of those
+        publishers.  If the target repository does not support this, and a
+        prefix was not specified, an UnsupportedRepositoryOperation exception
+        will be raised.  If the target repository supports the operation, but
+        does not provide complete configuration information, a
+        RepoPubConfigUnavailable exception will be raised.
+
+        'ssl_cert' is an optional pathname of an SSL Certificate file to
+        configure all publishers with and to use when retrieving publisher
+        configuration information.  If provided, 'ssl_key' must also be
+        provided.  The certificate file must be pem-encoded.
+
+        'ssl_key' is an optional pathname of an SSL Key file to configure all
+        publishers with and to use when retrieving publisher configuration
+        information.  If provided, 'ssl_cert' must also be provided.  The
+        key file must be pem-encoded.
+
+        'user_provided_dir' is an optional boolean value indicating that the
+        provided 'root' was user-supplied and that additional error handling
+        should be enforced.  This primarily affects cases where a relative
+        root has been provided or the root was based on the current working
+        directory.
+
+        'progtrack' is an optional ProgressTracker object.
+
+        'variants' is a dictionary of variant names and values to set during
+        the image creation process.
+
+        Callers must provide one of the following when calling this function:
+         * a 'prefix' and 'repo_uri' (origins and mirrors are optional)
+         * no 'prefix' and a 'repo_uri'  (origins and mirrors are optional)
+         * a 'prefix' and 'origins'
+        """
+
+        # Caller must provide a prefix and repository, or no prefix and a
+        # repository, or a prefix and origins.
+        assert (prefix and repo_uri) or (not prefix and repo_uri) or (prefix and
+            origins)
+
+        # If prefix isn't provided, and refresh isn't allowed, then auto-config
+        # cannot be done.
+        assert not repo_uri or (repo_uri and refresh_allowed)
+
+        destroy_root = False
+        try:
+                destroy_root = not os.path.exists(root)
+        except EnvironmentError, e:
+                if e.errno == errno.EACCES:
+                        raise api_errors.PermissionsException(
+                            e.filename)
+                raise
+
+        # The image object must be created first since transport may be
+        # needed to retrieve publisher configuration information.
+        img = image.Image(root, force=force, imgtype=imgtype,
+            progtrack=progtrack, should_exist=False,
+            user_provided_dir=user_provided_dir)
+
+        api_inst = ImageInterface(img, version_id,
+            progtrack, cancel_state_callable, pkg_client_name)
+
+        try:
+                if repo_uri:
+                        # Assume auto configuration.
+                        repo = publisher.RepositoryURI(repo_uri,
+                            ssl_cert=ssl_cert, ssl_key=ssl_key)
+
+                        pubs = None
+                        try:
+                                pubs = api_inst.get_publisherdata(repo=repo)
+                        except api_errors.UnsupportedRepositoryOperation:
+                                if not prefix:
+                                        raise api_errors.RepoPubConfigUnavailable(
+                                            location=repo_uri)
+                                # For a v0 repo where a prefix was specified,
+                                # fallback to manual configuration.
+                                if not origins:
+                                        origins = [repo_uri]
+                                repo_uri = None
+
+                        if not prefix and not pubs:
+                                # Empty repository configuration.
+                                raise api_errors.RepoPubConfigUnavailable(
+                                    location=repo_uri)
+
+                        if repo_uri:
+                                for p in pubs:
+                                        if p.selected_repository:
+                                                continue
+                                        # Incomplete repository configuration.
+                                        raise api_errors.RepoPubConfigUnavailable(
+                                            location=repo_uri)
+
+                if prefix and not repo_uri:
+                        # Auto-configuration not possible or not requested.
+                        repo = publisher.Repository()
+                        for o in origins:
+                                repo.add_origin(o)
+                        for m in mirrors:
+                                repo.add_mirror(m)
+                        pub = publisher.Publisher(prefix,
+                            repositories=[repo])
+                        pubs = [pub]
+
+                if prefix and prefix not in pubs:
+                        # If publisher prefix requested isn't found in the list
+                        # of publishers at this point, then configuration isn't
+                        # possible.
+                        known = [p.prefix for p in pubs]
+                        raise api_errors.UnknownRepositoryPublishers(
+                            known=known, unknown=[prefix], location=repo_uri)
+                elif prefix:
+                        # Filter out any publishers that weren't requested.
+                        pubs = [
+                            p for p in pubs
+                            if p.prefix == prefix
+                        ]
+
+                # Add additional origins and mirrors that weren't found in the
+                # publisher configuration if provided.
+                for p in pubs:
+                        pr = p.selected_repository
+                        for o in origins:
+                                if not pr.has_origin(o):
+                                        pr.add_origin(o)
+                        for m in mirrors:
+                                if not pr.has_mirror(m):
+                                        pr.add_mirror(m)
+
+                # Set provided SSL Cert/Key for all configured publishers.
+                for p in pubs:
+                        repo = p.selected_repository
+                        for o in repo.origins:
+                                o.ssl_cert = ssl_cert
+                                o.ssl_key = ssl_key
+                        for m in repo.mirrors:
+                                m.ssl_cert = ssl_cert
+                                m.ssl_key = ssl_key
+
+                img.create(pubs, facets=facets, is_zone=is_zone,
+                    progtrack=progtrack, refresh_allowed=refresh_allowed,
+                    variants=variants)
+        except EnvironmentError, e:
+                if e.errno == errno.EACCES:
+                        raise api_errors.PermissionsException(
+                            e.filename)
+                if e.errno == errno.EROFS:
+                        raise api_errors.ReadOnlyFileSystemException(
+                            e.filename)
+                raise
+        except:
+                # Ensure a defunct image isn't left behind.
+                img.destroy()
+                if destroy_root and \
+                    os.path.abspath(root) != "/" and \
+                    os.path.exists(root):
+                        # Root didn't exist before create and isn't '/',
+                        # so remove it.
+                        shutil.rmtree(root, True)
+                raise
+
+        img.cleanup_downloads()
+
+        return api_inst
+

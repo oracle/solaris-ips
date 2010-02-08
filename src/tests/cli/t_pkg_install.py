@@ -2704,14 +2704,18 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 """ Start four depots.
                     depot 1 gets foo and moo, depot 2 gets foo and bar,
                     depot 3 is empty, depot 4 gets upgrade_np@1.1
+                    depot 5 gets corge10, depot6 is empty
+                    depot7 is a copy of test1's repository for test3
                     depot1 is mapped to publisher test1 (preferred)
                     depot2 is mapped to publisher test2
                     depot3 is not mapped during setUp
-                    depot4 is not mapped during setUp"""
+                    depot4 is not mapped during setUp
+                    depot5 is not mapped during setUp
+                    depot6 is not mapped during setUp"""
 
-                # Two depots are intentionally started for test2.
+                # Two depots are intentionally started for some publishers.
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2",
-                    "test3", "test2", "test4"])
+                    "test3", "test2", "test4", "test1", "test3"])
 
                 durl1 = self.dcs[1].get_depot_url()
                 self.pkgsend_bulk(durl1, self.foo10 + self.moo10 + \
@@ -2729,6 +2733,15 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
 
                 durl5 = self.dcs[5].get_depot_url()
                 self.pkgsend_bulk(durl5, self.corge10)
+
+                # Copy contents of test1's repo to a repo for test3.
+                self.dcs[7].stop()
+                d1dir = self.dcs[1].get_repodir()
+                d2dir = self.dcs[7].get_repodir()
+                self.copy_repository(d1dir, "test1", d2dir, "test3")
+                self.dcs[7].set_rebuild()
+                self.dcs[7].start()
+                self.dcs[7].set_norebuild()
 
                 # Create image and hence primary publisher
                 self.image_create(durl1, prefix="test1")
@@ -2906,33 +2919,37 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 # install the package again, which should succeed even though
                 # the fmri is no longer in the publisher's catalog.
                 self.pkg("set-publisher -O %s test1" % \
-                    self.dcs[3].get_depot_url())
+                    self.dcs[6].get_depot_url())
                 self.pkg("install quux@1.0", exit=4)
                 self.pkg("info quux@1.0")
                 self.pkg("unset-publisher test1")
 
-                # Add a new publisher, using the installed package publisher's
-                # repository and add back the installed package's publisher, but
-                # using a repository with an empty catalog.  After that, attempt
-                # to install the package again, which should succeed even though
-                # the package's installed publisher is known, but doesn't have
-                # the package's fmri in its catalog, but the package's fmri is
-                # in a different publisher's catalog.
+                # Add a new publisher, with the same packages as the installed
+                # publisher.  Then, add back the installed package's publisher,
+                # but using an empty repository.  After that, attempt to install
+                # the package again, which should succeed since at least one
+                # publisher has the package in its catalog.
                 self.pkg("set-publisher -O %s test3" % \
-                    self.dcs[1].get_depot_url())
+                    self.dcs[7].get_depot_url())
                 self.pkg("set-publisher -O %s test1" % \
-                    self.dcs[3].get_depot_url())
+                    self.dcs[6].get_depot_url())
+                self.pkg("info -r pkg://test3/quux@1.0")
                 self.pkg("install quux@1.0", exit=4)
                 self.pkg("unset-publisher test1")
                 self.pkg("unset-publisher test3")
+
+                self.pkg("set-publisher -O %s test1" % \
+                    self.dcs[1].get_depot_url())
+                self.pkg("info -r pkg://test1/quux@1.0")
+                self.pkg("unset-publisher test1")
 
                 # Add a new publisher, using the installed package publisher's
                 # repository.  After that, attempt to install the package again,
                 # which should succeed even though the fmri is only in a
                 # different publisher's catalog.
                 self.pkg("set-publisher -O %s test3" % \
-                    self.dcs[1].get_depot_url())
-                self.pkg("install quux@1.0", exit=4)
+                    self.dcs[7].get_depot_url())
+                self.pkg("install quux@1.0")
                 self.pkg("unset-publisher test3")
 
                 # Change the image metadata back to where it was, in preparation
@@ -2971,31 +2988,31 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 # uninstall the package again, which should succeed even though
                 # the fmri is no longer in the publisher's catalog.
                 self.pkg("set-publisher -O %s test1" % \
-                    self.dcs[3].get_depot_url())
+                    self.dcs[6].get_depot_url())
                 self.pkg("uninstall -nv foo")
                 self.pkg("unset-publisher test1")
 
-                # Add a new publisher, using the installed package publisher's
-                # repository; then add back the installed package's publisher
-                # using a repository with an empty catalog.  After that, attempt
-                # to uninstall the package again, which should succeed even
-                # though the package's installed publisher is known, but doesn't
-                # have the package's fmri in its catalog, but the package's fmri
-                # is in a different publisher's catalog.
+                # Add a new publisher, with a repository with the same packages
+                # as the installed publisher.  Then, add back the installed
+                # package's publisher using an empty repository.  After that,
+                # attempt to uninstall the package again, which should succeed
+                # even though the package's installed publisher is known, but
+                # doesn't have the package's fmri in its catalog, but the
+                # package's fmri is in a different publisher's catalog.
                 self.pkg("set-publisher -O %s test3" % \
-                    self.dcs[1].get_depot_url())
+                    self.dcs[7].get_depot_url())
                 self.pkg("set-publisher -O %s test1" % \
-                    self.dcs[3].get_depot_url())
+                    self.dcs[6].get_depot_url())
                 self.pkg("uninstall -nv foo")
                 self.pkg("unset-publisher test1")
                 self.pkg("unset-publisher test3")
 
-                # Add a new publisher, using the installed package publisher's
-                # repository.  After that, attempt to uninstall the package
-                # again, which should succeed even though the fmri is only in a
-                # different publisher's catalog.
+                # Add a new publisher, with a repository with the same packages
+                # as the installed publisher.  After that, attempt to uninstall
+                # the package again, which should succeed even though the fmri
+                # is only in a different publisher's catalog.
                 self.pkg("set-publisher -O %s test3" % \
-                    self.dcs[1].get_depot_url())
+                    self.dcs[7].get_depot_url())
                 self.pkg("uninstall -nv foo")
                 self.pkg("unset-publisher test3")
 

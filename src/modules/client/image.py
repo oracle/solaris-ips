@@ -615,35 +615,36 @@ class Image(object):
                                     os.path.join(kdir, fname))
                         self.__rebuild_image_catalogs(progtrack=progtrack)
 
-        def set_attrs(self, is_zone, prefix, mirrors=EmptyI, origins=EmptyI,
-            ssl_key=None, ssl_cert=None, refresh_allowed=True, progtrack=None,
-            variants=EmptyDict, facets=EmptyDict):
+        def create(self, pubs, facets=EmptyDict, is_zone=False,  progtrack=None,
+            refresh_allowed=True, variants=EmptyDict):
                 """Creates a new image with the given attributes if it does not
-                exist or sets the attributes of an already existing image."""
+                exist; should not be used with an existing image.
 
-                if not os.path.exists(os.path.join(self.imgdir,
-                    imageconfig.CFG_FILE)):
-                        op = "image-create"
-                else:
-                        op = "image-set-attributes"
+                'is_zone' is a boolean indicating whether the image is a zone.
 
-                # Create the publisher object before creating the image
-                # so that if creation of the Publisher object fails, an
-                # empty, useless image won't be left behind.
-                repo = publisher.Repository()
-                for o in origins:
-                        repo.add_origin(o, ssl_cert=ssl_cert, ssl_key=ssl_key)
-                for m in mirrors:
-                        repo.add_mirror(m, ssl_cert=ssl_cert, ssl_key=ssl_key)
+                'pubs' is a list of Publisher objects to configure the image
+                with.
 
-                newpub = publisher.Publisher(prefix,
-                    meta_root=self._get_publisher_meta_root(prefix),
-                    repositories=[repo], transport=self.transport)
+                'refresh_allowed' is an optional boolean indicating that
+                network operations (such as publisher data retrieval) are
+                allowed.
+
+                'progtrack' is an optional ProgressTracker object.
+
+                'variants' is an optional dictionary of variant names and
+                values.
+
+                'facets' is an optional dictionary of facet names and values.
+                """
+
+                for p in pubs:
+                        p.meta_root = self._get_publisher_meta_root(p.prefix)
+                        p.transport = self.transport
 
                 # Initialize and store the configuration object.
                 self.cfg_cache = imageconfig.ImageConfig(self.root,
                     self._get_publisher_meta_dir())
-                self.history.log_operation_start(op)
+                self.history.log_operation_start("image-create")
 
                 # Determine and add the default variants for the image.
                 if is_zone:
@@ -662,9 +663,20 @@ class Image(object):
                 self.cfg_cache.facets.update(facets)
 
                 # Now everything is ready for publisher configuration.
-                self.add_publisher(newpub, refresh_allowed=refresh_allowed,
-                    progtrack=progtrack)
-                self.cfg_cache.preferred_publisher = newpub.prefix
+                # Since multiple publishers are allowed, they are all
+                # added at once without any publisher data retrieval.
+                # A single retrieval is then performed afterwards, if
+                # allowed, to nimimize the amount of work the client
+                # needs to perform.
+                for p in pubs:
+                        self.add_publisher(p, refresh_allowed=False,
+                            progtrack=progtrack)
+
+                if refresh_allowed:
+                        self.refresh_publishers(progtrack=progtrack)
+
+                # Assume first publisher in list is preferred.
+                self.cfg_cache.preferred_publisher = pubs[0].prefix
 
                 # No need to save configuration as add_publisher will do that
                 # if successful.
@@ -860,6 +872,39 @@ class Image(object):
                         del self.cfg_cache.properties[prop_name]
                         self.save_config()
 
+        def destroy(self):
+                """Destroys the image; image object should not be used
+                afterwards."""
+
+                if not self.imgdir or not os.path.exists(self.imgdir):
+                        return
+
+                if os.path.abspath(self.imgdir) == "/":
+                        # Paranoia.
+                        return
+
+                try:
+                        shutil.rmtree(self.imgdir)
+                except shutil.Error, e:
+                        # shutil.Error contains a list of lists of tuples of
+                        # errors with the last part of the tuple being the
+                        # actual exception.
+                        msg = ""
+                        for entries in e:
+                                for entry in entries:
+                                        # Last part of entry is actual
+                                        # exception.
+                                        msg += "%s\n" % str(entry[-1])
+                        raise api_errors.UnknownErrors(msg)
+                except EnvironmentError, e:
+                        if e.errno == errno.EACCES:
+                                raise api_errors.PermissionsException(
+                                    e.filename)
+                        if e.errno == errno.EROFS:
+                                raise api_errors.ReadOnlyFileSystemException(
+                                    e.filename)
+                        raise
+
         def properties(self):
                 for p in self.cfg_cache.properties:
                         yield p
@@ -889,8 +934,7 @@ class Image(object):
                         if not progtrack:
                                 progtrack = progress.QuietProgressTracker()
 
-                        # Must assign this first before performing any more
-                        # operations.
+                        # Must assign this first before performing operations.
                         pub.meta_root = self._get_publisher_meta_root(
                             pub.prefix)
                         pub.transport = self.transport
@@ -906,8 +950,15 @@ class Image(object):
                                         # First, verify that the publisher has a
                                         # valid pkg(5) repository.
                                         self.transport.valid_publisher_test(pub)
+                                        pub.validate_config()
                                         self.refresh_publishers(pubs=[pub],
                                             progtrack=progtrack)
+                                except Exception, e:
+                                        # Remove the newly added publisher since
+                                        # it is invalid or the retrieval failed.
+                                        self.cfg_cache.remove_publisher(
+                                            pub.prefix)
+                                        raise
                                 except:
                                         # Remove the newly added publisher since
                                         # the retrieval failed.
@@ -1608,7 +1659,6 @@ class Image(object):
                 # new entries as the versions for the stem of the entry will
                 # need to be passed to finalize() for sorting.
                 final_fmris = []
-
                 for name in old_icat.parts:
                         # Old installed part.
                         ipart = old_icat.get_part(name, must_exist=True)
@@ -2623,7 +2673,6 @@ class Image(object):
                                 # If refreshing publisher metadata is allowed,
                                 # then perform a refresh so that a new SUNWipkg
                                 # can be discovered.
-
                                 newimg.lock()
                                 try:
                                         newimg.refresh_publishers(

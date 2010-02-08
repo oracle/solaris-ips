@@ -28,10 +28,10 @@ SYNOPSIS
 
      /usr/bin/pkg image-create [-fFPUz] [--force]
          [--full|--partial|--user] [--zone] [-k ssl_key] [-c ssl_cert]
-         [--no-refresh] [--variant <variant_spec>=<instance>]
+         [--no-refresh] [--variant <variant_spec>=<instance> ...]
          [-g|--origin ...] [-m|--mirror ...]
-         [--facet <facet_spec>=[True|False]]
-         (-p|--publisher) name=uri dir
+         [--facet <facet_spec>=[True|False] ...]
+         (-p|--publisher) [<name>=]<repo_uri> dir
 
      /usr/bin/pkg variant [<variant_spec>]
      /usr/bin/pkg change-variant [-nvq] [--accept] [--be-name name]
@@ -50,9 +50,9 @@ SYNOPSIS
          [-G origin_to_remove | --remove-origin=origin_to_remove ...]
          [-m mirror_to_add | --add-mirror=mirror_to_add ...]
          [-M mirror_to_remove | --remove-mirror=mirror_to_remove ...]
-         [--search-before publisher] [--search-after publisher]
-         [--sticky] [--non-sticky]
-         [--enable] [--disable] [--no-refresh] [--reset-uuid] publisher
+         [-p repo_uri] [--search-before publisher]
+         [--search-after publisher] [--sticky] [--non-sticky]
+         [--enable] [--disable] [--no-refresh] [--reset-uuid] [publisher]
      /usr/bin/pkg unset-publisher publisher ...
      /usr/bin/pkg publisher [-HPn] [publisher ...]
 
@@ -119,7 +119,7 @@ SUBCOMMANDS
        [-k ssl_key] [-c ssl_cert] [--no-refresh] [-g|--origin ...]
        [--variant <variant_spec>=<instance> ...]
        [--facet <facet_spec>=[True|False] ...]
-       [-m|--mirror ...] (-p|--publisher) name=origin_uri dir
+       [-m|--mirror ...] (-p|--publisher) [<name>=]<repo_uri> dir
           Create, at location given by dir, an image suitable for package
           operations.  The default image type is user, as given by the -U
           (--user) option.  The image type may be set to a full image (-F
@@ -128,12 +128,17 @@ SUBCOMMANDS
           be specified using -g or --origin, while additional mirrors can
           be specified using -m or --mirror.
 
-          A preferred publisher must be provided using the -p or --publisher
-          option.  An attempt to retrieve the catalog associated with this
-          publisher will be made following the initial creation operations.
+          A package repository URI must be provided using the -p or
+          --publisher option.  If a publisher name is also provided, then
+          only that publisher will be added when the image is created.  If
+          a publisher name is not provided, then all publishers known by the
+          specified repository will be added to the image.  An attempt to
+          retrieve the catalog associated with this publisher will be made
+          following the initial creation operations.
 
           For publishers using client SSL authentication, a client key and
-          client certificate may be registered via the -c and -k options.
+          client certificate may be registered via the -c and -k options,
+          and will be used for all publishers added during image creation.
 
           If the image is to be run within nonglobal zone context, then
           the -z (--zone) option can be used to set an appropriate filter.
@@ -339,7 +344,7 @@ SUBCOMMANDS
           search.match_type     Corresponds to the attribute which contained
                                 the string that matched the search query.
 
-          With -p, perform the search and display the packages  which contain
+          With -p, perform the search and display the packages which contain
           at least one action which matched the query.  This is equivalent to
           enclosing the entire query with '<>'.  (For a description of the
           '<>' operator, please see below.)
@@ -547,9 +552,9 @@ SUBCOMMANDS
        [-G origin_to_remove | --remove-origin=origin_to_remove ...]
        [-m mirror_to_add | --add-mirror=mirror_to_add]
        [-M mirror_to_remove | --remove-mirror=mirror_to_remove]
-       [--search-before publisher] [--search-after publisher]
-       [--sticky] [--non-sticky] [--enable] [--disable] [--no-refresh]
-       [--reset-uuid] publisher
+       [-p repo_uri] [--search-before publisher] [--search-after
+       publisher] [--sticky] [--non-sticky] [--enable] [--disable]
+       [--no-refresh] [--reset-uuid] [publisher]
 
           Update an existing publisher or add an additional package
           publisher.  If no options affecting search order are specified,
@@ -597,6 +602,14 @@ SUBCOMMANDS
 
           With -M (--remove-mirror), remove the URI from the list of mirrors
           for the given publisher.
+
+          With -p, retrieve publisher configuration information from the
+          specified repository URI.  If a publisher is specified, then only
+          the matching one will be added or updated.  If no publisher is
+          specified, all will be added or updated as appropriate.  This option
+          may not be combined with the -g, --add-origin, -G, --remove-origin,
+          -m, --add-mirror, -M, --remove--mirror, --disable, --enable,
+          --no-refresh, or --reset-uuid options.
 
           With -e (--enable), enable the publisher; with -d (--disable), disable
           the publisher.  A disabled publisher is not used when populating the

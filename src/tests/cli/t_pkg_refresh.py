@@ -66,11 +66,15 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
 
         def setUp(self):
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2",
-                    "test1"])
+                    "test1", "test1"])
 
                 self.durl1 = self.dcs[1].get_depot_url()
                 self.durl2 = self.dcs[2].get_depot_url()
                 self.durl3 = self.dcs[3].get_depot_url()
+
+                # An empty repository for test1 to enable metadata tests
+                # to continue to work as expected.
+                self.durl4 = self.dcs[4].get_depot_url()
 
         def reduce_spaces(self, string):
                 """Reduce runs of spaces down to a single space."""
@@ -248,8 +252,8 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                 # If a privileged user requests this, it should fail since
                 # publisher metadata will have been refreshed, but it will
                 # be the metadata from a repository that does not contain
-                # package metadata for this publisher.
-                self.pkg("set-publisher -O " + self.durl2 + " test1")
+                # any package metadata for this publisher.
+                self.pkg("set-publisher -O " + self.durl4 + " test1")
                 self.pkg("list --no-refresh -avH pkg:/foo@1.0", exit=1)
                 self.pkg("list --no-refresh -avH pkg:/foo@1.1", exit=1)
 
@@ -262,14 +266,6 @@ class TestPkgRefreshMulti(pkg5unittest.ManyDepotTestCase):
                     "foo 1.0-0 known u----\n" \
                     "foo 1.1-0 known -----\n"
                 self.checkAnswer(expected, self.output)
-
-                self.pkg("set-publisher --no-refresh -O " +
-                    self.durl3 + " test1")
-                self.pkg("set-publisher -O " + self.durl1 + " test2")
-                self.pkg("list --no-refresh -aH pkg:/foo")
-                expected = \
-                    "foo 1.1-0 known -----\n" \
-                    "foo (test2) 1.0-0 known -----\n"
 
         def test_set_publisher_induces_delayed_full_refresh(self):
                 self.pkgsend_bulk(self.durl3, self.foo11)

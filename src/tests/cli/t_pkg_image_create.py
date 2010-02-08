@@ -33,6 +33,7 @@ import pkg5unittest
 import os
 import pkg.portable
 import pkg.catalog
+import pkg.client.image as image
 import shutil
 import unittest
 
@@ -46,12 +47,19 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                 # repository that is different than the actual test1
                 # repository can be used.
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2",
-                    "test1", "test1"])
+                    "test1", "test1", "nopubconfig"])
 
                 self.durl1 = self.dcs[1].get_depot_url()
                 self.durl2 = self.dcs[2].get_depot_url()
                 self.durl3 = self.dcs[3].get_depot_url()
                 self.durl4 = self.dcs[4].get_depot_url()
+                self.durl5 = self.dcs[5].get_depot_url()
+
+                # The fifth depot is purposefully one with the publisher
+                # operation disabled.
+                self.dcs[5].stop()
+                self.dcs[5].set_disable_ops(["publisher/0"])
+                self.dcs[5].start()
 
         def test_basic(self):
                 """ Create an image, verify it. """
@@ -102,18 +110,6 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                         f.write("V pkg:/%s@%s\n" % (stem, ver))
                 f.close()
 
-        def test_766(self):
-                """Bug 766: image-create without publisher prefix specified."""
-
-                pkgsend_data = """
-                open foo@0.0
-                close
-                """
-                self.pkgsend_bulk(self.durl1, pkgsend_data)
-
-                self.assertRaises(pkg5unittest.UnexpectedExitCodeException,
-                    self.image_create, self.durl1, prefix="")
-
         def test_3588(self):
                 """Ensure that image creation works as expected when an image
                 already exists."""
@@ -143,6 +139,42 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                     exit=1)
                 self.pkg("image-create -f -p test1=%s %s" % (self.durl1, p))
 
+        def __verify_pub_cfg(self, img_path, prefix, pub_cfg):
+                """Private helper method to verify publisher configuration."""
+
+                img = image.Image(img_path, should_exist=True)
+                pub = img.get_publisher(prefix=prefix)
+                for section in pub_cfg:
+                        for prop, val in pub_cfg[section].iteritems():
+                                if section == "publisher":
+                                        pub_val = getattr(pub, prop)
+                                else:
+                                        pub_val = getattr(
+                                            pub.selected_repository, prop)
+
+                                if prop in ("legal_uris", "mirrors", "origins",
+                                    "related_uris"):
+                                        # The publisher will have these as lists,
+                                        # so transform both sets of data first
+                                        # for reliable comparison.  Remove any
+                                        # trailing slashes so comparison can
+                                        # succeed.
+                                        if not val:
+                                                val = set()
+                                        else:
+                                                val = set(val.split(","))
+                                        new_pub_val = set()
+                                        for u in pub_val:
+                                                uri = u.uri
+                                                if uri.endswith("/"):
+                                                        uri = uri[:-1]
+                                                new_pub_val.add(uri)
+                                        pub_val = new_pub_val
+                                self.assertEqual(val, pub_val)
+
+                # Loading an image changed the cwd, so change it back.
+                os.chdir(self.test_root)
+
         def test_4_options(self):
                 """Verify that all of the options for specifying publisher
                 information work as expected for image-create."""
@@ -163,7 +195,7 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                     for u in (self.durl3, self.durl4)
                 )
 
-                self.pkg("image-create %s test1=%s %s %s %s" % (opt, self.durl1,
+                self.pkg("image-create -p test1=%s %s %s %s" % (self.durl1,
                     mirrors, origins, img_path))
 
                 self.pkg("-R %s publisher | grep origin.*%s" % (img_path,
@@ -173,14 +205,87 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                             img_path, u))
                         self.pkg("-R %s publisher | grep origin.*%s" % (
                             img_path, u))
+                shutil.rmtree(img_path, True)
+
+                # Verify that a v0 repo can be configured for a publisher.q
+                # This should succeed as the API should fallback to manual
+                # configuration if auto-configuration isn't available.
+                self.pkg("image-create -p test5=%s %s" % (self.durl5, img_path))
+                pub_cfg = {
+                    "publisher": { "prefix": "test5" },
+                    "repository": { "origins": self.durl5 }
+                }
+                self.__verify_pub_cfg(img_path, "test5", pub_cfg)
+                shutil.rmtree(img_path)
+
+                # Verify that -p auto-configuration works as expected for a
+                # a v1 repository when no prefix is provided.
+                self.pkg("image-create -p %s %s" % (self.durl1, img_path))
+                pub_cfg = {
+                    "publisher": { "prefix": "test1" },
+                    "repository": { "origins": self.durl1 }
+                }
+                self.__verify_pub_cfg(img_path, "test1", pub_cfg)
+                shutil.rmtree(img_path)
+
+                # Verify that -p auto-configuration works as expected for a
+                # a v1 repository when a prefix is provided.
+                self.pkg("image-create -p test1=%s %s" % (self.durl1, img_path))
+                pub_cfg = {
+                    "publisher": { "prefix": "test1" },
+                    "repository": { "origins": self.durl1 }
+                }
+                self.__verify_pub_cfg(img_path, "test1", pub_cfg)
+                shutil.rmtree(img_path)
+
+                # Verify that -p auto-configuration works as expected for a
+                # a v1 repository with additional origins and mirrors.
+                self.pkg("image-create -p test1=%s -g %s -m %s %s" % (
+                    self.durl1, self.durl3, self.durl5, img_path))
+                pub_cfg = {
+                    "publisher": { "prefix": "test1" },
+                    "repository": {
+                        "origins": "%s,%s" % (self.durl1,self.durl3),
+                        "mirrors": self.durl5,
+                    },
+                }
+                self.__verify_pub_cfg(img_path, "test1", pub_cfg)
+                shutil.rmtree(img_path)
 
         def test_5_bad_values_no_image(self):
                 """Verify that an invalid publisher URI or other piece of
                 information provided to image-create will not result in an
-                empty image being created despite failure."""
+                empty image being created despite failure.  In addition,
+                test that omitting required information will also not result
+                in the creation of an image."""
 
                 p = os.path.join(self.get_img_path(), "test_5_image")
+
+                # Invalid URIs should not result in the creation of an image.
                 self.pkg("image-create -p test=InvalidURI %s" % p, exit=1)
+                self.assertFalse(os.path.exists(p))
+
+                self.pkg("image-create -p InvalidURI %s" % p, exit=1)
+                self.assertFalse(os.path.exists(p))
+
+                # Valid URI but without prefix and with --no-refresh; auto-
+                # configuration isn't possible in this scenario and so
+                # an image should not be created.
+                self.pkg("image-create --no-refresh -p %s %s" % (self.durl1, p),
+                    exit=2)
+                self.assertFalse(os.path.exists(p))
+
+                # Valid URI but with the wrong publisher prefix should
+                # not create an image.
+                self.pkg("image-create -p nosuchpub=%s %s" % (self.durl1, p),
+                    exit=1)
+                self.assertFalse(os.path.exists(p))
+
+                # Valid URI, without a publisher prefix, but for a repository
+                # that doesn't provide publisher configuration should not
+                # create an image.
+                self.pkg("image-create -p %s %s" % (self.durl5, p),
+                    exit=1)
                 self.assertFalse(os.path.exists(p))
 
         def test_6_relative_root_create(self):

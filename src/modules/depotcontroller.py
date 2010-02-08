@@ -265,7 +265,7 @@ class DepotController(object):
                             self.__disable_ops))
                 for section in self.__props:
                         for prop, val in self.__props[section].iteritems():
-                                args.append("--set-property=%s.%s=%s" %
+                                args.append("--set-property=%s.%s='%s'" %
                                     (section, prop, val))
                 if self.__writable_root:
                         args.append("--writable-root=%s" % self.__writable_root)

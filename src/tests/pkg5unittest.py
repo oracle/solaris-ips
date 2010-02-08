@@ -1097,7 +1097,7 @@ class DepotTracebackException(Pkg5CommonException):
                 return str
 
 class TracebackException(Pkg5CommonException):
-        def __init__(self, command, output=None, comment=None):
+        def __init__(self, command, output=None, comment=None, debug=None):
                 Pkg5CommonException.__init__(self)
                 self.__command = command
                 self.__output = output
@@ -1483,8 +1483,19 @@ class CliTestCase(Pkg5TestCase):
                 pointed at the new repository must be started with the
                 --rebuild option."""
 
+                # Preserve destination repository's cfg_cache if it exists.
+                dest_cfg = os.path.join(dest, "cfg_cache")
+                dest_cfg_data = None
+                if os.path.exists(dest_cfg):
+                        with open(dest_cfg, "rb") as f:
+                                dest_cfg_data = f.read()
                 shutil.rmtree(dest, True)
                 os.makedirs(dest, mode=0755)
+
+                # Ensure config is written back out.
+                if dest_cfg_data:
+                    with open(dest_cfg, "wb") as f:
+                            f.write(dest_cfg_data)
 
                 for entry in os.listdir(src):
                         spath = os.path.join(src, entry)
@@ -1542,7 +1553,7 @@ class CliTestCase(Pkg5TestCase):
                 return retcode
 
         def start_depot(self, port, depotdir, logpath, refresh_index=False,
-            debug_features=EmptyI, properties=EmptyI):
+            debug_features=EmptyI, properties=EmptyI, set_origins=False):
                 """ Convenience routine to help subclasses start
                     depots.  Returns a depotcontroller. """
 
@@ -1564,6 +1575,15 @@ class CliTestCase(Pkg5TestCase):
                 dc.set_repodir(depotdir)
                 dc.set_logpath(logpath)
                 dc.set_port(port)
+
+                if set_origins: 
+                        # Since only this routine knows the URI for the depot
+                        # at this point, callers must ask to have this property
+                        # set for them.  Not automatically doing it allows tests
+                        # that use start_depot directly to not be affected.
+                        dc.set_property("repository", "origins",
+                            dc.get_depot_url())
+
                 for section in properties:
                         for prop, val in properties[section].iteritems():
                                 dc.set_property(section, prop, val)
@@ -1611,7 +1631,7 @@ class ManyDepotTestCase(CliTestCase):
                         self.dcs[i] = self.start_depot(12000 + i,
                             depotdir, depot_logfile,
                             debug_features=debug_features,
-                            properties=props)
+                            properties=props, set_origins=True)
 
         def check_traceback(self, logpath):
                 """ Scan logpath looking for tracebacks.

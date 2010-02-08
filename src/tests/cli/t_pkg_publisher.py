@@ -31,6 +31,7 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import os
+import pkg.client.image as image
 import tempfile
 import unittest
 
@@ -284,9 +285,29 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
             open baz@1,5.11-0
             close """
 
+        test3_pub_cfg = {
+            "publisher": {
+                "alias": "t3",
+                "prefix": "test3",
+            },
+            "repository": {
+                "collection_type": "supplemental",
+                "description": "This repository serves packages for test3.",
+                "legal_uris": "http://www.opensolaris.org/os/copyrights,"
+                        "http://www.opensolaris.org/os/tou,"
+                        "http://www.opensolaris.org/os/trademark",
+                "name": "The Test3 Repository",
+                "refresh_seconds": 86400,
+                "registration_uri": "",
+                "related_uris": "http://pkg.opensolaris.org/contrib,"
+                        "http://jucr.opensolaris.org/pending,"
+                        "http://jucr.opensolaris.org/contrib",
+            },
+        }
+
         def setUp(self):
-                pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2", "test3", 
-                    "test1", "test1"])
+                pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2",
+                    "test3",  "test1", "test1", "test3"])
 
                 durl1 = self.dcs[1].get_depot_url()
                 self.pkgsend_bulk(durl1, self.foo1)
@@ -303,8 +324,8 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
 
         def __test_mirror_origin(self, etype, add_opt, remove_opt):
                 durl1 = self.dcs[1].get_depot_url()
-                durl3 = self.dcs[3].get_depot_url()
                 durl4 = self.dcs[4].get_depot_url()
+                durl5 = self.dcs[5].get_depot_url()
 
                 # Test single add.
                 self.pkg("set-publisher %s http://%s1 test1" % (add_opt,
@@ -339,36 +360,146 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                     self.bogus_url), exit=1)
 
                 # Test a combined add and remove.
-                self.pkg("set-publisher %s %s test1" % (add_opt, durl3))
-                self.pkg("set-publisher %s %s %s %s test1" % (add_opt, durl4,
-                    remove_opt, durl3))
-                self.pkg("publisher | grep %s.*%s" % (etype, durl4))
-                self.pkg("publisher | grep %s.*%s" % (etype, durl3), exit=1)
-                self.pkg("set-publisher %s %s test1" % (remove_opt, durl4))
+                self.pkg("set-publisher %s %s test1" % (add_opt, durl4))
+                self.pkg("set-publisher %s %s %s %s test1" % (add_opt, durl5,
+                    remove_opt, durl4))
+                self.pkg("publisher | grep %s.*%s" % (etype, durl5))
+                self.pkg("publisher | grep %s.*%s" % (etype, durl4), exit=1)
+                self.pkg("set-publisher %s %s test1" % (remove_opt, durl5))
 
                 # Verify that if one of multiple URLs is not a valid URL, pkg
                 # will exit with an error, and does not add the valid one.
                 self.pkg("set-publisher %s %s %s http://b^^^/ogus test1" % (
-                    add_opt, durl3, add_opt), exit=1)
-                self.pkg("publisher | grep %s.*%s" % (etype, durl3), exit=1)
-
-                # Verify that multiple can be added at one time.
-                self.pkg("set-publisher %s %s %s %s test1" % (add_opt, durl3,
-                    add_opt, durl4))
-                self.pkg("publisher | grep %s.*%s" % (etype, durl3))
-                self.pkg("publisher | grep %s.*%s" % (etype, durl4))
-
-                # Verify that multiple can be removed at one time.
-                self.pkg("set-publisher %s %s %s %s test1" % (remove_opt, durl3,
-                    remove_opt, durl4))
-                self.pkg("publisher | grep %s.*%s" % (etype, durl3), exit=1)
+                    add_opt, durl4, add_opt), exit=1)
                 self.pkg("publisher | grep %s.*%s" % (etype, durl4), exit=1)
 
-        def test_set_mirrors_origins(self):
-                """Test set-publisher functionality for mirrors and origins."""
+                # Verify that multiple can be added at one time.
+                self.pkg("set-publisher %s %s %s %s test1" % (add_opt, durl4,
+                    add_opt, durl5))
+                self.pkg("publisher | grep %s.*%s" % (etype, durl4))
+                self.pkg("publisher | grep %s.*%s" % (etype, durl5))
+
+                # Verify that multiple can be removed at one time.
+                self.pkg("set-publisher %s %s %s %s test1" % (remove_opt, durl4,
+                    remove_opt, durl5))
+                self.pkg("publisher | grep %s.*%s" % (etype, durl4), exit=1)
+                self.pkg("publisher | grep %s.*%s" % (etype, durl5), exit=1)
+
+        def __verify_pub_cfg(self, prefix, pub_cfg):
+                """Private helper method to verify publisher configuration."""
+
+                img = image.Image(self.get_img_path(), should_exist=True)
+                pub = img.get_publisher(prefix=prefix)
+                for section in pub_cfg:
+                        for prop, val in pub_cfg[section].iteritems():
+                                if section == "publisher":
+                                        pub_val = getattr(pub, prop)
+                                else:
+                                        pub_val = getattr(
+                                            pub.selected_repository, prop)
+
+                                if prop in ("legal_uris", "mirrors", "origins",
+                                    "related_uris"):
+                                        # The publisher will have these as lists,
+                                        # so transform both sets of data first
+                                        # for reliable comparison.  Remove any
+                                        # trailing slashes so comparison can
+                                        # succeed.
+                                        if not val:
+                                                val = set()
+                                        else:
+                                                val = set(val.split(","))
+                                        new_pub_val = set()
+                                        for u in pub_val:
+                                                uri = u.uri
+                                                if uri.endswith("/"):
+                                                        uri = uri[:-1]
+                                                new_pub_val.add(uri)
+                                        pub_val = new_pub_val
+                                self.assertEqual(val, pub_val)
+
+        def test_set_auto(self):
+                """Verify that set-publisher -p works as expected."""
+
+                # XXX can't test multiple publisher configuration case as
+                # depot doesn't support that yet (i.e. publisher/0 response
+                # does not contain multiple publishers).  So this only tests
+                # the single add/update case for the moment.
                 durl1 = self.dcs[1].get_depot_url()
                 durl3 = self.dcs[3].get_depot_url()
                 durl4 = self.dcs[4].get_depot_url()
+                self.image_create(durl1, prefix="test1")
+
+                # Should fail because test3 publisher does not exist.
+                self.pkg("publisher test3", exit=1)
+
+                # Should fail because repository is for test3 not test2.
+                self.pkg("set-publisher -p %s test2" % durl3, exit=1)
+
+                # Update configuration of just this depot with more information
+                # for comparison basis.
+                self.dcs[3].stop()
+
+                # Origin and mirror info wasn't known until this point, so add
+                # it to the test configuration.
+                t3cfg = self.test3_pub_cfg
+                t3cfg["repository"]["origins"] = durl3
+                t3cfg["repository"]["mirrors"] = ",".join((durl1, durl3, durl4))
+                for section in t3cfg:
+                        for prop, val in t3cfg[section].iteritems():
+                                self.dcs[3].set_property(section, prop, val)
+                self.dcs[3].start()
+
+                # Should succeed and configure test3 publisher.
+                self.pkg("set-publisher -p %s" % durl3)
+
+                # Load image configuration to verify publisher was configured
+                # as expected.
+                self.__verify_pub_cfg("test3", t3cfg)
+
+                # Now test the update case.  This verifies that the existing,
+                # configured origins and mirrors will not be lost (only added
+                # to) and that new data will be accepted.
+                durl6 = self.dcs[6].get_depot_url()
+                self.dcs[6].stop()
+                t6cfg = {}
+                for section in t3cfg:
+                        t6cfg[section] = {}
+                        for prop in t3cfg[section]:
+                                val = t3cfg[section][prop]
+                                if prop == "refresh_seconds":
+                                        val = 1800
+                                elif prop == "collection_type":
+                                        val = "core"
+                                elif prop not in ("alias", "prefix"):
+                                        # Clear all other props.
+                                        val = ""
+                                t6cfg[section][prop] = val
+                t6cfg["repository"]["origins"] = ",".join((durl3, durl6))
+                t6cfg["repository"]["mirrors"] = ",".join((durl1, durl3, durl4,
+                    durl6))
+                for section in t6cfg:
+                        for prop, val in t6cfg[section].iteritems():
+                                self.dcs[6].set_property(section, prop, val)
+                self.dcs[6].start()
+
+                # Should fail since even though repository publisher prefix
+                # matches test3, the new origin isn't configured for test3,
+                # and as a result isn't a known source for publisher updates.
+                self.pkg("set-publisher -p %s" % durl6, exit=1)
+
+                # So, add the new origin to the publisher.
+                self.pkg("set-publisher -g %s test3" % durl6)
+                self.pkg("set-publisher -p %s" % durl6)
+
+                # Load image configuration to verify publisher was configured
+                # as expected.
+                self.__verify_pub_cfg("test3", t6cfg)
+
+        def test_set_mirrors_origins(self):
+                """Test set-publisher functionality for mirrors and origins."""
+
+                durl1 = self.dcs[1].get_depot_url()
                 self.image_create(durl1, prefix="test1")
 
                 # Test short options for mirrors.
@@ -387,10 +518,12 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
 
                 # Finally, verify that if multiple origins are present that -O
                 # will discard all others.
-                self.pkg("set-publisher -g %s -g %s test1" % (durl3, durl4))
+                durl4 = self.dcs[4].get_depot_url()
+                durl5 = self.dcs[5].get_depot_url()
+                self.pkg("set-publisher -g %s -g %s test1" % (durl4, durl5))
                 self.pkg("set-publisher -O %s test1" % durl4)
                 self.pkg("publisher | grep origin.*%s" % durl1, exit=1)
-                self.pkg("publisher | grep origin.*%s" % durl3, exit=1)
+                self.pkg("publisher | grep origin.*%s" % durl5, exit=1)
 
         def test_enable_disable(self):
                 """Test enable and disable."""

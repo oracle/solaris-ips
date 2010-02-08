@@ -528,9 +528,19 @@ class Repository(object):
                         cfgpathname = self.cfgpathname
                 self.__load_config(cfgpathname, properties=properties)
 
-                # Set any specified properties.
+                # Set any specified properties again for cases where no existing
+                # configuration could be loaded and so that individual property
+                # validation messages can be re-raised to caller.
                 for section in properties:
                         for prop, value in properties[section].iteritems():
+                                # List values require special handling.
+                                if self.cfg.get_property_type(section,
+                                    prop) == rc.PROP_TYPE_URI_LIST and \
+                                    type(value) != list:
+                                        if value == "":
+                                                value = []
+                                        else:
+                                                value = value.split(",")
                                 self.cfg.set_property(section, prop, value)
 
                 # Verify that all required configuration information is set.

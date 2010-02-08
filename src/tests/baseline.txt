@@ -391,7 +391,6 @@ cli.t_pkg_image_create.py TestPkgImageCreateBasics.test_3588|pass
 cli.t_pkg_image_create.py TestPkgImageCreateBasics.test_4_options|pass
 cli.t_pkg_image_create.py TestPkgImageCreateBasics.test_5_bad_values_no_image|pass
 cli.t_pkg_image_create.py TestPkgImageCreateBasics.test_6_relative_root_create|pass
-cli.t_pkg_image_create.py TestPkgImageCreateBasics.test_766|pass
 cli.t_pkg_image_create.py TestPkgImageCreateBasics.test_7_image_create_no_refresh|pass
 cli.t_pkg_image_create.py TestPkgImageCreateBasics.test_8_image_upgrade|pass
 cli.t_pkg_image_create.py TestPkgImageCreateBasics.test_9_bad_image_state|pass
@@ -549,6 +548,7 @@ cli.t_pkg_publisher.py TestPkgPublisherBasics.test_publisher_uuid|pass
 cli.t_pkg_publisher.py TestPkgPublisherBasics.test_publisher_validation|pass
 cli.t_pkg_publisher.py TestPkgPublisherMany.test_enable_disable|pass
 cli.t_pkg_publisher.py TestPkgPublisherMany.test_search_order|pass
+cli.t_pkg_publisher.py TestPkgPublisherMany.test_set_auto|pass
 cli.t_pkg_publisher.py TestPkgPublisherMany.test_set_mirrors_origins|pass
 cli.t_pkg_rebuild_index.py TestPkgRebuildIndex.test_rebuild_index_bad_opts|pass
 cli.t_pkg_rebuild_index.py TestPkgRebuildIndex.test_rebuild_index_bad_perms|pass

@@ -411,8 +411,10 @@ class TestDepotController(pkg5unittest.CliTestCase):
 
                 self.__dc.set_port(12000)
                 self.__dc.set_writable_root(writable_root)
-                self.__dc.start()
                 durl = self.__dc.get_depot_url()
+                self.__dc.set_property("publisher", "prefix", "test")
+                self.__dc.set_property("repository", "origins", durl)
+                self.__dc.start()
                 check_state(False)
                 self.pkgsend_bulk(durl, TestPkgDepot.quux10)
                 get_feed(durl)
@@ -561,19 +563,19 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                 "description":
                     "Development packages for the contrib repository.",
                 "legal_uris": [
-                    "http://www.opensolaris.org/os/copyrights/",
-                    "http://www.opensolaris.org/os/tou/",
-                    "http://www.opensolaris.org/os/trademark/"
+                    "http://www.opensolaris.org/os/copyrights",
+                    "http://www.opensolaris.org/os/tou",
+                    "http://www.opensolaris.org/os/trademark"
                 ],
                 "mirrors": [],
                 "name": """"Pending" Repository""",
-                "origins": ["http://pkg.opensolaris.org/pending/"],
+                "origins": [],  # Has to be set during setUp for correct origin.
                 "refresh_seconds": 86400,
                 "registration_uri": "",
                 "related_uris": [
-                    "http://jucr.opensolaris.org/contrib/",
-                    "http://jucr.opensolaris.org/pending/",
-                    "http://pkg.opensolaris.org/contrib/",
+                    "http://jucr.opensolaris.org/contrib",
+                    "http://jucr.opensolaris.org/pending",
+                    "http://pkg.opensolaris.org/contrib",
                 ]
             }
         }
@@ -587,6 +589,10 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                 # Prevent override of custom configuration;
                 # tests will set as needed.
                 self.dc.clear_property("publisher", "prefix")
+
+                # Set repository origins.
+                self.repo_cfg["repository"]["origins"] = \
+                    [self.dc.get_depot_url()]
 
                 self.tpath = tempfile.mkdtemp(prefix="tpath",
                     dir=self.test_root)
@@ -703,7 +709,10 @@ class TestDepotOutput(pkg5unittest.SingleDepotTestCase):
                         if prop.endswith("uris") or prop == "origins":
                                 uris = []
                                 for u in returned:
-                                        uris.append(u.uri)
+                                        uri = u.uri
+                                        if uri.endswith("/"):
+                                                uri = uri[:-1]
+                                        uris.append(uri)
                                 returned = uris
                         self.assertEqual(returned, expected)
 

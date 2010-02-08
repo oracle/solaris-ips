@@ -1395,6 +1395,45 @@ pkg unset-publisher %s
                         # Cleanup tempdir.
                         shutil.rmtree(tempdir, True)
 
+        def validate_config(self, repo_uri=None):
+                """Verify that the publisher's configuration (such as prefix)
+                matches that provided by the repository.  If the configuration
+                does not match as expected, an UnknownRepositoryPublishers
+                exception will be raised.
+
+                'repo_uri' is an optional RepositoryURI object or URI string
+                containing the location of the repository.  If not provided,
+                the publisher's selected_repository will be used instead."""
+
+                if repo_uri and not isinstance(repo_uri, RepositoryURI):
+                        repo = RepositoryURI(repo_uri)
+                elif not repo_uri:
+                        # Transport actually allows both type of objects.
+                        repo = self
+                else:
+                        repo = repo_uri
+
+                pubs = None
+                try:
+                        pubs = self.transport.get_publisherdata(repo)
+                except api_errors.UnsupportedRepositoryOperation:
+                        # Nothing more can be done.
+                        return
+
+                if not pubs:
+                        raise api_errors.RepoPubConfigUnavailable(
+                            location=repo_uri, pub=self)
+
+                if self.prefix not in pubs:
+                        known = [p.prefix for p in pubs]
+                        if repo_uri:
+                                raise api_errors.UnknownRepositoryPublishers(
+                                    known=known, unknown=[self.prefix],
+                                    location=repo_uri)
+                        raise api_errors.UnknownRepositoryPublishers(
+                            known=known, unknown=[self.prefix],
+                            origins=self.selected_repository.origins)
+
         def refresh(self, full_refresh=False, immediate=False):
                 """Refreshes the publisher's metadata, returning a boolean
                 value indicating whether any updates to the publisher's

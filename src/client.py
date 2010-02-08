@@ -68,7 +68,6 @@ import pkg.client.api_errors as api_errors
 import pkg.client.bootenv as bootenv
 import pkg.client.history as history
 import pkg.client.image as image
-import pkg.client.imagetypes as imgtypes
 import pkg.client.progress as progress
 import pkg.client.publisher as publisher
 import pkg.fmri as fmri
@@ -76,13 +75,14 @@ import pkg.misc as misc
 import pkg.version as version
 
 from pkg.client import global_settings
+from pkg.client.api import IMG_TYPE_ENTIRE, IMG_TYPE_PARTIAL, IMG_TYPE_USER
 from pkg.client.debugvalues import DebugValues
 from pkg.client.history import (RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
     RESULT_FAILED_CONFIGURATION, RESULT_FAILED_LOCKED, RESULT_FAILED_STORAGE,
     RESULT_FAILED_TRANSPORT, RESULT_FAILED_UNKNOWN, RESULT_FAILED_OUTOFMEMORY)
 from pkg.misc import EmptyI, msg, PipeError
 
-CLIENT_API_VERSION = 31
+CLIENT_API_VERSION = 32
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -160,9 +160,10 @@ Advanced subcommands:
         pkg contents [-Hmr] [-a attribute=pattern ...] [-o attribute ...]
             [-s sort_key] [-t action_type ... ] [pkg_fmri_pattern ...]
         pkg image-create [-fFPUz] [--force] [--full|--partial|--user] [--zone]
+            [-g uri| --origin=uri ...] [-m uri| --mirror=uri ...]
             [-k ssl_key] [-c ssl_cert] [--no-refresh]
-            [--variant <variant_spec>=<instance>] 
-            [--facet <facet_spec>=[True,False]]
+            [--variant <variant_spec>=<instance> ...]
+            [--facet <facet_spec>=[True,False] ...]
             (-p|--publisher) name=uri dir
         pkg change-variant [-nvq] [--be-name name] <variant_spec>=<instance>
             [<variant_spec>=<instance> ...]
@@ -178,9 +179,9 @@ Advanced subcommands:
             [-G origin_to_remove | --remove-origin=origin_to_remove]
             [-m mirror_to_add | --add-mirror=mirror_to_add]
             [-M mirror_to_remove | --remove-mirror=mirror_to_remove]
-            [--enable] [--disable] [--no-refresh] [--reset-uuid] 
-            [--non-sticky] [--sticky] [--search-after=publisher]
-            [--search-before=publisher] publisher
+            [-p repo_uri] [--enable] [--disable] [--no-refresh]
+            [--reset-uuid] [--non-sticky] [--sticky] [--search-after=publisher]
+            [--search-before=publisher] [publisher]
         pkg unset-publisher publisher ...
         pkg publisher [-HPn] [publisher ...]
         pkg history [-Hl]
@@ -316,7 +317,7 @@ def list_inventory(img, args):
                         # refresh doesn't matter.
                         pass
                 except api_errors.CatalogRefreshException, e:
-                        succeeded = display_catalog_failures(e, 
+                        succeeded = display_catalog_failures(e,
                             ignore_perms_failure=True)
                         if succeeded != e.total:
                                 # If total number of publishers does
@@ -630,7 +631,7 @@ def verify_image(img, args):
 
                 for act, errors, warnings, pinfo in entries:
                         msg("\t%s" % act.distinguished_name())
-                        for x in errors: 
+                        for x in errors:
                                 msg("\t\t%s" % x)
                         for x in warnings:
                                 msg("\t\t%s" % x)
@@ -979,8 +980,8 @@ def change_facet(img, args):
 
         facets = img.get_facets()
         allowed_values = {
-            "TRUE" : True, 
-            "FALSE": False, 
+            "TRUE" : True,
+            "FALSE": False,
             "NONE" : None
         }
 
@@ -992,10 +993,10 @@ def change_facet(img, args):
                             "'facet....=[True|False|None]'") % op)
 
                 # get the facet name and value
-                name, value = arg.split('=')                
+                name, value = arg.split('=')
                 if not name.startswith("facet."):
                         name = "facet." + name
-                
+
                 if value.upper() not in allowed_values:
                         usage(_("%s: facets must to be of the form "
                             "'facet....=[True|False|None]'.") % op)
@@ -1013,7 +1014,7 @@ def change_facet(img, args):
 
         stuff_to_do = None
         try:
-                stuff_to_do = api_inst.plan_change_varcets(variants=None, 
+                stuff_to_do = api_inst.plan_change_varcets(variants=None,
                     facets=facets, noexecute=noexecute, verbose=verbose,
                     be_name=be_name)
         except:
@@ -1744,7 +1745,7 @@ def calc_justs(attrs):
                         return JUST_LEFT
                 return JUST_UNKNOWN
         return [ __chose_just(attr) for attr in attrs ]
-        
+
 def produce_lines(actionlist, attrs, action_types=None, show_all=False,
     remove_consec_dup_lines=False, last_res=None):
         """Produces a list of n tuples (where n is the length of attrs)
@@ -1911,7 +1912,7 @@ def display_contents_results(actionlist, attrs, sort_attrs, action_types,
         justs = calc_justs(attrs)
         lines = produce_lines(actionlist, attrs, action_types)
         widths = calc_widths(lines, attrs)
-        
+
         sortidx = 0
         for i, attr in enumerate(attrs):
                 if attr == sort_attrs[0]:
@@ -2121,7 +2122,7 @@ def list_contents(img, args):
         else:
                 excludes = img.list_excludes()
 
-        def matches(action):
+        def mmatches(action):
                 """Given an action, return True if any of its attributes' values
                 matches the pattern for the same attribute in the attr_match
                 dictionary, and False otherwise."""
@@ -2155,7 +2156,7 @@ def list_contents(img, args):
             (m.fmri, a, None, None, None)
             for m in manifests
             for a in m.gen_actions(excludes)
-            if matches(a)
+            if mmatches(a)
         ]
 
         if attr_match and fmris and not actionlist:
@@ -2240,6 +2241,29 @@ def display_catalog_failures(cre, ignore_perms_failure=False):
 
         return succeeded
 
+def __refresh(api_inst, pubs, full_refresh=False):
+        """Private helper method for refreshing publisher data."""
+
+        try:
+                # The user explicitly requested this refresh, so set the
+                # refresh to occur immediately.
+                api_inst.refresh(full_refresh=full_refresh,
+                    immediate=True, pubs=pubs)
+        except api_errors.PublisherError, e:
+                error(e)
+                error(_("'pkg publisher' will show a list of publishers."))
+                return EXIT_OOPS
+        except api_errors.PermissionsException, e:
+                # Prepend a newline because otherwise the exception will
+                # be printed on the same line as the spinner.
+                error("\n" + str(e))
+                return EXIT_OOPS
+        except api_errors.CatalogRefreshException, e:
+                if display_catalog_failures(e) == 0:
+                        return EXIT_OOPS
+                return EXIT_PARTIAL
+        return EXIT_OK
+
 def publisher_refresh(img, args):
         """Update metadata for the image's publishers."""
 
@@ -2253,103 +2277,143 @@ def publisher_refresh(img, args):
         api_inst = __api_alloc(img)
         if api_inst == None:
                 return EXIT_OOPS
+        return __refresh(api_inst, pargs, full_refresh=full_refresh)
+
+def _get_ssl_cert_key(root, is_zone, ssl_cert, ssl_key):
+        if ssl_cert is not None or ssl_key is not None:
+                # In the case of zones, the ssl cert given is assumed to
+                # be relative to the root of the image, not truly absolute.
+                if is_zone:
+                        if ssl_cert is not None:
+                                ssl_cert = os.path.abspath(
+                                    root + os.sep + ssl_cert)
+                        if ssl_key is not None:
+                                ssl_key = os.path.abspath(
+                                    root + os.sep + ssl_key)
+                elif orig_cwd:
+                        if ssl_cert and not os.path.isabs(ssl_cert):
+                                ssl_cert = os.path.normpath(os.path.join(
+                                    orig_cwd, ssl_cert))
+                        if ssl_key and not os.path.isabs(ssl_key):
+                                ssl_key = os.path.normpath(os.path.join(
+                                    orig_cwd, ssl_key))
+        return ssl_cert, ssl_key
+
+def _set_pub_error_wrap(func, pfx, raise_errors, *args, **kwargs):
+        """Helper function to wrap set-publisher private methods.  Returns
+        a tuple of (return value, message).  Callers should check the return
+        value for errors."""
 
         try:
-                # The user explicitly requested this refresh, so set the
-                # refresh to occur immediately.
-                api_inst.refresh(full_refresh=full_refresh,
-                    immediate=True, pubs=pargs)
-        except api_errors.PublisherError, e:
-                error(e)
-                error(_("'pkg publisher' will show a list of publishers."))
-                return EXIT_OOPS
-        except api_errors.PermissionsException, e:
+                return func(*args, **kwargs)
+        except api_errors.CatalogRefreshException, e:
+                for entry in raise_errors:
+                        if isinstance(e, entry):
+                                raise
+                return EXIT_OOPS, _("Could not refresh the catalog for %s") % \
+                    pfx
+        except api_errors.InvalidDepotResponseException, e:
+                for entry in raise_errors:
+                        if isinstance(e, entry):
+                                raise
+                if pfx:
+                        return EXIT_OOPS, _("The origin URIs for '%(pubname)s' "
+                            "do not appear to point to a valid pkg server.\n"
+                            "Please check the server's address and client's "
+                            "network configuration."
+                            "\nAdditional details:\n\n%(details)s") % {
+                            "pubname": pfx, "details": str(e) }
+                return EXIT_OOPS, _("The specified URI does not appear to "
+                    "point to a valid pkg server.\nPlease check the URI "
+                    "and the client's network configuration."
+                    "\nAdditional details:\n\n%s") % str(e)
+        except api_errors.ApiException, e:
+                for entry in raise_errors:
+                        if isinstance(e, entry):
+                                raise
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
-                error("\n" + str(e))
-                return EXIT_OOPS
-        except api_errors.CatalogRefreshException, e:
-                if display_catalog_failures(e) == 0:
-                        return EXIT_OOPS
-                else:
-                        return EXIT_PARTIAL
-        else:
-                return EXIT_OK
+                return EXIT_OOPS, ("\n" + str(e))
 
 def publisher_set(img, args):
         """pkg set-publisher [-Ped] [-k ssl_key] [-c ssl_cert] [--reset-uuid]
             [-g|--add-origin origin to add] [-G|--remove-origin origin to
             remove] [-m|--add-mirror mirror to add] [-M|--remove-mirror mirror
-            to remove] [--enable] [--disable] [--no-refresh] [--sticky] [--non-sticky ]
-            [--search-before=publisher] [--search-after=publisher] publisher"""
+            to remove] [-p repo_uri] [--enable] [--disable] [--no-refresh]
+            [--sticky] [--non-sticky ] [--search-before=publisher]
+            [--search-after=publisher] [publisher]"""
 
         preferred = False
         ssl_key = None
         ssl_cert = None
-        origin_url = None
+        origin_uri = None
         reset_uuid = False
         add_mirrors = set()
         remove_mirrors = set()
         add_origins = set()
         remove_origins = set()
-        refresh_catalogs = True
+        refresh_allowed = True
         disable = None
         sticky = None
         search_before = None
         search_after = None
+        repo_uri = None
 
-        opts, pargs = getopt.getopt(args, "Pedk:c:O:G:g:M:m:",
+        opts, pargs = getopt.getopt(args, "Pedk:c:O:G:g:M:m:p:",
             ["add-mirror=", "remove-mirror=", "add-origin=", "remove-origin=",
-            "no-refresh", "reset-uuid", "enable", "disable", "sticky", 
+            "no-refresh", "reset-uuid", "enable", "disable", "sticky",
             "non-sticky", "search-before=", "search-after="])
 
         for opt, arg in opts:
                 if opt == "-c":
                         ssl_cert = arg
-                if opt == "-d" or opt == "--disable":
+                elif opt == "-d" or opt == "--disable":
                         disable = True
-                if opt == "-e" or opt == "--enable":
+                elif opt == "-e" or opt == "--enable":
                         disable = False
-                if opt == "-g" or opt == "--add-origin":
+                elif opt == "-g" or opt == "--add-origin":
                         add_origins.add(arg)
-                if opt == "-G" or opt == "--remove-origin":
+                elif opt == "-G" or opt == "--remove-origin":
                         remove_origins.add(arg)
-                if opt == "-k":
+                elif opt == "-k":
                         ssl_key = arg
-                if opt == "-O":
-                        origin_url = arg
-                if opt == "-m" or opt == "--add-mirror":
+                elif opt == "-O":
+                        origin_uri = arg
+                elif opt == "-m" or opt == "--add-mirror":
                         add_mirrors.add(arg)
-                if opt == "-M" or opt == "--remove-mirror":
+                elif opt == "-M" or opt == "--remove-mirror":
                         remove_mirrors.add(arg)
-                if opt == "-P":
+                elif opt == "-p":
+                        repo_uri = arg
+                elif opt == "-P":
                         preferred = True
-                if opt == "--reset-uuid":
+                elif opt == "--reset-uuid":
                         reset_uuid = True
-                if opt == "--no-refresh":
-                        refresh_catalogs = False
-                if opt == "--sticky":
+                elif opt == "--no-refresh":
+                        refresh_allowed = False
+                elif opt == "--sticky":
                         sticky = True
-                if opt == "--non-sticky":
+                elif opt == "--non-sticky":
                         sticky = False
-                if opt == "--search-before":
+                elif opt == "--search-before":
                         search_before = arg
-                if opt == "--search-after":
+                elif opt == "--search-after":
                         search_after = arg
-                        
-        if len(pargs) == 0:
+
+        name = None
+        if len(pargs) == 0 and not repo_uri:
                 usage(_("requires a publisher name"), cmd="set-publisher")
         elif len(pargs) > 1:
                 usage( _("only one publisher name may be specified"),
                     cmd="set-publisher",)
-
-        name = pargs[0]
+        elif pargs:
+                name = pargs[0]
 
         if preferred and disable:
-                usage(_("the -p and -d options may not be combined"),
+                usage(_("the -P and -d options may not be combined"),
                     cmd="set-publisher")
 
-        if origin_url and (add_origins or remove_origins):
+        if origin_uri and (add_origins or remove_origins):
                 usage(_("the -O and -g, --add-origin, -G, or --remove-origin "
                     "options may not be combined"), cmd="set-publisher")
 
@@ -2357,30 +2421,234 @@ def publisher_set(img, args):
                 usage(_("search_before and search_after may not be combined"),
                       cmd="set-publisher")
 
+        if repo_uri and (add_origins or add_mirrors or remove_origins or
+            remove_mirrors or disable != None or not refresh_allowed or
+            reset_uuid):
+                usage(_("the -p option may not be combined with the -g, "
+                    "--add-origin, -G, --remove-origin, -m, --add-mirror, "
+                    "-M, --remove-mirror, --enable, --disable, --no-refresh, "
+                    "or --reset-uuid options"), cmd="set-publisher")
+
         api_inst = __api_alloc(img)
         if api_inst == None:
                 return EXIT_OOPS
 
-        new_pub = False
+        # Get sanitized SSL Cert/Key input values.
+        ssl_cert, ssl_key = _get_ssl_cert_key(api_inst.root, api_inst.is_zone,
+            ssl_cert, ssl_key)
+
+        if not repo_uri:
+                # Normal case.
+                ret = _set_pub_error_wrap(_add_update_pub, name, [],
+                    api_inst, name, disable=disable, sticky=sticky,
+                    origin_uri=origin_uri, add_mirrors=add_mirrors,
+                    remove_mirrors=remove_mirrors, add_origins=add_origins,
+                    remove_origins=remove_origins, ssl_cert=ssl_cert,
+                    ssl_key=ssl_key, search_before=search_before,
+                    search_after=search_after, reset_uuid=reset_uuid,
+                    refresh_allowed=refresh_allowed, preferred=preferred)
+                rval, rmsg = ret
+                if rmsg:
+                        error(rmsg, cmd="set-publisher")
+                return rval
+
+        pubs = None
+        # Automatic configuration via -p case.
+        def get_pubs():
+                repo = publisher.RepositoryURI(repo_uri,
+                    ssl_cert=ssl_cert, ssl_key=ssl_key)
+                return EXIT_OK, api_inst.get_publisherdata(repo=repo)
+
+        ret = None
         try:
-                pub = api_inst.get_publisher(prefix=name, alias=name,
-                    duplicate=True)
-                if reset_uuid:
-                        pub.reset_client_uuid()
-                repo = pub.selected_repository
-        except api_errors.PermissionsException, e:
-                error(e, cmd="set-publisher")
+                ret = _set_pub_error_wrap(get_pubs, name,
+                    [api_errors.UnsupportedRepositoryOperation])
+        except api_errors.UnsupportedRepositoryOperation, e:
+                # Fail if the operation can't be done automatically.
+                error(str(e), cmd="set-publisher")
+                logger.error(_("""
+To add a publisher using this repository, execute the following command as a
+privileged user:
+
+  pkg set-publisher -g %s <publisher>
+""") % repo_uri)
                 return EXIT_OOPS
-        except api_errors.UnknownPublisher:
-                if not origin_url and not add_origins:
-                        error(_("publisher does not exist. Use -g to define "
-                            "origin URI for new publisher."),
-                            cmd="set-publisher")
-                        return EXIT_OOPS
-                # No pre-existing, so create a new one.
-                repo = publisher.Repository()
-                pub = publisher.Publisher(name, repositories=[repo])
+        else:
+                rval, rmsg = ret
+                if rval != EXIT_OK:
+                        error(rmsg, cmd="set-publisher")
+                        return rval
+                pubs = rmsg
+
+        # For the automatic publisher configuration case, update or add
+        # publishers based on whether they exist and if they match any
+        # specified publisher prefix.
+        if not pubs:
+                error(_("""
+The specified repository did not contain any publisher configuration
+information.  This is likely the result of a repository configuration
+error.  Please contact the repository administrator for further
+assistance."""))
+                return EXIT_OOPS
+
+        if name and name not in pubs:
+                known = [p.prefix for p in pubs]
+                unknown = [name]
+                e = api_errors.UnknownRepositoryPublishers(known=known,
+                    unknown=unknown, location=repo_uri)
+                error(str(e))
+                return EXIT_OOPS
+
+        added = []
+        updated = []
+        failed = []
+
+        for src_pub in pubs:
+                prefix = src_pub.prefix
+                if name and prefix != name:
+                        # User didn't request this one.
+                        continue
+
+                src_repo = src_pub.selected_repository
+                if not src_repo:
+                        failed.append((prefix, _("""\
+    The retrieved publisher configuration information for %s
+    did not contain any repository configuration information
+    and so was ignored.  Please contact the repository
+    administrator for further assistance.""" % prefix)))
+                        continue
+
+                if not api_inst.has_publisher(prefix=prefix):
+                        rval, rmsg = _set_pub_error_wrap(_add_update_pub, name,
+                            [], api_inst, prefix, pub=src_pub,
+                            ssl_cert=ssl_cert, ssl_key=ssl_key, sticky=sticky,
+                            search_after=search_after,
+                            search_before=search_before)
+                        if rval == EXIT_OK:
+                                added.append(prefix)
+                else:
+                        # The update case is special and requires some
+                        # finesse.  In particular, the update should
+                        # only happen if the repo_uri specified is
+                        # already known to the existing publisher.  This
+                        # is just a sanity check to ensure that random
+                        # repositories can't attempt to hijack other
+                        # publishers.
+                        dest_pub = api_inst.get_publisher(prefix=prefix,
+                            duplicate=True)
+                        dest_repo = dest_pub.selected_repository
+
+                        if not dest_repo.has_origin(repo_uri):
+                                failed.append((prefix, _("""\
+    The specified repository location is not a known source of publisher
+    configuration updates for '%s'.
+
+    This new repository location must be added as an origin to the publisher
+    to accept configuration updates from this repository.""") % prefix))
+                                continue
+
+                        # Avoid duplicates by adding only those mirrors
+                        # or origins not already known.
+                        add_mirrors = [
+                            u.uri
+                            for u in src_repo.mirrors
+                            if u.uri not in dest_repo.mirrors
+                        ]
+                        add_origins = [
+                            u.uri
+                            for u in src_repo.origins
+                            if u.uri not in dest_repo.origins
+                        ]
+
+                        # Special bits to update; for these, take the new
+                        # value as-is (don't attempt to merge).
+                        for prop in ("collection_type", "description",
+                            "legal_uris", "name", "refresh_seconds",
+                            "registration_uri", "related_uris"):
+                                src_val = getattr(src_repo, prop)
+                                if src_val is not None:
+                                        setattr(dest_repo, prop, src_val)
+
+                        # If an alias doesn't already exist, update it too.
+                        if src_pub.alias and not dest_pub.alias:
+                                dest_pub.alias = src_pub.alias
+
+                        rval, rmsg = _set_pub_error_wrap(_add_update_pub, name,
+                            [], api_inst, prefix, pub=dest_pub,
+                            add_mirrors=add_mirrors, add_origins=add_origins)
+
+                        if rval == EXIT_OK:
+                                updated.append(prefix)
+
+                if rval != EXIT_OK:
+                        if rmsg:
+                                error(rmsg, cmd="set-publisher")
+                        failed.append((prefix, msg))
+                        continue
+
+        first = True
+        for pub, rmsg in failed:
+                if first:
+                        first = False
+                        error("failed to add or update one or more "
+                            "publishers", cmd="set-publisher")
+                logger.error("  %s:" % pub)
+                logger.error(rmsg)
+
+        if added or updated:
+                if first:
+                        logger.info("pkg set-publisher:")
+                if added:
+                        logger.info(_("  Added publisher(s): %s") %
+                            ", ".join(added))
+                if updated:
+                        logger.info(_("  Updated publisher(s): %s") %
+                            ", ".join(updated))
+
+        if failed:
+                if len(failed) != len(pubs):
+                        # Not all publishers retrieved could be added or
+                        # updated.
+                        return EXIT_PARTIAL
+                return EXIT_OOPS
+
+        # Now that the configuration was successful, attempt to refresh the
+        # catalog data for all of the configured publishers.  If the refresh
+        # had been allowed earlier while configuring each publisher, then this
+        # wouldn't be necessary and some possibly invalid configuration could
+        # have been eliminated sooner.  However, that would be much slower as
+        # each refresh requires a client image state rebuild.
+        return __refresh(api_inst, added + updated)
+
+def _add_update_pub(api_inst, prefix, pub=None, disable=None, sticky=None,
+    origin_uri=None, add_mirrors=EmptyI, remove_mirrors=EmptyI,
+    add_origins=EmptyI, remove_origins=EmptyI, ssl_cert=None, ssl_key=None,
+    search_before=None, search_after=None, reset_uuid=None,
+    refresh_allowed=False, preferred=False):
+
+        repo = None
+        new_pub = False
+        if not pub:
+                try:
+                        pub = api_inst.get_publisher(prefix=prefix,
+                            alias=prefix, duplicate=True)
+                        if reset_uuid:
+                                pub.reset_client_uuid()
+                        repo = pub.selected_repository
+                except api_errors.UnknownPublisher:
+                        if not origin_uri and not add_origins:
+                                return EXIT_OOPS, _("publisher does not exist. "
+                                    "Use -g to define origin URI for new "
+                                    "publisher.")
+                        # No pre-existing, so create a new one.
+                        repo = publisher.Repository()
+                        pub = publisher.Publisher(prefix, repositories=[repo])
+                        new_pub = True
+        elif not api_inst.has_publisher(prefix=pub.prefix):
                 new_pub = True
+
+        if not repo:
+                repo = pub.selected_repository
 
         if disable is not None:
                 # Set disabled property only if provided.
@@ -2390,30 +2658,27 @@ def publisher_set(img, args):
                 # Set stickiness only if provided
                 pub.sticky = sticky
 
-        if origin_url:
+        if origin_uri:
                 # For compatibility with old -O behaviour, treat -O as a wipe
                 # of existing origins and add the new one.
-                try:
-                        # Only use existing cert information if the new URI uses
-                        # https for transport.
-                        if repo.origins and not (ssl_cert or ssl_key) and \
-                            origin_url.startswith("https:"):
-                                for uri in repo.origins:
-                                        if ssl_cert is None:
-                                                ssl_cert = uri.ssl_cert
-                                        if ssl_key is None:
-                                                ssl_key = uri.ssl_key
-                                        break
 
-                        repo.reset_origins()
-                        repo.add_origin(origin_url)
+                # Only use existing cert information if the new URI uses
+                # https for transport.
+                if repo.origins and not (ssl_cert or ssl_key) and \
+                    origin_uri.startswith("https:"):
+                        for uri in repo.origins:
+                                if ssl_cert is None:
+                                        ssl_cert = uri.ssl_cert
+                                if ssl_key is None:
+                                        ssl_key = uri.ssl_key
+                                break
 
-                        # XXX once image configuration supports storing this
-                        # information at the uri level, ssl info should be set
-                        # here.
-                except api_errors.PublisherError, e:
-                        error(e, cmd="set-publisher")
-                        return EXIT_OOPS
+                repo.reset_origins()
+                repo.add_origin(origin_uri)
+
+                # XXX once image configuration supports storing this
+                # information at the uri level, ssl info should be set
+                # here.
 
         for entry in (("mirror", add_mirrors, remove_mirrors), ("origin",
             add_origins, remove_origins)):
@@ -2421,78 +2686,34 @@ def publisher_set(img, args):
                 # XXX once image configuration supports storing this
                 # information at the uri level, ssl info should be set
                 # here.
-                try:
-                        for u in add:
-                                getattr(repo, "add_%s" % etype)(u)
-                        for u in remove:
-                                getattr(repo, "remove_%s" % etype)(u)
-                except (api_errors.PublisherError,
-                    api_errors.CertificateError), e:
-                        error(e, cmd="set-publisher")
-                        return EXIT_OOPS
+                for u in add:
+                        getattr(repo, "add_%s" % etype)(u)
+                for u in remove:
+                        getattr(repo, "remove_%s" % etype)(u)
 
         # None is checked for here so that a client can unset a ssl_cert or
         # ssl_key by using -k "" or -c "".
         if ssl_cert is not None or ssl_key is not None:
-                #
-                # In the case of zones, the ssl cert given is assumed to
-                # be relative to the root of the image, not truly absolute.
-                #
-                if img.is_zone():
-                        if ssl_cert is not None:
-                                ssl_cert = os.path.abspath(
-                                    img.get_root() + os.sep + ssl_cert)
-                        if ssl_key is not None:
-                                ssl_key = os.path.abspath(
-                                    img.get_root() + os.sep + ssl_key)
-                else:
-                        if ssl_cert and not os.path.isabs(ssl_cert):
-                                ssl_cert = os.path.normpath(orig_cwd + os.sep + ssl_cert)
-                        if ssl_key and not os.path.isabs(ssl_key):
-                                ssl_key = os.path.normpath(orig_cwd + os.sep + ssl_key)
-
                 # Assume the user wanted to update the ssl_cert or ssl_key
                 # information for *all* of the currently selected
                 # repository's origins and mirrors.
-                try:
-                        for uri in repo.origins:
-                                if ssl_cert is not None:
-                                        uri.ssl_cert = ssl_cert
-                                if ssl_key is not None:
-                                        uri.ssl_key = ssl_key
-                        for uri in repo.mirrors:
-                                if ssl_cert is not None:
-                                        uri.ssl_cert = ssl_cert
-                                if ssl_key is not None:
-                                        uri.ssl_key = ssl_key
-                except (api_errors.PublisherError,
-                    api_errors.CertificateError), e:
-                        error(e, cmd="set-publisher")
-                        return EXIT_OOPS
+                for uri in repo.origins:
+                        if ssl_cert is not None:
+                                uri.ssl_cert = ssl_cert
+                        if ssl_key is not None:
+                                uri.ssl_key = ssl_key
+                for uri in repo.mirrors:
+                        if ssl_cert is not None:
+                                uri.ssl_cert = ssl_cert
+                        if ssl_key is not None:
+                                uri.ssl_key = ssl_key
 
-        try:
-                if new_pub:
-                        api_inst.add_publisher(pub,
-                            refresh_allowed=refresh_catalogs)
-                else:
-                        api_inst.update_publisher(pub,
-                            refresh_allowed=refresh_catalogs)
-        except api_errors.CatalogRefreshException, e:
-                text = "Could not refresh the catalog for %s"
-                error(_(text) % pub)
-                return EXIT_OOPS
-        except api_errors.InvalidDepotResponseException, e:
-                error(_("The origin URIs for '%(pubname)s' do not appear to "
-                    "point to a valid pkg server.\nPlease check the server's "
-                    "address and client's network configuration."
-                    "\nAdditional details:\n\n%(details)s") %
-                    { "pubname": pub.prefix, "details": e })
-                return EXIT_OOPS
-        except api_errors.PermissionsException, e:
-                # Prepend a newline because otherwise the exception will
-                # be printed on the same line as the spinner.
-                error("\n" + str(e))
-                return EXIT_OOPS
+        if new_pub:
+                api_inst.add_publisher(pub,
+                    refresh_allowed=refresh_allowed)
+        else:
+                api_inst.update_publisher(pub,
+                    refresh_allowed=refresh_allowed)
 
         if preferred:
                 api_inst.set_preferred_publisher(prefix=pub.prefix)
@@ -2503,8 +2724,7 @@ def publisher_set(img, args):
         if search_after:
                 api_inst.set_pub_search_after(pub.prefix, search_after)
 
-
-        return EXIT_OK
+        return EXIT_OK, None
 
 def publisher_unset(img, args):
         """pkg unset-publisher publisher ..."""
@@ -2937,7 +3157,7 @@ def variant_list(img, args):
                 msg(fmt % (p, variants[p]))
 
         return EXIT_OK
-        
+
 def facet_list(img, args):
         """pkg facet [-H] [<facet_spec>]"""
 
@@ -2972,7 +3192,7 @@ def facet_list(img, args):
                 msg(fmt % (p, facets[p]))
 
         return EXIT_OK
-       
+
 def image_create(args):
         """Create an image of the requested kind, at the given path.  Load
         catalog for initial publisher for convenience.
@@ -2983,12 +3203,13 @@ def image_create(args):
         kernel statistics or device information."""
 
         force = False
-        imgtype = image.IMG_USER
+        imgtype = IMG_TYPE_USER
         is_zone = False
-        mirrors = set()
-        origins = set()
+        add_mirrors = set()
+        add_origins = set()
         pub_name = None
-        refresh_catalogs = True
+        pub_url = None
+        refresh_allowed = True
         ssl_key = None
         ssl_cert = None
         variants = {}
@@ -3006,34 +3227,28 @@ def image_create(args):
                                 pub_name, pub_url = arg.split("=", 1)
                         except ValueError:
                                 pub_name = None
-                                pub_url = None
-
-                        if pub_name is None or pub_url is None:
-                                usage(_("publisher argument must be of the "
-                                    "form '<prefix>=<url>'."),
-                                    cmd="image-create")
-                        origins.add(pub_url)
+                                pub_url = arg
                 elif opt == "-c":
                         ssl_cert = arg
                 elif opt == "-f" or opt == "--force":
                         force = True
                 elif opt in ("-g", "--origin"):
-                        origins.add(arg)
+                        add_origins.add(arg)
                 elif opt == "-k":
                         ssl_key = arg
                 elif opt in ("-m", "--mirror"):
-                        mirrors.add(arg)
+                        add_mirrors.add(arg)
                 elif opt == "-z" or opt == "--zone":
                         is_zone = True
-                        imgtype = image.IMG_ENTIRE
+                        imgtype = IMG_TYPE_ENTIRE
                 elif opt == "-F" or opt == "--full":
-                        imgtype = imgtypes.IMG_ENTIRE
+                        imgtype = IMG_TYPE_ENTIRE
                 elif opt == "-P" or opt == "--partial":
-                        imgtype = imgtypes.IMG_PARTIAL
+                        imgtype = IMG_TYPE_PARTIAL
                 elif opt == "-U" or opt == "--user":
-                        imgtype = imgtypes.IMG_USER
+                        imgtype = IMG_TYPE_USER
                 elif opt == "--no-refresh":
-                        refresh_catalogs = False
+                        refresh_allowed = False
                 elif opt == "--variant":
                         try:
                                 v_name, v_value = arg.split("=", 1)
@@ -3055,74 +3270,44 @@ def image_create(args):
                                     cmd="image-create")
                         facets[f_name] = allow[f_value.upper()]
 
-        if len(pargs) != 1:
+        if not pargs:
+                usage(_("an image directory path must be specified"),
+                    cmd="image-create")
+        elif len(pargs) > 1:
                 usage(_("only one image directory path may be specified"),
                     cmd="image-create")
         image_dir = pargs[0]
 
-        if ssl_key:
-                # When creating zones, the path is image-root-relative.
-                if is_zone:
-                        ssl_key = os.path.normpath(image_dir + os.sep + \
-                            ssl_key)
-                else:
-                        ssl_key = os.path.abspath(ssl_key)
-
-        if ssl_cert:
-                # When creating zones, the path is image-root-relative.
-                if is_zone:
-                        ssl_cert = os.path.normpath(image_dir + os.sep + \
-                            ssl_cert)
-                else:
-                        ssl_cert = os.path.abspath(ssl_cert)
-
-        if not pub_name and not origins:
-                usage(_("a publisher must be specified"), cmd="image-create")
-
-        if not pub_name or not origins:
+        if not pub_name and not pub_url:
                 usage(_("publisher argument must be of the form "
-                    "'<prefix>=<url>'."), cmd="image-create")
+                    "'<prefix>=<uri> or '<uri>''."), cmd="image-create")
+        elif not pub_name and not refresh_allowed:
+                usage(_("--no-refresh cannot be used with -p unless a "
+                    "publisher prefix is provided."))
 
-        if pub_name.startswith(fmri.PREF_PUB_PFX):
-                error(_("a publisher's prefix may not start with the text: %s"
-                        % fmri.PREF_PUB_PFX), cmd="image-create")
-                return EXIT_OOPS
+        if not refresh_allowed and pub_url:
+                # Auto-config can't be done if refresh isn't allowed, so treat
+                # this as a manual configuration case.
+                add_origins.add(pub_url)
+                repo_uri = None
+        else:
+                repo_uri = pub_url
 
-        if not misc.valid_pub_prefix(pub_name):
-                error(_("publisher prefix contains invalid characters"),
-                    cmd="image-create")
-                return EXIT_OOPS
+        # Get sanitized SSL Cert/Key input values.
+        ssl_cert, ssl_key = _get_ssl_cert_key(image_dir, is_zone, ssl_cert,
+            ssl_key)
 
         global __img
         try:
                 progtrack = get_tracker()
-                __img = img = image.Image(root=image_dir, imgtype=imgtype,
-                    should_exist=False, progtrack=progtrack, force=force)
-                img.set_attrs(is_zone, pub_name, facets=facets,
-                    origins=origins, ssl_key=ssl_key, ssl_cert=ssl_cert,
-                    refresh_allowed=refresh_catalogs, progtrack=progtrack,
-                    variants=variants, mirrors=mirrors)
-                img.cleanup_downloads()
-        except OSError, e:
-                # Ensure messages are displayed after the spinner.
-                img.cleanup_downloads()
-                logger.error("\n")
-                error(_("cannot create image at %(image_dir)s: %(reason)s") %
-                    { "image_dir": image_dir, "reason": e.args[1] },
-                    cmd="image-create")
-                return EXIT_OOPS
-        except api_errors.PublisherError, e:
-                error(e, cmd="image-create")
-                return EXIT_OOPS
-        except api_errors.PermissionsException, e:
-                # Ensure messages are displayed after the spinner.
-                img.cleanup_downloads()
-                logger.error("")
-                error(e, cmd="image-create")
-                return EXIT_OOPS
+                api_inst = api.image_create(PKG_CLIENT_NAME, CLIENT_API_VERSION,
+                    image_dir, imgtype, is_zone, facets=facets, force=force,
+                    mirrors=add_mirrors, origins=add_origins, prefix=pub_name,
+                    progtrack=progtrack, refresh_allowed=refresh_allowed,
+                    repo_uri=repo_uri, variants=variants)
+                __img = api_inst.img
         except api_errors.InvalidDepotResponseException, e:
                 # Ensure messages are displayed after the spinner.
-                img.cleanup_downloads()
                 logger.error("\n")
                 error(_("The URI '%(pub_url)s' does not appear to point to a "
                     "valid pkg server.\nPlease check the server's "
@@ -3134,14 +3319,13 @@ def image_create(args):
                 return EXIT_OOPS
         except api_errors.CatalogRefreshException, cre:
                 # Ensure messages are displayed after the spinner.
-                img.cleanup_downloads()
                 error("", cmd="image-create")
                 if display_catalog_failures(cre) == 0:
                         return EXIT_OOPS
                 else:
                         return EXIT_PARTIAL
-        except api_errors.ImageCreationException, e:
-                error(e, cmd="image-create")
+        except api_errors.ApiException, e:
+                error(str(e), cmd="image-create")
                 return EXIT_OOPS
         return EXIT_OK
 
@@ -3277,7 +3461,7 @@ def history_purge(img, pargs):
         if ret_code == EXIT_OK:
                 msg(_("History purged."))
         return ret_code
-                
+
 def print_proxy_config():
         """If the user has configured http_proxy or https_proxy in the
         environment, print out the values.  Some transport errors are
@@ -3314,7 +3498,7 @@ def main_func():
                         if not orig_cwd or orig_cwd[0] != "/":
                                 orig_cwd = None
                 except KeyError:
-                                orig_cwd = None
+                        orig_cwd = None
 
         try:
                 opts, pargs = getopt.getopt(sys.argv[1:], "R:D:?",

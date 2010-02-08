@@ -45,6 +45,7 @@ import pkg.fmri
 import pkg.manifest as manifest
 import pkg.misc as misc
 import pkg.nrlock as nrlock
+import pkg.p5i as p5i
 import pkg.portable as portable
 import pkg.updatelog as updatelog
 
@@ -502,27 +503,31 @@ class Transport(object):
                                 tfailurex.append(f)
                         raise tfailurex
 
-        def get_publisherinfo(self, pub, ccancel=None):
+        def get_publisherdata(self, pub, ccancel=None):
                 """Given a publisher pub, return the publisher/0
-                information in a StringIO object.""" 
+                information as a list of publisher objects.  If
+                no publisher information was contained in the
+                response, the list will be empty."""
 
                 self.__lock.acquire()
                 try:
-                        publisher_info = self._get_publisherinfo(pub,
+                        return self._get_publisherdata(pub,
                             ccancel=ccancel)
                 finally:
                         self.__lock.release()
 
-                return publisher_info
-
-        def _get_publisherinfo(self, pub, ccancel=None):
-                """Implementation of get_publisherinfo.  This routine
+        def _get_publisherdata(self, pub, ccancel=None):
+                """Implementation of get_publisherdata.  This routine
                 implements the method, the other is an external interface
                 and lock wrapper."""
 
                 retry_count = global_settings.PKG_CLIENT_MAX_TIMEOUT
                 failures = tx.TransportFailures()
-                header = self.__build_header(uuid=self.__get_uuid(pub))
+                repo_found = False
+                header = None
+
+                if isinstance(pub, publisher.Publisher):
+                        header = self.__build_header(uuid=self.__get_uuid(pub))
 
                 # Call setup if the transport isn't configured or was shutdown.
                 if not self.__engine:
@@ -530,26 +535,42 @@ class Transport(object):
 
                 for d in self.__gen_origins_byversion(pub, retry_count,
                     "publisher", 0, ccancel=ccancel):
-
+                        repo_found = True
                         try:
                                 resp = d.get_publisherinfo(header,
                                     ccancel=ccancel)
-
                                 infostr = resp.read()
-                                s = cStringIO.StringIO(infostr)
-                                return s
 
+                                # If parse succeeds, then the data is valid.
+                                pub_data = p5i.parse(data=infostr)
+                                return [pub for pub, ignored in pub_data if pub]
                         except tx.ExcessiveTransientFailure, e:
                                 # If an endpoint experienced so many failures
                                 # that we just gave up, grab the list of
                                 # failures that it contains
                                 failures.extend(e.failures)
 
+                        except apx.InvalidP5IFile, e:
+                                url = d.get_url()
+                                exc = tx.TransferContentException(url,
+                                    "api_errors.InvalidP5IFile:%s" %
+                                    (" ".join([str(a) for a in e.args])))
+                                repostats = self.stats[url]
+                                repostats.record_error(content=True)
+                                if exc.retryable:
+                                        failures.append(exc)
+                                else:
+                                        raise exc
+
                         except tx.TransportException, e:
                                 if e.retryable:
                                         failures.append(e)
                                 else:
                                         raise
+
+                if not repo_found:
+                        raise apx.UnsupportedRepositoryOperation(pub,
+                            "publisher/0")
                 raise failures
 
         def get_content(self, fmri, fhash, ccancel=None):

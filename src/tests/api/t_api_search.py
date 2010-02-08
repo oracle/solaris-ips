@@ -49,7 +49,7 @@ import pkg.portable as portable
 import pkg.search_storage as ss
 import pkg.server.repository as srepo
 
-API_VERSION = 31
+API_VERSION = 32
 PKG_CLIENT_NAME = "pkg"
 
 class TestApiSearchBasics(pkg5unittest.SingleDepotTestCase):
@@ -2236,7 +2236,7 @@ class TestApiSearchBasics_nonP(TestApiSearchBasics):
                     self.res_remote_path, servers=[{"origin": durl}])
                 lfh = file(self.dc.get_logpath(), "rb")
                 found = 0
-                num_expected = 8
+                num_expected = 7
                 for line in lfh:
                         if "X-IPKG-UUID:" in line:
                                 tmp = line.split()
@@ -2508,7 +2508,7 @@ class TestApiSearchMulti(pkg5unittest.ManyDepotTestCase):
                     set(), servers=[{"origin": self.durl1}])
                 self._search_op(api_obj, True, "example_path",
                     set(), servers=[{"origin": self.durl3}])
-                num_expected = { 1: 7, 2: 4, 3: 0 }
+                num_expected = { 1: 6, 2: 5, 3: 0 }
                 for d in range(1,(len(self.dcs) + 1)):
                         try:
                                 pub = api_obj.img.get_publisher(

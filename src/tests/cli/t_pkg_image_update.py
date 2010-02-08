@@ -100,24 +100,29 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
             close """
 
         def setUp(self):
+                # Two repositories are created for test2.
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2",
-                    "test3", "test4", "test5"])
+                    "test2", "test4", "test5"])
                 durl1 = self.dcs[1].get_depot_url()
                 durl2 = self.dcs[2].get_depot_url()
-                durl4 = self.dcs[2].get_depot_url()
-                durl5 = self.dcs[2].get_depot_url()
+                durl4 = self.dcs[4].get_depot_url()
+                durl5 = self.dcs[5].get_depot_url()
                 self.pkgsend_bulk(durl1, self.foo10 + self.foo11 + \
                     self.baz11 + self.qux10 + self.qux11 + self.quux10 + \
                     self.quux11 + self.corge11)
+
                 self.pkgsend_bulk(durl2, self.foo10 + self.bar10 + \
                     self.bar11 + self.baz10 + self.qux10 + self.qux11 + \
                     self.quux10 + self.quux11 + self.corge10)
-                self.pkgsend_bulk(durl4, self.foo10 + self.bar10 + \
-                    self.bar11 + self.baz10 + self.qux10 + self.qux11 + \
-                    self.quux10 + self.quux11 + self.corge10)
-                self.pkgsend_bulk(durl5, self.foo10 + self.bar10 + \
-                    self.bar11 + self.baz10 + self.qux10 + self.qux11 + \
-                    self.quux10 + self.quux11 + self.corge10)
+
+                # Copy contents of repository 2 to repos 4 and 5.
+                for i in (4, 5):
+                        self.dcs[i].stop()
+                        self.dcs[i].set_rebuild()
+                        self.copy_repository(self.dcs[2].get_repodir(), "test1",
+                                self.dcs[i].get_repodir(), "test%d" % i)
+                        self.dcs[i].start()
+                        self.dcs[i].set_norebuild()
 
         def test_image_update_bad_opts(self):
                 """Test image-update with bad options."""
@@ -178,7 +183,6 @@ class TestImageUpdate(pkg5unittest.ManyDepotTestCase):
 
                 durl1 = self.dcs[1].get_depot_url()
                 durl2 = self.dcs[2].get_depot_url()
-                durl3 = self.dcs[3].get_depot_url()
                 self.image_create(durl1, prefix="test1")
 
                 # First, verify that the preferred status of a publisher will

@@ -1,3 +1,27 @@
+Version 32:
+Incompatible with clients using versions 0-31.
+
+    The ImageInterface class has changed as follows:
+        * The add_publisher and update_publisher methods now validate
+          the image's publisher configuration against the origins of
+          the publisher.  If any of the origins are found to not match,
+          an UnknownRepositoryPublishers exception will be raised.
+          If one of the new repository origins does not provide
+          publisher configuration information or it is incomplete,
+          a RepoPubConfigUnavailable exception will be raised.
+
+    The pkg.client.api module has changed as follows:
+        * A new method named image_create has been added.  See 'pydoc
+          pkg.client.api' for details.
+
+    The pkg.client.api_errors modules has changed as follows:
+        * UnknownRepositoryPublishers, RepoPubConfigUnavailable, and
+          UnknownErrors expections have been added for use by the
+          pkg.client.api.  API consumers are reminded that they should
+          catch all ApiException class exceptions, although catching
+          specific exception subclasses for case-by-case handling in
+          addition to that is acceptable.
+
 Version 31:
 Compatible with clients using version 30.
     All image-modifying operations now lock the image for exclusive use

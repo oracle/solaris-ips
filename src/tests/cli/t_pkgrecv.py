@@ -111,9 +111,9 @@ class TestPkgrecvMulti(pkg5unittest.ManyDepotTestCase):
                 """ Start two depots.
                     depot 1 gets foo and moo, depot 2 gets foo and bar
                     depot1 is mapped to publisher test1 (preferred)
-                    depot2 is mapped to publisher test2 """
+                    depot2 is mapped to publisher test1 (alternate) """
 
-                pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2"])
+                pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test1"])
 
                 self.make_misc_files(self.misc_files)
 

@@ -70,7 +70,7 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
 
         def setUp(self):
                 pkg5unittest.ManyDepotTestCase.setUp(self, ["test1", "test2",
-                    "test3"])
+                    "test2"])
 
                 durl1 = self.dcs[1].get_depot_url()
                 self.pkgsend_bulk(durl1, self.foo1 + self.foo10 + self.foo11 + \
@@ -305,7 +305,14 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 # installed for test2, and test3 shouldn't be listed since the
                 # packages in the specified repository are for publisher test2.
                 self.pkg("unset-publisher test2")
-                self.pkg("set-publisher -O %s test3" % durl2)
+
+                # A refresh has to be prevented here as set-publisher will not
+                # allow the provided repository URI as it is for a different
+                # publisher.  However, since this test is checking for the case
+                # where a different publisher's data is now being used for
+                # a publisher, this can be worked around.
+                self.pkg("set-publisher --no-refresh -O %s test3" % durl2)
+                self.pkg("refresh test3")
                 self.pkg("list -aHf foo@1.0")
                 expected = \
                     "foo 1.0-0 known u----\n" + \
@@ -489,7 +496,8 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
         def test_list_z_empty_image(self):
                 """ pkg list should fail in an empty image """
 
-                self.image_create(self.dcs[1].get_depot_url())
+                self.image_create(self.dcs[1].get_depot_url(),
+                    prefix="test1")
                 self.pkg("list", exit=1)
 
 if __name__ == "__main__":

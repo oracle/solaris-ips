@@ -831,11 +831,11 @@ class InvalidP5IFile(DataError):
 
         def __str__(self):
                 if self.data:
-                        return _("The specified file is in an unrecognized "
+                        return _("The provided p5i data is in an unrecognized "
                             "format or does not contain valid publisher "
                             "information: %s") % self.data
-                return _("The specified file is in an unrecognized format or "
-                    "does not contain valid publisher information.")
+                return _("The provided p5i data is in an unrecognized format "
+                    "or does not contain valid publisher information.")
 
 
 class UnsupportedP5IFile(DataError):
@@ -1173,6 +1173,46 @@ class UnknownPublisher(PublisherError):
                 return _("Unknown publisher '%s'.") % self.data
 
 
+class UnknownRepositoryPublishers(PublisherError):
+        """Used to indicate that one or more publisher prefixes are unknown by
+        the specified repository."""
+
+        def __init__(self, known=EmptyI, unknown=EmptyI, location=None,
+            origins=EmptyI):
+                ApiException.__init__(self)
+                self.known = known
+                self.location = location
+                self.origins = origins
+                self.unknown = unknown
+
+        def __str__(self):
+                if self.location:
+                        return _("The repository at %(location)s does not "
+                            "contain package data for %(unknown)s; only "
+                            "%(known)s.\n\nThis is either because the "
+                            "repository location is not valid, or because the "
+                            "provided publisher does not match those known by "
+                            "the repository.") % {
+                            "unknown": ", ".join(self.unknown),
+                            "location": self.location,
+                            "known": ", ".join(self.known) }
+                if self.origins:
+                        return _("One or more of the repository origin(s) "
+                            "listed below contains package data for "
+                            "%(known)s; not %(unknown)s:\n\n%(origins)s\n\n"
+                            "This is either because one of the repository "
+                            "origins is not valid for this publisher, or "
+                            "because the list of known publishers retrieved "
+                            "from the repository origin does not match the "
+                            "client.") % { "unknown": ", ".join(self.unknown),
+                            "known": ", ".join(self.known),
+                            "origins": "\n".join(str(o) for o in self.origins) }
+                return _("The specified publisher repository does not "
+                    "contain any package data for %(unknown)s; only "
+                    "%(known)s.") % { "unknown": ", ".join(self.unknown),
+                    "known": ", ".join(self.known) }
+
+
 class UnknownRelatedURI(PublisherError):
         """Used to indicate that no matching related URI could be found using
         the provided criteria."""
@@ -1209,7 +1249,31 @@ class UnsupportedRepositoryOperation(PublisherError):
 
         def __str__(self):
                 return _("Publisher '%s' has no repositories that support the"
-                    " '%s' operation.") % (self.pub.prefix, self.op)
+                    " '%s' operation.") % (self.pub, self.op)
+
+
+class RepoPubConfigUnavailable(PublisherError):
+        """Used to indicate that the specified repository does not provide
+        publisher configuration information."""
+
+        def __init__(self, location=None, pub=None):
+                ApiException.__init__(self)
+                self.location = location
+                self.pub = pub
+
+        def __str__(self):
+                if not self.location and not self.pub:
+                        return _("The specified package repository does not "
+                            "provide publisher configuration information.")
+                if self.location:
+                        return _("The package repository at %s does not "
+                            "provide publisher configuration information or "
+                            "the information provided is incomplete.") % \
+                            self.location
+                return _("One of the package repository origins for %s does "
+                    "not provide publisher configuration information or the "
+                    "information provided is incomplete.") % self.pub
+
 
 class UnknownRepositoryOrigin(PublisherError):
         """Used to indicate that a repository URI could not be found in the
@@ -1446,9 +1510,26 @@ class BadManifestSignatures(ManifestError):
                             "'%s' package is not valid.") % self.data
                 return _("The signature data for the manifest is not valid.")
 
+
+class UnknownErrors(ApiException):
+        """Used to indicate that one or more exceptions were encountered.
+        This is intended for use with where multiple exceptions for multiple
+        files are encountered and the errors have been condensed into a
+        single exception and re-raised.  One example case would be rmtree()
+        with shutil.Error."""
+
+        def __init__(self, msg):
+                ApiException.__init__(self)
+                self.__msg = msg
+
+        def __str__(self):
+                return self.__msg
+
+
 # Image creation exceptions
 class ImageCreationException(ApiException):
         def __init__(self, path):
+                ApiException.__init__(self)
                 self.path = path
 
         def __str__(self):

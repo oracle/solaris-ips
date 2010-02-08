@@ -37,14 +37,16 @@ import urlparse
 CURRENT_VERSION = 1
 MIME_TYPE = "application/vnd.pkg5.info"
 
-def parse(fileobj=None, location=None):
-        """Reads the pkg(5) publisher json formatted data at 'location'
+def parse(data=None, fileobj=None, location=None):
+        """Reads the pkg(5) publisher JSON formatted data at 'location'
         or from the provided file-like object 'fileobj' and returns a
         list of tuples of the format (publisher object, pkg_names).
         pkg_names is a list of strings representing package names or
         FMRIs.  If any pkg_names not specific to a publisher were
         provided, the last tuple returned will be of the format (None,
         pkg_names).
+
+        'data' is an optional string containing the p5i data.
 
         'fileobj' is an optional file-like object that must support a
         'read' method for retrieving data.
@@ -54,9 +56,9 @@ def parse(fileobj=None, location=None):
         If it is a URI string, supported protocol schemes are 'file',
         'ftp', 'http', and 'https'.
 
-        'fileobj' or 'location' must be provided."""
+        'data' or 'fileobj' or 'location' must be provided."""
 
-        if location is None and fileobj is None:
+        if not data and not location and not fileobj:
                 raise api_errors.InvalidResourceLocation(location)
 
         if location:
@@ -74,11 +76,14 @@ def parse(fileobj=None, location=None):
                             location=location)
 
         try:
-                dump_struct = json.load(fileobj)
+                if data:
+                        dump_struct = json.loads(data)
+                else:
+                        dump_struct = json.load(fileobj)
         except (EnvironmentError, urllib2.HTTPError), e:
                 raise api_errors.RetrievalError(e)
         except ValueError, e:
-                # Not a valid json file.
+                # Not a valid JSON file.
                 raise api_errors.InvalidP5IFile(e)
 
         try:
@@ -138,7 +143,7 @@ def parse(fileobj=None, location=None):
 
 def write(fileobj, pubs, pkg_names=None):
         """Writes the publisher, repository, and provided package names to the
-        provided file-like object 'fileobj' in json p5i format.
+        provided file-like object 'fileobj' in JSON p5i format.
 
         'fileobj' is an object that has a 'write' method that accepts data to be
         written as a parameter.
