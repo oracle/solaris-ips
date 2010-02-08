@@ -207,7 +207,11 @@ def _get_pkg_cat_data(cat, info_needed, actions=None,
                 if attr_name == "pkg.summary":
                         if get_summ:
                                 summ = a.attrs["value"]
-                elif attr_name in ("description", "pkg.description"):
+                elif attr_name == "description":
+                        if get_summ and summ is None:
+                                # Historical summary field.
+                                summ = a.attrs["value"]
+                elif attr_name == "pkg.description":
                         desc = a.attrs["value"]
                 elif cat_info != None and a.has_category_info():
                         cat_info.extend(a.parse_category_info())

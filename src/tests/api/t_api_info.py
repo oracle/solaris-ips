@@ -69,6 +69,7 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
 
                 pkg1 = """
                     open jade@1.0,5.11-0
+                    add set name=description value="Ye Olde Summary"
                     add dir mode=0755 owner=root group=bin path=/bin
                     add set name=info.classification value="org.opensolaris.category.2008:Applications/Sound and Video"
                     close
@@ -116,6 +117,13 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                     close
                 """
 
+                pkg7 = """
+                    open amber@1.0,5.11-0
+                    add set name=description value="Amber's Olde Summary"
+                    add set name=pkg.summary value="Amber's Actual Summary"
+                    close
+                """
+
                 durl = self.dc.get_depot_url()
 
                 self.pkgsend_bulk(durl, pkg1)
@@ -123,6 +131,7 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                 self.pkgsend_bulk(durl, pkg4)
                 self.pkgsend_bulk(durl, pkg5)
                 self.pkgsend_bulk(durl, pkg6)
+                self.pkgsend_bulk(durl, pkg7)
 
                 self.image_create(durl)
 
@@ -174,16 +183,33 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                 notfound = ret[api.ImageInterface.INFO_MISSING]
                 illegals = ret[api.ImageInterface.INFO_ILLEGALS]
                 self.assert_(len(pis) == 1)
-                self.assert_(api.PackageInfo.INSTALLED in pis[0].states)
-                self.assert_(len(pis[0].category_info_list) == 1)
+                res = pis[0]
+                self.assert_(api.PackageInfo.INSTALLED in res.states)
+                self.assert_(len(res.category_info_list) == 1)
+                self.assertEqual(res.summary, "Ye Olde Summary")
+                self.assertEqual(res.description, None)
+
+                ret = api_obj.info(["amber"], local, info_needed)
+                pis = ret[api.ImageInterface.INFO_FOUND]
+                notfound = ret[api.ImageInterface.INFO_MISSING]
+                illegals = ret[api.ImageInterface.INFO_ILLEGALS]
+                self.assert_(len(pis) == 1)
+                res = pis[0]
+                self.assert_(api.PackageInfo.INSTALLED not in res.states)
+                self.assert_(len(res.category_info_list) == 0)
+                self.assertEqual(res.summary, "Amber's Actual Summary")
+                self.assertEqual(res.description, None)
 
                 ret = api_obj.info(["turquoise"], local, info_needed)
                 pis = ret[api.ImageInterface.INFO_FOUND]
                 notfound = ret[api.ImageInterface.INFO_MISSING]
                 illegals = ret[api.ImageInterface.INFO_ILLEGALS]
                 self.assert_(len(pis) == 1)
-                self.assert_(api.PackageInfo.INSTALLED not in pis[0].states)
-                self.assert_(len(pis[0].category_info_list) == 1)
+                res = pis[0]
+                self.assert_(api.PackageInfo.INSTALLED not in res.states)
+                self.assert_(len(res.category_info_list) == 1)
+                self.assertEqual(res.summary, "")
+                self.assertEqual(res.description, None)
 
                 ret = api_obj.info(["example_pkg"], local,
                     api.PackageInfo.ALL_OPTIONS)
@@ -215,6 +241,10 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                 # A test for bug 8868 which ensures the pkg.description field
                 # is as exected.
                 self.assertEqual(res.description, "DESCRIPTION 1")
+
+                # Verify that summary is pulled from the old "name=description"
+                # set action.
+                self.assertEqual(res.summary, "FOOO bAr O OO OOO")
 
                 ret = api_obj.info(["emerald"], local, info_needed)
                 pis = ret[api.ImageInterface.INFO_FOUND]

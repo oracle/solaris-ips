@@ -1245,9 +1245,9 @@ class ImageInterface(object):
                                         summ = atvalue
                                         continue
 
-                                if atname in ("description",
-                                    "pkg.description"):
+                                if atname == "description":
                                         if summ is None:
+                                                # Historical summary field.
                                                 summ = atvalue
                                         continue
 
