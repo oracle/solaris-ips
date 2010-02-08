@@ -290,17 +290,16 @@ class ImageConfig(object):
                         # search order (add them in alpha order to the end).
                         # Also ensure that all publishers in search order that
                         # are not known are removed.
-                        pfxs = self.__publishers.keys()
-                        pso = self.__publisher_search_order
-                        for i, pfx in enumerate(list(pso)):
-                                if pfx not in pfxs:
-                                        # Safe since iteration is over copy.
-                                        del pso[i]
-                        for pfx in sorted(pfxs):
-                                if pfx not in pso:
-                                        pso.append(pfx)
-                        self.__publisher_search_order = list(pso)
+                        known_pubs = set(self.__publishers.keys())
+                        sorted_pubs = set(self.__publisher_search_order)
+                        new_pubs = known_pubs - sorted_pubs
+                        old_pubs = sorted_pubs - known_pubs
 
+                        for pub in old_pubs:
+                                self.__publisher_search_order.remove(pub)
+
+                        self.__publisher_search_order.extend(sorted(new_pubs))
+                        
                 self.properties["publisher-search-order"] = \
                     str(self.__publisher_search_order)
 
