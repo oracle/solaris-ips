@@ -2195,29 +2195,52 @@ class ImageInterface(object):
                         return False
 
                 refresh_catalog = False
-                updated = False
                 disable = False
                 orig_pub = None
                 publishers = self.__img.get_publishers()
+
+                # First, attempt to match the updated publisher object to an
+                # existing one using the object id that was stored during
+                # copy().
                 for key, old in publishers.iteritems():
                         if pub._source_object_id == id(old):
+                                # Store the new publisher's id and the old
+                                # publisher object so it can be restored if the
+                                # update operation fails.
+                                orig_pub = (id(pub), old)
+                                break
+
+                if not orig_pub:
+                        # If a matching publisher couldn't be found and
+                        # replaced, something is wrong (client api usage
+                        # error).
+                        raise api_errors.UnknownPublisher(pub)
+
+                # Next, be certain that the publisher's prefix and alias
+                # are not already in use by another publisher.
+                for key, old in publishers.iteritems():
+                        if pub._source_object_id == id(old):
+                                # Don't check the object we're replacing.
+                                continue
+
+                        if pub.prefix == old.prefix or \
+                            pub.prefix == old.alias or \
+                            pub.alias and (pub.alias == old.alias or
+                            pub.alias == old.prefix):
+                                raise api_errors.DuplicatePublisher(pub)
+
+                # Next, determine what needs updating and add the updated
+                # publisher.
+                for key, old in publishers.iteritems():
+                        if pub._source_object_id == id(old):
+                                old = orig_pub[-1]
                                 if need_refresh(old, pub):
                                         refresh_catalog = True
                                 if not old.disabled and pub.disabled:
                                         disable = True
 
-                                # Store the new publisher's id and the old
-                                # publisher object so it can be restored if the
-                                # update operation fails.
-                                orig_pub = (id(pub), publishers[key])
-
                                 # Now remove the old publisher object using the
-                                # iterator key since the prefix might be
-                                # different for the new publisher object.
-                                updated = True
-
-                                # only if prefix is different - this
-                                # preserves search order
+                                # iterator key if the prefix has changed.
                                 if key != pub.prefix:
                                         del publishers[key]
 
@@ -2230,12 +2253,6 @@ class ImageInterface(object):
                                 # Finally, add the new publisher object.
                                 publishers[pub.prefix] = pub
                                 break
-
-                if not updated:
-                        # If a matching publisher couldn't be found and
-                        # replaced, something is wrong (client api usage
-                        # error).
-                        raise api_errors.UnknownPublisher(pub)
 
                 def cleanup():
                         new_id, old_pub = orig_pub

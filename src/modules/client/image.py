@@ -874,10 +874,16 @@ class Image(object):
 
                 'progtrack' is an optional ProgressTracker object."""
 
+                # API consumer error.
+                repo = pub.selected_repository
+                assert repo and repo.origins
+
                 with self.locked_op("add-publisher"):
                         for p in self.cfg_cache.publishers.values():
-                                if pub == p or (pub.alias and
-                                    pub.alias == p.alias):
+                                if pub.prefix == p.prefix or \
+                                    pub.prefix == p.alias or \
+                                    pub.alias and (pub.alias == p.alias or
+                                    pub.alias == p.prefix):
                                         raise api_errors.DuplicatePublisher(pub)
 
                         if not progtrack:

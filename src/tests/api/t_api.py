@@ -616,6 +616,51 @@ class TestPkgApi(pkg5unittest.SingleDepotTestCase):
                 api_obj.get_publisher(prefix=pub.prefix)
                 cpub = api_obj.get_publisher(alias=pub.alias, duplicate=True)
 
+                # Now verify that the DuplicatePublisher exception is raised
+                # as expected when adding or updating publishers if the prefix
+                # is the same as another publisher's prefix or alias.  This is
+                # because alias and prefix are intended to be interchangeable
+                # (although the API allows clients to make a distinction
+                # internally).
+                dpub = api_obj.get_publisher(alias=pub.alias, duplicate=True)
+                dpub.alias = None
+
+                # Should fail since a publisher exists with this prefix.
+                self.assertRaises(api_errors.DuplicatePublisher,
+                        api_obj.add_publisher, dpub, refresh_allowed=False)
+                dpub.prefix = "bobcat"
+                self.assertRaises(api_errors.DuplicatePublisher,
+                        api_obj.update_publisher, dpub, refresh_allowed=False)
+
+                # Should fail since a publisher exists with an alias the same
+                # as this prefix.
+                dpub.prefix = "copycat"
+                self.assertRaises(api_errors.DuplicatePublisher,
+                        api_obj.add_publisher, dpub, refresh_allowed=False)
+                dpub.prefix = "cat"
+                self.assertRaises(api_errors.DuplicatePublisher,
+                        api_obj.update_publisher, dpub, refresh_allowed=False)
+
+                # Should fail since a publisher exists with an alias the same
+                # as this alias.
+                dpub.prefix = "uniquecat"
+                dpub.alias = "copycat"
+                self.assertRaises(api_errors.DuplicatePublisher,
+                        api_obj.add_publisher, dpub, refresh_allowed=False)
+                dpub.alias = "cat"
+                self.assertRaises(api_errors.DuplicatePublisher,
+                        api_obj.update_publisher, dpub, refresh_allowed=False)
+
+                # Should fail since a publisher exists with a prefix the same
+                # as this alias.
+                dpub.prefix = "uniquecat"
+                dpub.alias = "p5icat"
+                self.assertRaises(api_errors.DuplicatePublisher,
+                        api_obj.add_publisher, dpub, refresh_allowed=False)
+                dpub.alias = "bobcat"
+                self.assertRaises(api_errors.DuplicatePublisher,
+                        api_obj.update_publisher, dpub, refresh_allowed=False)
+
                 # Now update the publisher and set it to disabled, to verify
                 # that api functions still work as expected.
                 cpub.disabled = True
