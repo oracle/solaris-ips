@@ -934,7 +934,6 @@ class Transport(object):
                                 ]
                         else:
                                 success = [ x[0] for x in mfstlist ]
-                                mfstlist = None
 
                         for s in success:
 
@@ -970,16 +969,18 @@ class Transport(object):
                                 progtrack.evaluate_progress(fmri)
                                 mxfr.del_hash(s)
 
-                        # Return if everything was successful
-                        if not mfstlist and not failedreqs:
-                                return
-                        elif failedreqs:
+                        # If there were failures, re-generate list for just
+                        # failed requests.
+                        if failedreqs:
                                 # Generate mfstlist here, which included any
                                 # reqs that failed during verification.
                                 mfstlist = [
                                     (x,y) for x,y in mfstlist
                                     if x in failedreqs
                                 ]
+                        # Return if everything was successful
+                        else:
+                                return
  
         def _verify_manifest(self, fmri, mfstpath=None, content=None):
                 """Verify a manifest.  The caller must supply the FMRI
