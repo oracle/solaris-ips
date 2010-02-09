@@ -363,8 +363,8 @@ class GroupFile(CfgFile):
         """ return list of additional groups user belongs to """
         return sorted([
                 t[1]["groupname"]
-                for t in self.index.values()
-                if username in t[1]["user-list"].split(",")
+                for t in self.index.values()                
+                if t[1] is not None and username in t[1]["user-list"].split(",")
                 ])
 
     def setgroups(self, username, groups):

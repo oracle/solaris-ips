@@ -875,7 +875,7 @@ class TestPkgInstallUpgrade(pkg5unittest.SingleDepotTestCase):
 
         silveruser = """
             open silveruser@1.0
-            add user username=Kermit group=adm home-dir=/export/home/Kermit gcos-field="Kermit the Frog"
+            add user username=Kermit group=adm home-dir=/export/home/Kermit
             close
         """
 
@@ -1420,6 +1420,7 @@ other::1:root
 bin::2:root,daemon
 sys::3:root,bin,adm
 adm::4:root,daemon
++::::
 """,
                 "passwd" :
 """root:x:0:0::/root:/usr/bin/bash
@@ -1427,6 +1428,7 @@ daemon:x:1:1::/:
 bin:x:2:2::/usr/bin:
 sys:x:3:3::/:
 adm:x:4:4:Admin:/var/adm:
++::::::
 """,
                 "shadow" :
 """root:9EIfTNBp9elws:13817::::::
@@ -1434,6 +1436,7 @@ daemon:NP:6445::::::
 bin:NP:6445::::::
 sys:NP:6445::::::
 adm:NP:6445::::::
++::::::::
 """,
                 "cat" : " ",
                 "empty" : ""
@@ -1833,12 +1836,16 @@ adm:NP:6445::::::
                 file(ppath, "w").writelines(pdata)
                 self.pkg("verify simpleuser", exit=1)
                 finderr("login-shell: '/bin/zsh' should be '/bin/sh'")
+                self.pkg("fix simpleuser")
+                self.pkg("verify simpleuser")
 
                 # change a provided, non-empty-default field to the default
                 pdata[-1] = "misspiggy:x:5:0:& User:/:/bin/sh"
                 file(ppath, "w").writelines(pdata)
                 self.pkg("verify simpleuser", exit=1)
                 finderr("gcos-field: '& User' should be '& loves Kermie'")
+                self.pkg("fix simpleuser")
+                self.pkg("verify simpleuser")
 
                 # change a non-provided, non-empty-default field to something
                 # other than the default
@@ -1846,6 +1853,8 @@ adm:NP:6445::::::
                 file(ppath, "w").writelines(pdata)
                 self.pkg("verify simpleuser", exit=1)
                 finderr("home-dir: '/misspiggy' should be '/'")
+                self.pkg("fix simpleuser")
+                self.pkg("verify simpleuser")
 
                 # add a non-provided, empty-default field
                 pdata[-1] = "misspiggy:x:5:0:& loves Kermie:/:/bin/sh"
@@ -1853,6 +1862,10 @@ adm:NP:6445::::::
                 file(ppath, "w").writelines(pdata)
                 os.chmod(spath, S_IMODE(os.stat(spath).st_mode)| S_IWUSR)
                 file(spath, "w").writelines(sdata)
+                self.pkg("verify simpleuser", exit=1)
+                finderr("min: '7' should be '<empty>'")
+                # fails fix since we don't repair shadow entries on purpose
+                self.pkg("fix simpleuser")
                 self.pkg("verify simpleuser", exit=1)
                 finderr("min: '7' should be '<empty>'")
 
@@ -1863,18 +1876,24 @@ adm:NP:6445::::::
                 file(spath, "w").writelines(sdata)
                 self.pkg("verify simpleuser", exit=1)
                 finderr("home-dir: '' should be '/'")
+                self.pkg("fix simpleuser")
+                self.pkg("verify simpleuser")
 
                 # remove a provided, non-empty-default field
                 pdata[-1] = "misspiggy:x:5:0::/:/bin/sh"
                 file(ppath, "w").writelines(pdata)
                 self.pkg("verify simpleuser", exit=1)
                 finderr("gcos-field: '' should be '& loves Kermie'")
+                self.pkg("fix simpleuser")
+                self.pkg("verify simpleuser")
 
                 # remove a provided, empty-default field
                 pdata[-1] = "misspiggy:x:5:0:& loves Kermie:/:"
                 file(ppath, "w").writelines(pdata)
                 self.pkg("verify simpleuser", exit=1)
                 finderr("login-shell: '' should be '/bin/sh'")
+                self.pkg("fix simpleuser")
+                self.pkg("verify simpleuser")
 
                 # remove the user from /etc/passwd
                 pdata[-1] = "misswiggy:x:5:0:& loves Kermie:/:"
@@ -1883,12 +1902,18 @@ adm:NP:6445::::::
                 finderr("login-shell: '<missing>' should be '/bin/sh'")
                 finderr("gcos-field: '<missing>' should be '& loves Kermie'")
                 finderr("group: '<missing>' should be 'root'")
+                self.pkg("fix simpleuser")
+                self.pkg("verify simpleuser")
 
                 # remove the user completely
+                pdata[-1] = "misswiggy:x:5:0:& loves Kermie:/:"
                 sdata[-1] = "misswiggy:*LK*:14579::::::"
+                file(ppath, "w").writelines(pdata)
                 file(spath, "w").writelines(sdata)
                 self.pkg("verify simpleuser", exit=1)
                 finderr("username: '<missing>' should be 'misspiggy'")
+                self.pkg("fix simpleuser")
+                self.pkg("verify simpleuser")
 
 
         def test_minugid(self):

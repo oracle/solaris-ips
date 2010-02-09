@@ -51,6 +51,11 @@ class UserAction(generic.Action):
                        "lastchng", "min", "max",
                        "warn", "inactive", "expire"
                        "flag", "group-list", "ftpuser"]
+        # if these values are different on disk than in action
+        # prefer on-disk version
+        use_existing_attrs = [ "passwd", "lastchng", "min",
+                               "max", "expire", "flag", 
+                               "warn", "inactive"]
 
         def __init__(self, data=None, **attrs):
                 generic.Action.__init__(self, data, **attrs)
@@ -61,15 +66,18 @@ class UserAction(generic.Action):
                 return set([item])
 
         def merge(self, old_plan, on_disk):
-                """ three way attribute merge.  What we do is to
-                take the new version if the on_disk is the same
-                as the old plan, otherwise return old versions"""
+                """ three way attribute merge between old manifest,
+                what's on disk and new manifest.  For any values
+                on disk that are not in the new plan, use the values
+                on disk.  Use new plan values unless attribute is 
+                in self.use_existing_attrs, or if old manifest and
+                on-disk copy match...."""
 
                 out = self.attrs.copy()
 
                 for attr in on_disk:
-                        if attr in old_plan and \
-                            old_plan[attr] == on_disk[attr]:
+                        if (attr in out and attr not in self.use_existing_attrs) or \
+                            ( attr in old_plan and old_plan[attr] == on_disk[attr]):
                                 continue
                         if attr != "group-list":
                                 out[attr] = on_disk[attr]
@@ -121,11 +129,12 @@ class UserAction(generic.Action):
                             self.attrs["group"])
 
                         orig_attrs = {}
+                        default_attrs = pw.getdefaultvalues()
                         if orig:
                                 # Grab default values from files, extend by
                                 # specifics from original manifest for
                                 # comparisons sake.
-                                orig_attrs.update(pw.getdefaultvalues())
+                                orig_attrs.update(default_attrs)
                                 orig_attrs["group-list"] = []
                                 orig_attrs["ftpuser"] = "true"
                                 orig_attrs.update(orig.attrs)
@@ -137,6 +146,11 @@ class UserAction(generic.Action):
                                 # from the representation of the file so that
                                 # the new value takes precedence in the merge.
                                 del cur_attrs["ftpuser"]
+
+                        # add default values to new attrs if not present
+                        for attr in default_attrs:
+                                if attr not in self.attrs:
+                                        self.attrs[attr] = default_attrs[attr]
 
                         final_attrs = self.merge(orig_attrs, cur_attrs)
 
