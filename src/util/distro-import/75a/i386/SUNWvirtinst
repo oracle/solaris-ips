@@ -1,5 +1,5 @@
 package SUNWvirtinst
-consolidation "osnet"
+consolidation "xvm"
 classification "System/Virtualization"
 import SUNWvirtinst
 depend SUNWlibvirt

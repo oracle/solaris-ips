@@ -1,5 +1,5 @@
 package SUNWurlgrabber
-consolidation "osnet"
+consolidation "xvm"
 classification "Applications/Internet"
 import SUNWurlgrabber
 version 3.1.0
