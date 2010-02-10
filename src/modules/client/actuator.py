@@ -85,9 +85,12 @@ SMF_SVC_ENABLED      = 5
 import os
 import pkg.pkgsubprocess as subprocess
 from pkg.client.debugvalues import DebugValues
+from pkg.client import global_settings
+logger = global_settings.logger
 
 svcprop_path = "/usr/bin/svcprop"
 svcadm_path  = "/usr/sbin/svcadm"
+svcs_path = "/usr/bin/svcs"
 
 class NonzeroExitException(Exception):
         def __init__(self, cmd, return_code, output):
@@ -172,6 +175,8 @@ class Actuator(GenericActuator):
 
                 disable_fmris = self.removal.get("disable_fmri", set())
 
+                suspend_fmris = self.__smf_svc_check_fmris("suspend_fmri", suspend_fmris)
+                disable_fmris = self.__smf_svc_check_fmris("disable_fmri", disable_fmris)
                 # eliminate services not loaded or not running
                 # remember those services enabled only temporarily
 
@@ -228,6 +233,9 @@ class Actuator(GenericActuator):
                 restart_fmris = self.removal.get("restart_fmri", set()) | \
                     self.update.get("restart_fmri", set()) | \
                     self.install.get("restart_fmri", set())
+
+                refresh_fmris = self.__smf_svc_check_fmris("refresh_fmri", refresh_fmris)
+                restart_fmris = self.__smf_svc_check_fmris("restart_fmri", restart_fmris)
 
                 # ignore services not present or not
                 # enabled
@@ -293,6 +301,48 @@ class Actuator(GenericActuator):
 
         def __smf_svc_is_disabled(self, fmri):
                 return self.__smf_svc_get_state(fmri) < SMF_SVC_TMP_ENABLED
+
+        def __smf_svc_check_fmris(self, attr, fmris):
+                """ Walk a set of fmris checking that each is fully specifed with
+                an instance.
+                If an FMRI is not fully specified and does not contain at least
+                one special match character from fnmatch(5) the fmri is dropped
+                from the set that is returned and an error message is logged.
+                """
+
+                chars = "*?[!^"
+                for fmri in fmris.copy():
+                        is_glob = False
+                        for c in chars:
+                                if c in fmri:
+                                        is_glob = True
+
+                        tmp_fmri = fmri
+                        if fmri.startswith("svc:"):
+                                tmp_fmri = fmri.replace("svc:", "", 1)
+
+                        # check to see if we've got an instance already
+                        if ":" in tmp_fmri and not is_glob:
+                                continue
+
+                        if is_glob:
+                                cmd = (svcs_path, "-H", "-o", "fmri", "%s" % fmri)
+                                try:
+                                        instances = self.__call(cmd)
+                                except NonzeroExitException:
+                                        continue # non-zero exit == not installed
+
+                        else:
+                                instances = []
+                                logger.error(_("FMRI pattern might implicitly match " \
+                                    "more than one service instance."))
+                                logger.error(_("Actuators for %(attr)s will not be run " \
+                                    "for %(fmri)s.") % locals())
+
+                        fmris.remove(fmri)
+                        for instance in instances:
+                                fmris.add(instance.rstrip())
+                return fmris
 
         def __get_smf_props(self, svcfmri):
                 args = (svcprop_path, "-c", svcfmri)

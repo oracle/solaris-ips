@@ -178,6 +178,37 @@ exit $PKG_SVCPROP_EXIT_CODE
 """#!/bin/sh
 echo $0 "$@" >> $PKG_TEST_DIR/svcadm_arguments
 exit $PKG_SVCADM_EXIT_CODE
+""",
+                "usr/bin/svcs" : \
+"""#!/bin/sh
+
+# called from pkg.client.actuator using 'svcs -H -o fmri <string>'
+# so $4 is the FMRI pattern that we're interested in resolving
+RETURN=0
+
+case $4 in
+        svc:/system/test_refresh_svc:default)
+                FMRI=$4
+                ;;
+        # the following are too relaxed, eg. "svcs sys/foo/tZst_suspend_svc:defXX"
+        # would match, but is sufficient for this test case as we only
+        # ever resolve services that truely exist here.
+        *sy*t?st_suspend_svc:def*)
+                FMRI=svc:/system/test_suspend_svc:default
+                ;;
+        *test_disable_svc*)
+                FMRI=svc:/system/test_disable_svc:default
+                ;;
+        *test_restart_svc*)
+                FMRI=svc:/system/test_restart_svc:default
+                ;;
+        *)
+                FMRI="ERROR - t_actuators.py svcs wrapper failed to match $4"
+                RETURN=1
+                ;;
+esac
+echo $FMRI
+exit $RETURN
 """
 }
 
@@ -193,32 +224,44 @@ exit $PKG_SVCADM_EXIT_CODE
 
                 self.pkg_list+= ["""
                     open basics@1.0,5.11-0
-                    add file testdata/empty mode=0644 owner=root group=sys path=/test_restart restart_fmri=svc:system/test_restart_svc
+                    add file testdata/empty mode=0644 owner=root group=sys path=/test_restart restart_fmri=svc:/system/test_restart_svc:default
                     close """]
 
                 self.pkg_list+= ["""
                     open basics@1.1,5.11-0
-                    add file testdata/empty mode=0655 owner=root group=sys path=/test_restart restart_fmri=svc:system/test_restart_svc
+                    add file testdata/empty mode=0655 owner=root group=sys path=/test_restart restart_fmri=svc:/system/test_restart_svc:default
                     close """]
 
                 self.pkg_list+= ["""
                     open basics@1.2,5.11-0
-                    add file testdata/empty mode=0646 owner=root group=sys path=/test_restart restart_fmri=svc:system/test_restart_svc
+                    add file testdata/empty mode=0646 owner=root group=sys path=/test_restart restart_fmri=svc:/system/test_restart_svc:default
                     close """]
 
                 self.pkg_list+= ["""
                     open basics@1.3,5.11-0
-                    add file testdata/empty mode=0657 owner=root group=sys path=/test_restart refresh_fmri=svc:system/test_refresh_svc
+                    add file testdata/empty mode=0657 owner=root group=sys path=/test_restart refresh_fmri=svc:/system/test_refresh_svc:default
                     close """]
 
                 self.pkg_list+= ["""
                     open basics@1.4,5.11-0
-                    add file testdata/empty mode=0667 owner=root group=sys path=/test_restart suspend_fmri=svc:system/test_suspend_svc
+                    add file testdata/empty mode=0667 owner=root group=sys path=/test_restart suspend_fmri=svc:/system/test_suspend_svc:default
                     close """]
 
                 self.pkg_list+= ["""
                     open basics@1.5,5.11-0
-                    add file testdata/empty mode=0677 owner=root group=sys path=/test_restart suspend_fmri=svc:system/test_suspend_svc disable_fmri=svc:system/test_disable_svc
+                    add file testdata/empty mode=0677 owner=root group=sys path=/test_restart suspend_fmri=svc:/system/test_suspend_svc:default disable_fmri=svc:/system/test_disable_svc:default
+                    close """]
+
+                # no fully specified FMRIs here
+                self.pkg_list+= ["""
+                    open basics@1.6,5.11-0
+                    add file testdata/empty mode=0677 owner=root group=sys path=/test_restart restart_fmri=svc:/system/test_restart_svc suspend_fmri=svc:/system/test_suspend_svc disable_fmri=svc:/system/test_disable_svc
+                    close """]
+
+                # multiple FMRIs, some with globbing characters
+                self.pkg_list+= ["""
+                    open basics@1.7,5.11-0
+                    add file testdata/empty mode=0677 owner=root group=sys path=/test_restart refresh_fmri=svc:/system/test_refresh_svc:default restart_fmri=svc:/system/test_restart_svc* suspend_fmri=svc:/sy*t?st_suspend_svc:def* disable_fmri=*test_disable_svc*
                     close """]
 
                 self.make_misc_files(self.misc_files, prefix="testdata",
@@ -246,27 +289,28 @@ exit $PKG_SVCADM_EXIT_CODE
                 self.pkg(cmdstr + " install basics@1.0")
                 self.pkg("verify")
 
-                self.file_contains(svcadm_output, "svcadm restart svc:system/test_restart_svc")
+                self.file_contains(svcadm_output,
+                    "svcadm restart svc:/system/test_restart_svc:default")
                 os.unlink(svcadm_output)
 
                 # test to see if our test service is restarted on upgrade
-                cmdstr = "--debug actuator_cmds_dir=%s" % self.testdata_dir
                 self.pkg(cmdstr + " install basics@1.1")
                 self.pkg("verify")
-                self.file_contains(svcadm_output, "svcadm restart svc:system/test_restart_svc")
+                self.file_contains(svcadm_output,
+                    "svcadm restart svc:/system/test_restart_svc:default")
                 os.unlink(svcadm_output)
 
                 # test to see if our test service is restarted on uninstall
                 self.pkg(cmdstr + " uninstall basics")
                 self.pkg("verify")
-                self.file_contains(svcadm_output, "svcadm restart svc:system/test_restart_svc")
+                self.file_contains(svcadm_output,
+                    "svcadm restart svc:/system/test_restart_svc:default")
                 os.unlink(svcadm_output)
 
                 # make it look like our test service is not enabled
                 os.environ["PKG_SVCPROP_OUTPUT"] = "svcprop_disabled"
 
                 # test to see to make sure we don't restart disabled service
-                cmdstr = "--debug actuator_cmds_dir=%s" % self.testdata_dir
                 self.pkg(cmdstr + " install basics@1.2")
                 self.pkg("verify")
                 self.file_does_not_exist(svcadm_output)
@@ -275,7 +319,6 @@ exit $PKG_SVCADM_EXIT_CODE
                 os.environ["PKG_SVCPROP_EXIT_CODE"] = "1"
                 self.pkg("uninstall basics")
                 self.pkg("verify")
-                cmdstr = "--debug actuator_cmds_dir=%s" % self.testdata_dir
                 self.pkg(cmdstr + " install basics@1.2")
                 self.pkg("verify")
                 self.file_does_not_exist(svcadm_output)
@@ -285,36 +328,69 @@ exit $PKG_SVCADM_EXIT_CODE
                 os.environ["PKG_SVCPROP_OUTPUT"] = "svcprop_enabled"
 
                 # test to see if refresh works as designed, along w/ restart
-                cmdstr = "--debug actuator_cmds_dir=%s" % self.testdata_dir
                 self.pkg(cmdstr + " install basics@1.3")
                 self.pkg("verify")
-                self.file_contains(svcadm_output, "svcadm restart svc:system/test_restart_svc")
-                self.file_contains(svcadm_output, "svcadm refresh svc:system/test_refresh_svc")
+                self.file_contains(svcadm_output,
+                    "svcadm restart svc:/system/test_restart_svc:default")
+                self.file_contains(svcadm_output,
+                    "svcadm refresh svc:/system/test_refresh_svc:default")
                 os.unlink(svcadm_output)
 
                 # test if suspend works
-                cmdstr = "--debug actuator_cmds_dir=%s" % self.testdata_dir
                 self.pkg(cmdstr + " install basics@1.4")
                 self.pkg("verify")
-                self.file_contains(svcadm_output, "svcadm disable -st svc:system/test_suspend_svc")
-                self.file_contains(svcadm_output, "svcadm enable svc:system/test_suspend_svc")
+                self.file_contains(svcadm_output,
+                    "svcadm disable -st svc:/system/test_suspend_svc:default")
+                self.file_contains(svcadm_output,
+                    "svcadm enable svc:/system/test_suspend_svc:default")
                 os.unlink(svcadm_output)
 
                 # test if suspend works properly w/ temp. enabled service
                 # make it look like our test service(s) is/are temp enabled
                 os.environ["PKG_SVCPROP_OUTPUT"] = "svcprop_temp_enabled"
-                cmdstr = "--debug actuator_cmds_dir=%s" % self.testdata_dir
                 self.pkg(cmdstr + " install basics@1.5")
                 self.pkg("verify")
-                self.file_contains(svcadm_output, "svcadm disable -st svc:system/test_suspend_svc")
-                self.file_contains(svcadm_output, "svcadm enable -t svc:system/test_suspend_svc")
+                self.file_contains(svcadm_output,
+                    "svcadm disable -st svc:/system/test_suspend_svc:default")
+                self.file_contains(svcadm_output,
+                    "svcadm enable -t svc:/system/test_suspend_svc:default")
                 os.unlink(svcadm_output)
 
                 # test if service is disabled on uninstall
-                cmdstr = "--debug actuator_cmds_dir=%s" % self.testdata_dir
                 self.pkg(cmdstr + " uninstall basics")
                 self.pkg("verify")
-                self.file_contains(svcadm_output, "svcadm disable -s svc:system/test_disable_svc")
+                self.file_contains(svcadm_output,
+                    "svcadm disable -s svc:/system/test_disable_svc:default")
+                os.unlink(svcadm_output)
+
+                # make it look like our test service(s) is/are enabled
+                os.environ["PKG_SVCPROP_OUTPUT"] = "svcprop_enabled"
+                os.environ["PKG_SVCPROP_EXIT_CODE"] = "0"
+
+                # test that we do nothing for FMRIs with no instance specified
+                self.pkg(cmdstr + " install basics@1.6")
+                self.pkg("verify")
+                self.file_does_not_exist(svcadm_output)
+                self.pkg(cmdstr + " uninstall basics")
+                self.file_does_not_exist(svcadm_output)
+                
+                # test that we do the right thing for multiple FMRIs with globbing chars
+                self.pkg(cmdstr + " install basics@1.6")
+                self.pkg(cmdstr + " install basics@1.7")
+                self.pkg("verify")
+
+                for text in [ "svcadm refresh svc:/system/test_refresh_svc:default",
+                   "svcadm refresh svc:/system/test_refresh_svc:default",
+                   "svcadm restart svc:/system/test_restart_svc:default",
+                   "svcadm disable -st svc:/system/test_suspend_svc:default",
+                   "svcadm enable svc:/system/test_suspend_svc:default" ]:
+                           self.file_contains(svcadm_output, text)
+                os.unlink(svcadm_output)
+
+                self.pkg(cmdstr + " uninstall basics")
+                self.file_contains(svcadm_output,
+                    "svcadm disable -s svc:/system/test_disable_svc:default")
+
 
         def file_does_not_exist(self, path):
                 file_path = os.path.join(self.get_img_path(), path)

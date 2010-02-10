@@ -470,6 +470,10 @@ DESCRIPTION
                  temporarily prior to the action install phase, and then
                  enabled after the completion of that phase.
 
+                 The value may contain a pattern matching multiple service
+                 instances.   However, it must do so explicitly with a glob
+                 as accepted by svcs(1), rather than doing so implicitly by
+                 not indicating any instances.
 
   Constraints and Freezing
      TBD
