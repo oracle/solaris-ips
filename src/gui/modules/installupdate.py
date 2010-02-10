@@ -1171,7 +1171,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 pfmri = item[0]
                 dest = item[2]
                 pkg_name = pfmri.get_name()
-                lic = dest.license
+                lic = dest.get_text()
                 if dest.must_accept:
                         gui_misc.change_stockbutton_label(self.w_license_accept_button,
                             _("A_ccept"))
