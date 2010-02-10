@@ -369,11 +369,11 @@ SUBCOMMANDS
 
           Boolean search using AND and OR is supported.  Field, or structured,
           queries are supported. The syntax for these is
-          pkg_name:action_type:key:token.  Missing fields are implictly
+          pkg_name:action_type:key:token.  Missing fields are implicitly
           wildcarded.  A search for :basename:pkg would match all actions
           types in all packages with a key of basename and which matched
-          the token 'pkg'.  Explict wildcards are supported in the pkg_name and
-          token fields, action_type and key must match exactly.
+          the token 'pkg'.  Explicit wildcards are supported in the pkg_name
+          and token fields, action_type and key must match exactly.
 
           To convert actions to the packages which contain those actions,
           use '<>'.  With the -a option, Searching for 'token' results in
@@ -488,7 +488,7 @@ SUBCOMMANDS
 
      facet [<facet_spec> ...]
           Without arguments, displays the current values of all facets.  With
-          argument(s), evalute if each facet would be true or false and print
+          argument(s), evaluate if each facet would be true or false and print
           the result.
 
      change-facet [-nvq] [--accept] [--be-name name] [--licenses]
@@ -809,8 +809,7 @@ FILES
      and are subject to change.
 
 ATTRIBUTES
-     See attributes(5) for descriptions of the  following  attri-
-     butes:
+     See attributes(5) for descriptions of the following attributes:
      ____________________________________________________________
     |       ATTRIBUTE TYPE        |       ATTRIBUTE VALUE       |
     |_____________________________|_____________________________|
@@ -838,7 +837,7 @@ NOTES
      environment variables to select a suitable HTTP or HTTPS proxy
      server.  At present, particular care is needed when using local
      repository URIs--such as http://localhost:10000/--with the
-     http_proxy environment variable; this behaviour may change in a
+     http_proxy environment variable; this behavior may change in a
      future version of image packaging.
 
      At present, pkg(1), on directory removal, will move unpackaged

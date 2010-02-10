@@ -179,7 +179,7 @@ OPTIONS
 
      --exit-ready               Prepare for startup, but exit just before
                                 serving content.  This is useful for making
-                                sure search indicies are built, new content
+                                sure search indices are built, new content
                                 cataloged, etc.  
 
      --log-access dest          Overrides pkg/log_access with the value
@@ -361,8 +361,7 @@ FILES
                                 alternate location.
 
 ATTRIBUTES
-     See attributes(5) for descriptions of the  following  attri-
-     butes:
+     See attributes(5) for descriptions of the following attributes:
      ____________________________________________________________
     |       ATTRIBUTE TYPE        |       ATTRIBUTE VALUE       |
     |_____________________________|_____________________________|

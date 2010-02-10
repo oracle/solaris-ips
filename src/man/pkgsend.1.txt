@@ -202,7 +202,7 @@ ACTIONS
      license src_path license=<license_name> \
        [ property_list ]
           Deliver, into the image packaging metadata, the license file
-          at src_path, labelled by the given license value.
+          at src_path, labeled by the given license value.
 
      link path=<path> target=<target> [ property_list ]
           Deliver a symbolic link with given path, pointing to the given
@@ -267,8 +267,7 @@ EXIT STATUS
 FILES
 
 ATTRIBUTES
-     See attributes(5) for descriptions of the  following  attri-
-     butes:
+     See attributes(5) for descriptions of the following attributes:
      ____________________________________________________________
     |       ATTRIBUTE TYPE        |       ATTRIBUTE VALUE       |
     |_____________________________|_____________________________|

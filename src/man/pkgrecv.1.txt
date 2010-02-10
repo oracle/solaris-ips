@@ -36,7 +36,7 @@ OPTIONS
      -k              Keep the retrieved package content compressed, ignored
                      when republishing.  Should not be used with pkgsend.
 
-     -m match        Controls matching behaviour using the following values:
+     -m match        Controls matching behavior using the following values:
                          all-timestamps
                              includes all matching timestamps, not just
                              latest (implies all-versions)
@@ -121,8 +121,7 @@ EXIT STATUS
 FILES
 
 ATTRIBUTES
-     See attributes(5) for descriptions of the  following  attri-
-     butes:
+     See attributes(5) for descriptions of the following attributes:
      ____________________________________________________________
     |       ATTRIBUTE TYPE        |       ATTRIBUTE VALUE       |
     |_____________________________|_____________________________|
