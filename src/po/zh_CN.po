@@ -28,13 +28,13 @@ msgstr ""
        "Project-Id-Version: PACKAGE VERSION\n"
        "Report-Msgid-Bugs-To: \n"
        "POT-Creation-Date: 2010-01-15 08:56+0900\n"
-       "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-       "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-       "Language-Team: LANGUAGE <LL@li.org>\n"
+       "PO-Revision-Date: 2010-01-28 13:19+0800\n"
+       "Last-Translator: desktop-discuss@opensolaris.org\n"
+       "Language-Team: desktop-discuss@opensolaris.org\n"
        "MIME-Version: 1.0\n"
        "Content-Type: text/plain; charset=UTF-8\n"
        "Content-Transfer-Encoding: 8bit\n"
-       "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+       "Plural-Forms: nplurals=1; plural=0;\n"
 
 #. The full usage message isn't desired.
 #: ../client.py:138
@@ -101,57 +101,58 @@ msgid ""
 "        PKG_IMAGE"
 msgstr ""
        "用法：\n"
-       "        pkg [选项] 命令 [命令选项] [操作数]\n"
+       "        pkg [选项] 命令 [cmd 选项] [操作数]\n"
        "\n"
        "基本子命令：\n"
-       "        pkg install [-nvq] [--无刷新] [--无索引] 软件包...\n"
-       "        pkg uninstall [-nrvq] [--无索引] 软件包...\n"
-       "        pkg list [-Hafnsuv] [--无刷新] [软件包...]\n"
-       "        pkg image-update [-fnvq] [--be-name 名称] [--无刷新] [--无索引]\n"
-       "        pkg refresh [--完整] [出版者 ...]\n"
+       "        pkg install [-nvq] [--no-refresh] [--no-index] 软件包...\n"
+       "        pkg uninstall [-nrvq] [--no-index] 软件包...\n"
+       "        pkg list [-Hafnsuv] [--no-refresh] [软件包...]\n"
+       "        pkg image-update [-fnvq] [--be-name 名称] [--no-refresh] [--no-"
+       "index]\n"
+       "        pkg refresh [--full] [发布者...]\n"
        "        pkg version\n"
        "\n"
-       "高级子命令:\n"
-       "        pkg info [-lr] [--许可证] [pkg_fmri 模式 ...]\n"
+       "高级子命令：\n"
+       "        pkg info [-lr] [--license] [pkg fmri模式...]\n"
        "        pkg search [-alprI] [-s 服务器] 查询\n"
-       "        pkg verify [-Hqv] [pkg_fmri 模式 ...]\n"
-       "        pkg fix [pkg_fmri 模式 ...]\n"
-       "        pkg contents [-Hmr] [-a 属性=模式 ...] [-o 属性 ...]\n"
-       "            [-s 排序关键字] [-t 操作类型 ... ] [pkg_fmri 模式 ...]\n"
-       "        pkg image-create [-fFPUz] [--强制] [--完整|--部分|--用户] [--"
-       "区域]\n"
-       "            [-k ssl 密钥] [-c ssl 证书] [--无刷新]\n"
-       "            [--变量 <变量规格>=<实例>] \n"
-       "            [--侧面 <侧面规格>=[True,False]]\n"
-       "            (-p|--出版者) 名称=uri 目录\n"
+       "        pkg verify [-Hqv] [pkg fmri 模式...]\n"
+       "        pkg fix [pkg fmri 模式...]\n"
+       "        pkg contents [-Hmr] [-a attribute=模式...] [-o 属性...]\n"
+       "            [-s 排序关键字] [-t 操作类型... ] [pkg fmri 模式...]\n"
+       "        pkg image-create [-fFPUz] [--force] [--full|--partial|--user] [--"
+       "zone]\n"
+       "            [-k ssl 密钥] [-c ssl 证书] [--no-refresh]\n"
+       "            [--variant <变量规格>=<实例>] \n"
+       "            [--facet <侧面规格>=[True,False]]\n"
+       "            (-p|--publisher) name=uri 目录\n"
        "        pkg change-variant [-nvq] [--be-name 名称] "
        "<变量规格>=<实例>\n"
-       "            [<变量规格>=<实例> ...]\n"
+       "            [<变量规格>=<实例>...]\n"
        "        pkg change-facet -nvq [--be-name 名称] <侧面规格>=[True|False|"
-       "无] ...\n"
+       "None] ...\n"
        "        pkg variant -H [<变量规格>]\n"
        "        pkg facet -H [<侧面规格>]\n"
        "        pkg set-property 属性名 属性值\n"
-       "        pkg unset-property 属性名 ...\n"
-       "        pkg property [-H] [属性名 ...]\n"
+       "        pkg unset-property 属性名...\n"
+       "        pkg property [-H] [属性名...]\n"
        "\n"
        "        pkg set-publisher [-Ped] [-k ssl 密钥] [-c ssl 证书]\n"
        "            [-g 要添加的原始位置 | --add-origin=要添加的原始位置]\n"
        "            [-G 要删除的原始位置 | --remove-origin=要删除的原始位置]\n"
        "            [-m 要添加的镜像 | --add-mirror=要添加的镜像]\n"
        "            [-M 要删除的镜像 | --remove-mirror=要删除的镜像]\n"
-       "            [--启用] [--禁用] [--无刷新] [--重置 uuid] \n"
-       "            [--非粘性] [--粘性] [--search-after=出版者]\n"
-       "            [--search-before=出版者] 出版者\n"
-       "        pkg unset-publisher 出版者 ...\n"
-       "        pkg publisher [-HPn] [出版者 ...]\n"
+       "            [--enable] [--disable] [--no-refresh] [--reset-uuid] \n"
+       "            [--non-sticky] [--sticky] [--search-after=发布者]\n"
+       "            [--search-before=发布者] 发布者\n"
+       "        pkg unset-publisher 发布者...\n"
+       "        pkg publisher [-HPn] [发布者...]\n"
        "        pkg history [-Hl]\n"
        "        pkg purge-history\n"
        "        pkg rebuild-index\n"
        "\n"
        "选项：\n"
        "        -R dir\n"
-       "        --help or -?\n"
+       "        --help 或 -?\n"
        "\n"
        "环境：\n"
        "        PKG_IMAGE"
@@ -183,11 +184,11 @@ msgstr "没有安装软件包"
 
 #: ../client.py:411
 msgid "No specified packages have newer versions available."
-msgstr "没有任何指定的软件包具有可用的更高版本。"
+msgstr "指定的软件包都没有更新版本可用。"
 
 #: ../client.py:414
 msgid "No installed packages have newer versions available."
-msgstr "没有任何已安装的软件包具有可用的更高版本。"
+msgstr "已安装的软件包都没有更新版本可用。"
 
 #: ../client.py:437
 msgid "known or installed"
@@ -208,7 +209,8 @@ msgid ""
 "The following packages require their licenses to be accepted before they can "
 "be repaired: "
 msgstr ""
-       "以下软件包需要先接受其许可证，然后才能对其进行修复："
+       "需要先接受以下软件包的许可证，然后才能对其"
+       "进行修复："
 
 #: ../client.py:510 ../client.py:684
 msgid ""
@@ -216,7 +218,9 @@ msgid ""
 "packages listed above, use the --accept option.  To display all of the "
 "related licenses, use the --licenses option."
 msgstr ""
-       "要指示您同意和接受上面所列的软件包的许可证条款，请使用 --accept 选项。要显示所有相关的许可证，请使用 --licenses 选项。"
+       "要指示您同意并接受上面所列的软件包的许可证条款，"
+       "请使用 --accept 选项。要显示所有相关的"
+       "许可证，请使用 --licenses 选项。"
 
 #: ../client.py:517
 msgid ""
@@ -264,7 +268,8 @@ msgid ""
 "The following packages require their licenses to be accepted before they can "
 "be installed or updated: "
 msgstr ""
-       "以下软件包需要先接受其许可证，然后才能对其进行安装或更新。"
+       "需要先接受以下软件包的许可证，然后才能对其"
+       "进行安装或更新："
 
 #: ../client.py:692
 #, python-format
@@ -273,17 +278,17 @@ msgid ""
 "An unexpected error happened while preparing for %s:"
 msgstr ""
        "\n"
-       "在准备 %s 时发生意外错误:"
+       "在准备 %s 时发生意外错误："
 
 #: ../client.py:701
 #, python-format
 msgid "%s failed: %s"
-msgstr "%s 已失败: %s"
+msgstr "%s 失败: %s"
 
 #: ../client.py:704
 #, python-format
 msgid "%s cannot be done on live image"
-msgstr "无法在实时映像上完成 %s"
+msgstr "无法对实时映像执行 %s"
 
 #: ../client.py:707
 #, python-format
@@ -298,7 +303,7 @@ msgstr ""
 #: ../client.py:739 ../client.py:743
 #, python-format
 msgid "An unexpected error happened during %s: %s"
-msgstr "%s 期间出现意外错误: %s"
+msgstr "%s 期间发生意外错误: %s"
 
 #: ../client.py:755 ../client.py:764
 #, python-format
@@ -311,7 +316,7 @@ msgid ""
 "%s failed (inventory exception):\n"
 "%s"
 msgstr ""
-       "%s 已失败(库存异常):\n"
+       "%s 失败（清单异常）:\n"
        "%s"
 
 #: ../client.py:770
@@ -321,14 +326,14 @@ msgid ""
 "running %s.  Please update pkg(5) using 'pfexec pkg install\n"
 "SUNWipkg' and then retry the %s."
 msgstr ""
-       "警告：pkg(5) 似乎已过期，应该对其进行更新，然后\n"
-       "运行 %s。请使用 'pfexec pkg install\n"
-       "SUNWipkg' 更新 pkg(5)，然后重试 %s。"
+       "警告：pkg(5) 似乎已过期，应该在运行 %s 之前进行更新。\n"
+       "请使用 'pfexec pkg install SUNWipkg'\n"
+       "更新 pkg(5)，然后重试 %s。"
 
 #: ../client.py:777
 #, python-format
 msgid "Cannot remove '%s' due to the following packages that depend on it:"
-msgstr "无法删除 '%s'，因为以下软件包取决于它："
+msgstr "无法删除 '%s'，由于与其相关的以下软件包："
 
 #: ../client.py:832 ../client.py:913
 #, python-format
@@ -338,12 +343,12 @@ msgstr "%s: 不能组合使用 -v 和 -q"
 #: ../client.py:835
 #, python-format
 msgid "%s: no variants specified"
-msgstr "%s: 没有指定任何变量"
+msgstr "%s: 没有指定变量"
 
 #: ../client.py:841
 #, python-format
 msgid "%s: variants must to be of the form '<name>=<value>'."
-msgstr "%s: 变量的格式必须是 '<名称>=<值>'。"
+msgstr "%s: 变量的格式必须是“<名称>=<值>”。"
 
 #: ../client.py:851
 #, python-format
@@ -352,7 +357,7 @@ msgstr "%s: 指定了重复的变量: %s"
 
 #: ../client.py:869 ../client.py:1111
 msgid "No updates necessary for this image."
-msgstr "没有此映像必需的更新。"
+msgstr "没有此映像所需的更新。"
 
 #: ../client.py:916
 #, python-format
@@ -388,7 +393,7 @@ msgstr "注意：请查看位于以下网址的发行说明：\n"
 
 #: ../client.py:1089 ../client.py:1153
 msgid "at least one package name required"
-msgstr "至少需要一个软件包"
+msgstr "至少需要一个软件包名称"
 
 #: ../client.py:1262
 #, python-format
@@ -405,7 +410,7 @@ msgid ""
 "The server returned an invalid action.\n"
 "%s"
 msgstr ""
-       "服务器返回了一个无效的操作。\n"
+       "服务器返回了无效的操作。\n"
        "%s"
 
 #: ../client.py:1324
@@ -415,7 +420,7 @@ msgstr "%s 不是有效的服务器 URL。"
 
 #: ../client.py:1336
 msgid "at least one search term must be provided"
-msgstr "必须至少提供一个搜索项"
+msgstr "必须至少提供一个搜索词条"
 
 #: ../client.py:1347
 #, python-format
@@ -493,7 +498,7 @@ msgstr "    已重命名为："
 #. XXX even more info on the publisher would be nice?
 #: ../client.py:1609
 msgid "     Publisher:"
-msgstr "        出版者:"
+msgstr "        发布者："
 
 #: ../client.py:1610
 msgid "       Version:"
@@ -524,8 +529,8 @@ msgid ""
 "pkg: info: no packages matching the following patterns you specified are\n"
 "installed on the system.  Try specifying -r to query remotely:"
 msgstr ""
-       "pkg: info: 系统中没有安装任何与您指定的以下模式匹配的软件包。\n"
-       "请尝试指定 -r 来进行远程查询："
+       "pkg: info: 系统中没有安装任何与您指定的以下模式匹配的\n"
+       "软件包。请尝试指定 -r 来进行远程查询:"
 
 #: ../client.py:1627
 msgid ""
@@ -533,9 +538,9 @@ msgid ""
 "found in the catalog.  Try relaxing the patterns, refreshing, and/or\n"
 "examining the catalogs:"
 msgstr ""
-       "pkg: info: 在此目录中没有找到任何与您指定的以下模式匹配的软件包。\n"
-       "请尝试放宽这些模式、刷新和/或\n"
-       "检查这些目录："
+       "pkg: info: 在目录中没有找到任何与您指定的以下模式匹配的\n"
+       "软件包。请尝试细化模式、刷新和/或\n"
+       "检查目录:"
 
 #: ../client.py:1643 ../modules/client/api_errors.py:278
 #, python-format
@@ -575,8 +580,8 @@ msgid ""
 "are\n"
 "installed on the system.  Try specifying -r to query remotely:"
 msgstr ""
-       "pkg: contents: 系统中没有安装任何与您指定的以下模式匹配的软件包。\n"
-       "请尝试指定 -r 来进行远程查询："
+       "pkg: contents: 系统中没有安装任何与您指定的以下模式匹配的\n"
+       "软件包。请尝试指定 -r 来进行远程查询:"
 
 #: ../client.py:2090
 msgid ""
@@ -584,9 +589,9 @@ msgid ""
 "were\n"
 "found in the catalog.  Try relaxing the patterns, refreshing, and/or\n"
 "examining the catalogs:"
-msgstr "pkg: contents: 在此目录中没有找到任何与您指定的以下模式匹配的软件包。\n"
-       "请尝试放宽这些模式、刷新和/或\n"
-       "检查这些目录："
+msgstr "pkg: contents: 在目录中没有找到任何与您指定的以下模式匹配的\n"
+       "软件包。请尝试细化模式、刷新和/或\n"
+       "检查目录:"
 
 #: ../client.py:2107
 #, python-format
@@ -595,15 +600,15 @@ msgstr "pkg: %s/%s 目录已成功更新:"
 
 #: ../client.py:2175
 msgid "'pkg publisher' will show a list of publishers."
-msgstr "'pkg publisher' 将会显示一个出版者列表。"
+msgstr "'pkg publisher' 将会显示一个发布者列表。"
 
 #: ../client.py:2252
 msgid "requires a publisher name"
-msgstr "需要一个出版者名称"
+msgstr "需要一个发布者名称"
 
 #: ../client.py:2254
 msgid "only one publisher name may be specified"
-msgstr "只能指定一个出版者名称"
+msgstr "只能指定一个发布者名称"
 
 #: ../client.py:2260
 msgid "the -p and -d options may not be combined"
@@ -624,7 +629,7 @@ msgstr "不能组合使用 search_before 和 search_after"
 msgid ""
 "publisher does not exist. Use -g to define origin URI for new publisher."
 msgstr ""
-       "出版者不存在。请使用 -g 为新的出版者定义原始位置 URI。"
+       "发布者不存在。请使用 -g 来为新发布者定义原始位置 URI。"
 
 #: ../client.py:2391
 #, python-format
@@ -645,7 +650,7 @@ msgstr ""
 
 #: ../client.py:2419
 msgid "at least one publisher must be specified"
-msgstr "必须至少指定一个出版者"
+msgstr "必须至少指定一个发布者"
 
 #: ../client.py:2449
 #, python-format
@@ -654,7 +659,7 @@ msgstr "删除 '%(pub)s' 失败: %(msg)s"
 
 #: ../client.py:2517
 msgid "PUBLISHER"
-msgstr "出版者"
+msgstr "发布者"
 
 #: ../client.py:2517
 msgid "TYPE"
@@ -708,7 +713,7 @@ msgstr "证书失效日期："
 
 #: ../client.py:2593
 msgid "           Origin URI:"
-msgstr "           原始 URI："
+msgstr "           原始位置 URI："
 
 #: ../client.py:2599
 msgid "           Mirror URI:"
@@ -716,7 +721,7 @@ msgstr "           镜像 URI："
 
 #: ../client.py:2613
 msgid "            Publisher:"
-msgstr "出版者:"
+msgstr "            发布者："
 
 #: ../client.py:2614
 msgid "                Alias:"
@@ -751,7 +756,7 @@ msgstr "需要一个属性名称和值"
 
 #: ../client.py:2644 ../client.py:2672
 msgid "set-publisher must be used to change the preferred publisher"
-msgstr "必须使用 set-publisher 来更改首选出版者"
+msgstr "必须使用 set-publisher 来更改首选发布者"
 
 #: ../client.py:2667
 msgid "requires at least one property name"
@@ -774,11 +779,11 @@ msgstr "无此类变量: %s"
 
 #: ../client.py:2819 ../client.py:2890
 msgid "publisher argument must be of the form '<prefix>=<url>'."
-msgstr "出版者参数的格式必须是 '<前缀>=<url>'。"
+msgstr "发布者参数的格式必须是“<前缀>=<url>”。"
 
 #: ../client.py:2850
 msgid "variant arguments must be of the form '<name>=<value>'."
-msgstr "变量参数的格式必须是 '<名称>=<值>'。"
+msgstr "变量参数的格式必须是“<名称>=<值>”。"
 
 #: ../client.py:2860
 msgid "Facet arguments must beform 'facet..=[True|False]'"
@@ -790,16 +795,16 @@ msgstr "只能指定一个映像目录路径"
 
 #: ../client.py:2887
 msgid "a publisher must be specified"
-msgstr "必须指定一个出版者"
+msgstr "必须指定一个发布者"
 
 #: ../client.py:2894
 #, python-format
 msgid "a publisher's prefix may not start with the text: %s"
-msgstr "出版者的前缀可能不是按以下文本开头: %s"
+msgstr "发布者的前缀不能以下面的文字开头: %s"
 
 #: ../client.py:2899
 msgid "publisher prefix contains invalid characters"
-msgstr "出版者的前缀包含无效字符"
+msgstr "发布者前缀包含无效字符"
 
 #: ../client.py:2917
 #, python-format
@@ -816,7 +821,7 @@ msgid ""
 "%(error)s"
 msgstr ""
        "URI '%(pub_url)s' 似乎未指向有效的 pkg 服务器。\n"
-       "请检查此服务器的地址和客户机的网络设置。\n"
+       "请检查服务器的地址和客户机的网络设置。\n"
        "其他详细信息:\n"
        "\n"
        "%(error)s"
@@ -932,7 +937,8 @@ msgid ""
 "the requested operation."
 msgstr ""
        "\n"
-       "在尝试为请求的操作检索软件包或文件数据时遇到错误。\n"
+       "尝试为请求的操作检索软件包或文件数据时\n"
+       "出现错误。"
 
 #: ../client.py:3309
 #, python-format
@@ -941,7 +947,7 @@ msgid ""
 "\n"
 "%s"
 msgstr ""
-       "详细信息如下所示:\n"
+       "详细信息如下:\n"
        "\n"
        "%s"
 
@@ -1021,16 +1027,16 @@ msgid ""
 msgstr ""
        "\n"
        "\n"
-       "尽管在建立索引时出现错误，但映像更新、安装或卸载已成功完成。\n"
+       "尽管在建立索引时出现错误，但映像更新、安装或卸载\n已成功完成。"
 
 #. The full usage message isn't desired.
 #: ../depot.py:131
 msgid "Try `pkg.depotd --help or -?' for more information."
-msgstr "有关更多信息，请尝试 `pkg.depotd --help or -?'。"
+msgstr "有关更多信息，请尝试 'pkg.depotd --help' 或 'pkg.depotd -?'。"
 
 #: ../depot.py:396 ../publish.py:115
 msgid "property arguments must be of the form '<section.property>=<value>'."
-msgstr "属性参数的格式必须是 '<部分.属性>=<值>'。"
+msgstr "属性参数的格式必须是“<区段.属性>=<值>”。"
 
 #: ../gui/data/addmoresoftware.desktop.in.h:1
 msgid "Add More Software"
@@ -1335,7 +1341,9 @@ msgid ""
 "exit and use it on restart. The state is the selected publisher and the size "
 "and position of horizontal and vertical dividers."
 msgstr ""
-       "一个布尔值，用于确定软件包管理器是否应在退出时保存其状态并在重新启动时使用该状态。此状态是选定的出版者以及水平和垂直分隔条的尺寸和位置。"
+       "一个布尔值，用于确定软件包管理器是否应在退出时保存其状态"
+       "并在重新启动时使用该状态。此状态是选定的发布者以及"
+       "水平和垂直分隔条的尺寸和位置。"
 
 #: ../gui/data/packagemanager-preferences.schemas.in.h:4
 msgid ""
@@ -1344,39 +1352,46 @@ msgid ""
 "if updates are available) or it should go straight to the update all "
 "operation."
 msgstr ""
-       "一个布尔值，用于确定软件包管理器是应在执行更新操作（检查是否有可用更新）之后找到更新时显示确认对话框，还是应直接更新所有操作。"
+       "一个布尔值，用于确定软件包管理器是应在执行更新"
+       "操作（检查是否有可用更新）之后找到更新时"
+       "显示确认对话框，还是应直接执行全部更新"
+       "操作。"
 
 #: ../gui/data/packagemanager-preferences.schemas.in.h:5
 msgid ""
 "A boolean which determines whether Package Manager should show confirmation "
 "dialog when the user selected some packages for installation or update."
 msgstr ""
-       "一个布尔值，用于确定软件包管理器是否应在用户选择了一些要安装或更新的软件包时显示确认对话框。"
+       "一个布尔值，用于确定软件包管理器是否应在用户选择了"
+       "一些要安装或更新的软件包时显示确认对话框。"
 
 #: ../gui/data/packagemanager-preferences.schemas.in.h:6
 msgid ""
 "A boolean which determines whether Package Manager should show confirmation "
 "dialog when the user selected some packages for removal."
 msgstr ""
-       "一个布尔值，用于确定软件包管理器是否应在用户选择了一些要删除的软件包时显示确认对话框。"
+       "一个布尔值，用于确定软件包管理器是否应在用户选择了"
+       "一些要删除的软件包时显示确认对话框。"
 
 #: ../gui/data/packagemanager-preferences.schemas.in.h:7
 msgid ""
 "A boolean which determines whether Package Manager should start in search "
 "mode."
 msgstr ""
-       "一个布尔值，用于确定软件包管理器是否应在搜索模式下启动。"
+       "一个布尔值，用于确定软件包管理器是否应在搜索模式下"
+       "启动。"
 
 #: ../gui/data/packagemanager-preferences.schemas.in.h:8
 msgid ""
 "A string which determines if the repository is shown or not in the error "
 "dialog."
 msgstr ""
-       "一个字符串，用于确定错误对话框中是否显示系统信息库。"
+       "一个字符串，用于确定系统信息库是否显示在错误"
+       "对话框中。"
 
 #: ../gui/data/packagemanager-preferences.schemas.in.h:9
 msgid "A string which stores the last publisher used by package manager."
-msgstr "一个字符串，用于存储软件包管理器上次使用的出版者。"
+msgstr "一个字符串，用于存储软件包管理器上次使用的发布者。"
 
 #: ../gui/data/packagemanager-preferences.schemas.in.h:10
 msgid ""
@@ -1392,7 +1407,9 @@ msgid ""
 "packagemanager starts. 0 = \"All Categories\", 2 = \"Applications\" (the "
 "default)"
 msgstr ""
-       "一个整数，用于确定要在软件包管理器启动时展开的初始顶级部分。0 = “所有类别”，2 = “应用程序”（缺省）"
+       "一个整数，用于确定要在软件包管理器启动时展开的初始"
+       "顶层区段。0 =“所有类别”，2 =“应用程序”"
+       "（缺省）"
 
 #: ../gui/data/packagemanager-preferences.schemas.in.h:12
 msgid ""
@@ -1431,18 +1448,20 @@ msgid ""
 "An integer which specifies the maximum number of entries to store for search "
 "completion."
 msgstr ""
-       "一个整数，用于指定为完成搜索要存储的最大条目数。"
+       "一个整数，用于指定为完成搜索而存储的最大"
+       "条目数。"
 
 #: ../gui/data/packagemanager-preferences.schemas.in.h:17
 msgid ""
 "Comma separated list of repositories which we show if there are API errors "
 "when searching them"
 msgstr ""
-       "逗号分隔的系统信息库列表，用于显示在搜索这些系统信息库时是否存在 API 错误"
+       "逗号分隔的系统信息库列表，用于显示在搜索这些系统信息库时"
+       "是否存在 API 错误"
 
 #: ../gui/data/packagemanager-preferences.schemas.in.h:18
 msgid "Display confirmation dialog after Check for updates"
-msgstr "检查是否有更新后显示确认对话框"
+msgstr "检查更新后显示确认对话框"
 
 #: ../gui/data/packagemanager-preferences.schemas.in.h:19
 msgid "Display install/update packages confirmation dialog"
@@ -1454,7 +1473,7 @@ msgstr "显示删除软件包确认对话框"
 
 #: ../gui/data/packagemanager-preferences.schemas.in.h:21
 msgid "Display selected publisher at startup"
-msgstr "在启动时显示选定出版者"
+msgstr "在启动时显示选定发布者"
 
 #: ../gui/data/packagemanager-preferences.schemas.in.h:22
 msgid "Enable type ahead search"
@@ -1486,11 +1505,11 @@ msgstr "初始显示过滤器值"
 
 #: ../gui/data/packagemanager-preferences.schemas.in.h:29
 msgid "Last Export Selections Path"
-msgstr "上次导出选择路径"
+msgstr "上次导出选定项路径"
 
 #: ../gui/data/packagemanager-preferences.schemas.in.h:30
 msgid "Last publisher used by package manager"
-msgstr "软件包管理器上次使用的出版者"
+msgstr "软件包管理器上次使用的发布者"
 
 #: ../gui/data/packagemanager-preferences.schemas.in.h:31
 msgid "Maximum entries for Search Completion"
@@ -1516,7 +1535,7 @@ msgstr ""
 
 #: ../gui/data/packagemanager-preferences.schemas.in.h:36
 msgid "The path for the last set of selections exported from packagemanager."
-msgstr "上次从软件包管理器中导出的一组选择的路径。"
+msgstr "上次从软件包管理器中导出的一组选定项的路径。"
 
 #: ../gui/data/packagemanager.desktop.in.h:2
 #: ../gui/data/packagemanager.glade.h:77 ../gui/modules/webinstall.py:428
@@ -1527,7 +1546,7 @@ msgstr "软件包管理器"
 
 #: ../gui/data/packagemanager.glade.h:1
 msgid "<b>Add, modify and remove publishers</b>"
-msgstr "<b>添加、修改和删除出版者</b>"
+msgstr "<b>添加、修改和删除发布者</b>"
 
 #: ../gui/data/packagemanager.glade.h:2
 msgid "<b>Apply the following changes:</b>"
@@ -1547,7 +1566,7 @@ msgstr "<b>常规</b>"
 
 #: ../gui/data/packagemanager.glade.h:6 ../packagemanager.py:3600
 msgid "<b>Installable Version:</b>"
-msgstr "<b>可安装的版本：</b>"
+msgstr "<b>可安装版本：</b>"
 
 #: ../gui/data/packagemanager.glade.h:7
 msgid "<b>Installed:</b>"
@@ -1563,11 +1582,11 @@ msgstr "<b>原始位置</b>"
 
 #: ../gui/data/packagemanager.glade.h:10
 msgid "<b>Publisher added successfully</b>"
-msgstr "<b>成功添加的出版者</b>"
+msgstr "<b>已成功添加发布者</b>"
 
 #: ../gui/data/packagemanager.glade.h:11
 msgid "<b>Publisher</b>"
-msgstr "<b>出版者</b>"
+msgstr "<b>发布者</b>"
 
 #: ../gui/data/packagemanager.glade.h:12
 msgid "<b>Recent Searches</b>"
@@ -1607,7 +1626,7 @@ msgstr "<big><b>软件包管理器 Web 安装程序</b></big>"
 
 #: ../gui/data/packagemanager.glade.h:21
 msgid "<span foreground=\"blue\"><u>What's this?</u></span>"
-msgstr "<span foreground=\"blue\"><u>这是什么?</u></span>"
+msgstr "<span foreground=\"blue\"><u>这是什么？</u></span>"
 
 #: ../gui/data/packagemanager.glade.h:22
 msgid ""
@@ -1615,15 +1634,17 @@ msgid ""
 "system image and updated packages. The\n"
 "system will boot into the new BE on restart."
 msgstr ""
-       "引导环境 (Boot Environment, BE) 包含操作系统映像\n"
-       "和更新的软件包。\n在重新启动时，系统将引导进入新的引导环境。"
+       "引导环境 (boot environment, BE) 包含操作\n"
+       "系统映像和更新的软件包。在重新\n"
+       "启动时，系统将引导至新的 BE。"
 
 #: ../gui/data/packagemanager.glade.h:25
 msgid ""
 "A new boot environment has been created and will be given the\n"
 "following name."
 msgstr ""
-       "已创建了一个新的引导环境，并为其指定以下名称。\n"
+       "已创建了一个新的引导环境，并为其指定\n"
+       "以下名称。"
 
 #: ../gui/data/packagemanager.glade.h:27
 msgid "A_dd"
@@ -1631,7 +1652,7 @@ msgstr "添加(_D)"
 
 #: ../gui/data/packagemanager.glade.h:28
 msgid "A_lias:"
-msgstr "别名(_L):"
+msgstr "别名(_L)："
 
 #: ../gui/data/packagemanager.glade.h:29
 msgid "About Glade"
@@ -1639,11 +1660,11 @@ msgstr "关于 Glade"
 
 #: ../gui/data/packagemanager.glade.h:30 ../gui/modules/repository.py:1348
 msgid "Add Publisher"
-msgstr "添加出版者"
+msgstr "添加发布者"
 
 #: ../gui/data/packagemanager.glade.h:31
 msgid "Adding Publisher Complete"
-msgstr "添加出版者已完成"
+msgstr "添加发布者完成"
 
 #: ../gui/data/packagemanager.glade.h:32 ../gui/modules/repository.py:1451
 #: ../gui/modules/repository.py:1465
@@ -1706,7 +1727,7 @@ msgid ""
 msgstr ""
        "版权所有 2010 Sun Microsystems, Inc. \n"
        "保留所有权利。\n"
-       "其使用应遵守许可证条款。"
+       "必须依据许可证条款使用。"
 
 #: ../gui/data/packagemanager.glade.h:48
 msgid "Currently active boot environment"
@@ -1734,7 +1755,7 @@ msgstr "详细信息"
 
 #: ../gui/data/packagemanager.glade.h:54
 msgid "Do not notify me about these publishers again."
-msgstr "请不要再通知我有关这些出版者的信息。"
+msgstr "请不要再通知我有关这些发布者的信息。"
 
 #: ../gui/data/packagemanager.glade.h:55 ../gui/modules/installupdate.py:95
 #: ../um/data/updatemanager.glade.h:6
@@ -1792,7 +1813,7 @@ msgstr "管理引导环境"
 
 #: ../gui/data/packagemanager.glade.h:68
 msgid "Manage Publishers"
-msgstr "管理出版者"
+msgstr "管理发布者"
 
 #: ../gui/data/packagemanager.glade.h:69
 msgid "Manage _Boot Environments..."
@@ -1800,7 +1821,7 @@ msgstr "管理引导环境(_B)..."
 
 #: ../gui/data/packagemanager.glade.h:70
 msgid "Modify Publisher"
-msgstr "修改出版者"
+msgstr "修改发布者"
 
 #: ../gui/data/packagemanager.glade.h:71 ../gui/modules/misc.py:256
 msgid "Name:"
@@ -1812,15 +1833,15 @@ msgstr "名称： "
 
 #: ../gui/data/packagemanager.glade.h:73
 msgid "O_rigin:"
-msgstr "原始位置(_R):"
+msgstr "原始位置(_R)："
 
 #: ../gui/data/packagemanager.glade.h:74
 msgid "On Package _Install/Update"
-msgstr "软件包安装/更新时(_I)"
+msgstr "安装/更新软件包时(_I)"
 
 #: ../gui/data/packagemanager.glade.h:75
 msgid "On Package _Remove"
-msgstr "软件包删除时(_R)"
+msgstr "删除软件包时(_R)"
 
 #: ../gui/data/packagemanager.glade.h:76
 msgid "On _Updates"
@@ -1844,11 +1865,11 @@ msgstr "正在处理"
 
 #: ../gui/data/packagemanager.glade.h:82
 msgid "Pu_blisher:"
-msgstr "出版者(_B):"
+msgstr "发布者(_B)："
 
 #: ../gui/data/packagemanager.glade.h:83
 msgid "Publisher Name:"
-msgstr "出版者名称："
+msgstr "发布者名称："
 
 #: ../gui/data/packagemanager.glade.h:84
 msgid "Re_fresh"
@@ -1905,7 +1926,7 @@ msgstr "SSL 证书(_E)："
 
 #: ../gui/data/packagemanager.glade.h:97
 msgid "SSL Certi_ficate:"
-msgstr "SSL 证书(_F):"
+msgstr "SSL 证书(_F)："
 
 #: ../gui/data/packagemanager.glade.h:98
 msgid "SSL _Key:"
@@ -1921,7 +1942,7 @@ msgstr "搜索"
 
 #: ../gui/data/packagemanager.glade.h:101
 msgid "Search Publisher Errors"
-msgstr "搜索出版者错误"
+msgstr "搜索发布者错误"
 
 #: ../gui/data/packagemanager.glade.h:102
 msgid "Search Repositories Error"
@@ -1929,7 +1950,7 @@ msgstr "搜索系统信息库错误"
 
 #: ../gui/data/packagemanager.glade.h:103
 msgid "Search errors with the following publishers:"
-msgstr "使用以下出版者搜索错误："
+msgstr "搜索以下发布者的错误："
 
 #: ../gui/data/packagemanager.glade.h:104
 msgid "Select _Updates"
@@ -1945,19 +1966,19 @@ msgstr "通过选中复选框选择软件包，然后单击“删除”以删除
 
 #: ../gui/data/packagemanager.glade.h:107
 msgid "Set publisher priorities using arrows."
-msgstr "使用箭头设置出版者优先级。"
+msgstr "使用箭头设置发布者优先级。"
 
 #: ../gui/data/packagemanager.glade.h:108
 msgid "Show Start Page on _startup"
-msgstr "启动时显示起始页面(_S)"
+msgstr "在启动时显示起始页面(_S)"
 
 #: ../gui/data/packagemanager.glade.h:109
 msgid "Show _all publisher results"
-msgstr "显示所有出版者结果(_A)"
+msgstr "显示所有发布者结果(_A)"
 
 #: ../gui/data/packagemanager.glade.h:110
 msgid "Specify the publisher name and URI"
-msgstr "指定出版者名称和 URI"
+msgstr "指定发布者名称和 URI"
 
 #: ../gui/data/packagemanager.glade.h:111
 msgid "Start _Page"
@@ -1969,19 +1990,19 @@ msgstr "以下项将添加到您的系统中："
 
 #: ../gui/data/packagemanager.glade.h:113
 msgid "This is a secure publisher."
-msgstr "这是一个安全出版者。"
+msgstr "这是一个安全发布者。"
 
 #: ../gui/data/packagemanager.glade.h:114
 msgid ""
 "This publisher requires an SSL key and an SSL certificate.\n"
 "Specify the location of these files."
 msgstr ""
-       "此出版者需要 SSL 密钥和 SSL 证书。\n"
+       "此发布者需要 SSL 密钥和 SSL 证书。\n"
        "请指定这些文件的位置。"
 
 #: ../gui/data/packagemanager.glade.h:116
 msgid "Type text to search for the package."
-msgstr "键入用于搜索软件包的文本。"
+msgstr "键入用于搜索软件包的文字。"
 
 #: ../gui/data/packagemanager.glade.h:117
 msgid "URI:"
@@ -1989,7 +2010,7 @@ msgstr "URI："
 
 #: ../gui/data/packagemanager.glade.h:118
 msgid "Update All Complete"
-msgstr "全部更新已完成"
+msgstr "全部更新完成"
 
 #: ../gui/data/packagemanager.glade.h:119 ../packagemanager.py:330
 msgid "Updates"
@@ -1997,7 +2018,7 @@ msgstr "更新"
 
 #: ../gui/data/packagemanager.glade.h:120
 msgid "Vie_w:"
-msgstr "视图(_W):"
+msgstr "查看(_W)："
 
 #: ../gui/data/packagemanager.glade.h:121
 msgid "_Accept"
@@ -2009,7 +2030,7 @@ msgstr "添加(_A)"
 
 #: ../gui/data/packagemanager.glade.h:123
 msgid "_Add Publisher..."
-msgstr "添加出版者(_A)..."
+msgstr "添加发布者(_A)..."
 
 #: ../gui/data/packagemanager.glade.h:124
 msgid "_Add..."
@@ -2041,7 +2062,7 @@ msgstr "编辑(_E)"
 
 #: ../gui/data/packagemanager.glade.h:131
 msgid "_Export Selections..."
-msgstr "导出选择(_E)..."
+msgstr "导出选定项(_E)..."
 
 #: ../gui/data/packagemanager.glade.h:132
 msgid "_File"
@@ -2065,7 +2086,7 @@ msgstr "日志(_L)"
 
 #: ../gui/data/packagemanager.glade.h:137
 msgid "_Manage Publishers..."
-msgstr "管理出版者(_M)..."
+msgstr "管理发布者(_M)..."
 
 #: ../gui/data/packagemanager.glade.h:138
 msgid "_Modify..."
@@ -2105,7 +2126,7 @@ msgstr "搜索(_S)"
 
 #: ../gui/data/packagemanager.glade.h:147
 msgid "_URI:"
-msgstr "URI(_U):"
+msgstr "URI(_U)："
 
 #: ../gui/data/packagemanager.glade.h:148
 msgid "_Up"
@@ -2319,7 +2340,7 @@ msgstr "名称"
 #: ../gui/modules/installupdate.py:357 ../gui/modules/repository.py:386
 #: ../packagemanager.py:1512
 msgid "Publisher"
-msgstr "出版者"
+msgstr "发布者"
 
 #: ../gui/modules/installupdate.py:365 ../packagemanager.py:1528
 msgid "Description"
@@ -2369,7 +2390,8 @@ msgid ""
 "%s"
 msgstr ""
        "\n"
-       "无法联系有效的软件包仓库。请检查您的网络设置，\n并尝试使用 Web 浏览器联系服务器。\n"
+       "无法联系有效的软件包仓库。请检查您的网络设置，\n"
+       "并尝试使用 Web 浏览器联系服务器。\n"
        "\n"
        "%s"
 
@@ -2445,7 +2467,7 @@ msgid ""
 "Live Image.\n"
 "Please retry this operation on an alternate boot environment."
 msgstr ""
-       "请求的操作不会影响无法在实时映像中修改的文件。\n"
+       "请求的操作会影响在实时映像中无法修改的文件。\n"
        "请在备用引导环境中重试此操作。"
 
 #: ../gui/modules/installupdate.py:551
@@ -2489,7 +2511,7 @@ msgstr "正在执行..."
 
 #: ../gui/modules/installupdate.py:640
 msgid "Gathering package information, please wait..."
-msgstr "正在收集软件包信息，请等待..."
+msgstr "正在收集软件包信息，请稍候..."
 
 #: ../gui/modules/installupdate.py:642
 msgid "Gathering package information"
@@ -2518,8 +2540,8 @@ msgstr "全部更新确认"
 #: ../gui/modules/installupdate.py:728
 msgid "Review the package which will be affected by Update all"
 msgid_plural "Review the packages which will be affected by Update all"
-msgstr[0] "查看将受全部更新影响的软件包"
-msgstr[1] "查看将受全部更新影响的软件包"
+msgstr[0] "查看将受“全部更新”影响的软件包"
+msgstr[1] "查看将受“全部更新”影响的软件包"
 
 #: ../gui/modules/installupdate.py:824 ../gui/modules/installupdate.py:864
 msgid "No futher information available"
@@ -2545,8 +2567,8 @@ msgid ""
 "filing a bug together with the error details listed below at:\n"
 msgstr ""
        "%s 阶段中出现了未知错误。\n"
-       "请报告该错误并附上以下列出的错误详细信息，\n"
-       "让开发者了解此问题：\n"
+       "请通过报告该错误并附上下面列出的错误\n"
+       "详细信息，让开发者了解这一问题：\n"
 
 #: ../gui/modules/installupdate.py:859
 msgid "Exception traceback:\n"
@@ -2554,11 +2576,11 @@ msgstr "异常跟踪信息：\n"
 
 #: ../gui/modules/installupdate.py:866
 msgid "pkg version: "
-msgstr "pkg version: "
+msgstr "pkg version："
 
 #: ../gui/modules/installupdate.py:870
 msgid "List of configured publishers:"
-msgstr "已配置的出版者列表："
+msgstr "已配置的发布者列表："
 
 #: ../gui/modules/installupdate.py:953
 msgid "Installation completed successfully"
@@ -2621,7 +2643,7 @@ msgstr "%s 许可证"
 
 #: ../gui/modules/misc.py:123
 msgid "Errors logged: click to view"
-msgstr "错误已记录：可单击查看"
+msgstr "记录的错误：单击便可查看"
 
 #: ../gui/modules/misc.py:207
 #, python-format
@@ -2660,7 +2682,7 @@ msgstr "最新版本："
 
 #: ../gui/modules/misc.py:263
 msgid "Publisher:"
-msgstr "出版者："
+msgstr "发布者："
 
 #. Installed with later version but can't upgrade
 #. Upgradeable Version: None
@@ -2677,7 +2699,7 @@ msgstr "无"
 #: ../packagemanager.py:4229
 #, python-format
 msgid "%(version)s (Build %(build)s-%(branch)s)"
-msgstr "%(version)s（生成 %(build)s-%(branch)s）"
+msgstr "%(version)s（内部版本 %(build)s-%(branch)s）"
 
 #: ../gui/modules/misc.py:315
 msgid " (disabled)"
@@ -2685,7 +2707,7 @@ msgstr "（禁用）"
 
 #: ../gui/modules/misc.py:317
 msgid " (removed)"
-msgstr " (已删除)"
+msgstr "（已删除）"
 
 #: ../gui/modules/misc.py:438
 msgid "Catalog refresh error:\n"
@@ -2707,7 +2729,7 @@ msgstr "正在缓存目录...\n"
 
 #: ../gui/modules/progress.py:59
 msgid "Loading catalog cache ...\n"
-msgstr "正在加载目录缓存...\n"
+msgstr "正在装入目录高速缓存...\n"
 
 #: ../gui/modules/progress.py:70
 #, python-format
@@ -2717,7 +2739,7 @@ msgstr "正在刷新目录 %s\n"
 #: ../gui/modules/progress.py:75
 #, python-format
 msgid "Finished refreshing catalog %s\n"
-msgstr "已完成刷新目录 %s\n"
+msgstr "刷新目录 %s 已完成\n"
 
 #: ../gui/modules/progress.py:87
 #, python-format
@@ -2741,7 +2763,7 @@ msgstr "%s\n"
 
 #: ../gui/modules/repository.py:103
 msgid "Manage Publishers Confirmation"
-msgstr "管理出版者确认"
+msgstr "管理发布者确认"
 
 #: ../gui/modules/repository.py:339
 #, python-format
@@ -2766,11 +2788,11 @@ msgstr "名称已在使用中"
 
 #: ../gui/modules/repository.py:592 ../gui/modules/repository.py:1690
 msgid "SSL Key not found at specified location"
-msgstr "在指定位置没有找到 SSL 密钥"
+msgstr "在指定位置找不到 SSL 密钥"
 
 #: ../gui/modules/repository.py:801
 msgid "Adding Publisher"
-msgstr "正在添加出版者"
+msgstr "正在添加发布者"
 
 #: ../gui/modules/repository.py:815
 msgid "Canceling...\n"
@@ -2779,50 +2801,50 @@ msgstr "正在取消...\n"
 #: ../gui/modules/repository.py:836 ../gui/modules/repository.py:1051
 #, python-format
 msgid "Removing publisher %s\n"
-msgstr "正在删除出版者 %s\n"
+msgstr "正在删除发布者 %s\n"
 
 #: ../gui/modules/repository.py:840 ../gui/modules/repository.py:1055
 #, python-format
 msgid "Publisher %s succesfully removed\n"
-msgstr "已成功删除出版者 %s\n"
+msgstr "已成功删除发布者 %s\n"
 
 #: ../gui/modules/repository.py:867
 #, python-format
 msgid "Adding publisher %s\n"
-msgstr "正在添加出版者 %s\n"
+msgstr "正在添加发布者 %s\n"
 
 #: ../gui/modules/repository.py:871
 #, python-format
 msgid "Updating publisher %s\n"
-msgstr "正在更新出版者 %s\n"
+msgstr "正在更新发布者 %s\n"
 
 #: ../gui/modules/repository.py:875
 #, python-format
 msgid "Publisher %s succesfully added\n"
-msgstr "已成功添加出版者 %s\n"
+msgstr "已成功添加发布者 %s\n"
 
 #: ../gui/modules/repository.py:878
 #, python-format
 msgid "Publisher %s succesfully updated\n"
-msgstr "已成功更新出版者 %s\n"
+msgstr "已成功更新发布者 %s\n"
 
 #: ../gui/modules/repository.py:947
 msgid "Disable Publisher:\n"
 msgid_plural "Disable Publishers:\n"
-msgstr[0] "禁用出版者：\n"
-msgstr[1] "禁用出版者：\n"
+msgstr[0] "禁用发布者：\n"
+msgstr[1] "禁用发布者：\n"
 
 #: ../gui/modules/repository.py:949
 msgid "Enable Publisher:\n"
 msgid_plural "Enable Publishers:\n"
-msgstr[0] "启用出版者：\n"
-msgstr[1] "启用出版者：\n"
+msgstr[0] "启用发布者：\n"
+msgstr[1] "启用发布者：\n"
 
 #: ../gui/modules/repository.py:951
 msgid "Remove Publisher:\n"
 msgid_plural "Remove Publishers:\n"
-msgstr[0] "删除出版者：\n"
-msgstr[1] "删除出版者：\n"
+msgstr[0] "删除发布者：\n"
+msgstr[1] "删除发布者：\n"
 
 #: ../gui/modules/repository.py:953
 msgid "Change Priorities:\n"
@@ -2845,32 +2867,32 @@ msgstr "启用"
 #: ../gui/modules/repository.py:1011 ../gui/modules/repository.py:1068
 #, python-format
 msgid "%(enable)s publisher %(name)s\n"
-msgstr "%(enable)s 出版者 %(name)s\n"
+msgstr "%(enable)s 发布者 %(name)s\n"
 
 #: ../gui/modules/repository.py:1038
 #, python-format
 msgid "Changing priority for publisher %s\n"
-msgstr "正在更改出版者 %s 的优先级\n"
+msgstr "更改发布者 %s 的优先级\n"
 
 #: ../gui/modules/repository.py:1231
 msgid ""
 "Mirrors for a secure publisher\n"
 "need to begin with https://"
 msgstr ""
-       "安全出版者的镜像需要\n"
-       "以 https 开头：//"
+       "安全发布者的镜像需要\n"
+       "以 https:// 开头"
 
 #: ../gui/modules/repository.py:1239
 msgid ""
 "Origins for a secure publisher\n"
 "need to begin with https://"
 msgstr ""
-       "安全出版者的原始位置需要\n"
-       "以 https 开头：//"
+       "安全发布者的原始位置需要\n"
+       "以 https:// 开头"
 
 #: ../gui/modules/repository.py:1261
 msgid "URI already added"
-msgstr "URI 已添加"
+msgstr "已添加 URI"
 
 #: ../gui/modules/repository.py:1508
 msgid "Origin:\n"
@@ -2885,7 +2907,7 @@ msgstr "描述：\n"
 #. More Generic for WebInstall
 #: ../gui/modules/repository.py:1530
 msgid "Publisher error"
-msgstr "出版者错误"
+msgstr "发布者错误"
 
 #: ../gui/modules/repository.py:1543
 msgid "Specify SSL Key File"
@@ -2905,7 +2927,7 @@ msgstr "不应指定 SSL"
 
 #: ../gui/modules/repository.py:1694
 msgid "SSL Certificate not found at specified location"
-msgstr "在指定位置未找到 SSL 证书"
+msgstr "在指定位置找不到 SSL 证书"
 
 #: ../gui/modules/repository.py:1702
 msgid "Mirror URI"
@@ -2918,14 +2940,14 @@ msgstr "原始位置 URI"
 #: ../gui/modules/repository.py:1805
 msgid "Enabling Publisher"
 msgid_plural "Enabling Publishers"
-msgstr[0] "启用出版者"
-msgstr[1] "启用出版者"
+msgstr[0] "启用发布者"
+msgstr[1] "启用发布者"
 
 #: ../gui/modules/repository.py:1807
 msgid "Disabling Publisher"
 msgid_plural "Disabling Publishers"
-msgstr[0] "禁用出版者"
-msgstr[1] "禁用出版者"
+msgstr[0] "禁用发布者"
+msgstr[1] "禁用发布者"
 
 #: ../gui/modules/uarenamebe.py:58
 msgid "The <b>libbe</b> library was not found on your system."
@@ -2933,11 +2955,11 @@ msgstr "在系统上找不到 <b>libbe</b> 库。"
 
 #: ../gui/modules/uarenamebe.py:65 ../gui/modules/uarenamebe.py:109
 msgid "Rename BE"
-msgstr "重命名引导环境"
+msgstr "重命名 BE"
 
 #: ../gui/modules/uarenamebe.py:110
 msgid "Renaming BE, please wait..."
-msgstr "正在重命名引导环境，请等待..."
+msgstr "正在重命名 BE，请稍候..."
 
 #: ../gui/modules/uarenamebe.py:143 ../packagemanager.py:722
 #, python-format
@@ -2953,7 +2975,7 @@ msgid ""
 "The following name will be used instead:\n"
 "\t%s"
 msgstr ""
-       "无法将引导环境名称更改为：\n"
+       "无法将 BE 名称更改为：\n"
        "\t%s\n"
        "\n"
        "将改用以下名称：\n"
@@ -2961,7 +2983,7 @@ msgstr ""
 
 #: ../gui/modules/uarenamebe.py:223
 msgid "BE Name"
-msgstr "引导环境名称"
+msgstr "BE 名称"
 
 #: ../gui/modules/uarenamebe.py:229
 msgid ""
@@ -2981,7 +3003,7 @@ msgstr "此名称已存在。"
 
 #: ../gui/modules/uarenamebe.py:251
 msgid "BE name contains invalid character."
-msgstr "引导环境名称包含无效字符。"
+msgstr "BE 名称包含无效字符。"
 
 #: ../gui/modules/webinstall.py:131
 #, python-format
@@ -2997,14 +3019,14 @@ msgid_plural ""
 " Add New Publishers\n"
 msgstr[0] ""
        "\n"
-       " 添加新出版者\n"
+       " 添加新发布者\n"
 msgstr[1] ""
        "\n"
-       " 添加新出版者\n"
+       " 添加新发布者\n"
 
 #: ../gui/modules/webinstall.py:152
 msgid "All specified publishers are already on the system."
-msgstr "所有指定的出版者都已在系统中。"
+msgstr "所有指定的发布者都已在系统中。"
 
 #: ../gui/modules/webinstall.py:162
 #, python-format
@@ -3028,7 +3050,7 @@ msgstr[0] ""
        " 安装软件包\n"
 msgstr[1] ""
        "\n"
-       "安装软件包\n"
+       " 安装软件包\n"
 
 #: ../gui/modules/webinstall.py:181
 #, python-format
@@ -3038,19 +3060,19 @@ msgstr "\t%s（已禁用）\n"
 #: ../gui/modules/webinstall.py:231
 msgid "Click Proceed <b>only</b> if you trust this new publisher "
 msgid_plural "Click Proceed <b>only</b> if you trust these new publishers "
-msgstr[0] "<b>仅</b>在您信任此新出版者时，单击“继续”"
-msgstr[1] "<b>仅</b>在您信任这些新出版者时，单击“继续”"
+msgstr[0] "<b>仅</b>当您信任此新发布者时才单击“继续”"
+msgstr[1] "<b>仅</b>当您信任这些新发布者时才单击“继续”"
 
 #: ../gui/modules/webinstall.py:302 ../gui/modules/webinstall.py:347
 #: ../gui/modules/webinstall.py:391
 msgid "Publisher Error"
-msgstr "出版者错误"
+msgstr "发布者错误"
 
 #: ../gui/modules/webinstall.py:310
 msgid "The following publisher is disabled:\n"
 msgid_plural "The following publishers are disabled:\n"
-msgstr[0] "已禁用以下出版者：\n"
-msgstr[1] "已禁用以下出版者：\n"
+msgstr[0] "已禁用以下发布者：\n"
+msgstr[1] "已禁用以下发布者：\n"
 
 #: ../gui/modules/webinstall.py:314
 #, python-format
@@ -3068,17 +3090,18 @@ msgid_plural ""
 "On completion they will be disabled again."
 msgstr[0] ""
        "\n"
-       "在继续安装之前，单击“确定”将会启用此出版者。完成时它将再次被禁用。"
+       "在继续安装之前，单击“确定”将会启用此发布者。安装完成"
+       "时它将再次被禁用。"
 msgstr[1] ""
        "\n"
-       "在继续安装之前，单击“确定”将会启用这些出版者。\n"
-       "完成时它将再次被禁用。"
+       "在继续安装之前，单击“确定”将会启用这些发布者。\n"
+       "安装完成时它们将再次被禁用。"
 
 #: ../gui/modules/webinstall.py:329
 msgid "Disabled Publisher"
 msgid_plural "Disabled Publishers"
-msgstr[0] "已禁用出版者"
-msgstr[1] "已禁用出版者"
+msgstr[0] "已禁用发布者"
+msgstr[1] "已禁用发布者"
 
 #: ../gui/modules/webinstall.py:387
 #, python-format
@@ -3159,7 +3182,7 @@ msgstr "缺少 fmri 属性"
 #: ../modules/actions/depend.py:73
 #, python-format
 msgid "Unknown type (%s) in depend action"
-msgstr "depend 操作中的未知类型 (%s)"
+msgstr "depend 操作中有未知类型 (%s)"
 
 #: ../modules/actions/directory.py:54 ../modules/actions/file.py:63
 #: ../modules/actions/link.py:56
@@ -3169,7 +3192,7 @@ msgstr "空路径属性"
 #: ../modules/actions/generic.py:139
 #, python-format
 msgid "No such file: '%s'."
-msgstr "没有此类文件：'%s'。"
+msgstr "没有此类文件: '%s'。"
 
 #: ../modules/actions/generic.py:142
 #, python-format
@@ -3184,7 +3207,7 @@ msgstr "许可证文件 %s 不存在。"
 #: ../modules/actions/license.py:118
 #, python-format
 msgid "Hash: '%(found)s' should be '%(expected)s'"
-msgstr "散列：'%(found)s' 应该是 '%(expected)s'"
+msgstr "散列: '%(found)s' 应该是 '%(expected)s'"
 
 #: ../modules/catalog.py:1514
 #, python-format
@@ -3259,7 +3282,7 @@ msgstr ""
 #: ../modules/client/api_errors.py:235
 #, python-format
 msgid "Could not complete the operation on %s: read-only filesystem\n"
-msgstr "无法在 %s 上完成此操作：只读文件系统\n"
+msgstr "无法对 %s 完成此操作：只读文件系统\n"
 
 #: ../modules/client/api_errors.py:237
 msgid "Could not complete the operation: read-only filesystem."
@@ -3277,7 +3300,9 @@ msgstr ""
 msgid ""
 "The following patterns only matched packages that are from publishers other "
 "than that which supplied the already installed version of this package"
-msgstr "以下模式仅与来自未提供此软件包的已安装版本的出版者的软件包匹配"
+msgstr ""
+       "以下模式仅与来自这样的发布者的软件包匹配，即提供此软件包"
+       "的已安装版本的发布者以外的发布者"
 
 #: ../modules/client/api_errors.py:285
 #, python-format
@@ -3309,20 +3334,21 @@ msgid ""
 "The proposed operation can not be performed for the following package(s) as "
 "they are already installed: "
 msgstr ""
-       "无法对以下软件包执行建议的操作，因为这些软件包已安装："
+       "无法对以下软件包执行建议的操作，因为"
+       "这些软件包已安装："
 
 #: ../modules/client/api_errors.py:310
 msgid "The following different patterns specify thesame package(s):"
-msgstr "以下不同模式可指定相同的软件包："
+msgstr "以下不同模式指定相同的软件包："
 
 #: ../modules/client/api_errors.py:320
 msgid "No solution was found to satisfy constraints"
-msgstr "没有找到符合此约束的解决方案"
+msgstr "找不到可满足约束的解决方案"
 
 #: ../modules/client/api_errors.py:326
 #, python-format
 msgid "Package %s is missing a dependency: %s"
-msgstr "软件包 %s 缺少一个相关项：%s"
+msgstr "软件包 %s 缺少一个相关项: %s"
 
 #: ../modules/client/api_errors.py:398
 #, python-format
@@ -3330,7 +3356,8 @@ msgid ""
 "The FMRI '%s' does not contain publisher information and cannot be used for "
 "catalog operations."
 msgstr ""
-       "FMRI '%s' 不包含出版者信息，无法用于目录操作。"
+       "FMRI '%s' 不包含发布者信息，无法用于"
+       "目录操作。"
 
 #: ../modules/client/api_errors.py:407
 #, python-format
@@ -3343,7 +3370,7 @@ msgstr ""
 
 #: ../modules/client/api_errors.py:424 ../modules/server/catalog.py:79
 msgid "The following catalog files have incorrect permissions:\n"
-msgstr "以下目录文件具有不正确的权限：\n"
+msgstr "以下目录文件的权限不正确：\n"
 
 #: ../modules/client/api_errors.py:428 ../modules/server/catalog.py:83
 #, python-format
@@ -3361,7 +3388,8 @@ msgid ""
 "Unable to determine the updates needed for  the current catalog using the "
 "provided catalog update data in '%s'."
 msgstr ""
-       "无法使用 '%s' 中提供的目录更新数据确定当前目录所需的更新。"
+       "无法使用 '%s' 中提供的目录更新数据确定"
+       "当前目录所需的更新。"
 
 #: ../modules/client/api_errors.py:458
 #, python-format
@@ -3369,7 +3397,8 @@ msgid ""
 "Unable to perform '%(op)s' operation for catalog %(name)s; completion would "
 "result in a duplicate entry for package '%(fmri)s'."
 msgstr ""
-       "无法对目录 %(name)s 执行 '%(op)s' 操作；完成此操作会导致出现重复的软件包 '%(fmri)s' 条目。"
+       "无法对目录 %(name)s 执行 '%(op)s' 操作；完成时"
+       "会导致软件包 '%(fmri)s' 有重复的条目。"
 
 #: ../modules/client/api_errors.py:470
 msgid "Catalog updates can only be applied to an on-disk catalog."
@@ -3387,7 +3416,9 @@ msgid ""
 "catalog update data in '%s'. The specified catalog updates are for an older "
 "version of the catalog and cannot be used."
 msgstr ""
-       "无法使用 '%s' 中提供的目录更新数据确定此目录所需的更新。指定的目录更新适用于旧版本的目录，无法使用。"
+       "无法使用 '%s' 中提供的目录更新数据确定"
+       "此目录所需的更新。指定的目录更新适用于较旧"
+       "版本的目录，因而无法使用。"
 
 #: ../modules/client/api_errors.py:497
 #, python-format
@@ -3402,14 +3433,14 @@ msgstr "未知目录更新类型 '%s'"
 #: ../modules/client/api_errors.py:513
 #, python-format
 msgid "Unrecognized, unknown, or invalid CatalogPart '%s'"
-msgstr "未识别的、未知的或无效的目录部分 '%s'"
+msgstr "无法识别的、未知的或无效的 CatalogPart '%s'"
 
 #: ../modules/client/api_errors.py:544
 msgid ""
 "No matching package could be found for the following FMRIs in any of the "
 "catalogs for the current publishers:\n"
 msgstr ""
-       "在当前出版者的任何目录中都找不到适合于"
+       "在当前发布者的任何目录中都找不到适合于"
        "以下 FMRI 的匹配软件包：\n"
 
 #: ../modules/client/api_errors.py:549
@@ -3420,7 +3451,7 @@ msgstr "%s（模式不匹配）\n"
 #: ../modules/client/api_errors.py:551
 #, python-format
 msgid "%s (publisher did not match)\n"
-msgstr "%s（出版者不匹配）\n"
+msgstr "%s（发布者不匹配）\n"
 
 #: ../modules/client/api_errors.py:554
 #, python-format
@@ -3473,7 +3504,7 @@ msgid ""
 "publisher information: %s"
 msgstr ""
        "指定文件的格式不可识别，或者文件未包含有效的"
-       "出版者信息: %s"
+       "发布者信息: %s"
 
 #: ../modules/client/api_errors.py:796
 msgid ""
@@ -3481,11 +3512,11 @@ msgid ""
 "publisher information."
 msgstr ""
        "指定文件的格式不可识别，或者文件未包含有效的"
-       "出版者信息。"
+       "发布者信息。"
 
 #: ../modules/client/api_errors.py:805
 msgid "Unsupported pkg(5) publisher information data format."
-msgstr "不受支持的 pkg(5) 出版者信息数据格式。"
+msgstr "不受支持的 pkg(5) 发布者信息数据格式。"
 
 #: ../modules/client/api_errors.py:831
 #, python-format
@@ -3568,13 +3599,13 @@ msgid ""
 "Publisher meta_root '%(root)s' is invalid; unable to complete operation: '%"
 "(op)s'."
 msgstr ""
-       "出版者 meta_root '%(root)s' 无效；无法完成操作: '%"
+       "发布者 meta_root '%(root)s' 无效；无法完成操作: '%"
        "(op)s'。"
 
 #: ../modules/client/api_errors.py:968
 #, python-format
 msgid "'%s' is not a valid publisher name."
-msgstr "'%s' 不是有效的出版者名称。"
+msgstr "'%s' 不是有效的发布者名称。"
 
 #: ../modules/client/api_errors.py:976
 #, python-format
@@ -3606,12 +3637,12 @@ msgstr "'%s' 不是有效的系统信息库 URI 排序策略。"
 #: ../modules/client/api_errors.py:1026
 #, python-format
 msgid "Publisher '%s' is disabled and cannot be used for packaging operations."
-msgstr "出版者 '%s' 已被禁用，无法用于打包操作。"
+msgstr "发布者 '%s' 已被禁用，无法用于打包操作。"
 
 #: ../modules/client/api_errors.py:1035
 #, python-format
 msgid "A publisher with the same name or alias as '%s' already exists."
-msgstr "已存在一个具有与 '%s' 相同名称或别名的出版者。"
+msgstr "已存在一个具有与 '%s' 相同名称或别名的发布者。"
 
 #: ../modules/client/api_errors.py:1044
 #, python-format
@@ -3619,18 +3650,18 @@ msgid ""
 "A repository with the same name or origin URIs already exists for publisher "
 "'%s'."
 msgstr ""
-       "出版者 '%s' 已存在一个具有相同名称或原始 URI 的"
+       "发布者 '%s' 已存在一个具有相同名称或原始 URI 的"
        "系统信息库。"
 
 #: ../modules/client/api_errors.py:1053
 #, python-format
 msgid "Mirror '%s' already exists for the specified publisher."
-msgstr "指定出版者的镜像 '%s' 已存在。"
+msgstr "指定的发布者的镜像 '%s' 已存在。"
 
 #: ../modules/client/api_errors.py:1062
 #, python-format
 msgid "Origin '%s' already exists for the specified publisher."
-msgstr "指定出版者的原始位置 '%s' 已存在。"
+msgstr "指定的发布者的原始位置 '%s' 已存在。"
 
 #: ../modules/client/api_errors.py:1071
 #, python-format
@@ -3638,33 +3669,35 @@ msgid ""
 "At least one origin is required for %s.  You must add a new origin before "
 "attempting to remove the specified origin(s)."
 msgstr ""
-       "对于 %s，至少需要一个原始位置。在尝试删除指定的原始位置之前，必须添加一个新的原始位置。"
+       "对于 %s，至少需要一个原始位置。在尝试删除指定的原始位置"
+       "之前，必须添加一个新的原始位置。"
 
 #: ../modules/client/api_errors.py:1081
 msgid "The preferred publisher cannot be removed."
-msgstr "无法删除首选出版者。"
+msgstr "无法删除首选发布者。"
 
 #: ../modules/client/api_errors.py:1088
 msgid "Cannot search a repository before or after itself"
-msgstr "在其本身之前或之后，无法搜索系统信息库"
+msgstr "无法在系统信息库本身之前或之后搜索系统信息库"
 
 #: ../modules/client/api_errors.py:1096
 msgid "Cannot remove the selected repository for a publisher."
-msgstr "无法删除出版者的选定系统信息库。"
+msgstr "无法删除发布者的选定系统信息库。"
 
 #: ../modules/client/api_errors.py:1105
 #, python-format
 msgid ""
 "Publisher '%s' is disabled and cannot be set as the preferred publisher."
 msgstr ""
-       "出版者 '%s' 已被禁用，无法设置为首选出版者。"
+       "发布者 '%s' 已被禁用，无法设置为首选发布者。"
 
 #: ../modules/client/api_errors.py:1114
 msgid ""
 "The preferred publisher may not be disabled.  Another publisher must be set "
 "as the preferred publisher before this publisher can be disabled."
 msgstr ""
-       "首选出版者可能未被禁用。在可禁用此出版者之前，必须将另一个出版者设置为首选出版者。"
+       "首选发布者可能未被禁用。在可禁用此发布者之前，"
+       "必须将另一个发布者设置为首选发布者。"
 
 #: ../modules/client/api_errors.py:1124
 #, python-format
@@ -3674,7 +3707,7 @@ msgstr "未知的合法 URI '%s'。"
 #: ../modules/client/api_errors.py:1132
 #, python-format
 msgid "Unknown publisher '%s'."
-msgstr "未知的出版者 '%s'。"
+msgstr "未知的发布者 '%s'。"
 
 #: ../modules/client/api_errors.py:1140
 #, python-format
@@ -3694,12 +3727,12 @@ msgstr "未知的系统信息库镜像 '%s'。"
 #: ../modules/client/api_errors.py:1170
 #, python-format
 msgid "Publisher '%s' has no repositories that support the '%s' operation."
-msgstr "出版者 '%s' 没有支持 '%s' 操作的系统信息库。"
+msgstr "发布者 '%s' 没有支持 '%s' 操作的系统信息库。"
 
 #: ../modules/client/api_errors.py:1178
 #, python-format
 msgid "Unknown repository origin '%s'"
-msgstr "未知的系统信息库原始 '%s'"
+msgstr "未知的系统信息库原始位置 '%s'"
 
 #: ../modules/client/api_errors.py:1189
 #, python-format
@@ -3721,7 +3754,7 @@ msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s' needed to access '%(uri)s', "
 "has expired.  Please install a valid certificate."
 msgstr ""
-       "访问 '%(uri)s' 所需的出版者 '%(pub)s' 的"
+       "访问 '%(uri)s' 所需的发布者 '%(pub)s' 的"
        "证书 '%(cert)s' 已过期。请安装有效证书。"
 
 #: ../modules/client/api_errors.py:1232
@@ -3730,7 +3763,7 @@ msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s', has expired.  Please install "
 "a valid certificate."
 msgstr ""
-       "出版者 '%(pub)s' 的证书 '%(cert)s' 已过期。请"
+       "发布者 '%(pub)s' 的证书 '%(cert)s' 已过期。请"
        "安装有效证书。"
 
 #: ../modules/client/api_errors.py:1237
@@ -3753,7 +3786,7 @@ msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s', needed to access '%(uri)s', "
 "will expire in '%(days)s' days."
 msgstr ""
-       "访问 '%(uri)s' 所需的出版者 '%(pub)s' 的"
+       "访问 '%(uri)s' 所需的发布者 '%(pub)s' 的"
        "证书 '%(cert)s' 将在 '%(days)s' 天内过期。"
 
 #: ../modules/client/api_errors.py:1258
@@ -3762,7 +3795,7 @@ msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s' will expire in '%(days)s' "
 "days."
 msgstr ""
-       "出版者 '%(pub)s' 的证书 '%(cert)s' 将"
+       "发布者 '%(pub)s' 的证书 '%(cert)s' 将"
        "在 '%(days)s' 天内过期。"
 
 #: ../modules/client/api_errors.py:1262
@@ -3785,13 +3818,13 @@ msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s', needed to access '%(uri)s', "
 "is invalid."
 msgstr ""
-       "访问 '%(uri)s' 所需的出版者 '%(pub)s' 的"
+       "访问 '%(uri)s' 所需的发布者 '%(pub)s' 的"
        "证书 '%(cert)s' 无效。"
 
 #: ../modules/client/api_errors.py:1281
 #, python-format
 msgid "Certificate '%(cert)s' for publisher '%(pub)s' is invalid."
-msgstr "出版者 '%(pub)s' 的证书 '%(cert)s' 无效。"
+msgstr "发布者 '%(pub)s' 的证书 '%(cert)s' 无效。"
 
 #: ../modules/client/api_errors.py:1285
 #, python-format
@@ -3809,24 +3842,23 @@ msgid ""
 "Unable to locate key '%(key)s' for publisher '%(pub)s' needed to access '%"
 "(uri)s'."
 msgstr ""
-       "无法找到访问 '%"
-       "(uri)s' 所需的出版者 '%(pub)s' 的密钥 '%(key)s'。"
+       "找不到访问 '%(uri)s' 所需的发布者 '%(pub)s' 的"
+       "密钥 '%(key)s'。"
 
 #: ../modules/client/api_errors.py:1303
 #, python-format
 msgid "Unable to locate key '%(key)s' for publisher '%(pub)s'."
-msgstr "无法找到出版者 '%(pub)s' 的密钥 '%(key)s'。"
+msgstr "找不到发布者 '%(pub)s' 的密钥 '%(key)s'。"
 
 #: ../modules/client/api_errors.py:1307
 #, python-format
 msgid "Unable to locate key '%(key)s' needed to access '%(uri)s'."
-msgstr "无法找到访问 '%"
-       "(uri)s' 所需的密钥 '%(key)s'。"
+msgstr "找不到访问 '%(uri)s' 所需的密钥 '%(key)s'。"
 
 #: ../modules/client/api_errors.py:1310
 #, python-format
 msgid "Unable to locate key '%s'."
-msgstr "无法找到密钥 '%s'。"
+msgstr "找不到密钥 '%s'。"
 
 #: ../modules/client/api_errors.py:1321
 #, python-format
@@ -3834,13 +3866,13 @@ msgid ""
 "Unable to locate certificate '%(cert)s' for publisher '%(pub)s' needed to "
 "access '%(uri)s'."
 msgstr ""
-       "找不到访问 '%(uri)s' 所需的出版者 '%(pub)s' 的"
+       "找不到访问 '%(uri)s' 所需的发布者 '%(pub)s' 的"
        "证书 '%(cert)s'。"
 
 #: ../modules/client/api_errors.py:1326
 #, python-format
 msgid "Unable to locate certificate '%(cert)s' for publisher '%(pub)s'."
-msgstr "找不到出版者 '%(pub)s' 的证书 '%(cert)s'。"
+msgstr "找不到发布者 '%(pub)s' 的证书 '%(cert)s'。"
 
 #: ../modules/client/api_errors.py:1330
 #, python-format
@@ -3858,7 +3890,7 @@ msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s', needed to access '%(uri)s', "
 "has a future effective date."
 msgstr ""
-       "访问 '%(uri)s' 所需的出版者 '%(pub)s' 的"
+       "访问 '%(uri)s' 所需的发布者 '%(pub)s' 的"
        "证书 '%(cert)s' 具有一个将来的生效日期。"
 
 #: ../modules/client/api_errors.py:1350
@@ -3866,7 +3898,7 @@ msgstr ""
 msgid ""
 "Certificate '%(cert)s' for publisher '%(pub)s' has a future effective date."
 msgstr ""
-       "出版者 '%(pub)s' 的证书 '%(cert)s' 具有一个将来的生效日期。"
+       "发布者 '%(pub)s' 的证书 '%(cert)s' 具有一个将来的生效日期。"
 
 #: ../modules/client/api_errors.py:1354
 #, python-format
@@ -3908,7 +3940,7 @@ msgid ""
 "To override, use the -f (force) option."
 msgstr ""
        "以下位置中已存在一个映像: %s。\n"
-       "要将其覆盖，请使用 -f（强制）选项。"
+       "要进行覆盖，请使用 -f（强制）选项。"
 
 #: ../modules/client/api_errors.py:1425
 #, python-format
@@ -3917,7 +3949,7 @@ msgid ""
 "To override, use the -f (force) option."
 msgstr ""
        "指定的映像路径不为空: %s。\n"
-       "要将其覆盖，请使用 -f（强制）选项。"
+       "要进行覆盖，请使用 -f（强制）选项。"
 
 #: ../modules/client/bootenv.py:134
 msgid "pkg: unable to create an auto snapshot. pkg recovery is disabled."
@@ -3934,8 +3966,8 @@ msgid ""
 "pkg: '%(cmd)s' failed. \n"
 "with a return code of %(ret)d."
 msgstr ""
-       "pkg: '%(cmd)s' 已失败。\n"
-       "返回代码 %(ret)d。"
+       "pkg: '%(cmd)s' 失败。\n"
+       "返回代码为 %(ret)d。"
 
 #: ../modules/client/bootenv.py:284
 #, python-format
@@ -4009,8 +4041,10 @@ msgid ""
 "unmount %(clone_name)s' and then 'beadm activate %(clone_name)s' if you wish "
 "to boot to this BE."
 msgstr ""
-       "引导环境 %(name)s 更新失败。快照是在尝试更新失败之前实施的，并且已挂载在 %(clone_dir)s 中。如果您要引导进入此引导环境，请使用 'beadm "
-       "unmount %(clone_name)s'，然后使用 'beadm activate %(clone_name)s'。"
+       "引导环境 %(name)s 更新失败。快照是在尝试更新失败之前实施"
+       "的，并且已挂载在 %(clone_dir)s 处。如果要引导至此引导"
+       "环境，请使用 'beadm unmount %(clone_name)s'，然后"
+       "使用 'beadm activate %(clone_name)s'。"
 
 #: ../modules/client/bootenv.py:435
 #, python-format
@@ -4028,7 +4062,7 @@ msgstr "SUNWipkg 更新检查失败。"
 #: ../modules/client/imageplan.py:169
 #, python-format
 msgid "Planning for %s failed: %s\n"
-msgstr "%s 计划失败: %s\n"
+msgstr "规划 %s 失败: %s\n"
 
 #: ../modules/client/imageplan.py:861
 msgid "Removal Phase"
@@ -4044,7 +4078,7 @@ msgstr "更新阶段"
 
 #: ../modules/client/imageplan.py:938
 msgid "Index Phase"
-msgstr "索引建立阶段"
+msgstr "索引阶段"
 
 #: ../modules/client/pkg_solver.py:162
 msgid "This version excluded by specified installation version"
@@ -4053,7 +4087,7 @@ msgstr "此版本被指定的安装版本排除"
 #: ../modules/client/pkg_solver.py:171
 #, python-format
 msgid "This version is excluded by installed incorporation %s"
-msgstr "此版本被已安装的合并项 %s 排除 "
+msgstr "此版本被已安装的公司 %s 排除"
 
 #: ../modules/client/pkg_solver.py:181
 #, python-format
@@ -4063,25 +4097,25 @@ msgstr "此版本被冻结 %s 排除"
 #: ../modules/client/pkg_solver.py:197
 #, python-format
 msgid "No matching version of %s can be installed:"
-msgstr "没有可安装的 %s 匹配版本："
+msgstr "没有 %s 的匹配版本可供安装："
 
 #: ../modules/client/pkg_solver.py:229
 #, python-format
 msgid "No version of %s can be installed:"
-msgstr "没有可安装的 %s 版本："
+msgstr "没有 %s 的版本可供安装："
 
 #: ../modules/client/pkg_solver.py:917
 msgid "Publisher differs from installed or specifed version"
-msgstr "出版者与已安装或指定的版本不同"
+msgstr "发布者与已安装的版本或指定的版本不同"
 
 #: ../modules/client/pkg_solver.py:927
 msgid "Publisher is lower ranked"
-msgstr "出版者的等级更低"
+msgstr "发布者的等级较低"
 
 #: ../modules/client/pkg_solver.py:962
 #, python-format
 msgid "Newer version %s is already installed"
-msgstr "已安装更高版本的 %s"
+msgstr "已安装较新的版本 %s"
 
 #: ../modules/client/pkg_solver.py:971
 msgid "Package doesn't support image architecture"
@@ -4095,7 +4129,7 @@ msgstr "软件包不支持映像变量 %s"
 #: ../modules/client/progress.py:592
 #, python-format
 msgid "Retrieving catalog '%s'..."
-msgstr "正在检索 '%s'..."
+msgstr "正在检索目录 '%s'..."
 
 #: ../modules/client/progress.py:599
 msgid "Caching catalogs ..."
@@ -4103,7 +4137,7 @@ msgstr "正在缓存目录..."
 
 #: ../modules/client/progress.py:605
 msgid "Loading catalog cache ..."
-msgstr "正在加载目录缓存..."
+msgstr "正在装入目录高速缓存..."
 
 #: ../modules/client/progress.py:611
 msgid "Refreshing catalog"
@@ -4122,13 +4156,13 @@ msgid ""
 "contains package data for: %(pubs)s.\n"
 msgstr ""
        "\n"
-       "无法从以下原始位置之一检索出版者 '%(prefix)s' 的软件包数据：\n"
-       "\n"
+       "无法从以下原始位置之一检索发布者 '%(prefix)s' 的\n"
+       "软件包数据：\n"
        "\n"
        "%(origins)s\n"
        "\n"
-       "从上面所列的原始位置之一中检索到的目录仅包含\n"
-       "%(pubs)s 的软件包数据。\n"
+       "从上面所列的原始位置之一中检索到的目录仅\n"
+       "包含 %(pubs)s 的软件包数据。\n"
 
 #: ../modules/client/publisher.py:969
 #, python-format
@@ -4137,9 +4171,9 @@ msgid ""
 "for publisher '%s', or because the wrong publisher name was\n"
 "provided when this publisher was added.\n"
 msgstr ""
-       "这是为出版者 '%s' 提供的无效原始位置信息导致的结果，\n"
-       "或者是因为在添加此出版者时提供了错误的出版者名称导致的结果。\n"
-       "\n"
+       "这是因为提供给发布者 '%s' 的原始位置信息\n"
+       "无效，或者是因为在添加此发布者时提供了\n"
+       "错误的发布者名称。\n"
 
 #: ../modules/client/publisher.py:977
 #, python-format
@@ -4149,10 +4183,10 @@ msgid ""
 "the publisher using the correct name and remove the '%(prefix)s'\n"
 "publisher.\n"
 msgstr ""
-       "要解决此问题，请使用\n"
-       "pkg set-publisher 子命令更正为出版者 '%(prefix)s' 提供的原始位置信息，或者使用正确的名称重新添加此出版者，\n"
-       "然后删除 '%(prefix)s'\n"
-       "出版者。\n"
+       "要解决此问题，请使用 pkg set-publisher 子命令更正为\n"
+       "发布者 '%(prefix)s' 提供的原始位置信息，或者使用\n"
+       "正确的名称重新添加此发布者，然后删除 '%(prefix)s'\n"
+       "发布者。\n"
 
 #: ../modules/client/publisher.py:985
 #, python-format
@@ -4163,8 +4197,8 @@ msgid ""
 "pkg set-publisher -P -g %(origin)s %(pub)s\n"
 "pkg unset-publisher %(prefix)s\n"
 msgstr ""
-       "要使用正确的名称重新添加此出版者，请以特权用户身份执行以下命令：\n"
-       "\n"
+       "要使用正确的名称重新添加此发布者，请以特权用户\n"
+       "身份执行以下命令：\n"
        "\n"
        "pkg set-publisher -P -g %(origin)s %(pub)s\n"
        "pkg unset-publisher %(prefix)s\n"
@@ -4175,9 +4209,9 @@ msgid ""
 "publisher, but this issue can likely be resolved by executing one\n"
 "of the following commands as a privileged user:\n"
 msgstr ""
-       "上面所列的原始位置包含多个出版者的软件包数据，\n"
-       "但通过以特权用户身份执行以下命令之一有可能可解决此问题：\n"
-       "\n"
+       "上面所列的原始位置包含多个发布者的软件包\n"
+       "数据，但通过以特权用户身份执行以下命令之一\n"
+       "有可能可解决此问题：\n"
 
 #: ../modules/client/publisher.py:1001
 #, python-format
@@ -4192,8 +4226,8 @@ msgid ""
 "\n"
 "pkg unset-publisher %s\n"
 msgstr ""
-       "然后，应该通过以特权用户身份执行以下命令删除旧的出版者：\n"
-       "\n"
+       "然后，应该通过以特权用户身份执行以下\n"
+       "命令删除旧的发布者：\n"
        "\n"
        "pkg unset-publisher %s\n"
 
@@ -4216,7 +4250,8 @@ msgid ""
 "known layouts:\n"
 "%s"
 msgstr ""
-       "找到以下路径，但无法通过任何已知布局说明此路径：\n"
+       "找到以下路径，但无法通过任何已知布局"
+       "进行说明:\n"
        "%s"
 
 #: ../modules/flavor/base.py:51
@@ -4241,7 +4276,9 @@ msgid ""
 "run path: %(rp)s.  It is not currently possible to automatically expand this "
 "token. Please specify its value on the command line."
 msgstr ""
-       "%(pp)s（将在 %(ip)s 上安装）在其运行路径 %(rp)s 上具有此令牌 %(tok)s。当前不可能自动展开此令牌。请在命令行上指定其值。"
+       "%(pp)s（将安装于 %(ip)s）在其运行路径 %(rp)s 中"
+       "具有此标记 %(tok)s。当前无法自动展开此"
+       "标记。请在命令行上指定其值。"
 
 #: ../modules/flavor/python.py:43
 #, python-format
@@ -4255,11 +4292,11 @@ msgstr "FMRI '%s' 缺少版本信息。"
 
 #: ../modules/indexer.py:158
 msgid "Reading Existing Index"
-msgstr "正在读取现有索引"
+msgstr "读取现有索引"
 
 #: ../modules/indexer.py:673 ../modules/indexer.py:698
 msgid "Indexing Packages"
-msgstr "正在建立软件包索引"
+msgstr "建立软件包索引"
 
 #: ../modules/manifest.py:462
 #, python-format
@@ -4327,7 +4364,8 @@ msgid ""
 "actions are as follows:\n"
 "%s"
 msgstr ""
-       "文件相关项 %s 具有可解析为指向多个软件包的路径。这些操作如下所示：\n"
+       "文件相关项 %s 具有可解析为多个软件包的路径。"
+       "操作如下:\n"
        "%s"
 
 #: ../modules/publish/dependencies.py:73
@@ -4336,7 +4374,8 @@ msgid ""
 "The file dependency %s depends on a path delivered by multiple packages. "
 "Those packages are:%s"
 msgstr ""
-       "文件相关项 %s 取决于多个软件包传送的路径。这些软件包包括：%s"
+       "文件相关项 %s 取决于多个软件包传送的路径。"
+       "这些软件包为: %s"
 
 #: ../modules/publish/dependencies.py:87
 #, python-format
@@ -4345,7 +4384,8 @@ msgid ""
 "variants:\n"
 "%s"
 msgstr ""
-       "根据以下变量组合，%s 具有未解析的相关项 '%s':\n"
+       "根据以下变量组合，%s 具有未解析的相关"
+       "项 '%s':\n"
        "%s"
 
 #: ../modules/publish/transaction.py:78
@@ -4400,7 +4440,7 @@ msgstr ""
 msgid ""
 "Unsupported operation '%(op)s' for the specified repository type '%(type)s'."
 msgstr ""
-       "指定系统信息库类型 '%(type)s' 的不受支持的操作 '%(op)s'。"
+       "指定的系统信息库类型 '%(type)s' 不支持操作 '%(op)s'。"
 
 #: ../modules/publish/transaction.py:147
 msgid "Not an absolute path."
@@ -4413,27 +4453,28 @@ msgid ""
 "structures:\n"
 "%s"
 msgstr ""
-       "在尝试初始化系统信息库目录结构时出现错误:\n"
+       "在尝试初始化系统信息库目录结构时出现"
+       "错误:\n"
        "%s"
 
 #: ../modules/publish/transaction.py:294
 msgid "Unsupported or temporarily unavailable operation requested."
-msgstr "不受支持或临时不可用的请求操作。"
+msgstr "请求的操作不受支持或暂时不可用。"
 
 #: ../modules/publish/transaction.py:422
 #, python-format
 msgid "Unknown failure; no transaction ID provided in response: %s"
-msgstr "未知的失败；响应中没有提供任何事务 ID: %s"
+msgstr "未知故障；响应中没有提供任何事务 ID: %s"
 
 #: ../modules/query_parser.py:126
 #, python-format
 msgid "An unparseable character in query at position : %d"
-msgstr "在以下位置的查询中出现不可分析的字符: %d"
+msgstr "在以下位置的查询中出现不可解析的字符: %d"
 
 #: ../modules/query_parser.py:337
 #, python-format
 msgid "In query %(query)s, %(name)s had a bad value of '%(bv)s'."
-msgstr "在查询 %(query)s 中，%(name)s 具有一个错误的 '%(bv)s' 值。"
+msgstr "在查询 %(query)s 中，%(name)s 具有一个错误的值 '%(bv)s'。"
 
 #: ../modules/query_parser.py:352
 #, python-format
@@ -4444,12 +4485,15 @@ msgid ""
 "fields:\n"
 "%s"
 msgstr ""
-       "预期查询具有五个字段：区分大小写、返回类型、要返回的结果数、要开始返回结果的编号和查询文本。提供的查询至少缺少这些字段中的其中一个字段:\n"
+       "查询应该具有五个字段：区分大小写、返回类型、"
+       "要返回的结果数、要开始返回结果的编号和查询"
+       "文字。提供的查询至少缺少这些字段中的一个"
+       "字段:\n"
        "%s"
 
 #: ../modules/query_parser.py:374
 msgid "Could not parse query."
-msgstr "无法分析查询。"
+msgstr "无法解析查询。"
 
 #: ../modules/query_parser.py:375
 #, python-format
@@ -4468,7 +4512,7 @@ msgstr "此表达式会生成以下软件包结果："
 msgid ""
 "'AND' and 'OR' require those expressions to produce the same type of results."
 msgstr ""
-       "'AND' 和 'OR' 需要这些表达式才能生成相同类型的结果。"
+       "'AND' 和 'OR' 需要这些表达式来生成相同类型的结果。"
 
 #: ../modules/search_errors.py:135
 #, python-format
@@ -4476,7 +4520,8 @@ msgid ""
 "Got an empty unquote_list while indexing. split_chars was %(sc)s and line "
 "was %(l)s"
 msgstr ""
-       "在建立索引时获得了空的 unquote_list。split_chars 是 %(sc)s，并且行是 %(l)s"
+       "在建立索引时获得了空的 unquote_list。split_chars 是 %(sc)s，"
+       "行是 %(l)s"
 
 #: ../modules/search_errors.py:147
 #, python-format
@@ -4484,7 +4529,7 @@ msgid ""
 "Had an empty line in the main dictionary. split_chars is %(sc)s and "
 "unquote_list is %(ul)s.%(s)s"
 msgstr ""
-       "主字典中具有一个空行。split_chars 是 %(sc)s，并且 "
+       "主字典中具有一个空行。split_chars 是 %(sc)s，"
        "unquote_list 是 %(ul)s.%(s)s"
 
 #: ../modules/server/api_errors.py:70
@@ -4520,7 +4565,7 @@ msgstr "指定的操作类型 '%s' 无效。"
 
 #: ../modules/server/depot.py:941
 msgid "No matching FMRI found in repository catalog."
-msgstr "在系统信息库目录中没有找到任何匹配的 FMRI。"
+msgstr "在系统信息库目录中找不到任何匹配的 FMRI。"
 
 #: ../modules/server/repository.py:78
 #, python-format
@@ -4530,7 +4575,7 @@ msgstr "找不到指定的目录文件 '%s'。"
 #: ../modules/server/repository.py:87
 #, python-format
 msgid "No file could be found for the specified hash name: '%s'."
-msgstr "没有为指定的散列名称找到任何文件: '%s'。"
+msgstr "未能为指定的散列名称找到任何文件: '%s'。"
 
 #: ../modules/server/repository.py:96
 #, python-format
@@ -4545,14 +4590,15 @@ msgstr "指定的事务 ID '%s' 无效。"
 #: ../modules/server/repository.py:116
 #, python-format
 msgid "No manifest could be found for the FMRI: '%s'."
-msgstr "没有为 FMRI 找到任何清单: '%s'。"
+msgstr "未能为 FMRI 找到任何清单: '%s'。"
 
 #: ../modules/server/repository.py:125
 msgid ""
 "The requested operation cannot be performed when the repository is used in "
 "mirror mode."
 msgstr ""
-       "在镜像模式下使用系统信息库时，无法执行请求的操作。"
+       "在镜像模式下使用系统信息库时，无法执行"
+       "请求的操作。"
 
 #: ../modules/server/repository.py:134
 msgid "The repository is read-only and cannot be modified."
@@ -4560,12 +4606,12 @@ msgstr "系统信息库是只读的，无法修改。"
 
 #: ../modules/server/repository.py:143
 msgid "No token was provided to search."
-msgstr "没有提供任何要搜索的令牌。"
+msgstr "没有提供任何要搜索的标记。"
 
 #: ../modules/server/repository.py:145
 #, python-format
 msgid "The specified search token '%s' is invalid."
-msgstr "指定的搜索令牌 '%s' 无效。"
+msgstr "指定的搜索标记 '%s' 无效。"
 
 #: ../modules/server/repository.py:153
 msgid "Search functionality is temporarily unavailable."
@@ -4578,13 +4624,16 @@ msgid ""
 "cannot be upgraded.  If using pkg.depotd, please restart the server without "
 "read-only so that the repository can be upgraded."
 msgstr ""
-       "系统信息库或其内容的格式需要先进行升级，然后才能用于为软件包数据提供服务。但是，此系统信息库当前是只读的，无法升级。如果使用 pkg.depotd，请在非只读模式下重新启动服务器，以便可以升级此系统信息库。"
+       "系统信息库或其内容的格式需要先进行升级，然后才能用于"
+       "提供软件包数据。但是，此系统信息库当前是只读的，无法"
+       "升级。如果使用 pkg.depotd，请在非只读模式下重新启动"
+       "服务器，以便可以升级此系统信息库。"
 
 #. To upgrade the repository, the catalog will have to
 #. be rebuilt.
 #: ../modules/server/repository.py:432
 msgid "Upgrading repository; this process will take some time."
-msgstr "正在升级系统信息库；此过程将需要一些时间才能完成。"
+msgstr "正在升级系统信息库，此过程需要花费一些时间。"
 
 #: ../modules/server/repository.py:541
 msgid "repository directories incomplete"
@@ -4595,14 +4644,15 @@ msgid ""
 "repository directories not writeable by current user id or group and are "
 "incomplete"
 msgstr ""
-       "系统信息库目录对于当前用户 ID 或组不可写入，并且不完整"
+       "当前用户 ID 或组无法写入系统信息库目录，因而"
+       "不完整"
 
 #. Don't add packages with corrupt
 #. manifests to the catalog.
 #: ../modules/server/repository.py:663
 #, python-format
 msgid "Skipping %(fmri)s; invalid manifest: %(error)s"
-msgstr "正在跳过 %(fmri)s；无效清单: %(error)s"
+msgstr "跳过 %(fmri)s；无效的清单: %(error)s"
 
 #: ../modules/server/repositoryconfig.py:406
 #, python-format
@@ -4624,12 +4674,12 @@ msgstr "指定的 client_release 无效: '%s'"
 #: ../modules/server/transaction.py:92
 #, python-format
 msgid "'The specified FMRI, '%s', has an invalid version."
-msgstr "'指定的 FMRI '%s' 的版本无效。"
+msgstr "指定的 FMRI '%s' 的版本无效。"
 
 #: ../modules/server/transaction.py:95
 #, python-format
 msgid "The specified FMRI, '%s', already exists or has been restricted."
-msgstr "指定的 FMRI '%s' 已存在，或已被限制。"
+msgstr "指定的 FMRI '%s' 已存在或受到限制。"
 
 #: ../modules/server/transaction.py:98
 #, python-format
@@ -4638,7 +4688,9 @@ msgid ""
 "repository contains package data for more than one publisher or a default "
 "publisher has not been defined."
 msgstr ""
-       "指定的 FMRI '%s' 必须包含出版者前缀，因为此系统信息库包含多个出版者的软件包数据，或者，缺省的出版者未定义。"
+       "当系统信息库包含多个发布者的软件包数据，或尚未"
+       "定义缺省发布者时，指定的 FMRI '%s' 必须包含"
+       "发布者前缀。"
 
 #: ../modules/server/transaction.py:104
 #, python-format
@@ -4652,15 +4704,15 @@ msgstr "事务 ID '%s' 已打开。"
 
 #: ../modules/server/transaction.py:428
 msgid "An obsolete package cannot contain actions other than 'set'."
-msgstr "过时的软件包不能包含非 'set' 的操作。"
+msgstr "过时的软件包不能包含 'set' 以外的操作。"
 
 #: ../modules/server/transaction.py:436
 msgid "A renamed package cannot contain actions other than 'set' and 'depend'."
-msgstr "重命名的软件包不能包含非 'set' 和 'depend' 的操作。"
+msgstr "重命名的软件包不能包含 'set' 和 'depend' 以外的操作。"
 
 #: ../modules/server/transaction.py:451
 msgid "A package may not  be marked for both obsoletion and renaming."
-msgstr "软件包可能没有被标记为过时和重命名。"
+msgstr "软件包不能同时被标记为过时和重命名。"
 
 #: ../modules/server/transaction.py:454
 #, python-format
@@ -4694,11 +4746,11 @@ msgstr "选定的软件包"
 
 #: ../packagemanager.py:339
 msgid "All Publishers (Installed)"
-msgstr "所有出版者(已安装)"
+msgstr "所有发布者（已安装）"
 
 #: ../packagemanager.py:340
 msgid "All Publishers (Search)"
-msgstr "所有出版者(搜索)"
+msgstr "所有发布者（搜索）"
 
 #: ../packagemanager.py:341
 msgid "Add..."
@@ -4710,19 +4762,19 @@ msgstr "日志"
 
 #: ../packagemanager.py:815
 msgid "Export Selections Confirmation"
-msgstr "导出选择确认"
+msgstr "导出选定项确认"
 
 #: ../packagemanager.py:817
 msgid "<b>Export the following to a Web Install .p5i file:</b>"
-msgstr "<b>将以下内容导出到 Web 安装 .p5i 文件：</b>"
+msgstr "<b>将以下项导出到 WebInstall .p5i 文件：</b>"
 
 #: ../packagemanager.py:859
 msgid "Export Selections Error"
-msgstr "导出选择错误"
+msgstr "导出选定项错误"
 
 #: ../packagemanager.py:870
 msgid "Export Selections"
-msgstr "导出选择"
+msgstr "导出选定项"
 
 #: ../packagemanager.py:877
 msgid "p5i Files"
@@ -4734,7 +4786,7 @@ msgstr "所有文件"
 
 #: ../packagemanager.py:886
 msgid "my_packages"
-msgstr "我的软件包(_P)"
+msgstr "我的软件包"
 
 #: ../packagemanager.py:933 ../packagemanager.py:941
 msgid "Search (Ctrl-F)"
@@ -4753,7 +4805,7 @@ msgstr ""
 
 #: ../packagemanager.py:1100
 msgid "failed to respond"
-msgstr "响应失败"
+msgstr "无法响应"
 
 #: ../packagemanager.py:1103
 msgid "invalid response"
@@ -4769,12 +4821,12 @@ msgstr "不受支持的搜索"
 
 #: ../packagemanager.py:1133
 msgid "Search Errors: click to view"
-msgstr "搜索错误：可单击查看"
+msgstr "搜索错误：单击便可查看"
 
 #: ../packagemanager.py:1188
 #, python-format
 msgid "Loading... %s"
-msgstr "正在加载... %s"
+msgstr "正在装入... %s"
 
 #: ../packagemanager.py:1194
 msgid "Stopped"
@@ -4798,7 +4850,7 @@ msgstr ""
        "href='stub'></a></font>                    <a href='pm?%s=internal&uri=%"
        "s'>                    <IMG SRC = '%s/startpage_star."
        "png'                     style='border-style: none'></a> "
-       "<br><br>                    <h2><font color='#0000FF'>警告：无法加载 URL</font></h2><br>%s</body></html>"
+       "<br><br>                    <h2><font color='#0000FF'>警告：无法                     装入 URL</font></h2><br>%s</body></html>"
 
 #: ../packagemanager.py:1281
 #, python-format
@@ -4808,12 +4860,12 @@ msgstr "在 %(s1)s%(pub)s%(e1)s 中查看软件包"
 #: ../packagemanager.py:1289
 #, python-format
 msgid "Search within %(s1)sAll Publishers%(e1)s"
-msgstr "在 %(s1)s所有出版者%(e1)s 中搜索"
+msgstr "在 %(s1)s所有发布者%(e1)s 中搜索"
 
 #: ../packagemanager.py:1296
 #, python-format
 msgid "View installed packages for %(s1)sAll Publishers%(e1)s"
-msgstr "查看 %(s1)s所有出版者%(e1)s 的已安装软件包"
+msgstr "查看 %(s1)s所有发布者%(e1)s 的已安装软件包"
 
 #: ../packagemanager.py:1303
 #, python-format
@@ -4828,7 +4880,7 @@ msgstr "显示 %(s1)s搜索帮助%(e1)s"
 #: ../packagemanager.py:1314
 #, python-format
 msgid "Loading %(s1)sSearch Help%(e1)s ..."
-msgstr "正在加载 %(s1)s搜索帮助%(e1)s ..."
+msgstr "正在装入 %(s1)s搜索帮助%(e1)s ..."
 
 #: ../packagemanager.py:1324
 #, python-format
@@ -4902,11 +4954,11 @@ msgstr "Web 服务"
 
 #: ../packagemanager.py:1956
 msgid "Search all publishers"
-msgstr "搜索所有出版者"
+msgstr "搜索所有发布者"
 
 #: ../packagemanager.py:1958
 msgid "Search current publisher"
-msgstr "搜索当前出版者"
+msgstr "搜索当前发布者"
 
 #: ../packagemanager.py:2006
 msgid ""
@@ -4915,9 +4967,9 @@ msgid ""
 "Use the Search field to search for packages within the following Publishers:"
 "</TD></TR>"
 msgstr ""
-       "alt='[Information]' title='Information' ALIGN='bottom'></"
-       "TD><TD><h3><b>搜索所有出版者</b></h3><TD></TD></TR><TR><TD></TD><TD> "
-       "使用“搜索”字段可在以下出版者中搜索软件包："
+       "alt='[信息]' title='信息' ALIGN='bottom'></"
+       "TD><TD><h3><b>搜索所有发布者</b></h3><TD></TD></TR><TR><TD></TD><TD> "
+       "使用“搜索”字段可在以下发布者中搜索软件包："
        "</TD></TR>"
 
 #: ../packagemanager.py:2024
@@ -4925,7 +4977,7 @@ msgid ""
 "<TR><TD></TD><TD></TD></TR><TR><TD></TD><TD>Click on the Publishers below to "
 "view their list of packages:</TD></TR>"
 msgstr ""
-       "<TR><TD></TD><TD></TD></TR><TR><TD></TD><TD>单击下面的出版者可查看其软件包列表：</TD></TR>"
+       "<TR><TD></TD><TD></TD></TR><TR><TD></TD><TD>单击下面的发布者可查看其软件包列表：</TD></TR>"
 
 #: ../packagemanager.py:2038
 msgid ""
@@ -4934,9 +4986,9 @@ msgid ""
 "TR><TR><TD></TD><TD> Search is <b>not</b> supported in All Publishers "
 "(Installed).</TD></TR>"
 msgstr ""
-       "alt='[Information]' title='Information' ALIGN='bottom'></"
-       "TD><TD><h3><b>在“所有出版者(已安装)”中搜索</b></h3><TD></TD></"
-       "TR><TR><TD></TD><TD>搜索在“所有出版者(已安装)”中<b>不</b>受支持。</TD></TR>"
+       "alt='[信息]' title='信息' ALIGN='bottom'></"
+       "TD><TD><h3><b>在“所有发布者（已安装）”中搜索</b></h3><TD></TD></"
+       "TR><TR><TD></TD><TD>“所有发布者（已安装）”中<b>不</b>支持搜索。</TD></TR>"
 
 #: ../packagemanager.py:2044 ../packagemanager.py:2113
 #: ../packagemanager.py:2139
@@ -4953,8 +5005,8 @@ msgid ""
 "<li style='padding-left:7px'>Return to view packages for All Publishers <a "
 "href='pm?pm-action=internal&search=%s'>(Installed)</a></li>"
 msgstr ""
-       "<li style='padding-left:7px'>返回查看“所有出版者<a "
-       "href='pm?pm-action=internal&search=%s'>(已安装)</a>”的软件包</li>"
+       "<li style='padding-left:7px'>返回查看“所有发布者<a "
+       "href='pm?pm-action=internal&search=%s'>（已安装）</a>”的软件包</li>"
 
 #: ../packagemanager.py:2052
 #, python-format
@@ -4962,8 +5014,8 @@ msgid ""
 "<li style='padding-left:7px'>Search for <b>%(text)s</b> using All Publishers "
 "<a href='pm?pm-action=internal&search=%(all_pubs)s'>(Search)</a></li>"
 msgstr ""
-       "<li style='padding-left:7px'>使用“所有出版者"
-       "<a href='pm?pm-action=internal&search=%(all_pubs)s'>(搜索)</a>”搜索 <b>%(text)s</b></li>"
+       "<li style='padding-left:7px'>使用“所有发布者"
+       "<a href='pm?pm-action=internal&search=%(all_pubs)s'>（搜索）</a>”搜索 <b>%(text)s</b></li>"
 
 #: ../packagemanager.py:2057 ../packagemanager.py:2180
 #: ../packagemanager.py:2209
@@ -4981,7 +5033,7 @@ msgid ""
 "TD><TD><h3><b>Recent Searches</b></h3><TD></TD></TR><TR><TD></TD><TD> Access "
 "stored results from recent searches in this session.</TD></TR>"
 msgstr ""
-       "alt='[Information]' title='Information' ALIGN='bottom'></"
+       "alt='[信息]' title='信息' ALIGN='bottom'></"
        "TD><TD><h3><b>最近的搜索</b></h3><TD></TD></TR><TR><TD></TD><TD>在此会话中访问最近的搜索的已存储结果。</TD></TR>"
 
 #: ../packagemanager.py:2080
@@ -5001,7 +5053,7 @@ msgid ""
 "alt='[Information]' title='Information' ALIGN='bottom'></TD><TD><h3><b>View "
 "Packages</b></h3><TD></TD></TR><TR><TD></TD><TD>"
 msgstr ""
-       "alt='[Information]' title='Information' ALIGN='bottom'></TD><TD><h3><b>查看软件包</b></h3><TD></TD></TR><TR><TD></TD><TD>"
+       "alt='[信息]' title='信息' ALIGN='bottom'></TD><TD><h3><b>查看软件包</b></h3><TD></TD></TR><TR><TD></TD><TD>"
 
 #: ../packagemanager.py:2104
 #, python-format
@@ -5014,10 +5066,12 @@ msgid_plural ""
 "visible in the selected View:\n"
 "<li style='padding-left:7px'><b>%s</b></li>"
 msgstr[0] ""
-       "此目录中存在一个软件包，但在选定的视图中不可见:\n"
+       "此目录中存在一个软件包，但该软件包在选定的视图中"
+       "不可见：\n"
        "<li style='padding-left:7px'><b>%s</b></li>"
 msgstr[1] ""
-       "此目录中存在许多软件包，但在选定的视图中不可见:\n"
+       "此目录中存在许多软件包，但这些软件包在选定的"
+       "视图中不可见：\n"
        "<li style='padding-left:7px'><b>%s</b></li>"
 
 #: ../packagemanager.py:2117 ../packagemanager.py:2143
@@ -5027,14 +5081,14 @@ msgid ""
 "s'>Change View to All Packages</a></li>"
 msgstr ""
        "<li style='padding-left:7px'><a href='pm?pm-action=internal&search=%"
-       "s'>将“视图”更改为“所有软件包”</a></li>"
+       "s'>将视图更改为“所有软件包”</a></li>"
 
 #: ../packagemanager.py:2128
 msgid ""
 "alt='[Information]' title='Information' ALIGN='bottom'></"
 "TD><TD><h3><b>Search Results</b></h3><TD></TD></TR><TR><TD></TD><TD>"
 msgstr ""
-       "alt='[Information]' title='Information' ALIGN='bottom'></"
+       "alt='[信息]' title='信息' ALIGN='bottom'></"
        "TD><TD><h3><b>搜索结果</b></h3><TD></TD></TR><TR><TD></TD><TD>"
 
 #: ../packagemanager.py:2131
@@ -5046,9 +5100,11 @@ msgid_plural ""
 "Found <b>%(num)s</b> packages matching <b>%(text)s</b> in All Packages, "
 "however they are not listed in the <b>%(filter)s</b> View."
 msgstr[0] ""
-       "已在“所有软件包”中找到 <b>%(num)s</b> 个与 <b>%(text)s</b> 匹配的软件包，但是，该软件包不会在 <b>%(filter)s</b> 视图中列出。"
+       "已在“所有软件包”中找到 <b>%(num)s</b> 个与 <b>%(text)s</b> 匹配的软件包，"
+       "但是，该软件包不会在 <b>%(filter)s</b> 视图中列出。"
 msgstr[1] ""
-       "已在“所有软件包”中找到 <b>%(num)s</b> 个与 <b>%(text)s</b> 匹配的软件包，但是，这些软件包不会在 <b>%(filter)s</b> 视图中列出。"
+       "已在“所有软件包”中找到 <b>%(num)s</b> 个与 <b>%(text)s</b> 匹配的软件包，"
+       "但是，这些软件包不会在 <b>%(filter)s</b> 视图中列出。"
 
 #: ../packagemanager.py:2163
 #, python-format
@@ -5057,8 +5113,8 @@ msgid ""
 "TD><TD><h3><b>Search Results</b></h3><TD></TD></TR><TR><TD></TD><TD>No "
 "packages found in <b>%(pub)s</b> matching <b>%(text)s</b></TD></TR>"
 msgstr ""
-       "alt='[Information]' title='Information' ALIGN='bottom'></"
-       "TD><TD><h3><b>搜索结果</b></h3><TD></TD></TR><TR><TD></TD><TD>在 <b>%(pub)s</b> 中没有找到任何与 <b>%(text)s</b> 匹配的软件包</TD></TR>"
+       "alt='[信息]' title='信息' ALIGN='bottom'></"
+       "TD><TD><h3><b>搜索结果</b></h3><TD></TD></TR><TR><TD></TD><TD>在 <b>%(pub)s</b> 中找不到任何与 <b>%(text)s</b> 匹配的软件包</TD></TR>"
 
 #: ../packagemanager.py:2168
 msgid ""
@@ -5070,7 +5126,7 @@ msgstr ""
        "<TR><TD></TD><TD<TD></TD></TR><TR><TD></TD><TD<TD></TD></TR><TR><TD></"
        "TD><TD<TD><b>建议：</b><br></TD></TR><TR><TD></TD><TD<TD><li "
        "style='padding-left:7px'>检查您的拼写</li><li style='padding-"
-       "left:7px'>尝试新的搜索项</li>"
+       "left:7px'>尝试新的搜索词条</li>"
 
 #: ../packagemanager.py:2175
 #, python-format
@@ -5079,7 +5135,7 @@ msgid ""
 "pm-action=internal&search=%(all_pubs)s'>All Publishers</a></li>"
 msgstr ""
        "<li style='padding-left:7px'>在<a href='pm?"
-       "pm-action=internal&search=%(all_pubs)s'>所有出版者</a>中搜索 <b>%(text)s</b></li>"
+       "pm-action=internal&search=%(all_pubs)s'>所有发布者</a>中搜索 <b>%(text)s</b></li>"
 
 #: ../packagemanager.py:2197
 #, python-format
@@ -5091,9 +5147,9 @@ msgid ""
 "is not supported in All Publishers</TD></TR>"
 msgstr ""
        "<table border='0' cellpadding='3' style='table-layout:fixed' ><TR><TD><IMG "
-       "SRC = '%s/dialog-warning.png' style='border-style: none' alt='[Warning]' "
-       "title='Warning' ALIGN='bottom'></TD><TD><h3><b>搜索警告</b></h3><TD></"
-       "TD></TR><TR><TD></TD><TD>“所有出版者”中不支持仅使用通配符 <b>*</b> 进行搜索</TD></TR>"
+       "SRC = '%s/dialog-warning.png' style='border-style: none' alt='[警告]' "
+       "title='警告' ALIGN='bottom'></TD><TD><h3><b>搜索警告</b></h3><TD></"
+       "TD></TR><TR><TD></TD><TD>“所有发布者”中不支持仅使用通配符 <b>*</b> 进行搜索</TD></TR>"
 
 #: ../packagemanager.py:2204
 msgid ""
@@ -5103,16 +5159,16 @@ msgid ""
 msgstr ""
        "<TR><TD></TD><TD<TD></TD></TR><TR><TD></TD><TD<TD></TD></TR><TR><TD></"
        "TD><TD<TD><b>建议：</b><br></TD></TR><TR><TD></TD><TD<TD><li "
-       "style='padding-left:7px'>尝试新的搜索项</li>"
+       "style='padding-left:7px'>尝试新的搜索词条</li>"
 
 #: ../packagemanager.py:2452 ../packagemanager.py:2473
 #: ../packagemanager.py:5025
 msgid "All Publishers"
-msgstr "所有出版者"
+msgstr "所有发布者"
 
 #: ../packagemanager.py:2664
 msgid "Search cleared"
-msgstr "搜索已清除"
+msgstr "已清除搜索"
 
 #: ../packagemanager.py:2684
 msgid "Fetching legal information..."
@@ -5120,7 +5176,7 @@ msgstr "正在获取法律信息..."
 
 #: ../packagemanager.py:3391 ../packagemanager.py:3828
 msgid "Refreshing package catalog information"
-msgstr "正在刷新目录信息"
+msgstr "正在刷新软件包目录信息"
 
 #: ../packagemanager.py:3438
 msgid "All"
@@ -5140,7 +5196,7 @@ msgstr "<b>可升级版本：</b>"
 #: ../packagemanager.py:3605
 #, python-format
 msgid "Yes, %(version)s (Build %(build)s-%(branch)s)"
-msgstr "是，%(version)s（生成 %(build)s-%(branch)s）"
+msgstr "是，%(version)s（内部版本 %(build)s-%(branch)s）"
 
 #. Installed and up to date
 #: ../packagemanager.py:3613
@@ -5153,7 +5209,7 @@ msgid ""
 "The latest version of %s cannot be installed. It may be possible to do so "
 "after updating your system. Run \"Updates\" to get your system up-to-date."
 msgstr ""
-       "无法安装 %s 的最新版本。可以在更新您的系统后进行此安装。请运行“更新”使系统处于最新状态。"
+       "无法安装 %s 的最新版本。可以在更新您的系统后进行此安装。请运行“更新”，以使您的系统处于最新状态。"
 
 #: ../packagemanager.py:3701
 #, python-format
@@ -5161,7 +5217,7 @@ msgid ""
 "Cannot upgrade to the latest version of %s. It may be possible to do so "
 "after updating your system. Run \"Updates\" to get your system up-to-date."
 msgstr ""
-       "无法升级到 %s 的最新版本。可以在更新您的系统后进行此升级。请运行“更新”使系统处于最新状态。"
+       "无法升级到 %s 的最新版本。可以在更新您的系统后进行此升级。请运行“更新”，以使您的系统处于最新状态。"
 
 #: ../packagemanager.py:3721
 msgid "Latest Version: "
@@ -5225,13 +5281,13 @@ msgstr "由于转换问题，无法显示许可证。"
 
 #: ../packagemanager.py:4754 ../packagemanager.py:4803
 msgid "Loading package list"
-msgstr "正在加载软件包列表"
+msgstr "正在装入软件包列表"
 
 #. This can happen if the repository does not
 #. contain any packages
 #: ../packagemanager.py:4767
 msgid "Selected publisher does not contain any packages."
-msgstr "选定的出版者不包含任何软件包。"
+msgstr "选定的发布者不包含任何软件包。"
 
 #: ../packagemanager.py:5001
 msgid "Recent Searches"
@@ -5247,7 +5303,7 @@ msgstr "总数: %(total)s 选定数: %(selected)s"
 msgid ""
 "Searching %(s1)s%(active_pub)s%(e1)s for %(s1)s%(search_text)s%(e1)s ..."
 msgstr ""
-       "正在搜索 %(s1)s%(active_pub)s%(e1)s（适用于 %(s1)s%(search_text)s%(e1)s）..."
+       "正在 %(s1)s%(active_pub)s%(e1)s 中搜索 %(s1)s%(search_text)s%(e1)s ..."
 
 #: ../packagemanager.py:5466
 #, python-format
@@ -5257,7 +5313,7 @@ msgstr "正在搜索 %(s1)s%(search_text)s%(e1)s ..."
 #: ../packagemanager.py:5471
 #, python-format
 msgid "%(number)d packages found matching %(s1)s%(search_text)s%(e1)s"
-msgstr "已找到 %(number)d 个与 %(s1)s%(search_text)s%(e1)s 匹配的软件包"
+msgstr "找到 %(number)d 个与 %(s1)s%(search_text)s%(e1)s 匹配的软件包"
 
 #: ../packagemanager.py:5591
 msgid ""
@@ -5285,8 +5341,8 @@ msgid ""
 "Please let the developers know about this problem by\n"
 "filing a bug together with the error details listed below at:"
 msgstr ""
-       "请报告该错误并附上以下列出的错误详细信息，\n"
-       "让开发者了解此问题："
+       "请通过报告该错误并附上下面列出的错误详细信息，\n"
+       "让开发者了解这一问题："
 
 #: ../packagemanager.py:5694
 msgid "Unexpected Error"
@@ -5302,7 +5358,7 @@ msgid ""
 "List of configured publishers:"
 msgstr ""
        "\n"
-       "已配置的出版者列表："
+       "已配置的发布者列表："
 
 #: ../packagemanager.py:5728
 msgid ""
@@ -5310,7 +5366,7 @@ msgid ""
 "Please include output from:\n"
 msgstr ""
        "\n"
-       "请包含来自以下位置的输出：\n"
+       "请包含来自以下项的输出：\n"
 
 #: ../packagemanager.py:5733
 msgid ""
@@ -5318,7 +5374,7 @@ msgid ""
 "pkg version:\n"
 msgstr ""
        "\n"
-       "pkg version:\n"
+       "pkg version：\n"
 
 #: ../packagemanager.py:5766
 msgid "Save selected..."
@@ -5356,7 +5412,7 @@ msgid ""
 "        PKG_IMAGE"
 msgstr ""
        "用法：\n"
-       "        pkgdepend [选项] 命令 [命令选项] [操作数]\n"
+       "        pkgdepend [选项] 命令 [cmd 选项] [操作数]\n"
        "\n"
        "子命令：\n"
        "        pkgdepend generate [-DIkMm] 清单 proto_dir\n"
@@ -5364,7 +5420,7 @@ msgstr ""
        "\n"
        "选项：\n"
        "        -R dir\n"
-       "        --help or -?\n"
+       "        --help 或 -?\n"
        "环境：\n"
        "        PKG_IMAGE"
 
@@ -5381,7 +5437,8 @@ msgid ""
 "ORIGIN may not be specified using -D. It will be inferred from the\n"
 "install paths of the files."
 msgstr ""
-       "不能使用 -D 指定 ORIGIN。它将根据文件的安装路径推断出来。\n"
+       "不能使用 -D 指定 ORIGIN。将根据文件的安装\n"
+       "路径将其推断出来。"
 
 #: ../pkgdep.py:149 ../pkgdep.py:212
 #, python-format
@@ -5399,7 +5456,7 @@ msgid ""
 "Could not parse manifest %(manifest)s because of the following line:\n"
 "%(line)s"
 msgstr ""
-       "无法分析清单 %(manifest)s，因为以下行: \n"
+       "无法解析清单 %(manifest)s，因为以下行:\n"
        "%(line)s"
 
 #: ../pkgdep.py:206
@@ -5418,7 +5475,7 @@ msgstr "'%s' 不是一个安装映像"
 
 #: ../pkgdep.py:254
 msgid "Could not parse one or more manifests because of the "
-msgstr "无法分析一个或多个清单，因为"
+msgstr "无法解析一个或多个清单，因为"
 
 #: ../pkgdep.py:323 ../pkgdep.py:358
 #, python-format
@@ -5436,12 +5493,12 @@ msgstr ""
 #: ../pkgdep.py:350
 #, python-format
 msgid "Could not open output file %s for writing"
-msgstr "无法打开要写入的输出文件 %s"
+msgstr "无法打开输出文件 %s 以进行写入"
 
 #: ../pkgdep.py:392
 #, python-format
 msgid "Out dir %s does not exist and could not be created. Error is: %s"
-msgstr "输出目录 %s 不存在，无法创建。错误是: %s"
+msgstr "输出目录 %s 不存在，并且无法创建该目录。错误是: %s"
 
 #: ../pkgdep.py:467
 msgid "generate subcommand doesn't use -R"
@@ -5455,7 +5512,8 @@ msgid ""
 "is %(api)s"
 msgstr ""
        "%(cmd)s 命令似乎与 SUNWipkg 提供的库不同步。\n"
-       "客户机版本是 %(client)s，而库 API 版本是 %(api)s"
+       "客户机版本是 %(client)s，而库 API 版本"
+       "是 %(api)s"
 
 #: ../publish.py:80
 msgid ""
@@ -5482,23 +5540,23 @@ msgid ""
 "        PKG_REPO"
 msgstr ""
        "用法：\n"
-       "        pkgsend [选项] 命令 [命令选项] [操作数]\n"
+       "        pkgsend [选项] 命令 [cmd 选项] [操作数]\n"
        "\n"
        "软件包程序子命令：\n"
-       "        pkgsend create-repository --set-property <部分.属性>=<值>\n"
+       "        pkgsend create-repository --set-property <区段.属性>=<值>\n"
        "        pkgsend open [-en] pkg_fmri\n"
        "        pkgsend add 操作 参数\n"
        "        pkgsend import [-T 文件模式] 包文件 ...\n"
        "        pkgsend include [-d 基本目录] .. [清单] ...\n"
-       "        pkgsend close [-A | [--无索引] [--无目录]]\n"
-       "        pkgsend publish [ -d 基本目录] ... [--无索引] \n"
-       "          [--清单中的 fmri | pkg_fmri] [--无目录] [清单] ...\n"
+       "        pkgsend close [-A | [--no-index] [--no-catalog]]\n"
+       "        pkgsend publish [ -d 基本目录] ... [--no-index] \n"
+       "          [--fmri-in-manifest | pkg_fmri] [--no-catalog] [清单] ...\n"
        "        pkgsend generate [-T 文件模式] 包文件 ....\n"
        "        pkgsend refresh-index\n"
        "\n"
        "选项：\n"
        "        -s repo_uri     目标系统信息库 URI\n"
-       "        --help or -?    显示用法消息\n"
+       "        --help 或 -?    显示用法消息\n"
        "\n"
        "环境：\n"
        "        PKG_REPO"
@@ -5509,7 +5567,9 @@ msgid ""
 "or required values are missing.  Please provide the correct and/or required "
 "values using the --set-property option."
 msgstr ""
-       "使用 --set-property 指定了无效的系统信息库配置值，或缺少必要的值。请使用 --set-property 选项提供正确和/或必要的值。"
+       "使用 --set-property 指定了无效的系统信息库配置值，"
+       "或缺少所需的值。请使用 --set-property 选项提供正确"
+       "和/或所需的值。"
 
 #: ../publish.py:149
 msgid "only -e or -n may be specified"
@@ -5542,7 +5602,7 @@ msgstr "文件 %s 行 %s: %s"
 
 #: ../publish.py:281
 msgid "Manifest does not set fmri and "
-msgstr "清单没有设置 fmri，并且 "
+msgstr "清单没有设置 fmri，并且"
 
 #: ../publish.py:446
 msgid "command does not take operands"
@@ -5610,40 +5670,51 @@ msgid ""
 "        PKG_DEST        Destination directory or repository URI\n"
 "        PKG_SRC         Source repository URI"
 msgstr ""
+       ""
        "用法：\n"
-       "        pkgrecv [-s 源系统信息库 uri] [-d (路径|目标 uri)] [-k] [-m] [-n] [-r]\n"
+       "        pkgrecv [-s src_repo_uri] [-d (路径|目标 uri)] [-k] [-m] [-n] [-r]\n"
        "            (fmri|模式) ...\n"
-       "        pkgrecv [-s 源系统信息库 uri] -n\n"
+       "        pkgrecv [-s src_repo_uri] -n\n"
        "\n"
        "选项：\n"
-       "        -d path_or_uri  用于保存检索到的软件包的目录路径，\n"
-       "                        或要将其重新发布到的系统信息库的 URI。  "
+       "        -d path_or_uri  要将检索到的软件包保存到的目录"
+       "路径，\n"
+       "                        或要将其重新发布到的系统信息库的 URI。"
        "如果\n"
-       "                        未提供此选项，则缺省值为当前的工作\n"
+       "                        未提供此项，则缺省值为当前的"
+       "工作\n"
        "                        目录。如果提供了一个目录路径，则\n"
-       "                        只有在目标目录中不存在软件包内容时\n"
-       "                        才会检索此软件包内容。如果提供了一个 "
+       "                        只有在目标目录中尚不存在软件包内容时\n"
+       "                        才会检索此软件包内容。如果提供了一个"
        "系统信息库\n"
-       "                        URI，则会创建一个临时目录，\n"
-       "                        并在尝试重新发布它时\n"
-       "                        检索所有软件包数据。\n"
+       "                        URI，则会创建一个临时目"
+       "录，\n"
+       "                        并在尝试重新发布它之前检索"
+       "所有\n"
+       "                        软件包数据。\n"
        "\n"
        "        -h              显示此用法消息。\n"
-       "        -k              在重新发布时，将检索到的软件包内容保持处于压缩\n"
-       "                        和被忽略状态。不应该与 pkgsend 结合使用。\n"
-       "        -m match        使用以下值控制匹配行为：\n"
+       "        -k              在重新发布时，使检索到的软件包内容保持处于"
+       "压缩\n"
+       "                        和被忽略状态。不应该与 pkgsend 结合"
+       "使用。\n"
+       "        -m match        使用以下值控制匹配"
+       "行为：\n"
        "                            all-timestamps\n"
        "                                包含所有匹配的时间戳，而不仅仅是\n"
        "                                最新的时间戳（暗指 all-versions）\n"
        "                            all-versions\n"
-       "                                包含所有匹配的版本，而不仅仅是最新的版本\n"
-       "        -n              列出指定系统信息库中可用的最新软件包版本，\n"
-       "                        并退出（将忽略所有其他选项，\n"
-       "                        但 -s 除外）。\n"
-       "        -r              按递归方式评估所提供的软件包列表的所有相关项，\n"
-       "                        并将其添加到此列表中。\n"
-       "        -s src_repo_uri 表示 pkg(5)\n"
-       "                        系统信息库的位置的 URI，用于从中检索软件包数据。\n"
+       "                                包含所有匹配的版本，而不仅仅是最新的"
+       "版本\n"
+       "        -n              列出指定系统信息库中可用的最新"
+       "软件包\n"
+       "                        版本，并退出（将忽略所有其他\n"
+       "                        选项，但 -s 除外）。\n"
+       "        -r              按递归方式评估所提供的软件包列表的"
+       "所有\n"
+       "                        相关项，并将其添加到此列表中。\n"
+       "        -s src_repo_uri 表示 pkg(5) 系统信息库的位置\n"
+       "                        的 URI，用于从中检索软件包数据。\n"
        "\n"
        "环境：\n"
        "        PKG_DEST        目标目录或系统信息库 URI\n"
@@ -5652,12 +5723,12 @@ msgstr ""
 #: ../pull.py:167
 #, python-format
 msgid "Unable to load manifest '%(mpath)s' for package '%(pfmri)s'."
-msgstr "无法为软件包 '%(pfmri)s' 加载清单 '%(mpath)s'。"
+msgstr "无法为软件包 '%(pfmri)s' 装入清单 '%(mpath)s'。"
 
 #: ../pull.py:177
 #, python-format
 msgid "Unable to parse manifest '%(mpath)s' for package '%(pfmri)s'"
-msgstr "无法为软件包 '%(pfmri)s' 分析清单 '%(mpath)s'。"
+msgstr "无法为软件包 '%(pfmri)s' 解析清单 '%(mpath)s'。"
 
 #: ../pull.py:188
 #, python-format
@@ -5667,7 +5738,7 @@ msgstr "无法为软件包 '%(pfmri)s' 写入清单 '%(mpath)s'。"
 #: ../pull.py:235
 #, python-format
 msgid "Unable to retrieve manifest %s from %s: %s"
-msgstr "无法检索清单 %s（从 %s）: %s"
+msgstr "无法从 %2$s 检索清单 %1$s: %3$s"
 
 #: ../pull.py:244
 #, python-format
@@ -5692,7 +5763,7 @@ msgstr "无法从以下位置下载目录：%s"
 #: ../pull.py:538
 #, python-format
 msgid "Error: %s while reading from: %s"
-msgstr "出现错误：%s（从 %s 中读取数据时）"
+msgstr "从以下位置读取数据时出现错误 %s：%s"
 
 #: ../pull.py:576
 #, python-format
@@ -5727,7 +5798,9 @@ msgid ""
 "or the specified path does not exist.  Please correct the configuration of "
 "the repository or create a new one."
 msgstr ""
-       "位于 '%s' 中的系统信息库的系统信息库配置无效，或指定的路径不存在。请更正此系统信息库的配置或创建一个新的系统信息库。"
+       "位于 '%s' 的系统信息库的系统信息库配置无效，"
+       "或指定的路径不存在。请更正此系统信息库的"
+       "配置或创建一个新的系统信息库。"
 
 #: ../pull.py:656
 #, python-format
@@ -5750,7 +5823,7 @@ msgstr "正在检索软件包内容..."
 #: ../pull.py:726
 #, python-format
 msgid "Republishing %s ..."
-msgstr "正在重新发布 %s ..."
+msgstr "正在重新发布 %s..."
 
 #: ../pull.py:782
 msgid "Refreshing repository search indices ..."
@@ -5887,7 +5960,8 @@ msgid ""
 "Click Update All to create a new boot environment and install all packages "
 "into it."
 msgstr ""
-       "单击“全部更新”可创建一个新的引导环境，并将所有软件包安装到其中。"
+       "单击“全部更新”可创建一个新的引导环境，并将所有软件包"
+       "安装到其中。"
 
 #: ../updatemanager.py:312
 msgid "Current Version"
@@ -5912,7 +5986,7 @@ msgstr "请使用 pfexec 重新启动 pm-updatemanager。"
 
 #: ../updatemanager.py:435
 msgid "<b>No Updates available</b>"
-msgstr "<b>没有可用的更新</b>"
+msgstr "<b>没有可用更新</b>"
 
 #: ../updatemanager.py:469
 #, python-format

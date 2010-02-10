@@ -19,29 +19,29 @@
 # CDDL HEADER END
 #
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2009-12-21 12:05+0900\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+       "Project-Id-Version: PACKAGE VERSION\n"
+       "POT-Creation-Date: 2010-01-14 11:47+0900\n"
+       "PO-Revision-Date: 2010-01-14 11:47+0900\n"
+       "Last-Translator: Brazilian Portuguese L10n team <i18n-discuss@opensolaris.org>\n"
+       "Language-Team: Brazilian Portuguese <i18n-discuss@opensolaris.org>\n"
+       "MIME-Version: 1.0\n"
+       "Content-Type: text/plain; charset=UTF-8\n"
+       "Content-Transfer-Encoding: 8bit\n"
 
 #. When image changes, this message will be marked fuzzy or untranslated for you.
 #. It doesn't matter what you translate it to: it's not used at all.
-#: package-manager.xml.in.nolegal:38(None) package-manager.xml.in.nolegal:89(None) 
+#: package-manager.xml.in.nolegal:38(None) package-manager.xml.in.nolegal:88(None) 
 msgid "@@image: 'figures/pkgmgr-main.png'; md5=e2194180dd5eca2d8e3912fee614e061"
 msgstr "@@image: 'figures/pkgmgr-main.png'; md5=e2194180dd5eca2d8e3912fee614e061"
 
 #. When image changes, this message will be marked fuzzy or untranslated for you.
 #. It doesn't matter what you translate it to: it's not used at all.
-#: package-manager.xml.in.nolegal:69(None) 
+#: package-manager.xml.in.nolegal:68(None) 
 msgid "@@image: 'figures/startpage_new.png'; md5=9f8516015a79fd2b5c456128482affe4"
 msgstr "@@image: 'figures/startpage_new.png'; md5=9f8516015a79fd2b5c456128482affe4"
 
@@ -136,293 +136,282 @@ msgid "About Image Packaging System"
 msgstr "Sobre o Image Packaging System"
 
 #: package-manager.xml.in.nolegal:54(para) 
-msgid "Image Packaging System (IPS) is a software delivery system that interacts with a network repository. The IPS software is a framework which provides for software lifecycle management including installation, upgrade, and removal."
-msgstr ""
-       "O Image Packaging System (IPS) é um sistema de entrega de software que interage "
-       "com o repositório da rede. O software IPS é uma framework que possibilita "
-       "o gerenciamento do ciclo de vida do software, incluindo instalação, atualização e"
-       "remoção."
+msgid "Image Packaging System (IPS) is a framework which provides for software lifecycle management including installation, upgrade, and removal. The OpenSolaris 2010.03 release uses IPS as its packaging system."
+msgstr "Image Packaging System (IPS) é um estrutura de sistema que fornece gerenciamente para o ciclo de vida do software, incluindo instalação, atualizaçao e remoção. O OpenSolaris 2010.03 release usa o IPS como sistema de empacotamento."
 
 #: package-manager.xml.in.nolegal:55(para) 
-msgid "The OpenSolaris 2010.03 release uses IPS as its packaging system."
-msgstr "A OpenSolaris 2010.03 release usa o IPS como o seu sistema de empacotamento."
-
-#: package-manager.xml.in.nolegal:56(para) 
 msgid "After an initial installation of the OpenSolaris 2010.03 operating system, you will find that some of the software applications that you use on a regular basis are not immediately available to you. These software applications are available as packages in a repository for downloading and installing over the network. A repository is a source for packages."
 msgstr "Após uma instalação inicial do sistema operacional OpenSolaris 2010.03, você verá que alguns dos aplicativos de software que você usa normalmente não estão disponíveis imediatamente para você."
        "Estes aplicativos de software estão disponíveis como pacotes em um repositório para baixar e instalar por meio da rede. Um repositório é uma fonte para os pacotes."
 
-#: package-manager.xml.in.nolegal:57(para) 
-msgid "Users can use IPS to install packages from a repository, create and publish their own IPS packages, mirror an existing repository, and publish existing packages to a repository."
-msgstr ""
-       "Os usuários podem usar o IPS para instalar os pacotes de um repositório, criar e publicar "
-       "seus próprios pacotes IPS, espelhar um repositório existente e publicar em um repositório "
-       "os pacotes existentes."
+#: package-manager.xml.in.nolegal:56(para) 
+msgid "IPS provides a set of software tools that can be used to install packages from a repository, create and publish their own IPS packages, mirror an existing repository, and publish existing packages to a repository."
+msgstr "O IPS fornece um configurador de ferramentas do software que pode ser usado para instalar pacotes a partir de um repositório, criar e editar seus próprios pacotes IPS, espelhar um repositório existente e editar pacotes existentes à um repositório."
 
-#: package-manager.xml.in.nolegal:58(para) 
+#: package-manager.xml.in.nolegal:57(para) 
 msgid "Once you have installed packages, IPS enables you to search, update, and manage packages on your system."
 msgstr ""
        "Depois de instalar os pacotes, o IPS permite que você pesquise, atualize e "
        "gerencie os pacotes do seu sistema."
 
-#: package-manager.xml.in.nolegal:59(para) 
+#: package-manager.xml.in.nolegal:58(para) 
 msgid "With IPS , you can upgrade your system to a newer build of OpenSolaris, install and update your software to the latest available versions in a repository, and retrieve packages from mirror repositories."
 msgstr "Com o IPS, você pode atualizar seu sistema com uma compilação mais recente do OpenSolaris, "
        "instalar e atualizar seu software com as versões mais recentes disponíveis em um repositório e recuperar pacotes de repositórios espelhados."
 
-#: package-manager.xml.in.nolegal:60(emphasis) 
+#: package-manager.xml.in.nolegal:59(emphasis) 
 msgid "The Package Manager provides a subset of the tasks that can be performed from the command-line."
 msgstr ""
        "O Gerenciador de pacotes oferece um subconjunto das tarefas que podem ser realizadas "
        "da linha de comando."
 
-#: package-manager.xml.in.nolegal:62(para) 
-msgid "If the system on which IPS is installed is on the network, IPS can automatically access the OpenSolaris publisher. For the OpenSolaris 2010.03 release, your IPS client can access the packages from <ulink url=\"http://pkg.opensolaris.org\"/>."
-msgstr "Se o sistema pelo qual o IPS é instalado está na rede, o IPS pode acessar automaticamente o editor do OpenSolaris. Seu cliente de IPS pode acessar os pacotes do <ulink url=\"http://pkg.opensolaris.org\"/> para o OpenSolaris 2010.03 release."
+#: package-manager.xml.in.nolegal:61(para) 
+msgid "For the OpenSolaris 2010.03 release, if the system on which IPS is installed is on the network, IPS can automatically retrieve packages provided by the OpenSolaris publisher from the package repository located at <ulink url=\"http://pkg.opensolaris.org\"/>."
+msgstr "No OpenSolaris 2010.03 release, caso o sistema que o IPS está instalado esteja na rede, o IPS pode automaticamente recuperar pacotes fornecidos pelo editor do OpenSolaris a partir do repositório do pacote localizado em <ulink url=\"http://pkg.opensolaris.org\"/>."
 
-#: package-manager.xml.in.nolegal:63(para) 
+#: package-manager.xml.in.nolegal:62(para) 
 msgid "For more IPS documentation, see the <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"><citetitle>Image Packaging System Guide</citetitle></ulink> and the <filename>pkg</filename><ulink url=\"http://opensolaris.org/sc/src/pkg/gate/src/man/\">man pages</ulink>."
 msgstr "Para mais documentações do IPS, veja o  <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"><citetitle>Image Packaging System Guide</citetitle></ulink> e o <filename>pkg</filename><ulink url=\"http://opensolaris.org/sc/src/pkg/gate/src/man/\">man pages</ulink>."
 
-#: package-manager.xml.in.nolegal:64(para) 
+#: package-manager.xml.in.nolegal:63(para) 
 msgid "For more information about IPS, visit the <ulink url=\"http://opensolaris.org/os/project/pkg\">project page</ulink>."
 msgstr "Para mais informações sobre o IPS, visite a <ulink url=\"http://opensolaris.org/os/project/pkg\">project page</ulink>."
 
-#: package-manager.xml.in.nolegal:66(title) 
+#: package-manager.xml.in.nolegal:65(title) 
 msgid "Getting Started With Package Manager"
 msgstr "Iniciando o Gerenciador de Pacotes"
 
-#: package-manager.xml.in.nolegal:67(para) 
+#: package-manager.xml.in.nolegal:66(para) 
 msgid "When you start the Package Manager, a Start Page similar to the example below is displayed:"
 msgstr "Quando você inicia o Gerenciador de Pacotes, uma página inicial parecida ao exemplo abaixo é exibida:"
 
-#: package-manager.xml.in.nolegal:68(title) 
+#: package-manager.xml.in.nolegal:67(title) 
 msgid "Package Manager Start Page"
 msgstr "Página Inicial do Gerenciador de Pacotes"
 
-#: package-manager.xml.in.nolegal:72(para) 
+#: package-manager.xml.in.nolegal:71(para) 
 msgid "The Start Page provides a list of featured packages that can be installed. It includes a list of some of the most popular and recent packages downloaded by the OpenSolaris community of users. The Recommended list of packages point to software applications that are frequently downloaded by the OpenSolaris user. Click the package links to install the packages."
 msgstr "A página inicial fornece uma lista de pacotes exibidos que podem ser instalados. Ela inclui a lista de alguns dos mais populares e recentes pacotes baixados pelos usuários da comunidade do OpenSolaris. A lista dos pacotes recomendados aponta para os aplicativos de software que são frequentementes baixados pelos usuários do OpenSolaris. Clique nos links dos pacotes para instalá-los."
 
-#: package-manager.xml.in.nolegal:73(para) 
+#: package-manager.xml.in.nolegal:72(para) 
 msgid "The Start Page also provides links to more information about the OpenSolaris project, subscribe to newsletters and join the OpenSolaris community."
 msgstr "A página inicial também fornece links para mais informações sobre o projeto OpenSolaris, assine as newsletters e junte-se à comunidade do OpenSolaris."
 
-#: package-manager.xml.in.nolegal:74(para) 
+#: package-manager.xml.in.nolegal:73(para) 
 msgid "To close the Start Page and see the list of packages in the selected publisher, perform any of the following actions in the main window of the Package Manager:"
 msgstr "Para fechar a página inicial e ver a lista de pacotes no editor selecionado, realize alguma das seguintes ações na janela principal do Gerenciador de Pacotes:"
 
-#: package-manager.xml.in.nolegal:75(para) 
+#: package-manager.xml.in.nolegal:74(para) 
 msgid "Select a package category"
 msgstr "Selecione uma categoria de pacote"
 
-#: package-manager.xml.in.nolegal:77(para) 
+#: package-manager.xml.in.nolegal:76(para) 
 msgid "Change the <emphasis role=\"strong\">View</emphasis> drop-down menu"
 msgstr "Altere o <emphasis role=\"strong\">Exibir</emphasis> do menu drop-down"
 
-#: package-manager.xml.in.nolegal:79(para) 
+#: package-manager.xml.in.nolegal:78(para) 
 msgid "Perform a search"
 msgstr "Realize uma pesquisa"
 
-#: package-manager.xml.in.nolegal:81(para) 
+#: package-manager.xml.in.nolegal:80(para) 
 msgid "Change the publisher"
 msgstr "Altere o editor"
 
-#: package-manager.xml.in.nolegal:84(para) 
+#: package-manager.xml.in.nolegal:83(para) 
 msgid "Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</guimenuitem></menuchoice> to return to the Start Page at anytime."
 msgstr "Selecione <menuchoice><guimenu>Exibir</guimenu><guimenuitem>Página inicial</guimenuitem></menuchoice> para retornar à página inicial a qualquer momento."
        "guimenuitem></menuchoice> para voltar em qualquer momento à página inicial."
 
-#: package-manager.xml.in.nolegal:85(para) 
+#: package-manager.xml.in.nolegal:84(para) 
 msgid "See <xref linkend=\"edit-prefs\"/> to turn off the <emphasis role=\"strong\">initial display</emphasis> of the start page when the Package Manager starts."
 msgstr "Veja <xref linkend=\"edit-prefs\"/> para fechar o <emphasis role=\"strong\">display inicial</emphasis> da página inicial quando o Gerenciador de Pacotes inicia."
 
-#: package-manager.xml.in.nolegal:87(title) 
+#: package-manager.xml.in.nolegal:86(title) 
 msgid "About The Package Manager Window"
 msgstr "Sobre a janela do Gerenciador de Pacotes"
 
-#: package-manager.xml.in.nolegal:88(title) 
+#: package-manager.xml.in.nolegal:87(title) 
 msgid "Package Manager Main View"
 msgstr "Visão principal do Gerenciador de Pacotes"
 
-#: package-manager.xml.in.nolegal:92(para) 
+#: package-manager.xml.in.nolegal:91(para) 
 msgid "The main window of the Package Manager consists of the following elements :"
 msgstr "A janela principal do Gerenciador de pacotes está formada pelos seguintes elementos:"
 
-#: package-manager.xml.in.nolegal:93(emphasis) 
+#: package-manager.xml.in.nolegal:92(emphasis) 
 msgid "Menubar"
 msgstr "Barra de menus"
 
-#: package-manager.xml.in.nolegal:94(para) 
+#: package-manager.xml.in.nolegal:93(para) 
 msgid "The menubar contains the menus and sub-menus required to perform all of the commands related to the Package Manager."
 msgstr "A barra de menus contém os menus e sub-menus necessários para realizar todos os comandos relacionados ao Gerenciador de Pacotes."
 
-#: package-manager.xml.in.nolegal:98(emphasis) 
+#: package-manager.xml.in.nolegal:97(emphasis) 
 msgid "Toolbar"
 msgstr "Barra de ferramentas"
 
-#: package-manager.xml.in.nolegal:99(para) 
+#: package-manager.xml.in.nolegal:98(para) 
 msgid "The toolbar contains the icons for a subset of the commands that can be performed by using the menus on the menubar. A <emphasis role=\"strong\">Search</emphasis> field is also located on the toolbar. You can perform the following actions from the toolbar :"
 msgstr "A barra de ferramentas contém os ícones para uma sub-configuração dos comandos que podem ser realizados usando os menus na barra de menus. Um campo <emphasis role=\"strong\">Search</emphasis> é também localizados na barra de ferramentas. Você pode realizar as seguintes ações a partir da barra de ferramentas:"
 
-#: package-manager.xml.in.nolegal:100(para) 
+#: package-manager.xml.in.nolegal:99(para) 
 msgid "<emphasis role=\"strong\">Updates</emphasis> – Click <emphasis role=\"strong\">Updates</emphasis> to check for and install the latest updates."
 msgstr "<emphasis role=\"strong\">Atualizações</emphasis> – Clique <emphasis role=\"strong\">Atualizações</emphasis> para verificar e instalar as últimas atualizações."
 
-#: package-manager.xml.in.nolegal:102(para) 
+#: package-manager.xml.in.nolegal:101(para) 
 msgid "<emphasis role=\"strong\">Install/Update</emphasis> – Select a package and click <emphasis role=\"strong\">Install/Update</emphasis> to install or update a package."
 msgstr "<emphasis role=\"strong\">Instalar/Atualizar</emphasis> – Selecione um pacote e clique <emphasis role=\"strong\">Instalar/Atualizar</emphasis> para instalar ou atualizar um pacote."
 
-#: package-manager.xml.in.nolegal:104(para) 
+#: package-manager.xml.in.nolegal:103(para) 
 msgid "<emphasis role=\"strong\">Refresh</emphasis> – Click <emphasis role=\"strong\">Refresh</emphasis> to reload the list of packages."
 msgstr "<emphasis role=\"strong\">Reiniciar</emphasis> – Clique <emphasis role=\"strong\">Reiniciar</emphasis> para recarregar a lista de pacotes."
 
-#: package-manager.xml.in.nolegal:106(para) 
+#: package-manager.xml.in.nolegal:105(para) 
 msgid "<emphasis role=\"strong\">Remove</emphasis> – Select a package and click <emphasis role=\"strong\">Remove</emphasis> to remove a package."
 msgstr "<emphasis role=\"strong\">Remover</emphasis> – Selecione um pacote e clique <emphasis role=\"strong\">Remover</emphasis> para remover um pacote."
 
-#: package-manager.xml.in.nolegal:108(para) 
+#: package-manager.xml.in.nolegal:107(para) 
 msgid "<emphasis role=\"strong\">Search for a Package</emphasis> – Type the name or description of a package in the <emphasis role=\"strong\">Search</emphasis> field to search for a package. See the <xref linkend=\"search-pkg\"/> section for examples on how to search for a package."
 msgstr "<emphasis role=\"strong\">Procure por um pacote</emphasis> – Digite o nome ou descrição de um pacote no campo<emphasis role=\"strong\">Procure</emphasis> para procurar um pacote. Veja a seção <xref linkend=\"search-pkg\"/> para exemplos sobre como procurar pacotes."
 
-#: package-manager.xml.in.nolegal:113(emphasis) 
+#: package-manager.xml.in.nolegal:112(emphasis) 
 msgid "Publisher Drop-Down Menu"
 msgstr "Editor do Menu Drop-Down"
 
-#: package-manager.xml.in.nolegal:114(para) 
+#: package-manager.xml.in.nolegal:113(para) 
 msgid "The list of available publishers is shown in the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu. Users can perform the following tasks from the publisher drop-down menu :"
 msgstr "A lista de editores disponíveis é exibida no menu drop-down <emphasis role=\"strong\">Editor</emphasis> . Os usuários podem realizar as seguintes tarefas a partir do editor do menu drop-down :"
 
-#: package-manager.xml.in.nolegal:115(emphasis) 
+#: package-manager.xml.in.nolegal:114(emphasis) 
 msgid "Select a publisher"
 msgstr "Selecionar um editor"
 
-#: package-manager.xml.in.nolegal:117(emphasis) 
+#: package-manager.xml.in.nolegal:116(emphasis) 
 msgid "View the list of packages installed from all publishers"
 msgstr "Exibir a lista de pacotes instalados a partir de todos os editores"
 
-#: package-manager.xml.in.nolegal:119(emphasis) 
+#: package-manager.xml.in.nolegal:118(emphasis) 
 msgid "Search for package across all publishers"
 msgstr "Procurar por pacotes através de todos os editores"
 
-#: package-manager.xml.in.nolegal:121(emphasis) 
+#: package-manager.xml.in.nolegal:120(emphasis) 
 msgid "Add a publisher"
 msgstr "Adicionar um editor"
 
-#: package-manager.xml.in.nolegal:126(emphasis) 
+#: package-manager.xml.in.nolegal:125(emphasis) 
 msgid "List of Packages by Category"
 msgstr "Lista de pacotes por categoria"
 
-#: package-manager.xml.in.nolegal:127(para) 
+#: package-manager.xml.in.nolegal:126(para) 
 msgid "You can browse the available packages by category in the left hand side panel. Click on a category to see the sub-categories of packages available. There are six main categories that are displayed in the Package Manager:"
 msgstr "Você pode verificar os pacotes disponíveis por categoria no lado esquerdo do painel. Clique em uma categoria para ver as sub-categorias dos pacotes disponíveis. Há seis principais categorias que estão disponíveis no Gerenciador de Pacotes: "
 
-#: package-manager.xml.in.nolegal:128(emphasis) 
+#: package-manager.xml.in.nolegal:127(emphasis) 
 msgid "Applications"
 msgstr "Aplicativos"
 
-#: package-manager.xml.in.nolegal:130(emphasis) 
+#: package-manager.xml.in.nolegal:129(emphasis) 
 msgid "Desktop (GNOME)"
 msgstr "Área de trabalho (GNOME)"
 
-#: package-manager.xml.in.nolegal:132(emphasis) 
+#: package-manager.xml.in.nolegal:131(emphasis) 
 msgid "Development"
 msgstr "Desenvolvimento"
 
-#: package-manager.xml.in.nolegal:134(emphasis) 
+#: package-manager.xml.in.nolegal:133(emphasis) 
 msgid "Drivers"
 msgstr "Drivers"
 
-#: package-manager.xml.in.nolegal:136(emphasis) 
+#: package-manager.xml.in.nolegal:135(emphasis) 
 msgid "System"
 msgstr "Sistema"
 
-#: package-manager.xml.in.nolegal:138(emphasis) 
+#: package-manager.xml.in.nolegal:137(emphasis) 
 msgid "Web Services"
 msgstr "Serviços Web"
 
-#: package-manager.xml.in.nolegal:143(emphasis) 
+#: package-manager.xml.in.nolegal:142(emphasis) 
 msgid "Recent Searches"
 msgstr "Buscas recentes"
 
-#: package-manager.xml.in.nolegal:144(para) 
+#: package-manager.xml.in.nolegal:143(para) 
 msgid "The Package Manager saves your recent package searches. Click the Recent Searches in the left hand side panel to view the packages you searched for recently."
 msgstr "O Gerenciador de Pacotes salva sua busca recente de pacotes. Clique em Buscas recentes no lado esquerdo do painel para ver os pacotes que você procurou recentemente. "
 
-#: package-manager.xml.in.nolegal:147(emphasis) 
+#: package-manager.xml.in.nolegal:146(emphasis) 
 msgid "List of Packages by Status"
 msgstr "Lista de pacotes por status"
 
-#: package-manager.xml.in.nolegal:148(para) 
+#: package-manager.xml.in.nolegal:147(para) 
 msgid "The <emphasis role=\"strong\">View</emphasis> drop-down menu enables you to view package status with the following options :"
 msgstr "O menu drop-down <emphasis role=\"strong\">Exibir</emphasis> permite que você veja o status dos pacotes com as seguintes opções :"
 
-#: package-manager.xml.in.nolegal:149(para) 
+#: package-manager.xml.in.nolegal:148(para) 
 msgid "<emphasis role=\"strong\">All Packages</emphasis> – Shows the list of all packages available within the current publisher."
 msgstr "<emphasis role=\"strong\">Todos os pacotes</emphasis> – Mostra a lista de todos os pacotes disponíveis dentro de um editor atual."
 
-#: package-manager.xml.in.nolegal:151(para) 
+#: package-manager.xml.in.nolegal:150(para) 
 msgid "<emphasis role=\"strong\">Installed Packages</emphasis> – Shows the list of packages installed within the current publisher on your system."
 msgstr "<emphasis role=\"strong\">Pacotes instalados</emphasis> – Mostra a lista de pacotes instalados dentro do editor atual em seu sistema."
 
-#: package-manager.xml.in.nolegal:153(para) 
+#: package-manager.xml.in.nolegal:152(para) 
 msgid "<emphasis role=\"strong\">Updates</emphasis> — Shows the list of packages that have newer versions available within the current publisher."
 msgstr "<emphasis role=\"strong\">Atualizações</emphasis> — Mostra a lista de pacotes que têm as mais recentes versões disponíveis dentro do editor atual."
 
-#: package-manager.xml.in.nolegal:155(para) 
+#: package-manager.xml.in.nolegal:154(para) 
 msgid "<emphasis role=\"strong\">Not Installed Packages</emphasis> – Shows the list of packages that are not installed, but are available in the currently selected publisher."
 msgstr "<emphasis role=\"strong\">Pacotes não instalados</emphasis> – Mostra a lista de pacotes que não estão instalados, mas estão disponíveis no editor instalado atualmente."
 
-#: package-manager.xml.in.nolegal:157(para) 
+#: package-manager.xml.in.nolegal:156(para) 
 msgid "<emphasis role=\"strong\">Selected Packages</emphasis> – Shows the list of packages that you have selected."
 msgstr "<emphasis role=\"strong\">Pacotes selecionados</emphasis> – Mostra a lista de pacotes que você tem selecionado."
        "pacotes que você selecionou."
 
-#: package-manager.xml.in.nolegal:162(emphasis) 
+#: package-manager.xml.in.nolegal:161(emphasis) 
 msgid "Package Name, Status, and Description"
 msgstr "Nome do pacote, status e descrição"
 
-#: package-manager.xml.in.nolegal:163(para) 
+#: package-manager.xml.in.nolegal:162(para) 
 msgid "The list of packages in the selected category, a brief description, and their status are displayed in here."
 msgstr "A lista de pacotes na categoria selecionada, uma descrição resumida, e seus status são exibidos aqui dentro."
 
-#: package-manager.xml.in.nolegal:164(para) 
+#: package-manager.xml.in.nolegal:163(para) 
 msgid "The Publisher name is also displayed here in the following instances :"
 msgstr "O nome do editor é também exibido aqui nas seguintes instâncias :"
 
-#: package-manager.xml.in.nolegal:165(para) 
+#: package-manager.xml.in.nolegal:164(para) 
 msgid "When the <emphasis role=\"strong\">Pubisher</emphasis> drop-down menu is set to All Publishers (Installed)"
 msgstr "Quando o menu drop-down <emphasis role=\"strong\">Editor</emphasis> está configurado para todos os editores (Instalado)"
 
-#: package-manager.xml.in.nolegal:167(para) 
+#: package-manager.xml.in.nolegal:166(para) 
 msgid "When search results are displayed for the All Publishers (Search) option"
 msgstr "Quando os resultados da busca são exibidos para as opções de todos os editores (Busca)"
 
-#: package-manager.xml.in.nolegal:169(para) 
+#: package-manager.xml.in.nolegal:168(para) 
 msgid "When a recent search result is displayed"
 msgstr "Quando um resultado de uma busca recente é exibido"
 
-#: package-manager.xml.in.nolegal:174(emphasis) 
+#: package-manager.xml.in.nolegal:173(emphasis) 
 msgid "Package Details"
 msgstr "Detalhes do pacote"
 
-#: package-manager.xml.in.nolegal:175(para) 
+#: package-manager.xml.in.nolegal:174(para) 
 msgid "Click a package name to select it. Details of the selected package, such as name, version, file dependencies, and license are displayed in this window."
 msgstr "Clique no nome do pacote para selecioná-lo. Os detalhes do pacote selecionado tais como nome, versão, dependências de arquivo e licença são exibidos nesta janela."
 
-#: package-manager.xml.in.nolegal:181(title) 
+#: package-manager.xml.in.nolegal:180(title) 
 msgid "Package Manager Settings"
 msgstr "Configurações do Gerenciador de Pacotes"
 
-#: package-manager.xml.in.nolegal:182(para) 
+#: package-manager.xml.in.nolegal:181(para) 
 msgid "Use the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> to change the Package Manager settings. The following sections discuss the preferences that can be changed by the user."
 msgstr "Use <menuchoice><guimenu>Editar</guimenu><guimenuitem>Preferências</guimenuitem></menuchoice> para alterar as configurações do Gerenciador de Pacotes. As seções seguintes examinam as preferências que podem ser alteradas pelo usuário."
 
-#: package-manager.xml.in.nolegal:183(title) 
+#: package-manager.xml.in.nolegal:182(title) 
 msgid "Start Page Preferences"
 msgstr "Preferências da página inicial"
 
-#: package-manager.xml.in.nolegal:184(para) 
+#: package-manager.xml.in.nolegal:183(para) 
 msgid "A Start Page is displayed in the main window of the Package Manager when the application is started. The Start Page provides links to <ulink url=\"http://opensolaris.com\">opensolaris.com</ulink> page where you can get more information about OpenSolaris, subscribe to newsletters and join the OpenSolaris community."
 msgstr ""
        "É exibida uma página inicial na janela principal do Gerenciador de pacotes quando o "
@@ -430,313 +419,313 @@ msgstr ""
        "\">opensolaris.com</ulink> na qual é possível obter informações sobre o "
        "OpenSolaris, inscrever-se aos boletins informativos e unir-se à comunidade OpenSolaris."
 
-#: package-manager.xml.in.nolegal:185(para) 
+#: package-manager.xml.in.nolegal:184(para) 
 msgid "You can choose to turn off this setting so this page is not displayed when Package Manager starts."
 msgstr "Você tem a opção de desativar esta configuração de modo que está página não seja exibida quando o Gerenciador de Pacotes inicia."
        "Gerenciador de pacotes for iniciado."
 
-#: package-manager.xml.in.nolegal:186(para) 
+#: package-manager.xml.in.nolegal:185(para) 
 msgid "Select <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> from the main menu and uncheck the <emphasis role=\"strong\">Show Start Page on Startup</emphasis> to disable the Start Page. This dialog is checked by default."
 msgstr "Selecione <menuchoice><guimenu>Editar</guimenu><guimenuitem>Preferências</guimenuitem></menuchoice> a partir do menu principal e desmarque o <emphasis role=\"strong\">Mostrar a página inicial no Startup</emphasis> para desabilitar a página inicial. Este diálogo é clicado por padrão."
 
-#: package-manager.xml.in.nolegal:187(para) 
+#: package-manager.xml.in.nolegal:186(para) 
 msgid "Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</guimenuitem></menuchoice> from the main menu to go to the Start Page at anytime."
 msgstr "Selecione <menuchoice><guimenu>Exibir</guimenu><guimenuitem>Página inicial</guimenuitem></menuchoice> a partir do menu principal para ir para página principal a qualquer momento."
 
-#: package-manager.xml.in.nolegal:189(title) 
+#: package-manager.xml.in.nolegal:188(title) 
 msgid "Exit Preferences"
 msgstr "Preferências de saída"
 
-#: package-manager.xml.in.nolegal:190(para) 
+#: package-manager.xml.in.nolegal:189(para) 
 msgid "The Package Manager application can remember some of its current settings if the <emphasis role=\"strong\">Remember current state on exit</emphasis> option in the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> is checked."
 msgstr "O aplicativo do gerenciador de pacotes pode lembrar de algumas de suas configurações atuais se a opção <emphasis role=\"strong\">Lembrar o estado atual na saída</emphasis> em <menuchoice><guimenu>Editar</guimenu><guimenuitem>Preferências</guimenuitem></menuchoice> estiver selecionado."
 
-#: package-manager.xml.in.nolegal:191(para) 
+#: package-manager.xml.in.nolegal:190(para) 
 msgid "The following settings are saved:"
 msgstr "As seguintes configurações estão salvas:"
 
-#: package-manager.xml.in.nolegal:192(para) 
+#: package-manager.xml.in.nolegal:191(para) 
 msgid "<emphasis role=\"strong\">Vertical separators</emphasis> – The size of the columns in the main window the Package Manager"
 msgstr "<emphasis role=\"strong\">Separadores verticais</emphasis> – O tamanho das colunas na janela principal do gerenciador de pacotes"
 
-#: package-manager.xml.in.nolegal:194(para) 
+#: package-manager.xml.in.nolegal:193(para) 
 msgid "<emphasis role=\"strong\">Window size</emphasis> – The size of the Package Manager window"
 msgstr "<emphasis role=\"strong\">Tamanho da janela</emphasis> – O tamanho da janela do gerenciador de pacotes"
 
-#: package-manager.xml.in.nolegal:196(para) 
+#: package-manager.xml.in.nolegal:195(para) 
 msgid "<emphasis role=\"strong\">Current publisher</emphasis> – The publisher that is selected when the Package Manager is closed"
 msgstr "<emphasis role=\"strong\">Editor atual</emphasis> – O editor que está selecionado quando o gerenciador de pacotes é fechado"
 
-#: package-manager.xml.in.nolegal:200(title) 
+#: package-manager.xml.in.nolegal:199(title) 
 msgid "Confirmation Dialog Preferences"
 msgstr "Confirmação das preferência de diálogo"
 
-#: package-manager.xml.in.nolegal:201(para) 
+#: package-manager.xml.in.nolegal:200(para) 
 msgid "When a package is selected for installation, update, or removal, a confirmation dialog is displayed that displays the list of packages and the action to be performed. Under the <emphasis role=\"strong\">Show Confirmation Dialog</emphasis> uncheck <emphasis role=\"strong\">On Updates</emphasis>, <emphasis role=\"strong\">On Package Install/Update</emphasis>, and <emphasis role=\"strong\">On Package Remove</emphasis> to turn these settings off."
 msgstr "Quando um pacote é selecionado para instalação, atualização ou remoção, é exibido um diálogo de confirmação que mostra a lista de pacotes e a ação que irá ser realizada. Em <emphasis role=\"strong\">Mostrar diálogo de confirmação</emphasis> desmarcar <emphasis role=\"strong\">Em atualizações</emphasis>, <emphasis role=\"strong\">Em instalar/atualizar pacotes</emphasis>, e <emphasis role=\"strong\">Em remover pacotes</emphasis> para desativar estas confirgurações."
 
-#: package-manager.xml.in.nolegal:204(title) 
+#: package-manager.xml.in.nolegal:203(title) 
 msgid "Working With Packages"
 msgstr "Trabalhando com o Gerenciador de atualizações"
 
-#: package-manager.xml.in.nolegal:205(title) 
+#: package-manager.xml.in.nolegal:204(title) 
 msgid "Install a Package"
 msgstr "Instalar um pacote"
 
-#: package-manager.xml.in.nolegal:206(para) 
+#: package-manager.xml.in.nolegal:205(para) 
 msgid "The list of packages and their status is displayed in the main window of the Package Manager. Perform the following steps to install a package:"
 msgstr "A lista de pacotes e seus status são exibidos na janela principal do gerenciador de pacotes. Realizar os seguintes passos para instalar um pacote:"
 
-#: package-manager.xml.in.nolegal:207(para) 
+#: package-manager.xml.in.nolegal:206(para) 
 msgid "Check the box next to the package or packages to select it. Double-clicking the package also selects the package."
 msgstr "Clique na caixa próxima ao pacote ou pacotes para selecioná-los. Também pode-se selecionar um pacote com duplo clique."
 
-#: package-manager.xml.in.nolegal:209(para) 
+#: package-manager.xml.in.nolegal:208(para) 
 msgid "Click <guibutton>Install/Update</guibutton> to start the package installation process."
 msgstr "Clique <guibutton>Instalar/Atualizar</guibutton> para iniciar o processo de instalação do pacote."
 
-#: package-manager.xml.in.nolegal:210(para) 
+#: package-manager.xml.in.nolegal:209(para) 
 msgid "You can also choose <menuchoice><guimenu>Package</guimenu><guimenuitem>Install/Update</guimenuitem></menuchoice> to start the package installation process."
 msgstr "Você também pode escolher <menuchoice><guimenu>Pacote</guimenu><guimenuitem>Instalar/Atualizar</guimenuitem></menuchoice> para iniciar o processo de instalação do pacote."
 
-#: package-manager.xml.in.nolegal:212(para) 
+#: package-manager.xml.in.nolegal:211(para) 
 msgid "Click <guilabel>Details</guilabel> to view the installation details or <guibutton>Cancel</guibutton> to cancel the package installation."
 msgstr "Clique <guilabel>Detalhes</guilabel> para exibir os detalhes da instalação ou <guibutton>Cancelar</guibutton> para cancelar a instalação do pacote."
 
-#: package-manager.xml.in.nolegal:214(para) 
+#: package-manager.xml.in.nolegal:213(para) 
 msgid "After the installation has completed, click <guibutton>Close</guibutton>."
 msgstr "Após completar a instalação, clique em <guibutton>Fechar</guibutton>."
 
-#: package-manager.xml.in.nolegal:217(title) 
+#: package-manager.xml.in.nolegal:216(title) 
 msgid "Installation Error"
 msgstr "Erro na instalação"
 
-#: package-manager.xml.in.nolegal:218(para) 
+#: package-manager.xml.in.nolegal:217(para) 
 msgid "If an error occurs during package installation, an error dialog with the error message is displayed along with the reason for failure. Click <guibutton>Close</guibutton> to close the error dialog."
 msgstr "Se um erro ocorrer durante a instalação de um pacote, um diálogo de erro com a mensagem de erro é exibido juntamente com a razão da falha. Clique em <guibutton>Fechar</guibutton> para fechar o diálogo de erro."
 
-#: package-manager.xml.in.nolegal:221(title) 
+#: package-manager.xml.in.nolegal:220(title) 
 msgid "Remove a Package"
 msgstr "Remover um pacote"
 
-#: package-manager.xml.in.nolegal:222(para) 
+#: package-manager.xml.in.nolegal:221(para) 
 msgid "Perform the following steps to remove a package:"
 msgstr "Realize as seguintes etapas para remover um pacote:"
 
-#: package-manager.xml.in.nolegal:223(para) 
+#: package-manager.xml.in.nolegal:222(para) 
 msgid "Check the box next to a package to select it. Double-clicking the package also selects the package."
 msgstr "Clique na caixa próxima ao pacote ou pacotes para selecioná-los. Também pode-se selecionar um pacote com duplo clique."
 
-#: package-manager.xml.in.nolegal:225(para) 
+#: package-manager.xml.in.nolegal:224(para) 
 msgid "Click <guibutton>Remove</guibutton> to start the package uninstallation process."
 msgstr "Clique <guibutton>Remover</guibutton> para iniciar o processo de desinstalação do pacote."
 
-#: package-manager.xml.in.nolegal:226(para) 
+#: package-manager.xml.in.nolegal:225(para) 
 msgid "You can also choose <menuchoice><guimenu>Package</guimenu><guimenuitem>Remove</guimenuitem></menuchoice> to remove a package."
 msgstr "Você também pode escolher <menuchoice><guimenu>Pacote</guimenu><guimenuitem>Remover</guimenuitem></menuchoice> para remover um pacote."
 
-#: package-manager.xml.in.nolegal:228(para) 
+#: package-manager.xml.in.nolegal:227(para) 
 msgid "Review the packages to be removed and the package dependencies details in the <emphasis role=\"strong\">Remove Confirmation</emphasis> dialog."
 msgstr "Rever os pacotes para ser removidos e os detalhes de depêndencias de pacotes no diálogo <emphasis role=\"strong\">Confirmação de remover</emphasis> diálogo."
 
-#: package-manager.xml.in.nolegal:230(para) 
+#: package-manager.xml.in.nolegal:229(para) 
 msgid "Click <guibutton>Proceed</guibutton> to start removing the packages or <guibutton>Cancel</guibutton> to cancel the process."
 msgstr "Clique em <guibutton>Continuar</guibutton> para começar a remover os pacotes ou em <guibutton>Cancelar</guibutton> para cancelar o processo."
 
-#: package-manager.xml.in.nolegal:234(title) 
+#: package-manager.xml.in.nolegal:233(title) 
 msgid "Search for a Package"
 msgstr "Procurar um pacote"
 
-#: package-manager.xml.in.nolegal:235(para) 
+#: package-manager.xml.in.nolegal:234(para) 
 msgid "You can search for a package in the following ways :"
 msgstr "Você pode procurar um pacote das seguintes formas:"
 
-#: package-manager.xml.in.nolegal:236(para) 
+#: package-manager.xml.in.nolegal:235(para) 
 msgid "<emphasis role=\"strong\">Search the current publisher</emphasis> – Search for a package in the publisher currently selected in the <emphasis role=\"strong\"> Publisher</emphasis> drop-down menu. If you do not know the status of the package you are searching for, set the <emphasis role=\"strong\">View</emphasis> drop-down menu to <emphasis role=\"strong\">All Packages</emphasis>."
 msgstr "<emphasis role=\"strong\">Buscar o editor atual</emphasis> – Buscar por um pacote no editor atualmente selecionado no menu drop-down <emphasis role=\"strong\"> Editor</emphasis>. Se você não sabe o status do pacote que você está procurando, configure o menu drop-down <emphasis role=\"strong\">Exibir</emphasis> para <emphasis role=\"strong\">Todos os pacotes</emphasis>."
 
-#: package-manager.xml.in.nolegal:237(para) 
+#: package-manager.xml.in.nolegal:236(para) 
 msgid "Enter a description, or a partial name in the <emphasis role=\"strong\">Search</emphasis> field. For example, you might type one of the following search terms to search for <filename>SUNWgnome-games</filename> :"
 msgstr "Inserir uma descrição, ou um nome parcial no campo <emphasis role=\"strong\">Procurar</emphasis>. Por exemplo, você poderia digitar um dos seguintes termos de busca para buscar <filename>SUNWgnome-games</filename> :"
 
-#: package-manager.xml.in.nolegal:238(para) 
+#: package-manager.xml.in.nolegal:237(para) 
 msgid "SUNWgames"
 msgstr "SUNWgames"
 
-#: package-manager.xml.in.nolegal:240(para) 
+#: package-manager.xml.in.nolegal:239(para) 
 msgid "games"
 msgstr "games"
 
-#: package-manager.xml.in.nolegal:242(para) 
+#: package-manager.xml.in.nolegal:241(para) 
 msgid "GNOME-games"
 msgstr "GNOME-games"
 
-#: package-manager.xml.in.nolegal:245(para) 
+#: package-manager.xml.in.nolegal:244(para) 
 msgid "To search for SunStudio compilers, you might type one of the following terms:"
 msgstr ""
        "Para procurar os compiladores SunStudio, você pode digitar um dos seguintes termos:"
 
-#: package-manager.xml.in.nolegal:246(para) 
+#: package-manager.xml.in.nolegal:245(para) 
 msgid "compiler"
 msgstr "compilador"
 
-#: package-manager.xml.in.nolegal:248(para) 
+#: package-manager.xml.in.nolegal:247(para) 
 msgid "tools"
 msgstr "ferramentas"
 
-#: package-manager.xml.in.nolegal:252(para) 
+#: package-manager.xml.in.nolegal:251(para) 
 msgid "<emphasis role=\"strong\">Search all publishers</emphasis> – Choose <emphasis role=\"strong\">All Publishers(Search)</emphasis> from the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu to search for a package across all configured publishers. If you do not know the status of the package you are searching for, set the <emphasis role=\"strong\">View</emphasis> drop-down menu to <emphasis role=\"strong\">All Packages</emphasis>."
 msgstr "<emphasis role=\"strong\">Procurar todos os editores</emphasis> – Escolher <emphasis role=\"strong\">Todos os editores (Procurar)</emphasis> a partir do menu drop-down <emphasis role=\"strong\">Editor</emphasis>  para buscar um pacote através de todos os editores configurados. Se você não sabe o status do pacote que você está procurando, configure o menu drop-down <emphasis role=\"strong\">Exibir</emphasis>  para <emphasis role=\"strong\">Todos os pacotes</emphasis>."
 
-#: package-manager.xml.in.nolegal:253(para) 
+#: package-manager.xml.in.nolegal:252(para) 
 msgid "Type a description of the package in the <emphasis role=\"strong\">Search</emphasis> field. For example, the <filename>SUNWdiveintopython</filename> package is a book on Python programming. The description of the package contains the string <emphasis>book</emphasis>. To search for this package, you might then type one of the following terms:"
 msgstr "Digite uma descrição do pacote no campo <emphasis role=\"strong\">Procurar</emphasis>. Por exemplo, o pacote <filename>SUNWdiveintopython</filename>  é um livro sobre a programaçãp Python. A descrição do pacote contém a série de palavras <emphasis>book</emphasis>. Para buscar este pacote, você poderia em seguida digitar um dos seguintes termos:"
 
-#: package-manager.xml.in.nolegal:254(para) 
+#: package-manager.xml.in.nolegal:253(para) 
 msgid "python"
 msgstr "python"
 
-#: package-manager.xml.in.nolegal:256(para) 
+#: package-manager.xml.in.nolegal:255(para) 
 msgid "book"
 msgstr "livro"
 
-#: package-manager.xml.in.nolegal:259(para) 
+#: package-manager.xml.in.nolegal:258(para) 
 msgid "If you searched for the term <emphasis>diveinto</emphasis> when searching for the <filename>SUNWdiveintopython</filename> package, the results will not be displayed as the term <emphasis>diveinto</emphasis> is not present as an independent, complete word in the package contents. However you will find the package using the <literal>*</literal> wild card. Hence, searching for the term <literal>diveinto*</literal> will display the <filename>SUNWdiveintopython</filename> package."
 msgstr "Se você buscou pelo termo <emphasis>diveinto</emphasis> quando procurando pelo pacote <filename>SUNWdiveintopython</filename>, os resultados não serão exibidos, pois o termo <emphasis>diveinto</emphasis> não está presente com termo independente, palavra completa no conteúdo de pacotes. Entretanto, você encontrará o pacote usando o caractere curinga <literal>*</literal>. A partir disso, a procura pelo termo <literal>diveinto*</literal> exibirá o pacote <filename>SUNWdiveintopython</filename>."
 
-#: package-manager.xml.in.nolegal:263(para) 
+#: package-manager.xml.in.nolegal:262(para) 
 msgid "Use the submenus under the <menuchoice><guimenu>Edit</guimenu></menuchoice> menu to cut, copy, or paste text in the <emphasis role=\"strong\">Search</emphasis> field."
 msgstr "Use os submenus do menu <menuchoice><guimenu>Editar</guimenu></menuchoice>ppara cortar, copiar ou colar texto no capo <emphasis role=\"strong\">Procurar</emphasis>."
 
-#: package-manager.xml.in.nolegal:265(para) 
+#: package-manager.xml.in.nolegal:264(para) 
 msgid "The following operators are supported for a package search:"
 msgstr "Os seguintes operadores têm suporte para uma busca de pacotes:"
 
-#: package-manager.xml.in.nolegal:266(emphasis) 
+#: package-manager.xml.in.nolegal:265(emphasis) 
 msgid "The AND operator"
 msgstr "O operador AND"
 
-#: package-manager.xml.in.nolegal:267(para) 
+#: package-manager.xml.in.nolegal:266(para) 
 msgid "When the search term is separated by spaces or the AND operator, the Package Manager will search for packages containing <emphasis role=\"strong\">all</emphasis> the search terms."
 msgstr "Quando o termo de busca está separado por espaços ou pelo operador AND, o Gerenciador de Pacotes buscará pacotes que contenham <emphasis role=\"strong\">todos</emphasis> os termos de busca."
 
-#: package-manager.xml.in.nolegal:270(emphasis) 
+#: package-manager.xml.in.nolegal:269(emphasis) 
 msgid "Double Quotes"
 msgstr "Quotas duplas"
 
-#: package-manager.xml.in.nolegal:271(para) 
+#: package-manager.xml.in.nolegal:270(para) 
 msgid "When a search term is placed within double quotes, the Package Manager will search for packages that <emphasis role=\"strong\">match the search term exactly</emphasis>."
 msgstr "Quando um termo de busca está localizado dentro de quotas duplas, o Gerenciador de Pacotes buscará pacotes que <emphasis role=\"strong\">correspondem exatamente aos termos de busca</emphasis>."
 
-#: package-manager.xml.in.nolegal:274(emphasis) 
+#: package-manager.xml.in.nolegal:273(emphasis) 
 msgid "Wildcard *"
 msgstr "Caractere curinga *"
 
-#: package-manager.xml.in.nolegal:275(para) 
+#: package-manager.xml.in.nolegal:274(para) 
 msgid "Including a wildcard in your search term enables you to search for partial package names. For example, when you enter <emphasis>boo*</emphasis> in your search term, the packages displayed could include <emphasis>boot</emphasis> and <emphasis>book</emphasis> in the package name and description."
 msgstr "Ao incluir um caractere curinga no seu termo de busca, permitirá que você busque nomes de pacotes parciais. Por exemplo, quando você inserir <emphasis>boo*</emphasis> no seu termo de busca, os pacotes exibidos poderiam incluir <emphasis>boot</emphasis> e <emphasis>registrar</emphasis> no nome do pacote e descrição."
 
-#: package-manager.xml.in.nolegal:276(para) 
+#: package-manager.xml.in.nolegal:275(para) 
 msgid "Wildcard searching can be slower than an exact match search or a search based on package description."
 msgstr "A busca com caracteres curinga pode ser mais devagar do que uma busca de correspondência exata ou uma busca baseada na descrição do pacote."
 
-#: package-manager.xml.in.nolegal:280(emphasis) 
+#: package-manager.xml.in.nolegal:279(emphasis) 
 msgid "The OR operator"
 msgstr "O operador OR"
 
-#: package-manager.xml.in.nolegal:281(para) 
+#: package-manager.xml.in.nolegal:280(para) 
 msgid "When a search term is separated by the OR operator, the Package Manager searches for packages that contain any of the search terms."
 msgstr "Quando um termo de busca está separado pelo operador OR, o Gerenciador de Pacotes busca pacotes que contenham algum dos termos de busca."
 
-#: package-manager.xml.in.nolegal:286(title) 
+#: package-manager.xml.in.nolegal:285(title) 
 msgid "Cancel Package Search"
 msgstr "Cancelar busca de pacotes"
 
-#: package-manager.xml.in.nolegal:287(para) 
+#: package-manager.xml.in.nolegal:286(para) 
 msgid "If you want to cancel a search, use the Cancel Search icon at the bottom of the main window of the Package Manager. This icon is visible on the status bar only during a search operation."
 msgstr "Se você quer cancelar uma busca, use o ícone Cancelar busca no botão da janela principal do Gerenciador de Pacotes. Este ícone é visível na barra de status somente durante a operação de busca."
 
-#: package-manager.xml.in.nolegal:289(title) 
+#: package-manager.xml.in.nolegal:288(title) 
 msgid "Update a Package"
 msgstr "Atualizar um pacote"
 
-#: package-manager.xml.in.nolegal:290(para) 
+#: package-manager.xml.in.nolegal:289(para) 
 msgid "Look for the Updates icon next to the installed package name. This icon indicates that updates are available for the package in the currently selected publisher. You can also choose one of the following views to display a list of packages that have updates available :"
 msgstr "Procurar por ícones de atualizações próximos ao nome do pacote instalado. Este ícone indica que atualizações estão disponíveis para o pacote no editor atualmente selecionado. Você também pode escolher uma das seguintes exibições para exibir uma lista de pacotes que tenham atualizações disponíveis:"
 
-#: package-manager.xml.in.nolegal:291(para) 
+#: package-manager.xml.in.nolegal:290(para) 
 msgid "Select the <menuchoice><guimenuitem>Updates</guimenuitem></menuchoice> option in the <emphasis role=\"strong\">View</emphasis> drop-down menu to list all packages that have updates available in the currently selected publisher."
 msgstr "Selecione a <menuchoice><guimenuitem>Atualizações</guimenuitem></menuchoice> opção no <emphasis role=\"strong\">Exibir</emphasis> menu drop-down para listar a lista de todos pacotes que tenham atualizações disponíveis no editor atualmente selecionado."
 
-#: package-manager.xml.in.nolegal:293(para) 
+#: package-manager.xml.in.nolegal:292(para) 
 msgid "Select the <menuchoice><guimenuitem>Updates</guimenuitem></menuchoice> option in the <emphasis role=\"strong\">View</emphasis> drop-down menu and the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> in the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu to list all packages that have updates available from all publishers."
 msgstr "Selecione a opção <menuchoice><guimenuitem>Atualizações</guimenuitem></menuchoice> no menu drop-down <emphasis role=\"strong\">Exibir</emphasis> "
        "e <emphasis role=\"strong\">Todos os editores (Instalados)</emphasis> no menu drop-down <emphasis role=\"strong\">Editor</emphasis>"
        "para listar todos os pacotes que tenham atualizações disponíveis de todos editores."
 
-#: package-manager.xml.in.nolegal:296(para) 
+#: package-manager.xml.in.nolegal:295(para) 
 msgid "Updating a package may fail sometimes, due to inherent dependencies of the package you have selected for installation or update. You may need to update all packages on your system to get the latest updates."
 msgstr "Às vezes, podem ocorrer falhas ao atualizar um pacote, devido a dependências inerentes ao pacote que você tenha selecionado para instalação ou atualização. Você pode precisar atualizar todos os pacotes no seu sistema para conseguir as atualizações mais recentes."
 
-#: package-manager.xml.in.nolegal:298(para) 
+#: package-manager.xml.in.nolegal:297(para) 
 msgid "Select the package or packages you want to update and click <guibutton>Install/Update</guibutton> to install the latest version of the package. Use the <emphasis role=\"strong\">Updates</emphasis> icon on the toolbar to update all packages on your system."
 msgstr "Selecione o pacote ou pacotes que você quer atualizar e clique em <guibutton>Instalar/Atualizar</guibutton> para instalar a versão mais recente do pacote. Use o ícone <emphasis role=\"strong\">Atualizações</emphasis> na barra de ferramentas para atualizar todos os pacotes no seu sistema."
 
-#: package-manager.xml.in.nolegal:300(title) 
+#: package-manager.xml.in.nolegal:299(title) 
 msgid "Package Version Information"
 msgstr "Informação da versão do pacote"
 
-#: package-manager.xml.in.nolegal:301(para) 
+#: package-manager.xml.in.nolegal:300(para) 
 msgid "Select a package in the main window of the Package Manager and right-click your mouse to view the package version information. There are three types of package versions :"
 msgstr "Selecione um pacote na janela principal do Gerenciador de Pacotes e clique com o botão direito do mouse para exibir a informação da versão do pacote. Há três tipos de versões de pacotes:"
 
-#: package-manager.xml.in.nolegal:302(para) 
+#: package-manager.xml.in.nolegal:301(para) 
 msgid "<emphasis role=\"strong\">Installable Version</emphasis> – The version of a package that is available for installation or an update. This version may be older than the latest available version of the package due to package dependencies on the system. Hence you may not be able to install the latest available version of the package unless you update your system using the <emphasis role=\"strong\">Updates</emphasis> icon on the toolbar."
 msgstr "<emphasis role=\"strong\">Versão Instalável</emphasis> – A versão de um pacote que está disponível para instalação ou uma atualização. Esta versão pode ser mais antiga do que a versão mais recente disponível do pacote devido a dependências do pacote disponível no sistema. Sendo assim, pode não ser possível instalar a versão mais recente disponível do pacote, a não ser que você atualize seu sistema usando o ícone <emphasis role=\"strong\">Atualizações</emphasis> na barra de ferramentas."
 
-#: package-manager.xml.in.nolegal:304(para) 
+#: package-manager.xml.in.nolegal:303(para) 
 msgid "<emphasis role=\"strong\">Installed Version</emphasis> – The version of the package installed on the system."
 msgstr "<emphasis role=\"strong\">Versão Instalada</emphasis> – A versão do pacote instalado no sistema."
 
-#: package-manager.xml.in.nolegal:306(para) 
+#: package-manager.xml.in.nolegal:305(para) 
 msgid "<emphasis role=\"strong\">Latest Version</emphasis> – This is the latest version of the package available for installation or update. The latest version can be installed if your system is up-to-date."
 msgstr "<emphasis role=\"strong\">Versão mais recente</emphasis> – Esta é a versão mais recente do pacote disponível para instalação ou atualização. A versão mais recente pode estar instalada se seu sistema está atualizado."
 
-#: package-manager.xml.in.nolegal:310(title) 
+#: package-manager.xml.in.nolegal:309(title) 
 msgid "View Installed Packages From All Publishers"
 msgstr "Exibir pacotes instalados de todos os editores"
 
-#: package-manager.xml.in.nolegal:311(para) 
+#: package-manager.xml.in.nolegal:310(para) 
 msgid "Choose the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> from the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu filter to view a list of all packages that you have installed from all publishers."
 msgstr "Escolher <emphasis role=\"strong\">Todos os editores (Instalados)</emphasis> a partir do filtro do menu drop-down <emphasis role=\"strong\">Editor</emphasis> para exibir uma lista de todos os pacotes que você têm instalados a partir de todos os editores."
 
-#: package-manager.xml.in.nolegal:312(para) 
+#: package-manager.xml.in.nolegal:311(para) 
 msgid "You cannot search for a package from the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> option. Switch to <emphasis role=\"strong\">All Publishers (Search)</emphasis> to search for a package."
 msgstr "Você pode buscar um pacote da opção<emphasis role=\"strong\">Todos os editores (Instalados)</emphasis>. Altere para <emphasis role=\"strong\">Todos os editores (Procurar)</emphasis> para buscar um pacote."
 
-#: package-manager.xml.in.nolegal:316(title) 
+#: package-manager.xml.in.nolegal:315(title) 
 msgid "Introduction to Boot Environments"
 msgstr "Introdução aos ambientes de inicialização"
 
-#: package-manager.xml.in.nolegal:317(para) 
+#: package-manager.xml.in.nolegal:316(para) 
 msgid "A boot environment is an image that is bootable. Upon an initial OpenSolaris installation, a boot environment is created."
 msgstr ""
        "Um ambiente de inicialização é uma imagem que pode ser inicializada. Na instalação inicial do "
        "OpenSolaris é criado um ambiente de inicialização."
 
-#: package-manager.xml.in.nolegal:318(para) 
+#: package-manager.xml.in.nolegal:317(para) 
 msgid "You can maintain multiple boot environments on your OpenSolaris 2010.03 system. Use the <command>beadm(1)</command> command from the command-line interface (CLI) to create, rename, mount or unmount, or destroy these boot environments."
 msgstr "Você pode manter múltiplos ambientes de inicialização no seu sistema OpenSolaris 2010.03. Use o comando <command>beadm(1)</command> da interface da linha de comando (CLI) para criar, renomear, ajustar ou desajustar, ou destruir estes ambientes de inicialização."
 
-#: package-manager.xml.in.nolegal:319(para) 
+#: package-manager.xml.in.nolegal:318(para) 
 msgid "The Package Manager enables you to manage the boot environments created during the process of updating your image. For more information, see <xref linkend=\"manage-be\"/> section."
 msgstr "O Gerenciador de Pacotes permite que você gerencie os ambientes de inicialização criados durante o processo de atualização da sua imagem. Para mais informações, veja <xref linkend=\"manage-be\"/> seção."
 
-#: package-manager.xml.in.nolegal:320(para) 
+#: package-manager.xml.in.nolegal:319(para) 
 msgid "Users can maintain multiple boot environments on their systems, and each boot environment can have different software versions installed."
 msgstr "Usuários podem manter múltiplos ambientes de inicialização em seus sistemas, e cada ambiente de inicialização pode ter direntes versões de software instalados."
 
-#: package-manager.xml.in.nolegal:321(para) 
+#: package-manager.xml.in.nolegal:320(para) 
 msgid "When you use either the Package Manager or the <command>pkg image-update</command> command to update all the packages in your active OpenSolaris boot environment, a clone of that boot environment is automatically created. The packages are updated in the clone rather than in the original boot environment. After successfully completing the updates, the new clone is activated. Then, the clone will become the new default boot environment on system reboot. The original boot environment is also available as an alternate selection."
 msgstr ""
        "Ao usar o Gerenciador de pacotes ou o comando <command>pkg image-update</"
@@ -748,205 +737,209 @@ msgstr ""
        "ao inicializar o sistema. O ambiente de inicialização original também está disponível como uma "
        "seleção alternativa."
 
-#: package-manager.xml.in.nolegal:322(para) 
+#: package-manager.xml.in.nolegal:321(para) 
 msgid "See the beadm(1) man pages and the <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"><citetitle>Upgrading and Managing Boot Environments</citetitle></ulink> document to learn more about boot environments and the <command>beadm(1)</command> command."
 msgstr "Veja as páginas man beadm(1) e <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"><citetitle>Atualizando e gerenciando ambientes de inicialização</citetitle></ulink> documento para aprender mais sobre os ambientes de inicialização e o comando <command>beadm(1)</command>."
 
-#: package-manager.xml.in.nolegal:323(title) 
+#: package-manager.xml.in.nolegal:322(title) 
 msgid "Update All Packages (Update Your Image)"
 msgstr "Atualizar todos os pacotes (atualizar a imagem)"
 
-#: package-manager.xml.in.nolegal:324(para) 
+#: package-manager.xml.in.nolegal:323(para) 
 msgid "Perform the following steps to update all the packages in your image."
 msgstr "Realize as etapas seguintes para atualizar todos os pacotes da sua imagem:"
 
-#: package-manager.xml.in.nolegal:325(para) 
+#: package-manager.xml.in.nolegal:324(para) 
 msgid "Click <guibutton>Updates</guibutton> to start the process of updating <emphasis role=\"strong\">all</emphasis> the packages installed in your image."
 msgstr "Clique em <guibutton>Atualizações</guibutton> para inciar o processo de atualização de <emphasis role=\"strong\">todos</emphasis> os pacotes instalados na sua imagem."
 
-#: package-manager.xml.in.nolegal:326(para) 
+#: package-manager.xml.in.nolegal:325(para) 
 msgid "You can also choose <menuchoice><guimenu>Package</guimenu><guisubmenu>Updates</guisubmenu></menuchoice> to start the process."
 msgstr "Você também pode escolher <menuchoice><guimenu>Pacote</guimenu><guisubmenu>Atualizações</guisubmenu></menuchoice> para iniciar o processo."
 
-#: package-manager.xml.in.nolegal:327(para) 
+#: package-manager.xml.in.nolegal:326(para) 
 msgid "If no updates are available to your installed packages, a <emphasis role=\"strong\">No Updates Available</emphasis> message is displayed after you click <guibutton>Updates</guibutton>."
 msgstr "Se não há atualizações disponíveis para seus pacotes instalados, é exibida a mensagem <emphasis role=\"strong\">Atualizações não disponíveis</emphasis> logo após clicar em <guibutton>Atualizações</guibutton>."
 
-#: package-manager.xml.in.nolegal:330(para) 
+#: package-manager.xml.in.nolegal:329(para) 
 msgid "The process of updating all the packages installed on your system is completed in three phases:"
 msgstr "O processo de atualização de todos os pacotes instalados no seu sistema se compõe de três fases:"
 
-#: package-manager.xml.in.nolegal:331(emphasis) 
+#: package-manager.xml.in.nolegal:330(emphasis) 
 msgid "Preparation"
 msgstr "Preparação"
 
-#: package-manager.xml.in.nolegal:333(emphasis) 
+#: package-manager.xml.in.nolegal:332(emphasis) 
 msgid "Download"
 msgstr "Baixar"
 
-#: package-manager.xml.in.nolegal:335(emphasis) 
+#: package-manager.xml.in.nolegal:334(emphasis) 
 msgid "Install"
 msgstr "Instalar"
 
-#: package-manager.xml.in.nolegal:338(para) 
+#: package-manager.xml.in.nolegal:337(para) 
 msgid "Click on the <emphasis>Details</emphasis> tab displayed in each of the phases to view more information."
 msgstr "Clique na guia <emphasis>Detalhes</emphasis> exibida em cada uma das fases para obter mais informações."
 
-#: package-manager.xml.in.nolegal:340(para) 
+#: package-manager.xml.in.nolegal:339(para) 
 msgid "After the update process is completed successfully, an <emphasis role=\"strong\">Update All Complete</emphasis> dialog is displayed. A new boot environment is created which consists of the updated packages. The new boot environment is given a default name by the Package Manager, you can change the given boot environment name."
 msgstr "Após o processo de atualização ser completado com êxito, é exibido o diálogo <emphasis role=\"strong\">Todas as atualizações finalizadas</emphasis>. Um novo ambiente de inicialização é criado, sendo ele composto pelos pacotes atualizados. O novo ambiente de inicialização é apresentado com um nome padrão dado pelo Gerenciador de Pacotes, você pode alterar o nome dado pelo ambiente de inicialização."
 
-#: package-manager.xml.in.nolegal:341(para) 
+#: package-manager.xml.in.nolegal:340(para) 
 msgid "If the Package Manager is unable to create a new boot environment, an error message is displayed. See the <xref linkend=\"gilfh\"/> section on how to rectify the error and continue with updating your image."
 msgstr "Se o Gerenciador de Pacotes não consegue criar um novo ambiente de inicialização, uma mensagem de erro é exibida. Veja a seção <xref linkend=\"gilfh\"/> sobre como corrigir o erro e continuar a atualizar sua imagem."
 
-#: package-manager.xml.in.nolegal:344(para) 
+#: package-manager.xml.in.nolegal:343(para) 
 msgid "Click <guibutton>Restart Now</guibutton> to reboot your system immediately."
 msgstr "Clique em <guibutton>Reiniciar agora</guibutton> para reiniciar seu sistema de imediato."
 
-#: package-manager.xml.in.nolegal:345(para) 
+#: package-manager.xml.in.nolegal:344(para) 
 msgid "Click <guibutton>Restart Later</guibutton> to restart your system at a later time. <emphasis role=\"strong\">You must reboot your system for the changes to take effect.</emphasis>"
 msgstr "Clique em <guibutton>Reiniciar mais tarde</guibutton> para reiniciar seu sistema mais tarde, em um outro momento. <emphasis role=\"strong\">Você deve reiniciar seu sistema para que as alterações tenham efeito.</emphasis>"
 
-#: package-manager.xml.in.nolegal:346(para) 
+#: package-manager.xml.in.nolegal:345(para) 
 msgid "During the Update All process, a clone of the active boot environment is created. You can boot into the clone to return to the boot environment state that existed before the Update All process was started."
 msgstr "Durante o processo de todas as atualizações, um clone do ambiente de inicialização ativo é criado. Você pode inicializar para que o clone retorne para o estado do ambiente de inicialização que existia antes do processo de todas as atualizações ter começado."
 
-#: package-manager.xml.in.nolegal:351(title) package-manager.xml.in.nolegal:656(title) 
+#: package-manager.xml.in.nolegal:350(title) package-manager.xml.in.nolegal:656(title) 
 msgid "Update All Errors"
 msgstr "Erros ao atualizar tudo"
 
-#: package-manager.xml.in.nolegal:352(para) 
+#: package-manager.xml.in.nolegal:351(para) 
 msgid "A new boot environment clone must be created by the Package Manager for the Updates process to be completed. An error message is displayed if a boot environment clone cannot be created. You might see an error message such as the following :"
 msgstr "Um novo clone de ambiente de atualização deve ser criado pelo Gerenciador de Pacotes para que o processo de atualizações possa ser finalizado. Uma mensagem de erro é exibida caso um clone do ambiente de atualização não possa ser criado. Você poderia ver uma mensagem de erro como a seguinte:"
 
-#: package-manager.xml.in.nolegal:353(para) package-manager.xml.in.nolegal:658(para) 
+#: package-manager.xml.in.nolegal:352(para) 
 msgid "<literal>Not enough disk space, the Update All action cannot be performed. Choose Manage BE to manage your boot environments and free up disk space.</literal>."
 msgstr "<literal>Não há espaço suficiente no disco, a ação de atualizar tudo não pode ser realizada. Escolha gerenciar BE para gerenciar seus ambientes de inicialização e disponibilizar espaço no disco.</literal>."
 
-#: package-manager.xml.in.nolegal:354(para) package-manager.xml.in.nolegal:659(para) 
+#: package-manager.xml.in.nolegal:353(para) package-manager.xml.in.nolegal:659(para) 
 msgid "Click <guibutton>Close</guibutton> to cancel the Update All process."
 msgstr "Clique em <guibutton>Fechar</guibutton> para cancelar o processo de atualizar tudo."
 
-#: package-manager.xml.in.nolegal:355(para) package-manager.xml.in.nolegal:660(para) 
+#: package-manager.xml.in.nolegal:354(para) package-manager.xml.in.nolegal:660(para) 
 msgid "Perform the following steps if you want to rectify the error and continue with the Update All process:"
 msgstr "Realize as etapas seguintes se você quiser retificar o erro e continuar com o processo Atualizar todos:"
 
-#: package-manager.xml.in.nolegal:356(para) 
+#: package-manager.xml.in.nolegal:355(para) 
 msgid "Click <guibutton>Manage BE</guibutton> to display the <emphasis role=\"strong\">Manage Boot Environment</emphasis> dialog."
 msgstr "Clique em <guibutton>Gerenciar BE</guibutton> para exibir o diálogo <emphasis role=\"strong\">Gerenciador de ambiente de inicialização</emphasis>."
 
-#: package-manager.xml.in.nolegal:358(para) 
+#: package-manager.xml.in.nolegal:357(para) 
 msgid "Select the boot environments that you want to delete."
 msgstr "Selecione o ambiente de inicialização que deseja excluir."
 
-#: package-manager.xml.in.nolegal:359(para) 
+#: package-manager.xml.in.nolegal:358(para) 
 msgid "You cannot delete the currently active boot environment."
 msgstr "Não é possível excluir o ambiente de inicialização atualmente ativo."
 
-#: package-manager.xml.in.nolegal:361(para) 
+#: package-manager.xml.in.nolegal:360(para) 
 msgid "You do not need to reboot your system if you are only deleting some of your boot environments."
 msgstr ""
        "Não é necessário reinicializar o sistema caso esteja excluindo apenas alguns dos "
        "ambientes de inicialização."
 
-#: package-manager.xml.in.nolegal:366(para) 
+#: package-manager.xml.in.nolegal:365(para) 
 msgid "Click <guibutton>OK</guibutton>."
 msgstr "Clique em <guibutton>OK</guibutton>."
 
-#: package-manager.xml.in.nolegal:368(para) 
+#: package-manager.xml.in.nolegal:367(para) 
 msgid "The <emphasis role=\"strong\">Boot Environment Confirmation</emphasis> dialog is shown. Review your changes and click OK to proceed."
 msgstr "O diálogo <emphasis role=\"strong\">Confirmação do ambiente de inicialização</emphasis> é exibido. Rever suas alterações e clicar em OK para continuar."
 
-#: package-manager.xml.in.nolegal:370(para) 
+#: package-manager.xml.in.nolegal:369(para) 
 msgid "Click <guibutton>Update All</guibutton> to restart the process of updating all packages."
 msgstr "Clique em <guibutton>Atualizar tudo</guibutton> para reiniciar o processo de atualização de todos os pacotes."
 
-#: package-manager.xml.in.nolegal:374(title) 
+#: package-manager.xml.in.nolegal:373(title) 
 msgid "Manage Boot Environments"
 msgstr "Gerenciar ambientes de inicialização"
 
-#: package-manager.xml.in.nolegal:375(para) 
+#: package-manager.xml.in.nolegal:374(para) 
 msgid "Perform the following steps to manage your boot environments:"
 msgstr "Siga as etapas seguintes para gerenciar os ambientes de inicialização:"
 
-#: package-manager.xml.in.nolegal:376(para) 
+#: package-manager.xml.in.nolegal:375(para) 
 msgid "Click <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot Environments</guimenuitem></menuchoice> to open the <emphasis role=\"strong\">Manage Boot Environments</emphasis> dialog."
 msgstr "Clique em <menuchoice><guimenu>Arquivo</guimenu><guimenuitem>Gerenciar ambientes de inicialização</guimenuitem></menuchoice> para abrir o diálogo <emphasis role=\"strong\">Gerenciar ambientes de inicialização</emphasis>."
 
-#: package-manager.xml.in.nolegal:378(para) 
+#: package-manager.xml.in.nolegal:377(para) 
 msgid "In this dialog, you can perform the following actions:"
 msgstr "Neste diálogo é possível realizar as seguintes ações:"
 
-#: package-manager.xml.in.nolegal:379(para) 
+#: package-manager.xml.in.nolegal:378(para) 
 msgid "<emphasis role=\"strong\">Activate a boot environment</emphasis> – Select the boot environment you want to be active on system reboot. This is the default boot environment <emphasis role=\"strong\">after</emphasis> you have rebooted your system."
 msgstr "<emphasis role=\"strong\">Ativar um ambiente de inicialização</emphasis> – Selecione um ambiente de inicialização que você quer que esteja ativo no sistema de reiniciação. Este será o ambiente de inicialização padrão <emphasis role=\"strong\">depois</emphasis> de você reiniciar o sistema."
 
-#: package-manager.xml.in.nolegal:381(para) 
+#: package-manager.xml.in.nolegal:380(para) 
 msgid "<emphasis role=\"strong\">Remove old or unused boot environments to free up disk space</emphasis> – Select the boot environnment or boot environments you want to delete."
 msgstr "<emphasis role=\"strong\">Remover ambientes de inicialização antigos ou não usados para disponibilizar espaço no disco</emphasis> – Selecione um ambiente de inicialização ou ambientes de inicializações que você queira excluir."
 
-#: package-manager.xml.in.nolegal:382(para) 
+#: package-manager.xml.in.nolegal:381(para) 
 msgid "You cannot the delete the currently active boot environment."
 msgstr "Não é possível excluir o ambiente de inicialização atualmente ativo."
 
-#: package-manager.xml.in.nolegal:384(para) 
+#: package-manager.xml.in.nolegal:383(para) 
 msgid "If you have selected a boot environment to be renamed, it cannot be deleted."
 msgstr ""
        "Se você tiver selecionado um ambiente de inicialização para que seja renomeado, este não pode ser excluído."
 
-#: package-manager.xml.in.nolegal:389(para) 
+#: package-manager.xml.in.nolegal:388(para) 
 msgid "<emphasis role=\"strong\">Rename a boot environment</emphasis> – Double-click the boot environment name you want torename. Enter the new name of the boot environment and click <guibutton>OK</guibutton>."
 msgstr "<emphasis role=\"strong\">Renomear um ambiente de inicialização</emphasis> – Dê um clique duplo no nome do ambiente de inicialização que você quer renomear. Insira um novo nome de ambiente de inicialização e clique em <guibutton>OK</guibutton>."
 
-#: package-manager.xml.in.nolegal:390(para) 
+#: package-manager.xml.in.nolegal:389(para) 
 msgid "If you have selected a boot environment to be deleted, it cannot be renamed."
 msgstr ""
        "Se você tiver selecionado um ambiente de inicialização para que seja excluído, este não pode ser renomeado."
 
-#: package-manager.xml.in.nolegal:392(para) 
+#: package-manager.xml.in.nolegal:391(para) 
 msgid "The currently active boot environment cannot be renamed."
 msgstr "Não é possível renomear um ambiente de inicialização atualmente ativo."
 
-#: package-manager.xml.in.nolegal:399(para) 
+#: package-manager.xml.in.nolegal:398(para) 
 msgid "Click <guibutton>OK</guibutton> to proceed or <guibutton>Cancel</guibutton> to cancel all changes."
 msgstr "Clique em <guibutton>OK</guibutton> para continuar ou <guibutton>Cancelar</guibutton> para cancelar todas as alterações."
 
-#: package-manager.xml.in.nolegal:401(para) 
+#: package-manager.xml.in.nolegal:400(para) 
 msgid "The <emphasis role=\"strong\">Boot Environment Confirmation</emphasis> dialog is displayed. Review your changes and click OK to proceed."
 msgstr "O diálogo <emphasis role=\"strong\">Confirmação de ambientes de inicialização</emphasis> é exibido. Reveja suas alterações e clique em OK para continuar."
 
-#: package-manager.xml.in.nolegal:402(para) 
+#: package-manager.xml.in.nolegal:401(para) 
 msgid "After you click <guibutton>OK</guibutton>, you cannot undo any changes that you made to the boot environments."
 msgstr ""
        "Depois de clicar em <guibutton>OK</guibutton>, não é possível desfazer as alterações "
        "feitas nos ambientes de inicialização."
 
-#: package-manager.xml.in.nolegal:404(para) 
+#: package-manager.xml.in.nolegal:403(para) 
 msgid "The changes that you made to the <emphasis role=\"strong\">default boot environment</emphasis> setting are effective only after system reboot."
 msgstr ""
        "As alterações feitas na configuração do <emphasis role=\"strong\">ambiente de "
        "inicialização padrão</emphasis> são aplicadas somente depois que o sistema for reinicializado."
 
-#: package-manager.xml.in.nolegal:406(para) 
+#: package-manager.xml.in.nolegal:405(para) 
 msgid "Click <guibutton>Cancel</guibutton> to cancel the changes."
 msgstr "Clique em <guibutton>Cancelar</guibutton> para cancelar as alterações."
 
-#: package-manager.xml.in.nolegal:408(para) 
+#: package-manager.xml.in.nolegal:407(para) 
 msgid "Reboot your system to boot into the newly activated boot environment."
 msgstr "Reinicialize o sistema para inicializar o ambiente de inicialização recém-ativado."
 
-#: package-manager.xml.in.nolegal:409(para) 
+#: package-manager.xml.in.nolegal:408(para) 
 msgid "Reboot your system only if you changed the active boot environment."
 msgstr "Reinicialize o sistema somente se tiver alterado o ambiente de inicialização ativo."
 
-#: package-manager.xml.in.nolegal:415(title) 
+#: package-manager.xml.in.nolegal:414(title) 
 msgid "Add and Manage Publishers"
 msgstr "Adicionar e gerenciar editores"
 
+#: package-manager.xml.in.nolegal:415(para) 
+msgid "The <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> dialog enables the user to add and manage the configured publishers. A publisher is a person, group, or corporation that designs, creates, and publishes a package to a repository. Every publisher has a package repository where its package data can be found. The locations that contain package data for a publisher's repository are defined through the use of origins and mirrors. Origins are used to provide locations that contain the complete set of package data for a publisher, while mirrors are used to provide locations that only contain package files. Origins and mirrors are defined using URIs (Universal Resource Identifiers), such as <ulink url=\"http://pkg.opensolaris.org/release\"/>."
+msgstr "O <menuchoice><guimenu>diálogo</guimenu><guimenuitem>de editores de gerenciador</guimenuitem></menuchoice> de arquivos permite ao usuário adicionar e gerenciar os editores configurados. Um editor é uma pessoa, grupo, ou corporação que designa, cria, e edita um pacote à um repositório. Todo editor tem um repositório de pacote onde os dados do pacote podem ser encontrados. As locações que contêm os dados dos pacotes para um repositório do editor estão definidos através do usuário de origens e espelhos. Origens são usados para fornecer locações que contenham a configuração completa dos dados de pacote para um editor, enquanto que os espelhos são usados para fornecer locações que somente contenham arquivos de pacote. Origens e espelhos são definido, usando URIs (Universal Resource Identifiers), tais como <ulink url=\"http://pkg.opensolaris.org/release\"/>."
+
 #: package-manager.xml.in.nolegal:416(para) 
-msgid "The <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> dialog enables the user to add and manage the configured publishers. A publisher is a person, group, or corporation that designs, creates, and publishes a package to a repository. A repository is a source for packages. Every publisher has a origin URI (Universal Resource Identifier) associated with it. Read the following sections to learn how to add and manage publishers on your system."
-msgstr "O diálogo <menuchoice><guimenu>Arquivo</guimenu><guimenuitem>Gerenciar editores</guimenuitem></menuchoice> permite que o usuário adicione e gerencie os editores configurados. Um editor é uma pessoa, grupo, ou corporação que designa, cria e edita um pacote para um repositório. Um repositório é uma fonte para os pacotes. Todos os editores têm uma origem IRU (Identificador de Recurso Universal) associada a ele. Leia as seções seguintes para aprender como adicionar e gerenciar editores no seu sistema."
+msgid "Read the following sections to learn how to add and manage publishers on your system."
+msgstr "Leia as seções a seguir para aprender como adicionar e gerenciar editores no sistema."
 
 #: package-manager.xml.in.nolegal:417(title) 
 msgid "Add a Publisher"
@@ -1430,6 +1423,10 @@ msgstr "Você deve reinicializar o sistema para que as alterações tenham efeit
 msgid "A new boot environment clone <emphasis role=\"strong\">must</emphasis> be created for the Update All process to be completed. The following error message is displayed if a boot environment clone cannot be created due to space restrictions :"
 msgstr "Para que o processo Atualizar todos seja concluído,<emphasis role=\"strong\">deve</emphasis> ser criado um clone do novo ambiente de inicialização. A seguinte mensagem de erro é exibida caso um clone do ambiente de inicialização não possa ser criado devido a restrições de espaço:"
 
+#: package-manager.xml.in.nolegal:658(para) 
+msgid "<literal>Not enough disk space, the Update All action cannot be performed. Choose Manage BE to manage your boot environments and free up disk space</literal>."
+msgstr "<literal>Não há espaço suficiente no disco, a ação Atualizar Tudo não pode ser realizada. Escolha Gerenciar BE para gerenciar os ambientes de inicialização e liberar espaço no disco</literal>."
+
 #: package-manager.xml.in.nolegal:661(para) 
 msgid "Click <guibutton>Manage BE</guibutton> in the error dialog to go to the <emphasis role=\"strong\">Manage Boot Environments</emphasis> dialog."
 msgstr "Clique no diálogo de erro <guibutton>Gerenciar BE</guibutton> para ir para o diálogo <emphasis role=\"strong\">Gerenciar ambientes de inicialização</emphasis>."
@@ -1462,8 +1459,8 @@ msgid "publisher"
 msgstr "editor"
 
 #: package-manager.xml.in.nolegal:676(para) 
-msgid "A person, group, or corporation that designs, creates, and publishes a package to a repository. The repository in turn serves the packages from the (default) publisher, for downloading purposes."
-msgstr "Uma pessoa, grupo, ou corporação que designa, cria, e publica um pacote para um repositório. O repositório, por sua vez, serve os pacotes do editor (padrão) para fins de download."
+msgid "A person, group, or corporation that provides packages. Packages for a publisher are found in a repository, from which the package system retrieves package data."
+msgstr "Uma pessoa, grupo, ou corporação que fornece pacotes. Os pacotes para um editor são encontrados em um repositório, do qual o sistema de pacote recupera os dados de pacotes."
 
 #: package-manager.xml.in.nolegal:679(glossterm) 
 msgid "repository"
@@ -1478,12 +1475,8 @@ msgid "boot environment"
 msgstr "ambiente de inicialização"
 
 #: package-manager.xml.in.nolegal:684(para) 
-msgid "For an OpenSolaris release, a boot environment is an instance of a bootable OpenSolaris environment. The root file system and all other file systems of the boot environment that contain system software are required to be ZFS datasets."
-msgstr ""
-       "Em uma versão do OpenSolaris, um ambiente de inicialização é uma instância de um ambiente "
-       "inicializável do OpenSolaris. O sistema de arquivos raiz e todos os outros sistemas de arquivos do "
-       "ambiente de inicialização que contêm o software do sistema são requeridos para serem conjuntos de dados "
-       "do ZFS."
+msgid "For an OpenSolaris 2010.03 release, a boot environment is an instance of a bootable OpenSolaris environment. The root file system and all other file systems of the boot environment that contain system software are required to be ZFS datasets."
+msgstr "No OpenSolaris 2010.03 release, um ambiente de inicialização é um instância de um ambiente OpenSolaris inicializável. O sistema de arquivo root e todos os sistemas de arquivos do ambiente de inicialização, que contenha o software de sistema, são requisitados para serem ZFS datasets."
 
 #: package-manager.xml.in.nolegal:685(para) 
 msgid "The active boot environment is the one that is currently booted. Many boot environments can present on an OpenSolaris system and an inactive boot environment can be in a state of waiting for activation upon system reboot."
@@ -1548,8 +1541,8 @@ msgid "origin"
 msgstr "origem"
 
 #: package-manager.xml.in.nolegal:707(para) 
-msgid "Location of a package repository specified by a URI."
-msgstr "Locação de um repositório de pacotes especificado por um IRU."
+msgid "Location of a package repository specified by a URI, that contains a complete set of package data."
+msgstr "Locação de um repositório de pacote especificado por uma URI, que contêm uma configuração completa dos dados do pacote."
 
 #: package-manager.xml.in.nolegal:710(glossterm) 
 msgid "alias"
@@ -1558,6 +1551,14 @@ msgstr "alias"
 #: package-manager.xml.in.nolegal:711(para) 
 msgid "An alternate name for a publisher."
 msgstr "Um nome alternativo para um editor."
+
+#: package-manager.xml.in.nolegal:714(glossterm) 
+msgid "mirror"
+msgstr "espelho"
+
+#: package-manager.xml.in.nolegal:715(para) 
+msgid "Location of a package repository, specified by a URI, that contains only package files."
+msgstr "Locação de um repositório de pacote, especificado por uma URI, que contêm somente arquivos de pacote."
 
 #. Put one translator per line, in the form of NAME <EMAIL>, YEAR1, YEAR2.
 #: package-manager.xml.in.nolegal:0(None) 

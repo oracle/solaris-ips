@@ -164,7 +164,7 @@ msgstr "-f può essere usata solo in combinazione con -a"
 #: ../client.py:281
 #, python-format
 msgid "%(opts)s may not be used with %(opt)s"
-msgstr "%(opts)s non possono essere usate con %(opt)s"
+msgstr "%(opts)s non può essere usato con %(opt)s"
 
 #: ../client.py:285
 msgid "-s and -v may not be combined"
@@ -184,7 +184,7 @@ msgstr "non è installato alcun pacchetto"
 
 #: ../client.py:411
 msgid "No specified packages have newer versions available."
-msgstr "Non sono disponibili nuove versioni per i pacchetti specificati ."
+msgstr "Non sono disponibili nuove versioni per i pacchetti specificati."
 
 #: ../client.py:414
 msgid "No installed packages have newer versions available."
@@ -217,7 +217,7 @@ msgid ""
 "packages listed above, use the --accept option.  To display all of the "
 "related licenses, use the --licenses option."
 msgstr ""
-       "Per indicare l'accettazione dei termini delle licenze dei pacchetti elencati sopra, utilizzare l'opzione --accept.  Per visualizzare tutte le licenze correlate, utilizzare l'opzione --licenses."
+       "Per indicare l'accettazione dei termini delle licenze dei pacchetti elencati sopra, utilizzare l'opzione --accept. Per visualizzare tutte le licenze correlate, utilizzare l'opzione --licenses."
 
 #: ../client.py:517
 msgid ""
@@ -1348,21 +1348,21 @@ msgid ""
 "if updates are available) or it should go straight to the update all "
 "operation."
 msgstr ""
-       "Un'azione booleana che determina se Package Manager deve mostrare una finestra di conferma quando vengono rilevati aggiornamenti dopo aver eseguito un'operazione di aggiornamento (verifica disponibilità aggiornamenti) oppure se deve passare direttamente all'operazione di aggiornamento di tutti i componenti."
+       "Operatore booleano che determina se Package Manager deve mostrare una finestra di conferma quando vengono rilevati aggiornamenti dopo aver eseguito un'operazione di aggiornamento (verifica disponibilità aggiornamenti) oppure se deve passare direttamente all'operazione di aggiornamento di tutti i componenti."
 
 #: ../gui/data/packagemanager-preferences.schemas.in.h:5
 msgid ""
 "A boolean which determines whether Package Manager should show confirmation "
 "dialog when the user selected some packages for installation or update."
 msgstr ""
-       "Un'azione booleana che determina se Package Manager deve mostrare una finestra di conferma quando l'utente seleziona alcuni pacchetti da installare o aggiornare."
+       "Operatore booleano che determina se Package Manager deve mostrare una finestra di conferma quando l'utente seleziona alcuni pacchetti da installare o aggiornare."
 
 #: ../gui/data/packagemanager-preferences.schemas.in.h:6
 msgid ""
 "A boolean which determines whether Package Manager should show confirmation "
 "dialog when the user selected some packages for removal."
 msgstr ""
-       "Un'azione booleana che determina se Package Manager deve mostrare una finestra di conferma quando l'utente seleziona alcuni pacchetti da rimuovere."
+       "Operatore booleano che determina se Package Manager deve mostrare una finestra di conferma quando l'utente seleziona alcuni pacchetti da rimuovere."
 
 #: ../gui/data/packagemanager-preferences.schemas.in.h:7
 msgid ""
@@ -1555,7 +1555,7 @@ msgstr "<b>Versione installabile:</b>"
 
 #: ../gui/data/packagemanager.glade.h:7
 msgid "<b>Installed:</b>"
-msgstr "<b>Installata:</b>"
+msgstr "<b>Installato:</b>"
 
 #: ../gui/data/packagemanager.glade.h:8
 msgid "<b>Name:</b>"
@@ -1595,7 +1595,7 @@ msgstr "<b>Aggiorna tutti i componenti completati correttamente</b>"
 
 #: ../gui/data/packagemanager.glade.h:17
 msgid "<b>View Package Manager Logs</b>"
-msgstr "<b>Visualizza registri Package Manager</b>"
+msgstr "<b>Visualizza registri di Package Manager</b>"
 
 #: ../gui/data/packagemanager.glade.h:18
 msgid "<b>_Mirrors</b>"
@@ -1710,7 +1710,7 @@ msgid ""
 "All rights reserved.\n"
 "Use is subject to license terms."
 msgstr ""
-       "Copyright 2010 Sun Microsystems, Inc.  \n"
+       "Copyright 2010 Sun Microsystems, Inc. \n"
        "Tutti i diritti riservati.\n"
        "L'uso è soggetto alle condizioni indicate nella licenza."
 
@@ -1959,7 +1959,7 @@ msgstr "Mostra pagina iniziale all'_avvio"
 
 #: ../gui/data/packagemanager.glade.h:109
 msgid "Show _all publisher results"
-msgstr "Mostra  tutti i risult_ati publisher"
+msgstr "Mostra tutti i risult_ati publisher"
 
 #: ../gui/data/packagemanager.glade.h:110
 msgid "Specify the publisher name and URI"
@@ -2035,7 +2035,7 @@ msgstr "_Dettagli"
 
 #: ../gui/data/packagemanager.glade.h:128
 msgid "_Do not show this confirmation dialog again"
-msgstr "Non mostrare più questa finestra _di conferma"
+msgstr "_Non mostrare più questa finestra di conferma"
 
 #: ../gui/data/packagemanager.glade.h:129
 msgid "_Down"
@@ -2059,7 +2059,7 @@ msgstr "A_iuto"
 
 #: ../gui/data/packagemanager.glade.h:134
 msgid "_Install Details"
-msgstr "Dettagli _installazione"
+msgstr "_Dettagli installazione"
 
 #: ../gui/data/packagemanager.glade.h:135
 msgid "_Install/Update"
@@ -2087,7 +2087,7 @@ msgstr "_Pacchetto"
 
 #: ../gui/data/packagemanager.glade.h:141
 msgid "_Package Version Info"
-msgstr "Informazioni sulla versione del _pacchetto"
+msgstr "_Informazioni sulla versione del pacchetto"
 
 #: ../gui/data/packagemanager.glade.h:142
 msgid "_Recent Searches"
@@ -2115,7 +2115,7 @@ msgstr "_URI:"
 
 #: ../gui/data/packagemanager.glade.h:148
 msgid "_Up"
-msgstr "S_u"
+msgstr "_Su"
 
 #: ../gui/data/packagemanager.glade.h:149
 msgid "_Update Details"
@@ -2689,11 +2689,11 @@ msgstr "%(version)s (Build %(build)s-%(branch)s)"
 
 #: ../gui/modules/misc.py:315
 msgid " (disabled)"
-msgstr " (disabled)"
+msgstr " (disabilitato)"
 
 #: ../gui/modules/misc.py:317
 msgid " (removed)"
-msgstr " (removed)"
+msgstr " (rimosso)"
 
 #: ../gui/modules/misc.py:438
 msgid "Catalog refresh error:\n"
@@ -2774,7 +2774,7 @@ msgstr "Nome già in uso"
 
 #: ../gui/modules/repository.py:592 ../gui/modules/repository.py:1690
 msgid "SSL Key not found at specified location"
-msgstr "Chiave SSL non trovata nella posizione specificata"
+msgstr "Chiave SSL non trovata nel percorso specificato"
 
 #: ../gui/modules/repository.py:801
 msgid "Adding Publisher"
@@ -2961,7 +2961,7 @@ msgid ""
 "The following name will be used instead:\n"
 "\t%s"
 msgstr ""
-       "Impossibile modificare il nome dell'ambiente di avvio in:\n"
+       "Impossibile sostituire il nome dell'ambiente di avvio con:\n"
        "\t%s\n"
        "\n"
        "Verrà utilizzato il nome seguente:\n"
@@ -3285,7 +3285,7 @@ msgid ""
 "The following patterns only matched packages that are from publishers other "
 "than that which supplied the already installed version of this package"
 msgstr ""
-       "I seguenti motivi hanno trovato corrispondenza solo in pacchetti di publisher diversi da quello che ha fornito la versione installato del pacchetto"
+       "I seguenti motivi hanno trovato corrispondenza solo in pacchetti di publisher diversi da quello che ha fornito la versione installata del pacchetto"
 
 #: ../modules/client/api_errors.py:285
 #, python-format
@@ -5381,7 +5381,7 @@ msgstr ""
 
 #: ../pkgdep.py:115
 msgid "-D arguments must be of the form 'name=value'."
-msgstr "gli argomenti -D devono avere il formato nome=valore'."
+msgstr "Gli argomenti -D devono avere il formato 'nome=valore'."
 
 #: ../pkgdep.py:134
 msgid "Generate only accepts exactly two arguments."
@@ -5467,7 +5467,7 @@ msgid ""
 "is %(api)s"
 msgstr ""
        "Il comando %(cmd)s potrebbe non essere sincronizzato con le librerie fornite \n"
-       "da SUNWipkg. La versione del client è %(client)s mentre la versione delle API della libreria "
+       "da SUNWipkg. La versione  client è %(client)s mentre la versione delle API della libreria "
        "è %(api)s"
 
 #: ../publish.py:80

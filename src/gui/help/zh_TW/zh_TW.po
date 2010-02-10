@@ -24,14 +24,14 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2010-01-14 11:47+0900\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+       "Project-Id-Version: PACKAGE VERSION\n"
+       "POT-Creation-Date: 2010-01-14 11:47+0900\n"
+       "PO-Revision-Date: 2010-01-28 13:19+0800\n"
+       "Last-Translator: desktop-discuss@opensolaris.org\n"
+       "Language-Team: desktop-discuss@opensolaris.org\n"
+       "MIME-Version: 1.0\n"
+       "Content-Type: text/plain; charset=UTF-8\n"
+       "Content-Transfer-Encoding: 8bit\n"
 
 #. When image changes, this message will be marked fuzzy or untranslated for you.
 #. It doesn't matter what you translate it to: it's not used at all.
@@ -59,7 +59,7 @@ msgstr "@@image: 'figures/update_all_new.png'; md5=3d505052632edfdb38212de7f7ffb
 
 #: package-manager.xml.in.nolegal:3(title) 
 msgid "OpenSolaris 2010.03 Package Manager Online Help"
-msgstr "OpenSolaris 2010.03套裝軟體管理員線上幫助"
+msgstr "OpenSolaris 2010.03 套裝軟體管理員線上說明"
 
 #: package-manager.xml.in.nolegal:4(firstname) 
 msgid "OpenSolaris"
@@ -91,7 +91,7 @@ msgstr "關於套裝軟體管理員"
 
 #: package-manager.xml.in.nolegal:34(para) 
 msgid "Welcome to the <trademark>OpenSolaris</trademark> 2010.03 Package Manager online help!"
-msgstr "歡迎使用<trademark>OpenSolaris</trademark> 2010.03套裝軟體管理員線上幫助"
+msgstr "歡迎使用<trademark>OpenSolaris</trademark> 2010.03 套裝軟體管理員線上說明"
 
 #: package-manager.xml.in.nolegal:35(para) 
 msgid "Use the help contents to learn how to use the Package Manager. Navigate through this help by clicking the topics displayed in the sidebar."
@@ -99,7 +99,7 @@ msgstr "使用該說明內容可以學習如何使用套裝軟體管理員。按
 
 #: package-manager.xml.in.nolegal:36(para) 
 msgid "The OpenSolaris 2010.03 Package Manager application is a graphical user interface for the Image Packaging System (IPS) software. The Package Manager provides a subset of the functionality offered by the command-line (CLI) clients provided with IPS."
-msgstr "OpenSolaris 2010.03 套裝軟體管理員應用程式是影像封裝系統 (IPS) 軟體的圖形化使用者界面。套裝軟體管理員會提供 IPS 隨附指令行 (CLI) 用戶端所支援的功能子集。"
+msgstr "OpenSolaris 2010.03 套裝軟體管理員應用程式是影像封裝系統 (IPS) 軟體的圖形化使用者介面。套裝軟體管理員會提供 IPS 隨附指令行 (CLI) 用戶端所支援的功能子集。"
 
 #: package-manager.xml.in.nolegal:37(title) 
 msgid "Package Manager"
@@ -127,8 +127,7 @@ msgstr "建立、移除及管理啟動環境"
 
 #: package-manager.xml.in.nolegal:51(para) 
 msgid "See the <xref linkend=\"glossary\"/> for a definition of the terms used in this document."
-msgstr ""
-       "如需本文件所用字詞的定義，"
+msgstr "如需本文件所用字詞的定義，"
        "請參閱<xref linkend=\"glossary\"/>。"
 
 #: package-manager.xml.in.nolegal:53(title) 
@@ -141,16 +140,15 @@ msgstr "影像封裝系統 (IPS) 是提供進行安裝、升級及移除等軟�
 
 #: package-manager.xml.in.nolegal:55(para) 
 msgid "After an initial installation of the OpenSolaris 2010.03 operating system, you will find that some of the software applications that you use on a regular basis are not immediately available to you. These software applications are available as packages in a repository for downloading and installing over the network. A repository is a source for packages."
-msgstr "初始安裝 OpenSolaris 2010.03 作業系統之後，您會發現定期使用的部分軟體應用程式無法立即使用。這些軟體應用程式會在儲存庫中以套裝軟體的形式提供，讓您透過網路來下載及安裝。儲存庫是取用套裝軟體的來源。"
+msgstr "初始安裝 OpenSolaris 2010.03 作業系統之後，您會發現定期使用的部分軟體應用程式無法立即使用。這些軟體應用程式會在儲存庫中以套裝軟體的形式提供，讓您透過網路來下載及安裝。儲存庫是套裝軟體的來源。"
 
 #: package-manager.xml.in.nolegal:56(para) 
 msgid "IPS provides a set of software tools that can be used to install packages from a repository, create and publish their own IPS packages, mirror an existing repository, and publish existing packages to a repository."
-msgstr "IPS 會提供軟體工具集，可用來從儲存庫中安裝套裝軟體、建立並發佈本身的 IPD 套裝軟體、鏡射現有儲存庫、以及將現有套裝軟體發佈至儲存庫。"
+msgstr "IPS 會提供軟體工具集，可用來從儲存庫中安裝套裝軟體、建立並發佈本身的 IPD 套裝軟體、鏡像現有儲存庫、以及將現有套裝軟體發佈至儲存庫。"
 
 #: package-manager.xml.in.nolegal:57(para) 
 msgid "Once you have installed packages, IPS enables you to search, update, and manage packages on your system."
-msgstr ""
-       "您安裝了套裝軟體之後，即可使用 IPS 搜尋、更新以及"
+msgstr "您安裝了套裝軟體之後，即可使用 IPS 搜尋、更新以及"
        "管理您系統上的套裝軟體。"
 
 #: package-manager.xml.in.nolegal:58(para) 
@@ -191,11 +189,11 @@ msgstr "套裝軟體管理員起始頁面"
 
 #: package-manager.xml.in.nolegal:71(para) 
 msgid "The Start Page provides a list of featured packages that can be installed. It includes a list of some of the most popular and recent packages downloaded by the OpenSolaris community of users. The Recommended list of packages point to software applications that are frequently downloaded by the OpenSolaris user. Click the package links to install the packages."
-msgstr "「起始頁面」會提供可安裝的主要套裝軟體清單。其中包括 OpenSolaris 使用群所下載最熱門且最新的一些套裝軟體之清單。建議安裝的套裝軟體清單則會顯示出 OpenSolaris 使用者最常下載的軟體應用程式。按一下套裝軟體連結可以安裝套裝軟體。"
+msgstr "「起始頁面」會提供可安裝的主要套裝軟體清單。其中包括 OpenSolaris 使用群所下載最熱門且最新的一些套裝軟體之清單。建議安裝的套裝軟體清單則會指向 OpenSolaris 使用者最常下載的軟體應用程式。按一下套裝軟體連結可以安裝套裝軟體。"
 
 #: package-manager.xml.in.nolegal:72(para) 
 msgid "The Start Page also provides links to more information about the OpenSolaris project, subscribe to newsletters and join the OpenSolaris community."
-msgstr "此外「起始頁面」還提供到更多 OpenSolaris 相關資訊的連結、訂閱新聞稿，以及加入 OpenSolaris 社群。"
+msgstr "此外「起始頁面」還提供更多 OpenSolaris 相關資訊的連結、訂閱新聞稿，以及加入 OpenSolaris 社群。"
 
 #: package-manager.xml.in.nolegal:73(para) 
 msgid "To close the Start Page and see the list of packages in the selected publisher, perform any of the following actions in the main window of the Package Manager:"
@@ -219,8 +217,7 @@ msgstr "變更發佈者"
 
 #: package-manager.xml.in.nolegal:83(para) 
 msgid "Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</guimenuitem></menuchoice> to return to the Start Page at anytime."
-msgstr ""
-       "任何時候選取 <menuchoice>[<guimenu>檢視</guimenu>] [<guimenuitem>起始頁面</"
+msgstr "任何時候選取 <menuchoice>[<guimenu>檢視</guimenu>] [<guimenuitem>起始頁面</"
        "guimenuitem>]</menuchoice> 都可以返回「起始頁面」。"
 
 #: package-manager.xml.in.nolegal:84(para) 
@@ -233,7 +230,7 @@ msgstr "關於套裝軟體管理員視窗"
 
 #: package-manager.xml.in.nolegal:87(title) 
 msgid "Package Manager Main View"
-msgstr "套裝軟體管理原主檢視"
+msgstr "套裝軟體管理員主檢視"
 
 #: package-manager.xml.in.nolegal:91(para) 
 msgid "The main window of the Package Manager consists of the following elements :"
@@ -354,8 +351,7 @@ msgstr "<emphasis role=\"strong\">所有套裝軟體</emphasis> – 顯示目前
 
 #: package-manager.xml.in.nolegal:150(para) 
 msgid "<emphasis role=\"strong\">Installed Packages</emphasis> – Shows the list of packages installed within the current publisher on your system."
-msgstr "<emphasis role=\"strong\">已安裝的套裝軟體</emphasis> – 顯示系統上"
-       "目前發佈者中已安裝的套裝軟體之清單。"
+msgstr "<emphasis role=\"strong\">已安裝的套裝軟體</emphasis> – 顯示系統上目前發佈者中已安裝的套裝軟體之清單。"
 
 #: package-manager.xml.in.nolegal:152(para) 
 msgid "<emphasis role=\"strong\">Updates</emphasis> — Shows the list of packages that have newer versions available within the current publisher."
@@ -367,8 +363,7 @@ msgstr "<emphasis role=\"strong\">未安裝的套裝軟體</emphasis> – 顯示
 
 #: package-manager.xml.in.nolegal:156(para) 
 msgid "<emphasis role=\"strong\">Selected Packages</emphasis> – Shows the list of packages that you have selected."
-msgstr ""
-       "<emphasis role=\"strong\">選取的套裝軟體</emphasis> – 顯示已選取的"
+msgstr "<emphasis role=\"strong\">選取的套裝軟體</emphasis> – 顯示已選取的"
        "套裝軟體清單。"
 
 #: package-manager.xml.in.nolegal:161(emphasis) 
@@ -389,11 +384,11 @@ msgstr "當 [<emphasis role=\"strong\">發佈者</emphasis>] 下拉式功能表�
 
 #: package-manager.xml.in.nolegal:166(para) 
 msgid "When search results are displayed for the All Publishers (Search) option"
-msgstr "當「所有發佈者 (搜尋)」選項的搜尋結果顯示時"
+msgstr "當顯示「所有發佈者 (搜尋)」選項的搜尋結果時"
 
 #: package-manager.xml.in.nolegal:168(para) 
 msgid "When a recent search result is displayed"
-msgstr "當最近的搜尋結果顯示時"
+msgstr "當顯示最近的搜尋結果時"
 
 #: package-manager.xml.in.nolegal:173(emphasis) 
 msgid "Package Details"
@@ -401,9 +396,7 @@ msgstr "套裝軟體詳細資訊"
 
 #: package-manager.xml.in.nolegal:174(para) 
 msgid "Click a package name to select it. Details of the selected package, such as name, version, file dependencies, and license are displayed in this window."
-msgstr ""
-       "按一下套裝軟體名稱可加以選取。此視窗中會顯示所選套裝軟體的詳細資訊，例如"
-       "名稱、版本、檔案相依性及授權。"
+msgstr "按一下套裝軟體名稱可加以選取。此視窗中會顯示所選套裝軟體的詳細資訊，例如名稱、版本、檔案相依性及授權。"
 
 #: package-manager.xml.in.nolegal:180(title) 
 msgid "Package Manager Settings"
@@ -419,8 +412,7 @@ msgstr "起始頁面喜好設定"
 
 #: package-manager.xml.in.nolegal:183(para) 
 msgid "A Start Page is displayed in the main window of the Package Manager when the application is started. The Start Page provides links to <ulink url=\"http://opensolaris.com\">opensolaris.com</ulink> page where you can get more information about OpenSolaris, subscribe to newsletters and join the OpenSolaris community."
-msgstr ""
-       "當應用程式啟動時，會在套裝軟體管理員主視窗中顯示"
+msgstr "當應用程式啟動時，會在套裝軟體管理員主視窗中顯示"
        "「起始頁面」。「起始頁面」提供了到 <ulink url=\"http://"
        "opensolaris.com\">opensolaris.com</ulink> 頁面的連結，您可在該頁面獲得關於 "
        "OpenSolaris 的詳細資訊、訂閱新聞稿，以及加入 "
@@ -428,8 +420,7 @@ msgstr ""
 
 #: package-manager.xml.in.nolegal:184(para) 
 msgid "You can choose to turn off this setting so this page is not displayed when Package Manager starts."
-msgstr ""
-       "您可以選擇關閉此設定，讓您在啟動套裝軟體管理員時，不會顯示"
+msgstr "您可以選擇關閉此設定，讓您在啟動套裝軟體管理員時，不會顯示"
        "此頁面。"
 
 #: package-manager.xml.in.nolegal:185(para) 
@@ -446,7 +437,7 @@ msgstr "結束喜好設定"
 
 #: package-manager.xml.in.nolegal:189(para) 
 msgid "The Package Manager application can remember some of its current settings if the <emphasis role=\"strong\">Remember current state on exit</emphasis> option in the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> is checked."
-msgstr "如果有核取 <menuchoice>[<guimenu>編輯</guimenu>] [<guimenuitem>喜好設定</guimenuitem>]</menuchoice> 中的<emphasis role=\"strong\">結束時記住目前狀態</emphasis>選項，套裝軟體管理員應用程式就會記住部分的目前設定。"
+msgstr "如果有核取 <menuchoice>[<guimenu>編輯</guimenu>] [<guimenuitem>喜好設定</guimenuitem>]</menuchoice> 中的<emphasis role=\"strong\">結束時記住目前狀態</emphasis>選項，套裝軟體管理員應用程式就會記住部分目前設定。"
 
 #: package-manager.xml.in.nolegal:190(para) 
 msgid "The following settings are saved:"
@@ -454,7 +445,7 @@ msgstr "會儲存下列設定值："
 
 #: package-manager.xml.in.nolegal:191(para) 
 msgid "<emphasis role=\"strong\">Vertical separators</emphasis> – The size of the columns in the main window the Package Manager"
-msgstr "<emphasis role=\"strong\">垂直分隔符</emphasis> – 套裝軟體管理員主視窗的欄大小"
+msgstr "<emphasis role=\"strong\">垂直分隔符</emphasis> – 套裝軟體管理員的主視窗欄大小"
 
 #: package-manager.xml.in.nolegal:193(para) 
 msgid "<emphasis role=\"strong\">Window size</emphasis> – The size of the Package Manager window"
@@ -470,7 +461,7 @@ msgstr "確認對話方塊喜好設定"
 
 #: package-manager.xml.in.nolegal:200(para) 
 msgid "When a package is selected for installation, update, or removal, a confirmation dialog is displayed that displays the list of packages and the action to be performed. Under the <emphasis role=\"strong\">Show Confirmation Dialog</emphasis> uncheck <emphasis role=\"strong\">On Updates</emphasis>, <emphasis role=\"strong\">On Package Install/Update</emphasis>, and <emphasis role=\"strong\">On Package Remove</emphasis> to turn these settings off."
-msgstr "選取安裝、更新或移除套裝軟體後會顯示一個對話方塊，其中會列出套裝軟體以及要執行的動作。取消核取位於 [<emphasis role=\"strong\">顯示確認對話方塊</emphasis>] 下的 [<emphasis role=\"strong\">更新時</emphasis>]、[<emphasis role=\"strong\">套裝軟體安裝/更新時</emphasis>] 以及 [<emphasis role=\"strong\">套裝軟體移除時</emphasis>] 可以關閉這些設定值。"
+msgstr "選取安裝、更新或移除套裝軟體後會顯示一個對話方塊，其中會列出套裝軟體以及要執行的動作。取消核取位於 [<emphasis role=\"strong\">顯示確認對話方塊</emphasis>] 下的 [<emphasis role=\"strong\">更新時</emphasis>]、[<emphasis role=\"strong\">套裝軟體安裝/更新時</emphasis>] 以及 [<emphasis role=\"strong\">套裝軟體移除時</emphasis>] 可以關閉這些設定。"
 
 #: package-manager.xml.in.nolegal:203(title) 
 msgid "Working With Packages"
@@ -494,10 +485,7 @@ msgstr "按一下 [<guibutton>安裝/更新</guibutton>] 可以啟動套裝軟�
 
 #: package-manager.xml.in.nolegal:209(para) 
 msgid "You can also choose <menuchoice><guimenu>Package</guimenu><guimenuitem>Install/Update</guimenuitem></menuchoice> to start the package installation process."
-msgstr ""
-       "您也可以選擇 <menuchoice>[<guimenu>套裝軟體</"
-       "guimenu>] [<guimenuitem>安裝/更新</guimenuitem>]</menuchoice>，"
-       "啟動套裝軟體安裝程序。"
+msgstr "您也可以選擇 <menuchoice>[<guimenu>套裝軟體</guimenu>] [<guimenuitem>安裝/更新</guimenuitem>]</menuchoice>，啟動套裝軟體安裝程序。"
 
 #: package-manager.xml.in.nolegal:211(para) 
 msgid "Click <guilabel>Details</guilabel> to view the installation details or <guibutton>Cancel</guibutton> to cancel the package installation."
@@ -533,14 +521,11 @@ msgstr "按一下 [<guibutton>移除</guibutton>] 可以啟動套裝軟體解除
 
 #: package-manager.xml.in.nolegal:225(para) 
 msgid "You can also choose <menuchoice><guimenu>Package</guimenu><guimenuitem>Remove</guimenuitem></menuchoice> to remove a package."
-msgstr ""
-       "您也可以選擇 <menuchoice>[<guimenu>套裝軟體</"
-       "guimenu>] [<guimenuitem>移除</guimenuitem>]</menuchoice>，移除套裝軟體。"
+msgstr "您也可以選擇 <menuchoice>[<guimenu>套裝軟體</guimenu>] [<guimenuitem>移除</guimenuitem>]</menuchoice>，移除套裝軟體。"
 
 #: package-manager.xml.in.nolegal:227(para) 
 msgid "Review the packages to be removed and the package dependencies details in the <emphasis role=\"strong\">Remove Confirmation</emphasis> dialog."
-msgstr "在 [<emphasis role=\"strong\">移除確認</emphasis>] 對話方塊中，"
-       "檢閱要移除的套裝軟體及套裝軟體相依性詳細資訊。"
+msgstr "在 [<emphasis role=\"strong\">移除確認</emphasis>] 對話方塊中，檢閱要移除的套裝軟體及套裝軟體相依性詳細資訊。"
 
 #: package-manager.xml.in.nolegal:229(para) 
 msgid "Click <guibutton>Proceed</guibutton> to start removing the packages or <guibutton>Cancel</guibutton> to cancel the process."
@@ -576,8 +561,7 @@ msgstr "GNOME-games"
 
 #: package-manager.xml.in.nolegal:244(para) 
 msgid "To search for SunStudio compilers, you might type one of the following terms:"
-msgstr ""
-       "若要搜尋 SunStudio 編譯器，您可以輸入下列任一字詞："
+msgstr "若要搜尋 SunStudio 編譯器，您可以輸入下列任一字詞："
 
 #: package-manager.xml.in.nolegal:245(para) 
 msgid "compiler"
@@ -637,11 +621,11 @@ msgstr "萬用字元 *"
 
 #: package-manager.xml.in.nolegal:274(para) 
 msgid "Including a wildcard in your search term enables you to search for partial package names. For example, when you enter <emphasis>boo*</emphasis> in your search term, the packages displayed could include <emphasis>boot</emphasis> and <emphasis>book</emphasis> in the package name and description."
-msgstr "在搜尋字詞中加入萬用字元可讓您搜尋部分套裝軟體名稱。例如，若您在搜尋字詞中輸入 <emphasis>boo*</emphasis>，顯示的可能是套裝軟體名稱和說明中含有 <emphasis>boot</emphasis> 和 <emphasis>book</emphasis> 的套裝軟體。"
+msgstr "在搜尋字詞中加入萬用字元可讓您搜尋部分的套裝軟體名稱。例如，若您在搜尋字詞中輸入 <emphasis>boo*</emphasis>，顯示的可能是套裝軟體名稱和說明中含有 <emphasis>boot</emphasis> 和 <emphasis>book</emphasis> 的套裝軟體。"
 
 #: package-manager.xml.in.nolegal:275(para) 
 msgid "Wildcard searching can be slower than an exact match search or a search based on package description."
-msgstr "萬用字元搜尋可能會比完全相符搜尋或針對套裝軟體說明搜尋來得慢。"
+msgstr "萬用字元搜尋可能會比完全相符搜尋或基於套裝軟體說明搜尋來得慢。"
 
 #: package-manager.xml.in.nolegal:279(emphasis) 
 msgid "The OR operator"
@@ -665,11 +649,11 @@ msgstr "更新套裝軟體"
 
 #: package-manager.xml.in.nolegal:289(para) 
 msgid "Look for the Updates icon next to the installed package name. This icon indicates that updates are available for the package in the currently selected publisher. You can also choose one of the following views to display a list of packages that have updates available :"
-msgstr "查看已安裝套裝軟體名稱旁的 「更新」圖示。此圖示會指出目前所選發佈者中的可用更新。您也可以選擇下列其中一項檢視來顯示有可用更新的套裝軟體清單："
+msgstr "查看已安裝套裝軟體名稱旁的「更新」圖示。此圖示會指出目前所選發佈者中的可用更新。您也可以選擇下列其中一項檢視來顯示有可用更新的套裝軟體清單："
 
 #: package-manager.xml.in.nolegal:290(para) 
 msgid "Select the <menuchoice><guimenuitem>Updates</guimenuitem></menuchoice> option in the <emphasis role=\"strong\">View</emphasis> drop-down menu to list all packages that have updates available in the currently selected publisher."
-msgstr "選取<emphasis role=\"strong\">檢視</emphasis>下拉式功能表中的  <menuchoice>[<guimenuitem>更新</guimenuitem>]</menuchoice> 選項，列出目前所選發佈者中有可用更新的所有套裝軟體。"
+msgstr "選取 [<emphasis role=\"strong\">檢視</emphasis>] 下拉式功能表中的 <menuchoice>[<guimenuitem>更新</guimenuitem>]</menuchoice> 選項，列出目前所選發佈者中有可用更新的所有套裝軟體。"
 
 #: package-manager.xml.in.nolegal:292(para) 
 msgid "Select the <menuchoice><guimenuitem>Updates</guimenuitem></menuchoice> option in the <emphasis role=\"strong\">View</emphasis> drop-down menu and the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> in the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu to list all packages that have updates available from all publishers."
@@ -693,7 +677,7 @@ msgstr "在套裝軟體管理員主視窗中選取套裝軟體，然後按滑鼠
 
 #: package-manager.xml.in.nolegal:301(para) 
 msgid "<emphasis role=\"strong\">Installable Version</emphasis> – The version of a package that is available for installation or an update. This version may be older than the latest available version of the package due to package dependencies on the system. Hence you may not be able to install the latest available version of the package unless you update your system using the <emphasis role=\"strong\">Updates</emphasis> icon on the toolbar."
-msgstr "<emphasis role=\"strong\">可安裝版本</emphasis> – 套裝軟體可安裝或更新的版本。取決於系統上的套裝軟體相依性，此版本可能會比最新的可用版本舊。因此您可能無法安裝套裝軟體最新的可用版本，除非您使用工具列上的 [<emphasis role=\"strong\">更新</emphasis>] 圖示來更新您的系統。"
+msgstr "<emphasis role=\"strong\">可安裝版本</emphasis> – 套裝軟體可安裝或更新的版本。由於系統上的套裝軟體相依性，此版本可能會比最新的可用版本舊。因此您可能無法安裝套裝軟體最新的可用版本，除非您使用工具列上的 [<emphasis role=\"strong\">更新</emphasis>] 圖示來更新您的系統。"
 
 #: package-manager.xml.in.nolegal:303(para) 
 msgid "<emphasis role=\"strong\">Installed Version</emphasis> – The version of the package installed on the system."
@@ -721,8 +705,7 @@ msgstr "啟動環境簡介"
 
 #: package-manager.xml.in.nolegal:316(para) 
 msgid "A boot environment is an image that is bootable. Upon an initial OpenSolaris installation, a boot environment is created."
-msgstr ""
-       "啟動環境是可開機的影像。初始安裝 OpenSolaris 時，"
+msgstr "啟動環境是可開機的影像。初始安裝 OpenSolaris 時，"
        "就會建立啟動環境。"
 
 #: package-manager.xml.in.nolegal:317(para) 
@@ -739,8 +722,7 @@ msgstr "使用者可以在系統上維護多個啟動環境，且每個啟動環
 
 #: package-manager.xml.in.nolegal:320(para) 
 msgid "When you use either the Package Manager or the <command>pkg image-update</command> command to update all the packages in your active OpenSolaris boot environment, a clone of that boot environment is automatically created. The packages are updated in the clone rather than in the original boot environment. After successfully completing the updates, the new clone is activated. Then, the clone will become the new default boot environment on system reboot. The original boot environment is also available as an alternate selection."
-msgstr ""
-       "當您使用套裝軟體管理員或 <command>pkg image-update</"
+msgstr "當您使用套裝軟體管理員或 <command>pkg image-update</"
        "command> 指令來更新您使用中 OpenSolaris 啟動環境中所有的"
        "套裝軟體時，會自動建立該啟動環境的複製。"
        "套裝軟體會在複製中更新，而非在原來的啟動環境中"
@@ -772,7 +754,7 @@ msgstr "您也可以選擇 <menuchoice>[<guimenu>套裝軟體</guimenu>] [<guisu
 
 #: package-manager.xml.in.nolegal:326(para) 
 msgid "If no updates are available to your installed packages, a <emphasis role=\"strong\">No Updates Available</emphasis> message is displayed after you click <guibutton>Updates</guibutton>."
-msgstr "如果您安裝的套裝軟體有可用更新，按一下 [<guibutton>更新</guibutton>] 後會顯示<emphasis role=\"strong\">沒有可用更新</emphasis>的訊息。"
+msgstr "如果您安裝的套裝軟體沒有可用更新，按一下 [<guibutton>更新</guibutton>] 後會顯示<emphasis role=\"strong\">沒有可用更新</emphasis>的訊息。"
 
 #: package-manager.xml.in.nolegal:329(para) 
 msgid "The process of updating all the packages installed on your system is completed in three phases:"
@@ -812,7 +794,7 @@ msgstr "按一下 [<guibutton>稍後重新啟動</guibutton>]，稍後再重新�
 
 #: package-manager.xml.in.nolegal:345(para) 
 msgid "During the Update All process, a clone of the active boot environment is created. You can boot into the clone to return to the boot environment state that existed before the Update All process was started."
-msgstr "在 [全部更新] 程序中，會建立使用中啟動環境的複製。您可以此複製啟動，回到啟動 [全部更新] 程序之前的啟動環境狀態。"
+msgstr "在 [全部更新] 程序中，會建立使用中啟動環境的複製。您可以啟動至此複製，回到啟動 [全部更新] 程序之前的啟動環境狀態。"
 
 #: package-manager.xml.in.nolegal:350(title) package-manager.xml.in.nolegal:656(title) 
 msgid "Update All Errors"
@@ -832,9 +814,7 @@ msgstr "按一下 [<guibutton>關閉</guibutton>] 可以取消 [全部更新] �
 
 #: package-manager.xml.in.nolegal:354(para) package-manager.xml.in.nolegal:660(para) 
 msgid "Perform the following steps if you want to rectify the error and continue with the Update All process:"
-msgstr ""
-       "如果要改正錯誤並繼續 [全部更新] 程序，"
-       "請執行下列步驟："
+msgstr "如果要改正錯誤並繼續 [全部更新] 程序，請執行下列步驟："
 
 #: package-manager.xml.in.nolegal:355(para) 
 msgid "Click <guibutton>Manage BE</guibutton> to display the <emphasis role=\"strong\">Manage Boot Environment</emphasis> dialog."
@@ -850,9 +830,7 @@ msgstr "您無法刪除目前使用中的啟動環境。"
 
 #: package-manager.xml.in.nolegal:360(para) 
 msgid "You do not need to reboot your system if you are only deleting some of your boot environments."
-msgstr ""
-       "如果僅要刪除某些啟動環境，"
-       "不必重新啟動系統。"
+msgstr "如果僅要刪除某些啟動環境，不必重新啟動系統。"
 
 #: package-manager.xml.in.nolegal:365(para) 
 msgid "Click <guibutton>OK</guibutton>."
@@ -884,7 +862,7 @@ msgstr "您可在此對話方塊中執行下列動作："
 
 #: package-manager.xml.in.nolegal:378(para) 
 msgid "<emphasis role=\"strong\">Activate a boot environment</emphasis> – Select the boot environment you want to be active on system reboot. This is the default boot environment <emphasis role=\"strong\">after</emphasis> you have rebooted your system."
-msgstr "<emphasis role=\"strong\">啟動某啟動環境</emphasis> – 選取"
+msgstr "<emphasis role=\"strong\">啟動某個啟動環境</emphasis> – 選取"
        "您想要在重新啟動系統時使用的啟動環境。此環境在"
        "您重新啟動系統<emphasis role=\"strong\">之後</emphasis>，"
        "將成為預設的啟動環境。"
@@ -900,8 +878,7 @@ msgstr "您無法刪除目前使用中的啟動環境。"
 
 #: package-manager.xml.in.nolegal:383(para) 
 msgid "If you have selected a boot environment to be renamed, it cannot be deleted."
-msgstr ""
-       "如果您選取了要重新命名的啟動環境，就無法刪除該啟動環境。"
+msgstr "如果您選取了要重新命名的啟動環境，就無法刪除該啟動環境。"
 
 #: package-manager.xml.in.nolegal:388(para) 
 msgid "<emphasis role=\"strong\">Rename a boot environment</emphasis> – Double-click the boot environment name you want torename. Enter the new name of the boot environment and click <guibutton>OK</guibutton>."
@@ -911,8 +888,7 @@ msgstr "<emphasis role=\"strong\">重新命名啟動環境</emphasis> – 在"
 
 #: package-manager.xml.in.nolegal:389(para) 
 msgid "If you have selected a boot environment to be deleted, it cannot be renamed."
-msgstr ""
-       "如果您選取了要刪除的啟動環境，就無法重新命名該啟動環境。"
+msgstr "如果您選取了要刪除的啟動環境，就無法重新命名該啟動環境。"
 
 #: package-manager.xml.in.nolegal:391(para) 
 msgid "The currently active boot environment cannot be renamed."
@@ -928,15 +904,11 @@ msgstr "會顯示 [<emphasis role=\"strong\">啟動環境確認</emphasis>] 對�
 
 #: package-manager.xml.in.nolegal:401(para) 
 msgid "After you click <guibutton>OK</guibutton>, you cannot undo any changes that you made to the boot environments."
-msgstr ""
-       "按一下 [<guibutton>確定</guibutton>] 之後，"
-       "您就無法還原您對啟動環境所進行的任何變更。"
+msgstr "按一下 [<guibutton>確定</guibutton>] 之後，您就無法還原您對啟動環境所進行的任何變更。"
 
 #: package-manager.xml.in.nolegal:403(para) 
 msgid "The changes that you made to the <emphasis role=\"strong\">default boot environment</emphasis> setting are effective only after system reboot."
-msgstr ""
-       "只有在重新啟動系統後，"
-       "您對<emphasis role=\"strong\">預設啟動環境</emphasis>設定的變更才會生效。"
+msgstr "只有在重新啟動系統後，您對<emphasis role=\"strong\">預設啟動環境</emphasis>設定的變更才會生效。"
 
 #: package-manager.xml.in.nolegal:405(para) 
 msgid "Click <guibutton>Cancel</guibutton> to cancel the changes."
@@ -956,7 +928,7 @@ msgstr "增加及管理發佈者"
 
 #: package-manager.xml.in.nolegal:415(para) 
 msgid "The <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> dialog enables the user to add and manage the configured publishers. A publisher is a person, group, or corporation that designs, creates, and publishes a package to a repository. Every publisher has a package repository where its package data can be found. The locations that contain package data for a publisher's repository are defined through the use of origins and mirrors. Origins are used to provide locations that contain the complete set of package data for a publisher, while mirrors are used to provide locations that only contain package files. Origins and mirrors are defined using URIs (Universal Resource Identifiers), such as <ulink url=\"http://pkg.opensolaris.org/release\"/>."
-msgstr "<menuchoice>[<guimenu>檔案</guimenu>] [<guimenuitem>管理發佈者</guimenuitem>]</menuchoice> 對話方塊可讓使用者增加及管理配置的發佈者。發佈者是指設計、建立及發佈儲存庫中的套裝軟體的人員、群組或公司。每位發佈者都會有套裝軟體儲存庫，而其套裝軟體會置於該處。放置發佈者的套裝軟體資料的儲存庫位置是透過原點和鏡像來定義。原點用於提供放置發佈者完整的套裝軟體資料的位置，而鏡像則用於提供僅放置套裝軟體檔案的位置。原點和鏡像是透過 URI (通用資源識別碼) 來定義，例如 <ulink url=\"http://pkg.opensolaris.org/release\"/>。"
+msgstr "<menuchoice>[<guimenu>檔案</guimenu>] [<guimenuitem>管理發佈者</guimenuitem>]</menuchoice> 對話方塊可讓使用者增加及管理配置的發佈者。發佈者是指設計、建立及發佈儲存庫中的套裝軟體的人員、群組或公司。每位發佈者都會有套裝軟體儲存庫，而其套裝軟體會置於該處。放置發佈者的套裝軟體資料的儲存庫位置是透過原始和鏡像來定義。原始用於提供放置發佈者完整的套裝軟體資料的位置，而鏡像則用於提供僅放置套裝軟體檔案的位置。原始和鏡像是透過 URI (通用資源識別碼) 來定義，例如 <ulink url=\"http://pkg.opensolaris.org/release\"/>。"
 
 #: package-manager.xml.in.nolegal:416(para) 
 msgid "Read the following sections to learn how to add and manage publishers on your system."
@@ -976,11 +948,11 @@ msgstr "選擇 <menuchoice>[<guimenu>檔案</guimenu>] [<guimenuitem>增加發�
 
 #: package-manager.xml.in.nolegal:420(para) 
 msgid "You can also choose the <guibutton>Add..</guibutton> option from the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu or select <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> and then click <emphasis>Add..</emphasis> in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog."
-msgstr "也可以從 [<emphasis role=\"strong\">發佈者</emphasis>] 下拉式功能表中選擇 [<guibutton>增加..</guibutton>] 選項，或選取 <menuchoice>[<guimenu>檔案</guimenu>] [<guimenuitem>管理發佈者</guimenuitem>]</menuchoice>，然後按一下 [<emphasis role=\"strong\">管理發佈者</emphasis>] 對話方塊中的 [<emphasis>增加..</emphasis>]。 "
+msgstr "也可以從 [<emphasis role=\"strong\">發佈者</emphasis>] 下拉式功能表中選擇 [<guibutton>增加..</guibutton>] 選項，或選取 <menuchoice>[<guimenu>檔案</guimenu>] [<guimenuitem>管理發佈者</guimenuitem>]</menuchoice>，然後按一下 [<emphasis role=\"strong\">管理發佈者</emphasis>] 對話方塊中的 [<emphasis>增加..</emphasis>]。"
 
 #: package-manager.xml.in.nolegal:422(para) 
 msgid "The <emphasis role=\"strong\">Add Publisher</emphasis> dialog is displayed. Enter the name of the publisher and the associated URI. If the publisher is a secure publisher, the <emphasis role=\"strong\">SSL Key</emphasis> and <emphasis role=\"strong\">SSL Certificate</emphasis> fields are displayed. Follow the steps in the <xref linkend=\"modify-publisher\"/> section to add an SSL key and certificate."
-msgstr "會顯示 [<emphasis role=\"strong\">增加發佈者</emphasis>] 對話方塊。請輸入發佈者名稱及相關 URI。如果發佈者為受保護的發佈者，則會顯示 [<emphasis role=\"strong\">SSL 金鑰</emphasis>] 以及 [<emphasis role=\"strong\">SSL 憑證</emphasis>] 等欄位。請依照<xref linkend=\"modify-publisher\"/>一節中的步驟來增加 SSL 金鑰與憑證。"
+msgstr "會顯示 [<emphasis role=\"strong\">增加發佈者</emphasis>] 對話方塊。請輸入發佈者名稱及相關 URI。如果發佈者是一位安全的發佈者，則會顯示 [<emphasis role=\"strong\">SSL 金鑰</emphasis>] 以及 [<emphasis role=\"strong\">SSL 憑證</emphasis>] 等欄位。請依照<xref linkend=\"modify-publisher\"/>一節中的步驟來增加 SSL 金鑰與憑證。"
 
 #: package-manager.xml.in.nolegal:424(para) 
 msgid "Click <guibutton>Add</guibutton>."
@@ -1040,7 +1012,7 @@ msgstr "會顯示已配置發佈者的清單。按一下箭頭可以變更發佈
 
 #: package-manager.xml.in.nolegal:451(emphasis) 
 msgid "Packages are searched within the publishers in the order of priority, the publisher with the highest priority is searched first."
-msgstr "會依照優先權的排序在發佈者中搜尋套裝軟體，優先權最高的發佈者就會最先被找到。"
+msgstr "會依照優先權的排序在發佈者中搜尋套裝軟體，優先權最高的發佈者就會最先被搜尋到。"
 
 #: package-manager.xml.in.nolegal:453(para) package-manager.xml.in.nolegal:465(para) package-manager.xml.in.nolegal:484(para) package-manager.xml.in.nolegal:503(para) package-manager.xml.in.nolegal:520(para) package-manager.xml.in.nolegal:537(para) 
 msgid "Click <guibutton>OK</guibutton> to save your changes or <guibutton>Cancel</guibutton> to return to the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog without making any changes."
@@ -1068,15 +1040,15 @@ msgstr "在 [<emphasis role=\"strong\">管理發佈者</emphasis>] 對話方塊�
 
 #: package-manager.xml.in.nolegal:471(title) 
 msgid "Add Publisher Origins"
-msgstr "增加發佈者原點"
+msgstr "增加發佈者原始"
 
 #: package-manager.xml.in.nolegal:472(para) 
 msgid "Perform the following steps to add an origin or origins associated with a publisher:"
-msgstr "執行下列步驟可以增加與發佈者相關的一或多個原點："
+msgstr "執行下列步驟可以增加與發佈者相關的一或多個原始："
 
 #: package-manager.xml.in.nolegal:475(para) 
 msgid "Select the publisher whose origin you want to modify. The <emphasis role=\"strong\">Details</emphasis> tab in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog displays the origin associated with the publisher."
-msgstr "選取要修改其原點的發佈者。[<emphasis role=\"strong\">管理發佈者</emphasis>] 對話方塊中的 [<emphasis role=\"strong\">詳細資訊</emphasis>] 標籤會顯示與發佈者相關的原點。"
+msgstr "選取要修改其原始的發佈者。[<emphasis role=\"strong\">管理發佈者</emphasis>] 對話方塊中的 [<emphasis role=\"strong\">詳細資訊</emphasis>] 標籤會顯示與發佈者相關的原始。"
 
 #: package-manager.xml.in.nolegal:477(para) package-manager.xml.in.nolegal:496(para) package-manager.xml.in.nolegal:515(para) package-manager.xml.in.nolegal:532(para) 
 msgid "Click <guibutton>Modify..</guibutton>."
@@ -1084,39 +1056,39 @@ msgstr "按一下 [<guibutton>修改..</guibutton>]。"
 
 #: package-manager.xml.in.nolegal:478(para) 
 msgid "The <emphasis role=\"strong\">Modify Publisher</emphasis> dialog is displayed. Enter the name of the new origin you want to associate with the publisher in the <emphasis role=\"strong\">Origin</emphasis> field. Click <guibutton>Add</guibutton>. The list of associated origins is displayed in the table."
-msgstr "會顯示 [<emphasis role=\"strong\">修改發佈者</emphasis>] 對話方塊。請在 [<emphasis role=\"strong\">原點</emphasis>] 欄位中輸入要與發佈者建立關聯的新原點名稱。按一下 [<guibutton>增加</guibutton>]。表中會顯示相關原點的清單。"
+msgstr "會顯示 [<emphasis role=\"strong\">修改發佈者</emphasis>] 對話方塊。請在 [<emphasis role=\"strong\">原始</emphasis>] 欄位中輸入要與發佈者建立關聯的新原始名稱。按一下 [<guibutton>增加</guibutton>]。表中會顯示相關原始的清單。"
 
 #: package-manager.xml.in.nolegal:479(para) 
 msgid "You cannot change the origin URI after the origin has been added."
-msgstr "增加原點後，就無法變更原點的 URI。"
+msgstr "增加原始後，就無法變更原始的 URI。"
 
 #: package-manager.xml.in.nolegal:482(para) 
 msgid "(optional) If the origin you have added is a secure origin, add the SSL Key and SSL certificate. <guibutton>Browse</guibutton> to locate the SSL Key and SSL Certificate on your system."
-msgstr "(可選擇) 如果增加的原點是受保護的原點，請增加 SSL 金鑰及 SSL 憑證。利用 [<guibutton>瀏覽</guibutton>] 來找出系統上的 SSL 金鑰及 SSL 憑證。"
+msgstr "(可選擇) 如果增加的原始是安全的原始，請增加 SSL 金鑰及 SSL 憑證。利用 [<guibutton>瀏覽</guibutton>] 來找出系統上的 SSL 金鑰及 SSL 憑證。"
 
 #: package-manager.xml.in.nolegal:490(title) 
 msgid "Remove Publisher Origins"
-msgstr "移除發佈者原點"
+msgstr "移除發佈者原始"
 
 #: package-manager.xml.in.nolegal:491(para) 
 msgid "Perform the following steps to remove an origin or origins associated with a publisher:"
-msgstr "執行下列步驟可以移除與發佈者相關的一或多個原點："
+msgstr "執行下列步驟可以移除與發佈者相關的一或多個原始："
 
 #: package-manager.xml.in.nolegal:494(para) 
 msgid "Select the publisher whose origin you want to remove. The <emphasis role=\"strong\">Details</emphasis> tab in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog displays the origin or origins associated with the publisher."
-msgstr "選取要移除其原點的發佈者。[<emphasis role=\"strong\">管理發佈者</emphasis>] 對話方塊中的 [<emphasis role=\"strong\">詳細資訊</emphasis>] 標籤會顯示與發佈者相關的原點。"
+msgstr "選取要移除其原始的發佈者。[<emphasis role=\"strong\">管理發佈者</emphasis>] 對話方塊中的 [<emphasis role=\"strong\">詳細資訊</emphasis>] 標籤會顯示與發佈者相關的原始。"
 
 #: package-manager.xml.in.nolegal:497(para) 
 msgid "The <emphasis role=\"strong\">Modify Publisher</emphasis> dialog is displayed. The list of associated origins is displayed in the table."
-msgstr "會顯示 [<emphasis role=\"strong\">修改發佈者</emphasis>] 對話方塊。表中會顯示相關原點的清單。"
+msgstr "會顯示 [<emphasis role=\"strong\">修改發佈者</emphasis>] 對話方塊。表中會顯示相關原始的清單。"
 
 #: package-manager.xml.in.nolegal:499(para) 
 msgid "Select the origin you want to remove. Click <guibutton>Remove</guibutton>."
-msgstr "選取要移除的原點。按一下 [<guibutton>移除</guibutton>]。"
+msgstr "選取要移除的原始。按一下 [<guibutton>移除</guibutton>]。"
 
 #: package-manager.xml.in.nolegal:500(para) 
 msgid "If only one origin is associated with a publisher, it cannot be removed."
-msgstr "如果只有一個原點與發佈者相關，就無法移除該原點。"
+msgstr "如果只有一個原始與發佈者相關，就無法移除該原始。"
 
 #: package-manager.xml.in.nolegal:509(title) 
 msgid "Add Publisher Mirrors"
@@ -1164,7 +1136,7 @@ msgstr "使用 WebInstall"
 
 #: package-manager.xml.in.nolegal:545(para) 
 msgid "The OpenSolaris 2010.03 Package Manager provides support for users to add new publishers and optionally, install packages from these publishers using a simple one-click WebInstall process. A <filename>.p5i</filename> file which contains the publishers to be added and optionally, the packages that can be installed from these publishers, is required for the WebInstall process. The information contained in the <filename>.p5i</filename> file is read and used by the WebInstall process."
-msgstr "OpenSolaris 2010.03 套裝軟體管理員提供使用者支援，讓使用者可以增加新的發佈者，以及可選擇是否使用簡單的一鍵式 WebInstall 程序來從這些發佈者安裝套裝軟體。WebInstall 程序需要 <filename>.p5i</filename> 檔案，其中含有要增加的發佈者，以及可選擇是否包含可從這些發佈者安裝的套裝軟體。WebInstall 程序會讀取及使用 <filename>.p5i</filename> 檔案中包含的資訊。"
+msgstr "OpenSolaris 2010.03 套裝軟體管理員提供使用者支援，讓使用者可以增加新的發佈者，以及可選擇是否使用簡單的一鍵式 WebInstall 程序從這些發佈者安裝套裝軟體。WebInstall 程序需要 <filename>.p5i</filename> 檔案，其中含有要增加的發佈者，以及可選擇是否包含可從這些發佈者安裝的套裝軟體。WebInstall 程序會讀取及使用 <filename>.p5i</filename> 檔案中包含的資訊。"
 
 #: package-manager.xml.in.nolegal:546(title) 
 msgid "Export Package Selections as WebInstall Files"
@@ -1172,7 +1144,7 @@ msgstr "將套裝軟體選擇匯出為 WebInstall 檔案"
 
 #: package-manager.xml.in.nolegal:547(para) 
 msgid "If you want to distribute some of the packages available on your system to others for easy installation and distribution, you can export the references to the packages, using the WebInstall process. The <menuchoice><guisubmenu>File</guisubmenu><guimenuitem>Export Selections</guimenuitem></menuchoice> feature enables you to create a <filename>.p5i</filename> file containing the installation instructions for the selected packages. The <filename>.p5i</filename> file is can then be distributed for use. See the <xref linkend=\"webinstall\"/> section on how to install packages from a <filename>.p5i</filename>."
-msgstr "如果想將系統上的一些可用套裝軟體分給其他人以供輕鬆安裝或散佈，可以使用 WebInstall 程序來匯出套裝軟體的參照。<menuchoice>[<guisubmenu>檔案</guisubmenu>] [<guimenuitem>匯出</guimenuitem>]</menuchoice> 功能可讓您建立 <filename>.p5i</filename> 檔案，此檔案中會含有所選套裝軟體的安裝說明。<filename>.p5i</filename> 檔案之後可分給其他使用者。如需有關如何從 <filename>.p5i</filename> 安裝套裝軟體的資訊，請參閱<xref linkend=\"webinstall\"/>一節。"
+msgstr "如果想將系統上的一些可用套裝軟體分給其他人以供輕鬆安裝或分發，可以使用 WebInstall 程序來匯出套裝軟體的參照。<menuchoice>[<guisubmenu>檔案</guisubmenu>] [<guimenuitem>匯出</guimenuitem>]</menuchoice> 功能可讓您建立 <filename>.p5i</filename> 檔案，此檔案中會含有所選套裝軟體的安裝說明。<filename>.p5i</filename> 檔案之後可分給其他使用者。如需有關如何從 <filename>.p5i</filename> 安裝套裝軟體的資訊，請參閱<xref linkend=\"webinstall\"/>一節。"
 
 #: package-manager.xml.in.nolegal:548(para) 
 msgid "The following procedure lists the steps to create a <filename>.p5i</filename> file and export your files."
@@ -1208,7 +1180,7 @@ msgstr "檔案依預設會儲存在 <filename>/tmp</filename> 資料夾中。按
 
 #: package-manager.xml.in.nolegal:563(para) 
 msgid "Choose the <filename>p5i Files</filename> option in the drop-down menu located at the bottom right hand side of the window."
-msgstr "在視窗右下方的下拉式功能表中，選擇 <filename>p5i 檔案</filename> 選項。"
+msgstr "在視窗右下方的下拉式功能表中，選擇 <filename>p5i Files</filename> 選項。"
 
 #: package-manager.xml.in.nolegal:567(title) 
 msgid "How to Use WebInstall to Add Publishers and Install Packages"
@@ -1220,9 +1192,7 @@ msgstr "WebInstall 程序可讓您透過 <filename>p5i</filename> 檔案來安�
 
 #: package-manager.xml.in.nolegal:569(para) 
 msgid "Locate the <filename>.p5i</filename> file which may be present on your desktop, the Start page in the Package Manager, or on a website."
-msgstr ""
-       "找出 <filename>.p5i</filename> 檔案。該檔案可能位在您的"
-       "桌面、套裝軟體管理員的「起始頁面」，或在某個網站上。"
+msgstr "找出 <filename>.p5i</filename> 檔案。該檔案可能位在您的桌面、套裝軟體管理員的「起始頁面」，或在某個網站上。"
 
 #: package-manager.xml.in.nolegal:571(para) 
 msgid "Start the Package Manager in WebInstall mode in one of the following ways:"
@@ -1230,15 +1200,11 @@ msgstr "以下列任一方式啟動「WebInstall 模式的套裝軟體管理員�
 
 #: package-manager.xml.in.nolegal:572(para) 
 msgid "Click on a <filename>.p5i</filename> file on your desktop, and the associated application, Package Manager in WebInstall mode, will be launched."
-msgstr ""
-       "按一下您桌面上的 <filename>.p5i</filename> 檔案，"
-       "則關聯的應用程式「WebInstall 模式的套裝軟體管理員」就會啟動。"
+msgstr "按一下您桌面上的 <filename>.p5i</filename> 檔案，則關聯的應用程式「WebInstall 模式的套裝軟體管理員」就會啟動。"
 
 #: package-manager.xml.in.nolegal:574(para) 
 msgid "Start the Package Manager from the command-line along with a path to the <filename>.p5i</filename> file. For example, type the following command at the command-line:"
-msgstr ""
-       "從指令行啟動套裝軟體管理員，並附上 <filename>.p5i</filename> 檔案"
-       "的路徑。例如，在指令行輸入下列"
+msgstr "從指令行啟動套裝軟體管理員，並附上 <filename>.p5i</filename> 檔案的路徑。例如，在指令行輸入下列"
        "指令："
 
 #: package-manager.xml.in.nolegal:575(replaceable) 
@@ -1255,10 +1221,7 @@ msgstr "按一下含有到 <filename>.p5i</filename> 檔案之連結的 URL 位�
 
 #: package-manager.xml.in.nolegal:578(para) 
 msgid "If the <filename>.p5i</filename> is located on a web server that does not have the new mime type registered, save the <filename>.p5i</filename> file to your desktop and then click on it to launch Web Install."
-msgstr ""
-       "如果 <filename>.p5i</filename> 所在的 Web 伺服器上並未"
-       "註冊這種新的 MIME 類型的話，請將 <filename>.p5i</filename> 檔案"
-       "儲存到您的桌面，然後按一下檔案以啟動 WebInstall。"
+msgstr "如果 <filename>.p5i</filename> 所在的 Web 伺服器上並未註冊這種新的 MIME 類型的話，請將 <filename>.p5i</filename> 檔案儲存到您的桌面，然後按一下檔案以啟動 WebInstall。"
 
 #: package-manager.xml.in.nolegal:582(para) 
 msgid "You will see a window similar to the example window shown below. The window shows a list of publishers that will be added and the packages that will be installed. Review the information."
@@ -1274,15 +1237,15 @@ msgstr "按一下 [<guibutton>繼續</guibutton>] 可以增加新的發佈者及
 
 #: package-manager.xml.in.nolegal:589(para) 
 msgid "The <emphasis role=\"strong\">Add Publisher</emphasis> dialog is displayed. The name and URI of the publisher is already entered."
-msgstr "會顯示 [<emphasis role=\"strong\">增加發佈者</emphasis>] 對話方塊。而且會已經輸入好發佈者的名稱和 URI。"
+msgstr "會顯示 [<emphasis role=\"strong\">增加發佈者</emphasis>] 對話方塊。而且已經輸入了發佈者的名稱和 URI。"
 
 #: package-manager.xml.in.nolegal:590(para) 
 msgid "The <emphasis role=\"strong\">Adding Publisher Complete</emphasis> dialog is displayed if the publisher has been added successfully."
-msgstr "如果發佈者已增加成功，則會顯示 [<emphasis role=\"strong\">發佈者增加完成</emphasis>] 對話方塊。"
+msgstr "如果已成功增加發佈者，則會顯示 [<emphasis role=\"strong\">完成發佈者增加</emphasis>] 對話方塊。"
 
 #: package-manager.xml.in.nolegal:592(para) 
 msgid "(Optional) If the publishers to be added are secure publishers, an SSL key and certificate is required. Browse to locate the SSL Key and SSL Certificate on your system."
-msgstr "(可選擇) 如果要增加的發佈者是受保護的發佈者，則必須提供 SSL 金鑰及憑證。請瀏覽至系統上 SSL 金鑰及 SSL 憑證所在的位置。"
+msgstr "(可選擇) 如果要增加的發佈者是安全的發佈者，則必須提供 SSL 金鑰及憑證。請瀏覽至系統上 SSL 金鑰及 SSL 憑證所在的位置。"
 
 #: package-manager.xml.in.nolegal:594(para) 
 msgid "Click <guibutton>OK</guibutton> to proceed."
@@ -1326,11 +1289,7 @@ msgstr "您可以使用更新管理員應用程式來更新影像中已安裝的
 
 #: package-manager.xml.in.nolegal:613(para) 
 msgid "For the OpenSolaris 2010.03 release, the Update Manager updates <emphasis role=\"strong\">all</emphasis> installed packages in the image. This action is equivalent to running the <command>pkg image-update</command> command from the command-line."
-msgstr ""
-       "對於 OpenSolaris 2010.03 發行版本，更新管理員會更新"
-       "影像中的<emphasis role=\"strong\">所有</emphasis>安裝的套裝軟體。這項動作"
-       "等於從指令行執行 <command>pkg image-update</command>"
-       "指令。"
+msgstr "對於 OpenSolaris 2010.03 發行版本，更新管理員會更新影像中的<emphasis role=\"strong\">所有</emphasis>安裝的套裝軟體。這項動作等於從指令行執行 <command>pkg image-update</command> 指令。"
 
 #: package-manager.xml.in.nolegal:616(title) 
 msgid "Using the Update Manager"
@@ -1338,22 +1297,15 @@ msgstr "使用更新管理員"
 
 #: package-manager.xml.in.nolegal:617(para) 
 msgid "When updates are available to the installed packages, a notification icon is displayed in the notification panel on the OpenSolaris desktop."
-msgstr ""
-       "當已安裝之套裝軟體有可用的更新時，會在 OpenSolaris 桌面上"
-       "的通知面板中顯示通知圖示。"
+msgstr "當已安裝之套裝軟體有可用的更新時，會在 OpenSolaris 桌面上的通知面板中顯示通知圖示。"
 
 #: package-manager.xml.in.nolegal:618(para) 
 msgid "You can also click <menuchoice><guimenu>System</guimenu><guisubmenu>Administration</guisubmenu><guimenuitem>Update Manager</guimenuitem></menuchoice> to manually launch the Update Manager."
-msgstr ""
-       "您也可以按一下 <menuchoice>[<guimenu>系統</"
-       "guimenu>] [<guisubmenu>管理</guisubmenu>] [<guimenuitem>更新管理員</"
-       "guimenuitem>]</menuchoice>，以手動方式啟動「更新管理員」。"
+msgstr "您也可以按一下 <menuchoice>[<guimenu>系統</guimenu>] [<guisubmenu>管理</guisubmenu>] [<guimenuitem>更新管理員</guimenuitem>]</menuchoice>，以手動方式啟動「更新管理員」。"
 
 #: package-manager.xml.in.nolegal:619(para) 
 msgid "When you are notified of a software update, perform the following steps to begin the process of updating your system:"
-msgstr ""
-       "當通知您有軟體更新時，請執行下列步驟以"
-       "開始更新系統程序："
+msgstr "當通知您有軟體更新時，請執行下列步驟以開始更新系統程序："
 
 #: package-manager.xml.in.nolegal:620(para) 
 msgid "Click the notification icon on the desktop to display the <emphasis role=\"strong\">Update Manager</emphasis> window."
@@ -1365,9 +1317,7 @@ msgstr "按一下 [<emphasis role=\"strong\">更新管理員</emphasis>] 視窗�
 
 #: package-manager.xml.in.nolegal:623(para) 
 msgid "Select a package and click the <guilabel>Details</guilabel> panel if you want to view more information about the package."
-msgstr ""
-       "如果要檢視套裝軟體的更多資訊，"
-       "請選取套裝軟體並按一下 [<guilabel>詳細資訊</guilabel>] 面板。"
+msgstr "如果要檢視套裝軟體的更多資訊，請選取套裝軟體並按一下 [<guilabel>詳細資訊</guilabel>] 面板。"
 
 #: package-manager.xml.in.nolegal:626(para) 
 msgid "The <emphasis role=\"strong\">Update All</emphasis> dialog is displayed. Proceed with the Update All process or cancel the action."
@@ -1375,30 +1325,20 @@ msgstr "會顯示 [<emphasis role=\"strong\">全部更新</emphasis>] 對話方�
 
 #: package-manager.xml.in.nolegal:627(para) 
 msgid "Click <guibutton>Proceed</guibutton> to create a new boot environment and update all packages in the current image."
-msgstr ""
-       "按一下 [<guibutton>繼續</guibutton>] 可以建立新的啟動環境，"
-       "並更新目前影像中的所有套裝軟體。"
+msgstr "按一下 [<guibutton>繼續</guibutton>] 可以建立新的啟動環境，並更新目前影像中的所有套裝軟體。"
 
 #: package-manager.xml.in.nolegal:628(para) 
 msgid "During the Update All process, a clone of the active boot environment is created. This clone enables the user to boot into the boot environment state that existed before the Update All process was started."
-msgstr ""
-       "在 [全部更新] 期間，會建立使用中啟動環境的複製。"
-       "此複製可讓使用者在啟動 [全部更新] 程序之前"
-       "即已存在的啟動環境狀態啟動。"
+msgstr "在 [全部更新] 期間，會建立使用中啟動環境的複製。此複製可讓使用者在啟動 [全部更新] 程序之前即已存在的啟動環境狀態啟動。"
 
 #: package-manager.xml.in.nolegal:629(para) 
 msgid "If the Package Manager is unable to create a new boot environment, an error message will be displayed. See the <xref linkend=\"gileh\"/> section on how to rectify the error and continue with updating your image."
-msgstr ""
-       "如果套裝軟體管理員無法建立新的啟動環境，"
-       "即會出現錯誤訊息。有關如何改正錯誤及繼續更新影像的方法，"
-       "請參閱<xref linkend=\"gileh\"/>一節。"
+msgstr "如果套裝軟體管理員無法建立新的啟動環境，即會出現錯誤訊息。有關如何改正錯誤及繼續更新影像的方法，請參閱<xref linkend=\"gileh\"/>一節。"
 
 #: package-manager.xml.in.nolegal:630(para) 
 msgid "A name for the new boot environment is automatically generated. You can accept the name generated by the system, or provide your own name for the boot environment."
-msgstr ""
-       "新啟動環境的名稱會自動產生。您可以"
-       "接受由系統產生的名稱，或自行為啟動環境"
-       "命名。"
+msgstr "新啟動環境的名稱會自動產生。您可以"
+       "接受由系統產生的名稱，或自行為啟動環境命名。"
 
 #: package-manager.xml.in.nolegal:633(para) 
 msgid "Click <guibutton>Cancel</guibutton> to cancel the process."
@@ -1426,21 +1366,15 @@ msgstr "只有<emphasis role=\"strong\">準備</emphasis>和<emphasis role=\"str
 
 #: package-manager.xml.in.nolegal:646(para) 
 msgid "Click the <guilabel>Details</guilabel> panel to view more information about each of the installation processes."
-msgstr ""
-       "按一下 [<guilabel>詳細資訊</guilabel>] 面板，"
-       "檢視各安裝程序的詳細資訊。"
+msgstr "按一下 [<guilabel>詳細資訊</guilabel>] 面板，檢視各安裝程序的詳細資訊。"
 
 #: package-manager.xml.in.nolegal:647(para) 
 msgid "If an error occurs during any of the stages, the <guilabel>Details</guilabel> panel is expanded and the details of the error are displayed. An error status indicator is shown next to the failed stage."
-msgstr ""
-       "如果在任一階段中發生錯誤，即會展開 [<guilabel>詳細資訊</"
-       "guilabel>] 面板，並顯示錯誤的詳細資訊。"
-       "失敗的階段旁會顯示錯誤狀態指示器。"
+msgstr "如果在任一階段中發生錯誤，即會展開 [<guilabel>詳細資訊</guilabel>] 面板，並顯示錯誤的詳細資訊。失敗的階段旁會顯示錯誤狀態指示器。"
 
 #: package-manager.xml.in.nolegal:650(para) 
 msgid "Read the <xref linkend=\"release_notes\"/> before rebooting your system."
-msgstr ""
-       "重新啟動系統之前，請先閱讀<xref linkend=\"release_notes\"/>。"
+msgstr "重新啟動系統之前，請先閱讀<xref linkend=\"release_notes\"/>。"
 
 #: package-manager.xml.in.nolegal:651(para) 
 msgid "You must reboot your system for the changes to take effect."
@@ -1448,34 +1382,27 @@ msgstr "必須重新啟動系統，變更才會生效。"
 
 #: package-manager.xml.in.nolegal:657(para) 
 msgid "A new boot environment clone <emphasis role=\"strong\">must</emphasis> be created for the Update All process to be completed. The following error message is displayed if a boot environment clone cannot be created due to space restrictions :"
-msgstr ""
-       "<emphasis role=\"strong\">必須</emphasis>建立新的啟動環境複製，"
-       "才能完成 [全部更新] 程序。如果因"
-       "空間限制而無法建立啟動環境複製，即會顯示下列"
-       "錯誤訊息："
+msgstr "<emphasis role=\"strong\">必須</emphasis>建立新的啟動環境複製，才能完成 [全部更新] 程序。如果因空間限制而無法建立啟動環境複製，即會顯示下列錯誤訊息："
 
 #: package-manager.xml.in.nolegal:658(para) 
 msgid "<literal>Not enough disk space, the Update All action cannot be performed. Choose Manage BE to manage your boot environments and free up disk space</literal>."
-msgstr "<literal>磁碟空間不足，無法執行「全部更新」動作。請選擇 [管理 BE] 來管理啟動環境並清出磁碟空間</literal>。"
+msgstr "<literal>磁碟空間不足，無法執行「全部更新」動作。請選擇 [管理 BE] 來管理啟動環境並釋放出磁碟空間</literal>。"
 
 #: package-manager.xml.in.nolegal:661(para) 
 msgid "Click <guibutton>Manage BE</guibutton> in the error dialog to go to the <emphasis role=\"strong\">Manage Boot Environments</emphasis> dialog."
-msgstr "按一下錯誤對話方塊中的 [<guibutton>管理 BE</guibutton>] 可以前往 [<emphasis role=\"strong\">管理啟動環境</emphasis>] 對話方塊。"
+msgstr "按一下錯誤對話方塊中的 [<guibutton>管理 BE</guibutton>] 前往 [<emphasis role=\"strong\">管理啟動環境</emphasis>] 對話方塊。"
 
 #: package-manager.xml.in.nolegal:663(para) 
 msgid "Go to step 2 in the <xref linkend=\"gilfh\"/> section. Follow the instructions to delete old or unused boot environments and free up disk space."
-msgstr ""
-       "移至<xref linkend=\"gilfh\"/>一節中的步驟 2。遵循"
-       "該說明，刪除舊的或未使用的啟動環境，並釋放磁碟"
-       "空間。"
+msgstr "移至<xref linkend=\"gilfh\"/>一節中的步驟 2。遵循該說明，刪除舊的或未使用的啟動環境，並釋放磁碟空間。"
 
 #: package-manager.xml.in.nolegal:665(para) 
 msgid "Click <guibutton>Update All</guibutton> in the <emphasis role=\"strong\">Update Manager</emphasis> window to restart the process of updating all packages."
-msgstr "按一下 [<emphasis role=\"strong\">更新管理員</emphasis>] 視窗中的 [<guibutton>全部更新</guibutton>] 可以重新啟動更新所有套裝軟體的程序。"
+msgstr "按一下 [<emphasis role=\"strong\">更新管理員</emphasis>] 視窗中的 [<guibutton>全部更新</guibutton>] 重新啟動更新所有套裝軟體的程序。"
 
 #: package-manager.xml.in.nolegal:669(title) 
 msgid "2010.03 Release Notes"
-msgstr "2010.03發行版紀錄"
+msgstr "2010.03 版本說明"
 
 #: package-manager.xml.in.nolegal:670(para) 
 msgid "The Release Notes for 2010.03 are available at the following location: <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"/>."
@@ -1507,14 +1434,11 @@ msgstr "啟動環境"
 
 #: package-manager.xml.in.nolegal:684(para) 
 msgid "For an OpenSolaris 2010.03 release, a boot environment is an instance of a bootable OpenSolaris environment. The root file system and all other file systems of the boot environment that contain system software are required to be ZFS datasets."
-msgstr "對 OpenSolaris 2010.03 發行版本而言，啟動環境是可開機之 OpenSolaris 環境的實例。根檔案系統與所有其他包含了系統軟體的啟動環境檔案系統都必須是 ZFS 資料集。"
+msgstr "對 OpenSolaris 2010.03 發行版本而言，啟動環境是可啟動之 OpenSolaris 環境的實例。根檔案系統與所有其他包含了系統軟體的啟動環境檔案系統都必須是 ZFS 資料集。"
 
 #: package-manager.xml.in.nolegal:685(para) 
 msgid "The active boot environment is the one that is currently booted. Many boot environments can present on an OpenSolaris system and an inactive boot environment can be in a state of waiting for activation upon system reboot."
-msgstr ""
-       "使用中的啟動環境是目前所啟動的啟動環境。在 OpenSolaris 系統上"
-       "可以存在許多啟動環境，且非使用中的啟動"
-       "環境可以處於等待狀態，在重新啟動系統時啟用。"
+msgstr "使用中的啟動環境是目前所啟動的啟動環境。在 OpenSolaris 系統上可以存在許多啟動環境，且非使用中的啟動環境可以處於等待狀態，在重新啟動系統時啟用。"
 
 #: package-manager.xml.in.nolegal:688(glossterm) 
 msgid "clone"
@@ -1526,9 +1450,7 @@ msgstr "完全一致的副本。"
 
 #: package-manager.xml.in.nolegal:690(para) 
 msgid "A clone could be an exact copy of an operating system, a file system, or a volume. This copy has 100% compatibility with the original."
-msgstr ""
-       "複製可以是完全與作業系統、檔案系統或"
-       "磁碟區相同的副本。此副本與原件 100% 相容。"
+msgstr "複製可以是完全與作業系統、檔案系統或磁碟區相同的副本。此副本與原件 100% 相容。"
 
 #: package-manager.xml.in.nolegal:693(glossterm) 
 msgid "dataset"
@@ -1536,10 +1458,7 @@ msgstr "資料集"
 
 #: package-manager.xml.in.nolegal:694(para) 
 msgid "A generic name for the following ZFS entities: clones, file systems, snapshots, or volumes. Each dataset is identified by a unique name in the ZFS namespace."
-msgstr ""
-       "下列 ZFS 項目的通用名稱：複製、檔案系統、"
-       "快照或磁碟區。"
-       "每個資料集都使用 ZFS 名稱空間中的唯一名稱識別。"
+msgstr "下列 ZFS 項目的通用名稱：複製、檔案系統、快照或磁碟區。每個資料集都使用 ZFS 名稱空間中的唯一名稱識別。"
 
 #: package-manager.xml.in.nolegal:697(glossterm) 
 msgid "image"
@@ -1547,15 +1466,11 @@ msgstr "影像"
 
 #: package-manager.xml.in.nolegal:698(para) 
 msgid "A collection of software in a package that comprises an entire or partial operating system. The package is suitable for installation."
-msgstr ""
-       "構成整個或部分作業系統之套裝軟體的軟體集合。"
-       "此套裝軟體適合用於安裝。"
+msgstr "構成整個或部分作業系統之套裝軟體的軟體集合。此套裝軟體適合用於安裝。"
 
 #: package-manager.xml.in.nolegal:699(para) 
 msgid "An image is a location on your system where packages and their associated files, directories, links, and dependencies can be installed."
-msgstr ""
-       "影像是您系統上的某個位置，可在其中安裝套裝軟體及其"
-       "相關的檔案、目錄、連結及相依性。"
+msgstr "影像是您系統上的某個位置，可在其中安裝套裝軟體及其相關的檔案、目錄、連結及相依性。"
 
 #: package-manager.xml.in.nolegal:702(glossterm) 
 msgid "package"
@@ -1563,9 +1478,7 @@ msgstr "套裝軟體"
 
 #: package-manager.xml.in.nolegal:703(para) 
 msgid "A collection of files, directories, links, drivers, and dependencies in a defined format."
-msgstr ""
-       "使用定義格式的檔案、目錄、連結、驅動程式及"
-       "相依性的集合。"
+msgstr "使用定義格式的檔案、目錄、連結、驅動程式及相依性的集合。"
 
 #: package-manager.xml.in.nolegal:706(glossterm) 
 msgid "origin"

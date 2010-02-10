@@ -4861,7 +4861,7 @@ msgstr "Статус"
 
 #: ../packagemanager.py:1644
 msgid "all selection toggle"
-msgstr "переключатель Выбрать все"
+msgstr "переключатель \"Выбрать все\""
 
 #: ../packagemanager.py:1696
 msgid "Not Installed"

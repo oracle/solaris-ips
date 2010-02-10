@@ -154,7 +154,7 @@ msgstr "Une fois les packages installés sur votre système, IPS vous permet de 
 
 #: package-manager.xml.in.nolegal:58(para) 
 msgid "With IPS , you can upgrade your system to a newer build of OpenSolaris, install and update your software to the latest available versions in a repository, and retrieve packages from mirror repositories."
-msgstr "Grâce à IPS, vous pouvez installer la dernière version de OpenSolaris pour mettre à niveau votre système, "
+msgstr "Grâce à IPS, vous pouvez installer la dernière version d'OpenSolaris pour mettre à niveau votre système, "
        "mettre à jour vos logiciels à partir des dernières versions disponibles dans "
        "un référentiel et récupérer des packages à partir de référentiels mis en miroir."
 
@@ -258,7 +258,7 @@ msgstr "La barre d'outils contient les icônes correspondant à un sous-ensemble
 
 #: package-manager.xml.in.nolegal:99(para) 
 msgid "<emphasis role=\"strong\">Updates</emphasis> – Click <emphasis role=\"strong\">Updates</emphasis> to check for and install the latest updates."
-msgstr "<emphasis role=\"strong\">Updates (Mises à jour)</emphasis> : cliquez sur <emphasis role=\"strong\">Updates (Mises à jour)</emphasis> pour rechercher et installer les mises à jour les plus récentes."
+msgstr "<emphasis role=\"strong\">Mises à jour</emphasis> : cliquez sur <emphasis role=\"strong\">Mises à jour</emphasis> pour rechercher et installer les mises à jour les plus récentes."
 
 #: package-manager.xml.in.nolegal:101(para) 
 msgid "<emphasis role=\"strong\">Install/Update</emphasis> – Select a package and click <emphasis role=\"strong\">Install/Update</emphasis> to install or update a package."
@@ -266,7 +266,7 @@ msgstr "<emphasis role=\"strong\">Installer/Mettre à jour</emphasis> : sélect
 
 #: package-manager.xml.in.nolegal:103(para) 
 msgid "<emphasis role=\"strong\">Refresh</emphasis> – Click <emphasis role=\"strong\">Refresh</emphasis> to reload the list of packages."
-msgstr "<emphasis role=\"strong\">Refresh (Actualiser)</emphasis> : cliquez sur <emphasis role=\"strong\">Refresh (Actualiser)</emphasis> pour recharger la liste des packages."
+msgstr "<emphasis role=\"strong\">Actualiser</emphasis> : cliquez sur <emphasis role=\"strong\">Actualiser</emphasis> pour recharger la liste des packages."
 
 #: package-manager.xml.in.nolegal:105(para) 
 msgid "<emphasis role=\"strong\">Remove</emphasis> – Select a package and click <emphasis role=\"strong\">Remove</emphasis> to remove a package."
@@ -274,7 +274,7 @@ msgstr "<emphasis role=\"strong\">Supprimer</emphasis> : sélectionnez un packa
 
 #: package-manager.xml.in.nolegal:107(para) 
 msgid "<emphasis role=\"strong\">Search for a Package</emphasis> – Type the name or description of a package in the <emphasis role=\"strong\">Search</emphasis> field to search for a package. See the <xref linkend=\"search-pkg\"/> section for examples on how to search for a package."
-msgstr "<emphasis role=\"strong\">Search for a Package (Rechercher un package)</emphasis> :– saisissez le nom ou la description d'un package dans le champ <emphasis role=\"strong\">Recherche</emphasis> pour rechercher un package. Reportez-vous à la section <xref linkend=\"search-pkg\"/> pour obtenir des exemples de recherche d'un package."
+msgstr "<emphasis role=\"strong\">Rechercher un package</emphasis> :– saisissez le nom ou la description d'un package dans le champ <emphasis role=\"strong\">Recherche</emphasis> pour rechercher un package. Reportez-vous à la section <xref linkend=\"search-pkg\"/> pour obtenir des exemples de recherche d'un package."
 
 #: package-manager.xml.in.nolegal:112(emphasis) 
 msgid "Publisher Drop-Down Menu"
@@ -338,7 +338,7 @@ msgstr "Recherches récentes"
 
 #: package-manager.xml.in.nolegal:143(para) 
 msgid "The Package Manager saves your recent package searches. Click the Recent Searches in the left hand side panel to view the packages you searched for recently."
-msgstr "Le Gestionnaire de packages enregistre vos dernières recherches de packages. Cliquez sur Recent Searches (Recherches récentes) dans le panneau de gauche pour afficher les derniers packages que vous avez recherchés."
+msgstr "Le Gestionnaire de packages enregistre vos dernières recherches de packages. Cliquez sur Recherches récentes dans le panneau de gauche pour afficher les derniers packages que vous avez recherchés."
 
 #: package-manager.xml.in.nolegal:146(emphasis) 
 msgid "List of Packages by Status"
@@ -359,7 +359,7 @@ msgstr "<emphasis role=\"strong\">Packages installés</emphasis> : affiche la l
 
 #: package-manager.xml.in.nolegal:152(para) 
 msgid "<emphasis role=\"strong\">Updates</emphasis> — Shows the list of packages that have newer versions available within the current publisher."
-msgstr "<emphasis role=\"strong\">Updates (Mises à jour)</emphasis> : affiche la liste des packages pour lesquels il existe des versions plus récentes dans l'éditeur actuel."
+msgstr "<emphasis role=\"strong\">Mises à jour</emphasis> : affiche la liste des packages pour lesquels il existe des versions plus récentes dans l'éditeur actuel."
 
 #: package-manager.xml.in.nolegal:154(para) 
 msgid "<emphasis role=\"strong\">Not Installed Packages</emphasis> – Shows the list of packages that are not installed, but are available in the currently selected publisher."
@@ -383,11 +383,11 @@ msgstr "Le nom de l'éditeur y est également indiqué dans les cas suivants :"
 
 #: package-manager.xml.in.nolegal:164(para) 
 msgid "When the <emphasis role=\"strong\">Pubisher</emphasis> drop-down menu is set to All Publishers (Installed)"
-msgstr "Lorsque le menu déroulant <emphasis role=\"strong\">Éditeur</emphasis> est défini sur All Publishers (Installed) (Tous les éditeurs (installés)) ;"
+msgstr "Lorsque le menu déroulant <emphasis role=\"strong\">Éditeur</emphasis> est défini sur Tous les éditeurs (installés) ;"
 
 #: package-manager.xml.in.nolegal:166(para) 
 msgid "When search results are displayed for the All Publishers (Search) option"
-msgstr "Lorsque les résultats de recherche sont affichés pour l'option All Publishers (Search) (Tous les éditeurs (recherche)) ;"
+msgstr "Lorsque les résultats de recherche sont affichés pour l'option Tous les éditeurs (recherche) ;"
 
 #: package-manager.xml.in.nolegal:168(para) 
 msgid "When a recent search result is displayed"
@@ -437,7 +437,7 @@ msgstr "Quitter les préférences"
 
 #: package-manager.xml.in.nolegal:189(para) 
 msgid "The Package Manager application can remember some of its current settings if the <emphasis role=\"strong\">Remember current state on exit</emphasis> option in the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> is checked."
-msgstr "L'application du Gestionnaire de packages peut mémoriser certains des paramètres définis lorsque l'option <emphasis role=\"strong\">Remember current state on exit (Mémoriser l'état actuel en quittant) </emphasis> du menu <menuchoice><guimenu>Édition</guimenu><guimenuitem>Préférences</guimenuitem></menuchoice> est sélectionnée."
+msgstr "L'application du Gestionnaire de packages peut mémoriser certains des paramètres définis lorsque l'option <emphasis role=\"strong\">Mémoriser l'état actuel en quittant</emphasis> du menu <menuchoice><guimenu>Édition</guimenu><guimenuitem>Préférences</guimenuitem></menuchoice> est sélectionnée."
 
 #: package-manager.xml.in.nolegal:190(para) 
 msgid "The following settings are saved:"
@@ -445,15 +445,15 @@ msgstr "Les paramètres suivants sont sauvegardés :"
 
 #: package-manager.xml.in.nolegal:191(para) 
 msgid "<emphasis role=\"strong\">Vertical separators</emphasis> – The size of the columns in the main window the Package Manager"
-msgstr "<emphasis role=\"strong\">Vertical separators (Séparateurs verticaux)</emphasis> : taille des colonnes dans la fenêtre principale du Gestionnaire de packages ;"
+msgstr "<emphasis role=\"strong\">Séparateurs verticaux</emphasis> : taille des colonnes dans la fenêtre principale du Gestionnaire de packages ;"
 
 #: package-manager.xml.in.nolegal:193(para) 
 msgid "<emphasis role=\"strong\">Window size</emphasis> – The size of the Package Manager window"
-msgstr "<emphasis role=\"strong\">Window size (Taille de la fenêtre)</emphasis> : taille de la fenêtre du Gestionnaire de packages ;"
+msgstr "<emphasis role=\"strong\">Taille de la fenêtre</emphasis> : taille de la fenêtre du Gestionnaire de packages ;"
 
 #: package-manager.xml.in.nolegal:195(para) 
 msgid "<emphasis role=\"strong\">Current publisher</emphasis> – The publisher that is selected when the Package Manager is closed"
-msgstr "<emphasis role=\"strong\">Current publisher (Éditeur actuel)</emphasis> : éditeur sélectionné au moment de la fermeture du Gestionnaire des packages ;"
+msgstr "<emphasis role=\"strong\">Éditeur actuel</emphasis> : éditeur sélectionné au moment de la fermeture du Gestionnaire des packages ;"
 
 #: package-manager.xml.in.nolegal:199(title) 
 msgid "Confirmation Dialog Preferences"
@@ -461,7 +461,7 @@ msgstr "Préférences de la boîte de dialogue de confirmation"
 
 #: package-manager.xml.in.nolegal:200(para) 
 msgid "When a package is selected for installation, update, or removal, a confirmation dialog is displayed that displays the list of packages and the action to be performed. Under the <emphasis role=\"strong\">Show Confirmation Dialog</emphasis> uncheck <emphasis role=\"strong\">On Updates</emphasis>, <emphasis role=\"strong\">On Package Install/Update</emphasis>, and <emphasis role=\"strong\">On Package Remove</emphasis> to turn these settings off."
-msgstr "Lorsqu'un package est sélectionné pour être installé, mis à jour ou supprimé, une boîte de dialogue de confirmation s'affiche en indiquant la liste des packages et l'action à exécuter. Dans la section <emphasis role=\"strong\">Show Confirmation Dialog (Afficher la boîte de dialogue de confirmation)</emphasis>, désélectionnez les options <emphasis role=\"strong\">On Updates (Lors des mises à jour)</emphasis>, <emphasis role=\"strong\">On Package Install/Update (Lors des installations/mises à jour de packages)</emphasis> et <emphasis role=\"strong\">On Package Remove (Lors des suppressions de packages)</emphasis> pour les désactiver."
+msgstr "Lorsqu'un package est sélectionné pour être installé, mis à jour ou supprimé, une boîte de dialogue de confirmation s'affiche en indiquant la liste des packages et l'action à exécuter. Dans la section <emphasis role=\"strong\">Afficher la boîte de dialogue de confirmation</emphasis>, désélectionnez les options <emphasis role=\"strong\">Lors des mises à jour</emphasis>, <emphasis role=\"strong\">Lors des installations/mises à jour de packages</emphasis> et <emphasis role=\"strong\">Lors des suppressions de packages</emphasis> pour les désactiver."
 
 #: package-manager.xml.in.nolegal:203(title) 
 msgid "Working With Packages"
@@ -543,7 +543,7 @@ msgstr "Pour rechercher un package, vous disposez des options suivantes :"
 
 #: package-manager.xml.in.nolegal:235(para) 
 msgid "<emphasis role=\"strong\">Search the current publisher</emphasis> – Search for a package in the publisher currently selected in the <emphasis role=\"strong\"> Publisher</emphasis> drop-down menu. If you do not know the status of the package you are searching for, set the <emphasis role=\"strong\">View</emphasis> drop-down menu to <emphasis role=\"strong\">All Packages</emphasis>."
-msgstr "<emphasis role=\"strong\">Search the current publisher (Rechercher dans l'éditeur actuel)</emphasis> : recherchez un package dans l'éditeur actuellement sélectionné dans le menu déroulant <emphasis role=\"strong\"> Éditeur</emphasis>. Si vous ne connaissez pas l'état du package recherché, réglez le menu déroulant <emphasis role=\"strong\">Affichage</emphasis> sur <emphasis role=\"strong\">Tous les packages</emphasis>."
+msgstr "<emphasis role=\"strong\">Rechercher dans l'éditeur actuel</emphasis> : recherchez un package dans l'éditeur actuellement sélectionné dans le menu déroulant <emphasis role=\"strong\"> Éditeur</emphasis>. Si vous ne connaissez pas l'état du package recherché, réglez le menu déroulant <emphasis role=\"strong\">Affichage</emphasis> sur <emphasis role=\"strong\">Tous les packages</emphasis>."
 
 #: package-manager.xml.in.nolegal:236(para) 
 msgid "Enter a description, or a partial name in the <emphasis role=\"strong\">Search</emphasis> field. For example, you might type one of the following search terms to search for <filename>SUNWgnome-games</filename> :"
@@ -576,12 +576,12 @@ msgstr "outils"
 
 #: package-manager.xml.in.nolegal:251(para) 
 msgid "<emphasis role=\"strong\">Search all publishers</emphasis> – Choose <emphasis role=\"strong\">All Publishers(Search)</emphasis> from the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu to search for a package across all configured publishers. If you do not know the status of the package you are searching for, set the <emphasis role=\"strong\">View</emphasis> drop-down menu to <emphasis role=\"strong\">All Packages</emphasis>."
-msgstr "<emphasis role=\"strong\">Rechercher dans tous les éditeurs</emphasis> : sélectionnez <emphasis role=\"strong\">All Publishers(Search) (Tous les éditeurs (recherche))</emphasis> dans le menu déroulant <emphasis role=\"strong\">Éditeur/emphasis> pour rechercher un package dans l'ensemble des éditeurs configurés. Si vous ne connaissez pas l'état du package que vous recherchez, réglez le menu déroulant <emphasis role=\"strong\">Affichage</emphasis> sur <emphasis role=\"strong\">Tous les packages</emphasis>."
+msgstr "<emphasis role=\"strong\">Rechercher dans tous les éditeurs</emphasis> : sélectionnez <emphasis role=\"strong\">Tous les éditeurs (recherche)</emphasis> dans le menu déroulant <emphasis role=\"strong\">Éditeur/emphasis> pour rechercher un package dans l'ensemble des éditeurs configurés. Si vous ne connaissez pas l'état du package que vous recherchez, réglez le menu déroulant <emphasis role=\"strong\">Affichage</emphasis> sur <emphasis role=\"strong\">Tous les packages</emphasis>."
 
 #: package-manager.xml.in.nolegal:252(para) 
 msgid "Type a description of the package in the <emphasis role=\"strong\">Search</emphasis> field. For example, the <filename>SUNWdiveintopython</filename> package is a book on Python programming. The description of the package contains the string <emphasis>book</emphasis>. To search for this package, you might then type one of the following terms:"
 msgstr "Entrez une description du package dans le champ <emphasis role=\"strong\">Recherche</emphasis>. Par exemple, le package "
-       "<filename>SUNWdiveintopython</filename> est un ouvrage sur le programme Python. La description du package contient la chaîne "
+       "<filename>SUNWdiveintopython</filename> est un ouvrage sur la programmation en Python. La description du package contient la chaîne "
        "<emphasis>livre</emphasis>. Pour rechercher ce package, vous pouvez taper l'un des termes suivants :"
 
 #: package-manager.xml.in.nolegal:253(para) 
@@ -622,7 +622,7 @@ msgstr "Guillemets doubles"
 
 #: package-manager.xml.in.nolegal:270(para) 
 msgid "When a search term is placed within double quotes, the Package Manager will search for packages that <emphasis role=\"strong\">match the search term exactly</emphasis>."
-msgstr "Lorsque des termes de recherche sont placés entre guillemets doubles, le Gestionnaire de packages va rechercher des packages qui <emphasis role=\"strong\">correspondent à l'expression exacte recherchée</emphasis>."
+msgstr "Lorsque des termes de recherche sont placés entre guillemets doubles, le Gestionnaire de packages va rechercher des packages qui <emphasis role=\"strong\">correspondent à l'expression recherchée</emphasis>."
 
 #: package-manager.xml.in.nolegal:273(emphasis) 
 msgid "Wildcard *"
@@ -650,7 +650,7 @@ msgstr "Annulation de la recherche de package"
 
 #: package-manager.xml.in.nolegal:286(para) 
 msgid "If you want to cancel a search, use the Cancel Search icon at the bottom of the main window of the Package Manager. This icon is visible on the status bar only during a search operation."
-msgstr "Si vous souhaitez annuler une recherche, utilisez l'icône Cancel Search (Annuler la recherche) en bas de la fenêtre principale du Gestionnaire de packages. Cette icône sera visible dans la barre d'état uniquement lors d'une opération de recherche."
+msgstr "Si vous souhaitez annuler une recherche, utilisez l'icône Annuler la recherche en bas de la fenêtre principale du Gestionnaire de packages. Cette icône sera visible dans la barre d'état uniquement lors d'une opération de recherche."
 
 #: package-manager.xml.in.nolegal:288(title) 
 msgid "Update a Package"
@@ -662,19 +662,19 @@ msgstr "Recherchez l'icône des mises à jour en regard du nom de package instal
 
 #: package-manager.xml.in.nolegal:290(para) 
 msgid "Select the <menuchoice><guimenuitem>Updates</guimenuitem></menuchoice> option in the <emphasis role=\"strong\">View</emphasis> drop-down menu to list all packages that have updates available in the currently selected publisher."
-msgstr "Sélectionnez l'option <menuchoice><guimenuitem>Updates (Mises à jour)</guimenuitem></menuchoice> dans le menu déroulant <emphasis role=\"strong\">Affichage</emphasis> pour afficher tous les packages pour lesquels des mises à jour sont disponibles dans l'éditeur actuellement sélectionné."
+msgstr "Sélectionnez l'option <menuchoice><guimenuitem>Mises à jour</guimenuitem></menuchoice> dans le menu déroulant <emphasis role=\"strong\">Affichage</emphasis> pour afficher tous les packages pour lesquels des mises à jour sont disponibles dans l'éditeur actuellement sélectionné."
 
 #: package-manager.xml.in.nolegal:292(para) 
 msgid "Select the <menuchoice><guimenuitem>Updates</guimenuitem></menuchoice> option in the <emphasis role=\"strong\">View</emphasis> drop-down menu and the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> in the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu to list all packages that have updates available from all publishers."
-msgstr "Sélectionnez l'option <menuchoice><guimenuitem>Updates (Mises à jour)</guimenuitem></menuchoice> dans le menu déroulant <emphasis role=\"strong\">Affichage</emphasis> et l'option <emphasis role=\"strong\">All Publishers (Installed) (Tous les éditeurs (installés))</emphasis> dans le menu déroulant <emphasis role=\"strong\">Éditeur</emphasis> pour afficher tous les packages pour lesquels des mises à jour sont disponibles dans l'ensemble des éditeurs."
+msgstr "Sélectionnez l'option <menuchoice><guimenuitem>Mises à jour</guimenuitem></menuchoice> dans le menu déroulant <emphasis role=\"strong\">Affichage</emphasis> et l'option <emphasis role=\"strong\">Tous les éditeurs (installés)</emphasis> dans le menu déroulant <emphasis role=\"strong\">Éditeur</emphasis> pour afficher tous les packages pour lesquels des mises à jour sont disponibles dans l'ensemble des éditeurs."
 
 #: package-manager.xml.in.nolegal:295(para) 
 msgid "Updating a package may fail sometimes, due to inherent dependencies of the package you have selected for installation or update. You may need to update all packages on your system to get the latest updates."
-msgstr "La mise à jour d'un package peut parfois échouer en raison des dépendances inhérentes du package sélectionné pour être installé ou mis à jour. Il est possible que vous deviez mettre à jour l'ensemble des packages de votre système pour obtenir les mises à jour les plus récentes."
+msgstr "La mise à jour d'un package peut parfois échouer en raison des dépendances inhérentes au package sélectionné pour être installé ou mis à jour. Il est possible que vous deviez mettre à jour l'ensemble des packages de votre système pour obtenir les mises à jour les plus récentes."
 
 #: package-manager.xml.in.nolegal:297(para) 
 msgid "Select the package or packages you want to update and click <guibutton>Install/Update</guibutton> to install the latest version of the package. Use the <emphasis role=\"strong\">Updates</emphasis> icon on the toolbar to update all packages on your system."
-msgstr "Sélectionnez le ou les packages à mettre à jour et cliquez sur <guibutton>Installer/Mettre à jour</guibutton> pour installer la dernière version du ou des packages. Utilisez l'icône <emphasis role=\"strong\">Updates (Mises à jour)</emphasis> de la barre d'outils pour mettre à jour l'ensemble des packages de votre système."
+msgstr "Sélectionnez le ou les packages à mettre à jour et cliquez sur <guibutton>Installer/Mettre à jour</guibutton> pour installer la dernière version du ou des packages. Utilisez l'icône <emphasis role=\"strong\">Mises à jour</emphasis> de la barre d'outils pour mettre à jour l'ensemble des packages de votre système."
 
 #: package-manager.xml.in.nolegal:299(title) 
 msgid "Package Version Information"
@@ -686,15 +686,15 @@ msgstr "Sélectionnez un package dans la fenêtre principale du Gestionnaire de 
 
 #: package-manager.xml.in.nolegal:301(para) 
 msgid "<emphasis role=\"strong\">Installable Version</emphasis> – The version of a package that is available for installation or an update. This version may be older than the latest available version of the package due to package dependencies on the system. Hence you may not be able to install the latest available version of the package unless you update your system using the <emphasis role=\"strong\">Updates</emphasis> icon on the toolbar."
-msgstr "<emphasis role=\"strong\">Installable Version (Version installable)</emphasis> : version d'un package disponible pour une installation ou une mise à jour. Cette version peut être plus ancienne que la dernière version disponible du package, en raison des dépendances des packages sur le système. Par conséquent, il ne vous sera peut-être pas possible d'installer la dernière version disponible du package, à moins de mettre à jour votre système à l'aide de l'icône <emphasis role=\"strong\">Updates (Mises à jour)</emphasis> de la barre d'outils."
+msgstr "<emphasis role=\"strong\">Version installable</emphasis> : version d'un package disponible pour une installation ou une mise à jour. Cette version peut être plus ancienne que la dernière version disponible du package, en raison des dépendances des packages sur le système. Par conséquent, il ne vous sera peut-être pas possible d'installer la dernière version disponible du package, à moins de mettre à jour votre système à l'aide de l'icône <emphasis role=\"strong\">Mises à jour</emphasis> de la barre d'outils."
 
 #: package-manager.xml.in.nolegal:303(para) 
 msgid "<emphasis role=\"strong\">Installed Version</emphasis> – The version of the package installed on the system."
-msgstr "<emphasis role=\"strong\">Installed Version (Version installée)</emphasis> : version du package installé sur le système."
+msgstr "<emphasis role=\"strong\">Version installée</emphasis> : version du package installé sur le système."
 
 #: package-manager.xml.in.nolegal:305(para) 
 msgid "<emphasis role=\"strong\">Latest Version</emphasis> – This is the latest version of the package available for installation or update. The latest version can be installed if your system is up-to-date."
-msgstr "<emphasis role=\"strong\">Latest Version (Version la plus récente)</emphasis> : version la plus récente d'un package disponible pour une installation ou une mise à jour. Cette version peut être installée si votre système est à jour."
+msgstr "<emphasis role=\"strong\">Dernière version</emphasis> : version la plus récente d'un package disponible pour une installation ou une mise à jour. Cette version peut être installée si votre système est à jour."
 
 #: package-manager.xml.in.nolegal:309(title) 
 msgid "View Installed Packages From All Publishers"
@@ -702,11 +702,11 @@ msgstr "Affichage des packages installés issus de tous les éditeurs"
 
 #: package-manager.xml.in.nolegal:310(para) 
 msgid "Choose the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> from the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu filter to view a list of all packages that you have installed from all publishers."
-msgstr "Sélectionnez l'option <emphasis role=\"strong\">All Publishers (Installed) (Tous les éditeurs (installés))</emphasis> dans le menu déroulant <emphasis role=\"strong\">Éditeur</emphasis> pour afficher une liste des packages que vous avez installés depuis tous les éditeurs."
+msgstr "Sélectionnez l'option <emphasis role=\"strong\">Tous les éditeurs (installés)</emphasis> dans le menu déroulant <emphasis role=\"strong\">Éditeur</emphasis> pour afficher une liste des packages que vous avez installés depuis tous les éditeurs."
 
 #: package-manager.xml.in.nolegal:311(para) 
 msgid "You cannot search for a package from the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> option. Switch to <emphasis role=\"strong\">All Publishers (Search)</emphasis> to search for a package."
-msgstr "Vous ne pouvez rechercher un package lorsque l'option <emphasis role=\"strong\">All Publishers (Installed) (Tous les éditeurs (installés))</emphasis> est sélectionnée. Vous devez passer à l'option <emphasis role=\"strong\">All Publishers (Search) (Tous les éditeurs (recherche))</emphasis> pour rechercher un package."
+msgstr "Vous ne pouvez pas rechercher un package lorsque l'option <emphasis role=\"strong\">Tous les éditeurs (installés)</emphasis> est sélectionnée. Vous devez passer à l'option <emphasis role=\"strong\">Tous les éditeurs (recherche)</emphasis> pour rechercher un package."
 
 #: package-manager.xml.in.nolegal:315(title) 
 msgid "Introduction to Boot Environments"
@@ -714,7 +714,7 @@ msgstr "Introduction aux environnements d'initialisation"
 
 #: package-manager.xml.in.nolegal:316(para) 
 msgid "A boot environment is an image that is bootable. Upon an initial OpenSolaris installation, a boot environment is created."
-msgstr "Un environnement d'initialisation est une image amorçable. Suite à une installation initiale de OpenSolaris, un environnement d'initialisation est créé."
+msgstr "Un environnement d'initialisation est une image amorçable. Suite à une installation initiale d'OpenSolaris, un environnement d'initialisation est créé."
 
 #: package-manager.xml.in.nolegal:317(para) 
 msgid "You can maintain multiple boot environments on your OpenSolaris 2010.03 system. Use the <command>beadm(1)</command> command from the command-line interface (CLI) to create, rename, mount or unmount, or destroy these boot environments."
@@ -752,15 +752,15 @@ msgstr "Pour mettre à jour tous les packages d'une image, suivez la procédure 
 
 #: package-manager.xml.in.nolegal:324(para) 
 msgid "Click <guibutton>Updates</guibutton> to start the process of updating <emphasis role=\"strong\">all</emphasis> the packages installed in your image."
-msgstr "Cliquez sur <guibutton>Updates (Mises à jour)</guibutton> pour lancer le processus de mise à jour de <emphasis role=\"strong\">tous</emphasis> les packages installés dans l'image."
+msgstr "Cliquez sur <guibutton>Mises à jour</guibutton> pour lancer le processus de mise à jour de <emphasis role=\"strong\">tous</emphasis> les packages installés dans l'image."
 
 #: package-manager.xml.in.nolegal:325(para) 
 msgid "You can also choose <menuchoice><guimenu>Package</guimenu><guisubmenu>Updates</guisubmenu></menuchoice> to start the process."
-msgstr "Vous pouvez également sélectionner <menuchoice><guimenu>Package</guimenu><guisubmenu>Updates (Mises à jour)</guisubmenu></menuchoice> pour lancer le processus."
+msgstr "Vous pouvez également sélectionner <menuchoice><guimenu>Package</guimenu><guisubmenu>Mises à jour</guisubmenu></menuchoice> pour lancer le processus."
 
 #: package-manager.xml.in.nolegal:326(para) 
 msgid "If no updates are available to your installed packages, a <emphasis role=\"strong\">No Updates Available</emphasis> message is displayed after you click <guibutton>Updates</guibutton>."
-msgstr "Si aucune mise à jour n'est disponible pour les packages installés, le message <emphasis role=\"strong\">No Updates Available (Aucune mise à jour disponible)</emphasis> s'affiche lorsque vous cliquez sur <guibutton>Updates (Mises à jour)</guibutton>."
+msgstr "Si aucune mise à jour n'est disponible pour les packages installés, le message <emphasis role=\"strong\">Aucune mise à jour disponible</emphasis> s'affiche lorsque vous cliquez sur <guibutton>Mises à jour</guibutton>."
 
 #: package-manager.xml.in.nolegal:329(para) 
 msgid "The process of updating all the packages installed on your system is completed in three phases:"
@@ -784,7 +784,7 @@ msgstr "Cliquez sur l'onglet <emphasis>Détails</emphasis> qui s'affiche à chac
 
 #: package-manager.xml.in.nolegal:339(para) 
 msgid "After the update process is completed successfully, an <emphasis role=\"strong\">Update All Complete</emphasis> dialog is displayed. A new boot environment is created which consists of the updated packages. The new boot environment is given a default name by the Package Manager, you can change the given boot environment name."
-msgstr "Une fois le processus de mise à jour exécuté, une boîte de dialogue <emphasis role=\"strong\">Update All Complete (Mise à jour globale terminée)</emphasis> s'affiche. Un environnement d'initialisation est créé, composé des packages mis à jour. Le Gestionnaire de packages lui donne un nom par défaut, que vous pouvez modifier."
+msgstr "Une fois le processus de mise à jour exécuté, une boîte de dialogue <emphasis role=\"strong\">Opération Tout mettre à jour terminée</emphasis> s'affiche. Un environnement d'initialisation est créé, composé des packages mis à jour. Le Gestionnaire de packages lui donne un nom par défaut, que vous pouvez modifier."
 
 #: package-manager.xml.in.nolegal:340(para) 
 msgid "If the Package Manager is unable to create a new boot environment, an error message is displayed. See the <xref linkend=\"gilfh\"/> section on how to rectify the error and continue with updating your image."
@@ -824,7 +824,7 @@ msgstr "Si vous souhaitez rectifier l'erreur et poursuivre le processus Tout met
 
 #: package-manager.xml.in.nolegal:355(para) 
 msgid "Click <guibutton>Manage BE</guibutton> to display the <emphasis role=\"strong\">Manage Boot Environment</emphasis> dialog."
-msgstr "Cliquez sur <guibutton>Manage BE (Gérer les environnement d'initialisation)</guibutton> pour afficher la boîte de dialogue <emphasis role=\"strong\">Gestion des environnements d'initialisation</emphasis>."
+msgstr "Cliquez sur <guibutton>Gestion dles environnement d'initialisation</guibutton> pour afficher la boîte de dialogue <emphasis role=\"strong\">Gestion des environnements d'initialisation</emphasis>."
 
 #: package-manager.xml.in.nolegal:357(para) 
 msgid "Select the boot environments that you want to delete."
@@ -965,15 +965,15 @@ msgstr "Cliquez sur <guibutton>Ajouter</guibutton>."
 
 #: package-manager.xml.in.nolegal:426(para) 
 msgid "The <emphasis role=\"strong\">Adding Publisher</emphasis> dialog is displayed. Click Cancel to cancel the process."
-msgstr "La boîte de dialogue <emphasis role=\"strong\">Adding Publisher (Ajout d'éditeur)</emphasis> s'affiche. Cliquez sur Annuler pour annuler le processus."
+msgstr "La boîte de dialogue <emphasis role=\"strong\">Ajout d'un éditeur</emphasis> s'affiche. Cliquez sur Annuler pour annuler le processus."
 
 #: package-manager.xml.in.nolegal:428(para) 
 msgid "The <emphasis role=\"strong\">Adding Publisher Complete</emphasis> dialog is displayed if the publisher is added successfully."
-msgstr "La boîte de dialogue <emphasis role=\"strong\">Adding Publisher Complete (Ajout de l'éditeur terminé)</emphasis> s'affiche si l'opération a réussi."
+msgstr "La boîte de dialogue <emphasis role=\"strong\">Ajout de l'éditeur terminé</emphasis> s'affiche si l'opération a réussi."
 
 #: package-manager.xml.in.nolegal:431(para) 
 msgid "An <emphasis role=\"strong\">Adding Publisher Error</emphasis> is displayed if the publisher could not be added. Click <emphasis role=\"strong\">Details</emphasis> to get more information about the error."
-msgstr "Le message <emphasis role=\"strong\">Adding Publisher Error (Erreur lors de l'ajout de l'éditeur)</emphasis> s'affiche si l'éditeur n'a pas pu être ajouté. Pour obtenir plus d'informations sur l'erreur, cliquez sur <emphasis role=\"strong\">Détails</emphasis> ."
+msgstr "Le message <emphasis role=\"strong\">Erreur lors de l'ajout de l'éditeur</emphasis> s'affiche si l'éditeur n'a pas pu être ajouté. Pour obtenir plus d'informations sur l'erreur, cliquez sur <emphasis role=\"strong\">Détails</emphasis> ."
 
 #: package-manager.xml.in.nolegal:434(title) 
 msgid "Remove a Publisher"
@@ -994,7 +994,7 @@ msgstr "Cliquez sur un éditeur de la liste pour le sélectionner. Cliquez sur <
 
 #: package-manager.xml.in.nolegal:440(para) 
 msgid "The <emphasis role=\"strong\">Manage Publishers Confirmation</emphasis> dialog is displayed."
-msgstr "La boîte de dialogue <emphasis role=\"strong\">Manage Publishers Confirmation (Confirmation de l'organisation des éditeurs)</emphasis> s'affiche."
+msgstr "La boîte de dialogue <emphasis role=\"strong\">Confirmation de l'organisation des éditeurs</emphasis> s'affiche."
 
 #: package-manager.xml.in.nolegal:442(para) 
 msgid "Click <guibutton>OK</guibutton> to save the changes and remove the publisher or <guibutton>Cancel</guibutton> to return to the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog without making any changes."
@@ -1151,7 +1151,7 @@ msgstr "Exportation de sélections de packages sous forme de fichiers WebInstall
 
 #: package-manager.xml.in.nolegal:547(para) 
 msgid "If you want to distribute some of the packages available on your system to others for easy installation and distribution, you can export the references to the packages, using the WebInstall process. The <menuchoice><guisubmenu>File</guisubmenu><guimenuitem>Export Selections</guimenuitem></menuchoice> feature enables you to create a <filename>.p5i</filename> file containing the installation instructions for the selected packages. The <filename>.p5i</filename> file is can then be distributed for use. See the <xref linkend=\"webinstall\"/> section on how to install packages from a <filename>.p5i</filename>."
-msgstr "Si vous souhaitez rendre certains des packages disponibles sur votre système accessibles à d'autres utilisateurs à des fins d'installation et de distribution, vous pouvez utiliser le processus WebInstall pour exporter les références des packages. La fonctionnalité <menuchoice><guisubmenu>Fichier</guisubmenu><guimenuitem>Export Selections (Exporter les sélections)</guimenuitem></menuchoice> vous permet de créer un fichier <filename>.p5i</filename> contenant les instructions d'installation des packages sélectionnés. Le fichier <filename>.p5i</filename> peut ensuite être distribué et utilisé par d'autres utilisateurs. Reportez-vous à la section <xref linkend=\"webinstall\"/> relative à l'installation de packages à partir d'un fichier <filename>.p5i</filename>."
+msgstr "Si vous souhaitez rendre certains des packages disponibles sur votre système accessibles à d'autres utilisateurs à des fins d'installation et de distribution, vous pouvez utiliser le processus WebInstall pour exporter les références des packages. La fonctionnalité <menuchoice><guisubmenu>Fichier</guisubmenu><guimenuitem>Exporter les sélections</guimenuitem></menuchoice> vous permet de créer un fichier <filename>.p5i</filename> contenant les instructions d'installation des packages sélectionnés. Le fichier <filename>.p5i</filename> peut ensuite être distribué et utilisé par d'autres utilisateurs. Reportez-vous à la section <xref linkend=\"webinstall\"/> relative à l'installation de packages à partir d'un fichier <filename>.p5i</filename>."
 
 #: package-manager.xml.in.nolegal:548(para) 
 msgid "The following procedure lists the steps to create a <filename>.p5i</filename> file and export your files."
@@ -1167,7 +1167,7 @@ msgstr "Cochez la case en regard du ou des packages pour les sélectionner. Les 
 
 #: package-manager.xml.in.nolegal:553(para) 
 msgid "Click <menuchoice><guisubmenu>File</guisubmenu><guimenuitem>Export Selections</guimenuitem></menuchoice> to display the <emphasis role=\"strong\">Export Selections Confirmation</emphasis> window."
-msgstr "Pour afficher la fenêtre <emphasis role=\"strong\">Export Selections Confirmation (Confirmation des sélections d'exportation)</emphasis>, cliquez sur <menuchoice><guisubmenu>Fichier</guisubmenu><guimenuitem>Export Selections (Exporter les sélections)</guimenuitem></menuchoice>."
+msgstr "Pour afficher la fenêtre <emphasis role=\"strong\">Confirmation des sélections d'exportation</emphasis>, cliquez sur <menuchoice><guisubmenu>Fichier</guisubmenu><guimenuitem>Exporter les sélections</guimenuitem></menuchoice>."
 
 #: package-manager.xml.in.nolegal:555(para) 
 msgid "Click <guibutton>OK</guibutton> to confirm the selections and proceed or <guibutton>Cancel</guibutton> to cancel the selections."
@@ -1175,7 +1175,7 @@ msgstr "Cliquez sur <guibutton>OK</guibutton> pour confirmer les sélections et 
 
 #: package-manager.xml.in.nolegal:557(para) 
 msgid "The <emphasis role=\"strong\">Export Selections</emphasis> window is displayed."
-msgstr "La fenêtre <emphasis role=\"strong\">Export Selections (Exporter les sélections)</emphasis> s'affiche."
+msgstr "La fenêtre <emphasis role=\"strong\">Exporter les sélections</emphasis> s'affiche."
 
 #: package-manager.xml.in.nolegal:559(para) 
 msgid "A default name for the <filename>p5i</filename> file with the extension <filename>.p5i</filename> is provided. Click inside the <emphasis role=\"strong\">Name</emphasis> field to change the name of the <filename>p5i</filename> file."
@@ -1183,7 +1183,7 @@ msgstr "Un nom par défaut portant l'extension <filename>.p5i</filename> est don
 
 #: package-manager.xml.in.nolegal:561(para) 
 msgid "The file is saved in the <filename>/tmp</filename> folder by default. Click the <emphasis role=\"strong\">Browse for other folders</emphasis> tab to select your own folder."
-msgstr "Par défaut, le fichier est enregistré dans le dossier <filename>/tmp</filename>. Cliquez sur l'onglet <emphasis role=\"strong\">Browse for other folders (Rechercher d'autres dossiers)</emphasis> pour sélectionner votre dossier."
+msgstr "Par défaut, le fichier est enregistré dans le dossier <filename>/tmp</filename>. Cliquez sur l'onglet <emphasis role=\"strong\">Rechercher d'autres dossiers</emphasis> pour sélectionner votre dossier."
 
 #: package-manager.xml.in.nolegal:563(para) 
 msgid "Choose the <filename>p5i Files</filename> option in the drop-down menu located at the bottom right hand side of the window."
@@ -1254,7 +1254,7 @@ msgstr "La boîte de dialogue <emphasis role=\"strong\">Ajouter un éditeur</emp
 
 #: package-manager.xml.in.nolegal:590(para) 
 msgid "The <emphasis role=\"strong\">Adding Publisher Complete</emphasis> dialog is displayed if the publisher has been added successfully."
-msgstr "La boîte de dialogue <emphasis role=\"strong\">Adding Publisher Complete (Ajout de l'éditeur terminé)</emphasis> s'affiche si l'opération a réussi."
+msgstr "La boîte de dialogue <emphasis role=\"strong\">Ajout de l'éditeur terminé</emphasis> s'affiche si l'opération a réussi."
 
 #: package-manager.xml.in.nolegal:592(para) 
 msgid "(Optional) If the publishers to be added are secure publishers, an SSL key and certificate is required. Browse to locate the SSL Key and SSL Certificate on your system."
@@ -1278,7 +1278,7 @@ msgstr "Utilisation de WebInstall avec un éditeur désactivé"
 
 #: package-manager.xml.in.nolegal:602(para) 
 msgid "Sometimes a <filename>.p5i</filename> file may contain packages from a disabled publisher. In such cases WebInstall opens up an <emphasis role=\"strong\">Enable Publisher</emphasis> dialog which allows the user to enable the publisher before installing packages."
-msgstr "Il arrive qu'un fichier <filename>.p5i</filename> contienne des packages issus d'un éditeur désactivé. Le cas échéant, WebInstall ouvre une boîte de dialogue <emphasis role=\"strong\">Enable Publisher (Activer l'éditeur)</emphasis> permettant à l'utilisateur d'activer l'éditeur avant d'installer les packages."
+msgstr "Il arrive qu'un fichier <filename>.p5i</filename> contienne des packages issus d'un éditeur désactivé. Le cas échéant, WebInstall ouvre une boîte de dialogue <emphasis role=\"strong\">Activer l'éditeur</emphasis> permettant à l'utilisateur d'activer l'éditeur avant d'installer les packages."
 
 #: package-manager.xml.in.nolegal:605(title) 
 msgid "Working With the Update Manager"
@@ -1406,11 +1406,11 @@ msgstr "Pour que le processus Tout mettre à jour s'effectue correctement, la cr
 
 #: package-manager.xml.in.nolegal:658(para) 
 msgid "<literal>Not enough disk space, the Update All action cannot be performed. Choose Manage BE to manage your boot environments and free up disk space</literal>."
-msgstr "<literal>Not enough disk space, the Update All action cannot be performed. Choose Manage BE to manage your boot environments and free up disk space. (Espace disque insuffisant, l'opération Tout mettre à jour ne peut pas être effectuée. Sélectionnez l'option de gestion des environnements d'initialisation pour libérer de l'espace disque.)</literal>."
+msgstr "<literal>Espace disque insuffisant, l'opération Tout mettre à jour ne peut pas être effectuée. Sélectionnez l'option de gestion des environnements d'initialisation pour libérer de l'espace disque.</literal>."
 
 #: package-manager.xml.in.nolegal:661(para) 
 msgid "Click <guibutton>Manage BE</guibutton> in the error dialog to go to the <emphasis role=\"strong\">Manage Boot Environments</emphasis> dialog."
-msgstr "Cliquez sur <guibutton>Manage BE (Gérer les environnements d'initialisation)</guibutton> dans le message d'erreur pour accéder à la boîte de dialogue <emphasis role=\"strong\">Gestion des environnements d'initialisation</emphasis>."
+msgstr "Cliquez sur <guibutton>Gestion des environnements d'initialisation</guibutton> dans le message d'erreur pour accéder à la boîte de dialogue <emphasis role=\"strong\">Gestion des environnements d'initialisation</emphasis>."
 
 #: package-manager.xml.in.nolegal:663(para) 
 msgid "Go to step 2 in the <xref linkend=\"gilfh\"/> section. Follow the instructions to delete old or unused boot environments and free up disk space."

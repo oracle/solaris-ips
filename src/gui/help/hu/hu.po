@@ -19,29 +19,30 @@
 # CDDL HEADER END
 #
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 msgid ""
 msgstr ""
-       "Project-Id-Version: PACKAGE VERSION\n"
-       "POT-Creation-Date: 2009-12-21 12:05+0900\n"
-       "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-       "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-       "Language-Team: LANGUAGE <LL@li.org>\n"
+       "Project-Id-Version: Package Manager\n"
+       "Report-Msgid-Bugs-To: \n"
+       "POT-Creation-Date: 2009-12-21 11:15+0900\n"
+       "PO-Revision-Date:  2009-12-21 11:15+0900\n"
+       "Last-Translator: Zsolt Suri <surizs@opensolaris.org>\n"
+       "Language-Team: Magyar Csapat <l18n-discuss@opensolaris.org>\n"
        "MIME-Version: 1.0\n"
        "Content-Type: text/plain; charset=UTF-8\n"
        "Content-Transfer-Encoding: 8bit\n"
 
 #. When image changes, this message will be marked fuzzy or untranslated for you.
 #. It doesn't matter what you translate it to: it's not used at all.
-#: package-manager.xml.in.nolegal:38(None) package-manager.xml.in.nolegal:89(None) 
+#: package-manager.xml.in.nolegal:38(None) package-manager.xml.in.nolegal:88(None) 
 msgid "@@image: 'figures/pkgmgr-main.png'; md5=e2194180dd5eca2d8e3912fee614e061"
 msgstr "@@image: 'figures/pkgmgr-main.png'; md5=e2194180dd5eca2d8e3912fee614e061"
 
 #. When image changes, this message will be marked fuzzy or untranslated for you.
 #. It doesn't matter what you translate it to: it's not used at all.
-#: package-manager.xml.in.nolegal:69(None) 
+#: package-manager.xml.in.nolegal:68(None) 
 msgid "@@image: 'figures/startpage_new.png'; md5=9f8516015a79fd2b5c456128482affe4"
 msgstr "@@image: 'figures/startpage_new.png'; md5=9f8516015a79fd2b5c456128482affe4"
 
@@ -134,778 +135,778 @@ msgid "About Image Packaging System"
 msgstr "Az Image Packaging System-ről"
 
 #: package-manager.xml.in.nolegal:54(para) 
-msgid "Image Packaging System (IPS) is a software delivery system that interacts with a network repository. The IPS software is a framework which provides for software lifecycle management including installation, upgrade, and removal."
-msgstr "Image Packaging System (IPS) egy szoftver szállító rendszer, amely hálózati repozítorikkal áll kapcsolatban. Az IPS szoftver egy keretrendszer, amely szoftver életciklus kezelő feladatokat lát el mint a telepítés, a frissítés és az eltávolítás."
+msgid "Image Packaging System (IPS) is a framework which provides for software lifecycle management including installation, upgrade, and removal. The OpenSolaris 2010.03 release uses IPS as its packaging system."
+msgstr "Image Packaging System (IPS) is a framework which provides for software lifecycle management including installation, upgrade, and removal. The OpenSolaris 2010.03 release uses IPS as its packaging system."
 
 #: package-manager.xml.in.nolegal:55(para) 
-msgid "The OpenSolaris 2010.03 release uses IPS as its packaging system."
-msgstr "Az OpenSolaris 2010.03 kiadása az IPS-t használja csomagkezelő rendszerként"
-
-#: package-manager.xml.in.nolegal:56(para) 
 msgid "After an initial installation of the OpenSolaris 2010.03 operating system, you will find that some of the software applications that you use on a regular basis are not immediately available to you. These software applications are available as packages in a repository for downloading and installing over the network. A repository is a source for packages."
 msgstr "After an initial installation of the OpenSolaris 2010.03 operating system, you will find that some of the software applications that you use on a regular basis are not immediately available to you. These software applications are available as packages in a repository for downloading and installing over the network. A repository is a source for packages."
 
-#: package-manager.xml.in.nolegal:57(para) 
-msgid "Users can use IPS to install packages from a repository, create and publish their own IPS packages, mirror an existing repository, and publish existing packages to a repository."
-msgstr "Users can use IPS to install packages from a repository, create and publish their own IPS packages, mirror an existing repository, and publish existing packages to a repository."
+#: package-manager.xml.in.nolegal:56(para) 
+msgid "IPS provides a set of software tools that can be used to install packages from a repository, create and publish their own IPS packages, mirror an existing repository, and publish existing packages to a repository."
+msgstr "IPS provides a set of software tools that can be used to install packages from a repository, create and publish their own IPS packages, mirror an existing repository, and publish existing packages to a repository."
 
-#: package-manager.xml.in.nolegal:58(para) 
+#: package-manager.xml.in.nolegal:57(para) 
 msgid "Once you have installed packages, IPS enables you to search, update, and manage packages on your system."
 msgstr "Miután már telepített csomagokat, az IPS lehetővé teszi csomagok keresését, frissítését és kezelését a rendszerén."
 
-#: package-manager.xml.in.nolegal:59(para) 
+#: package-manager.xml.in.nolegal:58(para) 
 msgid "With IPS , you can upgrade your system to a newer build of OpenSolaris, install and update your software to the latest available versions in a repository, and retrieve packages from mirror repositories."
 msgstr "With IPS , you can upgrade your system to a newer build of OpenSolaris, install and update your software to the latest available versions in a repository, and retrieve packages from mirror repositories."
 
-#: package-manager.xml.in.nolegal:60(emphasis) 
+#: package-manager.xml.in.nolegal:59(emphasis) 
 msgid "The Package Manager provides a subset of the tasks that can be performed from the command-line."
 msgstr "A Csomagkezelő a parancssorban végrehajtható műveletek egy részéhez nyújt elérést. "
 
-#: package-manager.xml.in.nolegal:62(para) 
-msgid "If the system on which IPS is installed is on the network, IPS can automatically access the OpenSolaris publisher. For the OpenSolaris 2010.03 release, your IPS client can access the packages from <ulink url=\"http://pkg.opensolaris.org\"/>."
-msgstr "If the system on which IPS is installed is on the network, IPS can automatically access the OpenSolaris publisher. For the OpenSolaris 2010.03 release, your IPS client can access the packages from <ulink url=\"http://pkg.opensolaris.org\"/>."
+#: package-manager.xml.in.nolegal:61(para) 
+msgid "For the OpenSolaris 2010.03 release, if the system on which IPS is installed is on the network, IPS can automatically retrieve packages provided by the OpenSolaris publisher from the package repository located at <ulink url=\"http://pkg.opensolaris.org\"/>."
+msgstr "For the OpenSolaris 2010.03 release, if the system on which IPS is installed is on the network, IPS can automatically retrieve packages provided by the OpenSolaris publisher from the package repository located at <ulink url=\"http://pkg.opensolaris.org\"/>."
 
-#: package-manager.xml.in.nolegal:63(para) 
+#: package-manager.xml.in.nolegal:62(para) 
 msgid "For more IPS documentation, see the <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"><citetitle>Image Packaging System Guide</citetitle></ulink> and the <filename>pkg</filename><ulink url=\"http://opensolaris.org/sc/src/pkg/gate/src/man/\">man pages</ulink>."
 msgstr "For more IPS documentation, see the <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"><citetitle>Image Packaging System Guide</citetitle></ulink> and the <filename>pkg</filename><ulink url=\"http://opensolaris.org/sc/src/pkg/gate/src/man/\">man pages</ulink>."
 
-#: package-manager.xml.in.nolegal:64(para) 
+#: package-manager.xml.in.nolegal:63(para) 
 msgid "For more information about IPS, visit the <ulink url=\"http://opensolaris.org/os/project/pkg\">project page</ulink>."
 msgstr "For more information about IPS, visit the <ulink url=\"http://opensolaris.org/os/project/pkg\">project page</ulink>."
 
-#: package-manager.xml.in.nolegal:66(title) 
+#: package-manager.xml.in.nolegal:65(title) 
 msgid "Getting Started With Package Manager"
 msgstr "Getting Started With Package Manager"
 
-#: package-manager.xml.in.nolegal:67(para) 
+#: package-manager.xml.in.nolegal:66(para) 
 msgid "When you start the Package Manager, a Start Page similar to the example below is displayed:"
 msgstr "When you start the Package Manager, a Start Page similar to the example below is displayed:"
 
-#: package-manager.xml.in.nolegal:68(title) 
+#: package-manager.xml.in.nolegal:67(title) 
 msgid "Package Manager Start Page"
 msgstr "Csomagkezelő Kezdő Oldal"
 
-#: package-manager.xml.in.nolegal:72(para) 
+#: package-manager.xml.in.nolegal:71(para) 
 msgid "The Start Page provides a list of featured packages that can be installed. It includes a list of some of the most popular and recent packages downloaded by the OpenSolaris community of users. The Recommended list of packages point to software applications that are frequently downloaded by the OpenSolaris user. Click the package links to install the packages."
 msgstr "The Start Page provides a list of featured packages that can be installed. It includes a list of some of the most popular and recent packages downloaded by the OpenSolaris community of users. The Recommended list of packages point to software applications that are frequently downloaded by the OpenSolaris user. Click the package links to install the packages."
 
-#: package-manager.xml.in.nolegal:73(para) 
+#: package-manager.xml.in.nolegal:72(para) 
 msgid "The Start Page also provides links to more information about the OpenSolaris project, subscribe to newsletters and join the OpenSolaris community."
 msgstr "The Start Page also provides links to more information about the OpenSolaris project, subscribe to newsletters and join the OpenSolaris community."
 
-#: package-manager.xml.in.nolegal:74(para) 
+#: package-manager.xml.in.nolegal:73(para) 
 msgid "To close the Start Page and see the list of packages in the selected publisher, perform any of the following actions in the main window of the Package Manager:"
 msgstr "To close the Start Page and see the list of packages in the selected publisher, perform any of the following actions in the main window of the Package Manager:"
 
-#: package-manager.xml.in.nolegal:75(para) 
+#: package-manager.xml.in.nolegal:74(para) 
 msgid "Select a package category"
 msgstr "Válasszon egy csomag kategóriát"
 
-#: package-manager.xml.in.nolegal:77(para) 
+#: package-manager.xml.in.nolegal:76(para) 
 msgid "Change the <emphasis role=\"strong\">View</emphasis> drop-down menu"
 msgstr "Change the <emphasis role=\"strong\">View</emphasis> drop-down menu"
 
-#: package-manager.xml.in.nolegal:79(para) 
+#: package-manager.xml.in.nolegal:78(para) 
 msgid "Perform a search"
 msgstr "Keresés indítása"
 
-#: package-manager.xml.in.nolegal:81(para) 
+#: package-manager.xml.in.nolegal:80(para) 
 msgid "Change the publisher"
 msgstr "Change the publisher"
 
-#: package-manager.xml.in.nolegal:84(para) 
+#: package-manager.xml.in.nolegal:83(para) 
 msgid "Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</guimenuitem></menuchoice> to return to the Start Page at anytime."
 msgstr "Válassza a <menuchoice><guimenu>Nézet</guimenu><guimenuitem>Kezdő Oldal</"
        "guimenuitem></menuchoice> a Kezdő Oldalhoz való visszatéréshez."
 
-#: package-manager.xml.in.nolegal:85(para) 
+#: package-manager.xml.in.nolegal:84(para) 
 msgid "See <xref linkend=\"edit-prefs\"/> to turn off the <emphasis role=\"strong\">initial display</emphasis> of the start page when the Package Manager starts."
 msgstr "See <xref linkend=\"edit-prefs\"/> to turn off the <emphasis role=\"strong\">initial display</emphasis> of the start page when the Package Manager starts."
 
-#: package-manager.xml.in.nolegal:87(title) 
+#: package-manager.xml.in.nolegal:86(title) 
 msgid "About The Package Manager Window"
 msgstr "About The Package Manager Window"
 
-#: package-manager.xml.in.nolegal:88(title) 
+#: package-manager.xml.in.nolegal:87(title) 
 msgid "Package Manager Main View"
 msgstr "Package Manager Main View"
 
-#: package-manager.xml.in.nolegal:92(para) 
+#: package-manager.xml.in.nolegal:91(para) 
 msgid "The main window of the Package Manager consists of the following elements :"
 msgstr "A Csomagkezelő fő ablaka a következő részekből áll:"
 
-#: package-manager.xml.in.nolegal:93(emphasis) 
+#: package-manager.xml.in.nolegal:92(emphasis) 
 msgid "Menubar"
 msgstr "Menüsor"
 
-#: package-manager.xml.in.nolegal:94(para) 
+#: package-manager.xml.in.nolegal:93(para) 
 msgid "The menubar contains the menus and sub-menus required to perform all of the commands related to the Package Manager."
 msgstr "The menubar contains the menus and sub-menus required to perform all of the commands related to the Package Manager."
 
-#: package-manager.xml.in.nolegal:98(emphasis) 
+#: package-manager.xml.in.nolegal:97(emphasis) 
 msgid "Toolbar"
 msgstr "Eszköztár"
 
-#: package-manager.xml.in.nolegal:99(para) 
+#: package-manager.xml.in.nolegal:98(para) 
 msgid "The toolbar contains the icons for a subset of the commands that can be performed by using the menus on the menubar. A <emphasis role=\"strong\">Search</emphasis> field is also located on the toolbar. You can perform the following actions from the toolbar :"
 msgstr "The toolbar contains the icons for a subset of the commands that can be performed by using the menus on the menubar. A <emphasis role=\"strong\">Search</emphasis> field is also located on the toolbar. You can perform the following actions from the toolbar :"
 
-#: package-manager.xml.in.nolegal:100(para) 
+#: package-manager.xml.in.nolegal:99(para) 
 msgid "<emphasis role=\"strong\">Updates</emphasis> – Click <emphasis role=\"strong\">Updates</emphasis> to check for and install the latest updates."
 msgstr "<emphasis role=\"strong\">Updates</emphasis> – Click <emphasis role=\"strong\">Updates</emphasis> to check for and install the latest updates."
 
-#: package-manager.xml.in.nolegal:102(para) 
+#: package-manager.xml.in.nolegal:101(para) 
 msgid "<emphasis role=\"strong\">Install/Update</emphasis> – Select a package and click <emphasis role=\"strong\">Install/Update</emphasis> to install or update a package."
 msgstr "<emphasis role=\"strong\">Install/Update</emphasis> – Select a package and click <emphasis role=\"strong\">Install/Update</emphasis> to install or update a package."
 
-#: package-manager.xml.in.nolegal:104(para) 
+#: package-manager.xml.in.nolegal:103(para) 
 msgid "<emphasis role=\"strong\">Refresh</emphasis> – Click <emphasis role=\"strong\">Refresh</emphasis> to reload the list of packages."
 msgstr "<emphasis role=\"strong\">Refresh</emphasis> – Click <emphasis role=\"strong\">Refresh</emphasis> to reload the list of packages."
 
-#: package-manager.xml.in.nolegal:106(para) 
+#: package-manager.xml.in.nolegal:105(para) 
 msgid "<emphasis role=\"strong\">Remove</emphasis> – Select a package and click <emphasis role=\"strong\">Remove</emphasis> to remove a package."
 msgstr "<emphasis role=\"strong\">Remove</emphasis> – Select a package and click <emphasis role=\"strong\">Remove</emphasis> to remove a package."
 
-#: package-manager.xml.in.nolegal:108(para) 
+#: package-manager.xml.in.nolegal:107(para) 
 msgid "<emphasis role=\"strong\">Search for a Package</emphasis> – Type the name or description of a package in the <emphasis role=\"strong\">Search</emphasis> field to search for a package. See the <xref linkend=\"search-pkg\"/> section for examples on how to search for a package."
 msgstr "<emphasis role=\"strong\">Search for a Package</emphasis> – Type the name or description of a package in the <emphasis role=\"strong\">Search</emphasis> field to search for a package. See the <xref linkend=\"search-pkg\"/> section for examples on how to search for a package."
 
-#: package-manager.xml.in.nolegal:113(emphasis) 
+#: package-manager.xml.in.nolegal:112(emphasis) 
 msgid "Publisher Drop-Down Menu"
 msgstr "Publisher Drop-Down Menu"
 
-#: package-manager.xml.in.nolegal:114(para) 
+#: package-manager.xml.in.nolegal:113(para) 
 msgid "The list of available publishers is shown in the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu. Users can perform the following tasks from the publisher drop-down menu :"
 msgstr "The list of available publishers is shown in the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu. Users can perform the following tasks from the publisher drop-down menu :"
 
-#: package-manager.xml.in.nolegal:115(emphasis) 
+#: package-manager.xml.in.nolegal:114(emphasis) 
 msgid "Select a publisher"
 msgstr "Select a publisher"
 
-#: package-manager.xml.in.nolegal:117(emphasis) 
+#: package-manager.xml.in.nolegal:116(emphasis) 
 msgid "View the list of packages installed from all publishers"
 msgstr "View the list of packages installed from all publishers"
 
-#: package-manager.xml.in.nolegal:119(emphasis) 
+#: package-manager.xml.in.nolegal:118(emphasis) 
 msgid "Search for package across all publishers"
 msgstr "Search for package across all publishers"
 
-#: package-manager.xml.in.nolegal:121(emphasis) 
+#: package-manager.xml.in.nolegal:120(emphasis) 
 msgid "Add a publisher"
 msgstr "Add a publisher"
 
-#: package-manager.xml.in.nolegal:126(emphasis) 
+#: package-manager.xml.in.nolegal:125(emphasis) 
 msgid "List of Packages by Category"
 msgstr "Csomagok kategóriák szerinti listázása"
 
-#: package-manager.xml.in.nolegal:127(para) 
+#: package-manager.xml.in.nolegal:126(para) 
 msgid "You can browse the available packages by category in the left hand side panel. Click on a category to see the sub-categories of packages available. There are six main categories that are displayed in the Package Manager:"
 msgstr "You can browse the available packages by category in the left hand side panel. Click on a category to see the sub-categories of packages available. There are six main categories that are displayed in the Package Manager:"
 
-#: package-manager.xml.in.nolegal:128(emphasis) 
+#: package-manager.xml.in.nolegal:127(emphasis) 
 msgid "Applications"
 msgstr "Alkalmazások"
 
-#: package-manager.xml.in.nolegal:130(emphasis) 
+#: package-manager.xml.in.nolegal:129(emphasis) 
 msgid "Desktop (GNOME)"
 msgstr "Asztali környezet (GNOME)"
 
-#: package-manager.xml.in.nolegal:132(emphasis) 
+#: package-manager.xml.in.nolegal:131(emphasis) 
 msgid "Development"
 msgstr "Fejlesztés"
 
-#: package-manager.xml.in.nolegal:134(emphasis) 
+#: package-manager.xml.in.nolegal:133(emphasis) 
 msgid "Drivers"
 msgstr "Meghajtóprogramok"
 
-#: package-manager.xml.in.nolegal:136(emphasis) 
+#: package-manager.xml.in.nolegal:135(emphasis) 
 msgid "System"
 msgstr "Rendszer"
 
-#: package-manager.xml.in.nolegal:138(emphasis) 
+#: package-manager.xml.in.nolegal:137(emphasis) 
 msgid "Web Services"
 msgstr "Web Szolgáltatások"
 
-#: package-manager.xml.in.nolegal:143(emphasis) 
+#: package-manager.xml.in.nolegal:142(emphasis) 
 msgid "Recent Searches"
 msgstr "Recent Searches"
 
-#: package-manager.xml.in.nolegal:144(para) 
+#: package-manager.xml.in.nolegal:143(para) 
 msgid "The Package Manager saves your recent package searches. Click the Recent Searches in the left hand side panel to view the packages you searched for recently."
 msgstr "The Package Manager saves your recent package searches. Click the Recent Searches in the left hand side panel to view the packages you searched for recently."
 
-#: package-manager.xml.in.nolegal:147(emphasis) 
+#: package-manager.xml.in.nolegal:146(emphasis) 
 msgid "List of Packages by Status"
 msgstr "Csomagok állapot szerinti listázása"
 
-#: package-manager.xml.in.nolegal:148(para) 
+#: package-manager.xml.in.nolegal:147(para) 
 msgid "The <emphasis role=\"strong\">View</emphasis> drop-down menu enables you to view package status with the following options :"
 msgstr "The <emphasis role=\"strong\">View</emphasis> drop-down menu enables you to view package status with the following options :"
 
-#: package-manager.xml.in.nolegal:149(para) 
+#: package-manager.xml.in.nolegal:148(para) 
 msgid "<emphasis role=\"strong\">All Packages</emphasis> – Shows the list of all packages available within the current publisher."
 msgstr "<emphasis role=\"strong\">All Packages</emphasis> – Shows the list of all packages available within the current publisher."
 
-#: package-manager.xml.in.nolegal:151(para) 
+#: package-manager.xml.in.nolegal:150(para) 
 msgid "<emphasis role=\"strong\">Installed Packages</emphasis> – Shows the list of packages installed within the current publisher on your system."
 msgstr "<emphasis role=\"strong\">Installed Packages</emphasis> – Shows the list of packages installed within the current publisher on your system."
 
-#: package-manager.xml.in.nolegal:153(para) 
+#: package-manager.xml.in.nolegal:152(para) 
 msgid "<emphasis role=\"strong\">Updates</emphasis> — Shows the list of packages that have newer versions available within the current publisher."
 msgstr "<emphasis role=\"strong\">Updates</emphasis> — Shows the list of packages that have newer versions available within the current publisher."
 
-#: package-manager.xml.in.nolegal:155(para) 
+#: package-manager.xml.in.nolegal:154(para) 
 msgid "<emphasis role=\"strong\">Not Installed Packages</emphasis> – Shows the list of packages that are not installed, but are available in the currently selected publisher."
 msgstr "<emphasis role=\"strong\">Not Installed Packages</emphasis> – Shows the list of packages that are not installed, but are available in the currently selected publisher."
 
-#: package-manager.xml.in.nolegal:157(para) 
+#: package-manager.xml.in.nolegal:156(para) 
 msgid "<emphasis role=\"strong\">Selected Packages</emphasis> – Shows the list of packages that you have selected."
 msgstr "<emphasis role=\"strong\">Kiválasztott Csomagok</emphasis> – Megjeleníti a kiválasztott csomagok listáját."
 
-#: package-manager.xml.in.nolegal:162(emphasis) 
+#: package-manager.xml.in.nolegal:161(emphasis) 
 msgid "Package Name, Status, and Description"
 msgstr "Csomag név, állapot és leírás"
 
-#: package-manager.xml.in.nolegal:163(para) 
+#: package-manager.xml.in.nolegal:162(para) 
 msgid "The list of packages in the selected category, a brief description, and their status are displayed in here."
 msgstr "The list of packages in the selected category, a brief description, and their status are displayed in here."
 
-#: package-manager.xml.in.nolegal:164(para) 
+#: package-manager.xml.in.nolegal:163(para) 
 msgid "The Publisher name is also displayed here in the following instances :"
 msgstr "The Publisher name is also displayed here in the following instances :"
 
-#: package-manager.xml.in.nolegal:165(para) 
+#: package-manager.xml.in.nolegal:164(para) 
 msgid "When the <emphasis role=\"strong\">Pubisher</emphasis> drop-down menu is set to All Publishers (Installed)"
 msgstr "When the <emphasis role=\"strong\">Pubisher</emphasis> drop-down menu is set to All Publishers (Installed)"
 
-#: package-manager.xml.in.nolegal:167(para) 
+#: package-manager.xml.in.nolegal:166(para) 
 msgid "When search results are displayed for the All Publishers (Search) option"
 msgstr "When search results are displayed for the All Publishers (Search) option"
 
-#: package-manager.xml.in.nolegal:169(para) 
+#: package-manager.xml.in.nolegal:168(para) 
 msgid "When a recent search result is displayed"
 msgstr "When a recent search result is displayed"
 
-#: package-manager.xml.in.nolegal:174(emphasis) 
+#: package-manager.xml.in.nolegal:173(emphasis) 
 msgid "Package Details"
 msgstr "Csomag Részletek"
 
-#: package-manager.xml.in.nolegal:175(para) 
+#: package-manager.xml.in.nolegal:174(para) 
 msgid "Click a package name to select it. Details of the selected package, such as name, version, file dependencies, and license are displayed in this window."
 msgstr "Kattintson a csomag nevére a kijelöléshez. A kiválasztott csomag részletei mint a neve, verziója, fájl függőségei és a licenc megjelenítésre kerülnek ebben az ablakban."
 
-#: package-manager.xml.in.nolegal:181(title) 
+#: package-manager.xml.in.nolegal:180(title) 
 msgid "Package Manager Settings"
 msgstr "Csomagkezelő Beállításai"
 
-#: package-manager.xml.in.nolegal:182(para) 
+#: package-manager.xml.in.nolegal:181(para) 
 msgid "Use the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> to change the Package Manager settings. The following sections discuss the preferences that can be changed by the user."
 msgstr "Use the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> to change the Package Manager settings. The following sections discuss the preferences that can be changed by the user."
 
-#: package-manager.xml.in.nolegal:183(title) 
+#: package-manager.xml.in.nolegal:182(title) 
 msgid "Start Page Preferences"
 msgstr "A Kezdő Oldal előnyei"
 
-#: package-manager.xml.in.nolegal:184(para) 
+#: package-manager.xml.in.nolegal:183(para) 
 msgid "A Start Page is displayed in the main window of the Package Manager when the application is started. The Start Page provides links to <ulink url=\"http://opensolaris.com\">opensolaris.com</ulink> page where you can get more information about OpenSolaris, subscribe to newsletters and join the OpenSolaris community."
 msgstr "A Kezdő Oldal a Csomagkezelő fő ablakában jelenik meg a program indítását követően. A Kezdő Oldal hivatkozást nyújt az <ulink url=\"http://"
        "opensolaris.com\">opensolaris.com</ulink> oldalra, ahol további információkat találhat az OpenSolaris-ról, feliratkozhat a hírlevelekre és csatlakozhat az OpenSolaris közösséghez."
 
-#: package-manager.xml.in.nolegal:185(para) 
+#: package-manager.xml.in.nolegal:184(para) 
 msgid "You can choose to turn off this setting so this page is not displayed when Package Manager starts."
 msgstr "Akár ki is kapcsolhatja ezt a beállítást így nem kerül megjelenítésre az oldal a Csomagkezelő indításakor."
 
-#: package-manager.xml.in.nolegal:186(para) 
+#: package-manager.xml.in.nolegal:185(para) 
 msgid "Select <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> from the main menu and uncheck the <emphasis role=\"strong\">Show Start Page on Startup</emphasis> to disable the Start Page. This dialog is checked by default."
 msgstr "Select <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> from the main menu and uncheck the <emphasis role=\"strong\">Show Start Page on Startup</emphasis> to disable the Start Page. This dialog is checked by default."
 
-#: package-manager.xml.in.nolegal:187(para) 
+#: package-manager.xml.in.nolegal:186(para) 
 msgid "Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</guimenuitem></menuchoice> from the main menu to go to the Start Page at anytime."
 msgstr "Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</guimenuitem></menuchoice> from the main menu to go to the Start Page at anytime."
 
-#: package-manager.xml.in.nolegal:189(title) 
+#: package-manager.xml.in.nolegal:188(title) 
 msgid "Exit Preferences"
 msgstr "Exit Preferences"
 
-#: package-manager.xml.in.nolegal:190(para) 
+#: package-manager.xml.in.nolegal:189(para) 
 msgid "The Package Manager application can remember some of its current settings if the <emphasis role=\"strong\">Remember current state on exit</emphasis> option in the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> is checked."
 msgstr "The Package Manager application can remember some of its current settings if the <emphasis role=\"strong\">Remember current state on exit</emphasis> option in the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> is checked."
 
-#: package-manager.xml.in.nolegal:191(para) 
+#: package-manager.xml.in.nolegal:190(para) 
 msgid "The following settings are saved:"
 msgstr "The following settings are saved:"
 
-#: package-manager.xml.in.nolegal:192(para) 
+#: package-manager.xml.in.nolegal:191(para) 
 msgid "<emphasis role=\"strong\">Vertical separators</emphasis> – The size of the columns in the main window the Package Manager"
 msgstr "<emphasis role=\"strong\">Vertical separators</emphasis> – The size of the columns in the main window the Package Manager"
 
-#: package-manager.xml.in.nolegal:194(para) 
+#: package-manager.xml.in.nolegal:193(para) 
 msgid "<emphasis role=\"strong\">Window size</emphasis> – The size of the Package Manager window"
 msgstr "<emphasis role=\"strong\">Window size</emphasis> – The size of the Package Manager window"
 
-#: package-manager.xml.in.nolegal:196(para) 
+#: package-manager.xml.in.nolegal:195(para) 
 msgid "<emphasis role=\"strong\">Current publisher</emphasis> – The publisher that is selected when the Package Manager is closed"
 msgstr "<emphasis role=\"strong\">Current publisher</emphasis> – The publisher that is selected when the Package Manager is closed"
 
-#: package-manager.xml.in.nolegal:200(title) 
+#: package-manager.xml.in.nolegal:199(title) 
 msgid "Confirmation Dialog Preferences"
 msgstr "Confirmation Dialog Preferences"
 
-#: package-manager.xml.in.nolegal:201(para) 
+#: package-manager.xml.in.nolegal:200(para) 
 msgid "When a package is selected for installation, update, or removal, a confirmation dialog is displayed that displays the list of packages and the action to be performed. Under the <emphasis role=\"strong\">Show Confirmation Dialog</emphasis> uncheck <emphasis role=\"strong\">On Updates</emphasis>, <emphasis role=\"strong\">On Package Install/Update</emphasis>, and <emphasis role=\"strong\">On Package Remove</emphasis> to turn these settings off."
 msgstr "When a package is selected for installation, update, or removal, a confirmation dialog is displayed that displays the list of packages and the action to be performed. Under the <emphasis role=\"strong\">Show Confirmation Dialog</emphasis> uncheck <emphasis role=\"strong\">On Updates</emphasis>, <emphasis role=\"strong\">On Package Install/Update</emphasis>, and <emphasis role=\"strong\">On Package Remove</emphasis> to turn these settings off."
 
-#: package-manager.xml.in.nolegal:204(title) 
+#: package-manager.xml.in.nolegal:203(title) 
 msgid "Working With Packages"
 msgstr "Csomagok használata"
 
-#: package-manager.xml.in.nolegal:205(title) 
+#: package-manager.xml.in.nolegal:204(title) 
 msgid "Install a Package"
 msgstr "Csomag telepítése"
 
-#: package-manager.xml.in.nolegal:206(para) 
+#: package-manager.xml.in.nolegal:205(para) 
 msgid "The list of packages and their status is displayed in the main window of the Package Manager. Perform the following steps to install a package:"
 msgstr "The list of packages and their status is displayed in the main window of the Package Manager. Perform the following steps to install a package:"
 
-#: package-manager.xml.in.nolegal:207(para) 
+#: package-manager.xml.in.nolegal:206(para) 
 msgid "Check the box next to the package or packages to select it. Double-clicking the package also selects the package."
 msgstr "Check the box next to the package or packages to select it. Double-clicking the package also selects the package."
 
-#: package-manager.xml.in.nolegal:209(para) 
+#: package-manager.xml.in.nolegal:208(para) 
 msgid "Click <guibutton>Install/Update</guibutton> to start the package installation process."
 msgstr "Click <guibutton>Install/Update</guibutton> to start the package installation process."
 
-#: package-manager.xml.in.nolegal:210(para) 
+#: package-manager.xml.in.nolegal:209(para) 
 msgid "You can also choose <menuchoice><guimenu>Package</guimenu><guimenuitem>Install/Update</guimenuitem></menuchoice> to start the package installation process."
 msgstr "You can also choose <menuchoice><guimenu>Package</guimenu><guimenuitem>Install/Update</guimenuitem></menuchoice> to start the package installation process."
 
-#: package-manager.xml.in.nolegal:212(para) 
+#: package-manager.xml.in.nolegal:211(para) 
 msgid "Click <guilabel>Details</guilabel> to view the installation details or <guibutton>Cancel</guibutton> to cancel the package installation."
 msgstr "Click <guilabel>Details</guilabel> to view the installation details or <guibutton>Cancel</guibutton> to cancel the package installation."
 
-#: package-manager.xml.in.nolegal:214(para) 
+#: package-manager.xml.in.nolegal:213(para) 
 msgid "After the installation has completed, click <guibutton>Close</guibutton>."
 msgstr "After the installation has completed, click <guibutton>Close</guibutton>."
 
-#: package-manager.xml.in.nolegal:217(title) 
+#: package-manager.xml.in.nolegal:216(title) 
 msgid "Installation Error"
 msgstr "Telepítési Hiba"
 
-#: package-manager.xml.in.nolegal:218(para) 
+#: package-manager.xml.in.nolegal:217(para) 
 msgid "If an error occurs during package installation, an error dialog with the error message is displayed along with the reason for failure. Click <guibutton>Close</guibutton> to close the error dialog."
 msgstr "If an error occurs during package installation, an error dialog with the error message is displayed along with the reason for failure. Click <guibutton>Close</guibutton> to close the error dialog."
 
-#: package-manager.xml.in.nolegal:221(title) 
+#: package-manager.xml.in.nolegal:220(title) 
 msgid "Remove a Package"
 msgstr "Csomag eltávolítása"
 
-#: package-manager.xml.in.nolegal:222(para) 
+#: package-manager.xml.in.nolegal:221(para) 
 msgid "Perform the following steps to remove a package:"
 msgstr "Egy csomag eltávolításához a következő lépéseket hajtsa végre:"
 
-#: package-manager.xml.in.nolegal:223(para) 
+#: package-manager.xml.in.nolegal:222(para) 
 msgid "Check the box next to a package to select it. Double-clicking the package also selects the package."
 msgstr "Check the box next to a package to select it. Double-clicking the package also selects the package."
 
-#: package-manager.xml.in.nolegal:225(para) 
+#: package-manager.xml.in.nolegal:224(para) 
 msgid "Click <guibutton>Remove</guibutton> to start the package uninstallation process."
 msgstr "Click <guibutton>Remove</guibutton> to start the package uninstallation process."
 
-#: package-manager.xml.in.nolegal:226(para) 
+#: package-manager.xml.in.nolegal:225(para) 
 msgid "You can also choose <menuchoice><guimenu>Package</guimenu><guimenuitem>Remove</guimenuitem></menuchoice> to remove a package."
 msgstr "You can also choose <menuchoice><guimenu>Package</guimenu><guimenuitem>Remove</guimenuitem></menuchoice> to remove a package."
 
-#: package-manager.xml.in.nolegal:228(para) 
+#: package-manager.xml.in.nolegal:227(para) 
 msgid "Review the packages to be removed and the package dependencies details in the <emphasis role=\"strong\">Remove Confirmation</emphasis> dialog."
 msgstr "Review the packages to be removed and the package dependencies details in the <emphasis role=\"strong\">Remove Confirmation</emphasis> dialog."
 
-#: package-manager.xml.in.nolegal:230(para) 
+#: package-manager.xml.in.nolegal:229(para) 
 msgid "Click <guibutton>Proceed</guibutton> to start removing the packages or <guibutton>Cancel</guibutton> to cancel the process."
 msgstr "Click <guibutton>Proceed</guibutton> to start removing the packages or <guibutton>Cancel</guibutton> to cancel the process."
 
-#: package-manager.xml.in.nolegal:234(title) 
+#: package-manager.xml.in.nolegal:233(title) 
 msgid "Search for a Package"
 msgstr "Csomag keresése"
 
-#: package-manager.xml.in.nolegal:235(para) 
+#: package-manager.xml.in.nolegal:234(para) 
 msgid "You can search for a package in the following ways :"
 msgstr "A következőképpen kereshet csomagokat:"
 
-#: package-manager.xml.in.nolegal:236(para) 
+#: package-manager.xml.in.nolegal:235(para) 
 msgid "<emphasis role=\"strong\">Search the current publisher</emphasis> – Search for a package in the publisher currently selected in the <emphasis role=\"strong\"> Publisher</emphasis> drop-down menu. If you do not know the status of the package you are searching for, set the <emphasis role=\"strong\">View</emphasis> drop-down menu to <emphasis role=\"strong\">All Packages</emphasis>."
 msgstr "<emphasis role=\"strong\">Search the current publisher</emphasis> – Search for a package in the publisher currently selected in the <emphasis role=\"strong\"> Publisher</emphasis> drop-down menu. If you do not know the status of the package you are searching for, set the <emphasis role=\"strong\">View</emphasis> drop-down menu to <emphasis role=\"strong\">All Packages</emphasis>."
 
-#: package-manager.xml.in.nolegal:237(para) 
+#: package-manager.xml.in.nolegal:236(para) 
 msgid "Enter a description, or a partial name in the <emphasis role=\"strong\">Search</emphasis> field. For example, you might type one of the following search terms to search for <filename>SUNWgnome-games</filename> :"
 msgstr "Enter a description, or a partial name in the <emphasis role=\"strong\">Search</emphasis> field. For example, you might type one of the following search terms to search for <filename>SUNWgnome-games</filename> :"
 
-#: package-manager.xml.in.nolegal:238(para) 
+#: package-manager.xml.in.nolegal:237(para) 
 msgid "SUNWgames"
 msgstr "SUNWgames"
 
-#: package-manager.xml.in.nolegal:240(para) 
+#: package-manager.xml.in.nolegal:239(para) 
 msgid "games"
 msgstr "játékok"
 
-#: package-manager.xml.in.nolegal:242(para) 
+#: package-manager.xml.in.nolegal:241(para) 
 msgid "GNOME-games"
 msgstr "GNOME-games"
 
-#: package-manager.xml.in.nolegal:245(para) 
+#: package-manager.xml.in.nolegal:244(para) 
 msgid "To search for SunStudio compilers, you might type one of the following terms:"
 msgstr "SunStudio fordítók kereséséhez megadhatná a következő szavakat:"
 
-#: package-manager.xml.in.nolegal:246(para) 
+#: package-manager.xml.in.nolegal:245(para) 
 msgid "compiler"
 msgstr "compiler"
 
-#: package-manager.xml.in.nolegal:248(para) 
+#: package-manager.xml.in.nolegal:247(para) 
 msgid "tools"
 msgstr "tools"
 
-#: package-manager.xml.in.nolegal:252(para) 
+#: package-manager.xml.in.nolegal:251(para) 
 msgid "<emphasis role=\"strong\">Search all publishers</emphasis> – Choose <emphasis role=\"strong\">All Publishers(Search)</emphasis> from the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu to search for a package across all configured publishers. If you do not know the status of the package you are searching for, set the <emphasis role=\"strong\">View</emphasis> drop-down menu to <emphasis role=\"strong\">All Packages</emphasis>."
 msgstr "<emphasis role=\"strong\">Search all publishers</emphasis> – Choose <emphasis role=\"strong\">All Publishers(Search)</emphasis> from the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu to search for a package across all configured publishers. If you do not know the status of the package you are searching for, set the <emphasis role=\"strong\">View</emphasis> drop-down menu to <emphasis role=\"strong\">All Packages</emphasis>."
 
-#: package-manager.xml.in.nolegal:253(para) 
+#: package-manager.xml.in.nolegal:252(para) 
 msgid "Type a description of the package in the <emphasis role=\"strong\">Search</emphasis> field. For example, the <filename>SUNWdiveintopython</filename> package is a book on Python programming. The description of the package contains the string <emphasis>book</emphasis>. To search for this package, you might then type one of the following terms:"
 msgstr "Type a description of the package in the <emphasis role=\"strong\">Search</emphasis> field. For example, the <filename>SUNWdiveintopython</filename> package is a book on Python programming. The description of the package contains the string <emphasis>book</emphasis>. To search for this package, you might then type one of the following terms:"
 
-#: package-manager.xml.in.nolegal:254(para) 
+#: package-manager.xml.in.nolegal:253(para) 
 msgid "python"
 msgstr "python"
 
-#: package-manager.xml.in.nolegal:256(para) 
+#: package-manager.xml.in.nolegal:255(para) 
 msgid "book"
 msgstr "book"
 
-#: package-manager.xml.in.nolegal:259(para) 
+#: package-manager.xml.in.nolegal:258(para) 
 msgid "If you searched for the term <emphasis>diveinto</emphasis> when searching for the <filename>SUNWdiveintopython</filename> package, the results will not be displayed as the term <emphasis>diveinto</emphasis> is not present as an independent, complete word in the package contents. However you will find the package using the <literal>*</literal> wild card. Hence, searching for the term <literal>diveinto*</literal> will display the <filename>SUNWdiveintopython</filename> package."
 msgstr "If you searched for the term <emphasis>diveinto</emphasis> when searching for the <filename>SUNWdiveintopython</filename> package, the results will not be displayed as the term <emphasis>diveinto</emphasis> is not present as an independent, complete word in the package contents. However you will find the package using the <literal>*</literal> wild card. Hence, searching for the term <literal>diveinto*</literal> will display the <filename>SUNWdiveintopython</filename> package."
 
-#: package-manager.xml.in.nolegal:263(para) 
+#: package-manager.xml.in.nolegal:262(para) 
 msgid "Use the submenus under the <menuchoice><guimenu>Edit</guimenu></menuchoice> menu to cut, copy, or paste text in the <emphasis role=\"strong\">Search</emphasis> field."
 msgstr "Use the submenus under the <menuchoice><guimenu>Edit</guimenu></menuchoice> menu to cut, copy, or paste text in the <emphasis role=\"strong\">Search</emphasis> field."
 
-#: package-manager.xml.in.nolegal:265(para) 
+#: package-manager.xml.in.nolegal:264(para) 
 msgid "The following operators are supported for a package search:"
 msgstr "The following operators are supported for a package search:"
 
-#: package-manager.xml.in.nolegal:266(emphasis) 
+#: package-manager.xml.in.nolegal:265(emphasis) 
 msgid "The AND operator"
 msgstr "The AND operator"
 
-#: package-manager.xml.in.nolegal:267(para) 
+#: package-manager.xml.in.nolegal:266(para) 
 msgid "When the search term is separated by spaces or the AND operator, the Package Manager will search for packages containing <emphasis role=\"strong\">all</emphasis> the search terms."
 msgstr "When the search term is separated by spaces or the AND operator, the Package Manager will search for packages containing <emphasis role=\"strong\">all</emphasis> the search terms."
 
-#: package-manager.xml.in.nolegal:270(emphasis) 
+#: package-manager.xml.in.nolegal:269(emphasis) 
 msgid "Double Quotes"
 msgstr "Double Quotes"
 
-#: package-manager.xml.in.nolegal:271(para) 
+#: package-manager.xml.in.nolegal:270(para) 
 msgid "When a search term is placed within double quotes, the Package Manager will search for packages that <emphasis role=\"strong\">match the search term exactly</emphasis>."
 msgstr "When a search term is placed within double quotes, the Package Manager will search for packages that <emphasis role=\"strong\">match the search term exactly</emphasis>."
 
-#: package-manager.xml.in.nolegal:274(emphasis) 
+#: package-manager.xml.in.nolegal:273(emphasis) 
 msgid "Wildcard *"
 msgstr "Wildcard *"
 
-#: package-manager.xml.in.nolegal:275(para) 
+#: package-manager.xml.in.nolegal:274(para) 
 msgid "Including a wildcard in your search term enables you to search for partial package names. For example, when you enter <emphasis>boo*</emphasis> in your search term, the packages displayed could include <emphasis>boot</emphasis> and <emphasis>book</emphasis> in the package name and description."
 msgstr "Including a wildcard in your search term enables you to search for partial package names. For example, when you enter <emphasis>boo*</emphasis> in your search term, the packages displayed could include <emphasis>boot</emphasis> and <emphasis>book</emphasis> in the package name and description."
 
-#: package-manager.xml.in.nolegal:276(para) 
+#: package-manager.xml.in.nolegal:275(para) 
 msgid "Wildcard searching can be slower than an exact match search or a search based on package description."
 msgstr "Wildcard searching can be slower than an exact match search or a search based on package description."
 
-#: package-manager.xml.in.nolegal:280(emphasis) 
+#: package-manager.xml.in.nolegal:279(emphasis) 
 msgid "The OR operator"
 msgstr "A VAGY operátor"
 
-#: package-manager.xml.in.nolegal:281(para) 
+#: package-manager.xml.in.nolegal:280(para) 
 msgid "When a search term is separated by the OR operator, the Package Manager searches for packages that contain any of the search terms."
 msgstr "When a search term is separated by the OR operator, the Package Manager searches for packages that contain any of the search terms."
 
-#: package-manager.xml.in.nolegal:286(title) 
+#: package-manager.xml.in.nolegal:285(title) 
 msgid "Cancel Package Search"
 msgstr "Csomag keresés megszakítása"
 
-#: package-manager.xml.in.nolegal:287(para) 
+#: package-manager.xml.in.nolegal:286(para) 
 msgid "If you want to cancel a search, use the Cancel Search icon at the bottom of the main window of the Package Manager. This icon is visible on the status bar only during a search operation."
 msgstr "If you want to cancel a search, use the Cancel Search icon at the bottom of the main window of the Package Manager. This icon is visible on the status bar only during a search operation."
 
-#: package-manager.xml.in.nolegal:289(title) 
+#: package-manager.xml.in.nolegal:288(title) 
 msgid "Update a Package"
 msgstr "Csomag frissítése"
 
-#: package-manager.xml.in.nolegal:290(para) 
+#: package-manager.xml.in.nolegal:289(para) 
 msgid "Look for the Updates icon next to the installed package name. This icon indicates that updates are available for the package in the currently selected publisher. You can also choose one of the following views to display a list of packages that have updates available :"
 msgstr "Look for the Updates icon next to the installed package name. This icon indicates that updates are available for the package in the currently selected publisher. You can also choose one of the following views to display a list of packages that have updates available :"
 
-#: package-manager.xml.in.nolegal:291(para) 
+#: package-manager.xml.in.nolegal:290(para) 
 msgid "Select the <menuchoice><guimenuitem>Updates</guimenuitem></menuchoice> option in the <emphasis role=\"strong\">View</emphasis> drop-down menu to list all packages that have updates available in the currently selected publisher."
 msgstr "Select the <menuchoice><guimenuitem>Updates</guimenuitem></menuchoice> option in the <emphasis role=\"strong\">View</emphasis> drop-down menu to list all packages that have updates available in the currently selected publisher."
 
-#: package-manager.xml.in.nolegal:293(para) 
+#: package-manager.xml.in.nolegal:292(para) 
 msgid "Select the <menuchoice><guimenuitem>Updates</guimenuitem></menuchoice> option in the <emphasis role=\"strong\">View</emphasis> drop-down menu and the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> in the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu to list all packages that have updates available from all publishers."
 msgstr "Select the <menuchoice><guimenuitem>Updates</guimenuitem></menuchoice> option in the <emphasis role=\"strong\">View</emphasis> drop-down menu and the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> in the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu to list all packages that have updates available from all publishers."
 
-#: package-manager.xml.in.nolegal:296(para) 
+#: package-manager.xml.in.nolegal:295(para) 
 msgid "Updating a package may fail sometimes, due to inherent dependencies of the package you have selected for installation or update. You may need to update all packages on your system to get the latest updates."
 msgstr "Updating a package may fail sometimes, due to inherent dependencies of the package you have selected for installation or update. You may need to update all packages on your system to get the latest updates."
 
-#: package-manager.xml.in.nolegal:298(para) 
+#: package-manager.xml.in.nolegal:297(para) 
 msgid "Select the package or packages you want to update and click <guibutton>Install/Update</guibutton> to install the latest version of the package. Use the <emphasis role=\"strong\">Updates</emphasis> icon on the toolbar to update all packages on your system."
 msgstr "Select the package or packages you want to update and click <guibutton>Install/Update</guibutton> to install the latest version of the package. Use the <emphasis role=\"strong\">Updates</emphasis> icon on the toolbar to update all packages on your system."
 
-#: package-manager.xml.in.nolegal:300(title) 
+#: package-manager.xml.in.nolegal:299(title) 
 msgid "Package Version Information"
 msgstr "Package Version Information"
 
-#: package-manager.xml.in.nolegal:301(para) 
+#: package-manager.xml.in.nolegal:300(para) 
 msgid "Select a package in the main window of the Package Manager and right-click your mouse to view the package version information. There are three types of package versions :"
 msgstr "Select a package in the main window of the Package Manager and right-click your mouse to view the package version information. There are three types of package versions :"
 
-#: package-manager.xml.in.nolegal:302(para) 
+#: package-manager.xml.in.nolegal:301(para) 
 msgid "<emphasis role=\"strong\">Installable Version</emphasis> – The version of a package that is available for installation or an update. This version may be older than the latest available version of the package due to package dependencies on the system. Hence you may not be able to install the latest available version of the package unless you update your system using the <emphasis role=\"strong\">Updates</emphasis> icon on the toolbar."
 msgstr "<emphasis role=\"strong\">Installable Version</emphasis> – The version of a package that is available for installation or an update. This version may be older than the latest available version of the package due to package dependencies on the system. Hence you may not be able to install the latest available version of the package unless you update your system using the <emphasis role=\"strong\">Updates</emphasis> icon on the toolbar."
 
-#: package-manager.xml.in.nolegal:304(para) 
+#: package-manager.xml.in.nolegal:303(para) 
 msgid "<emphasis role=\"strong\">Installed Version</emphasis> – The version of the package installed on the system."
 msgstr "<emphasis role=\"strong\">Installed Version</emphasis> – The version of the package installed on the system."
 
-#: package-manager.xml.in.nolegal:306(para) 
+#: package-manager.xml.in.nolegal:305(para) 
 msgid "<emphasis role=\"strong\">Latest Version</emphasis> – This is the latest version of the package available for installation or update. The latest version can be installed if your system is up-to-date."
 msgstr "<emphasis role=\"strong\">Latest Version</emphasis> – This is the latest version of the package available for installation or update. The latest version can be installed if your system is up-to-date."
 
-#: package-manager.xml.in.nolegal:310(title) 
+#: package-manager.xml.in.nolegal:309(title) 
 msgid "View Installed Packages From All Publishers"
 msgstr "View Installed Packages From All Publishers"
 
-#: package-manager.xml.in.nolegal:311(para) 
+#: package-manager.xml.in.nolegal:310(para) 
 msgid "Choose the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> from the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu filter to view a list of all packages that you have installed from all publishers."
 msgstr "Choose the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> from the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu filter to view a list of all packages that you have installed from all publishers."
 
-#: package-manager.xml.in.nolegal:312(para) 
+#: package-manager.xml.in.nolegal:311(para) 
 msgid "You cannot search for a package from the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> option. Switch to <emphasis role=\"strong\">All Publishers (Search)</emphasis> to search for a package."
 msgstr "You cannot search for a package from the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> option. Switch to <emphasis role=\"strong\">All Publishers (Search)</emphasis> to search for a package."
 
-#: package-manager.xml.in.nolegal:316(title) 
+#: package-manager.xml.in.nolegal:315(title) 
 msgid "Introduction to Boot Environments"
 msgstr "Bevezetés a Boot Environment-ekbe"
 
-#: package-manager.xml.in.nolegal:317(para) 
+#: package-manager.xml.in.nolegal:316(para) 
 msgid "A boot environment is an image that is bootable. Upon an initial OpenSolaris installation, a boot environment is created."
 msgstr "A boot environment is an image that is bootable. Upon an initial OpenSolaris installation, a boot environment is created."
 
-#: package-manager.xml.in.nolegal:318(para) 
+#: package-manager.xml.in.nolegal:317(para) 
 msgid "You can maintain multiple boot environments on your OpenSolaris 2010.03 system. Use the <command>beadm(1)</command> command from the command-line interface (CLI) to create, rename, mount or unmount, or destroy these boot environments."
 msgstr "You can maintain multiple boot environments on your OpenSolaris 2010.03 system. Use the <command>beadm(1)</command> command from the command-line interface (CLI) to create, rename, mount or unmount, or destroy these boot environments."
 
-#: package-manager.xml.in.nolegal:319(para) 
+#: package-manager.xml.in.nolegal:318(para) 
 msgid "The Package Manager enables you to manage the boot environments created during the process of updating your image. For more information, see <xref linkend=\"manage-be\"/> section."
 msgstr "The Package Manager enables you to manage the boot environments created during the process of updating your image. For more information, see <xref linkend=\"manage-be\"/> section."
 
-#: package-manager.xml.in.nolegal:320(para) 
+#: package-manager.xml.in.nolegal:319(para) 
 msgid "Users can maintain multiple boot environments on their systems, and each boot environment can have different software versions installed."
 msgstr "Users can maintain multiple boot environments on their systems, and each boot environment can have different software versions installed."
 
-#: package-manager.xml.in.nolegal:321(para) 
+#: package-manager.xml.in.nolegal:320(para) 
 msgid "When you use either the Package Manager or the <command>pkg image-update</command> command to update all the packages in your active OpenSolaris boot environment, a clone of that boot environment is automatically created. The packages are updated in the clone rather than in the original boot environment. After successfully completing the updates, the new clone is activated. Then, the clone will become the new default boot environment on system reboot. The original boot environment is also available as an alternate selection."
 msgstr "When you use either the Package Manager or the <command>pkg image-update</command> command to update all the packages in your active OpenSolaris boot environment, a clone of that boot environment is automatically created. The packages are updated in the clone rather than in the original boot environment. After successfully completing the updates, the new clone is activated. Then, the clone will become the new default boot environment on system reboot. The original boot environment is also available as an alternate selection."
 
-#: package-manager.xml.in.nolegal:322(para) 
+#: package-manager.xml.in.nolegal:321(para) 
 msgid "See the beadm(1) man pages and the <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"><citetitle>Upgrading and Managing Boot Environments</citetitle></ulink> document to learn more about boot environments and the <command>beadm(1)</command> command."
 msgstr "See the beadm(1) man pages and the <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"><citetitle>Upgrading and Managing Boot Environments</citetitle></ulink> document to learn more about boot environments and the <command>beadm(1)</command> command."
 
-#: package-manager.xml.in.nolegal:323(title) 
+#: package-manager.xml.in.nolegal:322(title) 
 msgid "Update All Packages (Update Your Image)"
 msgstr "Update All Packages (Update Your Image)"
 
-#: package-manager.xml.in.nolegal:324(para) 
+#: package-manager.xml.in.nolegal:323(para) 
 msgid "Perform the following steps to update all the packages in your image."
 msgstr "Perform the following steps to update all the packages in your image."
 
-#: package-manager.xml.in.nolegal:325(para) 
+#: package-manager.xml.in.nolegal:324(para) 
 msgid "Click <guibutton>Updates</guibutton> to start the process of updating <emphasis role=\"strong\">all</emphasis> the packages installed in your image."
 msgstr "Click <guibutton>Updates</guibutton> to start the process of updating <emphasis role=\"strong\">all</emphasis> the packages installed in your image."
 
-#: package-manager.xml.in.nolegal:326(para) 
+#: package-manager.xml.in.nolegal:325(para) 
 msgid "You can also choose <menuchoice><guimenu>Package</guimenu><guisubmenu>Updates</guisubmenu></menuchoice> to start the process."
 msgstr "You can also choose <menuchoice><guimenu>Package</guimenu><guisubmenu>Updates</guisubmenu></menuchoice> to start the process."
 
-#: package-manager.xml.in.nolegal:327(para) 
+#: package-manager.xml.in.nolegal:326(para) 
 msgid "If no updates are available to your installed packages, a <emphasis role=\"strong\">No Updates Available</emphasis> message is displayed after you click <guibutton>Updates</guibutton>."
 msgstr "If no updates are available to your installed packages, a <emphasis role=\"strong\">No Updates Available</emphasis> message is displayed after you click <guibutton>Updates</guibutton>."
 
-#: package-manager.xml.in.nolegal:330(para) 
+#: package-manager.xml.in.nolegal:329(para) 
 msgid "The process of updating all the packages installed on your system is completed in three phases:"
 msgstr "The process of updating all the packages installed on your system is completed in three phases:"
 
-#: package-manager.xml.in.nolegal:331(emphasis) 
+#: package-manager.xml.in.nolegal:330(emphasis) 
 msgid "Preparation"
 msgstr "Előkészítés"
 
-#: package-manager.xml.in.nolegal:333(emphasis) 
+#: package-manager.xml.in.nolegal:332(emphasis) 
 msgid "Download"
 msgstr "Letöltés"
 
-#: package-manager.xml.in.nolegal:335(emphasis) 
+#: package-manager.xml.in.nolegal:334(emphasis) 
 msgid "Install"
 msgstr "Telepítés"
 
-#: package-manager.xml.in.nolegal:338(para) 
+#: package-manager.xml.in.nolegal:337(para) 
 msgid "Click on the <emphasis>Details</emphasis> tab displayed in each of the phases to view more information."
 msgstr "Click on the <emphasis>Details</emphasis> tab displayed in each of the phases to view more information."
 
-#: package-manager.xml.in.nolegal:340(para) 
+#: package-manager.xml.in.nolegal:339(para) 
 msgid "After the update process is completed successfully, an <emphasis role=\"strong\">Update All Complete</emphasis> dialog is displayed. A new boot environment is created which consists of the updated packages. The new boot environment is given a default name by the Package Manager, you can change the given boot environment name."
 msgstr "After the update process is completed successfully, an <emphasis role=\"strong\">Update All Complete</emphasis> dialog is displayed. A new boot environment is created which consists of the updated packages. The new boot environment is given a default name by the Package Manager, you can change the given boot environment name."
 
-#: package-manager.xml.in.nolegal:341(para) 
+#: package-manager.xml.in.nolegal:340(para) 
 msgid "If the Package Manager is unable to create a new boot environment, an error message is displayed. See the <xref linkend=\"gilfh\"/> section on how to rectify the error and continue with updating your image."
 msgstr "If the Package Manager is unable to create a new boot environment, an error message is displayed. See the <xref linkend=\"gilfh\"/> section on how to rectify the error and continue with updating your image."
 
-#: package-manager.xml.in.nolegal:344(para) 
+#: package-manager.xml.in.nolegal:343(para) 
 msgid "Click <guibutton>Restart Now</guibutton> to reboot your system immediately."
 msgstr "Click <guibutton>Restart Now</guibutton> to reboot your system immediately."
 
-#: package-manager.xml.in.nolegal:345(para) 
+#: package-manager.xml.in.nolegal:344(para) 
 msgid "Click <guibutton>Restart Later</guibutton> to restart your system at a later time. <emphasis role=\"strong\">You must reboot your system for the changes to take effect.</emphasis>"
 msgstr "Click <guibutton>Restart Later</guibutton> to restart your system at a later time. <emphasis role=\"strong\">You must reboot your system for the changes to take effect.</emphasis>"
 
-#: package-manager.xml.in.nolegal:346(para) 
+#: package-manager.xml.in.nolegal:345(para) 
 msgid "During the Update All process, a clone of the active boot environment is created. You can boot into the clone to return to the boot environment state that existed before the Update All process was started."
 msgstr "During the Update All process, a clone of the active boot environment is created. You can boot into the clone to return to the boot environment state that existed before the Update All process was started."
 
-#: package-manager.xml.in.nolegal:351(title) package-manager.xml.in.nolegal:656(title) 
+#: package-manager.xml.in.nolegal:350(title) package-manager.xml.in.nolegal:656(title) 
 msgid "Update All Errors"
 msgstr "Update All Errors"
 
-#: package-manager.xml.in.nolegal:352(para) 
+#: package-manager.xml.in.nolegal:351(para) 
 msgid "A new boot environment clone must be created by the Package Manager for the Updates process to be completed. An error message is displayed if a boot environment clone cannot be created. You might see an error message such as the following :"
 msgstr "A new boot environment clone must be created by the Package Manager for the Updates process to be completed. An error message is displayed if a boot environment clone cannot be created. You might see an error message such as the following :"
 
-#: package-manager.xml.in.nolegal:353(para) package-manager.xml.in.nolegal:658(para) 
+#: package-manager.xml.in.nolegal:352(para) 
 msgid "<literal>Not enough disk space, the Update All action cannot be performed. Choose Manage BE to manage your boot environments and free up disk space.</literal>."
 msgstr "<literal>Not enough disk space, the Update All action cannot be performed. Choose Manage BE to manage your boot environments and free up disk space.</literal>."
 
-#: package-manager.xml.in.nolegal:354(para) package-manager.xml.in.nolegal:659(para) 
+#: package-manager.xml.in.nolegal:353(para) package-manager.xml.in.nolegal:659(para) 
 msgid "Click <guibutton>Close</guibutton> to cancel the Update All process."
 msgstr "Click <guibutton>Close</guibutton> to cancel the Update All process."
 
-#: package-manager.xml.in.nolegal:355(para) package-manager.xml.in.nolegal:660(para) 
+#: package-manager.xml.in.nolegal:354(para) package-manager.xml.in.nolegal:660(para) 
 msgid "Perform the following steps if you want to rectify the error and continue with the Update All process:"
 msgstr "Perform the following steps if you want to rectify the error and continue with the Update All process:"
 
-#: package-manager.xml.in.nolegal:356(para) 
+#: package-manager.xml.in.nolegal:355(para) 
 msgid "Click <guibutton>Manage BE</guibutton> to display the <emphasis role=\"strong\">Manage Boot Environment</emphasis> dialog."
 msgstr "Click <guibutton>Manage BE</guibutton> to display the <emphasis role=\"strong\">Manage Boot Environment</emphasis> dialog."
 
-#: package-manager.xml.in.nolegal:358(para) 
+#: package-manager.xml.in.nolegal:357(para) 
 msgid "Select the boot environments that you want to delete."
 msgstr "Válassza ki a törölni kívánt boot environment-eket."
 
-#: package-manager.xml.in.nolegal:359(para) 
+#: package-manager.xml.in.nolegal:358(para) 
 msgid "You cannot delete the currently active boot environment."
 msgstr "A jelenlegi aktív boot environment nem törölhető."
 
-#: package-manager.xml.in.nolegal:361(para) 
+#: package-manager.xml.in.nolegal:360(para) 
 msgid "You do not need to reboot your system if you are only deleting some of your boot environments."
 msgstr "You do not need to reboot your system if you are only deleting some of your boot environments."
 
-#: package-manager.xml.in.nolegal:366(para) 
+#: package-manager.xml.in.nolegal:365(para) 
 msgid "Click <guibutton>OK</guibutton>."
 msgstr "Kattintson az <guibutton>OK</guibutton> gombra."
 
-#: package-manager.xml.in.nolegal:368(para) 
+#: package-manager.xml.in.nolegal:367(para) 
 msgid "The <emphasis role=\"strong\">Boot Environment Confirmation</emphasis> dialog is shown. Review your changes and click OK to proceed."
 msgstr "The <emphasis role=\"strong\">Boot Environment Confirmation</emphasis> dialog is shown. Review your changes and click OK to proceed."
 
-#: package-manager.xml.in.nolegal:370(para) 
+#: package-manager.xml.in.nolegal:369(para) 
 msgid "Click <guibutton>Update All</guibutton> to restart the process of updating all packages."
 msgstr "Click <guibutton>Update All</guibutton> to restart the process of updating all packages."
 
-#: package-manager.xml.in.nolegal:374(title) 
+#: package-manager.xml.in.nolegal:373(title) 
 msgid "Manage Boot Environments"
 msgstr "Boot Environment-ek kezelése"
 
-#: package-manager.xml.in.nolegal:375(para) 
+#: package-manager.xml.in.nolegal:374(para) 
 msgid "Perform the following steps to manage your boot environments:"
 msgstr "Perform the following steps to manage your boot environments:"
 
-#: package-manager.xml.in.nolegal:376(para) 
+#: package-manager.xml.in.nolegal:375(para) 
 msgid "Click <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot Environments</guimenuitem></menuchoice> to open the <emphasis role=\"strong\">Manage Boot Environments</emphasis> dialog."
 msgstr "Click <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot Environments</guimenuitem></menuchoice> to open the <emphasis role=\"strong\">Manage Boot Environments</emphasis> dialog."
 
-#: package-manager.xml.in.nolegal:378(para) 
+#: package-manager.xml.in.nolegal:377(para) 
 msgid "In this dialog, you can perform the following actions:"
 msgstr "In this dialog, you can perform the following actions:"
 
-#: package-manager.xml.in.nolegal:379(para) 
+#: package-manager.xml.in.nolegal:378(para) 
 msgid "<emphasis role=\"strong\">Activate a boot environment</emphasis> – Select the boot environment you want to be active on system reboot. This is the default boot environment <emphasis role=\"strong\">after</emphasis> you have rebooted your system."
 msgstr "<emphasis role=\"strong\">Activate a boot environment</emphasis> – Select the boot environment you want to be active on system reboot. This is the default boot environment <emphasis role=\"strong\">after</emphasis> you have rebooted your system."
 
-#: package-manager.xml.in.nolegal:381(para) 
+#: package-manager.xml.in.nolegal:380(para) 
 msgid "<emphasis role=\"strong\">Remove old or unused boot environments to free up disk space</emphasis> – Select the boot environnment or boot environments you want to delete."
 msgstr "<emphasis role=\"strong\">Remove old or unused boot environments to free up disk space</emphasis> – Select the boot environnment or boot environments you want to delete."
 
-#: package-manager.xml.in.nolegal:382(para) 
+#: package-manager.xml.in.nolegal:381(para) 
 msgid "You cannot the delete the currently active boot environment."
 msgstr "You cannot the delete the currently active boot environment."
 
-#: package-manager.xml.in.nolegal:384(para) 
+#: package-manager.xml.in.nolegal:383(para) 
 msgid "If you have selected a boot environment to be renamed, it cannot be deleted."
 msgstr "If you have selected a boot environment to be renamed, it cannot be deleted."
 
-#: package-manager.xml.in.nolegal:389(para) 
+#: package-manager.xml.in.nolegal:388(para) 
 msgid "<emphasis role=\"strong\">Rename a boot environment</emphasis> – Double-click the boot environment name you want torename. Enter the new name of the boot environment and click <guibutton>OK</guibutton>."
 msgstr "<emphasis role=\"strong\">Rename a boot environment</emphasis> – Double-click the boot environment name you want torename. Enter the new name of the boot environment and click <guibutton>OK</guibutton>."
 
-#: package-manager.xml.in.nolegal:390(para) 
+#: package-manager.xml.in.nolegal:389(para) 
 msgid "If you have selected a boot environment to be deleted, it cannot be renamed."
 msgstr "If you have selected a boot environment to be deleted, it cannot be renamed."
 
-#: package-manager.xml.in.nolegal:392(para) 
+#: package-manager.xml.in.nolegal:391(para) 
 msgid "The currently active boot environment cannot be renamed."
 msgstr "The currently active boot environment cannot be renamed."
 
-#: package-manager.xml.in.nolegal:399(para) 
+#: package-manager.xml.in.nolegal:398(para) 
 msgid "Click <guibutton>OK</guibutton> to proceed or <guibutton>Cancel</guibutton> to cancel all changes."
 msgstr "Click <guibutton>OK</guibutton> to proceed or <guibutton>Cancel</guibutton> to cancel all changes."
 
-#: package-manager.xml.in.nolegal:401(para) 
+#: package-manager.xml.in.nolegal:400(para) 
 msgid "The <emphasis role=\"strong\">Boot Environment Confirmation</emphasis> dialog is displayed. Review your changes and click OK to proceed."
 msgstr "The <emphasis role=\"strong\">Boot Environment Confirmation</emphasis> dialog is displayed. Review your changes and click OK to proceed."
 
-#: package-manager.xml.in.nolegal:402(para) 
+#: package-manager.xml.in.nolegal:401(para) 
 msgid "After you click <guibutton>OK</guibutton>, you cannot undo any changes that you made to the boot environments."
 msgstr "After you click <guibutton>OK</guibutton>, you cannot undo any changes that you made to the boot environments."
 
-#: package-manager.xml.in.nolegal:404(para) 
+#: package-manager.xml.in.nolegal:403(para) 
 msgid "The changes that you made to the <emphasis role=\"strong\">default boot environment</emphasis> setting are effective only after system reboot."
 msgstr "The changes that you made to the <emphasis role=\"strong\">default boot environment</emphasis> setting are effective only after system reboot."
 
-#: package-manager.xml.in.nolegal:406(para) 
+#: package-manager.xml.in.nolegal:405(para) 
 msgid "Click <guibutton>Cancel</guibutton> to cancel the changes."
 msgstr "Click <guibutton>Cancel</guibutton> to cancel the changes."
 
-#: package-manager.xml.in.nolegal:408(para) 
+#: package-manager.xml.in.nolegal:407(para) 
 msgid "Reboot your system to boot into the newly activated boot environment."
 msgstr "Indítsa újra a rendszert az újonnan aktivált boot environment betöltéséhez."
 
-#: package-manager.xml.in.nolegal:409(para) 
+#: package-manager.xml.in.nolegal:408(para) 
 msgid "Reboot your system only if you changed the active boot environment."
 msgstr "Indítsa újra a rendszert csak akkor, ha megváltoztatta az aktív boot environment-et."
 
-#: package-manager.xml.in.nolegal:415(title) 
+#: package-manager.xml.in.nolegal:414(title) 
 msgid "Add and Manage Publishers"
 msgstr "Add and Manage Publishers"
 
+#: package-manager.xml.in.nolegal:415(para) 
+msgid "The <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> dialog enables the user to add and manage the configured publishers. A publisher is a person, group, or corporation that designs, creates, and publishes a package to a repository. Every publisher has a package repository where its package data can be found. The locations that contain package data for a publisher's repository are defined through the use of origins and mirrors. Origins are used to provide locations that contain the complete set of package data for a publisher, while mirrors are used to provide locations that only contain package files. Origins and mirrors are defined using URIs (Universal Resource Identifiers), such as <ulink url=\"http://pkg.opensolaris.org/release\"/>."
+msgstr "The <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> dialog enables the user to add and manage the configured publishers. A publisher is a person, group, or corporation that designs, creates, and publishes a package to a repository. Every publisher has a package repository where its package data can be found. The locations that contain package data for a publisher's repository are defined through the use of origins and mirrors. Origins are used to provide locations that contain the complete set of package data for a publisher, while mirrors are used to provide locations that only contain package files. Origins and mirrors are defined using URIs (Universal Resource Identifiers), such as <ulink url=\"http://pkg.opensolaris.org/release\"/>."
+
 #: package-manager.xml.in.nolegal:416(para) 
-msgid "The <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> dialog enables the user to add and manage the configured publishers. A publisher is a person, group, or corporation that designs, creates, and publishes a package to a repository. A repository is a source for packages. Every publisher has a origin URI (Universal Resource Identifier) associated with it. Read the following sections to learn how to add and manage publishers on your system."
-msgstr "The <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> dialog enables the user to add and manage the configured publishers. A publisher is a person, group, or corporation that designs, creates, and publishes a package to a repository. A repository is a source for packages. Every publisher has a origin URI (Universal Resource Identifier) associated with it. Read the following sections to learn how to add and manage publishers on your system."
+msgid "Read the following sections to learn how to add and manage publishers on your system."
+msgstr "Read the following sections to learn how to add and manage publishers on your system."
 
 #: package-manager.xml.in.nolegal:417(title) 
 msgid "Add a Publisher"
@@ -1355,6 +1356,10 @@ msgstr "Újra kell indítania a rendszert a változások érvényesítéséhez."
 msgid "A new boot environment clone <emphasis role=\"strong\">must</emphasis> be created for the Update All process to be completed. The following error message is displayed if a boot environment clone cannot be created due to space restrictions :"
 msgstr "A new boot environment clone <emphasis role=\"strong\">must</emphasis> be created for the Update All process to be completed. The following error message is displayed if a boot environment clone cannot be created due to space restrictions :"
 
+#: package-manager.xml.in.nolegal:658(para) 
+msgid "<literal>Not enough disk space, the Update All action cannot be performed. Choose Manage BE to manage your boot environments and free up disk space</literal>."
+msgstr "<literal>Not enough disk space, the Update All action cannot be performed. Choose Manage BE to manage your boot environments and free up disk space</literal>."
+
 #: package-manager.xml.in.nolegal:661(para) 
 msgid "Click <guibutton>Manage BE</guibutton> in the error dialog to go to the <emphasis role=\"strong\">Manage Boot Environments</emphasis> dialog."
 msgstr "Click <guibutton>Manage BE</guibutton> in the error dialog to go to the <emphasis role=\"strong\">Manage Boot Environments</emphasis> dialog."
@@ -1384,8 +1389,8 @@ msgid "publisher"
 msgstr "Kiadó"
 
 #: package-manager.xml.in.nolegal:676(para) 
-msgid "A person, group, or corporation that designs, creates, and publishes a package to a repository. The repository in turn serves the packages from the (default) publisher, for downloading purposes."
-msgstr "A person, group, or corporation that designs, creates, and publishes a package to a repository. The repository in turn serves the packages from the (default) publisher, for downloading purposes."
+msgid "A person, group, or corporation that provides packages. Packages for a publisher are found in a repository, from which the package system retrieves package data."
+msgstr "A person, group, or corporation that provides packages. Packages for a publisher are found in a repository, from which the package system retrieves package data."
 
 #: package-manager.xml.in.nolegal:679(glossterm) 
 msgid "repository"
@@ -1400,8 +1405,8 @@ msgid "boot environment"
 msgstr "boot environment"
 
 #: package-manager.xml.in.nolegal:684(para) 
-msgid "For an OpenSolaris release, a boot environment is an instance of a bootable OpenSolaris environment. The root file system and all other file systems of the boot environment that contain system software are required to be ZFS datasets."
-msgstr "For an OpenSolaris release, a boot environment is an instance of a bootable OpenSolaris environment. The root file system and all other file systems of the boot environment that contain system software are required to be ZFS datasets."
+msgid "For an OpenSolaris 2010.03 release, a boot environment is an instance of a bootable OpenSolaris environment. The root file system and all other file systems of the boot environment that contain system software are required to be ZFS datasets."
+msgstr "For an OpenSolaris 2010.03 release, a boot environment is an instance of a bootable OpenSolaris environment. The root file system and all other file systems of the boot environment that contain system software are required to be ZFS datasets."
 
 #: package-manager.xml.in.nolegal:685(para) 
 msgid "The active boot environment is the one that is currently booted. Many boot environments can present on an OpenSolaris system and an inactive boot environment can be in a state of waiting for activation upon system reboot."
@@ -1453,8 +1458,8 @@ msgid "origin"
 msgstr "eredeti"
 
 #: package-manager.xml.in.nolegal:707(para) 
-msgid "Location of a package repository specified by a URI."
-msgstr "Location of a package repository specified by a URI."
+msgid "Location of a package repository specified by a URI, that contains a complete set of package data."
+msgstr "Location of a package repository specified by a URI, that contains a complete set of package data."
 
 #: package-manager.xml.in.nolegal:710(glossterm) 
 msgid "alias"
@@ -1463,6 +1468,14 @@ msgstr "alias"
 #: package-manager.xml.in.nolegal:711(para) 
 msgid "An alternate name for a publisher."
 msgstr "An alternate name for a publisher."
+
+#: package-manager.xml.in.nolegal:714(glossterm) 
+msgid "mirror"
+msgstr "tükör"
+
+#: package-manager.xml.in.nolegal:715(para) 
+msgid "Location of a package repository, specified by a URI, that contains only package files."
+msgstr "Location of a package repository, specified by a URI, that contains only package files."
 
 #. Put one translator per line, in the form of NAME <EMAIL>, YEAR1, YEAR2.
 #: package-manager.xml.in.nolegal:0(None) 

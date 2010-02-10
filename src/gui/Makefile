@@ -102,7 +102,7 @@ MIMETYPE = \
 C_ONLY_HELP_LOCALES = C
 HELP_LOCALES = C ar ca cs de es fr hu id it ja ko pl pt_BR ru sv zh_CN zh_HK zh_TW
 C_ONLY_SP_LOCALES = C
-SP_LOCALES = C ar ca cs de es fr hu it ja ko nl pt_BR ru sv zh_CN zh_HK zh_TW
+SP_LOCALES = C ar ca cs de es fr hu id it ja ko nl pt_BR ru sv zh_CN zh_HK zh_TW
 
 
 #

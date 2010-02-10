@@ -19,28 +19,29 @@
 # CDDL HEADER END
 #
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 msgid ""
 msgstr "Project-Id-Version: PACKAGE VERSION\n"
-       "POT-Creation-Date: 2009-12-21 12:05+0900\n"
-       "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-       "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-       "Language-Team: LANGUAGE <LL@li.org>\n"
+       "Report-Msgid-Bugs-To: \n"
+       "POT-Creation-Date: 2010-01-15 08:56+0900\n"
+       "PO-Revision-Date: 2010-01-15 08:56+0900\n"
+       "Last-Translator: Japanese L10n Team <i18n-discuss@opensolaris.org>\n"
+       "Language-Team: Japanese <i18n-discuss@opensolaris.org>\n"
        "MIME-Version: 1.0\n"
        "Content-Type: text/plain; charset=UTF-8\n"
        "Content-Transfer-Encoding: 8bit\n"
 
 #. When image changes, this message will be marked fuzzy or untranslated for you.
 #. It doesn't matter what you translate it to: it's not used at all.
-#: package-manager.xml.in.nolegal:38(None) package-manager.xml.in.nolegal:89(None) 
+#: package-manager.xml.in.nolegal:38(None) package-manager.xml.in.nolegal:88(None) 
 msgid "@@image: 'figures/pkgmgr-main.png'; md5=e2194180dd5eca2d8e3912fee614e061"
 msgstr "@@image: 'figures/pkgmgr-main.png'; md5=e2194180dd5eca2d8e3912fee614e061"
 
 #. When image changes, this message will be marked fuzzy or untranslated for you.
 #. It doesn't matter what you translate it to: it's not used at all.
-#: package-manager.xml.in.nolegal:69(None) 
+#: package-manager.xml.in.nolegal:68(None) 
 msgid "@@image: 'figures/startpage_new.png'; md5=9f8516015a79fd2b5c456128482affe4"
 msgstr "@@image: 'figures/startpage_new.png'; md5=9f8516015a79fd2b5c456128482affe4"
 
@@ -139,18 +140,10 @@ msgid "About Image Packaging System"
 msgstr "Image Packaging System について"
 
 #: package-manager.xml.in.nolegal:54(para) 
-msgid "Image Packaging System (IPS) is a software delivery system that interacts with a network repository. The IPS software is a framework which provides for software lifecycle management including installation, upgrade, and removal."
-msgstr ""
-       "Image Packaging System (IPS) はネットワークリポジトリと相互動作する"
-       "ソフトウェア配布システムです。IPS ソフトウェアは、インストール、アップグレード、削除といった"
-       "ソフトウェアのライフサイクル管理を提供する"
-       "フレームワークです。"
+msgid "Image Packaging System (IPS) is a framework which provides for software lifecycle management including installation, upgrade, and removal. The OpenSolaris 2010.03 release uses IPS as its packaging system."
+msgstr "Image Packaging System (IPS) は、インストール、アップグレード、削除といったソフトウェアのライフサイクル管理を提供するフレームワークです。OpenSolaris 2010.03 リリースは IPS をパッケージシステムとして使用します。"
 
 #: package-manager.xml.in.nolegal:55(para) 
-msgid "The OpenSolaris 2010.03 release uses IPS as its packaging system."
-msgstr "OpenSolaris 2010.03 リリースでは、パッケージングシステムとして IPS を使用します。"
-
-#: package-manager.xml.in.nolegal:56(para) 
 msgid "After an initial installation of the OpenSolaris 2010.03 operating system, you will find that some of the software applications that you use on a regular basis are not immediately available to you. These software applications are available as packages in a repository for downloading and installing over the network. A repository is a source for packages."
 msgstr "OpenSolaris 2010.03 オペレーティングシステムの初期インストールのあと、"
        "通常使用するソフトウェアアプリケーションのいくつかが"
@@ -158,286 +151,284 @@ msgstr "OpenSolaris 2010.03 オペレーティングシステムの初期イン�
        "リポジトリのパッケージとして用意されており、ネットワーク経由で"
        "ダウンロードしてインストールすることができます。リポジトリとはパッケージのソースです。"
 
-#: package-manager.xml.in.nolegal:57(para) 
-msgid "Users can use IPS to install packages from a repository, create and publish their own IPS packages, mirror an existing repository, and publish existing packages to a repository."
-msgstr ""
-       "ユーザーは IPS を使用して、リポジトリからのパッケージのインストール、ユーザー独自の "
-       "IPS パッケージの作成と発行、既存リポジトリのミラー化、リポジトリへの既存パッケージの発行"
-       "などを行うことができます。"
+#: package-manager.xml.in.nolegal:56(para) 
+msgid "IPS provides a set of software tools that can be used to install packages from a repository, create and publish their own IPS packages, mirror an existing repository, and publish existing packages to a repository."
+msgstr "IPS はリポジトリからのパッケージのインストール、ユーザー独自の"
+       "IPS パッケージの作成と発行、既存リポジトリのミラー化、リポジトリへの既存パッケージの発行などに使用するソフトウェアツールのセットを提供します。"
 
-#: package-manager.xml.in.nolegal:58(para) 
+#: package-manager.xml.in.nolegal:57(para) 
 msgid "Once you have installed packages, IPS enables you to search, update, and manage packages on your system."
 msgstr ""
        "パッケージのインストールが完了したら、IPS を使用して、システム上のパッケージを検索、更新、"
        "および管理することができます。"
 
-#: package-manager.xml.in.nolegal:59(para) 
+#: package-manager.xml.in.nolegal:58(para) 
 msgid "With IPS , you can upgrade your system to a newer build of OpenSolaris, install and update your software to the latest available versions in a repository, and retrieve packages from mirror repositories."
 msgstr ""
        "IPS を使用すると、システムを OpenSolaris のより新しいビルドにアップグレードしたり、"
        "ソフトウェアをインストールしてリポジトリ内の使用可能な最新バージョンに更新したり、"
        "ミラーリポジトリからパッケージを取得したりすることができます。"
 
-#: package-manager.xml.in.nolegal:60(emphasis) 
+#: package-manager.xml.in.nolegal:59(emphasis) 
 msgid "The Package Manager provides a subset of the tasks that can be performed from the command-line."
 msgstr ""
        "パッケージマネージャーでは、コマンド行から実行可能な作業の一部を"
        "実行できます。"
 
-#: package-manager.xml.in.nolegal:62(para) 
-msgid "If the system on which IPS is installed is on the network, IPS can automatically access the OpenSolaris publisher. For the OpenSolaris 2010.03 release, your IPS client can access the packages from <ulink url=\"http://pkg.opensolaris.org\"/>."
-msgstr "IPS のインストールされたシステムがネットワーク上にあれば、IPS は自動的に OpenSolaris 発行元にアクセスできます。OpenSolaris 2010.03 リリースの場合、IPS クライアントは <ulink url=\"http://pkg.opensolaris.org\"/> からパッケージにアクセスできます。"
+#: package-manager.xml.in.nolegal:61(para) 
+msgid "For the OpenSolaris 2010.03 release, if the system on which IPS is installed is on the network, IPS can automatically retrieve packages provided by the OpenSolaris publisher from the package repository located at <ulink url=\"http://pkg.opensolaris.org\"/>."
+msgstr "OpenSolaris 2010.03 リリースの場合、IPS のインストールされたシステムがネットワーク上にあれば、IPS は自動的に <ulink url=\"http://pkg.opensolaris.org\"/> にある OpenSolaris の発行元によって提供されたパッケージを検索できます。 "
 
-#: package-manager.xml.in.nolegal:63(para) 
+#: package-manager.xml.in.nolegal:62(para) 
 msgid "For more IPS documentation, see the <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"><citetitle>Image Packaging System Guide</citetitle></ulink> and the <filename>pkg</filename><ulink url=\"http://opensolaris.org/sc/src/pkg/gate/src/man/\">man pages</ulink>."
 msgstr "IPS については、<ulink url=\"http://docs.sun.com/source/820-7679/index.html\"><citetitle>Image Packaging System Guide</citetitle></ulink>および<filename>pkg</filename><ulink url=\"http://opensolaris.org/sc/src/pkg/gate/src/man/\">マニュアルページ</ulink>を参照してください。"
 
-#: package-manager.xml.in.nolegal:64(para) 
+#: package-manager.xml.in.nolegal:63(para) 
 msgid "For more information about IPS, visit the <ulink url=\"http://opensolaris.org/os/project/pkg\">project page</ulink>."
 msgstr "IPS の詳細については、<ulink url=\"http://opensolaris.org/os/project/pkg\">project page</ulink>を参照してください。"
 
-#: package-manager.xml.in.nolegal:66(title) 
+#: package-manager.xml.in.nolegal:65(title) 
 msgid "Getting Started With Package Manager"
 msgstr "パッケージマネージャー入門"
 
-#: package-manager.xml.in.nolegal:67(para) 
+#: package-manager.xml.in.nolegal:66(para) 
 msgid "When you start the Package Manager, a Start Page similar to the example below is displayed:"
 msgstr "パッケージマネージャーを起動すると、次の例のような開始ページが表示されます。"
 
-#: package-manager.xml.in.nolegal:68(title) 
+#: package-manager.xml.in.nolegal:67(title) 
 msgid "Package Manager Start Page"
 msgstr "パッケージマネージャー開始ページ"
 
-#: package-manager.xml.in.nolegal:72(para) 
+#: package-manager.xml.in.nolegal:71(para) 
 msgid "The Start Page provides a list of featured packages that can be installed. It includes a list of some of the most popular and recent packages downloaded by the OpenSolaris community of users. The Recommended list of packages point to software applications that are frequently downloaded by the OpenSolaris user. Click the package links to install the packages."
 msgstr "開始ページはインストール可能な機能パッケージの一覧を提供します。その中には OpenSolaris コミュニティーユーザーがダウンロードしたもっとも人気のある最新のパッケージのいくつかを含みます。推奨パッケージ一覧は OpenSolaris ユーザーがよくダウンロードするソフトウェアアプリケーションへリンクしています。パッケージをインストールするにはパッケージのリンクをクリックしてください。"
 
-#: package-manager.xml.in.nolegal:73(para) 
+#: package-manager.xml.in.nolegal:72(para) 
 msgid "The Start Page also provides links to more information about the OpenSolaris project, subscribe to newsletters and join the OpenSolaris community."
 msgstr "開始ページはまた OpenSolaris プロジェクトについてのより詳しい情報、ニュースレターの購読、OpenSolaris コミュニティーへの参加リンクを提供しています。"
 
-#: package-manager.xml.in.nolegal:74(para) 
+#: package-manager.xml.in.nolegal:73(para) 
 msgid "To close the Start Page and see the list of packages in the selected publisher, perform any of the following actions in the main window of the Package Manager:"
 msgstr "開始ページを閉じ、選択した発行元内のパッケージ一覧を見るには、パッケージマネージャーのメインウィンドウで次のアクションのいずれかを行います。"
 
-#: package-manager.xml.in.nolegal:75(para) 
+#: package-manager.xml.in.nolegal:74(para) 
 msgid "Select a package category"
 msgstr "パッケージカテゴリを選択する"
 
-#: package-manager.xml.in.nolegal:77(para) 
+#: package-manager.xml.in.nolegal:76(para) 
 msgid "Change the <emphasis role=\"strong\">View</emphasis> drop-down menu"
 msgstr "<emphasis role=\"strong\">表示</emphasis>ドロップダウンメニューを変更します"
 
-#: package-manager.xml.in.nolegal:79(para) 
+#: package-manager.xml.in.nolegal:78(para) 
 msgid "Perform a search"
 msgstr "検索を実行する"
 
-#: package-manager.xml.in.nolegal:81(para) 
+#: package-manager.xml.in.nolegal:80(para) 
 msgid "Change the publisher"
 msgstr "発行元を変更します"
 
-#: package-manager.xml.in.nolegal:84(para) 
+#: package-manager.xml.in.nolegal:83(para) 
 msgid "Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</guimenuitem></menuchoice> to return to the Start Page at anytime."
 msgstr ""
        "<menuchoice><guimenu>「表示」</guimenu><guimenuitem>「開始ページ」</"
        "guimenuitem></menuchoice>を選択すると、いつでも「開始ページ」に戻ることができます。"
 
-#: package-manager.xml.in.nolegal:85(para) 
+#: package-manager.xml.in.nolegal:84(para) 
 msgid "See <xref linkend=\"edit-prefs\"/> to turn off the <emphasis role=\"strong\">initial display</emphasis> of the start page when the Package Manager starts."
 msgstr "パッケージマネージャーの起動時に開始ページの<emphasis role=\"strong\">初期画面</emphasis>を消すには<xref linkend=\"edit-prefs\"/>を参照してください。"
 
-#: package-manager.xml.in.nolegal:87(title) 
+#: package-manager.xml.in.nolegal:86(title) 
 msgid "About The Package Manager Window"
 msgstr "パッケージマネージャーウィンドウについて"
 
-#: package-manager.xml.in.nolegal:88(title) 
+#: package-manager.xml.in.nolegal:87(title) 
 msgid "Package Manager Main View"
 msgstr "パッケージマネージャーメインウィンドウ"
 
-#: package-manager.xml.in.nolegal:92(para) 
+#: package-manager.xml.in.nolegal:91(para) 
 msgid "The main window of the Package Manager consists of the following elements :"
 msgstr ""
        "パッケージマネージャーのメインウィンドウは、次の要素で構成されています。"
 
-#: package-manager.xml.in.nolegal:93(emphasis) 
+#: package-manager.xml.in.nolegal:92(emphasis) 
 msgid "Menubar"
 msgstr "メニューバー"
 
-#: package-manager.xml.in.nolegal:94(para) 
+#: package-manager.xml.in.nolegal:93(para) 
 msgid "The menubar contains the menus and sub-menus required to perform all of the commands related to the Package Manager."
 msgstr "メニューバーにはパッケージマネージャーに関するすべてのコマンドを実行するのに必要なメニューおよびサブメニューがあります。"
 
-#: package-manager.xml.in.nolegal:98(emphasis) 
+#: package-manager.xml.in.nolegal:97(emphasis) 
 msgid "Toolbar"
 msgstr "ツールバー"
 
-#: package-manager.xml.in.nolegal:99(para) 
+#: package-manager.xml.in.nolegal:98(para) 
 msgid "The toolbar contains the icons for a subset of the commands that can be performed by using the menus on the menubar. A <emphasis role=\"strong\">Search</emphasis> field is also located on the toolbar. You can perform the following actions from the toolbar :"
 msgstr "ツールバーにはメニューバー上のメニューを使用して実行できるコマンドのサブセットのアイコンがあります。<emphasis role=\"strong\">検索</emphasis>フィールドもまたツールバー上にあります。ツールバーから次のアクションを実行することができます。"
 
-#: package-manager.xml.in.nolegal:100(para) 
+#: package-manager.xml.in.nolegal:99(para) 
 msgid "<emphasis role=\"strong\">Updates</emphasis> – Click <emphasis role=\"strong\">Updates</emphasis> to check for and install the latest updates."
 msgstr "<emphasis role=\"strong\">更新</emphasis> – <emphasis role=\"strong\">更新</emphasis>をクリックして最新の更新をチェックし、インストールします。"
 
-#: package-manager.xml.in.nolegal:102(para) 
+#: package-manager.xml.in.nolegal:101(para) 
 msgid "<emphasis role=\"strong\">Install/Update</emphasis> – Select a package and click <emphasis role=\"strong\">Install/Update</emphasis> to install or update a package."
 msgstr "<emphasis role=\"strong\">インストール/更新</emphasis> – パッケージを選択し、<emphasis role=\"strong\">インストール/更新</emphasis>をクリックしてパッケージをインストールまたは更新します。"
 
-#: package-manager.xml.in.nolegal:104(para) 
+#: package-manager.xml.in.nolegal:103(para) 
 msgid "<emphasis role=\"strong\">Refresh</emphasis> – Click <emphasis role=\"strong\">Refresh</emphasis> to reload the list of packages."
 msgstr "<emphasis role=\"strong\">再表示</emphasis> – <emphasis role=\"strong\">再表示</emphasis>をクリックしてパッケージの一覧を再読み込みします。"
 
-#: package-manager.xml.in.nolegal:106(para) 
+#: package-manager.xml.in.nolegal:105(para) 
 msgid "<emphasis role=\"strong\">Remove</emphasis> – Select a package and click <emphasis role=\"strong\">Remove</emphasis> to remove a package."
 msgstr "<emphasis role=\"strong\">削除</emphasis> – パッケージを選択し、<emphasis role=\"strong\">削除</emphasis>をクリックしてパッケージを削除します。 "
 
-#: package-manager.xml.in.nolegal:108(para) 
+#: package-manager.xml.in.nolegal:107(para) 
 msgid "<emphasis role=\"strong\">Search for a Package</emphasis> – Type the name or description of a package in the <emphasis role=\"strong\">Search</emphasis> field to search for a package. See the <xref linkend=\"search-pkg\"/> section for examples on how to search for a package."
 msgstr "<emphasis role=\"strong\">パッケージを検索</emphasis> – <emphasis role=\"strong\">検索</emphasis>フィールド内にパッケージの名前か説明を入力してパッケージを検索します。パッケージを検索する方法の例については、<xref linkend=\"search-pkg\"/>の節を参照してください。"
 
-#: package-manager.xml.in.nolegal:113(emphasis) 
+#: package-manager.xml.in.nolegal:112(emphasis) 
 msgid "Publisher Drop-Down Menu"
 msgstr "発行元ドロップダウンメニュー"
 
-#: package-manager.xml.in.nolegal:114(para) 
+#: package-manager.xml.in.nolegal:113(para) 
 msgid "The list of available publishers is shown in the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu. Users can perform the following tasks from the publisher drop-down menu :"
 msgstr "利用可能な発行元の一覧は<emphasis role=\"strong\">発行元</emphasis>ドロップダウンメニューに表示されます。ユーザーは発行元ドロップダウンメニューから次のタスクを実行できます。"
 
-#: package-manager.xml.in.nolegal:115(emphasis) 
+#: package-manager.xml.in.nolegal:114(emphasis) 
 msgid "Select a publisher"
 msgstr "発行元を選択します"
 
-#: package-manager.xml.in.nolegal:117(emphasis) 
+#: package-manager.xml.in.nolegal:116(emphasis) 
 msgid "View the list of packages installed from all publishers"
 msgstr "すべての発行元からインストールされたパッケージの一覧を表示します"
 
-#: package-manager.xml.in.nolegal:119(emphasis) 
+#: package-manager.xml.in.nolegal:118(emphasis) 
 msgid "Search for package across all publishers"
 msgstr "すべての発行元からパッケージを検索します"
 
-#: package-manager.xml.in.nolegal:121(emphasis) 
+#: package-manager.xml.in.nolegal:120(emphasis) 
 msgid "Add a publisher"
 msgstr "発行元を追加します"
 
-#: package-manager.xml.in.nolegal:126(emphasis) 
+#: package-manager.xml.in.nolegal:125(emphasis) 
 msgid "List of Packages by Category"
 msgstr "カテゴリ別のパッケージ一覧"
 
-#: package-manager.xml.in.nolegal:127(para) 
+#: package-manager.xml.in.nolegal:126(para) 
 msgid "You can browse the available packages by category in the left hand side panel. Click on a category to see the sub-categories of packages available. There are six main categories that are displayed in the Package Manager:"
 msgstr "左側のパネルでは、使用可能なパッケージをカテゴリ別に参照できます。使用可能なパッケージのサブカテゴリを見るにはカテゴリをクリックします。パッケージマネージャーに表示されるメインカテゴリは 6 つあります。"
 
-#: package-manager.xml.in.nolegal:128(emphasis) 
+#: package-manager.xml.in.nolegal:127(emphasis) 
 msgid "Applications"
 msgstr "アプリケーション"
 
-#: package-manager.xml.in.nolegal:130(emphasis) 
+#: package-manager.xml.in.nolegal:129(emphasis) 
 msgid "Desktop (GNOME)"
 msgstr "デスクトップ (GNOME)"
 
-#: package-manager.xml.in.nolegal:132(emphasis) 
+#: package-manager.xml.in.nolegal:131(emphasis) 
 msgid "Development"
 msgstr "開発"
 
-#: package-manager.xml.in.nolegal:134(emphasis) 
+#: package-manager.xml.in.nolegal:133(emphasis) 
 msgid "Drivers"
 msgstr "ドライバ"
 
-#: package-manager.xml.in.nolegal:136(emphasis) 
+#: package-manager.xml.in.nolegal:135(emphasis) 
 msgid "System"
 msgstr "システム"
 
-#: package-manager.xml.in.nolegal:138(emphasis) 
+#: package-manager.xml.in.nolegal:137(emphasis) 
 msgid "Web Services"
 msgstr "Web サービス"
 
-#: package-manager.xml.in.nolegal:143(emphasis) 
+#: package-manager.xml.in.nolegal:142(emphasis) 
 msgid "Recent Searches"
 msgstr "最近の検索"
 
-#: package-manager.xml.in.nolegal:144(para) 
+#: package-manager.xml.in.nolegal:143(para) 
 msgid "The Package Manager saves your recent package searches. Click the Recent Searches in the left hand side panel to view the packages you searched for recently."
 msgstr "パッケージマネージャーは最近検索したパッケージを保存します。最近検索したパッケージを参照するには、左側のパネルにある「最近の検索」をクリックします。"
 
-#: package-manager.xml.in.nolegal:147(emphasis) 
+#: package-manager.xml.in.nolegal:146(emphasis) 
 msgid "List of Packages by Status"
 msgstr "状態別のパッケージ一覧"
 
-#: package-manager.xml.in.nolegal:148(para) 
+#: package-manager.xml.in.nolegal:147(para) 
 msgid "The <emphasis role=\"strong\">View</emphasis> drop-down menu enables you to view package status with the following options :"
 msgstr "<emphasis role=\"strong\">「表示」</emphasis>ドロップダウンメニューを使用すると、次のオプションによってパッケージの状態を参照することができます。"
 
-#: package-manager.xml.in.nolegal:149(para) 
+#: package-manager.xml.in.nolegal:148(para) 
 msgid "<emphasis role=\"strong\">All Packages</emphasis> – Shows the list of all packages available within the current publisher."
 msgstr "<emphasis role=\"strong\">「すべてのパッケージ」</emphasis> – 現在の発行元内で使用可能なすべてのパッケージの一覧を表示します。"
 
-#: package-manager.xml.in.nolegal:151(para) 
+#: package-manager.xml.in.nolegal:150(para) 
 msgid "<emphasis role=\"strong\">Installed Packages</emphasis> – Shows the list of packages installed within the current publisher on your system."
 msgstr "<emphasis role=\"strong\">「インストール済みパッケージ」</emphasis> – 現在の発行元内でシステムにインストールされているパッケージの一覧を表示します。"
 
-#: package-manager.xml.in.nolegal:153(para) 
+#: package-manager.xml.in.nolegal:152(para) 
 msgid "<emphasis role=\"strong\">Updates</emphasis> — Shows the list of packages that have newer versions available within the current publisher."
 msgstr "<emphasis role=\"strong\">「更新」</emphasis> – 現在の発行元内で新しいバージョンが使用可能になっているパッケージの一覧を表示します。"
 
-#: package-manager.xml.in.nolegal:155(para) 
+#: package-manager.xml.in.nolegal:154(para) 
 msgid "<emphasis role=\"strong\">Not Installed Packages</emphasis> – Shows the list of packages that are not installed, but are available in the currently selected publisher."
 msgstr "<emphasis role=\"strong\">「インストールされていないパッケージ」</emphasis> – "
        "インストールされていないが、現在選択されている発行元内で使用可能なパッケージの一覧を表示します。"
 
-#: package-manager.xml.in.nolegal:157(para) 
+#: package-manager.xml.in.nolegal:156(para) 
 msgid "<emphasis role=\"strong\">Selected Packages</emphasis> – Shows the list of packages that you have selected."
 msgstr ""
        "<emphasis role=\"strong\">「選択したパッケージ」</emphasis> – "
        "ユーザーが選択したパッケージの一覧を表示します。"
 
-#: package-manager.xml.in.nolegal:162(emphasis) 
+#: package-manager.xml.in.nolegal:161(emphasis) 
 msgid "Package Name, Status, and Description"
 msgstr "パッケージ名、状態、および説明"
 
-#: package-manager.xml.in.nolegal:163(para) 
+#: package-manager.xml.in.nolegal:162(para) 
 msgid "The list of packages in the selected category, a brief description, and their status are displayed in here."
 msgstr "選択されたカテゴリに含まれるパッケージの一覧と各パッケージの簡単な説明"
        "および状態がここに表示されます。"
 
-#: package-manager.xml.in.nolegal:164(para) 
+#: package-manager.xml.in.nolegal:163(para) 
 msgid "The Publisher name is also displayed here in the following instances :"
 msgstr "次の場合には発行元名も表示されます。"
 
-#: package-manager.xml.in.nolegal:165(para) 
+#: package-manager.xml.in.nolegal:164(para) 
 msgid "When the <emphasis role=\"strong\">Pubisher</emphasis> drop-down menu is set to All Publishers (Installed)"
 msgstr "<emphasis role=\"strong\">発行元</emphasis>ドロップダウンメニューが「すべての発行元 (インストール済み)」に設定されているとき"
 
-#: package-manager.xml.in.nolegal:167(para) 
+#: package-manager.xml.in.nolegal:166(para) 
 msgid "When search results are displayed for the All Publishers (Search) option"
 msgstr "検索結果がすべての発行元 (検索) オプションで表示されたとき"
 
-#: package-manager.xml.in.nolegal:169(para) 
+#: package-manager.xml.in.nolegal:168(para) 
 msgid "When a recent search result is displayed"
 msgstr "最近の検索結果が表示されたとき"
 
-#: package-manager.xml.in.nolegal:174(emphasis) 
+#: package-manager.xml.in.nolegal:173(emphasis) 
 msgid "Package Details"
 msgstr "パッケージの詳細"
 
-#: package-manager.xml.in.nolegal:175(para) 
+#: package-manager.xml.in.nolegal:174(para) 
 msgid "Click a package name to select it. Details of the selected package, such as name, version, file dependencies, and license are displayed in this window."
 msgstr ""
        "パッケージをクリックして選択します。名前、バージョン、ファイルの依存関係、"
        "ライセンスなど、選択されたパッケージの詳細がこのウィンドウに表示されます。"
 
-#: package-manager.xml.in.nolegal:181(title) 
+#: package-manager.xml.in.nolegal:180(title) 
 msgid "Package Manager Settings"
 msgstr "パッケージマネージャー設定"
 
-#: package-manager.xml.in.nolegal:182(para) 
+#: package-manager.xml.in.nolegal:181(para) 
 msgid "Use the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> to change the Package Manager settings. The following sections discuss the preferences that can be changed by the user."
 msgstr "パッケージマネージャーの設定を変更するには、<menuchoice><guimenu>「編集」</guimenu><guimenuitem>「設定」</guimenuitem></menuchoice>を使用します。次の節ではユーザーが変更できる設定について説明します。"
 
-#: package-manager.xml.in.nolegal:183(title) 
+#: package-manager.xml.in.nolegal:182(title) 
 msgid "Start Page Preferences"
 msgstr "「開始ページ」の設定"
 
-#: package-manager.xml.in.nolegal:184(para) 
+#: package-manager.xml.in.nolegal:183(para) 
 msgid "A Start Page is displayed in the main window of the Package Manager when the application is started. The Start Page provides links to <ulink url=\"http://opensolaris.com\">opensolaris.com</ulink> page where you can get more information about OpenSolaris, subscribe to newsletters and join the OpenSolaris community."
 msgstr ""
        "パッケージマネージャーの起動時には、メインウィンドウに「開始ページ」が"
@@ -446,13 +437,13 @@ msgstr ""
        "OpenSolaris の詳細情報を得たり、ニュースレターに登録したり、"
        "OpenSolaris コミュニティーに参加したりできます。"
 
-#: package-manager.xml.in.nolegal:185(para) 
+#: package-manager.xml.in.nolegal:184(para) 
 msgid "You can choose to turn off this setting so this page is not displayed when Package Manager starts."
 msgstr ""
        "この設定をオフにして、パッケージマネージャーの起動時にこのページを表示しないように"
        "することもできます。"
 
-#: package-manager.xml.in.nolegal:186(para) 
+#: package-manager.xml.in.nolegal:185(para) 
 msgid "Select <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> from the main menu and uncheck the <emphasis role=\"strong\">Show Start Page on Startup</emphasis> to disable the Start Page. This dialog is checked by default."
 msgstr "「開始ページ」を無効にするには、メインメニューから<menuchoice><guimenu>「編集」</guimenu><guimenuitem>「設定」</"
        "guimenuitem></menuchoice>を選択し、<emphasis role="
@@ -460,314 +451,314 @@ msgstr "「開始ページ」を無効にするには、メインメニューか
        "選択を解除します。"
        "このダイアログはデフォルトでチェックされます。"
 
-#: package-manager.xml.in.nolegal:187(para) 
+#: package-manager.xml.in.nolegal:186(para) 
 msgid "Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</guimenuitem></menuchoice> from the main menu to go to the Start Page at anytime."
 msgstr "<menuchoice><guimenu>「表示」</guimenu><guimenuitem>「開始ページ」</"
        "guimenuitem></menuchoice>を選択すると、いつでも「開始ページ」に移動することができます。"
 
-#: package-manager.xml.in.nolegal:189(title) 
+#: package-manager.xml.in.nolegal:188(title) 
 msgid "Exit Preferences"
 msgstr "設定を閉じる"
 
-#: package-manager.xml.in.nolegal:190(para) 
+#: package-manager.xml.in.nolegal:189(para) 
 msgid "The Package Manager application can remember some of its current settings if the <emphasis role=\"strong\">Remember current state on exit</emphasis> option in the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> is checked."
 msgstr "パッケージマネージャーアプリケーションは<menuchoice><guimenu>編集</guimenu><guimenuitem>設定</guimenuitem></menuchoice>内の<emphasis role=\"strong\">「終了時に現在の設定を記憶する」</emphasis>オプションにチェックが入っていると現在の設定のいくつかを記憶できます。"
 
-#: package-manager.xml.in.nolegal:191(para) 
+#: package-manager.xml.in.nolegal:190(para) 
 msgid "The following settings are saved:"
 msgstr "次の設定が保存されます:"
 
-#: package-manager.xml.in.nolegal:192(para) 
+#: package-manager.xml.in.nolegal:191(para) 
 msgid "<emphasis role=\"strong\">Vertical separators</emphasis> – The size of the columns in the main window the Package Manager"
 msgstr "<emphasis role=\"strong\">垂直セパレータ</emphasis> – パッケージマネージャーメインウィンドウ内の列のサイズ。"
 
-#: package-manager.xml.in.nolegal:194(para) 
+#: package-manager.xml.in.nolegal:193(para) 
 msgid "<emphasis role=\"strong\">Window size</emphasis> – The size of the Package Manager window"
 msgstr "<emphasis role=\"strong\">ウィンドウサイズ</emphasis> – パッケージマネージャーウィンドウのサイズ"
 
-#: package-manager.xml.in.nolegal:196(para) 
+#: package-manager.xml.in.nolegal:195(para) 
 msgid "<emphasis role=\"strong\">Current publisher</emphasis> – The publisher that is selected when the Package Manager is closed"
 msgstr "<emphasis role=\"strong\">現在の発行元</emphasis> – パッケージマネージャーを閉じたときに選択されていた発行元"
 
-#: package-manager.xml.in.nolegal:200(title) 
+#: package-manager.xml.in.nolegal:199(title) 
 msgid "Confirmation Dialog Preferences"
 msgstr "「確認」ダイアログ設定"
 
-#: package-manager.xml.in.nolegal:201(para) 
+#: package-manager.xml.in.nolegal:200(para) 
 msgid "When a package is selected for installation, update, or removal, a confirmation dialog is displayed that displays the list of packages and the action to be performed. Under the <emphasis role=\"strong\">Show Confirmation Dialog</emphasis> uncheck <emphasis role=\"strong\">On Updates</emphasis>, <emphasis role=\"strong\">On Package Install/Update</emphasis>, and <emphasis role=\"strong\">On Package Remove</emphasis> to turn these settings off."
 msgstr "パッケージをインストール、更新、削除のために選択すると、確認ダイアログが表示されてパッケージの一覧と実行するアクションを示します。この設定をオフにするには、<emphasis role=\"strong\">確認ダイアログの表示</emphasis>で<emphasis role=\"strong\">更新時</emphasis>、<emphasis role=\"strong\">パッケージのインストール/更新時</emphasis>、および<emphasis role=\"strong\">パッケージ削除時</emphasis>のチェックをはずします。"
 
-#: package-manager.xml.in.nolegal:204(title) 
+#: package-manager.xml.in.nolegal:203(title) 
 msgid "Working With Packages"
 msgstr "パッケージの操作"
 
-#: package-manager.xml.in.nolegal:205(title) 
+#: package-manager.xml.in.nolegal:204(title) 
 msgid "Install a Package"
 msgstr "パッケージをインストールする"
 
-#: package-manager.xml.in.nolegal:206(para) 
+#: package-manager.xml.in.nolegal:205(para) 
 msgid "The list of packages and their status is displayed in the main window of the Package Manager. Perform the following steps to install a package:"
 msgstr "パッケージのリストと状態はパッケージマネージャーのメインウィンドウに"
        "表示されます。パッケージをインストールするには、次の手順を実行します。"
 
-#: package-manager.xml.in.nolegal:207(para) 
+#: package-manager.xml.in.nolegal:206(para) 
 msgid "Check the box next to the package or packages to select it. Double-clicking the package also selects the package."
 msgstr "パッケージの隣にあるボックスをクリックして選択します。パッケージをダブルクリックしてもパッケージが選択されます。"
 
-#: package-manager.xml.in.nolegal:209(para) 
+#: package-manager.xml.in.nolegal:208(para) 
 msgid "Click <guibutton>Install/Update</guibutton> to start the package installation process."
 msgstr "<guibutton>「インストール/更新」</guibutton>をクリックしてパッケージインストール処理を開始します。"
 
-#: package-manager.xml.in.nolegal:210(para) 
+#: package-manager.xml.in.nolegal:209(para) 
 msgid "You can also choose <menuchoice><guimenu>Package</guimenu><guimenuitem>Install/Update</guimenuitem></menuchoice> to start the package installation process."
 msgstr ""
        "<menuchoice><guimenu>「パッケージ」</guimenu><guimenuitem>"
        "「インストール/更新」</guimenuitem></menuchoice>を選択しても、パッケージ"
        "インストール処理を開始することができます。"
 
-#: package-manager.xml.in.nolegal:212(para) 
+#: package-manager.xml.in.nolegal:211(para) 
 msgid "Click <guilabel>Details</guilabel> to view the installation details or <guibutton>Cancel</guibutton> to cancel the package installation."
 msgstr "<guilabel>詳細</guilabel>をクリックしてインストールの詳細を表示するか、<guibutton>「キャンセル」</guibutton>をクリックしてパッケージのインストールを取り消します。"
 
-#: package-manager.xml.in.nolegal:214(para) 
+#: package-manager.xml.in.nolegal:213(para) 
 msgid "After the installation has completed, click <guibutton>Close</guibutton>."
 msgstr "インストールが完了したら、<guibutton>「閉じる」</guibutton>をクリックします。"
 
-#: package-manager.xml.in.nolegal:217(title) 
+#: package-manager.xml.in.nolegal:216(title) 
 msgid "Installation Error"
 msgstr "インストールエラー"
 
-#: package-manager.xml.in.nolegal:218(para) 
+#: package-manager.xml.in.nolegal:217(para) 
 msgid "If an error occurs during package installation, an error dialog with the error message is displayed along with the reason for failure. Click <guibutton>Close</guibutton> to close the error dialog."
 msgstr "パッケージのインストール中にエラーが発生すると、失敗の理由とともにエラーダイアログボックスにエラーメッセージと失敗理由が表示されます。<guibutton>「閉じる」</guibutton>をクリックしてエラーダイアログボックスを閉じてください。"
 
-#: package-manager.xml.in.nolegal:221(title) 
+#: package-manager.xml.in.nolegal:220(title) 
 msgid "Remove a Package"
 msgstr "パッケージを削除する"
 
-#: package-manager.xml.in.nolegal:222(para) 
+#: package-manager.xml.in.nolegal:221(para) 
 msgid "Perform the following steps to remove a package:"
 msgstr "パッケージを削除するには、次の手順を実行します。"
 
-#: package-manager.xml.in.nolegal:223(para) 
+#: package-manager.xml.in.nolegal:222(para) 
 msgid "Check the box next to a package to select it. Double-clicking the package also selects the package."
 msgstr "パッケージ横のチェックボックスをクリックしてパッケージを選択します。ダブルクリックしてもパッケージを選択できます。"
 
-#: package-manager.xml.in.nolegal:225(para) 
+#: package-manager.xml.in.nolegal:224(para) 
 msgid "Click <guibutton>Remove</guibutton> to start the package uninstallation process."
 msgstr "<guibutton>「削除」</guibutton>ボタンをクリックして"
        "パッケージのアンインストール処理を開始します。"
 
-#: package-manager.xml.in.nolegal:226(para) 
+#: package-manager.xml.in.nolegal:225(para) 
 msgid "You can also choose <menuchoice><guimenu>Package</guimenu><guimenuitem>Remove</guimenuitem></menuchoice> to remove a package."
 msgstr ""
        "<menuchoice><guimenu>「パッケージ」</guimenu><guimenuitem>"
        "「削除」</guimenuitem></menuchoice>を選択しても、パッケージを削除できます。"
 
-#: package-manager.xml.in.nolegal:228(para) 
+#: package-manager.xml.in.nolegal:227(para) 
 msgid "Review the packages to be removed and the package dependencies details in the <emphasis role=\"strong\">Remove Confirmation</emphasis> dialog."
 msgstr "<emphasis role=\"strong\">「削除の確認」</emphasis>ダイアログで、削除されるパッケージとパッケージの依存関係の詳細を確認します。"
 
-#: package-manager.xml.in.nolegal:230(para) 
+#: package-manager.xml.in.nolegal:229(para) 
 msgid "Click <guibutton>Proceed</guibutton> to start removing the packages or <guibutton>Cancel</guibutton> to cancel the process."
 msgstr "<guibutton>「続行」</guibutton>をクリックしてパッケージの削除を開始するか、<guibutton>「キャンセル」</guibutton>をクリックして処理をキャンセルします。"
 
-#: package-manager.xml.in.nolegal:234(title) 
+#: package-manager.xml.in.nolegal:233(title) 
 msgid "Search for a Package"
 msgstr "パッケージを検索する"
 
-#: package-manager.xml.in.nolegal:235(para) 
+#: package-manager.xml.in.nolegal:234(para) 
 msgid "You can search for a package in the following ways :"
 msgstr "次の方法でパッケージを検索することができます。"
 
-#: package-manager.xml.in.nolegal:236(para) 
+#: package-manager.xml.in.nolegal:235(para) 
 msgid "<emphasis role=\"strong\">Search the current publisher</emphasis> – Search for a package in the publisher currently selected in the <emphasis role=\"strong\"> Publisher</emphasis> drop-down menu. If you do not know the status of the package you are searching for, set the <emphasis role=\"strong\">View</emphasis> drop-down menu to <emphasis role=\"strong\">All Packages</emphasis>."
 msgstr "<emphasis role=\"strong\">現在の発行元を検索</emphasis> – <emphasis role=\"strong\">発行元</emphasis>ドロップダウンメニュー内で現在選択されている発行元内のパッケージを検索します。 探しているパッケージの状態を知らなければ、<emphasis role=\"strong\">「表示」</emphasis>ドロップダウンメニューを<emphasis role=\"strong\">すべてのパッケージ</emphasis>に設定します。"
 
-#: package-manager.xml.in.nolegal:237(para) 
+#: package-manager.xml.in.nolegal:236(para) 
 msgid "Enter a description, or a partial name in the <emphasis role=\"strong\">Search</emphasis> field. For example, you might type one of the following search terms to search for <filename>SUNWgnome-games</filename> :"
 msgstr "<emphasis role=\"strong\">「検索」</emphasis>フィールドに、説明または名前の一部を入力します。たとえば、<filename>SUNWgnome-games</filename> を検索するには、次のいずれかの検索語を入力できます。"
 
-#: package-manager.xml.in.nolegal:238(para) 
+#: package-manager.xml.in.nolegal:237(para) 
 msgid "SUNWgames"
 msgstr "SUNWgames"
 
-#: package-manager.xml.in.nolegal:240(para) 
+#: package-manager.xml.in.nolegal:239(para) 
 msgid "games"
 msgstr "games"
 
-#: package-manager.xml.in.nolegal:242(para) 
+#: package-manager.xml.in.nolegal:241(para) 
 msgid "GNOME-games"
 msgstr "GNOME-games"
 
-#: package-manager.xml.in.nolegal:245(para) 
+#: package-manager.xml.in.nolegal:244(para) 
 msgid "To search for SunStudio compilers, you might type one of the following terms:"
 msgstr ""
        "SunStudio コンパイラを検索するには、次のいずれかの検索語を入力できます。"
 
-#: package-manager.xml.in.nolegal:246(para) 
+#: package-manager.xml.in.nolegal:245(para) 
 msgid "compiler"
 msgstr "compiler"
 
-#: package-manager.xml.in.nolegal:248(para) 
+#: package-manager.xml.in.nolegal:247(para) 
 msgid "tools"
 msgstr "tools"
 
-#: package-manager.xml.in.nolegal:252(para) 
+#: package-manager.xml.in.nolegal:251(para) 
 msgid "<emphasis role=\"strong\">Search all publishers</emphasis> – Choose <emphasis role=\"strong\">All Publishers(Search)</emphasis> from the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu to search for a package across all configured publishers. If you do not know the status of the package you are searching for, set the <emphasis role=\"strong\">View</emphasis> drop-down menu to <emphasis role=\"strong\">All Packages</emphasis>."
 msgstr "<emphasis role=\"strong\">すべての発行元を検索</emphasis> – <emphasis role=\"strong\">「発行元」</emphasis>ドロップダウンメニューから<emphasis role=\"strong\">「すべての発行元 (検索)」</emphasis>を選択しすべての設定済み発行元からパッケージを検索します。探しているパッケージの状態を知らない場合は、<emphasis role=\"strong\">「表示」</emphasis>ドロップダウンメニューから<emphasis role=\"strong\">「すべてのパッケージ」</emphasis>を設定します。"
 
-#: package-manager.xml.in.nolegal:253(para) 
+#: package-manager.xml.in.nolegal:252(para) 
 msgid "Type a description of the package in the <emphasis role=\"strong\">Search</emphasis> field. For example, the <filename>SUNWdiveintopython</filename> package is a book on Python programming. The description of the package contains the string <emphasis>book</emphasis>. To search for this package, you might then type one of the following terms:"
 msgstr "<emphasis role=\"strong\">「検索」</emphasis>フィールド内にパッケージの説明を入力します。 たとえば、<filename>SUNWdiveintopython</filename>パッケージは Python プログラミングに関する本です。このパッケージの説明には<emphasis>「book」</emphasis>という文字列があります。このパッケージを検索するには、次のいずれかの検索語を入力できます。"
 
-#: package-manager.xml.in.nolegal:254(para) 
+#: package-manager.xml.in.nolegal:253(para) 
 msgid "python"
 msgstr "python"
 
-#: package-manager.xml.in.nolegal:256(para) 
+#: package-manager.xml.in.nolegal:255(para) 
 msgid "book"
 msgstr "book"
 
-#: package-manager.xml.in.nolegal:259(para) 
+#: package-manager.xml.in.nolegal:258(para) 
 msgid "If you searched for the term <emphasis>diveinto</emphasis> when searching for the <filename>SUNWdiveintopython</filename> package, the results will not be displayed as the term <emphasis>diveinto</emphasis> is not present as an independent, complete word in the package contents. However you will find the package using the <literal>*</literal> wild card. Hence, searching for the term <literal>diveinto*</literal> will display the <filename>SUNWdiveintopython</filename> package."
 msgstr "<filename>SUNWdiveintopython</filename>パッケージを検索するのに検索語<emphasis>「diveinto」</emphasis>で検索すると、結果は表示されません。なぜなら<emphasis>「diveinto」</emphasis>という検索語はパッケージの内容の中に独立した、完全な語として存在しないからです。ただしワイルドカード<literal>「*」</literal>を使用してパッケージを見つけることができます。そこで検索語<literal>「diveinto*」</literal>は<filename>SUNWdiveintopython</filename>パッケージを表示します。"
 
-#: package-manager.xml.in.nolegal:263(para) 
+#: package-manager.xml.in.nolegal:262(para) 
 msgid "Use the submenus under the <menuchoice><guimenu>Edit</guimenu></menuchoice> menu to cut, copy, or paste text in the <emphasis role=\"strong\">Search</emphasis> field."
 msgstr "<emphasis role=\"strong\">「検索」</emphasis>フィールド内のテキストをカット、コピー、またはペーストするには、<menuchoice><guimenu>「編集」</guimenu></menuchoice> メニューの下のサブメニューを使用します。"
 
-#: package-manager.xml.in.nolegal:265(para) 
+#: package-manager.xml.in.nolegal:264(para) 
 msgid "The following operators are supported for a package search:"
 msgstr "パッケージの検索では次の操作がサポートされています。"
 
-#: package-manager.xml.in.nolegal:266(emphasis) 
+#: package-manager.xml.in.nolegal:265(emphasis) 
 msgid "The AND operator"
 msgstr "AND 演算子"
 
-#: package-manager.xml.in.nolegal:267(para) 
+#: package-manager.xml.in.nolegal:266(para) 
 msgid "When the search term is separated by spaces or the AND operator, the Package Manager will search for packages containing <emphasis role=\"strong\">all</emphasis> the search terms."
 msgstr "検索語がスペースあるいは AND 演算子で区切られていると、パッケージマネージャーは<emphasis role=\"strong\">すべて</emphasis>の検索語を含むパッケージを検索します。"
 
-#: package-manager.xml.in.nolegal:270(emphasis) 
+#: package-manager.xml.in.nolegal:269(emphasis) 
 msgid "Double Quotes"
 msgstr "二重引用符"
 
-#: package-manager.xml.in.nolegal:271(para) 
+#: package-manager.xml.in.nolegal:270(para) 
 msgid "When a search term is placed within double quotes, the Package Manager will search for packages that <emphasis role=\"strong\">match the search term exactly</emphasis>."
 msgstr "検索語が二重引用符の中にあると、パッケージマネージャーは<emphasis role=\"strong\">検索語に完全一致する</emphasis>パッケージを検索します。"
 
-#: package-manager.xml.in.nolegal:274(emphasis) 
+#: package-manager.xml.in.nolegal:273(emphasis) 
 msgid "Wildcard *"
 msgstr "ワイルドカード *"
 
-#: package-manager.xml.in.nolegal:275(para) 
+#: package-manager.xml.in.nolegal:274(para) 
 msgid "Including a wildcard in your search term enables you to search for partial package names. For example, when you enter <emphasis>boo*</emphasis> in your search term, the packages displayed could include <emphasis>boot</emphasis> and <emphasis>book</emphasis> in the package name and description."
 msgstr "検索語にワイルドカードを含めるとパッケージ名の一部で検索できます。たとえば、検索語に<emphasis>boo*</emphasis>と入力すると、パッケージ名か説明に<emphasis>boot</emphasis>と<emphasis>book</emphasis>を含むパッケージが表示されます。"
 
-#: package-manager.xml.in.nolegal:276(para) 
+#: package-manager.xml.in.nolegal:275(para) 
 msgid "Wildcard searching can be slower than an exact match search or a search based on package description."
 msgstr "ワイルドカードによる検索は完全一致検索やパッケージの説明に基づく検索より遅くなる場合があります。"
 
-#: package-manager.xml.in.nolegal:280(emphasis) 
+#: package-manager.xml.in.nolegal:279(emphasis) 
 msgid "The OR operator"
 msgstr "OR 演算子"
 
-#: package-manager.xml.in.nolegal:281(para) 
+#: package-manager.xml.in.nolegal:280(para) 
 msgid "When a search term is separated by the OR operator, the Package Manager searches for packages that contain any of the search terms."
 msgstr "検索語が OR 演算子で区切られていると、パッケージマネージャーは検索語のいずれかを含むパッケージを検索します。"
 
-#: package-manager.xml.in.nolegal:286(title) 
+#: package-manager.xml.in.nolegal:285(title) 
 msgid "Cancel Package Search"
 msgstr "パッケージ検索をキャンセルする"
 
-#: package-manager.xml.in.nolegal:287(para) 
+#: package-manager.xml.in.nolegal:286(para) 
 msgid "If you want to cancel a search, use the Cancel Search icon at the bottom of the main window of the Package Manager. This icon is visible on the status bar only during a search operation."
 msgstr "検索をキャンセルしたい場合は、パッケージマネージャーのメインウィンドウ下部にある「検索のキャンセル」アイコンを使用します。このアイコンは検索の実行中にのみステータスバーに現れます。"
 
-#: package-manager.xml.in.nolegal:289(title) 
+#: package-manager.xml.in.nolegal:288(title) 
 msgid "Update a Package"
 msgstr "パッケージを更新する"
 
-#: package-manager.xml.in.nolegal:290(para) 
+#: package-manager.xml.in.nolegal:289(para) 
 msgid "Look for the Updates icon next to the installed package name. This icon indicates that updates are available for the package in the currently selected publisher. You can also choose one of the following views to display a list of packages that have updates available :"
 msgstr "インストール済みパッケージ名の隣にある「更新」アイコンを探します。このアイコンは、現在選択されている発行元内にそのパッケージの使用可能な更新が存在することを示しています。次の表示の 1 つを選択することでも更新が使用可能なパッケージの一覧を表示できます。"
 
-#: package-manager.xml.in.nolegal:291(para) 
+#: package-manager.xml.in.nolegal:290(para) 
 msgid "Select the <menuchoice><guimenuitem>Updates</guimenuitem></menuchoice> option in the <emphasis role=\"strong\">View</emphasis> drop-down menu to list all packages that have updates available in the currently selected publisher."
 msgstr "<emphasis role=\"strong\">「表示」</emphasis>ドロップダウンメニューの<menuchoice><guimenuitem>「更新」</guimenuitem></menuchoice>オプションを選択すると、現在選択されている発行元内で使用可能なパッケージの一覧を表示します。"
 
-#: package-manager.xml.in.nolegal:293(para) 
+#: package-manager.xml.in.nolegal:292(para) 
 msgid "Select the <menuchoice><guimenuitem>Updates</guimenuitem></menuchoice> option in the <emphasis role=\"strong\">View</emphasis> drop-down menu and the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> in the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu to list all packages that have updates available from all publishers."
 msgstr "<emphasis role=\"strong\">「表示」</emphasis>ドロップダウンメニューの<menuchoice><guimenuitem>「更新」</guimenuitem></menuchoice>オプションと<emphasis role=\"strong\">発行元</emphasis>ドロップダウンメニューの<emphasis role=\"strong\">すべての発行元 (インストール済み)</emphasis>オプションを選択すると、全発行元で使用可能なすべてのパッケージの一覧を表示します。"
 
-#: package-manager.xml.in.nolegal:296(para) 
+#: package-manager.xml.in.nolegal:295(para) 
 msgid "Updating a package may fail sometimes, due to inherent dependencies of the package you have selected for installation or update. You may need to update all packages on your system to get the latest updates."
 msgstr "インストールまたは更新を選択したパッケージに内在する依存性のために、パッケージの更新はときどき失敗します。最新の更新をするためには、システム上のすべてのパッケージを更新する必要がある場合があります。"
 
-#: package-manager.xml.in.nolegal:298(para) 
+#: package-manager.xml.in.nolegal:297(para) 
 msgid "Select the package or packages you want to update and click <guibutton>Install/Update</guibutton> to install the latest version of the package. Use the <emphasis role=\"strong\">Updates</emphasis> icon on the toolbar to update all packages on your system."
 msgstr "最新のバージョンのパッケージをインストールするには、更新したい 1 つか複数のパッケージを選択し<guibutton>「インストール/更新」</guibutton>をクリックします。システム上のすべてのパッケージを更新するには、ツールバー上にある<emphasis role=\"strong\">「更新」</emphasis>アイコンを使用します。"
 
-#: package-manager.xml.in.nolegal:300(title) 
+#: package-manager.xml.in.nolegal:299(title) 
 msgid "Package Version Information"
 msgstr "パッケージのバージョン情報"
 
-#: package-manager.xml.in.nolegal:301(para) 
+#: package-manager.xml.in.nolegal:300(para) 
 msgid "Select a package in the main window of the Package Manager and right-click your mouse to view the package version information. There are three types of package versions :"
 msgstr "パッケージマネージャーのメインウィンドウでパッケージを選択し、右クリックするとそのパッケージのバージョン情報を見ることができます。パッケージのバージョンには次の 3 つのタイプがあります:"
 
-#: package-manager.xml.in.nolegal:302(para) 
+#: package-manager.xml.in.nolegal:301(para) 
 msgid "<emphasis role=\"strong\">Installable Version</emphasis> – The version of a package that is available for installation or an update. This version may be older than the latest available version of the package due to package dependencies on the system. Hence you may not be able to install the latest available version of the package unless you update your system using the <emphasis role=\"strong\">Updates</emphasis> icon on the toolbar."
 msgstr "<emphasis role=\"strong\">インストール可能なバージョン</emphasis> – インストールまたは更新に利用可能なパッケージのバージョン。このバージョンはシステム上のパッケージ依存性により利用可能な最新バージョンより古い可能性があります。そのためツールバー上の<emphasis role=\"strong\">「更新」</emphasis>アイコンを使用してシステムを更新しないかぎり利用可能な最新バージョンをインストールできない場合があります。"
 
-#: package-manager.xml.in.nolegal:304(para) 
+#: package-manager.xml.in.nolegal:303(para) 
 msgid "<emphasis role=\"strong\">Installed Version</emphasis> – The version of the package installed on the system."
 msgstr "<emphasis role=\"strong\">「インストール済みバージョン」</emphasis> – システムにインストールされているパッケージのバージョン。"
 
-#: package-manager.xml.in.nolegal:306(para) 
+#: package-manager.xml.in.nolegal:305(para) 
 msgid "<emphasis role=\"strong\">Latest Version</emphasis> – This is the latest version of the package available for installation or update. The latest version can be installed if your system is up-to-date."
 msgstr "<emphasis role=\"strong\">「最新バージョン」</emphasis> – これはインストールまたは更新に利用可能な最新バージョンです。最新バージョンはシステムが最新の場合、インストールできます。"
 
-#: package-manager.xml.in.nolegal:310(title) 
+#: package-manager.xml.in.nolegal:309(title) 
 msgid "View Installed Packages From All Publishers"
 msgstr "すべての発行元からインストールされたパッケージを一覧表示する"
 
-#: package-manager.xml.in.nolegal:311(para) 
+#: package-manager.xml.in.nolegal:310(para) 
 msgid "Choose the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> from the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu filter to view a list of all packages that you have installed from all publishers."
 msgstr "すべての発行元からインストールしたすべてのパッケージの一覧を表示するには、<emphasis role=\"strong\">「発行元」</emphasis>ドロップダウンメニューフィルターから<emphasis role=\"strong\">すべての発行元 (インストール済み)</emphasis>を選択します。"
 
-#: package-manager.xml.in.nolegal:312(para) 
+#: package-manager.xml.in.nolegal:311(para) 
 msgid "You cannot search for a package from the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> option. Switch to <emphasis role=\"strong\">All Publishers (Search)</emphasis> to search for a package."
 msgstr "<emphasis role=\"strong\">すべての発行元 (インストール済み)</emphasis>オプションからパッケージを検索することはできません。パッケージを検索するには、<emphasis role=\"strong\">すべての発行元 (検索)</emphasis>に切り替えます。"
 
-#: package-manager.xml.in.nolegal:316(title) 
+#: package-manager.xml.in.nolegal:315(title) 
 msgid "Introduction to Boot Environments"
 msgstr "ブート環境の概要"
 
-#: package-manager.xml.in.nolegal:317(para) 
+#: package-manager.xml.in.nolegal:316(para) 
 msgid "A boot environment is an image that is bootable. Upon an initial OpenSolaris installation, a boot environment is created."
 msgstr ""
        "ブート環境はブート可能なイメージです。OpenSolaris の初期インストール時に"
        "ブート環境が作成されます。"
 
-#: package-manager.xml.in.nolegal:318(para) 
+#: package-manager.xml.in.nolegal:317(para) 
 msgid "You can maintain multiple boot environments on your OpenSolaris 2010.03 system. Use the <command>beadm(1)</command> command from the command-line interface (CLI) to create, rename, mount or unmount, or destroy these boot environments."
 msgstr "OpenSolaris 2010.03 システム上に複数のブート環境を維持することができます。"
        "これらのブート環境の作成、名前の変更、マウント、マウント解除、または破棄を行うには、"
        "コマンド行インタフェース (CLI) から <command>beadm(1)</command> コマンドを"
        "使用します。"
 
-#: package-manager.xml.in.nolegal:319(para) 
+#: package-manager.xml.in.nolegal:318(para) 
 msgid "The Package Manager enables you to manage the boot environments created during the process of updating your image. For more information, see <xref linkend=\"manage-be\"/> section."
 msgstr "パッケージマネージャーを使用すると、イメージの更新処理中に作成されたブート環境を"
        "管理できます。詳細は、<xref linkend=\"manage_be\"/>の節を参照してください。"
 
-#: package-manager.xml.in.nolegal:320(para) 
+#: package-manager.xml.in.nolegal:319(para) 
 msgid "Users can maintain multiple boot environments on their systems, and each boot environment can have different software versions installed."
 msgstr "ユーザーはシステム上に複数のブート環境を維持することができ、各ブート環境にそれぞれ異なるソフトウェアバージョンをインストールすることもできます。"
 
-#: package-manager.xml.in.nolegal:321(para) 
+#: package-manager.xml.in.nolegal:320(para) 
 msgid "When you use either the Package Manager or the <command>pkg image-update</command> command to update all the packages in your active OpenSolaris boot environment, a clone of that boot environment is automatically created. The packages are updated in the clone rather than in the original boot environment. After successfully completing the updates, the new clone is activated. Then, the clone will become the new default boot environment on system reboot. The original boot environment is also available as an alternate selection."
 msgstr ""
        "パッケージマネージャーまたは <command>pkg image-update</"
@@ -779,209 +770,213 @@ msgstr ""
        "ブート環境になります。元のブート環境も"
        "代替ブート環境として使用可能です。"
 
-#: package-manager.xml.in.nolegal:322(para) 
+#: package-manager.xml.in.nolegal:321(para) 
 msgid "See the beadm(1) man pages and the <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"><citetitle>Upgrading and Managing Boot Environments</citetitle></ulink> document to learn more about boot environments and the <command>beadm(1)</command> command."
 msgstr "ブート環境と<command>beadm(1)</command>コマンドの詳細についてはbeadm(1) マニュアルページと<ulink url=\"http://docs.sun.com/source/820-7679/index.html\"><citetitle>Upgrading and Managing Boot Environments</citetitle></ulink>のドキュメントを参照してください。"
 
-#: package-manager.xml.in.nolegal:323(title) 
+#: package-manager.xml.in.nolegal:322(title) 
 msgid "Update All Packages (Update Your Image)"
 msgstr "すべてのパッケージを更新する (イメージの更新)"
 
-#: package-manager.xml.in.nolegal:324(para) 
+#: package-manager.xml.in.nolegal:323(para) 
 msgid "Perform the following steps to update all the packages in your image."
 msgstr "イメージ内のすべてのパッケージを更新するには、次の手順を実行します。"
 
-#: package-manager.xml.in.nolegal:325(para) 
+#: package-manager.xml.in.nolegal:324(para) 
 msgid "Click <guibutton>Updates</guibutton> to start the process of updating <emphasis role=\"strong\">all</emphasis> the packages installed in your image."
 msgstr "イメージ内にインストールされている<emphasis role=\"strong\">すべての</emphasis>パッケージを更新する処理を開始するには、<guibutton>「更新」</guibutton>をクリックします。"
 
-#: package-manager.xml.in.nolegal:326(para) 
+#: package-manager.xml.in.nolegal:325(para) 
 msgid "You can also choose <menuchoice><guimenu>Package</guimenu><guisubmenu>Updates</guisubmenu></menuchoice> to start the process."
 msgstr "<menuchoice><guimenu>「パッケージ」</guimenu><guisubmenu>「更新」"
        "</guisubmenu></menuchoice>を選択しても、この処理を開始することができます。"
 
-#: package-manager.xml.in.nolegal:327(para) 
+#: package-manager.xml.in.nolegal:326(para) 
 msgid "If no updates are available to your installed packages, a <emphasis role=\"strong\">No Updates Available</emphasis> message is displayed after you click <guibutton>Updates</guibutton>."
 msgstr "インストール済みパッケージに更新がなければ、<guibutton>「更新」</guibutton>をクリックしたあとに<emphasis role=\"strong\">「更新はありません」</emphasis>のメッセージが表示されます。"
 
-#: package-manager.xml.in.nolegal:330(para) 
+#: package-manager.xml.in.nolegal:329(para) 
 msgid "The process of updating all the packages installed on your system is completed in three phases:"
 msgstr "システム上のすべてのパッケージを一度に更新するプロセスには 3 つの段階を経て完了します。"
 
-#: package-manager.xml.in.nolegal:331(emphasis) 
+#: package-manager.xml.in.nolegal:330(emphasis) 
 msgid "Preparation"
 msgstr "準備"
 
-#: package-manager.xml.in.nolegal:333(emphasis) 
+#: package-manager.xml.in.nolegal:332(emphasis) 
 msgid "Download"
 msgstr "ダウンロード"
 
-#: package-manager.xml.in.nolegal:335(emphasis) 
+#: package-manager.xml.in.nolegal:334(emphasis) 
 msgid "Install"
 msgstr "インストール"
 
-#: package-manager.xml.in.nolegal:338(para) 
+#: package-manager.xml.in.nolegal:337(para) 
 msgid "Click on the <emphasis>Details</emphasis> tab displayed in each of the phases to view more information."
 msgstr "各インストール処理に関する詳細情報を表示するには、各段階で表示される<emphasis>「詳細」</emphasis>タブをクリックします。"
 
-#: package-manager.xml.in.nolegal:340(para) 
+#: package-manager.xml.in.nolegal:339(para) 
 msgid "After the update process is completed successfully, an <emphasis role=\"strong\">Update All Complete</emphasis> dialog is displayed. A new boot environment is created which consists of the updated packages. The new boot environment is given a default name by the Package Manager, you can change the given boot environment name."
 msgstr "更新プロセスが完了すると、<emphasis role=\"strong\">「更新はすべて完了」</emphasis>ダイアログが表示されます。更新済みパッケージで構成された新規ブート環境が作成されました。新規ブート環境はパッケージマネージャーによってデフォルトの名前が付けられています。既定のブート環境名を変更することができます。"
 
-#: package-manager.xml.in.nolegal:341(para) 
+#: package-manager.xml.in.nolegal:340(para) 
 msgid "If the Package Manager is unable to create a new boot environment, an error message is displayed. See the <xref linkend=\"gilfh\"/> section on how to rectify the error and continue with updating your image."
 msgstr "パッケージマネージャーが新しいブート環境を作成できない場合は、エラーメッセージが表示されます。エラーを修正してイメージの更新を続行する方法については、<xref linkend=\"gileh\"/>の節を参照してください。"
 
-#: package-manager.xml.in.nolegal:344(para) 
+#: package-manager.xml.in.nolegal:343(para) 
 msgid "Click <guibutton>Restart Now</guibutton> to reboot your system immediately."
 msgstr "システムをただちに再起動するには、<guibutton>「今すぐ再起動」</guibutton>をクリックします。"
 
-#: package-manager.xml.in.nolegal:345(para) 
+#: package-manager.xml.in.nolegal:344(para) 
 msgid "Click <guibutton>Restart Later</guibutton> to restart your system at a later time. <emphasis role=\"strong\">You must reboot your system for the changes to take effect.</emphasis>"
 msgstr "システムをあとで再起動するには、<guibutton>「あとで再起動」</guibutton>をクリックします。<emphasis role=\"strong\">変更を有効にするには、システムをリブートする必要があります。</emphasis>"
 
-#: package-manager.xml.in.nolegal:346(para) 
+#: package-manager.xml.in.nolegal:345(para) 
 msgid "During the Update All process, a clone of the active boot environment is created. You can boot into the clone to return to the boot environment state that existed before the Update All process was started."
 msgstr "「すべて更新」処理中に、アクティブブート環境のクローンが作成されます。このクローンでブートして「すべて更新」処理が開始される前に存在していたブート環境の状態に戻ることができます。"
 
-#: package-manager.xml.in.nolegal:351(title) package-manager.xml.in.nolegal:656(title) 
+#: package-manager.xml.in.nolegal:350(title) package-manager.xml.in.nolegal:656(title) 
 msgid "Update All Errors"
 msgstr "「すべて更新」のエラー"
 
-#: package-manager.xml.in.nolegal:352(para) 
+#: package-manager.xml.in.nolegal:351(para) 
 msgid "A new boot environment clone must be created by the Package Manager for the Updates process to be completed. An error message is displayed if a boot environment clone cannot be created. You might see an error message such as the following :"
 msgstr "「更新」処理が完了するには、パッケージマネージャーによって新しいブート環境クローン"
        "が作成される必要があります。ブート環境クローンを作成できない場合はエラーメッセージが表示されます。次のようなエラーメッセージが表示されることがあります。"
 
-#: package-manager.xml.in.nolegal:353(para) package-manager.xml.in.nolegal:658(para) 
+#: package-manager.xml.in.nolegal:352(para) 
 msgid "<literal>Not enough disk space, the Update All action cannot be performed. Choose Manage BE to manage your boot environments and free up disk space.</literal>."
 msgstr "<literal>ディスク容量が不足しています。「すべて更新」を実行できません。「BE 管理」を選択して既存の BE を管理し、ディスク容量を解放してください</literal>。"
 
-#: package-manager.xml.in.nolegal:354(para) package-manager.xml.in.nolegal:659(para) 
+#: package-manager.xml.in.nolegal:353(para) package-manager.xml.in.nolegal:659(para) 
 msgid "Click <guibutton>Close</guibutton> to cancel the Update All process."
 msgstr "「すべて更新」処理を取り消すには、<guibutton>「閉じる」</guibutton>をクリックします。"
 
-#: package-manager.xml.in.nolegal:355(para) package-manager.xml.in.nolegal:660(para) 
+#: package-manager.xml.in.nolegal:354(para) package-manager.xml.in.nolegal:660(para) 
 msgid "Perform the following steps if you want to rectify the error and continue with the Update All process:"
 msgstr ""
        "エラーを修正して「すべて更新」処理を続行するには、"
        "次の手順を実行します。"
 
-#: package-manager.xml.in.nolegal:356(para) 
+#: package-manager.xml.in.nolegal:355(para) 
 msgid "Click <guibutton>Manage BE</guibutton> to display the <emphasis role=\"strong\">Manage Boot Environment</emphasis> dialog."
 msgstr "<guibutton>「BE の管理」</guibutton>をクリックして<emphasis role=\"strong\">「ブート環境の管理」</emphasis>ダイアログを表示します。"
 
-#: package-manager.xml.in.nolegal:358(para) 
+#: package-manager.xml.in.nolegal:357(para) 
 msgid "Select the boot environments that you want to delete."
 msgstr "削除するブート環境を選択します。"
 
-#: package-manager.xml.in.nolegal:359(para) 
+#: package-manager.xml.in.nolegal:358(para) 
 msgid "You cannot delete the currently active boot environment."
 msgstr "現在アクティブになっているブート環境を削除することはできません。"
 
-#: package-manager.xml.in.nolegal:361(para) 
+#: package-manager.xml.in.nolegal:360(para) 
 msgid "You do not need to reboot your system if you are only deleting some of your boot environments."
 msgstr ""
        "一部のブート環境のみを削除する場合は、システムをリブートする必要"
        "はありません。"
 
-#: package-manager.xml.in.nolegal:366(para) 
+#: package-manager.xml.in.nolegal:365(para) 
 msgid "Click <guibutton>OK</guibutton>."
 msgstr "<guibutton>「了解」</guibutton>をクリックします。"
 
-#: package-manager.xml.in.nolegal:368(para) 
+#: package-manager.xml.in.nolegal:367(para) 
 msgid "The <emphasis role=\"strong\">Boot Environment Confirmation</emphasis> dialog is shown. Review your changes and click OK to proceed."
 msgstr "The <emphasis role=\"strong\">「ブート環境の確認」</emphasis>ダイアログが表示されます。変更内容を確認し、「了解」をクリックして続行します。"
 
-#: package-manager.xml.in.nolegal:370(para) 
+#: package-manager.xml.in.nolegal:369(para) 
 msgid "Click <guibutton>Update All</guibutton> to restart the process of updating all packages."
 msgstr "すべてのパッケージの更新処理を再開するには、<guibutton>「すべて更新」</guibutton>をクリックします。"
 
-#: package-manager.xml.in.nolegal:374(title) 
+#: package-manager.xml.in.nolegal:373(title) 
 msgid "Manage Boot Environments"
 msgstr "ブート環境を管理する"
 
-#: package-manager.xml.in.nolegal:375(para) 
+#: package-manager.xml.in.nolegal:374(para) 
 msgid "Perform the following steps to manage your boot environments:"
 msgstr "ブート環境を管理するには、次の手順を実行します。"
 
-#: package-manager.xml.in.nolegal:376(para) 
+#: package-manager.xml.in.nolegal:375(para) 
 msgid "Click <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot Environments</guimenuitem></menuchoice> to open the <emphasis role=\"strong\">Manage Boot Environments</emphasis> dialog."
 msgstr "<menuchoice><guimenu>「ファイル」</guimenu><guimenuitem>「ブート環境の管理」</guimenuitem></menuchoice>をクリックして、<emphasis role=\"strong\">「ブート環境の管理」</emphasis>ダイアログを開きます。"
 
-#: package-manager.xml.in.nolegal:378(para) 
+#: package-manager.xml.in.nolegal:377(para) 
 msgid "In this dialog, you can perform the following actions:"
 msgstr "このダイアログでは、次のアクションを実行できます。"
 
-#: package-manager.xml.in.nolegal:379(para) 
+#: package-manager.xml.in.nolegal:378(para) 
 msgid "<emphasis role=\"strong\">Activate a boot environment</emphasis> – Select the boot environment you want to be active on system reboot. This is the default boot environment <emphasis role=\"strong\">after</emphasis> you have rebooted your system."
 msgstr "<emphasis role=\"strong\">ブート環境をアクティブにする</emphasis> – システムのリブート時にアクティブにするブート環境を選択します。これは、システムをリブートした<emphasis role=\"strong\">あとの</emphasis>デフォルトのブート環境です。"
 
-#: package-manager.xml.in.nolegal:381(para) 
+#: package-manager.xml.in.nolegal:380(para) 
 msgid "<emphasis role=\"strong\">Remove old or unused boot environments to free up disk space</emphasis> – Select the boot environnment or boot environments you want to delete."
 msgstr "<emphasis role=\"strong\">古いブート環境や未使用のブート環境を削除してディスク容量を解放する</emphasis> – 削除する 1 つまたは複数のブート環境を選択します。"
 
-#: package-manager.xml.in.nolegal:382(para) 
+#: package-manager.xml.in.nolegal:381(para) 
 msgid "You cannot the delete the currently active boot environment."
 msgstr "現在アクティブになっているブート環境を削除することはできません。"
 
-#: package-manager.xml.in.nolegal:384(para) 
+#: package-manager.xml.in.nolegal:383(para) 
 msgid "If you have selected a boot environment to be renamed, it cannot be deleted."
 msgstr ""
        "名前を変更するブート環境を選択してある場合、そのブート環境を削除することはできません。"
 
-#: package-manager.xml.in.nolegal:389(para) 
+#: package-manager.xml.in.nolegal:388(para) 
 msgid "<emphasis role=\"strong\">Rename a boot environment</emphasis> – Double-click the boot environment name you want torename. Enter the new name of the boot environment and click <guibutton>OK</guibutton>."
 msgstr "<emphasis role=\"strong\">ブート環境の名前を変更する</emphasis> – 変更するブート環境の名前をダブルクリックします。ブート環境の新しい名前を入力し、<guibutton>「了解」</guibutton>をクリックします。"
 
-#: package-manager.xml.in.nolegal:390(para) 
+#: package-manager.xml.in.nolegal:389(para) 
 msgid "If you have selected a boot environment to be deleted, it cannot be renamed."
 msgstr ""
        "削除するブート環境を選択してある場合、そのブート環境の名前を変更することはできません。"
 
-#: package-manager.xml.in.nolegal:392(para) 
+#: package-manager.xml.in.nolegal:391(para) 
 msgid "The currently active boot environment cannot be renamed."
 msgstr "現在アクティブになっているブート環境の名前を変更することはできません。"
 
-#: package-manager.xml.in.nolegal:399(para) 
+#: package-manager.xml.in.nolegal:398(para) 
 msgid "Click <guibutton>OK</guibutton> to proceed or <guibutton>Cancel</guibutton> to cancel all changes."
 msgstr "続行するには<guibutton>「了解」</guibutton>を、すべての変更を取り消すには、<guibutton>「キャンセル」</guibutton>をクリックします。"
 
-#: package-manager.xml.in.nolegal:401(para) 
+#: package-manager.xml.in.nolegal:400(para) 
 msgid "The <emphasis role=\"strong\">Boot Environment Confirmation</emphasis> dialog is displayed. Review your changes and click OK to proceed."
 msgstr "<emphasis role=\"strong\">「ブート環境の確認」</emphasis>ダイアログが表示されます。変更内容を確認し、「了解」をクリックして続行します。"
 
-#: package-manager.xml.in.nolegal:402(para) 
+#: package-manager.xml.in.nolegal:401(para) 
 msgid "After you click <guibutton>OK</guibutton>, you cannot undo any changes that you made to the boot environments."
 msgstr ""
        "<guibutton>「了解」</guibutton>をクリックしたあとで、ブート環境に加えた変更"
        "を取り消すことはできません。"
 
-#: package-manager.xml.in.nolegal:404(para) 
+#: package-manager.xml.in.nolegal:403(para) 
 msgid "The changes that you made to the <emphasis role=\"strong\">default boot environment</emphasis> setting are effective only after system reboot."
 msgstr ""
        "<emphasis role=\"strong\">デフォルトのブート環境</emphasis>の設定に加えた"
        "変更は、システムのリブートのあとでのみ有効になります。"
 
-#: package-manager.xml.in.nolegal:406(para) 
+#: package-manager.xml.in.nolegal:405(para) 
 msgid "Click <guibutton>Cancel</guibutton> to cancel the changes."
 msgstr "この変更を取り消すには、<guibutton>「キャンセル」</guibutton>をクリックします。"
 
-#: package-manager.xml.in.nolegal:408(para) 
+#: package-manager.xml.in.nolegal:407(para) 
 msgid "Reboot your system to boot into the newly activated boot environment."
 msgstr "システムをリブートして、新しくアクティブにしたブート環境にブートします。"
 
-#: package-manager.xml.in.nolegal:409(para) 
+#: package-manager.xml.in.nolegal:408(para) 
 msgid "Reboot your system only if you changed the active boot environment."
 msgstr "アクティブなブート環境を変更した場合のみ、システムをリブートしてください。"
 
-#: package-manager.xml.in.nolegal:415(title) 
+#: package-manager.xml.in.nolegal:414(title) 
 msgid "Add and Manage Publishers"
 msgstr "発行元の追加および管理"
 
+#: package-manager.xml.in.nolegal:415(para) 
+msgid "The <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> dialog enables the user to add and manage the configured publishers. A publisher is a person, group, or corporation that designs, creates, and publishes a package to a repository. Every publisher has a package repository where its package data can be found. The locations that contain package data for a publisher's repository are defined through the use of origins and mirrors. Origins are used to provide locations that contain the complete set of package data for a publisher, while mirrors are used to provide locations that only contain package files. Origins and mirrors are defined using URIs (Universal Resource Identifiers), such as <ulink url=\"http://pkg.opensolaris.org/release\"/>."
+msgstr "<menuchoice><guimenu>「ファイル」</guimenu><guimenuitem>「発行元の管理」</guimenuitem></menuchoice>ダイアログでユーザーは設定済み発行元を追加または管理できます。発行元とはパッケージを設計、開発、リポジトリに発行した個人、グループ、または企業です。すべての発行元にはパッケージデータの見つかるパッケージリポジトリがあります。ある発行元のパッケージデータのある場所は起点とミラーの使用を通じて定義されます。起点は発行元のパッケージデータの完全なセットのある場所を提供するのに使用され、ミラーはパッケージファイルのみのある場所を提供するのに使用されます。起点とミラーは<ulink url=\"http://pkg.opensolaris.org/release\"/> のように URI (Universal Resource Identifier) を使用して定義されます。"
+
 #: package-manager.xml.in.nolegal:416(para) 
-msgid "The <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> dialog enables the user to add and manage the configured publishers. A publisher is a person, group, or corporation that designs, creates, and publishes a package to a repository. A repository is a source for packages. Every publisher has a origin URI (Universal Resource Identifier) associated with it. Read the following sections to learn how to add and manage publishers on your system."
-msgstr "<menuchoice><guimenu>「ファイル」</guimenu><guimenuitem>「発行元の管理」</guimenuitem></menuchoice>ダイアログでユーザーは設定済み発行元を追加または管理できます。発行元とはパッケージを設計、開発、リポジトリに発行した個人、グループ、または企業です。リポジトリとはパッケージのソースです。すべての発行元にはそれに関連付いた起点 URI (Universal Resource Identifier) があります。システムにどのようにして発行元を追加し管理するかについては、次の節をお読みください。"
+msgid "Read the following sections to learn how to add and manage publishers on your system."
+msgstr "次の節を読んでシステムにどのように発行元を追加し管理するかを学んでください。"
 
 #: package-manager.xml.in.nolegal:417(title) 
 msgid "Add a Publisher"
@@ -1474,6 +1469,10 @@ msgstr ""
        "容量制限のためブート環境クローンを作成できない場合は、"
        "次のエラーメッセージが表示されます。"
 
+#: package-manager.xml.in.nolegal:658(para) 
+msgid "<literal>Not enough disk space, the Update All action cannot be performed. Choose Manage BE to manage your boot environments and free up disk space</literal>."
+msgstr "<literal>ディスク容量が不足しています。「すべて更新」を実行できません。「BE 管理」を選択して既存のブート環境を管理し、ディスク容量を解放してください</literal>。"
+
 #: package-manager.xml.in.nolegal:661(para) 
 msgid "Click <guibutton>Manage BE</guibutton> in the error dialog to go to the <emphasis role=\"strong\">Manage Boot Environments</emphasis> dialog."
 msgstr "<literal>「ブート環境を管理する」</literal>ダイアログに移動するには、エラーダイアログにある<guibutton>「BE の管理」</guibutton>をクリックします。"
@@ -1506,8 +1505,8 @@ msgid "publisher"
 msgstr "発行元"
 
 #: package-manager.xml.in.nolegal:676(para) 
-msgid "A person, group, or corporation that designs, creates, and publishes a package to a repository. The repository in turn serves the packages from the (default) publisher, for downloading purposes."
-msgstr "パッケージを設計および作成してリポジトリに発行する個人、グループ、または企業。このリポジトリが次に、ダウンロードの目的で (デフォルトの) 発行元からのパッケージを提供します。"
+msgid "A person, group, or corporation that provides packages. Packages for a publisher are found in a repository, from which the package system retrieves package data."
+msgstr "パッケージを提供する個人、グループ、または企業。この発行元のパッケージはパッケージシステムがパッケージデータを検索するリポジトリの中に見つかります。"
 
 #: package-manager.xml.in.nolegal:679(glossterm) 
 msgid "repository"
@@ -1522,12 +1521,9 @@ msgid "boot environment"
 msgstr "ブート環境"
 
 #: package-manager.xml.in.nolegal:684(para) 
-msgid "For an OpenSolaris release, a boot environment is an instance of a bootable OpenSolaris environment. The root file system and all other file systems of the boot environment that contain system software are required to be ZFS datasets."
+msgid "For an OpenSolaris 2010.03 release, a boot environment is an instance of a bootable OpenSolaris environment. The root file system and all other file systems of the boot environment that contain system software are required to be ZFS datasets."
 msgstr ""
-       "OpenSolaris リリースのブート環境とは、ブート可能な OpenSolaris 環境のインスタンスのことです。"
-       "ブート環境の、システムソフトウェアを含むルートファイルシステムとその他のすべての"
-       "ファイルシステムは、ZFS データセットである必要が"
-       "あります。"
+       "OpenSolaris 2010.03 リリースにおいて、ブート環境とはブート可能な OpenSolaris 環境のインスタンスのことです。ブート環境の、システムソフトウェアを含むルートファイルシステムとその他のすべてのファイルシステムは、ZFS データセットである必要があります。"
 
 #: package-manager.xml.in.nolegal:685(para) 
 msgid "The active boot environment is the one that is currently booted. Many boot environments can present on an OpenSolaris system and an inactive boot environment can be in a state of waiting for activation upon system reboot."
@@ -1592,8 +1588,8 @@ msgid "origin"
 msgstr "起点"
 
 #: package-manager.xml.in.nolegal:707(para) 
-msgid "Location of a package repository specified by a URI."
-msgstr "URI によって指定されたパッケージリポジトリの場所。"
+msgid "Location of a package repository specified by a URI, that contains a complete set of package data."
+msgstr "パッケージデータの完全なセットがある URI によって指定されたパッケージリポジトリの場所。"
 
 #: package-manager.xml.in.nolegal:710(glossterm) 
 msgid "alias"
@@ -1602,6 +1598,14 @@ msgstr "別名"
 #: package-manager.xml.in.nolegal:711(para) 
 msgid "An alternate name for a publisher."
 msgstr "発行元の別名。"
+
+#: package-manager.xml.in.nolegal:714(glossterm) 
+msgid "mirror"
+msgstr "ミラー"
+
+#: package-manager.xml.in.nolegal:715(para) 
+msgid "Location of a package repository, specified by a URI, that contains only package files."
+msgstr "パッケージファイルのみがある URI によって指定されたパッケージリポジトリの場所。"
 
 #. Put one translator per line, in the form of NAME <EMAIL>, YEAR1, YEAR2.
 #: package-manager.xml.in.nolegal:0(None) 

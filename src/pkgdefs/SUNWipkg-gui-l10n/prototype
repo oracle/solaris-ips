@@ -78,6 +78,9 @@ f none usr/share/locale/ja/LC_MESSAGES/pkg.mo 444 root other
 d none usr/share/locale/ko 755 root other
 d none usr/share/locale/ko/LC_MESSAGES 755 root other
 f none usr/share/locale/ko/LC_MESSAGES/pkg.mo 444 root other
+d none usr/share/locale/nl 755 root other
+d none usr/share/locale/nl/LC_MESSAGES 755 root other
+f none usr/share/locale/nl/LC_MESSAGES/pkg.mo 444 root other
 d none usr/share/locale/pl 755 root other
 d none usr/share/locale/pl/LC_MESSAGES 755 root other
 f none usr/share/locale/pl/LC_MESSAGES/pkg.mo 444 root other
@@ -119,6 +122,8 @@ d none usr/share/package-manager/data/startpagebase/fr 755 root bin
 f none usr/share/package-manager/data/startpagebase/fr/startpage.html 444 root bin
 d none usr/share/package-manager/data/startpagebase/hu 755 root bin
 f none usr/share/package-manager/data/startpagebase/hu/startpage.html 444 root bin
+d none usr/share/package-manager/data/startpagebase/id 755 root bin
+f none usr/share/package-manager/data/startpagebase/id/startpage.html 444 root bin
 d none usr/share/package-manager/data/startpagebase/it 755 root bin
 f none usr/share/package-manager/data/startpagebase/it/startpage.html 444 root bin
 d none usr/share/package-manager/data/startpagebase/ja 755 root bin

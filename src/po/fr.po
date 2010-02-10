@@ -164,7 +164,7 @@ msgstr "-f peut être utilisé uniquement en combinaison avec -a"
 #: ../client.py:281
 #, python-format
 msgid "%(opts)s may not be used with %(opt)s"
-msgstr "%(opts)s ne peut être utilisé avec %(opt)s"
+msgstr "%(opts)s ne peut pas être utilisé avec %(opt)s"
 
 #: ../client.py:285
 msgid "-s and -v may not be combined"
@@ -217,7 +217,7 @@ msgid ""
 "packages listed above, use the --accept option.  To display all of the "
 "related licenses, use the --licenses option."
 msgstr ""
-       "Pour indiquer votre acceptation des termes des licences des "
+       "Pour indiquer votre acceptation des conditions des licences des "
        "packages répertoriés ci-dessus, utilisez l'option --accept. Pour afficher l'ensemble des licences liées, utilisez l'option --licenses."
 
 #: ../client.py:517
@@ -239,7 +239,6 @@ msgid ""
 "pkg: no packages matching the following patterns you specified are\n"
 "installed on the system.\n"
 msgstr ""
-       ""
        "pkg : aucun package correspondant aux modèles spécifiés indiqués ci-dessous\n"
        "n'est installé sur le système.\n"
 
@@ -249,7 +248,6 @@ msgid ""
 "\n"
 "All other patterns matched installed packages.  %s"
 msgstr ""
-       ""
        "\n"
        "Tous les autres modèles correspondent à des packages installés. %s"
 
@@ -368,16 +366,16 @@ msgstr "%s : aucune facette spécifiée"
 #: ../client.py:929
 #, python-format
 msgid "%s: facets must to be of the form 'facet....=[True|False|None]'"
-msgstr "%s : les facettes doivent avoir le format 'facet....=[True|False|None]'"
+msgstr "%s : les facettes doivent adopter le format 'facet....=[True|False|None]'"
 
 #: ../client.py:938
 #, python-format
 msgid "%s: facets must to be of the form 'facet....=[True|False|None]'."
-msgstr "%s : les facettes doivent avoir le format 'facet....=[True|False|None]'."
+msgstr "%s : les facettes doivent adopter le format 'facet....=[True|False|None]'."
 
 #: ../client.py:962
 msgid "Facet change has no effect on image"
-msgstr "Le changement de facette n'a aucune incidence sur l'image"
+msgstr "La modification d'une facette n'a aucune incidence sur l'image"
 
 #: ../client.py:1019 ../client.py:2962
 #, python-format
@@ -788,7 +786,7 @@ msgstr "les arguments de variante doivent adopter la forme '<name>=<value>'."
 
 #: ../client.py:2860
 msgid "Facet arguments must beform 'facet..=[True|False]'"
-msgstr "Les arguments de facette doivent avoir le format 'facet..=[True|False]'"
+msgstr "Les arguments de facette doivent adopter le format 'facet..=[True|False]'"
 
 #: ../client.py:2866
 msgid "only one image directory path may be specified"
@@ -1031,7 +1029,7 @@ msgstr ""
 #. The full usage message isn't desired.
 #: ../depot.py:131
 msgid "Try `pkg.depotd --help or -?' for more information."
-msgstr "Pour obtenir de plus amples informations, essayez `pkg.depotd --help ou -?'."
+msgstr "Pour obtenir de plus amples informations, essayez 'pkg.depotd --help ou -?'."
 
 #: ../depot.py:396 ../publish.py:115
 msgid "property arguments must be of the form '<section.property>=<value>'."
@@ -1347,21 +1345,21 @@ msgid ""
 "if updates are available) or it should go straight to the update all "
 "operation."
 msgstr ""
-       "Boléen déterminant si le Gestionnaire de packages doit afficher une boîte de dialogue de confirmation lorsque des mises à jour sont détectées suite à l'opération de mise à jour (recherche des mises à jour disponibles) ou s'il doit procéder directement à l'opération Tout mettre à jour."
+       "Booléen déterminant si le Gestionnaire de packages doit afficher une boîte de dialogue de confirmation lorsque des mises à jour sont détectées suite à l'opération Mises à jour (recherche des mises à jour disponibles) ou s'il doit procéder directement à l'opération Tout mettre à jour."
 
 #: ../gui/data/packagemanager-preferences.schemas.in.h:5
 msgid ""
 "A boolean which determines whether Package Manager should show confirmation "
 "dialog when the user selected some packages for installation or update."
 msgstr ""
-       "Boléen déterminant si le Gestionnaire de packages doit afficher une boîte de dialogue de confirmation lorsque l'utilisateur a sélectionné certains packages afin de procéder à une installation ou une mise à jour."
+       "Booléen déterminant si le Gestionnaire de packages doit afficher une boîte de dialogue de confirmation lorsque l'utilisateur a sélectionné certains packages à installer ou mettre à jour."
 
 #: ../gui/data/packagemanager-preferences.schemas.in.h:6
 msgid ""
 "A boolean which determines whether Package Manager should show confirmation "
 "dialog when the user selected some packages for removal."
 msgstr ""
-       "Boléen déterminant si le Gestionnaire de packages doit afficher une boîte de dialogue de confirmation lorsque l'utilisateur a sélectionné certains packages afin de procéder à une suppression."
+       "Booléen déterminant si le Gestionnaire de packages doit afficher une boîte de dialogue de confirmation lorsque l'utilisateur a sélectionné certains packages à supprimer."
 
 #: ../gui/data/packagemanager-preferences.schemas.in.h:7
 msgid ""
@@ -1448,7 +1446,7 @@ msgstr "Afficher la boîte de dialogue de confirmation après la recherche de mi
 
 #: ../gui/data/packagemanager-preferences.schemas.in.h:19
 msgid "Display install/update packages confirmation dialog"
-msgstr "Afficher la boîte de dialogue de confirmation d'installation/de mise à jour"
+msgstr "Afficher la boîte de dialogue de confirmation d'installation/de mise à jour des packages"
 
 #: ../gui/data/packagemanager-preferences.schemas.in.h:20
 msgid "Display remove packages confirmation dialog"
@@ -1593,7 +1591,7 @@ msgstr "<b>Opération Tout mettre à jour réussie</b>"
 
 #: ../gui/data/packagemanager.glade.h:17
 msgid "<b>View Package Manager Logs</b>"
-msgstr "<b>Afficher les journaux du Getsionnaire de packages</b>"
+msgstr "<b>Afficher les journaux du Gestionnaire de packages</b>"
 
 #: ../gui/data/packagemanager.glade.h:18
 msgid "<b>_Mirrors</b>"
@@ -1626,7 +1624,7 @@ msgid ""
 "A new boot environment has been created and will be given the\n"
 "following name."
 msgstr ""
-       "Un nouvel environnement d'initialisation a été créé et portera le\n"
+       "Un nouvel environnement d'initialisation a été créé avec le\n"
        "nom suivant."
 
 #: ../gui/data/packagemanager.glade.h:27
@@ -1820,11 +1818,11 @@ msgstr "O_rigine :"
 
 #: ../gui/data/packagemanager.glade.h:74
 msgid "On Package _Install/Update"
-msgstr "Lors de l'_installation/mise à jour de packages"
+msgstr "Lors des _installations/mises à jour de packages"
 
 #: ../gui/data/packagemanager.glade.h:75
 msgid "On Package _Remove"
-msgstr "Lors de la su_ppression de packages"
+msgstr "Lors des su_ppressions de packages"
 
 #: ../gui/data/packagemanager.glade.h:76
 msgid "On _Updates"
@@ -1933,7 +1931,7 @@ msgstr "Erreur lors de la recherche dans les référentiels"
 
 #: ../gui/data/packagemanager.glade.h:103
 msgid "Search errors with the following publishers:"
-msgstr "Erreurs lors de la recherche dans les éditeurs suivants :"
+msgstr "Erreurs de recherche dans les éditeurs suivants :"
 
 #: ../gui/data/packagemanager.glade.h:104
 msgid "Select _Updates"
@@ -1949,7 +1947,7 @@ msgstr "Sélectionnez les packages puis cliquez sur Supprimer les éléments sé
 
 #: ../gui/data/packagemanager.glade.h:107
 msgid "Set publisher priorities using arrows."
-msgstr "Définir les priorités de l'éditeur à l'aide des flèches."
+msgstr "Définir l'ordre de priorité des éditeurs à l'aide des flèches."
 
 #: ../gui/data/packagemanager.glade.h:108
 msgid "Show Start Page on _startup"
@@ -2608,11 +2606,11 @@ msgstr "A_ccepter"
 msgid ""
 "You must accept the terms of the license before downloading this package."
 msgstr ""
-       "Vous devez accepter les termes de la licence avant de télécharger ce package."
+       "Vous devez accepter les conditions de la licence avant de télécharger ce package."
 
 #: ../gui/modules/installupdate.py:1129
 msgid "You must view the terms of the license before downloading this package."
-msgstr "Vous devez consulter les termes de la licence avant de télécharger ce package."
+msgstr "Vous devez lire les conditions de la licence avant de télécharger ce package."
 
 #: ../gui/modules/installupdate.py:1137
 #, python-format
@@ -2857,7 +2855,7 @@ msgid ""
 "Mirrors for a secure publisher\n"
 "need to begin with https://"
 msgstr ""
-       "Les miroirs d'un éditeur sécurisé\n"
+       "Les copies miroir d'un éditeur sécurisé\n"
        "doivent commencer par https://"
 
 #: ../gui/modules/repository.py:1239
@@ -2865,7 +2863,7 @@ msgid ""
 "Origins for a secure publisher\n"
 "need to begin with https://"
 msgstr ""
-       "Les origines d'un éditeur sécurisé\n"
+       "Les copies d'origine d'un éditeur sécurisé\n"
        "doivent commencer par https://"
 
 #: ../gui/modules/repository.py:1261
@@ -3273,7 +3271,7 @@ msgid ""
 "The following patterns only matched packages that are from publishers other "
 "than that which supplied the already installed version of this package"
 msgstr ""
-       "Les modèles suivants correspondent uniquement issus d'éditeurs autres que ceux ayant fournis la version déjà installée de ce package"
+       "Les modèles suivants correspondent uniquement aux packages issus d'éditeurs autres que ceux ayant fourni la version déjà installée de ces packages."
 
 #: ../modules/client/api_errors.py:285
 #, python-format
@@ -3309,11 +3307,11 @@ msgstr ""
 
 #: ../modules/client/api_errors.py:310
 msgid "The following different patterns specify thesame package(s):"
-msgstr "Les différents modèles suivants spécifient le ou les mêmes packages :"
+msgstr "Les différents modèles suivants caractérisent le ou les mêmes packages :"
 
 #: ../modules/client/api_errors.py:320
 msgid "No solution was found to satisfy constraints"
-msgstr "Aucune solution n'a été trouvée pour répondre aux contraintes."
+msgstr "Aucune solution ne répond aux contraintes."
 
 #: ../modules/client/api_errors.py:326
 #, python-format
@@ -3634,7 +3632,7 @@ msgstr "L'éditeur préféré ne peut pas être supprimé."
 
 #: ../modules/client/api_errors.py:1088
 msgid "Cannot search a repository before or after itself"
-msgstr "Impossible d'effectuer une recherche dans le référentiel avant ou après l'élément"
+msgstr "Impossible d'effectuer une recherche dans le référentiel avant ou après celui-ci"
 
 #: ../modules/client/api_errors.py:1096
 msgid "Cannot remove the selected repository for a publisher."
@@ -3754,7 +3752,7 @@ msgid ""
 "Certificate '%(cert)s', needed to access '%(uri)s', will expire in '%(days)"
 "s' days."
 msgstr ""
-       "Le certificat '%(cert)s', nécessaire pour accéder à '%(uri)s', expire dans '%(days)' jours."
+       "Le certificat '%(cert)s', nécessaire pour accéder à '%(uri)s', expire dans '%(days)s' jours."
 
 #: ../modules/client/api_errors.py:1265
 #, python-format
@@ -4048,11 +4046,11 @@ msgstr "Aucune version de %s ne peut être installée :"
 
 #: ../modules/client/pkg_solver.py:917
 msgid "Publisher differs from installed or specifed version"
-msgstr "L'éditeur est différent de la version installée ou spécifiée."
+msgstr "L'éditeur est différent de celui de la version installée ou spécifiée."
 
 #: ../modules/client/pkg_solver.py:927
 msgid "Publisher is lower ranked"
-msgstr "L'éditeur possède un niveau plus faible."
+msgstr "L'éditeur possède une priorité plus faible."
 
 #: ../modules/client/pkg_solver.py:962
 #, python-format
@@ -4127,7 +4125,7 @@ msgid ""
 msgstr ""
        "Pour résoudre ce problème, corrigez les informations de copie d'origine fournies pour\n"
        "l'éditeur '%(prefix)s' à l'aide de la sous-commande pkg set-publisher ou ajoutez à nouveau\n"
-       "l'éditeur en lui donnant un nom approprié, puis supprimez l'éditeur '%(prefix)s'.\n"
+       "l'éditeur avec le nom approprié, puis supprimez l'éditeur '%(prefix)s'.\n"
 
 #: ../modules/client/publisher.py:985
 #, python-format
@@ -4138,7 +4136,7 @@ msgid ""
 "pkg set-publisher -P -g %(origin)s %(pub)s\n"
 "pkg unset-publisher %(prefix)s\n"
 msgstr ""
-       "Pour ajouter à nouveau cet éditeur en lui donnant un nom approprié, exécutez les commandes\n"
+       "Pour ajouter à nouveau cet éditeur en lui donnant le nom approprié, exécutez les commandes\n"
        "suivantes en tant qu'utilisateur privilégié :\n"
        "\n"
        "pkg set-publisher -P -g %(origin)s %(pub)s\n"
@@ -4216,7 +4214,7 @@ msgid ""
 "run path: %(rp)s.  It is not currently possible to automatically expand this "
 "token. Please specify its value on the command line."
 msgstr ""
-       "Le chemin d'exécution de %(pp)s (qui sera installé au chemin %(ip)s) possède le jeton %(tok)s : %(rp)s. Il est actuellement impossible d'étendre manuellement ce jeton. Spécifiez sa valeur dans la ligne de commande."
+       "Le chemin d'exécution de %(pp)s (qui sera installé au chemin %(ip)s) possède le jeton %(tok)s : %(rp)s. Il est actuellement impossible d'étendre ce jeton manuellement. Spécifiez sa valeur dans la ligne de commande."
 
 #: ../modules/flavor/python.py:43
 #, python-format
@@ -4302,7 +4300,7 @@ msgid ""
 "actions are as follows:\n"
 "%s"
 msgstr ""
-       "La dépendance de fichier %s possède des chemins qui pointent vers des packages multiples. Les "
+       "La dépendance de fichier %s possède des chemins qui pointent vers plusieurs packages. Les "
        "actions sont les suivantes :\n"
        "%s"
 
@@ -4979,7 +4977,7 @@ msgid_plural ""
 "Click on one of the search results links below to view the stored results:"
 msgstr[0] "Cliquez sur le lien des résultats de recherche ci-dessous pour afficher les résultats stockés :"
 msgstr[1] ""
-       "Cliquez sur les liens des résultats de recherche ci-dessous pour afficher les résultats stockés :"
+       "Cliquez sur l'un des liens de résultats de recherche ci-dessous pour afficher les résultats stockés :"
 
 #: ../packagemanager.py:2101
 msgid ""
@@ -5295,7 +5293,7 @@ msgid ""
 "Please include output from:\n"
 msgstr ""
        "\n"
-       "Veuillez inclure le résultat de :\n"
+       "Veuillez inclure la sortie de :\n"
 
 #: ../packagemanager.py:5733
 msgid ""
@@ -5355,7 +5353,7 @@ msgstr ""
 
 #: ../pkgdep.py:115
 msgid "-D arguments must be of the form 'name=value'."
-msgstr "Les arguments -D doivent adopter la forme 'name=value'."
+msgstr "Les arguments -D doivent adopter le format 'name=value'."
 
 #: ../pkgdep.py:134
 msgid "Generate only accepts exactly two arguments."
@@ -5528,7 +5526,7 @@ msgstr "Fichier %s ligne %s : %s"
 
 #: ../publish.py:281
 msgid "Manifest does not set fmri and "
-msgstr "Le fichier global ne définit pas FMRI et la "
+msgstr "Le fichier manifest ne définit pas FMRI et la "
 
 #: ../publish.py:446
 msgid "command does not take operands"
@@ -5652,7 +5650,7 @@ msgstr "Impossible de charger le fichier manifest '%(mpath)s' pour le package '%
 #: ../pull.py:188
 #, python-format
 msgid "Unable to write manifest '%(mpath)s' for package '%(pfmri)s'."
-msgstr ""
+msgstr "Impossible d'écrire le fichier manifest '%(mpath)s' pour le package '%(pfmri)s'."
 
 #: ../pull.py:235
 #, python-format
@@ -5818,7 +5816,7 @@ msgstr "<b>Évaluer</b>"
 
 #: ../um/data/updatemanager.glade.h:2 ../updatemanager.py:283
 msgid "<b>Updates are available for the following packages</b>"
-msgstr ""
+msgstr "<b>Des mises à jour sont disponibles pour les packages suivants.</b>"
 
 #: ../um/data/updatemanager.glade.h:3
 msgid "<b>_Details</b>"
@@ -5838,7 +5836,7 @@ msgstr "Installer la mise à jour"
 
 #: ../um/data/updatemanager.glade.h:10
 msgid "Select the packages you want to update and click Install."
-msgstr ""
+msgstr "Sélectionnez les packages que vous souhaitez mettre à jour et cliquez sur Installer."
 
 #: ../um/data/updatemanager.glade.h:12
 msgid "_Cancel"
@@ -5878,10 +5876,11 @@ msgid ""
 "Click Update All to create a new boot environment and install all packages "
 "into it."
 msgstr ""
+       "Cliquez sur Tout mettre à jour pour créer un environnement d'initialisation et y installer tous les packages."
 
 #: ../updatemanager.py:312
 msgid "Current Version"
-msgstr ""
+msgstr "Version actuelle"
 
 #: ../updatemanager.py:321
 msgid "Size (Meg)"
@@ -5894,15 +5893,15 @@ msgstr "nombre : %d"
 
 #: ../updatemanager.py:429
 msgid "<b>You do not have sufficient permissions</b>"
-msgstr ""
+msgstr "<b>Vous ne disposez pas des autorisations suffisantes.</b>"
 
 #: ../updatemanager.py:431
 msgid "Please restart pm-updatemanager using pfexec."
-msgstr ""
+msgstr "Veuillez redémarrer pm-updatemanager à l'aide de pfexec."
 
 #: ../updatemanager.py:435
 msgid "<b>No Updates available</b>"
-msgstr ""
+msgstr "<b>Aucune mise à jour disponible.</b>"
 
 #: ../updatemanager.py:469
 #, python-format

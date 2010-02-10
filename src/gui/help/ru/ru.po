@@ -404,7 +404,7 @@ msgstr "Подробные сведения о пакете"
 msgid "Click a package name to select it. Details of the selected package, such as name, version, file dependencies, and license are displayed in this window."
 msgstr ""
        "Для выбора пакета щелкните мышью его название. В данном окне отображаются подробные сведения об этом пакете, "
-       "например, название, версия, зависимости файлов и лицензия."
+       "например название, версия, зависимости файлов и лицензия."
 
 #: package-manager.xml.in.nolegal:180(title) 
 msgid "Package Manager Settings"
@@ -421,7 +421,7 @@ msgstr "Параметры начальной страницы"
 #: package-manager.xml.in.nolegal:183(para) 
 msgid "A Start Page is displayed in the main window of the Package Manager when the application is started. The Start Page provides links to <ulink url=\"http://opensolaris.com\">opensolaris.com</ulink> page where you can get more information about OpenSolaris, subscribe to newsletters and join the OpenSolaris community."
 msgstr ""
-       "При запуске приложения в главном меню диспетчера пакетов выводится начальная страница "
+       "При запуске приложения в главном меню диспетчера пакетов выводится начальная страница. "
        "На начальной странице содержатся ссылки на страницу <ulink url=\"http://"
        "opensolaris.com\">opensolaris.com</ulink>, где приведена дополнительная "
        "информация об ОС OpenSolaris, можно подписаться на списки рассылки или вступить "
@@ -650,7 +650,7 @@ msgstr "Оператор OR"
 
 #: package-manager.xml.in.nolegal:280(para) 
 msgid "When a search term is separated by the OR operator, the Package Manager searches for packages that contain any of the search terms."
-msgstr "Если критерии поиска разделены оператором OR, выполняется пои ск пакетов, содержащих любой из критериев."
+msgstr "Если критерии поиска разделены оператором OR, выполняется поиск пакетов, содержащих любой из критериев."
 
 #: package-manager.xml.in.nolegal:285(title) 
 msgid "Cancel Package Search"
@@ -658,7 +658,7 @@ msgstr "Отмена поиска пакетов"
 
 #: package-manager.xml.in.nolegal:286(para) 
 msgid "If you want to cancel a search, use the Cancel Search icon at the bottom of the main window of the Package Manager. This icon is visible on the status bar only during a search operation."
-msgstr "Если поиск требуется отменить, воспользуйтесь значком \"Отмена поиска\" в нижней части главного окна Диспетчера пакетов. Этот значок отображается в строке состояния только в ходе операции поиска."
+msgstr "Если поиск требуется отменить, воспользуйтесь значком \"Отмена поиска\" в нижней части главного окна диспетчера пакетов. Этот значок отображается в строке состояния только в ходе операции поиска."
 
 #: package-manager.xml.in.nolegal:288(title) 
 msgid "Update a Package"
@@ -674,11 +674,11 @@ msgstr "Для получения списка всех пакетов, для �
 
 #: package-manager.xml.in.nolegal:292(para) 
 msgid "Select the <menuchoice><guimenuitem>Updates</guimenuitem></menuchoice> option in the <emphasis role=\"strong\">View</emphasis> drop-down menu and the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> in the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu to list all packages that have updates available from all publishers."
-msgstr "Для получения списка всех пакетов, для которых доступны обновения от всех издателей, выберите пункт <menuchoice><guimenuitem>Обновления</guimenuitem></menuchoice> в раскрывающемся меню <emphasis role=\"strong\">View</emphasis> и пункт <emphasis role=\"strong\">Все издатели (установленные)</emphasis> в раскрывающемся меню <emphasis role=\"strong\">Издатель</emphasis>."
+msgstr "Для получения списка всех пакетов, для которых доступны обновления от всех издателей, выберите пункт <menuchoice><guimenuitem>Обновления</guimenuitem></menuchoice> в раскрывающемся меню <emphasis role=\"strong\">View</emphasis> и пункт <emphasis role=\"strong\">Все издатели (установленные)</emphasis> в раскрывающемся меню <emphasis role=\"strong\">Издатель</emphasis>."
 
 #: package-manager.xml.in.nolegal:295(para) 
 msgid "Updating a package may fail sometimes, due to inherent dependencies of the package you have selected for installation or update. You may need to update all packages on your system to get the latest updates."
-msgstr "Обновление пакета иногда завершается неуспешно вследствие неотъемлемых зависимостей пакета, выбранного для установки или обновления. Для получения последних обновлений может потребоваться обновление всех пакетов в системе."
+msgstr "Иногда при обновлении пакета возникают сбои вследствие неотъемлемых зависимостей пакета, выбранного для установки или обновления. Для получения последних обновлений может потребоваться обновление всех пакетов в системе."
 
 #: package-manager.xml.in.nolegal:297(para) 
 msgid "Select the package or packages you want to update and click <guibutton>Install/Update</guibutton> to install the latest version of the package. Use the <emphasis role=\"strong\">Updates</emphasis> icon on the toolbar to update all packages on your system."
@@ -788,7 +788,7 @@ msgstr "Загрузка"
 
 #: package-manager.xml.in.nolegal:334(emphasis) 
 msgid "Install"
-msgstr "Установить"
+msgstr "Установка"
 
 #: package-manager.xml.in.nolegal:337(para) 
 msgid "Click on the <emphasis>Details</emphasis> tab displayed in each of the phases to view more information."
@@ -1010,7 +1010,7 @@ msgstr "Выберите пункт меню <menuchoice><guimenu>Файл</guim
 
 #: package-manager.xml.in.nolegal:438(para) 
 msgid "Click on a publisher from the list to select it. Click <guibutton>Remove</guibutton>."
-msgstr "Щелкните издателя для выбора из списка. Нажмите кнопку <guibutton>Удалить</guibutton>."
+msgstr "В списке щелкните издателя, чтобы выбрать его. Нажмите кнопку <guibutton>Удалить</guibutton>."
 
 #: package-manager.xml.in.nolegal:440(para) 
 msgid "The <emphasis role=\"strong\">Manage Publishers Confirmation</emphasis> dialog is displayed."
@@ -1452,7 +1452,7 @@ msgstr ""
 
 #: package-manager.xml.in.nolegal:658(para) 
 msgid "<literal>Not enough disk space, the Update All action cannot be performed. Choose Manage BE to manage your boot environments and free up disk space</literal>."
-msgstr "<literal>Недостаточно дискового пространства, выполнение обновления невозможно. Выберите \"Управление загрузочными средами\" и примите меры к высвобождению дискового пространства посредстом управления загрузочными средами.</literal>."
+msgstr "<literal>Недостаточно дискового пространства, выполнение обновления невозможно. Выберите \"Управление загрузочными средами\" и примите меры к высвобождению дискового пространства посредством управления загрузочными средами.</literal>."
 
 #: package-manager.xml.in.nolegal:661(para) 
 msgid "Click <guibutton>Manage BE</guibutton> in the error dialog to go to the <emphasis role=\"strong\">Manage Boot Environments</emphasis> dialog."

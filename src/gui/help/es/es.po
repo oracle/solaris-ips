@@ -112,7 +112,7 @@ msgstr "Package Manager permite efectuar las tareas siguientes:"
 
 #: package-manager.xml.in.nolegal:42(para) 
 msgid "Install, remove, and search for packages"
-msgstr "Instalación, eliminación y búsqueda de paquetes"
+msgstr "Instalación, supresión y búsqueda de paquetes"
 
 #: package-manager.xml.in.nolegal:44(para) 
 msgid "Update your system"
@@ -138,14 +138,12 @@ msgstr "Acerca de Image Packaging System"
 
 #: package-manager.xml.in.nolegal:54(para) 
 msgid "Image Packaging System (IPS) is a framework which provides for software lifecycle management including installation, upgrade, and removal. The OpenSolaris 2010.03 release uses IPS as its packaging system."
-msgstr "Image Packaging System (IPS) es un marco que se proporciona para la administración del ciclo de vida del software, lo que incluye la instalación, la actualización y la eliminación. La versión OpenSolaris 2010.03 emplea IPS como sistema de empaquetado."
+msgstr "Image Packaging System (IPS) es un marco que se proporciona para la administración del ciclo de vida del software, lo que incluye la instalación, la actualización y la supresión. La versión OpenSolaris 2010.03 emplea IPS como sistema de empaquetado."
 
 #: package-manager.xml.in.nolegal:55(para) 
 msgid "After an initial installation of the OpenSolaris 2010.03 operating system, you will find that some of the software applications that you use on a regular basis are not immediately available to you. These software applications are available as packages in a repository for downloading and installing over the network. A repository is a source for packages."
 msgstr "Tras la instalación inicial del sistema operativo OpenSolaris 2010.03, verá "
-       "que muchas de las aplicaciones que utiliza habitualmente "
-       "no están disponibles directamente. Dichas aplicaciones "
-       "se muestran como paquetes en un depósito para su descarga e instalación a través de la red. Un depósito es una fuente de paquetes."
+       "que muchas de las aplicaciones que utiliza habitualmente no están disponibles directamente. Dichas aplicaciones se muestran como paquetes en un depósito para su descarga e instalación a través de la red. Un depósito es una fuente de paquetes."
 
 #: package-manager.xml.in.nolegal:56(para) 
 msgid "IPS provides a set of software tools that can be used to install packages from a repository, create and publish their own IPS packages, mirror an existing repository, and publish existing packages to a repository."
@@ -204,8 +202,7 @@ msgstr "La página de inicio también proporciona vínculos a información adici
 
 #: package-manager.xml.in.nolegal:73(para) 
 msgid "To close the Start Page and see the list of packages in the selected publisher, perform any of the following actions in the main window of the Package Manager:"
-msgstr "Para cerrar la página de inicio y ver la lista de paquetes del editor seleccionado, efectúe cualquiera de las "
-       "siguientes acciones en la ventana principal de Package Manager:"
+msgstr "Para cerrar la página de inicio y ver la lista de paquetes del editor seleccionado, efectúe cualquiera de las siguientes acciones en la ventana principal de Package Manager:"
 
 #: package-manager.xml.in.nolegal:74(para) 
 msgid "Select a package category"
@@ -260,7 +257,7 @@ msgstr "Barra de herramientas"
 
 #: package-manager.xml.in.nolegal:98(para) 
 msgid "The toolbar contains the icons for a subset of the commands that can be performed by using the menus on the menubar. A <emphasis role=\"strong\">Search</emphasis> field is also located on the toolbar. You can perform the following actions from the toolbar :"
-msgstr "La barra de herramientas contiene los iconos correspondientes a un subconjunto de los comandos que se pueden ejecutar con los menús de la barra de menús. En la barra de herramientas también hay un campo <emphasis role=\"strong\">Buscar</emphasis>. Puede realizar las siguientes acciones en la barra de herramientas:"
+msgstr "La barra de herramientas contiene los iconos correspondientes a un subconjunto de los comandos que se pueden ejecutar con los menús de la barra de menús. En la barra de herramientas también hay un campo <emphasis role=\"strong\">Buscar</emphasis>. Se pueden realizar las siguientes acciones en la barra de herramientas:"
 
 #: package-manager.xml.in.nolegal:99(para) 
 msgid "<emphasis role=\"strong\">Updates</emphasis> – Click <emphasis role=\"strong\">Updates</emphasis> to check for and install the latest updates."
@@ -272,15 +269,15 @@ msgstr "<emphasis role=\"strong\">Instalar/Actualizar</emphasis>: seleccione un 
 
 #: package-manager.xml.in.nolegal:103(para) 
 msgid "<emphasis role=\"strong\">Refresh</emphasis> – Click <emphasis role=\"strong\">Refresh</emphasis> to reload the list of packages."
-msgstr "<emphasis role=\"strong\">Renovar</emphasis>: haga clic en <emphasis role=\"strong\">Renovar</emphasis> para recargar la lista de paquetes."
+msgstr "<emphasis role=\"strong\">Actualizar</emphasis>: haga clic en <emphasis role=\"strong\">Actualizar</emphasis> para recargar la lista de paquetes."
 
 #: package-manager.xml.in.nolegal:105(para) 
 msgid "<emphasis role=\"strong\">Remove</emphasis> – Select a package and click <emphasis role=\"strong\">Remove</emphasis> to remove a package."
-msgstr "<emphasis role=\"strong\">Borrar</emphasis>: seleccione un paquete y haga clic en <emphasis role=\"strong\">Borrar</emphasis> para borrar un paquete."
+msgstr "<emphasis role=\"strong\">Suprimir</emphasis>: seleccione un paquete y haga clic en <emphasis role=\"strong\">Suprimir</emphasis> para suprimir un paquete."
 
 #: package-manager.xml.in.nolegal:107(para) 
 msgid "<emphasis role=\"strong\">Search for a Package</emphasis> – Type the name or description of a package in the <emphasis role=\"strong\">Search</emphasis> field to search for a package. See the <xref linkend=\"search-pkg\"/> section for examples on how to search for a package."
-msgstr "<emphasis role=\"strong\">Buscar un paquete</emphasis>: escriba el nombre o la descripción de un paquete en el campo <emphasis role=\"strong\">Buscar</emphasis> para buscar un paquete. Para ver ejemplos acerca de cómo buscar un paquete, consulte la sección <xref linkend=\"search-pkg\"/>."
+msgstr "<emphasis role=\"strong\">Buscar un paquete</emphasis>: en el campo <emphasis role=\"strong\">Buscar</emphasis> escriba el nombre o la descripción del paquete que desea buscar. En la sección <xref linkend=\"search-pkg\"/>, encontrará ejemplos acerca de cómo buscar un paquete."
 
 #: package-manager.xml.in.nolegal:112(emphasis) 
 msgid "Publisher Drop-Down Menu"
@@ -370,8 +367,7 @@ msgstr "<emphasis role=\"strong\">Actualizaciones</emphasis>: muestra la lista d
 #: package-manager.xml.in.nolegal:154(para) 
 msgid "<emphasis role=\"strong\">Not Installed Packages</emphasis> – Shows the list of packages that are not installed, but are available in the currently selected publisher."
 msgstr "<emphasis role=\"strong\">Paquetes no instalados</emphasis>: muestra la lista "
-       "de paquetes no instalados pero que están disponibles en el editor "
-       "seleccionado actualmente."
+       "de paquetes no instalados pero que están disponibles en el editor seleccionado actualmente."
 
 #: package-manager.xml.in.nolegal:156(para) 
 msgid "<emphasis role=\"strong\">Selected Packages</emphasis> – Shows the list of packages that you have selected."
@@ -469,7 +465,7 @@ msgstr "<emphasis role=\"strong\">Tamaño de ventana</emphasis>: el tamaño de l
 
 #: package-manager.xml.in.nolegal:195(para) 
 msgid "<emphasis role=\"strong\">Current publisher</emphasis> – The publisher that is selected when the Package Manager is closed"
-msgstr "<emphasis role=\"strong\">Editor actual</emphasis>: el editor que se seleccionara cuando se cerró Package Manager"
+msgstr "<emphasis role=\"strong\">Editor actual</emphasis>: el editor que se seleccionó cuando se cerró Package Manager"
 
 #: package-manager.xml.in.nolegal:199(title) 
 msgid "Confirmation Dialog Preferences"
@@ -477,7 +473,7 @@ msgstr "Preferencias del cuadro de diálogo de confirmación"
 
 #: package-manager.xml.in.nolegal:200(para) 
 msgid "When a package is selected for installation, update, or removal, a confirmation dialog is displayed that displays the list of packages and the action to be performed. Under the <emphasis role=\"strong\">Show Confirmation Dialog</emphasis> uncheck <emphasis role=\"strong\">On Updates</emphasis>, <emphasis role=\"strong\">On Package Install/Update</emphasis>, and <emphasis role=\"strong\">On Package Remove</emphasis> to turn these settings off."
-msgstr "Cuando se seleccionar un paquete para instalar, actualizar o eliminar, aparece un cuadro de diálogo de confirmación con la lista de paquetes y la acción que se debe realizar. En el menú <emphasis role=\"strong\">Mostrar cuadro de diálogo de confirmación</emphasis>, desmarque <emphasis role=\"strong\">Al actualizar</emphasis>, <emphasis role=\"strong\">Al instalar/actualizar paquete</emphasis> y <emphasis role=\"strong\">Al eliminar paquete</emphasis> para desactivar estos valores."
+msgstr "Cuando se selecciona un paquete para instalar, actualizar o suprimir, aparece un cuadro de diálogo de confirmación con la lista de paquetes y la acción que se debe realizar. En el menú <emphasis role=\"strong\">Mostrar cuadro de diálogo de confirmación</emphasis>, desmarque <emphasis role=\"strong\">Al actualizar</emphasis>, <emphasis role=\"strong\">Al instalar/actualizar paquete</emphasis> y <emphasis role=\"strong\">Al eliminar paquete</emphasis> para desactivar estos valores."
 
 #: package-manager.xml.in.nolegal:203(title) 
 msgid "Working With Packages"
@@ -545,11 +541,11 @@ msgstr ""
 
 #: package-manager.xml.in.nolegal:227(para) 
 msgid "Review the packages to be removed and the package dependencies details in the <emphasis role=\"strong\">Remove Confirmation</emphasis> dialog."
-msgstr "Examine los paquetes que se van a eliminar y los detalles de las dependencias de paquetes en el cuadro de diálogo <emphasis role=\"strong\">Confirmación de eliminación</emphasis>."
+msgstr "Examine los paquetes que se van a eliminar y los detalles de las dependencias de paquetes en el cuadro de diálogo <emphasis role=\"strong\">Confirmación de supresión</emphasis>."
 
 #: package-manager.xml.in.nolegal:229(para) 
 msgid "Click <guibutton>Proceed</guibutton> to start removing the packages or <guibutton>Cancel</guibutton> to cancel the process."
-msgstr "Haga clic en <guibutton>Continuar</guibutton> para comenzar el proceso de eliminación de los paquetes o en <guibutton>Cancelar</guibutton> para cancelarlo."
+msgstr "Haga clic en <guibutton>Continuar</guibutton> para comenzar el proceso de supresión de los paquetes o en <guibutton>Cancelar</guibutton> para cancelarlo."
 
 #: package-manager.xml.in.nolegal:233(title) 
 msgid "Search for a Package"
@@ -561,7 +557,7 @@ msgstr "Puede buscar paquetes de las siguientes maneras:"
 
 #: package-manager.xml.in.nolegal:235(para) 
 msgid "<emphasis role=\"strong\">Search the current publisher</emphasis> – Search for a package in the publisher currently selected in the <emphasis role=\"strong\"> Publisher</emphasis> drop-down menu. If you do not know the status of the package you are searching for, set the <emphasis role=\"strong\">View</emphasis> drop-down menu to <emphasis role=\"strong\">All Packages</emphasis>."
-msgstr "<emphasis role=\"strong\">Buscar en el editor actual</emphasis>: busque un paquete en el editor actualmente seleccionado en el menú desplegable <emphasis role=\"strong\"> Editor</emphasis>. Si no conoce el estado del paquete que busca, en el menú desplegable <emphasis role=\"strong\">Ver</emphasis> seleccione <emphasis role=\"strong\">Todos los paquetes</emphasis>."
+msgstr "<emphasis role=\"strong\">Buscar en el editor actual</emphasis>: permite buscar un paquete en el editor actualmente seleccionado en el menú desplegable <emphasis role=\"strong\"> Editor</emphasis>. Si no conoce el estado del paquete que busca, en el menú desplegable <emphasis role=\"strong\">Ver</emphasis> seleccione <emphasis role=\"strong\">Todos los paquetes</emphasis>."
 
 #: package-manager.xml.in.nolegal:236(para) 
 msgid "Enter a description, or a partial name in the <emphasis role=\"strong\">Search</emphasis> field. For example, you might type one of the following search terms to search for <filename>SUNWgnome-games</filename> :"
@@ -626,7 +622,7 @@ msgstr "El operador AND"
 
 #: package-manager.xml.in.nolegal:266(para) 
 msgid "When the search term is separated by spaces or the AND operator, the Package Manager will search for packages containing <emphasis role=\"strong\">all</emphasis> the search terms."
-msgstr "Cuando el término de búsqueda esté separado mediante espacios y el operador AND, Package Manager buscará los paquetes que contienen <emphasis role=\"strong\">todos</emphasis> los términos de búsqueda."
+msgstr "Cuando el término de búsqueda esté separado mediante espacios o el operador AND, Package Manager buscará los paquetes que contengan <emphasis role=\"strong\">todos</emphasis> los términos de búsqueda."
 
 #: package-manager.xml.in.nolegal:269(emphasis) 
 msgid "Double Quotes"
@@ -654,7 +650,7 @@ msgstr "El operador OR"
 
 #: package-manager.xml.in.nolegal:280(para) 
 msgid "When a search term is separated by the OR operator, the Package Manager searches for packages that contain any of the search terms."
-msgstr "Cuando un término de búsqueda está separado por el operador OR, Package Manager busca los paquetes que contienen cualquiera de los términos de búsqueda."
+msgstr "Cuando un término de búsqueda esté separado por el operador OR, Package Manager buscará los paquetes que contengan cualquiera de los términos de búsqueda."
 
 #: package-manager.xml.in.nolegal:285(title) 
 msgid "Cancel Package Search"
@@ -682,7 +678,7 @@ msgstr "Seleccione la opción <menuchoice><guimenuitem>Actualizaciones</guimenui
 
 #: package-manager.xml.in.nolegal:295(para) 
 msgid "Updating a package may fail sometimes, due to inherent dependencies of the package you have selected for installation or update. You may need to update all packages on your system to get the latest updates."
-msgstr "En ocasiones, la actualización de un paquete puede no realizarse correctamente debido a las dependencias inherentes del paquete seleccionado para instalar o actualizar. Puede que para obtener las actualizaciones más recientes tenga que actualizar todos los paquetes del sistema."
+msgstr "En ocasiones, la actualización de un paquete puede no realizarse correctamente debido a las dependencias inherentes del paquete seleccionado para instalar o actualizar. Es posible que para obtener las actualizaciones más recientes tenga que actualizar todos los paquetes del sistema."
 
 #: package-manager.xml.in.nolegal:297(para) 
 msgid "Select the package or packages you want to update and click <guibutton>Install/Update</guibutton> to install the latest version of the package. Use the <emphasis role=\"strong\">Updates</emphasis> icon on the toolbar to update all packages on your system."
@@ -718,7 +714,7 @@ msgstr "Seleccione la opción <emphasis role=\"strong\">Todos los editores (inst
 
 #: package-manager.xml.in.nolegal:311(para) 
 msgid "You cannot search for a package from the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> option. Switch to <emphasis role=\"strong\">All Publishers (Search)</emphasis> to search for a package."
-msgstr "No se puede buscar un paquete desde la opción <emphasis role=\"strong\">Todos los editores (instalados)</emphasis>. Para realizar esta acción, debe cambiar a=\"strong\">Todos los editores (buscar)</emphasis>."
+msgstr "No se puede buscar un paquete con la opción <emphasis role=\"strong\">Todos los editores (instalados)</emphasis>. Para realizar esta acción, debe cambiar a=\"strong\">Todos los editores (buscar)</emphasis>."
 
 #: package-manager.xml.in.nolegal:315(title) 
 msgid "Introduction to Boot Environments"
@@ -734,13 +730,11 @@ msgstr ""
 msgid "You can maintain multiple boot environments on your OpenSolaris 2010.03 system. Use the <command>beadm(1)</command> command from the command-line interface (CLI) to create, rename, mount or unmount, or destroy these boot environments."
 msgstr "Puede mantener varios entornos de arranque en su sistema OpenSolaris 2010.03. "
        "Utilice el comando <command>beadm(1)</command> de la interfaz de línea de "
-       "comandos (CLI) para crear, renombrar, montar, desmontar o destruir esos"
-       "entornos de arranque."
+       "comandos (CLI) para crear, renombrar, montar, desmontar o destruir esos entornos de arranque."
 
 #: package-manager.xml.in.nolegal:318(para) 
 msgid "The Package Manager enables you to manage the boot environments created during the process of updating your image. For more information, see <xref linkend=\"manage-be\"/> section."
-msgstr "Package Manager le permite administrar los entornos de arranque creados "
-       "durante el proceso de actualización de la imagen. Encontrará más información en la sección <xref linkend=\"manage_be\"/>."
+msgstr "Package Manager le permite administrar los entornos de arranque creados durante el proceso de actualización de la imagen. Encontrará más información en la sección <xref linkend=\"manage_be\"/>."
 
 #: package-manager.xml.in.nolegal:319(para) 
 msgid "Users can maintain multiple boot environments on their systems, and each boot environment can have different software versions installed."
@@ -820,8 +814,7 @@ msgstr "Haga clic en <guibutton>Reiniciar más tarde</guibutton> para reiniciar 
 
 #: package-manager.xml.in.nolegal:345(para) 
 msgid "During the Update All process, a clone of the active boot environment is created. You can boot into the clone to return to the boot environment state that existed before the Update All process was started."
-msgstr "Durante el proceso Actualizar todo, se crea un clónico del entorno de arranque "
-       "activo. Puede arrancar en el clónico para volver al estado del entorno de arranque que existía antes de que se iniciara el proceso Actualizar todo."
+msgstr "Durante el proceso Actualizar todo, se crea un clónico del entorno de arranque activo. Puede arrancar en el clónico para volver al estado del entorno de arranque que existía antes de que se iniciara el proceso Actualizar todo."
 
 #: package-manager.xml.in.nolegal:350(title) package-manager.xml.in.nolegal:656(title) 
 msgid "Update All Errors"
@@ -829,7 +822,7 @@ msgstr "Errores del proceso Actualizar todo"
 
 #: package-manager.xml.in.nolegal:351(para) 
 msgid "A new boot environment clone must be created by the Package Manager for the Updates process to be completed. An error message is displayed if a boot environment clone cannot be created. You might see an error message such as the following :"
-msgstr "Package Manager debe crear un clónico del entorno de arranque del proceso Actualizar todo que va a realizarse. Se muestra un mensaje de error si no se puede crear un clónico del entorno de arranque. Podría aparecer un mensaje de error como el siguiente:"
+msgstr "Package Manager debe crear un clónico del entorno de arranque para el proceso Actualizar todo que va a realizarse. Si no se puede crear un clónico del entorno de arranque, se muestra un mensaje de error, como el siguiente:"
 
 #: package-manager.xml.in.nolegal:352(para) 
 msgid "<literal>Not enough disk space, the Update All action cannot be performed. Choose Manage BE to manage your boot environments and free up disk space.</literal>."
@@ -893,8 +886,7 @@ msgstr "En este cuadro de diálogo puede efectuar las acciones siguientes:"
 
 #: package-manager.xml.in.nolegal:378(para) 
 msgid "<emphasis role=\"strong\">Activate a boot environment</emphasis> – Select the boot environment you want to be active on system reboot. This is the default boot environment <emphasis role=\"strong\">after</emphasis> you have rebooted your system."
-msgstr "<emphasis role=\"strong\">Activar un entorno de arranque</emphasis>: seleccione el entorno de arranque que desee activar en el arranque del sistema. Será "
-       "el entorno de arranque predeterminado <emphasis role=\"strong\">después</emphasis> de haber rearrancado el sistema."
+msgstr "<emphasis role=\"strong\">Activar un entorno de arranque</emphasis>: seleccione el entorno de arranque que desee activar en el arranque del sistema. Será el entorno de arranque predeterminado <emphasis role=\"strong\">después</emphasis> de haber rearrancado el sistema."
 
 #: package-manager.xml.in.nolegal:380(para) 
 msgid "<emphasis role=\"strong\">Remove old or unused boot environments to free up disk space</emphasis> – Select the boot environnment or boot environments you want to delete."
@@ -1004,11 +996,11 @@ msgstr "Si el editor no se ha podido agregar, se muestra el cuadro de diálogo=\
 
 #: package-manager.xml.in.nolegal:434(title) 
 msgid "Remove a Publisher"
-msgstr "Eliminación de un editor"
+msgstr "Supresión de un editor"
 
 #: package-manager.xml.in.nolegal:435(para) 
 msgid "Perform the following steps to remove a publisher:"
-msgstr "Para eliminar un editor, realice los pasos siguientes:"
+msgstr "Para suprimir un editor, realice los pasos siguientes:"
 
 #: package-manager.xml.in.nolegal:436(para) package-manager.xml.in.nolegal:459(para) package-manager.xml.in.nolegal:473(para) package-manager.xml.in.nolegal:492(para) package-manager.xml.in.nolegal:511(para) package-manager.xml.in.nolegal:528(para) 
 msgid "Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice>."
@@ -1020,15 +1012,15 @@ msgstr "Haga clic en un editor de la lista para seleccionarlo y, a continuación
 
 #: package-manager.xml.in.nolegal:440(para) 
 msgid "The <emphasis role=\"strong\">Manage Publishers Confirmation</emphasis> dialog is displayed."
-msgstr "Se muestra el cuadro de diálogo <emphasis role=\"strong\">Confirmación de administración de editores</emphasis>."
+msgstr "Se muestra el cuadro de diálogo <emphasis role=\"strong\">Confirmación de Administrar editores</emphasis>."
 
 #: package-manager.xml.in.nolegal:442(para) 
 msgid "Click <guibutton>OK</guibutton> to save the changes and remove the publisher or <guibutton>Cancel</guibutton> to return to the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog without making any changes."
-msgstr "Haga clic en <guibutton>Aceptar</guibutton> para guardar los cambios y eliminar el editor o en <guibutton>Cancelar</guibutton> para volver al cuadro de diálogo <emphasis role=\"strong\">Administrar editores</emphasis> sin realizar cambios."
+msgstr "Haga clic en <guibutton>Aceptar</guibutton> para guardar los cambios y suprimir el editor o en <guibutton>Cancelar</guibutton> para volver al cuadro de diálogo <emphasis role=\"strong\">Administrar editores</emphasis> sin realizar cambios."
 
 #: package-manager.xml.in.nolegal:446(title) 
 msgid "Set Publisher Priority"
-msgstr "Configuración de la prioridad de los editores"
+msgstr "Configuración de la prioridad del editor"
 
 #: package-manager.xml.in.nolegal:447(para) 
 msgid "Perform the following steps to set or change the publisher priority:"
@@ -1060,11 +1052,11 @@ msgstr "Para modificar el alias de un editor, realice los siguientes pasos:"
 
 #: package-manager.xml.in.nolegal:461(para) 
 msgid "Select the publisher whose alias you want to modify. Click <guibutton>Modify..</guibutton>."
-msgstr "Seleccione el editor cuyo alias desea modificar. Haga clic en <guibutton>Modificar..</guibutton>."
+msgstr "Seleccione el editor cuyo alias desea modificar y haga clic en <guibutton>Modificar..</guibutton>."
 
 #: package-manager.xml.in.nolegal:463(para) 
 msgid "The <emphasis role=\"strong\">Modify Publisher</emphasis> dialog is displayed. Modify or enter a new name of the alias in the <emphasis role=\"strong\">Alias</emphasis> field."
-msgstr "Se muestra el cuadro de diálogo <emphasis role=\"strong\">Modificar editor</emphasis>. Modifique o escriba un nombre nuevo del alias en el campo <emphasis role=\"strong\">Alias</emphasis>."
+msgstr "Se muestra el cuadro de diálogo <emphasis role=\"strong\">Modificar editor</emphasis>. Modifique el alias o escriba un nombre nuevo en el campo <emphasis role=\"strong\">Alias</emphasis>."
 
 #: package-manager.xml.in.nolegal:467(para) package-manager.xml.in.nolegal:486(para) package-manager.xml.in.nolegal:505(para) package-manager.xml.in.nolegal:522(para) package-manager.xml.in.nolegal:539(para) 
 msgid "Click <guibutton>OK</guibutton> in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog to exit the dialog. Note that clicking <guibutton>Cancel</guibutton> in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog will not undo the changes made in the <emphasis role=\"strong\">Modify Publishers</emphasis> dialog."
@@ -1100,15 +1092,15 @@ msgstr "(opcional) Si el origen que ha agregado es un origen seguro, agregue la 
 
 #: package-manager.xml.in.nolegal:490(title) 
 msgid "Remove Publisher Origins"
-msgstr "Eliminación de orígenes de editor"
+msgstr "Supresión de orígenes de editor"
 
 #: package-manager.xml.in.nolegal:491(para) 
 msgid "Perform the following steps to remove an origin or origins associated with a publisher:"
-msgstr "Para eliminar el origen u orígenes asociados con un editor, realice los siguientes pasos:"
+msgstr "Para suprimir el origen u orígenes asociados con un editor, realice los siguientes pasos:"
 
 #: package-manager.xml.in.nolegal:494(para) 
 msgid "Select the publisher whose origin you want to remove. The <emphasis role=\"strong\">Details</emphasis> tab in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog displays the origin or origins associated with the publisher."
-msgstr "Seleccione el editor cuyo origen desea eliminar. La ficha <emphasis role=\"strong\">Detalles</emphasis> del cuadro de diálogo <emphasis role=\"strong\">Administrar editores</emphasis> muestra el origen asociado con el editor."
+msgstr "Seleccione el editor cuyo origen desea suprimir. La ficha <emphasis role=\"strong\">Detalles</emphasis> del cuadro de diálogo <emphasis role=\"strong\">Administrar editores</emphasis> muestra el origen asociado con el editor."
 
 #: package-manager.xml.in.nolegal:497(para) 
 msgid "The <emphasis role=\"strong\">Modify Publisher</emphasis> dialog is displayed. The list of associated origins is displayed in the table."
@@ -1116,15 +1108,15 @@ msgstr "Se muestra el cuadro de diálogo <emphasis role=\"strong\">Modificar edi
 
 #: package-manager.xml.in.nolegal:499(para) 
 msgid "Select the origin you want to remove. Click <guibutton>Remove</guibutton>."
-msgstr "Seleccione el origen que desea eliminar y haga clic en <guibutton>Suprimir</guibutton>."
+msgstr "Seleccione el origen que desea suprimir y haga clic en <guibutton>Suprimir</guibutton>."
 
 #: package-manager.xml.in.nolegal:500(para) 
 msgid "If only one origin is associated with a publisher, it cannot be removed."
-msgstr "Si sólo hay un origen asociado con el editor, no se podrá eliminar."
+msgstr "Si sólo hay un origen asociado con el editor, no se podrá suprimir."
 
 #: package-manager.xml.in.nolegal:509(title) 
 msgid "Add Publisher Mirrors"
-msgstr "Adición de duplicados de editores"
+msgstr "Adición de reflejos de editores"
 
 #: package-manager.xml.in.nolegal:510(para) 
 msgid "Perform the following steps to add a mirror for a publisher:"
@@ -1144,15 +1136,15 @@ msgstr "Escriba el URI del reflejo en el campo <emphasis>Reflejo</emphasis> y ha
 
 #: package-manager.xml.in.nolegal:526(title) 
 msgid "Remove Publisher Mirrors"
-msgstr "Eliminación de reflejos de editor"
+msgstr "Supresión de reflejos de editor"
 
 #: package-manager.xml.in.nolegal:527(para) 
 msgid "Perform the following steps to remove a mirror associated with a publisher:"
-msgstr "Para eliminar un reflejo asociado con un editor, realice los siguientes pasos:"
+msgstr "Para suprimir un reflejo asociado con un editor, realice los siguientes pasos:"
 
 #: package-manager.xml.in.nolegal:530(para) 
 msgid "Select the publisher for which you want to remove the mirror."
-msgstr "Seleccione el editor del que desea eliminar el reflejo."
+msgstr "Seleccione el editor del que desea suprimir el reflejo."
 
 #: package-manager.xml.in.nolegal:533(para) 
 msgid "The <emphasis role=\"strong\">Modify Publisher</emphasis> dialog is displayed. The list of associated mirrors is displayed in the table."
@@ -1160,7 +1152,7 @@ msgstr "Se muestra el cuadro de diálogo <emphasis role=\"strong\">Modificar edi
 
 #: package-manager.xml.in.nolegal:535(para) 
 msgid "Select the mirror you want to remove. Click <guibutton>Remove</guibutton>."
-msgstr "Seleccione el reflejo que desea eliminar y haga clic en <guibutton>Suprimir</guibutton>."
+msgstr "Seleccione el reflejo que desea suprimir y haga clic en <guibutton>Suprimir</guibutton>."
 
 #: package-manager.xml.in.nolegal:544(title) 
 msgid "Working With WebInstall"
@@ -1194,11 +1186,11 @@ msgstr "Marque la casilla junto al paquete o paquetes para seleccionarlos. Los p
 
 #: package-manager.xml.in.nolegal:553(para) 
 msgid "Click <menuchoice><guisubmenu>File</guisubmenu><guimenuitem>Export Selections</guimenuitem></menuchoice> to display the <emphasis role=\"strong\">Export Selections Confirmation</emphasis> window."
-msgstr "Haga clic en <menuchoice><guisubmenu>Archivo</guisubmenu><guimenuitem>Exportar selecciones</guimenuitem></menuchoice> para mostrar la ventana <emphasis role=\"strong\">Confirmación de exportación de selecciones</emphasis>."
+msgstr "Haga clic en <menuchoice><guisubmenu>Archivo</guisubmenu><guimenuitem>Exportar selecciones</guimenuitem></menuchoice> para mostrar la ventana <emphasis role=\"strong\">Confirmación de Exportar selecciones</emphasis>."
 
 #: package-manager.xml.in.nolegal:555(para) 
 msgid "Click <guibutton>OK</guibutton> to confirm the selections and proceed or <guibutton>Cancel</guibutton> to cancel the selections."
-msgstr "Haga clic en <guibutton>Aceptar</guibutton> para confirmar las selecciones continuar o en <guibutton>Cancelar</guibutton> para cancelar las selecciones."
+msgstr "Haga clic en <guibutton>Aceptar</guibutton> para confirmar las selecciones y continuar o en <guibutton>Cancelar</guibutton> para cancelar las selecciones."
 
 #: package-manager.xml.in.nolegal:557(para) 
 msgid "The <emphasis role=\"strong\">Export Selections</emphasis> window is displayed."
@@ -1214,7 +1206,7 @@ msgstr "De forma predeterminada, el archivo se guarda en la carpeta <filename>/t
 
 #: package-manager.xml.in.nolegal:563(para) 
 msgid "Choose the <filename>p5i Files</filename> option in the drop-down menu located at the bottom right hand side of the window."
-msgstr "Seleccione la opción <filename>p5i Files</filename> del menú desplegable situado en la parte inferior derecha de la ventana."
+msgstr "Seleccione la opción <filename>Archivos p5i</filename> del menú desplegable situado en la parte inferior derecha de la ventana."
 
 #: package-manager.xml.in.nolegal:567(title) 
 msgid "How to Use WebInstall to Add Publishers and Install Packages"
@@ -1257,11 +1249,9 @@ msgstr "$ pfexec packagemanager/<placeholder-1/>"
 
 #: package-manager.xml.in.nolegal:577(para) 
 msgid "Click on a URL location that contains a link to <filename>.p5i</filename> file. If you are using this method to start WebInstall, the <filename>.p5i</filename> file <emphasis role=\"strong\">must</emphasis> be located on a web server that has registered the new mime type. Only then, the web server can manage the <filename>.p5i</filename> automatically and start Package Manager in WebInstall mode."
-msgstr "Hacer clic en una ubicación URL que contenga un vínculo al archivo <filename>.p5i</filename>."
+msgstr "Haga clic en una ubicación URL que contenga un vínculo al archivo <filename>.p5i</filename>."
        "Si utiliza este método para iniciar WebInstall, el archivo <filename>.p5i</filename><emphasis role=\"strong\">debe</emphasis> estar en "
-       "un servidor web que haya registrado el nuevo tipo de mime. Sólo entonces el servidor "
-       "web puede administrar el archivo <filename>.p5i</filename> automáticamente e iniciar "
-       "Package Manager en modo WebInstall."
+       "un servidor web que haya registrado el nuevo tipo mime. Sólo entonces el servidor web puede administrar el archivo <filename>.p5i</filename> automáticamente e iniciar Package Manager en modo WebInstall."
 
 #: package-manager.xml.in.nolegal:578(para) 
 msgid "If the <filename>.p5i</filename> is located on a web server that does not have the new mime type registered, save the <filename>.p5i</filename> file to your desktop and then click on it to launch Web Install."
@@ -1312,7 +1302,7 @@ msgstr "Uso de WebInstall con un editor inhabilitado"
 
 #: package-manager.xml.in.nolegal:602(para) 
 msgid "Sometimes a <filename>.p5i</filename> file may contain packages from a disabled publisher. In such cases WebInstall opens up an <emphasis role=\"strong\">Enable Publisher</emphasis> dialog which allows the user to enable the publisher before installing packages."
-msgstr "En ocasiones un archivo <filename>.p5i</filename> puede contener paquetes de un editor inhabilitado. En tales casos, WebInstall abre el cuadro de diálogo <emphasis role=\"strong\">Habilitar editor</emphasis> que permite al usuario habilitar el editor antes de instalar paquetes."
+msgstr "En ocasiones, un archivo <filename>.p5i</filename> puede contener paquetes de un editor inhabilitado. En tales casos, WebInstall abre el cuadro de diálogo <emphasis role=\"strong\">Habilitar editor</emphasis> que permite al usuario habilitar el editor antes de instalar paquetes."
 
 #: package-manager.xml.in.nolegal:605(title) 
 msgid "Working With the Update Manager"
@@ -1337,7 +1327,7 @@ msgstr "Se puede utilizar para actualizar los paquetes instalados en la imagen. 
 
 #: package-manager.xml.in.nolegal:613(para) 
 msgid "For the OpenSolaris 2010.03 release, the Update Manager updates <emphasis role=\"strong\">all</emphasis> installed packages in the image. This action is equivalent to running the <command>pkg image-update</command> command from the command-line."
-msgstr "En la versión OpenSolaris 2010.03, el Administrador de actualizaciones actualiza <emphasis "
+msgstr "En la versión OpenSolaris 2010.03, el Administrador de actualizaciones actualiza <emphasis"
        "role=\"strong\">todos</emphasis> los paquetes instalados en la imagen. Esta acción "
        "es equivalente a ejecutar el comando <command>pkg image-update</command> "
        "desde la línea de comandos."
@@ -1416,7 +1406,7 @@ msgstr "Haga clic en el botón <guibutton>Cancelar</guibutton> para anular el pr
 
 #: package-manager.xml.in.nolegal:637(para) 
 msgid "If you chose to proceed, the <emphasis role=\"strong\">Installing Updates</emphasis> windows are displayed. The package installation process consists of four stages:"
-msgstr "Si eligió continuar, se mostrarán las ventanas <emphasis role=\"strong\">Instalando actualizaciones</emphasis>. El proceso de instalación de paquetes consta de cuatro fases:"
+msgstr "Si eligió continuar, se mostrarán las ventanas <emphasis role=\"strong\">Instalación de actualizaciones</emphasis>. El proceso de instalación de paquetes consta de cuatro fases:"
 
 #: package-manager.xml.in.nolegal:638(para) 
 msgid "Prepare"
@@ -1501,7 +1491,7 @@ msgstr "editor"
 
 #: package-manager.xml.in.nolegal:676(para) 
 msgid "A person, group, or corporation that provides packages. Packages for a publisher are found in a repository, from which the package system retrieves package data."
-msgstr "Una persona, grupo o corporación que proporciona paquetes. Los paquetes para un editor se encuentran en un depósito, del que el sistema de paquetes recupera los datos de paquetes."
+msgstr "Una persona, grupo o corporación que proporciona paquetes. Los paquetes para un editor se encuentran en un depósito, del que el sistema de paquetes recupera datos de paquete."
 
 #: package-manager.xml.in.nolegal:679(glossterm) 
 msgid "repository"
@@ -1509,7 +1499,7 @@ msgstr "depósito"
 
 #: package-manager.xml.in.nolegal:680(para) 
 msgid "A location where clients can publish and retrieve package content such as files contained within the package, and package metadata which includes information about the package such as its name and description."
-msgstr "Una ubicación donde los clientes pueden publicar y recuperar el contenido de los paquetes como los archivos que contienen y los metadatos, que incluyen información acerca del paquete como su nombre y descripción."
+msgstr "Una ubicación donde los clientes pueden publicar y recuperar el contenido de los paquetes (por ejemplo, los archivos que contienen y los metadatos), que incluye información acerca del paquete como su nombre y descripción."
 
 #: package-manager.xml.in.nolegal:683(glossterm) 
 msgid "boot environment"
@@ -1517,7 +1507,7 @@ msgstr "entorno de arranque"
 
 #: package-manager.xml.in.nolegal:684(para) 
 msgid "For an OpenSolaris 2010.03 release, a boot environment is an instance of a bootable OpenSolaris environment. The root file system and all other file systems of the boot environment that contain system software are required to be ZFS datasets."
-msgstr "En OpenSolaris versión 2010.03, un entorno de arranque es un ejemplo de entorno arrancable de OpenSolaris. El sistema de archivos raíz y el resto de sistemas de archivos del entorno de arranque que contienen software del sistema son necesarios para constituir conjuntos de datos ZFS."
+msgstr "En OpenSolaris versión 2010.03, un entorno de arranque es una instancia de entorno arrancable de OpenSolaris. El sistema de archivos raíz y el resto de sistemas de archivos del entorno de arranque que contienen software del sistema son necesarios para constituir conjuntos de datos ZFS."
 
 #: package-manager.xml.in.nolegal:685(para) 
 msgid "The active boot environment is the one that is currently booted. Many boot environments can present on an OpenSolaris system and an inactive boot environment can be in a state of waiting for activation upon system reboot."

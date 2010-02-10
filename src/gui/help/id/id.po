@@ -19,29 +19,29 @@
 # CDDL HEADER END
 #
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 msgid ""
 msgstr ""
-       "Project-Id-Version: PACKAGE VERSION\n"
-       "POT-Creation-Date: 2009-12-21 12:05+0900\n"
-       "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-       "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-       "Language-Team: LANGUAGE <LL@li.org>\n"
+       "Project-Id-Version: Package Manager\n"
+       "POT-Creation-Date: 2010-01-14 11:47+0900\n"
+       "PO-Revision-Date: 2010-01-14 11:47+0900\n"
+       "Last-Translator: Indonesian l10n team <i18n-discuss@opensolaris.org>\n"
+       "Language-Team: Indonesian <LL@li.org>\n"
        "MIME-Version: 1.0\n"
        "Content-Type: text/plain; charset=UTF-8\n"
        "Content-Transfer-Encoding: 8bit\n"
 
 #. When image changes, this message will be marked fuzzy or untranslated for you.
 #. It doesn't matter what you translate it to: it's not used at all.
-#: package-manager.xml.in.nolegal:38(None) package-manager.xml.in.nolegal:89(None) 
+#: package-manager.xml.in.nolegal:38(None) package-manager.xml.in.nolegal:88(None) 
 msgid "@@image: 'figures/pkgmgr-main.png'; md5=e2194180dd5eca2d8e3912fee614e061"
 msgstr "@@image: 'figures/pkgmgr-main.png'; md5=e2194180dd5eca2d8e3912fee614e061"
 
 #. When image changes, this message will be marked fuzzy or untranslated for you.
 #. It doesn't matter what you translate it to: it's not used at all.
-#: package-manager.xml.in.nolegal:69(None) 
+#: package-manager.xml.in.nolegal:68(None) 
 msgid "@@image: 'figures/startpage_new.png'; md5=9f8516015a79fd2b5c456128482affe4"
 msgstr "@@image: 'figures/startpage_new.png'; md5=9f8516015a79fd2b5c456128482affe4"
 
@@ -49,17 +49,17 @@ msgstr "@@image: 'figures/startpage_new.png'; md5=9f8516015a79fd2b5c456128482aff
 #. It doesn't matter what you translate it to: it's not used at all.
 #: package-manager.xml.in.nolegal:583(None) 
 msgid "@@image: 'figures/webinstall.png'; md5=79f40b964b51261cd0164f64991b576c"
-msgstr "@@image: 'figures/webinstall.png'; md5=79f40b964b51261cd0164f64991b576c"
+msgstr "@ @ image: 'angka / webinstall.png'; md5 = 79f40b964b51261cd0164f64991b576c"
 
 #. When image changes, this message will be marked fuzzy or untranslated for you.
 #. It doesn't matter what you translate it to: it's not used at all.
 #: package-manager.xml.in.nolegal:609(None) 
 msgid "@@image: 'figures/update_all_new.png'; md5=3d505052632edfdb38212de7f7ffb22c"
-msgstr "@@image: 'figures/update_all_new.png'; md5=3d505052632edfdb38212de7f7ffb22c"
+msgstr "@ @ image: 'angka / update_all_new.png'; md5 = 3d505052632edfdb38212de7f7ffb22c"
 
 #: package-manager.xml.in.nolegal:3(title) 
 msgid "OpenSolaris 2010.03 Package Manager Online Help"
-msgstr "OpenSolaris 2010.03 pengelola paket bantuan online"
+msgstr "OpenSolaris 2010.03 Pengelola Paket Bantuan Online"
 
 #: package-manager.xml.in.nolegal:4(firstname) 
 msgid "OpenSolaris"
@@ -91,7 +91,7 @@ msgstr "Tentang Pengelola Paket"
 
 #: package-manager.xml.in.nolegal:34(para) 
 msgid "Welcome to the <trademark>OpenSolaris</trademark> 2010.03 Package Manager online help!"
-msgstr "Selamat datang di, OpenSolaris </ merk> 2.010,03 bantuan online paket pengelola!"
+msgstr "Selamat datang di, OpenSolaris </trademark> 2010.03 bantuan online paket pengelola!"
 
 #: package-manager.xml.in.nolegal:35(para) 
 msgid "Use the help contents to learn how to use the Package Manager. Navigate through this help by clicking the topics displayed in the sidebar."
@@ -99,7 +99,7 @@ msgstr "Gunakan isi bantuan untuk mempelajari cara menggunakan Package Manager. 
 
 #: package-manager.xml.in.nolegal:36(para) 
 msgid "The OpenSolaris 2010.03 Package Manager application is a graphical user interface for the Image Packaging System (IPS) software. The Package Manager provides a subset of the functionality offered by the command-line (CLI) clients provided with IPS."
-msgstr "OpenSolaris 2010,03 Pengelola Paket Aplikasi ini merupakan antarmuka pengguna grafis untuk Image Packaging System (IPS) perangkat lunak. Pengelola Paket menyediakan subset dari fungsi yang ditawarkan oleh baris perintah (CLI) klien disediakan dengan IPS."
+msgstr "OpenSolaris 2010.03 Pengelola Paket Aplikasi ini merupakan antarmuka pengguna grafis untuk Image Packaging System (IPS) perangkat lunak. Pengelola Paket menyediakan subset dari fungsi yang ditawarkan oleh baris perintah (CLI) klien disediakan dengan IPS."
 
 #: package-manager.xml.in.nolegal:37(title) 
 msgid "Package Manager"
@@ -107,11 +107,11 @@ msgstr "Paket Pengelola"
 
 #: package-manager.xml.in.nolegal:41(para) 
 msgid "The Package Manager enables you to perform the following tasks:"
-msgstr "Package Manager memungkinkan anda untuk melakukna hal - hal sebagai berikut :"
+msgstr "Pengelola Paket memungkinkan anda untuk melakukan hal - hal sebagai berikut :"
 
 #: package-manager.xml.in.nolegal:42(para) 
 msgid "Install, remove, and search for packages"
-msgstr "Memasang, Menghapus, dan pencarian paket"
+msgstr "Install, Menghapus, dan pencarian paket"
 
 #: package-manager.xml.in.nolegal:44(para) 
 msgid "Update your system"
@@ -119,7 +119,7 @@ msgstr "Memperbarui sistem anda"
 
 #: package-manager.xml.in.nolegal:46(para) 
 msgid "Add and manage publishers"
-msgstr "tambah dan mengelola penerbit"
+msgstr "Tambah dan mengelola penerbit"
 
 #: package-manager.xml.in.nolegal:48(para) 
 msgid "Create, remove, and manage boot environments"
@@ -127,1055 +127,1055 @@ msgstr "Membuat, menghapus dan mengatur 'Boot Environment'"
 
 #: package-manager.xml.in.nolegal:51(para) 
 msgid "See the <xref linkend=\"glossary\"/> for a definition of the terms used in this document."
-msgstr "See the <xref linkend=\"glossary\"/> for a definition of the terms used in this document."
+msgstr "Untuk keterangan istilah yang digunakan dalam dokumen ini, lihat <xref linked=\"glosary\">."
 
 #: package-manager.xml.in.nolegal:53(title) 
 msgid "About Image Packaging System"
 msgstr "Tentang Image Packaging System"
 
 #: package-manager.xml.in.nolegal:54(para) 
-msgid "Image Packaging System (IPS) is a software delivery system that interacts with a network repository. The IPS software is a framework which provides for software lifecycle management including installation, upgrade, and removal."
-msgstr "Image Packaging System (IPS) adalah sebuah perangkat lunak sistem pengiriman yang berinteraksi dengan repositori jaringan. Perangkat lunak yang IPS yang menyediakan suatu kerangka kerja untuk perangkat lunak manajemen siklus hidup termasuk instalasi, upgrade, dan penghapusan."
+msgid "Image Packaging System (IPS) is a framework which provides for software lifecycle management including installation, upgrade, and removal. The OpenSolaris 2010.03 release uses IPS as its packaging system."
+msgstr "Image Packaging System (IPS) adalah suatu kerangka kerja yang menyediakan perangkat lunak manajemen siklus hidup termasuk instalasi, upgrade, dan penghapusan. OpenSolaris rilis 2.010.03 yang menggunakan IPS sebagai packaging sistem."
 
 #: package-manager.xml.in.nolegal:55(para) 
-msgid "The OpenSolaris 2010.03 release uses IPS as its packaging system."
-msgstr "OpenSolaris 2010.03 rilis yang menggunakan IPS sebagai sistem kemasan."
-
-#: package-manager.xml.in.nolegal:56(para) 
 msgid "After an initial installation of the OpenSolaris 2010.03 operating system, you will find that some of the software applications that you use on a regular basis are not immediately available to you. These software applications are available as packages in a repository for downloading and installing over the network. A repository is a source for packages."
 msgstr "Setelah instalasi awal dari sistem operasi OpenSolaris 2010.03, Anda akan menemukan bahwa beberapa aplikasi perangkat lunak yang Anda gunakan secara teratur tidak segera tersedia untuk Anda. Aplikasi perangkat lunak ini tersedia sebagai paket di repositori untuk men-download dan menginstal melalui jaringan. Sebuah repositori adalah sumber paket."
 
-#: package-manager.xml.in.nolegal:57(para) 
-msgid "Users can use IPS to install packages from a repository, create and publish their own IPS packages, mirror an existing repository, and publish existing packages to a repository."
-msgstr "Pengguna dapat menggunakan IPS untuk menginstal paket-paket dari repositori, membuat dan mempublikasikan paket IPS mereka sendiri, cermin repositori yang sudah ada, dan mempublikasikan paket-paket yang ada ke repositori."
+#: package-manager.xml.in.nolegal:56(para) 
+msgid "IPS provides a set of software tools that can be used to install packages from a repository, create and publish their own IPS packages, mirror an existing repository, and publish existing packages to a repository."
+msgstr "IPS menyediakan satu set perangkat lunak yang dapat digunakan untuk menginstal paket-paket dari repositori, membuat dan mempublikasikan paket IPS mereka sendiri, mirror repositori yang sudah ada, dan mempublikasikan paket yang ada ke repositori."
 
-#: package-manager.xml.in.nolegal:58(para) 
+#: package-manager.xml.in.nolegal:57(para) 
 msgid "Once you have installed packages, IPS enables you to search, update, and manage packages on your system."
 msgstr "Setelah Anda menginstal paket, IPS memungkinkan Anda untuk mencari, memperbarui, dan mengelola paket pada sistem anda."
 
-#: package-manager.xml.in.nolegal:59(para) 
+#: package-manager.xml.in.nolegal:58(para) 
 msgid "With IPS , you can upgrade your system to a newer build of OpenSolaris, install and update your software to the latest available versions in a repository, and retrieve packages from mirror repositories."
 msgstr "Dengan IPS, Anda dapat meng-upgrade sistem anda untuk membangun yang lebih baru dari OpenSolaris, menginstal dan memutakhirkan perangkat lunak Anda ke versi terbaru yang tersedia dalam repositori, dan mengambil paket dari mirror repositori."
 
-#: package-manager.xml.in.nolegal:60(emphasis) 
+#: package-manager.xml.in.nolegal:59(emphasis) 
 msgid "The Package Manager provides a subset of the tasks that can be performed from the command-line."
-msgstr "Manajer Paket menyediakan subset dari tugas-tugas yang dapat dilakukan dari baris perintah."
+msgstr "Pengelola Paket menyediakan subset dari tugas-tugas yang dapat dilakukan dari baris perintah."
+
+#: package-manager.xml.in.nolegal:61(para) 
+msgid "For the OpenSolaris 2010.03 release, if the system on which IPS is installed is on the network, IPS can automatically retrieve packages provided by the OpenSolaris publisher from the package repository located at <ulink url=\"http://pkg.opensolaris.org\"/>."
+msgstr "Untuk OpenSolaris rilis 2010.03, jika sistem yang terinstal adalah IPS pada jaringan, IPS dapat secara otomatis mengambil paket yang disediakan oleh penerbit OpenSolaris dari repositori paket terletak di <ulink url = \"http://pkg.opensolaris.org\"/>."
 
 #: package-manager.xml.in.nolegal:62(para) 
-msgid "If the system on which IPS is installed is on the network, IPS can automatically access the OpenSolaris publisher. For the OpenSolaris 2010.03 release, your IPS client can access the packages from <ulink url=\"http://pkg.opensolaris.org\"/>."
-msgstr "Jika sistem yang terinstal IPS adalah pada jaringan, IPS dapat secara otomatis mengakses OpenSolaris penerbit. Untuk rilis 2010.03 OpenSolaris, klien IPS Anda dapat mengakses paket dari <ulink url=\"http://pkg.opensolaris.org\"/>."
+msgid "For more IPS documentation, see the <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"><citetitle>Image Packaging System Guide</citetitle></ulink> and the <filename>pkg</filename><ulink url=\"http://opensolaris.org/sc/src/pkg/gate/src/man/\">man pages</ulink>."
+msgstr "Untuk informasi lebih IPS dokumentasi, lihat di <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"><citetitle>Image Packaging System Guide</citetitle></ulink> and the <filename>pkg</filename><ulink url=\"http://opensolaris.org/sc/src/pkg/gate/src/man/\">man pages</ulink>."
 
 #: package-manager.xml.in.nolegal:63(para) 
-msgid "For more IPS documentation, see the <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"><citetitle>Image Packaging System Guide</citetitle></ulink> and the <filename>pkg</filename><ulink url=\"http://opensolaris.org/sc/src/pkg/gate/src/man/\">man pages</ulink>."
-msgstr "For more IPS documentation, see the <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"><citetitle>Image Packaging System Guide</citetitle></ulink> and the <filename>pkg</filename><ulink url=\"http://opensolaris.org/sc/src/pkg/gate/src/man/\">man pages</ulink>."
-
-#: package-manager.xml.in.nolegal:64(para) 
 msgid "For more information about IPS, visit the <ulink url=\"http://opensolaris.org/os/project/pkg\">project page</ulink>."
-msgstr "For more information about IPS, visit the <ulink url=\"http://opensolaris.org/os/project/pkg\">project page</ulink>."
+msgstr "Untuk informasi lebih lanjut tentang IPS, kunjungi <ulink url=\"http://opensolaris.org/os/project/pkg\">Halaman Proyek</ulink>."
 
-#: package-manager.xml.in.nolegal:66(title) 
+#: package-manager.xml.in.nolegal:65(title) 
 msgid "Getting Started With Package Manager"
-msgstr "Persiapan dengan Package Manager"
+msgstr "Persiapan dengan Pengelola Paket"
 
-#: package-manager.xml.in.nolegal:67(para) 
+#: package-manager.xml.in.nolegal:66(para) 
 msgid "When you start the Package Manager, a Start Page similar to the example below is displayed:"
-msgstr "Ketika kamu memulai Package Manager, Halaman Mulai serupa dengan contoh di bawah ini ditampilkan:"
+msgstr "Ketika Anda memulai Pengelola Paket, Halaman Awal serupa dengan contoh yang ditampilkan di bawah ini:"
 
-#: package-manager.xml.in.nolegal:68(title) 
+#: package-manager.xml.in.nolegal:67(title) 
 msgid "Package Manager Start Page"
-msgstr "Halaman memulai Package Manager"
+msgstr "Halaman Awal Pengelola Paket"
 
-#: package-manager.xml.in.nolegal:72(para) 
+#: package-manager.xml.in.nolegal:71(para) 
 msgid "The Start Page provides a list of featured packages that can be installed. It includes a list of some of the most popular and recent packages downloaded by the OpenSolaris community of users. The Recommended list of packages point to software applications that are frequently downloaded by the OpenSolaris user. Click the package links to install the packages."
 msgstr "Halaman Awal menyediakan fitur daftar paket yang dapat diinstal. Ini mencakup daftar dari beberapa yang paling populer dan paket terbaru download oleh komunitas pengguna OpenSolaris. Fitur daftar yang menunjuk ke paket perangkat lunak aplikasi yang sering di-download oleh pengguna OpenSolaris. Klik link paket untuk menginstal paket-paket."
 
-#: package-manager.xml.in.nolegal:73(para) 
+#: package-manager.xml.in.nolegal:72(para) 
 msgid "The Start Page also provides links to more information about the OpenSolaris project, subscribe to newsletters and join the OpenSolaris community."
 msgstr "Halaman Awal juga menyediakan link untuk informasi lebih lanjut tentang proyek OpenSolaris, berlangganan newsletter dan bergabung dengan komunitas OpenSolaris."
 
-#: package-manager.xml.in.nolegal:74(para) 
+#: package-manager.xml.in.nolegal:73(para) 
 msgid "To close the Start Page and see the list of packages in the selected publisher, perform any of the following actions in the main window of the Package Manager:"
-msgstr "To close the Start Page and see the list of packages in the selected publisher, perform any of the following actions in the main window of the Package Manager:"
+msgstr "Untuk menutup Halaman Awal dan melihat daftar paket-paket yang dipilih penerbit, melakukan salah satu tindakan berikut dalam jendela utama Pengelola Paket:"
 
-#: package-manager.xml.in.nolegal:75(para) 
+#: package-manager.xml.in.nolegal:74(para) 
 msgid "Select a package category"
-msgstr "Select a package category"
+msgstr "Pilih kategori paket"
 
-#: package-manager.xml.in.nolegal:77(para) 
+#: package-manager.xml.in.nolegal:76(para) 
 msgid "Change the <emphasis role=\"strong\">View</emphasis> drop-down menu"
-msgstr "Change the <emphasis role=\"strong\">View</emphasis> drop-down menu"
+msgstr "Mengubah <emphasis role=\"strong\">View</emphasis> drop-down menu"
 
-#: package-manager.xml.in.nolegal:79(para) 
+#: package-manager.xml.in.nolegal:78(para) 
 msgid "Perform a search"
-msgstr "Perform a search"
+msgstr "Melakukan pencarian"
 
-#: package-manager.xml.in.nolegal:81(para) 
+#: package-manager.xml.in.nolegal:80(para) 
 msgid "Change the publisher"
-msgstr "Change the publisher"
+msgstr "Mengubah penerbit"
+
+#: package-manager.xml.in.nolegal:83(para) 
+msgid "Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</guimenuitem></menuchoice> to return to the Start Page at anytime."
+msgstr "Memilih <menuchoice><guimenu>View</guimenu><guimenuitem>Halaman Awal</guimenuitem></menuchoice> untuk kembali ke Halaman Awal kapan saja."
 
 #: package-manager.xml.in.nolegal:84(para) 
-msgid "Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</guimenuitem></menuchoice> to return to the Start Page at anytime."
-msgstr "Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</guimenuitem></menuchoice> to return to the Start Page at anytime."
-
-#: package-manager.xml.in.nolegal:85(para) 
 msgid "See <xref linkend=\"edit-prefs\"/> to turn off the <emphasis role=\"strong\">initial display</emphasis> of the start page when the Package Manager starts."
-msgstr "See <xref linkend=\"edit-prefs\"/> to turn off the <emphasis role=\"strong\">initial display</emphasis> of the start page when the Package Manager starts."
+msgstr "Lihat <xref linkend=\"edit-prefs\"/> untuk menonaktifkan tampilan awal <emphasis role=\"strong\"> </emphasis> dari halaman awal saat Package Manager dimulai."
+
+#: package-manager.xml.in.nolegal:86(title) 
+msgid "About The Package Manager Window"
+msgstr "Tentang jendela Pengelola paket"
 
 #: package-manager.xml.in.nolegal:87(title) 
-msgid "About The Package Manager Window"
-msgstr "About The Package Manager Window"
-
-#: package-manager.xml.in.nolegal:88(title) 
 msgid "Package Manager Main View"
-msgstr "Package Manager Main View"
+msgstr "Tinjauan Utama Pengelola Paket"
 
-#: package-manager.xml.in.nolegal:92(para) 
+#: package-manager.xml.in.nolegal:91(para) 
 msgid "The main window of the Package Manager consists of the following elements :"
-msgstr "The main window of the Package Manager consists of the following elements :"
+msgstr "Jendela utama Pengelola Paket terdiri dari unsur-unsur berikut:"
 
-#: package-manager.xml.in.nolegal:93(emphasis) 
+#: package-manager.xml.in.nolegal:92(emphasis) 
 msgid "Menubar"
 msgstr "Menubar"
 
-#: package-manager.xml.in.nolegal:94(para) 
+#: package-manager.xml.in.nolegal:93(para) 
 msgid "The menubar contains the menus and sub-menus required to perform all of the commands related to the Package Manager."
-msgstr "The menubar contains the menus and sub-menus required to perform all of the commands related to the Package Manager."
+msgstr "The menu berisi menu dan sub-menu yang diperlukan untuk menjalankan semua perintah yang berkaitan dengan Pengelola paket."
 
-#: package-manager.xml.in.nolegal:98(emphasis) 
+#: package-manager.xml.in.nolegal:97(emphasis) 
 msgid "Toolbar"
 msgstr "Toolbar"
 
-#: package-manager.xml.in.nolegal:99(para) 
+#: package-manager.xml.in.nolegal:98(para) 
 msgid "The toolbar contains the icons for a subset of the commands that can be performed by using the menus on the menubar. A <emphasis role=\"strong\">Search</emphasis> field is also located on the toolbar. You can perform the following actions from the toolbar :"
-msgstr "The toolbar contains the icons for a subset of the commands that can be performed by using the menus on the menubar. A <emphasis role=\"strong\">Search</emphasis> field is also located on the toolbar. You can perform the following actions from the toolbar :"
+msgstr "Toolbar berisi ikon untuk subset dari perintah-perintah yang dapat dilakukan dengan menggunakan menu di menubar. Sebuah <emphasis role=\"strong\"> Search </emphasis> field juga terletak pada toolbar. Anda dapat melakukan tindakan berikut ini dari toolbar:"
 
-#: package-manager.xml.in.nolegal:100(para) 
+#: package-manager.xml.in.nolegal:99(para) 
 msgid "<emphasis role=\"strong\">Updates</emphasis> – Click <emphasis role=\"strong\">Updates</emphasis> to check for and install the latest updates."
-msgstr "<emphasis role=\"strong\">Updates</emphasis> – Click <emphasis role=\"strong\">Updates</emphasis> to check for and install the latest updates."
+msgstr "<emphasis role=\"strong\"> Pembaruan </emphasis> - Klik <emphasis role=\"strong\"> Pembaruan </emphasis> untuk memeriksa dan menginstal update terbaru."
 
-#: package-manager.xml.in.nolegal:102(para) 
+#: package-manager.xml.in.nolegal:101(para) 
 msgid "<emphasis role=\"strong\">Install/Update</emphasis> – Select a package and click <emphasis role=\"strong\">Install/Update</emphasis> to install or update a package."
-msgstr "<emphasis role=\"strong\">Install/Update</emphasis> – Select a package and click <emphasis role=\"strong\">Install/Update</emphasis> to install or update a package."
+msgstr "<emphasis role=\"strong\">Install/Update</emphasis> – Pilih paket dan klik <emphasis role=\"strong\">Install/Update</emphasis> untuk menginstall atau perbarui paket."
 
-#: package-manager.xml.in.nolegal:104(para) 
+#: package-manager.xml.in.nolegal:103(para) 
 msgid "<emphasis role=\"strong\">Refresh</emphasis> – Click <emphasis role=\"strong\">Refresh</emphasis> to reload the list of packages."
-msgstr "<emphasis role=\"strong\">Refresh</emphasis> – Click <emphasis role=\"strong\">Refresh</emphasis> to reload the list of packages."
+msgstr "<emphasis role=\"strong\">Refresh</emphasis> – Klik <emphasis role=\"strong\">Refresh</emphasis> untuk mengisi daftar paket."
 
-#: package-manager.xml.in.nolegal:106(para) 
+#: package-manager.xml.in.nolegal:105(para) 
 msgid "<emphasis role=\"strong\">Remove</emphasis> – Select a package and click <emphasis role=\"strong\">Remove</emphasis> to remove a package."
-msgstr "<emphasis role=\"strong\">Remove</emphasis> – Select a package and click <emphasis role=\"strong\">Remove</emphasis> to remove a package."
+msgstr "<emphasis role=\"strong\"> Hapus </emphasis> - Pilih sebuah paket dan klik <emphasis role=\"strong\"> Hapus </emphasis> untuk menghapus sebuah paket."
 
-#: package-manager.xml.in.nolegal:108(para) 
+#: package-manager.xml.in.nolegal:107(para) 
 msgid "<emphasis role=\"strong\">Search for a Package</emphasis> – Type the name or description of a package in the <emphasis role=\"strong\">Search</emphasis> field to search for a package. See the <xref linkend=\"search-pkg\"/> section for examples on how to search for a package."
-msgstr "<emphasis role=\"strong\">Search for a Package</emphasis> – Type the name or description of a package in the <emphasis role=\"strong\">Search</emphasis> field to search for a package. See the <xref linkend=\"search-pkg\"/> section for examples on how to search for a package."
+msgstr "<emphasis role=\"strong\">pencarian Paket </emphasis> - Ketik nama atau deskripsi suatu paket dalam <emphasis role=\"strong\"> mencari </ penekanan> laman untuk mencari sebuah paket . Lihat bagian untuk <xref linkend=\"search-pkg\"/> contoh tentang bagaimana untuk mencari sebuah paket."
 
-#: package-manager.xml.in.nolegal:113(emphasis) 
+#: package-manager.xml.in.nolegal:112(emphasis) 
 msgid "Publisher Drop-Down Menu"
-msgstr "Publisher Drop-Down Menu"
+msgstr "Menu Drop-Down Penerbit"
 
-#: package-manager.xml.in.nolegal:114(para) 
+#: package-manager.xml.in.nolegal:113(para) 
 msgid "The list of available publishers is shown in the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu. Users can perform the following tasks from the publisher drop-down menu :"
-msgstr "The list of available publishers is shown in the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu. Users can perform the following tasks from the publisher drop-down menu :"
+msgstr "Daftar penerbit yang tersedia ditampilkan dalam <emphasis role=\"strong\"> Penerbit </emphasis> drop-down. Pengguna dapat melakukan tugas-tugas berikut dari penerbit menu drop-down:"
 
-#: package-manager.xml.in.nolegal:115(emphasis) 
+#: package-manager.xml.in.nolegal:114(emphasis) 
 msgid "Select a publisher"
-msgstr "Select a publisher"
+msgstr "Pilih Penerbit"
 
-#: package-manager.xml.in.nolegal:117(emphasis) 
+#: package-manager.xml.in.nolegal:116(emphasis) 
 msgid "View the list of packages installed from all publishers"
-msgstr "View the list of packages installed from all publishers"
+msgstr "Melihat daftar paket yang diinstal dari semua penerbit"
 
-#: package-manager.xml.in.nolegal:119(emphasis) 
+#: package-manager.xml.in.nolegal:118(emphasis) 
 msgid "Search for package across all publishers"
-msgstr "Search for package across all publishers"
+msgstr "Pencarian untuk paket di semua penerbit"
 
-#: package-manager.xml.in.nolegal:121(emphasis) 
+#: package-manager.xml.in.nolegal:120(emphasis) 
 msgid "Add a publisher"
-msgstr "Add a publisher"
+msgstr "Menambahkan penerbit"
 
-#: package-manager.xml.in.nolegal:126(emphasis) 
+#: package-manager.xml.in.nolegal:125(emphasis) 
 msgid "List of Packages by Category"
 msgstr "Daftar paket berdasarkan kategori"
 
-#: package-manager.xml.in.nolegal:127(para) 
+#: package-manager.xml.in.nolegal:126(para) 
 msgid "You can browse the available packages by category in the left hand side panel. Click on a category to see the sub-categories of packages available. There are six main categories that are displayed in the Package Manager:"
-msgstr "You can browse the available packages by category in the left hand side panel. Click on a category to see the sub-categories of packages available. There are six main categories that are displayed in the Package Manager:"
+msgstr "Anda dapat menelusuri paket yang tersedia menurut kategori di sisi kiri panel. Klik pada kategori untuk melihat sub-kategori dari paket yang tersedia. Ada enam kategori utama yang ditampilkan dalam Pengelola Paket:"
 
-#: package-manager.xml.in.nolegal:128(emphasis) 
+#: package-manager.xml.in.nolegal:127(emphasis) 
 msgid "Applications"
-msgstr "Applications"
+msgstr "Aplikasi"
 
-#: package-manager.xml.in.nolegal:130(emphasis) 
+#: package-manager.xml.in.nolegal:129(emphasis) 
 msgid "Desktop (GNOME)"
 msgstr "Desktop (GNOME)"
 
-#: package-manager.xml.in.nolegal:132(emphasis) 
+#: package-manager.xml.in.nolegal:131(emphasis) 
 msgid "Development"
-msgstr "Development"
+msgstr "Pengembangan"
 
-#: package-manager.xml.in.nolegal:134(emphasis) 
+#: package-manager.xml.in.nolegal:133(emphasis) 
 msgid "Drivers"
-msgstr "Drivers"
+msgstr "Driver"
 
-#: package-manager.xml.in.nolegal:136(emphasis) 
+#: package-manager.xml.in.nolegal:135(emphasis) 
 msgid "System"
-msgstr "System"
+msgstr "Sistem"
 
-#: package-manager.xml.in.nolegal:138(emphasis) 
+#: package-manager.xml.in.nolegal:137(emphasis) 
 msgid "Web Services"
-msgstr "Web Services"
+msgstr "Web Servis"
 
-#: package-manager.xml.in.nolegal:143(emphasis) 
+#: package-manager.xml.in.nolegal:142(emphasis) 
 msgid "Recent Searches"
-msgstr "Recent Searches"
+msgstr "Pencarian Terakhir"
 
-#: package-manager.xml.in.nolegal:144(para) 
+#: package-manager.xml.in.nolegal:143(para) 
 msgid "The Package Manager saves your recent package searches. Click the Recent Searches in the left hand side panel to view the packages you searched for recently."
-msgstr "The Package Manager saves your recent package searches. Click the Recent Searches in the left hand side panel to view the packages you searched for recently."
+msgstr "Pengelola Paket ini akan menyimpan pencarian paket terakhir Anda. Pencarian Terakhir Klik di sisi kiri panel untuk melihat paket-paket yang anda cari baru-baru ini."
 
-#: package-manager.xml.in.nolegal:147(emphasis) 
+#: package-manager.xml.in.nolegal:146(emphasis) 
 msgid "List of Packages by Status"
 msgstr "Daftar paket berdasarkan status"
 
-#: package-manager.xml.in.nolegal:148(para) 
+#: package-manager.xml.in.nolegal:147(para) 
 msgid "The <emphasis role=\"strong\">View</emphasis> drop-down menu enables you to view package status with the following options :"
-msgstr "The <emphasis role=\"strong\">View</emphasis> drop-down menu enables you to view package status with the following options :"
+msgstr "<emphasis role=\"strong\">Lihat</emphasis> drop-down menu memungkinkan Anda untuk melihat status paket dengan pilihan berikut:"
 
-#: package-manager.xml.in.nolegal:149(para) 
+#: package-manager.xml.in.nolegal:148(para) 
 msgid "<emphasis role=\"strong\">All Packages</emphasis> – Shows the list of all packages available within the current publisher."
-msgstr "<emphasis role=\"strong\">All Packages</emphasis> – Shows the list of all packages available within the current publisher."
+msgstr "<emphasis role=\"strong\">Semua Paket</emphasis> – Menampilkan daftar semua paket yang tersedia dalam penerbit saat ini."
 
-#: package-manager.xml.in.nolegal:151(para) 
+#: package-manager.xml.in.nolegal:150(para) 
 msgid "<emphasis role=\"strong\">Installed Packages</emphasis> – Shows the list of packages installed within the current publisher on your system."
-msgstr "<emphasis role=\"strong\">Installed Packages</emphasis> – Shows the list of packages installed within the current publisher on your system."
+msgstr "<emphasis role=\"strong\">Paket Terinstal</emphasis> – Menampilkan daftar paket-paket yang diinstal di dalam penerbit saat ini pada sistem Anda."
 
-#: package-manager.xml.in.nolegal:153(para) 
+#: package-manager.xml.in.nolegal:152(para) 
 msgid "<emphasis role=\"strong\">Updates</emphasis> — Shows the list of packages that have newer versions available within the current publisher."
-msgstr "<emphasis role=\"strong\">Updates</emphasis> — Shows the list of packages that have newer versions available within the current publisher."
+msgstr "<emphasis role=\"strong\">Pembaruan</emphasis> — Menampilkan daftar paket yang memiliki versi yang lebih baru yang tersedia dalam penerbit saat ini."
 
-#: package-manager.xml.in.nolegal:155(para) 
+#: package-manager.xml.in.nolegal:154(para) 
 msgid "<emphasis role=\"strong\">Not Installed Packages</emphasis> – Shows the list of packages that are not installed, but are available in the currently selected publisher."
-msgstr "<emphasis role=\"strong\">Not Installed Packages</emphasis> – Shows the list of packages that are not installed, but are available in the currently selected publisher."
+msgstr "<emphasis role=\"strong\">Paket Tidak Terinstal</emphasis> – Menampilkan daftar paket yang tidak diinstal, tetapi tersedia di penerbit yang sedang dipilih."
 
-#: package-manager.xml.in.nolegal:157(para) 
+#: package-manager.xml.in.nolegal:156(para) 
 msgid "<emphasis role=\"strong\">Selected Packages</emphasis> – Shows the list of packages that you have selected."
-msgstr "<emphasis role=\"strong\">Selected Packages</emphasis> – Shows the list of packages that you have selected."
+msgstr "<emphasis role=\"strong\">Paket Dipilih</emphasis> – Menampilkan daftar paket yang Anda pilih."
 
-#: package-manager.xml.in.nolegal:162(emphasis) 
+#: package-manager.xml.in.nolegal:161(emphasis) 
 msgid "Package Name, Status, and Description"
-msgstr "Package Name, Status, and Description"
+msgstr "Nama Paket, Status, dan Deskripsi"
+
+#: package-manager.xml.in.nolegal:162(para) 
+msgid "The list of packages in the selected category, a brief description, and their status are displayed in here."
+msgstr "Daftar paket dalam kategori yang dipilih, penjelasan singkat, dan status akan ditampilkan di sini."
 
 #: package-manager.xml.in.nolegal:163(para) 
-msgid "The list of packages in the selected category, a brief description, and their status are displayed in here."
-msgstr "The list of packages in the selected category, a brief description, and their status are displayed in here."
+msgid "The Publisher name is also displayed here in the following instances :"
+msgstr "Nama Penerbit juga ditampilkan di sini dalam contoh berikut:"
 
 #: package-manager.xml.in.nolegal:164(para) 
-msgid "The Publisher name is also displayed here in the following instances :"
-msgstr "The Publisher name is also displayed here in the following instances :"
-
-#: package-manager.xml.in.nolegal:165(para) 
 msgid "When the <emphasis role=\"strong\">Pubisher</emphasis> drop-down menu is set to All Publishers (Installed)"
-msgstr "When the <emphasis role=\"strong\">Pubisher</emphasis> drop-down menu is set to All Publishers (Installed)"
+msgstr "Ketika <emphasis role=\"strong\">Penerbit</emphasis> drop-down menu diset ke Semua Penerbit (Terinstal)"
 
-#: package-manager.xml.in.nolegal:167(para) 
+#: package-manager.xml.in.nolegal:166(para) 
 msgid "When search results are displayed for the All Publishers (Search) option"
-msgstr "When search results are displayed for the All Publishers (Search) option"
+msgstr "Bila hasil pencarian ditampilkan untuk opsi Semua Penerbit (Pencarian)"
 
-#: package-manager.xml.in.nolegal:169(para) 
+#: package-manager.xml.in.nolegal:168(para) 
 msgid "When a recent search result is displayed"
-msgstr "When a recent search result is displayed"
+msgstr "Ketika baru-baru ini hasil pencarian ditampilkan"
 
-#: package-manager.xml.in.nolegal:174(emphasis) 
+#: package-manager.xml.in.nolegal:173(emphasis) 
 msgid "Package Details"
 msgstr "Keterangan lengkap paket"
 
-#: package-manager.xml.in.nolegal:175(para) 
+#: package-manager.xml.in.nolegal:174(para) 
 msgid "Click a package name to select it. Details of the selected package, such as name, version, file dependencies, and license are displayed in this window."
 msgstr "Klik pada sebuah paket untuk memilihnya. Keterangan lengkap dari paket yang telah dipilih seperti nama, versi, file yang harus didapatkan terlebih dahulu dan lisensi ditampilkan pada layar ini."
 
-#: package-manager.xml.in.nolegal:181(title) 
+#: package-manager.xml.in.nolegal:180(title) 
 msgid "Package Manager Settings"
-msgstr "Package Manager Settings"
+msgstr "Pengaturan Pengelola Paket"
 
-#: package-manager.xml.in.nolegal:182(para) 
+#: package-manager.xml.in.nolegal:181(para) 
 msgid "Use the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> to change the Package Manager settings. The following sections discuss the preferences that can be changed by the user."
-msgstr "Use the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> to change the Package Manager settings. The following sections discuss the preferences that can be changed by the user."
+msgstr "Gunakan <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferensi</guimenuitem></menuchoice> untuk mengubah pengaturan Pengelola Paket. Bagian berikut membahas preferensi yang dapat diubah oleh pengguna."
 
-#: package-manager.xml.in.nolegal:183(title) 
+#: package-manager.xml.in.nolegal:182(title) 
 msgid "Start Page Preferences"
-msgstr "Start Page Preferences"
+msgstr "Memulai Pengelolaan Halaman"
+
+#: package-manager.xml.in.nolegal:183(para) 
+msgid "A Start Page is displayed in the main window of the Package Manager when the application is started. The Start Page provides links to <ulink url=\"http://opensolaris.com\">opensolaris.com</ulink> page where you can get more information about OpenSolaris, subscribe to newsletters and join the OpenSolaris community."
+msgstr "Sebuah Halaman Awal ditampilkan dalam jendela utama Pengelola Paket pada saat aplikasi diaktifkan. Halaman Awal menyediakan link ke halaman<ulink url=\"http://opensolaris.com\">opensolaris.com</ulink> di mana Anda bisa mendapatkan informasi lebih lanjut mengenai OpenSolaris, berlangganan newsletter dan bergabung dengan komunitas OpenSolaris."
 
 #: package-manager.xml.in.nolegal:184(para) 
-msgid "A Start Page is displayed in the main window of the Package Manager when the application is started. The Start Page provides links to <ulink url=\"http://opensolaris.com\">opensolaris.com</ulink> page where you can get more information about OpenSolaris, subscribe to newsletters and join the OpenSolaris community."
-msgstr "A Start Page is displayed in the main window of the Package Manager when the application is started. The Start Page provides links to <ulink url=\"http://opensolaris.com\">opensolaris.com</ulink> page where you can get more information about OpenSolaris, subscribe to newsletters and join the OpenSolaris community."
-
-#: package-manager.xml.in.nolegal:185(para) 
 msgid "You can choose to turn off this setting so this page is not displayed when Package Manager starts."
 msgstr "Anda bisa memilih untuk menonaktifkan pengaturan ini sehingga halaman ini tidak akan tampil ketika memulai aplikasi Package Manager."
 
-#: package-manager.xml.in.nolegal:186(para) 
+#: package-manager.xml.in.nolegal:185(para) 
 msgid "Select <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> from the main menu and uncheck the <emphasis role=\"strong\">Show Start Page on Startup</emphasis> to disable the Start Page. This dialog is checked by default."
-msgstr "Select <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> from the main menu and uncheck the <emphasis role=\"strong\">Show Start Page on Startup</emphasis> to disable the Start Page. This dialog is checked by default."
+msgstr "Pilih <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferensi</guimenuitem></menuchoice> pada menu utama dan hilangkan tanda centang <emphasis role=\"strong\">Tampilkan Halaman Awal pada Startup</emphasis> untuk menonaktifkan Halaman Awal. Dialog ini dicek secara default."
 
-#: package-manager.xml.in.nolegal:187(para) 
+#: package-manager.xml.in.nolegal:186(para) 
 msgid "Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</guimenuitem></menuchoice> from the main menu to go to the Start Page at anytime."
-msgstr "Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</guimenuitem></menuchoice> from the main menu to go to the Start Page at anytime."
+msgstr "Pilih <menuchoice><guimenu>Lihat</guimenu><guimenuitem>Halaman Awal</guimenuitem></menuchoice> dari menu utama untuk pergi ke Halaman Awal kapan saja."
 
-#: package-manager.xml.in.nolegal:189(title) 
+#: package-manager.xml.in.nolegal:188(title) 
 msgid "Exit Preferences"
-msgstr "Exit Preferences"
+msgstr "Keluar Preferensi"
+
+#: package-manager.xml.in.nolegal:189(para) 
+msgid "The Package Manager application can remember some of its current settings if the <emphasis role=\"strong\">Remember current state on exit</emphasis> option in the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> is checked."
+msgstr "Pengelola Paket dapat mengingat beberapa pengaturan saat ini jika pilihan<emphasis role=\"strong\">Ingat kondisi ini ketika keluar</emphasis> pada <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferensi</guimenuitem></menuchoice> dicentang."
 
 #: package-manager.xml.in.nolegal:190(para) 
-msgid "The Package Manager application can remember some of its current settings if the <emphasis role=\"strong\">Remember current state on exit</emphasis> option in the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> is checked."
-msgstr "The Package Manager application can remember some of its current settings if the <emphasis role=\"strong\">Remember current state on exit</emphasis> option in the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> is checked."
+msgid "The following settings are saved:"
+msgstr "Pengaturan berikut telah disimpan:"
 
 #: package-manager.xml.in.nolegal:191(para) 
-msgid "The following settings are saved:"
-msgstr "The following settings are saved:"
-
-#: package-manager.xml.in.nolegal:192(para) 
 msgid "<emphasis role=\"strong\">Vertical separators</emphasis> – The size of the columns in the main window the Package Manager"
-msgstr "<emphasis role=\"strong\">Vertical separators</emphasis> – The size of the columns in the main window the Package Manager"
+msgstr "<emphasis role=\"strong\">Pemisah Vertikal</emphasis> – Ukuran kolom pada jendela utama Pengelola Paket"
 
-#: package-manager.xml.in.nolegal:194(para) 
+#: package-manager.xml.in.nolegal:193(para) 
 msgid "<emphasis role=\"strong\">Window size</emphasis> – The size of the Package Manager window"
-msgstr "<emphasis role=\"strong\">Window size</emphasis> – The size of the Package Manager window"
+msgstr "<emphasis role=\"strong\">Ukuran Jendela</emphasis> – Ukuran dari jendela Pengelola Paket"
 
-#: package-manager.xml.in.nolegal:196(para) 
+#: package-manager.xml.in.nolegal:195(para) 
 msgid "<emphasis role=\"strong\">Current publisher</emphasis> – The publisher that is selected when the Package Manager is closed"
-msgstr "<emphasis role=\"strong\">Current publisher</emphasis> – The publisher that is selected when the Package Manager is closed"
+msgstr "<emphasis role=\"strong\">Penerbit saat ini</emphasis> – Penerbit yang dipilih ketika Pengelola Paket ditutup."
 
-#: package-manager.xml.in.nolegal:200(title) 
+#: package-manager.xml.in.nolegal:199(title) 
 msgid "Confirmation Dialog Preferences"
-msgstr "Confirmation Dialog Preferences"
+msgstr "Preferensi Dialog Konfirmasi"
 
-#: package-manager.xml.in.nolegal:201(para) 
+#: package-manager.xml.in.nolegal:200(para) 
 msgid "When a package is selected for installation, update, or removal, a confirmation dialog is displayed that displays the list of packages and the action to be performed. Under the <emphasis role=\"strong\">Show Confirmation Dialog</emphasis> uncheck <emphasis role=\"strong\">On Updates</emphasis>, <emphasis role=\"strong\">On Package Install/Update</emphasis>, and <emphasis role=\"strong\">On Package Remove</emphasis> to turn these settings off."
-msgstr "When a package is selected for installation, update, or removal, a confirmation dialog is displayed that displays the list of packages and the action to be performed. Under the <emphasis role=\"strong\">Show Confirmation Dialog</emphasis> uncheck <emphasis role=\"strong\">On Updates</emphasis>, <emphasis role=\"strong\">On Package Install/Update</emphasis>, and <emphasis role=\"strong\">On Package Remove</emphasis> to turn these settings off."
+msgstr "Ketika sebuah paket yang dipilih untuk instalasi, pembaruan, atau penghapusan, sebuah dialog konfirmasi akan ditampilkan yang menampilkan daftar paket dan tindakan yang akan dilakukan. Di bawah <emphasis role=\"strong\">Lihat Dialog Konfirmasi</emphasis> Hilangkan tanda centang <emphasis role=\"strong\">pada Pembaruan</emphasis>, <emphasis role=\"strong\">pada Paket Install/Pembaruan</emphasis>, dan <emphasis role=\"strong\">pada Hapus Paket</emphasis> untuk menonaktifkan pengaturan ini."
 
-#: package-manager.xml.in.nolegal:204(title) 
+#: package-manager.xml.in.nolegal:203(title) 
 msgid "Working With Packages"
 msgstr "Bekerja dengan paket"
 
-#: package-manager.xml.in.nolegal:205(title) 
+#: package-manager.xml.in.nolegal:204(title) 
 msgid "Install a Package"
 msgstr "Menginstall sebuah paket"
 
-#: package-manager.xml.in.nolegal:206(para) 
+#: package-manager.xml.in.nolegal:205(para) 
 msgid "The list of packages and their status is displayed in the main window of the Package Manager. Perform the following steps to install a package:"
-msgstr "The list of packages and their status is displayed in the main window of the Package Manager. Perform the following steps to install a package:"
+msgstr "Daftar paket dan status akan ditampilkan dalam jendela utama Pengelola Paket. Lakukan langkah-langkah berikut untuk menginstal sebuah paket:"
 
-#: package-manager.xml.in.nolegal:207(para) 
+#: package-manager.xml.in.nolegal:206(para) 
 msgid "Check the box next to the package or packages to select it. Double-clicking the package also selects the package."
-msgstr "Check the box next to the package or packages to select it. Double-clicking the package also selects the package."
+msgstr "Centang kotak di sebelah paket untuk memilihnya. Klik ganda paket juga bisa dilakukan memilih paket."
+
+#: package-manager.xml.in.nolegal:208(para) 
+msgid "Click <guibutton>Install/Update</guibutton> to start the package installation process."
+msgstr "Klik <guibutton>Instal/Pembaruan</guibutton> untuk memulai proses instalasi."
 
 #: package-manager.xml.in.nolegal:209(para) 
-msgid "Click <guibutton>Install/Update</guibutton> to start the package installation process."
-msgstr "Click <guibutton>Install/Update</guibutton> to start the package installation process."
-
-#: package-manager.xml.in.nolegal:210(para) 
 msgid "You can also choose <menuchoice><guimenu>Package</guimenu><guimenuitem>Install/Update</guimenuitem></menuchoice> to start the package installation process."
-msgstr "You can also choose <menuchoice><guimenu>Package</guimenu><guimenuitem>Install/Update</guimenuitem></menuchoice> to start the package installation process."
+msgstr "Anda juga dapat memilih <menuchoice><guimenu>Paket</guimenu><guimenuitem>Instal/Pembaruan</guimenuitem></menuchoice> untuk memulai proses instalasi."
 
-#: package-manager.xml.in.nolegal:212(para) 
+#: package-manager.xml.in.nolegal:211(para) 
 msgid "Click <guilabel>Details</guilabel> to view the installation details or <guibutton>Cancel</guibutton> to cancel the package installation."
-msgstr "Click <guilabel>Details</guilabel> to view the installation details or <guibutton>Cancel</guibutton> to cancel the package installation."
+msgstr "Klik <guilabel>Rincian</guilabel> untuk melihat rincian instalasi atau <guibutton>Batal</guibutton> untuk membatalkan instalasi paket."
 
-#: package-manager.xml.in.nolegal:214(para) 
+#: package-manager.xml.in.nolegal:213(para) 
 msgid "After the installation has completed, click <guibutton>Close</guibutton>."
-msgstr "After the installation has completed, click <guibutton>Close</guibutton>."
+msgstr "Setelah instalasi selesai, Klik <guibutton>Tutup</guibutton>."
 
-#: package-manager.xml.in.nolegal:217(title) 
+#: package-manager.xml.in.nolegal:216(title) 
 msgid "Installation Error"
-msgstr "Installation Error"
+msgstr "Terjadi Kesalahan Instalasi"
 
-#: package-manager.xml.in.nolegal:218(para) 
+#: package-manager.xml.in.nolegal:217(para) 
 msgid "If an error occurs during package installation, an error dialog with the error message is displayed along with the reason for failure. Click <guibutton>Close</guibutton> to close the error dialog."
-msgstr "If an error occurs during package installation, an error dialog with the error message is displayed along with the reason for failure. Click <guibutton>Close</guibutton> to close the error dialog."
+msgstr "Jika kesalahan terjadi saat instalasi paket, ada dialog kesalahan yang menampilkan alasan kegagalan. Klik<guibutton>Tutup</guibutton> untup menutup dialog kesalahan."
 
-#: package-manager.xml.in.nolegal:221(title) 
+#: package-manager.xml.in.nolegal:220(title) 
 msgid "Remove a Package"
-msgstr "Remove a Package"
+msgstr "Hapus sebuah Paket"
+
+#: package-manager.xml.in.nolegal:221(para) 
+msgid "Perform the following steps to remove a package:"
+msgstr "Lakukan langkah berikut untuk membuang sebuah paket:"
 
 #: package-manager.xml.in.nolegal:222(para) 
-msgid "Perform the following steps to remove a package:"
-msgstr "Perform the following steps to remove a package:"
-
-#: package-manager.xml.in.nolegal:223(para) 
 msgid "Check the box next to a package to select it. Double-clicking the package also selects the package."
-msgstr "Check the box next to a package to select it. Double-clicking the package also selects the package."
+msgstr "Centang kotak di sebelah paket untuk memilihnya. Klik ganda paket juga bisa dilakukan memilih paket."
+
+#: package-manager.xml.in.nolegal:224(para) 
+msgid "Click <guibutton>Remove</guibutton> to start the package uninstallation process."
+msgstr "Klik <guibutton>Hapus</guibutton> untuk memulai proses uninstall."
 
 #: package-manager.xml.in.nolegal:225(para) 
-msgid "Click <guibutton>Remove</guibutton> to start the package uninstallation process."
-msgstr "Click <guibutton>Remove</guibutton> to start the package uninstallation process."
-
-#: package-manager.xml.in.nolegal:226(para) 
 msgid "You can also choose <menuchoice><guimenu>Package</guimenu><guimenuitem>Remove</guimenuitem></menuchoice> to remove a package."
-msgstr "You can also choose <menuchoice><guimenu>Package</guimenu><guimenuitem>Remove</guimenuitem></menuchoice> to remove a package."
+msgstr "Anda juga dapat memilih <menuchoice><guimenu>Paket</guimenu><guimenuitem>Hapus</guimenuitem></menuchoice> untuk menghapus paket."
 
-#: package-manager.xml.in.nolegal:228(para) 
+#: package-manager.xml.in.nolegal:227(para) 
 msgid "Review the packages to be removed and the package dependencies details in the <emphasis role=\"strong\">Remove Confirmation</emphasis> dialog."
-msgstr "Review the packages to be removed and the package dependencies details in the <emphasis role=\"strong\">Remove Confirmation</emphasis> dialog."
+msgstr "Tinjau ulang paket-paket yang akan dihapus dan detail dependensi paket pada dialog <emphasis role=\"strong\">Hapus Confirmation</emphasis>."
 
-#: package-manager.xml.in.nolegal:230(para) 
+#: package-manager.xml.in.nolegal:229(para) 
 msgid "Click <guibutton>Proceed</guibutton> to start removing the packages or <guibutton>Cancel</guibutton> to cancel the process."
-msgstr "Click <guibutton>Proceed</guibutton> to start removing the packages or <guibutton>Cancel</guibutton> to cancel the process."
+msgstr "Klik <guibutton>Lanjut</guibutton> untuk memulai menghapus paket atau <guibutton>Batal</guibutton> untuk membatalkan proses."
 
-#: package-manager.xml.in.nolegal:234(title) 
+#: package-manager.xml.in.nolegal:233(title) 
 msgid "Search for a Package"
-msgstr "Search for a Package"
+msgstr "Pencarian untuk sebuah paket"
+
+#: package-manager.xml.in.nolegal:234(para) 
+msgid "You can search for a package in the following ways :"
+msgstr "Anda bisa mencari paket dengan cara berikut ini:"
 
 #: package-manager.xml.in.nolegal:235(para) 
-msgid "You can search for a package in the following ways :"
-msgstr "You can search for a package in the following ways :"
+msgid "<emphasis role=\"strong\">Search the current publisher</emphasis> – Search for a package in the publisher currently selected in the <emphasis role=\"strong\"> Publisher</emphasis> drop-down menu. If you do not know the status of the package you are searching for, set the <emphasis role=\"strong\">View</emphasis> drop-down menu to <emphasis role=\"strong\">All Packages</emphasis>."
+msgstr "<emphasis role=\"strong\">Cari penerbit saat ini</emphasis> – Mencari paket penerbit saat ini dipilih pada drop-down menu <emphasis role=\"strong\"> Penerbit</emphasis>. Jika Anda tidak mengetahui status dari paket yang Anda cari, atur <emphasis role=\"strong\">Lihat</emphasis> drop-down menu ke <emphasis role=\"strong\">Semua Paket</emphasis>."
 
 #: package-manager.xml.in.nolegal:236(para) 
-msgid "<emphasis role=\"strong\">Search the current publisher</emphasis> – Search for a package in the publisher currently selected in the <emphasis role=\"strong\"> Publisher</emphasis> drop-down menu. If you do not know the status of the package you are searching for, set the <emphasis role=\"strong\">View</emphasis> drop-down menu to <emphasis role=\"strong\">All Packages</emphasis>."
-msgstr "<emphasis role=\"strong\">Search the current publisher</emphasis> – Search for a package in the publisher currently selected in the <emphasis role=\"strong\"> Publisher</emphasis> drop-down menu. If you do not know the status of the package you are searching for, set the <emphasis role=\"strong\">View</emphasis> drop-down menu to <emphasis role=\"strong\">All Packages</emphasis>."
+msgid "Enter a description, or a partial name in the <emphasis role=\"strong\">Search</emphasis> field. For example, you might type one of the following search terms to search for <filename>SUNWgnome-games</filename> :"
+msgstr "Masukkan deskripsi, atau nama parsial pada field <emphasis role=\"strong\">Cari</emphasis>. Sebagai contoh, anda mungkin menuliskan pada pencarian untuk mencari <filename>SUNWgnome-games</filename> :"
 
 #: package-manager.xml.in.nolegal:237(para) 
-msgid "Enter a description, or a partial name in the <emphasis role=\"strong\">Search</emphasis> field. For example, you might type one of the following search terms to search for <filename>SUNWgnome-games</filename> :"
-msgstr "Enter a description, or a partial name in the <emphasis role=\"strong\">Search</emphasis> field. For example, you might type one of the following search terms to search for <filename>SUNWgnome-games</filename> :"
-
-#: package-manager.xml.in.nolegal:238(para) 
 msgid "SUNWgames"
 msgstr "SUNWgames"
 
-#: package-manager.xml.in.nolegal:240(para) 
+#: package-manager.xml.in.nolegal:239(para) 
 msgid "games"
-msgstr "games"
+msgstr "permainan"
 
-#: package-manager.xml.in.nolegal:242(para) 
+#: package-manager.xml.in.nolegal:241(para) 
 msgid "GNOME-games"
 msgstr "GNOME-games"
 
-#: package-manager.xml.in.nolegal:245(para) 
+#: package-manager.xml.in.nolegal:244(para) 
 msgid "To search for SunStudio compilers, you might type one of the following terms:"
-msgstr "To search for SunStudio compilers, you might type one of the following terms:"
+msgstr "Untuk mencari SunStudio kompiler, Anda mungkin menuliskan sebagai berikut:"
 
-#: package-manager.xml.in.nolegal:246(para) 
+#: package-manager.xml.in.nolegal:245(para) 
 msgid "compiler"
-msgstr "compiler"
+msgstr "kompiler"
 
-#: package-manager.xml.in.nolegal:248(para) 
+#: package-manager.xml.in.nolegal:247(para) 
 msgid "tools"
 msgstr "tools"
 
-#: package-manager.xml.in.nolegal:252(para) 
+#: package-manager.xml.in.nolegal:251(para) 
 msgid "<emphasis role=\"strong\">Search all publishers</emphasis> – Choose <emphasis role=\"strong\">All Publishers(Search)</emphasis> from the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu to search for a package across all configured publishers. If you do not know the status of the package you are searching for, set the <emphasis role=\"strong\">View</emphasis> drop-down menu to <emphasis role=\"strong\">All Packages</emphasis>."
-msgstr "<emphasis role=\"strong\">Search all publishers</emphasis> – Choose <emphasis role=\"strong\">All Publishers(Search)</emphasis> from the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu to search for a package across all configured publishers. If you do not know the status of the package you are searching for, set the <emphasis role=\"strong\">View</emphasis> drop-down menu to <emphasis role=\"strong\">All Packages</emphasis>."
+msgstr "<emphasis role=\"strong\">Mencari semua penerbit</emphasis> – Pilih <emphasis role=\"strong\">Semua Penerbit(Cari)</emphasis> dari <emphasis role=\"strong\">Penerbit</emphasis> drop-down menu ke pencarian paket untuk semua konfigurasi penerbit. Jika Anda tidak mengetahui status dari paket yang Anda cari, atur <emphasis role=\"strong\">Lihat</emphasis> drop-down menu ke <emphasis role=\"strong\">semua Paket</emphasis>."
+
+#: package-manager.xml.in.nolegal:252(para) 
+msgid "Type a description of the package in the <emphasis role=\"strong\">Search</emphasis> field. For example, the <filename>SUNWdiveintopython</filename> package is a book on Python programming. The description of the package contains the string <emphasis>book</emphasis>. To search for this package, you might then type one of the following terms:"
+msgstr "Tuliskan deskripsi paket pada field<emphasis role=\"strong\">Cari</emphasis> . Sebagai contoh, paket <filename>SUNWdiveintopython</filename> adalah buku pada Pemrograman Python. Deskripsi paket mengandung string <emphasis>buku</emphasis>. Untuk mencari paket ini, anda bisa menuliskan sebagai berikut:"
 
 #: package-manager.xml.in.nolegal:253(para) 
-msgid "Type a description of the package in the <emphasis role=\"strong\">Search</emphasis> field. For example, the <filename>SUNWdiveintopython</filename> package is a book on Python programming. The description of the package contains the string <emphasis>book</emphasis>. To search for this package, you might then type one of the following terms:"
-msgstr "Type a description of the package in the <emphasis role=\"strong\">Search</emphasis> field. For example, the <filename>SUNWdiveintopython</filename> package is a book on Python programming. The description of the package contains the string <emphasis>book</emphasis>. To search for this package, you might then type one of the following terms:"
-
-#: package-manager.xml.in.nolegal:254(para) 
 msgid "python"
-msgstr "python"
+msgstr "phyton"
 
-#: package-manager.xml.in.nolegal:256(para) 
+#: package-manager.xml.in.nolegal:255(para) 
 msgid "book"
-msgstr "book"
+msgstr "buku"
 
-#: package-manager.xml.in.nolegal:259(para) 
+#: package-manager.xml.in.nolegal:258(para) 
 msgid "If you searched for the term <emphasis>diveinto</emphasis> when searching for the <filename>SUNWdiveintopython</filename> package, the results will not be displayed as the term <emphasis>diveinto</emphasis> is not present as an independent, complete word in the package contents. However you will find the package using the <literal>*</literal> wild card. Hence, searching for the term <literal>diveinto*</literal> will display the <filename>SUNWdiveintopython</filename> package."
-msgstr "If you searched for the term <emphasis>diveinto</emphasis> when searching for the <filename>SUNWdiveintopython</filename> package, the results will not be displayed as the term <emphasis>diveinto</emphasis> is not present as an independent, complete word in the package contents. However you will find the package using the <literal>*</literal> wild card. Hence, searching for the term <literal>diveinto*</literal> will display the <filename>SUNWdiveintopython</filename> package."
+msgstr "Jika Anda mencari <emphasis>diveinto</emphasis> ketika sedang mencari paket <filename>SUNWdiveintopython</filename>, hasilnya tidak akan ditampilkan sebagai <emphasis>diveinto</emphasis> tidak ditampilkan secara independen, kata lengkap dengan konten paket. Bagaimanapun, anda akan menemukan paket menggunakan wildcard<literal>*</literal> . Pencarian <literal>diveinto*</literal> akan menampilkan paket <filename>SUNWdiveintopython</filename>."
 
-#: package-manager.xml.in.nolegal:263(para) 
+#: package-manager.xml.in.nolegal:262(para) 
 msgid "Use the submenus under the <menuchoice><guimenu>Edit</guimenu></menuchoice> menu to cut, copy, or paste text in the <emphasis role=\"strong\">Search</emphasis> field."
-msgstr "Use the submenus under the <menuchoice><guimenu>Edit</guimenu></menuchoice> menu to cut, copy, or paste text in the <emphasis role=\"strong\">Search</emphasis> field."
+msgstr "Gunakan submenu di bawah menu <menuchoice><guimenu>Ubah</guimenu></menuchoice> untuk cut, copy, atau paste teks pada field <emphasis role=\"strong\">Cari</emphasis> ."
 
-#: package-manager.xml.in.nolegal:265(para) 
+#: package-manager.xml.in.nolegal:264(para) 
 msgid "The following operators are supported for a package search:"
-msgstr "The following operators are supported for a package search:"
+msgstr "Operator berikut didukung untuk pencarian sebuah paket:"
 
-#: package-manager.xml.in.nolegal:266(emphasis) 
+#: package-manager.xml.in.nolegal:265(emphasis) 
 msgid "The AND operator"
-msgstr "The AND operator"
+msgstr "Operator AND"
 
-#: package-manager.xml.in.nolegal:267(para) 
+#: package-manager.xml.in.nolegal:266(para) 
 msgid "When the search term is separated by spaces or the AND operator, the Package Manager will search for packages containing <emphasis role=\"strong\">all</emphasis> the search terms."
-msgstr "When the search term is separated by spaces or the AND operator, the Package Manager will search for packages containing <emphasis role=\"strong\">all</emphasis> the search terms."
+msgstr "Ketika pencarian dipisahkan dengan spasi atau operator AND, the Paket Manager akan mencari paket yang berisi <emphasis role=\"strong\">semua</emphasis> pencarian."
 
-#: package-manager.xml.in.nolegal:270(emphasis) 
+#: package-manager.xml.in.nolegal:269(emphasis) 
 msgid "Double Quotes"
-msgstr "Double Quotes"
+msgstr "Tanda Petik Ganda"
 
-#: package-manager.xml.in.nolegal:271(para) 
+#: package-manager.xml.in.nolegal:270(para) 
 msgid "When a search term is placed within double quotes, the Package Manager will search for packages that <emphasis role=\"strong\">match the search term exactly</emphasis>."
-msgstr "When a search term is placed within double quotes, the Package Manager will search for packages that <emphasis role=\"strong\">match the search term exactly</emphasis>."
+msgstr "Ketika pencarian dilakukan dengan menggunakan tanda kutip ganda, Pengelola Paket akan mencari paket-paket yang <emphasis role=\"strong\">persis cocok dengan pencarian</emphasis>."
 
-#: package-manager.xml.in.nolegal:274(emphasis) 
+#: package-manager.xml.in.nolegal:273(emphasis) 
 msgid "Wildcard *"
 msgstr "Wildcard *"
 
-#: package-manager.xml.in.nolegal:275(para) 
+#: package-manager.xml.in.nolegal:274(para) 
 msgid "Including a wildcard in your search term enables you to search for partial package names. For example, when you enter <emphasis>boo*</emphasis> in your search term, the packages displayed could include <emphasis>boot</emphasis> and <emphasis>book</emphasis> in the package name and description."
-msgstr "Including a wildcard in your search term enables you to search for partial package names. For example, when you enter <emphasis>boo*</emphasis> in your search term, the packages displayed could include <emphasis>boot</emphasis> and <emphasis>book</emphasis> in the package name and description."
+msgstr "Termasuk wildcard pada istilah pencarian Anda memungkinkan Anda untuk mencari nama-nama paket yang parsial. Sebagai contoh, ketika Anda memasukkan <emphasis>boo*</emphasis> pada pencarian Anda, paket yang ditampilkan dapat termasuk <emphasis>boot</emphasis> dan <emphasis>book</emphasis> pada nama paket dan deskripsi."
 
-#: package-manager.xml.in.nolegal:276(para) 
+#: package-manager.xml.in.nolegal:275(para) 
 msgid "Wildcard searching can be slower than an exact match search or a search based on package description."
-msgstr "Wildcard searching can be slower than an exact match search or a search based on package description."
+msgstr "Wildcard mencari lebih lambat daripada pencocokan yang sama persis atau pencarian berdasarkan deskripsi paket."
 
-#: package-manager.xml.in.nolegal:280(emphasis) 
+#: package-manager.xml.in.nolegal:279(emphasis) 
 msgid "The OR operator"
-msgstr "The OR operator"
+msgstr "Operator OR"
 
-#: package-manager.xml.in.nolegal:281(para) 
+#: package-manager.xml.in.nolegal:280(para) 
 msgid "When a search term is separated by the OR operator, the Package Manager searches for packages that contain any of the search terms."
-msgstr "When a search term is separated by the OR operator, the Package Manager searches for packages that contain any of the search terms."
+msgstr "Ketika istilah pencarian dipisahkan oleh operator OR, Pengelola Paket mencari paket yang mengandung salah satu dari pencarian."
 
-#: package-manager.xml.in.nolegal:286(title) 
+#: package-manager.xml.in.nolegal:285(title) 
 msgid "Cancel Package Search"
-msgstr "Cancel Package Search"
+msgstr "Batalkan Pencarian Paket"
 
-#: package-manager.xml.in.nolegal:287(para) 
+#: package-manager.xml.in.nolegal:286(para) 
 msgid "If you want to cancel a search, use the Cancel Search icon at the bottom of the main window of the Package Manager. This icon is visible on the status bar only during a search operation."
-msgstr "If you want to cancel a search, use the Cancel Search icon at the bottom of the main window of the Package Manager. This icon is visible on the status bar only during a search operation."
+msgstr "Jika Anda ingin membatalkan pencarian, gunakan ikon Batalkan Pencarian di bagian bawah jendela utama Pengelola Paket. Ikon ini terlihat pada status bar hanya selama operasi pencarian."
 
-#: package-manager.xml.in.nolegal:289(title) 
+#: package-manager.xml.in.nolegal:288(title) 
 msgid "Update a Package"
-msgstr "Update a Package"
+msgstr "Perbarui sebuah Paket"
+
+#: package-manager.xml.in.nolegal:289(para) 
+msgid "Look for the Updates icon next to the installed package name. This icon indicates that updates are available for the package in the currently selected publisher. You can also choose one of the following views to display a list of packages that have updates available :"
+msgstr "Lihat ikon Pembaruan untuk nama paket yang terinstal. Ikon ini menunjukkan bahwa pembaruan tersedia untuk paket di penerbit yang sedang dipilih. Anda juga dapat memilih untuk menampilkan daftar paket yang memiliki update yang tersedia:"
 
 #: package-manager.xml.in.nolegal:290(para) 
-msgid "Look for the Updates icon next to the installed package name. This icon indicates that updates are available for the package in the currently selected publisher. You can also choose one of the following views to display a list of packages that have updates available :"
-msgstr "Look for the Updates icon next to the installed package name. This icon indicates that updates are available for the package in the currently selected publisher. You can also choose one of the following views to display a list of packages that have updates available :"
-
-#: package-manager.xml.in.nolegal:291(para) 
 msgid "Select the <menuchoice><guimenuitem>Updates</guimenuitem></menuchoice> option in the <emphasis role=\"strong\">View</emphasis> drop-down menu to list all packages that have updates available in the currently selected publisher."
-msgstr "Select the <menuchoice><guimenuitem>Updates</guimenuitem></menuchoice> option in the <emphasis role=\"strong\">View</emphasis> drop-down menu to list all packages that have updates available in the currently selected publisher."
+msgstr "Pilih opsi<menuchoice><guimenuitem>Perbarui</guimenuitem></menuchoice> pada drop-down menu<emphasis role=\"strong\">Lihat</emphasis> untuk menampilkan daftar semua paket yang memiliki update yang tersedia di penerbit yang sedang dipilih."
 
-#: package-manager.xml.in.nolegal:293(para) 
+#: package-manager.xml.in.nolegal:292(para) 
 msgid "Select the <menuchoice><guimenuitem>Updates</guimenuitem></menuchoice> option in the <emphasis role=\"strong\">View</emphasis> drop-down menu and the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> in the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu to list all packages that have updates available from all publishers."
-msgstr "Select the <menuchoice><guimenuitem>Updates</guimenuitem></menuchoice> option in the <emphasis role=\"strong\">View</emphasis> drop-down menu and the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> in the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu to list all packages that have updates available from all publishers."
+msgstr "Pilih opsi<menuchoice><guimenuitem>Perbarui</guimenuitem></menuchoice> pada drop-down menu <emphasis role=\"strong\">Lihat</emphasis> dan <emphasis role=\"strong\">Semua Penerbit (Terinstall)</emphasis> pada drop-down menu <emphasis role=\"strong\">Penerbit</emphasis> untuk menampilkan daftar semua paket yang memiliki update yang tersedia dari semua penerbit."
 
-#: package-manager.xml.in.nolegal:296(para) 
+#: package-manager.xml.in.nolegal:295(para) 
 msgid "Updating a package may fail sometimes, due to inherent dependencies of the package you have selected for installation or update. You may need to update all packages on your system to get the latest updates."
-msgstr "Updating a package may fail sometimes, due to inherent dependencies of the package you have selected for installation or update. You may need to update all packages on your system to get the latest updates."
+msgstr "Memperbarui sebuah paket mungkin mengakibatkan kegagalan, karena tergantung pada dependensi paket yang telah Anda pilih untuk instalasi atau pembaruan. Anda mungkin perlu memperbarui semua paket pada sistem anda untuk mendapatkan pembaruan terbaru."
 
-#: package-manager.xml.in.nolegal:298(para) 
+#: package-manager.xml.in.nolegal:297(para) 
 msgid "Select the package or packages you want to update and click <guibutton>Install/Update</guibutton> to install the latest version of the package. Use the <emphasis role=\"strong\">Updates</emphasis> icon on the toolbar to update all packages on your system."
-msgstr "Select the package or packages you want to update and click <guibutton>Install/Update</guibutton> to install the latest version of the package. Use the <emphasis role=\"strong\">Updates</emphasis> icon on the toolbar to update all packages on your system."
+msgstr "Pilih paket yang ingin Anda perbarui dan klik <guibutton>Install/Perbarui</guibutton> untuk menginstall versi terakhir dari paket. Gunakan ikon <emphasis role=\"strong\">Perbarui</emphasis> pada toolbar untuk memperbarui semua paket pada sistem Anda."
 
-#: package-manager.xml.in.nolegal:300(title) 
+#: package-manager.xml.in.nolegal:299(title) 
 msgid "Package Version Information"
-msgstr "Package Version Information"
+msgstr "Informasi Versi Paket"
+
+#: package-manager.xml.in.nolegal:300(para) 
+msgid "Select a package in the main window of the Package Manager and right-click your mouse to view the package version information. There are three types of package versions :"
+msgstr "Pilih sebuah paket di jendela utama Pengelola Paket dan klik kanan mouse anda untuk melihat versi paket informasi. Ada tiga jenis paket versi:"
 
 #: package-manager.xml.in.nolegal:301(para) 
-msgid "Select a package in the main window of the Package Manager and right-click your mouse to view the package version information. There are three types of package versions :"
-msgstr "Select a package in the main window of the Package Manager and right-click your mouse to view the package version information. There are three types of package versions :"
-
-#: package-manager.xml.in.nolegal:302(para) 
 msgid "<emphasis role=\"strong\">Installable Version</emphasis> – The version of a package that is available for installation or an update. This version may be older than the latest available version of the package due to package dependencies on the system. Hence you may not be able to install the latest available version of the package unless you update your system using the <emphasis role=\"strong\">Updates</emphasis> icon on the toolbar."
-msgstr "<emphasis role=\"strong\">Installable Version</emphasis> – The version of a package that is available for installation or an update. This version may be older than the latest available version of the package due to package dependencies on the system. Hence you may not be able to install the latest available version of the package unless you update your system using the <emphasis role=\"strong\">Updates</emphasis> icon on the toolbar."
+msgstr "<emphasis role=\"strong\">Versi Installable</emphasis> – Versi dari paket yang tersedia untuk instalasi atau pembaruan. Versi ini mungkin lebih lama dari versi terbaru karena dependensi paket pada sistem. Maka Anda mungkin tidak dapat menginstal versi terbaru dari paket kecuali jika Anda memperbarui sistem anda dengan menggunakan ikon <emphasis role=\"strong\">Perbarui</emphasis> pada toolbar."
 
-#: package-manager.xml.in.nolegal:304(para) 
+#: package-manager.xml.in.nolegal:303(para) 
 msgid "<emphasis role=\"strong\">Installed Version</emphasis> – The version of the package installed on the system."
-msgstr "<emphasis role=\"strong\">Installed Version</emphasis> – The version of the package installed on the system."
+msgstr "<emphasis role=\"strong\">Versi Terinstall</emphasis> – Versi dari paket yang terintall pada sistem."
 
-#: package-manager.xml.in.nolegal:306(para) 
+#: package-manager.xml.in.nolegal:305(para) 
 msgid "<emphasis role=\"strong\">Latest Version</emphasis> – This is the latest version of the package available for installation or update. The latest version can be installed if your system is up-to-date."
-msgstr "<emphasis role=\"strong\">Latest Version</emphasis> – This is the latest version of the package available for installation or update. The latest version can be installed if your system is up-to-date."
+msgstr "<emphasis role=\"strong\">Versi Terakhir</emphasis> – Ini adalah versi terakhir dari paket yang tersedia untuk instalasi atau pembaruan. Versi Terakhir dapat diinstall jika sistem Anda up-to-date."
 
-#: package-manager.xml.in.nolegal:310(title) 
+#: package-manager.xml.in.nolegal:309(title) 
 msgid "View Installed Packages From All Publishers"
-msgstr "View Installed Packages From All Publishers"
+msgstr "Perlihatkan Semua Paket Dari Semua Penerbit"
+
+#: package-manager.xml.in.nolegal:310(para) 
+msgid "Choose the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> from the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu filter to view a list of all packages that you have installed from all publishers."
+msgstr "Pilih <emphasis role=\"strong\">Semua Penerbit (Terinstall)</emphasis> dari filter drop-down menu<emphasis role=\"strong\">Penerbit</emphasis> untuk melihat daftar semua paket yang telah Anda install dari semua penerbit."
 
 #: package-manager.xml.in.nolegal:311(para) 
-msgid "Choose the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> from the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu filter to view a list of all packages that you have installed from all publishers."
-msgstr "Choose the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> from the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu filter to view a list of all packages that you have installed from all publishers."
-
-#: package-manager.xml.in.nolegal:312(para) 
 msgid "You cannot search for a package from the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> option. Switch to <emphasis role=\"strong\">All Publishers (Search)</emphasis> to search for a package."
-msgstr "You cannot search for a package from the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> option. Switch to <emphasis role=\"strong\">All Publishers (Search)</emphasis> to search for a package."
+msgstr "Anda tidak dapat mencari paket dari opsi<emphasis role=\"strong\">Semua Penerbit (Terinstall)</emphasis>. Beralih ke <emphasis role=\"strong\">Semua Penerbit (Cari)</emphasis> untuk mencari paket."
 
-#: package-manager.xml.in.nolegal:316(title) 
+#: package-manager.xml.in.nolegal:315(title) 
 msgid "Introduction to Boot Environments"
-msgstr "Introduction to Boot Environments"
+msgstr "Pengenalan Boot Environment"
+
+#: package-manager.xml.in.nolegal:316(para) 
+msgid "A boot environment is an image that is bootable. Upon an initial OpenSolaris installation, a boot environment is created."
+msgstr "Boot environment adalah image yang bootable. Setelah awal instalasi OpenSolaris, sebuah boot environment dibuat."
 
 #: package-manager.xml.in.nolegal:317(para) 
-msgid "A boot environment is an image that is bootable. Upon an initial OpenSolaris installation, a boot environment is created."
-msgstr "A boot environment is an image that is bootable. Upon an initial OpenSolaris installation, a boot environment is created."
+msgid "You can maintain multiple boot environments on your OpenSolaris 2010.03 system. Use the <command>beadm(1)</command> command from the command-line interface (CLI) to create, rename, mount or unmount, or destroy these boot environments."
+msgstr "Anda dapat mengelola beberapa Boot Environment pada sistem OpenSolaris 2010.03. Gunakan perintah <command>beadm(1)</command> pada command-line interface (CLI) untuk membuat, memberi nama baru, mount atau unmount, atau menghapus boot environment."
 
 #: package-manager.xml.in.nolegal:318(para) 
-msgid "You can maintain multiple boot environments on your OpenSolaris 2010.03 system. Use the <command>beadm(1)</command> command from the command-line interface (CLI) to create, rename, mount or unmount, or destroy these boot environments."
-msgstr "You can maintain multiple boot environments on your OpenSolaris 2010.03 system. Use the <command>beadm(1)</command> command from the command-line interface (CLI) to create, rename, mount or unmount, or destroy these boot environments."
+msgid "The Package Manager enables you to manage the boot environments created during the process of updating your image. For more information, see <xref linkend=\"manage-be\"/> section."
+msgstr "Pengelola Paket memungkinkan Anda untuk mengelola boot environments dibuat selama proses pembaruan image Anda. Untuk keterangan lebih lanjut, lihat bagian <xref linkend=\"manage-be\"/>."
 
 #: package-manager.xml.in.nolegal:319(para) 
-msgid "The Package Manager enables you to manage the boot environments created during the process of updating your image. For more information, see <xref linkend=\"manage-be\"/> section."
-msgstr "The Package Manager enables you to manage the boot environments created during the process of updating your image. For more information, see <xref linkend=\"manage-be\"/> section."
+msgid "Users can maintain multiple boot environments on their systems, and each boot environment can have different software versions installed."
+msgstr "Pengguna dapat mengatur beberapa boot environment pada sistem mereka, dan masing-masing boot environment bisa memiliki versi software terinstall yang berbeda."
 
 #: package-manager.xml.in.nolegal:320(para) 
-msgid "Users can maintain multiple boot environments on their systems, and each boot environment can have different software versions installed."
-msgstr "Users can maintain multiple boot environments on their systems, and each boot environment can have different software versions installed."
+msgid "When you use either the Package Manager or the <command>pkg image-update</command> command to update all the packages in your active OpenSolaris boot environment, a clone of that boot environment is automatically created. The packages are updated in the clone rather than in the original boot environment. After successfully completing the updates, the new clone is activated. Then, the clone will become the new default boot environment on system reboot. The original boot environment is also available as an alternate selection."
+msgstr "Bila Anda menggunakan baik Pengelola Paket atau perintah <command>pkg image-update</command> untuk memperbarui semua paket pada boot environment OpenSolaris Anda yang aktif, sebuah klon dari boot environment tersebut dibuat secara otomatis. Paket-paket yang akan diperbarui di klon bukan di boot environment yang asli. Setelah berhasil menyelesaikan pembaruan, kloning baru diaktifkan. Kemudian, klon akan menjadi boot environment default yang baru pada sistem reboot. Boot environment yang asli juga tersedia sebagai pilihan alternatif."
 
 #: package-manager.xml.in.nolegal:321(para) 
-msgid "When you use either the Package Manager or the <command>pkg image-update</command> command to update all the packages in your active OpenSolaris boot environment, a clone of that boot environment is automatically created. The packages are updated in the clone rather than in the original boot environment. After successfully completing the updates, the new clone is activated. Then, the clone will become the new default boot environment on system reboot. The original boot environment is also available as an alternate selection."
-msgstr "When you use either the Package Manager or the <command>pkg image-update</command> command to update all the packages in your active OpenSolaris boot environment, a clone of that boot environment is automatically created. The packages are updated in the clone rather than in the original boot environment. After successfully completing the updates, the new clone is activated. Then, the clone will become the new default boot environment on system reboot. The original boot environment is also available as an alternate selection."
-
-#: package-manager.xml.in.nolegal:322(para) 
 msgid "See the beadm(1) man pages and the <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"><citetitle>Upgrading and Managing Boot Environments</citetitle></ulink> document to learn more about boot environments and the <command>beadm(1)</command> command."
-msgstr "See the beadm(1) man pages and the <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"><citetitle>Upgrading and Managing Boot Environments</citetitle></ulink> document to learn more about boot environments and the <command>beadm(1)</command> command."
+msgstr "Lihat halaman beadm(1) man dan <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"><citetitle>Memperbarui dan Mengelola Boot Environment</citetitle></ulink> untuk mempelajari tentang boot environment dan perintah <command>beadm(1)</command>."
 
-#: package-manager.xml.in.nolegal:323(title) 
+#: package-manager.xml.in.nolegal:322(title) 
 msgid "Update All Packages (Update Your Image)"
-msgstr "Update All Packages (Update Your Image)"
+msgstr "Perbarui Semua Paket (Perbarui Image Anda)"
+
+#: package-manager.xml.in.nolegal:323(para) 
+msgid "Perform the following steps to update all the packages in your image."
+msgstr "Lakukan langkah-langkah berikut untuk memperbarui semua paket pada image Anda."
 
 #: package-manager.xml.in.nolegal:324(para) 
-msgid "Perform the following steps to update all the packages in your image."
-msgstr "Perform the following steps to update all the packages in your image."
+msgid "Click <guibutton>Updates</guibutton> to start the process of updating <emphasis role=\"strong\">all</emphasis> the packages installed in your image."
+msgstr "Klik <guibutton>Perbarui</guibutton> untuk memulai proses pembaruan\<emphasis role=\"strong\">semua</emphasis> paket-paket yang terinstal pada image Anda."
 
 #: package-manager.xml.in.nolegal:325(para) 
-msgid "Click <guibutton>Updates</guibutton> to start the process of updating <emphasis role=\"strong\">all</emphasis> the packages installed in your image."
-msgstr "Click <guibutton>Updates</guibutton> to start the process of updating <emphasis role=\"strong\">all</emphasis> the packages installed in your image."
+msgid "You can also choose <menuchoice><guimenu>Package</guimenu><guisubmenu>Updates</guisubmenu></menuchoice> to start the process."
+msgstr "Anda juga dapat memilih <menuchoice><guimenu>Paket</guimenu><guisubmenu>Perbarui</guisubmenu></menuchoice> untuk memulai proses."
 
 #: package-manager.xml.in.nolegal:326(para) 
-msgid "You can also choose <menuchoice><guimenu>Package</guimenu><guisubmenu>Updates</guisubmenu></menuchoice> to start the process."
-msgstr "You can also choose <menuchoice><guimenu>Package</guimenu><guisubmenu>Updates</guisubmenu></menuchoice> to start the process."
-
-#: package-manager.xml.in.nolegal:327(para) 
 msgid "If no updates are available to your installed packages, a <emphasis role=\"strong\">No Updates Available</emphasis> message is displayed after you click <guibutton>Updates</guibutton>."
-msgstr "If no updates are available to your installed packages, a <emphasis role=\"strong\">No Updates Available</emphasis> message is displayed after you click <guibutton>Updates</guibutton>."
+msgstr "Jika tidak ada pembaruan yang tersedia untuk paket-paket yang terinstall, sebuah pesan <emphasis role=\"strong\">Tidak ada Pembaruan yang tersedia</emphasis> ditampilkan setelah Anda klik <guibutton>Perbarui</guibutton>."
 
-#: package-manager.xml.in.nolegal:330(para) 
+#: package-manager.xml.in.nolegal:329(para) 
 msgid "The process of updating all the packages installed on your system is completed in three phases:"
-msgstr "The process of updating all the packages installed on your system is completed in three phases:"
+msgstr "Proses memperbarui semua paket yang terinstal di sistem anda selesai dalam tiga fase:"
 
-#: package-manager.xml.in.nolegal:331(emphasis) 
+#: package-manager.xml.in.nolegal:330(emphasis) 
 msgid "Preparation"
-msgstr "Preparation"
+msgstr "Persiapan"
 
-#: package-manager.xml.in.nolegal:333(emphasis) 
+#: package-manager.xml.in.nolegal:332(emphasis) 
 msgid "Download"
-msgstr "Download"
+msgstr "Unduh"
 
-#: package-manager.xml.in.nolegal:335(emphasis) 
+#: package-manager.xml.in.nolegal:334(emphasis) 
 msgid "Install"
-msgstr "Install"
+msgstr "Instal"
 
-#: package-manager.xml.in.nolegal:338(para) 
+#: package-manager.xml.in.nolegal:337(para) 
 msgid "Click on the <emphasis>Details</emphasis> tab displayed in each of the phases to view more information."
-msgstr "Click on the <emphasis>Details</emphasis> tab displayed in each of the phases to view more information."
+msgstr "Klik pada tab <emphasis>Rincian</emphasis> ditampilkan di setiap fase untuk melihat informasi lebih lanjut."
+
+#: package-manager.xml.in.nolegal:339(para) 
+msgid "After the update process is completed successfully, an <emphasis role=\"strong\">Update All Complete</emphasis> dialog is displayed. A new boot environment is created which consists of the updated packages. The new boot environment is given a default name by the Package Manager, you can change the given boot environment name."
+msgstr "Setelah proses update berhasil dilakukan, Dialog <emphasis role=\"strong\">Semua Update Selesai</emphasis> ditampilkan. Sebuah boot environment dibuat yang berisi semua update dari paket yang diperbarui. Boot environment yang baru diberi nama default oleh Pengelola Paket, Anda dapat merubah nama boot environment yang diberikan."
 
 #: package-manager.xml.in.nolegal:340(para) 
-msgid "After the update process is completed successfully, an <emphasis role=\"strong\">Update All Complete</emphasis> dialog is displayed. A new boot environment is created which consists of the updated packages. The new boot environment is given a default name by the Package Manager, you can change the given boot environment name."
-msgstr "After the update process is completed successfully, an <emphasis role=\"strong\">Update All Complete</emphasis> dialog is displayed. A new boot environment is created which consists of the updated packages. The new boot environment is given a default name by the Package Manager, you can change the given boot environment name."
-
-#: package-manager.xml.in.nolegal:341(para) 
 msgid "If the Package Manager is unable to create a new boot environment, an error message is displayed. See the <xref linkend=\"gilfh\"/> section on how to rectify the error and continue with updating your image."
-msgstr "If the Package Manager is unable to create a new boot environment, an error message is displayed. See the <xref linkend=\"gilfh\"/> section on how to rectify the error and continue with updating your image."
+msgstr "Jika Pengelola Paket tidak dapat menciptakan boot environment baru, pesan kesalahan ditampilkan. <xref linkend=\"gilfh\"/> Lihat bagian yang menjelaskan tentang bagaimana memperbaiki kesalahan dan melanjutkan dengan memperbarui image Anda."
+
+#: package-manager.xml.in.nolegal:343(para) 
+msgid "Click <guibutton>Restart Now</guibutton> to reboot your system immediately."
+msgstr "Klik <guibutton> Start ulang sekarang </ guibutton> untuk reboot sistem anda segera."
 
 #: package-manager.xml.in.nolegal:344(para) 
-msgid "Click <guibutton>Restart Now</guibutton> to reboot your system immediately."
-msgstr "Click <guibutton>Restart Now</guibutton> to reboot your system immediately."
+msgid "Click <guibutton>Restart Later</guibutton> to restart your system at a later time. <emphasis role=\"strong\">You must reboot your system for the changes to take effect.</emphasis>"
+msgstr "Klik <guibutton> Start ulang kemudian</guibutton> untuk start ulang sistem Anda di lain waktu. <emphasis role=\"strong\">Anda harus me-reboot sistem anda agar perubahan diterapkan.</emphasis>"
 
 #: package-manager.xml.in.nolegal:345(para) 
-msgid "Click <guibutton>Restart Later</guibutton> to restart your system at a later time. <emphasis role=\"strong\">You must reboot your system for the changes to take effect.</emphasis>"
-msgstr "Click <guibutton>Restart Later</guibutton> to restart your system at a later time. <emphasis role=\"strong\">You must reboot your system for the changes to take effect.</emphasis>"
-
-#: package-manager.xml.in.nolegal:346(para) 
 msgid "During the Update All process, a clone of the active boot environment is created. You can boot into the clone to return to the boot environment state that existed before the Update All process was started."
-msgstr "During the Update All process, a clone of the active boot environment is created. You can boot into the clone to return to the boot environment state that existed before the Update All process was started."
+msgstr "Selama Perbarui Semua proses, klon dari boot environment aktif dibuat. Anda dapat boot ke clone untuk kembali ke keadaan boot environment yang sudah ada sebelum Update Semua proses ini dimulai."
 
-#: package-manager.xml.in.nolegal:351(title) package-manager.xml.in.nolegal:656(title) 
+#: package-manager.xml.in.nolegal:350(title) package-manager.xml.in.nolegal:656(title) 
 msgid "Update All Errors"
-msgstr "Update All Errors"
+msgstr "Perbarui Semua Kesalahan"
+
+#: package-manager.xml.in.nolegal:351(para) 
+msgid "A new boot environment clone must be created by the Package Manager for the Updates process to be completed. An error message is displayed if a boot environment clone cannot be created. You might see an error message such as the following :"
+msgstr "Sebuah klon boot environment yang baru harus diciptakan oleh Paengelola Paket untuk menyelesaikan proses Pembaruan. Pesan kesalahan ditampilkan jika klon boot environment tidak dapat diciptakan. Anda mungkin akan melihat pesan kesalahan seperti berikut:"
 
 #: package-manager.xml.in.nolegal:352(para) 
-msgid "A new boot environment clone must be created by the Package Manager for the Updates process to be completed. An error message is displayed if a boot environment clone cannot be created. You might see an error message such as the following :"
-msgstr "A new boot environment clone must be created by the Package Manager for the Updates process to be completed. An error message is displayed if a boot environment clone cannot be created. You might see an error message such as the following :"
-
-#: package-manager.xml.in.nolegal:353(para) package-manager.xml.in.nolegal:658(para) 
 msgid "<literal>Not enough disk space, the Update All action cannot be performed. Choose Manage BE to manage your boot environments and free up disk space.</literal>."
-msgstr "<literal>Not enough disk space, the Update All action cannot be performed. Choose Manage BE to manage your boot environments and free up disk space.</literal>."
+msgstr "<literal> Tidak cukup ruang disk, Perbarui Semua tidak dapat dilakukan. Pilih Pengelola BE untuk mengelola boot environment anda dan membebaskan ruang disk. </ Literal>."
 
-#: package-manager.xml.in.nolegal:354(para) package-manager.xml.in.nolegal:659(para) 
+#: package-manager.xml.in.nolegal:353(para) package-manager.xml.in.nolegal:659(para) 
 msgid "Click <guibutton>Close</guibutton> to cancel the Update All process."
-msgstr "Click <guibutton>Close</guibutton> to cancel the Update All process."
+msgstr "Klik <guibutton> Tutup </ guibutton> untuk membatalkan Perbarui Semua proses."
 
-#: package-manager.xml.in.nolegal:355(para) package-manager.xml.in.nolegal:660(para) 
+#: package-manager.xml.in.nolegal:354(para) package-manager.xml.in.nolegal:660(para) 
 msgid "Perform the following steps if you want to rectify the error and continue with the Update All process:"
-msgstr "Perform the following steps if you want to rectify the error and continue with the Update All process:"
+msgstr "Lakukan langkah-langkah berikut jika Anda ingin memperbaiki kesalahan dan melanjutkan dengan Perbarui Semua proses:"
 
-#: package-manager.xml.in.nolegal:356(para) 
+#: package-manager.xml.in.nolegal:355(para) 
 msgid "Click <guibutton>Manage BE</guibutton> to display the <emphasis role=\"strong\">Manage Boot Environment</emphasis> dialog."
-msgstr "Click <guibutton>Manage BE</guibutton> to display the <emphasis role=\"strong\">Manage Boot Environment</emphasis> dialog."
+msgstr "Klik Pengelola <guibutton> BE </ guibutton> untuk menampilkan <emphasis role=\"strong\"> Pengelola Boot Environment </ penekanan> dialog."
+
+#: package-manager.xml.in.nolegal:357(para) 
+msgid "Select the boot environments that you want to delete."
+msgstr "Pilih boot environment yang ingin Anda hapus."
 
 #: package-manager.xml.in.nolegal:358(para) 
-msgid "Select the boot environments that you want to delete."
-msgstr "Select the boot environments that you want to delete."
-
-#: package-manager.xml.in.nolegal:359(para) 
 msgid "You cannot delete the currently active boot environment."
-msgstr "You cannot delete the currently active boot environment."
+msgstr "Anda tidak dapat menghapus boot environment yang sedang aktif."
 
-#: package-manager.xml.in.nolegal:361(para) 
+#: package-manager.xml.in.nolegal:360(para) 
 msgid "You do not need to reboot your system if you are only deleting some of your boot environments."
-msgstr "You do not need to reboot your system if you are only deleting some of your boot environments."
+msgstr "Anda tidak perlu reboot sistem jika Anda hanya menghapus sebagian dari boot environments Anda."
 
-#: package-manager.xml.in.nolegal:366(para) 
+#: package-manager.xml.in.nolegal:365(para) 
 msgid "Click <guibutton>OK</guibutton>."
-msgstr "Click <guibutton>OK</guibutton>."
+msgstr "Klik <guibutton> OK </ guibutton>."
 
-#: package-manager.xml.in.nolegal:368(para) 
+#: package-manager.xml.in.nolegal:367(para) 
 msgid "The <emphasis role=\"strong\">Boot Environment Confirmation</emphasis> dialog is shown. Review your changes and click OK to proceed."
-msgstr "The <emphasis role=\"strong\">Boot Environment Confirmation</emphasis> dialog is shown. Review your changes and click OK to proceed."
+msgstr "<emphasis role=\"strong\">Konfirmasi Boot Environment</emphasis> dialog ditampilkan. Tinjau perubahan Anda dan klik OK untuk melanjutkan."
 
-#: package-manager.xml.in.nolegal:370(para) 
+#: package-manager.xml.in.nolegal:369(para) 
 msgid "Click <guibutton>Update All</guibutton> to restart the process of updating all packages."
-msgstr "Click <guibutton>Update All</guibutton> to restart the process of updating all packages."
+msgstr "Klik <guibutton> Perbarui Semua </ guibutton> untuk memulai kembali proses pembaruan semua paket."
 
-#: package-manager.xml.in.nolegal:374(title) 
+#: package-manager.xml.in.nolegal:373(title) 
 msgid "Manage Boot Environments"
-msgstr "Manage Boot Environments"
+msgstr "Pengelola Boot Environment"
+
+#: package-manager.xml.in.nolegal:374(para) 
+msgid "Perform the following steps to manage your boot environments:"
+msgstr "Lakukan langkah-langkah berikut untuk mengelola boot environment Anda:"
 
 #: package-manager.xml.in.nolegal:375(para) 
-msgid "Perform the following steps to manage your boot environments:"
-msgstr "Perform the following steps to manage your boot environments:"
-
-#: package-manager.xml.in.nolegal:376(para) 
 msgid "Click <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot Environments</guimenuitem></menuchoice> to open the <emphasis role=\"strong\">Manage Boot Environments</emphasis> dialog."
-msgstr "Click <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot Environments</guimenuitem></menuchoice> to open the <emphasis role=\"strong\">Manage Boot Environments</emphasis> dialog."
+msgstr "Klik <menuchoice><guimenu>Berkas</guimenu><guimenuitem>Pengelola Boot Environments</guimenuitem></menuchoice> untuk membuka <emphasis role=\"strong\">Pengelola Boot Environments</emphasis> dialog."
+
+#: package-manager.xml.in.nolegal:377(para) 
+msgid "In this dialog, you can perform the following actions:"
+msgstr "Dalam dialog ini, Anda dapat melakukan tindakan berikut:"
 
 #: package-manager.xml.in.nolegal:378(para) 
-msgid "In this dialog, you can perform the following actions:"
-msgstr "In this dialog, you can perform the following actions:"
-
-#: package-manager.xml.in.nolegal:379(para) 
 msgid "<emphasis role=\"strong\">Activate a boot environment</emphasis> – Select the boot environment you want to be active on system reboot. This is the default boot environment <emphasis role=\"strong\">after</emphasis> you have rebooted your system."
-msgstr "<emphasis role=\"strong\">Activate a boot environment</emphasis> – Select the boot environment you want to be active on system reboot. This is the default boot environment <emphasis role=\"strong\">after</emphasis> you have rebooted your system."
+msgstr "<emphasis role=\"strong\">Aktifkan boot environment</emphasis> – Pilih boot environment yang Anda ingin menjadi aktif pada sistem reboot. Ini adalah boot environment default <emphasis role=\"strong\">after</emphasis> Anda harus reboot sistem anda."
+
+#: package-manager.xml.in.nolegal:380(para) 
+msgid "<emphasis role=\"strong\">Remove old or unused boot environments to free up disk space</emphasis> – Select the boot environnment or boot environments you want to delete."
+msgstr "<emphasis role=\"strong\">Hapus boot environment yang lama atau tidak terpakai untuk membebaskan ruang disk</emphasis> – Pilih boot environnment yang ingin Anda hapus."
 
 #: package-manager.xml.in.nolegal:381(para) 
-msgid "<emphasis role=\"strong\">Remove old or unused boot environments to free up disk space</emphasis> – Select the boot environnment or boot environments you want to delete."
-msgstr "<emphasis role=\"strong\">Remove old or unused boot environments to free up disk space</emphasis> – Select the boot environnment or boot environments you want to delete."
-
-#: package-manager.xml.in.nolegal:382(para) 
 msgid "You cannot the delete the currently active boot environment."
-msgstr "You cannot the delete the currently active boot environment."
+msgstr "Anda tidak dapat menghapus boot environment yang sedang aktif."
 
-#: package-manager.xml.in.nolegal:384(para) 
+#: package-manager.xml.in.nolegal:383(para) 
 msgid "If you have selected a boot environment to be renamed, it cannot be deleted."
-msgstr "If you have selected a boot environment to be renamed, it cannot be deleted."
+msgstr "Jika Anda telah memilih boot environment untuk berganti nama, maka tidak dapat dihapus."
+
+#: package-manager.xml.in.nolegal:388(para) 
+msgid "<emphasis role=\"strong\">Rename a boot environment</emphasis> – Double-click the boot environment name you want torename. Enter the new name of the boot environment and click <guibutton>OK</guibutton>."
+msgstr "<emphasis role=\"strong\">Beri nama boot environment</emphasis> – Double-klik pada nama boot environment yang Anda inginkan untuk diganti namanya.Masukkan nama yang baru dari boot environment dan klik <guibutton>OK</guibutton>."
 
 #: package-manager.xml.in.nolegal:389(para) 
-msgid "<emphasis role=\"strong\">Rename a boot environment</emphasis> – Double-click the boot environment name you want torename. Enter the new name of the boot environment and click <guibutton>OK</guibutton>."
-msgstr "<emphasis role=\"strong\">Rename a boot environment</emphasis> – Double-click the boot environment name you want torename. Enter the new name of the boot environment and click <guibutton>OK</guibutton>."
-
-#: package-manager.xml.in.nolegal:390(para) 
 msgid "If you have selected a boot environment to be deleted, it cannot be renamed."
-msgstr "If you have selected a boot environment to be deleted, it cannot be renamed."
+msgstr "Jika Anda telah memilih boot environment untuk dihapus, maka tidak dapat diganti nama."
 
-#: package-manager.xml.in.nolegal:392(para) 
+#: package-manager.xml.in.nolegal:391(para) 
 msgid "The currently active boot environment cannot be renamed."
-msgstr "The currently active boot environment cannot be renamed."
+msgstr "Boot environment yang sedang aktif tidak bisa diganti nama."
 
-#: package-manager.xml.in.nolegal:399(para) 
+#: package-manager.xml.in.nolegal:398(para) 
 msgid "Click <guibutton>OK</guibutton> to proceed or <guibutton>Cancel</guibutton> to cancel all changes."
-msgstr "Click <guibutton>OK</guibutton> to proceed or <guibutton>Cancel</guibutton> to cancel all changes."
+msgstr "Klik <guibutton>OK</guibutton> untuk melanjutkan atau<guibutton>Cancel</guibutton> untuk membatalkan semua perubahan."
+
+#: package-manager.xml.in.nolegal:400(para) 
+msgid "The <emphasis role=\"strong\">Boot Environment Confirmation</emphasis> dialog is displayed. Review your changes and click OK to proceed."
+msgstr "<emphasis role=\"strong\">Konfirmasi Boot Environment</emphasis> dialog ditampilkan. Tinjau perubahan Anda dan klik OK untuk melanjutkan."
 
 #: package-manager.xml.in.nolegal:401(para) 
-msgid "The <emphasis role=\"strong\">Boot Environment Confirmation</emphasis> dialog is displayed. Review your changes and click OK to proceed."
-msgstr "The <emphasis role=\"strong\">Boot Environment Confirmation</emphasis> dialog is displayed. Review your changes and click OK to proceed."
-
-#: package-manager.xml.in.nolegal:402(para) 
 msgid "After you click <guibutton>OK</guibutton>, you cannot undo any changes that you made to the boot environments."
-msgstr "After you click <guibutton>OK</guibutton>, you cannot undo any changes that you made to the boot environments."
+msgstr "Setelah Anda mengklik <guibutton>OK</ guibutton>, Anda tidak dapat membatalkan perubahan apapun yang Anda lakukan terhadap boot environment."
 
-#: package-manager.xml.in.nolegal:404(para) 
+#: package-manager.xml.in.nolegal:403(para) 
 msgid "The changes that you made to the <emphasis role=\"strong\">default boot environment</emphasis> setting are effective only after system reboot."
-msgstr "The changes that you made to the <emphasis role=\"strong\">default boot environment</emphasis> setting are effective only after system reboot."
+msgstr "Perubahan yang Anda lakukan terhadap <emphasis role=\"strong\">boot environment default </emphasis> Pengaturan efektif hanya setelah sistem reboot."
 
-#: package-manager.xml.in.nolegal:406(para) 
+#: package-manager.xml.in.nolegal:405(para) 
 msgid "Click <guibutton>Cancel</guibutton> to cancel the changes."
-msgstr "Click <guibutton>Cancel</guibutton> to cancel the changes."
+msgstr "Klik <guibutton>Batal</guibutton>untuk membatalkan perubahan."
+
+#: package-manager.xml.in.nolegal:407(para) 
+msgid "Reboot your system to boot into the newly activated boot environment."
+msgstr "Reboot sistem anda untuk mengaktifkan environment boot yang baru."
 
 #: package-manager.xml.in.nolegal:408(para) 
-msgid "Reboot your system to boot into the newly activated boot environment."
-msgstr "Reboot your system to boot into the newly activated boot environment."
-
-#: package-manager.xml.in.nolegal:409(para) 
 msgid "Reboot your system only if you changed the active boot environment."
-msgstr "Reboot your system only if you changed the active boot environment."
+msgstr "Reboot sistem anda hanya jika Anda mengubah boot environment aktif."
 
-#: package-manager.xml.in.nolegal:415(title) 
+#: package-manager.xml.in.nolegal:414(title) 
 msgid "Add and Manage Publishers"
-msgstr "Add and Manage Publishers"
+msgstr "Tambah dan Kelola Penerbit"
+
+#: package-manager.xml.in.nolegal:415(para) 
+msgid "The <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> dialog enables the user to add and manage the configured publishers. A publisher is a person, group, or corporation that designs, creates, and publishes a package to a repository. Every publisher has a package repository where its package data can be found. The locations that contain package data for a publisher's repository are defined through the use of origins and mirrors. Origins are used to provide locations that contain the complete set of package data for a publisher, while mirrors are used to provide locations that only contain package files. Origins and mirrors are defined using URIs (Universal Resource Identifiers), such as <ulink url=\"http://pkg.opensolaris.org/release\"/>."
+msgstr "<menuchoice><guimenu>Berkas</guimenu><guimenuitem>Pengelola Penerbit</guimenuitem></menuchoice> Dialog memungkinkan pengguna untuk menambahkan dan mengelola konfigurasi penerbit. Sebuah penerbit adalah orang, kelompok, atau perusahaan yang mendesain, menciptakan, dan menerbitkan sebuah paket ke sebuah repositori. Setiap penerbit memiliki repositori paket dimana paket data dapat ditemukan. Lokasi paket yang berisi data untuk repositori penerbit didefinisikan melalui penggunaan asal dan mirror. Asal yang digunakan untuk menyediakan lokasi yang berisi set lengkap paket data untuk penerbit, sedangkan mirror digunakan untuk menyediakan lokasi yang hanya berisi file paket. Asal dan mirror didefinisikan menggunakan URI (Universal Resource Identifier), seperti <ulink url=\"http://pkg.opensolaris.org/release\"/>."
 
 #: package-manager.xml.in.nolegal:416(para) 
-msgid "The <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> dialog enables the user to add and manage the configured publishers. A publisher is a person, group, or corporation that designs, creates, and publishes a package to a repository. A repository is a source for packages. Every publisher has a origin URI (Universal Resource Identifier) associated with it. Read the following sections to learn how to add and manage publishers on your system."
-msgstr "The <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> dialog enables the user to add and manage the configured publishers. A publisher is a person, group, or corporation that designs, creates, and publishes a package to a repository. A repository is a source for packages. Every publisher has a origin URI (Universal Resource Identifier) associated with it. Read the following sections to learn how to add and manage publishers on your system."
+msgid "Read the following sections to learn how to add and manage publishers on your system."
+msgstr "Bacalah bagian berikut untuk mempelajari bagaimana menambahkan dan mengelola penerbit di sistem anda."
 
 #: package-manager.xml.in.nolegal:417(title) 
 msgid "Add a Publisher"
-msgstr "Add a Publisher"
+msgstr "Tambahkan sebuah Penerbit"
 
 #: package-manager.xml.in.nolegal:418(para) 
 msgid "Perform the following steps to add a publisher and its associated URI:"
-msgstr "Perform the following steps to add a publisher and its associated URI:"
+msgstr "Lakukan langkah-langkah berikut untuk menambahkan penerbit dan yang terkait URI:"
 
 #: package-manager.xml.in.nolegal:419(para) 
 msgid "Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Add Publishers</guimenuitem></menuchoice>."
-msgstr "Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Add Publishers</guimenuitem></menuchoice>."
+msgstr "Pilih <menuchoice><guimenu>Berkas</guimenu><guimenuitem>Tambah Penerbit</guimenuitem></menuchoice>."
 
 #: package-manager.xml.in.nolegal:420(para) 
 msgid "You can also choose the <guibutton>Add..</guibutton> option from the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu or select <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> and then click <emphasis>Add..</emphasis> in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog."
-msgstr "You can also choose the <guibutton>Add..</guibutton> option from the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu or select <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> and then click <emphasis>Add..</emphasis> in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog."
+msgstr "Anda juga bisa memilih <guibutton>Tambah..</guibutton> dari <emphasis role=\"strong\">Penerbit</emphasis> drop-down menu atau pilih <menuchoice><guimenu>Berkas</guimenu><guimenuitem>Pengelola Penerbit</guimenuitem></menuchoice> dan kemudian klik<emphasis>Tambah..</emphasis> pada <emphasis role=\"strong\">Pengelola Penerbit</emphasis> dialog."
 
 #: package-manager.xml.in.nolegal:422(para) 
 msgid "The <emphasis role=\"strong\">Add Publisher</emphasis> dialog is displayed. Enter the name of the publisher and the associated URI. If the publisher is a secure publisher, the <emphasis role=\"strong\">SSL Key</emphasis> and <emphasis role=\"strong\">SSL Certificate</emphasis> fields are displayed. Follow the steps in the <xref linkend=\"modify-publisher\"/> section to add an SSL key and certificate."
-msgstr "The <emphasis role=\"strong\">Add Publisher</emphasis> dialog is displayed. Enter the name of the publisher and the associated URI. If the publisher is a secure publisher, the <emphasis role=\"strong\">SSL Key</emphasis> and <emphasis role=\"strong\">SSL Certificate</emphasis> fields are displayed. Follow the steps in the <xref linkend=\"modify-publisher\"/> section to add an SSL key and certificate."
+msgstr "<emphasis role=\"strong\">Tambah Penerbit</emphasis> dialog ditampilkan. Masukkan nama penerbit dan URI terkait. Jika penerbit adalah penerbit yang secure,<emphasis role=\"strong\">SSL Key</emphasis> dan <emphasis role=\"strong\">SSL Sertifikat</emphasis> ditampilkan. Ikuti langkah-langkah pada <xref linkend=\"modify-publisher\"/> bagian untuk menambahkan kunci SSL dan sertifikat."
 
 #: package-manager.xml.in.nolegal:424(para) 
 msgid "Click <guibutton>Add</guibutton>."
-msgstr "Click <guibutton>Add</guibutton>."
+msgstr "Klik <guibutton>Tambah</guibutton>"
 
 #: package-manager.xml.in.nolegal:426(para) 
 msgid "The <emphasis role=\"strong\">Adding Publisher</emphasis> dialog is displayed. Click Cancel to cancel the process."
-msgstr "The <emphasis role=\"strong\">Adding Publisher</emphasis> dialog is displayed. Click Cancel to cancel the process."
+msgstr "<emphasis role=\"strong\">Penambahan Penerbit</emphasis> dialog ditampilkan. Klik Batal untuk membatalkan proses."
 
 #: package-manager.xml.in.nolegal:428(para) 
 msgid "The <emphasis role=\"strong\">Adding Publisher Complete</emphasis> dialog is displayed if the publisher is added successfully."
-msgstr "The <emphasis role=\"strong\">Adding Publisher Complete</emphasis> dialog is displayed if the publisher is added successfully."
+msgstr "<emphasis role=\"strong\">Penambahan Penerbit Selesai</emphasis> dialog ditampilkan jika penerbit berhasil ditambahkan."
 
 #: package-manager.xml.in.nolegal:431(para) 
 msgid "An <emphasis role=\"strong\">Adding Publisher Error</emphasis> is displayed if the publisher could not be added. Click <emphasis role=\"strong\">Details</emphasis> to get more information about the error."
-msgstr "An <emphasis role=\"strong\">Adding Publisher Error</emphasis> is displayed if the publisher could not be added. Click <emphasis role=\"strong\">Details</emphasis> to get more information about the error."
+msgstr "<emphasis role=\"strong\">Kesalahan Penambahan Penerbit</emphasis> is ditampilkan jika penerbit tidak bisa ditambahkan. Klik <emphasis role=\"strong\">Details</emphasis> untuk mendapatkan informasi lebih lanjut tentang kesalahan."
 
 #: package-manager.xml.in.nolegal:434(title) 
 msgid "Remove a Publisher"
-msgstr "Remove a Publisher"
+msgstr "Hapus sebuah Penerbit"
 
 #: package-manager.xml.in.nolegal:435(para) 
 msgid "Perform the following steps to remove a publisher:"
-msgstr "Perform the following steps to remove a publisher:"
+msgstr "Lakukan langkah-langkah berikut untuk menghapus penerbit:"
 
 #: package-manager.xml.in.nolegal:436(para) package-manager.xml.in.nolegal:459(para) package-manager.xml.in.nolegal:473(para) package-manager.xml.in.nolegal:492(para) package-manager.xml.in.nolegal:511(para) package-manager.xml.in.nolegal:528(para) 
 msgid "Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice>."
-msgstr "Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice>."
+msgstr "Pilih <menuchoice><guimenu>Berkas</guimenu><guimenuitem>Pengelola Publisher</guimenuitem></menuchoice>."
 
 #: package-manager.xml.in.nolegal:438(para) 
 msgid "Click on a publisher from the list to select it. Click <guibutton>Remove</guibutton>."
-msgstr "Click on a publisher from the list to select it. Click <guibutton>Remove</guibutton>."
+msgstr "Klik pada penerbit yang ada di list untuk memilihnya. Klik<guibutton>Hapus</guibutton>."
 
 #: package-manager.xml.in.nolegal:440(para) 
 msgid "The <emphasis role=\"strong\">Manage Publishers Confirmation</emphasis> dialog is displayed."
-msgstr "The <emphasis role=\"strong\">Manage Publishers Confirmation</emphasis> dialog is displayed."
+msgstr "<emphasis role=\"strong\">Konfirmasi Pengelola Penerbit</emphasis> dialog ditampilkan."
 
 #: package-manager.xml.in.nolegal:442(para) 
 msgid "Click <guibutton>OK</guibutton> to save the changes and remove the publisher or <guibutton>Cancel</guibutton> to return to the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog without making any changes."
-msgstr "Click <guibutton>OK</guibutton> to save the changes and remove the publisher or <guibutton>Cancel</guibutton> to return to the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog without making any changes."
+msgstr "Klik <guibutton>OK</guibutton> untuk menyimpan perubahan dan menghapus penerbit atau <guibutton>Cancel</guibutton> untuk kembali ke <emphasis role=\"strong\">Pengelola Penerbit</emphasis> dialog tanpa membuat perubahan."
 
 #: package-manager.xml.in.nolegal:446(title) 
 msgid "Set Publisher Priority"
-msgstr "Set Publisher Priority"
+msgstr "Mengatur Prioritas Penerbit"
 
 #: package-manager.xml.in.nolegal:447(para) 
 msgid "Perform the following steps to set or change the publisher priority:"
-msgstr "Perform the following steps to set or change the publisher priority:"
+msgstr "Lakukan langkah-langkah berikut untuk mengatur atau mengubah prioritas penerbit:"
 
 #: package-manager.xml.in.nolegal:448(para) 
 msgid "Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> to open the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog."
-msgstr "Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> to open the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog."
+msgstr "Pilih <menuchoice><guimenu>Berkas</guimenu><guimenuitem>Pengelola Penerbit</guimenuitem></menuchoice> untuk membuka <emphasis role=\"strong\">Pengelola Penerbit</emphasis> dialog."
 
 #: package-manager.xml.in.nolegal:450(para) 
 msgid "The list of configured publishers is displayed. Click the arrows to change the priority of the publishers. The publisher with the highest priority is displayed at the top of the list."
-msgstr "The list of configured publishers is displayed. Click the arrows to change the priority of the publishers. The publisher with the highest priority is displayed at the top of the list."
+msgstr "Daftar konfigurasi penerbit ditampilkan. Klik tanda panah untuk mengubah prioritas penerbit. Penerbit dengan prioritas tertinggi akan ditampilkan di bagian atas daftar."
 
 #: package-manager.xml.in.nolegal:451(emphasis) 
 msgid "Packages are searched within the publishers in the order of priority, the publisher with the highest priority is searched first."
-msgstr "Packages are searched within the publishers in the order of priority, the publisher with the highest priority is searched first."
+msgstr "Paket yang dicari dalam penerbit dalam urutan prioritas, penerbit dengan prioritas tertinggi dicari pertama."
 
 #: package-manager.xml.in.nolegal:453(para) package-manager.xml.in.nolegal:465(para) package-manager.xml.in.nolegal:484(para) package-manager.xml.in.nolegal:503(para) package-manager.xml.in.nolegal:520(para) package-manager.xml.in.nolegal:537(para) 
 msgid "Click <guibutton>OK</guibutton> to save your changes or <guibutton>Cancel</guibutton> to return to the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog without making any changes."
-msgstr "Click <guibutton>OK</guibutton> to save your changes or <guibutton>Cancel</guibutton> to return to the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog without making any changes."
+msgstr "Klik <guibutton>OK</guibutton> untuk menyimpan perubahan atau <guibutton>Cancel</guibutton> untuk kembali ke <emphasis role=\"strong\">Pengelola Penerbit</emphasis> dialog tanpa membuat perubahan."
 
 #: package-manager.xml.in.nolegal:457(title) 
 msgid "Modify Publisher Alias"
-msgstr "Modify Publisher Alias"
+msgstr "Rubah Nama Lain Penerbit"
 
 #: package-manager.xml.in.nolegal:458(para) 
 msgid "Perform the following steps to modify the alias of a publisher:"
-msgstr "Perform the following steps to modify the alias of a publisher:"
+msgstr "Lakukan langkah-langkah berikut untuk memodifikasi alias penerbit:"
 
 #: package-manager.xml.in.nolegal:461(para) 
 msgid "Select the publisher whose alias you want to modify. Click <guibutton>Modify..</guibutton>."
-msgstr "Select the publisher whose alias you want to modify. Click <guibutton>Modify..</guibutton>."
+msgstr "Pilih alias penerbit yang ingin Anda ubah. Klik <guibutton>Modifikasi..</guibutton>."
 
 #: package-manager.xml.in.nolegal:463(para) 
 msgid "The <emphasis role=\"strong\">Modify Publisher</emphasis> dialog is displayed. Modify or enter a new name of the alias in the <emphasis role=\"strong\">Alias</emphasis> field."
-msgstr "The <emphasis role=\"strong\">Modify Publisher</emphasis> dialog is displayed. Modify or enter a new name of the alias in the <emphasis role=\"strong\">Alias</emphasis> field."
+msgstr "<emphasis role=\"strong\">Modifikasi Penerbit</emphasis> dialog ditampilkan. Modifikasi atau masukkan nama baru dari alias pada <emphasis role=\"strong\">Alias</emphasis> field."
 
 #: package-manager.xml.in.nolegal:467(para) package-manager.xml.in.nolegal:486(para) package-manager.xml.in.nolegal:505(para) package-manager.xml.in.nolegal:522(para) package-manager.xml.in.nolegal:539(para) 
 msgid "Click <guibutton>OK</guibutton> in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog to exit the dialog. Note that clicking <guibutton>Cancel</guibutton> in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog will not undo the changes made in the <emphasis role=\"strong\">Modify Publishers</emphasis> dialog."
-msgstr "Click <guibutton>OK</guibutton> in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog to exit the dialog. Note that clicking <guibutton>Cancel</guibutton> in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog will not undo the changes made in the <emphasis role=\"strong\">Modify Publishers</emphasis> dialog."
+msgstr "Klik <guibutton>OK</guibutton> pada <emphasis role=\"strong\">Pengelola Penerbit</emphasis> dialog untuk keluar dialog. Catatan bahwa mengklik <guibutton>Batal</guibutton> pada <emphasis role=\"strong\">Pengelola Penerbit</emphasis> dialog tidak akan membatalkan perubahan yang dibuat pada <emphasis role=\"strong\">Pengelola Penerbit</emphasis> dialog."
 
 #: package-manager.xml.in.nolegal:471(title) 
 msgid "Add Publisher Origins"
-msgstr "Add Publisher Origins"
+msgstr "Menambah Asal Publisher"
 
 #: package-manager.xml.in.nolegal:472(para) 
 msgid "Perform the following steps to add an origin or origins associated with a publisher:"
-msgstr "Perform the following steps to add an origin or origins associated with a publisher:"
+msgstr "Lakukan langkah-langkah berikut untuk menambahkan asal yang berhubungan dengan penerbit:"
 
 #: package-manager.xml.in.nolegal:475(para) 
 msgid "Select the publisher whose origin you want to modify. The <emphasis role=\"strong\">Details</emphasis> tab in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog displays the origin associated with the publisher."
-msgstr "Select the publisher whose origin you want to modify. The <emphasis role=\"strong\">Details</emphasis> tab in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog displays the origin associated with the publisher."
+msgstr "Pilih penerbit asal yang akan Anda ubah.<emphasis role=\"strong\">Detail</emphasis> tab di <emphasis role=\"strong\">Pengelola Penerbit</emphasis> dialog menampilkan asal yang berhubungan dengan penerbit."
 
 #: package-manager.xml.in.nolegal:477(para) package-manager.xml.in.nolegal:496(para) package-manager.xml.in.nolegal:515(para) package-manager.xml.in.nolegal:532(para) 
 msgid "Click <guibutton>Modify..</guibutton>."
-msgstr "Click <guibutton>Modify..</guibutton>."
+msgstr "Klik <guibutton>Modifikasi..</guibutton>."
 
 #: package-manager.xml.in.nolegal:478(para) 
 msgid "The <emphasis role=\"strong\">Modify Publisher</emphasis> dialog is displayed. Enter the name of the new origin you want to associate with the publisher in the <emphasis role=\"strong\">Origin</emphasis> field. Click <guibutton>Add</guibutton>. The list of associated origins is displayed in the table."
-msgstr "The <emphasis role=\"strong\">Modify Publisher</emphasis> dialog is displayed. Enter the name of the new origin you want to associate with the publisher in the <emphasis role=\"strong\">Origin</emphasis> field. Click <guibutton>Add</guibutton>. The list of associated origins is displayed in the table."
+msgstr "<emphasis role=\"strong\">Modifikasi Penerbit</emphasis> dialog ditampilkan. Masukkan nama asal baru Anda ingin asosiasikan dengan penerbit pada <emphasis role=\"strong\">Asal</emphasis> field. Klik <guibutton>Tambah</guibutton>. Daftar asal terkait ditampilkan dalam tabel."
 
 #: package-manager.xml.in.nolegal:479(para) 
 msgid "You cannot change the origin URI after the origin has been added."
-msgstr "You cannot change the origin URI after the origin has been added."
+msgstr "Anda tidak dapat mengubah URI asal setelah asal telah ditambahkan."
 
 #: package-manager.xml.in.nolegal:482(para) 
 msgid "(optional) If the origin you have added is a secure origin, add the SSL Key and SSL certificate. <guibutton>Browse</guibutton> to locate the SSL Key and SSL Certificate on your system."
-msgstr "(optional) If the origin you have added is a secure origin, add the SSL Key and SSL certificate. <guibutton>Browse</guibutton> to locate the SSL Key and SSL Certificate on your system."
+msgstr "(opsional) Jika Anda telah menambahkan asal adalah asal yang aman, tambahkan SSL Key dan sertifikat SSL. <guibutton>Jelajah</guibutton> untuk menetapkan kunci SSL dan sertifikat SSL pada sistem anda."
 
 #: package-manager.xml.in.nolegal:490(title) 
 msgid "Remove Publisher Origins"
-msgstr "Remove Publisher Origins"
+msgstr "Hapus Origin Penerbit."
 
 #: package-manager.xml.in.nolegal:491(para) 
 msgid "Perform the following steps to remove an origin or origins associated with a publisher:"
-msgstr "Perform the following steps to remove an origin or origins associated with a publisher:"
+msgstr "Lakukan langkah-langkah berikut untuk menghapus asal yang berhubungan dengan penerbit:"
 
 #: package-manager.xml.in.nolegal:494(para) 
 msgid "Select the publisher whose origin you want to remove. The <emphasis role=\"strong\">Details</emphasis> tab in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog displays the origin or origins associated with the publisher."
-msgstr "Select the publisher whose origin you want to remove. The <emphasis role=\"strong\">Details</emphasis> tab in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog displays the origin or origins associated with the publisher."
+msgstr "Pilih asal penerbit yang ingin Anda hapus.<emphasis role=\"strong\">Details</emphasis> tab di <emphasis role=\"strong\">Pengelola Penerbit</emphasis> dialog menampilkan asal yang berhubungan dengan penerbit."
 
 #: package-manager.xml.in.nolegal:497(para) 
 msgid "The <emphasis role=\"strong\">Modify Publisher</emphasis> dialog is displayed. The list of associated origins is displayed in the table."
-msgstr "The <emphasis role=\"strong\">Modify Publisher</emphasis> dialog is displayed. The list of associated origins is displayed in the table."
+msgstr "<emphasis role=\"strong\">Modifikasi Penerbit</emphasis> dialog ditampilkan. Daftar asal terkait ditampilkan dalam tabel."
 
 #: package-manager.xml.in.nolegal:499(para) 
 msgid "Select the origin you want to remove. Click <guibutton>Remove</guibutton>."
-msgstr "Select the origin you want to remove. Click <guibutton>Remove</guibutton>."
+msgstr "Pilih asal yang ingin Anda hapus. Klik <guibutton>Hapus</guibutton>."
 
 #: package-manager.xml.in.nolegal:500(para) 
 msgid "If only one origin is associated with a publisher, it cannot be removed."
-msgstr "If only one origin is associated with a publisher, it cannot be removed."
+msgstr "Jika hanya satu asal berhubungan dengan penerbit, tidak dapat dihapus."
 
 #: package-manager.xml.in.nolegal:509(title) 
 msgid "Add Publisher Mirrors"
-msgstr "Add Publisher Mirrors"
+msgstr "Tambah Mirror Penerbit"
 
 #: package-manager.xml.in.nolegal:510(para) 
 msgid "Perform the following steps to add a mirror for a publisher:"
-msgstr "Perform the following steps to add a mirror for a publisher:"
+msgstr "Lakukan langkah-langkah berikut untuk menambahkan mirror untuk penerbit:"
 
 #: package-manager.xml.in.nolegal:513(para) 
 msgid "Select the publisher for which you want to add the mirror."
-msgstr "Select the publisher for which you want to add the mirror."
+msgstr "Pilih penerbit yang ingin Anda tambahkan mirror."
 
 #: package-manager.xml.in.nolegal:516(para) 
 msgid "The <emphasis role=\"strong\">Modify Publisher</emphasis> dialog is displayed."
-msgstr "The <emphasis role=\"strong\">Modify Publisher</emphasis> dialog is displayed."
+msgstr "<emphasis role=\"strong\">Modifikasi Penerbit</emphasis> dialog ditampilkan."
 
 #: package-manager.xml.in.nolegal:518(para) 
 msgid "Enter the URI for the mirror in the <emphasis>Mirror</emphasis> field. Click <guibutton>Add</guibutton>."
-msgstr "Enter the URI for the mirror in the <emphasis>Mirror</emphasis> field. Click <guibutton>Add</guibutton>."
+msgstr "Masukkan URI untuk mirror pada <emphasis>Mirror</emphasis> field. Klik <guibutton>Tambah</guibutton>."
 
 #: package-manager.xml.in.nolegal:526(title) 
 msgid "Remove Publisher Mirrors"
-msgstr "Remove Publisher Mirrors"
+msgstr "Hapus Mirror Penerbit"
 
 #: package-manager.xml.in.nolegal:527(para) 
 msgid "Perform the following steps to remove a mirror associated with a publisher:"
-msgstr "Perform the following steps to remove a mirror associated with a publisher:"
+msgstr "Lakukan langkah-langkah berikut untuk menghapus mirror yang terkait dengan penerbit:"
 
 #: package-manager.xml.in.nolegal:530(para) 
 msgid "Select the publisher for which you want to remove the mirror."
-msgstr "Select the publisher for which you want to remove the mirror."
+msgstr "Pilih penerbit yang ingin Anda hapus mirror."
 
 #: package-manager.xml.in.nolegal:533(para) 
 msgid "The <emphasis role=\"strong\">Modify Publisher</emphasis> dialog is displayed. The list of associated mirrors is displayed in the table."
-msgstr "The <emphasis role=\"strong\">Modify Publisher</emphasis> dialog is displayed. The list of associated mirrors is displayed in the table."
+msgstr "<emphasis role=\"strong\">Modifikasi Penerbit</emphasis> dialog ditampilkan.Daftar mirror yang terkait ditampilkan dalam tabel."
 
 #: package-manager.xml.in.nolegal:535(para) 
 msgid "Select the mirror you want to remove. Click <guibutton>Remove</guibutton>."
-msgstr "Select the mirror you want to remove. Click <guibutton>Remove</guibutton>."
+msgstr "Pilih mirror yang ingin Anda hapus. Klik <guibutton>Hapus</guibutton>."
 
 #: package-manager.xml.in.nolegal:544(title) 
 msgid "Working With WebInstall"
-msgstr "Working With WebInstall"
+msgstr "Bekerja Dengan WebInstall"
 
 #: package-manager.xml.in.nolegal:545(para) 
 msgid "The OpenSolaris 2010.03 Package Manager provides support for users to add new publishers and optionally, install packages from these publishers using a simple one-click WebInstall process. A <filename>.p5i</filename> file which contains the publishers to be added and optionally, the packages that can be installed from these publishers, is required for the WebInstall process. The information contained in the <filename>.p5i</filename> file is read and used by the WebInstall process."
-msgstr "The OpenSolaris 2010.03 Package Manager provides support for users to add new publishers and optionally, install packages from these publishers using a simple one-click WebInstall process. A <filename>.p5i</filename> file which contains the publishers to be added and optionally, the packages that can be installed from these publishers, is required for the WebInstall process. The information contained in the <filename>.p5i</filename> file is read and used by the WebInstall process."
+msgstr "Pengelola Paket OpenSolaris 2010.03 menyediakan dukungan bagi pengguna untuk menambahkan penerbit baru dan secara opsional, instal paket-paket dari penerbit ini menggunakan satu-klik sederhana melalaui WebInstall. Berkas<filename>.p5i</filename> yang berisi penerbit untuk ditambahkan dan secara opsional, paket-paket yang dapat diinstal dari penerbit ini, diperlukan untuk proses WebInstall. Informasi yang terkandung dalam berkas<filename>.p5i</filename> dibaca dan digunakan oleh proses WebInstall."
 
 #: package-manager.xml.in.nolegal:546(title) 
 msgid "Export Package Selections as WebInstall Files"
-msgstr "Export Package Selections as WebInstall Files"
+msgstr "Seleksi Paket Ekspor sebagai Berkas WebInstall"
 
 #: package-manager.xml.in.nolegal:547(para) 
 msgid "If you want to distribute some of the packages available on your system to others for easy installation and distribution, you can export the references to the packages, using the WebInstall process. The <menuchoice><guisubmenu>File</guisubmenu><guimenuitem>Export Selections</guimenuitem></menuchoice> feature enables you to create a <filename>.p5i</filename> file containing the installation instructions for the selected packages. The <filename>.p5i</filename> file is can then be distributed for use. See the <xref linkend=\"webinstall\"/> section on how to install packages from a <filename>.p5i</filename>."
-msgstr "If you want to distribute some of the packages available on your system to others for easy installation and distribution, you can export the references to the packages, using the WebInstall process. The <menuchoice><guisubmenu>File</guisubmenu><guimenuitem>Export Selections</guimenuitem></menuchoice> feature enables you to create a <filename>.p5i</filename> file containing the installation instructions for the selected packages. The <filename>.p5i</filename> file is can then be distributed for use. See the <xref linkend=\"webinstall\"/> section on how to install packages from a <filename>.p5i</filename>."
+msgstr "Jika Anda ingin mendistribusikan beberapa paket yang tersedia di sistem anda kepada orang lain untuk kemudahan instalasi dan distribusi, Anda dapat mengekspor paket referensi, menggunakan proses WebInstall.<menuchoice><guisubmenu>Berkas</guisubmenu><guimenuitem>Seleksi Ekspor</guimenuitem></menuchoice> fitur memungkinkan Anda untuk membuat sebuah berkas <filename>.p5i</filename> berisi petunjuk instalasi untuk paket-paket yang dipilih. Berkas<filename>.p5i</filename> yang kemudian dapat didistribusikan untuk digunakan. Lihat <xref linkend=\"webinstall\"/> bagian tentang cara menginstal paket-paket dari sebuah <filename>.p5i</filename>."
 
 #: package-manager.xml.in.nolegal:548(para) 
 msgid "The following procedure lists the steps to create a <filename>.p5i</filename> file and export your files."
-msgstr "The following procedure lists the steps to create a <filename>.p5i</filename> file and export your files."
+msgstr "Prosedur berikut daftar langkah-langkah untuk membuat berkas<filename>.p5i</filename> and ekspor berkas Anda."
 
 #: package-manager.xml.in.nolegal:549(para) 
 msgid "From the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu, select the publisher from which you want to include the packages in the <filename>.p5i</filename> file."
-msgstr "From the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu, select the publisher from which you want to include the packages in the <filename>.p5i</filename> file."
+msgstr "Dari <emphasis role=\"strong\">Penerbit</emphasis> drop-down menu, pilih penerbit yang ingin Anda sertakan di dalam paket-paket berkas <filename>.p5i</filename>."
 
 #: package-manager.xml.in.nolegal:551(para) 
 msgid "Check the box next to the package or packages to select it. The packages selected are highlighted."
-msgstr "Check the box next to the package or packages to select it. The packages selected are highlighted."
+msgstr "Centang kotak di sebelah paket untuk memilihnya. Paket-paket yang dipilih akan disorot."
 
 #: package-manager.xml.in.nolegal:553(para) 
 msgid "Click <menuchoice><guisubmenu>File</guisubmenu><guimenuitem>Export Selections</guimenuitem></menuchoice> to display the <emphasis role=\"strong\">Export Selections Confirmation</emphasis> window."
-msgstr "Click <menuchoice><guisubmenu>File</guisubmenu><guimenuitem>Export Selections</guimenuitem></menuchoice> to display the <emphasis role=\"strong\">Export Selections Confirmation</emphasis> window."
+msgstr "Klik <menuchoice><guisubmenu>Berkas</guisubmenu><guimenuitem>Seleksi Ekspor</guimenuitem></menuchoice> untuk menampilkan jendela <emphasis role=\"strong\">Konfirmasi Seleksi Ekspor</emphasis>."
 
 #: package-manager.xml.in.nolegal:555(para) 
 msgid "Click <guibutton>OK</guibutton> to confirm the selections and proceed or <guibutton>Cancel</guibutton> to cancel the selections."
-msgstr "Click <guibutton>OK</guibutton> to confirm the selections and proceed or <guibutton>Cancel</guibutton> to cancel the selections."
+msgstr "Klik <guibutton>OK</guibutton> untuk mengkonfirmasi pilihan dan melanjutkan atau <guibutton>Batal</guibutton> untuk membatalkan pilihan."
 
 #: package-manager.xml.in.nolegal:557(para) 
 msgid "The <emphasis role=\"strong\">Export Selections</emphasis> window is displayed."
-msgstr "The <emphasis role=\"strong\">Export Selections</emphasis> window is displayed."
+msgstr "Jendela <emphasis role=\"strong\">Seleksi Ekspor</emphasis> window ditampilkan."
 
 #: package-manager.xml.in.nolegal:559(para) 
 msgid "A default name for the <filename>p5i</filename> file with the extension <filename>.p5i</filename> is provided. Click inside the <emphasis role=\"strong\">Name</emphasis> field to change the name of the <filename>p5i</filename> file."
-msgstr "A default name for the <filename>p5i</filename> file with the extension <filename>.p5i</filename> is provided. Click inside the <emphasis role=\"strong\">Name</emphasis> field to change the name of the <filename>p5i</filename> file."
+msgstr "Nama default untuk berkas<filename>p5i</filename> dengan ekstensi <filename>.p5i</filename> disediakan. Klik di dalam field<emphasis role=\"strong\">Nama</emphasis> untuk mengubah nama berkas <filename>p5i</filename>."
 
 #: package-manager.xml.in.nolegal:561(para) 
 msgid "The file is saved in the <filename>/tmp</filename> folder by default. Click the <emphasis role=\"strong\">Browse for other folders</emphasis> tab to select your own folder."
-msgstr "The file is saved in the <filename>/tmp</filename> folder by default. Click the <emphasis role=\"strong\">Browse for other folders</emphasis> tab to select your own folder."
+msgstr "Berkas tersebut disimpan dalam folder<filename>/tmp</filename> secara default. Klik <emphasis role=\"strong\">Jelajah folder lain</emphasis> tab untuk memilih folder Anda sendiri."
 
 #: package-manager.xml.in.nolegal:563(para) 
 msgid "Choose the <filename>p5i Files</filename> option in the drop-down menu located at the bottom right hand side of the window."
-msgstr "Choose the <filename>p5i Files</filename> option in the drop-down menu located at the bottom right hand side of the window."
+msgstr "Pilih <filename>berkas p5i</filename> pilihan dalam menu drop-down yang terletak di sisi kanan bawah jendela."
 
 #: package-manager.xml.in.nolegal:567(title) 
 msgid "How to Use WebInstall to Add Publishers and Install Packages"
-msgstr "How to Use WebInstall to Add Publishers and Install Packages"
+msgstr "Cara Menggunakan WebInstall untuk Menambahkan Penerbit dan Install Paket"
 
 #: package-manager.xml.in.nolegal:568(para) 
 msgid "The WebInstall process enables you to install packages through a <filename>p5i</filename> file."
-msgstr "The WebInstall process enables you to install packages through a <filename>p5i</filename> file."
+msgstr "Proses WebInstall memungkinkan Anda untuk menginstal paket melalui berkas <filename>p5i</filename>."
 
 #: package-manager.xml.in.nolegal:569(para) 
 msgid "Locate the <filename>.p5i</filename> file which may be present on your desktop, the Start page in the Package Manager, or on a website."
-msgstr "Locate the <filename>.p5i</filename> file which may be present on your desktop, the Start page in the Package Manager, or on a website."
+msgstr "Tempatkan berkas <filename>.p5i</filename> yang dapat ditemukan pada desktop, halaman Start di Pengelola Paket, atau pada sebuah situs web."
 
 #: package-manager.xml.in.nolegal:571(para) 
 msgid "Start the Package Manager in WebInstall mode in one of the following ways:"
-msgstr "Start the Package Manager in WebInstall mode in one of the following ways:"
+msgstr "Buat halaman Pengelola Paket dalam modus WebInstall melalui salah satu dari cara berikut:"
 
 #: package-manager.xml.in.nolegal:572(para) 
 msgid "Click on a <filename>.p5i</filename> file on your desktop, and the associated application, Package Manager in WebInstall mode, will be launched."
-msgstr "Click on a <filename>.p5i</filename> file on your desktop, and the associated application, Package Manager in WebInstall mode, will be launched."
+msgstr "Klik berkas <filename>.p5i</filename> pada desktop Anda, dan aplikasi yang terkait, Pengelola Paket dalam modus WebInstall, akan diluncurkan."
 
 #: package-manager.xml.in.nolegal:574(para) 
 msgid "Start the Package Manager from the command-line along with a path to the <filename>.p5i</filename> file. For example, type the following command at the command-line:"
-msgstr "Start the Package Manager from the command-line along with a path to the <filename>.p5i</filename> file. For example, type the following command at the command-line:"
+msgstr "Buat halaman Pengelola Paket dari command-line dengan path ke berkas<filename>.p5i</filename>.Sebagai contoh, ketik perintah berikut di command-line:"
 
 #: package-manager.xml.in.nolegal:575(replaceable) 
 msgid "path_to_p5i_file/file.p5i"
@@ -1187,191 +1187,195 @@ msgstr "$ pfexec packagemanager/<placeholder-1/>"
 
 #: package-manager.xml.in.nolegal:577(para) 
 msgid "Click on a URL location that contains a link to <filename>.p5i</filename> file. If you are using this method to start WebInstall, the <filename>.p5i</filename> file <emphasis role=\"strong\">must</emphasis> be located on a web server that has registered the new mime type. Only then, the web server can manage the <filename>.p5i</filename> automatically and start Package Manager in WebInstall mode."
-msgstr "Click on a URL location that contains a link to <filename>.p5i</filename> file. If you are using this method to start WebInstall, the <filename>.p5i</filename> file <emphasis role=\"strong\">must</emphasis> be located on a web server that has registered the new mime type. Only then, the web server can manage the <filename>.p5i</filename> automatically and start Package Manager in WebInstall mode."
+msgstr "Klik pada lokasi URL yang berisi link ke berkas<filename>.p5i</filename>. Jika Anda menggunakan metode ini untuk memulai WebInstall, berkas <filename>.p5i</filename> <emphasis role=\"strong\">harus</emphasis> ditempatkan di web server yang telah terdaftar tipe mime baru. Kemudian hanya, server web dapat mengatur <filename>.p5i</filename> secara otomatis dan mulai Pengelola Paket pada modus WebInstall."
 
 #: package-manager.xml.in.nolegal:578(para) 
 msgid "If the <filename>.p5i</filename> is located on a web server that does not have the new mime type registered, save the <filename>.p5i</filename> file to your desktop and then click on it to launch Web Install."
-msgstr "If the <filename>.p5i</filename> is located on a web server that does not have the new mime type registered, save the <filename>.p5i</filename> file to your desktop and then click on it to launch Web Install."
+msgstr "Jika <filename>.p5i</filename> terletak di server web yang tidak memiliki tipe mime baru terdaftar, simpan berrkas<filename>.p5i</filename> pada desktop Anda dan kemudian klik untuk memulai Web Instal."
 
 #: package-manager.xml.in.nolegal:582(para) 
 msgid "You will see a window similar to the example window shown below. The window shows a list of publishers that will be added and the packages that will be installed. Review the information."
-msgstr "You will see a window similar to the example window shown below. The window shows a list of publishers that will be added and the packages that will be installed. Review the information."
+msgstr "Anda akan melihat sebuah jendela yang mirip dengan contoh yang ditunjukkan di bawah jendela. Jendela menampilkan daftar penerbit yang akan ditambahkan dan paket-paket yang akan diinstal. Tinjau ulang informasi tersebut."
 
 #: package-manager.xml.in.nolegal:586(para) 
 msgid "Confirm or cancel the WebInstall process."
-msgstr "Confirm or cancel the WebInstall process."
+msgstr "Konfirmasi atau membatalkan proses WebInstall."
 
 #: package-manager.xml.in.nolegal:587(para) 
 msgid "Click <guibutton>Proceed</guibutton> to add the new publishers and install the packages."
-msgstr "Click <guibutton>Proceed</guibutton> to add the new publishers and install the packages."
+msgstr "Klik <guibutton>Lanjut</guibutton> untuk menambahkan penerbit baru dan menginstal paket-paket."
 
 #: package-manager.xml.in.nolegal:589(para) 
 msgid "The <emphasis role=\"strong\">Add Publisher</emphasis> dialog is displayed. The name and URI of the publisher is already entered."
-msgstr "The <emphasis role=\"strong\">Add Publisher</emphasis> dialog is displayed. The name and URI of the publisher is already entered."
+msgstr "Dialog <emphasis role=\"strong\">Tambah penerbit</emphasis> dialog ditampilkan. Nama dan URI dari penerbit sudah dimasukkan."
 
 #: package-manager.xml.in.nolegal:590(para) 
 msgid "The <emphasis role=\"strong\">Adding Publisher Complete</emphasis> dialog is displayed if the publisher has been added successfully."
-msgstr "The <emphasis role=\"strong\">Adding Publisher Complete</emphasis> dialog is displayed if the publisher has been added successfully."
+msgstr "Dialog <emphasis role=\"strong\">Penambahan Penerbit Selesai</emphasis> ditampilkan jika penerbit berhasil ditambahkan."
 
 #: package-manager.xml.in.nolegal:592(para) 
 msgid "(Optional) If the publishers to be added are secure publishers, an SSL key and certificate is required. Browse to locate the SSL Key and SSL Certificate on your system."
-msgstr "(Optional) If the publishers to be added are secure publishers, an SSL key and certificate is required. Browse to locate the SSL Key and SSL Certificate on your system."
+msgstr "(Opsional) Jika penerbit yang akan ditambahkan adalah penerbit yang secure, sebuah kunci dan sertifikat SSL diperlukan. Jelajah untuk mencari kunci SSL dan sertifikat SSL pada sistem anda."
 
 #: package-manager.xml.in.nolegal:594(para) 
 msgid "Click <guibutton>OK</guibutton> to proceed."
-msgstr "Click <guibutton>OK</guibutton> to proceed."
+msgstr "Klik <guibutton>OK</guibutton> untuk melanjutkan."
 
 #: package-manager.xml.in.nolegal:596(para) 
 msgid "If packages are being installed, the <emphasis role=\"strong\">Install/Update</emphasis> dialog is displayed."
-msgstr "If packages are being installed, the <emphasis role=\"strong\">Install/Update</emphasis> dialog is displayed."
+msgstr "Jika paket sedang diinstal, dialog<emphasis role=\"strong\"> Install / Perbarui </emphasis> akan ditampilkan."
 
 #: package-manager.xml.in.nolegal:597(para) 
 msgid "The application will close when all packages are installed."
-msgstr "The application will close when all packages are installed."
+msgstr "Aplikasi ini akan dinutup ketika semua paket diinstal."
 
 #: package-manager.xml.in.nolegal:601(title) 
 msgid "Using WebInstall With a Disabled Publisher"
-msgstr "Using WebInstall With a Disabled Publisher"
+msgstr "Menggunakan WebInstall dengan Penerbit yang Tidak Aktif"
 
 #: package-manager.xml.in.nolegal:602(para) 
 msgid "Sometimes a <filename>.p5i</filename> file may contain packages from a disabled publisher. In such cases WebInstall opens up an <emphasis role=\"strong\">Enable Publisher</emphasis> dialog which allows the user to enable the publisher before installing packages."
-msgstr "Sometimes a <filename>.p5i</filename> file may contain packages from a disabled publisher. In such cases WebInstall opens up an <emphasis role=\"strong\">Enable Publisher</emphasis> dialog which allows the user to enable the publisher before installing packages."
+msgstr "Terkadang berkas <filename>.p5i</filename> mungkin berisi paket-paket dari penerbit yang tidak aktif. Dalam kasus seperti membuka sebuah WebInstall dialog <emphasis role=\"strong\">Aktifkan Penerbit</emphasis> yang memungkinkan pengguna untuk mengaktifkan penerbit sebelum menginstal paket."
 
 #: package-manager.xml.in.nolegal:605(title) 
 msgid "Working With the Update Manager"
-msgstr "Working With the Update Manager"
+msgstr "Bekerja Dengan Pengelola Pembaruan"
 
 #: package-manager.xml.in.nolegal:606(title) 
 msgid "About The Update Manager"
-msgstr "About The Update Manager"
+msgstr "Tentang Pengelola Pembaruan"
 
 #: package-manager.xml.in.nolegal:607(para) 
 msgid "The Update Manager is a separate application that starts from the desktop when updates to the installed packages are available in the publisher."
-msgstr "The Update Manager is a separate application that starts from the desktop when updates to the installed packages are available in the publisher."
+msgstr "Pengelola Pembaruan adalah aplikasi terpisah yang dijalankan dari desktop ketika update paket-paket yang terinstal tersedia di penerbit."
 
 #: package-manager.xml.in.nolegal:608(title) 
 msgid "Update Manager Main Window"
-msgstr "Update Manager Main Window"
+msgstr "Jendela Utama Pengelola Pembaruan"
 
 #: package-manager.xml.in.nolegal:612(para) 
 msgid "You can use the Update Manager application to update the installed packages in your image. The Update Manager uses the publisher that is currently set in the Package Manager to install the latest image."
-msgstr "You can use the Update Manager application to update the installed packages in your image. The Update Manager uses the publisher that is currently set in the Package Manager to install the latest image."
+msgstr "Anda dapat menggunakan aplikasi Pengelola Pembaruan untuk memperbarui paket-paket yang terinstal di image Anda. Pengelola Pembaruan yang menggunakan penerbit saat ini diatur di Pengelola Paket untuk menginstal image terbaru."
 
 #: package-manager.xml.in.nolegal:613(para) 
 msgid "For the OpenSolaris 2010.03 release, the Update Manager updates <emphasis role=\"strong\">all</emphasis> installed packages in the image. This action is equivalent to running the <command>pkg image-update</command> command from the command-line."
-msgstr "For the OpenSolaris 2010.03 release, the Update Manager updates <emphasis role=\"strong\">all</emphasis> installed packages in the image. This action is equivalent to running the <command>pkg image-update</command> command from the command-line."
+msgstr "Pada rilis OpenSolaris 2010.03, Pengelola Pembaruan memperbarui <emphasis role=\"strong\">semua</emphasis> paket yang terinstal dalam image. Tindakan ini sama seperti menjalankan perintah<command>pkg image-update</command> dari command-line."
 
 #: package-manager.xml.in.nolegal:616(title) 
 msgid "Using the Update Manager"
-msgstr "Using the Update Manager"
+msgstr "Menggunakan Pengelola Pembaruan"
 
 #: package-manager.xml.in.nolegal:617(para) 
 msgid "When updates are available to the installed packages, a notification icon is displayed in the notification panel on the OpenSolaris desktop."
-msgstr "When updates are available to the installed packages, a notification icon is displayed in the notification panel on the OpenSolaris desktop."
+msgstr "Ketika pembaruan yang tersedia untuk paket-paket yang terinstal, ikon pemberitahuan ditampilkan dalam panel notifikasi desktop OpenSolaris."
 
 #: package-manager.xml.in.nolegal:618(para) 
 msgid "You can also click <menuchoice><guimenu>System</guimenu><guisubmenu>Administration</guisubmenu><guimenuitem>Update Manager</guimenuitem></menuchoice> to manually launch the Update Manager."
-msgstr "You can also click <menuchoice><guimenu>System</guimenu><guisubmenu>Administration</guisubmenu><guimenuitem>Update Manager</guimenuitem></menuchoice> to manually launch the Update Manager."
+msgstr "Anda juga bisa klik <menuchoice><guimenu>Sistem</guimenu><guisubmenu>Administrasi</guisubmenu><guimenuitem>Pengelola Pembaruan</guimenuitem></menuchoice> untuk meluncurkan secara manual Pengelola Pembaruan."
 
 #: package-manager.xml.in.nolegal:619(para) 
 msgid "When you are notified of a software update, perform the following steps to begin the process of updating your system:"
-msgstr "When you are notified of a software update, perform the following steps to begin the process of updating your system:"
+msgstr "Ketika Anda akan diberitahu tentang pembaruan perangkat lunak, lakukan langkah-langkah berikut untuk memulai proses pembaruan sistem anda:"
 
 #: package-manager.xml.in.nolegal:620(para) 
 msgid "Click the notification icon on the desktop to display the <emphasis role=\"strong\">Update Manager</emphasis> window."
-msgstr "Click the notification icon on the desktop to display the <emphasis role=\"strong\">Update Manager</emphasis> window."
+msgstr "Klik ikon notifikasi pada desktop untuk menampilkan jendela <emphasis role=\"strong\">Pengelola Pembaruan</emphasis>."
 
 #: package-manager.xml.in.nolegal:622(para) 
 msgid "Click <guibutton>Update All</guibutton> in the <emphasis role=\"strong\">Update Manager</emphasis> window."
-msgstr "Click <guibutton>Update All</guibutton> in the <emphasis role=\"strong\">Update Manager</emphasis> window."
+msgstr "Klik <guibutton>Perbarui Semua</guibutton> pada jendela<emphasis role=\"strong\">Pengelola Pembaruan</emphasis>."
 
 #: package-manager.xml.in.nolegal:623(para) 
 msgid "Select a package and click the <guilabel>Details</guilabel> panel if you want to view more information about the package."
-msgstr "Select a package and click the <guilabel>Details</guilabel> panel if you want to view more information about the package."
+msgstr "Pilih paket dan klik panel<guilabel>Rincian</guilabel> jika Anda ingin melihat informasi lebih lanjut tentang paket."
 
 #: package-manager.xml.in.nolegal:626(para) 
 msgid "The <emphasis role=\"strong\">Update All</emphasis> dialog is displayed. Proceed with the Update All process or cancel the action."
-msgstr "The <emphasis role=\"strong\">Update All</emphasis> dialog is displayed. Proceed with the Update All process or cancel the action."
+msgstr "Dialog <emphasis role=\"strong\">Perbarui Semua</emphasis> ditampilkan. Lanjutkan dengan proses Perbarui Semua atau batalkan."
 
 #: package-manager.xml.in.nolegal:627(para) 
 msgid "Click <guibutton>Proceed</guibutton> to create a new boot environment and update all packages in the current image."
-msgstr "Click <guibutton>Proceed</guibutton> to create a new boot environment and update all packages in the current image."
+msgstr "Klik <guibutton>Lanjutkan</guibutton> untuk menciptakan boot environment yang baru dan memperbarui semua paket dalam image ini."
 
 #: package-manager.xml.in.nolegal:628(para) 
 msgid "During the Update All process, a clone of the active boot environment is created. This clone enables the user to boot into the boot environment state that existed before the Update All process was started."
-msgstr "During the Update All process, a clone of the active boot environment is created. This clone enables the user to boot into the boot environment state that existed before the Update All process was started."
+msgstr "Selama proses Perbarui Semua, klon dari boot environment aktif dibuat. Klon ini memungkinkan pengguna untuk boot ke kondisi boot environment yang sudah ada sebelum proses Perbarui Semua dimulai."
 
 #: package-manager.xml.in.nolegal:629(para) 
 msgid "If the Package Manager is unable to create a new boot environment, an error message will be displayed. See the <xref linkend=\"gileh\"/> section on how to rectify the error and continue with updating your image."
-msgstr "If the Package Manager is unable to create a new boot environment, an error message will be displayed. See the <xref linkend=\"gileh\"/> section on how to rectify the error and continue with updating your image."
+msgstr "Jika Pengelola Pembaruan tidak dapat menciptakan boot environment baru, pesan kesalahan akan ditampilkan. Lihat <xref linkend=\"gileh\"/> bagian tentang bagaimana untuk memperbaiki kesalahan dan melanjutkan dengan memperbarui image Anda."
 
 #: package-manager.xml.in.nolegal:630(para) 
 msgid "A name for the new boot environment is automatically generated. You can accept the name generated by the system, or provide your own name for the boot environment."
-msgstr "A name for the new boot environment is automatically generated. You can accept the name generated by the system, or provide your own name for the boot environment."
+msgstr "Nama untuk boot environment baru secara otomatis dihasilkan. Anda dapat menerima nama yang dihasilkan oleh sistem, atau memberikan nama Anda sendiri untuk boot environment."
 
 #: package-manager.xml.in.nolegal:633(para) 
 msgid "Click <guibutton>Cancel</guibutton> to cancel the process."
-msgstr "Click <guibutton>Cancel</guibutton> to cancel the process."
+msgstr "Klik <guibutton>Batal</guibutton> untuk membatalkan proses."
 
 #: package-manager.xml.in.nolegal:637(para) 
 msgid "If you chose to proceed, the <emphasis role=\"strong\">Installing Updates</emphasis> windows are displayed. The package installation process consists of four stages:"
-msgstr "If you chose to proceed, the <emphasis role=\"strong\">Installing Updates</emphasis> windows are displayed. The package installation process consists of four stages:"
+msgstr "Jika Anda memilih untuk melanjutkan, jendela <emphasis role=\"strong\">Instalasai Pembaruan</emphasis> ditampilkan. Proses instalasi paket terdiri dari empat tahapan:"
 
 #: package-manager.xml.in.nolegal:638(para) 
 msgid "Prepare"
-msgstr "Prepare"
+msgstr "Persiapan"
 
 #: package-manager.xml.in.nolegal:640(para) 
 msgid "Download."
-msgstr "Download."
+msgstr "Mengunduh"
 
 #: package-manager.xml.in.nolegal:642(para) 
 msgid "Install."
-msgstr "Install."
+msgstr "Install"
 
 #: package-manager.xml.in.nolegal:645(para) 
 msgid "You can choose to cancel the process only during the <emphasis role=\"strong\">Prepare</emphasis> and <emphasis role=\"strong\">Download</emphasis> stages."
-msgstr "You can choose to cancel the process only during the <emphasis role=\"strong\">Prepare</emphasis> and <emphasis role=\"strong\">Download</emphasis> stages."
+msgstr "Anda dapat memilih untuk membatalkan proses hanya selama di tahap<emphasis role=\"strong\">Persiapan</emphasis> dan <emphasis role=\"strong\">Mengunduh</emphasis>."
 
 #: package-manager.xml.in.nolegal:646(para) 
 msgid "Click the <guilabel>Details</guilabel> panel to view more information about each of the installation processes."
-msgstr "Click the <guilabel>Details</guilabel> panel to view more information about each of the installation processes."
+msgstr "Klik panel <guilabel>Rincian</guilabel> untuk melihat informasi lebih lanjut tentang masing-masing proses instalasi."
 
 #: package-manager.xml.in.nolegal:647(para) 
 msgid "If an error occurs during any of the stages, the <guilabel>Details</guilabel> panel is expanded and the details of the error are displayed. An error status indicator is shown next to the failed stage."
-msgstr "If an error occurs during any of the stages, the <guilabel>Details</guilabel> panel is expanded and the details of the error are displayed. An error status indicator is shown next to the failed stage."
+msgstr "Jika kesalahan terjadi pada salah satu tahap, panel<guilabel>Rincian</guilabel> diperluas dan rincian kesalahan ditampilkan. Indikator status kesalahan ditampilkan di sebelah tahapan yang gagal."
 
 #: package-manager.xml.in.nolegal:650(para) 
 msgid "Read the <xref linkend=\"release_notes\"/> before rebooting your system."
-msgstr "Read the <xref linkend=\"release_notes\"/> before rebooting your system."
+msgstr "Baca <xref linkend=\"release_notes\"/> sebelum reboot sistem anda."
 
 #: package-manager.xml.in.nolegal:651(para) 
 msgid "You must reboot your system for the changes to take effect."
-msgstr "You must reboot your system for the changes to take effect."
+msgstr "Anda harus me-reboot sistem anda agar perubahan diterapkan."
 
 #: package-manager.xml.in.nolegal:657(para) 
 msgid "A new boot environment clone <emphasis role=\"strong\">must</emphasis> be created for the Update All process to be completed. The following error message is displayed if a boot environment clone cannot be created due to space restrictions :"
-msgstr "A new boot environment clone <emphasis role=\"strong\">must</emphasis> be created for the Update All process to be completed. The following error message is displayed if a boot environment clone cannot be created due to space restrictions :"
+msgstr "Klon boot environment yang baru <emphasis role=\"strong\">harus</emphasis> dibuat untuk menyelesaikan proses Pembaruan Semua. Pesan kesalahan berikut ditampilkan jika klon boot environment tidak dapat diciptakan karena batasan ruang:"
+
+#: package-manager.xml.in.nolegal:658(para) 
+msgid "<literal>Not enough disk space, the Update All action cannot be performed. Choose Manage BE to manage your boot environments and free up disk space</literal>."
+msgstr "<literal>Tidak cukup ruang disk, Semua Pembaruan tidak dapat dilakukan. Pilih Pengelola BE untuk mengelola boot environment Anda dan bebaskan ruang disk</literal>."
 
 #: package-manager.xml.in.nolegal:661(para) 
 msgid "Click <guibutton>Manage BE</guibutton> in the error dialog to go to the <emphasis role=\"strong\">Manage Boot Environments</emphasis> dialog."
-msgstr "Click <guibutton>Manage BE</guibutton> in the error dialog to go to the <emphasis role=\"strong\">Manage Boot Environments</emphasis> dialog."
+msgstr "Klik <guibutton>Pengelola BE</guibutton> pada dialog Error dan menuju dialog<emphasis role=\"strong\">Pengelola Boot Environments</emphasis>."
 
 #: package-manager.xml.in.nolegal:663(para) 
 msgid "Go to step 2 in the <xref linkend=\"gilfh\"/> section. Follow the instructions to delete old or unused boot environments and free up disk space."
-msgstr "Go to step 2 in the <xref linkend=\"gilfh\"/> section. Follow the instructions to delete old or unused boot environments and free up disk space."
+msgstr "Pergi ke langkah 2 pada bagian <xref linkend=\"gilfh\"/>. Ikuti petunjuk untuk menghapus boot environment yang lama atau tidak digunakan dan bebaskan ruang disk."
 
 #: package-manager.xml.in.nolegal:665(para) 
 msgid "Click <guibutton>Update All</guibutton> in the <emphasis role=\"strong\">Update Manager</emphasis> window to restart the process of updating all packages."
-msgstr "Click <guibutton>Update All</guibutton> in the <emphasis role=\"strong\">Update Manager</emphasis> window to restart the process of updating all packages."
+msgstr "Klik <guibutton>Perbarui Semua</guibutton> pada jendela<emphasis role=\"strong\">Pengelola Pembaruan</emphasis> untuk start ulang proses pembaruan semua paket."
 
 #: package-manager.xml.in.nolegal:669(title) 
 msgid "2010.03 Release Notes"
-msgstr "2010.03 Release Notes"
+msgstr "Catatan Rilis 2010.03"
 
 #: package-manager.xml.in.nolegal:670(para) 
 msgid "The Release Notes for 2010.03 are available at the following location: <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"/>."
-msgstr "The Release Notes for 2010.03 are available at the following location: <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"/>."
+msgstr "Catatan Rilis 2010.03 tersedia di lokasi berikut: <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"/>."
 
 #: package-manager.xml.in.nolegal:674(title) 
 msgid "Image Packaging System Glossary"
@@ -1379,43 +1383,43 @@ msgstr "Image Packaging System Glossary"
 
 #: package-manager.xml.in.nolegal:675(glossterm) 
 msgid "publisher"
-msgstr "publisher"
+msgstr "penerbit"
 
 #: package-manager.xml.in.nolegal:676(para) 
-msgid "A person, group, or corporation that designs, creates, and publishes a package to a repository. The repository in turn serves the packages from the (default) publisher, for downloading purposes."
-msgstr "A person, group, or corporation that designs, creates, and publishes a package to a repository. The repository in turn serves the packages from the (default) publisher, for downloading purposes."
+msgid "A person, group, or corporation that provides packages. Packages for a publisher are found in a repository, from which the package system retrieves package data."
+msgstr "Seseorang, kelompok, atau korporasi yang menyediakan paket. Paket untuk penerbit ditemukan di repositori, dari mana sistem paket mengambil data paket."
 
 #: package-manager.xml.in.nolegal:679(glossterm) 
 msgid "repository"
-msgstr "repository"
+msgstr "repositori"
 
 #: package-manager.xml.in.nolegal:680(para) 
 msgid "A location where clients can publish and retrieve package content such as files contained within the package, and package metadata which includes information about the package such as its name and description."
-msgstr "A location where clients can publish and retrieve package content such as files contained within the package, and package metadata which includes information about the package such as its name and description."
+msgstr "Sebuah lokasi di mana klien dapat mempublikasikan dan mengambil isi paket seperti berkas yang terkandung dalam paket, dan paket metadata yang meliputi informasi tentang paket seperti nama dan deskripsi."
 
 #: package-manager.xml.in.nolegal:683(glossterm) 
 msgid "boot environment"
 msgstr "boot environment"
 
 #: package-manager.xml.in.nolegal:684(para) 
-msgid "For an OpenSolaris release, a boot environment is an instance of a bootable OpenSolaris environment. The root file system and all other file systems of the boot environment that contain system software are required to be ZFS datasets."
-msgstr "For an OpenSolaris release, a boot environment is an instance of a bootable OpenSolaris environment. The root file system and all other file systems of the boot environment that contain system software are required to be ZFS datasets."
+msgid "For an OpenSolaris 2010.03 release, a boot environment is an instance of a bootable OpenSolaris environment. The root file system and all other file systems of the boot environment that contain system software are required to be ZFS datasets."
+msgstr "Untuk OpenSolaris rilis 2010.03, boot environment adalah sebuah instans dari sebuah bootable OpenSolaris environment. Sistem berkas root dan semua sistem berkas lain dari boot environment yang berisi perangkat lunak sistem yang diperlukan untuk ZFS dataset."
 
 #: package-manager.xml.in.nolegal:685(para) 
 msgid "The active boot environment is the one that is currently booted. Many boot environments can present on an OpenSolaris system and an inactive boot environment can be in a state of waiting for activation upon system reboot."
-msgstr "The active boot environment is the one that is currently booted. Many boot environments can present on an OpenSolaris system and an inactive boot environment can be in a state of waiting for activation upon system reboot."
+msgstr "Boot Environment yang aktif adalah yang sedang digunakan untuk boot saat ini. Banyak boot environment dapat digunakan pada sebuah sistem OpenSolaris dan boot environment yang tidak aktif dalam keadaan menunggu aktivasi sistem setelah reboot."
 
 #: package-manager.xml.in.nolegal:688(glossterm) 
 msgid "clone"
-msgstr "clone"
+msgstr "klon"
 
 #: package-manager.xml.in.nolegal:689(para) 
 msgid "An exact copy."
-msgstr "An exact copy."
+msgstr "Salinan"
 
 #: package-manager.xml.in.nolegal:690(para) 
 msgid "A clone could be an exact copy of an operating system, a file system, or a volume. This copy has 100% compatibility with the original."
-msgstr "A clone could be an exact copy of an operating system, a file system, or a volume. This copy has 100% compatibility with the original."
+msgstr "Sebuah klon dapat berupa salinan dari sistem operasi, sistem file, atau volume. salinan ini memiliki 100% kompatibilitas dengan yang asli."
 
 #: package-manager.xml.in.nolegal:693(glossterm) 
 msgid "dataset"
@@ -1423,7 +1427,7 @@ msgstr "dataset"
 
 #: package-manager.xml.in.nolegal:694(para) 
 msgid "A generic name for the following ZFS entities: clones, file systems, snapshots, or volumes. Each dataset is identified by a unique name in the ZFS namespace."
-msgstr "A generic name for the following ZFS entities: clones, file systems, snapshots, or volumes. Each dataset is identified by a unique name in the ZFS namespace."
+msgstr "Sebuah nama yang umum untuk entitas ZFS berikut: klon, sistem berkas, snapshot, atau volume. Setiap Dataset diidentifikasi dengan nama yang unik dalam namespace ZFS."
 
 #: package-manager.xml.in.nolegal:697(glossterm) 
 msgid "image"
@@ -1431,27 +1435,27 @@ msgstr "image"
 
 #: package-manager.xml.in.nolegal:698(para) 
 msgid "A collection of software in a package that comprises an entire or partial operating system. The package is suitable for installation."
-msgstr "A collection of software in a package that comprises an entire or partial operating system. The package is suitable for installation."
+msgstr "Kumpulan perangkat lunak dalam paket yang terdiri dari seluruh atau sebagian sistem operasi. Paket ini cocok untuk instalasi."
 
 #: package-manager.xml.in.nolegal:699(para) 
 msgid "An image is a location on your system where packages and their associated files, directories, links, and dependencies can be installed."
-msgstr "An image is a location on your system where packages and their associated files, directories, links, and dependencies can be installed."
+msgstr "Sebuah image adalah sebuah lokasi di sistem anda di mana paket-paket dan berkas terkait, direktori, link, dan dependensi dapat diinstal."
 
 #: package-manager.xml.in.nolegal:702(glossterm) 
 msgid "package"
-msgstr "package"
+msgstr "paket"
 
 #: package-manager.xml.in.nolegal:703(para) 
 msgid "A collection of files, directories, links, drivers, and dependencies in a defined format."
-msgstr "A collection of files, directories, links, drivers, and dependencies in a defined format."
+msgstr "Kumpulan berkas, direktori, link, driver, dan dependensi dalam format yang ditetapkan."
 
 #: package-manager.xml.in.nolegal:706(glossterm) 
 msgid "origin"
 msgstr "asal"
 
 #: package-manager.xml.in.nolegal:707(para) 
-msgid "Location of a package repository specified by a URI."
-msgstr "Location of a package repository specified by a URI."
+msgid "Location of a package repository specified by a URI, that contains a complete set of package data."
+msgstr "Lokasi paket repositori ditentukan oleh URI, yang berisi satu set lengkap paket data."
 
 #: package-manager.xml.in.nolegal:710(glossterm) 
 msgid "alias"
@@ -1459,7 +1463,15 @@ msgstr "alias"
 
 #: package-manager.xml.in.nolegal:711(para) 
 msgid "An alternate name for a publisher."
-msgstr "An alternate name for a publisher."
+msgstr "Nama alternatif bagi penerbit"
+
+#: package-manager.xml.in.nolegal:714(glossterm) 
+msgid "mirror"
+msgstr "mirror"
+
+#: package-manager.xml.in.nolegal:715(para) 
+msgid "Location of a package repository, specified by a URI, that contains only package files."
+msgstr "Lokasi dari sebuah paket repositori, ditentukan oleh URI, yang hanya mengandung berkas paket."
 
 #. Put one translator per line, in the form of NAME <EMAIL>, YEAR1, YEAR2.
 #: package-manager.xml.in.nolegal:0(None) 

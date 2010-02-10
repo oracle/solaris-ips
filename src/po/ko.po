@@ -28,13 +28,13 @@ msgstr ""
        "Project-Id-Version: PACKAGE VERSION\n"
        "Report-Msgid-Bugs-To: \n"
        "POT-Creation-Date: 2010-01-15 08:56+0900\n"
-       "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-       "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-       "Language-Team: LANGUAGE <LL@li.org>\n"
+       "PO-Revision-Date: 2010-01-28 13:19+0800\n"
+       "Last-Translator: desktop-discuss@opensolaris.org\n"
+       "Language-Team: desktop-discuss@opensolaris.org\n"
        "MIME-Version: 1.0\n"
        "Content-Type: text/plain; charset=UTF-8\n"
        "Content-Transfer-Encoding: 8bit\n"
-       "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+       "Plural-Forms: nplurals=1; plural=0;\n"
 
 #. The full usage message isn't desired.
 #: ../client.py:138
@@ -381,7 +381,7 @@ msgstr "페이싯 변경이 이미지에 영향을 주지 않습니다."
 #: ../client.py:1019 ../client.py:2962
 #, python-format
 msgid "command does not take operands ('%s')"
-msgstr "command does not take operands ('%s')"
+msgstr "명령이 피연산자('%s')를 가져오지 않습니다."
 
 #: ../client.py:1037
 msgid "No updates available for this image."
@@ -1359,8 +1359,8 @@ msgid ""
 "if updates are available) or it should go straight to the update all "
 "operation."
 msgstr ""
-       "업데이트 작업을 수행한 후 업데이트가 검색될 때 패키지 관리자에서 "
-       "확인 대화 상자를 표시해야 하는지(업데이트가 사용 가능한지 확인) "
+       "업데이트 작업(업데이트가 사용 가능한지 확인)을 수행한 후 업데이트가 검색될 때 패키지 관리자에서 "
+       "확인 대화 상자를 표시해야 하는지 "
        "모두 업데이트 작업으로 바로 이동해야 하는지를 결정하는 "
        "부울 값입니다."
 
@@ -1512,7 +1512,7 @@ msgstr "초기 표시 필터 값"
 
 #: ../gui/data/packagemanager-preferences.schemas.in.h:29
 msgid "Last Export Selections Path"
-msgstr "마지막 선택 항목 내보내기 경로"
+msgstr "마지막 내보내기 선택 항목 경로"
 
 #: ../gui/data/packagemanager-preferences.schemas.in.h:30
 msgid "Last publisher used by package manager"
@@ -2584,7 +2584,7 @@ msgstr "예외 역추적 내용:\n"
 
 #: ../gui/modules/installupdate.py:866
 msgid "pkg version: "
-msgstr "pkg 버전: "
+msgstr "pkg version: "
 
 #: ../gui/modules/installupdate.py:870
 msgid "List of configured publishers:"
@@ -2875,7 +2875,7 @@ msgstr "활성화 중"
 #: ../gui/modules/repository.py:1011 ../gui/modules/repository.py:1068
 #, python-format
 msgid "%(enable)s publisher %(name)s\n"
-msgstr "%(enable)s 게시자 %(name)s\n"
+msgstr "게시자 %(name)s %(enable)s\n"
 
 #: ../gui/modules/repository.py:1038
 #, python-format
@@ -3215,7 +3215,7 @@ msgstr "라이센스 파일 %s 가 존재하지 않습니다."
 #: ../modules/actions/license.py:118
 #, python-format
 msgid "Hash: '%(found)s' should be '%(expected)s'"
-msgstr "Hash: '%(found)s'은(는) '%(expected)s'이(가) 되어야 합니다."
+msgstr "해시: '%(found)s'은(는) '%(expected)s'이(가) 되어야 합니다."
 
 #: ../modules/catalog.py:1514
 #, python-format
@@ -4321,7 +4321,7 @@ msgid ""
 "%(fp)s contains an action which is missing the expected attribute: %(at)s.\n"
 "The action is:%(act)s"
 msgstr ""
-       "%(fp)s에는 예상 속성이 누락된 작업이 있습니다. %(at)s.\n"
+       "%(fp)s에는 다음 예상 속성이 누락된 작업이 있습니다. %(at)s.\n"
        "작업: %(act)s"
 
 #: ../modules/manifest.py:595
@@ -4372,7 +4372,7 @@ msgid ""
 "actions are as follows:\n"
 "%s"
 msgstr ""
-       "파일 종속성 %s에 여러 패키지로 변환되는 경로가 있습니다. "
+       "파일 종속성 %s에 여러 패키지로 확인되는 경로가 있습니다. "
        "작업은 다음과 같습니다.\n"
        "%s"
 
@@ -4382,8 +4382,8 @@ msgid ""
 "The file dependency %s depends on a path delivered by multiple packages. "
 "Those packages are:%s"
 msgstr ""
-       "파일 종속성 %s은(는) 여러 패키지에서 제공하는 경로에 따라 달라집니다. "
-       "해당 패키지: %s"
+       "파일 종속성 %s이(가) 다중 패키지를 가리키는 경로에 종속되어 있습니다. "
+       "이러한 패키지는 다음과 같습니다. %s"
 
 #: ../modules/publish/dependencies.py:87
 #, python-format
@@ -4528,7 +4528,7 @@ msgid ""
 "Got an empty unquote_list while indexing. split_chars was %(sc)s and line "
 "was %(l)s"
 msgstr ""
-       "색인화 작업 중 비어 있는 unquote_list를 가져왔습니다. split_chars는 %(sc)이고 행은 "
+       "색인화 작업 중 비어 있는 unquote_list를 가져왔습니다. split_chars는 %(sc)s 이고 행은 "
        "%(l)s였습니다."
 
 #: ../modules/search_errors.py:147
@@ -4682,7 +4682,7 @@ msgstr "지정한 client_release가 잘못되었습니다. '%s'"
 #: ../modules/server/transaction.py:92
 #, python-format
 msgid "'The specified FMRI, '%s', has an invalid version."
-msgstr "'지정한 FMRI '%s'에 잘못된 버전이 있습니다."
+msgstr "지정한 FMRI '%s'에 잘못된 버전이 있습니다."
 
 #: ../modules/server/transaction.py:95
 #, python-format
@@ -4869,27 +4869,27 @@ msgstr "%(s1)s%(pub)s%(e1)s의 패키지 보기"
 #: ../packagemanager.py:1289
 #, python-format
 msgid "Search within %(s1)sAll Publishers%(e1)s"
-msgstr "%(s1)sAll Publishers%(e1)s 내에서 검색"
+msgstr "%(s1)s모든 게시자%(e1)s 내에서 검색"
 
 #: ../packagemanager.py:1296
 #, python-format
 msgid "View installed packages for %(s1)sAll Publishers%(e1)s"
-msgstr "%(s1)sAll Publishers%(e1)s에 대해 설치된 패키지 보기"
+msgstr "%(s1)s모든 게시자%(e1)s에 대해 설치된 패키지 보기"
 
 #: ../packagemanager.py:1303
 #, python-format
 msgid "Change View to %(s1)sAll Packages%(e1)s"
-msgstr "보기를 %(s1)sAll Packages%(e1)s(으)로 변경"
+msgstr "보기를 %(s1)s모든 패키지%(e1)s(으)로 변경"
 
 #: ../packagemanager.py:1311
 #, python-format
 msgid "Display %(s1)sSearch Help%(e1)s"
-msgstr "%(s1)sSearch Help%(e1)s 표시"
+msgstr "%(s1)s검색 도움말%(e1)s 표시"
 
 #: ../packagemanager.py:1314
 #, python-format
 msgid "Loading %(s1)sSearch Help%(e1)s ..."
-msgstr "%(s1)sSearch Help%(e1)s 로드 중..."
+msgstr "%(s1)s검색 도움말%(e1)s 로드 중..."
 
 #: ../packagemanager.py:1324
 #, python-format
@@ -5389,7 +5389,7 @@ msgid ""
 "pkg version:\n"
 msgstr ""
        "\n"
-       "패키지 버전:\n"
+       "pkg version:\n"
 
 #: ../packagemanager.py:5766
 msgid "Save selected..."
@@ -5584,7 +5584,7 @@ msgid ""
 msgstr ""
        "--set-property를 사용하여 지정한 저장소 구성 값이 잘못되었거나 "
        "필요한 값이 누락되었습니다. --set-property 옵션을 사용하여 올바른 값 "
-       "또는 필요한 값을 제공하십시오."
+       "및/또는 필요한 값을 제공하십시오."
 
 #: ../publish.py:149
 msgid "only -e or -n may be specified"
@@ -5696,7 +5696,7 @@ msgstr ""
        "\n"
        "                        제공하지 않을 경우 기본값은 현재 작업\n"
        "                        디렉토리입니다. 디렉토리 경로를 제공할 경우\n"
-       "                        대상 디렉토리에 이미 없으면 패키지 내용만\n"
+       "                        패키지 내용이 대상 디렉토리에 없을 때에만\n"
        "                        검색됩니다. 저장소 URI를 제공할 경우\n"
        "                        임시 디렉토리가 작성되고\n"
        "                        모든 패키지 데이터가 다시 게시되기 전에\n"

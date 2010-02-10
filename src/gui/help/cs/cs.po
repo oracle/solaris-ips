@@ -19,29 +19,31 @@
 # CDDL HEADER END
 #
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 msgid ""
 msgstr ""
-       "Project-Id-Version: PACKAGE VERSION\n"
-       "POT-Creation-Date: 2009-12-21 12:05+0900\n"
-       "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-       "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-       "Language-Team: LANGUAGE <LL@li.org>\n"
+       "Project-Id-Version: Package Manager\n"
+       "Report-Msgid-Bugs-To: \n"
+       "POT-Creation-Date: 2010-01-14 11:47+0900\n"
+       "PO-Revision-Date: 2010-01-20 20:31+0100\n"
+       "Last-Translator: Kristyna Kitzbergerova\n"
+       "Language-Team: Czech language team <i18n-discuss@opensolaris.org>\n"
        "MIME-Version: 1.0\n"
        "Content-Type: text/plain; charset=UTF-8\n"
        "Content-Transfer-Encoding: 8bit\n"
+       "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. When image changes, this message will be marked fuzzy or untranslated for you.
 #. It doesn't matter what you translate it to: it's not used at all.
-#: package-manager.xml.in.nolegal:38(None) package-manager.xml.in.nolegal:89(None) 
+#: package-manager.xml.in.nolegal:38(None) package-manager.xml.in.nolegal:88(None) 
 msgid "@@image: 'figures/pkgmgr-main.png'; md5=e2194180dd5eca2d8e3912fee614e061"
 msgstr "@@image: 'figures/pkgmgr-main.png'; md5=e2194180dd5eca2d8e3912fee614e061"
 
 #. When image changes, this message will be marked fuzzy or untranslated for you.
 #. It doesn't matter what you translate it to: it's not used at all.
-#: package-manager.xml.in.nolegal:69(None) 
+#: package-manager.xml.in.nolegal:68(None) 
 msgid "@@image: 'figures/startpage_new.png'; md5=9f8516015a79fd2b5c456128482affe4"
 msgstr "@@image: 'figures/startpage_new.png'; md5=9f8516015a79fd2b5c456128482affe4"
 
@@ -134,780 +136,780 @@ msgid "About Image Packaging System"
 msgstr "O balíčkovacím systému IPS"
 
 #: package-manager.xml.in.nolegal:54(para) 
-msgid "Image Packaging System (IPS) is a software delivery system that interacts with a network repository. The IPS software is a framework which provides for software lifecycle management including installation, upgrade, and removal."
-msgstr "Balíčkovací systém IPS je software, který spolupracuje se síťovým repozitářem. IPS software je framework, který poskytuje správu životního cyklu balíčku zahrnující jeho instalaci, aktualizaci a odstranění."
+msgid "Image Packaging System (IPS) is a framework which provides for software lifecycle management including installation, upgrade, and removal. The OpenSolaris 2010.03 release uses IPS as its packaging system."
+msgstr "Balíčkovací systém IPS je framework, který poskytuje správu životního cyklu softwaru zahrnující instalaci, aktualizaci a odstranění. OpenSolaris 2010.03 používá IPS a jeho balíčkovací systém."
 
 #: package-manager.xml.in.nolegal:55(para) 
-msgid "The OpenSolaris 2010.03 release uses IPS as its packaging system."
-msgstr "OpenSolaris 2010.03 využívá jako balíčkovací systém IPS."
-
-#: package-manager.xml.in.nolegal:56(para) 
 msgid "After an initial installation of the OpenSolaris 2010.03 operating system, you will find that some of the software applications that you use on a regular basis are not immediately available to you. These software applications are available as packages in a repository for downloading and installing over the network. A repository is a source for packages."
 msgstr "Po počáteční instalaci operačního systému OpenSolaris 2010.03 zjistíte, že některé běžně používané softwarové aplikace nejsou okamžitě k dispozici. Tyto softwarové aplikace jsou jako balíčky v repozitáři dostupné ke stažení a instalaci přes síť. Repozitář je zdroj balíčků. "
 
-#: package-manager.xml.in.nolegal:57(para) 
-msgid "Users can use IPS to install packages from a repository, create and publish their own IPS packages, mirror an existing repository, and publish existing packages to a repository."
-msgstr "Uživatelé mohou použít IPS pro instalaci balíčků z repozitáře, vytváření a publikování jejich vlastních balíčků, zrcadlit existující repozitář nebo publikovat existující balíčky v repozitáři."
+#: package-manager.xml.in.nolegal:56(para) 
+msgid "IPS provides a set of software tools that can be used to install packages from a repository, create and publish their own IPS packages, mirror an existing repository, and publish existing packages to a repository."
+msgstr "IPS poskytuje sadu softwarových nástrojů, které mohou být použity pro instalaci balíčků z repozitáře,  pro vytváření vlastních IPS balíčků a jejich publikaci do repozitáře."
 
-#: package-manager.xml.in.nolegal:58(para) 
+#: package-manager.xml.in.nolegal:57(para) 
 msgid "Once you have installed packages, IPS enables you to search, update, and manage packages on your system."
 msgstr "Jakmile máte nainstalován balíček, IPS vám umožní hledat, aktualizovat a spravovat balíčky na Vašem systému."
 
-#: package-manager.xml.in.nolegal:59(para) 
+#: package-manager.xml.in.nolegal:58(para) 
 msgid "With IPS , you can upgrade your system to a newer build of OpenSolaris, install and update your software to the latest available versions in a repository, and retrieve packages from mirror repositories."
 msgstr "Pomocí IPS systému můžete aktualizovat Váš systém na novější verzi OpenSolarisu, instalovat a aktualizovat Váš software na nejnovější verze v repozitáři a získávat balíčky ze zrcadleného repozitáře."
 
-#: package-manager.xml.in.nolegal:60(emphasis) 
+#: package-manager.xml.in.nolegal:59(emphasis) 
 msgid "The Package Manager provides a subset of the tasks that can be performed from the command-line."
 msgstr "Správce balíčků poskytuje sadu úkolů, které mohou být provedeny z příkazové řádky."
 
-#: package-manager.xml.in.nolegal:62(para) 
-msgid "If the system on which IPS is installed is on the network, IPS can automatically access the OpenSolaris publisher. For the OpenSolaris 2010.03 release, your IPS client can access the packages from <ulink url=\"http://pkg.opensolaris.org\"/>."
-msgstr "Pokud je systém, kde je IPS nainstalován, připojen k síti, IPS se může automaticky připojit k OpenSolaris vydavateli. V případě verze OpenSolaris 2010.03 může váš IPS klient získat balíčky z <ulink url=\"http://pkg.opensolaris.org\"/>.  "
+#: package-manager.xml.in.nolegal:61(para) 
+msgid "For the OpenSolaris 2010.03 release, if the system on which IPS is installed is on the network, IPS can automatically retrieve packages provided by the OpenSolaris publisher from the package repository located at <ulink url=\"http://pkg.opensolaris.org\"/>."
+msgstr "Pokud je systém, kde je IPS nainstalován, připojen k síti, IPS může automaticky stáhnout balíčky poskytované OpenSolaris vydavatelem z repozitáře umístěného na  <ulink url=\"http://pkg.opensolaris.org\"/>."
 
-#: package-manager.xml.in.nolegal:63(para) 
+#: package-manager.xml.in.nolegal:62(para) 
 msgid "For more IPS documentation, see the <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"><citetitle>Image Packaging System Guide</citetitle></ulink> and the <filename>pkg</filename><ulink url=\"http://opensolaris.org/sc/src/pkg/gate/src/man/\">man pages</ulink>."
 msgstr "Pro další dokumentaci k IPS navštivte <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"><citetitle>Průvodce správce balíčků</citetitle></ulink> a <ulink url=\"http://opensolaris.org/sc/src/pkg/gate/src/man/\">manuálové stránky</ulink> <filename> pkg</filename>"
 
-#: package-manager.xml.in.nolegal:64(para) 
+#: package-manager.xml.in.nolegal:63(para) 
 msgid "For more information about IPS, visit the <ulink url=\"http://opensolaris.org/os/project/pkg\">project page</ulink>."
 msgstr "Pro více informací o IPS navštivte <ulink url=\"http://opensolaris.org/os/project/pkg\">stránku projektu</ulink>."
 
-#: package-manager.xml.in.nolegal:66(title) 
+#: package-manager.xml.in.nolegal:65(title) 
 msgid "Getting Started With Package Manager"
 msgstr "Začínáme se Správcem balíčků."
 
-#: package-manager.xml.in.nolegal:67(para) 
+#: package-manager.xml.in.nolegal:66(para) 
 msgid "When you start the Package Manager, a Start Page similar to the example below is displayed:"
 msgstr "Po spuštění Správce balíčků je zobrazena počáteční stránka podobná ukázce níže."
 
-#: package-manager.xml.in.nolegal:68(title) 
+#: package-manager.xml.in.nolegal:67(title) 
 msgid "Package Manager Start Page"
 msgstr "Počáteční stránka Správce balíčků"
 
-#: package-manager.xml.in.nolegal:72(para) 
+#: package-manager.xml.in.nolegal:71(para) 
 msgid "The Start Page provides a list of featured packages that can be installed. It includes a list of some of the most popular and recent packages downloaded by the OpenSolaris community of users. The Recommended list of packages point to software applications that are frequently downloaded by the OpenSolaris user. Click the package links to install the packages."
 msgstr "Počáteční stránka poskytuje seznam dostupných balíčků, které mohou být nainstalovány. Zahrnuje seznam některých nejvíce populárních a nových balíčků stahovaných uživatelskou komunitou OpenSolaris. Seznam doporučených balíčků směřuje k softwarovým aplikacím často stahovaným uživateli OpenSolarisu. Po kliknutí na balíček bude balíček nainstalován."
 
-#: package-manager.xml.in.nolegal:73(para) 
+#: package-manager.xml.in.nolegal:72(para) 
 msgid "The Start Page also provides links to more information about the OpenSolaris project, subscribe to newsletters and join the OpenSolaris community."
 msgstr "Počáteční stránka také poskytuje odkazy na další informace o projektu OpenSolaris, můžete si nechat zasílat buletin a připojit se ke komunitě OpenSolaris."
 
-#: package-manager.xml.in.nolegal:74(para) 
+#: package-manager.xml.in.nolegal:73(para) 
 msgid "To close the Start Page and see the list of packages in the selected publisher, perform any of the following actions in the main window of the Package Manager:"
 msgstr "Pro zavření počáteční stránky a zobrazení seznamu balíčků zvoleného vydavatele proveďte jakoukoli z následujících akcí v hlavním okně Správce balíčků."
 
-#: package-manager.xml.in.nolegal:75(para) 
+#: package-manager.xml.in.nolegal:74(para) 
 msgid "Select a package category"
 msgstr "Vyberte kategorii balíčku"
 
-#: package-manager.xml.in.nolegal:77(para) 
+#: package-manager.xml.in.nolegal:76(para) 
 msgid "Change the <emphasis role=\"strong\">View</emphasis> drop-down menu"
 msgstr "Změňte  rozbalovací nabídku <emphasis role=\"strong\">Náhled</emphasis> "
 
-#: package-manager.xml.in.nolegal:79(para) 
+#: package-manager.xml.in.nolegal:78(para) 
 msgid "Perform a search"
 msgstr "Proveďte hledání"
 
-#: package-manager.xml.in.nolegal:81(para) 
+#: package-manager.xml.in.nolegal:80(para) 
 msgid "Change the publisher"
 msgstr "Změňte vydavatele"
 
-#: package-manager.xml.in.nolegal:84(para) 
+#: package-manager.xml.in.nolegal:83(para) 
 msgid "Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</guimenuitem></menuchoice> to return to the Start Page at anytime."
 msgstr "Vyberte <menuchoice><guimenu>Náhled</guimenu><guimenuitem>Úvodní stránka</"
        "guimenuitem></menuchoice> pro návrat na Úvodní stránku."
 
-#: package-manager.xml.in.nolegal:85(para) 
+#: package-manager.xml.in.nolegal:84(para) 
 msgid "See <xref linkend=\"edit-prefs\"/> to turn off the <emphasis role=\"strong\">initial display</emphasis> of the start page when the Package Manager starts."
 msgstr "Viz také <xref linkend=\"edit-prefs\"/> vypnutí <emphasis role=\"strong\"> úvodní stránky</emphasis> při spuštění Správce balíčků."
 
-#: package-manager.xml.in.nolegal:87(title) 
+#: package-manager.xml.in.nolegal:86(title) 
 msgid "About The Package Manager Window"
 msgstr "O okně Správce balíčků"
 
-#: package-manager.xml.in.nolegal:88(title) 
+#: package-manager.xml.in.nolegal:87(title) 
 msgid "Package Manager Main View"
 msgstr "Hlavní zobrazení Správce balíčků"
 
-#: package-manager.xml.in.nolegal:92(para) 
+#: package-manager.xml.in.nolegal:91(para) 
 msgid "The main window of the Package Manager consists of the following elements :"
 msgstr "Hlavní okno Správce balíčků se zkládá z následujících částí:"
 
-#: package-manager.xml.in.nolegal:93(emphasis) 
+#: package-manager.xml.in.nolegal:92(emphasis) 
 msgid "Menubar"
 msgstr "Hlavní nabídka"
 
-#: package-manager.xml.in.nolegal:94(para) 
+#: package-manager.xml.in.nolegal:93(para) 
 msgid "The menubar contains the menus and sub-menus required to perform all of the commands related to the Package Manager."
 msgstr "Hlavní nabídka obsahuje menu a podmenu potřebná k provádění všech příkazů souvisejících se Správcem balíčků."
 
-#: package-manager.xml.in.nolegal:98(emphasis) 
+#: package-manager.xml.in.nolegal:97(emphasis) 
 msgid "Toolbar"
 msgstr "Panel nástrojů"
 
-#: package-manager.xml.in.nolegal:99(para) 
+#: package-manager.xml.in.nolegal:98(para) 
 msgid "The toolbar contains the icons for a subset of the commands that can be performed by using the menus on the menubar. A <emphasis role=\"strong\">Search</emphasis> field is also located on the toolbar. You can perform the following actions from the toolbar :"
 msgstr "Panel nástrojů obsahuje ikony pro podskupiny příkazů, které mohou být provedeny užitím hlavní nabídky. V panelu nástrojů se také nachází políčko <emphasis role=\"strong\">Hledat</emphasis>. Je možno provést následující akce:"
 
-#: package-manager.xml.in.nolegal:100(para) 
+#: package-manager.xml.in.nolegal:99(para) 
 msgid "<emphasis role=\"strong\">Updates</emphasis> – Click <emphasis role=\"strong\">Updates</emphasis> to check for and install the latest updates."
 msgstr "<emphasis role=\"strong\">Aktualizovat</emphasis> - Klikněte na <emphasis role=\"strong\">Aktualizovat</emphasis> pro zjištění a instalaci posledních aktualizací."
 
-#: package-manager.xml.in.nolegal:102(para) 
+#: package-manager.xml.in.nolegal:101(para) 
 msgid "<emphasis role=\"strong\">Install/Update</emphasis> – Select a package and click <emphasis role=\"strong\">Install/Update</emphasis> to install or update a package."
 msgstr "<emphasis role=\"strong\">Instalovat/Aktualizovat</emphasis> - Zvolte balíček a klikněte na <emphasis role=\"strong\">Instalovat/Aktualizovat</emphasis> pro instalaci nebo aktualizaci balíčku."
 
-#: package-manager.xml.in.nolegal:104(para) 
+#: package-manager.xml.in.nolegal:103(para) 
 msgid "<emphasis role=\"strong\">Refresh</emphasis> – Click <emphasis role=\"strong\">Refresh</emphasis> to reload the list of packages."
 msgstr "<emphasis role=\"strong\">Obnovit</emphasis> - Klikněte na <emphasis role=\"strong\">Obnovit</emphasis> k obnovení seznamu balíčků."
 
-#: package-manager.xml.in.nolegal:106(para) 
+#: package-manager.xml.in.nolegal:105(para) 
 msgid "<emphasis role=\"strong\">Remove</emphasis> – Select a package and click <emphasis role=\"strong\">Remove</emphasis> to remove a package."
 msgstr "<emphasis role=\"strong\">Odstranit</emphasis> - Zvolte balíček a klikněte na <emphasis role=\"strong\">Odstranit</emphasis> pro odebrání balíčku."
 
-#: package-manager.xml.in.nolegal:108(para) 
+#: package-manager.xml.in.nolegal:107(para) 
 msgid "<emphasis role=\"strong\">Search for a Package</emphasis> – Type the name or description of a package in the <emphasis role=\"strong\">Search</emphasis> field to search for a package. See the <xref linkend=\"search-pkg\"/> section for examples on how to search for a package."
 msgstr "<emphasis role=\"strong\">Vyhledat balíček</emphasis> - Uveďte název balíčku nebo popis balíčku do políčka <emphasis role=\"strong\">Hledat</emphasis> pro vyhledání balíčku. Viz sekce <xref linkend=\"search-pkg\"/> ukázky, jak vyhledat balíček."
 
-#: package-manager.xml.in.nolegal:113(emphasis) 
+#: package-manager.xml.in.nolegal:112(emphasis) 
 msgid "Publisher Drop-Down Menu"
 msgstr "Rozbalovací menu Vydavatel"
 
-#: package-manager.xml.in.nolegal:114(para) 
+#: package-manager.xml.in.nolegal:113(para) 
 msgid "The list of available publishers is shown in the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu. Users can perform the following tasks from the publisher drop-down menu :"
 msgstr "Seznam dostupných vydavatelů je zobrazen v rozbalovacím menu <emphasis role=\"strong\">Vydavatel</emphasis>. Uživatelé mohou z rozbalovacího menu Vydavatel provádět následující úkony:"
 
-#: package-manager.xml.in.nolegal:115(emphasis) 
+#: package-manager.xml.in.nolegal:114(emphasis) 
 msgid "Select a publisher"
 msgstr "Zvolit vydavatele"
 
-#: package-manager.xml.in.nolegal:117(emphasis) 
+#: package-manager.xml.in.nolegal:116(emphasis) 
 msgid "View the list of packages installed from all publishers"
 msgstr "Zobrazit seznam balíčků nainstalovaných od všech vydavatelů"
 
-#: package-manager.xml.in.nolegal:119(emphasis) 
+#: package-manager.xml.in.nolegal:118(emphasis) 
 msgid "Search for package across all publishers"
 msgstr "Vyhledávat balíček u všech vydavatelů"
 
-#: package-manager.xml.in.nolegal:121(emphasis) 
+#: package-manager.xml.in.nolegal:120(emphasis) 
 msgid "Add a publisher"
 msgstr "Přidat vydavatele"
 
-#: package-manager.xml.in.nolegal:126(emphasis) 
+#: package-manager.xml.in.nolegal:125(emphasis) 
 msgid "List of Packages by Category"
 msgstr "Seznam balíčků podle kategorie"
 
-#: package-manager.xml.in.nolegal:127(para) 
+#: package-manager.xml.in.nolegal:126(para) 
 msgid "You can browse the available packages by category in the left hand side panel. Click on a category to see the sub-categories of packages available. There are six main categories that are displayed in the Package Manager:"
 msgstr "Můžete procházet dostupné balíčky po kategoriích v levém postranním panelu. Klikněte na kategorii pro zobrazení podkategorií dostupných balíčků. Ve Správci balíčků je zobrazeno šest hlavních kategorií."
 
-#: package-manager.xml.in.nolegal:128(emphasis) 
+#: package-manager.xml.in.nolegal:127(emphasis) 
 msgid "Applications"
 msgstr "Aplikace"
 
-#: package-manager.xml.in.nolegal:130(emphasis) 
+#: package-manager.xml.in.nolegal:129(emphasis) 
 msgid "Desktop (GNOME)"
 msgstr "Desktop (GNOME)"
 
-#: package-manager.xml.in.nolegal:132(emphasis) 
+#: package-manager.xml.in.nolegal:131(emphasis) 
 msgid "Development"
 msgstr "Vývoj"
 
-#: package-manager.xml.in.nolegal:134(emphasis) 
+#: package-manager.xml.in.nolegal:133(emphasis) 
 msgid "Drivers"
 msgstr "Ovladače"
 
-#: package-manager.xml.in.nolegal:136(emphasis) 
+#: package-manager.xml.in.nolegal:135(emphasis) 
 msgid "System"
 msgstr "Systém"
 
-#: package-manager.xml.in.nolegal:138(emphasis) 
+#: package-manager.xml.in.nolegal:137(emphasis) 
 msgid "Web Services"
 msgstr "Webové Služby"
 
-#: package-manager.xml.in.nolegal:143(emphasis) 
+#: package-manager.xml.in.nolegal:142(emphasis) 
 msgid "Recent Searches"
 msgstr "Nedávná vyhledávání"
 
-#: package-manager.xml.in.nolegal:144(para) 
+#: package-manager.xml.in.nolegal:143(para) 
 msgid "The Package Manager saves your recent package searches. Click the Recent Searches in the left hand side panel to view the packages you searched for recently."
 msgstr "Správce balíčků ukládá vaše nedávná vyhledávání balíčků. Klikněte na Nedávná vyhledávání v levém postranním panelu pro zobrazení Vámi nedávno vyhledáváných balíčků."
 
-#: package-manager.xml.in.nolegal:147(emphasis) 
+#: package-manager.xml.in.nolegal:146(emphasis) 
 msgid "List of Packages by Status"
 msgstr "Seznam balíčků podle stavu"
 
-#: package-manager.xml.in.nolegal:148(para) 
+#: package-manager.xml.in.nolegal:147(para) 
 msgid "The <emphasis role=\"strong\">View</emphasis> drop-down menu enables you to view package status with the following options :"
 msgstr "Rozbalovací nabídka <emphasis role=\"strong\">Náhled</emphasis> umožňuje zobrazení stavu balíčků s následujícími možnostmi:"
 
-#: package-manager.xml.in.nolegal:149(para) 
+#: package-manager.xml.in.nolegal:148(para) 
 msgid "<emphasis role=\"strong\">All Packages</emphasis> – Shows the list of all packages available within the current publisher."
 msgstr "<emphasis role=\"strong\">Všechny balíčky</emphasis> - Zobrazí seznam všech balíčků dostupných v rámci daného vydavatele."
 
-#: package-manager.xml.in.nolegal:151(para) 
+#: package-manager.xml.in.nolegal:150(para) 
 msgid "<emphasis role=\"strong\">Installed Packages</emphasis> – Shows the list of packages installed within the current publisher on your system."
 msgstr "<emphasis role=\"strong\">Nainstalované balíčky</emphasis> - Zobrazí seznam balíčků v rámci daného vydavatele nainstalovaných na vašem systému."
 
-#: package-manager.xml.in.nolegal:153(para) 
+#: package-manager.xml.in.nolegal:152(para) 
 msgid "<emphasis role=\"strong\">Updates</emphasis> — Shows the list of packages that have newer versions available within the current publisher."
 msgstr "<emphasis role=\"strong\">Aktualizace</emphasis> - Zobrazí seznam balíčků s dostupnými novějšími verzemi v rámci daného vydavatele."
 
-#: package-manager.xml.in.nolegal:155(para) 
+#: package-manager.xml.in.nolegal:154(para) 
 msgid "<emphasis role=\"strong\">Not Installed Packages</emphasis> – Shows the list of packages that are not installed, but are available in the currently selected publisher."
 msgstr "<emphasis role=\"strong\">Nenainsatlované balíčky</emphasis> - Zobrazí seznam balíčků, které nejsou nainstalovány, ale jsou dostupné v rámci daného vydavatele."
 
-#: package-manager.xml.in.nolegal:157(para) 
+#: package-manager.xml.in.nolegal:156(para) 
 msgid "<emphasis role=\"strong\">Selected Packages</emphasis> – Shows the list of packages that you have selected."
 msgstr "<emphasis role=\"strong\">Vybrané balíčky</emphasis> – Zobrazí seznam balíčků, které jse vybrali."
 
-#: package-manager.xml.in.nolegal:162(emphasis) 
+#: package-manager.xml.in.nolegal:161(emphasis) 
 msgid "Package Name, Status, and Description"
 msgstr "Jméno, Stav a Popis balíčku"
 
-#: package-manager.xml.in.nolegal:163(para) 
+#: package-manager.xml.in.nolegal:162(para) 
 msgid "The list of packages in the selected category, a brief description, and their status are displayed in here."
 msgstr "Zde je zobrazen seznam balíčků ve zvolené kategorii, stručný popis a jejich stav. "
 
-#: package-manager.xml.in.nolegal:164(para) 
+#: package-manager.xml.in.nolegal:163(para) 
 msgid "The Publisher name is also displayed here in the following instances :"
 msgstr "V následujících případech je zobrazen i vydavatel:"
 
-#: package-manager.xml.in.nolegal:165(para) 
+#: package-manager.xml.in.nolegal:164(para) 
 msgid "When the <emphasis role=\"strong\">Pubisher</emphasis> drop-down menu is set to All Publishers (Installed)"
 msgstr "Rozbalovací menu <emphasis role=\"strong\">Vydavatel</emphasis> je nastaveno na Všichni vydavatelé (Nainstalováno)"
 
-#: package-manager.xml.in.nolegal:167(para) 
+#: package-manager.xml.in.nolegal:166(para) 
 msgid "When search results are displayed for the All Publishers (Search) option"
 msgstr "Jsou zobrazeny výsledky vyhledávání pro Všechny vydavatele"
 
-#: package-manager.xml.in.nolegal:169(para) 
+#: package-manager.xml.in.nolegal:168(para) 
 msgid "When a recent search result is displayed"
 msgstr "Je zobrazen výsledek nedávného vyhledávání"
 
-#: package-manager.xml.in.nolegal:174(emphasis) 
+#: package-manager.xml.in.nolegal:173(emphasis) 
 msgid "Package Details"
 msgstr "Podrobnosti o balíčku"
 
-#: package-manager.xml.in.nolegal:175(para) 
+#: package-manager.xml.in.nolegal:174(para) 
 msgid "Click a package name to select it. Details of the selected package, such as name, version, file dependencies, and license are displayed in this window."
 msgstr "Klikněte na jméno balíčku a zobrazí se informace o vybraném balíčku jako je jméno, verze, souborové závislosti a licence."
 
-#: package-manager.xml.in.nolegal:181(title) 
+#: package-manager.xml.in.nolegal:180(title) 
 msgid "Package Manager Settings"
 msgstr "Nastavení Správce balíčku"
 
-#: package-manager.xml.in.nolegal:182(para) 
+#: package-manager.xml.in.nolegal:181(para) 
 msgid "Use the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> to change the Package Manager settings. The following sections discuss the preferences that can be changed by the user."
 msgstr "Ke změně nastavení Správce balíčků, použijte <menuchoice><guimenu>Upravit</guimenu><guimenuitem>Nastavení</guimenuitem></menuchoice>. Následující sekce se zabývají nastaveními, která může uživatel měnit."
 
-#: package-manager.xml.in.nolegal:183(title) 
+#: package-manager.xml.in.nolegal:182(title) 
 msgid "Start Page Preferences"
 msgstr "Nastavení úvodní stránky"
 
-#: package-manager.xml.in.nolegal:184(para) 
+#: package-manager.xml.in.nolegal:183(para) 
 msgid "A Start Page is displayed in the main window of the Package Manager when the application is started. The Start Page provides links to <ulink url=\"http://opensolaris.com\">opensolaris.com</ulink> page where you can get more information about OpenSolaris, subscribe to newsletters and join the OpenSolaris community."
 msgstr "Úvodní stránka je zobrazena v hlavním okně Správce Balíčků při spuštění aplikace. Úvodní stránka poskytuje odkazy na <ulink url=\"http://opensolaris.com\">opensolaris.com</ulink>, dále odkaz na přihlášení se do odebírání e-mailů s novinkami a připojení se k OpenSolaris komunitě."
 
-#: package-manager.xml.in.nolegal:185(para) 
+#: package-manager.xml.in.nolegal:184(para) 
 msgid "You can choose to turn off this setting so this page is not displayed when Package Manager starts."
 msgstr "Můžete zvolit vypnout toto nastavení tak, že úvodní stránka nebude zobrazena při startu Správce balíčků."
 
-#: package-manager.xml.in.nolegal:186(para) 
+#: package-manager.xml.in.nolegal:185(para) 
 msgid "Select <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> from the main menu and uncheck the <emphasis role=\"strong\">Show Start Page on Startup</emphasis> to disable the Start Page. This dialog is checked by default."
 msgstr "V hlavní nabídce zvolte<menuchoice><guimenu>Upravit</guimenu><guimenuitem>Nastavení</guimenuitem></menuchoice> a odškrtněte <emphasis role=\"strong\">Zobrazit Úvodní stránku při spuštění</emphasis>. Tento dialog je standartně zaškrtnutý."
 
-#: package-manager.xml.in.nolegal:187(para) 
+#: package-manager.xml.in.nolegal:186(para) 
 msgid "Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</guimenuitem></menuchoice> from the main menu to go to the Start Page at anytime."
 msgstr "V hlavní nabídce zvolte <menuchoice><guimenu>Zobrazit</guimenu><guimenuitem>Úvodní stránka</guimenuitem></menuchoice> kdykoli pro zobrazení Úvodní stránky."
 
-#: package-manager.xml.in.nolegal:189(title) 
+#: package-manager.xml.in.nolegal:188(title) 
 msgid "Exit Preferences"
 msgstr "Ukončit nastavení"
 
-#: package-manager.xml.in.nolegal:190(para) 
+#: package-manager.xml.in.nolegal:189(para) 
 msgid "The Package Manager application can remember some of its current settings if the <emphasis role=\"strong\">Remember current state on exit</emphasis> option in the <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> is checked."
 msgstr "Aplikace Správce balíčků je schopna si zapamatovat některá její současná nastavení, pokud je zaškrtnuta možnost <emphasis role=\"strong\">Pamatovat si současný stav při ukončení</emphasis> v nabídce <menuchoice><guimenu>Upravit</guimenu><guimenuitem>Nastavení</guimenuitem></menuchoice>"
 
-#: package-manager.xml.in.nolegal:191(para) 
+#: package-manager.xml.in.nolegal:190(para) 
 msgid "The following settings are saved:"
 msgstr "Následující nastavení jsou uložena:"
 
-#: package-manager.xml.in.nolegal:192(para) 
+#: package-manager.xml.in.nolegal:191(para) 
 msgid "<emphasis role=\"strong\">Vertical separators</emphasis> – The size of the columns in the main window the Package Manager"
 msgstr "</emphasis role=\"strong\">Vertikální oddělovače</emphasis> - Velikost sloupců v hlavním okně Správce balíčků."
 
-#: package-manager.xml.in.nolegal:194(para) 
+#: package-manager.xml.in.nolegal:193(para) 
 msgid "<emphasis role=\"strong\">Window size</emphasis> – The size of the Package Manager window"
 msgstr "<emphasis role=\"strong\">Velikost okna</emphasis> - Velikost okna Správce balíčků"
 
-#: package-manager.xml.in.nolegal:196(para) 
+#: package-manager.xml.in.nolegal:195(para) 
 msgid "<emphasis role=\"strong\">Current publisher</emphasis> – The publisher that is selected when the Package Manager is closed"
 msgstr "<emphasis role=\"strong\">Současný vydavatel</emphasis> - Vydavatel, který je momentálně zvolen, když je Správce balíčků ukončen. "
 
-#: package-manager.xml.in.nolegal:200(title) 
+#: package-manager.xml.in.nolegal:199(title) 
 msgid "Confirmation Dialog Preferences"
 msgstr "Nastavení Potvrzovacího Dialogu"
 
-#: package-manager.xml.in.nolegal:201(para) 
+#: package-manager.xml.in.nolegal:200(para) 
 msgid "When a package is selected for installation, update, or removal, a confirmation dialog is displayed that displays the list of packages and the action to be performed. Under the <emphasis role=\"strong\">Show Confirmation Dialog</emphasis> uncheck <emphasis role=\"strong\">On Updates</emphasis>, <emphasis role=\"strong\">On Package Install/Update</emphasis>, and <emphasis role=\"strong\">On Package Remove</emphasis> to turn these settings off."
 msgstr "Pokud je balíček vybrán k instalaci, aktualizaci nebo odebrání, je zobrazen potvrzovací dialog zobrazující seznam balíčků a operací, které budou provedeny. V okně <emphasis role=\"strong\">Ukázat Potvrzovací Dialog</emphasis> odškrtněte<emphasis role=\"strong\">Při aktualizacích</emphasis>, <emphasis role=\"strong\">Při Instalaci/Aktualizaci Balíčků</emphasis> a <emphasis role=\"strong\">Při Odebírání Balíčků</emphasis> pro vypnutí těchto nastavení."
 
-#: package-manager.xml.in.nolegal:204(title) 
+#: package-manager.xml.in.nolegal:203(title) 
 msgid "Working With Packages"
 msgstr "Pracujeme s balíčky"
 
-#: package-manager.xml.in.nolegal:205(title) 
+#: package-manager.xml.in.nolegal:204(title) 
 msgid "Install a Package"
 msgstr "Instalace balíčku"
 
-#: package-manager.xml.in.nolegal:206(para) 
+#: package-manager.xml.in.nolegal:205(para) 
 msgid "The list of packages and their status is displayed in the main window of the Package Manager. Perform the following steps to install a package:"
 msgstr "Seznam balíčků a jejich stavu je zobrazen v hlavním okně Správce balíčků. Pro instalaci balíčku proveďte následující kroky."
 
-#: package-manager.xml.in.nolegal:207(para) 
+#: package-manager.xml.in.nolegal:206(para) 
 msgid "Check the box next to the package or packages to select it. Double-clicking the package also selects the package."
 msgstr "Označte políčko vedle balíčku k jeho vybrání. Dvojklikem také balíček vybere."
 
-#: package-manager.xml.in.nolegal:209(para) 
+#: package-manager.xml.in.nolegal:208(para) 
 msgid "Click <guibutton>Install/Update</guibutton> to start the package installation process."
 msgstr "Klikněte na <guibutton>Instalovat/Aktualizovat</guibutton> pro start procesu instalace balíčku."
 
-#: package-manager.xml.in.nolegal:210(para) 
+#: package-manager.xml.in.nolegal:209(para) 
 msgid "You can also choose <menuchoice><guimenu>Package</guimenu><guimenuitem>Install/Update</guimenuitem></menuchoice> to start the package installation process."
 msgstr "Instalaci můžete také začít vybráním <menuchoice><guimenu>Balíček</"
        "guimenu><guimenuitem>Instalovat/Aktualizovat</guimenuitem></menuchoice>."
 
-#: package-manager.xml.in.nolegal:212(para) 
+#: package-manager.xml.in.nolegal:211(para) 
 msgid "Click <guilabel>Details</guilabel> to view the installation details or <guibutton>Cancel</guibutton> to cancel the package installation."
 msgstr "Klikněte na <guilabel>Podrobnosti</guilabel> pro zobrazení podrobností o instalaci nebo na <guibutton>Zrušit</guibutton> pro zrušení instalace balíčku."
 
-#: package-manager.xml.in.nolegal:214(para) 
+#: package-manager.xml.in.nolegal:213(para) 
 msgid "After the installation has completed, click <guibutton>Close</guibutton>."
 msgstr "Po dokončení instalace klikněte na tlačítko <guibutton>Zavřít</guibutton>."
 
-#: package-manager.xml.in.nolegal:217(title) 
+#: package-manager.xml.in.nolegal:216(title) 
 msgid "Installation Error"
 msgstr "Chyba při instalaci"
 
-#: package-manager.xml.in.nolegal:218(para) 
+#: package-manager.xml.in.nolegal:217(para) 
 msgid "If an error occurs during package installation, an error dialog with the error message is displayed along with the reason for failure. Click <guibutton>Close</guibutton> to close the error dialog."
 msgstr "Pokud dojde při instalaci k chybě, je zobrazen chybový dialog s chybovou hláškou a důvodem selhání. Klikněte na <guibutton>Zavřít</guibutton> pro zavření chybového dialogu."
 
-#: package-manager.xml.in.nolegal:221(title) 
+#: package-manager.xml.in.nolegal:220(title) 
 msgid "Remove a Package"
 msgstr "Odstranit balíček"
 
-#: package-manager.xml.in.nolegal:222(para) 
+#: package-manager.xml.in.nolegal:221(para) 
 msgid "Perform the following steps to remove a package:"
 msgstr "Pro odstranění balíčku proveďte následující kroky:"
 
-#: package-manager.xml.in.nolegal:223(para) 
+#: package-manager.xml.in.nolegal:222(para) 
 msgid "Check the box next to a package to select it. Double-clicking the package also selects the package."
 msgstr "Zaškrtněte políčko vedle balíčku k vybrání balíčku. Dvojklikem také balíček vybere."
 
-#: package-manager.xml.in.nolegal:225(para) 
+#: package-manager.xml.in.nolegal:224(para) 
 msgid "Click <guibutton>Remove</guibutton> to start the package uninstallation process."
 msgstr "Klikněte na <guibutton>Odebrat</guibutton> pro započetí procesu deinstalace balíčku."
 
-#: package-manager.xml.in.nolegal:226(para) 
+#: package-manager.xml.in.nolegal:225(para) 
 msgid "You can also choose <menuchoice><guimenu>Package</guimenu><guimenuitem>Remove</guimenuitem></menuchoice> to remove a package."
 msgstr "Pro odstranění balíčku můžete také zvolit <menuchoice><guimenu>Balíček</"
        "guimenu><guimenuitem>Odstranit</guimenuitem></menuchoice>"
 
-#: package-manager.xml.in.nolegal:228(para) 
+#: package-manager.xml.in.nolegal:227(para) 
 msgid "Review the packages to be removed and the package dependencies details in the <emphasis role=\"strong\">Remove Confirmation</emphasis> dialog."
 msgstr "Shlédněte balíčky k odebrání a podrobnosti o závislostech balíčků v potvrzovacím dialogu <emphasis role=\"strong\">Potvrzení odebrání</emphasis>."
 
-#: package-manager.xml.in.nolegal:230(para) 
+#: package-manager.xml.in.nolegal:229(para) 
 msgid "Click <guibutton>Proceed</guibutton> to start removing the packages or <guibutton>Cancel</guibutton> to cancel the process."
 msgstr "Klikněte na <guibutton>Pokračovat</guibutton> pro započetí odebírání balíčků nebo <guibutton>Zrušit</guibutton> pro zrušení procesu."
 
-#: package-manager.xml.in.nolegal:234(title) 
+#: package-manager.xml.in.nolegal:233(title) 
 msgid "Search for a Package"
 msgstr "Vyhledání balíčku"
 
-#: package-manager.xml.in.nolegal:235(para) 
+#: package-manager.xml.in.nolegal:234(para) 
 msgid "You can search for a package in the following ways :"
 msgstr "Balíček můžete hledat následujícími způsoby:"
 
-#: package-manager.xml.in.nolegal:236(para) 
+#: package-manager.xml.in.nolegal:235(para) 
 msgid "<emphasis role=\"strong\">Search the current publisher</emphasis> – Search for a package in the publisher currently selected in the <emphasis role=\"strong\"> Publisher</emphasis> drop-down menu. If you do not know the status of the package you are searching for, set the <emphasis role=\"strong\">View</emphasis> drop-down menu to <emphasis role=\"strong\">All Packages</emphasis>."
 msgstr "<emphasis role=\"strong\">Hledat v rámci daného vydavatele</emphasis> - Vyhledávat balíček v rámci nyní vybraného vydavatele v rozbalovacím menu </emphasis role=\"strong\">Vydavatel</emphasis>. Pokud neznáte stav vyhledávaného balíčku, nastavte v rozbalobacím menu</emphasis role=\"strong\">Náhled</emphasis> hodnotu <emphasis role=\"strong\">Všechny balíčky</emphasis>."
 
-#: package-manager.xml.in.nolegal:237(para) 
+#: package-manager.xml.in.nolegal:236(para) 
 msgid "Enter a description, or a partial name in the <emphasis role=\"strong\">Search</emphasis> field. For example, you might type one of the following search terms to search for <filename>SUNWgnome-games</filename> :"
-msgstr "Uveďte popis nebo částečný název do políčka <emphasis role=\"strong\">Hledat</emphasis>. Například můžete uvést jeden z následujících výrazů pro vyhledání <filename>SUNWgnome-games</filename>:"
+msgstr "Vložte popis a část jména do pole <emphasis role=\"strong\">Hledat</emphasis>. Například pro vyhledání <filename>SUNWgnome-games</filename> můžete napsat následující:"
 
-#: package-manager.xml.in.nolegal:238(para) 
+#: package-manager.xml.in.nolegal:237(para) 
 msgid "SUNWgames"
 msgstr "SUNWgames"
 
-#: package-manager.xml.in.nolegal:240(para) 
+#: package-manager.xml.in.nolegal:239(para) 
 msgid "games"
 msgstr "games"
 
-#: package-manager.xml.in.nolegal:242(para) 
+#: package-manager.xml.in.nolegal:241(para) 
 msgid "GNOME-games"
 msgstr "GNOME-games"
 
-#: package-manager.xml.in.nolegal:245(para) 
+#: package-manager.xml.in.nolegal:244(para) 
 msgid "To search for SunStudio compilers, you might type one of the following terms:"
 msgstr "Pro vyhledání SunStudio kompilátorů, můžete napsat následující výrazy:"
 
-#: package-manager.xml.in.nolegal:246(para) 
+#: package-manager.xml.in.nolegal:245(para) 
 msgid "compiler"
 msgstr "compiler"
 
-#: package-manager.xml.in.nolegal:248(para) 
+#: package-manager.xml.in.nolegal:247(para) 
 msgid "tools"
 msgstr "tools"
 
-#: package-manager.xml.in.nolegal:252(para) 
+#: package-manager.xml.in.nolegal:251(para) 
 msgid "<emphasis role=\"strong\">Search all publishers</emphasis> – Choose <emphasis role=\"strong\">All Publishers(Search)</emphasis> from the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu to search for a package across all configured publishers. If you do not know the status of the package you are searching for, set the <emphasis role=\"strong\">View</emphasis> drop-down menu to <emphasis role=\"strong\">All Packages</emphasis>."
 msgstr "<emphasis role=\"strong\">Hledat u všech vydavatelů</emphasis> - Zvolte <emphasis role=\"strong\">Všichni vydavatelé (Vyhledávání)</emphasis> v rozbalovací nabídce <emphasis role=\"strong\">Vydavatel</emphasis> pro vyhledávání balíčku v rámci všech nastavených vydavatelů. Pokud neznáte stav vyhledávaného balíčku, nastavte v rozbalovací nabídce<emphasis role=\"strong\">Náhled</emphasis> hodnotu </emphasis role=\"strong\">Všechny balíčky</emphasis> "
 
-#: package-manager.xml.in.nolegal:253(para) 
+#: package-manager.xml.in.nolegal:252(para) 
 msgid "Type a description of the package in the <emphasis role=\"strong\">Search</emphasis> field. For example, the <filename>SUNWdiveintopython</filename> package is a book on Python programming. The description of the package contains the string <emphasis>book</emphasis>. To search for this package, you might then type one of the following terms:"
 msgstr "Uveďte popis balíčku do políčka <emphasis role=\"strong\">Vyhledávání</emphasis>. Například balíček <filename>SUNWdiveintopython</filename> je kniha o programování v Pythonu. Popis palíčku obsahuje řetězec <emphasis>book</emphasis>. Pro vyhledávání tohoto balíčku můžete použít jeden z následujících výrazů:"
 
-#: package-manager.xml.in.nolegal:254(para) 
+#: package-manager.xml.in.nolegal:253(para) 
 msgid "python"
 msgstr "python"
 
-#: package-manager.xml.in.nolegal:256(para) 
+#: package-manager.xml.in.nolegal:255(para) 
 msgid "book"
 msgstr "book"
 
-#: package-manager.xml.in.nolegal:259(para) 
+#: package-manager.xml.in.nolegal:258(para) 
 msgid "If you searched for the term <emphasis>diveinto</emphasis> when searching for the <filename>SUNWdiveintopython</filename> package, the results will not be displayed as the term <emphasis>diveinto</emphasis> is not present as an independent, complete word in the package contents. However you will find the package using the <literal>*</literal> wild card. Hence, searching for the term <literal>diveinto*</literal> will display the <filename>SUNWdiveintopython</filename> package."
 msgstr "Pokud by vyhledávaný výraz byl <emphasis>diveinto</emphasis> při hledání balíčku <filename>SUNWdiveintopython</filename>, výsledky by nebyly zobrazeny, neboť výraz <emphasis>diveinto</emphasis> není přítomen jako nezávislé celé slovo v obsahu balíčku. Nicméně balíček naleznete užitím náhrady <literal>*</literal>. Tedy hledání výrazu <literal>diveinto*</literal> zobrazí balíček <filename>SUNWdiveintopython</filename>."
 
-#: package-manager.xml.in.nolegal:263(para) 
+#: package-manager.xml.in.nolegal:262(para) 
 msgid "Use the submenus under the <menuchoice><guimenu>Edit</guimenu></menuchoice> menu to cut, copy, or paste text in the <emphasis role=\"strong\">Search</emphasis> field."
 msgstr "Užijte podnabídky v menu <menuchoice><guimenu>Upravit</guimenu></menuchoice> pro vyjmutí, kopírování nebo vložení textu do políčka <emphasis role=\"strong\">Vyhledávání</emphasis>."
 
-#: package-manager.xml.in.nolegal:265(para) 
+#: package-manager.xml.in.nolegal:264(para) 
 msgid "The following operators are supported for a package search:"
 msgstr "Při vyhledávání balíčků jsou podporovány následující operátory:"
 
-#: package-manager.xml.in.nolegal:266(emphasis) 
+#: package-manager.xml.in.nolegal:265(emphasis) 
 msgid "The AND operator"
 msgstr "Operátor AND"
 
-#: package-manager.xml.in.nolegal:267(para) 
+#: package-manager.xml.in.nolegal:266(para) 
 msgid "When the search term is separated by spaces or the AND operator, the Package Manager will search for packages containing <emphasis role=\"strong\">all</emphasis> the search terms."
 msgstr "Pokud je vyhledávaný výraz rozdělen mezerami nebo operátorem AND, Správce balíčků bude vyhledávat balíčky obsahující <emphasis role=\"strong\">všechny</emphasis> vyhledávané výrazy. "
 
-#: package-manager.xml.in.nolegal:270(emphasis) 
+#: package-manager.xml.in.nolegal:269(emphasis) 
 msgid "Double Quotes"
 msgstr "Uvozovky"
 
-#: package-manager.xml.in.nolegal:271(para) 
+#: package-manager.xml.in.nolegal:270(para) 
 msgid "When a search term is placed within double quotes, the Package Manager will search for packages that <emphasis role=\"strong\">match the search term exactly</emphasis>."
 msgstr "Pokud je vyhledávaný výraz umístěn mezi uvozovkami, Správce balíčků bude vyhledávat balíčky, které <emphasis role=\"strong\">přesně odpovídají tomuto výrazu</emphasis>. "
 
-#: package-manager.xml.in.nolegal:274(emphasis) 
+#: package-manager.xml.in.nolegal:273(emphasis) 
 msgid "Wildcard *"
 msgstr "Náhrada *"
 
-#: package-manager.xml.in.nolegal:275(para) 
+#: package-manager.xml.in.nolegal:274(para) 
 msgid "Including a wildcard in your search term enables you to search for partial package names. For example, when you enter <emphasis>boo*</emphasis> in your search term, the packages displayed could include <emphasis>boot</emphasis> and <emphasis>book</emphasis> in the package name and description."
 msgstr "Zahrnutí nahrazujícího znaku do vyhledávaného výrazu umožňuje vyhledávání částečných názvů balíčků. Například při zadání <emphasis>boo*</emphasis> do vyhledávaného výrazu by mohly zobrazené balíčky obsahovat <emphasis>boot</emphasis> a <emphasis>book</emphasis> v názvu a popisu balíčku."
 
-#: package-manager.xml.in.nolegal:276(para) 
+#: package-manager.xml.in.nolegal:275(para) 
 msgid "Wildcard searching can be slower than an exact match search or a search based on package description."
 msgstr "Vyhledávání s náhradou může být pomalejší než vyhledávání přesné shody nebo vyhledávání založené na popisu balíčku."
 
-#: package-manager.xml.in.nolegal:280(emphasis) 
+#: package-manager.xml.in.nolegal:279(emphasis) 
 msgid "The OR operator"
 msgstr "Operátor OR"
 
-#: package-manager.xml.in.nolegal:281(para) 
+#: package-manager.xml.in.nolegal:280(para) 
 msgid "When a search term is separated by the OR operator, the Package Manager searches for packages that contain any of the search terms."
 msgstr "Pokud je vyhledávaný výraz rozdělen operátorem OR, Správce balíčků bude vyhledávat balíčky obsahující libovolný z těchto výrazů."
 
-#: package-manager.xml.in.nolegal:286(title) 
+#: package-manager.xml.in.nolegal:285(title) 
 msgid "Cancel Package Search"
 msgstr "Zrušit Vyhledávání Balíčků"
 
-#: package-manager.xml.in.nolegal:287(para) 
+#: package-manager.xml.in.nolegal:286(para) 
 msgid "If you want to cancel a search, use the Cancel Search icon at the bottom of the main window of the Package Manager. This icon is visible on the status bar only during a search operation."
 msgstr "Pokud chcete zrušit vyhledávání, použijte ikonu Zrušit Vyhledávání ve spodní části hlavního okna Správce balíčků. Tato ikona je na stavové řádce viditelná pouze při probíhající operaci vyhledávání."
 
-#: package-manager.xml.in.nolegal:289(title) 
+#: package-manager.xml.in.nolegal:288(title) 
 msgid "Update a Package"
 msgstr "Aktualizovat Balíček"
 
-#: package-manager.xml.in.nolegal:290(para) 
+#: package-manager.xml.in.nolegal:289(para) 
 msgid "Look for the Updates icon next to the installed package name. This icon indicates that updates are available for the package in the currently selected publisher. You can also choose one of the following views to display a list of packages that have updates available :"
-msgstr "Vedle názvu nainstalovaného balíčku naleznete ikonu Aktualizovat."
+msgstr "Vedle názvu nainstalovaného balíčku naleznete ikonu Aktualizovat. Tato ikona značí, že jsou dostupné aktualizace pro balíčky v právě vybraném vydavateli. Můžete také zvolit jeden z následujících náhledů pro zobrazení seznamu balíčků a jejich dostupných aktualizací:"
 
-#: package-manager.xml.in.nolegal:291(para) 
+#: package-manager.xml.in.nolegal:290(para) 
 msgid "Select the <menuchoice><guimenuitem>Updates</guimenuitem></menuchoice> option in the <emphasis role=\"strong\">View</emphasis> drop-down menu to list all packages that have updates available in the currently selected publisher."
-msgstr "Vyberte možnost <menuchoice><guimenuitem>Aktualizovat</guimenuitem></menuchoice> z rozbalovací nabídky<emphasis role=\"strong\">Zobrazení</emphasis> pro vypsání všech balíčků, které mají u nyní zvoleného vydavatele dostupné aktualizace."
+msgstr "Vyberte možnost <menuchoice><guimenuitem>Aktualizace</guimenuitem></menuchoice> z rozbalovací nabídky<emphasis role=\"strong\">Náhled</emphasis> pro zobrazení seznamu všech balíčků, které mají u nyní zvoleného vydavatele dostupné aktualizace."
 
-#: package-manager.xml.in.nolegal:293(para) 
+#: package-manager.xml.in.nolegal:292(para) 
 msgid "Select the <menuchoice><guimenuitem>Updates</guimenuitem></menuchoice> option in the <emphasis role=\"strong\">View</emphasis> drop-down menu and the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> in the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu to list all packages that have updates available from all publishers."
-msgstr "Vyberte možnost <menuchoice><guimenuitem>Aktualizovat</guimenuitem></menuchoice> v rozbalovací nabídce <emphasis role=\"strong\">Náhled</emphasis> a <emphasis role=\"strong\">Všichni vydavatelé (Nainstalované)</emphasis> v nabídce <emphasis role=\"strong\">Vydavatelé</emphasis> pro zobrazení seznamu balíčků, pro které jsou dostupné aktualizace ze všech vydavatelů."
+msgstr "Vyberte možnost <menuchoice><guimenuitem>Aktualizace</guimenuitem></menuchoice> v rozbalovací nabídce <emphasis role=\"strong\">Náhled</emphasis> a <emphasis role=\"strong\">Všichni vydavatelé (Nainstalované)</emphasis> v nabídce <emphasis role=\"strong\">Vydavatelé</emphasis> pro zobrazení seznamu balíčků, pro které jsou dostupné aktualizace ze všech vydavatelů."
 
-#: package-manager.xml.in.nolegal:296(para) 
+#: package-manager.xml.in.nolegal:295(para) 
 msgid "Updating a package may fail sometimes, due to inherent dependencies of the package you have selected for installation or update. You may need to update all packages on your system to get the latest updates."
 msgstr "Aktualizace balíčku může občas selhat kvůli vlastní závislosti balíčku, který jste si vybrali pro instalaci nebo aktualizaci. Možná budete muset aktualizovat všechny balíčky na Vašem systému, abyste získali nejnovější aktualizace."
 
-#: package-manager.xml.in.nolegal:298(para) 
+#: package-manager.xml.in.nolegal:297(para) 
 msgid "Select the package or packages you want to update and click <guibutton>Install/Update</guibutton> to install the latest version of the package. Use the <emphasis role=\"strong\">Updates</emphasis> icon on the toolbar to update all packages on your system."
 msgstr "Vyberte balíček nebo balíčky, které chcete aktualizovat a klikněte na <guibutton>Instalovat/Aktualizovat</guibutton> pro instalaci nejnovější verze balíčku. Použijte ikonu <emphasis role=\"strong\">Aktualizovat</emphasis>na panelu nástrojů pro aktualizaci všech balíčků na Vašem systému."
 
-#: package-manager.xml.in.nolegal:300(title) 
+#: package-manager.xml.in.nolegal:299(title) 
 msgid "Package Version Information"
 msgstr "Informace o verzi balíčku"
 
-#: package-manager.xml.in.nolegal:301(para) 
+#: package-manager.xml.in.nolegal:300(para) 
 msgid "Select a package in the main window of the Package Manager and right-click your mouse to view the package version information. There are three types of package versions :"
 msgstr "Vyberte balíček v hlavním okně Správce balíčků a pro zobrazení verze balíčku, klikněte pravým tlačítkem na vybraný balíček. Existují tři typy verzí balíčků:"
 
-#: package-manager.xml.in.nolegal:302(para) 
+#: package-manager.xml.in.nolegal:301(para) 
 msgid "<emphasis role=\"strong\">Installable Version</emphasis> – The version of a package that is available for installation or an update. This version may be older than the latest available version of the package due to package dependencies on the system. Hence you may not be able to install the latest available version of the package unless you update your system using the <emphasis role=\"strong\">Updates</emphasis> icon on the toolbar."
 msgstr "<emphasis role=\"strong\">Instalovatelná verze</emphasis> – Verze balíčku, která je dostupná pro instalaci nebo aktualizaci. Tato verze balíčku nemusí být nejnovější kvůli závislostem balíčku na systému. Tudíž nemusí být schopni nainstalovat nejnovější verzi balíčku, dokud neaktualizujete Váš systém pomocí ikony <emphasis role=\"strong\">Aktualizovat</emphasis>na panelu nástrojů."
 
-#: package-manager.xml.in.nolegal:304(para) 
+#: package-manager.xml.in.nolegal:303(para) 
 msgid "<emphasis role=\"strong\">Installed Version</emphasis> – The version of the package installed on the system."
 msgstr "<emphasis role=\"strong\">Nainstalovaná verze</emphasis> – verze balíčku, která je nainstalovaná na systému."
 
-#: package-manager.xml.in.nolegal:306(para) 
+#: package-manager.xml.in.nolegal:305(para) 
 msgid "<emphasis role=\"strong\">Latest Version</emphasis> – This is the latest version of the package available for installation or update. The latest version can be installed if your system is up-to-date."
 msgstr "<emphasis role=\"strong\">Nejnovější verze</emphasis> - Toto je nejnovější verze balíčku dostupná pro instalaci nebo aktualizaci. Nejnovější verze může nainstalovaná, pokud je Váš systém aktuální."
 
-#: package-manager.xml.in.nolegal:310(title) 
+#: package-manager.xml.in.nolegal:309(title) 
 msgid "View Installed Packages From All Publishers"
 msgstr "Zobrazit nainstalované balíčky od všech vydavatelů"
 
-#: package-manager.xml.in.nolegal:311(para) 
+#: package-manager.xml.in.nolegal:310(para) 
 msgid "Choose the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> from the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu filter to view a list of all packages that you have installed from all publishers."
 msgstr "Z vysunovací nabídky <emphasis role=\"strong\">Vydavatel</emphasis> vyberte <emphasis role=\"strong\">Všichni vydavatelé (Nainstalované)</emphasis> pro zobrazení seznamu všech balíčků, které jste nainstalovali od všech vydavatelů."
 
-#: package-manager.xml.in.nolegal:312(para) 
+#: package-manager.xml.in.nolegal:311(para) 
 msgid "You cannot search for a package from the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> option. Switch to <emphasis role=\"strong\">All Publishers (Search)</emphasis> to search for a package."
 msgstr "Nemůžete vyhledávat balíčky z možnosti <emphasis role=\"strong\">Všichni Vydavatelé (Nainstalované)</emphasis>. Přepněte na <emphasis role=\"strong\">Všichni Vydavatelé(Hledat)</emphasis> pro vyhledání balíčku."
 
-#: package-manager.xml.in.nolegal:316(title) 
+#: package-manager.xml.in.nolegal:315(title) 
 msgid "Introduction to Boot Environments"
 msgstr "Úvod do Bootovacích Prostředí"
 
-#: package-manager.xml.in.nolegal:317(para) 
+#: package-manager.xml.in.nolegal:316(para) 
 msgid "A boot environment is an image that is bootable. Upon an initial OpenSolaris installation, a boot environment is created."
 msgstr "Bootovací prostředí je obraz, který lze zavést. Toto prostředí je vytvořeno po počáteční instalaci OpenSolarisu."
 
-#: package-manager.xml.in.nolegal:318(para) 
+#: package-manager.xml.in.nolegal:317(para) 
 msgid "You can maintain multiple boot environments on your OpenSolaris 2010.03 system. Use the <command>beadm(1)</command> command from the command-line interface (CLI) to create, rename, mount or unmount, or destroy these boot environments."
 msgstr "Můžete spravovat více bootovacích prostředí na Vašem systému OpenSolaris 2010.03. Použijte příkaz <command>beadm(1)</command> z příkazové řádky (CLI) pro vytvoření, přejmenování, připojení nebo odpojení a odstranění těchto bootovacích prostředí"
 
-#: package-manager.xml.in.nolegal:319(para) 
+#: package-manager.xml.in.nolegal:318(para) 
 msgid "The Package Manager enables you to manage the boot environments created during the process of updating your image. For more information, see <xref linkend=\"manage-be\"/> section."
 msgstr "Správce balíčků umožňuje spravovat bootovací prostředí vytvořené během procesu aktualizace obrazu. Více informací, viz sekce <xref linkend=\"manage-be\"/>."
 
-#: package-manager.xml.in.nolegal:320(para) 
+#: package-manager.xml.in.nolegal:319(para) 
 msgid "Users can maintain multiple boot environments on their systems, and each boot environment can have different software versions installed."
 msgstr "Uživatelé mohou spravovat více bootovacích prostředí na jejich systému a každé bootovací prostředí může obsahovat různé verze nainstalovaného softwaru."
 
-#: package-manager.xml.in.nolegal:321(para) 
+#: package-manager.xml.in.nolegal:320(para) 
 msgid "When you use either the Package Manager or the <command>pkg image-update</command> command to update all the packages in your active OpenSolaris boot environment, a clone of that boot environment is automatically created. The packages are updated in the clone rather than in the original boot environment. After successfully completing the updates, the new clone is activated. Then, the clone will become the new default boot environment on system reboot. The original boot environment is also available as an alternate selection."
 msgstr "Pokud použijete Správce balíčků nebo příkaz <command>pkg image-update</"
        "command> pro aktualizaci všech balíčků ve Vašem aktivním bootovacím prostředí, vytvoří se automaticky klon tohoto prostředí. Balíčky jsou poté aktualizovány v tomto klonu a po úspěšném dokončení aktualizace, je tento nový klon aktivován a stane se novým výchozím bootovacím prostředím na Vašem systému. Původní bootovací prostředí je také dostupné jako alternativní výběr."
 
-#: package-manager.xml.in.nolegal:322(para) 
+#: package-manager.xml.in.nolegal:321(para) 
 msgid "See the beadm(1) man pages and the <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"><citetitle>Upgrading and Managing Boot Environments</citetitle></ulink> document to learn more about boot environments and the <command>beadm(1)</command> command."
 msgstr "Viz manuálové stránky beadm(1) a dokument <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"><citetitle>Aktualizace a správa bootovacích prostředí</citetitle></ulink>"
 
-#: package-manager.xml.in.nolegal:323(title) 
+#: package-manager.xml.in.nolegal:322(title) 
 msgid "Update All Packages (Update Your Image)"
 msgstr "Aktualizovat všechny balíčky (Aktualizovat Váš obraz)"
 
-#: package-manager.xml.in.nolegal:324(para) 
+#: package-manager.xml.in.nolegal:323(para) 
 msgid "Perform the following steps to update all the packages in your image."
 msgstr "Proveďte následující kroky pro aktualizaci Vašeho obrazu."
 
-#: package-manager.xml.in.nolegal:325(para) 
+#: package-manager.xml.in.nolegal:324(para) 
 msgid "Click <guibutton>Updates</guibutton> to start the process of updating <emphasis role=\"strong\">all</emphasis> the packages installed in your image."
 msgstr "Klikněte na  <guibutton>Aktualizovat</guibutton> pro start procesu aktualizace <emphasis role=\"strong\">všech</emphasis> balíčků nainstalovaných na Vašem obrazu."
 
-#: package-manager.xml.in.nolegal:326(para) 
+#: package-manager.xml.in.nolegal:325(para) 
 msgid "You can also choose <menuchoice><guimenu>Package</guimenu><guisubmenu>Updates</guisubmenu></menuchoice> to start the process."
 msgstr "Můžete také vybrat <menuchoice><guimenu>Balíček</guimenu><guisubmenu>Aktualizovat</guisubmenu></menuchoice> pro start procesu."
 
-#: package-manager.xml.in.nolegal:327(para) 
+#: package-manager.xml.in.nolegal:326(para) 
 msgid "If no updates are available to your installed packages, a <emphasis role=\"strong\">No Updates Available</emphasis> message is displayed after you click <guibutton>Updates</guibutton>."
 msgstr "Pokud nejsou dostupné žádné aktualizace balíčků, zobrazí se zpráva <emphasis role=\"strong\">Nejsou dostupné žádné aktualizace</emphasis> po kliknutí na <guibutton>Aktualizovat</guibutton>."
 
-#: package-manager.xml.in.nolegal:330(para) 
+#: package-manager.xml.in.nolegal:329(para) 
 msgid "The process of updating all the packages installed on your system is completed in three phases:"
 msgstr "Proces aktualizace všech balíčků nainstalovaných na Vašem systému je dokončen ve třech fázích:"
 
-#: package-manager.xml.in.nolegal:331(emphasis) 
+#: package-manager.xml.in.nolegal:330(emphasis) 
 msgid "Preparation"
 msgstr "Příprava"
 
-#: package-manager.xml.in.nolegal:333(emphasis) 
+#: package-manager.xml.in.nolegal:332(emphasis) 
 msgid "Download"
 msgstr "Stahování"
 
-#: package-manager.xml.in.nolegal:335(emphasis) 
+#: package-manager.xml.in.nolegal:334(emphasis) 
 msgid "Install"
 msgstr "Instalace"
 
-#: package-manager.xml.in.nolegal:338(para) 
+#: package-manager.xml.in.nolegal:337(para) 
 msgid "Click on the <emphasis>Details</emphasis> tab displayed in each of the phases to view more information."
 msgstr "Klikněte na záložku <emphasis>Podrobnosti</emphasis> pro zobrazení podrobností pro každou z fází."
 
-#: package-manager.xml.in.nolegal:340(para) 
+#: package-manager.xml.in.nolegal:339(para) 
 msgid "After the update process is completed successfully, an <emphasis role=\"strong\">Update All Complete</emphasis> dialog is displayed. A new boot environment is created which consists of the updated packages. The new boot environment is given a default name by the Package Manager, you can change the given boot environment name."
 msgstr "Po úspešném dokončení procesu aktualizace se zobrazí dialog <emphasis role=\"strong\">Aktualizace Obrazu Dokončena</emphasis>. Je vytvořeno nové bootovací prostředí tvořené aktualizovanými balíčky. Nové bootovací prostředí získá výchozí název od Správce balíčků, tento název bootovacího prostředí je možno změnit."
 
-#: package-manager.xml.in.nolegal:341(para) 
+#: package-manager.xml.in.nolegal:340(para) 
 msgid "If the Package Manager is unable to create a new boot environment, an error message is displayed. See the <xref linkend=\"gilfh\"/> section on how to rectify the error and continue with updating your image."
 msgstr "Pokud Správce balíčků nedokáže vytvořit nové bootovací prostředí, je zobrazena chybová hláška. Viz sekce <xref linkend=\"gilfh\"/> o způsobu napravení chyb a pokračování v aktualizaci obrazu."
 
-#: package-manager.xml.in.nolegal:344(para) 
+#: package-manager.xml.in.nolegal:343(para) 
 msgid "Click <guibutton>Restart Now</guibutton> to reboot your system immediately."
 msgstr "Klikněte na <guibutton>Restartovat Nyní</guibutton> pro okamžité restartování systému."
 
-#: package-manager.xml.in.nolegal:345(para) 
+#: package-manager.xml.in.nolegal:344(para) 
 msgid "Click <guibutton>Restart Later</guibutton> to restart your system at a later time. <emphasis role=\"strong\">You must reboot your system for the changes to take effect.</emphasis>"
 msgstr "Klikněte na <guibutton>Restartovat později</guibutton> pro restartování systému později. <emphasis role=\"strong\">Je nutné systém restartovat, aby se změny projevily</emphasis>"
 
-#: package-manager.xml.in.nolegal:346(para) 
+#: package-manager.xml.in.nolegal:345(para) 
 msgid "During the Update All process, a clone of the active boot environment is created. You can boot into the clone to return to the boot environment state that existed before the Update All process was started."
 msgstr "Během procesu aktualizace obrazu je vytvořen klon aktivního bootovacího prostředí. Je možno se nabootovat do klonu pro navrácení stavu bootovacího prostředí existujícího před započetím procesu aktualizace obrazu."
 
-#: package-manager.xml.in.nolegal:351(title) package-manager.xml.in.nolegal:656(title) 
+#: package-manager.xml.in.nolegal:350(title) package-manager.xml.in.nolegal:656(title) 
 msgid "Update All Errors"
 msgstr "Chyby při aktualizaci obrazu"
 
-#: package-manager.xml.in.nolegal:352(para) 
+#: package-manager.xml.in.nolegal:351(para) 
 msgid "A new boot environment clone must be created by the Package Manager for the Updates process to be completed. An error message is displayed if a boot environment clone cannot be created. You might see an error message such as the following :"
 msgstr "Nový klon bootovacího prostředí musí být vytvořen Správcem balíčků pro dokončení procesu Aktualizací. Pokud nelze vytvořit klon bootovacího prostředí, je zobrazena chybová hláška. Chybová hláška může vypadat například takto:"
 
-#: package-manager.xml.in.nolegal:353(para) package-manager.xml.in.nolegal:658(para) 
+#: package-manager.xml.in.nolegal:352(para) 
 msgid "<literal>Not enough disk space, the Update All action cannot be performed. Choose Manage BE to manage your boot environments and free up disk space.</literal>."
 msgstr "<literal>Nedostatek místa na disku, aktualizace obrazu nemůže být provedena. Zvolte Správa BE pro správu bootovacích prostředí a uvolnění místa na disku."
 
-#: package-manager.xml.in.nolegal:354(para) package-manager.xml.in.nolegal:659(para) 
+#: package-manager.xml.in.nolegal:353(para) package-manager.xml.in.nolegal:659(para) 
 msgid "Click <guibutton>Close</guibutton> to cancel the Update All process."
 msgstr "Klikněte na <guibutton>Zavřít</guibutton> pro zrušení procesu Aktualizace Všeho."
 
-#: package-manager.xml.in.nolegal:355(para) package-manager.xml.in.nolegal:660(para) 
+#: package-manager.xml.in.nolegal:354(para) package-manager.xml.in.nolegal:660(para) 
 msgid "Perform the following steps if you want to rectify the error and continue with the Update All process:"
 msgstr "Proveďte následující kroky, pokud si přejete opravit chybu a pokračovat v aktualizaci obrazu:"
 
-#: package-manager.xml.in.nolegal:356(para) 
+#: package-manager.xml.in.nolegal:355(para) 
 msgid "Click <guibutton>Manage BE</guibutton> to display the <emphasis role=\"strong\">Manage Boot Environment</emphasis> dialog."
 msgstr "Klikněte na <guibutton>Správa BE</guibutton> pro zobrazení dialogu <emphasis role=\"strong\">Správa Bootovacích prostředí</emphasis>"
 
-#: package-manager.xml.in.nolegal:358(para) 
+#: package-manager.xml.in.nolegal:357(para) 
 msgid "Select the boot environments that you want to delete."
 msgstr "Vyberte bootovací prostředí, které chcete smazat."
 
-#: package-manager.xml.in.nolegal:359(para) 
+#: package-manager.xml.in.nolegal:358(para) 
 msgid "You cannot delete the currently active boot environment."
 msgstr "Nemůžete smazat právě aktivní bootovací prostředí."
 
-#: package-manager.xml.in.nolegal:361(para) 
+#: package-manager.xml.in.nolegal:360(para) 
 msgid "You do not need to reboot your system if you are only deleting some of your boot environments."
 msgstr "Nemusíte restartovat systém, pokud pouze mažete některý z bootovacích prostředí."
 
-#: package-manager.xml.in.nolegal:366(para) 
+#: package-manager.xml.in.nolegal:365(para) 
 msgid "Click <guibutton>OK</guibutton>."
 msgstr "Klikněte na <guibutton>OK</guibutton>."
 
-#: package-manager.xml.in.nolegal:368(para) 
+#: package-manager.xml.in.nolegal:367(para) 
 msgid "The <emphasis role=\"strong\">Boot Environment Confirmation</emphasis> dialog is shown. Review your changes and click OK to proceed."
 msgstr "Objeví se dialog <emphasis role=\"strong\">Potvrzení Bootovacího Prostředí</emphasis>. Zkontrolujte své změny a klikněte na tlačítko OK."
 
-#: package-manager.xml.in.nolegal:370(para) 
+#: package-manager.xml.in.nolegal:369(para) 
 msgid "Click <guibutton>Update All</guibutton> to restart the process of updating all packages."
 msgstr "Klikněte na <guibutton>Aktualizovat Vše</guibutton> pro restart procesu aktualizace všech balíčků."
 
-#: package-manager.xml.in.nolegal:374(title) 
+#: package-manager.xml.in.nolegal:373(title) 
 msgid "Manage Boot Environments"
 msgstr "Správa Bootovacích Prostředí"
 
-#: package-manager.xml.in.nolegal:375(para) 
+#: package-manager.xml.in.nolegal:374(para) 
 msgid "Perform the following steps to manage your boot environments:"
 msgstr "Proveďte následující kroky pro správu bootovacích prostředí:"
 
-#: package-manager.xml.in.nolegal:376(para) 
+#: package-manager.xml.in.nolegal:375(para) 
 msgid "Click <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Boot Environments</guimenuitem></menuchoice> to open the <emphasis role=\"strong\">Manage Boot Environments</emphasis> dialog."
 msgstr "Klikněte na <menuchoice><guimenu>Soubor</guimenu><guimenuitem>Správa Bootovacích Prostředí</guimenuitem></menuchoice> a otevře se dialog <emphasis role=\"strong\">Správa Bootovacích Prostředí</emphasis>"
 
-#: package-manager.xml.in.nolegal:378(para) 
+#: package-manager.xml.in.nolegal:377(para) 
 msgid "In this dialog, you can perform the following actions:"
 msgstr "V tomto dialogu lze provést následující:"
 
-#: package-manager.xml.in.nolegal:379(para) 
+#: package-manager.xml.in.nolegal:378(para) 
 msgid "<emphasis role=\"strong\">Activate a boot environment</emphasis> – Select the boot environment you want to be active on system reboot. This is the default boot environment <emphasis role=\"strong\">after</emphasis> you have rebooted your system."
 msgstr "<emphasis role=\"strong\">Aktivovat bootovací prostředí</emphasis> - Zvolte bootovací prostředí, které si přejete aktivovat po restartu systému. Toto je výchozí bootovací prostředí </emphasis role=\"strong\">po</emphasis> restartování systému."
 
-#: package-manager.xml.in.nolegal:381(para) 
+#: package-manager.xml.in.nolegal:380(para) 
 msgid "<emphasis role=\"strong\">Remove old or unused boot environments to free up disk space</emphasis> – Select the boot environnment or boot environments you want to delete."
 msgstr "<emphasis role=\"strong\">Odstranit stará nebo nepoužívaná bootovací prostředí pro uvolnění diskového prostoru</emphasis> - Zvolte jedno nebo více bootovacích prostředí, která chcete smazat."
 
-#: package-manager.xml.in.nolegal:382(para) 
+#: package-manager.xml.in.nolegal:381(para) 
 msgid "You cannot the delete the currently active boot environment."
 msgstr "Nemůžete smazat právě aktivní bootovací prostředí."
 
-#: package-manager.xml.in.nolegal:384(para) 
+#: package-manager.xml.in.nolegal:383(para) 
 msgid "If you have selected a boot environment to be renamed, it cannot be deleted."
 msgstr "Pokud jste vybrali bootovací prostředí, které má být přejmenováno, tak nemůže být smazáno."
 
-#: package-manager.xml.in.nolegal:389(para) 
+#: package-manager.xml.in.nolegal:388(para) 
 msgid "<emphasis role=\"strong\">Rename a boot environment</emphasis> – Double-click the boot environment name you want torename. Enter the new name of the boot environment and click <guibutton>OK</guibutton>."
 msgstr "<emphasis role=\"strong\">Přejmenovat bootovací prostředí</emphasis> - Poklepejte na bootovací prostředí, které chcete přejmenovat. Uveďte nový název bootovacího prostředí a klikněte na <guibutton>OK</guibutton>."
 
-#: package-manager.xml.in.nolegal:390(para) 
+#: package-manager.xml.in.nolegal:389(para) 
 msgid "If you have selected a boot environment to be deleted, it cannot be renamed."
 msgstr "Pokud jste již vybrali toto prostředí pro smazání, nemůže být přejmenováno."
 
-#: package-manager.xml.in.nolegal:392(para) 
+#: package-manager.xml.in.nolegal:391(para) 
 msgid "The currently active boot environment cannot be renamed."
 msgstr "Právě aktivní bootovací prostředí nemůže být přejmenováno."
 
-#: package-manager.xml.in.nolegal:399(para) 
+#: package-manager.xml.in.nolegal:398(para) 
 msgid "Click <guibutton>OK</guibutton> to proceed or <guibutton>Cancel</guibutton> to cancel all changes."
 msgstr "Klikněte na <guibutton>OK</guibutton> pro pokračování nebo na <guibutton>Zrušit</guibutton> pro zrušení všech změn."
 
-#: package-manager.xml.in.nolegal:401(para) 
+#: package-manager.xml.in.nolegal:400(para) 
 msgid "The <emphasis role=\"strong\">Boot Environment Confirmation</emphasis> dialog is displayed. Review your changes and click OK to proceed."
 msgstr "Zobrazí se dialog <emphasis role=\"strong\">Potvrzení bootovacího prostředí</emphasis>. Zkontrolujte své změny a klikněte na OK pro pokračování."
 
-#: package-manager.xml.in.nolegal:402(para) 
+#: package-manager.xml.in.nolegal:401(para) 
 msgid "After you click <guibutton>OK</guibutton>, you cannot undo any changes that you made to the boot environments."
 msgstr "Poté, co kliknete na <guibutton>OK</guibutton>, změny již nelze vrátit zpět."
 
-#: package-manager.xml.in.nolegal:404(para) 
+#: package-manager.xml.in.nolegal:403(para) 
 msgid "The changes that you made to the <emphasis role=\"strong\">default boot environment</emphasis> setting are effective only after system reboot."
 msgstr "Změny, které jste provedli v nastavení <emphasis role=\"strong\">výchozího bootovacího prostředí</emphasis> se projeví až po restartování systému."
 
-#: package-manager.xml.in.nolegal:406(para) 
+#: package-manager.xml.in.nolegal:405(para) 
 msgid "Click <guibutton>Cancel</guibutton> to cancel the changes."
 msgstr "Klikněte na  <guibutton>Zrušit</guibutton> pro zrušení všech změn."
 
-#: package-manager.xml.in.nolegal:408(para) 
+#: package-manager.xml.in.nolegal:407(para) 
 msgid "Reboot your system to boot into the newly activated boot environment."
 msgstr "Restartujte Váš systém pro nabootování do nově aktivovaného prostředí."
 
-#: package-manager.xml.in.nolegal:409(para) 
+#: package-manager.xml.in.nolegal:408(para) 
 msgid "Reboot your system only if you changed the active boot environment."
 msgstr "Restartujte Váš systém pouze, pokud chcete změnit aktivní bootovací prostředí."
 
-#: package-manager.xml.in.nolegal:415(title) 
+#: package-manager.xml.in.nolegal:414(title) 
 msgid "Add and Manage Publishers"
 msgstr "Přidat a Spravovat vydavatele"
 
+#: package-manager.xml.in.nolegal:415(para) 
+msgid "The <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> dialog enables the user to add and manage the configured publishers. A publisher is a person, group, or corporation that designs, creates, and publishes a package to a repository. Every publisher has a package repository where its package data can be found. The locations that contain package data for a publisher's repository are defined through the use of origins and mirrors. Origins are used to provide locations that contain the complete set of package data for a publisher, while mirrors are used to provide locations that only contain package files. Origins and mirrors are defined using URIs (Universal Resource Identifiers), such as <ulink url=\"http://pkg.opensolaris.org/release\"/>."
+msgstr "Dialog <menuchoice><guimenu>Soubor</guimenu><guimenuitem>Správa vydavatelů</guimenuitem></menuchoice> umožní uživatelům přidat a spravovat nakonfigurované vydavatele. Vydavatel je osoba, skupina nebo společnost, která navrhuje, vytváří a publikuje balíčky do repozitáře. Každý vydavatel má svůj repozitář balíčků. Umístění repozitáře je definováno pomocí zdroje a mirroru. Zdroje repozitářů slouží k poskytnutí umístění, která obsahují kompletní sady balíčků vydavatele, zatímco mirror je použit pro poskytnutí umístění, která obsahují pouze soubory balíčků. Zdroj a mirror je definován pomocí URI (Universal Resource Identifiers) jako je  <ulink url=\"http://pkg.opensolaris.org/release\"/>."
+
 #: package-manager.xml.in.nolegal:416(para) 
-msgid "The <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> dialog enables the user to add and manage the configured publishers. A publisher is a person, group, or corporation that designs, creates, and publishes a package to a repository. A repository is a source for packages. Every publisher has a origin URI (Universal Resource Identifier) associated with it. Read the following sections to learn how to add and manage publishers on your system."
-msgstr "Dialog <menuchoice><guimenu>Soubor</guimenu><guimenuitem>Správa vydavatelů</guimenuitem></menuchoice> umožňuje uživateli přidávat a spravovat nastavení vydavatelů. Vydavatel je osoba, skupina nebo korporace, která navrhuje a vydává balíčky do repozitáře. Repozitář je zdroj balíčků. Každý vydavatel má své URI (Universal Resource Identifier). Pro zjištění, jak přidávat a spravovat vydavatele na Vašem systému, čtěte následující sekce."
+msgid "Read the following sections to learn how to add and manage publishers on your system."
+msgstr "Přečtěte si následující sekce, jak přidat a spravovat vydavatele na Vašem systému."
 
 #: package-manager.xml.in.nolegal:417(title) 
 msgid "Add a Publisher"
@@ -923,7 +925,7 @@ msgstr "Zvolte <menuchoice><guimenu>Soubor</guimenu><guimenuitem>Přidat vydavat
 
 #: package-manager.xml.in.nolegal:420(para) 
 msgid "You can also choose the <guibutton>Add..</guibutton> option from the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu or select <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> and then click <emphasis>Add..</emphasis> in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog."
-msgstr "Je také možno zvolit možnost <guibutton>Přidat...</guibutton> z rozbalovací nabídky <emphasis role=\"strong\">Vydavatel</emphasis> nebo zvolit <menuchoice><guimenu>Soubor</guimenu><guimenuitem>Spravovat vydavatele</guimenuitem></menuchoice> a poté kliknout na <emphasis>Přidat...</emphasis> v dialogu <emphasis role=\"strong\">Spravovat vydavatele</emphasis>."
+msgstr "Je také možno zvolit možnost <guibutton>Přidat...</guibutton> z rozbalovací nabídky <emphasis role=\"strong\">Vydavatel</emphasis> nebo zvolit <menuchoice><guimenu>Soubor</guimenu><guimenuitem>Správa vydavatelů</guimenuitem></menuchoice> a poté kliknout na <emphasis>Přidat...</emphasis> v dialogu <emphasis role=\"strong\">Správa vydavatelů</emphasis>."
 
 #: package-manager.xml.in.nolegal:422(para) 
 msgid "The <emphasis role=\"strong\">Add Publisher</emphasis> dialog is displayed. Enter the name of the publisher and the associated URI. If the publisher is a secure publisher, the <emphasis role=\"strong\">SSL Key</emphasis> and <emphasis role=\"strong\">SSL Certificate</emphasis> fields are displayed. Follow the steps in the <xref linkend=\"modify-publisher\"/> section to add an SSL key and certificate."
@@ -1251,7 +1253,7 @@ msgstr "O Správci Aktualizací"
 
 #: package-manager.xml.in.nolegal:607(para) 
 msgid "The Update Manager is a separate application that starts from the desktop when updates to the installed packages are available in the publisher."
-msgstr "The Update Manager is a separate application that starts from the desktop when updates to the installed packages are available in the publisher."
+msgstr "Správce aktualizací je oddělená aplikace, kterou lze spustit z plochy, pokud jsou dostupné aktualizace balíčků pro vydavatele."
 
 #: package-manager.xml.in.nolegal:608(title) 
 msgid "Update Manager Main Window"
@@ -1259,11 +1261,11 @@ msgstr "Hlavní okno Správce aktualizací"
 
 #: package-manager.xml.in.nolegal:612(para) 
 msgid "You can use the Update Manager application to update the installed packages in your image. The Update Manager uses the publisher that is currently set in the Package Manager to install the latest image."
-msgstr "You can use the Update Manager application to update the installed packages in your image. The Update Manager uses the publisher that is currently set in the Package Manager to install the latest image."
+msgstr "Můžete použít aplikaci Správce Aktualizací pro aktualizaci nainstalovaných balíčků na Vašem obrazu. Správce Aktualizací používá vydavatele, který je právě nastavem ve Správci Balíčků."
 
 #: package-manager.xml.in.nolegal:613(para) 
 msgid "For the OpenSolaris 2010.03 release, the Update Manager updates <emphasis role=\"strong\">all</emphasis> installed packages in the image. This action is equivalent to running the <command>pkg image-update</command> command from the command-line."
-msgstr "For the OpenSolaris 2010.03 release, the Update Manager updates <emphasis role=\"strong\">all</emphasis> installed packages in the image. This action is equivalent to running the <command>pkg image-update</command> command from the command-line."
+msgstr "Ve verzi OpenSolaris 2010.03 Správce Aktualizací aktualizuje <emphasis role=\"strong\">všechny</emphasis> nainstalované balíčky na obraze. Tato akce je rovnocenná s příkazem <command>pkg image-update</command> v příkazové řádce."
 
 #: package-manager.xml.in.nolegal:616(title) 
 msgid "Using the Update Manager"
@@ -1279,15 +1281,15 @@ msgstr "Pro ruční spuštění Správce aktualizací můžete kliknout na <menu
 
 #: package-manager.xml.in.nolegal:619(para) 
 msgid "When you are notified of a software update, perform the following steps to begin the process of updating your system:"
-msgstr "Pokud jste upozorněni o aktualizaci softwaru, proveďte následující kroky pro začátek procesu aktualizace systému:"
+msgstr "Jste-li upozorněni o aktualizaci softwaru, proveďte následující kroky pro start procesu aktualizace systému:"
 
 #: package-manager.xml.in.nolegal:620(para) 
 msgid "Click the notification icon on the desktop to display the <emphasis role=\"strong\">Update Manager</emphasis> window."
-msgstr "Click the notification icon on the desktop to display the <emphasis role=\"strong\">Update Manager</emphasis> window."
+msgstr "Klikněte na ikonku upozornění na ploše pro zobrazení okna <emphasis role=\"strong\">Správce Aktualizací</emphasis>"
 
 #: package-manager.xml.in.nolegal:622(para) 
 msgid "Click <guibutton>Update All</guibutton> in the <emphasis role=\"strong\">Update Manager</emphasis> window."
-msgstr "Click <guibutton>Update All</guibutton> in the <emphasis role=\"strong\">Update Manager</emphasis> window."
+msgstr "Klikněte na <guibutton>Aktualizovat Vše</guibutton> v okně  <emphasis role=\"strong\">Správce Aktualizací</emphasis>."
 
 #: package-manager.xml.in.nolegal:623(para) 
 msgid "Select a package and click the <guilabel>Details</guilabel> panel if you want to view more information about the package."
@@ -1295,7 +1297,7 @@ msgstr "Vyberte balíček a klikněte na panel <guilabel>Podrobnosti</guilabel> 
 
 #: package-manager.xml.in.nolegal:626(para) 
 msgid "The <emphasis role=\"strong\">Update All</emphasis> dialog is displayed. Proceed with the Update All process or cancel the action."
-msgstr "The <emphasis role=\"strong\">Update All</emphasis> dialog is displayed. Proceed with the Update All process or cancel the action."
+msgstr "Zobrazí se dialog <emphasis role=\"strong\">Aktualizovat Vše</emphasis>"
 
 #: package-manager.xml.in.nolegal:627(para) 
 msgid "Click <guibutton>Proceed</guibutton> to create a new boot environment and update all packages in the current image."
@@ -1319,7 +1321,7 @@ msgstr "Klikněte na tlačítko <guibutton>Zrušit</guibutton> pro zrušení pro
 
 #: package-manager.xml.in.nolegal:637(para) 
 msgid "If you chose to proceed, the <emphasis role=\"strong\">Installing Updates</emphasis> windows are displayed. The package installation process consists of four stages:"
-msgstr "If you chose to proceed, the <emphasis role=\"strong\">Installing Updates</emphasis> windows are displayed. The package installation process consists of four stages:"
+msgstr "Zvolíte-li pokračovat, zobrazí se okno <emphasis role=\"strong\">Instalace aktualizací</emphasis>. Proces instalace balíčků se zkládá ze čtyř kroků:"
 
 #: package-manager.xml.in.nolegal:638(para) 
 msgid "Prepare"
@@ -1357,6 +1359,10 @@ msgstr "Aby se změny projevily, musíte restartovat Váš systém."
 msgid "A new boot environment clone <emphasis role=\"strong\">must</emphasis> be created for the Update All process to be completed. The following error message is displayed if a boot environment clone cannot be created due to space restrictions :"
 msgstr "<emphasis role=\"strong\">Musí</emphasis> být vytvořen nový klon bootovacího prostředí pro dokončení procesu aktualizace všech balíčků. Zobrazí se následující chyba, pokud klon bootovacího prostředí nemůže být vytvořen kvůli nedostatku místa na disku:"
 
+#: package-manager.xml.in.nolegal:658(para) 
+msgid "<literal>Not enough disk space, the Update All action cannot be performed. Choose Manage BE to manage your boot environments and free up disk space</literal>."
+msgstr "<literal>Nedostatek místa na disku, akce Aktualizovat Vše nemůže být provedena. Zvolte Správa BE pro správu Vašich bootovacích prostředí a uvolněte místo na disku</literal>."
+
 #: package-manager.xml.in.nolegal:661(para) 
 msgid "Click <guibutton>Manage BE</guibutton> in the error dialog to go to the <emphasis role=\"strong\">Manage Boot Environments</emphasis> dialog."
 msgstr "Klikněte na <guibutton>Správa BE</guibutton> v chybovém dialogu a přejděte do okna <emphasis role=\"strong\">Správa Bootovacích Prostředí</emphasis>"
@@ -1386,8 +1392,8 @@ msgid "publisher"
 msgstr "vydavatel"
 
 #: package-manager.xml.in.nolegal:676(para) 
-msgid "A person, group, or corporation that designs, creates, and publishes a package to a repository. The repository in turn serves the packages from the (default) publisher, for downloading purposes."
-msgstr "Osoba, skupina nebo společnost, která navrhuje, vytváří a zveřejňuje balíčky do repozitáře. Repozitář pak poskytuje balíčky z (výchozí) vydavatele pro účely stahování."
+msgid "A person, group, or corporation that provides packages. Packages for a publisher are found in a repository, from which the package system retrieves package data."
+msgstr "Osoba, skupina nebo společnost, která poskytuje balíčky. Balíčky vydavatele lze nalézt v repozitáři, ze kterého si správce balíčků stahuje informace o nich."
 
 #: package-manager.xml.in.nolegal:679(glossterm) 
 msgid "repository"
@@ -1402,8 +1408,8 @@ msgid "boot environment"
 msgstr "bootovací prostředí"
 
 #: package-manager.xml.in.nolegal:684(para) 
-msgid "For an OpenSolaris release, a boot environment is an instance of a bootable OpenSolaris environment. The root file system and all other file systems of the boot environment that contain system software are required to be ZFS datasets."
-msgstr "Pro vydání OpenSolarisu je bootovací prostředí instancí bootovatelného OpenSolaris prostředí. Kořenový souborový systém a všechny ostaní souborové systémy bootovacího prostředí, které obsahují systémový software, jsou požadovány ZFS datasetem."
+msgid "For an OpenSolaris 2010.03 release, a boot environment is an instance of a bootable OpenSolaris environment. The root file system and all other file systems of the boot environment that contain system software are required to be ZFS datasets."
+msgstr "Pro verzi OpenSolaris 2010.03 je bootovací prostředí instancí bootovacího OpenSolaris prostředí. Kořenový souborový systém a další souborové systémy bootovacího prostředí mohou obsahovat systémový software potřebný pro ZFS datasety."
 
 #: package-manager.xml.in.nolegal:685(para) 
 msgid "The active boot environment is the one that is currently booted. Many boot environments can present on an OpenSolaris system and an inactive boot environment can be in a state of waiting for activation upon system reboot."
@@ -1451,11 +1457,11 @@ msgstr "Kolekce souborů, adresářů, odkazů, ovladačů a závislostí v defi
 
 #: package-manager.xml.in.nolegal:706(glossterm) 
 msgid "origin"
-msgstr "původ"
+msgstr "zdroj"
 
 #: package-manager.xml.in.nolegal:707(para) 
-msgid "Location of a package repository specified by a URI."
-msgstr "Umístění repozitáře balíčků je specifikovánoURI adresou."
+msgid "Location of a package repository specified by a URI, that contains a complete set of package data."
+msgstr "Umístění repozitáře specifikovaného pomocí URI, který obsahuje kompletní sadu dat balíčků."
 
 #: package-manager.xml.in.nolegal:710(glossterm) 
 msgid "alias"
@@ -1464,6 +1470,14 @@ msgstr "alias"
 #: package-manager.xml.in.nolegal:711(para) 
 msgid "An alternate name for a publisher."
 msgstr "Alternativní název pro vydavatele."
+
+#: package-manager.xml.in.nolegal:714(glossterm) 
+msgid "mirror"
+msgstr "mirror"
+
+#: package-manager.xml.in.nolegal:715(para) 
+msgid "Location of a package repository, specified by a URI, that contains only package files."
+msgstr "Umístění repozitáře specifikovaného pomocí URI, který obsahuje soubory balíčků."
 
 #. Put one translator per line, in the form of NAME <EMAIL>, YEAR1, YEAR2.
 #: package-manager.xml.in.nolegal:0(None) 

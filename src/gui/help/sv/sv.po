@@ -142,8 +142,7 @@ msgstr "Image Packaging System (IPS) är ett system för hantering av programvar
 
 #: package-manager.xml.in.nolegal:55(para) 
 msgid "After an initial installation of the OpenSolaris 2010.03 operating system, you will find that some of the software applications that you use on a regular basis are not immediately available to you. These software applications are available as packages in a repository for downloading and installing over the network. A repository is a source for packages."
-msgstr "Efter grundinstallationen av operativsystemet OpenSolaris 2010.03 kommer du att märka att många av de program som du ofta använder inte är direkt tillgängliga för dig. Dessa program finns i stället som paket i en databas på Internet och kan laddas ned därifrån och installeras."
-       "Med databas menas paketkälla, det vill ställe varifrån paket hämtas."
+msgstr "Efter grundinstallationen av operativsystemet OpenSolaris 2010.03 kommer du att märka att många av de program som du ofta använder inte är direkt tillgängliga för dig. De här programmen finns tillgängliga som paket i en databas på Internet och kan hämtas därifrån och installeras via nätverket. En databas är en paketkälla."
 
 #: package-manager.xml.in.nolegal:56(para) 
 msgid "IPS provides a set of software tools that can be used to install packages from a repository, create and publish their own IPS packages, mirror an existing repository, and publish existing packages to a repository."
@@ -643,7 +642,7 @@ msgstr "Du kan söka på delar av paketnamn genom att använda jokertecken. Om d
 
 #: package-manager.xml.in.nolegal:275(para) 
 msgid "Wildcard searching can be slower than an exact match search or a search based on package description."
-msgstr "Det kan ta längre tid att söka med jokertecken jämfört med exakt ordalydelse och sökningar med ord som finns med i beskrivningen."
+msgstr "Det kan ta längre tid att söka med jokertecken jämfört med exakt matchning eller en sökning med ord som finns med i beskrivningen."
 
 #: package-manager.xml.in.nolegal:279(emphasis) 
 msgid "The OR operator"
@@ -695,7 +694,7 @@ msgstr "Högerklicka på det paket som du vill se versionsuppgifter om i paketha
 
 #: package-manager.xml.in.nolegal:301(para) 
 msgid "<emphasis role=\"strong\">Installable Version</emphasis> – The version of a package that is available for installation or an update. This version may be older than the latest available version of the package due to package dependencies on the system. Hence you may not be able to install the latest available version of the package unless you update your system using the <emphasis role=\"strong\">Updates</emphasis> icon on the toolbar."
-msgstr "<emphasis role=\"strong\">Installerbar version</emphasis> – Den version som kan installeras och uppdateras. Denna version kan vara äldre än den nyaste paketversionen på grund av beroenden i systemet. Eventuellt är det då inte möjligt att installera den senaste versionen av paketet såvida du inte uppdaterar hela systemet genom att klicka på ikonen <emphasis role=\"strong\">Uppdateringar</emphasis> i verktygsfältet."
+msgstr "<emphasis role=\"strong\">Installerbar version</emphasis> – Den version som kan installeras och uppdateras. Denna version kan vara äldre än den senast tillgängliga paketversionen på grund av beroenden i systemet. Eventuellt är det då inte möjligt att installera den senaste versionen av paketet såvida du inte uppdaterar hela systemet genom att klicka på ikonen <emphasis role=\"strong\">Uppdateringar</emphasis> i verktygsfältet."
 
 #: package-manager.xml.in.nolegal:303(para) 
 msgid "<emphasis role=\"strong\">Installed Version</emphasis> – The version of the package installed on the system."
@@ -703,7 +702,7 @@ msgstr "<emphasis role=\"strong\">Installerad version</emphasis> – Den version
 
 #: package-manager.xml.in.nolegal:305(para) 
 msgid "<emphasis role=\"strong\">Latest Version</emphasis> – This is the latest version of the package available for installation or update. The latest version can be installed if your system is up-to-date."
-msgstr "<emphasis role=\"strong\">Senaste version</emphasis> – Detta är den nyaste versionen som går att installera eller uppdatera till. Den senaste versionen kan installeras om hela systemet är  uppdaterat."
+msgstr "<emphasis role=\"strong\">Senaste version</emphasis> – Detta är den nyaste versionen som går att installera eller uppdatera till. Den senaste versionen kan installeras om hela systemet är uppdaterat."
 
 #: package-manager.xml.in.nolegal:309(title) 
 msgid "View Installed Packages From All Publishers"
@@ -773,7 +772,7 @@ msgstr "Du kan uppdatera alla paket genom att välja <menuchoice><guimenu>Paket<
 
 #: package-manager.xml.in.nolegal:326(para) 
 msgid "If no updates are available to your installed packages, a <emphasis role=\"strong\">No Updates Available</emphasis> message is displayed after you click <guibutton>Updates</guibutton>."
-msgstr "Om du klickar på <guibutton>Uppdateringar</guibutton> och det inte finns några uppdateringar till de paket du har visas meddelandet  <emphasis role=\"strong\">Det finns inga tillgängliga uppdateringar</emphasis>."
+msgstr "Om du klickar på <guibutton>Uppdateringar</guibutton> och det inte finns några uppdateringar till de paket du har visas meddelandet <emphasis role=\"strong\">Det finns inga tillgängliga uppdateringar</emphasis>."
 
 #: package-manager.xml.in.nolegal:329(para) 
 msgid "The process of updating all the packages installed on your system is completed in three phases:"
@@ -964,7 +963,7 @@ msgstr "I följande avsnitt kan du läsa om hur du lägger till och hanterar utg
 
 #: package-manager.xml.in.nolegal:417(title) 
 msgid "Add a Publisher"
-msgstr "Lägga till  utgivare"
+msgstr "Lägga till utgivare"
 
 #: package-manager.xml.in.nolegal:418(para) 
 msgid "Perform the following steps to add a publisher and its associated URI:"

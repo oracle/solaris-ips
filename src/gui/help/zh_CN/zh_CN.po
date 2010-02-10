@@ -26,9 +26,9 @@ msgid ""
 msgstr ""
        "Project-Id-Version: PACKAGE VERSION\n"
        "POT-Creation-Date: 2010-01-14 11:47+0900\n"
-       "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-       "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-       "Language-Team: LANGUAGE <LL@li.org>\n"
+       "PO-Revision-Date: 2010-01-28 13:19+0800\n"
+       "Last-Translator: desktop-discuss@opensolaris.org\n"
+       "Language-Team: desktop-discuss@opensolaris.org\n"
        "MIME-Version: 1.0\n"
        "Content-Type: text/plain; charset=UTF-8\n"
        "Content-Transfer-Encoding: 8bit\n"
@@ -119,7 +119,7 @@ msgstr "更新系统"
 
 #: package-manager.xml.in.nolegal:46(para) 
 msgid "Add and manage publishers"
-msgstr "添加和管理出版者"
+msgstr "添加和管理发布者"
 
 #: package-manager.xml.in.nolegal:48(para) 
 msgid "Create, remove, and manage boot environments"
@@ -137,11 +137,11 @@ msgstr "关于映像包管理系统"
 
 #: package-manager.xml.in.nolegal:54(para) 
 msgid "Image Packaging System (IPS) is a framework which provides for software lifecycle management including installation, upgrade, and removal. The OpenSolaris 2010.03 release uses IPS as its packaging system."
-msgstr "映像包管理系统 (Image Packaging System, IPS) 是一个针对软件生命周期管理（包括安装、升级和删除）提供的框架。OpenSolaris 2010.03 发行版使用 IPS 作为其包管理系统。"
+msgstr "映像包管理系统 (Image Packaging System, IPS) 架构提供了软件生命周期管理功能（包括安装、升级和删除）。OpenSolaris 2010.03 发行版使用 IPS 作为其包管理系统。"
 
 #: package-manager.xml.in.nolegal:55(para) 
 msgid "After an initial installation of the OpenSolaris 2010.03 operating system, you will find that some of the software applications that you use on a regular basis are not immediately available to you. These software applications are available as packages in a repository for downloading and installing over the network. A repository is a source for packages."
-msgstr "初始安装·OpenSolaris·2010.03·操作系统后，您将发现定期使用的某些软件应用程序并不能立即使用。这些软件应用程序会作为系统信息库中的软件包提供，可以通过网络进行下载和安装。系统信息库是软件包的源。"
+msgstr "初始安装·OpenSolaris·2010.03·操作系统后，您将发现经常使用的某些软件应用程序并不能立即使用。这些软件应用程序会作为系统信息库中的软件包提供，可以通过网络进行下载和安装。系统信息库是软件包的源。"
 
 #: package-manager.xml.in.nolegal:56(para) 
 msgid "IPS provides a set of software tools that can be used to install packages from a repository, create and publish their own IPS packages, mirror an existing repository, and publish existing packages to a repository."
@@ -168,7 +168,7 @@ msgstr ""
 
 #: package-manager.xml.in.nolegal:61(para) 
 msgid "For the OpenSolaris 2010.03 release, if the system on which IPS is installed is on the network, IPS can automatically retrieve packages provided by the OpenSolaris publisher from the package repository located at <ulink url=\"http://pkg.opensolaris.org\"/>."
-msgstr "对于 OpenSolaris 2010.03 发行版，如果安装了 IPS 的系统位于网络上，则 IPS 可以自动从位于 <ulink url=\"http://pkg.opensolaris.org\"/> 的软件包系统信息库中检索 OpenSolaris 出版者提供的软件包。"
+msgstr "对于 OpenSolaris 2010.03 发行版，如果安装了 IPS 的系统位于网络上，则 IPS 可以自动从位于 <ulink url=\"http://pkg.opensolaris.org\"/> 的软件包系统信息库中检索 OpenSolaris 发布者提供的软件包。"
 
 #: package-manager.xml.in.nolegal:62(para) 
 msgid "For more IPS documentation, see the <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"><citetitle>Image Packaging System Guide</citetitle></ulink> and the <filename>pkg</filename><ulink url=\"http://opensolaris.org/sc/src/pkg/gate/src/man/\">man pages</ulink>."
@@ -192,7 +192,7 @@ msgstr "软件包管理器起始页面"
 
 #: package-manager.xml.in.nolegal:71(para) 
 msgid "The Start Page provides a list of featured packages that can be installed. It includes a list of some of the most popular and recent packages downloaded by the OpenSolaris community of users. The Recommended list of packages point to software applications that are frequently downloaded by the OpenSolaris user. Click the package links to install the packages."
-msgstr "起始页面提供了可以安装的功能软件包的列表，其中包含 OpenSolaris 社区用户下载的一些最流行和最新的软件包的列表。推荐的软件包列表指向 OpenSolaris 用户经常下载的软件应用程序。单击这些软件包链接即可安装这些软件包。"
+msgstr "起始页面提供了可以安装的功能软件包的列表，其中包含 OpenSolaris 社区用户下载的一些最流行和最新的软件包的列表。推荐的软件包列表指向 OpenSolaris 用户经常下载的软件应用程序。单击这些软件包链接即可安装软件包。"
 
 #: package-manager.xml.in.nolegal:72(para) 
 msgid "The Start Page also provides links to more information about the OpenSolaris project, subscribe to newsletters and join the OpenSolaris community."
@@ -200,7 +200,7 @@ msgstr "起始页面还提供了其他链接，通过这些链接，可以获取
 
 #: package-manager.xml.in.nolegal:73(para) 
 msgid "To close the Start Page and see the list of packages in the selected publisher, perform any of the following actions in the main window of the Package Manager:"
-msgstr "要关闭起始页面并查看所选出版者中的软件包列表，请在软件包管理器主窗口中执行以下任何操作："
+msgstr "要关闭起始页面并查看所选发布者中的软件包列表，请在软件包管理器主窗口中执行以下任何操作："
 
 #: package-manager.xml.in.nolegal:74(para) 
 msgid "Select a package category"
@@ -216,7 +216,7 @@ msgstr "执行搜索"
 
 #: package-manager.xml.in.nolegal:80(para) 
 msgid "Change the publisher"
-msgstr "更改出版者"
+msgstr "更改发布者"
 
 #: package-manager.xml.in.nolegal:83(para) 
 msgid "Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</guimenuitem></menuchoice> to return to the Start Page at anytime."
@@ -279,27 +279,27 @@ msgstr "<emphasis role=\"strong\">搜索软件包</emphasis> – 在<emphasis ro
 
 #: package-manager.xml.in.nolegal:112(emphasis) 
 msgid "Publisher Drop-Down Menu"
-msgstr "出版者下拉式菜单"
+msgstr "发布者下拉式菜单"
 
 #: package-manager.xml.in.nolegal:113(para) 
 msgid "The list of available publishers is shown in the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu. Users can perform the following tasks from the publisher drop-down menu :"
-msgstr "<emphasis role=\"strong\">出版者</emphasis>下拉式菜单中会显示可用出版者的列表。用户可以从出版者下拉式菜单中执行以下任务："
+msgstr "<emphasis role=\"strong\">发布者</emphasis>下拉式菜单中会显示可用发布者的列表。用户可以从发布者下拉式菜单中执行以下任务："
 
 #: package-manager.xml.in.nolegal:114(emphasis) 
 msgid "Select a publisher"
-msgstr "选择出版者"
+msgstr "选择发布者"
 
 #: package-manager.xml.in.nolegal:116(emphasis) 
 msgid "View the list of packages installed from all publishers"
-msgstr "查看已从所有出版者安装的软件包的列表"
+msgstr "查看已从所有发布者安装的软件包的列表"
 
 #: package-manager.xml.in.nolegal:118(emphasis) 
 msgid "Search for package across all publishers"
-msgstr "在所有出版者中搜索软件包"
+msgstr "在所有发布者中搜索软件包"
 
 #: package-manager.xml.in.nolegal:120(emphasis) 
 msgid "Add a publisher"
-msgstr "添加出版者"
+msgstr "添加发布者"
 
 #: package-manager.xml.in.nolegal:125(emphasis) 
 msgid "List of Packages by Category"
@@ -351,19 +351,19 @@ msgstr "通过<emphasis role=\"strong\">查看</emphasis>下拉式菜单，您�
 
 #: package-manager.xml.in.nolegal:148(para) 
 msgid "<emphasis role=\"strong\">All Packages</emphasis> – Shows the list of all packages available within the current publisher."
-msgstr "<emphasis role=\"strong\">所有软件包</emphasis> – 显示当前出版者内可用的所有软件包的列表。"
+msgstr "<emphasis role=\"strong\">所有软件包</emphasis> – 显示当前发布者内可用的所有软件包的列表。"
 
 #: package-manager.xml.in.nolegal:150(para) 
 msgid "<emphasis role=\"strong\">Installed Packages</emphasis> – Shows the list of packages installed within the current publisher on your system."
-msgstr "<emphasis role=\"strong\">安装的软件包</emphasis> – 显示系统中当前出版者内已安装的软件包的列表。"
+msgstr "<emphasis role=\"strong\">安装的软件包</emphasis> – 显示系统中当前发布者内已安装的软件包的列表。"
 
 #: package-manager.xml.in.nolegal:152(para) 
 msgid "<emphasis role=\"strong\">Updates</emphasis> — Shows the list of packages that have newer versions available within the current publisher."
-msgstr "<emphasis role=\"strong\">更新</emphasis> – 显示当前出版者内提供了更新版本的软件包的列表。"
+msgstr "<emphasis role=\"strong\">更新</emphasis> – 显示当前发布者内提供了更新版本的软件包的列表。"
 
 #: package-manager.xml.in.nolegal:154(para) 
 msgid "<emphasis role=\"strong\">Not Installed Packages</emphasis> – Shows the list of packages that are not installed, but are available in the currently selected publisher."
-msgstr "<emphasis role=\"strong\">未安装的软件包</emphasis> – 显示未安装的但在当前选定的出版者中可用的软件包的列表。"
+msgstr "<emphasis role=\"strong\">未安装的软件包</emphasis> – 显示未安装的但在当前选定的发布者中可用的软件包的列表。"
 
 #: package-manager.xml.in.nolegal:156(para) 
 msgid "<emphasis role=\"strong\">Selected Packages</emphasis> – Shows the list of packages that you have selected."
@@ -379,15 +379,15 @@ msgstr "此处显示选定类别的软件包列表、简要描述及其状态。
 
 #: package-manager.xml.in.nolegal:163(para) 
 msgid "The Publisher name is also displayed here in the following instances :"
-msgstr "在以下情况下，此处还会显示出版者名称："
+msgstr "在以下情况下，此处还会显示发布者名称："
 
 #: package-manager.xml.in.nolegal:164(para) 
 msgid "When the <emphasis role=\"strong\">Pubisher</emphasis> drop-down menu is set to All Publishers (Installed)"
-msgstr "当<emphasis role=\"strong\">出版者</emphasis>下拉式菜单设置为“所有出版者（已安装）”时"
+msgstr "当<emphasis role=\"strong\">发布者</emphasis>下拉式菜单设置为“所有发布者（已安装）”时"
 
 #: package-manager.xml.in.nolegal:166(para) 
 msgid "When search results are displayed for the All Publishers (Search) option"
-msgstr "当显示“所有出版者（搜索）”选项的搜索结果时"
+msgstr "当显示“所有发布者（搜索）”选项的搜索结果时"
 
 #: package-manager.xml.in.nolegal:168(para) 
 msgid "When a recent search result is displayed"
@@ -452,7 +452,7 @@ msgstr "将会保存以下设置："
 
 #: package-manager.xml.in.nolegal:191(para) 
 msgid "<emphasis role=\"strong\">Vertical separators</emphasis> – The size of the columns in the main window the Package Manager"
-msgstr "<emphasis role=\"strong\">垂直分隔符</emphasis> – 软件包管理器主窗口中的列大小"
+msgstr "<emphasis role=\"strong\">垂直分隔条</emphasis> – 软件包管理器主窗口中的列大小"
 
 #: package-manager.xml.in.nolegal:193(para) 
 msgid "<emphasis role=\"strong\">Window size</emphasis> – The size of the Package Manager window"
@@ -460,7 +460,7 @@ msgstr "<emphasis role=\"strong\">窗口大小</emphasis> – 软件包管理器
 
 #: package-manager.xml.in.nolegal:195(para) 
 msgid "<emphasis role=\"strong\">Current publisher</emphasis> – The publisher that is selected when the Package Manager is closed"
-msgstr "<emphasis role=\"strong\">当前出版者</emphasis> – 关闭软件包管理器时选择的出版者"
+msgstr "<emphasis role=\"strong\">当前发布者</emphasis> – 关闭软件包管理器时选择的发布者"
 
 #: package-manager.xml.in.nolegal:199(title) 
 msgid "Confirmation Dialog Preferences"
@@ -468,7 +468,7 @@ msgstr "确认对话框首选项"
 
 #: package-manager.xml.in.nolegal:200(para) 
 msgid "When a package is selected for installation, update, or removal, a confirmation dialog is displayed that displays the list of packages and the action to be performed. Under the <emphasis role=\"strong\">Show Confirmation Dialog</emphasis> uncheck <emphasis role=\"strong\">On Updates</emphasis>, <emphasis role=\"strong\">On Package Install/Update</emphasis>, and <emphasis role=\"strong\">On Package Remove</emphasis> to turn these settings off."
-msgstr "选择要安装、更新或删除的软件包后，会显示一个确认对话框，其中显示软件包列表和要执行的操作。在<emphasis role=\"strong\">显示确认对话框</emphasis>下，取消选中<emphasis role=\"strong\">更新时</emphasis>、<emphasis role=\"strong\">软件包安装/更新时</emphasis>和<emphasis role=\"strong\">软件包删除时</emphasis>可关闭这些设置。"
+msgstr "选择要安装、更新或删除的软件包后，会显示一个确认对话框，其中显示软件包列表和要执行的操作。在<emphasis role=\"strong\">显示确认对话框</emphasis>下，取消选中<emphasis role=\"strong\">更新时</emphasis>、<emphasis role=\"strong\">安装/更新软件包时</emphasis>和<emphasis role=\"strong\">删除软件包时</emphasis>可关闭这些设置。"
 
 #: package-manager.xml.in.nolegal:203(title) 
 msgid "Working With Packages"
@@ -553,7 +553,7 @@ msgstr "您可以采用以下方式搜索软件包："
 
 #: package-manager.xml.in.nolegal:235(para) 
 msgid "<emphasis role=\"strong\">Search the current publisher</emphasis> – Search for a package in the publisher currently selected in the <emphasis role=\"strong\"> Publisher</emphasis> drop-down menu. If you do not know the status of the package you are searching for, set the <emphasis role=\"strong\">View</emphasis> drop-down menu to <emphasis role=\"strong\">All Packages</emphasis>."
-msgstr "<emphasis role=\"strong\">搜索当前出版者</emphasis> – 在<emphasis role=\"strong\">出版者</emphasis>下拉式菜单中当前选定的出版者中搜索软件包。如果您不知道要搜索的软件包的状态，请将<emphasis role=\"strong\">查看</emphasis>下拉式菜单设置为<emphasis role=\"strong\">所有软件包</emphasis>。"
+msgstr "<emphasis role=\"strong\">搜索当前发布者</emphasis> – 在<emphasis role=\"strong\">发布者</emphasis>下拉式菜单中当前选定的发布者中搜索软件包。如果您不知道要搜索的软件包的状态，请将<emphasis role=\"strong\">查看</emphasis>下拉式菜单设置为<emphasis role=\"strong\">所有软件包</emphasis>。"
 
 #: package-manager.xml.in.nolegal:236(para) 
 msgid "Enter a description, or a partial name in the <emphasis role=\"strong\">Search</emphasis> field. For example, you might type one of the following search terms to search for <filename>SUNWgnome-games</filename> :"
@@ -586,7 +586,7 @@ msgstr "工具"
 
 #: package-manager.xml.in.nolegal:251(para) 
 msgid "<emphasis role=\"strong\">Search all publishers</emphasis> – Choose <emphasis role=\"strong\">All Publishers(Search)</emphasis> from the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu to search for a package across all configured publishers. If you do not know the status of the package you are searching for, set the <emphasis role=\"strong\">View</emphasis> drop-down menu to <emphasis role=\"strong\">All Packages</emphasis>."
-msgstr "<emphasis role=\"strong\">搜索所有出版者</emphasis> – 从<emphasis role=\"strong\">出版者</emphasis>下拉式菜单中选择<emphasis role=\"strong\">所有出版者（搜索）</emphasis>可在所有已配置的出版者中搜索软件包。如果您不知道要搜索的软件包的状态，请将<emphasis role=\"strong\">查看</emphasis>下拉式菜单设置为<emphasis role=\"strong\">所有软件包</emphasis>。"
+msgstr "<emphasis role=\"strong\">搜索所有发布者</emphasis> – 从<emphasis role=\"strong\">发布者</emphasis>下拉式菜单中选择<emphasis role=\"strong\">所有发布者（搜索）</emphasis>可在所有已配置的发布者中搜索软件包。如果您不知道要搜索的软件包的状态，请将<emphasis role=\"strong\">查看</emphasis>下拉式菜单设置为<emphasis role=\"strong\">所有软件包</emphasis>。"
 
 #: package-manager.xml.in.nolegal:252(para) 
 msgid "Type a description of the package in the <emphasis role=\"strong\">Search</emphasis> field. For example, the <filename>SUNWdiveintopython</filename> package is a book on Python programming. The description of the package contains the string <emphasis>book</emphasis>. To search for this package, you might then type one of the following terms:"
@@ -662,15 +662,15 @@ msgstr "更新软件包"
 
 #: package-manager.xml.in.nolegal:289(para) 
 msgid "Look for the Updates icon next to the installed package name. This icon indicates that updates are available for the package in the currently selected publisher. You can also choose one of the following views to display a list of packages that have updates available :"
-msgstr "查找已安装软件包名称旁边的“更新”图标。此图标指示当前选定出版者中已有可用于此软件包的更新。您还可以选择以下视图之一来显示具有可用更新的软件包的列表："
+msgstr "查找已安装软件包名称旁边的“更新”图标。此图标指示当前选定发布者中已有可用于此软件包的更新。您还可以选择以下视图之一来显示具有可用更新的软件包的列表："
 
 #: package-manager.xml.in.nolegal:290(para) 
 msgid "Select the <menuchoice><guimenuitem>Updates</guimenuitem></menuchoice> option in the <emphasis role=\"strong\">View</emphasis> drop-down menu to list all packages that have updates available in the currently selected publisher."
-msgstr "选择<emphasis role=\"strong\">查看</emphasis>下拉式菜单中的<menuchoice><guimenuitem>更新</guimenuitem></menuchoice>选项可列出当前选定出版者中具有可用更新的所有软件包。"
+msgstr "选择<emphasis role=\"strong\">查看</emphasis>下拉式菜单中的<menuchoice><guimenuitem>更新</guimenuitem></menuchoice>选项可列出当前选定发布者中具有可用更新的所有软件包。"
 
 #: package-manager.xml.in.nolegal:292(para) 
 msgid "Select the <menuchoice><guimenuitem>Updates</guimenuitem></menuchoice> option in the <emphasis role=\"strong\">View</emphasis> drop-down menu and the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> in the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu to list all packages that have updates available from all publishers."
-msgstr "选择<emphasis role=\"strong\">查看</emphasis>下拉式菜单中的<menuchoice><guimenuitem>更新</guimenuitem></menuchoice>选项和<emphasis role=\"strong\">出版者</emphasis>下拉式菜单中的<emphasis role=\"strong\">所有出版者（已安装）</emphasis>可列出所有出版者中具有可用更新的所有软件包。"
+msgstr "选择<emphasis role=\"strong\">查看</emphasis>下拉式菜单中的<menuchoice><guimenuitem>更新</guimenuitem></menuchoice>选项和<emphasis role=\"strong\">发布者</emphasis>下拉式菜单中的<emphasis role=\"strong\">所有发布者（已安装）</emphasis>可列出所有发布者中具有可用更新的所有软件包。"
 
 #: package-manager.xml.in.nolegal:295(para) 
 msgid "Updating a package may fail sometimes, due to inherent dependencies of the package you have selected for installation or update. You may need to update all packages on your system to get the latest updates."
@@ -702,15 +702,15 @@ msgstr "<emphasis role=\"strong\">最新版本</emphasis> – 这是可用于安
 
 #: package-manager.xml.in.nolegal:309(title) 
 msgid "View Installed Packages From All Publishers"
-msgstr "查看已从所有出版者安装的软件包"
+msgstr "查看已从所有发布者安装的软件包"
 
 #: package-manager.xml.in.nolegal:310(para) 
 msgid "Choose the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> from the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu filter to view a list of all packages that you have installed from all publishers."
-msgstr "从<emphasis role=\"strong\">出版者</emphasis>下拉式菜单过滤器中选择<emphasis role=\"strong\">所有出版者（已安装）</emphasis>可查看已从所有出版者安装的所有软件包的列表。"
+msgstr "从<emphasis role=\"strong\">发布者</emphasis>下拉式菜单过滤器中选择<emphasis role=\"strong\">所有发布者（已安装）</emphasis>可查看已从所有发布者安装的所有软件包的列表。"
 
 #: package-manager.xml.in.nolegal:311(para) 
 msgid "You cannot search for a package from the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> option. Switch to <emphasis role=\"strong\">All Publishers (Search)</emphasis> to search for a package."
-msgstr "您不能从<emphasis role=\"strong\">所有出版者（已安装）</emphasis>选项搜索软件包。请切换到<emphasis role=\"strong\">所有出版者（搜索）</emphasis>来搜索软件包。"
+msgstr "您不能从<emphasis role=\"strong\">所有发布者（已安装）</emphasis>选项搜索软件包。请切换到<emphasis role=\"strong\">所有发布者（搜索）</emphasis>来搜索软件包。"
 
 #: package-manager.xml.in.nolegal:315(title) 
 msgid "Introduction to Boot Environments"
@@ -768,7 +768,7 @@ msgstr "您也可以通过选择<menuchoice><guimenu>软件包</guimenu><guisubm
 
 #: package-manager.xml.in.nolegal:326(para) 
 msgid "If no updates are available to your installed packages, a <emphasis role=\"strong\">No Updates Available</emphasis> message is displayed after you click <guibutton>Updates</guibutton>."
-msgstr "如果没有可用于已安装软件包的更新，则会在单击<guibutton>更新</guibutton>后显示<emphasis role=\"strong\">无可用更新</emphasis>消息。"
+msgstr "如果没有可用于已安装软件包的更新，则会在单击<guibutton>更新</guibutton>后显示<emphasis role=\"strong\">没有可用更新</emphasis>消息。"
 
 #: package-manager.xml.in.nolegal:329(para) 
 msgid "The process of updating all the packages installed on your system is completed in three phases:"
@@ -856,7 +856,7 @@ msgstr "单击<guibutton>确定</guibutton>。"
 
 #: package-manager.xml.in.nolegal:367(para) 
 msgid "The <emphasis role=\"strong\">Boot Environment Confirmation</emphasis> dialog is shown. Review your changes and click OK to proceed."
-msgstr "此时会显示<emphasis role=\"strong\">引导环境确认</emphasis>对话框。查看您所做的更改，然后单击“确定”继续。"
+msgstr "此时将显示<emphasis role=\"strong\">引导环境确认</emphasis>对话框。查看您所做的更改，然后单击“确定”继续。"
 
 #: package-manager.xml.in.nolegal:369(para) 
 msgid "Click <guibutton>Update All</guibutton> to restart the process of updating all packages."
@@ -914,7 +914,7 @@ msgstr "单击<guibutton>确定</guibutton>继续，或单击<guibutton>取消</
 
 #: package-manager.xml.in.nolegal:400(para) 
 msgid "The <emphasis role=\"strong\">Boot Environment Confirmation</emphasis> dialog is displayed. Review your changes and click OK to proceed."
-msgstr "此时会显示<emphasis role=\"strong\">引导环境确认</emphasis>对话框。查看您所做的更改，然后单击“确定”继续。"
+msgstr "此时将显示<emphasis role=\"strong\">引导环境确认</emphasis>对话框。查看您所做的更改，然后单击“确定”继续。"
 
 #: package-manager.xml.in.nolegal:401(para) 
 msgid "After you click <guibutton>OK</guibutton>, you cannot undo any changes that you made to the boot environments."
@@ -942,35 +942,35 @@ msgstr "只有在更改活动引导环境后，才重新引导系统。"
 
 #: package-manager.xml.in.nolegal:414(title) 
 msgid "Add and Manage Publishers"
-msgstr "添加和管理出版者"
+msgstr "添加和管理发布者"
 
 #: package-manager.xml.in.nolegal:415(para) 
 msgid "The <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> dialog enables the user to add and manage the configured publishers. A publisher is a person, group, or corporation that designs, creates, and publishes a package to a repository. Every publisher has a package repository where its package data can be found. The locations that contain package data for a publisher's repository are defined through the use of origins and mirrors. Origins are used to provide locations that contain the complete set of package data for a publisher, while mirrors are used to provide locations that only contain package files. Origins and mirrors are defined using URIs (Universal Resource Identifiers), such as <ulink url=\"http://pkg.opensolaris.org/release\"/>."
-msgstr "<menuchoice><guimenu>文件</guimenu><guimenuitem>管理出版者</guimenuitem></menuchoice>对话框允许用户添加和管理所配置的出版者。出版者是设计、创建软件包并将软件包发布到系统信息库的个人、组或公司。每个出版者都具有一个可在其中找到其软件包数据的软件包系统信息库。包含出版者系统信息库的软件包数据的位置通过使用原始位置和镜像进行定义。原始位置用于提供包含出版者的完整软件包数据集的位置，而镜像用于提供仅包含软件包文件的位置。原始位置和镜像是使用 URI（Universal Resource Identifier，统一资源标识符）定义的，例如 <ulink url=\"http://pkg.opensolaris.org/release\"/>。"
+msgstr "<menuchoice><guimenu>文件</guimenu><guimenuitem>管理发布者</guimenuitem></menuchoice>对话框允许用户添加和管理所配置的发布者。发布者是设计、创建软件包并将软件包发布到系统信息库的个人、组或公司。每个发布者都具有一个可在其中找到其软件包数据的软件包系统信息库。包含发布者系统信息库的软件包数据的位置通过使用原始位置和镜像进行定义。原始位置提供包含发布者完整软件包数据集的位置，而镜像提供仅包含软件包文件的位置。原始位置和镜像是使用 URI（Universal Resource Identifier，统一资源标识符）定义的，例如 <ulink url=\"http://pkg.opensolaris.org/release\"/>。"
 
 #: package-manager.xml.in.nolegal:416(para) 
 msgid "Read the following sections to learn how to add and manage publishers on your system."
-msgstr "请阅读以下几部分以了解如何在系统上添加和管理出版者。"
+msgstr "请阅读以下几部分以了解如何在系统上添加和管理发布者。"
 
 #: package-manager.xml.in.nolegal:417(title) 
 msgid "Add a Publisher"
-msgstr "添加出版者"
+msgstr "添加发布者"
 
 #: package-manager.xml.in.nolegal:418(para) 
 msgid "Perform the following steps to add a publisher and its associated URI:"
-msgstr "执行以下步骤来添加出版者及其关联的 URI："
+msgstr "执行以下步骤来添加发布者及其关联的 URI："
 
 #: package-manager.xml.in.nolegal:419(para) 
 msgid "Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Add Publishers</guimenuitem></menuchoice>."
-msgstr "选择<menuchoice><guimenu>文件</guimenu><guimenuitem>添加出版者</guimenuitem></menuchoice>。"
+msgstr "选择<menuchoice><guimenu>文件</guimenu><guimenuitem>添加发布者</guimenuitem></menuchoice>。"
 
 #: package-manager.xml.in.nolegal:420(para) 
 msgid "You can also choose the <guibutton>Add..</guibutton> option from the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu or select <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> and then click <emphasis>Add..</emphasis> in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog."
-msgstr "也可以从<emphasis role=\"strong\">出版者</emphasis>下拉式菜单中选择<guibutton>添加...</guibutton> 选项，或选择<menuchoice><guimenu>文件</guimenu><guimenuitem>管理出版者</guimenuitem></menuchoice>，然后在<emphasis role=\"strong\">管理出版者</emphasis>对话框中单击<emphasis>添加...</emphasis>。"
+msgstr "也可以从<emphasis role=\"strong\">发布者</emphasis>下拉式菜单中选择<guibutton>添加...</guibutton> 选项，或选择<menuchoice><guimenu>文件</guimenu><guimenuitem>管理发布者</guimenuitem></menuchoice>，然后在<emphasis role=\"strong\">管理发布者</emphasis>对话框中单击<emphasis>添加...</emphasis>。"
 
 #: package-manager.xml.in.nolegal:422(para) 
 msgid "The <emphasis role=\"strong\">Add Publisher</emphasis> dialog is displayed. Enter the name of the publisher and the associated URI. If the publisher is a secure publisher, the <emphasis role=\"strong\">SSL Key</emphasis> and <emphasis role=\"strong\">SSL Certificate</emphasis> fields are displayed. Follow the steps in the <xref linkend=\"modify-publisher\"/> section to add an SSL key and certificate."
-msgstr "此时会显示<emphasis role=\"strong\">添加出版者</emphasis>对话框。输入出版者的名称及其关联的 URI。如果此出版者是一个安全出版者，则会显示 <emphasis role=\"strong\">SSL 密钥</emphasis>和 <emphasis role=\"strong\">SSL 证书</emphasis>字段。请按照<xref linkend=\"modify-publisher\"/>一节中的步骤添加 SSL 密钥和证书。"
+msgstr "此时将显示<emphasis role=\"strong\">添加发布者</emphasis>对话框。输入发布者的名称及其关联的 URI。如果此发布者是一个安全发布者，则会显示 <emphasis role=\"strong\">SSL 密钥</emphasis>和 <emphasis role=\"strong\">SSL 证书</emphasis>字段。请按照<xref linkend=\"modify-publisher\"/>一节中的步骤添加 SSL 密钥和证书。"
 
 #: package-manager.xml.in.nolegal:424(para) 
 msgid "Click <guibutton>Add</guibutton>."
@@ -978,95 +978,95 @@ msgstr "单击<guibutton>添加</guibutton>。"
 
 #: package-manager.xml.in.nolegal:426(para) 
 msgid "The <emphasis role=\"strong\">Adding Publisher</emphasis> dialog is displayed. Click Cancel to cancel the process."
-msgstr "此时会显示<emphasis role=\"strong\">添加出版者</emphasis>对话框。单击“取消”可取消此过程。"
+msgstr "此时将显示<emphasis role=\"strong\">正在添加发布者</emphasis>对话框。单击“取消”可取消此过程。"
 
 #: package-manager.xml.in.nolegal:428(para) 
 msgid "The <emphasis role=\"strong\">Adding Publisher Complete</emphasis> dialog is displayed if the publisher is added successfully."
-msgstr "如果成功添加了出版者，则会显示<emphasis role=\"strong\">添加出版者完成</emphasis>对话框。"
+msgstr "如果成功添加了发布者，则会显示<emphasis role=\"strong\">添加发布者完成</emphasis>对话框。"
 
 #: package-manager.xml.in.nolegal:431(para) 
 msgid "An <emphasis role=\"strong\">Adding Publisher Error</emphasis> is displayed if the publisher could not be added. Click <emphasis role=\"strong\">Details</emphasis> to get more information about the error."
-msgstr "如果无法添加出版者，则会显示<emphasis role=\"strong\">添加出版者错误</emphasis>。单击<emphasis role=\"strong\">详细信息</emphasis>可获取有关该错误的更多信息。"
+msgstr "如果无法添加发布者，则会显示<emphasis role=\"strong\">添加发布者错误</emphasis>。单击<emphasis role=\"strong\">详细信息</emphasis>可获取有关该错误的更多信息。"
 
 #: package-manager.xml.in.nolegal:434(title) 
 msgid "Remove a Publisher"
-msgstr "删除出版者"
+msgstr "删除发布者"
 
 #: package-manager.xml.in.nolegal:435(para) 
 msgid "Perform the following steps to remove a publisher:"
-msgstr "执行以下步骤来删除出版者："
+msgstr "执行以下步骤来删除发布者："
 
 #: package-manager.xml.in.nolegal:436(para) package-manager.xml.in.nolegal:459(para) package-manager.xml.in.nolegal:473(para) package-manager.xml.in.nolegal:492(para) package-manager.xml.in.nolegal:511(para) package-manager.xml.in.nolegal:528(para) 
 msgid "Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice>."
-msgstr "选择<menuchoice><guimenu>文件</guimenu><guimenuitem>管理出版者</guimenuitem></menuchoice>。"
+msgstr "选择<menuchoice><guimenu>文件</guimenu><guimenuitem>管理发布者</guimenuitem></menuchoice>。"
 
 #: package-manager.xml.in.nolegal:438(para) 
 msgid "Click on a publisher from the list to select it. Click <guibutton>Remove</guibutton>."
-msgstr "从列表中单击一个出版者以将其选中。单击<guibutton>删除</guibutton>。"
+msgstr "从列表中单击一个发布者以将其选中。单击<guibutton>删除</guibutton>。"
 
 #: package-manager.xml.in.nolegal:440(para) 
 msgid "The <emphasis role=\"strong\">Manage Publishers Confirmation</emphasis> dialog is displayed."
-msgstr "此时会显示<emphasis role=\"strong\">管理出版者确认</emphasis>对话框。"
+msgstr "此时将显示<emphasis role=\"strong\">管理发布者确认</emphasis>对话框。"
 
 #: package-manager.xml.in.nolegal:442(para) 
 msgid "Click <guibutton>OK</guibutton> to save the changes and remove the publisher or <guibutton>Cancel</guibutton> to return to the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog without making any changes."
-msgstr "单击<guibutton>确定</guibutton>保存所做的更改，并删除此出版者，或单击<guibutton>取消</guibutton>返回到<emphasis role=\"strong\">管理出版者</emphasis>对话框，而不进行任何更改。"
+msgstr "单击<guibutton>确定</guibutton>保存所做的更改，并删除此发布者，或单击<guibutton>取消</guibutton>返回到<emphasis role=\"strong\">管理发布者</emphasis>对话框，而不进行任何更改。"
 
 #: package-manager.xml.in.nolegal:446(title) 
 msgid "Set Publisher Priority"
-msgstr "设置出版者优先级"
+msgstr "设置发布者优先级"
 
 #: package-manager.xml.in.nolegal:447(para) 
 msgid "Perform the following steps to set or change the publisher priority:"
-msgstr "执行以下步骤来设置或更改出版者优先级："
+msgstr "执行以下步骤来设置或更改发布者优先级："
 
 #: package-manager.xml.in.nolegal:448(para) 
 msgid "Choose <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> to open the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog."
-msgstr "选择<menuchoice><guimenu>文件</guimenu><guimenuitem>管理出版者</guimenuitem></menuchoice>，以打开<emphasis role=\"strong\">管理出版者</emphasis>对话框。"
+msgstr "选择<menuchoice><guimenu>文件</guimenu><guimenuitem>管理发布者</guimenuitem></menuchoice>，以打开<emphasis role=\"strong\">管理发布者</emphasis>对话框。"
 
 #: package-manager.xml.in.nolegal:450(para) 
 msgid "The list of configured publishers is displayed. Click the arrows to change the priority of the publishers. The publisher with the highest priority is displayed at the top of the list."
-msgstr "其中会显示已配置的出版者的列表。单击箭头可更改这些出版者的优先级。优先级最高的出版者显示在列表的顶部。"
+msgstr "其中会显示已配置的发布者的列表。单击箭头可更改这些发布者的优先级。优先级最高的发布者显示在列表的顶部。"
 
 #: package-manager.xml.in.nolegal:451(emphasis) 
 msgid "Packages are searched within the publishers in the order of priority, the publisher with the highest priority is searched first."
-msgstr "将会按优先级顺序在出版者内搜索软件包，首先搜索优先级最高的出版者。"
+msgstr "将会按优先级顺序在发布者内搜索软件包，首先搜索优先级最高的发布者。"
 
 #: package-manager.xml.in.nolegal:453(para) package-manager.xml.in.nolegal:465(para) package-manager.xml.in.nolegal:484(para) package-manager.xml.in.nolegal:503(para) package-manager.xml.in.nolegal:520(para) package-manager.xml.in.nolegal:537(para) 
 msgid "Click <guibutton>OK</guibutton> to save your changes or <guibutton>Cancel</guibutton> to return to the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog without making any changes."
-msgstr "单击<guibutton>确定</guibutton>保存所做的更改，或单击<guibutton>取消</guibutton>返回到<emphasis role=\"strong\">管理出版者</emphasis>对话框，而不进行任何更改。"
+msgstr "单击<guibutton>确定</guibutton>保存所做的更改，或单击<guibutton>取消</guibutton>返回到<emphasis role=\"strong\">管理发布者</emphasis>对话框，而不进行任何更改。"
 
 #: package-manager.xml.in.nolegal:457(title) 
 msgid "Modify Publisher Alias"
-msgstr "修改出版者别名"
+msgstr "修改发布者别名"
 
 #: package-manager.xml.in.nolegal:458(para) 
 msgid "Perform the following steps to modify the alias of a publisher:"
-msgstr "执行以下步骤来修改出版者的别名："
+msgstr "执行以下步骤来修改发布者的别名："
 
 #: package-manager.xml.in.nolegal:461(para) 
 msgid "Select the publisher whose alias you want to modify. Click <guibutton>Modify..</guibutton>."
-msgstr "选择要修改其别名的出版者。单击<guibutton>修改...</guibutton>。"
+msgstr "选择要修改其别名的发布者。单击<guibutton>修改...</guibutton>。"
 
 #: package-manager.xml.in.nolegal:463(para) 
 msgid "The <emphasis role=\"strong\">Modify Publisher</emphasis> dialog is displayed. Modify or enter a new name of the alias in the <emphasis role=\"strong\">Alias</emphasis> field."
-msgstr "此时会显示<emphasis role=\"strong\">修改出版者</emphasis>对话框。在<emphasis role=\"strong\">别名</emphasis>字段中修改别名或输入一个新的别名。"
+msgstr "此时将显示<emphasis role=\"strong\">修改发布者</emphasis>对话框。在<emphasis role=\"strong\">别名</emphasis>字段中修改别名或输入一个新的别名。"
 
 #: package-manager.xml.in.nolegal:467(para) package-manager.xml.in.nolegal:486(para) package-manager.xml.in.nolegal:505(para) package-manager.xml.in.nolegal:522(para) package-manager.xml.in.nolegal:539(para) 
 msgid "Click <guibutton>OK</guibutton> in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog to exit the dialog. Note that clicking <guibutton>Cancel</guibutton> in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog will not undo the changes made in the <emphasis role=\"strong\">Modify Publishers</emphasis> dialog."
-msgstr "单击<emphasis role=\"strong\">管理出版者</emphasis>对话框中的<guibutton>确定</guibutton>退出此对话框。请注意，单击<emphasis role=\"strong\">管理出版者</emphasis>对话框中的<guibutton>取消</guibutton>不会撤消在<emphasis role=\"strong\">修改出版者</emphasis>对话框中所做的更改。"
+msgstr "单击<emphasis role=\"strong\">管理发布者</emphasis>对话框中的<guibutton>确定</guibutton>退出此对话框。请注意，单击<emphasis role=\"strong\">管理发布者</emphasis>对话框中的<guibutton>取消</guibutton>不会撤消在<emphasis role=\"strong\">修改发布者</emphasis>对话框中所做的更改。"
 
 #: package-manager.xml.in.nolegal:471(title) 
 msgid "Add Publisher Origins"
-msgstr "添加出版者原始位置"
+msgstr "添加发布者原始位置"
 
 #: package-manager.xml.in.nolegal:472(para) 
 msgid "Perform the following steps to add an origin or origins associated with a publisher:"
-msgstr "执行以下步骤来添加与出版者关联的原始位置："
+msgstr "执行以下步骤来添加与发布者关联的原始位置："
 
 #: package-manager.xml.in.nolegal:475(para) 
 msgid "Select the publisher whose origin you want to modify. The <emphasis role=\"strong\">Details</emphasis> tab in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog displays the origin associated with the publisher."
-msgstr "选择要修改其原始位置的出版者。<emphasis role=\"strong\">管理出版者</emphasis>对话框的<emphasis role=\"strong\">详细信息</emphasis>选项卡中会显示与此出版者关联的原始位置。"
+msgstr "选择要修改其原始位置的发布者。<emphasis role=\"strong\">管理发布者</emphasis>对话框的<emphasis role=\"strong\">详细信息</emphasis>选项卡中会显示与此发布者关联的原始位置。"
 
 #: package-manager.xml.in.nolegal:477(para) package-manager.xml.in.nolegal:496(para) package-manager.xml.in.nolegal:515(para) package-manager.xml.in.nolegal:532(para) 
 msgid "Click <guibutton>Modify..</guibutton>."
@@ -1074,11 +1074,11 @@ msgstr "单击<guibutton>修改...</guibutton>。"
 
 #: package-manager.xml.in.nolegal:478(para) 
 msgid "The <emphasis role=\"strong\">Modify Publisher</emphasis> dialog is displayed. Enter the name of the new origin you want to associate with the publisher in the <emphasis role=\"strong\">Origin</emphasis> field. Click <guibutton>Add</guibutton>. The list of associated origins is displayed in the table."
-msgstr "此时会显示<emphasis role=\"strong\">修改出版者</emphasis>对话框。在<emphasis role=\"strong\">原始位置</emphasis>字段中输入要与此出版者关联的新原始位置的名称。单击<guibutton>添加</guibutton>。表中会显示关联的原始位置的列表。"
+msgstr "此时将显示<emphasis role=\"strong\">修改发布者</emphasis>对话框。在<emphasis role=\"strong\">原始位置</emphasis>字段中输入要与此发布者关联的新原始位置的名称。单击<guibutton>添加</guibutton>。表中会显示关联的原始位置的列表。"
 
 #: package-manager.xml.in.nolegal:479(para) 
 msgid "You cannot change the origin URI after the origin has been added."
-msgstr "添加原始位置之后，无法更改该原始 URI。"
+msgstr "添加原始位置之后，无法更改该原始位置 URI。"
 
 #: package-manager.xml.in.nolegal:482(para) 
 msgid "(optional) If the origin you have added is a secure origin, add the SSL Key and SSL certificate. <guibutton>Browse</guibutton> to locate the SSL Key and SSL Certificate on your system."
@@ -1086,19 +1086,19 @@ msgstr "（可选）如果您添加的原始位置是安全原始位置，请添
 
 #: package-manager.xml.in.nolegal:490(title) 
 msgid "Remove Publisher Origins"
-msgstr "删除出版者原始位置"
+msgstr "删除发布者原始位置"
 
 #: package-manager.xml.in.nolegal:491(para) 
 msgid "Perform the following steps to remove an origin or origins associated with a publisher:"
-msgstr "执行以下步骤来删除与出版者关联的原始位置："
+msgstr "执行以下步骤来删除与发布者关联的原始位置："
 
 #: package-manager.xml.in.nolegal:494(para) 
 msgid "Select the publisher whose origin you want to remove. The <emphasis role=\"strong\">Details</emphasis> tab in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog displays the origin or origins associated with the publisher."
-msgstr "选择要删除其原始位置的出版者。<emphasis role=\"strong\">管理出版者</emphasis>对话框的<emphasis role=\"strong\">详细信息</emphasis>选项卡中会显示与此出版者关联的原始位置。"
+msgstr "选择要删除其原始位置的发布者。<emphasis role=\"strong\">管理发布者</emphasis>对话框的<emphasis role=\"strong\">详细信息</emphasis>选项卡中会显示与此发布者关联的原始位置。"
 
 #: package-manager.xml.in.nolegal:497(para) 
 msgid "The <emphasis role=\"strong\">Modify Publisher</emphasis> dialog is displayed. The list of associated origins is displayed in the table."
-msgstr "此时会显示<emphasis role=\"strong\">修改出版者</emphasis>对话框。关联的原始位置的列表会显示在表中。"
+msgstr "此时将显示<emphasis role=\"strong\">修改发布者</emphasis>对话框。关联的原始位置的列表会显示在表中。"
 
 #: package-manager.xml.in.nolegal:499(para) 
 msgid "Select the origin you want to remove. Click <guibutton>Remove</guibutton>."
@@ -1106,23 +1106,23 @@ msgstr "选择要删除的原始位置。单击<guibutton>删除</guibutton>。"
 
 #: package-manager.xml.in.nolegal:500(para) 
 msgid "If only one origin is associated with a publisher, it cannot be removed."
-msgstr "如果只有一个原始位置与出版者关联，则无法删除此原始位置。"
+msgstr "如果只有一个原始位置与发布者关联，则无法删除此原始位置。"
 
 #: package-manager.xml.in.nolegal:509(title) 
 msgid "Add Publisher Mirrors"
-msgstr "添加出版者镜像"
+msgstr "添加发布者镜像"
 
 #: package-manager.xml.in.nolegal:510(para) 
 msgid "Perform the following steps to add a mirror for a publisher:"
-msgstr "执行以下步骤来为出版者添加镜像："
+msgstr "执行以下步骤来为发布者添加镜像："
 
 #: package-manager.xml.in.nolegal:513(para) 
 msgid "Select the publisher for which you want to add the mirror."
-msgstr "选择要为其添加镜像的出版者。"
+msgstr "选择要为其添加镜像的发布者。"
 
 #: package-manager.xml.in.nolegal:516(para) 
 msgid "The <emphasis role=\"strong\">Modify Publisher</emphasis> dialog is displayed."
-msgstr "此时会显示<emphasis role=\"strong\">修改出版者</emphasis>对话框。"
+msgstr "此时将显示<emphasis role=\"strong\">修改发布者</emphasis>对话框。"
 
 #: package-manager.xml.in.nolegal:518(para) 
 msgid "Enter the URI for the mirror in the <emphasis>Mirror</emphasis> field. Click <guibutton>Add</guibutton>."
@@ -1130,19 +1130,19 @@ msgstr "在<emphasis>镜像</emphasis>字段中输入镜像的 URI。单击<guib
 
 #: package-manager.xml.in.nolegal:526(title) 
 msgid "Remove Publisher Mirrors"
-msgstr "删除出版者镜像"
+msgstr "删除发布者镜像"
 
 #: package-manager.xml.in.nolegal:527(para) 
 msgid "Perform the following steps to remove a mirror associated with a publisher:"
-msgstr "执行以下步骤来删除与出版者关联的镜像："
+msgstr "执行以下步骤来删除与发布者关联的镜像："
 
 #: package-manager.xml.in.nolegal:530(para) 
 msgid "Select the publisher for which you want to remove the mirror."
-msgstr "选择要删除其镜像的出版者。"
+msgstr "选择要删除其镜像的发布者。"
 
 #: package-manager.xml.in.nolegal:533(para) 
 msgid "The <emphasis role=\"strong\">Modify Publisher</emphasis> dialog is displayed. The list of associated mirrors is displayed in the table."
-msgstr "此时会显示<emphasis role=\"strong\">修改出版者</emphasis>对话框。表中会显示关联的镜像的列表。"
+msgstr "此时将显示<emphasis role=\"strong\">修改发布者</emphasis>对话框。表中会显示关联的镜像的列表。"
 
 #: package-manager.xml.in.nolegal:535(para) 
 msgid "Select the mirror you want to remove. Click <guibutton>Remove</guibutton>."
@@ -1154,7 +1154,7 @@ msgstr "使用 WebInstall"
 
 #: package-manager.xml.in.nolegal:545(para) 
 msgid "The OpenSolaris 2010.03 Package Manager provides support for users to add new publishers and optionally, install packages from these publishers using a simple one-click WebInstall process. A <filename>.p5i</filename> file which contains the publishers to be added and optionally, the packages that can be installed from these publishers, is required for the WebInstall process. The information contained in the <filename>.p5i</filename> file is read and used by the WebInstall process."
-msgstr "OpenSolaris 2010.03 软件包管理器支持用户使用简单的单击 WebInstall 进程添加新的出版者，并（可选）安装这些出版者的软件包。<filename>.p5i</filename> 文件包含要添加的出版者，以及（可选）可通过这些出版者安装的软件包，WebInstall 进程需要使用该文件。<filename>.p5i</filename> 文件中包含的信息将由 WebInstall 进程读取和使用。"
+msgstr "OpenSolaris 2010.03 软件包管理器支持用户使用简单的单击 WebInstall 进程添加新的发布者，并（可选）安装这些发布者的软件包。<filename>.p5i</filename> 文件包含要添加的发布者，以及（可选）可通过这些发布者安装的软件包，WebInstall 进程需要使用该文件。<filename>.p5i</filename> 文件中包含的信息将由 WebInstall 进程读取和使用。"
 
 #: package-manager.xml.in.nolegal:546(title) 
 msgid "Export Package Selections as WebInstall Files"
@@ -1170,7 +1170,7 @@ msgstr "以下过程列出了创建 <filename>.p5i</filename> 文件和导出您
 
 #: package-manager.xml.in.nolegal:549(para) 
 msgid "From the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu, select the publisher from which you want to include the packages in the <filename>.p5i</filename> file."
-msgstr "从<emphasis role=\"strong\">出版者</emphasis>下拉式菜单中，选择要从其中将软件包包含到 <filename>.p5i</filename> 文件中的出版者。"
+msgstr "从<emphasis role=\"strong\">发布者</emphasis>下拉式菜单中，选择要从其中将软件包包含到 <filename>.p5i</filename> 文件中的发布者。"
 
 #: package-manager.xml.in.nolegal:551(para) 
 msgid "Check the box next to the package or packages to select it. The packages selected are highlighted."
@@ -1186,7 +1186,7 @@ msgstr "单击<guibutton>确定</guibutton>确认所做选择并继续，或单�
 
 #: package-manager.xml.in.nolegal:557(para) 
 msgid "The <emphasis role=\"strong\">Export Selections</emphasis> window is displayed."
-msgstr "此时会显示<emphasis role=\"strong\">导出选定项</emphasis>窗口。"
+msgstr "此时将显示<emphasis role=\"strong\">导出选定项</emphasis>窗口。"
 
 #: package-manager.xml.in.nolegal:559(para) 
 msgid "A default name for the <filename>p5i</filename> file with the extension <filename>.p5i</filename> is provided. Click inside the <emphasis role=\"strong\">Name</emphasis> field to change the name of the <filename>p5i</filename> file."
@@ -1194,7 +1194,7 @@ msgstr "系统为 <filename>p5i</filename> 文件提供了一个缺省名称，�
 
 #: package-manager.xml.in.nolegal:561(para) 
 msgid "The file is saved in the <filename>/tmp</filename> folder by default. Click the <emphasis role=\"strong\">Browse for other folders</emphasis> tab to select your own folder."
-msgstr "缺省情况下，此文件将保存在 <filename>/tmp</filename> 文件夹中。单击<emphasis role=\"strong\">浏览查找其他文件夹</emphasis>选项卡可选择您自己的文件夹。"
+msgstr "缺省情况下，此文件将保存在 <filename>/tmp</filename> 文件夹中。单击<emphasis role=\"strong\">浏览其他文件夹</emphasis>选项卡可选择您自己的文件夹。"
 
 #: package-manager.xml.in.nolegal:563(para) 
 msgid "Choose the <filename>p5i Files</filename> option in the drop-down menu located at the bottom right hand side of the window."
@@ -1202,7 +1202,7 @@ msgstr "在该窗口右下侧的下拉式菜单中选择 <filename>p5i 文件</f
 
 #: package-manager.xml.in.nolegal:567(title) 
 msgid "How to Use WebInstall to Add Publishers and Install Packages"
-msgstr "如何使用 WebInstall 添加出版者和安装软件包"
+msgstr "如何使用 WebInstall 添加发布者和安装软件包"
 
 #: package-manager.xml.in.nolegal:568(para) 
 msgid "The WebInstall process enables you to install packages through a <filename>p5i</filename> file."
@@ -1252,7 +1252,7 @@ msgstr ""
 
 #: package-manager.xml.in.nolegal:582(para) 
 msgid "You will see a window similar to the example window shown below. The window shows a list of publishers that will be added and the packages that will be installed. Review the information."
-msgstr "您将看到一个类似于如下所示的示例窗口的窗口。此窗口显示将要添加的出版者以及将要安装的软件包的列表。请查看这些信息。"
+msgstr "您将看到一个类似于如下所示的示例窗口的窗口。此窗口显示将要添加的发布者以及将要安装的软件包的列表。请查看这些信息。"
 
 #: package-manager.xml.in.nolegal:586(para) 
 msgid "Confirm or cancel the WebInstall process."
@@ -1260,19 +1260,19 @@ msgstr "确认或取消 WebInstall 进程。"
 
 #: package-manager.xml.in.nolegal:587(para) 
 msgid "Click <guibutton>Proceed</guibutton> to add the new publishers and install the packages."
-msgstr "单击<guibutton>继续</guibutton>以添加新的出版者并安装软件包。"
+msgstr "单击<guibutton>继续</guibutton>以添加新的发布者并安装软件包。"
 
 #: package-manager.xml.in.nolegal:589(para) 
 msgid "The <emphasis role=\"strong\">Add Publisher</emphasis> dialog is displayed. The name and URI of the publisher is already entered."
-msgstr "此时会显示<emphasis role=\"strong\">添加出版者</emphasis>对话框。已经输入了此出版者的名称和 URI。"
+msgstr "此时将显示<emphasis role=\"strong\">添加发布者</emphasis>对话框。已经输入了此发布者的名称和 URI。"
 
 #: package-manager.xml.in.nolegal:590(para) 
 msgid "The <emphasis role=\"strong\">Adding Publisher Complete</emphasis> dialog is displayed if the publisher has been added successfully."
-msgstr "如果成功添加了出版者，则会显示<emphasis role=\"strong\">添加出版者完成</emphasis>对话框。"
+msgstr "如果成功添加了发布者，则会显示<emphasis role=\"strong\">添加发布者完成</emphasis>对话框。"
 
 #: package-manager.xml.in.nolegal:592(para) 
 msgid "(Optional) If the publishers to be added are secure publishers, an SSL key and certificate is required. Browse to locate the SSL Key and SSL Certificate on your system."
-msgstr "（可选）如果要添加的出版者是安全出版者，则需要提供 SSL 密钥和证书。请在系统中浏览以找到 SSL 密钥和 SSL 证书。"
+msgstr "（可选）如果要添加的发布者是安全发布者，则需要提供 SSL 密钥和证书。请在系统中浏览以找到 SSL 密钥和 SSL 证书。"
 
 #: package-manager.xml.in.nolegal:594(para) 
 msgid "Click <guibutton>OK</guibutton> to proceed."
@@ -1288,11 +1288,11 @@ msgstr "安装所有软件包后，应用程序将会关闭。"
 
 #: package-manager.xml.in.nolegal:601(title) 
 msgid "Using WebInstall With a Disabled Publisher"
-msgstr "在已禁用出版者的情况下使用 WebInstall"
+msgstr "在已禁用发布者的情况下使用 WebInstall"
 
 #: package-manager.xml.in.nolegal:602(para) 
 msgid "Sometimes a <filename>.p5i</filename> file may contain packages from a disabled publisher. In such cases WebInstall opens up an <emphasis role=\"strong\">Enable Publisher</emphasis> dialog which allows the user to enable the publisher before installing packages."
-msgstr "有时，<filename>.p5i</filename> 文件可能包含来自已禁用的出版者的软件包。在这种情况下，WebInstall 会打开<emphasis role=\"strong\">启用出版者</emphasis>对话框，以允许用户启用此出版者，然后安装软件包。"
+msgstr "有时，<filename>.p5i</filename> 文件可能包含来自已禁用的发布者的软件包。在这种情况下，WebInstall 会打开<emphasis role=\"strong\">启用发布者</emphasis>对话框，以允许用户启用此发布者，然后安装软件包。"
 
 #: package-manager.xml.in.nolegal:605(title) 
 msgid "Working With the Update Manager"
@@ -1304,7 +1304,7 @@ msgstr "关于更新管理器"
 
 #: package-manager.xml.in.nolegal:607(para) 
 msgid "The Update Manager is a separate application that starts from the desktop when updates to the installed packages are available in the publisher."
-msgstr "更新管理器是一个独立的应用程序，在出版者中有可用于已安装软件包的更新时，它将从桌面启动。"
+msgstr "更新管理器是一个独立的应用程序，在发布者中有可用于已安装软件包的更新时，它将从桌面启动。"
 
 #: package-manager.xml.in.nolegal:608(title) 
 msgid "Update Manager Main Window"
@@ -1312,7 +1312,7 @@ msgstr "更新管理器主窗口"
 
 #: package-manager.xml.in.nolegal:612(para) 
 msgid "You can use the Update Manager application to update the installed packages in your image. The Update Manager uses the publisher that is currently set in the Package Manager to install the latest image."
-msgstr "您可以使用更新管理器应用程序更新映像中的已安装软件包。更新管理器使用当前在软件包管理器中设置的出版者安装最新映像。"
+msgstr "您可以使用更新管理器应用程序更新映像中的已安装软件包。更新管理器使用当前在软件包管理器中设置的发布者安装最新映像。"
 
 #: package-manager.xml.in.nolegal:613(para) 
 msgid "For the OpenSolaris 2010.03 release, the Update Manager updates <emphasis role=\"strong\">all</emphasis> installed packages in the image. This action is equivalent to running the <command>pkg image-update</command> command from the command-line."
@@ -1357,7 +1357,7 @@ msgstr ""
 
 #: package-manager.xml.in.nolegal:626(para) 
 msgid "The <emphasis role=\"strong\">Update All</emphasis> dialog is displayed. Proceed with the Update All process or cancel the action."
-msgstr "此时会显示<emphasis role=\"strong\">全部更新</emphasis>对话框。继续执行“全部更新”过程或取消该操作。"
+msgstr "此时将显示<emphasis role=\"strong\">全部更新</emphasis>对话框。继续执行“全部更新”过程或取消该操作。"
 
 #: package-manager.xml.in.nolegal:627(para) 
 msgid "Click <guibutton>Proceed</guibutton> to create a new boot environment and update all packages in the current image."
@@ -1473,11 +1473,11 @@ msgstr "映像包管理系统词汇表"
 
 #: package-manager.xml.in.nolegal:675(glossterm) 
 msgid "publisher"
-msgstr "出版者"
+msgstr "发布者"
 
 #: package-manager.xml.in.nolegal:676(para) 
 msgid "A person, group, or corporation that provides packages. Packages for a publisher are found in a repository, from which the package system retrieves package data."
-msgstr "提供软件包的个人、组或公司。可在系统信息库中找到出版者的软件包，软件包系统从系统信息库中检索软件包数据。"
+msgstr "提供软件包的个人、组或公司。可在系统信息库中找到发布者的软件包，软件包系统从该系统信息库中检索软件包数据。"
 
 #: package-manager.xml.in.nolegal:679(glossterm) 
 msgid "repository"
@@ -1485,7 +1485,7 @@ msgstr "系统信息库"
 
 #: package-manager.xml.in.nolegal:680(para) 
 msgid "A location where clients can publish and retrieve package content such as files contained within the package, and package metadata which includes information about the package such as its name and description."
-msgstr "一个位置，客户机可在该位置发布和检索软件包内容（如软件包中包含的文件）和软件包元数据（包含有关软件包的信息，如软件包名称和描述）。"
+msgstr "客户机可在系统信息库中发布和检索软件包内容（如软件包中包含的文件）以及软件包元数据（包含有关软件包的信息，如软件包名称和描述）。"
 
 #: package-manager.xml.in.nolegal:683(glossterm) 
 msgid "boot environment"
@@ -1566,7 +1566,7 @@ msgstr "别名"
 
 #: package-manager.xml.in.nolegal:711(para) 
 msgid "An alternate name for a publisher."
-msgstr "出版者的备用名称。"
+msgstr "发布者的另一个名称。"
 
 #: package-manager.xml.in.nolegal:714(glossterm) 
 msgid "mirror"

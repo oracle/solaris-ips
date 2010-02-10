@@ -26,9 +26,9 @@ msgid ""
 msgstr ""
        "Project-Id-Version: PACKAGE VERSION\n"
        "POT-Creation-Date: 2010-01-14 11:47+0900\n"
-       "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-       "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-       "Language-Team: LANGUAGE <LL@li.org>\n"
+       "PO-Revision-Date: 2010-01-28 13:19+0800\n"
+       "Last-Translator: desktop-discuss@opensolaris.org\n"
+       "Language-Team: desktop-discuss@opensolaris.org\n"
        "MIME-Version: 1.0\n"
        "Content-Type: text/plain; charset=UTF-8\n"
        "Content-Transfer-Encoding: 8bit\n"
@@ -192,7 +192,7 @@ msgstr "패키지 관리자 시작 페이지"
 
 #: package-manager.xml.in.nolegal:71(para) 
 msgid "The Start Page provides a list of featured packages that can be installed. It includes a list of some of the most popular and recent packages downloaded by the OpenSolaris community of users. The Recommended list of packages point to software applications that are frequently downloaded by the OpenSolaris user. Click the package links to install the packages."
-msgstr "시작 페이지에서는 설치 가능한,기능을 갖춘 패키지의 목록을 제공합니다. 여기에는 OpenSolaris 사용자 커뮤니티에서 가장 인기있는 패키지 및 최신의 패키지에 대한 일부 목록이 포함됩니다. 권장 패키지 목록은 OpenSolaris 사용자가 자주 다운로드하는 소프트웨어 응용 프로그램으로 향합니다. 패키지를 설치하려면 패키지 링크를 누르십시오."
+msgstr "시작 페이지에서는 설치 가능한, 기능을 갖춘 패키지의 목록을 제공합니다. 여기에는 OpenSolaris 사용자 커뮤니티에서 가장 인기있는 패키지 및 최신의 패키지에 대한 일부 목록이 포함됩니다. 권장 패키지 목록은 OpenSolaris 사용자가 자주 다운로드하는 소프트웨어 응용 프로그램을 가리킵니다. 패키지를 설치하려면 패키지 링크를 누르십시오."
 
 #: package-manager.xml.in.nolegal:72(para) 
 msgid "The Start Page also provides links to more information about the OpenSolaris project, subscribe to newsletters and join the OpenSolaris community."
@@ -719,8 +719,7 @@ msgstr "부트 환경 소개"
 
 #: package-manager.xml.in.nolegal:316(para) 
 msgid "A boot environment is an image that is bootable. Upon an initial OpenSolaris installation, a boot environment is created."
-msgstr ""
-       "부트 환경은 부트 가능한 이미지입니다. 초기 OpenSolaris 설치 시 "
+msgstr "부트 환경은 부트 가능한 이미지입니다. 초기 OpenSolaris 설치 시 "
        "부트 환경이 만들어집니다."
 
 #: package-manager.xml.in.nolegal:317(para) 

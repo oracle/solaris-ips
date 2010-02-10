@@ -279,7 +279,7 @@ msgstr "<emphasis role=\"strong\">Installa/Aggiorna</emphasis>: selezionare il p
 
 #: package-manager.xml.in.nolegal:103(para) 
 msgid "<emphasis role=\"strong\">Refresh</emphasis> – Click <emphasis role=\"strong\">Refresh</emphasis> to reload the list of packages."
-msgstr "<emphasis role=\"strong\">Aggiorna</emphasis: fare clic su <emphasis role=\"strong\">Aggiorna</emphasis> per aggiornare l'elenco dei pacchetti."
+msgstr "<emphasis role=\"strong\">Aggiorna</emphasis>: fare clic su <emphasis role=\"strong\">Aggiorna</emphasis> per aggiornare l'elenco dei pacchetti."
 
 #: package-manager.xml.in.nolegal:105(para) 
 msgid "<emphasis role=\"strong\">Remove</emphasis> – Select a package and click <emphasis role=\"strong\">Remove</emphasis> to remove a package."
@@ -446,7 +446,7 @@ msgstr ""
 
 #: package-manager.xml.in.nolegal:185(para) 
 msgid "Select <menuchoice><guimenu>Edit</guimenu><guimenuitem>Preferences</guimenuitem></menuchoice> from the main menu and uncheck the <emphasis role=\"strong\">Show Start Page on Startup</emphasis> to disable the Start Page. This dialog is checked by default."
-msgstr "Selezionare <menuchoice><guimenu>Modifica</guimenu><guimenuitem>Preferenze</guimenuitem></menuchoice> dal menu principale e deselezionare <emphasis role=\"strong\">Mostra pagina iniziale all'avvio</emphasis> per disattivare la visualizzazione di questa pagina. Questa opzione è selezionata per impostazione predefinita.##penso si tratti di finestra##"
+msgstr "Selezionare <menuchoice><guimenu>Modifica</guimenu><guimenuitem>Preferenze</guimenuitem></menuchoice> dal menu principale e deselezionare <emphasis role=\"strong\">Mostra pagina iniziale all'avvio</emphasis> per disattivare la visualizzazione di questa pagina. Questa opzione è selezionata per impostazione predefinita."
 
 #: package-manager.xml.in.nolegal:186(para) 
 msgid "Select <menuchoice><guimenu>View</guimenu><guimenuitem>Start Page</guimenuitem></menuchoice> from the main menu to go to the Start Page at anytime."
@@ -466,7 +466,7 @@ msgstr "Vengono salvate le seguenti impostazioni:"
 
 #: package-manager.xml.in.nolegal:191(para) 
 msgid "<emphasis role=\"strong\">Vertical separators</emphasis> – The size of the columns in the main window the Package Manager"
-msgstr "<emphasis role=\"strong\">Separatori verticali##non penso sia un'opzione vera##</emphasis>: la dimensione delle colonne nella finestra principale di Package Manager"
+msgstr "<emphasis role=\"strong\">Separatori verticali</emphasis>: la dimensione delle colonne nella finestra principale di Package Manager"
 
 #: package-manager.xml.in.nolegal:193(para) 
 msgid "<emphasis role=\"strong\">Window size</emphasis> – The size of the Package Manager window"
@@ -474,7 +474,7 @@ msgstr "<emphasis role=\"strong\">Dimensione della finestra</emphasis>: la dimen
 
 #: package-manager.xml.in.nolegal:195(para) 
 msgid "<emphasis role=\"strong\">Current publisher</emphasis> – The publisher that is selected when the Package Manager is closed"
-msgstr "<emphasis role=\"strong\">Publisher corrente##non penso sia un'opzione vera##</emphasis>: il publisher selezionato al momento della chiusura di Package Manager"
+msgstr "<emphasis role=\"strong\">Publisher corrente</emphasis>: il publisher selezionato al momento della chiusura di Package Manager"
 
 #: package-manager.xml.in.nolegal:199(title) 
 msgid "Confirmation Dialog Preferences"
@@ -675,7 +675,7 @@ msgstr "Annullamento della ricerca dei pacchetti"
 
 #: package-manager.xml.in.nolegal:286(para) 
 msgid "If you want to cancel a search, use the Cancel Search icon at the bottom of the main window of the Package Manager. This icon is visible on the status bar only during a search operation."
-msgstr "Se si desidera annullare una ricerca, utilizzare l'icona Annulla ricerca##n inglese è Clear Search## posta nella parte inferiore della finestra principale di Package Manager. Durante le operazioni di ricerca, l'icona è visibile sulla barra di stato."
+msgstr "Se si desidera annullare una ricerca, utilizzare l'icona Annulla ricerca posta nella parte inferiore della finestra principale di Package Manager. Durante le operazioni di ricerca, l'icona è visibile sulla barra di stato."
 
 #: package-manager.xml.in.nolegal:288(title) 
 msgid "Update a Package"
@@ -731,7 +731,7 @@ msgstr "Scegliere <emphasis role=\"strong\">Tutti i publisher (Installati)</emph
 
 #: package-manager.xml.in.nolegal:311(para) 
 msgid "You cannot search for a package from the <emphasis role=\"strong\">All Publishers (Installed)</emphasis> option. Switch to <emphasis role=\"strong\">All Publishers (Search)</emphasis> to search for a package."
-msgstr "Con l'opzione <emphasis role=\"strong\">Tutti publisher (Installati)</emphasis> non è possibile eseguire la ricerca di pacchetti. Per cercare pacchetti, utilizzare l'opzione <emphasis role=\"strong\">Tutti i publisher (cerca)</emphasis>."
+msgstr "Con l'opzione <emphasis role=\"strong\">Tutti i publisher (Installati)</emphasis> non è possibile eseguire la ricerca di pacchetti. Per cercare pacchetti, utilizzare l'opzione <emphasis role=\"strong\">Tutti i publisher (cerca)</emphasis>."
 
 #: package-manager.xml.in.nolegal:315(title) 
 msgid "Introduction to Boot Environments"
@@ -828,8 +828,7 @@ msgstr "Al termine del processo di aggiornamento, viene visualizzata la finestra
 
 #: package-manager.xml.in.nolegal:340(para) 
 msgid "If the Package Manager is unable to create a new boot environment, an error message is displayed. See the <xref linkend=\"gilfh\"/> section on how to rectify the error and continue with updating your image."
-msgstr ""
-       "Se Package Manager non è in grado di creare un nuovo ambiente di avvio, viene "
+msgstr "Se Package Manager non è in grado di creare un nuovo ambiente di avvio, viene "
        "visualizzato un messaggio di errore. Fare riferimento alla sezione <xref linkend=\"gilfh\"/> per correggere l'errore e continuare l'aggiornamento dell'immagine."
 
 #: package-manager.xml.in.nolegal:343(para) 
@@ -838,12 +837,11 @@ msgstr "Fare clic sul pulsante <guibutton>Riavvia ora </guibutton> per riavviare
 
 #: package-manager.xml.in.nolegal:344(para) 
 msgid "Click <guibutton>Restart Later</guibutton> to restart your system at a later time. <emphasis role=\"strong\">You must reboot your system for the changes to take effect.</emphasis>"
-msgstr "Fare clic sul pulsante <guibutton>Riavvia più avanti##</guibutton> per riavviare il sistema in un momento successivo. <emphasis role=\"strong\">Affinché le modifiche apportate abbiano effetto, è necessario riavviare il sistema.</emphasis>"
+msgstr "Fare clic sul pulsante <guibutton>Riavvia di seguito</guibutton> per riavviare il sistema in un momento successivo. <emphasis role=\"strong\">Affinché le modifiche apportate abbiano effetto, è necessario riavviare il sistema.</emphasis>"
 
 #: package-manager.xml.in.nolegal:345(para) 
 msgid "During the Update All process, a clone of the active boot environment is created. You can boot into the clone to return to the boot environment state that existed before the Update All process was started."
-msgstr ""
-       "Durante il processo Aggiorna tutto, viene creata una copia dell'ambiente di avvio "
+msgstr "Durante il processo Aggiorna tutto, viene creata una copia dell'ambiente di avvio "
        "attivo. È possibile eseguire l'avvio utilizzando talecopia per tornare allo stato dell'ambiente di avvio esistente prima del processo di aggiornamento."
 
 #: package-manager.xml.in.nolegal:350(title) package-manager.xml.in.nolegal:656(title) 
@@ -852,15 +850,14 @@ msgstr "Errori del processo Aggiorna tutto"
 
 #: package-manager.xml.in.nolegal:351(para) 
 msgid "A new boot environment clone must be created by the Package Manager for the Updates process to be completed. An error message is displayed if a boot environment clone cannot be created. You might see an error message such as the following :"
-msgstr ""
-       "Per completare il processo di aggiornamento, è necessario creare un nuovo clone"
+msgstr "Per completare il processo di aggiornamento, è necessario creare un nuovo clone"
        "dell'ambiente di avvio mediante Package Manager. Se non è possibile creare un clone dell'ambiente "
        "di avvio, viene visualizzato un messaggio di errore. È possibile che venga visualizzato il seguente "
        "messaggio di errore:"
 
 #: package-manager.xml.in.nolegal:352(para) 
 msgid "<literal>Not enough disk space, the Update All action cannot be performed. Choose Manage BE to manage your boot environments and free up disk space.</literal>."
-msgstr "<literal>Spazio su disco insufficiente. Impossibile  eseguire l'azione Aggiorna tutto. Scegliere la gestione degli ambienti di avvio per gestire i propri ambienti di avvio e liberare spazio su disco</literal>. adattata perché l'ho trovata parzialmente##"
+msgstr "<literal>Spazio su disco insufficiente. Impossibile eseguire l'azione Aggiorna tutto. Scegliere  ambiente di avvio per gestire i propri ambienti di avvio e liberare spazio su disco</literal>."
 
 #: package-manager.xml.in.nolegal:353(para) package-manager.xml.in.nolegal:659(para) 
 msgid "Click <guibutton>Close</guibutton> to cancel the Update All process."
@@ -874,7 +871,7 @@ msgstr ""
 
 #: package-manager.xml.in.nolegal:355(para) 
 msgid "Click <guibutton>Manage BE</guibutton> to display the <emphasis role=\"strong\">Manage Boot Environment</emphasis> dialog."
-msgstr "Fare clic su <guibutton>Manage BE##trovatoBE management##Gestione ambiente di avvio</guibutton> per visualizzare la finestra di dialogo <emphasis role=\"strong\">Gestione degli ambienti di avvio</emphasis>."
+msgstr "Fare clic su <guibutton> ambiente di avvio</guibutton> per visualizzare la finestra di dialogo <emphasis role=\"strong\">Gestione degli ambienti di avvio</emphasis>."
 
 #: package-manager.xml.in.nolegal:357(para) 
 msgid "Select the boot environments that you want to delete."
@@ -1018,7 +1015,7 @@ msgstr "Scegliere <menuchoice><guimenu>File</guimenu><guimenuitem>Aggiungi publi
 
 #: package-manager.xml.in.nolegal:420(para) 
 msgid "You can also choose the <guibutton>Add..</guibutton> option from the <emphasis role=\"strong\">Publisher</emphasis> drop-down menu or select <menuchoice><guimenu>File</guimenu><guimenuitem>Manage Publishers</guimenuitem></menuchoice> and then click <emphasis>Add..</emphasis> in the <emphasis role=\"strong\">Manage Publishers</emphasis> dialog."
-msgstr "In alternativa, è possibile scegliere l'opzione <guibutton>Aggiungi...</guibutton> dal menu a discesa <emphasis role=\"strong\">Publisher</emphasis> oppure selezionare <menuchoice><guimenu>File</guimenu><guimenuitem>Gestisci publisher</guimenuitem></menuchoice> e quindi fare clic su <emphasis>Aggiungi...</emphasis> nella finestra di dialogo <emphasis role=\"strong\">Gestisci publisher</emphasis>."
+msgstr "In alternativa, è possibile scegliere l'opzione <guibutton>Aggiungi...</guibutton> dal menu a discesa <emphasis role=\"strong\">Publisher</emphasis> oppure selezionare <menuchoice><guimenu>File</guimenu><guimenuitem> publisher</guimenuitem></menuchoice> e quindi fare clic su <emphasis>Aggiungi...</emphasis> nella finestra di dialogo <emphasis role=\"strong\"> publisher</emphasis>."
 
 #: package-manager.xml.in.nolegal:422(para) 
 msgid "The <emphasis role=\"strong\">Add Publisher</emphasis> dialog is displayed. Enter the name of the publisher and the associated URI. If the publisher is a secure publisher, the <emphasis role=\"strong\">SSL Key</emphasis> and <emphasis role=\"strong\">SSL Certificate</emphasis> fields are displayed. Follow the steps in the <xref linkend=\"modify-publisher\"/> section to add an SSL key and certificate."
@@ -1038,7 +1035,7 @@ msgstr "Se l'aggiunta del publisher va a buon fine, viene visualizzata la finest
 
 #: package-manager.xml.in.nolegal:431(para) 
 msgid "An <emphasis role=\"strong\">Adding Publisher Error</emphasis> is displayed if the publisher could not be added. Click <emphasis role=\"strong\">Details</emphasis> to get more information about the error."
-msgstr "Se non è possibile aggiungere un publisher, viene visualizzato il messaggio <emphasis role=\"strong\">Errore nell'aggiunta del publisher##</emphasis>. Fare clic su <emphasis role=\"strong\">Dettagli</emphasis> per visualizzare ulteriori informazioni sull'errore."
+msgstr "Se non è possibile aggiungere un publisher, viene visualizzato il messaggio <emphasis role=\"strong\">Errore nell'aggiunta del publisher</emphasis>. Fare clic su <emphasis role=\"strong\">Dettagli</emphasis> per visualizzare ulteriori informazioni sull'errore."
 
 #: package-manager.xml.in.nolegal:434(title) 
 msgid "Remove a Publisher"
@@ -1183,7 +1180,7 @@ msgstr "Immettere l'URI per il mirror nel campo <emphasis>Mirror</emphasis>. Far
 
 #: package-manager.xml.in.nolegal:526(title) 
 msgid "Remove Publisher Mirrors"
-msgstr "Rimozione dei mirror dei publisher "
+msgstr "Rimozione dei mirror dei publisher"
 
 #: package-manager.xml.in.nolegal:527(para) 
 msgid "Perform the following steps to remove a mirror associated with a publisher:"
@@ -1227,7 +1224,7 @@ msgstr "Dal menu a comparsa <emphasis role=\"strong\">Publisher</emphasis>, sele
 
 #: package-manager.xml.in.nolegal:551(para) 
 msgid "Check the box next to the package or packages to select it. The packages selected are highlighted."
-msgstr "Selezionare la casella posta accanto al pacchetto o ai pacchetti per selezionarli. I pacchetti selezionati vengono evidenziati."
+msgstr "Selezionare la casella accanto al pacchetto o ai pacchetti per selezionarli. I pacchetti selezionati vengono evidenziati."
 
 #: package-manager.xml.in.nolegal:553(para) 
 msgid "Click <menuchoice><guisubmenu>File</guisubmenu><guimenuitem>Export Selections</guimenuitem></menuchoice> to display the <emphasis role=\"strong\">Export Selections Confirmation</emphasis> window."
@@ -1247,7 +1244,7 @@ msgstr "Viene fornito un nome predefinito per il file <filename>p5i</filename> c
 
 #: package-manager.xml.in.nolegal:561(para) 
 msgid "The file is saved in the <filename>/tmp</filename> folder by default. Click the <emphasis role=\"strong\">Browse for other folders</emphasis> tab to select your own folder."
-msgstr "Per impostazione predefinita il file viene salvato nella cartella <filename>/tmp</filename>. Fare clic sulla scheda <emphasis role=\"strong\">Cerca altre cartelle##</emphasis> per selezionare la propria cartella."
+msgstr "Per impostazione predefinita il file viene salvato nella cartella <filename>/tmp</filename>. Fare clic sulla scheda <emphasis role=\"strong\">Cerca altre cartelle</emphasis> per selezionare la propria cartella."
 
 #: package-manager.xml.in.nolegal:563(para) 
 msgid "Choose the <filename>p5i Files</filename> option in the drop-down menu located at the bottom right hand side of the window."
@@ -1451,7 +1448,7 @@ msgstr "Fare clic su <guibutton>Annulla</guibutton> per annullare il processo."
 
 #: package-manager.xml.in.nolegal:637(para) 
 msgid "If you chose to proceed, the <emphasis role=\"strong\">Installing Updates</emphasis> windows are displayed. The package installation process consists of four stages:"
-msgstr "Se si sceglie di continuare vengono visualizzate le finestre <emphasis role=\"strong\">Installazione aggiornamenti</emphasis>. Il processo di installazione dei pacchetti è costituito dalle seguenti fasi:##messo così perché a me sembrano tre##"
+msgstr "Se si sceglie di continuare vengono visualizzate le finestre <emphasis role=\"strong\">Installazione aggiornamenti</emphasis>. Il processo di installazione dei pacchetti è costituito dalle seguenti fasi:"
 
 #: package-manager.xml.in.nolegal:638(para) 
 msgid "Prepare"
@@ -1501,11 +1498,11 @@ msgstr ""
 
 #: package-manager.xml.in.nolegal:658(para) 
 msgid "<literal>Not enough disk space, the Update All action cannot be performed. Choose Manage BE to manage your boot environments and free up disk space</literal>."
-msgstr "<literal>Spazio su disco insufficiente. Impossibile  eseguire l'azione Aggiorna tutto. Scegliere la gestione degli ambienti di avvio per gestire i propri ambienti di avvio e liberare spazio su disco</literal>. adattata perché non l'ho trovata##"
+msgstr "<literal>Spazio su disco insufficiente. Impossibile eseguire l'azione Aggiorna tutto. Scegliere Gestisci ambiente di avvio per gestire i propri ambienti di avvio e liberare spazio su disco</literal>."
 
 #: package-manager.xml.in.nolegal:661(para) 
 msgid "Click <guibutton>Manage BE</guibutton> in the error dialog to go to the <emphasis role=\"strong\">Manage Boot Environments</emphasis> dialog."
-msgstr "Fare clic su <guibutton>Manage BE##trovatoBE management##Gestione ambiente di avvio</guibutton> nella finestra di dialogo di errore per visualizzare la finestra di dialogo <emphasis role=\"strong\">Gestione degli ambienti di avvio</emphasis>."
+msgstr "Fare clic su <guibutton>Gestisci ambiente di avvio</guibutton> nella finestra di dialogo di errore per visualizzare la finestra di dialogo <emphasis role=\"strong\">Gestione degli ambienti di avvio</emphasis>."
 
 #: package-manager.xml.in.nolegal:663(para) 
 msgid "Go to step 2 in the <xref linkend=\"gilfh\"/> section. Follow the instructions to delete old or unused boot environments and free up disk space."
@@ -1524,7 +1521,7 @@ msgstr "Note di rilascio della versione 2010.03"
 
 #: package-manager.xml.in.nolegal:670(para) 
 msgid "The Release Notes for 2010.03 are available at the following location: <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"/>."
-msgstr "Le Note di rilascio per la versione 2010.03 sono disponibili nel seguente percorso: <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"/>."
+msgstr "Le Note di rilascio per la versione 2010.03 sono disponibili al seguente percorso: <ulink url=\"http://docs.sun.com/source/820-7679/index.html\"/>."
 
 #: package-manager.xml.in.nolegal:674(title) 
 msgid "Image Packaging System Glossary"
