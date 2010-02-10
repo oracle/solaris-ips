@@ -99,17 +99,7 @@ class Updatemanager:
                         module.textdomain("pkg")
                 gui_misc.init_for_help(self.application_dir)
                 # Duplicate ListStore setup in get_updates_to_list()
-                self.um_list = \
-                    gtk.ListStore(
-                        gobject.TYPE_INT,         # UM_ID
-                        gobject.TYPE_BOOLEAN,     # UM_INSTALL_MARK
-                        gtk.gdk.Pixbuf,           # UM_STATUS
-                        gobject.TYPE_STRING,      # UM_NAME
-                        gtk.gdk.Pixbuf,           # UM_REBOOT
-                        gobject.TYPE_STRING,      # UM_LATEST_VER
-                        gobject.TYPE_STRING,      # UM_SIZE
-                        gobject.TYPE_STRING,      # UM_STEM
-                        )
+                self.um_list = self.__get_um_liststore()
                 self.progress_stop_thread = False
                 self.last_select_time = 0
                 self.user_rights = portable.is_admin()
@@ -220,6 +210,19 @@ class Updatemanager:
                 self.w_um_dialog.resize(620, 500)
                 gui_misc.setup_logging(gui_misc.get_um_name())
 
+        @staticmethod
+        def __get_um_liststore():
+                return gtk.ListStore(
+                        gobject.TYPE_INT,         # UM_ID
+                        gobject.TYPE_BOOLEAN,     # UM_INSTALL_MARK
+                        gtk.gdk.Pixbuf,           # UM_STATUS
+                        gobject.TYPE_STRING,      # UM_NAME
+                        gtk.gdk.Pixbuf,           # UM_REBOOT
+                        gobject.TYPE_STRING,      # UM_LATEST_VER
+                        gobject.TYPE_STRING,      # UM_SIZE
+                        gobject.TYPE_STRING,      # UM_STEM
+                        )
+        
         def __set_cancel_state(self, status):
                 if status:
                         gobject.idle_add(self.w_progress_cancel.grab_focus)
@@ -299,7 +302,7 @@ class Updatemanager:
                 column.set_cell_data_func(name_renderer, self.__cell_data_function, None)
                 column.set_expand(True)
                 self.w_um_treeview.append_column(column)
-                
+
                 column = gtk.TreeViewColumn()
                 render_pixbuf = gtk.CellRendererPixbuf()
                 column.pack_start(render_pixbuf, expand = True)
@@ -351,18 +354,7 @@ class Updatemanager:
         def get_updates_to_list(self):
                 '''This function fetches a list of the updates
                         that are available to list'''
-                # MUST match self.um_list ListStore setup in __init__
-                um_list = \
-                    gtk.ListStore(
-                        gobject.TYPE_INT,         # UM_ID
-                        gobject.TYPE_BOOLEAN,     # UM_INSTALL_MARK
-                        gtk.gdk.Pixbuf,           # UM_STATUS
-                        gobject.TYPE_STRING,      # UM_NAME
-                        gtk.gdk.Pixbuf,           # UM_REBOOT
-                        gobject.TYPE_STRING,      # UM_LATEST_VER
-                        gobject.TYPE_STRING,      # UM_SIZE
-                        gobject.TYPE_STRING,      # UM_STEM
-                        )
+                um_list = self.__get_um_liststore()
 
                 # Use check_for_updates to determine whether updates
                 # are available
@@ -399,12 +391,10 @@ class Updatemanager:
                                 #        incState = _("Inc")
                                 #else:
                                 #        incState = "--"
-                                pkg_name = gui_misc.get_pkg_name(pkg_name)
-                                um_list.insert(count, [count, False, None,
-                                    pkg_name, None, 
-                                    pkg_fmri.get_version(), None, 
+                                um_list.insert(count, [count, False, None, pkg_name, 
+                                    None, pkg_fmri.get_version(), None, 
                                     pkg_fmri.get_pkg_stem()])
-                                
+
                 if debug:
                         print _("count: %d") % count
 

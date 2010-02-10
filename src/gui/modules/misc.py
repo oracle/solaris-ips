@@ -171,34 +171,92 @@ def display_help(help_id=None):
         else:
                 gnome.help_display('package-manager')
 
-def get_pkg_name(pkg_name):
-        index = -1
-        try:
-                index = pkg_name.rindex("/")
-        except ValueError:
-                # Package Name without "/"
-                return pkg_name
-        pkg_name_bk = pkg_name
-        test_name = pkg_name[index:]
-        pkg_name = pkg_name[:index]
-        try:
-                index = pkg_name.rindex("/")
-        except ValueError:
-                # Package Name with only one "/"
-                return pkg_name_bk
-        if pkg_name[index:].strip("/") not in SPECIAL_CATEGORIES:
-                return test_name.strip("/")
+def add_pkgname_to_dic(dic, name, special_table):
+        """Adds the original name of the package to the
+        dictionary of names.
+        
+        'dic' is the dictionary, which holds all the names
+        
+        'name' is the original package name
+
+        'special_table' table with special names. Special name is when the full name
+        is part of another name. Example package/name another/package/name. package/name
+        is the special name in this situation."""
+
+        table = name.split("/")
+        if len(table) == 1:
+                if table[0] in dic:
+                        return
+                else:
+                        dic[table[0]] = {}
+        table.reverse()
+        i = 0
+        j = len(table)
+        for entry in table:
+                dictionary = dic.get(entry)
+                if dictionary == None:
+                        dic[entry] = {}
+                        i += 1
+                dic = dic[entry]
+        if i == 0 and j > 1:
+                special_table.append(name)
+
+def __is_recursion_gr_then_one(dic):
+        if not isinstance(dic, dict):
+                return False
+        keys = dic.keys()
+        if len(keys) == 1:
+                return __is_recursion_gr_then_one(dic.get(keys[0]))
+        elif len(keys) > 1:
+                return True
         else:
-                # The package name contains special category
-                converted_name = pkg_name[index:] + test_name
-                pkg_name = pkg_name[:index]
-                try:
-                        index = pkg_name.rindex("/")
-                except ValueError:
-                        # Only three parts "part1/special/part2"
-                        return pkg_name + converted_name
-                return pkg_name[index:].strip("/") + converted_name
-        return pkg_name_bk
+                return False
+
+def get_minimal_unique_name(dic, name, special_table):
+        name_table = name.split("/")
+        len_name_table = len(name_table)
+        if len_name_table == 1 and name_table[0] in dic:
+                # Special case. The name doesn't contain any "/"
+                return name_table[0]
+        elif len_name_table == 1:
+                return name
+        max_special_level = 0
+        for special_name in special_table:
+                if name.endswith(special_name):
+                        level = len(special_name.split("/"))
+                        if level > max_special_level:
+                                max_special_level = level
+        for special_category in SPECIAL_CATEGORIES:
+                pos = name.find(special_category)
+                if pos != -1:
+                        level = len(name[pos:].split("/"))
+                        if level > max_special_level:
+                                max_special_level = level
+
+        if len_name_table < max_special_level:
+                return name
+
+        name_table.reverse()
+        new_name = []
+        i = 0
+        for entry in name_table:
+                dictionary = dic.get(entry)
+                recursion = __is_recursion_gr_then_one(dictionary)
+                if dictionary and recursion:
+                        new_name.append(entry)
+                        dic = dictionary
+                        i += 1
+                elif dictionary != None:
+                        new_name.append(entry)
+                        dic = dictionary
+                        i += 1
+                        if i > max_special_level:
+                                break
+        n = ""
+        new_name.reverse()
+        for part in new_name:
+                n += part + "/"
+        return n.strip("/")
 
 def get_api_object(img_dir, progtrack, parent_dialog):
         api_o = None

@@ -300,6 +300,8 @@ class PackageManager:
                 self.info_cache = {}
                 self.all_selected = 0
                 self.selected_pkgs = {}
+                self.package_names = {}
+                self.special_package_names = []
                 self.link_load_page = ""
                 self.start_page_url = None
                 self.to_install_update = {}
@@ -4991,7 +4993,11 @@ class PackageManager:
                         else:
                                 status_icon = self.not_installed_icon
                                 pkg_state = api.PackageInfo.KNOWN
-                        pkg_name = gui_misc.get_pkg_name(pkg_name)
+                        if not self.is_all_publishers and \
+                            not self.is_all_publishers_installed:
+                                pkg_name = gui_misc.get_minimal_unique_name(
+                                    self.package_names, pkg_name,
+                                    self.special_package_names)
                         marked = False
                         pkgs = self.selected_pkgs.get(pkg_pub)
                         if pkgs != None:
@@ -5016,6 +5022,9 @@ class PackageManager:
                 pkg_add = 0
                 if debug_perf:
                         a = time.time()
+                self.package_names = {}
+                self.special_package_names = []
+
                 for entry in pkgs_from_api:
                         (pkg_pub, pkg_name, ver), summ, cats, states = entry
                         if debug:
@@ -5023,7 +5032,8 @@ class PackageManager:
                         pkg_fmri = fmri.PkgFmri("%s@%s" % (pkg_name,
                             ver), publisher=pkg_pub)
                         pkg_stem = pkg_fmri.get_pkg_stem()
-                        pkg_name = gui_misc.get_pkg_name(pkg_name)
+                        gui_misc.add_pkgname_to_dic(self.package_names, pkg_name, 
+                            self.special_package_names)
                         if api.PackageInfo.INSTALLED in states:
                                 pkg_state = api.PackageInfo.INSTALLED
                                 if api.PackageInfo.UPGRADABLE in states:
@@ -5051,6 +5061,13 @@ class PackageManager:
                             pkg_add, pkg_name,
                             cats, category_list, pkg_pub)
                         pkg_add += 1
+                for pkg in application_list:
+                        pkg_name = pkg[enumerations.NAME_COLUMN]
+                        name = gui_misc.get_minimal_unique_name(self.package_names,
+                            pkg_name, self.special_package_names)
+                        if pkg_name != name:
+                                pkg[enumerations.NAME_COLUMN] = name
+                        
                 if debug_perf:
                         print "Time to add packages:", time.time() - a
                 if category_list != None:
@@ -5698,16 +5715,9 @@ class PackageManager:
 
         def __update_publisher_list(self, pub, full_list, package_list):
                 for row in full_list:
-                        if row[enumerations.NAME_COLUMN] in package_list:
+                        if row[enumerations.FMRI_COLUMN] and \
+                            row[enumerations.FMRI_COLUMN].pkg_name in package_list:
                                 self.__reset_row_status(row)
-
-        @staticmethod
-        def __update_package_list_names(package_list):
-                i = 0
-                while i < len(package_list):
-                        package_list[i] = gui_misc.get_pkg_name(package_list[i])
-                        i +=  1
-                return package_list
 
         def update_package_list(self, update_list):
                 if update_list == None and self.img_timestamp:
@@ -5725,9 +5735,6 @@ class PackageManager:
                                 prefix = pub.prefix
                                 package_list = update_list.get(prefix)
                                 if package_list != None:
-                                        package_list = \
-                                            self.__update_package_list_names(
-                                            package_list)
                                         self.__update_publisher_list(prefix,
                                             self.application_list,
                                             package_list)
@@ -5738,7 +5745,6 @@ class PackageManager:
                         if self.is_all_publishers_installed:
                                 self.__do_set_publisher()
                 elif visible_list:
-                        visible_list = self.__update_package_list_names(visible_list)
                         self.__update_publisher_list(visible_publisher, 
                                 self.application_list, visible_list)
                         if self.in_search_mode:

@@ -159,7 +159,7 @@ max-line-length=90
 
 # Maximum number of lines in a module
 # Increased from 1500 as the packagemanager is doing a lot of GUI initialisation that we can't logically put anywhere else.
-max-module-lines=6050
+max-module-lines=6100
 
 # String used as indentation unit. This is usually " " (4 spaces) or
 # "\t" (1 tab).
