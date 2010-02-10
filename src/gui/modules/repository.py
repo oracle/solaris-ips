@@ -509,6 +509,7 @@ class Repository(progress.GuiProgressTracker):
                                 ssl_cert = w_ssl_cert.get_text()
                         ssl_valid, ssl_error = self.__validate_ssl_key_cert(url, ssl_key,
                             ssl_cert, ignore_ssl_check_for_http=True)
+                        self.__update_repository_dialog_width(ssl_error)
                         if ssl_error != None and w_ssl_label:
                                 self.__show_error_label_with_format(w_ssl_label,
                                     ssl_error)
@@ -590,11 +591,22 @@ class Repository(progress.GuiProgressTracker):
                 updated_modify_repository = self.__update_modify_repository_dialog(True,
                     True, True, True)
                     
+                self.w_modify_repository_dialog.set_size_request(
+                    MODIFY_DIALOG_WIDTH_DEFAULT, -1)
+
+                if updated_modify_repository:
+                        self.w_modify_repository_dialog.show_all()
+
+        def __update_repository_dialog_width(self, ssl_error):
+                if ssl_error == None:
+                        self.w_modify_repository_dialog.set_size_request(
+                            MODIFY_DIALOG_WIDTH_DEFAULT, -1)
+                        return
+
                 style = self.w_repositorymodify_name.get_style()
                 font_size_in_pango_unit = style.font_desc.get_size()
                 font_size_in_pixel = font_size_in_pango_unit / pango.SCALE 
-                ssl_error = unicode(_("SSL Key not found at specified location"))
-                ssl_error_len = len(ssl_error) * font_size_in_pixel
+                ssl_error_len = len(unicode(ssl_error)) * font_size_in_pixel
                 if ssl_error_len > MODIFY_DIALOG_SSL_WIDTH_DEFAULT:
                         new_dialog_width = ssl_error_len * \
                                 (float(MODIFY_DIALOG_WIDTH_DEFAULT)/
@@ -604,9 +616,6 @@ class Repository(progress.GuiProgressTracker):
                 else:
                         self.w_modify_repository_dialog.set_size_request(
                             MODIFY_DIALOG_WIDTH_DEFAULT, -1)
-
-                if updated_modify_repository:
-                        self.w_modify_repository_dialog.show_all()
 
         def __update_modify_repository_dialog(self, update_alias=False, 
             update_mirrors=False, update_origins=False, update_ssl=False):
@@ -1245,6 +1254,7 @@ class Repository(progress.GuiProgressTracker):
                 ssl_cert = self.w_repositorymodify_cert_entry.get_text()
                 ssl_valid, ssl_error = self.__validate_ssl_key_cert(None,
                     ssl_key, ssl_cert)
+                self.__update_repository_dialog_width(ssl_error)
                 self.w_repositorymodifyok_button.set_sensitive(True)
                 if ssl_valid == False and (len(ssl_key) > 0 or len(ssl_cert) > 0):
                         self.w_repositorymodifyok_button.set_sensitive(False)
