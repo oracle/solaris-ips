@@ -553,9 +553,10 @@ class Repository(progress.GuiProgressTracker):
                 if not misc.valid_pub_prefix(name):
                         self.name_error = _("Name contains invalid characters")
                         return False
-                if name in [p.prefix for p in self.api_o.get_publishers()]:
-                        self.name_error = _("Name already in use")
-                        return False
+                for p in self.api_o.get_publishers():
+                        if name == p.prefix or name == p.alias:
+                                self.name_error = _("Name already in use")
+                                return False
                 return True
 
         def __get_selected_publisher_itr_model(self):
@@ -830,7 +831,19 @@ class Repository(progress.GuiProgressTracker):
                         new_pub = True
                         name = pub.prefix
                 errors_ssl = self.__update_ssl_creds(pub, repo, ssl_cert, ssl_key)
-                errors_update = self.__update_publisher(pub, new_publisher=new_pub)
+                errors_update = []
+                try:
+                        errors_update = self.__update_publisher(pub,
+                            new_publisher=new_pub)
+                except api_errors.UnknownRepositoryPublishers, e:
+                        if len(e.known) > 0:
+                                pub, repo, new_pub = self.__get_or_create_pub_with_url(
+                                    self.api_o, e.known[0], origin_url)
+                                pub.alias = name
+                                errors_update = self.__update_publisher(pub,
+                                    new_publisher=new_pub, raise_unknownpubex=False)
+                        else:
+                                errors_update.append((pub, e))
                 errors += errors_ssl
                 errors += errors_update
                 if self.cancel_progress_thread:
@@ -861,7 +874,7 @@ class Repository(progress.GuiProgressTracker):
                                    self.w_add_publisher_dialog, None)
                                 self.parent.reload_packages()
 
-        def __update_publisher(self, pub, new_publisher=False):
+        def __update_publisher(self, pub, new_publisher=False, raise_unknownpubex=True):
                 errors = []
                 try:
                         self.no_changes += 1
@@ -879,6 +892,11 @@ class Repository(progress.GuiProgressTracker):
                         else:
                                 self.__g_update_details_text(
                                     _("Publisher %s succesfully updated\n") % pub.prefix)
+                except api_errors.UnknownRepositoryPublishers, e:
+                        if raise_unknownpubex:
+                                raise e
+                        else:
+                                errors.append((pub, e))
                 except api_errors.CatalogRefreshException, e:
                         errors.append((pub, e))
                 except api_errors.InvalidDepotResponseException, e:
@@ -896,7 +914,11 @@ class Repository(progress.GuiProgressTracker):
                 # Descriptions not available at the moment
                 self.w_add_publisher_c_desc.hide()
                 self.w_add_publisher_c_desc_l.hide()
-                self.w_add_publisher_c_name.set_text(pub.prefix)
+                if pub.alias and len(pub.alias) > 0:
+                        self.w_add_publisher_c_name.set_text(
+                                pub.alias + " ("+ pub.prefix +")")
+                else:
+                        self.w_add_publisher_c_name.set_text(pub.prefix)
                 self.w_add_publisher_c_url.set_text(origin.uri)
                 self.w_add_publisher_comp_dialog.show()
 
@@ -1099,7 +1121,10 @@ class Repository(progress.GuiProgressTracker):
                 repo = pub.selected_repository
                 pub.alias = alias
                 errors += self.__update_ssl_creds(pub, repo, ssl_cert, ssl_key)
-                errors += self.__update_publisher(pub, new_publisher=False)
+                try:
+                        errors += self.__update_publisher(pub, new_publisher=False)
+                except api_errors.UnknownRepositoryPublishers, e:
+                        errors.append((pub, e))
                 self.progress_stop_thread = True
                 if len(errors) > 0:
                         gobject.idle_add(self.__show_errors, errors)
