@@ -191,15 +191,6 @@ STATICSPFILES = \
 	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/dialog-warning.png) \
 	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/install.png) \
 	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/opensolaris.png) \
-	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/popular.png) \
-	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/recent.png) \
-	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/recommended.png) \
-	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/startpage_ignite.png) \
-	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/startpage_learn.png) \
-	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/startpage_share.png) \
-	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/startpage_star.png) \
-	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/startpage_use.png) \
-	$(C_ONLY_SP_LOCALES:%=data/startpagebase/%/stub_test.html)
 
 #
 # Define the paths to all of the stuff we'll install.
