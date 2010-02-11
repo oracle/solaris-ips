@@ -1,0 +1,16 @@
+package developer/opensolaris/pkg5
+consolidation "ips"
+classification "Development/Distribution Tools"
+summary "Dependencies required to build the pkg(5) project."
+depend developer/build/make
+depend developer/build/onbld
+depend developer/gnome/gettext
+depend developer/gnome/gnome-doc-utils
+depend developer/versioning/mercurial
+depend library/python-2/setuptools-26
+depend package/svr4
+depend runtime/perl-584/extra
+depend system/zones/internal
+depend text/tidy
+depend x11/header
+end package
