@@ -27,6 +27,7 @@ MAX_INFO_CACHE_LIMIT = 100                # Max number of package descriptions t
 NOTEBOOK_PACKAGE_LIST_PAGE = 0            # Main Package List page index
 NOTEBOOK_START_PAGE = 1                   # Main View Start page index
 INFO_NOTEBOOK_LICENSE_PAGE = 3            # License Tab index
+OPEN_LINK = 'usr/lib/pm-openlink'
 PUBLISHER_INSTALLED = 0                   # Index for "All Publishers (Installed)" string
 PUBLISHER_ALL = 1                         # Index for "All Publishers (Search)" string
 PUBLISHER_ADD = 2                         # Index for "Add..." string
@@ -108,6 +109,7 @@ INFORMATION_PAGE_HEADER = (
 import getopt
 import pwd
 import os
+import subprocess
 import sys
 import time
 import locale
@@ -180,6 +182,7 @@ class PackageManager:
         def __init__(self):
                 self.before_start = True
                 signal.signal(signal.SIGINT, self.__main_application_quit)
+                self.original_user = None
                 self.__reset_home_dir()
                 self.api_o = None
                 self.cache_o = None
@@ -1395,17 +1398,11 @@ class PackageManager:
 
                         if handle_what == DISPLAY_LINK:
                                 return protocol + "://" + ext_uri
-                        try:
-                                gnome.url_show(protocol + "://" + ext_uri)
-                        except gobject.GError:
-                                self.__link_load_error(protocol + "://" + ext_uri)
+                        self.__open_link(protocol + "://" + ext_uri)
                 elif handle_what == DISPLAY_LINK:
                         return None
                 elif action == None:
-                        try:
-                                gnome.url_show(link)
-                        except gobject.GError:
-                                self.__link_load_error(link)
+                        self.__open_link(link)
                 # Handle empty and unsupported actions
                 elif action == "":
                         self.__link_load_error(_("Empty Action not supported"))
@@ -1413,6 +1410,24 @@ class PackageManager:
                 elif action != None:
                         self.__link_load_error(_("Action not supported: %s") % action)
                         return
+
+        def __open_link(self, link):
+                self.set_busy_cursor()
+                if self.original_user == None:
+                        try:
+                                gnome.url_show(link)
+                        except gobject.GError:
+                                self.__link_load_error(link)
+                else: 
+                        prog = os.path.join(self.application_dir, OPEN_LINK)
+                        try:
+                                return_code = subprocess.call([prog, 
+                                    self.original_user, link])
+                        except OSError:
+                                return_code = 1
+                        if return_code != 0:
+                                self.__link_load_error(link)
+                self.unset_busy_cursor()
 
         def __link_load_page(self, text =""):
                 self.link_load_page = text
@@ -5786,8 +5801,8 @@ class PackageManager:
                 # with gksu and had NFS mounted home directory in which
                 # case dbus called from gconf cannot write to the directory.
                 if os.getuid() == 0:
-                        home_dir = self.__find_root_home_dir()
-                        os.putenv('HOME', home_dir)
+                        root_home_dir = self.__find_root_home_dir()
+                        os.putenv('HOME', root_home_dir)
 
         @staticmethod
         def __find_root_home_dir():
@@ -5983,6 +5998,7 @@ if __name__ == '__main__':
         app_path = None
         image_dir = None
         info_install_arg = None
+        original_user = None
         save_selected = _("Save selected...")
         save_selected_pkgs = _("Save selected packages...")
         reboot_needed = _("The installed package(s) require a reboot before "
@@ -6035,11 +6051,16 @@ Use -U (--update-all) to proceed with Updates"""
                 main()
                 sys.exit(0)
 
+        # Get original user name if running as root
+        if os.getuid() == 0:
+                original_user = os.getenv('LOGNAME')
+
         # Setup packagemanager
         packagemanager = PackageManager()
         packagemanager.application_path = app_path
         packagemanager.image_directory = image_dir
         packagemanager.update_all_proceed = update_all_proceed
+        packagemanager.original_user = original_user
 
         while gtk.events_pending():
                 gtk.main_iteration(False)

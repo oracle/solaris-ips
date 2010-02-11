@@ -195,6 +195,7 @@ scripts_sunos = {
                 ['updatemanagernotifier.py', 'updatemanagernotifier'],
                 ['checkforupdates.py', 'pm-checkforupdates'],
                 ['launch.py', 'pm-launch'],
+                ['openlink.py', 'pm-openlink'],
                 ],
         svc_method_dir: [
                 ['svc/svc-pkg-depot', 'svc-pkg-depot'],
