@@ -227,6 +227,8 @@ class IndexStoreMainDict(IndexStoreBase):
         # values are the byte offsets into that manifest of the lines containing
         # that token.
 
+        sep_chars = [" ", "!", "@", "#", ","]
+
         def __init__(self, file_name):
                 IndexStoreBase.__init__(self, file_name)
                 self._old_suffix = None
@@ -249,55 +251,49 @@ class IndexStoreMainDict(IndexStoreBase):
                 return self._file_handle
 
         @staticmethod
-        def __parse_main_dict_line_help(split_chars, unquote_list, line):
-                """Helper function for parse_main_dict_line.
-
-                The "split_chars" parameter is a list of characters to use to
-                split the line by.
-
-                The "unquote_list" parameter is a list of booleans which tells
-                whether to unquote each level of value.
-
-                The "line" parameter is the line to parse.
-                """
-
-                if not split_chars:
-                        if not line:
-                                raise search_errors.EmptyMainDictLine(
-                                    split_chars, unquote_list)
-                        elif not unquote_list:
-                                raise search_errors.EmptyUnquoteList(
-                                    split_chars, line)
-                        else:
-                                assert len(unquote_list) == 1
-                                if unquote_list[0]:
-                                        return urllib.unquote(line)
-                                else:
-                                        return line
-                else:
-                        cur_char = split_chars[0]
-                        tmp = line.split(cur_char)
-                        if unquote_list[0]:
-                                header = urllib.unquote(tmp[0])
-                        else:
-                                header = tmp[0]
-                        return (header, [
-                            IndexStoreMainDict.__parse_main_dict_line_help(
-                            split_chars[1:], unquote_list[1:], x)
-                            for x
-                            in tmp[1:]])
-        
-        @staticmethod
         def parse_main_dict_line(line):
                 """Parses one line of a main dictionary file.
                 Changes to this function must be paired with changes to
                 write_main_dict_line below.
+
+                This should produce the same data structure that
+                _write_main_dict_line in indexer.py creates to write out each
+                line.
                 """
 
+                split_chars = IndexStoreMainDict.sep_chars
                 line = line.rstrip('\n')
-                return IndexStoreMainDict.__parse_main_dict_line_help(
-                    [" ", "!", "@", "#", ","],
-                    [True, False, False, True, False, False], line)
+                tmp = line.split(split_chars[0])
+                tok = urllib.unquote(tmp[0])
+                atl = tmp[1:]
+                res = []
+                for ati in atl:
+                        tmp = ati.split(split_chars[1])
+                        action_type = tmp[0]
+                        stl = tmp[1:]
+                        at_res = []
+                        for sti in stl:
+                                tmp = sti.split(split_chars[2])
+                                subtype = tmp[0]
+                                fvl = tmp[1:]
+                                st_res = []
+                                for fvi in fvl:
+                                        tmp = fvi.split(split_chars[3])
+                                        full_value = urllib.unquote(tmp[0])
+                                        pfl = tmp[1:]
+                                        fv_res = []
+                                        for pfi in pfl:
+                                                tmp = pfi.split(split_chars[4])
+                                                pfmri_index = int(tmp[0])
+                                                offsets = [
+                                                    int(t) for t in tmp[1:]
+                                                ]
+                                                fv_res.append(
+                                                    (pfmri_index, offsets))
+                                        st_res.append((full_value, fv_res))
+                                at_res.append((subtype, st_res))
+                        res.append((action_type, at_res))
+                return tok, res
 
         @staticmethod
         def parse_main_dict_line_for_token(line):
@@ -311,105 +307,43 @@ class IndexStoreMainDict(IndexStoreBase):
                 return urllib.unquote(lst[0])
 
         @staticmethod
-        def __write_main_dict_line_help(file_handle, sep_chars, quote, entries):
-                """Helper function for write_main_dict_line.
-
-                The "file_handle" parameter is the file handle to write lines
-                to.
-
-                The "sep_chars" parameter is the list of characters to use to
-                separate each level of the entries.
-
-                The "quote" parameter is a list of boolean values which
-                determine whether the value being written is quoted or not.
-
-                The "entries" parameter is a list of lists of lists and so on.
-                The depth of all lists at each level must be consistent, and
-                must match the length of "sep_chars" and "quote".
-                """
-
-                assert sep_chars
-                if not isinstance(entries, tuple):
-                        assert len(sep_chars) == 1
-                        file_handle.write(sep_chars[0])
-                        if quote[0]:
-                                file_handle.write(urllib.quote(str(entries)))
-                        else:
-                                file_handle.write(str(entries))
-                        return
-                header, entries = entries
-                file_handle.write(sep_chars[0])
-                if quote[0]:
-                        file_handle.write(urllib.quote(str(header)))
-                else:
-                        file_handle.write(str(header))
-                for e in entries:
-                        IndexStoreMainDict.__write_main_dict_line_help(
-                            file_handle, sep_chars[1:], quote[1:], e)
-        
-        @staticmethod
-        def write_main_dict_line(file_handle, token, lst):
-                """Paired with parse_main_dict_line above. Writes
-                a line in a main dictionary file in the appropriate format.
-                """
-                IndexStoreMainDict.__write_main_dict_line_help(file_handle,
-                    ["", " ", "!", "@", "#", ","],
-                    [True, False, False, True, False, False], (token, lst))
-                file_handle.write("\n")
-
-        @staticmethod
-        def __transform_main_dict_line_help(sep_chars, quote, entries):
-                """Helper function for transform_main_dict_line.
-
-                The "file_handle" parameter is the file handle to write lines
-                to.
-
-                The "sep_chars" parameter is the list of characters to use to
-                separate each level of the entries.
-
-                The "quote" parameter is a list of boolean values which
-                determine whether the value being written is quoted or not.
-
-                The "entries" parameter is a list of lists of lists and so on.
-                The depth of all lists at each level must be consistent, and
-                must match the length of sep_chars and quote.
-                """
-
-                assert sep_chars
-                ret = [sep_chars[0]]
-                if not isinstance(entries, tuple):
-                        assert len(sep_chars) == 1
-                        if quote[0]:
-                                ret.append(urllib.quote(str(entries)))
-                        else:
-                                ret.append(str(entries))
-                        return ret
-                header, entries = entries
-                if quote[0]:
-                        ret.append(urllib.quote(str(header)))
-                else:
-                        ret.append(str(header))
-                for e in entries:
-                        tmp = \
-                            IndexStoreMainDict.__transform_main_dict_line_help(
-                            sep_chars[1:], quote[1:], e)
-                        ret.extend(tmp)
-
-                return ret
-        
-        @staticmethod
-        def transform_main_dict_line(token, lst):
+        def transform_main_dict_line(token, entries):
                 """Paired with parse_main_dict_line above.  Transforms a token
-                and its data into the string which would be written to the main
+                and its data into the string which can be written to the main
                 dictionary.
-                """
 
-                tmp = IndexStoreMainDict.__transform_main_dict_line_help(
-                    ["", " ", "!", "@", "#", ","],
-                    [True, False, False, True, False, False], (token, lst))
-                tmp.append("\n")
-                return "".join(tmp)
-                
+                The "token" parameter is the token whose index line is being
+                generated.
+
+                The "entries" parameter is a list of lists of lists and so on.
+                It contains information about where and how "token" was seen in
+                manifests.  The depth of all lists at each level must be
+                consistent, and must match the length of "sep_chars" and
+                "quote".  The details of the contents on entries are described
+                in _write_main_dict_line in indexer.py.
+                """
+                sep_chars = IndexStoreMainDict.sep_chars
+                res = "%s" % urllib.quote(str(token))
+                for ati, atl in enumerate(entries):
+                        action_type, atl = atl
+                        res += "%s%s" % (sep_chars[0], action_type)
+                        for sti, stl in enumerate(atl):
+                                subtype, stl = stl
+                                res += "%s%s" % (sep_chars[1], subtype)
+                                for fvi, fvl in enumerate(stl):
+                                        full_value, fvl = fvl
+                                        res += "%s%s" % (sep_chars[2],
+                                            urllib.quote(str(full_value)))
+                                        for pfi, pfl in enumerate(fvl):
+                                                pfmri_index, pfl = pfl
+                                                res += "%s%s" % (sep_chars[3],
+                                                    pfmri_index)
+                                                for offset in pfl:
+                                                        res += "%s%s" % \
+                                                            (sep_chars[4],
+                                                            offset)
+                return res + "\n"
+
         def count_entries_removed_during_partial_indexing(self):
                 """Returns the number of entries removed during a second phase
                 of indexing.

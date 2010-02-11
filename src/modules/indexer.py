@@ -354,9 +354,8 @@ class Indexer(object):
                                                 p_id = int(p_id)
                                                 self._data_fmri_offsets.add_pair(
                                                     p_id, cur_location_int)
-
-                self._data_main_dict.write_main_dict_line(file_handle,
-                    token, fv_fmri_pos_list_list)
+                file_handle.write(self._data_main_dict.transform_main_dict_line(
+                    token, fv_fmri_pos_list_list))
 
         @staticmethod
         def __splice(ret_list, source_list):
@@ -673,6 +672,8 @@ class Indexer(object):
                                             _("Indexing Packages"),
                                             len(inputs[1]))
                                 self._fast_update(inputs)
+                                if self._progtrack is not None:
+                                        self._progtrack.index_done()
                                 fast_update = True
                                 if len(self._data_fast_add._set) > \
                                     MAX_ADDED_NUMBER_PACKAGES:
@@ -700,6 +701,8 @@ class Indexer(object):
                                 dicts = self._process_fmris(inputs)
                                 # Update the main dictionary file
                                 self.__close_sort_fh()
+                                if self._progtrack is not None:
+                                        self._progtrack.index_done()
                                 self._update_index(dicts, tmp_index_dir)
 
                                 self.empty_index = False
@@ -716,8 +719,6 @@ class Indexer(object):
                         self._migrate(source_dir = tmp_index_dir,
                             fast_update=fast_update)
 
-                        if self._progtrack is not None:
-                                self._progtrack.index_done()
                 finally:
                         self._data_main_dict.close_file_handle()
                 
