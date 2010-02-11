@@ -304,6 +304,23 @@ Incorrect attribute list.
                 self.assertRaises(action.InvalidActionError, action.fromstr,
                     "driver alias=pci1234,56 alias=pci4567,89 class=scsi")
 
+        def test_validate(self):
+                """Verify that action validate() works as expected; currently
+                only used during publication or action execution failure."""
+
+                fact = "file 12345 name=foo path=/tmp/foo mode=XXX"
+                dact = "dir path=/tmp mode=XXX"
+
+                # Invalid attribute for file and directory actions.
+                for act in (fact, dact):
+                        for bad_mode in ("", 'mode=""', "mode=???", 
+                            "mode=44755", "mode=44", "mode=999", "mode=0898"):
+                                nact = act.replace("mode=XXX", bad_mode)
+                                bad_act = action.fromstr(nact)
+                                self.assertRaises(
+                                    action.InvalidActionAttributesError,
+                                    bad_act.validate)
+
 
 if __name__ == "__main__":
         unittest.main()

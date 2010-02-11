@@ -144,6 +144,7 @@ api.t_misc.py TestMisc.testMakedirs|pass
 api.t_misc.py TestMisc.test_pub_prefix|pass
 api.t_misc.py TestMisc.test_pub_url|pass
 api.t_p5i.py TestP5I.test_parse_write|pass
+api.t_pkg_api_install.py TestPkgApiInstall.test_bad_package_actions|pass
 api.t_pkgtarfile.py TestPkgTarFile.testerrorlevelIsCorrect|pass
 api.t_plat.py TestPlat.testAdmin|pass
 api.t_plat.py TestPlat.testForcibleRename|pass
@@ -240,7 +241,8 @@ cli.t_api.py TestPkgApi.test_properties|pass
 cli.t_api.py TestPkgApi.test_publisher_apis|pass
 cli.t_api.py TestPkgApi.test_refresh_transition|pass
 cli.t_api.py TestPkgApi.test_reset|pass
-cli.t_api_info.py TestApiInfo.test_info_local_remote|pass
+cli.t_api_info.py TestApiInfo.test_0_local_remote|pass
+cli.t_api_info.py TestApiInfo.test_1_bad_packages|pass
 cli.t_api_list.py TestApiList.test_list_01_full|pass
 cli.t_api_list.py TestApiList.test_list_02_newest|pass
 cli.t_api_list.py TestApiList.test_list_03_cats|pass
@@ -465,6 +467,7 @@ cli.t_pkg_install.py TestPkgInstallAmbiguousPatterns.test_ambiguous_pattern_inst
 cli.t_pkg_install.py TestPkgInstallAmbiguousPatterns.test_bug_4204|pass
 cli.t_pkg_install.py TestPkgInstallAmbiguousPatterns.test_bug_6874|pass
 cli.t_pkg_install.py TestPkgInstallAmbiguousPatterns.test_non_ambiguous_fragment|pass
+cli.t_pkg_install.py TestPkgInstallBasics.test_bad_package_actions|pass
 cli.t_pkg_install.py TestPkgInstallBasics.test_basics_1|pass
 cli.t_pkg_install.py TestPkgInstallBasics.test_basics_2|pass
 cli.t_pkg_install.py TestPkgInstallBasics.test_basics_3|pass

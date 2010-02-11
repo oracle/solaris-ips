@@ -87,6 +87,7 @@ class ActionError(Exception):
 
 class UnknownActionError(ActionError):
         def __init__(self, *args):
+                ActionError.__init__(self)
                 self.actionstr = args[0]
                 self.type = args[1]
 
@@ -102,6 +103,7 @@ class UnknownActionError(ActionError):
 
 class MalformedActionError(ActionError):
         def __init__(self, *args):
+                ActionError.__init__(self)
                 self.actionstr = args[0]
                 self.position = args[1]
                 self.errorstr = args[2]
@@ -124,6 +126,7 @@ class ActionDataError(ActionError):
         initialization."""
 
         def __init__(self, *args, **kwargs):
+                ActionError.__init__(self)
                 self.error = args[0]
                 self.path = kwargs.get("path", None)
 
@@ -136,6 +139,7 @@ class InvalidActionError(ActionError):
         attributes were missing for an action."""
 
         def __init__(self, *args):
+                ActionError.__init__(self)
                 self.actionstr = args[0]
                 self.errorstr = args[1]
 
@@ -146,6 +150,37 @@ class InvalidActionError(ActionError):
                             "action": self.actionstr, "error": self.errorstr }
                 return _("invalid action, '%(action)s': %(error)s") % {
                         "action": self.actionstr, "error": self.errorstr }
+
+
+class InvalidActionAttributesError(ActionError):
+        """Used to indicate that one more action attributes were invalid."""
+
+        def __init__(self, act, errors, fmri=None):
+                """'act' is an Action (object or string).
+
+                'errors' is a list of tuples of the form (name, error) where
+                'name' is the action attribute name, and 'error' is a string
+                indicating what attribute is invalid and why.
+
+                'fmri' is an optional package FMRI (object or string)
+                indicating what package contained the actions with invalid
+                attributes."""
+
+                ActionError.__init__(self)
+                self.action = act
+                self.errors = errors
+                self.fmri = fmri
+
+        def __str__(self):
+                act_errors = "\n  ".join(err for name, err in self.errors)
+                if self.fmri:
+                        return _("The action '%(action)s' in package "
+                            "'%(fmri)s' has invalid attribute(s):\n"
+                            "  %(act_errors)s") % { "action": self.action,
+                            "fmri": self.fmri, "act_errors": act_errors }
+                return _("The action '%(action)s' has invalid attribute(s):\n"
+                    "  %(act_errors)s") % { "action": self.action,
+                    "act_errors": act_errors }
 
 
 from _actions import _fromstr

@@ -29,6 +29,7 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import os
+import pkg.fmri as fmri
 import shutil
 import unittest
 
@@ -49,15 +50,26 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
             close
         """
 
-        misc_files = [ "tmp/bronzeA1",  "tmp/bronzeA2",
-                    "tmp/bronze1", "tmp/bronze2",
-                    "tmp/copyright1", "tmp/sh"]
+        badfile10 = """
+            open badfile@1.0,5.11-0
+            add file tmp/baz mode=644 owner=root group=bin path=/tmp/baz-file
+            close
+        """
+
+        baddir10 = """
+            open baddir@1.0,5.11-0
+            add dir mode=755 owner=root group=bin path=/tmp/baz-dir
+            close
+        """
+
+        misc_files = [ "tmp/bronzeA1",  "tmp/bronzeA2", "tmp/bronze1",
+            "tmp/bronze2", "tmp/copyright1", "tmp/sh", "tmp/baz"]
 
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.make_misc_files(self.misc_files)
-
-                self.pkgsend_bulk(self.dc.get_depot_url(), self.bronze10)
+                self.plist = self.pkgsend_bulk(self.dc.get_depot_url(),
+                    self.badfile10 + self.baddir10 + self.bronze10)
 
         def test_pkg_info_bad_fmri(self):
                 """Test bad frmi's with pkg info."""
@@ -211,6 +223,41 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("info --license silver", exit=1)
                 self.pkg("info --license bronze silver", exit=1)
                 self.pkg("info --license silver 2>&1 | grep 'no license information'")
+
+        def test_info_bad_packages(self):
+                """Verify that pkg info handles packages with invalid
+                metadata."""
+
+                durl = self.dc.get_depot_url()
+                self.image_create(durl)
+
+                # Verify that no packages are installed.
+                self.pkg("list", exit=1)
+                plist = self.plist[:2]
+
+                # This should succeed and cause the manifests to be cached.
+                self.pkg("info -r %s" % " ".join(p for p in plist))
+
+                # Now attempt to corrupt the client's copy of the manifest by
+                # adding malformed actions.
+                for p in plist:
+                        self.debug("Testing package %s ..." % p)
+                        pfmri = fmri.PkgFmri(p)
+                        mdata = self.get_img_manifest(pfmri)
+                        if mdata.find("dir") != -1:
+                                src_mode = "mode=755"
+                        else:
+                                src_mode = "mode=644"
+
+                        for bad_act in (
+                            'set name=description value="" \" my desc \" ""',
+                            "set name=com.sun.service.escalations value="):
+                                self.debug("Testing with bad action "
+                                    "'%s'." % bad_act)
+                                bad_mdata = mdata + "%s\n" % bad_act
+                                self.write_img_manifest(pfmri, bad_mdata)
+                                self.pkg("info -r %s" % pfmri.pkg_name, exit=1)
+
 
 if __name__ == "__main__":
         unittest.main()

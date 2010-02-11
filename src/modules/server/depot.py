@@ -699,7 +699,10 @@ class DepotHTTP(object):
                         # Record the size of the payload, if there is one.
                         attrs["pkg.size"] = str(size)
 
-                action = actions.types[entry_type](data, **attrs)
+                try:
+                        action = actions.types[entry_type](data, **attrs)
+                except actions.ActionError, e:
+                        raise cherrypy.HTTPError(httplib.BAD_REQUEST, str(e))
 
                 # XXX Once actions are labelled with critical nature.
                 # if entry_type in critical_actions:

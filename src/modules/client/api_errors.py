@@ -97,6 +97,23 @@ class PlanPrepareException(ApiException):
         pass
 
 
+class InvalidPackageErrors(ApiException):
+        """Used to indicate that the requested operation could not be completed
+        as one or more packages contained invalid metadata."""
+
+        def __init__(self, errors):
+                """'errors' should be a list of exceptions or strings
+                indicating what packages had errors and why."""
+
+                ApiException.__init__(self)
+                self.errors = errors
+
+        def __str__(self):
+                return _("The requested operation cannot be completed due "
+                    "to invalid package metadata.  Details follow:\n\n"
+                    "%s") % "\n".join(str(e) for e in self.errors)
+
+
 class LicenseAcceptanceError(ApiException):
         """Used to indicate that license-related errors occurred during
         plan evaluation or execution."""

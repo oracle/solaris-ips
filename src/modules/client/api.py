@@ -60,7 +60,7 @@ from pkg.api_common import (PackageInfo, LicenseInfo, PackageCategory,
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 32
+CURRENT_API_VERSION = 33
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -122,7 +122,7 @@ class ImageInterface(object):
                 This function can raise VersionException and
                 ImageNotFoundException."""
 
-                compatible_versions = set([CURRENT_API_VERSION])
+                compatible_versions = set([32, CURRENT_API_VERSION])
 
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,

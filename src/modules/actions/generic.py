@@ -431,6 +431,45 @@ class Action(object):
                 correctly installed in the given image."""
                 return [], [], []
 
+        def validate_fsobj_common(self, fmri=None):
+                """Common validation logic for filesystem objects."""
+
+                errors = []
+
+                bad_mode = False
+                raw_mode = self.attrs.get("mode", None)
+                if not raw_mode:
+                        bad_mode = True
+                else:
+                        mlen = len(raw_mode)
+                        # Common case for our packages is 4 so place that first.
+                        if not (mlen == 4 or mlen == 3 or mlen == 5):
+                                bad_mode = True
+                        elif mlen == 5 and raw_mode[0] != "0":
+                                bad_mode = True
+
+                if not bad_mode:
+                        try:
+                                mode = str(int(raw_mode, 8))
+                        except (TypeError, ValueError):
+                                bad_mode = True
+                        else:
+                                bad_mode = mode == ""
+
+                if bad_mode:
+                        if not raw_mode:
+                                errors.append(("mode", _("mode is required; "
+                                    "value must be of the form '644', "
+                                    "'0644', or '04755'.")))
+                        else:
+                                errors.append(("mode", _("'%s' is not a valid "
+                                    "mode; value must be of the form '644', "
+                                    "'0644', or '04755'.") % raw_mode))
+
+                if errors:
+                        raise pkg.actions.InvalidActionAttributesError(self,
+                            errors, fmri=fmri)
+
         def verify_fsobj_common(self, img, ftype):
                 """Common verify logic for filesystem objects."""
 
@@ -566,3 +605,15 @@ class Action(object):
                         if not c(self):
                                 return False
                 return True
+
+        def validate(self, fmri=None):
+                """Performs additional validation of action attributes that
+                for performance or other reasons cannot or should not be done
+                during Action object creation.  An ActionError exception (or
+                subclass of) will be raised if any attributes are not valid.
+                This is primarily intended for use during publication or during
+                error handling to provide additional diagonostics.
+
+                'fmri' is an optional package FMRI (object or string) indicating
+                what package contained this action."""
+                pass

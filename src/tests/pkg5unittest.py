@@ -1530,6 +1530,41 @@ class CliTestCase(Pkg5TestCase):
                                 msrc.close()
                                 mdest.close()
 
+        def get_img_manifest(self, pfmri, img_path=None):
+                """Retrieves the client's cached copy of the manifest for the
+                given package FMRI and returns it as a string.  Callers are
+                responsible for all error handling."""
+
+                if not img_path:
+                        img_path = self.get_img_path()
+
+                mpath = os.path.join(img_path, "var", "pkg", "pkg",
+                    pfmri.get_dir_path(), "manifest")
+                with open(mpath, "rb") as f:
+                        return f.read()
+
+        def write_img_manifest(self, pfmri, mdata, img_path=None):
+                """Overwrites the client's cached copy of the manifest for the
+                given package FMRI using the provided string.  Callers are
+                responsible for all error handling."""
+
+                if not img_path:
+                        img_path = self.get_img_path()
+
+                mdir = os.path.join(img_path, "var", "pkg", "pkg",
+                    pfmri.get_dir_path())
+                mpath = os.path.join(mdir, "manifest")
+
+                # Dump the manifest directory for the package to ensure any
+                # cached information related to it is gone.
+                shutil.rmtree(mdir, True)
+                self.assert_(not os.path.exists(mdir))
+                os.makedirs(mdir, mode=0755)
+
+                # Finally, write the new manifest.
+                with open(mpath, "wb") as f:
+                        f.write(mdata)
+
         def validate_html_file(self, fname, exit=0, comment="",
             options="-quiet -utf8"):
                 cmdline = "tidy %s %s" % (options, fname)

@@ -37,7 +37,9 @@ import unittest
 from stat import *
 import pkg.client.api as api
 import pkg.client.api_errors as api_errors
+import pkg.fmri as fmri
 import pkg.client.progress as progress
+import shutil
 
 API_VERSION = 32
 PKG_CLIENT_NAME = "pkg"
@@ -94,7 +96,6 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
             add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
 
-
         bar12 = """
             open bar@1.2,5.11-0
             add depend type=require fmri=pkg:/foo@1.0
@@ -128,6 +129,16 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
             add depend type=require fmri=pkg:/ybar@1.0
             add dir mode=0755 owner=root group=bin path=/bin
             add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat
+            close """
+
+        badfile10 = """
+            open badfile@1.0,5.11-0
+            add file tmp/baz mode=644 owner=root group=bin path=/tmp/baz-file
+            close """
+
+        baddir10 = """
+            open baddir@1.0,5.11-0
+            add dir mode=755 owner=root group=bin path=/tmp/baz-dir
             close """
 
         misc_files = [ "tmp/libc.so.1", "tmp/cat", "tmp/baz" ]
@@ -306,7 +317,6 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 api_obj.reset()
                 self.__do_uninstall(api_obj, ["bar", "foo"])
                 self.pkg("verify")
-
 
         def test_recursive_uninstall(self):
                 """Install bar@1.0, dependent on foo@1.0, uninstall foo recursively."""
@@ -566,6 +576,57 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
 
                 api_obj.reset()
                 self.__do_install(api_obj, ["pkg://test/bar@1.0"])
+
+        def test_bad_package_actions(self):
+                """Test the install of packages that have actions that are
+                invalid."""
+
+                # XXX This test is not yet comprehensive.
+
+                # First, publish the package that will be corrupted and create
+                # an image for testing.
+                durl = self.dc.get_depot_url()
+                plist = self.pkgsend_bulk(durl, self.badfile10 + self.baddir10)
+                self.image_create(durl)
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+
+                # This should succeed and cause the manifest to be cached.
+                self.__do_install(api_obj, plist)
+
+                # Now attempt to corrupt the client's copy of the manifest by
+                # adding malformed actions or invalidating existing ones.
+                for p in plist:
+                        pfmri = fmri.PkgFmri(p)
+                        mdata = self.get_img_manifest(pfmri)
+                        if mdata.find("dir") != -1:
+                                src_mode = "mode=755"
+                        else:
+                                src_mode = "mode=644"
+
+                        # Remove the package so corrupt case can be tested.
+                        self.__do_uninstall(api_obj, [pfmri.pkg_name])
+
+                        for bad_mode in ("", 'mode=""', "mode=???"):
+                                self.debug("Testing with bad mode "
+                                    "'%s'." % bad_mode)
+
+                                bad_mdata = mdata.replace(src_mode, bad_mode)
+                                self.write_img_manifest(pfmri, bad_mdata)
+                                self.assertRaises(api_errors.InvalidPackageErrors,
+                                    self.__do_install, api_obj, [pfmri.pkg_name])
+
+                        for bad_act in (
+                            'set name=description value="" \" my desc \" ""',
+                            "set name=com.sun.service.escalations value="):
+                                self.debug("Testing with bad action "
+                                    "'%s'." % bad_act)
+
+                                bad_mdata = mdata + "%s\n" % bad_act
+                                self.write_img_manifest(pfmri, bad_mdata)
+                                self.assertRaises(api_errors.InvalidPackageErrors,
+                                    self.__do_install, api_obj, [pfmri.pkg_name])
 
 
 if __name__ == "__main__":

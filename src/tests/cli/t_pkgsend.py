@@ -142,6 +142,9 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
                 # will be seen by the depot server and when using file://.
                 self.pkgsend(dhurl, "open foo@1.0")
 
+                # Create a dummy file.
+                self.make_misc_files("tmp/dummy1")
+
                 for url in (dhurl, dfurl):
                         # Should fail because type attribute is missing.
                         self.pkgsend(url,
@@ -154,6 +157,25 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
                         # Should fail because path attribute is missing.
                         self.pkgsend(url,
                             "add file bin/ls", exit=1)
+
+                        # Should fail because mode attribute is missing.
+                        self.pkgsend(url,
+                            "add file tmp/dummy1 owner=root group=bin "
+                            "path=/tmp/dummy1", exit=1)
+
+                        # Should fail because mode attribute is invalid.
+                        self.pkgsend(url,
+                            """add file tmp/dummy1 owner=root group=bin """
+                            """mode="" path=/tmp/dummy1""", exit=1)
+                        self.pkgsend(url,
+                            "add file tmp/dummy1 owner=root group=bin "
+                            "mode=44755 path=/tmp/dummy1", exit=1)
+                        self.pkgsend(url,
+                            "add file tmp/dummy1 owner=root group=bin "
+                            "mode=44 path=/tmp/dummy1", exit=1)
+                        self.pkgsend(url,
+                            """add file tmp/dummy1 owner=root group=bin """
+                            """mode=???? path=/tmp/dummy1""", exit=1)
 
                         # Should fail because path attribute is missing a value.
                         self.pkgsend(url,

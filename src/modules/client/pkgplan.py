@@ -30,6 +30,7 @@ import os
 from pkg.client import global_settings
 logger = global_settings.logger
 
+import pkg.actions
 import pkg.actions.directory as directory
 import pkg.client.api_errors as apx
 import pkg.manifest as manifest
@@ -298,6 +299,10 @@ class PkgPlan(object):
                 """ perform action for installation of package"""
                 try:
                         dest.install(self, src)
+                except pkg.actions.ActionError:
+                        # Don't log these as they're expected, and should be
+                        # handled by the caller.
+                        raise
                 except Exception, e:
                         logger.error("Action install failed for '%s' (%s):\n  "
                             "%s: %s" % (dest.attrs.get(dest.key_attr, id(dest)),
@@ -309,6 +314,10 @@ class PkgPlan(object):
                 """ handle action updates"""
                 try:
                         dest.install(self, src)
+                except pkg.actions.ActionError:
+                        # Don't log these as they're expected, and should be
+                        # handled by the caller.
+                        raise
                 except Exception, e:
                         logger.error("Action upgrade failed for '%s' (%s):\n "
                             "%s: %s" % (dest.attrs.get(dest.key_attr, id(dest)),
@@ -320,6 +329,10 @@ class PkgPlan(object):
                 """ handle action removals"""
                 try:
                         src.remove(self)
+                except pkg.actions.ActionError:
+                        # Don't log these as they're expected, and should be
+                        # handled by the caller.
+                        raise
                 except Exception, e:
                         logger.error("Action removal failed for '%s' (%s):\n "
                             "%s: %s" % (src.attrs.get(src.key_attr, id(src)),

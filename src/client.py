@@ -426,7 +426,8 @@ def list_inventory(img, args):
 
                 api_inst.log_operation_end()
                 return EXIT_OK
-        except api_errors.PermissionsException, e:
+        except (api_errors.InvalidPackageErrors,
+            api_errors.PermissionsException), e:
                 error(e)
                 return EXIT_OOPS
         except api_errors.InventoryException, e:
@@ -526,7 +527,8 @@ def fix_image(img, args):
                 try:
                         success = img.repair(repairs, progresstracker,
                             accept=accept, show_licenses=show_licenses)
-                except api_errors.InvalidPlanError, e:
+                except (api_errors.InvalidPlanError,
+                    api_errors.InvalidPackageErrors), e:
                         # Another client has stomped on the repair operation.
                         logger.error("\n")
                         logger.error(str(e))
@@ -753,7 +755,8 @@ def __api_execute_plan(operation, api_inst, raise_ActionExecutionError=True):
         except RuntimeError, e:
                 error(_("%s failed: %s") % (operation, e))
                 return EXIT_OOPS
-        except api_errors.InvalidPlanError, e:
+        except (api_errors.InvalidPlanError,
+            api_errors.InvalidPackageErrors), e:
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
                 error("\n" + str(e))
@@ -846,7 +849,8 @@ Cannot remove '%s' due to the following packages that depend on it:"""
                 if noexecute:
                         return True
                 return False
-        if e_type == api_errors.InvalidPlanError:
+        if e_type in (api_errors.InvalidPlanError,
+            api_errors.InvalidPackageErrors):
                 error("\n" + str(e))
                 return False
         if issubclass(e_type, api_errors.BEException):
@@ -1604,7 +1608,8 @@ def info(img, args):
 
                 try:
                         ret = api_inst.info(pargs, info_local, info_needed)
-                except api_errors.UnrecognizedOptionsToInfo, e:
+                except (api_errors.InvalidPackageErrors,
+                    api_errors.UnrecognizedOptionsToInfo), e:
                         error(e)
                         return EXIT_OOPS
                 pis = ret[api.ImageInterface.INFO_FOUND]

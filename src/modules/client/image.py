@@ -39,6 +39,7 @@ from contextlib import contextmanager
 from pkg.client import global_settings
 logger = global_settings.logger
 
+import pkg.actions
 import pkg.catalog
 import pkg.client.api_errors            as api_errors
 import pkg.client.history               as history
@@ -981,7 +982,7 @@ class Image(object):
 
                 'progresstracker' is a ProgressTracker object.
 
-                'args' is a dicti of additional keyword arguments to be passed
+                'args' is a dict of additional keyword arguments to be passed
                 to each action verification routine."""
 
                 for act in self.get_manifest(fmri).gen_actions(
@@ -1037,9 +1038,11 @@ class Image(object):
                            set(self.cfg_cache.variants.iteritems()))
                 # facets are always the entire set
 
-                ip.plan_change_varcets(variants, facets)
-
-                self.__call_imageplan_evaluate(ip, verbose)
+                try:
+                        ip.plan_change_varcets(variants, facets)
+                        self.__call_imageplan_evaluate(ip, verbose)
+                except pkg.actions.ActionError, e:
+                        raise api_errors.InvalidPackageErrors([e])
 
         def image_config_update(self, new_variants, new_facets):
                 """update variants in image config"""
@@ -1060,7 +1063,10 @@ class Image(object):
         def repair(self, *args, **kwargs):
                 """Repair any actions in the fmri that failed a verify."""
                 with self.locked_op("fix"):
-                        return self.__repair(*args, **kwargs)
+                        try:
+                                return self.__repair(*args, **kwargs)
+                        except pkg.actions.ActionError, e:
+                                raise api_errors.InvalidPackageErrors([e])
 
         def __repair(self, repairs, progtrack, accept=False,
             show_licenses=False):
@@ -1161,7 +1167,7 @@ class Image(object):
                                         pass
                 except KeyError:
                         ret = self.transport.get_manifest(fmri, excludes,
-                                                    intent)
+                            intent)
                 return ret
 
         def get_manifest(self, fmri, all_variants=False, intent=None):
@@ -1175,8 +1181,12 @@ class Image(object):
                         excludes = EmptyI
                 else:
                         excludes = [ self.cfg_cache.variants.allow_action ]
-
-                m = self.__get_manifest(fmri, excludes=excludes, intent=intent)
+ 
+                try:
+                        m = self.__get_manifest(fmri, excludes=excludes,
+                            intent=intent)
+                except pkg.actions.ActionError, e:
+                        raise api_errors.InvalidPackageErrors([e])
 
                 return m
 
@@ -2585,12 +2595,16 @@ class Image(object):
 
                 try:
                         ip.plan_install(pkg_list)
-
+                except pkg.actions.ActionError, e:
+                        raise api_errors.InvalidPackageErrors([e])
                 except api_errors.ApiException:
                         ip.show_failure(verbose)
                         raise
 
-                self.__call_imageplan_evaluate(ip, verbose)
+                try:
+                        self.__call_imageplan_evaluate(ip, verbose)
+                except pkg.actions.ActionError, e:
+                        raise api_errors.InvalidPackageErrors([e])
 
         def make_update_plan(self, progtrack, check_cancelation,
             noexecute, verbose=False):
@@ -2605,9 +2619,11 @@ class Image(object):
                 # Always start with most current (on-disk) state information.
                 self.__init_catalogs()
 
-                ip.plan_update()
-
-                self.__call_imageplan_evaluate(ip, verbose)
+                try:
+                        ip.plan_update()
+                        self.__call_imageplan_evaluate(ip, verbose)
+                except pkg.actions.ActionError, e:
+                        raise api_errors.InvalidPackageErrors([e])
 
         def make_uninstall_plan(self, fmri_list, recursive_removal,
             progtrack, check_cancelation, noexecute, verbose=False):
@@ -2622,9 +2638,11 @@ class Image(object):
                 # Always start with most current (on-disk) state information.
                 self.__init_catalogs()
 
-                ip.plan_uninstall(fmri_list, recursive_removal)
-
-                self.__call_imageplan_evaluate(ip, verbose)
+                try:
+                        ip.plan_uninstall(fmri_list, recursive_removal)
+                        self.__call_imageplan_evaluate(ip, verbose)
+                except pkg.actions.ActionError, e:
+                        raise api_errors.InvalidPackageErrors([e])
 
         def ipkg_is_up_to_date(self, actual_cmd, check_cancelation, noexecute,
             refresh_allowed=True, progtrack=None):

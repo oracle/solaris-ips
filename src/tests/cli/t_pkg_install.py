@@ -145,12 +145,24 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
         a6018_1 = """
             open a6018@1.0,5.11-0
             close """
+
         a6018_2 = """
             open a6018@2.0,5.11-0
             close """
+
         b6018_1 = """
             open b6018@1.0,5.11-0
             add depend type=optional fmri=a6018@1
+            close """
+
+        badfile10 = """
+            open badfile@1.0,5.11-0
+            add file tmp/baz mode=644 owner=root group=bin path=/tmp/baz-file
+            close """
+
+        baddir10 = """
+            open baddir@1.0,5.11-0
+            add dir mode=755 owner=root group=bin path=/tmp/baz-dir
             close """
 
         misc_files = [ "tmp/libc.so.1", "tmp/cat", "tmp/baz" ]
@@ -193,7 +205,6 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("uninstall foo")
                 self.pkg("verify")
 
-
         def test_basics_2(self):
                 """ Send package foo@1.1, containing a directory and a file,
                     install, search, and uninstall. """
@@ -229,7 +240,6 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("verify")
                 self.pkg("list -a")
                 self.pkg("verify")
-
 
         def test_basics_3(self):
                 """ Install foo@1.0, upgrade to foo@1.1, uninstall. """
@@ -368,7 +378,6 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("list bar")
                 self.pkg("list foo")
 
-        
         def test_bug_1338(self):
                 """ Add bar@1.1, dependent on foo@1.2, install bar@1.1. """
 
@@ -436,18 +445,17 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 $ pkg image-update
                 No updates available for this image.
 
-                However, "pkg install a@2" works. 
+                However, "pkg install a@2" works.
                 """
 
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.a6018_1)
-                self.pkgsend_bulk(durl, self.a6018_2)                
-                self.pkgsend_bulk(durl, self.b6018_1)                
+                self.pkgsend_bulk(durl, self.a6018_2)
+                self.pkgsend_bulk(durl, self.b6018_1)
                 self.image_create(durl)
                 self.pkg("install b6018@1 a6018@1")
                 self.pkg("image-update")
                 self.pkg("list b6018@1 a6018@2")
-
 
         def test_install_matching(self):
                 """ Try to [un]install packages matching a pattern """
@@ -460,7 +468,7 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 # don't specify versions here; we have many
                 # different versions of foo, bar & baz in repo
                 # when entire class is run w/ one repo instance.
-                
+
                 # first case should fail since multiple patterns
                 # match the same pacakge
                 self.pkg("install 'ba*' 'b*'", exit=1)
@@ -469,6 +477,53 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("list bar", exit=0)
                 self.pkg("list baz", exit=0)
                 self.pkg("uninstall 'b*' 'f*'")
+
+        def test_bad_package_actions(self):
+                """Test the install of packages that have actions that are
+                invalid."""
+
+                # First, publish the package that will be corrupted and create
+                # an image for testing.
+                durl = self.dc.get_depot_url()
+                plist = self.pkgsend_bulk(durl, self.badfile10 + self.baddir10)
+                self.image_create(durl)
+
+                # This should succeed and cause the manifest to be cached.
+                self.pkg("install %s" % " ".join(plist))
+
+                # While the manifest is cached, get a copy of its contents.
+                for p in plist:
+                        pfmri = fmri.PkgFmri(p)
+                        mdata = self.get_img_manifest(pfmri)
+                        if mdata.find("dir") != -1:
+                                src_mode = "mode=755"
+                        else:
+                                src_mode = "mode=644"
+
+                        # Now remove the package so corrupt case can be tested.
+                        self.pkg("uninstall %s" % pfmri.pkg_name)
+
+                        # Now attempt to corrupt the client's copy of the
+                        # manifest in various ways to check if the client
+                        # handles missing mode and invalid mode cases for
+                        # file and directory actions.
+                        for bad_mode in ("", 'mode=""', "mode=???"):
+                                self.debug("Testing with bad mode "
+                                    "'%s'." % bad_mode)
+                                bad_mdata = mdata.replace(src_mode, bad_mode)
+                                self.write_img_manifest(pfmri, bad_mdata)
+                                self.pkg("install %s" % pfmri.pkg_name, exit=1)
+
+                        # Now attempt to corrupt the client's copy of the
+                        # manifest such that actions are malformed.
+                        for bad_act in (
+                            'set name=description value="" \" my desc \" ""',
+                            "set name=com.sun.service.escalations value="):
+                                self.debug("Testing with bad action "
+                                    "'%s'." % bad_act)
+                                bad_mdata = mdata + "%s\n" % bad_act
+                                self.write_img_manifest(pfmri, bad_mdata)
+                                self.pkg("install %s" % pfmri.pkg_name, exit=1)
 
         def test_bug_3770(self):
                 """ Try to install two versions of the same package """
@@ -494,9 +549,10 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("uninstall foo")
                 lr_path = os.path.join(self.img_path, "var","pkg","publisher",
                     "test", "last_refreshed")
-                os.unlink(lr_path) 
+                os.unlink(lr_path)
                 self.pkg("install --no-refresh foo")
                 self.dc.start()
+
 
 class TestPkgInstallAmbiguousPatterns(pkg5unittest.SingleDepotTestCase):
 
@@ -550,7 +606,7 @@ class TestPkgInstallAmbiguousPatterns(pkg5unittest.SingleDepotTestCase):
 
                 self.pkg("install foo", exit=1)
                 self.pkg("install a/foo b/foo", exit=0)
-                self.pkg("list")                
+                self.pkg("list")
                 self.pkg("uninstall foo", exit=1)
                 self.pkg("uninstall a/foo b/foo", exit=0)
 
@@ -1067,7 +1123,7 @@ adm
                 self.pkgsend_bulk(durl, self.amber20)
                 self.pkgsend_bulk(durl, self.bronze20)
 
-                # create image 
+                # create image
                 self.image_create(durl)
                 # install incorp2
                 self.pkg("install incorp@2.0")
@@ -2314,7 +2370,7 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
             add depend type=require fmri=pkg:/pkg1@1.0
             close
         """
- 
+
         pkg505 = """
             open pkg5@1.0.5,5.11-0
             add depend type=exclude fmri=pkg:/pkg1@1.1
@@ -2395,7 +2451,7 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
             add depend type=incorporate fmri=pkg:/pkgA_2@1.0
             add depend type=incorporate fmri=pkg:/pkgA_3@1.0
             close
-        """, 
+        """,
 
         """
             open B_incorp@1.0,5.11-0
@@ -2404,7 +2460,7 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
             add depend type=incorporate fmri=pkg:/pkgB_2@1.0
             add depend type=incorporate fmri=pkg:/pkgB_3@1.0
             close
-        """, 
+        """,
 
         """
             open A_incorp@1.1,5.11-0
@@ -2414,7 +2470,7 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
             add depend type=incorporate fmri=pkg:/pkgA_3@1.1
             add set name=pkg.depend.install-hold value=test
             close
-        """, 
+        """,
 
         """
             open B_incorp@1.1,5.11-0
@@ -2424,7 +2480,7 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
             add depend type=incorporate fmri=pkg:/pkgB_3@1.1
             add set name=pkg.depend.install-hold value=test
             close
-        """, 
+        """,
 
         """
             open A_incorp@1.2,5.11-0
@@ -2434,7 +2490,7 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
             add depend type=incorporate fmri=pkg:/pkgA_3@1.2
             add set name=pkg.depend.install-hold value=test.A
             close
-        """, 
+        """,
 
         """
             open B_incorp@1.2,5.11-0
@@ -2444,7 +2500,7 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
             add depend type=incorporate fmri=pkg:/pkgB_3@1.2
             add set name=pkg.depend.install-hold value=test.B
             close
-        """, 
+        """,
 
         """
             open A_incorp@1.3,5.11-0
@@ -2454,7 +2510,7 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
             add depend type=incorporate fmri=pkg:/pkgA_3@1.3
             add set name=pkg.depend.install-hold value=test.A
             close
-        """, 
+        """,
 
         """
             open B_incorp@1.3,5.11-0
@@ -2464,7 +2520,7 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
             add depend type=incorporate fmri=pkg:/pkgB_3@1.3
             add set name=pkg.depend.install-hold value=test.B
             close
-        """, 
+        """,
 
         """
             open incorp@1.0,5.11-0
@@ -2488,7 +2544,7 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
             add depend type=incorporate fmri=pkg:/B_incorp@1.2
             add set name=pkg.depend.install-hold value=test
             close
-        """, 
+        """,
         """
             open incorp@1.3,5.11-0
             add depend type=incorporate fmri=pkg:/A_incorp@1.3
@@ -2497,7 +2553,7 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
             close
         """
         ]
-                    
+
         bug_7394_incorp = """
             open bug_7394_incorp@1.0,5.11-0
             add depend type=incorporate fmri=pkg:/pkg1@2.0
@@ -2549,7 +2605,7 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 # try to install disallowed pkg
                 self.pkg("install pkg1@1.1", exit=1)
                 self.pkg("uninstall '*'")
-                # install pkg 
+                # install pkg
                 self.pkg("install pkg1@1.1")
                 # try to install pkg exclude dep on already
                 # installed pkg
@@ -2567,7 +2623,7 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 self.pkg("verify pkg5@1.0.5 pkg1@1.0 pkg2")
                 self.pkg("uninstall '*'")
                 # install a package that requires updating
-                # existing package to avoid exclude 
+                # existing package to avoid exclude
                 # dependency
                 self.pkg("install pkg6@1.0")
                 self.pkg("install pkg1@1.1")
@@ -2642,7 +2698,7 @@ class TestDependencies(pkg5unittest.SingleDepotTestCase):
                 # test to see if we could install both; presence of incorp causes relaxation
                 # of pkg.depend.install-hold
                 self.pkg("install -nv A_incorp@1.2 pkgA_1@1.2")
-                # this attempt also succeeds because pkg.depend.install-hold is relaxed 
+                # this attempt also succeeds because pkg.depend.install-hold is relaxed
                 # since A_incorp is on command line
                 self.pkg("install A_incorp@1.2")
                 self.pkg("list pkgA_1@1.2")
@@ -2825,7 +2881,7 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
 
         def test_05_upgrade_non_preferred_to_preferred(self):
                 """Install a package from a non-preferred publisher, and then
-                try to upgrade it, failing to implicitly switchto the preferred 
+                try to upgrade it, failing to implicitly switchto the preferred
                 publisher and then succeed doing it explicitly."""
                 self.pkg("list -a upgrade-np")
                 self.pkg("install upgrade-np@1.0")
@@ -3111,10 +3167,10 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 # version specification...
                 self.pkg("install upgrade-p")
                 self.pkg("install upgrade-p@1.1", exit=1)
-                self.pkg("set-publisher --non-sticky test1") 
-                self.pkg("install upgrade-p@1.1") # find match later on 
+                self.pkg("set-publisher --non-sticky test1")
+                self.pkg("install upgrade-p@1.1") # find match later on
                 self.pkg("set-publisher --sticky test1")
-                self.pkg("uninstall '*'")                
+                self.pkg("uninstall '*'")
 
         def test_15_nonsticky_update(self):
                 """Test to make sure image-update follows the same
@@ -3122,19 +3178,19 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
 
                 # try image-update
                 self.pkg("install pkg://test2/upgrade-np@1.0")
-                self.pkg("image-update", exit=4) 
+                self.pkg("image-update", exit=4)
                 self.pkg("list upgrade-np@1.0")
-                self.pkg("set-publisher --non-sticky test2") 
+                self.pkg("set-publisher --non-sticky test2")
                 self.pkg("publisher")
                 self.pkg("list -a upgrade-np")
-                self.pkg("image-update") 
+                self.pkg("image-update")
                 self.pkg("list upgrade-np@1.1")
-                self.pkg("set-publisher --sticky test2")  
-                self.pkg("uninstall '*'")                
+                self.pkg("set-publisher --sticky test2")
+                self.pkg("uninstall '*'")
 
         def test_16_disabled_nonsticky(self):
-                """Test to make sure disabled publishers are 
-                automatically made non-sticky, and after 
+                """Test to make sure disabled publishers are
+                automatically made non-sticky, and after
                 being enabled keep their previous value
                 of stickiness"""
 
@@ -3152,9 +3208,9 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 self.pkg("set-publisher --enable test2")
                 self.pkg("publisher")
                 self.pkg("publisher | egrep sticky", exit=1 )
-         
+
         def test_17_dependency_is_from_deleted_publisher(self):
-                self.pkg("set-publisher -O %s test4" % 
+                self.pkg("set-publisher -O %s test4" %
                     self.dcs[5].get_depot_url())
                 self.pkg("install pkg://test4/corge")
                 self.pkg("set-publisher --disable test2")
@@ -3162,7 +3218,7 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 self.pkg("list -af")
                 self.pkg("publisher")
                 self.pkg("install baz@1.0", exit=1)
-       
+
 class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
         """
         If a new essential directory is added to the format of an image it will

@@ -45,11 +45,9 @@ import pkg.fmri
 import pkg.manifest          as manifest
 import pkg.search_errors     as se
 import pkg.version
+import sys
 
 from pkg.client.debugvalues import DebugValues
-
-from pkg.misc import msg
-
 
 UNEVALUATED       = 0 # nothing done yet
 EVALUATED_PKGS    = 1 # established fmri changes
@@ -1088,11 +1086,28 @@ class ImagePlan(object):
                                         raise api_errors.PermissionsException(
                                             e.filename)
                                 elif e.errno == errno.EROFS:
-                                        raise api_errors.ReadOnlyFileSystemException(e.filename)
+                                        raise api_errors.ReadOnlyFileSystemException(
+                                            e.filename)
                                 raise
+                except pkg.actions.ActionError:
+                        exc_type, exc_value, exc_tb = sys.exc_info()
+                        self.state = EXECUTED_ERROR
+                        try:
+                                self.__actuators.exec_fail_actuators(self.image)
+                        finally:
+                                # Ensure the real cause of failure is raised.
+                                raise api_errors.InvalidPackageErrors([
+                                    exc_value]), None, exc_tb
                 except:
-                        self.__actuators.exec_fail_actuators(self.image)
-                        raise
+                        exc_type, exc_value, exc_tb = sys.exc_info()
+                        self.state = EXECUTED_ERROR
+                        try:
+                                self.__actuators.exec_fail_actuators(self.image)
+                        finally:
+                                # This ensures that the original exception and
+                                # traceback are used if exec_fail_actuators
+                                # fails.
+                                raise exc_value, None, exc_tb
                 else:
                         self.__actuators.exec_post_actuators(self.image)
 

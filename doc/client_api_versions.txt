@@ -1,3 +1,18 @@
+Version 33:
+Compatible with clients using version 32.
+
+    The ImageInterface class has changed as follows:
+        * file and directory actions will now have their mode validated
+          if failure occurs during plan execution to determine if bad
+          package metadata was the cause of execution failure.  In
+          addition, the client API will catch failures due to corrupt
+          or invalid package metadata and re-raise them as an
+          InvalidPackageErrors exception.
+
+    The pkg.client.api_errors module has changed as follows:
+        * The InvalidPackageErrors exception was added.  See 'pydoc
+          pkg.client.api_errors' for details.
+
 Version 32:
 Incompatible with clients using versions 0-31.
 
@@ -14,7 +29,7 @@ Incompatible with clients using versions 0-31.
         * A new method named image_create has been added.  See 'pydoc
           pkg.client.api' for details.
 
-    The pkg.client.api_errors modules has changed as follows:
+    The pkg.client.api_errors module has changed as follows:
         * UnknownRepositoryPublishers, RepoPubConfigUnavailable, and
           UnknownErrors expections have been added for use by the
           pkg.client.api.  API consumers are reminded that they should

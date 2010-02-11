@@ -93,7 +93,8 @@ class TransactionOperationError(TransactionError):
                             "version.") % self._args.get("pfmri", "")
                 elif "valid_new_fmri" in self._args:
                         return _("The specified FMRI, '%s', already exists or "
-                            "has been restricted.") % self._args.get("pfmri", "")
+                            "has been restricted.") % self._args.get("pfmri",
+                            "")
                 elif "publisher_required" in self._args:
                         return _("The specified FMRI, '%s', must include the "
                             "publisher prefix as the repository contains "
@@ -321,6 +322,13 @@ class Transaction(object):
                 """Adds the content of the provided action (if applicable) to
                 the Transaction."""
 
+                # Perform additional publication-time validation of actions
+                # before further processing is done.
+                try:
+                        action.validate()
+                except actions.ActionError, e:
+                        raise TransactionOperationError(e)
+
                 size = int(action.attrs.get("pkg.size", 0))
 
                 if action.name in ("file", "license") and size <= 0:
@@ -466,8 +474,6 @@ class Transaction(object):
                 tfile.close()
 
                 self.types_found.add(action.name)
-
-                return
 
         def accept_publish(self, refresh_index=True, add_to_catalog=True):
                 """Transaction meets consistency criteria, and can be published.

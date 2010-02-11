@@ -63,7 +63,15 @@ class DirectoryAction(generic.Action):
         def install(self, pkgplan, orig):
                 """Client-side method that installs a directory."""
                 path = self.attrs["path"]
-                mode = int(self.attrs["mode"], 8)
+
+                mode = None
+                try:
+                        mode = int(self.attrs.get("mode", None), 8)
+                except (TypeError, ValueError):
+                        # Mode isn't valid, so let validate raise a more
+                        # informative error.
+                        self.validate(fmri=pkgplan.destination_fmri)
+
                 owner = pkgplan.image.get_user_by_name(self.attrs["owner"])
                 group = pkgplan.image.get_group_by_name(self.attrs["group"])
 
@@ -83,7 +91,7 @@ class DirectoryAction(generic.Action):
 
                 if not orig:
                         try:
-                                self.makedirs(path, mode = mode)
+                                self.makedirs(path, mode=mode)
                         except OSError, e:
                                 if e.errno != errno.EEXIST:
                                         raise
@@ -147,3 +155,16 @@ class DirectoryAction(generic.Action):
                     ("directory", "path", os.path.sep + self.attrs["path"],
                     None)
                 ]
+
+        def validate(self, fmri=None):
+                """Performs additional validation of action attributes that
+                for performance or other reasons cannot or should not be done
+                during Action object creation.  An ActionError exception (or
+                subclass of) will be raised if any attributes are not valid.
+                This is primarily intended for use during publication or during
+                error handling to provide additional diagonostics.
+
+                'fmri' is an optional package FMRI (object or string) indicating
+                what package contained this action."""
+
+                return self.validate_fsobj_common(fmri=fmri)

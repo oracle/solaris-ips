@@ -36,6 +36,7 @@ import urllib2
 import urlparse
 
 from pkg.misc import versioned_urlopen, EmptyDict
+import pkg.actions as actions
 import pkg.portable.util as os_util
 import pkg.server.repository as sr
 import pkg.server.repositoryconfig as rc
@@ -175,8 +176,13 @@ class FileTransaction(object):
                 transaction.  Returns nothing."""
 
                 try:
+                        # Perform additional publication-time validation of
+                        # actions before further processing is done.
+                        action.validate()
+
+                        # Now add to the repository.
                         self.__repo.add(self.trans_id, action)
-                except sr.RepositoryError, e:
+                except (actions.ActionError, sr.RepositoryError), e:
                         raise TransactionOperationError("add",
                             trans_id=self.trans_id, msg=str(e))
 
@@ -301,6 +307,14 @@ class HTTPTransaction(object):
         def add(self, action):
                 """Adds an action and its related content to an in-flight
                 transaction.  Returns nothing."""
+
+                try:
+                        # Perform additional publication-time validation of
+                        # actions before further processing is done.
+                        action.validate()
+                except actions.ActionError, e:
+                        raise TransactionOperationError("add",
+                            trans_id=self.trans_id, msg=str(e))
 
                 attrs = action.attrs
                 if action.data != None:
@@ -465,11 +479,17 @@ class NullTransaction(object):
                 self.pkg_name = pkg_name
                 self.trans_id = trans_id
 
-        @staticmethod
-        def add(action):
+        def add(self, action):
                 """Adds an action and its related content to an in-flight
                 transaction.  Returns nothing."""
-                pass
+
+                try:
+                        # Perform additional publication-time validation of
+                        # actions before further processing is done.
+                        action.validate()
+                except actions.ActionError, e:
+                        raise TransactionOperationError("add",
+                            trans_id=self.trans_id, msg=str(e))
 
         def close(self, abandon=False, refresh_index=True):
                 """Ends an in-flight transaction.  Returns a tuple containing

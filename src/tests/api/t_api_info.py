@@ -40,6 +40,7 @@ import time
 import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 import pkg.client.progress as progress
+import pkg.fmri as fmri
 
 API_VERSION = 32
 PKG_CLIENT_NAME = "pkg"
@@ -48,7 +49,10 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
         # Only start/stop the depot once (instead of for every test)
         persistent_setup = True
 
-        def test_info_local_remote(self):
+        def test_0_local_remote(self):
+                """Verify that ImageInterface.info() works as expected
+                for both local (installed or cached) and remote packages."""
+
                 self.image_create(self.dc.get_depot_url())
                 progresstracker = progress.NullProgressTracker()
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
@@ -126,13 +130,7 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
 
                 durl = self.dc.get_depot_url()
 
-                self.pkgsend_bulk(durl, pkg1)
-                self.pkgsend_bulk(durl, pkg2)
-                self.pkgsend_bulk(durl, pkg4)
-                self.pkgsend_bulk(durl, pkg5)
-                self.pkgsend_bulk(durl, pkg6)
-                self.pkgsend_bulk(durl, pkg7)
-
+                self.pkgsend_bulk(durl, pkg1 + pkg2 + pkg4 + pkg5 + pkg6 + pkg7)
                 self.image_create(durl)
 
                 local = True
@@ -334,6 +332,64 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                 # A test for bug 8868 which ensures the pkg.description field
                 # is as exected.
                 self.assertEqual(res.description, "DESCRIPTION 3")
+
+        def test_1_bad_packages(self):
+                """Verify that the info operation handles packages with invalid
+                metadata."""
+
+                durl = self.dc.get_depot_url()
+                self.image_create(durl)
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+
+                self.assertRaises(api_errors.NoPackagesInstalledException,
+                    api_obj.info, [], True, api.PackageInfo.ALL_OPTIONS -
+                    (frozenset([api.PackageInfo.LICENSES]) |
+                    api.PackageInfo.ACTION_OPTIONS))
+
+                self.make_misc_files("tmp/baz")
+
+                badfile10 = """
+                    open badfile@1.0,5.11-0
+                    add file tmp/baz mode=644 owner=root group=bin path=/tmp/baz-file
+                    close
+                """
+
+                baddir10 = """
+                    open baddir@1.0,5.11-0
+                    add dir mode=755 owner=root group=bin path=/tmp/baz-dir
+                    close
+                """
+
+                plist = self.pkgsend_bulk(durl, badfile10 + baddir10)
+                api_obj.refresh(immediate=True)
+
+                # This should succeed and cause the manifests to be cached.
+                info_needed = api.PackageInfo.ALL_OPTIONS
+                ret = api_obj.info(plist, False, info_needed)
+
+                # Now attempt to corrupt the client's copy of the manifest by
+                # adding malformed actions.
+                for p in plist:
+                        self.debug("Testing package %s ..." % p)
+                        pfmri = fmri.PkgFmri(p)
+                        mdata = self.get_img_manifest(pfmri)
+                        if mdata.find("dir") != -1:
+                                src_mode = "mode=755"
+                        else:
+                                src_mode = "mode=644"
+
+                        for bad_act in (
+                            'set name=description value="" \" my desc \" ""',
+                            "set name=com.sun.service.escalations value="):
+                                self.debug("Testing with bad action "
+                                    "'%s'." % bad_act)
+                                bad_mdata = mdata + "%s\n" % bad_act
+                                self.write_img_manifest(pfmri, bad_mdata)
+                                self.assertRaises(api_errors.InvalidPackageErrors,
+                                    api_obj.info, [pfmri.pkg_name], False,
+                                    info_needed)
 
 
 if __name__ == "__main__":
