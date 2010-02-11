@@ -175,7 +175,7 @@ depend %(pfx)s.file=syslog %(pfx)s.path=var/log fmri=%(dummy_fmri)s type=require
         res_manf_2_missing = "ascii text"
 
         resolve_error = """\
-%(manf_path)s has unresolved dependency 'depend fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1 %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=usr/xpg4/lib/libcurses.so.1 %(pfx)s.type=elf type=require variant.arch=foo' under the following combinations of variants:
+%(manf_path)s has unresolved dependency 'depend fmri=%(dummy_fmri)s %(pfx)s.file=libc.so.1 %(pfx)s.path=lib %(pfx)s.path=usr/lib %(pfx)s.reason=usr/xpg4/lib/libcurses.so.1 %(pfx)s.type=elf type=require' under the following combinations of variants:
 variant.arch:foo
 """
 
@@ -232,10 +232,9 @@ file NOHASH group=sys mode=0600 owner=root path=var/log/authlog variant.foo=baz 
 
         two_v_deps_output = """\
 %(m1_path)s
-depend fmri=pkg:/s-v-bar pkg.debug.depend.file=var/log/authlog pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require variant.foo=bar
+depend fmri=pkg:/s-v-bar pkg.debug.depend.file=var/log/authlog pkg.debug.depend.file=var/log/file2 pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require
 depend fmri=pkg:/s-v-baz-one pkg.debug.depend.file=var/log/authlog pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require variant.foo=baz variant.num=one
 depend fmri=pkg:/s-v-baz-two pkg.debug.depend.file=var/log/authlog pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require variant.foo=baz variant.num=two
-depend fmri=pkg:/s-v-bar pkg.debug.depend.file=var/log/file2 pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require
 
 
 %(m2_path)s
@@ -250,6 +249,62 @@ depend fmri=pkg:/s-v-bar pkg.debug.depend.file=var/log/file2 pkg.debug.depend.re
 
 
 
+"""
+
+        dup_variant_deps = """\
+set name=variant.foo value=bar value=baz
+set name=variant.num value=one value=two
+depend fmri=pkg:/s-v-bar type=require
+depend fmri=pkg:/s-v-bar@0.1-0.2 type=incorporate
+depend fmri=pkg:/hand-dep type=require
+depend fmri=pkg:/hand-dep@0.1-0.2 type=incorporate
+depend fmri=__TBD pkg.debug.depend.file=var/log/authlog pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require
+depend fmri=__TBD pkg.debug.depend.file=var/log/file2 pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require
+depend fmri=__TBD pkg.debug.depend.file=var/log/f1 pkg.debug.depend.reason=b1 pkg.debug.depend.type=hardlink type=require
+depend fmri=__TBD pkg.debug.depend.file=var/log/f2 pkg.debug.depend.reason=b2 pkg.debug.depend.type=hardlink type=require
+depend fmri=__TBD pkg.debug.depend.file=var/log/f3 pkg.debug.depend.reason=b3 pkg.debug.depend.type=hardlink type=require variant.foo=bar
+depend fmri=__TBD pkg.debug.depend.file=var/log/f4 pkg.debug.depend.reason=b3 pkg.debug.depend.type=hardlink type=require variant.foo=baz
+depend fmri=__TBD pkg.debug.depend.file=var/log/f5 pkg.debug.depend.reason=b5 pkg.debug.depend.type=hardlink type=require
+depend fmri=__TBD pkg.debug.depend.file=var/log/f6 pkg.debug.depend.reason=b5 pkg.debug.depend.type=hardlink type=require variant.foo=bar
+"""
+
+        dup_prov = """
+set name=fmri value=pkg:/dup-prov
+set name=variant.foo value=bar value=baz
+set name=variant.num value=one value=two value=three
+file NOHASH group=sys mode=0600 owner=root path=var/log/f1
+file NOHASH group=sys mode=0600 owner=root path=var/log/f2
+"""
+
+        subset_prov = """
+set name=fmri value=pkg:/subset-prov
+set name=variant.foo value=bar value=baz
+set name=variant.num value=one value=two value=three
+file NOHASH group=sys mode=0600 owner=root path=var/log/f5
+file NOHASH group=sys mode=0600 owner=root path=var/log/f6
+"""
+
+        sep_vars = """
+set name=fmri value=pkg:/sep_vars
+set name=variant.foo value=bar value=baz
+set name=variant.num value=one value=two value=three
+file NOHASH group=sys mode=0600 owner=root path=var/log/f3 variant.foo=bar
+file NOHASH group=sys mode=0600 owner=root path=var/log/f4 variant.foo=baz
+"""
+
+        dup_variant_deps_resolved = """\
+set name=variant.foo value=bar value=baz
+set name=variant.num value=one value=two
+depend fmri=pkg:/hand-dep type=require
+depend fmri=pkg:/s-v-bar@0.1-0.2 type=incorporate
+depend fmri=pkg:/hand-dep@0.1-0.2 type=incorporate
+depend fmri=pkg:/dup-prov pkg.debug.depend.file=var/log/f2 pkg.debug.depend.file=var/log/f1 pkg.debug.depend.reason=b1 pkg.debug.depend.reason=b2 pkg.debug.depend.type=hardlink type=require
+depend fmri=pkg:/s-v-bar pkg.debug.depend.file=var/log/authlog pkg.debug.depend.file=var/log/file2 pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require
+depend fmri=pkg:/s-v-baz-one pkg.debug.depend.file=var/log/authlog pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require variant.foo=baz variant.num=one
+depend fmri=pkg:/s-v-baz-two pkg.debug.depend.file=var/log/authlog pkg.debug.depend.reason=baz pkg.debug.depend.type=hardlink type=require variant.foo=baz variant.num=two
+depend fmri=pkg:/sep_vars pkg.debug.depend.file=var/log/f3 pkg.debug.depend.reason=b3 pkg.debug.depend.type=hardlink type=require variant.foo=bar
+depend fmri=pkg:/sep_vars pkg.debug.depend.file=var/log/f4 pkg.debug.depend.reason=b3 pkg.debug.depend.type=hardlink type=require variant.foo=baz
+depend fmri=pkg:/subset-prov pkg.debug.depend.file=var/log/f6 pkg.debug.depend.file=var/log/f5 pkg.debug.depend.reason=b5 pkg.debug.depend.type=hardlink type=require
 """
 
         payload_elf_sub_error = """\
@@ -499,11 +554,7 @@ file NOHASH group=bin mode=0755 owner=root path=usr/bin/python
 """
 
         pyver_resolve_results = """
-depend fmri=%(res_manf)s %(pfx)s.file=usr/lib/python%(py_ver)s/vendor-packages/pkg/indexer.py %(pfx)s.reason=usr/lib/python%(py_ver)s/vendor-packages/pkg/client/indexer.py %(pfx)s.type=python type=require
-depend fmri=%(res_manf)s %(pfx)s.file=usr/lib/python%(py_ver)s/vendor-packages/pkg/misc.py %(pfx)s.reason=usr/lib/python%(py_ver)s/vendor-packages/pkg/client/indexer.py %(pfx)s.type=python type=require
-depend fmri=%(res_manf)s %(pfx)s.file=usr/lib/python%(py_ver)s/vendor-packages/pkg/__init__.py %(pfx)s.reason=usr/lib/python%(py_ver)s/vendor-packages/pkg/client/indexer.py %(pfx)s.type=python type=require
-depend fmri=%(res_manf)s %(pfx)s.file=usr/bin/python %(pfx)s.reason=usr/lib/python%(py_ver)s/vendor-packages/pkg/client/indexer.py %(pfx)s.type=script type=require
-depend fmri=%(res_manf)s %(pfx)s.file=usr/lib/python%(py_ver)s/lib-tk/pkg/search_storage.py %(pfx)s.reason=usr/lib/python%(py_ver)s/vendor-packages/pkg/client/indexer.py %(pfx)s.type=python type=require
+depend fmri=%(res_manf)s %(pfx)s.file=usr/lib/python%(py_ver)s/vendor-packages/pkg/indexer.py %(pfx)s.file=usr/lib/python%(py_ver)s/vendor-packages/pkg/misc.py %(pfx)s.file=usr/lib/python%(py_ver)s/vendor-packages/pkg/__init__.py %(pfx)s.file=usr/bin/python %(pfx)s.file=usr/lib/python%(py_ver)s/lib-tk/pkg/search_storage.py %(pfx)s.reason=usr/lib/python%(py_ver)s/vendor-packages/pkg/client/indexer.py %(pfx)s.type=script %(pfx)s.type=python type=require
 """
 
         pyver_mismatch_results = """\
@@ -1082,6 +1133,114 @@ The file to be installed in usr/bin/pkg does not specify a specific version of p
                 self.check_res(self.errout, "%s/bar/foo says it should be run "
                     "with 'perl' which is a relative path." %
                     self.test_proto_dir)
+
+        def test_bug_14118(self):
+                """Check that duplicate dependency actions are consolitdated
+                correctly, taking the variants into accout."""
+
+                # In the comments below, v.f stands for variant.foo and v.n
+                # stands for variant.num.
+                
+                # dup_variant_deps contains all the dependencies to be resolved.
+                # It is published as dup-v-deps.
+                m1_path = self.make_manifest(self.dup_variant_deps)
+
+                # two_v_deps_bar is published as the package s-v-bar.  It
+                # provides var/log/authlog when v.f=bar and var/log/file2 under
+                # all variants.  This means that dup-v-deps should depend
+                # unconditionally on s-v-bar.  This resolution tests that a
+                # dependency on X which exists only under a specific combination
+                # of variants is merged into a more general dependency
+                # appropriately.
+                m2_path = self.make_manifest(self.two_v_deps_bar)
+
+                # two_v_deps_baz_one is published as the package s-v-baz-one.
+                # It provides var/log/authlog when v.f=baz and v.n=one.  This
+                # means that dup-v-deps should depend on s-v-baz-one when
+                # v.f=baz and v.n=one.  This resolution tests that dependencies
+                # are still versioned correctly when necessary.
+                m3_path = self.make_manifest(self.two_v_deps_baz_one)
+
+                # two_v_deps_baz_two is identical to two_v_deps_baz_one except
+                # that it provides var/log/authlog when v.f=baz and v.n=two.
+                m4_path = self.make_manifest(self.two_v_deps_baz_two)
+
+                # dup_prov is published as the package dup-prov.  It provides
+                # var/log/f1 and var/log/f2 under all variants.  dup-v-deps
+                # depends on dup-prov under all combinations of variants because
+                # of each file.  This tests that when two dependencies are valid
+                # under same set of variants, they're combined correctly.
+                m5_path = self.make_manifest(self.dup_prov)
+
+                # sep_vars is published as sep_vars.  It provides var/log/f3
+                # when v.f=bar and var/log/f4 when v.f=baz.  This means that
+                # dup-v-deps depends on sep_vars for different reasons when
+                # v.f=bar and when v.f=baz.  This tests that those dependencies
+                # continue to be reported as separate dependencies.
+                m6_path = self.make_manifest(self.sep_vars)
+
+                # subset_prov unconditionally provides two files, f5 and f6.
+                # dup-v-deps unconditionally depends on f5, and conditionally
+                # depends on f6.  This means that dup-v-deps should
+                # unconditionally depend on dup-v-deps.  This also tests that
+                # variants are removed and added during the internal processing
+                # of dependency resolution.
+                m7_path = self.make_manifest(self.subset_prov)
+
+                # This empty manifest will be published as hand-dep. This checks
+                # that manually added dependencies are propogated correctly.
+                m8_path = self.make_manifest("\n\n")
+
+                p2_name = "s-v-bar"
+                p3_name = "s-v-baz-one"
+                p4_name = "s-v-baz-two"
+                self.pkgdepend_resolve(" -m %s" % " ".join([m1_path, m2_path,
+                        m3_path, m4_path, m5_path, m6_path, m7_path, m8_path]))
+                fh = open(m1_path + ".res")
+                res = fh.read()
+                fh.close()
+                self.check_res(self.dup_variant_deps_resolved, res)
+
+                # Check that the results can be installed correctly.
+                durl = self.dc.get_depot_url()
+                self.make_proto_text_file("var/log/file2")
+                self.make_proto_text_file("var/log/authlog")
+                self.make_proto_text_file("var/log/f1")
+                self.make_proto_text_file("var/log/f2")
+                self.make_proto_text_file("var/log/f3")
+                self.make_proto_text_file("var/log/f4")
+                self.make_proto_text_file("var/log/f5")
+                self.make_proto_text_file("var/log/f6")
+                self.make_proto_text_file(
+                    "platform/i86pc/kernel/dacf/amd64/consconfig_dacf")
+                self.make_proto_text_file(
+                    "platform/i86pc/kernel/dacf/consconfig_dacf")
+                self.pkgsend(durl, "publish -d %s dup-v-deps@0.1-0.2 %s" %
+                    (self.test_proto_dir, m1_path + ".res"))
+                self.pkgsend(durl, "publish -d %s s-v-bar@0.1-0.2 %s" %
+                    (self.test_proto_dir, m2_path + ".res"))
+                self.pkgsend(durl, "publish -d %s s-v-baz-one@0.1-0.2 %s" %
+                    (self.test_proto_dir, m3_path + ".res"))
+                self.pkgsend(durl, "publish -d %s s-v-baz-two@0.1-0.2 %s" %
+                    (self.test_proto_dir, m4_path + ".res"))
+                self.pkgsend(durl, "publish -d %s dup-prov@0.1-0.2 %s" %
+                    (self.test_proto_dir, m5_path + ".res"))
+                self.pkgsend(durl, "publish -d %s sep_vars@0.1-0.2 %s" %
+                    (self.test_proto_dir, m6_path + ".res"))
+                self.pkgsend(durl, "publish -d %s subset-prov@0.1-0.2 %s" %
+                    (self.test_proto_dir, m7_path + ".res"))
+                self.pkgsend(durl, "publish -d %s hand-dep@0.1-0.2 %s" %
+                    (self.test_proto_dir, m8_path + ".res"))
+                foo_vars = ["bar", "baz"]
+                num_vars = ["one", "two"]
+                for fv in foo_vars:
+                        for nv in num_vars:
+                                var_settings = "--variant variant.foo=%s " \
+                                    "--variant num=%s" % (fv, nv)
+                                self.image_create(durl,
+                                    additional_args=var_settings)
+                                self.pkg("install dup-v-deps")
+                                self.image_destroy()
 
 if __name__ == "__main__":
         unittest.main()

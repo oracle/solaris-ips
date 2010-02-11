@@ -297,6 +297,12 @@ class Action(object):
                                 l.append(k)
                 return (l)
 
+        def consolidate_attrs(self):
+                """Removes duplicate values from values which are lists."""
+                for k in self.attrs.iterkeys():
+                        if isinstance(self.attrs[k], list):
+                                self.attrs[k] = list(set(self.attrs[k]))
+
         def generate_indices(self):
                 """Generate the information needed to index this action.
 
@@ -424,6 +430,13 @@ class Action(object):
                 return variant.VariantSets(dict((
                     (v, self.attrs[v]) for v in self.get_varcet_keys()[0]
                 )))
+
+        def strip_variants(self):
+                """Remove all variant tags from the attrs dictionary."""
+
+                for k in self.attrs.keys():
+                        if k.startswith("variant."):
+                                del self.attrs[k]
 
         def verify(self, img, **args):
                 """Returns a tuple of lists of the form (errors, warnings,

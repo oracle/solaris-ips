@@ -585,6 +585,7 @@ cli.t_pkgdep.py TestPkgdepBasics.test_bug_12697|pass
 cli.t_pkgdep.py TestPkgdepBasics.test_bug_12816|pass
 cli.t_pkgdep.py TestPkgdepBasics.test_bug_12896|pass
 cli.t_pkgdep.py TestPkgdepBasics.test_bug_13059|pass
+cli.t_pkgdep.py TestPkgdepBasics.test_bug_14118|pass
 cli.t_pkgdep.py TestPkgdepBasics.test_opts|pass
 cli.t_pkgdep.py TestPkgdepBasics.test_output|pass
 cli.t_pkgdep.py TestPkgdepBasics.test_python_combinations|pass

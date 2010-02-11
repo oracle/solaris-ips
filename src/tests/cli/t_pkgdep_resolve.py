@@ -262,7 +262,9 @@ close"""
                         raise RuntimeError("Got the following unexpected "
                             "errors:\n%s" % "\n".join(["%s" % e for e in errs]))
                 self.assertEqual(len(pkg_deps), 2)
-                self.assertEqual(len(pkg_deps[m1_path]), 2)
+                self.assertEqual(len(pkg_deps[m1_path]), 1)
+                self.assertEqual(len(pkg_deps[m1_path][0].attrs["%s.reason" %
+                    base.Dependency.DEPEND_DEBUG_PREFIX]), 2)
                 self.assertEqual(len(pkg_deps[m2_path]), 1)
                 for d in pkg_deps[m1_path]:
                         self.assertEqual(d.attrs["fmri"], p2_name)

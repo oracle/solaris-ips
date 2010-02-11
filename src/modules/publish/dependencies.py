@@ -21,7 +21,7 @@
 #
 
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -326,13 +326,11 @@ def helper(lst, file_dep, dep_vars, orig_dep_vars, pkg_vars):
                                 errs.add(pfmri)
                 # Find the variants under which pfmri is relevant.
                 action_vars = orig_dep_vars.intersection(delivered_vars)
-                action_vars.remove_identical(pkg_vars)
                 # Mark the variants as satisfied so it's possible to know if
                 # all variant combinations have been covered.
                 dep_vars.mark_as_satisfied(delivered_vars)
                 attrs = file_dep.attrs.copy()
                 attrs.update({"fmri":str(pfmri)})
-                attrs.update(action_vars)                
                 # Add this package as satisfying the dependency.
                 res.append((actions.depend.DependencyAction(**attrs),
                     action_vars))
@@ -431,8 +429,8 @@ def find_package_using_delivered_files(delivered, file_dep, dep_vars,
 
         # Extract the actions from res, and only return those which don't have
         # multiple path errors.
-        return [a for a, v in res if a not in multiple_path_errs], dep_vars, \
-            errs
+        return [(a, v) for a, v in res if a not in multiple_path_errs], \
+            dep_vars, errs
 
 def find_package(delivered, installed, file_dep, pkg_vars):
         """Find the packages which resolve the dependency. It returns a list of
@@ -443,11 +441,11 @@ def find_package(delivered, installed, file_dep, pkg_vars):
 
         'file_dep' is the dependency being resolved.
 
-        "pkg_vars' is the variants against which the package was published."""
+        'pkg_vars' is the variants against which the package was published."""
 
-        orig_dep_vars = variants.VariantSets(file_dep.get_variants())
-        orig_dep_vars.merge_unknown(pkg_vars)
+        file_dep, orig_dep_vars = split_off_variants(file_dep, pkg_vars)
         dep_vars = orig_dep_vars.copy()
+
         # First try to resolve the dependency against the delivered files.
         res, dep_vars, errs = find_package_using_delivered_files(delivered,
                 file_dep, dep_vars, orig_dep_vars, pkg_vars)
@@ -465,6 +463,190 @@ def is_file_dependency(act):
         return act.name == "depend" and \
             act.attrs.get("fmri", None) == base.Dependency.DUMMY_FMRI and \
             "%s.file" % base.Dependency.DEPEND_DEBUG_PREFIX in act.attrs
+
+def merge_deps(dest, src):
+        """Add the information contained in src's attrs to dest."""
+
+        for k, v in src.attrs.items():
+                # If any of these dependencies already have a variant set,
+                # then something's gone horribly wrong.
+                assert(not k.startswith("variant."))
+                if k not in dest.attrs:
+                        dest.attrs[k] = v
+                elif v != dest.attrs[k]:
+                        # For now, just merge the values. Duplicate values
+                        # will be removed in a later step.
+                        if isinstance(v, basestring):
+                                v = [v]
+                        if isinstance(dest.attrs[k], list):
+                                dest.attrs[k].extend(v)
+                        else:
+                                t = [dest.attrs[k]]
+                                t.extend(v)
+                                dest.attrs[k] = t
+
+def combine(deps, pkg_vars):
+        """Combine duplicate dependency actions.
+
+        'deps' is a list of tuples. Each tuple contains a dependency action and
+        the variants associated with that dependency.
+
+        'pkg_vars' are the variants that the package for which dependencies are
+        being generated was published against."""
+
+        def action_group_key(d):
+                """Return a key on which the tuples can be sorted and grouped
+                so that the groups match the duplicate actions that the code
+                in pkg.manifest notices."""
+
+                # d[0] is the action.  d[1] is the VariantSet for this action.
+                return d[0].name, d[0].attrs.get(d[0].key_attr, id(d[0]))
+
+        def add_vars(d, d_vars, pkg_vars):
+                """Add the variants 'd_vars' to the dependency 'd', after
+                removing the variants matching those defined in 'pkg_vars'."""
+
+                d_vars.remove_identical(pkg_vars)
+                d.attrs.update(d_vars)
+                # Remove any duplicate values for any attributes.
+                d.consolidate_attrs()
+                return d
+
+        def key_on_variants(a):
+                """Return the key (the VariantSets) to sort the grouped tuples
+                by."""
+
+                return a[1]
+
+        def sort_by_variant_subsets(a, b):
+                """Sort the tuples so that those actions whose variants are
+                supersets of others are placed at the front of the list.  This
+                function assumes that a and b are both VariantSets."""
+
+                if a.issubset(b):
+                        return 1
+                elif b.issubset(a):
+                        return -1
+                return 0
+
+        # Here is an example of how this code should work.  Assume that the code
+        # is looking at dependencies for a package published against
+        # variant.foo = bar, baz and variant.num = one, two.  These are
+        # abbreviated below as v.f and v.n.  The following dependencies have
+        # been found for this package:
+        # 1) depend pkg_a reason=file_1, VariantSet is v.f=bar,baz v.n=one,two
+        # 2) depend pkg_a reason=file_2, VariantSet is v.f=bar v.n=one
+        # 3) depend pkg_b reason=file_3, VariantSet is v.f=bar v.n=one
+        # 4) depend pkg_b reason=file_3, VariantSet is v.f=baz v.n=two
+        # 5) depend pkg_b reason=file_3 path=p1, VariantSet is v.f=bar
+        #        v.n=one,two
+        #
+        # First, these dependencies are grouped by their fmris.  This produces
+        # two lists, the first contains dependencies 1 and 2, the second
+        # contains dependencies 3, 4, and 5.
+        #
+        # The first group of dependencies is sorted by their VariantSet's.
+        # Dependency 1 comes before dependency 2 because 2's variants are a
+        # subset of 1's variants.  Dependency 1 is put in the temporary result
+        # list (subres) since at least one dependency on pkg_a must exist.
+        # Next, dependency 2 is compared to dependency 1 to see if it its
+        # variants are subset of 1's. Since they are, the two dependencies are
+        # merged.  This means that values of all tags in either dependency
+        # appear in the merged dependency.  In this case, the merged dependency
+        # would look something like:
+        # depend pkg_a reason=file_1 reason=file_2
+        # The variant set associated with the merged dependency would still be
+        # dependency 1's variant set.
+        #
+        # The last thing that happens with this group of dependencies is that
+        # add_vars is called on each result.  This first removes those variants
+        # which match the package's identically.  What remains is added to the
+        # dependency's attribute dictionary.  Since the package variants and the
+        # dependency's variants are identical in this case, nothing is added.
+        # Lastly, any duplicate values for a tag are removed.  Again, since
+        # there are no duplicates, nothing is changed.  The final dependency
+        # that's added to final_res is:
+        # depend pkg_a reason=file_1 reason=file_2
+        #
+        # The second group of dependencies is also sorted by their VariantSet's.
+        # This sort is a partial ordering.  Dependency 5 must come before
+        # dependency 3, but dependency 4 can be anywhere in the list.  Let's
+        # assume that the order is [4, 5, 3].
+        #
+        # Dependency 4 is added to the temporary result list (subres).
+        # Dependency 5 is checked to see if its variants are subset of 4's
+        # variants.  Since they are not, dependency 5 is added to subres.
+        # Dependency 3 is checked against 4 to see if its variants are a subset.
+        # Since they're not, 3's variants are then checked against 5's variants.
+        # Since 3's variants are a subset of 5's variants, 3 is merged with 5,
+        # producing this dependency:
+        # depend pkg_b reason=file_3 reason=file_3 path=p1, VariantSet is
+        # v.f=bar v.n=one,two
+        #
+        # The two results from this group (dependency 4 and the merge of 5 and
+        # 3) than has add_vars called on it.  The final results are:
+        # dependency pkg_b reason=file_3 v.f=baz v.n=two
+        # dependency pkg_b reason=file_3 path=p1 v.f=bar
+        #
+        # The v.n tags have been removed from the second result because they
+        # were identical to the package's variants.  The duplicate reasons have
+        # also been coalesced.
+        #
+        # After everything is done, the final set of dependencies for this
+        # package are:
+        # depend pkg_a reason=file_1 reason=file_2
+        # dependency pkg_b reason=file_3 v.f=baz v.n=two
+        # dependency pkg_b reason=file_3 path=p1 v.f=bar
+
+        res = []
+        # For each group of dependencies (g) for a particular fmri (k) ...
+        for k, g in itertools.groupby(sorted(deps, key=action_group_key),
+            action_group_key):
+
+                # Sort the dependencies so that any dependency whose variants
+                # are a subset of the variants of another dependency follow it.
+                glist = sorted(g, cmp=sort_by_variant_subsets,
+                    key=key_on_variants)
+                subres = [glist[0]]
+
+                # d is a dependency action. d_vars are the variants under which
+                # d will be applied.
+                for d, d_vars in glist[1:]:
+                        found_subset = False
+                        for rel_res, rel_vars in subres:
+
+                                # If d_vars is a subset of any variant set
+                                # already in the results, then d should be
+                                # combined with that dependency.
+                                if d_vars.issubset(rel_vars):
+                                        found_subset = True
+                                        merge_deps(rel_res, d)
+                                        break
+                                assert(not rel_vars.issubset(d_vars))
+
+                        # If no subset was found, then d_vars is a new set of
+                        # conditions under which the dependency d should apply
+                        # so add it to the results.
+                        if not found_subset:
+                                subres.append((d, d_vars))
+
+                # Add the variants to the dependency action and remove any
+                # variants that are identical to those defined by the package.
+                subres = [add_vars(d, d_vars, pkg_vars) for d, d_vars in subres]
+                res.extend(subres)
+        return res
+
+def split_off_variants(dep, pkg_vars):
+        """Take a dependency which may be tagged with variants and move those
+        tags into a VariantSet."""
+
+        dep_vars = variants.VariantSets(dep.get_variants())
+        dep_vars.merge_unknown(pkg_vars)
+        # Since all variant information is being kept in the above VariantSets,
+        # remove the variant information from the action.  This prevents
+        # confusion about which is the authoritative source of information.
+        dep.strip_variants()
+        return dep, dep_vars
 
 def resolve_deps(manifest_paths, api_inst):
         """For each manifest given, resolve the file dependencies to package
@@ -533,7 +715,13 @@ def resolve_deps(manifest_paths, api_inst):
                     for d in mfst.gen_actions_by_type("depend")
                     if is_file_dependency(d)
                 ]
-                deps = []
+                # Seed the final results with those dependencies defined
+                # manually.
+                deps = [
+                    split_off_variants(d, pkg_vars)
+                    for d in mfst.gen_actions_by_type("depend")
+                    if not is_file_dependency(d)
+                ]
                 for file_dep, (res, dep_vars, pkg_errs) in pkg_res:
                         errs.extend(pkg_errs)
                         if not res:
@@ -545,6 +733,9 @@ def resolve_deps(manifest_paths, api_inst):
                                 if not dep_vars.is_satisfied():
                                         errs.append(UnresolvedDependencyError(
                                             mp, file_dep, dep_vars))
+                # Add variant information to the dependency actions and combine
+                # what would otherwise be duplicate dependencies.
+                deps = combine(deps, pkg_vars)
                 pkg_deps[mp] = deps
                         
         return pkg_deps, errs

@@ -273,7 +273,7 @@ def resolve(args, img_dir):
                 emsg(e)
         return ret_code
 
-def echo_line(l):
+def resolve_echo_line(l):
         """Given a line from a manifest, determines whether that line should
         be repeated in the output file if echo manifest has been set."""
 
@@ -284,7 +284,8 @@ def echo_line(l):
         except actions.ActionError:
                 return True
         else:
-                return not dependencies.is_file_dependency(act)
+                return not act.name == "depend" or \
+                    act.attrs["type"] != "require"
 
 def explode(dep_with_variantsets):
         sat_tups = dep_with_variantsets.get_variants().get_satisfied()
@@ -316,7 +317,7 @@ def pkgdeps_to_screen(pkg_deps, manifest_paths, echo_manifest):
                         try:
                                 fh = open(p, "rb")
                                 for l in fh:
-                                        if echo_line(l):
+                                        if resolve_echo_line(l):
                                                 msg(l.rstrip())
                                 fh.close()
                         except EnvironmentError:
@@ -358,7 +359,7 @@ def write_res(deps, out_file, echo_manifest, manifest_path):
                         emsg(_("Could not open %s to echo manifest") %
                             manifest_path)
                 for l in fh:
-                        if echo_line(l):
+                        if resolve_echo_line(l):
                                 out_fh.write(l)
                 fh.close()
         for d in deps:
