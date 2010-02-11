@@ -3,6 +3,7 @@ consolidation "gnome"
 classification "Development/System"
 import SUNWobby
 import SUNWobby-devel
+version 0.4.7
 end package
 
 package SUNWobby

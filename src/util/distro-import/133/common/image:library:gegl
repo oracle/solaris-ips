@@ -3,6 +3,7 @@ consolidation "gnome"
 classification "System/Multimedia Libraries"
 import SUNWgegl
 import SUNWgegl-devel
+version 0.1.0
 end package
 
 package SUNWgegl

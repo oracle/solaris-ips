@@ -3,6 +3,7 @@ consolidation "gnome"
 classification "System/Multimedia Libraries"
 import SUNWbabl
 import SUNWbabl-devel
+version 0.1.0
 end package
 
 package SUNWbabl

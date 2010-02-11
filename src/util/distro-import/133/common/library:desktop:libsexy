@@ -3,6 +3,7 @@ consolidation "gnome"
 classification "Desktop (GNOME)/Libraries"
 import SUNWlibsexy
 import SUNWlibsexy-devel
+version 0.1.11
 end package
 
 package SUNWlibsexy

@@ -2,6 +2,7 @@ package text/o3read
 consolidation "gnome"
 classification "Applications/Office"
 import SUNWo3read
+version 0.0.4
 end package
 
 package SUNWo3read

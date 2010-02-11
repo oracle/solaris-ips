@@ -4,6 +4,7 @@ classification "Desktop (GNOME)/Sessions"
 import SUNWconsolekit
 import SUNWconsolekit-devel
 import SUNWconsolekit-root
+version 0.4.1
 end package
 
 package SUNWconsolekit

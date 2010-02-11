@@ -3,6 +3,7 @@ consolidation "gnome"
 classification "Desktop (GNOME)/Libraries"
 import SUNWliboil
 import SUNWliboil-devel
+version 0.3.16
 end package
 
 package SUNWliboil

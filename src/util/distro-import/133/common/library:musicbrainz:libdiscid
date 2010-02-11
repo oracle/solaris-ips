@@ -3,6 +3,7 @@ consolidation "gnome"
 classification "System/Multimedia Libraries"
 import SUNWlibdiscid
 import SUNWlibdiscid-devel
+version 0.2.2
 end package
 
 package SUNWlibdiscid

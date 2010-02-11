@@ -3,6 +3,7 @@ consolidation "gnome"
 classification "System/Libraries"
 import SUNWlibproxy
 import SUNWlibproxy-devel
+version 0.3.1
 end package
 
 package SUNWlibproxy

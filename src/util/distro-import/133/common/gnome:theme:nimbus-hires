@@ -2,6 +2,7 @@ package gnome/theme/nimbus-hires
 consolidation "gnome"
 classification "Desktop (GNOME)/Theming"
 import SUNWnimbus-hires
+version 0.1.4
 end package
 
 package SUNWnimbus-hires

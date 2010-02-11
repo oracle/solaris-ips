@@ -3,6 +3,7 @@ consolidation "gnome"
 classification "Development/Python"
 import SUNWpython26-notify
 import SUNWpython26-notify-devel
+version 0.1.1
 end package
 
 package SUNWpython26-notify

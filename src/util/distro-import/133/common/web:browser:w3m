@@ -2,6 +2,7 @@ package web/browser/w3m
 consolidation "gnome"
 classification "Applications/Internet"
 import SUNWw3m
+version 0.5.2
 end package
 
 package SUNWw3m

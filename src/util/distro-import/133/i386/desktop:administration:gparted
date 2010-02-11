@@ -2,6 +2,7 @@ package desktop/administration/gparted
 consolidation "gnome"
 classification "System/Administration and Configuration"
 import SUNWGParted
+version 0.4.5
 end package
 
 package SUNWGParted

@@ -3,6 +3,7 @@ consolidation "gnome"
 classification "System/Multimedia Libraries"
 import SUNWlibpigment
 import SUNWlibpigment-devel
+version 0.3.17
 end package
 
 package SUNWlibpigment

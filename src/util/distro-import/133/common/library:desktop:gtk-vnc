@@ -3,6 +3,7 @@ consolidation "gnome"
 classification "Development/GNOME and GTK+"
 import SUNWgtk-vnc
 import SUNWgtk-vnc-devel
+version 0.3.10
 end package
 
 package SUNWgtk-vnc

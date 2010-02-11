@@ -9,6 +9,7 @@ add user username=zfssnap password=NP uid=51 group=daemon \
 depend library/python-2/python-dbus-26
 depend desktop/gksu
 depend library/python-2/python-gnome-libs-26
+version 0.2.10
 end package
 
 package SUNWgnome-time-slider

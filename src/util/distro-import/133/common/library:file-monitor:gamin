@@ -3,6 +3,7 @@ consolidation "gnome"
 classification "System/Libraries"
 import SUNWgamin
 import SUNWgamin-devel
+version 0.1.10
 end package
 
 package SUNWgamin

@@ -2,6 +2,7 @@ package library/python-2/python-pigment-26
 consolidation "gnome"
 classification "System/Multimedia Libraries"
 import SUNWlibpigment-python26
+version 0.3.12
 end package
 
 package SUNWlibpigment-python26
