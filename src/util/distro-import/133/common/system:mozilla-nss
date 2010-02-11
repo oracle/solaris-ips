@@ -1,0 +1,20 @@
+package system/mozilla-nss
+consolidation "sic_team"
+classification "System/Security"
+import SUNWtlsu
+add link path=usr/bin/addbuiltin target=../sfw/bin/addbuiltin
+add link path=usr/bin/certutil target=../sfw/bin/certutil
+add link path=usr/bin/cmsutil target=../sfw/bin/cmsutil
+add link path=usr/bin/crlutil target=../sfw/bin/crlutil
+add link path=usr/bin/modutil target=../sfw/bin/modutil
+add link path=usr/bin/pk12util target=../sfw/bin/pk12util
+add link path=usr/bin/signtool target=../sfw/bin/signtool
+add link path=usr/bin/signver target=../sfw/bin/signver
+add link path=usr/bin/ssltap target=../sfw/bin/ssltap
+end package
+
+package SUNWtlsu
+consolidation "sic_team"
+renamed 133
+depend system/mozilla-nss
+end package

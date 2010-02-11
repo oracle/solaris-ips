@@ -1,0 +1,12 @@
+package library/popt
+consolidation "gnome"
+classification "System/Libraries"
+import SUNWlibpopt
+import SUNWlibpopt-devel
+end package
+
+package SUNWlibpopt
+consolidation "gnome"
+renamed 133
+depend library/popt
+end package

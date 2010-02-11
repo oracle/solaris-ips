@@ -1,0 +1,12 @@
+package library/desktop/c++/gtkmm
+consolidation "gnome"
+classification "Desktop (GNOME)/Libraries"
+import SUNWgtkmm
+import SUNWgtkmm-devel
+end package
+
+package SUNWgtkmm
+consolidation "gnome"
+renamed 133
+depend library/desktop/c++/gtkmm
+end package

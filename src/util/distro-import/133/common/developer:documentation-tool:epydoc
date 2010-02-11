@@ -1,0 +1,13 @@
+package developer/documentation-tool/epydoc
+consolidation "sfw"
+classification "Development/Distribution Tools"
+import SUNWepydoc
+version 3.0.1
+end package
+
+package SUNWepydoc
+consolidation "sfw"
+renamed 133
+depend developer/documentation-tool/epydoc
+version 3.0.1
+end package

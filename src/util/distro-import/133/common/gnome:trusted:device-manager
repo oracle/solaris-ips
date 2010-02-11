@@ -1,0 +1,11 @@
+package gnome/trusted/device-manager
+consolidation "gnome"
+classification "Desktop (GNOME)/Trusted Extensions"
+import SUNWtgnome-tsoljdsdevmgr
+end package
+
+package SUNWtgnome-tsoljdsdevmgr
+consolidation "gnome"
+renamed 133
+depend gnome/trusted/device-manager
+end package

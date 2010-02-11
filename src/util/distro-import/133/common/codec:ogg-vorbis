@@ -1,0 +1,12 @@
+package codec/ogg-vorbis
+consolidation "gnome"
+classification "System/Multimedia Libraries"
+import SUNWogg-vorbis
+import SUNWogg-vorbis-devel
+end package
+
+package SUNWogg-vorbis
+consolidation "gnome"
+renamed 133
+depend codec/ogg-vorbis
+end package

@@ -1,0 +1,13 @@
+package runtime/tcl-8
+consolidation "sfw"
+classification "Development/Other Languages"
+import SUNWTcl
+version 8.4.18
+end package
+
+package SUNWTcl
+consolidation "sfw"
+renamed 133
+depend runtime/tcl-8
+version 8.4.18
+end package

@@ -1,0 +1,14 @@
+package web/editor/bluefish
+consolidation "gnome"
+classification "Applications/Internet"
+import SUNWbluefish
+
+chattr usr/share/mime/packages/bluefish.xml \
+	original_name=SUNWbluefish:usr/share/mime/packages/bluefish.xml
+end package
+
+package SUNWbluefish
+consolidation "gnome"
+renamed 133
+depend web/editor/bluefish
+end package

@@ -1,0 +1,13 @@
+package library/python-2/mako
+consolidation "ips"
+classification "Development/Python"
+import SUNWpython-mako
+version 0.2.2
+end package
+
+package SUNWpython-mako
+consolidation "ips"
+renamed 133
+depend library/python-2/mako
+version 0.2.2
+end package

@@ -1,0 +1,12 @@
+package network/iscsi/target/legacy
+consolidation "osnet"
+classification "System/Hardware"
+import SUNWiscsitgtu
+import SUNWiscsitgtr
+end package
+
+package SUNWiscsitgt
+consolidation "osnet"
+renamed 133
+depend network/iscsi/target/legacy
+end package

@@ -1,0 +1,12 @@
+package system/locale/nl
+consolidation "l10n"
+classification "System/Localizations"
+import SUNWlang-nl
+depend system/locale/nl_nl
+end package
+
+package SUNWlang-nl
+consolidation "l10n"
+renamed 133
+depend system/locale/nl
+end package

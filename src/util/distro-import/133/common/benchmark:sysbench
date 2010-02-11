@@ -1,0 +1,13 @@
+package benchmark/sysbench
+consolidation "sfw"
+classification "Development/System"
+import SUNWsysbench
+version 0.4.12
+end package
+
+package SUNWsysbench
+consolidation "sfw"
+renamed 133
+depend benchmark/sysbench
+version 0.4.12
+end package

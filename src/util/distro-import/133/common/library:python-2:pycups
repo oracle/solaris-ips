@@ -1,0 +1,13 @@
+package library/python-2/pycups
+consolidation "sfw"
+classification "System/Printing"
+import SUNWpycups
+version 1.9.46
+end package
+
+package SUNWpycups
+consolidation "sfw"
+renamed 133
+depend library/python-2/pycups
+version 1.9.46
+end package

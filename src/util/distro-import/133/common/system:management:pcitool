@@ -1,0 +1,11 @@
+package system/management/pcitool
+consolidation "osnet"
+classification "System/Administration and Configuration"
+import SUNWio-tools
+end package
+
+package SUNWio-tools
+consolidation "osnet"
+renamed 133
+depend system/management/pcitool
+end package

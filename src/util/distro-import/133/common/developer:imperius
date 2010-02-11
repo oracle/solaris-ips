@@ -1,0 +1,15 @@
+package developer/imperius
+consolidation "sfw"
+classification "Development/Other Languages"
+import SUNWImperius
+depend system/management/wbem/wbemcli
+depend developer/parser/antlr-2
+version 1.0.0
+end package
+
+package SUNWImperius
+consolidation "sfw"
+renamed 133
+depend developer/imperius
+version 1.0.0
+end package

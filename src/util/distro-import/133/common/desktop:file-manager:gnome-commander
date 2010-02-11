@@ -1,0 +1,11 @@
+package desktop/file-manager/gnome-commander
+consolidation "gnome"
+classification "Desktop (GNOME)/File Managers"
+import SUNWgnome-commander
+end package
+
+package SUNWgnome-commander
+consolidation "gnome"
+renamed 133
+depend desktop/file-manager/gnome-commander
+end package

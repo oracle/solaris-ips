@@ -1,0 +1,14 @@
+package driver/usb/ugen
+consolidation "osnet"
+classification "Drivers/Ports"
+import SUNWugen
+
+add driver name=ugen \
+    perms="* 0644 root sys"
+end package
+
+package SUNWugen
+consolidation "osnet"
+renamed 133
+depend driver/usb/ugen
+end package

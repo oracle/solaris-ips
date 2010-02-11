@@ -1,0 +1,19 @@
+package install/auto-install/installadm
+consolidation "install"
+classification "System/Administration and Configuration"
+import SUNWinstalladm-tools
+depend web/server/apache-22
+depend system/install/auto-install/auto-install-common
+depend service/network/dhcp
+depend service/network/dns/mdns
+depend library/python-2/cherrypy
+depend library/python-2/lxml-26
+depend database/sqlite-3
+depend service/network/tftp
+end package
+
+package SUNWinstalladm-tools
+consolidation "install"
+renamed 133
+depend install/auto-install/installadm
+end package

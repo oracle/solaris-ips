@@ -1,0 +1,13 @@
+package library/python-2/cherrypy
+consolidation "ips"
+classification "Development/Python"
+import SUNWpython-cherrypy
+version 3.1.2
+end package
+
+package SUNWpython-cherrypy
+consolidation "ips"
+renamed 133
+depend library/python-2/cherrypy
+version 3.1.2
+end package

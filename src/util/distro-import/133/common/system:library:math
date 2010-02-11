@@ -1,0 +1,12 @@
+package system/library/math
+consolidation "sunpro"
+classification "System/Libraries"
+import SUNWlibms
+import SUNWlibmsr
+end package
+
+package SUNWlibms
+consolidation "sunpro"
+renamed 133
+depend system/library/math
+end package

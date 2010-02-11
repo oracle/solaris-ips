@@ -1,0 +1,11 @@
+package service/management/sysidtool
+consolidation "install"
+classification "System/Administration and Configuration"
+import SUNWadmr
+end package
+
+package SUNWadmr
+consolidation "install"
+renamed 133
+depend service/management/sysidtool
+end package

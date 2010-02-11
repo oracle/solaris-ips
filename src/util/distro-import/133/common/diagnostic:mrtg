@@ -1,0 +1,13 @@
+package diagnostic/mrtg
+consolidation "sfw"
+classification "Applications/Internet"
+import SUNWmrtg
+version 2.16.2
+end package
+
+package SUNWmrtg
+consolidation "sfw"
+renamed 133
+depend diagnostic/mrtg
+version 2.16.2
+end package

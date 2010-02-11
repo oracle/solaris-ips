@@ -1,0 +1,12 @@
+package library/desktop/gtk-vnc
+consolidation "gnome"
+classification "Development/GNOME and GTK+"
+import SUNWgtk-vnc
+import SUNWgtk-vnc-devel
+end package
+
+package SUNWgtk-vnc
+consolidation "gnome"
+renamed 133
+depend library/desktop/gtk-vnc
+end package

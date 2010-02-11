@@ -1,0 +1,12 @@
+package gnome/gnome-dictionary
+consolidation "gnome"
+classification "Applications/Accessories"
+import SUNWgnome-dictionary
+import SUNWgnome-dictionary-root
+end package
+
+package SUNWgnome-dictionary
+consolidation "gnome"
+renamed 133
+depend gnome/gnome-dictionary
+end package

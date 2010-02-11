@@ -1,0 +1,11 @@
+package gnome/ggv
+consolidation "gnome"
+classification "Applications/Office"
+import SUNWgnome-ps-viewer
+end package
+
+package SUNWgnome-ps-viewer
+consolidation "gnome"
+renamed 133
+depend gnome/ggv
+end package

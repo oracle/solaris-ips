@@ -1,0 +1,14 @@
+package games/gnome-games
+consolidation "gnome"
+classification "Applications/Games"
+import SUNWgnome-games
+import SUNWgnome-games-devel
+import SUNWgnome-games-root
+depend library/python-2/python-gnome-desktop-24
+end package
+
+package SUNWgnome-games
+consolidation "gnome"
+renamed 133
+depend games/gnome-games
+end package

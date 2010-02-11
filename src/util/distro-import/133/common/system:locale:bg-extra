@@ -1,0 +1,11 @@
+package system/locale/bg-extra
+consolidation "l10n"
+classification "System/Localizations"
+import SUNWlang-bg-extra
+end package
+
+package SUNWlang-bg-extra
+consolidation "l10n"
+renamed 133
+depend system/locale/bg-extra
+end package

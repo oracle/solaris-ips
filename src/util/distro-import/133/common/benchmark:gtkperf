@@ -1,0 +1,11 @@
+package benchmark/gtkperf
+consolidation "gnome"
+classification "Development/GNOME and GTK+"
+import SUNWgtkperf
+end package
+
+package SUNWgtkperf
+consolidation "gnome"
+renamed 133
+depend benchmark/gtkperf
+end package

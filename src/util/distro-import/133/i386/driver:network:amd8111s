@@ -1,0 +1,14 @@
+package driver/network/amd8111s
+consolidation "osnet"
+classification "Drivers/Networking"
+import SUNWamd8111s
+
+add driver name=amd8111s \
+    alias="pci1022,7462"
+end package
+
+package SUNWamd8111s
+consolidation "osnet"
+renamed 133
+depend driver/network/amd8111s
+end package

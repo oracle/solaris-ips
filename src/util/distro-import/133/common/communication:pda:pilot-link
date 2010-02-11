@@ -1,0 +1,12 @@
+package communication/pda/pilot-link
+consolidation "gnome"
+classification "Applications/System Utilities"
+import SUNWpilot-link
+import SUNWpilot-link-devel
+end package
+
+package SUNWpilot-link
+consolidation "gnome"
+renamed 133
+depend communication/pda/pilot-link
+end package

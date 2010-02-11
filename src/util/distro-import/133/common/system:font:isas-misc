@@ -1,0 +1,18 @@
+package system/font/isas-misc
+consolidation "X"
+classification "System/Fonts"
+import SUNWfont-isas-misc
+add dir path=etc mode=0755 owner=root group=sys
+add dir path=etc/X11 mode=0755 owner=root group=sys
+add dir path=etc/X11/fontpath.d mode=0755 owner=root group=sys
+add link path=etc/X11/fontpath.d/isas:unscaled:pri=14 \
+    target=../../../usr/share/fonts/X11/isas
+add link path=etc/X11/fontpath.d/isas:pri=84 \
+    target=../../../usr/share/fonts/X11/isas
+end package
+
+package SUNWfont-isas-misc
+consolidation "X"
+renamed 133
+depend system/font/isas-misc
+end package

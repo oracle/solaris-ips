@@ -1,0 +1,13 @@
+package desktop/compiz/library/libcompizconfig
+consolidation "gnome"
+classification "Desktop (GNOME)/Libraries"
+import SUNWlibcompizconfig
+import SUNWlibcompizconfig-devel
+import SUNWlibcompizconfig-root
+end package
+
+package SUNWlibcompizconfig
+consolidation "gnome"
+renamed 133
+depend desktop/compiz/library/libcompizconfig
+end package

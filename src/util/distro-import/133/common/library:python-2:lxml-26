@@ -1,0 +1,13 @@
+package library/python-2/lxml-26
+consolidation "install"
+classification "Development/Python"
+import SUNWpython26-lxml
+version 2.1.2
+end package
+
+package SUNWpython26-lxml
+consolidation "install"
+renamed 133
+depend library/python-2/lxml-26
+version 2.1.2
+end package

@@ -1,0 +1,23 @@
+package system/management/intel-amt
+consolidation "osnet"
+classification "System/Enterprise Management"
+import SUNWamt
+import SUNWamt-lms
+
+add driver name=heci \
+    perms="* 0644 root sys" \
+    alias="pci8086,2974" \
+    alias="pci8086,2984" \
+    alias="pci8086,2994" \
+    alias="pci8086,29a4" \
+    alias="pci8086,29b4" \
+    alias="pci8086,29c4" \
+    alias="pci8086,2e04" \
+    alias="pci8086,2e14"
+end package
+
+package SUNWamt
+consolidation "osnet"
+renamed 133
+depend system/management/intel-amt
+end package

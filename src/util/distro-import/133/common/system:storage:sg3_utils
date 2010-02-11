@@ -1,0 +1,14 @@
+package system/storage/sg3_utils
+consolidation "sfw"
+classification "Applications/System Utilities"
+import SUNWsg3utilsr
+import SUNWsg3utilsu
+version 1.26
+end package
+
+package SUNWsg3utils
+consolidation "sfw"
+renamed 133
+depend system/storage/sg3_utils
+version 1.26
+end package

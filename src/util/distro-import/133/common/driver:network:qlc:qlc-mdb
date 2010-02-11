@@ -1,0 +1,11 @@
+package driver/network/qlc/qlc-mdb
+consolidation "osnet"
+classification "System/Hardware"
+import SUNWqlcu
+end package
+
+package SUNWqlcu
+consolidation "osnet"
+renamed 133
+depend driver/network/qlc/qlc-mdb
+end package

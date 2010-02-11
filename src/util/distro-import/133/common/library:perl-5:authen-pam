@@ -1,0 +1,11 @@
+package library/perl-5/authen-pam
+consolidation "gnome"
+classification "Development/Perl"
+import SUNWperl-authen-pam
+end package
+
+package SUNWperl-authen-pam
+consolidation "gnome"
+renamed 133
+depend library/perl-5/authen-pam
+end package

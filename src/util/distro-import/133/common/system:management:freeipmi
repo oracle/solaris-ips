@@ -1,0 +1,22 @@
+package system/management/freeipmi
+consolidation "sfw"
+classification "System/Hardware"
+import SUNWfreeipmir
+import SUNWfreeipmiu
+depend system/extended-system-utilities
+version 0.7.7
+
+chattr etc/freeipmi.conf \
+	original_name=SUNWfreeipmi:etc/freeipmi.conf
+chattr etc/ipmi_monitoring_sensors.conf \
+	original_name=SUNWfreeipmi:etc/ipmi_monitoring_sensors.conf
+chattr var/lib/freeipmi/ipckey \
+	original_name=SUNWfreeipmi:var/lib/freeipmi/ipckey
+end package
+
+package SUNWfreeipmi
+consolidation "sfw"
+renamed 133
+depend system/management/freeipmi
+version 0.7.7
+end package

@@ -1,0 +1,12 @@
+package editor/blog/drivel
+consolidation "gnome"
+classification "Applications/Internet"
+import SUNWdrivel
+import SUNWdrivel-root
+end package
+
+package SUNWdrivel
+consolidation "gnome"
+renamed 133
+depend editor/blog/drivel
+end package

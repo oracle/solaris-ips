@@ -1,0 +1,13 @@
+package service/storage/fibre-channel/fc-fabric
+consolidation "osnet"
+classification "System/Libraries"
+import SUNWcfpl
+import SUNWcfplr
+depend_path /usr/sbin/luxadm
+end package
+
+package SUNWcfpl
+consolidation "osnet"
+renamed 133
+depend service/storage/fibre-channel/fc-fabric
+end package

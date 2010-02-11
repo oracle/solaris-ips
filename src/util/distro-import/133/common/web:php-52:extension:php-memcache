@@ -1,0 +1,22 @@
+package web/php-52/extension/php-memcache
+consolidation "sfw"
+classification "Development/PHP"
+import SUNWphp52r-memcache
+import SUNWphp52u-memcache
+depend web/php-52
+version 2.2.5
+
+chattr etc/apache2/2.2/samples-conf.d/php-memcache-stats.conf \
+	original_name=SUNWphp52-memcache:etc/apache2/2.2/samples-conf.d/php-memcache-stats.conf
+chattr etc/php/5.2/conf.d/memcache.ini \
+	original_name=SUNWphp52-memcache:etc/php/5.2/conf.d/memcache.ini
+chattr etc/php/5.2/zts-conf.d/memcache.ini \
+	original_name=SUNWphp52-memcache:etc/php/5.2/zts-conf.d/memcache.ini
+end package
+
+package SUNWphp52-memcache
+consolidation "sfw"
+renamed 133
+depend web/php-52/extension/php-memcache
+version 2.2.5
+end package

@@ -1,0 +1,11 @@
+package driver/serial/usbser
+consolidation "osnet"
+classification "System/Hardware"
+import SUNWusbs
+end package
+
+package SUNWusbs
+consolidation "osnet"
+renamed 133
+depend driver/serial/usbser
+end package

@@ -1,0 +1,13 @@
+package library/libtool/libltdl
+consolidation "sfw"
+classification "Development/GNU"
+import SUNWltdl
+version 1.5.22
+end package
+
+package SUNWltdl
+consolidation "sfw"
+renamed 133
+depend library/libtool/libltdl
+version 1.5.22
+end package

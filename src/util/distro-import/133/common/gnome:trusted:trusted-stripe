@@ -1,0 +1,11 @@
+package gnome/trusted/trusted-stripe
+consolidation "gnome"
+classification "Desktop (GNOME)/Trusted Extensions"
+import SUNWtgnome-tstripe
+end package
+
+package SUNWtgnome-tstripe
+consolidation "gnome"
+renamed 133
+depend gnome/trusted/trusted-stripe
+end package

@@ -1,0 +1,13 @@
+package compress/unzip
+consolidation "sfw"
+classification "Applications/System Utilities"
+import SUNWunzip
+version 5.53.7
+end package
+
+package SUNWunzip
+consolidation "sfw"
+renamed 133
+depend compress/unzip
+version 5.53.7
+end package

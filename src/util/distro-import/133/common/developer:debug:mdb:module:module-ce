@@ -1,0 +1,11 @@
+package developer/debug/mdb/module/module-ce
+consolidation "nspg"
+classification "Drivers/Networking"
+import SUNWcea
+end package
+
+package SUNWcea
+consolidation "nspg"
+renamed 133
+depend developer/debug/mdb/module/module-ce
+end package

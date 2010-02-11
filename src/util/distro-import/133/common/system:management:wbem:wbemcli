@@ -1,0 +1,13 @@
+package system/management/wbem/wbemcli
+consolidation "sfw"
+classification "System/Enterprise Management"
+import SUNWSblimCimClient
+version 1.3.7
+end package
+
+package SUNWSblimCimClient
+consolidation "sfw"
+renamed 133
+depend system/management/wbem/wbemcli
+version 1.3.7
+end package

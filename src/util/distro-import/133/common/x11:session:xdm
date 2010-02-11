@@ -1,0 +1,25 @@
+package x11/session/xdm
+consolidation "X"
+classification "System/X11"
+import SUNWxdm exclude usr/openwin
+import SUNWxdm-root
+chattr_glob * edit path usr/openwin usr/X11
+depend_path /usr/bin/sort
+version 1.1.9
+
+chattr etc/X11/xdm/Xaccess \
+	original_name=SUNWxdm:etc/X11/xdm/Xaccess
+chattr etc/X11/xdm/Xresources \
+	original_name=SUNWxdm:etc/X11/xdm/Xresources
+chattr etc/X11/xdm/Xservers \
+	original_name=SUNWxdm:etc/X11/xdm/Xservers
+chattr etc/X11/xdm/xdm-config \
+	original_name=SUNWxdm:etc/X11/xdm/xdm-config
+end package
+
+package SUNWxdm
+consolidation "X"
+renamed 133
+depend x11/session/xdm
+version 1.1.9
+end package

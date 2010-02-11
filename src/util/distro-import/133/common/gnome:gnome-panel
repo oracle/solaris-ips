@@ -1,0 +1,14 @@
+package gnome/gnome-panel
+consolidation "gnome"
+classification "Applications/Panels and Applets"
+import SUNWgnome-panel
+import SUNWgnome-panel-devel
+import SUNWgnome-panel-root
+depend_path /usr/bin/tar
+end package
+
+package SUNWgnome-panel
+consolidation "gnome"
+renamed 133
+depend gnome/gnome-panel
+end package

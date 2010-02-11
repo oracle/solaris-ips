@@ -1,0 +1,27 @@
+package system/trusted/global-zone
+consolidation "osnet"
+classification "System/Trusted"
+import SUNWtsg
+drop etc/zones/SUNWtsoldef.xml
+add file SUNWtsoldef.xml path=etc/zones/SUNWtsoldef.xml mode=0444 \
+	owner=root group=bin
+
+chattr etc/security/tsol/devalloc_defaults \
+	original_name=SUNWtsg:etc/security/tsol/devalloc_defaults
+chattr etc/security/tsol/label_encodings \
+	original_name=SUNWtsg:etc/security/tsol/label_encodings
+chattr etc/security/tsol/relabel \
+	original_name=SUNWtsg:etc/security/tsol/relabel
+chattr etc/security/tsol/tnrhdb \
+	original_name=SUNWtsg:etc/security/tsol/tnrhdb
+chattr etc/security/tsol/tnrhtp \
+	original_name=SUNWtsg:etc/security/tsol/tnrhtp
+chattr etc/security/tsol/tnzonecfg \
+	original_name=SUNWtsg:etc/security/tsol/tnzonecfg
+end package
+
+package SUNWtsg
+consolidation "osnet"
+renamed 133
+depend system/trusted/global-zone
+end package

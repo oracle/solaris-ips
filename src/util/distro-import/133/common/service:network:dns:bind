@@ -1,0 +1,14 @@
+package service/network/dns/bind
+consolidation "sfw"
+classification "System/Services"
+import SUNWbind
+import SUNWbindr
+version 9.6.1.2
+end package
+
+package SUNWbind
+consolidation "sfw"
+renamed 133
+depend service/network/dns/bind
+version 9.6.1.2
+end package

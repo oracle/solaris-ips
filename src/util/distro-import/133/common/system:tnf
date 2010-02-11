@@ -1,0 +1,15 @@
+package system/tnf
+consolidation "osnet"
+classification "Development/System"
+import SUNWtnfc
+
+add driver name=tnf \
+    perms="tnfctl 0600 root sys" \
+    perms="tnfmap 0600 root sys"
+end package
+
+package SUNWtnfc
+consolidation "osnet"
+renamed 133
+depend system/tnf
+end package

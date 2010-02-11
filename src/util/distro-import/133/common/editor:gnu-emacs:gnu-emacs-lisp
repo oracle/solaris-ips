@@ -1,0 +1,14 @@
+package editor/gnu-emacs/gnu-emacs-lisp
+consolidation "sfw"
+classification "Development/Editors"
+import SUNWgnu-emacs-el
+version 23.1
+depend editor/gnu-emacs
+end package
+
+package SUNWgnu-emacs-el
+consolidation "sfw"
+renamed 133
+depend editor/gnu-emacs/gnu-emacs-lisp
+version 23.1
+end package

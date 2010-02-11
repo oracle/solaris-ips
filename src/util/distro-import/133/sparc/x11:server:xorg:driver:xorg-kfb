@@ -1,0 +1,19 @@
+package x11/server/xorg/driver/xorg-kfb
+consolidation "smcc"
+classification "Drivers/Display"
+import SUNWkfbw exclude \
+	usr/openwin \
+	usr/openwin/server \
+	usr/openwin/server/etc \
+	usr/openwin/server/etc/OWconfig \
+	usr/openwin/server/modules \
+	usr/openwin/server/modules/ddxSUNWkfb.so.1
+depend driver/graphics/kfb
+depend x11/server/xorg
+end package
+
+package SUNWkfbw
+consolidation "smcc"
+renamed 133
+depend x11/server/xorg/driver/xorg-kfb
+end package

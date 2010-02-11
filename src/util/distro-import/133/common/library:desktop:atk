@@ -1,0 +1,12 @@
+package library/desktop/atk
+consolidation "gnome"
+classification "Desktop (GNOME)/Libraries"
+import SUNWlibatk
+import SUNWlibatk-devel
+end package
+
+package SUNWlibatk
+consolidation "gnome"
+renamed 133
+depend library/desktop/atk
+end package

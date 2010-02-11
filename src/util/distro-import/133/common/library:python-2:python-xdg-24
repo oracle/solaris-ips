@@ -1,0 +1,11 @@
+package library/python-2/python-xdg-24
+consolidation "gnome"
+classification "Development/Python"
+import SUNWpython-xdg
+end package
+
+package SUNWpython-xdg
+consolidation "gnome"
+renamed 133
+depend library/python-2/python-xdg-24
+end package

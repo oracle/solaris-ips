@@ -1,0 +1,15 @@
+package library/security/pam/module/pam-pkcs11
+consolidation "sfw"
+classification "System/Security"
+import SUNWpampkcs11-docs
+import SUNWpampkcs11r
+import SUNWpampkcs11u
+version 0.6.0
+end package
+
+package SUNWpampkcs11
+consolidation "sfw"
+renamed 133
+depend library/security/pam/module/pam-pkcs11
+version 0.6.0
+end package

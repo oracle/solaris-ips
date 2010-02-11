@@ -1,0 +1,11 @@
+package desktop/administration/gparted
+consolidation "gnome"
+classification "System/Administration and Configuration"
+import SUNWGParted
+end package
+
+package SUNWGParted
+consolidation "gnome"
+renamed 133
+depend desktop/administration/gparted
+end package

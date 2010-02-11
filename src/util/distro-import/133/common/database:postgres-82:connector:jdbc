@@ -1,0 +1,13 @@
+package database/postgres-82/connector/jdbc
+consolidation "sfw"
+classification "System/Databases"
+import SUNWpostgr-82-jdbc
+version 8.2.504
+end package
+
+package SUNWpostgr-82-jdbc
+consolidation "sfw"
+renamed 133
+depend database/postgres-82/connector/jdbc
+version 8.2.504
+end package

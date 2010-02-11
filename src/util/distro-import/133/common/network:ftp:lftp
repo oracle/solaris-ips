@@ -1,0 +1,17 @@
+package network/ftp/lftp
+consolidation "sfw"
+classification "Applications/System Utilities"
+import SUNWlftpr
+import SUNWlftpu
+version 3.7.15
+
+chattr etc/lftp.conf \
+	original_name=SUNWlftp:etc/lftp.conf
+end package
+
+package SUNWlftp
+consolidation "sfw"
+renamed 133
+depend network/ftp/lftp
+version 3.7.15
+end package

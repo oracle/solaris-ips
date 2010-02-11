@@ -1,0 +1,11 @@
+package system/locale/lv-extra
+consolidation "l10n"
+classification "System/Localizations"
+import SUNWlang-lv-extra
+end package
+
+package SUNWlang-lv-extra
+consolidation "l10n"
+renamed 133
+depend system/locale/lv-extra
+end package

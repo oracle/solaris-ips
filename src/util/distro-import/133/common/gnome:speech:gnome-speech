@@ -1,0 +1,12 @@
+package gnome/speech/gnome-speech
+consolidation "gnome"
+classification "Applications/Universal Access"
+import SUNWgnome-a11y-speech
+import SUNWgnome-a11y-speech-devel
+end package
+
+package SUNWgnome-a11y-speech
+consolidation "gnome"
+renamed 133
+depend gnome/speech/gnome-speech
+end package

@@ -1,0 +1,11 @@
+package web/browser/firefox/plugin/plugin-java
+consolidation "gnome"
+classification "Applications/Plug-ins and Run-times"
+import SUNWjre-config-plugin
+end package
+
+package SUNWjre-config-plugin
+consolidation "gnome"
+renamed 133
+depend web/browser/firefox/plugin/plugin-java
+end package

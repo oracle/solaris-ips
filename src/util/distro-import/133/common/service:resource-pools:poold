@@ -1,0 +1,12 @@
+package service/resource-pools/poold
+consolidation "osnet"
+classification "System/Core"
+import SUNWpoold
+depend runtime/java
+end package
+
+package SUNWpoold
+consolidation "osnet"
+renamed 133
+depend service/resource-pools/poold
+end package

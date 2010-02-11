@@ -1,0 +1,11 @@
+package system/management/snmp/sea
+consolidation "osnet"
+classification "System/Enterprise Management"
+import SUNWsasnm
+end package
+
+package SUNWsasnm
+consolidation "osnet"
+renamed 133
+depend system/management/snmp/sea
+end package

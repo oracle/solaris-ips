@@ -1,0 +1,12 @@
+package library/gnome/gvfs
+consolidation "gnome"
+classification "Desktop (GNOME)/Libraries"
+import SUNWgnome-gvfs
+depend_path /usr/bin/less
+end package
+
+package SUNWgnome-gvfs
+consolidation "gnome"
+renamed 133
+depend library/gnome/gvfs
+end package

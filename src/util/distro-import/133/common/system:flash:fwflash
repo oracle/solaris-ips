@@ -1,0 +1,11 @@
+package system/flash/fwflash
+consolidation "osnet"
+classification "System/Core"
+import SUNWfwflash
+end package
+
+package SUNWfwflash
+consolidation "osnet"
+renamed 133
+depend system/flash/fwflash
+end package

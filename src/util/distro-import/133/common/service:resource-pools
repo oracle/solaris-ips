@@ -1,0 +1,16 @@
+package service/resource-pools
+consolidation "osnet"
+classification "System/Core"
+import SUNWpool
+import SUNWpoolr
+
+add driver name=pool \
+    perms="pool 0666 root sys" \
+    perms="poolctl 0666 root sys"
+end package
+
+package SUNWpool
+consolidation "osnet"
+renamed 133
+depend service/resource-pools
+end package

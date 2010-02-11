@@ -1,0 +1,12 @@
+package system/test/sunvts
+consolidation "SunVTS"
+classification "System/Hardware"
+import SUNWvts
+import SUNWvtsr
+end package
+
+package SUNWvts
+consolidation "SunVTS"
+renamed 133
+depend system/test/sunvts
+end package

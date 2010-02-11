@@ -1,0 +1,17 @@
+package driver/network/chxge
+consolidation "osnet"
+classification "Drivers/Networking"
+import SUNWchxge
+
+add driver name=chxge \
+    perms="* 0666 root sys" \
+    clone_perms="0666 root sys" \
+    alias="pci1425,7" \
+    alias="pci1425,a"
+end package
+
+package SUNWchxge
+consolidation "osnet"
+renamed 133
+depend driver/network/chxge
+end package

@@ -1,0 +1,14 @@
+package system/input-method/ibus/table/rustrad
+consolidation "l10n"
+classification "System/Internationalization"
+import SUNWibus-table-data-rustrad
+depend system/input-method/ibus/table
+version 1.2.0
+end package
+
+package SUNWibus-table-data-rustrad
+consolidation "l10n"
+renamed 133
+depend system/input-method/ibus/table/rustrad
+version 1.2.0
+end package

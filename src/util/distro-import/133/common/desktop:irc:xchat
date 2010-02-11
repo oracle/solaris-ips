@@ -1,0 +1,12 @@
+package desktop/irc/xchat
+consolidation "gnome"
+classification "Applications/Internet"
+import SUNWxchat
+import SUNWxchat-root
+end package
+
+package SUNWxchat
+consolidation "gnome"
+renamed 133
+depend desktop/irc/xchat
+end package

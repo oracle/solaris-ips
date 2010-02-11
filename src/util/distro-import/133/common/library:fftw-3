@@ -1,0 +1,13 @@
+package library/fftw-3
+consolidation "sfw"
+classification "Development/High Performance Computing"
+import SUNWfftw3
+version 3.1.2
+end package
+
+package SUNWfftw3
+consolidation "sfw"
+renamed 133
+depend library/fftw-3
+version 3.1.2
+end package

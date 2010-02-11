@@ -1,0 +1,20 @@
+package x11/server/xvnc
+consolidation "X"
+classification "System/X11"
+import SUNWxvnc
+version 1.0
+from SUNWxwplr import
+var/svc/manifest/application/x11/xvnc-inetd.xml
+end import
+depend runtime/perl-584
+depend_path /usr/X11/lib/X11/xkb/rules/base
+depend_path /usr/bin/xkbcomp
+depend_path /usr/lib/xorg/modules/dri/swrast_dri.so
+end package
+
+package SUNWxvnc
+consolidation "X"
+renamed 133
+depend x11/server/xvnc
+version 4.1.3
+end package

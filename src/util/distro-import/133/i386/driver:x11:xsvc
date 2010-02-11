@@ -1,0 +1,15 @@
+package driver/x11/xsvc
+consolidation "osnet"
+classification "System/X11"
+import SUNWxsvc
+
+add driver name=xsvc \
+    devlink="type=ddi_pseudo;name=xsvc\t\M0"
+
+end package
+
+package SUNWxsvc
+consolidation "osnet"
+renamed 133
+depend driver/x11/xsvc
+end package

@@ -1,0 +1,13 @@
+package system/desktop/ldtp
+consolidation "ips"
+classification "Development/Distribution Tools"
+import SUNWldtp
+version 1.7.1
+end package
+
+package SUNWldtp
+consolidation "ips"
+renamed 133
+depend system/desktop/ldtp
+version 1.7.1
+end package

@@ -1,0 +1,11 @@
+package gnome/theme/nimbus-hires
+consolidation "gnome"
+classification "Desktop (GNOME)/Theming"
+import SUNWnimbus-hires
+end package
+
+package SUNWnimbus-hires
+consolidation "gnome"
+renamed 133
+depend gnome/theme/nimbus-hires
+end package

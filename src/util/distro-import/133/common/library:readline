@@ -1,0 +1,13 @@
+package library/readline
+consolidation "sfw"
+classification "System/Libraries"
+import SUNWgnu-readline
+version 5.2
+end package
+
+package SUNWgnu-readline
+consolidation "sfw"
+renamed 133
+depend library/readline
+version 5.2
+end package

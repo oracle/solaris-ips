@@ -1,0 +1,11 @@
+package system/compatibility/sunos4
+consolidation "osnet"
+classification "System/Core"
+import SUNWbcp
+end package
+
+package SUNWbcp
+consolidation "osnet"
+renamed 133
+depend system/compatibility/sunos4
+end package

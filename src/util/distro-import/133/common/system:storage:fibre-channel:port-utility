@@ -1,0 +1,13 @@
+package system/storage/fibre-channel/port-utility
+consolidation "osnet"
+classification "System/Hardware"
+import SUNWfcprt
+import SUNWfcprtr
+depend service/storage/fibre-channel/fc-fabric
+end package
+
+package SUNWfcprt
+consolidation "osnet"
+renamed 133
+depend system/storage/fibre-channel/port-utility
+end package

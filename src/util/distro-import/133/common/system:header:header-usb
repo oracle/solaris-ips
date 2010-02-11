@@ -1,0 +1,11 @@
+package system/header/header-usb
+consolidation "osnet"
+classification "System/Hardware"
+import SUNWusbu
+end package
+
+package SUNWusbu
+consolidation "osnet"
+renamed 133
+depend system/header/header-usb
+end package

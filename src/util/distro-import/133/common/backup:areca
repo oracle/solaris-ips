@@ -1,0 +1,13 @@
+package backup/areca
+consolidation "sfw"
+classification "Applications/System Utilities"
+import SUNWareca
+version 7.1
+end package
+
+package SUNWareca
+consolidation "sfw"
+renamed 133
+depend backup/areca
+version 7.1
+end package

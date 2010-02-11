@@ -1,0 +1,85 @@
+package library/desktop/gtk1
+consolidation "sfw"
+classification "Applications/Graphics and Imaging"
+import SUNWGtku
+import SUNWGtkr
+version 1.2.10
+add dir path=usr/bin group=bin mode=0755 owner=root
+add link path=usr/bin/gtk-config target=../sfw/bin/gtk-config
+add dir path=usr/include mode=0755 owner=root group=bin
+add link path=usr/include/gtk-1.2 target=../sfw/include/gtk-1.2
+add dir path=usr/lib group=bin mode=0755 owner=root
+add link path=usr/lib/libgdk-1.2.so.0 target=../sfw/lib/libgdk-1.2.so.0
+add link path=usr/lib/libgdk.so target=../sfw/lib/libgdk.so
+add link path=usr/lib/libgtk-1.2.so.0 target=../sfw/lib/libgtk-1.2.so.0
+add link path=usr/lib/libgtk.so target=../sfw/lib/libgtk.so
+add dir path=usr/share group=sys mode=0755 owner=root
+add dir path=usr/share/man group=bin mode=0755 owner=root
+add dir path=usr/share/man/man1 group=bin mode=0755 owner=root
+add link path=usr/share/man/man1/gtk-config.1 \
+	target=../../../sfw/share/man/man1/gtk-config.1
+add dir path=usr/share/man/man3 group=bin mode=0755 owner=root
+add link path=usr/share/man/man3/gtk.3 target=../../../sfw/share/man/man3/gtk.3
+add link path=usr/share/man/man3/libgtk.3 \
+	target=../../../sfw/share/man/man3/libgtk.3
+
+chattr etc/gtk/gtkrc.az \
+	original_name=SUNWGtk:etc/gtk/gtkrc.az
+chattr etc/gtk/gtkrc.cp1251 \
+	original_name=SUNWGtk:etc/gtk/gtkrc.cp1251
+chattr etc/gtk/gtkrc.cp1255 \
+	original_name=SUNWGtk:etc/gtk/gtkrc.cp1255
+chattr etc/gtk/gtkrc.el \
+	original_name=SUNWGtk:etc/gtk/gtkrc.el
+chattr etc/gtk/gtkrc.eo \
+	original_name=SUNWGtk:etc/gtk/gtkrc.eo
+chattr etc/gtk/gtkrc.he \
+	original_name=SUNWGtk:etc/gtk/gtkrc.he
+chattr etc/gtk/gtkrc.hy \
+	original_name=SUNWGtk:etc/gtk/gtkrc.hy
+chattr etc/gtk/gtkrc.iso-8859-13 \
+	original_name=SUNWGtk:etc/gtk/gtkrc.iso-8859-13
+chattr etc/gtk/gtkrc.iso-8859-14 \
+	original_name=SUNWGtk:etc/gtk/gtkrc.iso-8859-14
+chattr etc/gtk/gtkrc.iso-8859-15 \
+	original_name=SUNWGtk:etc/gtk/gtkrc.iso-8859-15
+chattr etc/gtk/gtkrc.iso-8859-2 \
+	original_name=SUNWGtk:etc/gtk/gtkrc.iso-8859-2
+chattr etc/gtk/gtkrc.iso-8859-5 \
+	original_name=SUNWGtk:etc/gtk/gtkrc.iso-8859-5
+chattr etc/gtk/gtkrc.ja \
+	original_name=SUNWGtk:etc/gtk/gtkrc.ja
+chattr etc/gtk/gtkrc.ka_GE.georgianacademy \
+	original_name=SUNWGtk:etc/gtk/gtkrc.ka_GE.georgianacademy
+chattr etc/gtk/gtkrc.ka_GE.georgianps \
+	original_name=SUNWGtk:etc/gtk/gtkrc.ka_GE.georgianps
+chattr etc/gtk/gtkrc.ko \
+	original_name=SUNWGtk:etc/gtk/gtkrc.ko
+chattr etc/gtk/gtkrc.ru \
+	original_name=SUNWGtk:etc/gtk/gtkrc.ru
+chattr etc/gtk/gtkrc.th \
+	original_name=SUNWGtk:etc/gtk/gtkrc.th
+chattr etc/gtk/gtkrc.tr \
+	original_name=SUNWGtk:etc/gtk/gtkrc.tr
+chattr etc/gtk/gtkrc.uk \
+	original_name=SUNWGtk:etc/gtk/gtkrc.uk
+chattr etc/gtk/gtkrc.vi_VN.tcvn \
+	original_name=SUNWGtk:etc/gtk/gtkrc.vi_VN.tcvn
+chattr etc/gtk/gtkrc.vi_VN.viscii \
+	original_name=SUNWGtk:etc/gtk/gtkrc.vi_VN.viscii
+chattr etc/gtk/gtkrc.zh_CN \
+	original_name=SUNWGtk:etc/gtk/gtkrc.zh_CN
+chattr etc/gtk/gtkrc.zh_HK \
+	original_name=SUNWGtk:etc/gtk/gtkrc.zh_HK
+chattr etc/gtk/gtkrc.zh_TW \
+	original_name=SUNWGtk:etc/gtk/gtkrc.zh_TW
+chattr etc/gtk/gtkrc.zh_TW.big5 \
+	original_name=SUNWGtk:etc/gtk/gtkrc.zh_TW.big5
+end package
+
+package SUNWGtk
+consolidation "sfw"
+renamed 133
+depend library/desktop/gtk1
+version 1.2.10
+end package

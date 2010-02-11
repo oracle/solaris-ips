@@ -1,0 +1,11 @@
+package documentation/gnome/gnome-devel-docs
+consolidation "gnome"
+classification "Development/GNOME and GTK+"
+import SUNWgnome-devel-docs
+end package
+
+package SUNWgnome-devel-docs
+consolidation "gnome"
+renamed 133
+depend documentation/gnome/gnome-devel-docs
+end package

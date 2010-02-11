@@ -1,0 +1,12 @@
+package service/storage/ndmp
+consolidation "osnet"
+classification "System/Services"
+import SUNWndmpu
+import SUNWndmpr
+end package
+
+package SUNWndmp
+consolidation "osnet"
+renamed 133
+depend service/storage/ndmp
+end package

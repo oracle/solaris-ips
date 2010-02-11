@@ -1,0 +1,16 @@
+package system/font/misc-meltho
+consolidation "X"
+classification "System/Fonts"
+import SUNWfont-misc-meltho
+add dir path=etc mode=0755 owner=root group=sys
+add dir path=etc/X11 mode=0755 owner=root group=sys
+add dir path=etc/X11/fontpath.d mode=0755 owner=root group=sys
+add link path=etc/X11/fontpath.d/syriac:pri=61 \
+    target=../../../usr/share/fonts/X11/syriac
+end package
+
+package SUNWfont-misc-meltho
+consolidation "X"
+renamed 133
+depend system/font/misc-meltho
+end package

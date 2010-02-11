@@ -1,0 +1,14 @@
+package system/remote-shared-memory
+consolidation "osnet"
+classification "System/Core"
+import SUNWrsm
+
+add driver name=rsm \
+    perms="* 0666 root sys"
+end package
+
+package SUNWrsm
+consolidation "osnet"
+renamed 133
+depend system/remote-shared-memory
+end package

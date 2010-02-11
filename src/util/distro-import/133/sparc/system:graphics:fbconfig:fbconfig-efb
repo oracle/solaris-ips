@@ -1,0 +1,11 @@
+package system/graphics/fbconfig/fbconfig-efb
+consolidation "smcc"
+classification "Drivers/Display"
+import SUNWefbcf
+end package
+
+package SUNWefbcf
+consolidation "smcc"
+renamed 133
+depend system/graphics/fbconfig/fbconfig-efb
+end package

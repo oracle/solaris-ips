@@ -1,0 +1,12 @@
+package service/storage/removable-media
+consolidation "osnet"
+classification "System/Libraries"
+import SUNWsmedia
+import SUNWsmediar
+end package
+
+package SUNWsmedia
+consolidation "osnet"
+renamed 133
+depend service/storage/removable-media
+end package

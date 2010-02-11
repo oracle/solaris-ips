@@ -1,0 +1,24 @@
+package system/library/processor
+consolidation "osnet"
+classification "System/Core"
+$(i386_ONLY)import SUNWcar.i
+$(i386_ONLY)import SUNWcarx.i
+$(sparc_ONLY)import SUNWcar.u exclude etc/flash/precreation/caplib
+$(sparc_ONLY)import SUNWcar.v
+$(sparc_ONLY)import SUNWcart200.v
+
+$(sparc_ONLY)chattr platform/sun4u-us3/lib/libc_psr.so.1 \
+$(sparc_ONLY)	original_name=SUNWcar:platform/sun4u-us3/lib/libc_psr.so.1
+$(sparc_ONLY)chattr platform/sun4u-us3/lib/sparcv9/libc_psr.so.1 \
+$(sparc_ONLY)	original_name=SUNWcar:platform/sun4u-us3/lib/sparcv9/libc_psr.so.1
+$(sparc_ONLY)chattr platform/sun4v/lib/libc_psr.so.1 \
+$(sparc_ONLY)	original_name=SUNWcar:platform/sun4v/lib/libc_psr.so.1
+$(sparc_ONLY)chattr platform/sun4v/lib/sparcv9/libc_psr.so.1 \
+$(sparc_ONLY)	original_name=SUNWcar:platform/sun4v/lib/sparcv9/libc_psr.so.1
+end package
+
+package SUNWcar
+consolidation "osnet"
+renamed 133
+depend system/library/processor
+end package

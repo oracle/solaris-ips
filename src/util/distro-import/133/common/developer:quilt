@@ -1,0 +1,17 @@
+package developer/quilt
+consolidation "sfw"
+classification "Development/Source Code Management"
+import SUNWquiltr
+import SUNWquiltu
+version 0.47
+
+chattr etc/quilt.quiltrc \
+	original_name=SUNWquilt:etc/quilt.quiltrc
+end package
+
+package SUNWquilt
+consolidation "sfw"
+renamed 133
+depend developer/quilt
+version 0.47
+end package

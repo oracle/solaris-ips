@@ -1,0 +1,11 @@
+package system/library/liblayout
+consolidation "l10n"
+classification "System/Internationalization"
+import SUNWctpls
+end package
+
+package SUNWctpls
+consolidation "l10n"
+renamed 133
+depend system/library/liblayout
+end package

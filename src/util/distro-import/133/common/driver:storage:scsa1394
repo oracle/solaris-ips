@@ -1,0 +1,15 @@
+package driver/storage/scsa1394
+consolidation "osnet"
+classification "Drivers/Ports"
+import SUNWscsa1394
+
+add driver name=scsa1394 \
+    perms="* 0666 root sys" \
+    alias="firewire00609e,010483"
+end package
+
+package SUNWscsa1394
+consolidation "osnet"
+renamed 133
+depend driver/storage/scsa1394
+end package

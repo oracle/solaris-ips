@@ -1,0 +1,13 @@
+package audio/sox
+consolidation "sfw"
+classification "Applications/Sound and Video"
+import SUNWsound-exchange
+version 14.3.0
+end package
+
+package SUNWsound-exchange
+consolidation "sfw"
+renamed 133
+depend audio/sox
+version 14.3.0
+end package

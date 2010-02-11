@@ -1,0 +1,13 @@
+package x11/data/xcursor-themes
+consolidation "X"
+classification "System/X11"
+import SUNWxcursor-themes
+version 1.0.2
+end package
+
+package SUNWxcursor-themes
+consolidation "X"
+renamed 133
+depend x11/data/xcursor-themes
+version 1.0.2
+end package

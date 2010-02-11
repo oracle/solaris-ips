@@ -1,0 +1,12 @@
+package gnome/gnome-power-manager
+consolidation "gnome"
+classification "Applications/System Utilities"
+import SUNWgnome-power-manager
+import SUNWgnome-power-manager-root
+end package
+
+package SUNWgnome-power-manager
+consolidation "gnome"
+renamed 133
+depend gnome/gnome-power-manager
+end package

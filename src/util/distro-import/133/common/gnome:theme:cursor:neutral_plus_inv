@@ -1,0 +1,11 @@
+package gnome/theme/cursor/neutral_plus_inv
+consolidation "gnome"
+classification "Desktop (GNOME)/Theming"
+import SUNWneutral-plus-cursors
+end package
+
+package SUNWneutral-plus-cursors
+consolidation "gnome"
+renamed 133
+depend gnome/theme/cursor/neutral_plus_inv
+end package

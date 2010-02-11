@@ -1,0 +1,16 @@
+package system/font/misc-ethiopic
+consolidation "X"
+classification "System/Fonts"
+import SUNWfont-misc-ethiopic
+add dir path=etc mode=0755 owner=root group=sys
+add dir path=etc/X11 mode=0755 owner=root group=sys
+add dir path=etc/X11/fontpath.d mode=0755 owner=root group=sys
+add link path=etc/X11/fontpath.d/ethiopic:pri=60 \
+    target=../../../usr/share/fonts/X11/ethiopic
+end package
+
+package SUNWfont-misc-ethiopic
+consolidation "X"
+renamed 133
+depend system/font/misc-ethiopic
+end package

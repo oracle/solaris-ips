@@ -1,0 +1,13 @@
+package runtime/ocaml
+consolidation "sfw"
+classification "Development/Other Languages"
+import SUNWocaml
+version 3.10.2
+end package
+
+package SUNWocaml
+consolidation "sfw"
+renamed 133
+depend runtime/ocaml
+version 3.10.2
+end package

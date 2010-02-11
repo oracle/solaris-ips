@@ -1,0 +1,13 @@
+package runtime/perl-584
+consolidation "osnet"
+classification "Development/Perl"
+import SUNWperl584core
+version 5.8.4
+end package
+
+package SUNWperl584core
+consolidation "osnet"
+renamed 133
+depend runtime/perl-584
+version 5.8.4
+end package

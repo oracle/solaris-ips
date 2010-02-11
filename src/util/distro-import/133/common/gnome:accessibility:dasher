@@ -1,0 +1,12 @@
+package gnome/accessibility/dasher
+consolidation "gnome"
+classification "Applications/Universal Access"
+import SUNWgnome-a11y-dasher
+import SUNWgnome-a11y-dasher-root
+end package
+
+package SUNWgnome-a11y-dasher
+consolidation "gnome"
+renamed 133
+depend gnome/accessibility/dasher
+end package

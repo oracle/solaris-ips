@@ -1,0 +1,11 @@
+package system/header/header-firewire
+consolidation "osnet"
+classification "Development/System"
+import SUNW1394h
+end package
+
+package SUNW1394h
+consolidation "osnet"
+renamed 133
+depend system/header/header-firewire
+end package

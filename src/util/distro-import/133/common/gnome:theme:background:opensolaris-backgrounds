@@ -1,0 +1,11 @@
+package gnome/theme/background/opensolaris-backgrounds
+consolidation "gnome"
+classification "Desktop (GNOME)/Theming"
+import SUNWopensolaris-backgrounds
+end package
+
+package SUNWopensolaris-backgrounds
+consolidation "gnome"
+renamed 133
+depend gnome/theme/background/opensolaris-backgrounds
+end package

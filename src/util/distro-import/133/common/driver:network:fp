@@ -1,0 +1,17 @@
+package driver/network/fp
+consolidation "osnet"
+classification "Drivers/Storage"
+import SUNWfctl
+
+add driver name=fp \
+    perms="* 0600 root sys"
+
+chattr kernel/drv/fp.conf \
+	original_name=SUNWfctl:kernel/drv/fp.conf
+end package
+
+package SUNWfctl
+consolidation "osnet"
+renamed 133
+depend driver/network/fp
+end package

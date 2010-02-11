@@ -1,0 +1,12 @@
+package service/network/dns/mdns
+consolidation "osnet"
+classification "System/Services"
+import SUNWdsdr
+import SUNWdsdu
+end package
+
+package SUNWdsd
+consolidation "osnet"
+renamed 133
+depend service/network/dns/mdns
+end package

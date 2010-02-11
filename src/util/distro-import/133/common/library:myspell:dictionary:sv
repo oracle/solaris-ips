@@ -1,0 +1,11 @@
+package library/myspell/dictionary/sv
+consolidation "gnome_l10n"
+classification "System/Localizations"
+import SUNWmyspell-dictionary-sv
+end package
+
+package SUNWmyspell-dictionary-sv
+consolidation "gnome_l10n"
+renamed 133
+depend library/myspell/dictionary/sv
+end package

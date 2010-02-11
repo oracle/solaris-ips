@@ -1,0 +1,12 @@
+package system/network/wificonfig
+consolidation "osnet"
+classification "System/Administration and Configuration"
+import SUNWwlanu
+import SUNWwlanr
+end package
+
+package SUNWwlan
+consolidation "osnet"
+renamed 133
+depend system/network/wificonfig
+end package

@@ -1,0 +1,11 @@
+package gnome/locale/zh_tw
+consolidation "gnome_l10n"
+classification "Desktop (GNOME)/Localizations"
+import SUNWgnome-l10nmessages-zhTW
+end package
+
+package SUNWgnome-l10nmessages-zhTW
+consolidation "gnome_l10n"
+renamed 133
+depend gnome/locale/zh_tw
+end package

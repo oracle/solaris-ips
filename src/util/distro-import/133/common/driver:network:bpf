@@ -1,0 +1,15 @@
+package driver/network/bpf
+consolidation "osnet"
+classification "Drivers/Networking"
+import SUNWpacketu exclude usr
+import SUNWpacketh
+
+add driver name=bpf \
+    perms="bpf 0666 root sys"
+end package
+
+package SUNWpacket
+consolidation "osnet"
+renamed 133
+depend driver/network/bpf
+end package

@@ -1,0 +1,13 @@
+package desktop/remote-desktop/vinagre
+consolidation "gnome"
+classification "Applications/Internet"
+import SUNWvinagre
+import SUNWvinagre-devel
+import SUNWvinagre-root
+end package
+
+package SUNWvinagre
+consolidation "gnome"
+renamed 133
+depend desktop/remote-desktop/vinagre
+end package

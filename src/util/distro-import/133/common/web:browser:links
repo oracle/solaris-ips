@@ -1,0 +1,13 @@
+package web/browser/links
+consolidation "sfw"
+classification "Applications/Internet"
+import SUNWlinks
+version 1.0
+end package
+
+package SUNWlinks
+consolidation "sfw"
+renamed 133
+depend web/browser/links
+version 1.0
+end package

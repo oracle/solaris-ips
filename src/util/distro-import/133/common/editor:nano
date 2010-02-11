@@ -1,0 +1,13 @@
+package editor/nano
+consolidation "sfw"
+classification "System/Text Tools"
+import SUNWgnu-nano
+version 2.0.9
+end package
+
+package SUNWgnu-nano
+consolidation "sfw"
+renamed 133
+depend editor/nano
+version 2.0.9
+end package

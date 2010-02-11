@@ -1,0 +1,12 @@
+package service/network/network-servers
+consolidation "osnet"
+classification "System/Core"
+import SUNWrcmds
+import SUNWrcmdr
+end package
+
+package SUNWrcmds
+consolidation "osnet"
+renamed 133
+depend service/network/network-servers
+end package

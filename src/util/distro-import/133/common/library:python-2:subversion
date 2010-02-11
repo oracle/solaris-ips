@@ -1,0 +1,13 @@
+package library/python-2/subversion
+consolidation "sfw"
+classification "Development/Source Code Management"
+import SUNWsvn-python
+version 1.6.5
+end package
+
+package SUNWsvn-python
+consolidation "sfw"
+renamed 133
+depend library/python-2/subversion
+version 1.6.5
+end package

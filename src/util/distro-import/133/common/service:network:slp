@@ -1,0 +1,12 @@
+package service/network/slp
+consolidation "osnet"
+classification "System/Services"
+import SUNWslpu
+import SUNWslpr
+end package
+
+package SUNWslp
+consolidation "osnet"
+renamed 133
+depend service/network/slp
+end package

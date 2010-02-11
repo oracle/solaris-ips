@@ -1,0 +1,20 @@
+package driver/serial/usbsprl
+consolidation "osnet"
+classification "Drivers/Ports"
+import SUNWuprl
+
+add driver name=usbsprl \
+    perms="* 0666 root sys" \
+    alias="usb67b,2303" \
+    alias="usb67b,aaa2" \
+    alias="usb56e,5004" \
+    alias="usb557,2008" \
+    alias="usb6189,2068" \
+    alias="usb5ad,fba"
+end package
+
+package SUNWuprl
+consolidation "osnet"
+renamed 133
+depend driver/serial/usbsprl
+end package

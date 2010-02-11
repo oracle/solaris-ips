@@ -1,0 +1,13 @@
+package system/install
+consolidation "install"
+classification "System/Administration and Configuration"
+import SUNWinstall
+depend install/beadm
+depend library/python-2/python-extra-26
+end package
+
+package SUNWinstall
+consolidation "install"
+renamed 133
+depend system/install
+end package

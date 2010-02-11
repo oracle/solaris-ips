@@ -1,0 +1,11 @@
+package library/python-2/python-extra-26
+consolidation "gnome"
+classification "Development/Python"
+import SUNWPython26-extra
+end package
+
+package SUNWPython26-extra
+consolidation "gnome"
+renamed 133
+depend library/python-2/python-extra-26
+end package

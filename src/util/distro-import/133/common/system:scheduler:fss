@@ -1,0 +1,11 @@
+package system/scheduler/fss
+consolidation "osnet"
+classification "System/Core"
+import SUNWfss
+end package
+
+package SUNWfss
+consolidation "osnet"
+renamed 133
+depend system/scheduler/fss
+end package

@@ -1,0 +1,12 @@
+package library/python-2/python-mysql-26
+consolidation "gnome"
+classification "Development/Databases"
+import SUNWmysql-python26
+depend database/mysql-51
+end package
+
+package SUNWmysql-python26
+consolidation "gnome"
+renamed 133
+depend library/python-2/python-mysql-26
+end package

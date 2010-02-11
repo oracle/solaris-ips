@@ -1,0 +1,16 @@
+package driver/network/ge
+consolidation "nspg"
+classification "Drivers/Networking"
+import SUNWged
+
+add driver name=ge \
+    perms="* 0600 root sys" \
+    alias="pci108e,2bad" \
+    alias="SUNW,sbus-gem"
+end package
+
+package SUNWged
+consolidation "nspg"
+renamed 133
+depend driver/network/ge
+end package

@@ -1,0 +1,18 @@
+package driver/serial/usbsksp/usbs49_fw
+consolidation "osnet"
+classification "System/Hardware"
+import SUNWukspfw
+
+$(i386_ONLY)chattr kernel/misc/amd64/usbs49_fw \
+$(i386_ONLY)	original_name=SUNWukspfw:kernel/misc/amd64/usbs49_fw
+$(i386_ONLY)chattr kernel/misc/usbs49_fw \
+$(i386_ONLY)	original_name=SUNWukspfw:kernel/misc/usbs49_fw
+$(sparc_ONLY)chattr kernel/misc/sparcv9/usbs49_fw \
+$(sparc_ONLY)	original_name=SUNWukspfw:kernel/misc/sparcv9/usbs49_fw
+end package
+
+package SUNWukspfw
+consolidation "osnet"
+renamed 133
+depend driver/serial/usbsksp/usbs49_fw
+end package

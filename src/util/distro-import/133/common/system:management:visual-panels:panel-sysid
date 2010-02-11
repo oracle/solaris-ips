@@ -1,0 +1,12 @@
+package system/management/visual-panels/panel-sysid
+consolidation "vpanels"
+classification "Applications/Configuration and Preferences"
+import OSOLvpin-sysid
+depend system/management/visual-panels
+end package
+
+package OSOLvpanels-sysid
+consolidation "vpanels"
+renamed 133
+depend system/management/visual-panels/panel-sysid
+end package

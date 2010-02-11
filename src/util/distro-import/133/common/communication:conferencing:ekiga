@@ -1,0 +1,12 @@
+package communication/conferencing/ekiga
+consolidation "gnome"
+classification "Applications/Sound and Video"
+import SUNWgnome-meeting
+import SUNWgnome-meeting-root
+end package
+
+package SUNWgnome-meeting
+consolidation "gnome"
+renamed 133
+depend communication/conferencing/ekiga
+end package

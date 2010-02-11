@@ -1,0 +1,11 @@
+package x11/server/xorg/driver/xorg-misc
+consolidation "X"
+classification "Drivers/Display"
+import SUNWxorg-graphics-ddx
+end package
+
+package SUNWxorg-graphics-ddx
+consolidation "X"
+renamed 133
+depend x11/server/xorg/driver/xorg-misc
+end package

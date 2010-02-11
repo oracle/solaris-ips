@@ -1,0 +1,11 @@
+package system/kernel/dynamic-reconfiguration/sun-fire-15000
+consolidation "osnet"
+classification "System/Enterprise Management"
+import SUNWdrcr.u
+end package
+
+package SUNWdrcr
+consolidation "osnet"
+renamed 133
+depend system/kernel/dynamic-reconfiguration/sun-fire-15000
+end package

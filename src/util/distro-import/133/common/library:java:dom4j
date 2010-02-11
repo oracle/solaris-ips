@@ -1,0 +1,18 @@
+package library/java/dom4j
+consolidation "sfw"
+classification "Development/Java"
+import SUNWdom4j
+depend library/java/jaxen-core
+depend library/java/pullparser
+depend library/java/relaxngDatatype
+depend library/java/xpp3-min
+depend library/java/xsdlib
+version 1.6.1
+end package
+
+package SUNWdom4j
+consolidation "sfw"
+renamed 133
+depend library/java/dom4j
+version 1.6.1
+end package

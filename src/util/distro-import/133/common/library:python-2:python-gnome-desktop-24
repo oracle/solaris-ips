@@ -1,0 +1,12 @@
+package library/python-2/python-gnome-desktop-24
+consolidation "gnome"
+classification "Development/Python"
+import SUNWgnome-python-desktop
+import SUNWgnome-python-desktop-devel
+end package
+
+package SUNWgnome-python-desktop
+consolidation "gnome"
+renamed 133
+depend library/python-2/python-gnome-desktop-24
+end package

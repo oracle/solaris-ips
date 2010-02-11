@@ -1,0 +1,12 @@
+package library/desktop/libsexy
+consolidation "gnome"
+classification "Desktop (GNOME)/Libraries"
+import SUNWlibsexy
+import SUNWlibsexy-devel
+end package
+
+package SUNWlibsexy
+consolidation "gnome"
+renamed 133
+depend library/desktop/libsexy
+end package

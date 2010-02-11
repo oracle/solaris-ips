@@ -1,0 +1,13 @@
+package file/tree
+consolidation "sfw"
+classification "Applications/System Utilities"
+import SUNWtree
+version 1.5.2.1
+end package
+
+package SUNWtree
+consolidation "sfw"
+renamed 133
+depend file/tree
+version 1.5.2.1
+end package

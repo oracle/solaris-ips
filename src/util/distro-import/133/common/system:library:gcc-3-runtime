@@ -1,0 +1,31 @@
+package system/library/gcc-3-runtime
+consolidation "sfw"
+classification "Development/C"
+import SUNWgccruntime exclude \
+	usr/sfw/lib/$(ARCH64)/libfrtbegin.a \
+	usr/sfw/lib/$(ARCH64)/libg2c.a \
+	usr/sfw/lib/$(ARCH64)/libg2c.la \
+	usr/sfw/lib/$(ARCH64)/libiberty.a \
+	usr/sfw/lib/$(ARCH64)/libobjc.la \
+	usr/sfw/lib/$(ARCH64)/libstdc++.a \
+	usr/sfw/lib/$(ARCH64)/libstdc++.la \
+	usr/sfw/lib/$(ARCH64)/libsupc++.a \
+	usr/sfw/lib/$(ARCH64)/libsupc++.la \
+	usr/sfw/lib/libfrtbegin.a \
+	usr/sfw/lib/libg2c.a \
+	usr/sfw/lib/libg2c.la \
+	usr/sfw/lib/libiberty.a \
+	usr/sfw/lib/libobjc.la \
+	usr/sfw/lib/libstdc++.a \
+	usr/sfw/lib/libstdc++.la \
+	usr/sfw/lib/libsupc++.a \
+	usr/sfw/lib/libsupc++.la
+version 3.4.3
+end package
+
+package SUNWgccruntime
+consolidation "sfw"
+renamed 133
+depend system/library/gcc-3-runtime
+version 3.4.3
+end package

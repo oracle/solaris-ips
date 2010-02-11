@@ -1,0 +1,13 @@
+package crypto/pwgen
+consolidation "sfw"
+classification "Applications/System Utilities"
+import SUNWpwgen
+version 2.6
+end package
+
+package SUNWpwgen
+consolidation "sfw"
+renamed 133
+depend crypto/pwgen
+version 2.6
+end package

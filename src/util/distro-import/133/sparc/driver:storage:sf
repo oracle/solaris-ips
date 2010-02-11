@@ -1,0 +1,13 @@
+package driver/storage/sf
+consolidation "osnet"
+classification "Drivers/Storage"
+import SUNWluxd.u
+
+add driver name=sf
+end package
+
+package SUNWluxd
+consolidation "osnet"
+renamed 133
+depend driver/storage/sf
+end package

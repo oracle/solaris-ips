@@ -1,0 +1,14 @@
+package library/java/xom
+consolidation "sfw"
+classification "Development/Java"
+import SUNWxom
+depend library/java/jaxen-core
+version 1.1
+end package
+
+package SUNWxom
+consolidation "sfw"
+renamed 133
+depend library/java/xom
+version 1.1
+end package

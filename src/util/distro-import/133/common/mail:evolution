@@ -1,0 +1,13 @@
+package mail/evolution
+consolidation "gnome"
+classification "Applications/Internet"
+import SUNWevolution
+import SUNWevolution-devel
+import SUNWevolution-root
+end package
+
+package SUNWevolution
+consolidation "gnome"
+renamed 133
+depend mail/evolution
+end package

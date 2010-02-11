@@ -1,0 +1,13 @@
+package developer/build/cmake
+consolidation "sfw"
+classification "Development/Distribution Tools"
+import SUNWcmake
+version 2.6.2
+end package
+
+package SUNWcmake
+consolidation "sfw"
+renamed 133
+depend developer/build/cmake
+version 2.6.2
+end package

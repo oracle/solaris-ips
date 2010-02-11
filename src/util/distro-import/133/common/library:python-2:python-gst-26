@@ -1,0 +1,13 @@
+package library/python-2/python-gst-26
+consolidation "gnome"
+classification "Development/Python"
+import SUNWgst-python26
+import SUNWgst-python26-devel
+depend library/python-2/python-gnome-libs-26
+end package
+
+package SUNWgst-python26
+consolidation "gnome"
+renamed 133
+depend library/python-2/python-gst-26
+end package

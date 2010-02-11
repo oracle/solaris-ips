@@ -1,0 +1,13 @@
+package system/input-method/scim/hangul
+consolidation "l10n"
+classification "System/Internationalization"
+import SUNWscim-hangul
+version 0.3.2
+end package
+
+package SUNWscim-hangul
+consolidation "l10n"
+renamed 133
+depend system/input-method/scim/hangul
+version 0.3.2
+end package

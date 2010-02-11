@@ -1,0 +1,12 @@
+package package/pkg/update-manager
+consolidation "ips"
+classification "System/Packaging"
+import SUNWipkg-um
+depend package/pkg/package-manager
+end package
+
+package SUNWipkg-um
+consolidation "ips"
+renamed 133
+depend package/pkg/update-manager
+end package

@@ -1,0 +1,13 @@
+package library/java/subversion
+consolidation "sfw"
+classification "Development/Source Code Management"
+import SUNWsvn-java
+version 1.6.5
+end package
+
+package SUNWsvn-java
+consolidation "sfw"
+renamed 133
+depend library/java/subversion
+version 1.6.5
+end package

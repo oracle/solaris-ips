@@ -1,0 +1,12 @@
+package library/desktop/evolution-data-server
+consolidation "gnome"
+classification "Applications/Internet"
+import SUNWevolution-data-server
+import SUNWevolution-data-server-devel
+end package
+
+package SUNWevolution-data-server
+consolidation "gnome"
+renamed 133
+depend library/desktop/evolution-data-server
+end package

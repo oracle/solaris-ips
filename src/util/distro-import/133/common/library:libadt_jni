@@ -1,0 +1,11 @@
+package library/libadt_jni
+consolidation "osnet"
+classification "System/Administration and Configuration"
+import SUNWaudit
+end package
+
+package SUNWaudit
+consolidation "osnet"
+renamed 133
+depend library/libadt_jni
+end package

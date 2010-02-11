@@ -1,0 +1,13 @@
+package library/aalib
+consolidation "sfw"
+classification "System/Libraries"
+import SUNWaalib
+version 1.4.5
+end package
+
+package SUNWaalib
+consolidation "sfw"
+renamed 133
+depend library/aalib
+version 1.4.5
+end package

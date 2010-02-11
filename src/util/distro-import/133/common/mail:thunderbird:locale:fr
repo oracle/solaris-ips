@@ -1,0 +1,11 @@
+package mail/thunderbird/locale/fr
+consolidation "gnome_l10n"
+classification "Applications/Internet"
+import SUNWthunderbirdl10n-fr-FR
+end package
+
+package SUNWthunderbirdl10n-fr-FR
+consolidation "gnome_l10n"
+renamed 133
+depend mail/thunderbird/locale/fr
+end package

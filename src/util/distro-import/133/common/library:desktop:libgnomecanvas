@@ -1,0 +1,12 @@
+package library/desktop/libgnomecanvas
+consolidation "gnome"
+classification "Desktop (GNOME)/Libraries"
+import SUNWlibgnomecanvas
+import SUNWlibgnomecanvas-devel
+end package
+
+package SUNWlibgnomecanvas
+consolidation "gnome"
+renamed 133
+depend library/desktop/libgnomecanvas
+end package

@@ -1,0 +1,12 @@
+package system/network/routing
+consolidation "osnet"
+classification "System/Core"
+import SUNWroute
+import SUNWroutr
+end package
+
+package SUNWroute
+consolidation "osnet"
+renamed 133
+depend system/network/routing
+end package

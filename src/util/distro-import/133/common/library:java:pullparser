@@ -1,0 +1,13 @@
+package library/java/pullparser
+consolidation "sfw"
+classification "Development/Java"
+import SUNWpull-parser
+version 2.1.10
+end package
+
+package SUNWpull-parser
+consolidation "sfw"
+renamed 133
+depend library/java/pullparser
+version 2.1.10
+end package

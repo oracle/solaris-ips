@@ -1,0 +1,11 @@
+package system/kernel/ultra-wideband
+consolidation "osnet"
+classification "System/Hardware"
+import SUNWuwb
+end package
+
+package SUNWuwb
+consolidation "osnet"
+renamed 133
+depend system/kernel/ultra-wideband
+end package

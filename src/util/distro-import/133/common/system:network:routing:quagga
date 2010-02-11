@@ -1,0 +1,34 @@
+package system/network/routing/quagga
+consolidation "sfw"
+classification "System/Administration and Configuration"
+import SUNWquaggau
+import SUNWquaggar
+add dir path=usr/share mode=0755 owner=root group=sys
+add dir path=usr/share/man mode=0755 owner=root group=bin
+add dir path=usr/share/man/man1m mode=0755 owner=root group=bin
+add link path=usr/share/man/man1m/quaggaadm.1m \
+	target=../../../sfw/share/man/man1m/quaggaadm.1m
+add dir path=usr/share/man/man8 mode=0755 owner=root group=bin
+add link path=usr/share/man/man8/bgpd.8 \
+	target=../../../sfw/share/man/man8/bgpd.8
+add link path=usr/share/man/man8/ospf6d.8 \
+	target=../../../sfw/share/man/man8/ospf6d.8
+add link path=usr/share/man/man8/ospfd.8 \
+	target=../../../sfw/share/man/man8/ospfd.8
+add link path=usr/share/man/man8/quagga.8 \
+	target=../../../sfw/share/man/man8/quagga.8
+add link path=usr/share/man/man8/ripd.8 \
+	target=../../../sfw/share/man/man8/ripd.8
+add link path=usr/share/man/man8/ripngd.8 \
+	target=../../../sfw/share/man/man8/ripngd.8
+add link path=usr/share/man/man8/zebra.8 \
+	target=../../../sfw/share/man/man8/zebra.8
+version 0.99.8
+end package
+
+package SUNWquagga
+consolidation "sfw"
+renamed 133
+depend system/network/routing/quagga
+version 0.99.8
+end package

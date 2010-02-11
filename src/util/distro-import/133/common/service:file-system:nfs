@@ -1,0 +1,20 @@
+package service/file-system/nfs
+consolidation "osnet"
+classification "System/File System"
+import SUNWnfssu
+import SUNWnfssr
+import SUNWnfsskr
+
+chattr etc/default/nfslogd \
+	original_name=SUNWnfss:etc/default/nfslogd
+chattr etc/init.d/nfs.server \
+	original_name=SUNWnfss:etc/init.d/nfs.server
+chattr etc/nfs/nfslog.conf \
+	original_name=SUNWnfss:etc/nfs/nfslog.conf
+end package
+
+package SUNWnfss
+consolidation "osnet"
+renamed 133
+depend service/file-system/nfs
+end package

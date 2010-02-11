@@ -1,0 +1,12 @@
+package system/kernel/cpu/sun4v
+consolidation "osnet"
+classification "System/Core"
+import SUNWust1.v
+import SUNWust2.v
+end package
+
+package SUNWust
+consolidation "osnet"
+renamed 133
+depend system/kernel/cpu/sun4v
+end package

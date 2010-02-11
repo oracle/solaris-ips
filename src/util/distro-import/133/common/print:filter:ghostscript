@@ -1,0 +1,14 @@
+package print/filter/ghostscript
+consolidation "sfw"
+classification "Applications/System Utilities"
+import SUNWghostscriptr
+import SUNWghostscriptu
+version 8.64
+end package
+
+package SUNWghostscript
+consolidation "sfw"
+renamed 133
+depend print/filter/ghostscript
+version 8.64
+end package

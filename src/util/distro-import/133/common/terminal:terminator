@@ -1,0 +1,12 @@
+package terminal/terminator
+consolidation "gnome"
+classification "Applications/System Utilities"
+import SUNWterminator
+depend library/python-2/python-gnome-libs-26
+end package
+
+package SUNWterminator
+consolidation "gnome"
+renamed 133
+depend terminal/terminator
+end package

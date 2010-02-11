@@ -1,0 +1,27 @@
+package service/network/smtp/sendmail
+consolidation "osnet"
+classification "System/Core"
+import SUNWsndmu
+import SUNWsndmr
+version 8.14.3
+
+chattr etc/init.d/sendmail \
+	original_name=SUNWsndm:etc/init.d/sendmail
+chattr etc/mail/aliases \
+	original_name=SUNWsndm:etc/mail/aliases
+chattr etc/mail/local-host-names \
+	original_name=SUNWsndm:etc/mail/local-host-names
+chattr etc/mail/sendmail.cf \
+	original_name=SUNWsndm:etc/mail/sendmail.cf
+chattr etc/mail/submit.cf \
+	original_name=SUNWsndm:etc/mail/submit.cf
+chattr etc/mail/trusted-users \
+	original_name=SUNWsndm:etc/mail/trusted-users
+end package
+
+package SUNWsndm
+consolidation "osnet"
+renamed 133
+depend service/network/smtp/sendmail
+version 8.14.3
+end package

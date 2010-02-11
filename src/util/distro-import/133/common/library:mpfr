@@ -1,0 +1,13 @@
+package library/mpfr
+consolidation "sfw"
+classification "Development/High Performance Computing"
+import SUNWgnu-mpfr
+version 2.4.1
+end package
+
+package SUNWgnu-mpfr
+consolidation "sfw"
+renamed 133
+depend library/mpfr
+version 2.4.1
+end package

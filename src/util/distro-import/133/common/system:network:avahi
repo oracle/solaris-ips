@@ -1,0 +1,18 @@
+package system/network/avahi
+consolidation "gnome"
+classification "Applications/Internet"
+import SUNWavahi-bridge-dsd
+import SUNWavahi-bridge-dsd-devel
+import SUNWavahi-bridge-dsd-root
+depend library/python-2/python-dbus-26
+depend_path /usr/bin/vncviewer
+
+chattr etc/dbus-1/system.d/avahi-dbus.conf \
+	original_name=SUNWavahi-bridge-dsd:etc/dbus-1/system.d/avahi-dbus.conf
+end package
+
+package SUNWavahi-bridge-dsd
+consolidation "gnome"
+renamed 133
+depend system/network/avahi
+end package

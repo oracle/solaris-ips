@@ -1,0 +1,13 @@
+package desktop/cd-burning/brasero
+consolidation "gnome"
+classification "Applications/System Utilities"
+import SUNWgnome-cd-burner
+import SUNWgnome-cd-burner-devel
+import SUNWgnome-cd-burner-root
+end package
+
+package SUNWgnome-cd-burner
+consolidation "gnome"
+renamed 133
+depend desktop/cd-burning/brasero
+end package

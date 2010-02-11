@@ -1,0 +1,29 @@
+package print/cups
+consolidation "sfw"
+classification "System/Printing"
+import SUNWcupsu
+drop usr/lib/$(ARCH64)/libcups.so
+drop usr/lib/$(ARCH64)/libcups.so.2
+drop usr/lib/$(ARCH64)/libcupsimage.so
+drop usr/lib/$(ARCH64)/libcupsimage.so.2
+drop usr/lib/libcups.so
+drop usr/lib/libcups.so.2
+drop usr/lib/libcupsimage.so
+drop usr/lib/libcupsimage.so.2
+import SUNWcupsr
+version 1.4.2
+
+chattr etc/cups/command.types \
+	original_name=SUNWcups:etc/cups/command.types
+chattr etc/cups/cupsd.conf \
+	original_name=SUNWcups:etc/cups/cupsd.conf
+chattr etc/cups/snmp.conf \
+	original_name=SUNWcups:etc/cups/snmp.conf
+end package
+
+package SUNWcups
+consolidation "sfw"
+renamed 133
+depend print/cups
+version 1.4.2
+end package

@@ -1,0 +1,13 @@
+package desktop/project-management/planner
+consolidation "gnome"
+classification "Applications/Office"
+import SUNWplanner
+import SUNWplanner-devel
+import SUNWplanner-root
+end package
+
+package SUNWplanner
+consolidation "gnome"
+renamed 133
+depend desktop/project-management/planner
+end package

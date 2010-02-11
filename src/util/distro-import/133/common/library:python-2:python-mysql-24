@@ -1,0 +1,13 @@
+package library/python-2/python-mysql-24
+consolidation "gnome"
+classification "Development/Databases"
+import SUNWmysql-python
+depend runtime/python-24
+depend database/mysql-51
+end package
+
+package SUNWmysql-python
+consolidation "gnome"
+renamed 133
+depend library/python-2/python-mysql-24
+end package

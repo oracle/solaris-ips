@@ -1,0 +1,12 @@
+package library/python-2/python-notify-24
+consolidation "gnome"
+classification "Development/Python"
+import SUNWpython-notify
+import SUNWpython-notify-devel
+end package
+
+package SUNWpython-notify
+consolidation "gnome"
+renamed 133
+depend library/python-2/python-notify-24
+end package

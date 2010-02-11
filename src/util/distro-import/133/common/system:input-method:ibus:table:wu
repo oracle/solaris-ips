@@ -1,0 +1,14 @@
+package system/input-method/ibus/table/wu
+consolidation "l10n"
+classification "System/Internationalization"
+import SUNWibus-table-data-wu
+depend system/input-method/ibus/table
+version 1.2.0
+end package
+
+package SUNWibus-table-data-wu
+consolidation "l10n"
+renamed 133
+depend system/input-method/ibus/table/wu
+version 1.2.0
+end package

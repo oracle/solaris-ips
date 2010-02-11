@@ -1,0 +1,13 @@
+package library/gnome/gnome-libs
+consolidation "gnome"
+classification "Development/GNOME and GTK+"
+import SUNWgnome-libs-devel
+import SUNWgnome-libs
+import SUNWgnome-libs-root
+end package
+
+package SUNWgnome-libs
+consolidation "gnome"
+renamed 133
+depend library/gnome/gnome-libs
+end package

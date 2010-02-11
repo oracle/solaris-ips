@@ -1,0 +1,13 @@
+package system/input-method/scim/table/india
+consolidation "l10n"
+classification "System/Internationalization"
+import SUNWscim-tables-india
+version 0.5.7
+end package
+
+package SUNWscim-tables-india
+consolidation "l10n"
+renamed 133
+depend system/input-method/scim/table/india
+version 0.5.7
+end package

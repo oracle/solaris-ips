@@ -1,0 +1,14 @@
+package system/library/libdatrie
+consolidation "l10n"
+classification "System/Localizations"
+import SUNWlibdatrie
+import SUNWlibdatrie-devel
+version 0.1.2
+end package
+
+package SUNWlibdatrie
+consolidation "l10n"
+renamed 133
+depend system/library/libdatrie
+version 0.1.2
+end package

@@ -1,0 +1,13 @@
+package library/python-2/libxml2-24
+consolidation "sfw"
+classification "Development/Python"
+import SUNWlxml-python
+version 2.7.6
+end package
+
+package SUNWlxml-python
+consolidation "sfw"
+renamed 133
+depend library/python-2/libxml2-24
+version 2.7.6
+end package

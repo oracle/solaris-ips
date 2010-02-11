@@ -1,0 +1,12 @@
+package desktop/cd-ripping/sound-juicer
+consolidation "gnome"
+classification "Applications/Sound and Video"
+import SUNWgnome-cd
+import SUNWgnome-cd-root
+end package
+
+package SUNWgnome-cd
+consolidation "gnome"
+renamed 133
+depend desktop/cd-ripping/sound-juicer
+end package

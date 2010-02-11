@@ -1,0 +1,19 @@
+package service/file-system/smb
+consolidation "osnet"
+classification "System/File System"
+import SUNWsmbsu
+import SUNWsmbsr
+import SUNWsmbskr
+
+add driver name=smbsrv \
+    perms="* 0640 root sys"
+
+chattr var/smb/smbpasswd \
+	original_name=SUNWsmbs:var/smb/smbpasswd
+end package
+
+package SUNWsmbs
+consolidation "osnet"
+renamed 133
+depend service/file-system/smb
+end package

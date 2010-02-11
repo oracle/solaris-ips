@@ -1,0 +1,11 @@
+package system/locale/ro-extra
+consolidation "l10n"
+classification "System/Localizations"
+import SUNWlang-ro-extra
+end package
+
+package SUNWlang-ro-extra
+consolidation "l10n"
+renamed 133
+depend system/locale/ro-extra
+end package

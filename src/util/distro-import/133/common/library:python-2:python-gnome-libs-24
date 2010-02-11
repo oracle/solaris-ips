@@ -1,0 +1,12 @@
+package library/python-2/python-gnome-libs-24
+consolidation "gnome"
+classification "Development/Python"
+import SUNWgnome-python-libs
+import SUNWgnome-python-libs-devel
+end package
+
+package SUNWgnome-python-libs
+consolidation "gnome"
+renamed 133
+depend library/python-2/python-gnome-libs-24
+end package

@@ -1,0 +1,12 @@
+package system/desktop/stardict
+consolidation "gnome_l10n"
+classification "Applications/Accessories"
+import SUNWstardict
+import SUNWstardict-root
+end package
+
+package SUNWstardict
+consolidation "gnome_l10n"
+renamed 133
+depend system/desktop/stardict
+end package

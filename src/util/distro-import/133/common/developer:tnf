@@ -1,0 +1,11 @@
+package developer/tnf
+consolidation "osnet"
+classification "Development/System"
+import SUNWtnfd
+end package
+
+package SUNWtnfd
+consolidation "osnet"
+renamed 133
+depend developer/tnf
+end package

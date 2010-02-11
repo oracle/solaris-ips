@@ -1,0 +1,14 @@
+package runtime/ruby-18
+consolidation "sfw"
+classification "Development/Ruby"
+import SUNWruby18u
+import SUNWruby18r
+version 1.8.7.174
+end package
+
+package SUNWruby18
+consolidation "sfw"
+renamed 133
+depend runtime/ruby-18
+version 1.8.7.174
+end package

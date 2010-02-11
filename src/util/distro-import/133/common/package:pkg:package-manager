@@ -1,0 +1,14 @@
+package package/pkg/package-manager
+consolidation "ips"
+classification "System/Packaging"
+import SUNWipkg-gui
+import SUNWipkg-gui-data
+import SUNWipkg-gui-l10n
+depend library/python-2/python-gnome-extras-26
+end package
+
+package SUNWipkg-gui
+consolidation "ips"
+renamed 133
+depend package/pkg/package-manager
+end package

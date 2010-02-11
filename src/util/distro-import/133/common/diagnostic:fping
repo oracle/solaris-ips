@@ -1,0 +1,14 @@
+package diagnostic/fping
+consolidation "sfw"
+classification "Applications/System Utilities"
+import SUNWfping
+import SUNWfpingr
+version 2.4.2
+end package
+
+package SUNWfping
+consolidation "sfw"
+renamed 133
+depend diagnostic/fping
+version 2.4.2
+end package

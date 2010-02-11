@@ -1,0 +1,13 @@
+package system/locale/ja-extra
+consolidation "l10n"
+classification "System/Localizations"
+import SUNWlang-ja-extra
+depend system/library/iconv/extra
+depend system/library/iconv/unicode
+end package
+
+package SUNWlang-ja-extra
+consolidation "l10n"
+renamed 133
+depend system/locale/ja-extra
+end package

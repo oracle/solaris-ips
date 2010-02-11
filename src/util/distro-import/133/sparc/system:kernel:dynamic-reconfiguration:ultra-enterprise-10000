@@ -1,0 +1,14 @@
+package system/kernel/dynamic-reconfiguration/ultra-enterprise-10000
+consolidation "osnet"
+classification "System/Enterprise Management"
+import SUNWdrr.u
+
+add driver name=ngdr \
+    perms="* 0600 root sys"
+end package
+
+package SUNWdrr
+consolidation "osnet"
+renamed 133
+depend system/kernel/dynamic-reconfiguration/ultra-enterprise-10000
+end package

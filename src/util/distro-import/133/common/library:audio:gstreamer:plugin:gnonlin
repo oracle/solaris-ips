@@ -1,0 +1,12 @@
+package library/audio/gstreamer/plugin/gnonlin
+consolidation "gnome"
+classification "System/Multimedia Libraries"
+import SUNWgnonlin
+import SUNWgnonlin-devel
+end package
+
+package SUNWgnonlin
+consolidation "gnome"
+renamed 133
+depend library/audio/gstreamer/plugin/gnonlin
+end package

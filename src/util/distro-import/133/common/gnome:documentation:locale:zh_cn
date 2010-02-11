@@ -1,0 +1,11 @@
+package gnome/documentation/locale/zh_cn
+consolidation "gnome_l10n"
+classification "Desktop (GNOME)/Localizations"
+import SUNWgnome-l10ndocument-zhCN
+end package
+
+package SUNWgnome-l10ndocument-zhCN
+consolidation "gnome_l10n"
+renamed 133
+depend gnome/documentation/locale/zh_cn
+end package

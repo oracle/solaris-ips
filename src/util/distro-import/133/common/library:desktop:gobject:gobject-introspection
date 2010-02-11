@@ -1,0 +1,12 @@
+package library/desktop/gobject/gobject-introspection
+consolidation "gnome"
+classification "Development/GNOME and GTK+"
+import SUNWgobject-introspection
+import SUNWgobject-introspection-devel
+end package
+
+package SUNWgobject-introspection
+consolidation "gnome"
+renamed 133
+depend library/desktop/gobject/gobject-introspection
+end package

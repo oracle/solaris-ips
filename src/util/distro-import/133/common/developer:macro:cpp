@@ -1,0 +1,11 @@
+package developer/macro/cpp
+consolidation "sunpro"
+classification "Development/C"
+import SUNWcpp
+end package
+
+package SUNWcpp
+consolidation "sunpro"
+renamed 133
+depend developer/macro/cpp
+end package

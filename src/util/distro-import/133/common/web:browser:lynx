@@ -1,0 +1,12 @@
+package web/browser/lynx
+consolidation "gnome"
+classification "Applications/Internet"
+import SUNWlynx
+import SUNWlynx-root
+end package
+
+package SUNWlynx
+consolidation "gnome"
+renamed 133
+depend web/browser/lynx
+end package

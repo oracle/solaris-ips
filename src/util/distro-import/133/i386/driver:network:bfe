@@ -1,0 +1,16 @@
+package driver/network/bfe
+consolidation "osnet"
+classification "Drivers/Networking"
+import SUNWbfe
+
+add driver name=bfe \
+    alias="pci14e4,4401" \
+    alias="pci14e4,4402" \
+    alias="pci14e4,170c"
+end package
+
+package SUNWbfe
+consolidation "osnet"
+renamed 133
+depend driver/network/bfe
+end package

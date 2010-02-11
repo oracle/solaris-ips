@@ -1,0 +1,11 @@
+package library/cacao/cacao-dtrace
+consolidation "cacao"
+classification "Development/System"
+import SUNWcacaodtrace
+end package
+
+package SUNWcacaodtrace
+consolidation "cacao"
+renamed 133
+depend library/cacao/cacao-dtrace
+end package

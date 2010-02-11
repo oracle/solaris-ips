@@ -1,0 +1,11 @@
+package network/chat/irssi
+consolidation "gnome"
+classification "Applications/Internet"
+import SUNWirssi
+end package
+
+package SUNWirssi
+consolidation "gnome"
+renamed 133
+depend network/chat/irssi
+end package

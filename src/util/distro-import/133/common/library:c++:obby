@@ -1,0 +1,12 @@
+package library/c++/obby
+consolidation "gnome"
+classification "Development/System"
+import SUNWobby
+import SUNWobby-devel
+end package
+
+package SUNWobby
+consolidation "gnome"
+renamed 133
+depend library/c++/obby
+end package

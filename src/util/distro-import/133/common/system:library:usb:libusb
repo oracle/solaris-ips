@@ -1,0 +1,11 @@
+package system/library/usb/libusb
+consolidation "sfw"
+classification "System/Libraries"
+import SUNWlibusb
+end package
+
+package SUNWlibusb
+consolidation "sfw"
+renamed 133
+depend system/library/usb/libusb
+end package

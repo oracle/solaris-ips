@@ -1,0 +1,11 @@
+package library/security/pam/module/pam-consolekit
+consolidation "gnome"
+classification "Desktop (GNOME)/Sessions"
+import SUNWconsolekit-pam
+end package
+
+package SUNWconsolekit-pam
+consolidation "gnome"
+renamed 133
+depend library/security/pam/module/pam-consolekit
+end package

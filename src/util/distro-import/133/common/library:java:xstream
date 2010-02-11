@@ -1,0 +1,19 @@
+package library/java/xstream
+consolidation "sfw"
+classification "Development/Java"
+import SUNWxstream
+depend library/java/cglib
+depend library/java/dom4j
+depend library/java/jettison
+depend library/java/joda-time
+depend library/java/xom
+depend library/java/xpp3-min
+version 1.3
+end package
+
+package SUNWxstream
+consolidation "sfw"
+renamed 133
+depend library/java/xstream
+version 1.3
+end package

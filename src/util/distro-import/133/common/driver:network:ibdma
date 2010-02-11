@@ -1,0 +1,11 @@
+package driver/network/ibdma
+consolidation "osnet"
+classification "System/Hardware"
+import SUNWibdmar
+end package
+
+package SUNWibdma
+consolidation "osnet"
+renamed 133
+depend driver/network/ibdma
+end package

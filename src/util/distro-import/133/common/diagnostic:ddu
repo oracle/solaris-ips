@@ -1,0 +1,12 @@
+package diagnostic/ddu
+consolidation "hcts"
+classification "System/Hardware"
+import SUNWddu
+depend library/python-2/python-gnome-libs-26
+end package
+
+package SUNWddu
+consolidation "hcts"
+renamed 133
+depend diagnostic/ddu
+end package

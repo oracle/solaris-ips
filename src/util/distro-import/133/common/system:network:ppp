@@ -1,0 +1,24 @@
+package system/network/ppp
+consolidation "osnet"
+classification "Drivers/Networking"
+import SUNWpppd
+import SUNWpppdu
+import SUNWpppdr
+
+add driver name=sppp
+
+add driver name=sppptun
+
+chattr etc/init.d/pppd \
+	original_name=SUNWpppd:etc/init.d/pppd
+chattr etc/ppp/chap-secrets \
+	original_name=SUNWpppd:etc/ppp/chap-secrets
+chattr etc/ppp/pap-secrets \
+	original_name=SUNWpppd:etc/ppp/pap-secrets
+end package
+
+package SUNWpppd
+consolidation "osnet"
+renamed 133
+depend system/network/ppp
+end package

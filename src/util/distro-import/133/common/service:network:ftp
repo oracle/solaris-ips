@@ -1,0 +1,24 @@
+package service/network/ftp
+consolidation "osnet"
+classification "System/Core"
+import SUNWftpu
+# base package will deliver etc/ftpd/ftpusers
+import SUNWftpr exclude etc/ftpd/ftpusers
+
+chattr etc/ftpd/ftpaccess \
+	original_name=SUNWftp:etc/ftpd/ftpaccess
+chattr etc/ftpd/ftpconversions \
+	original_name=SUNWftp:etc/ftpd/ftpconversions
+chattr etc/ftpd/ftpgroups \
+	original_name=SUNWftp:etc/ftpd/ftpgroups
+chattr etc/ftpd/ftphosts \
+	original_name=SUNWftp:etc/ftpd/ftphosts
+chattr etc/ftpd/ftpservers \
+	original_name=SUNWftp:etc/ftpd/ftpservers
+end package
+
+package SUNWftp
+consolidation "osnet"
+renamed 133
+depend service/network/ftp
+end package

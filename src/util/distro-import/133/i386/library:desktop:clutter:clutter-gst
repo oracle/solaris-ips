@@ -1,0 +1,12 @@
+package library/desktop/clutter/clutter-gst
+consolidation "gnome"
+classification "System/Multimedia Libraries"
+import SUNWclutter-gst
+import SUNWclutter-gst-devel
+end package
+
+package SUNWclutter-gst
+consolidation "gnome"
+renamed 133
+depend library/desktop/clutter/clutter-gst
+end package

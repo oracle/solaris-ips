@@ -1,0 +1,18 @@
+package library/python-2/coherence-26
+consolidation "gnome"
+classification "Development/Python"
+import SUNWpython26-coherence
+import SUNWpython26-coherence-root
+add group groupname=upnp gid=52
+add user username=upnp password=NP uid=52 group=upnp \
+    gcos-field="UPnP Server Reserved UID" home-dir=/var/coherence \
+    login-shell=/bin/ksh
+depend library/python-2/python-twisted-26
+depend library/python-2/python-zope-interface-26
+end package
+
+package SUNWpython26-coherence
+consolidation "gnome"
+renamed 133
+depend library/python-2/coherence-26
+end package

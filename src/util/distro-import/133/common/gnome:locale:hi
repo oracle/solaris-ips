@@ -1,0 +1,11 @@
+package gnome/locale/hi
+consolidation "gnome_l10n"
+classification "Desktop (GNOME)/Localizations"
+import SUNWgnome-l10nmessages-hi
+end package
+
+package SUNWgnome-l10nmessages-hi
+consolidation "gnome_l10n"
+renamed 133
+depend gnome/locale/hi
+end package

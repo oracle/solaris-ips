@@ -1,0 +1,11 @@
+package system/desktop/locale/es
+consolidation "gnome_l10n"
+classification "Desktop (GNOME)/Localizations"
+import SUNWdesktop-other-l10n-es
+end package
+
+package SUNWdesktop-other-l10n-es
+consolidation "gnome_l10n"
+renamed 133
+depend system/desktop/locale/es
+end package

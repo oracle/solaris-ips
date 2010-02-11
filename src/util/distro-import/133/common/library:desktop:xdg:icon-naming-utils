@@ -1,0 +1,12 @@
+package library/desktop/xdg/icon-naming-utils
+consolidation "gnome"
+classification "Desktop (GNOME)/Theming"
+import SUNWicon-naming-utils
+depend library/perl-5/xml-parser
+end package
+
+package SUNWicon-naming-utils
+consolidation "gnome"
+renamed 133
+depend library/desktop/xdg/icon-naming-utils
+end package

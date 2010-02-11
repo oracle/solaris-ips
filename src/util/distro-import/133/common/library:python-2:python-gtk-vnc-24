@@ -1,0 +1,11 @@
+package library/python-2/python-gtk-vnc-24
+consolidation "gnome"
+classification "Development/GNOME and GTK+"
+import SUNWgtk-vnc-python24
+end package
+
+package SUNWgtk-vnc-python24
+consolidation "gnome"
+renamed 133
+depend library/python-2/python-gtk-vnc-24
+end package

@@ -1,0 +1,13 @@
+package runtime/erlang
+consolidation "sfw"
+classification "Development/Other Languages"
+import SUNWerlang
+version 12.1.1
+end package
+
+package SUNWerlang
+consolidation "sfw"
+renamed 133
+depend runtime/erlang
+version 12.1.1
+end package

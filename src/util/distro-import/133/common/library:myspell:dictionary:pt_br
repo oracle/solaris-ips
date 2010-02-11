@@ -1,0 +1,11 @@
+package library/myspell/dictionary/pt_br
+consolidation "gnome_l10n"
+classification "System/Localizations"
+import SUNWmyspell-dictionary-ptBR
+end package
+
+package SUNWmyspell-dictionary-ptBR
+consolidation "gnome_l10n"
+renamed 133
+depend library/myspell/dictionary/pt_br
+end package

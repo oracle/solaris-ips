@@ -1,0 +1,12 @@
+package image/library/babl
+consolidation "gnome"
+classification "System/Multimedia Libraries"
+import SUNWbabl
+import SUNWbabl-devel
+end package
+
+package SUNWbabl
+consolidation "gnome"
+renamed 133
+depend image/library/babl
+end package

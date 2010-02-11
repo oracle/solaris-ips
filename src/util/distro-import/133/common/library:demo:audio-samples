@@ -1,0 +1,11 @@
+package library/demo/audio-samples
+consolidation "osnet"
+classification "System/Media"
+import SUNWaudf
+end package
+
+package SUNWaudf
+consolidation "osnet"
+renamed 133
+depend library/demo/audio-samples
+end package

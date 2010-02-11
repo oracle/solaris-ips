@@ -1,0 +1,11 @@
+package gnome/applet/gnome-applets
+consolidation "gnome"
+classification "Applications/Panels and Applets"
+import SUNWgnome-applets
+end package
+
+package SUNWgnome-applets
+consolidation "gnome"
+renamed 133
+depend gnome/applet/gnome-applets
+end package

@@ -1,0 +1,15 @@
+package system/network/udapl
+consolidation "osnet"
+classification "System/Libraries"
+import SUNWudaplu
+import SUNWudaplr
+
+chattr etc/dat/dat.conf \
+	original_name=SUNWudapl:etc/dat/dat.conf
+end package
+
+package SUNWudapl
+consolidation "osnet"
+renamed 133
+depend system/network/udapl
+end package

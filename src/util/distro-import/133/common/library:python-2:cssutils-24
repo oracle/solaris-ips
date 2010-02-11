@@ -1,0 +1,11 @@
+package library/python-2/cssutils-24
+consolidation "gnome"
+classification "Development/Python"
+import SUNWpython24-cssutils
+end package
+
+package SUNWpython24-cssutils
+consolidation "gnome"
+renamed 133
+depend library/python-2/cssutils-24
+end package

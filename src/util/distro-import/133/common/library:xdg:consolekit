@@ -1,0 +1,13 @@
+package library/xdg/consolekit
+consolidation "gnome"
+classification "Desktop (GNOME)/Sessions"
+import SUNWconsolekit
+import SUNWconsolekit-devel
+import SUNWconsolekit-root
+end package
+
+package SUNWconsolekit
+consolidation "gnome"
+renamed 133
+depend library/xdg/consolekit
+end package

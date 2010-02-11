@@ -1,0 +1,11 @@
+package editor/gobby
+consolidation "gnome"
+classification "System/Text Tools"
+import SUNWgobby
+end package
+
+package SUNWgobby
+consolidation "gnome"
+renamed 133
+depend editor/gobby
+end package

@@ -1,0 +1,14 @@
+package system/management/cim/pegasus
+consolidation "sfw"
+classification "System/Enterprise Management"
+import SUNWcimserverr
+import SUNWcimserveru
+version 2.8.0
+end package
+
+package SUNWcimserver
+consolidation "sfw"
+renamed 133
+depend system/management/cim/pegasus
+version 2.8.0
+end package

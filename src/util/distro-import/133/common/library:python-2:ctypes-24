@@ -1,0 +1,11 @@
+package library/python-2/ctypes-24
+consolidation "gnome"
+classification "Development/Python"
+import SUNWpython24-ctypes
+end package
+
+package SUNWpython24-ctypes
+consolidation "gnome"
+renamed 133
+depend library/python-2/ctypes-24
+end package

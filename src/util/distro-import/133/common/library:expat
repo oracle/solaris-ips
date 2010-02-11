@@ -1,0 +1,13 @@
+package library/expat
+consolidation "sfw"
+classification "System/Libraries"
+import SUNWlexpt
+version 2.0.1
+end package
+
+package SUNWlexpt
+consolidation "sfw"
+renamed 133
+depend library/expat
+version 2.0.1
+end package

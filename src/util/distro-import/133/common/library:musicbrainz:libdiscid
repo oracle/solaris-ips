@@ -1,0 +1,12 @@
+package library/musicbrainz/libdiscid
+consolidation "gnome"
+classification "System/Multimedia Libraries"
+import SUNWlibdiscid
+import SUNWlibdiscid-devel
+end package
+
+package SUNWlibdiscid
+consolidation "gnome"
+renamed 133
+depend library/musicbrainz/libdiscid
+end package

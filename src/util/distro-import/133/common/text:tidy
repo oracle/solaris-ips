@@ -1,0 +1,13 @@
+package text/tidy
+consolidation "sfw"
+classification "System/Libraries"
+import SUNWtidy
+version 1.0.0
+end package
+
+package SUNWtidy
+consolidation "sfw"
+renamed 133
+depend text/tidy
+version 1.0.0
+end package

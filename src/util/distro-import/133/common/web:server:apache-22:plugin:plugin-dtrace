@@ -1,0 +1,17 @@
+package web/server/apache-22/plugin/plugin-dtrace
+consolidation "sfw"
+classification "Development/System"
+import SUNWapch22m-dtrace
+import SUNWapch22r-dtrace
+version 0.3.1
+
+chattr etc/apache2/2.2/conf.d/dtrace.conf \
+	original_name=SUNWapch22m-dtrace:etc/apache2/2.2/conf.d/dtrace.conf
+end package
+
+package SUNWapch22m-dtrace
+consolidation "sfw"
+renamed 133
+depend web/server/apache-22/plugin/plugin-dtrace
+version 0.3.1
+end package

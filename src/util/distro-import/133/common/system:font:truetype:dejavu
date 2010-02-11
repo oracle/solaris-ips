@@ -1,0 +1,16 @@
+package system/font/truetype/dejavu
+consolidation "X"
+classification "System/Fonts"
+import SUNWttf-dejavu
+add dir path=etc mode=0755 owner=root group=sys
+add dir path=etc/X11 mode=0755 owner=root group=sys
+add dir path=etc/X11/fontpath.d mode=0755 owner=root group=sys
+add link path=etc/X11/fontpath.d/dejavu:pri=42 \
+    target=../../../usr/share/fonts/TrueType/dejavu
+end package
+
+package SUNWttf-dejavu
+consolidation "X"
+renamed 133
+depend system/font/truetype/dejavu
+end package

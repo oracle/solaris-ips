@@ -1,0 +1,11 @@
+package system/data/terminfo
+consolidation "osnet"
+classification "System/Core"
+import SUNWter
+end package
+
+package SUNWter
+consolidation "osnet"
+renamed 133
+depend system/data/terminfo
+end package

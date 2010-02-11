@@ -1,0 +1,13 @@
+package developer/debug/gdb
+consolidation "sfw"
+classification "Development/System"
+import SUNWgdb
+version 6.8
+end package
+
+package SUNWgdb
+consolidation "sfw"
+renamed 133
+depend developer/debug/gdb
+version 6.8
+end package

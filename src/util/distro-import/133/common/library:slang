@@ -1,0 +1,17 @@
+package library/slang
+consolidation "sfw"
+classification "Development/Other Languages"
+import SUNWslang
+import SUNWslangr
+version 2.2.2
+
+chattr etc/slsh/slsh.rc \
+	original_name=SUNWslang:etc/slsh/slsh.rc
+end package
+
+package SUNWslang
+consolidation "sfw"
+renamed 133
+depend library/slang
+version 2.2.2
+end package

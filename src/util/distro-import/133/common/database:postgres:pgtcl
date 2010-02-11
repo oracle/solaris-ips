@@ -1,0 +1,13 @@
+package database/postgres/pgtcl
+consolidation "sfw"
+classification "Development/Databases"
+import SUNWpostgr-tcl
+version 1.7
+end package
+
+package SUNWpostgr-tcl
+consolidation "sfw"
+renamed 133
+depend database/postgres/pgtcl
+version 1.7
+end package

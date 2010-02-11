@@ -1,0 +1,11 @@
+package gnome/theme/hicolor-icon-theme
+consolidation "gnome"
+classification "Desktop (GNOME)/Theming"
+import SUNWhicolor-icon-theme
+end package
+
+package SUNWhicolor-icon-theme
+consolidation "gnome"
+renamed 133
+depend gnome/theme/hicolor-icon-theme
+end package

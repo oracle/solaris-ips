@@ -1,0 +1,18 @@
+package system/network/udapl/udapl-tavor
+consolidation "osnet"
+classification "System/Hardware"
+import SUNWudapltu
+import SUNWudapltr
+
+add driver name=daplt \
+    perms="* 0644 root sys"
+
+chattr etc/init.d/dodatadm.udaplt \
+	original_name=SUNWudaplt:etc/init.d/dodatadm.udaplt
+end package
+
+package SUNWudaplt
+consolidation "osnet"
+renamed 133
+depend system/network/udapl/udapl-tavor
+end package

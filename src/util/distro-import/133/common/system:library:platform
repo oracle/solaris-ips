@@ -1,0 +1,14 @@
+package system/library/platform
+consolidation "osnet"
+classification "System/Core"
+$(i386_ONLY)import SUNWkvm.i
+$(sparc_ONLY)import SUNWkvm.u
+$(sparc_ONLY)import SUNWkvm.v
+$(sparc_ONLY)import SUNWkvmt200.v
+end package
+
+package SUNWkvm
+consolidation "osnet"
+renamed 133
+depend system/library/platform
+end package

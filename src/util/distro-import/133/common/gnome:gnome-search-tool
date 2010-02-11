@@ -1,0 +1,12 @@
+package gnome/gnome-search-tool
+consolidation "gnome"
+classification "Applications/Accessories"
+import SUNWgnome-search-tool
+import SUNWgnome-search-tool-root
+end package
+
+package SUNWgnome-search-tool
+consolidation "gnome"
+renamed 133
+depend gnome/gnome-search-tool
+end package

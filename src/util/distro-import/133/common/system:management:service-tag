@@ -1,0 +1,13 @@
+package system/management/service-tag
+consolidation "cns"
+classification "System/Services"
+import SUNWservicetagu
+import SUNWservicetagr
+add user username=svctag uid=95 group=daemon gcos-field="Service Tag UID"
+end package
+
+package SUNWservicetag
+consolidation "cns"
+renamed 133
+depend system/management/service-tag
+end package

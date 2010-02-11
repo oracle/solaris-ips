@@ -1,0 +1,16 @@
+package print/lp
+consolidation "osnet"
+classification "System/Printing"
+import SUNWpsu
+import SUNWpsr
+chattr etc/printers.conf original_name=SUNWpc:etc/printers.conf
+
+chattr var/spool/cron/crontabs/lp \
+	original_name=SUNWps:var/spool/cron/crontabs/lp
+end package
+
+package SUNWps
+consolidation "osnet"
+renamed 133
+depend print/lp
+end package

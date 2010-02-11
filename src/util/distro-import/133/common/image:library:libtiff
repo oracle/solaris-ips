@@ -1,0 +1,14 @@
+package image/library/libtiff
+consolidation "gnome"
+classification "System/Multimedia Libraries"
+import SUNWTiff
+import SUNWTiff-devel
+drop usr/share/man/man3tiff/booktitles.ent
+drop usr/share/man/man3tiff/smancommon.ent
+end package
+
+package SUNWTiff
+consolidation "gnome"
+renamed 133
+depend image/library/libtiff
+end package

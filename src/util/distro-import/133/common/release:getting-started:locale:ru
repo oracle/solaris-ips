@@ -1,0 +1,11 @@
+package release/getting-started/locale/ru
+consolidation "gnome"
+classification "System/Localizations"
+import SUNWgetting-started-l10n-ru
+end package
+
+package SUNWgetting-started-l10n-ru
+consolidation "gnome"
+renamed 133
+depend release/getting-started/locale/ru
+end package

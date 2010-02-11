@@ -1,0 +1,13 @@
+package install/distribution-constructor
+consolidation "install"
+classification "System/Core"
+import SUNWdistro-const
+depend system/install
+depend_path /usr/bin/rmformat
+end package
+
+package SUNWdistro-const
+consolidation "install"
+renamed 133
+depend install/distribution-constructor
+end package

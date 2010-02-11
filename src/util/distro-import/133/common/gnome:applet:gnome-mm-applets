@@ -1,0 +1,12 @@
+package gnome/applet/gnome-mm-applets
+consolidation "gnome"
+classification "Applications/Panels and Applets"
+import SUNWgnome-mm-applets
+import SUNWgnome-mm-applets-root
+end package
+
+package SUNWgnome-mm-applets
+consolidation "gnome"
+renamed 133
+depend gnome/applet/gnome-mm-applets
+end package

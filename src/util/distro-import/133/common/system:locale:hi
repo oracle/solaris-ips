@@ -1,0 +1,12 @@
+package system/locale/hi
+consolidation "l10n"
+classification "System/Localizations"
+import SUNWlang-hi
+depend system/locale
+end package
+
+package SUNWlang-hi
+consolidation "l10n"
+renamed 133
+depend system/locale/hi
+end package

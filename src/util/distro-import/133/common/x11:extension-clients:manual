@@ -1,0 +1,11 @@
+package x11/extension-clients/manual
+consolidation "X"
+classification "Development/X11"
+import SUNWxorg-client-docs
+end package
+
+package SUNWxorg-client-docs
+consolidation "X"
+renamed 133
+depend x11/extension-clients/manual
+end package

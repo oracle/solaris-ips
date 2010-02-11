@@ -1,0 +1,17 @@
+package library/security/trousers
+consolidation "sfw"
+classification "System/Security"
+import SUNWtss
+import SUNWtss-root
+version 0.3.2
+
+chattr etc/security/tcsd.conf \
+	original_name=SUNWtss:etc/security/tcsd.conf
+end package
+
+package SUNWtss
+consolidation "sfw"
+renamed 133
+depend library/security/trousers
+version 0.3.2
+end package

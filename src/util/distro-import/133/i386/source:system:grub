@@ -1,0 +1,13 @@
+package source/system/grub
+consolidation "osnet"
+classification "System/Core"
+import SUNWgrubS
+version 0.97
+end package
+
+package SUNWgrubS
+consolidation "osnet"
+renamed 133
+depend source/system/grub
+version 0.97
+end package

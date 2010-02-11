@@ -1,0 +1,11 @@
+package x11/trusted/trusted-xorg
+consolidation "X"
+classification "System/Trusted"
+import SUNWxorg-tsol-module
+end package
+
+package SUNWxorg-tsol-module
+consolidation "X"
+renamed 133
+depend x11/trusted/trusted-xorg
+end package

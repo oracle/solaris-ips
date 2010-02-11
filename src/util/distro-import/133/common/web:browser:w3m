@@ -1,0 +1,11 @@
+package web/browser/w3m
+consolidation "gnome"
+classification "Applications/Internet"
+import SUNWw3m
+end package
+
+package SUNWw3m
+consolidation "gnome"
+renamed 133
+depend web/browser/w3m
+end package

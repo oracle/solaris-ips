@@ -1,0 +1,17 @@
+package library/desktop/search/tracker
+consolidation "gnome"
+classification "Applications/System Utilities"
+import SUNWdesktop-search
+import SUNWdesktop-search-devel
+import SUNWdesktop-search-root
+depend desktop/pdf-viewer/evince
+depend library/libxslt
+depend compress/unzip
+depend web/browser/w3m
+end package
+
+package SUNWdesktop-search
+consolidation "gnome"
+renamed 133
+depend library/desktop/search/tracker
+end package

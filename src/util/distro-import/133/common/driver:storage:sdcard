@@ -1,0 +1,19 @@
+package driver/storage/sdcard
+consolidation "osnet"
+$(i386_ONLY)classification "Drivers/Storage"
+$(i386_ONLY)import SUNWsdcard
+
+$(i386_ONLY)add driver name=sdcard \
+$(i386_ONLY)    perms="* 0644 root root"
+
+$(i386_ONLY)add driver name=sdhost \
+$(i386_ONLY)    perms="* 0644 root root" \
+$(i386_ONLY)    alias="pciclass,080500" \
+$(i386_ONLY)    alias="pciclass,080501"
+end package
+
+package SUNWsdcard
+consolidation "osnet"
+renamed 133
+depend driver/storage/sdcard
+end package

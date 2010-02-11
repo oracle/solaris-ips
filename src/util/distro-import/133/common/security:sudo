@@ -1,0 +1,17 @@
+package security/sudo
+consolidation "sfw"
+classification "Applications/System Utilities"
+import SUNWsudor
+import SUNWsudou
+version 1.7.0
+
+chattr etc/sudoers \
+	original_name=SUNWsudo:etc/sudoers
+end package
+
+package SUNWsudo
+consolidation "sfw"
+renamed 133
+depend security/sudo
+version 1.7.0
+end package

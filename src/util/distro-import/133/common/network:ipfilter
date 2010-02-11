@@ -1,0 +1,19 @@
+package network/ipfilter
+consolidation "osnet"
+classification "System/Administration and Configuration"
+import SUNWipfu
+import SUNWipfr
+
+add driver name=ipf \
+    perms="* 0666 root sys" \
+    policy="read_priv_set=sys_ip_config write_priv_set=sys_ip_config"
+
+chattr etc/ipf/ipf.conf \
+	original_name=SUNWipf:etc/ipf/ipf.conf
+end package
+
+package SUNWipf
+consolidation "osnet"
+renamed 133
+depend network/ipfilter
+end package

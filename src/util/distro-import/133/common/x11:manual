@@ -1,0 +1,11 @@
+package x11/manual
+consolidation "X"
+classification "System/X11"
+import SUNWxwman
+end package
+
+package SUNWxwman
+consolidation "X"
+renamed 133
+depend x11/manual
+end package

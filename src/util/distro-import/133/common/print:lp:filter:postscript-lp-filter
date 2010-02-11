@@ -1,0 +1,11 @@
+package print/lp/filter/postscript-lp-filter
+consolidation "osnet"
+classification "System/Printing"
+import SUNWpsf
+end package
+
+package SUNWpsf
+consolidation "osnet"
+renamed 133
+depend print/lp/filter/postscript-lp-filter
+end package

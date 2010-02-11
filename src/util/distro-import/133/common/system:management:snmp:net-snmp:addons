@@ -1,0 +1,14 @@
+package system/management/snmp/net-snmp/addons
+consolidation "sfw"
+classification "System/Enterprise Management"
+import SUNWnet-snmp-addons
+version 5.4.1
+depend system/management/snmp/net-snmp
+end package
+
+package SUNWnet-snmp-addons
+consolidation "sfw"
+renamed 133
+depend system/management/snmp/net-snmp/addons
+version 5.4.1
+end package

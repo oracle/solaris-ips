@@ -1,0 +1,19 @@
+package library/java/javadb
+consolidation "dbtg"
+classification "Development/Databases"
+import SUNWjavadb-client
+import SUNWjavadb-common
+import SUNWjavadb-core
+import SUNWjavadb-demo
+import SUNWjavadb-docs
+import SUNWjavadb-javadoc
+import SUNWjavadb-service
+version 10.5.3.0
+end package
+
+package SUNWjavadb
+consolidation "dbtg"
+renamed 133
+depend library/java/javadb
+version 10.5.3.0
+end package

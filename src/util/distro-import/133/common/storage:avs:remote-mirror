@@ -1,0 +1,23 @@
+package storage/avs/remote-mirror
+consolidation "osnet"
+classification "System/Hardware"
+import SUNWrdcu
+import SUNWrdcr
+depend driver/storage/sv
+
+add driver name=rdc \
+    perms="* 0666 root sys" \
+    privs=sys_devices \
+    privs=sys_config \
+    devlink="type=ddi_pseudo;name=rdc\t\D"
+
+
+chattr usr/kernel/drv/rdc.conf \
+	original_name=SUNWrdc:usr/kernel/drv/rdc.conf
+end package
+
+package SUNWrdc
+consolidation "osnet"
+renamed 133
+depend storage/avs/remote-mirror
+end package

@@ -1,0 +1,12 @@
+package library/desktop/pigment
+consolidation "gnome"
+classification "System/Multimedia Libraries"
+import SUNWlibpigment
+import SUNWlibpigment-devel
+end package
+
+package SUNWlibpigment
+consolidation "gnome"
+renamed 133
+depend library/desktop/pigment
+end package

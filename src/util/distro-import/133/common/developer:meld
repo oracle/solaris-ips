@@ -1,0 +1,13 @@
+package developer/meld
+consolidation "sfw"
+classification "Applications/System Utilities"
+import SUNWmeld
+version 1.1.5.1
+end package
+
+package SUNWmeld
+consolidation "sfw"
+renamed 133
+depend developer/meld
+version 1.1.5.1
+end package

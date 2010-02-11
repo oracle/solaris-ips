@@ -1,0 +1,16 @@
+package developer/build/libtool
+consolidation "sfw"
+classification "Development/GNU"
+import SUNWlibtool
+depend shell/bash
+depend library/libtool/libltdl
+depend system/xopen/xcu4
+version 1.5.22
+end package
+
+package SUNWlibtool
+consolidation "sfw"
+renamed 133
+depend developer/build/libtool
+version 1.5.22
+end package

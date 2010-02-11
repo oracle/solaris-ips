@@ -1,0 +1,13 @@
+package library/xmlrpc-c
+consolidation "sfw"
+classification "System/Libraries"
+import SUNWlibxmlrpc-c
+version 1.6.32
+end package
+
+package SUNWlibxmlrpc-c
+consolidation "sfw"
+renamed 133
+depend library/xmlrpc-c
+version 1.6.32
+end package

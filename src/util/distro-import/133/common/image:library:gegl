@@ -1,0 +1,12 @@
+package image/library/gegl
+consolidation "gnome"
+classification "System/Multimedia Libraries"
+import SUNWgegl
+import SUNWgegl-devel
+end package
+
+package SUNWgegl
+consolidation "gnome"
+renamed 133
+depend image/library/gegl
+end package

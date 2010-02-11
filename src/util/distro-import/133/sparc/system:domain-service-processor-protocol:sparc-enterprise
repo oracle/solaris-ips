@@ -1,0 +1,16 @@
+package system/domain-service-processor-protocol/sparc-enterprise
+consolidation "osnet"
+classification "System/Core"
+import SUNWdscpr.u
+import SUNWdscpu.u
+
+add driver name=dm2s
+
+add driver name=oplkmdrv
+end package
+
+package SUNWdscp
+consolidation "osnet"
+renamed 133
+depend system/domain-service-processor-protocol/sparc-enterprise
+end package

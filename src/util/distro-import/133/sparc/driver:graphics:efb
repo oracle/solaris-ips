@@ -1,0 +1,17 @@
+package driver/graphics/efb
+consolidation "smcc"
+classification "Drivers/Display"
+import SUNWefb
+
+add driver name=efb \
+    perms="* 0666 root sys" \
+    alias="SUNW,XVR-50" \
+    alias="SUNW,XVR-100" \
+    alias="SUNW,XVR-300"
+end package
+
+package SUNWefb
+consolidation "smcc"
+renamed 133
+depend driver/graphics/efb
+end package

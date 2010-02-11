@@ -1,0 +1,13 @@
+package web/server/apache-22/plugin/plugin-xml2enc
+consolidation "sfw"
+classification "Web Services/Application and Web Servers"
+import SUNWapch22m-xml2enc
+version 1.0.1
+end package
+
+package SUNWapch22m-xml2enc
+consolidation "sfw"
+renamed 133
+depend web/server/apache-22/plugin/plugin-xml2enc
+version 1.0.1
+end package

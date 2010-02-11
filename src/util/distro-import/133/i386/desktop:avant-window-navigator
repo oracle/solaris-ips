@@ -1,0 +1,15 @@
+package desktop/avant-window-navigator
+consolidation "gnome"
+classification "Applications/Panels and Applets"
+import SUNWavant
+import SUNWavant-devel
+import SUNWavant-root
+depend library/python-2/python-gnome-libs-26
+depend library/python-2/python-xdg-26
+end package
+
+package SUNWavant
+consolidation "gnome"
+renamed 133
+depend desktop/avant-window-navigator
+end package

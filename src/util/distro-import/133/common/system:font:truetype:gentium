@@ -1,0 +1,11 @@
+package system/font/truetype/gentium
+consolidation "l10n"
+classification "System/Fonts"
+import SUNWttf-gentium
+end package
+
+package SUNWttf-gentium
+consolidation "l10n"
+renamed 133
+depend system/font/truetype/gentium
+end package

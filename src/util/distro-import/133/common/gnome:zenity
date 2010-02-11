@@ -1,0 +1,11 @@
+package gnome/zenity
+consolidation "gnome"
+classification "Development/GNOME and GTK+"
+import SUNWgnome-dialog
+end package
+
+package SUNWgnome-dialog
+consolidation "gnome"
+renamed 133
+depend gnome/zenity
+end package

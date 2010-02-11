@@ -1,0 +1,12 @@
+package library/glib2
+consolidation "gnome"
+classification "Desktop (GNOME)/Libraries"
+import SUNWglib2
+import SUNWglib2-devel
+end package
+
+package SUNWglib2
+consolidation "gnome"
+renamed 133
+depend library/glib2
+end package

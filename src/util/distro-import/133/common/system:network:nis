@@ -1,0 +1,19 @@
+package system/network/nis
+consolidation "osnet"
+classification "System/Administration and Configuration"
+import SUNWnisu
+import SUNWnisr
+
+chattr etc/publickey \
+	original_name=SUNWnis:etc/publickey
+chattr var/yp/aliases \
+	original_name=SUNWnis:var/yp/aliases
+chattr var/yp/nicknames \
+	original_name=SUNWnis:var/yp/nicknames
+end package
+
+package SUNWnis
+consolidation "osnet"
+renamed 133
+depend system/network/nis
+end package

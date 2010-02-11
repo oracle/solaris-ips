@@ -1,0 +1,18 @@
+package system/file-system/smb
+consolidation "osnet"
+classification "System/File System"
+import SUNWsmbfsu
+import SUNWsmbfsr
+import SUNWsmbfskr
+
+add driver name=nsmb \
+    perms="* 0666 root sys" \
+    devlink="type=ddi_pseudo;name=nsmb\t\D"
+
+end package
+
+package SUNWsmbfs
+consolidation "osnet"
+renamed 133
+depend system/file-system/smb
+end package

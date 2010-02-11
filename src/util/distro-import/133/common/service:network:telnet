@@ -1,0 +1,15 @@
+package service/network/telnet
+consolidation "osnet"
+classification "System/Services"
+import SUNWtnetd
+import SUNWtnetr
+
+chattr etc/default/telnetd \
+	original_name=SUNWtnetd:etc/default/telnetd
+end package
+
+package SUNWtnetd
+consolidation "osnet"
+renamed 133
+depend service/network/telnet
+end package

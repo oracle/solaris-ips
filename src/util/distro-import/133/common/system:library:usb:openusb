@@ -1,0 +1,13 @@
+package system/library/usb/openusb
+consolidation "sfw"
+classification "System/Libraries"
+import SUNWlibopenusb
+version 1.0.1
+end package
+
+package SUNWlibopenusb
+consolidation "sfw"
+renamed 133
+depend system/library/usb/openusb
+version 1.0.1
+end package

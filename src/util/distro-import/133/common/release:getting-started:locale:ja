@@ -1,0 +1,11 @@
+package release/getting-started/locale/ja
+consolidation "gnome"
+classification "System/Localizations"
+import SUNWgetting-started-l10n-ja
+end package
+
+package SUNWgetting-started-l10n-ja
+consolidation "gnome"
+renamed 133
+depend release/getting-started/locale/ja
+end package

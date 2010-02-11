@@ -1,0 +1,13 @@
+package text/gnu-sed
+consolidation "sfw"
+classification "Applications/System Utilities"
+import SUNWgsed
+version 4.2.1
+end package
+
+package SUNWgsed
+consolidation "sfw"
+renamed 133
+depend text/gnu-sed
+version 4.2.1
+end package

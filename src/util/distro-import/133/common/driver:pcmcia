@@ -1,0 +1,18 @@
+package driver/pcmcia
+consolidation "osnet"
+classification "System/Hardware"
+import SUNWpcmci
+
+add driver name=pcic \
+    class=pcmcia \
+    alias="pciclass,060500" \
+    alias="pciclass,060700"
+
+add driver name=pcs
+end package
+
+package SUNWpcmci
+consolidation "osnet"
+renamed 133
+depend driver/pcmcia
+end package

@@ -1,0 +1,13 @@
+package desktop/remote-desktop/turbovnc
+consolidation "gfx"
+classification "Applications/Internet"
+import SUNWtvnc
+version 0.4
+end package
+
+package SUNWtvnc
+consolidation "gfx"
+renamed 133
+depend desktop/remote-desktop/turbovnc
+version 0.4
+end package

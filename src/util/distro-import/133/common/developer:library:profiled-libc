@@ -1,0 +1,11 @@
+package developer/library/profiled-libc
+consolidation "osnet"
+classification "Development/System"
+import SUNWdpl
+end package
+
+package SUNWdpl
+consolidation "osnet"
+renamed 133
+depend developer/library/profiled-libc
+end package

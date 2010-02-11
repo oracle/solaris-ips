@@ -1,0 +1,11 @@
+package developer/build/onbld
+consolidation "osnet"
+classification "Development/Distribution Tools"
+import SUNWonbld
+end package
+
+package SUNWonbld
+consolidation "osnet"
+renamed 133
+depend developer/build/onbld
+end package

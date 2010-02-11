@@ -1,0 +1,13 @@
+package developer/java/junit
+consolidation "sfw"
+classification "Development/Java"
+import SUNWjunit
+version 4.5
+end package
+
+package SUNWjunit
+consolidation "sfw"
+renamed 133
+depend developer/java/junit
+version 4.5
+end package

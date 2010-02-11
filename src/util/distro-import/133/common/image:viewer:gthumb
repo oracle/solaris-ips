@@ -1,0 +1,12 @@
+package image/viewer/gthumb
+consolidation "gnome"
+classification "Applications/Graphics and Imaging"
+import SUNWgnome-img-organizer
+import SUNWgnome-img-organizer-root
+end package
+
+package SUNWgnome-img-organizer
+consolidation "gnome"
+renamed 133
+depend image/viewer/gthumb
+end package

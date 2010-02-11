@@ -1,0 +1,15 @@
+package driver/graphics/atiatom
+consolidation "osnet"
+classification "Drivers/Display"
+import SUNWatigfx
+
+add driver name=atiatom \
+    perms="* 0644 root sys" \
+    alias="pci1002,4752"
+end package
+
+package SUNWatigfx
+consolidation "osnet"
+renamed 133
+depend driver/graphics/atiatom
+end package

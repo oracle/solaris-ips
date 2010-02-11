@@ -1,0 +1,13 @@
+package network/rsync
+consolidation "sfw"
+classification "Applications/System Utilities"
+import SUNWrsync
+version 3.0.6
+end package
+
+package SUNWrsync
+consolidation "sfw"
+renamed 133
+depend network/rsync
+version 3.0.6
+end package

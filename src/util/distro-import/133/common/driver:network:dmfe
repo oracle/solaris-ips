@@ -1,0 +1,18 @@
+package driver/network/dmfe
+consolidation "osnet"
+classification "Drivers/Networking"
+import SUNWdmfe
+
+add driver name=dmfe \
+    perms="* 0666 root sys" \
+    clone_perms="0666 root sys" \
+    alias="pci128h,9102" \
+    alias="pci108e,9102" \
+    alias="pci1282,9102"
+end package
+
+package SUNWdmfe
+consolidation "osnet"
+renamed 133
+depend driver/network/dmfe
+end package

@@ -1,0 +1,11 @@
+package print/lp/ipp/libipp
+consolidation "osnet"
+classification "System/Printing"
+import SUNWippcore
+end package
+
+package SUNWippcore
+consolidation "osnet"
+renamed 133
+depend print/lp/ipp/libipp
+end package

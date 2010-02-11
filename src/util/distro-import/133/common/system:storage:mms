@@ -1,0 +1,20 @@
+package system/storage/mms
+consolidation "osnet"
+classification "System/Media"
+import SUNWmmsr
+import SUNWmmsu
+
+add driver name=dda \
+    devlink="type=ddi_pseudo;name=dda\tdda/\N0\M0"
+
+add driver name=dmd
+
+chattr var/log/mms/mms_logadm.conf \
+	original_name=SUNWmms:var/log/mms/mms_logadm.conf
+end package
+
+package SUNWmms
+consolidation "osnet"
+renamed 133
+depend system/storage/mms
+end package

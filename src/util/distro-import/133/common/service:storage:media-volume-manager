@@ -1,0 +1,12 @@
+package service/storage/media-volume-manager
+consolidation "osnet"
+classification "System/Media"
+import SUNWrmvolmgr
+import SUNWrmvolmgrr
+end package
+
+package SUNWrmvolmgr
+consolidation "osnet"
+renamed 133
+depend service/storage/media-volume-manager
+end package

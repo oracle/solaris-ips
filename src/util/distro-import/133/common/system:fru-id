@@ -1,0 +1,11 @@
+package system/fru-id
+consolidation "osnet"
+classification "System/Administration and Configuration"
+import SUNWfruid
+end package
+
+package SUNWfruid
+consolidation "osnet"
+renamed 133
+depend system/fru-id
+end package

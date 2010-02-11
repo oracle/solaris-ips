@@ -1,0 +1,18 @@
+package desktop/time-slider
+consolidation "gnome"
+classification "Applications/Configuration and Preferences"
+import SUNWgnome-time-slider
+import SUNWgnome-time-slider-root
+add user username=zfssnap password=NP uid=51 group=daemon \
+	gcos-field="ZFS Automatic Snapshots Reserved UID" \
+	login-shell=/usr/bin/pfsh ftpuser=false
+depend library/python-2/python-dbus-26
+depend desktop/gksu
+depend library/python-2/python-gnome-libs-26
+end package
+
+package SUNWgnome-time-slider
+consolidation "gnome"
+renamed 133
+depend desktop/time-slider
+end package

@@ -1,0 +1,11 @@
+package file/gnu-findutils
+consolidation "gnome"
+classification "Applications/System Utilities"
+import SUNWgnu-findutils
+end package
+
+package SUNWgnu-findutils
+consolidation "gnome"
+renamed 133
+depend file/gnu-findutils
+end package

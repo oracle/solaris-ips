@@ -1,0 +1,11 @@
+package library/myspell/dictionary/cs
+consolidation "gnome_l10n"
+classification "System/Localizations"
+import SUNWmyspell-dictionary-cs
+end package
+
+package SUNWmyspell-dictionary-cs
+consolidation "gnome_l10n"
+renamed 133
+depend library/myspell/dictionary/cs
+end package

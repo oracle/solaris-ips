@@ -1,0 +1,11 @@
+package network/dhcp/dhcpmgr/locale/ko
+consolidation "l10n"
+classification "System/Services"
+import SUNWkdhcm
+end package
+
+package SUNWkdhcm
+consolidation "l10n"
+renamed 133
+depend network/dhcp/dhcpmgr/locale/ko
+end package

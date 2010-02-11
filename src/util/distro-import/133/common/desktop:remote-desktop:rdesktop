@@ -1,0 +1,11 @@
+package desktop/remote-desktop/rdesktop
+consolidation "gnome"
+classification "Applications/Internet"
+import SUNWrdesktop
+end package
+
+package SUNWrdesktop
+consolidation "gnome"
+renamed 133
+depend desktop/remote-desktop/rdesktop
+end package

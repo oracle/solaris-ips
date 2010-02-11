@@ -1,0 +1,20 @@
+package web/php-52/extension/php-tcpwrap
+consolidation "sfw"
+classification "Development/PHP"
+import SUNWphp52r-tcpwrap
+import SUNWphp52u-tcpwrap
+depend web/php-52
+version 1.1.3
+
+chattr etc/php/5.2/conf.d/tcpwrap.ini \
+	original_name=SUNWphp52-tcpwrap:etc/php/5.2/conf.d/tcpwrap.ini
+chattr etc/php/5.2/zts-conf.d/tcpwrap.ini \
+	original_name=SUNWphp52-tcpwrap:etc/php/5.2/zts-conf.d/tcpwrap.ini
+end package
+
+package SUNWphp52-tcpwrap
+consolidation "sfw"
+renamed 133
+depend web/php-52/extension/php-tcpwrap
+version 1.1.3
+end package

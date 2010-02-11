@@ -1,0 +1,17 @@
+package driver/network/rds
+consolidation "osnet"
+classification "System/Hardware"
+import SUNWrds
+
+add driver name=rds \
+    perms="* 0644 root sys"
+
+add driver name=rdsib \
+    perms="* 0644 root sys"
+end package
+
+package SUNWrds
+consolidation "osnet"
+renamed 133
+depend driver/network/rds
+end package

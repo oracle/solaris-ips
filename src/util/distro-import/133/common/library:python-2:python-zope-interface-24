@@ -1,0 +1,11 @@
+package library/python-2/python-zope-interface-24
+consolidation "gnome"
+classification "Development/Python"
+import SUNWpython-zope-interface
+end package
+
+package SUNWpython-zope-interface
+consolidation "gnome"
+renamed 133
+depend library/python-2/python-zope-interface-24
+end package

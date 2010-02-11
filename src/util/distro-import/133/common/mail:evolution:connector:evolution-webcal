@@ -1,0 +1,12 @@
+package mail/evolution/connector/evolution-webcal
+consolidation "gnome"
+classification "Applications/Internet"
+import SUNWevolution-webcal
+import SUNWevolution-webcal-root
+end package
+
+package SUNWevolution-webcal
+consolidation "gnome"
+renamed 133
+depend mail/evolution/connector/evolution-webcal
+end package

@@ -1,0 +1,19 @@
+package x11/library/libice
+consolidation "X"
+classification "System/X11"
+import SUNWxwice exclude usr/openwin
+# Obsolete - replaced by /usr/openwin -> X11 symlink
+drop usr/openwin/bin
+drop usr/openwin/bin/iceauth
+drop usr/openwin/lib
+drop usr/openwin/lib/$(ARCH64)
+drop usr/openwin/lib/$(ARCH64)/libICE.so
+drop usr/openwin/lib/$(ARCH64)/libICE.so.6
+drop usr/openwin/lib/libICE.so.6
+end package
+
+package SUNWxwice
+consolidation "X"
+renamed 133
+depend x11/library/libice
+end package

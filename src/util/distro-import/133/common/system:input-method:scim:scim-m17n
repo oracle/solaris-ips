@@ -1,0 +1,11 @@
+package system/input-method/scim/scim-m17n
+consolidation "l10n"
+classification "System/Internationalization"
+import SUNWscim-m17n
+end package
+
+package SUNWscim-m17n
+consolidation "l10n"
+renamed 133
+depend system/input-method/scim/scim-m17n
+end package

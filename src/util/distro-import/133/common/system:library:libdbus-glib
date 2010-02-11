@@ -1,0 +1,13 @@
+package system/library/libdbus-glib
+consolidation "gnome"
+classification "System/Libraries"
+import SUNWdbus-glib
+import SUNWdbus-glib-devel
+depend_path /usr/lib/pkgconfig/dbus-1.pc
+end package
+
+package SUNWdbus-glib
+consolidation "gnome"
+renamed 133
+depend system/library/libdbus-glib
+end package

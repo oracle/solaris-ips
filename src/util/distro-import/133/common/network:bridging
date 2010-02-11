@@ -1,0 +1,12 @@
+package network/bridging
+consolidation "osnet"
+classification "System/Core"
+import SUNWbridger
+import SUNWbridgeu
+end package
+
+package SUNWbridge
+consolidation "osnet"
+renamed 133
+depend network/bridging
+end package

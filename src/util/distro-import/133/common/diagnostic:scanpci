@@ -1,0 +1,14 @@
+package diagnostic/scanpci
+consolidation "X"
+classification "System/Hardware"
+import SUNWpciaccess
+depend_path /usr/share/hwdata/pci.ids
+version 0.10.9
+end package
+
+package SUNWpciaccess
+consolidation "X"
+renamed 133
+depend diagnostic/scanpci
+version 0.10.9
+end package

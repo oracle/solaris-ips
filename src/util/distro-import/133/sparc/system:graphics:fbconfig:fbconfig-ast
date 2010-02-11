@@ -1,0 +1,11 @@
+package system/graphics/fbconfig/fbconfig-ast
+consolidation "smcc"
+classification "Drivers/Display"
+import SUNWastfbcf
+end package
+
+package SUNWastfbcf
+consolidation "smcc"
+renamed 133
+depend system/graphics/fbconfig/fbconfig-ast
+end package

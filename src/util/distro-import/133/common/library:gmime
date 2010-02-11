@@ -1,0 +1,12 @@
+package library/gmime
+consolidation "gnome"
+classification "System/Libraries"
+import SUNWlibgmime
+import SUNWlibgmime-devel
+end package
+
+package SUNWlibgmime
+consolidation "gnome"
+renamed 133
+depend library/gmime
+end package

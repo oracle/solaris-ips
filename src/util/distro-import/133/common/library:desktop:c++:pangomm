@@ -1,0 +1,12 @@
+package library/desktop/c++/pangomm
+consolidation "gnome"
+classification "Desktop (GNOME)/Libraries"
+import SUNWpangomm
+import SUNWpangomm-devel
+end package
+
+package SUNWpangomm
+consolidation "gnome"
+renamed 133
+depend library/desktop/c++/pangomm
+end package

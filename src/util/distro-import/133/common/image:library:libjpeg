@@ -1,0 +1,12 @@
+package image/library/libjpeg
+consolidation "gnome"
+classification "System/Multimedia Libraries"
+import SUNWjpg
+import SUNWjpg-devel
+end package
+
+package SUNWjpg
+consolidation "gnome"
+renamed 133
+depend image/library/libjpeg
+end package

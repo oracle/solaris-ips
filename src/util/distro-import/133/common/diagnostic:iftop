@@ -1,0 +1,13 @@
+package diagnostic/iftop
+consolidation "sfw"
+classification "Applications/System Utilities"
+import SUNWiftop
+version 0.17
+end package
+
+package SUNWiftop
+consolidation "sfw"
+renamed 133
+depend diagnostic/iftop
+version 0.17
+end package

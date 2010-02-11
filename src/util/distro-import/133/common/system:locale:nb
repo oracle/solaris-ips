@@ -1,0 +1,12 @@
+package system/locale/nb
+consolidation "l10n"
+classification "System/Localizations"
+import SUNWlang-nb
+depend system/locale
+end package
+
+package SUNWlang-nb
+consolidation "l10n"
+renamed 133
+depend system/locale/nb
+end package

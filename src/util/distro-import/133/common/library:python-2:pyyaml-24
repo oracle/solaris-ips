@@ -1,0 +1,11 @@
+package library/python-2/pyyaml-24
+consolidation "gnome"
+classification "Development/Python"
+import SUNWpyyaml24
+end package
+
+package SUNWpyyaml24
+consolidation "gnome"
+renamed 133
+depend library/python-2/pyyaml-24
+end package

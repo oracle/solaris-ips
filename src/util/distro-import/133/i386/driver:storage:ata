@@ -1,0 +1,21 @@
+package driver/storage/ata
+consolidation "osnet"
+classification "Drivers/Other Peripherals"
+import SUNWpsdir
+
+add driver name=ata \
+    class=dada \
+    class=scsi \
+    alias="ide"
+
+add driver name=pci-ide
+
+$(i386_ONLY)chattr kernel/drv/ata.conf \
+$(i386_ONLY)	original_name=SUNWpsdir:kernel/drv/ata.conf
+end package
+
+package SUNWpsdir
+consolidation "osnet"
+renamed 133
+depend driver/storage/ata
+end package

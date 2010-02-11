@@ -1,0 +1,12 @@
+package system/locale/is
+consolidation "l10n"
+classification "System/Localizations"
+import SUNWlang-is
+depend system/locale
+end package
+
+package SUNWlang-is
+consolidation "l10n"
+renamed 133
+depend system/locale/is
+end package

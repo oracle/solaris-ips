@@ -1,0 +1,13 @@
+package text/gnu-gettext
+consolidation "sfw"
+classification "Development/GNU"
+import SUNWgnu-gettext
+version 0.16.1
+end package
+
+package SUNWgnu-gettext
+consolidation "sfw"
+renamed 133
+depend text/gnu-gettext
+version 0.16.1
+end package

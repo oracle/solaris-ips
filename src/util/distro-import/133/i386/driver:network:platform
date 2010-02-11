@@ -1,0 +1,82 @@
+package driver/network/platform
+consolidation "osnet"
+classification "System/Core"
+import SUNWos86r
+# BEGIN NON-REDISTRIBUTABLE
+# add driver name=spwr clone_perms="0666 root sys" alias=pci10b8,5
+drop kernel/drv/spwr
+# END NON-REDISTRIBUTABLE
+
+add driver name=dnet \
+    perms="* 0666 root sys" \
+    clone_perms="0666 root sys" \
+    alias="pci1011,2" \
+    alias="pci1011,9" \
+    alias="pci1011,14" \
+    alias="pci1011,19" \
+    alias="pci1109,1400" \
+    alias="pci1109,2400" \
+    alias="pci10b8,2001" \
+    alias="pci2646,1"
+
+add driver name=elxl \
+    perms="* 0666 root sys" \
+    clone_perms="0666 root sys" \
+    alias="pci10b7,9000" \
+    alias="pci10b7,9001" \
+    alias="pci10b7,9004" \
+    alias="pci10b7,9005" \
+    alias="pci10b7,9006" \
+    alias="pci10b7,9050" \
+    alias="pci10b7,9051" \
+    alias="pci10b7,9055" \
+    alias="pci10b7,9056" \
+    alias="pci10b7,9200" \
+    alias="pci10b7,9800" \
+    alias="pci10b7,9805"
+
+add driver name=iprb \
+    perms="* 0666 root sys" \
+    clone_perms="0666 root sys" \
+    alias="pci8086,1029" \
+    alias="pci8086,1229" \
+    alias="pci8086,1229.8086.1009" \
+    alias="pci8086,1229.8086.100c" \
+    alias="pci8086,1229.8086.1012" \
+    alias="pci8086,1229.8086.1013" \
+    alias="pci8086,1229.8086.1015" \
+    alias="pci8086,1229.8086.1016" \
+    alias="pci8086,1229.8086.1017" \
+    alias="pci8086,1229.8086.10f0" \
+    alias="pci8086,1030" \
+    alias="pci8086,1031" \
+    alias="pci8086,1032" \
+    alias="pci8086,1038" \
+    alias="pci8086,1039" \
+    alias="pci8086,103d" \
+    alias="pci8086,1050" \
+    alias="pci8086,1059" \
+    alias="pci8086,1068" \
+    alias="pci8086,1069" \
+    alias="pci8086,1092" \
+    alias="pci8086,1209" \
+    alias="pci8086,2449" \
+    alias="pci8086,27dc"
+
+add driver name=pcn \
+    perms="* 0666 root sys" \
+    clone_perms="0666 root sys" \
+    alias="pci1022,2000" \
+    alias="pci103c,104c"
+
+$(i386_ONLY)chattr etc/mach \
+$(i386_ONLY)	original_name=SUNWos86r:etc/mach
+chattr kernel/drv/sd.conf \
+	original_name=SUNWos86r:kernel/drv/sd.conf
+end package
+
+package SUNWos86r
+consolidation "osnet"
+renamed 133
+depend driver/network/platform
+end package

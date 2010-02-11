@@ -1,0 +1,14 @@
+package service/memcached
+consolidation "sfw"
+classification "Web Services/Application and Web Servers"
+import SUNWmemcached
+import SUNWmemcachedr
+version 1.4.1
+end package
+
+package SUNWmemcached
+consolidation "sfw"
+renamed 133
+depend service/memcached
+version 1.4.1
+end package

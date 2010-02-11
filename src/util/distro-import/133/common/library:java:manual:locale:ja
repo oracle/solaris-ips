@@ -1,0 +1,13 @@
+package library/java/manual/locale/ja
+consolidation "ub_javavm"
+classification "Development/Java"
+import SUNWj6jmp
+depend library/java/manual
+add license DLJ/LICENSE license=SUNWj6jmp.DLJ
+end package
+
+package SUNWj6jmp
+consolidation "ub_javavm"
+renamed 133
+depend library/java/manual/locale/ja
+end package

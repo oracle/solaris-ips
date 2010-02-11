@@ -1,0 +1,14 @@
+package system/management/web/openwsman
+consolidation "sfw"
+classification "Web Services/Application and Web Servers"
+import SUNWopenwsmanr
+import SUNWopenwsmanu
+version 2.1.0
+end package
+
+package SUNWopenwsman
+consolidation "sfw"
+renamed 133
+depend system/management/web/openwsman
+version 2.1.0
+end package

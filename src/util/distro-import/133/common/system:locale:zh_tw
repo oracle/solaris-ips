@@ -1,0 +1,12 @@
+package system/locale/zh_tw
+consolidation "l10n"
+classification "System/Localizations"
+import SUNWlang-zhTW
+depend system/locale
+end package
+
+package SUNWlang-zhTW
+consolidation "l10n"
+renamed 133
+depend system/locale/zh_tw
+end package

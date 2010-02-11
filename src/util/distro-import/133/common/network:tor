@@ -1,0 +1,17 @@
+package network/tor
+consolidation "sfw"
+classification "Applications/Internet"
+import SUNWtor
+import SUNWtor-root
+version 0.2.1.20
+
+chattr etc/torrc \
+	original_name=SUNWtor:etc/torrc
+end package
+
+package SUNWtor
+consolidation "sfw"
+renamed 133
+depend network/tor
+version 0.2.1.20
+end package

@@ -1,0 +1,14 @@
+package driver/audio/audiovia97
+consolidation "osnet"
+classification "Drivers/Media"
+import SUNWaudiovia97
+
+add driver name=audiovia97 \
+    alias="pci1106,3058"
+end package
+
+package SUNWaudiovia97
+consolidation "osnet"
+renamed 133
+depend driver/audio/audiovia97
+end package

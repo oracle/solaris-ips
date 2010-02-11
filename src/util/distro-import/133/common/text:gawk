@@ -1,0 +1,13 @@
+package text/gawk
+consolidation "sfw"
+classification "Applications/System Utilities"
+import SUNWgawk
+version 3.1.5
+end package
+
+package SUNWgawk
+consolidation "sfw"
+renamed 133
+depend text/gawk
+version 3.1.5
+end package

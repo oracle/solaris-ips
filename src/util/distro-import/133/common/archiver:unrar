@@ -1,0 +1,13 @@
+package archiver/unrar
+consolidation "sfw"
+classification "Applications/System Utilities"
+import SUNWunrar
+version 3.8.5
+end package
+
+package SUNWunrar
+consolidation "sfw"
+renamed 133
+depend archiver/unrar
+version 3.8.5
+end package

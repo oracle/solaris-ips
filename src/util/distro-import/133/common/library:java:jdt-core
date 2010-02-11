@@ -1,0 +1,13 @@
+package library/java/jdt-core
+consolidation "sfw"
+classification "Development/Java"
+import SUNWjdtcore
+version 3.2.2
+end package
+
+package SUNWjdtcore
+consolidation "sfw"
+renamed 133
+depend library/java/jdt-core
+version 3.2.2
+end package

@@ -1,0 +1,12 @@
+package desktop/archive-manager/file-roller
+consolidation "gnome"
+classification "Applications/Accessories"
+import SUNWgnome-archive-mgr
+import SUNWgnome-archive-mgr-root
+end package
+
+package SUNWgnome-archive-mgr
+consolidation "gnome"
+renamed 133
+depend desktop/archive-manager/file-roller
+end package

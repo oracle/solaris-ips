@@ -1,0 +1,12 @@
+package library/speech/espeak
+consolidation "gnome"
+classification "Applications/Universal Access"
+import SUNWespeak
+import SUNWespeak-devel
+end package
+
+package SUNWespeak
+consolidation "gnome"
+renamed 133
+depend library/speech/espeak
+end package

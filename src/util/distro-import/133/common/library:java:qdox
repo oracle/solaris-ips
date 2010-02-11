@@ -1,0 +1,13 @@
+package library/java/qdox
+consolidation "sfw"
+classification "Development/Java"
+import SUNWqdox
+version 1.9
+end package
+
+package SUNWqdox
+consolidation "sfw"
+renamed 133
+depend library/java/qdox
+version 1.9
+end package

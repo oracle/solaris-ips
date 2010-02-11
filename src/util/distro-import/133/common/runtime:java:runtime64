@@ -1,0 +1,14 @@
+package runtime/java/runtime64
+consolidation "ub_javavm"
+classification "Development/Java"
+import SUNWj6rtx
+drop usr/jdk/instances/jdk1.6.0/jre/lib/$(ARCH64)/motif21/libmawt.so
+depend runtime/java
+add license DLJ/LICENSE license=SUNWj6rtx.DLJ
+end package
+
+package SUNWj6rtx
+consolidation "ub_javavm"
+renamed 133
+depend runtime/java/runtime64
+end package

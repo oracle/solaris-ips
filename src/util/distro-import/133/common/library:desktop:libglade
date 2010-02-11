@@ -1,0 +1,12 @@
+package library/desktop/libglade
+consolidation "gnome"
+classification "Desktop (GNOME)/Libraries"
+import SUNWlibglade
+import SUNWlibglade-devel
+end package
+
+package SUNWlibglade
+consolidation "gnome"
+renamed 133
+depend library/desktop/libglade
+end package

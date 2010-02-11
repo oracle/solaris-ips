@@ -1,0 +1,12 @@
+package system/library/storage/fibre-channel/libsun_fc
+consolidation "osnet"
+classification "System/Libraries"
+import SUNWfchba
+import SUNWfchbar
+end package
+
+package SUNWfchba
+consolidation "osnet"
+renamed 133
+depend system/library/storage/fibre-channel/libsun_fc
+end package

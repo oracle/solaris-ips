@@ -1,0 +1,13 @@
+package library/graphics/pixman
+consolidation "X"
+classification "System/Libraries"
+import SUNWpixman
+version 0.16.4
+end package
+
+package SUNWpixman
+consolidation "X"
+renamed 133
+depend library/graphics/pixman
+version 0.16.4
+end package

@@ -1,0 +1,12 @@
+package library/desktop/gtkspell
+consolidation "gnome"
+classification "Applications/Accessories"
+import SUNWgtkspell
+import SUNWgtkspell-devel
+end package
+
+package SUNWgtkspell
+consolidation "gnome"
+renamed 133
+depend library/desktop/gtkspell
+end package

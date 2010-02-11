@@ -1,0 +1,11 @@
+package library/java/jdmk-runtime
+consolidation "jdmk"
+classification "Development/Java"
+import SUNWjdmk-base
+end package
+
+package SUNWjdmk-base
+consolidation "jdmk"
+renamed 133
+depend library/java/jdmk-runtime
+end package

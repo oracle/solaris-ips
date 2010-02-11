@@ -1,0 +1,12 @@
+package library/libtasn1
+consolidation "gnome"
+classification "System/Libraries"
+import SUNWlibtasn1
+import SUNWlibtasn1-devel
+end package
+
+package SUNWlibtasn1
+consolidation "gnome"
+renamed 133
+depend library/libtasn1
+end package

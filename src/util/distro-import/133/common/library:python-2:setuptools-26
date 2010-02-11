@@ -1,0 +1,12 @@
+package library/python-2/setuptools-26
+consolidation "gnome"
+classification "Development/Python"
+import SUNWpython26-setuptools
+depend runtime/python-26
+end package
+
+package SUNWpython26-setuptools
+consolidation "gnome"
+renamed 133
+depend library/python-2/setuptools-26
+end package

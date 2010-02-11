@@ -1,0 +1,11 @@
+package system/boot/wanboot
+consolidation "osnet"
+classification "System/Core"
+import SUNWwbsup
+end package
+
+package SUNWwbsup
+consolidation "osnet"
+renamed 133
+depend system/boot/wanboot
+end package

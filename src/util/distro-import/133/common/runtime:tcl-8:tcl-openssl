@@ -1,0 +1,13 @@
+package runtime/tcl-8/tcl-openssl
+consolidation "sfw"
+classification "Development/Other Languages"
+import SUNWtcltls
+version 1.6
+end package
+
+package SUNWtcltls
+consolidation "sfw"
+renamed 133
+depend runtime/tcl-8/tcl-openssl
+version 1.6
+end package

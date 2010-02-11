@@ -1,0 +1,12 @@
+package library/java/manual
+consolidation "ub_javavm"
+classification "Development/Java"
+import SUNWj6man
+add license DLJ/LICENSE license=SUNWj6man.DLJ
+end package
+
+package SUNWj6man
+consolidation "ub_javavm"
+renamed 133
+depend library/java/manual
+end package

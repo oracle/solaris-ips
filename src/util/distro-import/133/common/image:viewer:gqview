@@ -1,0 +1,11 @@
+package image/viewer/gqview
+consolidation "gnome"
+classification "Applications/Graphics and Imaging"
+import SUNWgqview
+end package
+
+package SUNWgqview
+consolidation "gnome"
+renamed 133
+depend image/viewer/gqview
+end package

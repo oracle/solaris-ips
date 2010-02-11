@@ -1,0 +1,11 @@
+package driver/graphics/dcam1394/devfsadm-dcam1394
+consolidation "osnet"
+classification "System/Media"
+import SUNWfwdcu
+end package
+
+package SUNWfwdcu
+consolidation "osnet"
+renamed 133
+depend driver/graphics/dcam1394/devfsadm-dcam1394
+end package

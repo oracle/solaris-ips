@@ -1,0 +1,12 @@
+package library/gc
+consolidation "gnome"
+classification "Development/C++"
+import SUNWlibgc
+import SUNWlibgc-devel
+end package
+
+package SUNWlibgc
+consolidation "gnome"
+renamed 133
+depend library/gc
+end package

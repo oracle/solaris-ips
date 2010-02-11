@@ -1,0 +1,11 @@
+package library/myspell/dictionary/noinst
+consolidation "gnome_l10n"
+classification "System/Localizations"
+import SUNWmyspell-dictionary-noinst
+end package
+
+package SUNWmyspell-dictionary-noinst
+consolidation "gnome_l10n"
+renamed 133
+depend library/myspell/dictionary/noinst
+end package

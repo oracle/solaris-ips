@@ -1,0 +1,16 @@
+package driver/network/rwn
+consolidation "osnet"
+classification "Drivers/Networking"
+import SUNWrwn
+
+add driver name=rwn \
+    perms="* 0666 root sys" \
+    clone_perms="0666 root sys" \
+    alias="pci1814,781"
+end package
+
+package SUNWrwn
+consolidation "osnet"
+renamed 133
+depend driver/network/rwn
+end package

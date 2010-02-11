@@ -1,0 +1,11 @@
+package web/browser/firefox/locale/zh_tw
+consolidation "gnome_l10n"
+classification "Applications/Internet"
+import SUNWfirefoxl10n-zh-TW
+end package
+
+package SUNWfirefoxl10n-zh-TW
+consolidation "gnome_l10n"
+renamed 133
+depend web/browser/firefox/locale/zh_tw
+end package

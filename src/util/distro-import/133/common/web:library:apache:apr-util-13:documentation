@@ -1,0 +1,13 @@
+package web/library/apache/apr-util-13/documentation
+consolidation "sfw"
+classification "Web Services/Application and Web Servers"
+import SUNWapu13doc
+version 1.3
+end package
+
+package SUNWapu13doc
+consolidation "sfw"
+renamed 133
+depend web/library/apache/apr-util-13/documentation
+version 1.3
+end package

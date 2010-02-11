@@ -1,0 +1,11 @@
+package release/name
+consolidation "solaris_re"
+classification "System/Core"
+import SUNWsolnm
+end package
+
+package SUNWsolnm
+consolidation "solaris_re"
+renamed 133
+depend release/name
+end package

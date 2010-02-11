@@ -1,0 +1,17 @@
+package web/wget
+consolidation "sfw"
+classification "Applications/Internet"
+import SUNWwgetu
+import SUNWwgetr
+version 1.12
+
+chattr etc/wgetrc \
+	original_name=SUNWwget:etc/wgetrc
+end package
+
+package SUNWwget
+consolidation "sfw"
+renamed 133
+depend web/wget
+version 1.12
+end package

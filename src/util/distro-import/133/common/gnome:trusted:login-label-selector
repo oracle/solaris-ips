@@ -1,0 +1,11 @@
+package gnome/trusted/login-label-selector
+consolidation "gnome"
+classification "Desktop (GNOME)/Trusted Extensions"
+import SUNWtgnome-tsoljdslabel
+end package
+
+package SUNWtgnome-tsoljdslabel
+consolidation "gnome"
+renamed 133
+depend gnome/trusted/login-label-selector
+end package

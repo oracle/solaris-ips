@@ -1,0 +1,12 @@
+package gnome/applet/gnome-intranet-applets
+consolidation "gnome"
+classification "Applications/Panels and Applets"
+import SUNWgnome-intranet-applets
+import SUNWgnome-intranet-applets-root
+end package
+
+package SUNWgnome-intranet-applets
+consolidation "gnome"
+renamed 133
+depend gnome/applet/gnome-intranet-applets
+end package

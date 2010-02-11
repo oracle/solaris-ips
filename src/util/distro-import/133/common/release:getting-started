@@ -1,0 +1,11 @@
+package release/getting-started
+consolidation "gnome"
+classification "Desktop (GNOME)/Documentation"
+import SUNWgetting-started-guide
+end package
+
+package SUNWgetting-started-guide
+consolidation "gnome"
+renamed 133
+depend release/getting-started
+end package

@@ -1,0 +1,19 @@
+package system/zones/brand/ipkg
+consolidation "ips"
+classification "System/Packaging"
+import SUNWipkg-brand
+depend system/extended-system-utilities
+depend package/pkg
+depend system/zones
+
+chattr etc/brand/ipkg/pkgrm.conf \
+	original_name=SUNWipkg-brand:etc/brand/ipkg/pkgrm.conf
+chattr etc/brand/ipkg/smf_disable.conf \
+	original_name=SUNWipkg-brand:etc/brand/ipkg/smf_disable.conf
+end package
+
+package SUNWipkg-brand
+consolidation "ips"
+renamed 133
+depend system/zones/brand/ipkg
+end package

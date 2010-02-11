@@ -1,0 +1,19 @@
+package service/network/ssh
+consolidation "osnet"
+classification "System/Security"
+import SUNWsshdu
+import SUNWsshdr
+# Replace method script to support generating keys on live CD
+drop lib/svc/method/sshd
+add file sshd path=lib/svc/method/sshd mode=0555 owner=root group=bin
+depend text/locale
+
+chattr etc/ssh/sshd_config \
+	original_name=SUNWsshd:etc/ssh/sshd_config
+end package
+
+package SUNWsshd
+consolidation "osnet"
+renamed 133
+depend service/network/ssh
+end package

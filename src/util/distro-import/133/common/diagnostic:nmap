@@ -1,0 +1,14 @@
+package diagnostic/nmap
+consolidation "sfw"
+classification "System/Administration and Configuration"
+import SUNWnmap
+version 4.75
+depend library/python-2/pysqlite-24
+end package
+
+package SUNWnmap
+consolidation "sfw"
+renamed 133
+depend diagnostic/nmap
+version 4.75
+end package

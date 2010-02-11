@@ -1,0 +1,12 @@
+package library/java/java-gnome
+consolidation "gnome"
+classification "Development/Java"
+import SUNWgnome-base-libs-java
+import SUNWgnome-base-libs-java-devel
+end package
+
+package SUNWgnome-base-libs-java
+consolidation "gnome"
+renamed 133
+depend library/java/java-gnome
+end package

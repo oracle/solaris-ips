@@ -1,0 +1,11 @@
+package desktop/gftp
+consolidation "gnome"
+classification "Applications/System Utilities"
+import SUNWgftp
+end package
+
+package SUNWgftp
+consolidation "gnome"
+renamed 133
+depend desktop/gftp
+end package

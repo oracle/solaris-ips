@@ -1,0 +1,13 @@
+package library/python-2/pyopenssl-26
+consolidation "sfw"
+classification "Development/Python"
+import SUNWpython26-pyopenssl
+version 0.8
+end package
+
+package SUNWpython26-pyopenssl
+consolidation "sfw"
+renamed 133
+depend library/python-2/pyopenssl-26
+version 0.8
+end package

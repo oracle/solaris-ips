@@ -1,0 +1,11 @@
+package text/groff
+consolidation "gnome"
+classification "System/Text Tools"
+import SUNWgroff
+end package
+
+package SUNWgroff
+consolidation "gnome"
+renamed 133
+depend text/groff
+end package

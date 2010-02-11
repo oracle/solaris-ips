@@ -1,0 +1,23 @@
+package driver/network/bnxe
+consolidation "osnet"
+classification "Drivers/Networking"
+import BRCMbnxe
+
+add driver name=bnxe \
+    perms="* 0666 root sys" \
+    alias="pci14e4,164e" \
+    alias="pci14e4,164f" \
+    alias="pci14e4,1650" \
+    alias="pciex14e4,164e" \
+    alias="pciex14e4,164f" \
+    alias="pciex14e4,1650"
+
+$(i386_ONLY)chattr kernel/drv/bnxe.conf \
+$(i386_ONLY)	original_name=BRCMbnxe:kernel/drv/bnxe.conf
+end package
+
+package BRCMbnxe
+consolidation "osnet"
+renamed 133
+depend driver/network/bnxe
+end package

@@ -1,0 +1,12 @@
+package system/management/visual-panels/panel-sharemgr
+consolidation "vpanels"
+classification "Applications/Configuration and Preferences"
+import OSOLvpin-sharemgr
+depend system/management/visual-panels
+end package
+
+package OSOLvpanels-sharemgr
+consolidation "vpanels"
+renamed 133
+depend system/management/visual-panels/panel-sharemgr
+end package

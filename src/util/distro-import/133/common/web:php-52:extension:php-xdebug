@@ -1,0 +1,20 @@
+package web/php-52/extension/php-xdebug
+consolidation "sfw"
+classification "Development/PHP"
+import SUNWphp52r-xdebug
+import SUNWphp52u-xdebug
+depend web/php-52
+version 2.0.5
+
+chattr etc/php/5.2/conf.d/xdebug.ini \
+	original_name=SUNWphp52-xdebug:etc/php/5.2/conf.d/xdebug.ini
+chattr etc/php/5.2/zts-conf.d/xdebug.ini \
+	original_name=SUNWphp52-xdebug:etc/php/5.2/zts-conf.d/xdebug.ini
+end package
+
+package SUNWphp52-xdebug
+consolidation "sfw"
+renamed 133
+depend web/php-52/extension/php-xdebug
+version 2.0.5
+end package

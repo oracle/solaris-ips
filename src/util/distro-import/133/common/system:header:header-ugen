@@ -1,0 +1,11 @@
+package system/header/header-ugen
+consolidation "osnet"
+classification "System/Hardware"
+import SUNWugenu
+end package
+
+package SUNWugenu
+consolidation "osnet"
+renamed 133
+depend system/header/header-ugen
+end package

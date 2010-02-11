@@ -1,0 +1,13 @@
+package image/dcraw
+consolidation "gnome"
+classification "System/Media"
+import SUNWdcraw
+version 8.81
+end package
+
+package SUNWdcraw
+consolidation "gnome"
+renamed 133
+depend image/dcraw
+version 8.81
+end package

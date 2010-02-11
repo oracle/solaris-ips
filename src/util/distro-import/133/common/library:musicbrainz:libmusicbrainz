@@ -1,0 +1,12 @@
+package library/musicbrainz/libmusicbrainz
+consolidation "gnome"
+classification "System/Multimedia Libraries"
+import SUNWmusicbrainz
+import SUNWmusicbrainz-devel
+end package
+
+package SUNWmusicbrainz
+consolidation "gnome"
+renamed 133
+depend library/musicbrainz/libmusicbrainz
+end package

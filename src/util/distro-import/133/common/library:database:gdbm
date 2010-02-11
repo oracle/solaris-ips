@@ -1,0 +1,13 @@
+package library/database/gdbm
+consolidation "sfw"
+classification "Development/Databases"
+import SUNWgnu-dbm
+version 1.8.3
+end package
+
+package SUNWgnu-dbm
+consolidation "sfw"
+renamed 133
+depend library/database/gdbm
+version 1.8.3
+end package

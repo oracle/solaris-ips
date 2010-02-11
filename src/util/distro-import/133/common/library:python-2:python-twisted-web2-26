@@ -1,0 +1,11 @@
+package library/python-2/python-twisted-web2-26
+consolidation "gnome"
+classification "Development/Python"
+import SUNWpython26-twisted-web2
+end package
+
+package SUNWpython26-twisted-web2
+consolidation "gnome"
+renamed 133
+depend library/python-2/python-twisted-web2-26
+end package

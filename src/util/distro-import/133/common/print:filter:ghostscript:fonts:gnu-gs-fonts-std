@@ -1,0 +1,13 @@
+package print/filter/ghostscript/fonts/gnu-gs-fonts-std
+consolidation "sfw"
+classification "System/Fonts"
+import SUNWgsfst
+version 6.0
+end package
+
+package SUNWgsfst
+consolidation "sfw"
+renamed 133
+depend print/filter/ghostscript/fonts/gnu-gs-fonts-std
+version 6.0
+end package

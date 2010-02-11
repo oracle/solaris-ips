@@ -1,0 +1,34 @@
+package system/kernel/dtrace/providers
+consolidation "osnet"
+classification "Development/System"
+import SUNWdtrp
+
+add driver name=dcpc
+
+add driver name=dtrace \
+    perms="* 0666 root sys"
+
+add driver name=fasttrap \
+    perms="fasttrap 0666 root sys"
+
+add driver name=fbt \
+    perms="fbt 0644 root sys"
+
+add driver name=lockstat \
+    perms="* 0644 root sys"
+
+add driver name=profile \
+    perms="profile 0644 root sys"
+
+add driver name=sdt \
+    perms="sdt 0644 root sys"
+
+add driver name=systrace \
+    perms="systrace 0644 root sys"
+end package
+
+package SUNWdtrp
+consolidation "osnet"
+renamed 133
+depend system/kernel/dtrace/providers
+end package

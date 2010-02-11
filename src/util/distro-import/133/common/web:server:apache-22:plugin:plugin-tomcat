@@ -1,0 +1,19 @@
+package web/server/apache-22/plugin/plugin-tomcat
+consolidation "sfw"
+classification "Web Services/Application and Web Servers"
+import SUNWapch22m-jk
+import SUNWapch22r-jk
+version 1.2.28
+
+chattr etc/apache2/2.2/conf.d/jk.conf \
+	original_name=SUNWapch22m-jk:etc/apache2/2.2/conf.d/jk.conf
+chattr etc/apache2/2.2/conf.d/workers.properties \
+	original_name=SUNWapch22m-jk:etc/apache2/2.2/conf.d/workers.properties
+end package
+
+package SUNWapch22m-jk
+consolidation "sfw"
+renamed 133
+depend web/server/apache-22/plugin/plugin-tomcat
+version 1.2.28
+end package

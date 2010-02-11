@@ -1,0 +1,24 @@
+package system/trusted
+consolidation "osnet"
+classification "System/Trusted"
+import SUNWtsu
+drop usr/sbin/txzonemgr
+add file txzonemgr path=usr/sbin/txzonemgr mode=0555 owner=root group=sys
+import SUNWtsr
+add dir path=usr/lib/brand/labeled mode=0755 owner=root group=sys
+add file config.xml path=usr/lib/brand/labeled/config.xml mode=0444 \
+	owner=root group=bin
+add file platform.xml path=usr/lib/brand/labeled/platform.xml mode=0444 \
+	owner=root group=bin
+depend system/file-system/zfs
+depend system/zones
+
+chattr usr/lib/lp/postscript/tsol_separator.ps \
+	original_name=SUNWts:usr/lib/lp/postscript/tsol_separator.ps
+end package
+
+package SUNWts
+consolidation "osnet"
+renamed 133
+depend system/trusted
+end package

@@ -1,0 +1,16 @@
+package driver/storage/ses
+consolidation "osnet"
+classification "Drivers/Ports"
+import SUNWses
+
+add driver name=ses \
+    perms="* 0666 bin bin" \
+    alias="scsiclass,0d" \
+    alias="scsiclass,03S"
+end package
+
+package SUNWses
+consolidation "osnet"
+renamed 133
+depend driver/storage/ses
+end package

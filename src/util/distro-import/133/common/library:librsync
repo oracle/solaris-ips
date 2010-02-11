@@ -1,0 +1,13 @@
+package library/librsync
+consolidation "sfw"
+classification "System/Libraries"
+import SUNWlibrsync
+version 0.9.7
+end package
+
+package SUNWlibrsync
+consolidation "sfw"
+renamed 133
+depend library/librsync
+version 0.9.7
+end package

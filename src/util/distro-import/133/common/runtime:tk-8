@@ -1,0 +1,13 @@
+package runtime/tk-8
+consolidation "sfw"
+classification "Development/Other Languages"
+import SUNWTk
+version 8.4.18
+end package
+
+package SUNWTk
+consolidation "sfw"
+renamed 133
+depend runtime/tk-8
+version 8.4.18
+end package

@@ -1,0 +1,11 @@
+package print/psutils
+consolidation "sfw"
+classification "System/Printing"
+import SUNWpsutils
+end package
+
+package SUNWpsutils
+consolidation "sfw"
+renamed 133
+depend print/psutils
+end package

@@ -1,0 +1,12 @@
+package gnome/crash-report/bug-buddy
+consolidation "gnome"
+classification "Development/GNOME and GTK+"
+import SUNWgnome-crash-report
+import SUNWgnome-crash-report-root
+end package
+
+package SUNWgnome-crash-report
+consolidation "gnome"
+renamed 133
+depend gnome/crash-report/bug-buddy
+end package

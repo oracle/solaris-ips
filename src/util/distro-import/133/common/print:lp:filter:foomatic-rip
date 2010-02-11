@@ -1,0 +1,17 @@
+package print/lp/filter/foomatic-rip
+consolidation "sfw"
+classification "System/Printing"
+import SUNWffiltersu
+import SUNWffiltersr
+version 3.0.2
+
+chattr etc/gnu/foomatic/filter.conf \
+	original_name=SUNWffilters:etc/gnu/foomatic/filter.conf
+end package
+
+package SUNWffilters
+consolidation "sfw"
+renamed 133
+depend print/lp/filter/foomatic-rip
+version 3.0.2
+end package

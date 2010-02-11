@@ -1,0 +1,16 @@
+package developer/debug/mdb
+consolidation "osnet"
+classification "Development/System"
+import SUNWmdb
+import SUNWmdbr
+# BEGIN NON-REDISTRIBUTABLE
+$(sparc_ONLY)drop kernel/kmdb/$(ARCH64)/isp
+$(sparc_ONLY)drop usr/lib/mdb/kvm/$(ARCH64)/isp.so
+# END NON-REDISTRIBUTABLE
+end package
+
+package SUNWmdb
+consolidation "osnet"
+renamed 133
+depend developer/debug/mdb
+end package

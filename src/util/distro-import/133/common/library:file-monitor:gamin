@@ -1,0 +1,12 @@
+package library/file-monitor/gamin
+consolidation "gnome"
+classification "System/Libraries"
+import SUNWgamin
+import SUNWgamin-devel
+end package
+
+package SUNWgamin
+consolidation "gnome"
+renamed 133
+depend library/file-monitor/gamin
+end package

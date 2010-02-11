@@ -1,0 +1,12 @@
+package gnome/applet/gnome-fun-applets
+consolidation "gnome"
+classification "Applications/Panels and Applets"
+import SUNWgnome-fun-applets
+import SUNWgnome-fun-applets-root
+end package
+
+package SUNWgnome-fun-applets
+consolidation "gnome"
+renamed 133
+depend gnome/applet/gnome-fun-applets
+end package

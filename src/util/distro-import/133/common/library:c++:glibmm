@@ -1,0 +1,12 @@
+package library/c++/glibmm
+consolidation "gnome"
+classification "Desktop (GNOME)/Libraries"
+import SUNWglibmm
+import SUNWglibmm-devel
+end package
+
+package SUNWglibmm
+consolidation "gnome"
+renamed 133
+depend library/c++/glibmm
+end package

@@ -1,0 +1,13 @@
+package shell/pipe-viewer
+consolidation "sfw"
+classification "Applications/System Utilities"
+import SUNWpipe-viewer
+version 1.1.4
+end package
+
+package SUNWpipe-viewer
+consolidation "sfw"
+renamed 133
+depend shell/pipe-viewer
+version 1.1.4
+end package

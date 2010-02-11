@@ -1,0 +1,11 @@
+package system/header/header-agp
+consolidation "osnet"
+classification "Development/System"
+import SUNWagph
+end package
+
+package SUNWagph
+consolidation "osnet"
+renamed 133
+depend system/header/header-agp
+end package

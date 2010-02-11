@@ -1,0 +1,11 @@
+package gnome/theme/gnome-themes-extra
+consolidation "gnome"
+classification "Desktop (GNOME)/Theming"
+import SUNWgnome-themes-only-extra
+end package
+
+package SUNWgnome-themes-only-extra
+consolidation "gnome"
+renamed 133
+depend gnome/theme/gnome-themes-extra
+end package

@@ -1,0 +1,11 @@
+package x11/developer/manual
+consolidation "X"
+classification "Development/X11"
+import SUNWxwpmn
+end package
+
+package SUNWxwpmn
+consolidation "X"
+renamed 133
+depend x11/developer/manual
+end package

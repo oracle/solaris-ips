@@ -1,0 +1,79 @@
+package web/php-52
+consolidation "sfw"
+classification "Development/PHP"
+import SUNWphp52r
+import SUNWphp52u
+version 5.2.12
+
+chattr etc/php/5.2/conf.d/bz2.ini \
+	original_name=SUNWphp52:etc/php/5.2/conf.d/bz2.ini
+chattr etc/php/5.2/conf.d/curl.ini \
+	original_name=SUNWphp52:etc/php/5.2/conf.d/curl.ini
+chattr etc/php/5.2/conf.d/ftp.ini \
+	original_name=SUNWphp52:etc/php/5.2/conf.d/ftp.ini
+chattr etc/php/5.2/conf.d/gd.ini \
+	original_name=SUNWphp52:etc/php/5.2/conf.d/gd.ini
+chattr etc/php/5.2/conf.d/gettext.ini \
+	original_name=SUNWphp52:etc/php/5.2/conf.d/gettext.ini
+chattr etc/php/5.2/conf.d/iconv.ini \
+	original_name=SUNWphp52:etc/php/5.2/conf.d/iconv.ini
+chattr etc/php/5.2/conf.d/imap.ini \
+	original_name=SUNWphp52:etc/php/5.2/conf.d/imap.ini
+chattr etc/php/5.2/conf.d/ldap.ini \
+	original_name=SUNWphp52:etc/php/5.2/conf.d/ldap.ini
+chattr etc/php/5.2/conf.d/mcrypt.ini \
+	original_name=SUNWphp52:etc/php/5.2/conf.d/mcrypt.ini
+chattr etc/php/5.2/conf.d/openssl.ini \
+	original_name=SUNWphp52:etc/php/5.2/conf.d/openssl.ini
+chattr etc/php/5.2/conf.d/pdo.ini \
+	original_name=SUNWphp52:etc/php/5.2/conf.d/pdo.ini
+chattr etc/php/5.2/conf.d/pdo_sqlite.ini \
+	original_name=SUNWphp52:etc/php/5.2/conf.d/pdo_sqlite.ini
+chattr etc/php/5.2/conf.d/snmp.ini \
+	original_name=SUNWphp52:etc/php/5.2/conf.d/snmp.ini
+chattr etc/php/5.2/conf.d/sqlite.ini \
+	original_name=SUNWphp52:etc/php/5.2/conf.d/sqlite.ini
+chattr etc/php/5.2/conf.d/tidy.ini \
+	original_name=SUNWphp52:etc/php/5.2/conf.d/tidy.ini
+chattr etc/php/5.2/nsapi/php.ini \
+	original_name=SUNWphp52:etc/php/5.2/nsapi/php.ini
+chattr etc/php/5.2/php.ini \
+	original_name=SUNWphp52:etc/php/5.2/php.ini
+chattr etc/php/5.2/zts-conf.d/bz2.ini \
+	original_name=SUNWphp52:etc/php/5.2/zts-conf.d/bz2.ini
+chattr etc/php/5.2/zts-conf.d/curl.ini \
+	original_name=SUNWphp52:etc/php/5.2/zts-conf.d/curl.ini
+chattr etc/php/5.2/zts-conf.d/ftp.ini \
+	original_name=SUNWphp52:etc/php/5.2/zts-conf.d/ftp.ini
+chattr etc/php/5.2/zts-conf.d/gd.ini \
+	original_name=SUNWphp52:etc/php/5.2/zts-conf.d/gd.ini
+chattr etc/php/5.2/zts-conf.d/gettext.ini \
+	original_name=SUNWphp52:etc/php/5.2/zts-conf.d/gettext.ini
+chattr etc/php/5.2/zts-conf.d/iconv.ini \
+	original_name=SUNWphp52:etc/php/5.2/zts-conf.d/iconv.ini
+chattr etc/php/5.2/zts-conf.d/imap.ini \
+	original_name=SUNWphp52:etc/php/5.2/zts-conf.d/imap.ini
+chattr etc/php/5.2/zts-conf.d/ldap.ini \
+	original_name=SUNWphp52:etc/php/5.2/zts-conf.d/ldap.ini
+chattr etc/php/5.2/zts-conf.d/mcrypt.ini \
+	original_name=SUNWphp52:etc/php/5.2/zts-conf.d/mcrypt.ini
+chattr etc/php/5.2/zts-conf.d/openssl.ini \
+	original_name=SUNWphp52:etc/php/5.2/zts-conf.d/openssl.ini
+chattr etc/php/5.2/zts-conf.d/pdo.ini \
+	original_name=SUNWphp52:etc/php/5.2/zts-conf.d/pdo.ini
+chattr etc/php/5.2/zts-conf.d/pdo_sqlite.ini \
+	original_name=SUNWphp52:etc/php/5.2/zts-conf.d/pdo_sqlite.ini
+chattr etc/php/5.2/zts-conf.d/snmp.ini \
+	original_name=SUNWphp52:etc/php/5.2/zts-conf.d/snmp.ini
+chattr etc/php/5.2/zts-conf.d/sqlite.ini \
+	original_name=SUNWphp52:etc/php/5.2/zts-conf.d/sqlite.ini
+chattr etc/php/5.2/zts-conf.d/tidy.ini \
+	original_name=SUNWphp52:etc/php/5.2/zts-conf.d/tidy.ini
+end package
+
+package SUNWphp52
+consolidation "sfw"
+renamed 133
+depend web/php-52
+version 5.2.12
+end package

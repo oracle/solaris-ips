@@ -1,0 +1,11 @@
+package library/python-2/python-imaging-24
+consolidation "gnome"
+classification "Development/Python"
+import SUNWpython-imaging
+end package
+
+package SUNWpython-imaging
+consolidation "gnome"
+renamed 133
+depend library/python-2/python-imaging-24
+end package

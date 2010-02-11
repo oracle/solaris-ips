@@ -1,0 +1,11 @@
+package library/python-2/python-pigment-26
+consolidation "gnome"
+classification "System/Multimedia Libraries"
+import SUNWlibpigment-python26
+end package
+
+package SUNWlibpigment-python26
+consolidation "gnome"
+renamed 133
+depend library/python-2/python-pigment-26
+end package

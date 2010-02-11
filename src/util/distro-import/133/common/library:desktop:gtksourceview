@@ -1,0 +1,12 @@
+package library/desktop/gtksourceview
+consolidation "gnome"
+classification "Desktop (GNOME)/Libraries"
+import SUNWgnome-gtksourceview
+import SUNWgnome-gtksourceview-devel
+end package
+
+package SUNWgnome-gtksourceview
+consolidation "gnome"
+renamed 133
+depend library/desktop/gtksourceview
+end package

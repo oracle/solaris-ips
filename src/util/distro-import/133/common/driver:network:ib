@@ -1,0 +1,17 @@
+package driver/network/ib
+consolidation "osnet"
+classification "System/Hardware"
+import SUNWib
+
+add driver name=ib \
+    perms="* 0644 root sys"
+
+chattr kernel/drv/ib.conf \
+	original_name=SUNWib:kernel/drv/ib.conf
+end package
+
+package SUNWib
+consolidation "osnet"
+renamed 133
+depend driver/network/ib
+end package

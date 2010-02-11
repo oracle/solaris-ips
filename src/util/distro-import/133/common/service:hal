@@ -1,0 +1,12 @@
+package service/hal
+consolidation "osnet"
+classification "System/Hardware"
+import SUNWhal
+import SUNWhalr
+end package
+
+package SUNWhal
+consolidation "osnet"
+renamed 133
+depend service/hal
+end package

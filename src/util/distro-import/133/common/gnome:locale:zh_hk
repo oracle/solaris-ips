@@ -1,0 +1,11 @@
+package gnome/locale/zh_hk
+consolidation "gnome_l10n"
+classification "Desktop (GNOME)/Localizations"
+import SUNWgnome-l10nmessages-zhHK
+end package
+
+package SUNWgnome-l10nmessages-zhHK
+consolidation "gnome_l10n"
+renamed 133
+depend gnome/locale/zh_hk
+end package

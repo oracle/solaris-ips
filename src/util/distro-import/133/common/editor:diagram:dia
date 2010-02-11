@@ -1,0 +1,11 @@
+package editor/diagram/dia
+consolidation "gnome"
+classification "Applications/Graphics and Imaging"
+import SUNWdia
+end package
+
+package SUNWdia
+consolidation "gnome"
+renamed 133
+depend editor/diagram/dia
+end package

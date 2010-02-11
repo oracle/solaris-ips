@@ -1,0 +1,13 @@
+package gnome/window-manager/metacity
+consolidation "gnome"
+classification "Desktop (GNOME)/Window Managers"
+import SUNWgnome-wm
+import SUNWgnome-wm-devel
+import SUNWgnome-wm-root
+end package
+
+package SUNWgnome-wm
+consolidation "gnome"
+renamed 133
+depend gnome/window-manager/metacity
+end package

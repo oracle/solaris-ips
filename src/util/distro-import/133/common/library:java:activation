@@ -1,0 +1,13 @@
+package library/java/activation
+consolidation "sfw"
+classification "Development/Java"
+import SUNWactivation
+version 1.1.1
+end package
+
+package SUNWactivation
+consolidation "sfw"
+renamed 133
+depend library/java/activation
+version 1.1.1
+end package

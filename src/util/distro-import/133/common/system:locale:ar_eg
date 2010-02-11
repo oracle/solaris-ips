@@ -1,0 +1,12 @@
+package system/locale/ar_eg
+consolidation "l10n"
+classification "System/Localizations"
+import SUNWlang-arEG
+depend system/locale
+end package
+
+package SUNWlang-arEG
+consolidation "l10n"
+renamed 133
+depend system/locale/ar_eg
+end package

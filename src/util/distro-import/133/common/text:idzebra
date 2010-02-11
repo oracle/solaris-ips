@@ -1,0 +1,13 @@
+package text/idzebra
+consolidation "sfw"
+classification "System/Text Tools"
+import SUNWidzebra
+version 2.0.40
+end package
+
+package SUNWidzebra
+consolidation "sfw"
+renamed 133
+depend text/idzebra
+version 2.0.40
+end package

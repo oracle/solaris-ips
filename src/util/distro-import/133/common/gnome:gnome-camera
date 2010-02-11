@@ -1,0 +1,14 @@
+package gnome/gnome-camera
+consolidation "gnome"
+classification "Applications/Graphics and Imaging"
+import SUNWgnome-camera exclude \
+	usr/lib/gimp/2.0/plug-ins \
+	usr/lib/gimp/2.0/plug-ins/gtkam-gimp
+import SUNWgnome-camera-devel
+end package
+
+package SUNWgnome-camera
+consolidation "gnome"
+renamed 133
+depend gnome/gnome-camera
+end package

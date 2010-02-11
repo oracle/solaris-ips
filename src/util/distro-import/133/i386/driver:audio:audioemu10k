@@ -1,0 +1,16 @@
+package driver/audio/audioemu10k
+consolidation "osnet"
+classification "Drivers/Media"
+import SUNWaudioemu10k
+
+add driver name=audioemu10k \
+    alias="pci1102,2" \
+    alias="pci1102,4" \
+    alias="pci1102,8"
+end package
+
+package SUNWaudioemu10k
+consolidation "osnet"
+renamed 133
+depend driver/audio/audioemu10k
+end package

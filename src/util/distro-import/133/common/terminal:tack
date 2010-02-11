@@ -1,0 +1,11 @@
+package terminal/tack
+consolidation "gnome"
+classification "Applications/System Utilities"
+import SUNWtack
+end package
+
+package SUNWtack
+consolidation "gnome"
+renamed 133
+depend terminal/tack
+end package

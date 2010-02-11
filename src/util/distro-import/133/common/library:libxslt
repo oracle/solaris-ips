@@ -1,0 +1,14 @@
+package library/libxslt
+consolidation "sfw"
+classification "System/Libraries"
+import SUNWlxsl
+import SUNWlxsl-devel
+version 1.1.26
+end package
+
+package SUNWlxsl
+consolidation "sfw"
+renamed 133
+depend library/libxslt
+version 1.1.26
+end package

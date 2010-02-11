@@ -1,0 +1,13 @@
+package desktop/character-map/gucharmap
+consolidation "gnome"
+classification "Applications/System Utilities"
+import SUNWgnome-character-map
+import SUNWgnome-character-map-devel
+import SUNWgnome-character-map-root
+end package
+
+package SUNWgnome-character-map
+consolidation "gnome"
+renamed 133
+depend desktop/character-map/gucharmap
+end package

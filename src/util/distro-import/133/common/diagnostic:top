@@ -1,0 +1,13 @@
+package diagnostic/top
+consolidation "sfw"
+classification "Applications/System Utilities"
+import SUNWtop
+version 3.8
+end package
+
+package SUNWtop
+consolidation "sfw"
+renamed 133
+depend diagnostic/top
+version 3.8
+end package

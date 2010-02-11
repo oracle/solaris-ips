@@ -1,0 +1,11 @@
+package print/lp/compatibility/sunos4
+consolidation "osnet"
+classification "System/Printing"
+import SUNWscplp
+end package
+
+package SUNWscplp
+consolidation "osnet"
+renamed 133
+depend print/lp/compatibility/sunos4
+end package

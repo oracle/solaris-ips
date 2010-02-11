@@ -1,0 +1,27 @@
+package system/network/http-cache-accelerator
+consolidation "osnet"
+classification "System/Core"
+import SUNWncau
+import SUNWncar
+
+add driver name=nca
+
+chattr etc/init.d/ncakmod \
+	original_name=SUNWnca:etc/init.d/ncakmod
+chattr etc/init.d/ncalogd \
+	original_name=SUNWnca:etc/init.d/ncalogd
+chattr etc/nca/nca.if \
+	original_name=SUNWnca:etc/nca/nca.if
+chattr etc/nca/ncakmod.conf \
+	original_name=SUNWnca:etc/nca/ncakmod.conf
+chattr etc/nca/ncalogd.conf \
+	original_name=SUNWnca:etc/nca/ncalogd.conf
+chattr etc/nca/ncaport.conf \
+	original_name=SUNWnca:etc/nca/ncaport.conf
+end package
+
+package SUNWnca
+consolidation "osnet"
+renamed 133
+depend system/network/http-cache-accelerator
+end package

@@ -1,0 +1,13 @@
+package database/sqlite-3/documentation
+consolidation "sfw"
+classification "System/Databases"
+import SUNWsqlite3docs
+version 3.6.17
+end package
+
+package SUNWsqlite3docs
+consolidation "sfw"
+renamed 133
+depend database/sqlite-3/documentation
+version 3.6.17
+end package

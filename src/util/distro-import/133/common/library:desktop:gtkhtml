@@ -1,0 +1,12 @@
+package library/desktop/gtkhtml
+consolidation "gnome"
+classification "Applications/Internet"
+import SUNWevolution-libs
+import SUNWevolution-libs-devel
+end package
+
+package SUNWevolution-libs
+consolidation "gnome"
+renamed 133
+depend library/desktop/gtkhtml
+end package

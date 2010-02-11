@@ -1,0 +1,20 @@
+package web/php-52/extension/php-idn
+consolidation "sfw"
+classification "Development/PHP"
+import SUNWphp52r-idn
+import SUNWphp52u-idn
+depend web/php-52
+version 0.2.0
+
+chattr etc/php/5.2/conf.d/idn.ini \
+	original_name=SUNWphp52-idn:etc/php/5.2/conf.d/idn.ini
+chattr etc/php/5.2/zts-conf.d/idn.ini \
+	original_name=SUNWphp52-idn:etc/php/5.2/zts-conf.d/idn.ini
+end package
+
+package SUNWphp52-idn
+consolidation "sfw"
+renamed 133
+depend web/php-52/extension/php-idn
+version 0.2.0
+end package

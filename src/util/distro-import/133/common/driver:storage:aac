@@ -1,0 +1,23 @@
+package driver/storage/aac
+consolidation "osnet"
+classification "Drivers/Ports"
+import SUNWaac
+
+add driver name=aac \
+    class=scsi \
+    alias="pci1028,3" \
+    alias="pci1028,a" \
+    alias="pci9005,285" \
+    alias="pci9005,286" \
+    alias="pciex9005,285" \
+    alias="pciex9005,286"
+
+chattr kernel/drv/aac.conf \
+	original_name=SUNWaac:kernel/drv/aac.conf
+end package
+
+package SUNWaac
+consolidation "osnet"
+renamed 133
+depend driver/storage/aac
+end package

@@ -1,0 +1,11 @@
+package library/python-2/python-sexy-24
+consolidation "gnome"
+classification "Development/Python"
+import SUNWsexy-python
+end package
+
+package SUNWsexy-python
+consolidation "gnome"
+renamed 133
+depend library/python-2/python-sexy-24
+end package

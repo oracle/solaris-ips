@@ -1,0 +1,11 @@
+package system/ipc
+consolidation "osnet"
+classification "System/Core"
+import SUNWipc
+end package
+
+package SUNWipc
+consolidation "osnet"
+renamed 133
+depend system/ipc
+end package

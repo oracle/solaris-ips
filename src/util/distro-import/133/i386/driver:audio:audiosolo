@@ -1,0 +1,14 @@
+package driver/audio/audiosolo
+consolidation "osnet"
+classification "Drivers/Media"
+import SUNWaudiosolo
+
+add driver name=audiosolo \
+    alias="pci125d,1969"
+end package
+
+package SUNWaudiosolo
+consolidation "osnet"
+renamed 133
+depend driver/audio/audiosolo
+end package

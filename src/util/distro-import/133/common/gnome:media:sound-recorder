@@ -1,0 +1,12 @@
+package gnome/media/sound-recorder
+consolidation "gnome"
+classification "Applications/Sound and Video"
+import SUNWgnome-sound-recorder
+import SUNWgnome-sound-recorder-root
+end package
+
+package SUNWgnome-sound-recorder
+consolidation "gnome"
+renamed 133
+depend gnome/media/sound-recorder
+end package

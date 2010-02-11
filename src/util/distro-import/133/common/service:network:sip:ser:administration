@@ -1,0 +1,11 @@
+package service/network/sip/ser/administration
+consolidation "sfw"
+classification "System/Services"
+import SUNWserweb
+end package
+
+package SUNWserweb
+consolidation "sfw"
+renamed 133
+depend service/network/sip/ser/administration
+end package

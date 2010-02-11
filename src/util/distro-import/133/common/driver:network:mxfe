@@ -1,0 +1,19 @@
+package driver/network/mxfe
+consolidation "osnet"
+classification "Drivers/Networking"
+import SUNWmxfe
+
+add driver name=mxfe \
+    perms="* 0666 root sys" \
+    clone_perms="0666 root sys" \
+    alias="pci11ad,c115" \
+    alias="pci10d9,531" \
+    alias="pci10d9,512" \
+    alias="pci11fc,9881"
+end package
+
+package SUNWmxfe
+consolidation "osnet"
+renamed 133
+depend driver/network/mxfe
+end package

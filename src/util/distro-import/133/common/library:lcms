@@ -1,0 +1,13 @@
+package library/lcms
+consolidation "sfw"
+classification "System/Administration and Configuration"
+import SUNWlcms
+version 1.17
+end package
+
+package SUNWlcms
+consolidation "sfw"
+renamed 133
+depend library/lcms
+version 1.17
+end package

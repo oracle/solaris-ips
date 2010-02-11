@@ -1,0 +1,12 @@
+package system/font/truetype/ipafont-mincho
+consolidation "l10n"
+classification "System/Fonts"
+import SUNWttf-ipafont-mincho
+depend system/font/truetype/ipafont
+end package
+
+package SUNWttf-ipafont-mincho
+consolidation "l10n"
+renamed 133
+depend system/font/truetype/ipafont-mincho
+end package

@@ -1,0 +1,12 @@
+package system/network/routing/vrrp
+consolidation "osnet"
+classification "System/Administration and Configuration"
+import SUNWvrrpr
+import SUNWvrrpu
+end package
+
+package SUNWvrrp
+consolidation "osnet"
+renamed 133
+depend system/network/routing/vrrp
+end package

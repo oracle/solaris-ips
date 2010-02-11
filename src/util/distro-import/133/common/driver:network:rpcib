@@ -1,0 +1,17 @@
+package driver/network/rpcib
+consolidation "osnet"
+classification "System/Hardware"
+import SUNWrpcib
+
+add driver name=rpcib \
+    perms="* 0644 root sys"
+
+chattr kernel/drv/rpcib.conf \
+	original_name=SUNWrpcib:kernel/drv/rpcib.conf
+end package
+
+package SUNWrpcib
+consolidation "osnet"
+renamed 133
+depend driver/network/rpcib
+end package

@@ -1,0 +1,121 @@
+package image/scanner/xsane/sane-backends
+consolidation "sfw"
+classification "System/Libraries"
+import SUNWsane-backendu
+import SUNWsane-backendr
+version 1.0.19
+
+chattr etc/sane.d/abaton.conf \
+	original_name=SUNWsane-backend:etc/sane.d/abaton.conf
+chattr etc/sane.d/apple.conf \
+	original_name=SUNWsane-backend:etc/sane.d/apple.conf
+chattr etc/sane.d/artec.conf \
+	original_name=SUNWsane-backend:etc/sane.d/artec.conf
+chattr etc/sane.d/artec_eplus48u.conf \
+	original_name=SUNWsane-backend:etc/sane.d/artec_eplus48u.conf
+chattr etc/sane.d/avision.conf \
+	original_name=SUNWsane-backend:etc/sane.d/avision.conf
+chattr etc/sane.d/bh.conf \
+	original_name=SUNWsane-backend:etc/sane.d/bh.conf
+chattr etc/sane.d/canon.conf \
+	original_name=SUNWsane-backend:etc/sane.d/canon.conf
+chattr etc/sane.d/canon630u.conf \
+	original_name=SUNWsane-backend:etc/sane.d/canon630u.conf
+chattr etc/sane.d/cardscan.conf \
+	original_name=SUNWsane-backend:etc/sane.d/cardscan.conf
+chattr etc/sane.d/coolscan.conf \
+	original_name=SUNWsane-backend:etc/sane.d/coolscan.conf
+chattr etc/sane.d/coolscan2.conf \
+	original_name=SUNWsane-backend:etc/sane.d/coolscan2.conf
+chattr etc/sane.d/dc25.conf \
+	original_name=SUNWsane-backend:etc/sane.d/dc25.conf
+chattr etc/sane.d/dell1600n_net.conf \
+	original_name=SUNWsane-backend:etc/sane.d/dell1600n_net.conf
+chattr etc/sane.d/dll.conf \
+	original_name=SUNWsane-backend:etc/sane.d/dll.conf
+chattr etc/sane.d/dmc.conf \
+	original_name=SUNWsane-backend:etc/sane.d/dmc.conf
+chattr etc/sane.d/epjitsu.conf \
+	original_name=SUNWsane-backend:etc/sane.d/epjitsu.conf
+chattr etc/sane.d/epson.conf \
+	original_name=SUNWsane-backend:etc/sane.d/epson.conf
+chattr etc/sane.d/fujitsu.conf \
+	original_name=SUNWsane-backend:etc/sane.d/fujitsu.conf
+chattr etc/sane.d/genesys.conf \
+	original_name=SUNWsane-backend:etc/sane.d/genesys.conf
+chattr etc/sane.d/gt68xx.conf \
+	original_name=SUNWsane-backend:etc/sane.d/gt68xx.conf
+chattr etc/sane.d/hp.conf \
+	original_name=SUNWsane-backend:etc/sane.d/hp.conf
+chattr etc/sane.d/hp3900.conf \
+	original_name=SUNWsane-backend:etc/sane.d/hp3900.conf
+chattr etc/sane.d/hp5400.conf \
+	original_name=SUNWsane-backend:etc/sane.d/hp5400.conf
+chattr etc/sane.d/hs2p.conf \
+	original_name=SUNWsane-backend:etc/sane.d/hs2p.conf
+chattr etc/sane.d/ibm.conf \
+	original_name=SUNWsane-backend:etc/sane.d/ibm.conf
+chattr etc/sane.d/leo.conf \
+	original_name=SUNWsane-backend:etc/sane.d/leo.conf
+chattr etc/sane.d/lexmark.conf \
+	original_name=SUNWsane-backend:etc/sane.d/lexmark.conf
+chattr etc/sane.d/ma1509.conf \
+	original_name=SUNWsane-backend:etc/sane.d/ma1509.conf
+chattr etc/sane.d/matsushita.conf \
+	original_name=SUNWsane-backend:etc/sane.d/matsushita.conf
+chattr etc/sane.d/microtek.conf \
+	original_name=SUNWsane-backend:etc/sane.d/microtek.conf
+chattr etc/sane.d/microtek2.conf \
+	original_name=SUNWsane-backend:etc/sane.d/microtek2.conf
+chattr etc/sane.d/mustek.conf \
+	original_name=SUNWsane-backend:etc/sane.d/mustek.conf
+chattr etc/sane.d/mustek_usb.conf \
+	original_name=SUNWsane-backend:etc/sane.d/mustek_usb.conf
+chattr etc/sane.d/nec.conf \
+	original_name=SUNWsane-backend:etc/sane.d/nec.conf
+chattr etc/sane.d/net.conf \
+	original_name=SUNWsane-backend:etc/sane.d/net.conf
+chattr etc/sane.d/pie.conf \
+	original_name=SUNWsane-backend:etc/sane.d/pie.conf
+chattr etc/sane.d/plustek.conf \
+	original_name=SUNWsane-backend:etc/sane.d/plustek.conf
+chattr etc/sane.d/plustek_pp.conf \
+	original_name=SUNWsane-backend:etc/sane.d/plustek_pp.conf
+chattr etc/sane.d/ricoh.conf \
+	original_name=SUNWsane-backend:etc/sane.d/ricoh.conf
+chattr etc/sane.d/sceptre.conf \
+	original_name=SUNWsane-backend:etc/sane.d/sceptre.conf
+chattr etc/sane.d/sharp.conf \
+	original_name=SUNWsane-backend:etc/sane.d/sharp.conf
+chattr etc/sane.d/sm3840.conf \
+	original_name=SUNWsane-backend:etc/sane.d/sm3840.conf
+chattr etc/sane.d/snapscan.conf \
+	original_name=SUNWsane-backend:etc/sane.d/snapscan.conf
+chattr etc/sane.d/sp15c.conf \
+	original_name=SUNWsane-backend:etc/sane.d/sp15c.conf
+chattr etc/sane.d/st400.conf \
+	original_name=SUNWsane-backend:etc/sane.d/st400.conf
+chattr etc/sane.d/teco1.conf \
+	original_name=SUNWsane-backend:etc/sane.d/teco1.conf
+chattr etc/sane.d/teco2.conf \
+	original_name=SUNWsane-backend:etc/sane.d/teco2.conf
+chattr etc/sane.d/teco3.conf \
+	original_name=SUNWsane-backend:etc/sane.d/teco3.conf
+chattr etc/sane.d/test.conf \
+	original_name=SUNWsane-backend:etc/sane.d/test.conf
+chattr etc/sane.d/u12.conf \
+	original_name=SUNWsane-backend:etc/sane.d/u12.conf
+chattr etc/sane.d/umax.conf \
+	original_name=SUNWsane-backend:etc/sane.d/umax.conf
+chattr etc/sane.d/umax1220u.conf \
+	original_name=SUNWsane-backend:etc/sane.d/umax1220u.conf
+chattr etc/sane.d/umax_pp.conf \
+	original_name=SUNWsane-backend:etc/sane.d/umax_pp.conf
+end package
+
+package SUNWsane-backend
+consolidation "sfw"
+renamed 133
+depend image/scanner/xsane/sane-backends
+version 1.0.19
+end package

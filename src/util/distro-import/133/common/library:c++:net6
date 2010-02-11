@@ -1,0 +1,12 @@
+package library/c++/net6
+consolidation "gnome"
+classification "Development/System"
+import SUNWnet6
+import SUNWnet6-devel
+end package
+
+package SUNWnet6
+consolidation "gnome"
+renamed 133
+depend library/c++/net6
+end package

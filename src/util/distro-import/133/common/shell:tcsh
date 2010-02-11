@@ -1,0 +1,13 @@
+package shell/tcsh
+consolidation "sfw"
+classification "System/Shells"
+import SUNWtcsh
+version 6.17.0
+end package
+
+package SUNWtcsh
+consolidation "sfw"
+renamed 133
+depend shell/tcsh
+version 6.17.0
+end package

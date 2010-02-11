@@ -1,0 +1,12 @@
+package desktop/system-monitor/gkrellm
+consolidation "gnome"
+classification "Applications/System Utilities"
+import SUNWgkrellm
+import SUNWgkrellm-devel
+end package
+
+package SUNWgkrellm
+consolidation "gnome"
+renamed 133
+depend desktop/system-monitor/gkrellm
+end package

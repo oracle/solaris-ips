@@ -1,0 +1,17 @@
+package driver/audio/audiohd
+consolidation "osnet"
+classification "Drivers/Media"
+import SUNWaudiohd
+
+add driver name=audiohd \
+    alias="pci8086,2668" \
+    alias="pci10de,371" \
+    alias="pciclass,0403" \
+    alias="pciexclass,0403"
+end package
+
+package SUNWaudiohd
+consolidation "osnet"
+renamed 133
+depend driver/audio/audiohd
+end package

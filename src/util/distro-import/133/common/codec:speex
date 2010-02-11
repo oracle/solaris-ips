@@ -1,0 +1,12 @@
+package codec/speex
+consolidation "gnome"
+classification "System/Multimedia Libraries"
+import SUNWspeex
+import SUNWspeex-devel
+end package
+
+package SUNWspeex
+consolidation "gnome"
+renamed 133
+depend codec/speex
+end package

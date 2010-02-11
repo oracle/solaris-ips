@@ -1,0 +1,14 @@
+package editor/gnu-emacs/gnu-emacs-gtk
+consolidation "sfw"
+classification "Development/Editors"
+import SUNWgnu-emacs-gtk
+version 23.1
+depend editor/gnu-emacs
+end package
+
+package SUNWgnu-emacs-gtk
+consolidation "sfw"
+renamed 133
+depend editor/gnu-emacs/gnu-emacs-gtk
+version 23.1
+end package

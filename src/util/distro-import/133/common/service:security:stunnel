@@ -1,0 +1,14 @@
+package service/security/stunnel
+consolidation "sfw"
+classification "System/Security"
+import SUNWstunnelr
+import SUNWstunnelu
+version 4.25
+end package
+
+package SUNWstunnel
+consolidation "sfw"
+renamed 133
+depend service/security/stunnel
+version 4.25
+end package

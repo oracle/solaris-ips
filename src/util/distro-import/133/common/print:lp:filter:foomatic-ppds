@@ -1,0 +1,13 @@
+package print/lp/filter/foomatic-ppds
+consolidation "sfw"
+classification "System/Printing"
+import SUNWfppd
+version 0.2008.8.18
+end package
+
+package SUNWfppd
+consolidation "sfw"
+renamed 133
+depend print/lp/filter/foomatic-ppds
+version 0.2008.8.18
+end package

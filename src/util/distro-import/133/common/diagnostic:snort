@@ -1,0 +1,23 @@
+package diagnostic/snort
+consolidation "sfw"
+classification "Applications/Internet"
+import SUNWsnortr
+import SUNWsnortu
+version 2.8.4.1
+
+chattr etc/classification.config \
+	original_name=SUNWsnort:etc/classification.config
+chattr etc/reference.config \
+	original_name=SUNWsnort:etc/reference.config
+chattr etc/snort.conf \
+	original_name=SUNWsnort:etc/snort.conf
+chattr etc/threshold.conf \
+	original_name=SUNWsnort:etc/threshold.conf
+end package
+
+package SUNWsnort
+consolidation "sfw"
+renamed 133
+depend diagnostic/snort
+version 2.8.4.1
+end package

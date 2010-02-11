@@ -1,0 +1,12 @@
+package codec/libtheora
+consolidation "gnome"
+classification "System/Multimedia Libraries"
+import SUNWlibtheora
+import SUNWlibtheora-devel
+end package
+
+package SUNWlibtheora
+consolidation "gnome"
+renamed 133
+depend codec/libtheora
+end package

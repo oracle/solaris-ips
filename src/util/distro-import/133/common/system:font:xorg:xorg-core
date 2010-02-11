@@ -1,0 +1,28 @@
+package system/font/xorg/xorg-core
+consolidation "X"
+classification "System/Fonts"
+import SUNWfont-xorg-core
+add dir path=etc mode=0755 owner=root group=sys
+add dir path=etc/X11 mode=0755 owner=root group=sys
+add dir path=etc/X11/fontpath.d mode=0755 owner=root group=sys
+add link path=etc/X11/fontpath.d/misc:unscaled:pri=17 \
+    target=../../../usr/share/fonts/X11/misc
+add link path=etc/X11/fontpath.d/100dpi:unscaled:pri=22 \
+    target=../../../usr/share/fonts/X11/100dpi
+add link path=etc/X11/fontpath.d/75dpi:unscaled:pri=27 \
+    target=../../../usr/share/fonts/X11/75dpi
+add link path=etc/X11/fontpath.d/Type1:pri=45 \
+    target=../../../usr/share/fonts/X11/Type1
+add link path=etc/X11/fontpath.d/misc:pri=87 \
+    target=../../../usr/share/fonts/X11/misc
+add link path=etc/X11/fontpath.d/100dpi:pri=92 \
+    target=../../../usr/share/fonts/X11/100dpi
+add link path=etc/X11/fontpath.d/75dpi:pri=97 \
+    target=../../../usr/share/fonts/X11/75dpi
+end package
+
+package SUNWfont-xorg-core
+consolidation "X"
+renamed 133
+depend system/font/xorg/xorg-core
+end package

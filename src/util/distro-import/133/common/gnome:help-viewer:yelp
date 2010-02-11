@@ -1,0 +1,12 @@
+package gnome/help-viewer/yelp
+consolidation "gnome"
+classification "Desktop (GNOME)/Documentation"
+import SUNWgnome-help-viewer
+import SUNWgnome-help-viewer-root
+end package
+
+package SUNWgnome-help-viewer
+consolidation "gnome"
+renamed 133
+depend gnome/help-viewer/yelp
+end package

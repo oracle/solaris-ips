@@ -1,0 +1,11 @@
+package gnome/trusted/locale/es
+consolidation "gnome_l10n"
+classification "Desktop (GNOME)/Trusted Extensions"
+import SUNWtgnome-l10n-ui-es
+end package
+
+package SUNWtgnome-l10n-ui-es
+consolidation "gnome_l10n"
+renamed 133
+depend gnome/trusted/locale/es
+end package

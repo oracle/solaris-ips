@@ -1,0 +1,11 @@
+package developer/icu
+consolidation "l10n"
+classification "System/Internationalization"
+import SUNWicud
+end package
+
+package SUNWicud
+consolidation "l10n"
+renamed 133
+depend developer/icu
+end package

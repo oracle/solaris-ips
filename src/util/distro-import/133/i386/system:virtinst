@@ -1,0 +1,14 @@
+package system/virtinst
+consolidation "xvm"
+classification "System/Virtualization"
+import SUNWvirtinst
+depend system/library/libvirt
+depend web/urlgrabber
+depend system/xvm/header-xvm
+end package
+
+package SUNWvirtinst
+consolidation "xvm"
+renamed 133
+depend system/virtinst
+end package

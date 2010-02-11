@@ -1,0 +1,13 @@
+package library/python-2/pycurl
+consolidation "ips"
+classification "Development/Python"
+import SUNWpython-pycurl
+version 7.19.0.1
+end package
+
+package SUNWpython-pycurl
+consolidation "ips"
+renamed 133
+depend library/python-2/pycurl
+version 7.19.0.1
+end package

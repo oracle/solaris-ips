@@ -1,0 +1,22 @@
+package system/security/kerberos-5
+consolidation "osnet"
+classification "System/Security"
+import SUNWkdcu
+import SUNWkdcr
+depend naming/ldap
+depend system/library/security/rpcsec
+depend service/file-system/smb
+
+chattr etc/krb5/kadm5.acl \
+	original_name=SUNWkdc:etc/krb5/kadm5.acl
+chattr etc/krb5/kdc.conf \
+	original_name=SUNWkdc:etc/krb5/kdc.conf
+chattr etc/krb5/kpropd.acl \
+	original_name=SUNWkdc:etc/krb5/kpropd.acl
+end package
+
+package SUNWkdc
+consolidation "osnet"
+renamed 133
+depend system/security/kerberos-5
+end package

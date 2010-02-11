@@ -1,0 +1,11 @@
+package x11/extension-clients
+consolidation "X"
+classification "System/X11"
+import SUNWxorg-client-programs
+end package
+
+package SUNWxorg-client-programs
+consolidation "X"
+renamed 133
+depend x11/extension-clients
+end package

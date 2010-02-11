@@ -1,0 +1,12 @@
+package system/library/security/libgcrypt
+consolidation "gnome"
+classification "System/Libraries"
+import SUNWlibgcrypt
+import SUNWlibgcrypt-devel
+end package
+
+package SUNWlibgcrypt
+consolidation "gnome"
+renamed 133
+depend system/library/security/libgcrypt
+end package

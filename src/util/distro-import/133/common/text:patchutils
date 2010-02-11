@@ -1,0 +1,15 @@
+package text/patchutils
+consolidation "sfw"
+classification "System/Text Tools"
+import SUNWpatchutils
+depend_path /usr/bin/gdiff
+depend_path /usr/bin/gpatch
+version 0.3.0
+end package
+
+package SUNWpatchutils
+consolidation "sfw"
+renamed 133
+depend text/patchutils
+version 0.3.0
+end package

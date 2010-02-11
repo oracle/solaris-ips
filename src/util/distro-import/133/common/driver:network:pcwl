@@ -1,0 +1,21 @@
+package driver/network/pcwl
+consolidation "osnet"
+classification "Drivers/Networking"
+import SUNWpcwl
+
+add driver name=pcwl \
+    perms="* 0666 root sys" \
+    clone_perms="0666 root sys" \
+    alias="pccard156,2" \
+    alias="pccard138,2" \
+    alias="pccardb,7300" \
+    alias="pci1260,3873" \
+    alias="pci1260,3872" \
+    alias="pci1385,4105"
+end package
+
+package SUNWpcwl
+consolidation "osnet"
+renamed 133
+depend driver/network/pcwl
+end package

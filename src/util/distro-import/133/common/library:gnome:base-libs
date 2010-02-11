@@ -1,0 +1,19 @@
+package library/gnome/base-libs
+consolidation "gnome"
+classification "Desktop (GNOME)/Libraries"
+import SUNWgnome-base-libs
+import SUNWgnome-base-libs-devel
+import SUNWgnome-base-libs-root
+depend library/glib2
+depend library/desktop/gtk2
+depend image/library/libart
+depend library/desktop/libglade
+depend library/desktop/libgnomecanvas
+depend library/desktop/pango
+end package
+
+package SUNWgnome-base-libs
+consolidation "gnome"
+renamed 133
+depend library/gnome/base-libs
+end package

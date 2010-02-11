@@ -1,0 +1,11 @@
+package system/library/mozilla-nss/header-nss
+consolidation "sic_team"
+classification "System/Security"
+import SUNWtlsd
+end package
+
+package SUNWtlsd
+consolidation "sic_team"
+renamed 133
+depend system/library/mozilla-nss/header-nss
+end package

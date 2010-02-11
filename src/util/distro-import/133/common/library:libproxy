@@ -1,0 +1,12 @@
+package library/libproxy
+consolidation "gnome"
+classification "System/Libraries"
+import SUNWlibproxy
+import SUNWlibproxy-devel
+end package
+
+package SUNWlibproxy
+consolidation "gnome"
+renamed 133
+depend library/libproxy
+end package

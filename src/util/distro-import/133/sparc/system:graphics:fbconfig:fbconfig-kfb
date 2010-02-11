@@ -1,0 +1,11 @@
+package system/graphics/fbconfig/fbconfig-kfb
+consolidation "smcc"
+classification "Drivers/Display"
+import SUNWkfbcf
+end package
+
+package SUNWkfbcf
+consolidation "smcc"
+renamed 133
+depend system/graphics/fbconfig/fbconfig-kfb
+end package

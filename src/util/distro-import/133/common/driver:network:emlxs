@@ -1,0 +1,45 @@
+package driver/network/emlxs
+consolidation "osnet"
+classification "Drivers/Networking"
+classification "Drivers/Storage"
+import SUNWemlxs
+import SUNWemlxu
+
+add driver name=emlxs \
+    perms="* 0666 root sys" \
+    class=fibre-channel \
+    alias="pci10df,fc00" \
+    alias="pci10df,f800" \
+    alias="pci10df,f900" \
+    alias="pci10df,f980" \
+    alias="pci10df,fa00" \
+    alias="pci10df,fd00" \
+    alias="pci10df,f0a5" \
+    alias="pci10df,fc10" \
+    alias="pci10df,fc20" \
+    alias="pci10df,fe00" \
+    alias="pciex10df,f100" \
+    alias="pciex10df,f111" \
+    alias="pciex10df,f112" \
+    alias="pciex10df,fc20" \
+    alias="pciex10df,fc40" \
+    alias="pciex10df,fe00" \
+    alias="pciex10df,fe05" \
+    alias="pciex19a2,704" \
+    alias="pciex19a2,714" \
+    alias="lpfs"
+
+add driver name=oce \
+    perms="* 0666 root sys" \
+    alias="pciex19a2,700" \
+    alias="pciex19a2,710"
+
+chattr kernel/drv/emlxs.conf \
+	original_name=SUNWemlxs:kernel/drv/emlxs.conf
+end package
+
+package SUNWemlxs
+consolidation "osnet"
+renamed 133
+depend driver/network/emlxs
+end package

@@ -1,0 +1,11 @@
+package service/storage/zfs-auto-snapshot
+consolidation "gnome"
+classification "System/File System"
+import SUNWzfs-auto-snapshot
+end package
+
+package SUNWzfs-auto-snapshot
+consolidation "gnome"
+renamed 133
+depend service/storage/zfs-auto-snapshot
+end package

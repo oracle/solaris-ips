@@ -1,0 +1,11 @@
+package system/storage/vdiskadm
+consolidation "xvm"
+classification "Applications/System Utilities"
+import SUNWvdisk
+end package
+
+package SUNWvdisk
+consolidation "xvm"
+renamed 133
+depend system/storage/vdiskadm
+end package

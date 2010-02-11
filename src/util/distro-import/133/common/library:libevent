@@ -1,0 +1,13 @@
+package library/libevent
+consolidation "sfw"
+classification "System/Libraries"
+import SUNWlibevent
+version 1.3.5
+end package
+
+package SUNWlibevent
+consolidation "sfw"
+renamed 133
+depend library/libevent
+version 1.3.5
+end package

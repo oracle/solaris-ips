@@ -1,0 +1,11 @@
+package image/editor/gimp/locale/es
+consolidation "gnome_l10n"
+classification "Applications/Graphics and Imaging"
+import SUNWgnome-img-editor-help-es
+end package
+
+package SUNWgnome-img-editor-help-es
+consolidation "gnome_l10n"
+renamed 133
+depend image/editor/gimp/locale/es
+end package

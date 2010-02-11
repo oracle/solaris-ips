@@ -1,0 +1,13 @@
+package library/gd
+consolidation "sfw"
+classification "System/Libraries"
+import SUNWgd2
+version 2.0.34
+end package
+
+package SUNWgd2
+consolidation "sfw"
+renamed 133
+depend library/gd
+version 2.0.34
+end package

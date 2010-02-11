@@ -1,0 +1,17 @@
+package driver/network/mwl
+consolidation "osnet"
+classification "Drivers/Networking"
+import SUNWmwl
+
+add driver name=mwl \
+    perms="* 0666 root sys" \
+    clone_perms="0666 root sys" \
+    alias="pci11ab,2a24" \
+    alias="pci11ab,2a0a"
+end package
+
+package SUNWmwl
+consolidation "osnet"
+renamed 133
+depend driver/network/mwl
+end package

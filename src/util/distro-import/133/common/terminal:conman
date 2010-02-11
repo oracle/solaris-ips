@@ -1,0 +1,21 @@
+package terminal/conman
+consolidation "sfw"
+classification "Applications/System Utilities"
+import SUNWconmanr
+import SUNWconmanu
+version 0.2.4.1
+
+chattr etc/conman.conf \
+	original_name=SUNWconman:etc/conman.conf
+chattr etc/default/conman \
+	original_name=SUNWconman:etc/default/conman
+chattr etc/logrotate.d/conman \
+	original_name=SUNWconman:etc/logrotate.d/conman
+end package
+
+package SUNWconman
+consolidation "sfw"
+renamed 133
+depend terminal/conman
+version 0.2.4.1
+end package

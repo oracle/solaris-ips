@@ -1,0 +1,13 @@
+package library/java/javamail
+consolidation "sfw"
+classification "Development/Java"
+import SUNWjavamail
+version 1.4.1
+end package
+
+package SUNWjavamail
+consolidation "sfw"
+renamed 133
+depend library/java/javamail
+version 1.4.1
+end package

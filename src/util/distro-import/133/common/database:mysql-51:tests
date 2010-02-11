@@ -1,0 +1,32 @@
+package database/mysql-51/tests
+consolidation "sfw"
+classification "Development/Databases"
+import SUNWmysql51test
+chattr usr/mysql/5.1/mysql-test/std_data/corrupt_t1.P.p1.MYI \
+	path=usr/mysql/5.1/mysql-test/std_data/corrupt_t1#P#p1.MYI
+chattr usr/mysql/5.1/mysql-test/std_data/parts/t1_will_crash.P.p6.MYD \
+	path=usr/mysql/5.1/mysql-test/std_data/parts/t1_will_crash#P#p6.MYD
+chattr usr/mysql/5.1/mysql-test/std_data/parts/t1_will_crash.P.p2.MYD \
+	path=usr/mysql/5.1/mysql-test/std_data/parts/t1_will_crash#P#p2.MYD
+chattr usr/mysql/5.1/mysql-test/std_data/parts/t1_will_crash.P.p6_3.MYD \
+	path=usr/mysql/5.1/mysql-test/std_data/parts/t1_will_crash#P#p6_3.MYD
+chattr usr/mysql/5.1/mysql-test/std_data/parts/t1_will_crash.P.p2.MYI \
+	path=usr/mysql/5.1/mysql-test/std_data/parts/t1_will_crash#P#p2.MYI
+chattr usr/mysql/5.1/mysql-test/std_data/parts/t1_will_crash.P.p1_first_1024.MYD \
+	path=usr/mysql/5.1/mysql-test/std_data/parts/t1_will_crash#P#p1_first_1024.MYD
+chattr usr/mysql/5.1/mysql-test/std_data/parts/t1_will_crash.P.p4.MYI \
+	path=usr/mysql/5.1/mysql-test/std_data/parts/t1_will_crash#P#p4.MYI
+chattr usr/mysql/5.1/mysql-test/std_data/parts/t1_will_crash.P.p6_2.MYD \
+	path=usr/mysql/5.1/mysql-test/std_data/parts/t1_will_crash#P#p6_2.MYD
+chattr usr/mysql/5.1/mysql-test/std_data/parts/t1_will_crash.P.p3.MYI \
+	path=usr/mysql/5.1/mysql-test/std_data/parts/t1_will_crash#P#p3.MYI
+depend database/mysql-51
+version 5.1.37
+end package
+
+package SUNWmysql51test
+consolidation "sfw"
+renamed 133
+depend database/mysql-51/tests
+version 5.1.37
+end package

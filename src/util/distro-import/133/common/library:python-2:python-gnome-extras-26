@@ -1,0 +1,13 @@
+package library/python-2/python-gnome-extras-26
+consolidation "gnome"
+classification "Development/Python"
+import SUNWgnome-python26-extras
+import SUNWgnome-python26-extras-devel
+depend library/python-2/python-gnome-libs-26
+end package
+
+package SUNWgnome-python26-extras
+consolidation "gnome"
+renamed 133
+depend library/python-2/python-gnome-extras-26
+end package

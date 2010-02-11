@@ -1,0 +1,13 @@
+package network/ftp/ncftp
+consolidation "sfw"
+classification "Applications/Internet"
+import SUNWncft
+version 3.2.2
+end package
+
+package SUNWncft
+consolidation "sfw"
+renamed 133
+depend network/ftp/ncftp
+version 3.2.2
+end package

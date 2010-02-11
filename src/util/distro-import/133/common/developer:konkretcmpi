@@ -1,0 +1,14 @@
+package developer/konkretcmpi
+consolidation "sfw"
+classification "Development/C"
+import SUNWkonkretcmpi
+version 0.8.7
+depend system/management/cim/pegasus
+end package
+
+package SUNWkonkretcmpi
+consolidation "sfw"
+renamed 133
+depend developer/konkretcmpi
+version 0.8.7
+end package

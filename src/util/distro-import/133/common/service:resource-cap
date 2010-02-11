@@ -1,0 +1,12 @@
+package service/resource-cap
+consolidation "osnet"
+classification "System/Core"
+import SUNWrcapu
+import SUNWrcapr
+end package
+
+package SUNWrcap
+consolidation "osnet"
+renamed 133
+depend service/resource-cap
+end package

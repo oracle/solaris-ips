@@ -1,0 +1,20 @@
+package web/php-52/extension/php-suhosin
+consolidation "sfw"
+classification "Development/PHP"
+import SUNWphp52r-suhosin
+import SUNWphp52u-suhosin
+depend web/php-52
+version 0.9.29
+
+chattr etc/php/5.2/conf.d/suhosin.ini \
+	original_name=SUNWphp52-suhosin:etc/php/5.2/conf.d/suhosin.ini
+chattr etc/php/5.2/zts-conf.d/suhosin.ini \
+	original_name=SUNWphp52-suhosin:etc/php/5.2/zts-conf.d/suhosin.ini
+end package
+
+package SUNWphp52-suhosin
+consolidation "sfw"
+renamed 133
+depend web/php-52/extension/php-suhosin
+version 0.9.29
+end package

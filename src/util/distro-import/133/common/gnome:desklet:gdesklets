@@ -1,0 +1,11 @@
+package gnome/desklet/gdesklets
+consolidation "gnome"
+classification "Applications/Panels and Applets"
+import SUNWgnome-desklets
+end package
+
+package SUNWgnome-desklets
+consolidation "gnome"
+renamed 133
+depend gnome/desklet/gdesklets
+end package

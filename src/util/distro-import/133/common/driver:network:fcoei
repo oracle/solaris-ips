@@ -1,0 +1,14 @@
+package driver/network/fcoei
+consolidation "osnet"
+classification "Drivers/Storage"
+import SUNWfcoei
+
+add driver name=fcoei \
+    perms="* 0600 root sys"
+end package
+
+package SUNWfcoei
+consolidation "osnet"
+renamed 133
+depend driver/network/fcoei
+end package

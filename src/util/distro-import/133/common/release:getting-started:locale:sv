@@ -1,0 +1,11 @@
+package release/getting-started/locale/sv
+consolidation "gnome"
+classification "System/Localizations"
+import SUNWgetting-started-l10n-sv
+end package
+
+package SUNWgetting-started-l10n-sv
+consolidation "gnome"
+renamed 133
+depend release/getting-started/locale/sv
+end package

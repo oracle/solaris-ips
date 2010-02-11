@@ -1,0 +1,18 @@
+package system/library/storage/libmpapi
+consolidation "osnet"
+classification "System/Libraries"
+import SUNWmpapi
+import SUNWmpapir
+add file mpapi.conf path=etc/mpapi.conf mode=0644 owner=root group=bin \
+	preserve=true
+depend system/library/storage/libmpscsi_vhci
+
+chattr etc/mpapi.conf \
+	original_name=SUNWmpapi:etc/mpapi.conf
+end package
+
+package SUNWmpapi
+consolidation "osnet"
+renamed 133
+depend system/library/storage/libmpapi
+end package

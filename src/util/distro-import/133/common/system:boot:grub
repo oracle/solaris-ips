@@ -1,0 +1,20 @@
+package system/boot/grub
+consolidation "osnet"
+classification "System/Core"
+$(i386_ONLY)import SUNWgrub
+import SUNWgrubr
+version 0.97
+$(i386_ONLY)drop boot/grub/splash.xpm.gz
+$(i386_ONLY)add file splash.xpm.gz path=boot/grub/splash.xpm.gz mode=0644 \
+$(i386_ONLY)	owner=root group=sys
+
+$(i386_ONLY)chattr boot/grub/default \
+$(i386_ONLY)	original_name=SUNWgrub:boot/grub/default
+end package
+
+package SUNWgrub
+consolidation "osnet"
+renamed 133
+depend system/boot/grub
+version 0.97
+end package

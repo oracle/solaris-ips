@@ -1,0 +1,14 @@
+package driver/audio/audiop16x
+consolidation "osnet"
+classification "Drivers/Media"
+import SUNWaudiop16x
+
+add driver name=audiop16x \
+    alias="pci1102,6"
+end package
+
+package SUNWaudiop16x
+consolidation "osnet"
+renamed 133
+depend driver/audio/audiop16x
+end package

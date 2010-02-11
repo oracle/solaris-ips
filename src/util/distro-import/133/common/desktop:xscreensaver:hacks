@@ -1,0 +1,11 @@
+package desktop/xscreensaver/hacks
+consolidation "gnome"
+classification "System/X11"
+import SUNWxscreensaver-hacks
+end package
+
+package SUNWxscreensaver-hacks
+consolidation "gnome"
+renamed 133
+depend desktop/xscreensaver/hacks
+end package

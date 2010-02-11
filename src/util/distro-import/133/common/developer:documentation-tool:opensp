@@ -1,0 +1,13 @@
+package developer/documentation-tool/opensp
+consolidation "gnome"
+classification "System/Text Tools"
+import SUNWopensp
+import SUNWopensp-devel
+import SUNWopensp-root
+end package
+
+package SUNWopensp
+consolidation "gnome"
+renamed 133
+depend developer/documentation-tool/opensp
+end package

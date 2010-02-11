@@ -1,0 +1,13 @@
+package library/graphics/libmng
+consolidation "sfw"
+classification "System/Libraries"
+import SUNWlibmng
+version 1.0.10
+end package
+
+package SUNWlibmng
+consolidation "sfw"
+renamed 133
+depend library/graphics/libmng
+version 1.0.10
+end package

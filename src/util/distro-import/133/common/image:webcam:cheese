@@ -1,0 +1,12 @@
+package image/webcam/cheese
+consolidation "gnome"
+classification "Applications/Graphics and Imaging"
+import SUNWcheese
+import SUNWcheese-root
+end package
+
+package SUNWcheese
+consolidation "gnome"
+renamed 133
+depend image/webcam/cheese
+end package

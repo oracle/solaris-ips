@@ -1,0 +1,18 @@
+package driver/network/hermon
+consolidation "osnet"
+classification "Drivers/Other Peripherals"
+import SUNWhermon
+
+add driver name=hermon \
+    perms="* 0666 root sys" \
+    alias="pciex15b3,6340" \
+    alias="pciex15b3,634a" \
+    alias="pciex15b3,6732" \
+    alias="pciex15b3,673c"
+end package
+
+package SUNWhermon
+consolidation "osnet"
+renamed 133
+depend driver/network/hermon
+end package

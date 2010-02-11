@@ -1,0 +1,18 @@
+package system/font/xorg/iso8859-11
+consolidation "X"
+classification "System/Fonts"
+import SUNWfont-xorg-iso8859-11
+add dir path=etc mode=0755 owner=root group=sys
+add dir path=etc/X11 mode=0755 owner=root group=sys
+add dir path=etc/X11/fontpath.d mode=0755 owner=root group=sys
+add link path=etc/X11/fontpath.d/misc-ISO8859-11:unscaled:pri=16 \
+    target=../../../usr/share/fonts/X11/misc-ISO8859-11
+add link path=etc/X11/fontpath.d/misc-ISO8859-11:pri=86 \
+    target=../../../usr/share/fonts/X11/misc-ISO8859-11
+end package
+
+package SUNWfont-xorg-iso8859-11
+consolidation "X"
+renamed 133
+depend system/font/xorg/iso8859-11
+end package

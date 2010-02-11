@@ -1,0 +1,19 @@
+package storage/storage-nas
+consolidation "osnet"
+classification "Drivers/Storage"
+summary "Network Attached Storage cluster"
+version 0.1
+depend network/iscsi/initiator
+depend network/iscsi/target/legacy
+depend service/storage/ndmp
+depend service/file-system/nfs
+depend service/file-system/smb
+depend service/storage/virus-scan
+end package
+
+package storage-nas
+consolidation "osnet"
+renamed 133
+depend storage/storage-nas
+version 0.1
+end package

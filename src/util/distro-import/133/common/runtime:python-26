@@ -1,0 +1,14 @@
+package runtime/python-26
+consolidation "gnome"
+classification "Development/Python"
+import SUNWPython26
+import SUNWPython26-devel
+version 2.6.4
+end package
+
+package SUNWPython26
+consolidation "gnome"
+renamed 133
+depend runtime/python-26
+version 2.6.4
+end package
