@@ -1766,8 +1766,8 @@ def produce_lines(actionlist, attrs, action_types=None, show_all=False,
         The "show_all" parameter determines whether an action that lacks one
         or more of the desired attributes will be displayed or not.
 
-        The "remove_dup_lines" parameter whether consecutive duplicate lines
-        should be removed from the results.
+        The "remove_consec_dup_lines" parameter determines whether consecutive
+        duplicate lines should be removed from the results.
 
         The "last_res" paramter is a seed to compare the first result against
         for duplicate removal.
@@ -1775,7 +1775,7 @@ def produce_lines(actionlist, attrs, action_types=None, show_all=False,
 
         # Assert that if last_res is set, we should be removing duplicate
         # lines.
-        assert(not last_res or remove_dup_lines)
+        assert(remove_consec_dup_lines or not last_res)
         lines = []
         if last_res:
                 lines.append(last_res)
@@ -3483,6 +3483,7 @@ def print_proxy_config():
 
 # To allow exception handler access to the image.
 __img = None
+orig_cwd = None
 
 def main_func():
         global_settings.client_name = PKG_CLIENT_NAME
