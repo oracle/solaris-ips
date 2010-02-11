@@ -2790,7 +2790,7 @@ def publisher_list(img, args):
             "enabled" : [("tsv"), _("ENABLED"), ""]
         }
 
-        desired_field_order = (_("PUBLISHER"), _(""), _("STICKY"),
+        desired_field_order = (_("PUBLISHER"), "", _("STICKY"),
                                _("PREFERRED"), _("ENABLED"), _("TYPE"),
                                _("STATUS"), _("URI"))
 
