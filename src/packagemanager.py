@@ -182,6 +182,7 @@ class PackageManager:
         def __init__(self):
                 self.before_start = True
                 signal.signal(signal.SIGINT, self.__main_application_quit)
+                self.user_rights = portable.is_admin()
                 self.original_user = None
                 self.__reset_home_dir()
                 self.api_o = None
@@ -284,7 +285,6 @@ class PackageManager:
                 gui_misc.init_for_help(self.application_dir)
                 self.main_window_title = _('Package Manager')
                 self.gdk_window = None
-                self.user_rights = portable.is_admin()
                 self.cancelled = False                    # For background processes
                 self.description_queue = deque()
                 self.description_thread_running = False
@@ -1419,12 +1419,16 @@ class PackageManager:
         def __open_link(self, link):
                 self.set_busy_cursor()
                 if self.original_user == None:
-                        try:
-                                gnome.url_show(link)
-                                gobject.timeout_add(1000, self.unset_busy_cursor)
-                        except gobject.GError:
+                        if self.user_rights:
                                 self.__link_load_error(link)
                                 self.unset_busy_cursor()
+                        else:
+                                try:
+                                        gnome.url_show(link)
+                                        gobject.timeout_add(1000, self.unset_busy_cursor)
+                                except gobject.GError:
+                                        self.__link_load_error(link)
+                                        self.unset_busy_cursor()
                 else: 
                         prog = os.path.join(self.application_dir, OPEN_LINK)
                         try:
@@ -5808,7 +5812,7 @@ class PackageManager:
                 # We reset the HOME directory in case the user called us
                 # with gksu and had NFS mounted home directory in which
                 # case dbus called from gconf cannot write to the directory.
-                if os.getuid() == 0:
+                if self.user_rights:
                         root_home_dir = self.__find_root_home_dir()
                         os.putenv('HOME', root_home_dir)
 
@@ -6060,8 +6064,13 @@ Use -U (--update-all) to proceed with Updates"""
                 sys.exit(0)
 
         # Get original user name if running as root
-        if os.getuid() == 0:
-                original_user = os.getenv('LOGNAME')
+        if portable.is_admin():
+                original_id = portable.get_userid()
+                if original_id:
+                        try:
+                                original_user = portable.get_username()
+                        except EnvironmentError:
+                                pass
 
         # Setup packagemanager
         packagemanager = PackageManager()
