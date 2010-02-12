@@ -881,7 +881,7 @@ class Repository(progress.GuiProgressTracker):
                                 gobject.idle_add(
                                    self.__g_on_add_publisher_delete_event,
                                    self.w_add_publisher_dialog, None)
-                                self.parent.reload_packages()
+                                gobject.idle_add(self.parent.reload_packages)
 
         def __update_publisher(self, pub, new_publisher=False, raise_unknownpubex=True):
                 errors = []
