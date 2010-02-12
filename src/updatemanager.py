@@ -51,6 +51,7 @@ import pkg.gui.beadmin as beadm
 import pkg.gui.installupdate as installupdate
 import pkg.gui.enumerations as enumerations
 import pkg.gui.misc as gui_misc
+import pkg.client.api_errors as api_errors
 import pkg.misc as misc
 from pkg.client import global_settings
 logger = global_settings.logger
@@ -371,7 +372,13 @@ class Updatemanager:
                 list_option = api.ImageInterface.LIST_UPGRADABLE
                 if list_uninstalled:
                         list_option = api.ImageInterface.LIST_INSTALLED_NEWEST
-                pkgs_from_api = self.api_obj.get_pkg_list(pkg_list = list_option)
+                try:
+                        pkgs_from_api = self.api_obj.get_pkg_list(pkg_list = list_option)
+                except api_errors.ApiException, ex:
+                        gobject.idle_add(gui_misc.error_occurred, 
+                            self.w_um_dialog, 
+                            str(ex), _("Update Manager"))
+                        return
                 for entry in pkgs_from_api:
                         (pkg_pub, pkg_name, ver) = entry[0]
                         states = entry[3]
@@ -547,7 +554,13 @@ class Updatemanager:
 
         def __on_updateall_button_clicked(self, widget):
                 self.__selectall_toggle(True)
-                self.__get_api_obj().reset()
+                try:
+                        self.__get_api_obj().reset()
+                except api_errors.ApiException, ex:
+                        gobject.idle_add(gui_misc.error_occurred, 
+                            self.w_um_dialog, 
+                            str(ex), _("Update Manager"))
+                        return
                 installupdate.InstallUpdate([], self,
                     self.__get_image_path(), action = enumerations.IMAGE_UPDATE,
                     parent_name = _("Update Manager"),
@@ -559,11 +572,6 @@ class Updatemanager:
         def __on_selectall_checkbutton_toggled(self, widget):
                 self.__selectall_toggle(widget.get_active())
                 
-        def __handle_cancel_exception(self):
-                gobject.idle_add(self.w_progress_dialog.hide)
-                gobject.idle_add(self.w_progressinfo_expander.set_expanded, False)
-                self.__cleanup()                
-        
         def __prompt_to_load_beadm(self):
                 msgbox = gtk.MessageDialog(parent = self.w_progress_dialog,
                     buttons = gtk.BUTTONS_OK_CANCEL, flags = gtk.DIALOG_MODAL,
@@ -591,11 +599,6 @@ class Updatemanager:
                         in 'list1' that are not in 'list2'"""
                 list2 = dict([(k, None) for k in list2])
                 return [item for item in list1 if item not in list2]
-                
-        def __cleanup(self):
-                self.api_obj.reset()
-                self.pr.reset()
-                self.progress_stop_thread = True   
                 
         @staticmethod
         def __on_um_expander_activate(widget):

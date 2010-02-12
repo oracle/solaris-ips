@@ -79,6 +79,7 @@ class Repository(progress.GuiProgressTracker):
                 self.publishers_list = None
                 self.repository_modify_publisher = None
                 self.no_changes = 0
+                self.pylintstub = None
                 w_tree_add_publisher = \
                     gtk.glade.XML(parent.gladefile, "add_publisher")
                 w_tree_add_publisher_complete = \
@@ -415,14 +416,22 @@ class Repository(progress.GuiProgressTracker):
                 selection = self.w_publishers_treeview.get_selection()
                 selected_rows = selection.get_selected_rows()
                 self.w_publishers_treeview.set_model(None)
-                pubs = self.api_o.get_publishers(duplicate=True)
+                try:
+                        pubs = self.api_o.get_publishers(duplicate=True)
+                except api_errors.ApiException, e:
+                        self.__show_errors([("", e)])
+                        return
                 if not sorted_model:
                         return
                 filtered_model = sorted_model.get_model()
                 model = filtered_model.get_model()
 
                 if len(pubs) > 1:
-                        so = self.api_o.get_pub_search_order()
+                        try:
+                                so = self.api_o.get_pub_search_order()
+                        except api_errors.ApiException, e:
+                                self.__show_errors([("", e)])
+                                return
                         pub_dict = dict([(p.prefix, p) for p in pubs])
                         pubs = [
                             pub_dict[name]
@@ -554,7 +563,12 @@ class Repository(progress.GuiProgressTracker):
                 if not misc.valid_pub_prefix(name):
                         self.name_error = _("Name contains invalid characters")
                         return False
-                for p in self.api_o.get_publishers():
+                try:
+                        pubs = self.api_o.get_publishers()
+                except api_errors.ApiException, e:
+                        self.__show_errors([("", e)])
+                        return False
+                for p in pubs:
                         if name == p.prefix or name == p.alias:
                                 self.name_error = _("Name already in use")
                                 return False
@@ -586,8 +600,12 @@ class Repository(progress.GuiProgressTracker):
         def __modify_publisher_dialog(self, pub):
                 gui_misc.set_modal_and_transient(self.w_modify_repository_dialog,
                     self.w_manage_publishers_dialog)
-                self.repository_modify_publisher = self.api_o.get_publisher(
-                    prefix=pub.prefix, alias=pub.prefix, duplicate=True)
+                try:
+                        self.repository_modify_publisher = self.api_o.get_publisher(
+                            prefix=pub.prefix, alias=pub.prefix, duplicate=True)
+                except api_errors.ApiException, e:
+                        self.__show_errors([("", e)])
+                        return                
                 updated_modify_repository = self.__update_modify_repository_dialog(True,
                     True, True, True)
                     
@@ -699,8 +717,7 @@ class Repository(progress.GuiProgressTracker):
                 try:
                         repo.add_mirror(new_mirror)
                         self.w_addmirror_entry.set_text("")
-                except (api_errors.PublisherError,
-                    api_errors.CertificateError), e:
+                except api_errors.ApiException, e:
                         self.__show_errors([(pub, e)])
                 self.__update_modify_repository_dialog(update_mirrors=True)
 
@@ -713,7 +730,7 @@ class Repository(progress.GuiProgressTracker):
                 repo = pub.selected_repository
                 try:
                         repo.remove_mirror(remove_mirror)
-                except api_errors.PublisherError, e:
+                except api_errors.ApiException, e:
                         self.__show_errors([(pub, e)])
                 self.__update_modify_repository_dialog(update_mirrors=True)
 
@@ -723,8 +740,7 @@ class Repository(progress.GuiProgressTracker):
                 try:
                         repo.add_origin(new_origin)
                         self.w_addorigin_entry.set_text("")
-                except (api_errors.PublisherError,
-                    api_errors.CertificateError), e:
+                except api_errors.ApiException, e:
                         self.__show_errors([(pub, e)])
                 self.__update_modify_repository_dialog(update_origins=True)
 
@@ -737,7 +753,7 @@ class Repository(progress.GuiProgressTracker):
                 repo = pub.selected_repository
                 try:
                         repo.remove_origin(remove_origin)
-                except api_errors.PublisherError, e:
+                except api_errors.ApiException, e:
                         self.__show_errors([(pub, e)])
                 self.__update_modify_repository_dialog(update_origins=True)
 
@@ -863,8 +879,7 @@ class Repository(progress.GuiProgressTracker):
                                     alias=name)
                                 self.__g_update_details_text(
                                     _("Publisher %s succesfully removed\n") % name)
-                        except (api_errors.PermissionsException,
-                            api_errors.PublisherError), e:
+                        except api_errors.ApiException, e:
                                 errors.append((pub, e))
                         self.progress_stop_thread = True
                 else:
@@ -906,14 +921,7 @@ class Repository(progress.GuiProgressTracker):
                                 raise e
                         else:
                                 errors.append((pub, e))
-                except api_errors.CatalogRefreshException, e:
-                        errors.append((pub, e))
-                except api_errors.InvalidDepotResponseException, e:
-                        errors.append((pub, e))
-                except api_errors.CertificateError, e:
-                        errors.append((pub, e))
-                except (api_errors.PermissionsException,
-                    api_errors.PublisherError), e:
+                except api_errors.ApiException, e:
                         errors.append((pub, e))
                 return errors
 
@@ -1048,8 +1056,7 @@ class Repository(progress.GuiProgressTracker):
                                 self.__g_update_details_text(details_text %
                                     {"enable" : enable_text, "name" : name})
                                 self.api_o.update_publisher(pub)
-                        except (api_errors.PermissionsException,
-                            api_errors.PublisherError), e:
+                        except api_errors.ApiException, e:
                                 errors.append(pub, e)
                 self.progress_stop_thread = True
                 gobject.idle_add(self.publishers_apply_expander.set_expanded, False)
@@ -1061,6 +1068,7 @@ class Repository(progress.GuiProgressTracker):
         def __proceed_after_confirmation(self):
                 errors = []
 
+                image_lock_err = False
                 for row in self.priority_changes:
                         try:
                                 if row[0] == enumerations.PUBLISHER_MOVE_BEFORE:
@@ -1073,9 +1081,12 @@ class Repository(progress.GuiProgressTracker):
                                 self.__g_update_details_text(
                                     _("Changing priority for publisher %s\n")
                                     % row[1])
-                        except (api_errors.PermissionsException,
-                            api_errors.PublisherError,
-                            api_errors.InvalidDepotResponseException), e:
+                        except api_errors.ImageLockedError, e:
+                                self.no_changes = 0
+                                if not image_lock_err:
+                                        errors.append((row[1], e))
+                                        image_lock_err = True
+                        except api_errors.ApiException, e:
                                 errors.append((row[1], e))
 
                 for row in self.publishers_list:
@@ -1105,10 +1116,13 @@ class Repository(progress.GuiProgressTracker):
                                         self.__g_update_details_text(details_text % 
                                             {"enable" : enable_text, "name" : name})
                                         self.api_o.update_publisher(pub)
-                        except (api_errors.PermissionsException,
-                            api_errors.PublisherError,
-                            api_errors.CatalogRefreshException,
-                            api_errors.InvalidDepotResponseException), e:
+                        except api_errors.ImageLockedError, e:
+                                self.no_changes = 0
+                                if not image_lock_err:
+                                        errors.append(
+                                            (row[enumerations.PUBLISHER_OBJECT], e))
+                                        image_lock_err = True
+                        except api_errors.ApiException, e:
                                 errors.append((row[enumerations.PUBLISHER_OBJECT], e))
                 self.progress_stop_thread = True
                 if len(errors) > 0:
@@ -1622,8 +1636,7 @@ class Repository(progress.GuiProgressTracker):
                 widget.hide()
                 return True
 
-        @staticmethod
-        def __get_or_create_pub_with_url(api_o, name, origin_url):
+        def __get_or_create_pub_with_url(self, api_o, name, origin_url):
                 new_pub = False
                 repo = None
                 pub = None
@@ -1643,6 +1656,8 @@ class Repository(progress.GuiProgressTracker):
                         else:
                                 origin = repo.origins[0]
                                 origin.uri = origin_url
+                except api_errors.ApiException, e:
+                        self.__show_errors([(name, e)])
                 return (pub, repo, new_pub)
 
         @staticmethod
@@ -1662,8 +1677,7 @@ class Repository(progress.GuiProgressTracker):
                         for uri in repo.mirrors:
                                 uri.ssl_cert = ssl_cert
                                 uri.ssl_key = ssl_key
-                except (api_errors.PublisherError,
-                    api_errors.CertificateError), e:
+                except api_errors.ApiException, e:
                         errors.append((pub, e))
                 return errors
 
@@ -1684,8 +1698,7 @@ class Repository(progress.GuiProgressTracker):
                 w_label.set_sensitive(True)
                 w_label.show()
 
-        @staticmethod
-        def __is_url_valid(url):
+        def __is_url_valid(self, url):
                 url_error = None
                 if len(url) == 0:
                         return False, url_error
@@ -1705,6 +1718,9 @@ class Repository(progress.GuiProgressTracker):
                                 url_error = None
                         else:
                                 url_error = _("URI is not valid")
+                        return False, url_error
+                except api_errors.ApiException, e:
+                        self.__show_errors([("", e)])
                         return False, url_error
 
         @staticmethod
@@ -1864,6 +1880,7 @@ class Repository(progress.GuiProgressTracker):
                 pass
 
         def is_progress_bouncing(self):
+                self.pylintstub = self
                 return True
 
         def stop_bouncing_progress(self):

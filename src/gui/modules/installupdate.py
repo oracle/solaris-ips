@@ -70,6 +70,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 progress.GuiProgressTracker.__init__(self)
                 self.web_install = web_install
                 self.web_updates_list = None
+                self.web_install_all_installed = False
                 self.parent = parent
                 self.api_o = gui_misc.get_api_object(image_directory,
                     self, main_window)
@@ -92,6 +93,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 self.ip = None
                 self.ips_update = False
                 self.operations_done = False
+                self.operations_done_ex = False
                 self.prev_ind_phase = None
                 self.uarenamebe_o = None
                 self.prev_pkg = None
@@ -422,7 +424,7 @@ class InstallUpdate(progress.GuiProgressTracker):
         def __on_cancelcreateplan_clicked(self, widget):
                 '''Handler for signal send by cancel button, which user might press
                 during evaluation stage - while the dialog is creating plan'''
-                if self.api_o.can_be_canceled():
+                if self.api_o.can_be_canceled() and self.operations_done_ex == False:
                         self.canceling = True
                         Thread(target = self.api_o.cancel, args = ()).start()
                         cancel_txt = _("Canceling...")
@@ -433,11 +435,16 @@ class InstallUpdate(progress.GuiProgressTracker):
                             gtk.STOCK_CANCEL, gtk.ICON_SIZE_MENU)
                         gobject.idle_add(self.w_stages_label.set_markup, cancel_txt)
                         self.w_cancel_button.set_sensitive(False)
-                if self.operations_done:
+                if self.operations_done or self.operations_done_ex:
                         self.w_dialog.hide()
                         if self.web_install:
-                                gobject.idle_add(self.parent.update_package_list,
-                                    self.web_updates_list)
+                                if self.operations_done_ex == False and \
+                                        not self.web_install_all_installed:
+                                        gobject.idle_add(self.parent.update_package_list,
+                                            None)
+                                else:
+                                        gobject.idle_add(self.parent.update_package_list,
+                                            self.web_updates_list)
                                 return
                         gobject.idle_add(self.parent.update_package_list, None)
 
@@ -692,7 +699,10 @@ class InstallUpdate(progress.GuiProgressTracker):
                 to_remove = gtk.ListStore(str, str, str)
 
 
-                plan = self.api_o.describe().get_changes()
+                plan_desc = self.api_o.describe()
+                if plan_desc == None:
+                        return
+                plan = plan_desc.get_changes()
 
                 for pkg_plan in plan:
                         orig = pkg_plan[0]
@@ -879,6 +889,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                 if msg == None or len(msg) == 0:
                         msg = _("No futher information available")
                 self.operations_done = True
+                self.operations_done_ex = True
                 self.stop_bouncing_progress()
                 self.update_details_text(_("\nError:\n"), "bold")
                 self.update_details_text("%s" % msg, "level1")
@@ -892,6 +903,7 @@ class InstallUpdate(progress.GuiProgressTracker):
 
         def __g_exception_stage(self, tracebk):
                 self.operations_done = True
+                self.operations_done_ex = True
                 self.stop_bouncing_progress()
                 if self.action == enumerations.IMAGE_UPDATE:
                         info_url = misc.get_release_notes_url()
@@ -1027,6 +1039,13 @@ class InstallUpdate(progress.GuiProgressTracker):
                             and not self.action == enumerations.IMAGE_UPDATE:
                                 self.parent.update_package_list(self.update_list)
                         if self.web_install:
+                                if done_txt == \
+                                        _("All packages already installed.") or \
+                                        done_txt == \
+                                        _("Installation completed successfully"):
+                                        self.web_install_all_installed = True
+                                else:
+                                        self.web_install_all_installed = False
                                 self.web_updates_list = self.update_list
                 if self.ips_update:
                         self.w_dialog.hide()
@@ -1058,7 +1077,10 @@ class InstallUpdate(progress.GuiProgressTracker):
                 install_iter = None
                 update_iter = None
                 remove_iter = None
-                plan = self.api_o.describe().get_changes()
+                plan_desc = self.api_o.describe()
+                if plan_desc == None:
+                        return
+                plan = plan_desc.get_changes()
                 self.update_details_text("\n")
                 for pkg_plan in plan:
                         origin_fmri = pkg_plan[0]
@@ -1133,12 +1155,8 @@ class InstallUpdate(progress.GuiProgressTracker):
                                         to_install[stem][1] = info_s.summary
                                 elif stem in to_remove:
                                         to_remove[stem][1] = info_s.summary
-                except api_errors.TransportError, tpex:
-                        err = str(tpex)
-                        logger.error(err)
-                        gui_misc.notify_log_error(self.parent)
-                except api_errors.InvalidDepotResponseException, idex:
-                        err = str(idex)
+                except api_errors.ApiException, ex:
+                        err = str(ex)
                         logger.error(err)
                         gui_misc.notify_log_error(self.parent)
 

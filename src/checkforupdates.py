@@ -32,7 +32,7 @@ import locale
 
 import pkg.client.progress as progress
 import pkg.client.api_errors as api_errors
-import pkg.gui.misc_non_gui as gui_misc
+import pkg.gui.misc_non_gui as nongui_misc
 import pkg.gui.enumerations as enumerations
 import pkg.misc as misc
 from pkg.client import global_settings
@@ -50,12 +50,14 @@ def __check_for_updates(image_directory, nice):
 
         message = None
         try:
-                api_obj = gui_misc.get_api_object(image_directory, pr)
+                api_obj = nongui_misc.get_api_object(image_directory, pr)
         except api_errors.VersionException, e:
                 message = "Version mismatch: expected version %d, got version %d" % \
                     (e.expected_version, e.received_version)
         except api_errors.ImageNotFoundException, e:
                 message = "%s is not an install image" % e.user_dir
+        except api_errors.ApiException, e:
+                message = "Unexpected exception: %s" % str(e)
         if message != None:
                 if debug:
                         print "Failed to get Api object: %s" % message
@@ -93,12 +95,16 @@ def __check_for_updates(image_directory, nice):
                 return enumerations.NO_UPDATES_AVAILABLE
 
 def __check_last_refresh(api_obj):
-        cache_dir = gui_misc.get_cache_dir(api_obj)
+        cache_dir = nongui_misc.get_cache_dir(api_obj)
         if not cache_dir:
                 return enumerations.UPDATES_UNDETERMINED
         try:
-                info = gui_misc.read_cache_file(os.path.join(
+                info = nongui_misc.read_cache_file(os.path.join(
                     cache_dir, CACHE_NAME + '.cpl'))
+                if len(info) == 0:
+                        if debug:
+                                print "No cache"
+                        return enumerations.UPDATES_UNDETERMINED
                 if info.get("version") != CACHE_VERSION:
                         if debug:
                                 print "Cache version mismatch:", \
@@ -137,7 +143,7 @@ def __check_last_refresh(api_obj):
                 return enumerations.UPDATES_UNDETERMINED
 
 def __dump_updates_available(api_obj, stuff_to_do):
-        cache_dir = gui_misc.get_cache_dir(api_obj)
+        cache_dir = nongui_misc.get_cache_dir(api_obj)
         if not cache_dir:
                 return
         publisher_list = {}
@@ -155,7 +161,7 @@ def __dump_updates_available(api_obj, stuff_to_do):
         dump_info["publishers"] = publisher_list
 
         try:
-                gui_misc.dump_cache_file(os.path.join(
+                nongui_misc.dump_cache_file(os.path.join(
                     cache_dir, CACHE_NAME + '.cpl'), dump_info)
         except IOError, e:
                 if debug:

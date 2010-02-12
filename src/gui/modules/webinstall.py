@@ -300,6 +300,10 @@ class Webinstall:
                             self.w_webinstall_dialog,
                             str(ex),
                             _("Publisher Error"))
+                except api_errors.ApiException, ex:
+                        gobject.idle_add(gui_misc.error_occurred, 
+                            self.w_webinstall_dialog, 
+                            str(ex), _("Web Installer Error"))
                 return False
 
         def __disabled_pubs_info(self, disabled_pubs):
@@ -345,11 +349,21 @@ class Webinstall:
                         gobject.idle_add(gui_misc.error_occurred, 
                             self.w_webinstall_dialog, 
                             str(ex), _("Publisher Error"))
+                except api_errors.ApiException, ex:
+                        gobject.idle_add(gui_misc.error_occurred, 
+                            self.w_webinstall_dialog, 
+                            str(ex), _("Web Installer Error"))
                 return False
 
         def __on_proceed_button_clicked(self, widget):
                 if not self.first_run:
-                        self.api_o.reset()
+                        try:
+                                self.api_o.reset()
+                        except api_errors.ApiException, ex:
+                                gobject.idle_add(gui_misc.error_occurred, 
+                                    self.w_webinstall_dialog, 
+                                    str(ex), _("Web Installer Error"))
+                                return
                         self.pub_pkg_list = self.api_parse_publisher_info()
                         self.__create_task_lists()
                 else:
@@ -411,7 +425,19 @@ class Webinstall:
                 if len(self.pkg_install_tasks) == 0:
                         return
                 # Handle all packages from all pubs as single install action
-                pref_pub = self.api_o.get_preferred_publisher()
+                try:
+                        pref_pub = self.api_o.get_preferred_publisher()
+                except api_errors.PublisherError, ex:
+                        gobject.idle_add(gui_misc.error_occurred,
+                            self.w_webinstall_dialog,
+                            str(ex),
+                            _("Publisher Error"))
+                        return
+                except api_errors.ApiException, ex:
+                        gobject.idle_add(gui_misc.error_occurred,
+                            self.w_webinstall_dialog,
+                            str(ex), _("Web Installer Error"))
+                        return
                 self.preferred = pref_pub.prefix
                 all_package_stems = []        
                 for pkg_installs in self.pkg_install_tasks:
@@ -446,6 +472,8 @@ class Webinstall:
        
         # Install Callback - invoked at end of installing packages
         def update_package_list(self, update_list):
+                if update_list == None:
+                        return
                 self.pkg_install_tasks = []
                 if len(self.disabled_pubs) > 0 and self.repo_gui:
                         gobject.idle_add(self.repo_gui.webinstall_enable_disable_pubs,
@@ -458,11 +486,7 @@ class Webinstall:
                    returns list of publisher and package list tuples'''
                 try:
                         return self.api_o.parse_p5i(location=self.param)
-                except (api_errors.InvalidP5IFile, 
-                        api_errors.InvalidResourceLocation,
-                        api_errors.RetrievalError,
-                        api_errors.UnsupportedP5IFile,
-                        api_errors.PublisherError), ex:
+                except api_errors.ApiException, ex:
                         self.w_webinstall_proceed.set_sensitive(False)
                         gui_misc.error_occurred( 
                             self.w_webinstall_dialog,

@@ -874,12 +874,17 @@ class PackageManager:
                         return
                 try:
                         fobj = open(filename, 'w')
-                except IOError, ex_sel:
-                        self.error_occurred(ex_sel, _("Export Selections Error"))
+                        self.api_o.write_p5i(fobj, pkg_names=self.selected_pkgs,
+                            pubs=self.selected_pkgs.keys())
+                except IOError, ex:
+                        err = str(ex)
+                        self.error_occurred(err, _("Export Selections Error"))
                         return
-
-                self.api_o.write_p5i(fobj, pkg_names=self.selected_pkgs,
-                    pubs=self.selected_pkgs.keys())
+                except api_errors.ApiException, ex:
+                        fobj.close()
+                        err = str(ex)
+                        self.error_occurred(err, _("Export Selections Error"))
+                        return
                 fobj.close()
                 os.chmod(filename, stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP |
                     stat.S_IWGRP | stat.S_IROTH | stat.S_IWOTH )
@@ -2462,13 +2467,28 @@ class PackageManager:
                 if search_all:
                         self.search_all_pub_being_searched = _("All Publishers")
                         servers = None
-                        pub_prefix = self.api_o.get_preferred_publisher().prefix
+                        try:
+                                pref_pub = self.api_o.get_preferred_publisher()
+                                pub_prefix = pref_pub.prefix
+                        except api_errors.ApiException, ex:
+                                err = str(ex)
+                                gobject.idle_add(self.error_occurred, err,
+                                    None, gtk.MESSAGE_INFO)
+                                gobject.idle_add(self.unset_busy_cursor)
+                                return
                 else:
                         pub_prefix = self.__get_selected_publisher()
-                        if pub_prefix != None:
-                                pub = self.api_o.get_publisher(prefix=pub_prefix)
-                        else:
-                                pub = self.api_o.get_preferred_publisher()
+                        try:
+                                if pub_prefix != None:
+                                        pub = self.api_o.get_publisher(prefix=pub_prefix)
+                                else:
+                                        pub = self.api_o.get_preferred_publisher()
+                        except api_errors.ApiException, ex:
+                                err = str(ex)
+                                gobject.idle_add(self.error_occurred, err,
+                                    None, gtk.MESSAGE_INFO)
+                                gobject.idle_add(self.unset_busy_cursor)
+                                return
                         origin_uri = self.__get_origin_uri(pub.selected_repository)
                         servers.append({"origin": origin_uri})
                         self.search_all_pub_being_searched = \
@@ -2479,17 +2499,17 @@ class PackageManager:
                 #TBD If we ever search just Installed pkgs should allow for a local search
                 case_sensitive = False
                 return_actions = True
-                searches.append(self.api_o.remote_search(
-                    [api.Query(" ".join(pargs), case_sensitive, return_actions)],
-                    servers=servers))
-                if debug:
-                        print "Search Args: %s : cs: %s : retact: %s" % \
-                                ("".join(pargs), case_sensitive, return_actions)
 
                 last_name = ""
                 # Sorting results by Name gives best overall appearance and flow
                 sort_col = enumerations.NAME_COLUMN
                 try:
+                        searches.append(self.api_o.remote_search(
+                            [api.Query(" ".join(pargs), case_sensitive, return_actions)],
+                            servers=servers))
+                        if debug:
+                                print "Search Args: %s : cs: %s : retact: %s" % \
+                                        ("".join(pargs), case_sensitive, return_actions)
                         for query_num, pub, (v, return_type, tmp) in \
                             itertools.chain(*searches):
                                 if v < 1 or return_type != api.Query.RETURN_PACKAGES:
@@ -2531,6 +2551,12 @@ class PackageManager:
                         self.__reset_search_start()
                         gobject.idle_add(self.unset_busy_cursor)
                         gobject.idle_add(self.__process_after_cancel)
+                        return
+                except api_errors.ImageLockedError, ex:
+                        err = str(ex)
+                        gobject.idle_add(self.error_occurred, err,
+                                None, gtk.MESSAGE_INFO)
+                        self.__process_after_search_failure()
                         return
                 except Exception, aex:
                         err = str(aex)
@@ -3655,7 +3681,8 @@ class PackageManager:
                         Thread(target = self.__get_info, args = (pkg_stem, name)).start()
 
         def __get_info(self, pkg_stem, name):
-                self.api_o.reset()
+                if not self.__do_api_reset():
+                        return
                 local_info = gui_misc.get_pkg_info(self, self.api_o, pkg_stem, True)
                 remote_info = gui_misc.get_pkg_info(self, self.api_o, pkg_stem, False)
                 if self.exiting:
@@ -3675,11 +3702,17 @@ class PackageManager:
                                 stuff_to_do = self.api_o.plan_install(
                                     install_update_list,
                                     refresh_catalogs = False) 
-                        except api_errors.ApiException:
+                        except api_errors.ApiException, ex:
+                                err = str(ex)
+                                logger.error(err)
+                                gobject.idle_add(gui_misc.notify_log_error, self)
                                 gobject.idle_add(self.unset_busy_cursor)
                                 return
                         if stuff_to_do:
-                                plan = self.api_o.describe().get_changes()
+                                plan_desc = self.api_o.describe()
+                                if plan_desc == None:
+                                        return
+                                plan = plan_desc.get_changes()
                                 plan_pkg = None
                                 for pkg_plan in plan:
                                         if name == pkg_plan[1].pkg_stem:
@@ -3839,8 +3872,19 @@ class PackageManager:
                 self.__on_info_ok_button_clicked(None)
                 return True
 
+        def __do_api_reset(self):
+                try:
+                        self.api_o.reset()
+                except api_errors.ApiException, ex:
+                        err = str(ex)
+                        gobject.idle_add(self.error_occurred, err,
+                            None, gtk.MESSAGE_INFO)
+                        return False
+                return True
+
         def __on_install_update(self, widget):
-                self.api_o.reset()
+                if not self.__do_api_reset():
+                        return
                 install_update = []
                 confirmation_list = None
                 if self.show_install:
@@ -3859,7 +3903,8 @@ class PackageManager:
                     confirmation_list = confirmation_list)
 
         def __on_update_all(self, widget):
-                self.api_o.reset()
+                if not self.__do_api_reset():
+                        return
                 confirmation = None
                 if self.show_image_update:
                         confirmation = []
@@ -3904,7 +3949,8 @@ class PackageManager:
                                                     desc, status])
 
         def __on_remove(self, widget):
-                self.api_o.reset()
+                if not self.__do_api_reset():
+                        return
                 remove_list = []
                 confirmation_list = None
                 if self.show_remove:
@@ -3941,10 +3987,12 @@ class PackageManager:
         def __catalog_refresh(self):
                 """Update image's catalogs."""
                 success = self.__do_refresh(immediate=True)
+                if not success:
+                        gobject.idle_add(self.unset_busy_cursor)
+                        gobject.idle_add(self.update_statusbar)
+                        return -1
                 gobject.idle_add(self.__clear_recent_searches)
                 self.__catalog_refresh_done()
-                if not success:
-                        return -1
                 return 0
 
         def __catalog_refresh_done(self):
@@ -4537,6 +4585,7 @@ class PackageManager:
                 if self.use_cache:
                         self.info_cache[pkg_stem] = (labs, text, inst_str,
                             local_info, dep_info, installed_dep_info)
+                self.unset_busy_cursor()
 
         @staticmethod
         def setup_package_license(licenses):
@@ -4655,6 +4704,7 @@ class PackageManager:
                 pkg_status = model.get_value(itr, enumerations.STATUS_COLUMN)
                 if self.info_cache.has_key(pkg_stem):
                         return
+                self.set_busy_cursor()
                 Thread(target = self.__show_package_info,
                     args = (pkg, pkg_stem, pkg_status, self.last_show_info_id)).start()
 
@@ -4901,15 +4951,6 @@ class PackageManager:
                                         return
                 self.w_selectupdates_menuitem.set_sensitive(False)
                 return
-
-        def __get_inventory_list(self, pargs, all_known, all_versions):
-                self.__image_activity_lock.acquire()
-                try:
-                        res = misc.get_inventory_list(self.api_o.img, 
-                            pargs, all_known, all_versions)
-                finally:
-                        self.__image_activity_lock.release()
-                return res
 
         def __enable_disable_export_selections(self):
                 if self.selected_pkgs == None or len(self.selected_pkgs) == 0:
@@ -5457,7 +5498,7 @@ class PackageManager:
                 if count == total:
                         self.w_progress_frame.hide()
                         return False
-                if self.api_o.can_be_canceled():
+                if self.api_o and self.api_o.can_be_canceled():
                         self.progress_cancel.set_sensitive(True)
                 else:
                         self.progress_cancel.set_sensitive(False)
@@ -5481,7 +5522,7 @@ class PackageManager:
         def __progress_pulse(self):
                 gobject.idle_add(self.w_progress_frame.show)
                 while not self.progress_stop_thread:
-                        if self.api_o != None and self.api_o.can_be_canceled():
+                        if self.api_o and self.api_o.can_be_canceled():
                                 gobject.idle_add(self.progress_cancel.set_sensitive, True)
                         else:
                                 gobject.idle_add(self.progress_cancel.set_sensitive,
@@ -5552,15 +5593,21 @@ class PackageManager:
                         dt = version.get_timestamp()
                 return dt
 
-        @staticmethod
-        def __get_version(api_o, local, pkg):
-                info = api_o.info([pkg], local, frozenset(
-                    [api.PackageInfo.STATE, api.PackageInfo.IDENTITY]))
-                found = info[api.ImageInterface.INFO_FOUND]
+        def __get_version(self, api_o, local, pkg):
+                version = None
                 try:
+                        info = api_o.info([pkg], local, frozenset(
+                            [api.PackageInfo.STATE, api.PackageInfo.IDENTITY]))
+                        found = info[api.ImageInterface.INFO_FOUND]
                         version = found[0]
                 except IndexError:
-                        version = None
+                        pass
+                except api_errors.ApiException, ex:
+                        err = str(ex)
+                        logger.error(err)
+                        gobject.idle_add(gui_misc.notify_log_error, self)
+                except Exception, ex:
+                        pass
                 return version
 
 #-----------------------------------------------------------------------------#
@@ -5756,7 +5803,14 @@ class PackageManager:
                 visible_list = update_list.get(visible_publisher)
                 if self.is_all_publishers or self.is_all_publishers_installed \
                     or self.in_recent_search:
-                        for pub in self.api_o.get_publishers():
+                        try:
+                                pubs = self.api_o.get_publishers()
+                        except api_errors.ApiException, ex:
+                                err = str(ex)
+                                gobject.idle_add(self.error_occurred, err,
+                                    None, gtk.MESSAGE_INFO)
+                                return
+                        for pub in pubs:
                                 if pub.disabled:
                                         continue
                                 prefix = pub.prefix

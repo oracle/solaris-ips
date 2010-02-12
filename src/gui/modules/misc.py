@@ -36,6 +36,7 @@ import sys
 import urllib2
 import urlparse
 import socket
+import traceback
 try:
         import gobject
         import gnome
@@ -268,13 +269,23 @@ def get_api_object(img_dir, progtrack, parent_dialog):
                     (ex.expected_version, ex.received_version)
         except api_errors.ImageNotFoundException, ex:
                 message = _("%s is not an install image") % ex.user_dir
-        if message != None:
-                if parent_dialog != None:
-                        error_occurred(parent_dialog,
-                            message, _("API Error"))
-                        sys.exit(0)
-                else:
-                        print message
+        except api_errors.ImageLockedError, ex:
+                message = str(ex)
+        except api_errors.ApiException, ex:
+                message = _("An unknown error occurred") + "\n\n" + _("Error details:\n")
+                message += str(ex)
+        except Exception:
+                traceback_lines = traceback.format_exc().splitlines()
+                traceback_str = ""
+                for line in traceback_lines:
+                        traceback_str += line + "\n"
+                message = _("An unknown error occurred")
+                if traceback_str != "":
+                        message += "\n\n" + _("Error details:\n") + traceback_str
+        if api_o == None or message != None:
+                if message == None:
+                        message = _("An unknown error occurred")
+                raise Exception(message)
         return api_o
 
 def error_occurred(parent, error_msg, msg_title = None,
