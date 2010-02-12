@@ -226,28 +226,29 @@ class ImagePlan(object):
                                 for f in each
                                 ])
 
+                # build installed dict
+                installed_dict = dict([
+                        (f.pkg_name, f)
+                        for f in self.image.gen_installed_pkgs()
+                        ])
+                                
+                # instantiate solver
+                self.__pkg_solver = pkg_solver.PkgSolver(
+                    self.image.get_catalog(self.image.IMG_CATALOG_KNOWN),
+                    installed_dict, 
+                    self.image.get_publisher_ranks(),
+                    self.image.get_variants(),
+                    self.__progtrack)
 
-                # compute removal of  packages; until we implement require 
-                # either A or B type dependencies no solver is needed
-                if recursive_removal:
-                        needs_processing = proposed_removals
-                        already_processed = set()
-                        while needs_processing:
-                                pfmri = needs_processing.pop()
-                                already_processed.add(pfmri)
-                                needs_processing |= set(self.image.get_dependents(pfmri,
-                                    self.__progtrack)) - already_processed
-                        proposed_removals = already_processed
+                new_vector = self.__pkg_solver.solve_uninstall([], 
+                    proposed_removals, recursive_removal, self.__new_excludes)
 
-                for pfmri in proposed_removals:
-                        self.__progtrack.evaluate_progress(pfmri)
-                        dependents = set(self.image.get_dependents(pfmri,
-                            self.__progtrack))
-                        if dependents - proposed_removals:
-                                raise api_errors.NonLeafPackageException(pfmri,
-                                    dependents)
-
-                self.__fmri_changes = [(f, None) for f in proposed_removals]
+                self.__fmri_changes = [ 
+                        (a, b)
+                        for a, b in ImagePlan.__dicts2fmrichanges(installed_dict, 
+                            ImagePlan.__fmris2dict(new_vector))
+                        if a != b
+                        ]
 
                 self.state = EVALUATED_PKGS
 

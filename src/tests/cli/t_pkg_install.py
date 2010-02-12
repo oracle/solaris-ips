@@ -3669,9 +3669,9 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 # package is installed, and the renamed package is installed,
                 # but marked renamed.  (4)
                 self.pkg("install qux@1")
-                self.pkg("install qux")
+                self.pkg("install qux") # upgrades qux
                 self.pkg("list foo@1")
-                self.pkg("list qux | grep -- --r--")
+                self.pkg("list qux", exit=1)
                 self.pkg("uninstall '*'") #clean up for next test
 
                 # Install a package that's going to be obsoleted and a package
@@ -4070,7 +4070,7 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
 
                 self.pkg("install netbooze")
                 self.pkg("list pkg:/developer/netbooze")
-                self.pkg("list pkg:/netbooze")
+                self.pkg("list pkg:/netbooze", exit=1)
 
 
         def test_basic_12(self):
@@ -4105,7 +4105,7 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 self.pkg("refresh")
                 self.pkg("image-update -v")
                 self.pkg("list pkg:/developer/netbeenz | grep -- -----")
-                self.pkg("list pkg:/netbeenz | grep -- --r--")
+                self.pkg("list pkg:/netbeenz", exit=1)
 
         def test_remove_renamed(self):
                 """If a renamed package has nothing depending on it, it should
@@ -4150,11 +4150,78 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
 
                 # But if there is something depending on the renamed package, it
                 # can't be removed.
-                self.pkg("pkg uninstall remrenB")
+                self.pkg("uninstall remrenB")
 
                 self.pkg("install remrenA@1 remrenC")
                 self.pkg("image-update")
                 self.pkg("list remrenA")
+
+        def test_chained_renames(self):
+                """If there are multiple renames, make sure we delete as much 
+                as possible, but no more."""
+
+                A1 = """
+                    open chained_A@1
+                    close
+                """
+
+                A2 = """
+                    open chained_A@2
+                    add set name=pkg.renamed value=true
+                    add depend type=require fmri=pkg:/chained_B@2
+                    close
+                """
+
+                B2 = """
+                    open chained_B@2
+                    add set name=pkg.renamed value=true
+                    add depend type=require fmri=pkg:/chained_C@2
+                    close
+                """
+ 
+                C2 = """
+                    open chained_C@2
+                    close
+                """
+
+                X = """
+                    open chained_X@1
+                    add depend type=require fmri=pkg:/chained_A
+                    close
+                """
+
+                Y = """
+                    open chained_Y@1
+                    add depend type=require fmri=pkg:/chained_B
+                    close
+                """
+
+                Z = """
+                    open chained_Z@1
+                    close
+                """
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, A1 + A2 + B2 + C2 + X + Y + Z)
+
+                self.image_create(durl)
+
+                self.pkg("install chained_A@1 chained_X chained_Z")
+                for p in ["chained_A@1", "chained_X@1"]:
+                        self.pkg("list %s" % p)
+                self.pkg("image-update")
+
+                for p in ["chained_A@2", "chained_X@1", "chained_B@2", "chained_C@2", "chained_Z"]:
+                        self.pkg("list %s" % p)
+
+                self.pkg("uninstall chained_X")
+               
+                for p in ["chained_C@2", "chained_Z"]:
+                        self.pkg("list %s" % p)
+               
+                # make sure renamed pkgs no longer needed are uninstalled
+                for p in ["chained_A@2", "chained_B@2"]:
+                        self.pkg("list %s" % p, exit=1)
 
         def test_unobsoleted(self):
                 """Ensure that the existence of an obsolete package version

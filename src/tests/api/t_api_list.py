@@ -569,8 +569,8 @@ add set name=pkg.description value="%(desc)s"
                 self.assertEqual(len(returned), 0)
 
                 # Test results after installing packages and only listing the
-                # installed packages.  Note that the 'obsolete' package here
-                # won't be installed since it has no dependencies.
+                # installed packages.  Note that the 'obsolete' and renamed packages
+                # won't be installed.
                 af = self.__get_pub_entry("test1", 3, "apple",
                     "1.2.0,5.11-0")[0]
                 api_obj.plan_install(["entire", af.get_fmri(), "corge",
@@ -582,21 +582,17 @@ add set name=pkg.description value="%(desc)s"
                 # Verify the results for LIST_INSTALLED.
                 returned = self.__get_returned(api_obj.LIST_INSTALLED,
                     api_obj=api_obj)
-                self.assertEqual(len(returned), 6)
+                self.assertEqual(len(returned), 4)
 
                 expected = [
                     self.__get_exp_pub_entry("test1", 3, "apple",
                         "1.2.0,5.11-0", installed=True),
-                    self.__get_exp_pub_entry("test1", 12, "corge", "1.0,5.11",
-                        installed=True),
                     self.__get_exp_pub_entry("test1", 13, "entire", "1.0,5.11",
                         installed=True),
                     self.__get_exp_pub_entry("test1", 14, "grault", "1.0,5.11",
                         installed=True),
                     self.__get_exp_pub_entry("test1", 16, "quux", "1.0,5.11",
-                        installed=True),
-                    self.__get_exp_pub_entry("test1", 18, "qux", "1.0,5.11",
-                        installed=True),
+                        installed=True)
                 ]
                 self.assertPrettyEqual(returned, expected)
 
@@ -612,7 +608,11 @@ add set name=pkg.description value="%(desc)s"
                     self.__get_exp_pub_entry("test2", 7, "bat/bar",
                         "1.2,5.11-0"),
                     self.__get_exp_pub_entry("test1", 12, "corge", "1.0,5.11",
-                        installed=True),
+                        installed=False),
+                    self.__get_exp_pub_entry("test2", 12, "corge", "1.0,5.11",
+
+                        installed=False),
+
                     self.__get_exp_pub_entry("test1", 13, "entire", "1.0,5.11",
                         installed=True),
                     self.__get_exp_pub_entry("test1", 14, "grault", "1.0,5.11",
@@ -623,11 +623,11 @@ add set name=pkg.description value="%(desc)s"
                         "1.0,5.11"),
                     self.__get_exp_pub_entry("test1", 16, "quux", "1.0,5.11",
                         installed=True),
-                    self.__get_exp_pub_entry("test1", 18, "qux", "1.0,5.11",
-                        installed=True),
                 ]
-                self.assertPrettyEqual(returned, expected)
+
                 self.assertEqual(len(returned), 10)
+                self.assertPrettyEqual(returned, expected)
+
 
                 # Re-test, including variants.
                 returned = self.__get_returned(api_obj.LIST_INSTALLED_NEWEST,
@@ -643,7 +643,9 @@ add set name=pkg.description value="%(desc)s"
                     self.__get_exp_pub_entry("test1", 10, "baz", "1.3,5.11"),
                     self.__get_exp_pub_entry("test2", 10, "baz", "1.3,5.11"),
                     self.__get_exp_pub_entry("test1", 12, "corge", "1.0,5.11",
-                        installed=True),
+                        installed=False),
+                    self.__get_exp_pub_entry("test2", 12, "corge", "1.0,5.11",
+                        installed=False),
                     self.__get_exp_pub_entry("test1", 13, "entire", "1.0,5.11",
                         installed=True),
                     self.__get_exp_pub_entry("test1", 14, "grault", "1.0,5.11",
@@ -654,11 +656,12 @@ add set name=pkg.description value="%(desc)s"
                         "1.0,5.11"),
                     self.__get_exp_pub_entry("test1", 16, "quux", "1.0,5.11",
                         installed=True),
-                    self.__get_exp_pub_entry("test1", 18, "qux", "1.0,5.11",
-                        installed=True),
+#                    self.__get_exp_pub_entry("test1", 18, "qux", "1.0,5.11",
+#                        installed=True),
                 ]
-                self.assertPrettyEqual(returned, expected)
                 self.assertEqual(len(returned), 12)
+                self.assertPrettyEqual(returned, expected)
+
 
                 # Verify results of LIST_INSTALLED_NEWEST when not including
                 # the publisher of installed packages.
@@ -668,19 +671,13 @@ add set name=pkg.description value="%(desc)s"
                 expected = [
                     self.__get_exp_pub_entry("test2", 7, "bat/bar",
                         "1.2,5.11-0"),
+                    self.__get_exp_pub_entry("test2", 12, "corge", 
+                        "1.0,5.11"),
                     self.__get_exp_pub_entry("test2", 15, "obsolete",
                         "1.0,5.11"),
                 ]
                 self.assertPrettyEqual(returned, expected)
-                self.assertEqual(len(returned), 2)
-
-                # Verify the results for LIST_INSTALLED_NEWEST after
-                # uninstalling 'qux'.  'qux' should not be listed as
-                # its replacement is incorporated.
-                api_obj.plan_uninstall(["qux"], False)
-                api_obj.prepare()
-                api_obj.execute_plan()
-                api_obj.reset()
+                self.assertEqual(len(returned), 3)
 
                 returned = self.__get_returned(api_obj.LIST_INSTALLED_NEWEST,
                     api_obj=api_obj)
@@ -693,7 +690,9 @@ add set name=pkg.description value="%(desc)s"
                     self.__get_exp_pub_entry("test2", 7, "bat/bar",
                         "1.2,5.11-0"),
                     self.__get_exp_pub_entry("test1", 12, "corge", "1.0,5.11",
-                        installed=True),
+                        installed=False),                    
+                    self.__get_exp_pub_entry("test2", 12, "corge", "1.0,5.11",
+                        installed=False),
                     self.__get_exp_pub_entry("test1", 13, "entire", "1.0,5.11",
                         installed=True),
                     self.__get_exp_pub_entry("test1", 14, "grault", "1.0,5.11",
@@ -706,7 +705,7 @@ add set name=pkg.description value="%(desc)s"
                         installed=True),
                 ]
                 self.assertPrettyEqual(returned, expected)
-                self.assertEqual(len(returned), 9)
+                self.assertEqual(len(returned), 10)
 
                 # Verify the results for LIST_INSTALLED_NEWEST after
                 # uninstalling 'quux' and 'qux'.
@@ -726,7 +725,9 @@ add set name=pkg.description value="%(desc)s"
                     self.__get_exp_pub_entry("test2", 7, "bat/bar",
                         "1.2,5.11-0"),
                     self.__get_exp_pub_entry("test1", 12, "corge", "1.0,5.11",
-                        installed=True),
+                        installed=False),
+                    self.__get_exp_pub_entry("test2", 12, "corge", "1.0,5.11",
+                        installed=False),
                     self.__get_exp_pub_entry("test1", 13, "entire", "1.0,5.11",
                         installed=True),
                     self.__get_exp_pub_entry("test1", 14, "grault", "1.0,5.11",
@@ -738,11 +739,11 @@ add set name=pkg.description value="%(desc)s"
                     self.__get_exp_pub_entry("test1", 16, "quux", "1.0,5.11"),
                 ]
                 self.assertPrettyEqual(returned, expected)
-                self.assertEqual(len(returned), 9)
+                self.assertEqual(len(returned), 10)
 
                 # Verify the results for LIST_INSTALLED_NEWEST after
                 # all packages have been uninstalled.
-                api_obj.plan_uninstall(["entire", "corge", "apple",
+                api_obj.plan_uninstall(["entire", "apple",
                     "grault"], False)
                 api_obj.prepare()
                 api_obj.execute_plan()
@@ -1227,7 +1228,12 @@ add set name=pkg.description value="%(desc)s"
 
                         # Prepare for next test.
                         self.debug("plan uninstall: %s" % time.ctime())
-                        api_obj.plan_uninstall(pkgs, False)
+                        # skip corge since it's renamed
+                        api_obj.plan_uninstall([
+                                                p 
+                                                for p in pkgs 
+                                                if not p.startswith("corge@1.0")
+                                                ], False)
                         self.debug("prepare uninstall: %s" % time.ctime())
                         api_obj.prepare()
                         self.debug("execute uninstall: %s" % time.ctime())

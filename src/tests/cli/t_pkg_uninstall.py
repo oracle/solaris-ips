@@ -112,6 +112,11 @@ class TestCommandLine(pkg5unittest.ManyDepotTestCase):
             add depend type=require fmri=quux@1.0
             close """
 
+        holder10 = """
+            open holder@1.0,5.11-0
+            add depend type=require fmri=renamed@1.0
+            close """
+
         def test_uninstalled_state(self):
                 """Uninstalling a package that is no longer known should result
                 in its removal from the output of pkg list -a, even if it has
@@ -119,14 +124,15 @@ class TestCommandLine(pkg5unittest.ManyDepotTestCase):
 
                 durl = self.dcs[1].get_depot_url()
                 durl2 = self.dcs[2].get_depot_url()
-                self.pkgsend_bulk(durl, self.quux10 + self.renamed10)
+                self.pkgsend_bulk(durl, self.quux10 + self.renamed10 + 
+                    self.holder10)
                 self.image_create(durl)
-                self.pkg("install -v renamed")
+                self.pkg("install -v renamed holder")
                 self.pkg("verify")
                 self.pkg("set-publisher -P -g %s bogus" % durl2)
                 self.pkg("unset-publisher test")
                 self.pkg("info quux@1.0 renamed@1.0")
-                self.pkg("uninstall renamed")
+                self.pkg("uninstall holder renamed")
                 self.pkg("list -a renamed@1.0", exit=1)
                 self.pkg("uninstall quux")
                 self.pkg("list -a quux@1.0", exit=1)

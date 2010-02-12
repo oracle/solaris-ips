@@ -422,7 +422,8 @@ class PkgSolver(object):
                                 solution.remove(f)
                                 
                 self.__timeit("phase 12")
-                return solution
+
+                return self.__elide_possible_renames(solution, excludes)
 
         def solve_update(self, existing_freezes, excludes=EmptyI):
                 # trim fmris we cannot install because they're older
@@ -480,7 +481,37 @@ class PkgSolver(object):
                         if self.__fmri_is_obsolete(f):
                                 solution.remove(f)
                         
-                return solution 
+                return self.__elide_possible_renames(solution, excludes)
+
+        def solve_uninstall(self, existing_freezes, uninstall_list, recursive, excludes):
+                """Compute changes needed for uninstall"""
+
+                # generate list of installed pkgs w/ possible renames removed to forestall
+                # failing removal due to presence of unneeded renamed pkg
+
+                orig_installed_set = set(self.__installed_fmris.values())
+                renamed_set = orig_installed_set - \
+                    self.__elide_possible_renames(orig_installed_set)
+                
+                if recursive is True:
+                        needs_processing = set(uninstall_list) | renamed_set
+                        proposed_removals = set()
+                        
+                        while needs_processing:
+                                pfmri = needs_processing.pop()
+                                proposed_removals.add(pfmri)
+                                needs_processing |= self.__get_dependents(pfmri, excludes) - proposed_removals
+                else:
+                        proposed_removals = set(uninstall_list) | renamed_set
+
+                # check for dependents
+                for pfmri in proposed_removals:
+                        dependents = self.__get_dependents(pfmri, excludes) - proposed_removals
+                        if dependents:
+                                raise api_errors.NonLeafPackageException(pfmri, dependents)
+
+                # remove any additional pkgs
+                return self.__elide_possible_renames(orig_installed_set - proposed_removals)
 
         def solve_change_varcets(self, existing_freezes, new_variants, new_facets, new_excludes):
                 """Compute packaging changes needed to effect
@@ -746,6 +777,44 @@ class PkgSolver(object):
                         self.__trim(fmri, str(e))
                         return set([])
 
+        def __elide_possible_renames(self, fmris, excludes=EmptyI):
+                """Return fmri list (which must be self-complete) with all
+                renamed fmris that have no other fmris depending on them
+                removed"""
+
+                # figure out which have been renamed
+                renamed_fmris = set([
+                        pfmri
+                        for pfmri in fmris
+                        if self.__fmri_is_renamed(pfmri, excludes)
+                        ])
+
+                # return if nothing has been renamed
+                if not renamed_fmris:
+                        return set(fmris)
+                
+                fmris_by_name = dict(((pfmri.pkg_name, pfmri) for pfmri in fmris))
+
+                # figure out which renamed fmris have dependencies; compute transitively
+                # so we can handle multiple renames 
+
+                needs_processing = set(fmris) - renamed_fmris
+                already_processed = set()
+
+                while needs_processing:
+                        pfmri = needs_processing.pop()
+                        already_processed.add(pfmri)
+                        for da in self.__get_dependency_actions(pfmri, excludes):
+                                if da.attrs["type"] == "require":
+                                        new_fmri = fmris_by_name[pkg.fmri.PkgFmri(da.attrs["fmri"], "5.11").pkg_name]
+                                        # since new_fmri will not be treated as renamed, make sure
+                                        # we check any dependencies it has
+                                        if new_fmri not in already_processed:
+                                                needs_processing.add(new_fmri)
+                                        renamed_fmris.discard(new_fmri)
+                return set(fmris) - renamed_fmris
+        
+                
         def __get_dependents(self, pfmri, excludes=EmptyI):
                 """return set of installed fmris that depend on specified installed fmri"""
                 if self.__dependents is None:
