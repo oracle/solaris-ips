@@ -1402,6 +1402,11 @@ class PackageManager:
                 elif handle_what == DISPLAY_LINK:
                         return None
                 elif action == None:
+                        if link and link.endswith(".p5i"):
+                                self.set_busy_cursor()
+                                gobject.spawn_async([self.application_path, "-i", link])
+                                gobject.timeout_add(1500, self.unset_busy_cursor)
+                                return
                         self.__open_link(link)
                 # Handle empty and unsupported actions
                 elif action == "":
@@ -1416,18 +1421,21 @@ class PackageManager:
                 if self.original_user == None:
                         try:
                                 gnome.url_show(link)
+                                gobject.timeout_add(1000, self.unset_busy_cursor)
                         except gobject.GError:
                                 self.__link_load_error(link)
+                                self.unset_busy_cursor()
                 else: 
                         prog = os.path.join(self.application_dir, OPEN_LINK)
                         try:
                                 return_code = subprocess.call([prog, 
                                     self.original_user, link])
+                                gobject.timeout_add(1000, self.unset_busy_cursor)
                         except OSError:
                                 return_code = 1
                         if return_code != 0:
                                 self.__link_load_error(link)
-                self.unset_busy_cursor()
+                                self.unset_busy_cursor()
 
         def __link_load_page(self, text =""):
                 self.link_load_page = text
