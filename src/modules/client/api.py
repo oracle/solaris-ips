@@ -265,6 +265,7 @@ class ImageInterface(object):
                                     self.__plan_type)
                         self.__img.lock(allow_unprivileged=noexecute)
                 except:
+                        self.__cancel_cleanup_exception()
                         self.__activity_lock.release()
                         raise
 
@@ -1744,7 +1745,6 @@ class ImageInterface(object):
                 self.__canceling = True
                 # Wait until the cancelled operation wakes us up.
                 self.__cancel_cv.wait()
-                self.__canceling = False
                 self.__cancel_lock.release()
                 return True
 

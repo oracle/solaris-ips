@@ -982,10 +982,10 @@ class NastyDepotHTTP(DepotHTTP):
         """A class that creates a depot that misbehaves.  Naughty
         depots are useful for testing."""
 
-        def __init__(self, repo, content_root):
+        def __init__(self, repo, content_root, disable_ops=misc.EmptyI):
                 """Initialize."""
 
-                DepotHTTP.__init__(self, repo, content_root)
+                DepotHTTP.__init__(self, repo, content_root, disable_ops)
 
                 # Handles the BUI (Browser User Interface).
                 face.init(self._repo, self.web_root)
@@ -994,6 +994,8 @@ class NastyDepotHTTP(DepotHTTP):
                 self._repo.write_config()
 
                 self.requested_files = []
+                self.requested_catalogs = []
+                self.requested_manifests = []
 
                 cherrypy.tools.nasty_httperror = cherrypy.Tool('before_handler',
                     NastyDepotHTTP.nasty_retryable_error)
@@ -1084,7 +1086,15 @@ class NastyDepotHTTP(DepotHTTP):
                         raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
 
                 # NASTY
-                # Send an error before serving the file, perhaps
+                # Stash manifest entry for later use.
+                # Toss out the list if it's larger than 1024 items.
+                if len(self.requested_manifests) > 1024:
+                        self.requested_manifests = [fpath]
+                else:
+                        self.requested_manifests.append(fpath)
+
+                # NASTY
+                # Send an error before serving the manifest, perhaps
                 if self._repo.cfg.need_nasty():
                         self.nasty_retryable_error()
                 elif self._repo.cfg.need_nasty_infrequently():
@@ -1093,6 +1103,15 @@ class NastyDepotHTTP(DepotHTTP):
                 elif self._repo.cfg.need_nasty_rarely():
                         # Forget that the manifest is here
                         raise cherrypy.HTTPError(httplib.NOT_FOUND)
+
+                # NASTY
+                # Send the wrong manifest
+                if self._repo.cfg.need_nasty_rarely():
+                        pick = random.randint(0,
+                            len(self.requested_manifests) - 1)
+                        badpath = self.requested_manifests[pick]
+
+                        return serve_file(badpath, "text/plain")
 
                 # NASTY
                 # Call a misbehaving serve_file
@@ -1264,7 +1283,7 @@ class NastyDepotHTTP(DepotHTTP):
                         # Fall asleep before finishing the request
                         time.sleep(35)
                 elif self._repo.cfg.need_nasty_rarely():
-                        # Forget that the manifest is here
+                        # Forget that the file is here
                         raise cherrypy.HTTPError(httplib.NOT_FOUND)
 
                 # NASTY
@@ -1281,6 +1300,62 @@ class NastyDepotHTTP(DepotHTTP):
                 return self.nasty_serve_file(fpath, "application/data")
 
         file_0._cp_config = { "response.stream": True }
+
+        def catalog_1(self, *tokens):
+                """Outputs the contents of the specified catalog file, using the
+                name in the request path, directly to the client."""
+
+                try:
+                        name = tokens[0]
+                except IndexError:
+                        raise cherrypy.HTTPError(httplib.FORBIDDEN,
+                            _("Directory listing not allowed."))
+
+                try:
+                        fpath = self._repo.catalog_1(name)
+                except repo.RepositoryCatalogNotFoundError, e:
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
+                except repo.RepositoryError, e:
+                        # Treat any remaining repository error as a 404, but
+                        # log the error and include the real failure
+                        # information.
+                        cherrypy.log("Request failed: %s" % str(e))
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND, str(e))
+
+                # NASTY
+                # Stash catalog entry for later use.
+                # Toss out the list if it's larger than 1024 items.
+                if len(self.requested_catalogs) > 1024:
+                        self.requested_catalogs = [fpath]
+                else:
+                        self.requested_catalogs.append(fpath)
+
+                # NASTY
+                # Send an error before serving the catalog, perhaps
+                if self._repo.cfg.need_nasty():
+                        self.nasty_retryable_error()
+                elif self._repo.cfg.need_nasty_rarely():
+                        # Fall asleep before finishing the request
+                        time.sleep(35)
+                elif self._repo.cfg.need_nasty_rarely():
+                        # Forget that the catalog is here
+                        raise cherrypy.HTTPError(httplib.NOT_FOUND)
+
+                # NASTY
+                # Send the wrong catalog
+                if self._repo.cfg.need_nasty_rarely():
+                        pick = random.randint(0,
+                            len(self.requested_catalogs) - 1)
+                        badpath = self.requested_catalogs[pick]
+
+                        return serve_file(badpath, "text/plain")
+
+                # NASTY
+                # Call a misbehaving serve_file
+                return self.nasty_serve_file(fpath, "text/plain")
+
+        catalog_1._cp_config = { "response.stream": True }
+
 
         def nasty_serve_file(self, filepath, content_type):
                 """A method that imitates the functionality of serve_file(),
