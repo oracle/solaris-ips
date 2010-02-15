@@ -413,10 +413,7 @@ def gen_actions(files, timestamp_files):
                                                 del action.attrs["timestamp"]
                                         except KeyError:
                                                 pass
-                        elif action.name in nopub_actions:
-                                yield (action, True)
-                        else:
-                                yield (action, False)
+                        yield (action, action.name in nopub_actions)
 
 def trans_import(repo_uri, args):
         try:

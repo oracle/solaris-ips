@@ -106,8 +106,10 @@ class SolarisPackageDatastreamBundle(object):
                                 if act:
                                         yield act
                         if p.type in "ls":
-                                yield self.action(self.pkgmap, None,
+                                act = self.action(self.pkgmap, None,
                                     dir + p.pathname)
+                                if act:
+                                        yield act
 
         def action(self, pkgmap, ci, path):
                 try:
@@ -138,6 +140,12 @@ class SolarisPackageDatastreamBundle(object):
                 elif mapline.type == "l":
                         return hardlink.HardLinkAction(path=mapline.pathname,
                             target=mapline.target)
+		elif mapline.type == "i" and mapline.pathname == "copyright":
+			return license.LicenseAction(data=ci.extractfile(),
+			    license="%s.copyright" % self.pkgname,
+			    path=mapline.pathname)
+                elif mapline.type == "i":
+                        return None
                 else:
                         return unknown.UnknownAction(path=mapline.pathname)
 

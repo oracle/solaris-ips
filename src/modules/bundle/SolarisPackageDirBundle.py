@@ -106,8 +106,10 @@ class SolarisPackageDirBundle(object):
                                 if act:
                                         yield act
 			elif p.type == "i":
-				yield self.action(p, os.path.join(self.filename,
+				a = self.action(p, os.path.join(self.filename,
 				    "install", r(p.pathname, p.type)))
+                                if a:
+                                        yield a
 
         def action(self, mapline, data):
                 preserve_dict = {
@@ -152,9 +154,11 @@ class SolarisPackageDirBundle(object):
                         return hardlink.HardLinkAction(path=mapline.pathname,
                             target=mapline.target)
 		elif mapline.type == "i" and mapline.pathname == "copyright":
-			return license.LicenseAction(data, 
+			return license.LicenseAction(data,
 			    license="%s.copyright" % self.pkgname,
 			    path=mapline.pathname)
+                elif mapline.type == "i":
+                        return None
                 else:
                         return unknown.UnknownAction(path=mapline.pathname)
 

@@ -29,12 +29,15 @@ if __name__ == "__main__":
 import pkg5unittest
 
 import os
+import os.path
 import shutil
+import stat
 import tempfile
 import unittest
 import urllib
 
 from pkg import misc
+import pkg.portable as portable
 
 class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
         persistent_setup = False
@@ -320,83 +323,165 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
                 self.pkg("install foo")
                 self.image_destroy()
 
-        def test_11_bundle_sysv_dir(self):
-                rootdir = self.test_root
-                dir1 = os.path.join(rootdir, "foobar")
-                os.mkdir(dir1)
-                file(os.path.join(dir1, "bar"), "wb").close()
-                pkginfopath = os.path.join(rootdir, "pkginfo")
+        # A map used to create a SVR4 package, and check an installed pkg(5)
+        # version of that package, created via 'pkgsend import'.  We map the
+        # path name to
+        # [ type, mode, user, group, digest ] initially setting the digest to None
+        sysv_contents = {
+            "foobar": [ "d", 0715, "nobody", "nobody", None ],
+            "foobar/bar": [ "f", 0614, "root", "sys", None ],
+            "foobar/baz": [ "f", 0644, "daemon", "adm", None ],
+            "foobar/symlink": [ "s", None, "daemon", "adm", None ],
+            "foobar/hardlink": [ "l", 0644, "daemon", "adm", None ],
+            "copyright": [ "i", None, None, None, None ],
+            # check that pkgsend doesn't generate an Action for "i" files
+            "pkginfo": [ "i", None, None, None, None ],
+            "myclass": [ "i", None, None, None, None ],
+            "prototype": [ "i", None, None, None, None ],
+            # pkgmap is not an "i" file, but we still want to
+            # check that it is not installed in the image
+            "pkgmap": [ "i", None, None, None, None ] }
+
+        sysv_prototype = """i pkginfo
+            i copyright
+            d none foobar 0715 nobody nobody
+            f none foobar/bar 0614 root sys
+            f myclass foobar/baz 0644 daemon adm
+            s none foobar/symlink=baz
+            l none foobar/hardlink=baz
+            i myclass"""
+
+        sysv_pkginfo = 'PKG="nopkg"\n'\
+            'NAME="No package"\n'\
+            'ARCH="all"\n'\
+            'CLASSES="none myclass"\n'\
+            'CATEGORY="utility"\n'\
+            'VENDOR="nobody"\n'\
+            'PSTAMP="7thOct83"\n'\
+            'ISTATES="S s 1 2 3"\n'\
+            'RSTATES="S s 1 2 3"\n'\
+            'BASEDIR="/"'
+
+        def create_sysv_package(self, rootdir):
+                """Create a SVR4 package at a given location using some predefined
+                contents."""
+                pkgroot = os.path.join(rootdir, "sysvpkg")
+                os.mkdir(pkgroot)
+
+                # create files and directories in our proto area
+                for entry in self.sysv_contents:
+                        ftype, mode  = self.sysv_contents[entry][:2]
+                        if ftype in "fi":
+                                dirname = os.path.dirname(entry)
+                                try:
+                                        os.makedirs(os.path.join(pkgroot, dirname))
+                                except OSError, err: # in case the dir exists already
+                                        if err.errno != os.errno.EEXIST:
+                                                raise                                        
+                                fpath = os.path.join(pkgroot, entry)
+                                f = file(fpath, "wb")
+                                f.write("test" + entry)
+                                f.close()
+                                # compute a digest of the file we just created, which
+                                # we can use when validating later.
+                                self.sysv_contents[entry][4] = \
+                                    misc.get_data_digest(fpath)[0]
+
+                        elif ftype == "d":
+                                try:
+                                        os.makedirs(os.path.join(pkgroot, entry), mode)
+                                except OSError, err:
+                                        if err.errno != os.errno.EEXIST:
+                                                raise
+
+                pkginfopath = os.path.join(pkgroot, "pkginfo")
                 pkginfo = file(pkginfopath, "w")
-                pkginfo.write('PKG="nopkg"\n'\
-                              'NAME="No package"\n'\
-                              'ARCH="all"\n'\
-                              'CLASSES="none"\n'\
-                              'CATEGORY="utility"\n'\
-                              'VENDOR="nobody"\n'\
-                              'PSTAMP="7thOct83"\n'\
-                              'ISTATES="S s 1 2 3"\n'\
-                              'RSTATES="S s 1 2 3"\n'\
-                              'BASEDIR="/"')
+                pkginfo.write(self.sysv_pkginfo)
                 pkginfo.close()
-                prototypepath = os.path.join(rootdir, "Prototype")
+
+                prototypepath = os.path.join(pkgroot, "prototype")
                 prototype = file(prototypepath, "w")
-                prototype.write("""i pkginfo
-                d none foobar 0755 nobody nobody
-                f none foobar/bar 0644 nobody nobody""")
+                prototype.write(self.sysv_prototype)
                 prototype.close()
+
                 self.cmdline_run("pkgmk -o -r %s -d %s -f %s" %
-                         (rootdir, rootdir, prototypepath))
+                         (pkgroot, rootdir, prototypepath))
+
+                shutil.rmtree(pkgroot)
+
+        def test_11_bundle_sysv_dir(self):
+                """ A SVR4 directory-format package can be imported, its contents
+                published to a repo and installed to an image."""
+                rootdir = self.test_root
+                self.create_sysv_package(rootdir)
                 url = self.dc.get_depot_url()
-                self.pkgsend_bulk(url,
-                """open nopkg@1.0
-                import %s
-                close""" % (os.path.join(rootdir, "nopkg")) )
-                os.remove(os.path.join(dir1, "bar"))
-                os.rmdir(dir1)
+
+                self.pkgsend(url, "open nopkg@1.0")
+                self.pkgsend(url, "import %s" % os.path.join(rootdir, "nopkg"))
+                self.pkgsend(url, "close")
+
                 self.image_create(url)
                 self.pkg("install nopkg")
+                self.validate_sysv_contents("nopkg")
+                self.pkg("verify")
                 self.image_destroy()
-
 
         def test_12_bundle_sysv_datastream(self):
+                """ A SVR4 datastream package can be imported, its contents published to
+                a repo and installed to an image."""
                 rootdir = self.test_root
-                dir1 = os.path.join(rootdir, "foobar")
-                os.mkdir(dir1)
-                file(os.path.join(dir1, "bar"), "wb").close()
-                pkginfopath = os.path.join(rootdir, "pkginfo")
-                pkginfo = file(pkginfopath, "w")
-                pkginfo.write('PKG="nopkg"\n'\
-                              'NAME="No package"\n'\
-                              'ARCH="all"\n'\
-                              'CLASSES="none"\n'\
-                              'CATEGORY="utility"\n'\
-                              'VENDOR="nobody"\n'\
-                              'PSTAMP="7thOct83"\n'\
-                              'ISTATES="S s 1 2 3"\n'\
-                              'RSTATES="S s 1 2 3"\n'\
-                              'BASEDIR="/"')
-                pkginfo.close()
-                prototypepath = os.path.join(rootdir, "Prototype")
-                prototype = file(prototypepath, "w")
-                prototype.write("""i pkginfo
-                d none foobar 0755 nobody nobody
-                f none foobar/bar 0644 nobody nobody""")
-                prototype.close()
-                self.cmdline_run("pkgmk -o -r %s -d %s -f %s" %
-                         (rootdir, rootdir, prototypepath))
+                self.create_sysv_package(rootdir)
                 self.cmdline_run("pkgtrans -s %s %s nopkg" % (rootdir,
                         os.path.join(rootdir, "nopkg.pkg")))
+
                 url = self.dc.get_depot_url()
-                self.pkgsend_bulk(url,
-                """open nopkg@1.0
-                import %s
-                close""" % os.path.join(rootdir, "nopkg.pkg") )
-                os.remove(os.path.join(dir1, "bar"))
-                os.rmdir(dir1)
+                self.pkgsend(url, "open nopkg@1.0")
+                self.pkgsend(url, "import %s" % os.path.join(rootdir, "nopkg"))
+                self.pkgsend(url, "close")
+
                 self.image_create(url)
                 self.pkg("install nopkg")
+                self.validate_sysv_contents("nopkg")
+                self.pkg("verify")
                 self.image_destroy()
 
+        def validate_sysv_contents(self, pkgname):
+                """ Check that the image contents correspond to the SVR4 package.
+                The tests in t_pkginstall cover most of the below, however
+                here we're interested in ensuring that pkgsend really did import
+                and publish everything we expected from the sysv package.
+                """
+
+                # verify we have copyright text
+                self.pkg("info --license %s" % pkgname)
+
+                for entry in self.sysv_contents:
+                        name = os.path.join(self.img_path, entry)
+                        ftype, mode, user, group, digest = self.sysv_contents[entry]
+
+                        if ftype in "fl":
+                                self.assertTrue(os.path.isfile(name))
+                        elif ftype == "d":
+                                self.assertTrue(os.path.isdir(name))
+                        elif ftype == "s":
+                                self.assertTrue(os.path.islink(name))
+                        elif ftype == "i":
+                                # we should not have installed these
+                                self.assertFalse(os.path.exists(name))
+                                continue
+
+                        if digest:
+                                pkg5_digest = misc.get_data_digest(name)[0]
+                                self.assertEqual(digest, pkg5_digest)
+
+                        st = os.stat(os.path.join(self.img_path, name))
+                        if mode is not None:
+                                portable.assert_mode(name, stat.S_IMODE(mode))
+                        self.assertEqual(portable.get_user_by_name(user,
+                            self.img_path, use_file=True), st.st_uid)
+                        self.assertEqual(portable.get_group_by_name(group,
+                            self.img_path, use_file=True), st.st_gid)
+    
         def test_13_pkgsend_indexcontrol(self):
                 """Verify that "pkgsend close --no-index" suppresses
                 indexing and that "pkgsend refresh-index" triggers
@@ -554,16 +639,16 @@ dir path=foo/bar mode=0755 owner=root group=bin
                 self.pkgsend("file://%s" % rpath,
                     "create-repository --set-property publisher.prefix=test")
                 cat_path = os.path.join(rpath, "catalog/catalog.attrs")
-                mtime = os.stat(cat_path).st_mtime                
+                mtime = os.stat(cat_path).st_mtime
                 self.pkgsend("file://%s publish --fmri-in-manifest --no-catalog %s" % (
                                 rpath, fpath))
                 new_mtime = os.stat(cat_path).st_mtime
                 # check that modified times are the same before and after publication
                 self.assertEqual(mtime, new_mtime)
                 self.dc.set_add_content()
-                
+
                 self.dc.start()
-                
+
                 dhurl = self.dc.get_depot_url()
                 self.dc.set_repodir(rpath)
                 self.image_create(dhurl)
