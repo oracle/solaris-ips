@@ -39,7 +39,7 @@ if __name__ == '__main__':
         link = sys.argv[2]
         try:
                 pw = pwd.getpwnam(name)
-                if pwd:
+                if pw:
                         uid = pw.pw_uid
                         pw_dir = pw.pw_dir
                         os.putenv('HOME', pw_dir)
