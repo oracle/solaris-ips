@@ -1,6 +1,6 @@
 package driver/storage/cpqary3
 consolidation "osnet"
-classification "Drivers/Networking"
+classification "Drivers/Storage"
 import CPQary3
 
 add driver name=cpqary3 \

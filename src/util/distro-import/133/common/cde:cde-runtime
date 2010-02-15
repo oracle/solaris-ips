@@ -1,8 +1,7 @@
-package library/cde
+package cde/cde-runtime
 consolidation "cde"
 classification "System/X11"
-summary "CDE application basic runtime environment"
-# Import only non-EOF compatibility libraries
+# Import only non-EOF components
 from SUNWdtbas import
 usr/dt
 usr/dt/app-defaults
@@ -39,6 +38,9 @@ end import
 from SUNWdtdte import
 usr/dt/bin/dterror.ds
 end import
+from SUNWdtdst import
+usr/dt/bin/sdtwebclient
+end import
 from SUNWdtma import
 usr/dt/share
 usr/dt/share/man
@@ -47,6 +49,7 @@ usr/dt/share/man/man1/dtaction.1
 usr/dt/share/man/man1/dterror.ds.1
 usr/dt/share/man/man1/dtexec.1
 usr/dt/share/man/man1/dtksh.1
+usr/dt/share/man/man1/sdtwebclient.1
 usr/dt/share/man/man4
 usr/dt/share/man/man4/dtactionfile.4
 usr/dt/share/man/man4/dtdtfile.4
@@ -59,5 +62,5 @@ end package
 package SUNWdtbas
 consolidation "cde"
 renamed 133
-depend library/cde
+depend cde/cde-runtime
 end package

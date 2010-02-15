@@ -1,0 +1,6 @@
+package library/libnotify
+consolidation "gnome"
+classification "Desktop (GNOME)/Libraries"
+import SUNWlibnotify
+version 0.4.5
+end package

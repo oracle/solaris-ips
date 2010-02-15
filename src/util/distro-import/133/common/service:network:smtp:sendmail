@@ -3,7 +3,7 @@ consolidation "osnet"
 classification "System/Core"
 import SUNWsndmu
 import SUNWsndmr
-version 8.14.3
+version 8.14.4
 
 chattr etc/init.d/sendmail \
 	original_name=SUNWsndm:etc/init.d/sendmail

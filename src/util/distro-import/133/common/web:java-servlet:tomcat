@@ -3,7 +3,7 @@ consolidation "sfw"
 classification "Web Services/Application and Web Servers"
 import SUNWtcatu
 import SUNWtcatr
-version 6.0.20
+version 6.0.24
 
 chattr var/tomcat6/conf/catalina.policy \
 	original_name=SUNWtcat:var/tomcat6/conf/catalina.policy

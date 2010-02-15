@@ -386,7 +386,6 @@ drop usr/share/man/man7d/pcser.7d
 drop usr/share/man/man7d/pfb.7d
 drop usr/share/man/man7d/qfe.7d
 drop usr/share/man/man7d/qus.7d
-drop usr/share/man/man7d/rtls.7d
 drop usr/share/man/man7d/scfd.7d
 drop usr/share/man/man7d/scsi_vhci.7d
 drop usr/share/man/man7d/se.7d

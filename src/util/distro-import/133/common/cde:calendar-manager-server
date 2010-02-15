@@ -1,0 +1,42 @@
+package cde/calendar-manager-server
+consolidation "cde"
+classification "System/Services"
+summary "CDE calendar manager service daemon"
+# Import only non-EOF components
+from SUNWdtdmr import
+etc
+etc/security
+etc/security/auth_attr
+lib
+lib/svc
+lib/svc/method
+lib/svc/method/rpc-cmsd
+var
+var/svc
+var/svc/manifest
+var/svc/manifest/network
+var/svc/manifest/network/rpc
+var/svc/manifest/network/rpc/cde-cmsd.xml
+end import
+from SUNWdtdmn import
+usr/dt
+usr/dt/bin
+usr/dt/bin/rpc.cmsd
+usr/dt/bin/sdtcm_convert
+usr/dt/config
+usr/dt/config/cmsd.conf
+usr/dt/lib
+usr/dt/lib/nls
+usr/dt/lib/nls/msg
+usr/dt/lib/nls/msg/C
+usr/dt/lib/nls/msg/C/sdtcm_convert.cat
+end import
+from SUNWdtma import
+usr/dt/share
+usr/dt/share/man
+usr/dt/share/man/man1
+usr/dt/share/man/man1/sdtcm_convert.1
+usr/dt/share/man/man1m
+usr/dt/share/man/man1m/rpc.cmsd.1m
+end import
+end package

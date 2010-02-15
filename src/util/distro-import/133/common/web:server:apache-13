@@ -9,10 +9,6 @@ chattr etc/apache/access.conf \
 	original_name=SUNWapch:etc/apache/access.conf
 chattr etc/apache/jk.conf \
 	original_name=SUNWapch:etc/apache/jk.conf
-chattr etc/apache/jserv.conf \
-	original_name=SUNWapch:etc/apache/jserv.conf
-chattr etc/apache/jserv.properties \
-	original_name=SUNWapch:etc/apache/jserv.properties
 chattr etc/apache/magic \
 	original_name=SUNWapch:etc/apache/magic
 chattr etc/apache/mime.types \
@@ -21,16 +17,12 @@ chattr etc/apache/srm.conf \
 	original_name=SUNWapch:etc/apache/srm.conf
 chattr etc/apache/workers.properties \
 	original_name=SUNWapch:etc/apache/workers.properties
-chattr etc/apache/zone.properties \
-	original_name=SUNWapch:etc/apache/zone.properties
 chattr etc/init.d/apache \
 	original_name=SUNWapch:etc/init.d/apache
 chattr var/apache/logs/access_log \
 	original_name=SUNWapch:var/apache/logs/access_log
 chattr var/apache/logs/error_log \
 	original_name=SUNWapch:var/apache/logs/error_log
-chattr var/apache/logs/mod_jserv.log \
-	original_name=SUNWapch:var/apache/logs/mod_jserv.log
 chattr var/apache/logs/suexec_log \
 	original_name=SUNWapch:var/apache/logs/suexec_log
 end package

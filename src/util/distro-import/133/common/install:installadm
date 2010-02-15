@@ -1,19 +1,19 @@
-package install/auto-install/installadm
+package install/installadm
 consolidation "install"
 classification "System/Administration and Configuration"
 import SUNWinstalladm-tools
-depend web/server/apache-22
-depend system/install/auto-install/auto-install-common
-depend service/network/dhcp
-depend service/network/dns/mdns
+depend database/sqlite-3
 depend library/python-2/cherrypy
 depend library/python-2/lxml-26
-depend database/sqlite-3
+depend service/network/dhcp
+depend service/network/dns/mdns
 depend service/network/tftp
+depend system/install/auto-install/auto-install-common
+depend web/server/apache-22
 end package
 
 package SUNWinstalladm-tools
 consolidation "install"
 renamed 133
-depend install/auto-install/installadm
+depend install/installadm
 end package

@@ -1,0 +1,5 @@
+package SUNWrmodu
+consolidation "osnet"
+renamed 133
+depend system/boot/real-mode
+end package

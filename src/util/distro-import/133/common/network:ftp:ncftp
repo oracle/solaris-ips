@@ -2,7 +2,7 @@ package network/ftp/ncftp
 consolidation "sfw"
 classification "Applications/Internet"
 import SUNWncft
-version 3.2.2
+version 3.2.3
 end package
 
 package SUNWncft

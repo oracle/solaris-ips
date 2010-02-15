@@ -383,7 +383,11 @@ FIX_FILES_131 =				\
 	shadow				\
 	shares.desktop
 FIX_FILES_132 = $(FIX_FILES_131)
-FIX_FILES_133 = $(FIX_FILES_131)
+FIX_FILES_133 = $(FIX_FILES_131)	\
+	auth_attr			\
+	exec_attr			\
+	prof_attr			\
+	user_attr
 FIX_FILES = $(FIX_FILES_$(BUILDID))
 
 JDKFILES = LICENSE README.html
@@ -577,6 +581,18 @@ $(BUILDID)/sh:	Makefile
 
 $(BUILDID)/vi:	Makefile
 	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsu usr/bin/edit > $@
+
+$(BUILDID)/auth_attr:	Makefile
+	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr etc/security/auth_attr > $@
+
+$(BUILDID)/exec_attr:	Makefile
+	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr etc/security/exec_attr > $@
+
+$(BUILDID)/prof_attr:	Makefile
+	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr etc/security/prof_attr > $@
+
+$(BUILDID)/user_attr:	Makefile
+	./get_file_from_pkg.py $(WOS_PKGS)/SUNWcsr etc/user_attr > $@
 
 proto/usr/sbin/extract_hostid:	proto ../misc/extract_hostid
 	cp ../misc/extract_hostid $@
