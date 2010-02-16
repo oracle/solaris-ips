@@ -566,7 +566,7 @@ class Action(object):
                             "expected": mode })
                 return lstat, errors, warnings, info, abort
 
-        def needsdata(self, orig):
+        def needsdata(self, orig, pkgplan):
                 """Returns True if the action transition requires a
                 datastream."""
                 return False

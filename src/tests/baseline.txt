@@ -510,6 +510,9 @@ cli.t_pkg_install.py TestPkgInstallObsolete.test_incorp_2|pass
 cli.t_pkg_install.py TestPkgInstallObsolete.test_remove_renamed|pass
 cli.t_pkg_install.py TestPkgInstallObsolete.test_unobsoleted|pass
 cli.t_pkg_install.py TestPkgInstallUpgrade.test_driver_policy_removal|pass
+cli.t_pkg_install.py TestPkgInstallUpgrade.test_file_preserve|pass
+cli.t_pkg_install.py TestPkgInstallUpgrade.test_file_preserve_renamenew|pass
+cli.t_pkg_install.py TestPkgInstallUpgrade.test_file_preserve_renameold|pass
 cli.t_pkg_install.py TestPkgInstallUpgrade.test_incorp_install|pass
 cli.t_pkg_install.py TestPkgInstallUpgrade.test_upgrade1|pass
 cli.t_pkg_install.py TestPkgInstallUpgrade.test_upgrade2|pass

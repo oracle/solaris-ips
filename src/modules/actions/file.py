@@ -124,28 +124,22 @@ class FileAction(generic.Action):
                 if "save_file" in self.attrs:
                         orig = self.restore_file(pkgplan.image)
 
-                # If the action has been marked with a preserve attribute, and
-                # the file exists and has a contents hash different from what
-                # the system expected it to be, then we preserve the original
-                # file in some way, depending on the value of preserve.
+                # See if we need to preserve the file, and if so, set that up.
                 #
                 # XXX What happens when we transition from preserve to
                 # non-preserve or vice versa? Do we want to treat a preserve
                 # attribute as turning the action into a critical action?
-                if "preserve" in self.attrs and os.path.isfile(final_path):
-                        chash, cdata = misc.get_data_digest(final_path)
-
-                        # XXX We should save the originally installed file.  It
-                        # can be used as an ancestor for a three-way merge, for
-                        # example.  Where should it be stored?
-                        if not orig or chash != orig.hash:
-                                pres_type = self.attrs["preserve"]
-                                if pres_type == "renameold":
-                                        old_path = final_path + ".old"
-                                elif pres_type == "renamenew":
-                                        final_path = final_path + ".new"
-                                else:
-                                        return
+                #
+                # XXX We should save the originally installed file.  It can be
+                # used as an ancestor for a three-way merge, for example.  Where
+                # should it be stored?
+                pres_type = self.__check_preserve(orig, pkgplan)
+                if pres_type is True:
+                        return
+                elif pres_type == "renameold":
+                        old_path = final_path + ".old"
+                elif pres_type == "renamenew":
+                        final_path = final_path + ".new"
 
                 # If it is a directory (and not empty) then we should
                 # salvage the contents.
@@ -166,7 +160,7 @@ class FileAction(generic.Action):
 
                 # XXX This needs to be modularized.
                 # XXX This needs to be controlled by policy.
-                if self.needsdata(orig):
+                if self.needsdata(orig, pkgplan):
                         tfilefd, temp = tempfile.mkstemp(dir=os.path.dirname(
                             final_path))
                         stream = self.data()
@@ -199,7 +193,7 @@ class FileAction(generic.Action):
 
                 # XXX There's a window where final_path doesn't exist, but we
                 # probably don't care.
-                if "old_path" in locals():
+                if pres_type == "renameold":
                         portable.rename(final_path, old_path)
 
                 # This is safe even if temp == final_path.
@@ -326,10 +320,43 @@ class FileAction(generic.Action):
 
                 return errors, warnings, info
 
+        def __check_preserve(self, orig, pkgplan):
+                """Return the type of preservation needed for this action.
+
+                Returns None if preservation is not defined by the action.
+                Returns False if it is, but no preservation is necessary.
+                Returns True for the normal preservation form.  Returns one of
+                the strings 'renameold' or 'renamenew' for each of the
+                respective forms of preservation.
+                """
+
+                if not "preserve" in self.attrs:
+                        return None
+
+                final_path = os.path.normpath(os.path.sep.join(
+                    (pkgplan.image.get_root(), self.attrs["path"])))
+
+                pres_type = False
+                # If the action has been marked with a preserve attribute, and
+                # the file exists and has a content hash different from what the
+                # system expected it to be, then we preserve the original file
+                # in some way, depending on the value of preserve.
+                if os.path.isfile(final_path):
+                        chash, cdata = misc.get_data_digest(final_path)
+
+                        if not orig or chash != orig.hash:
+                                pres_type = self.attrs["preserve"]
+                                if pres_type in ("renameold", "renamenew"):
+                                        return pres_type
+                                else:
+                                        return True
+                return pres_type
+
+
         # If we're not upgrading, or the file contents have changed,
         # retrieve the file and write it to a temporary location.
         # For ELF files, only write the new file if the elfhash changed.
-        def needsdata(self, orig):
+        def needsdata(self, orig, pkgplan):
                 if self.replace_required:
                         return True
                 bothelf = orig and "elfhash" in orig.attrs and \
@@ -337,6 +364,9 @@ class FileAction(generic.Action):
                 if not orig or \
                     (orig.hash != self.hash and (not bothelf or
                         orig.attrs["elfhash"] != self.attrs["elfhash"])):
+                        return True
+
+                if self.__check_preserve(orig, pkgplan):
                         return True
 
                 return False

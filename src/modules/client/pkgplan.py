@@ -225,7 +225,7 @@ class PkgPlan(object):
                 self.__xfersize = 0
                 self.__xferfiles = 0
                 for src, dest in itertools.chain(*self.actions):
-                        if dest and dest.needsdata(src):
+                        if dest and dest.needsdata(src, self):
                                 self.__xfersize += get_pkg_otw_size(dest)
                                 self.__xferfiles += 1
 
@@ -277,7 +277,7 @@ class PkgPlan(object):
                         return
 
                 for src, dest in itertools.chain(*self.actions):
-                        if dest and dest.needsdata(src):
+                        if dest and dest.needsdata(src, self):
                                 mfile.add_action(dest)
 
                 mfile.wait_files()

@@ -96,7 +96,7 @@ class LicenseAction(generic.Action):
                         if e.errno != errno.EPERM:
                                 raise
 
-        def needsdata(self, orig):
+        def needsdata(self, orig, pkgplan):
                 # We always want to download the license
                 return True
 

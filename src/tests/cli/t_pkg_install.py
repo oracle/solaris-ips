@@ -1026,6 +1026,60 @@ class TestPkgInstallUpgrade(pkg5unittest.SingleDepotTestCase):
             close
         """
 
+        renameold1 = """
+            open renold@1.0
+            add file tmp/renold1 path=testme mode=0644 owner=root group=root preserve=renameold
+            close
+        """
+
+        renameold2 = """
+            open renold@2.0
+            add file tmp/renold1 path=testme mode=0640 owner=root group=root preserve=renameold
+            close
+        """
+
+        renameold3 = """
+            open renold@3.0
+            add file tmp/renold3 path=testme mode=0644 owner=root group=root preserve=renameold
+            close
+        """
+
+        renamenew1 = """
+            open rennew@1.0
+            add file tmp/rennew1 path=testme mode=0644 owner=root group=root preserve=renamenew
+            close
+        """
+
+        renamenew2 = """
+            open rennew@2.0
+            add file tmp/rennew1 path=testme mode=0640 owner=root group=root preserve=renamenew
+            close
+        """
+
+        renamenew3 = """
+            open rennew@3.0
+            add file tmp/rennew3 path=testme mode=0644 owner=root group=root preserve=renamenew
+            close
+        """
+
+        preserve1 = """
+            open preserve@1.0
+            add file tmp/preserve1 path=testme mode=0644 owner=root group=root preserve=true
+            close
+        """
+
+        preserve2 = """
+            open preserve@2.0
+            add file tmp/preserve1 path=testme mode=0640 owner=root group=root preserve=true
+            close
+        """
+
+        preserve3 = """
+            open preserve@3.0
+            add file tmp/preserve3 path=testme mode=0644 owner=root group=root preserve=true
+            close
+        """
+
         misc_files1 = [
             "tmp/amber1", "tmp/amber2", "tmp/bronzeA1",  "tmp/bronzeA2",
             "tmp/bronze1", "tmp/bronze2",
@@ -1034,8 +1088,9 @@ class TestPkgInstallUpgrade(pkg5unittest.SingleDepotTestCase):
             "tmp/libc.so.1", "tmp/sh", "tmp/config1", "tmp/config2",
             "tmp/gold-passwd1", "tmp/gold-passwd2", "tmp/gold-group",
             "tmp/gold-shadow", "tmp/gold-ftpusers", "tmp/gold-silly",
-            "tmp/silver-silly",
-            "tmp/liveroot1", "tmp/liveroot2"
+            "tmp/silver-silly", "tmp/preserve1", "tmp/preserve3",
+            "tmp/renold1", "tmp/renold3", "tmp/rennew1", "tmp/rennew3",
+            "tmp/liveroot1", "tmp/liveroot2",
         ]
 
         misc_files2 = {
@@ -1437,11 +1492,174 @@ adm
                     "etc/security/device_policy")).readlines()
                 self.assert_("frigit:*\tread_priv_set=net_rawaccess\twrite_priv_set=net_rawaccess\n" not in dp_contents)
 
+        def test_file_preserve(self):
+                """Make sure that file upgrade works with a preserve tag."""
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.preserve1)
+                self.pkgsend_bulk(durl, self.preserve2)
+                self.pkgsend_bulk(durl, self.preserve3)
+                self.image_create(durl)
+
+                # If there are no local modifications, no preservation should be
+                # done.  First with no content change ...
+                self.pkg("install preserve@1")
+                self.pkg("install preserve@2")
+                self.file_contains("testme", "preserve1")
+                self.pkg("verify preserve")
+                self.pkg("uninstall preserve")
+
+                # ... and again with content change.
+                self.pkg("install preserve@1")
+                self.pkg("install preserve@3")
+                self.file_contains("testme", "preserve3")
+                self.pkg("verify preserve")
+                self.pkg("uninstall preserve")
+
+                # Modify the file locally and update to a version where the
+                # content changes.
+                self.pkg("install preserve@1")
+                self.file_append("testme", "junk")
+                self.pkg("install preserve@3")
+                self.file_contains("testme", "preserve1")
+                self.file_contains("testme", "junk")
+                self.file_doesnt_exist("testme.old")
+                self.file_doesnt_exist("testme.new")
+                self.pkg("verify preserve")
+                self.pkg("uninstall preserve")
+
+                # Modify the file locally and update to a version where just the
+                # mode changes.
+                self.pkg("install preserve@1")
+                self.file_append("testme", "junk")
+                self.pkg("install preserve@2")
+                self.file_contains("testme", "preserve1")
+                self.file_contains("testme", "junk")
+                self.file_doesnt_exist("testme.old")
+                self.file_doesnt_exist("testme.new")
+                # Preserved files don't get their mode changed, and verify will
+                # still balk, so fix up the mode.
+                os.chmod(os.path.join(self.get_img_path(), "testme"), 0640)
+                self.pkg("verify preserve")
+                self.pkg("uninstall preserve")
+
+        def test_file_preserve_renameold(self):
+                """Make sure that file upgrade with preserve=renameold works."""
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.renameold1)
+                self.pkgsend_bulk(durl, self.renameold2)
+                self.pkgsend_bulk(durl, self.renameold3)
+                self.image_create(durl)
+
+                # If there are no local modifications, no preservation should be
+                # done.  First with no content change ...
+                self.pkg("install renold@1")
+                self.pkg("install renold@2")
+                self.file_contains("testme", "renold1")
+                self.file_doesnt_exist("testme.old")
+                self.file_doesnt_exist("testme.new")
+                self.pkg("verify renold")
+                self.pkg("uninstall renold")
+
+                # ... and again with content change.
+                self.pkg("install renold@1")
+                self.pkg("install renold@3")
+                self.file_contains("testme", "renold3")
+                self.file_doesnt_exist("testme.old")
+                self.file_doesnt_exist("testme.new")
+                self.pkg("verify renold")
+                self.pkg("uninstall renold")
+
+                # Modify the file locally and update to a version where the
+                # content changes.
+                self.pkg("install renold@1")
+                self.file_append("testme", "junk")
+                self.pkg("install renold@3")
+                self.file_contains("testme.old", "junk")
+                self.file_doesnt_contain("testme", "junk")
+                self.file_contains("testme", "renold3")
+                self.file_doesnt_exist("testme.new")
+                self.pkg("verify renold")
+                self.pkg("uninstall renold")
+
+                # Modify the file locally and update to a version where just the
+                # mode changes.
+                self.pkg("install renold@1")
+                self.file_append("testme", "junk")
+                self.pkg("install renold@2")
+                self.file_contains("testme.old", "junk")
+                self.file_doesnt_contain("testme", "junk")
+                self.file_contains("testme", "renold1")
+                self.file_doesnt_exist("testme.new")
+                self.pkg("verify renold")
+                self.pkg("uninstall renold")
+
+        def test_file_preserve_renamenew(self):
+                """Make sure that file ugprade with preserve=renamenew works."""
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.renamenew1)
+                self.pkgsend_bulk(durl, self.renamenew2)
+                self.pkgsend_bulk(durl, self.renamenew3)
+                self.image_create(durl)
+
+                # If there are no local modifications, no preservation should be
+                # done.  First with no content change ...
+                self.pkg("install rennew@1")
+                self.pkg("install rennew@2")
+                self.file_contains("testme", "rennew1")
+                self.file_doesnt_exist("testme.new")
+                self.file_doesnt_exist("testme.old")
+                self.pkg("verify rennew")
+                self.pkg("uninstall rennew")
+
+                # ... and again with content change
+                self.pkg("install rennew@1")
+                self.pkg("install rennew@3")
+                self.file_contains("testme", "rennew3")
+                self.file_doesnt_exist("testme.new")
+                self.file_doesnt_exist("testme.old")
+                self.pkg("verify rennew")
+                self.pkg("uninstall rennew")
+
+                # Modify the file locally and update to a version where the
+                # content changes.
+                self.pkg("install rennew@1")
+                self.file_append("testme", "junk")
+                self.pkg("install rennew@3")
+                self.file_contains("testme", "junk")
+                self.file_doesnt_contain("testme.new", "junk")
+                self.file_contains("testme.new", "rennew3")
+                self.file_doesnt_exist("testme.old")
+                self.pkg("verify rennew")
+                self.pkg("uninstall rennew")
+
+                # Modify the file locally and update to a version where just the
+                # mode changes.
+                self.pkg("install rennew@1")
+                self.file_append("testme", "junk")
+                self.pkg("install rennew@2")
+                self.file_contains("testme", "junk")
+                self.file_doesnt_contain("testme.new", "junk")
+                self.file_contains("testme.new", "rennew1")
+                self.file_doesnt_exist("testme.old")
+                # Preserved files don't get their mode changed, and verify will
+                # still balk, so fix up the mode.
+                os.chmod(os.path.join(self.get_img_path(), "testme"), 0640)
+                self.pkg("verify rennew")
+                self.pkg("uninstall rennew")
+
         def file_append(self, path, string):
                 file_path = os.path.join(self.get_img_path(), path)
                 f = file(file_path, "a+")
                 f.write("\n%s\n" % string)
                 f.close
+
+        def file_doesnt_exist(self, path):
+                file_path = os.path.join(self.get_img_path(), path)
+                if os.path.isfile(file_path):
+                        self.assert_(False, "File %s exists" % path)
 
         def file_contains(self, path, string):
                 file_path = os.path.join(self.get_img_path(), path)
@@ -1453,6 +1671,16 @@ adm
                 else:
                         f.close()
                         self.assert_(False, "File %s does not contain %s" % (path, string))
+
+        def file_doesnt_contain(self, path, string):
+                file_path = os.path.join(self.get_img_path(), path)
+                f = file(file_path)
+                for line in f:
+                        if string in line:
+                                f.close()
+                                self.assert_(False, "File %s contains %s" % (path, string))
+                else:
+                        f.close()
 
 
 class TestPkgInstallActions(pkg5unittest.SingleDepotTestCase):
