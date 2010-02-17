@@ -491,7 +491,7 @@ class PkgSolver(object):
 
                 orig_installed_set = set(self.__installed_fmris.values())
                 renamed_set = orig_installed_set - \
-                    self.__elide_possible_renames(orig_installed_set)
+                    self.__elide_possible_renames(orig_installed_set, excludes)
                 
                 if recursive is True:
                         needs_processing = set(uninstall_list) | renamed_set
@@ -511,7 +511,7 @@ class PkgSolver(object):
                                 raise api_errors.NonLeafPackageException(pfmri, dependents)
 
                 # remove any additional pkgs
-                return self.__elide_possible_renames(orig_installed_set - proposed_removals)
+                return self.__elide_possible_renames(orig_installed_set - proposed_removals, excludes)
 
         def solve_change_varcets(self, existing_freezes, new_variants, new_facets, new_excludes):
                 """Compute packaging changes needed to effect
