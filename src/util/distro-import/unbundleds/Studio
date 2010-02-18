@@ -1,5 +1,5 @@
 package developer/sunstudio
-version 12.1
+version 12.1.1
 depend developer/sunstudio12u1
 end package
 
@@ -10,7 +10,7 @@ classification "Development/High Performance Computing"
 classification "Development/Integrated Development Environments"
 classification "Development/Suites"
 summary "Sun Studio - C, C++, & Fortran compilers and Tools"
-version 12.1
+version 12.1.1
 import sunstudio12u1
 depend SUNWarc
 depend SUNWcpp
@@ -69,13 +69,13 @@ end package
 package sunstudio
 add set name=pkg.renamed value=true
 depend developer/sunstudio
-version 12.1
+version 12.1.1
 end package
 
 package sunstudio12u1
 add set name=pkg.renamed value=true
 depend developer/sunstudio12u1
-version 12.1
+version 12.1.1
 end package
 
 package sunstudioexpress
