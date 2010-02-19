@@ -25,6 +25,7 @@
 # Use is subject to license terms.
 #
 
+import atexit
 import datetime
 import errno
 import fcntl
@@ -560,6 +561,9 @@ class Image(object):
                                 self.dl_cache_incoming = os.path.normpath(
                                     os.path.join(self.dl_cache_dir,
                                     "incoming-%d" % os.getpid()))
+                                # There's no image cleanup hook, so we'll just
+                                # remove this directory on process exit.
+                                atexit.register(os.rmdir, self.dl_cache_dir)
                 else:
                         os.removedirs(self.dl_cache_incoming)
 
