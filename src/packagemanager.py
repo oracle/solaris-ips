@@ -5800,6 +5800,10 @@ class PackageManager:
                 visible_publisher = self.__get_selected_publisher()
                 default_publisher = self.default_publisher
                 self.__do_refresh()
+                if update_list == None and not self.img_timestamp:
+                        self.img_timestamp = self.cache_o.get_index_timestamp()
+                        self.__on_reload(None)
+                        return
                 visible_list = update_list.get(visible_publisher)
                 if self.is_all_publishers or self.is_all_publishers_installed \
                     or self.in_recent_search:
