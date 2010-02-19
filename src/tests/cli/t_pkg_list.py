@@ -419,7 +419,7 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 self.pkg("refresh --full")
 
         def test_list_matching(self):
-                """List all versions of package foo, regardless of publisher."""
+                """Verify that pkg list pattern matching works as expected."""
                 self.pkg("list -aHf foo*")
                 expected = \
                     "foo         1.2.1-0 known -----\n" \
@@ -467,6 +467,12 @@ class TestPkgList(pkg5unittest.ManyDepotTestCase):
                 self.pkg("list -aH 'f?o*'")
                 output = self.reduceSpaces(self.output)
                 self.assertEqualDiff(expected, output)
+
+                for pat, ecode in (("foo food", 0), ("bogus", 1),
+                    ("foo bogus", 3), ("foo food bogus", 3),
+                    ("bogus quirky names", 1), ("'fo*' bogus", 3),
+                    ("'fo*' food bogus", 3), ("'f?o*' bogus", 3)):
+                        self.pkg("list -a %s" % pat, exit=ecode)
 
         def test_list_multi_name(self):
                 """Test for multiple name match listing."""

@@ -207,9 +207,9 @@ INCONSISTENT_INDEX_ERROR_MESSAGE = "The search index appears corrupted.  " + \
 PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE = "\n(Failure of consistent use " + \
     "of pfexec when executing pkg commands is often a\nsource of this problem.)"
 
-def check_fmri_args(args):
+def check_fmri_args(args, cmd=None):
         """ Convenience routine to check that input args are valid fmris. """
-        ret = True
+        errors = []
         for x in args:
                 try:
                         #
@@ -219,9 +219,10 @@ def check_fmri_args(args):
                         #
                         fmri.MatchingPkgFmri(x, build_release="1.0")
                 except fmri.IllegalFmri, e:
-                        error(e)
-                        ret = False
-        return ret
+                        errors.append(e)
+        if errors:
+                error("\n".join(str(e) for e in errors), cmd=cmd)
+        return len(errors) == 0
 
 def list_inventory(img, args):
         """List packages."""
@@ -294,7 +295,7 @@ def list_inventory(img, args):
         else:
                 fmt_str = "%-45s %-15s %-10s %s"
 
-        if not check_fmri_args(pargs):
+        if not check_fmri_args(pargs, cmd="list"):
                 return EXIT_OOPS
 
         api_inst = __api_alloc(img, quiet=not display_headers)
@@ -343,6 +344,49 @@ def list_inventory(img, args):
         if pargs:
                 pats = pargs
 
+        # Each pattern in pats can be a partial or full FMRI, so
+        # extract the individual components.  These patterns are
+        # transformed here so that partial failure can be detected
+        # when more than one pattern is provided.
+        unmatched_pats = {}
+        MATCH_EXACT = 0
+        MATCH_FMRI = 1
+        MATCH_GLOB = 2
+
+        # XXX need a saner way of building matching user input for
+        # the build-release case (how would the api provide it?).
+        # Something like this should probably be added to the client
+        # API at some point.
+        brelease = "5.11"
+        for pat in pats:
+                if "*" in pat or "?" in pat:
+                        matcher = MATCH_GLOB
+
+                        # XXX By default, matching FMRIs currently do not also
+                        # use MatchingVersion.  If that changes, this should
+                        # change too.
+                        parts = pat.split("@", 1)
+                        if len(parts) == 1:
+                                npat = fmri.MatchingPkgFmri(pat, brelease)
+                        else:
+                                npat = fmri.MatchingPkgFmri(parts[0], brelease)
+                                npat.version = \
+                                    pkg.version.MatchingVersion(
+                                    str(parts[1]), brelease)
+                elif pat.startswith("pkg:/"):
+                        matcher = MATCH_EXACT
+                        npat = fmri.PkgFmri(pat, brelease)
+                else:
+                        matcher = MATCH_FMRI
+                        npat = pkg.fmri.PkgFmri(pat, brelease)
+                unmatched_pats[pat] = (npat.tuple(), matcher)
+
+        if len(pats) == 1:
+                # For the single pattern case, there's no need to check for
+                # pattern match failure.
+                unmatched_pats = {}
+
+        # Now get the matching list of packages and display it.
         found = False
         ppub = api_inst.get_preferred_publisher().prefix
         try:
@@ -387,20 +431,66 @@ def list_inventory(img, args):
                         else:
                                 st_str = _("known")
 
+                        # This bit of logic allows detection of partial match
+                        # failure in the case that more than one pattern is
+                        # specified.
+                        for pat in unmatched_pats.keys():
+                                (pat_pub, pat_stem, pat_ver), matcher = \
+                                    unmatched_pats[pat]
+
+                                if pat_pub is not None and pub != pat_pub:
+                                        # Publisher doesn't match.
+                                        continue
+
+                                # The matching logic here is in-lined from the
+                                # pkg.fmri module's match routines to reduce
+                                # list operation time for the multiple match
+                                # case by about 2-8%.
+                                if matcher == MATCH_EXACT:
+                                        if pat_stem != stem:
+                                                # Stem doesn't match.
+                                                continue
+                                elif matcher == MATCH_FMRI:
+                                        if not ("/" + stem).endswith(
+                                            "/" + pat_stem):
+                                                # Stem doesn't match.
+                                                continue
+                                elif matcher == MATCH_GLOB:
+                                        if not fnmatch.fnmatchcase(stem,
+                                            pat_stem):
+                                                # Stem doesn't match.
+                                                continue
+
+                                if pat_ver is not None:
+                                        ever = version.Version(ver, brelease)
+                                        if not ever.is_successor(pat_ver,
+                                            version.CONSTRAINT_AUTO):
+                                                # Version doesn't match.
+                                                continue
+
+                                # If at least one match is found for the
+                                # pattern, it doesn't need to be checked
+                                # against other entries.
+                                del unmatched_pats[pat]
+
+                        # Display full FMRI for verbose case.
                         if verbose:
                                 pfmri = "pkg://%s/%s@%s" % (pub, stem, ver)
                                 msg("%-64s %-10s %s" % (pfmri, st_str, ufoxi))
                                 continue
 
+                        # Display short FMRI + summary.
                         pf = stem + spub
                         if summary:
                                 msg(fmt_str % (pf, summ))
                                 continue
 
+                        # Default case; display short FMRI and version info.
                         sver = version.Version.split(ver)[-1]
                         msg(fmt_str % (pf, sver, st_str, ufoxi))
 
                 if not found:
+                        # No packages matched criteria or found at all.
                         if pargs:
                                 raise api_errors.InventoryException(
                                     notfound=pargs)
@@ -423,14 +513,24 @@ def list_inventory(img, args):
                         api_inst.log_operation_end(
                             result=history.RESULT_NOTHING_TO_DO)
                         return EXIT_OOPS
+                elif unmatched_pats:
+                        # Multiple pattern case; packages were found, but some
+                        # of the patterns didn't match.
+                        raise api_errors.InventoryException(
+                            notfound=unmatched_pats.keys())
 
                 api_inst.log_operation_end()
                 return EXIT_OK
         except (api_errors.InvalidPackageErrors,
             api_errors.PermissionsException), e:
-                error(e)
+                error(e, cmd="list")
                 return EXIT_OOPS
         except api_errors.InventoryException, e:
+                if found:
+                        # Ensure a blank line is inserted after list for
+                        # partial failure case.
+                        logger.error(" ")
+
                 if e.illegal:
                         for i in e.illegal:
                                 error(i)
@@ -444,10 +544,17 @@ def list_inventory(img, args):
                         state = _("known or installed")
                 else:
                         state = _("installed")
-                for pat in e.notfound:
+
+                if e.notfound:
                         error(_("no packages matching "
-                            "'%(pattern)s' %(state)s") %
-                            { "pattern": pat, "state": state })
+                            "'%(pattern)s' %(state)s") % {
+                            "pattern": ", ".join(e.notfound),
+                            "state": state }, cmd="list")
+
+                if found and e.notfound:
+                        # Only some patterns matched.
+                        api_inst.log_operation_end()
+                        return EXIT_PARTIAL
                 api_inst.log_operation_end(result=history.RESULT_NOTHING_TO_DO)
                 return EXIT_OOPS
 
@@ -583,7 +690,7 @@ def verify_image(img, args):
 
         progresstracker = get_tracker(quiet)
 
-        if not check_fmri_args(pargs):
+        if not check_fmri_args(pargs, cmd="verify"):
                 return EXIT_OOPS
 
         fmris, notfound, illegals = img.installed_fmris_from_args(pargs)
@@ -1080,11 +1187,11 @@ def image_update(img, args):
                         update_index = False
 
         if verbose and quiet:
-                usage(_("-v and -q may not be combined"), cmd="image-update")
+                usage(_("-v and -q may not be combined"), cmd=op)
 
         if pargs:
                 usage(_("command does not take operands ('%s')") % \
-                    " ".join(pargs), cmd="image-update")
+                    " ".join(pargs), cmd=op)
 
         api_inst = __api_alloc(img, quiet)
         if api_inst == None:
@@ -1153,12 +1260,12 @@ def install(img, args):
                         update_index = False
 
         if not pargs:
-                usage(_("at least one package name required"), cmd="install")
+                usage(_("at least one package name required"), cmd=op)
 
         if verbose and quiet:
-                usage(_("-v and -q may not be combined"), cmd="install")
+                usage(_("-v and -q may not be combined"), cmd=op)
 
-        if not check_fmri_args(pargs):
+        if not check_fmri_args(pargs, cmd=op):
                 return EXIT_OOPS
 
         api_inst = __api_alloc(img, quiet)
@@ -1217,12 +1324,12 @@ def uninstall(img, args):
                         update_index = False
 
         if not pargs:
-                usage(_("at least one package name required"), cmd="uninstall")
+                usage(_("at least one package name required"), cmd=op)
 
         if verbose and quiet:
-                usage(_("-v and -q may not be combined"), cmd="uninstall")
+                usage(_("-v and -q may not be combined"), cmd=op)
 
-        if not check_fmri_args(pargs):
+        if not check_fmri_args(pargs, cmd=op):
                 return EXIT_OOPS
 
         api_inst = __api_alloc(img, quiet)
