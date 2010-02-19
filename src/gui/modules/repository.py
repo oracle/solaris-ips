@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -1565,15 +1565,6 @@ class Repository(progress.GuiProgressTracker):
                 uri_itr = details_buffer.get_end_iter()
                 for origin in repo.origins:
                         details_buffer.insert(uri_itr, "%s\n" % origin.uri)
-                description = ""
-                if repo.description:
-                        description = repo.description
-                if len(description) > 0:
-                        desc_s_itr = details_buffer.get_end_iter()
-                        details_buffer.insert_with_tags_by_name(desc_s_itr,
-                            _("Description:\n"), "level0")
-                        desc_itr = details_buffer.get_end_iter()
-                        details_buffer.insert(desc_itr, "%s\n" % description)
 
         def __show_errors(self, errors, msg_type=gtk.MESSAGE_ERROR, title = None):
                 error_msg = ""
