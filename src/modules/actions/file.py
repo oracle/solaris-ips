@@ -365,12 +365,21 @@ class FileAction(generic.Action):
                     (orig.hash != self.hash and (not bothelf or
                         orig.attrs["elfhash"] != self.attrs["elfhash"])):
                         return True
+                elif orig:
+                        # It's possible that the file content hasn't changed
+                        # for an upgrade case, but the file is missing.  This
+                        # ensures that for cases where the mode or some other
+                        # attribute of the file has changed that the file will
+                        # be installed.
+                        path = os.path.normpath(os.path.sep.join(
+                            (pkgplan.image.get_root(), self.attrs["path"])))
+                        if not os.path.isfile(path):
+                                return True
 
                 if self.__check_preserve(orig, pkgplan):
                         return True
 
                 return False
-
 
         def remove(self, pkgplan):
                 path = os.path.normpath(os.path.sep.join(
@@ -388,7 +397,6 @@ class FileAction(generic.Action):
                 except OSError, e:
                         if e.errno != errno.ENOENT:
                                 raise
-
 
         def different(self, other):
                 # Override the generic different() method to ignore the file
@@ -422,21 +430,33 @@ class FileAction(generic.Action):
                 ]
 
         def save_file(self, image, full_path):
-                """save a file for later (in same process invocation)
-                installation"""
+                """Save a file for later installation (in same process
+                invocation, if it exists)."""
 
                 saved_name = image.temporary_file()
-                misc.copyfile(full_path, saved_name)
+                try:
+                        misc.copyfile(full_path, saved_name)
+                except OSError, err:
+                        if err.errno != errno.ENOENT:
+                                raise
+
+                        # If the file doesn't exist, it can't be saved, so
+                        # be certain consumers of this information know there
+                        # isn't an original to restore.
+                        saved_name = None
 
                 image.saved_files[self.attrs["save_file"]] = (self, saved_name)
 
         def restore_file(self, image):
                 """restore a previously saved file; return cached action """
 
+                orig, saved_name = image.saved_files[self.attrs["save_file"]]
+                if saved_name is None:
+                        # Nothing to restore; original file is missing.
+                        return
 
                 path = self.attrs["path"]
 
-                orig, saved_name = image.saved_files[self.attrs["save_file"]]
                 full_path = os.path.normpath(os.path.sep.join(
                     (image.get_root(), path)))
 

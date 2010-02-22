@@ -1292,17 +1292,12 @@ adm
                 self.pkg("list bronze@3.0")
 
         def test_upgrade3(self):
-                """Test for editable files moving between packages or locations or both"""
+                """Test for editable files moving between packages or locations
+                or both."""
                 durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.silver10)
-                self.pkgsend_bulk(durl, self.silver20)
-                self.pkgsend_bulk(durl, self.silver30)
-                self.pkgsend_bulk(durl, self.gold10)
-                self.pkgsend_bulk(durl, self.gold20)
-                self.pkgsend_bulk(durl, self.gold30)
-                self.pkgsend_bulk(durl, self.golduser10)
-                self.pkgsend_bulk(durl, self.golduser20)
-                self.pkgsend_bulk(durl, self.silveruser)
+                self.pkgsend_bulk(durl, self.silver10 + self.silver20 + \
+                    self.silver30 + self.gold10 + self.gold20 + self.gold30 + \
+                    self.golduser10 + self.golduser20 + self.silveruser)
 
                 self.image_create(durl)
 
@@ -1493,7 +1488,8 @@ adm
                 self.assert_("frigit:*\tread_priv_set=net_rawaccess\twrite_priv_set=net_rawaccess\n" not in dp_contents)
 
         def test_file_preserve(self):
-                """Make sure that file upgrade works with a preserve tag."""
+                """Verify that file preserve=true works as expected during
+                package install, upgrade, and removal."""
 
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.preserve1)
@@ -1537,10 +1533,26 @@ adm
                 self.file_contains("testme", "junk")
                 self.file_doesnt_exist("testme.old")
                 self.file_doesnt_exist("testme.new")
+
+                # Remove the file locally and update the package; this should
+                # simply replace the missing file.
+                self.file_remove("testme")
+                self.pkg("install preserve@3")
+                self.pkg("verify preserve")
+                self.file_exists("testme")
+                self.pkg("uninstall preserve@3")
+
                 # Preserved files don't get their mode changed, and verify will
                 # still balk, so fix up the mode.
-                os.chmod(os.path.join(self.get_img_path(), "testme"), 0640)
+                self.pkg("install preserve@1")
+                self.pkg("install preserve@2")
+                self.file_chmod("testme", 0640)
                 self.pkg("verify preserve")
+
+                # Verify that a package with a missing file that is marked with
+                # the preserve=true won't cause uninstall failure.
+                self.file_remove("testme")
+                self.file_doesnt_exist("testme")
                 self.pkg("uninstall preserve")
 
         def test_file_preserve_renameold(self):
@@ -1595,6 +1607,14 @@ adm
                 self.pkg("verify renold")
                 self.pkg("uninstall renold")
 
+                # Remove the file locally and update the package; this should
+                # simply replace the missing file.
+                self.pkg("install renold@1")
+                self.file_remove("testme")
+                self.pkg("install renold@2")
+                self.pkg("verify renold")
+                self.pkg("uninstall renold")
+
         def test_file_preserve_renamenew(self):
                 """Make sure that file ugprade with preserve=renamenew works."""
 
@@ -1644,9 +1664,18 @@ adm
                 self.file_doesnt_contain("testme.new", "junk")
                 self.file_contains("testme.new", "rennew1")
                 self.file_doesnt_exist("testme.old")
+
                 # Preserved files don't get their mode changed, and verify will
                 # still balk, so fix up the mode.
-                os.chmod(os.path.join(self.get_img_path(), "testme"), 0640)
+                self.file_chmod("testme", 0640)
+                self.pkg("verify rennew")
+                self.pkg("uninstall rennew")
+
+                # Remove the file locally and update the package; this should
+                # simply replace the missing file.
+                self.pkg("install rennew@1")
+                self.file_remove("testme")
+                self.pkg("install rennew@2")
                 self.pkg("verify rennew")
                 self.pkg("uninstall rennew")
 
@@ -1656,10 +1685,19 @@ adm
                 f.write("\n%s\n" % string)
                 f.close
 
+        def file_chmod(self, path, mode):
+                file_path = os.path.join(self.get_img_path(), path)
+                os.chmod(file_path, mode)
+
         def file_doesnt_exist(self, path):
                 file_path = os.path.join(self.get_img_path(), path)
                 if os.path.isfile(file_path):
                         self.assert_(False, "File %s exists" % path)
+
+        def file_exists(self, path):
+                file_path = os.path.join(self.get_img_path(), path)
+                if not os.path.isfile(file_path):
+                        self.assert_(False, "File %s does not exist" % path)
 
         def file_contains(self, path, string):
                 file_path = os.path.join(self.get_img_path(), path)
@@ -1681,6 +1719,10 @@ adm
                                 self.assert_(False, "File %s contains %s" % (path, string))
                 else:
                         f.close()
+
+        def file_remove(self, path):
+                file_path = os.path.join(self.get_img_path(), path)
+                portable.remove(file_path)
 
 
 class TestPkgInstallActions(pkg5unittest.SingleDepotTestCase):

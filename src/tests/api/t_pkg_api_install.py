@@ -39,6 +39,7 @@ import pkg.client.api as api
 import pkg.client.api_errors as api_errors
 import pkg.fmri as fmri
 import pkg.client.progress as progress
+import pkg.portable as portable
 import shutil
 
 API_VERSION = 32
@@ -62,6 +63,13 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
         foo12 = """
             open foo@1.2,5.11-0
             add file tmp/libc.so.1 mode=0555 owner=root group=bin path=/lib/libc.so.1
+            close """
+
+        bar09 = """
+            open bar@0.9,5.11-0
+            add depend type=require fmri=pkg:/foo@1.0
+            add dir mode=0755 owner=root group=bin path=/bin
+            add file tmp/cat mode=0550 owner=root group=bin path=/bin/cat
             close """
 
         bar10 = """
@@ -100,7 +108,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
             open bar@1.2,5.11-0
             add depend type=require fmri=pkg:/foo@1.0
             add dir mode=0755 owner=root group=bin path=/bin
-            add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat 
+            add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
 
         baz10 = """
@@ -116,7 +124,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
             add dir mode=0755 owner=root group=bin path=/bin
             add file tmp/cat mode=0555 owner=root group=bin path=/bin/cat
             close """
-        
+
         xdeep10 = """
             open xdeep@1.0,5.11-0
             add depend type=require fmri=pkg:/xbar@1.0
@@ -139,6 +147,16 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
         baddir10 = """
             open baddir@1.0,5.11-0
             add dir mode=755 owner=root group=bin path=/tmp/baz-dir
+            close """
+
+        moving10 = """
+            open moving@1.0,5.11-0
+            add file tmp/baz mode=644 owner=root group=bin path=baz preserve=true
+            close """
+
+        moving20 = """
+            open moving@2.0,5.11-0
+            add file tmp/baz mode=644 owner=root group=bin path=quux original_name="moving:baz" preserve=true
             close """
 
         misc_files = [ "tmp/libc.so.1", "tmp/cat", "tmp/baz" ]
@@ -171,7 +189,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 progresstracker = progress.NullProgressTracker()
                 api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
                     progresstracker, lambda x: False, PKG_CLIENT_NAME)
-                
+
                 self.pkg("list -a")
                 self.pkg("list", exit=1)
 
@@ -281,6 +299,64 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 self.pkg("list foo", exit = 1)
                 self.pkg("verify")
 
+        def test_pkg_file_errors(self):
+                """ Verify that package install works as expected when
+                files or directories are are missing during upgrade or
+                uninstall. """
+
+                durl = self.dc.get_depot_url()
+                self.pkgsend_bulk(durl, self.bar09 + self.bar10 + self.bar11 + \
+                    self.foo10 + self.foo12 + self.moving10 + self.moving20)
+                self.image_create(durl)
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: True, PKG_CLIENT_NAME)
+
+                # Verify that missing files will be replaced during upgrade if
+                # the file action has changed (even if the content hasn't),
+                # such as when the mode changes.
+                self.__do_install(api_obj, ["bar@0.9"])
+                file_path = os.path.join(self.get_img_path(), "bin", "cat")
+                portable.remove(file_path)
+                self.assert_(not os.path.isfile(file_path))
+                self.__do_install(api_obj, ["bar@1.0"])
+                self.assert_(os.path.isfile(file_path))
+
+                # Verify that if the directory containing a missing file is also
+                # missing that upgrade will still work as expected for the file.
+                self.__do_uninstall(api_obj, ["bar@1.0"])
+                self.__do_install(api_obj, ["bar@0.9"])
+                dir_path = os.path.dirname(file_path)
+                shutil.rmtree(dir_path)
+                self.assert_(not os.path.isdir(dir_path))
+                self.__do_install(api_obj, ["bar@1.0"])
+                self.assert_(os.path.isfile(file_path))
+
+                # Verify that missing files won't cause uninstall failure.
+                portable.remove(file_path)
+                self.assert_(not os.path.isfile(file_path))
+                self.__do_uninstall(api_obj, ["bar@1.0"])
+
+                # Verify that missing directories won't cause uninstall failure.
+                self.__do_install(api_obj, ["bar@1.0"])
+                shutil.rmtree(dir_path)
+                self.assert_(not os.path.isdir(dir_path))
+                self.__do_uninstall(api_obj, ["bar@1.0"])
+
+                # Verify that missing files won't cause update failure if
+                # original_name is set.
+                self.__do_install(api_obj, ["moving@1.0"])
+                file_path = os.path.join(self.get_img_path(), "baz")
+                portable.remove(file_path)
+                self.__do_install(api_obj, ["moving@2.0"])
+                file_path = os.path.join(self.get_img_path(), "quux")
+
+                # Verify that missing files won't cause uninstall failure if
+                # original_name is set.
+                self.assert_(os.path.isfile(file_path))
+                portable.remove(file_path)
+                self.__do_uninstall(api_obj, ["moving@2.0"])
+
         def test_image_upgrade(self):
                 """ Send package bar@1.1, dependent on foo@1.2.  Install bar@1.0.
                     List all packages.  Upgrade image. """
@@ -337,7 +413,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 # bar depends on foo.  foo and bar should both
                 # be removed by this action.
                 self.__do_uninstall(api_obj, ["foo"], True)
-                                       
+
                 self.pkg("list bar", exit = 1)
                 self.pkg("list foo", exit = 1)
 
@@ -376,7 +452,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
 
         def test_bug_1338(self):
                 """ Add bar@1.1, dependent on foo@1.2, install bar@1.1. """
-                
+
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.bar11)
                 self.image_create(durl)
@@ -392,7 +468,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
         def test_bug_1338_2(self):
                 """ Add bar@1.1, dependent on foo@1.2, and baz@1.0, dependent
                     on foo@1.0, install baz@1.0 and bar@1.1. """
-                
+
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.bar11)
                 self.pkgsend_bulk(durl, self.baz10)
@@ -407,7 +483,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
         def test_bug_1338_3(self):
                 """ Add xdeep@1.0, xbar@1.0. xDeep@1.0 depends on xbar@1.0 which
                     depends on xfoo@1.0, install xdeep@1.0. """
-                
+
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.xbar10)
                 self.pkgsend_bulk(durl, self.xdeep10)
@@ -422,7 +498,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
         def test_bug_1338_4(self):
                 """ Add ydeep@1.0. yDeep@1.0 depends on ybar@1.0 which depends
                 on xfoo@1.0, install ydeep@1.0. """
-                
+
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.ydeep10)
                 self.image_create(durl)
@@ -505,7 +581,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 api_obj.reset()
                 pkg5unittest.eval_assert_raises(api_errors.PlanCreationException,
                     check_illegal, api_obj.plan_install, ["@/foo"])
-                
+
                 api_obj.reset()
                 pkg5unittest.eval_assert_raises(api_errors.PlanCreationException,
                     check_illegal, api_obj.plan_uninstall, ["/foo"], False)
@@ -525,7 +601,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                 self.__do_install(api_obj, ["foo"])
                 self.__do_uninstall(api_obj, ["foo"])
 
-                api_obj.reset()                
+                api_obj.reset()
                 pkg5unittest.eval_assert_raises(api_errors.PlanCreationException,
                     check_missing, api_obj.plan_uninstall, ["foo"], False)
 
@@ -562,7 +638,7 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
 
                 api_obj.reset()
                 self.__do_uninstall(api_obj, ["foo"])
- 
+
                 api_obj.reset()
                 self.__do_install(api_obj, ["pkg://test/foo"])
 
