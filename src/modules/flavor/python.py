@@ -125,7 +125,7 @@ class PythonDependency(base.PublishingDependency):
                     self.base_names, self.run_paths, self.pkg_vars)
 
 
-py_bin_re = re.compile(r"^\#\!/usr/bin/python(?P<major>\d+)\.(?P<minor>\d+)")
+py_bin_re = re.compile(r"^\#\!\s*/usr/bin/python(?P<major>\d+)\.(?P<minor>\d+)")
 py_lib_re = re.compile(r"^usr/lib/python(?P<major>\d+)\.(?P<minor>\d+)/")
 
 def process_python_dependencies(proto_dir, action, pkg_vars, script_path):

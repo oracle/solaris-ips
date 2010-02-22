@@ -454,8 +454,9 @@ file NOHASH group=bin mode=0755 owner=root path=usr/bin/pkg \
 file NOHASH group=bin mode=0644 owner=root path=usr/bin/pkg \
 """
 
+        # The #! line has lots of spaces to test for bug 14632.
         pyver_python_text = """\
-#!/usr/bin/python%s
+#!                  /usr/bin/python%s     -S  
 
 import pkg.indexer as indexer
 import pkg.search_storage as ss
