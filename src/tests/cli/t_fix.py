@@ -87,6 +87,9 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 size2 = self.file_size(victim)
                 self.assertNotEqual(size1, size2)
 
+                # Verify that unprivileged users are handled by fix.
+                self.pkg("fix amber", exit=1, su_wrap=True)
+
                 # Fix the package
                 self.pkg("fix amber")
 

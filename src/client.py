@@ -624,6 +624,7 @@ def fix_image(img, args):
         # Repair anything we failed to verify
         if repairs:
                 # Create a snapshot in case they want to roll back
+                success = False
                 try:
                         be = bootenv.BootEnv(img.get_root())
                         if be.exists():
@@ -635,8 +636,8 @@ def fix_image(img, args):
                         success = img.repair(repairs, progresstracker,
                             accept=accept, show_licenses=show_licenses)
                 except (api_errors.InvalidPlanError,
-                    api_errors.InvalidPackageErrors), e:
-                        # Another client has stomped on the repair operation.
+                    api_errors.InvalidPackageErrors,
+                    api_errors.PermissionsException), e:
                         logger.error("\n")
                         logger.error(str(e))
                 except api_errors.PlanLicenseErrors, e:
@@ -658,7 +659,6 @@ def fix_image(img, args):
                             "files that cannot be modified in live image.\n"
                             "Please retry this operation on an alternate boot "
                             "environment."))
-                        success = False
                         return EXIT_NOTLIVE
 
                 if not success:
