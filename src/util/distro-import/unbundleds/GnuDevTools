@@ -1,27 +1,91 @@
-package developer/gcc/gcc-432
+package developer/gcc/gcc-43
 classification "Development/C"
-version 4.3.2
-import SUNWgcc432
+classification "Development/C++"
+classification "Development/Fortran"
+classification "Development/Objective C"
+summary "GCC C, C++, & Fortran compilers"
+version 4.3.3
+import SUNWgcc43
 depend SUNWarc
 depend SUNWbinutils
-depend developer/gcc/gcc-runtime-432
 depend SUNWhea
+depend developer/gcc/gcc-libgcc
+depend developer/gcc/gcc-libgfortran
+depend developer/gcc/gcc-libgomp
+depend developer/gcc/gcc-libobjc
+depend developer/gcc/gcc-libssp
+depend developer/gcc/gcc-libstdc
+$(sparc_ONLY)depend developer/gcc/gccfss
+add depend fmri=developer/gcc/gcc-432@4.3.2-1 type=incorporate
 end package
 
-package developer/gcc/gcc-runtime-432
+$(sparc_ONLY)package developer/gcc/gccfss
+$(sparc_ONLY)classification "Development/C"
+$(sparc_ONLY)classification "Development/C++"
+$(sparc_ONLY)version 4.3.3
+$(sparc_ONLY)import SUNWgccfss
+$(sparc_ONLY)end package
+
+package developer/gcc/gcc-libgcc
 classification "Development/C"
-version 4.3.2
-import SUNWgccruntime432
+summary "GCC C Runtime Library"
+version 4.3.3
+import SUNWgcclibgcc
+add depend fmri=developer/gcc/gcc-runtime-432@4.3.2-1 type=incorporate
+end package
+
+package developer/gcc/gcc-libgfortran
+classification "Development/Fortran"
+summary "GCC Fortran Runtime Library"
+version 4.3.3
+import SUNWgcclibgfortran
+add depend fmri=developer/gcc/gcc-runtime-432@4.3.2-1 type=incorporate
+end package
+
+package developer/gcc/gcc-libgomp
+classification "Development/C"
+classification "Development/C++"
+classification "Development/Fortran"
+summary "GNU implementation of the OpenMP API"
+version 4.3.3
+import SUNWgcclibgomp
+add depend fmri=developer/gcc/gcc-runtime-432@4.3.2-1 type=incorporate
+end package
+
+package developer/gcc/gcc-libobjc
+classification "Development/Objective C"
+summary "GCC Objective C Runtime Library"
+version 4.3.3
+import SUNWgcclibobjc
+add depend fmri=developer/gcc/gcc-runtime-432@4.3.2-1 type=incorporate
+end package
+
+package developer/gcc/gcc-libssp
+classification "Development/C"
+summary "GCC Stack Smashing Protection Library"
+version 4.3.3
+import SUNWgcclibssp
+add depend fmri=developer/gcc/gcc-runtime-432@4.3.2-1 type=incorporate
+end package
+
+package developer/gcc/gcc-libstdc
+classification "Development/C++"
+summary "GCC C++ Runtime Library"
+version 4.3.3
+import SUNWgcclibstdc
+add depend fmri=developer/gcc/gcc-runtime-432@4.3.2-1 type=incorporate
 end package
 
 package developer/gcc/gcc-dev-4
-classification "Development/Suites"
-summary "GNU Compiler Collection 4.3.2 Development cluster" 
+classification "Development/C"
+classification "Development/C++"
+classification "Development/Fortran"
+classification "Development/Objective C"
+summary "GNU Compiler Collection & Tools"
 depend SUNWaconf
 depend SUNWbison
 depend SUNWcvs
 depend SUNWflexlex
-depend developer/gcc/gcc-432
 depend SUNWgdb
 depend SUNWgmake
 depend SUNWgnu-automake-110
@@ -30,4 +94,15 @@ depend SUNWlibtool
 depend SUNWmercurial
 depend SUNWsprot
 depend SUNWsvn
+depend developer/gcc/gcc-43
+end package
+
+package developer/gcc/gcc-432
+add set name=pkg.obsolete value=true
+version 4.3.2-1
+end package
+
+package developer/gcc/gcc-runtime-432
+add set name=pkg.obsolete value=true
+version 4.3.2-1
 end package
