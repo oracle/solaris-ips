@@ -890,17 +890,6 @@ class Image(object):
 
                 try:
                         shutil.rmtree(self.imgdir)
-                except shutil.Error, e:
-                        # shutil.Error contains a list of lists of tuples of
-                        # errors with the last part of the tuple being the
-                        # actual exception.
-                        msg = ""
-                        for entries in e:
-                                for entry in entries:
-                                        # Last part of entry is actual
-                                        # exception.
-                                        msg += "%s\n" % str(entry[-1])
-                        raise api_errors.UnknownErrors(msg)
                 except EnvironmentError, e:
                         if e.errno == errno.EACCES:
                                 raise api_errors.PermissionsException(
@@ -1291,6 +1280,28 @@ class Image(object):
                         orig_state_root = self.__salvagedir(state_root)
                         portable.rename(tmp_state_root, state_root)
                         shutil.rmtree(orig_state_root, True)
+                except EnvironmentError, e:
+                        # shutil.Error can contains a tuple of lists of errors.
+                        # Some of the error entries may be a tuple others will
+                        # be a string due to poor error handling in shutil.
+                        if isinstance(e, shutil.Error) and \
+                            type(e.args[0]) == list:
+                                msg = ""
+                                for elist in e.args:
+                                        for entry in elist:
+                                                if type(entry) == tuple:
+                                                        msg += "%s\n" % \
+                                                            entry[-1]
+                                                else:
+                                                        msg += "%s\n" % entry
+                                raise api_errors.UnknownErrors(msg)
+                        elif e.errno == errno.EACCES or e.errno == errno.EPERM:
+                                raise api_errors.PermissionsException(
+                                    e.filename)
+                        elif e.errno == errno.EROFS:
+                                raise api_errors.ReadOnlyFileSystemException(
+                                    e.filename)
+                        raise
                 finally:
                         # Regardless of success, the following must happen.
                         for name in (self.IMG_CATALOG_KNOWN,

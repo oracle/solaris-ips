@@ -835,23 +835,41 @@ class Repository(object):
                 old_cat_root = self.catalog_root
                 tmp_cat_root = self.__mkdtemp()
 
-                if os.path.exists(old_cat_root):
-                        # Now remove the temporary directory and then copy the
-                        # contents of the existing catalog directory to the new,
-                        # temporary name.  This is necessary since the catalog
-                        # only saves the data that has been loaded or changed,
-                        # so new parts will get written out, but old ones could
-                        # be lost.
-                        shutil.rmtree(tmp_cat_root)
-                        shutil.copytree(old_cat_root, tmp_cat_root)
-
-                # Ensure the permissions on the new temporary catalog
-                # directory are correct.
                 try:
+                        if os.path.exists(old_cat_root):
+                                # Now remove the temporary directory and then
+                                # copy the contents of the existing catalog
+                                # directory to the new, temporary name.  This
+                                # is necessary since the catalog only saves the
+                                # data that has been loaded or changed, so new
+                                # parts will get written out, but old ones could
+                                # be lost.
+                                shutil.rmtree(tmp_cat_root)
+                                shutil.copytree(old_cat_root, tmp_cat_root)
+
+                        # Ensure the permissions on the new temporary catalog
+                        # directory are correct.
                         os.chmod(tmp_cat_root, misc.PKG_DIR_MODE)
                 except EnvironmentError, e:
-                        if e.errno == errno.EACCES:
+                        # shutil.Error can contains a tuple of lists of errors.
+                        # Some of the error entries may be a tuple others will
+                        # be a string due to poor error handling in shutil.
+                        if isinstance(e, shutil.Error) and \
+                            type(e.args[0]) == list:
+                                msg = ""
+                                for elist in e.args:
+                                        for entry in elist:
+                                                if type(entry) == tuple:
+                                                        msg += "%s\n" % \
+                                                            entry[-1]
+                                                else:
+                                                        msg += "%s\n" % entry
+                                raise api_errors.UnknownErrors(msg)
+                        elif e.errno == errno.EACCES or e.errno == errno.EPERM:
                                 raise api_errors.PermissionsException(
+                                    e.filename)
+                        elif e.errno == errno.EROFS:
+                                raise api_errors.ReadOnlyFileSystemException(
                                     e.filename)
                         raise
 

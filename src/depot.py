@@ -694,7 +694,7 @@ if __name__ == "__main__":
         except search_errors.IndexingException, _e:
                 emsg("pkg.depotd: %s" % str(_e), "INDEX")
                 sys.exit(1)
-        except api_errors.PermissionsException, _e:
+        except (api_errors.UnknownErrors, api_errors.PermissionsException), _e:
                 emsg("pkg.depotd: %s" % str(_e))
                 sys.exit(1)
 
@@ -713,6 +713,7 @@ if __name__ == "__main__":
                         emsg(str(e), "REBUILD")
                         sys.exit(1)
                 except (search_errors.IndexingException,
+                    api_errors.UnknownErrors,
                     api_errors.PermissionsException), e:
                         emsg(str(e), "INDEX")
                         sys.exit(1)
@@ -724,6 +725,7 @@ if __name__ == "__main__":
                         emsg(str(e), "ADD_CONTENT")
                         sys.exit(1)
                 except (search_errors.IndexingException,
+                    api_errors.UnknownErrors,
                     api_errors.PermissionsException), e:
                         emsg(str(e), "INDEX")
                         sys.exit(1)

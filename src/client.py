@@ -821,7 +821,7 @@ def __api_prepare(operation, api_inst, accept=False, show_licenses=False):
                 if accept:
                         accept_plan_licenses(api_inst)
                 api_inst.prepare()
-        except api_errors.PermissionsException, e:
+        except (api_errors.PermissionsException, api_errors.UnknownErrors), e:
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
                 error("\n" + str(e))
@@ -883,10 +883,7 @@ def __api_execute_plan(operation, api_inst, raise_ActionExecutionError=True):
         except api_errors.ProblematicPermissionsIndexException, e:
                 error(str(e) + PROBLEMATIC_PERMISSIONS_ERROR_MESSAGE)
                 return EXIT_OOPS
-        except api_errors.ReadOnlyFileSystemException, e:
-                error(e)
-                raise
-        except api_errors.PermissionsException, e:
+        except (api_errors.PermissionsException, api_errors.UnknownErrors), e:
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
                 error("\n" + str(e))
@@ -964,6 +961,7 @@ Cannot remove '%s' due to the following packages that depend on it:"""
                 error(_(e))
                 return False
         if e_type in (api_errors.CertificateError,
+            api_errors.UnknownErrors,
             api_errors.PlanCreationException,
             api_errors.PermissionsException):
                 # Prepend a newline because otherwise the exception will
@@ -1723,7 +1721,7 @@ def info(img, args):
                 notfound = ret[api.ImageInterface.INFO_MISSING]
                 illegals = ret[api.ImageInterface.INFO_ILLEGALS]
                 multi_match = ret[api.ImageInterface.INFO_MULTI_MATCH]
-        except api_errors.PermissionsException, e:
+        except (api_errors.UnknownErrors, api_errors.PermissionsException), e:
                 error(e)
                 return EXIT_OOPS
         except api_errors.NoPackagesInstalledException:
@@ -2154,7 +2152,7 @@ def list_contents(img, args):
                 # operations
                 try:
                         img.check_cert_validity()
-                except (api_errors.CertificateError,
+                except (api_errors.CertificateError, api_errors.UnknownErrors,
                     api_errors.PermissionsException), e:
                         img.history.log_operation_end(error=e)
                         return EXIT_OOPS
@@ -2365,7 +2363,7 @@ def __refresh(api_inst, pubs, full_refresh=False):
                 error(e)
                 error(_("'pkg publisher' will show a list of publishers."))
                 return EXIT_OOPS
-        except api_errors.PermissionsException, e:
+        except (api_errors.UnknownErrors, api_errors.PermissionsException), e:
                 # Prepend a newline because otherwise the exception will
                 # be printed on the same line as the spinner.
                 error("\n" + str(e))
