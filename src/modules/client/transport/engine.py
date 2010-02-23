@@ -511,7 +511,15 @@ class CurlTransportEngine(TransportEngine):
                 for h in self.__chandles:
                         if h.url == url and h.uuid == uuid and \
                             h not in self.__freehandles:
-                                self.__mhandle.remove_handle(h)
+                                try:
+                                        self.__mhandle.remove_handle(h)
+                                except pycurl.error:
+                                        # If cleanup is interrupted, it's
+                                        # possible that a handle was removed but
+                                        # not placed in freelist.  In that case,
+                                        # finish cleanup and appened to
+                                        # freehandles.
+                                        pass
                                 self.__teardown_handle(h)
                                 self.__freehandles.append(h)
                                 return
@@ -532,7 +540,15 @@ class CurlTransportEngine(TransportEngine):
 
                 for c in self.__chandles:
                         if c not in self.__freehandles:
-                                self.__mhandle.remove_handle(c)
+                                try:
+                                        self.__mhandle.remove_handle(c)
+                                except pycurl.error:
+                                        # If cleanup is interrupted, it's
+                                        # possible that a handle was removed but
+                                        # not placed in freelist.  In that case,
+                                        # finish cleanup and appened to
+                                        # freehandles.
+                                        pass
                                 self.__teardown_handle(c)
 
                 self.__active_handles = 0
@@ -738,8 +754,6 @@ class CurlTransportEngine(TransportEngine):
         def shutdown(self):
                 """Shutdown the transport engine, perform cleanup."""
 
-                self.reset()
-
                 for c in self.__chandles:
                         c.close()
 
@@ -747,6 +761,11 @@ class CurlTransportEngine(TransportEngine):
                 self.__freehandles = None
                 self.__mhandle.close()
                 self.__mhandle = None
+                self.__req_q = None
+                self.__failures = None
+                self.__success = None
+                self.__orphans = None
+                self.__active_handles = 0
 
         @staticmethod
         def __teardown_handle(hdl):
