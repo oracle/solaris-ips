@@ -561,9 +561,11 @@ class Image(object):
                                 self.dl_cache_incoming = os.path.normpath(
                                     os.path.join(self.dl_cache_dir,
                                     "incoming-%d" % os.getpid()))
+                                self.is_user_cache_dir = False
                                 # There's no image cleanup hook, so we'll just
                                 # remove this directory on process exit.
-                                atexit.register(os.rmdir, self.dl_cache_dir)
+                                atexit.register(shutil.rmtree,
+                                    self.dl_cache_dir, ignore_errors=True)
                 else:
                         os.removedirs(self.dl_cache_incoming)
 
