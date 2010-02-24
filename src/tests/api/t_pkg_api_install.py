@@ -691,7 +691,30 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                                 bad_mdata = mdata.replace(src_mode, bad_mode)
                                 self.write_img_manifest(pfmri, bad_mdata)
                                 self.assertRaises(api_errors.InvalidPackageErrors,
-                                    self.__do_install, api_obj, [pfmri.pkg_name])
+                                    self.__do_install, api_obj,
+                                    [pfmri.pkg_name])
+
+                        for bad_owner in ("", 'owner=""', "owner=invaliduser"):
+                                self.debug("Testing with bad owner "
+                                    "'%s'." % bad_owner)
+
+                                bad_mdata = mdata.replace("owner=root",
+                                    bad_owner)
+                                self.write_img_manifest(pfmri, bad_mdata)
+                                self.assertRaises(api_errors.InvalidPackageErrors,
+                                    self.__do_install, api_obj,
+                                    [pfmri.pkg_name])
+
+                        for bad_group in ("", 'group=""', "group=invalidgroup"):
+                                self.debug("Testing with bad group "
+                                    "'%s'." % bad_group)
+
+                                bad_mdata = mdata.replace("group=bin",
+                                    bad_group)
+                                self.write_img_manifest(pfmri, bad_mdata)
+                                self.assertRaises(api_errors.InvalidPackageErrors,
+                                    self.__do_install, api_obj,
+                                    [pfmri.pkg_name])
 
                         for bad_act in (
                             'set name=description value="" \" my desc \" ""',
@@ -702,7 +725,8 @@ class TestPkgApiInstall(pkg5unittest.SingleDepotTestCase):
                                 bad_mdata = mdata + "%s\n" % bad_act
                                 self.write_img_manifest(pfmri, bad_mdata)
                                 self.assertRaises(api_errors.InvalidPackageErrors,
-                                    self.__do_install, api_obj, [pfmri.pkg_name])
+                                    self.__do_install, api_obj,
+                                    [pfmri.pkg_name])
 
 
 if __name__ == "__main__":

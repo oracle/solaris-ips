@@ -461,6 +461,13 @@ class Action(object):
                         elif mlen == 5 and raw_mode[0] != "0":
                                 bad_mode = True
 
+                # The group, mode, and owner attributes are intentionally only
+                # required during publication as it is anticipated that the
+                # there will eventually be defaults for these (possibly parent
+                # directory, etc.).  By only requiring these attributes here,
+                # it prevents publication of packages for which no default
+                # currently exists, while permitting future changes to remove
+                # that limitaiton and use sane defaults.
                 if not bad_mode:
                         try:
                                 mode = str(int(raw_mode, 8))
@@ -479,9 +486,113 @@ class Action(object):
                                     "mode; value must be of the form '644', "
                                     "'0644', or '04755'.") % raw_mode))
 
+                owner = self.attrs.get("owner", "").rstrip()
+                if not owner:
+                        errors.append(("owner", _("owner is required")))
+
+                group = self.attrs.get("group", "").rstrip()
+                if not group:
+                        errors.append(("group", _("group is required")))
+
                 if errors:
                         raise pkg.actions.InvalidActionAttributesError(self,
                             errors, fmri=fmri)
+
+        def get_fsobj_uid_gid(self, pkgplan, fmri):
+                """Returns a tuple of the form (owner, group) containing the uid
+                and gid of the filesystem object.  If the attributes are missing
+                or invalid, an InvalidActionAttributesError exception will be
+                raised."""
+
+                path = os.path.normpath(os.path.sep.join(
+                    (pkgplan.image.get_root(), self.attrs["path"])))
+
+                # The attribute may be missing.
+                owner = self.attrs.get("owner", "").rstrip()
+
+                # Now attempt to determine the uid and raise an appropriate
+                # exception if it can't be.
+                try:
+                        owner = pkgplan.image.get_user_by_name(owner)
+                except KeyError:
+                        if not owner:
+                                # Owner was missing; let validate raise a more
+                                # informative error.
+                                self.validate(fmri=fmri)
+
+                        # Otherwise, the user is unknown; attempt to report why.
+                        ip = pkgplan.image.imageplan
+                        if owner in ip.removed_users:
+                                # What package owned the user that was removed?
+                                src_fmri = ip.removed_users[owner]
+
+                                raise pkg.actions.InvalidActionAttributesError(
+                                    self, [("owner", _("'%(path)s' cannot be "
+                                    "installed; the owner '%(owner)s' was "
+                                    "removed by '%(src_fmri)s'.") % {
+                                    "path": path, "owner": owner,
+                                    "src_fmri": src_fmri })],
+                                    fmri=fmri)
+                        elif owner in ip.added_users:
+                                # This indicates an error on the part of the
+                                # caller; the user should have been added
+                                # before attempting to install the file.
+                                raise
+
+                        # If this spot was reached, the user wasn't part of
+                        # the operation plan and is completely unknown or
+                        # invalid.
+                        raise pkg.actions.InvalidActionAttributesError(
+                            self, [("owner", _("'%(path)s' cannot be "
+                                    "installed; '%(owner)s' is an unknown "
+                                    "or invalid user.") % { "path": path,
+                                    "owner": owner })],
+                                    fmri=fmri)
+
+                # The attribute may be missing.
+                group = self.attrs.get("group", "").rstrip()
+
+                # Now attempt to determine the gid and raise an appropriate
+                # exception if it can't be.
+                try:
+                        group = pkgplan.image.get_group_by_name(group)
+                except KeyError:
+                        if not group:
+                                # Group was missing; let validate raise a more
+                                # informative error.
+                                self.validate(fmri=pkgplan.destination_fmri)
+
+                        # Otherwise, the group is unknown; attempt to report
+                        # why.
+                        ip = pkgplan.image.imageplan
+                        if group in ip.removed_groups:
+                                # What package owned the group that was removed?
+                                src_fmri = ip.removed_groups[group]
+
+                                raise pkg.actions.InvalidActionAttributesError(
+                                    self, [("group", _("'%(path)s' cannot be "
+                                    "installed; the group '%(group)s' was "
+                                    "removed by '%(src_fmri)s'.") % {
+                                    "path": path, "group": group,
+                                    "src_fmri": src_fmri })],
+                                    fmri=pkgplan.destination_fmri)
+                        elif group in ip.added_groups:
+                                # This indicates an error on the part of the
+                                # caller; the group should have been added
+                                # before attempting to install the file.
+                                raise
+
+                        # If this spot was reached, the group wasn't part of
+                        # the operation plan and is completely unknown or
+                        # invalid.
+                        raise pkg.actions.InvalidActionAttributesError(
+                            self, [("group", _("'%(path)s' cannot be "
+                                    "installed; '%(group)s' is an unknown "
+                                    "or invalid group.") % { "path": path,
+                                    "group": group })],
+                                    fmri=pkgplan.destination_fmri)
+
+                return owner, group
 
         def verify_fsobj_common(self, img, ftype):
                 """Common verify logic for filesystem objects."""
@@ -511,9 +622,20 @@ class Action(object):
                 if "mode" in self.attrs:
                         mode = int(self.attrs["mode"], 8)
                 if "owner" in self.attrs:
-                        owner = img.get_user_by_name(self.attrs["owner"])
+                        owner = self.attrs["owner"]
+                        try:
+                                owner = img.get_user_by_name(owner)
+                        except KeyError:
+                                errors.append(_("Owner: %s is unknown") % owner)
+                                owner = None
                 if "group" in self.attrs:
-                        group = img.get_group_by_name(self.attrs["group"])
+                        group = self.attrs["group"]
+                        try:
+                                group = img.get_group_by_name(group)
+                        except KeyError:
+                                errors.append(_("Group: %s is unknown ") %
+                                    group)
+                                group = None
 
                 path = os.path.normpath(
                     os.path.sep.join((img.get_root(), self.attrs["path"])))

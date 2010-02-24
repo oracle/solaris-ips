@@ -95,7 +95,6 @@ class FileAction(generic.Action):
 
         def install(self, pkgplan, orig):
                 """Client-side method that installs a file."""
-                path = self.attrs["path"]
 
                 mode = None
                 try:
@@ -105,11 +104,11 @@ class FileAction(generic.Action):
                         # informative error.
                         self.validate(fmri=pkgplan.destination_fmri)
 
-                owner = pkgplan.image.get_user_by_name(self.attrs["owner"])
-                group = pkgplan.image.get_group_by_name(self.attrs["group"])
+                owner, group = self.get_fsobj_uid_gid(pkgplan,
+                    pkgplan.destination_fmri)
 
                 final_path = os.path.normpath(os.path.sep.join(
-                    (pkgplan.image.get_root(), path)))
+                    (pkgplan.image.get_root(), self.attrs["path"])))
 
                 if not os.path.exists(os.path.dirname(final_path)):
                         self.makedirs(os.path.dirname(final_path),

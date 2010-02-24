@@ -515,6 +515,27 @@ class TestPkgInstallBasics(pkg5unittest.SingleDepotTestCase):
                                 self.pkg("install %s" % pfmri.pkg_name, exit=1)
 
                         # Now attempt to corrupt the client's copy of the
+                        # manifest in various ways to check if the client
+                        # handles missing or invalid owners and groups.
+                        for bad_owner in ("", 'owner=""', "owner=invaliduser"):
+                                self.debug("Testing with bad owner "
+                                    "'%s'." % bad_owner)
+
+                                bad_mdata = mdata.replace("owner=root",
+                                    bad_owner)
+                                self.write_img_manifest(pfmri, bad_mdata)
+                                self.pkg("install %s" % pfmri.pkg_name, exit=1)
+
+                        for bad_group in ("", 'group=""', "group=invalidgroup"):
+                                self.debug("Testing with bad group "
+                                    "'%s'." % bad_group)
+
+                                bad_mdata = mdata.replace("group=bin",
+                                    bad_group)
+                                self.write_img_manifest(pfmri, bad_mdata)
+                                self.pkg("install %s" % pfmri.pkg_name, exit=1)
+
+                        # Now attempt to corrupt the client's copy of the
                         # manifest such that actions are malformed.
                         for bad_act in (
                             'set name=description value="" \" my desc \" ""',

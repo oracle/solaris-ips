@@ -85,6 +85,12 @@ class ImagePlan(object):
                                          # remove   (oldfmri, None)
                                          # reinstall(oldfmri, oldfmri)
 
+                # Used to track users and groups that are part of operation.
+                self.added_groups = {}
+                self.removed_groups = {}
+                self.added_users = {}
+                self.removed_users = {}
+
                 self.update_actions  = []
                 self.removal_actions = []
                 self.install_actions = []
@@ -597,29 +603,52 @@ class ImagePlan(object):
 
                 ActionPlan = namedtuple("ActionPlan", "p src dst")
 
-                self.removal_actions = [
-                    ActionPlan(p, src, dest)
-                    for p in self.pkg_plans
-                    for src, dest in p.gen_removal_actions()
-                ]
-
+                self.removal_actions = []
+                for p in self.pkg_plans:
+                        for src, dest in p.gen_removal_actions():
+                                if src.name == "user":
+                                        self.removed_users[src.attrs["username"]] = \
+                                            p.origin_fmri
+                                elif src.name == "group":
+                                        self.removed_groups[src.attrs["groupname"]] = \
+                                            p.origin_fmri
+                                self.removal_actions.append(ActionPlan(p, src,
+                                    dest))
                 self.__progtrack.evaluate_progress()
 
-                self.update_actions = [
-                    ActionPlan(p, src, dest)
-                    for p in self.pkg_plans
-                    for src, dest in p.gen_update_actions()
-                ]
-
+                self.update_actions = []
+                for p in self.pkg_plans:
+                        for src, dest in p.gen_update_actions():
+                                if dest.name == "user":
+                                        self.added_users[dest.attrs["username"]] = \
+                                            p.destination_fmri
+                                elif dest.name == "group":
+                                        self.added_groups[dest.attrs["groupname"]] = \
+                                            p.destination_fmri
+                                self.update_actions.append(ActionPlan(p, src,
+                                    dest))
                 self.__progtrack.evaluate_progress()
 
-                self.install_actions = [
-                    ActionPlan(p, src, dest)
-                    for p in self.pkg_plans
-                    for src, dest in p.gen_install_actions()
-                ]
-
+                self.install_actions = []
+                for p in self.pkg_plans:
+                        for src, dest in p.gen_install_actions():
+                                if dest.name == "user":
+                                        self.added_users[dest.attrs["username"]] = \
+                                            p.destination_fmri
+                                elif dest.name == "group":
+                                        self.added_groups[dest.attrs["groupname"]] = \
+                                            p.destination_fmri
+                                self.install_actions.append(ActionPlan(p, src,
+                                    dest))
                 self.__progtrack.evaluate_progress()
+
+                # In case a removed user or group was added back...
+                for entry in self.added_groups.keys():
+                        if entry in self.removed_groups:
+                                del self.removed_groups[entry]
+                for entry in self.added_users.keys():
+                        if entry in self.removed_users:
+                                del self.removed_users[entry]
 
                 self.__actuators = actuator.Actuator()
 

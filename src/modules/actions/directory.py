@@ -62,7 +62,6 @@ class DirectoryAction(generic.Action):
 
         def install(self, pkgplan, orig):
                 """Client-side method that installs a directory."""
-                path = self.attrs["path"]
 
                 mode = None
                 try:
@@ -72,18 +71,20 @@ class DirectoryAction(generic.Action):
                         # informative error.
                         self.validate(fmri=pkgplan.destination_fmri)
 
-                owner = pkgplan.image.get_user_by_name(self.attrs["owner"])
-                group = pkgplan.image.get_group_by_name(self.attrs["group"])
-
+                owner, group = self.get_fsobj_uid_gid(pkgplan,
+                        pkgplan.destination_fmri)
                 if orig:
-                        omode = int(orig.attrs["mode"], 8)
-                        oowner = pkgplan.image.get_user_by_name(
-                            orig.attrs["owner"])
-                        ogroup = pkgplan.image.get_group_by_name(
-                            orig.attrs["group"])
+                        try:
+                                omode = int(orig.attrs.get("mode", None), 8)
+                        except (TypeError, ValueError):
+                                # Mode isn't valid, so let validate raise a more
+                                # informative error.
+                                orig.validate(fmri=pkgplan.origin_fmri)
+                        oowner, ogroup = orig.get_fsobj_uid_gid(pkgplan,
+                            pkgplan.origin_fmri)
 
                 path = os.path.normpath(os.path.sep.join(
-                    (pkgplan.image.get_root(), path)))
+                    (pkgplan.image.get_root(), self.attrs["path"])))
 
                 # XXX Hack!  (See below comment.)
                 if not portable.is_admin():

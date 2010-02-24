@@ -180,6 +180,26 @@ class TestPkgsendBasics(pkg5unittest.SingleDepotTestCase):
                             """add file tmp/dummy1 owner=root group=bin """
                             """mode=???? path=/tmp/dummy1""", exit=1)
 
+                        # Should fail because owner attribute is missing.
+                        self.pkgsend(url,
+                            "add file tmp/dummy1 group=bin "
+                            "mode=0644 path=/tmp/dummy1", exit=1)
+
+                        # Should fail because owner attribute is invalid.
+                        self.pkgsend(url,
+                            """add file tmp/dummy1 owner=" " group=bin """
+                            """mode=0644 path=/tmp/dummy1""", exit=1)
+
+                        # Should fail because group attribute is missing.
+                        self.pkgsend(url,
+                            "add file tmp/dummy1 owner=root "
+                            "mode=0644 path=/tmp/dummy1", exit=1)
+
+                        # Should fail because group attribute is invalid.
+                        self.pkgsend(url,
+                            """add file tmp/dummy1 owner=root group=" " """
+                            """mode=0644 path=/tmp/dummy1""", exit=1)
+
                         # Should fail because path attribute is missing a value.
                         self.pkgsend(url,
                             "add file bin/ls path=", exit=1)
@@ -668,8 +688,8 @@ dir path=foo/bar mode=0755 owner=root group=bin
                         manfpath = path + ".manifest"
                         self.make_misc_files({
                             manfpath:
-                                "file %s mode=0644 owner=root path=/foo%s" % \
-                                (path, path)})
+                                "file %s mode=0644 owner=root group=bin "
+                                "path=/foo%s" % (path, path)})
 
                 # publish
                 url = self.dc.get_depot_url()
