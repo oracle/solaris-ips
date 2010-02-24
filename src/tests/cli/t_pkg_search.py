@@ -64,6 +64,13 @@ class TestPkgSearchBasics(pkg5unittest.SingleDepotTestCase):
             add signature pkg.sig_bit1=sig_bit_val1 pkg.sig_bit2=sig_bit_val2
             close """
 
+        dup_lines_pkg10 = """
+            open dup_lines@1.0,5.11-0
+            add set name=com.sun.service.incorporated_changes value="aa abc a a"
+            add set name=com.sun.service.bug_ids value="z x y a abc bb"
+            add set name=com.sun.service.keywords value="z a abc"
+            close """
+
         fat_pkg10 = """
 open fat@1.0,5.11-0
 add set name=variant.arch value=sparc value=i386
@@ -682,32 +689,41 @@ set name=com.sun.service.incorporated_changes value="6556919 6627937"
                 """Check that consecutive duplicate lines are removed and
                 that having a single option to -o still prints the header."""
 
+                # This test assumes that search is basically working and focuses
+                # on testing whether consecutive duplicate lines have been
+                # correctly removed.  For the first three queries, two lines are
+                # expected.  The first line is the headers and the second is
+                # a line for the matching package.  Without consecutive
+                # duplicate line removal, far more than two lines would be
+                # seen.  The final query has four lines of output.  The headers
+                # are the first line and the package name followed by
+                # com.sun.service.incorporated_changes, com.sun.service.bug_ids,
+                # or com.sun.service.keywords.
+
+                # The final query depends on search returning the results in
+                # a consistent ordering so that all the like lines get merged
+                # together.  If this changes in the future, because of parallel
+                # indexing or parallel searching for example, it's possible
+                # this test will need to be removed or reexamined.
+                
                 durl = self.dc.get_depot_url()
-                self.pkgsend_bulk(durl, self.example_pkg10)
+                self.pkgsend_bulk(durl, self.dup_lines_pkg10)
 
                 self.image_create(durl)
                 
-                self.pkg("search 'example_pkg:set:pkg.fmri:'")
+                self.pkg("search 'dup_lines:set:pkg.fmri:'")
                 self.assertEqual(len(self.output.splitlines()), 2)
 
-                self.pkg("search -o pkg.shortfmri '*6*'")
+                self.pkg("search -o pkg.shortfmri 'a'")
                 self.assertEqual(len(self.output.splitlines()), 2)
 
-                self.pkg("install example_pkg")
+                self.pkg("install dup_lines")
 
-                self.pkg("search -l 'example_pkg:set:pkg.fmri:'")
+                self.pkg("search -l 'dup_lines:set:pkg.fmri:'")
                 self.assertEqual(len(self.output.splitlines()), 2)
 
-                self.pkg("search -l -o pkg.shortfmri,action.key '*6*'")
-                expected_number_of_lines = 9
-                # If 6 happens to appear in the timestamp, then that will match
-                # as well.
-                if "pkg.fmri" in self.output:
-                        expected_number_of_lines += 1
-                self.debug("Expected number of lines:%s" %
-                    expected_number_of_lines)
-                self.assertEqual(len(self.output.splitlines()),
-                    expected_number_of_lines)
+                self.pkg("search -l -o pkg.shortfmri,action.key 'a'")
+                self.assertEqual(len(self.output.splitlines()), 4)
 
 if __name__ == "__main__":
         unittest.main()
