@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 # ##########################################################################
@@ -39,8 +39,12 @@
 #    startpagebase-C.tar.gz
 # For other locales the file checked is based on locale prefix:
 #    E.g. fr_BE.UTF-8 = startpagebase-fr.tar.gz
+#    E.g. zh_TW.UTF-8, zh_CN.UTF-8, zh_HK.UTF-8 = startpagebase-zh.tar.gz
+#         within startpagebase-zh.tar.gz, there should be 3 directories:
+#         zh_TW, zh_CN and zh_HK to support all three zh* locales.
 #
-# If a new set is obtained for the given locale, the cache files are updated:
+# There may be more then one supported locale directory within tarball, which are
+# being updated to:
 #    /var/pkg/gui/cache/startpagebase/<locale>  
 #
 # Note: script also checks for "C" locale updates if there is no Start Page
@@ -71,6 +75,7 @@ GREP="/usr/gnu/bin/grep"
 PATH="/usr/bin"
 
 DEFAULT_LOCALE="C"
+SUPPORTED_LOCALES="ar cs fr it nl sv zh_TW C de hu ja pt_BR zh_CN ca es id ko ru zh_HK"  
 LOCALE_FILE="/etc/default/init"
 FILE_PREFIX="startpagebase-"
 FILE_SUFFFIX=".tar.gz"
@@ -254,7 +259,11 @@ fi
 
 if unpack; then
 	debug "Unpacked: $FILE"
-	if install; then
-		debug "Installed: $FILE to $CACHE_DIR/$UNPACKED_DIR"
-	fi
+        for LANGUAGE in $SUPPORTED_LOCALES;
+        do
+		UNPACKED_DIR=$LANGUAGE
+		if install; then
+			debug "Installed: $FILE to $CACHE_DIR/$UNPACKED_DIR"
+		fi
+        done
 fi
