@@ -262,6 +262,7 @@ class PackageManager:
                 self.recent_searches_cat_iter = None
                 self.adding_recent_search = False
                 self.recent_searches_list = []
+                self.previous_search_text = None
                 
                 global_settings.client_name = gui_misc.get_pm_name()
 
@@ -1324,7 +1325,7 @@ class PackageManager:
                         if handle_what == DISPLAY_LINK:
                                 return _("Search within %(s1)sAll Publishers%(e1)s") % \
                                         {"s1": s1, "e1": e1}
-                        self.__handle_search_all_publishers(self.w_searchentry.get_text())
+                        self.__handle_search_all_publishers(self.previous_search_text)
                         return
                 # Change view to All Publishers (Installed)
                 if search_action and search_action == INTERNAL_SEARCH_ALL_PUBS_INSTALLED:
@@ -2254,6 +2255,7 @@ class PackageManager:
                             "</b> within <a href='pm?pm-action=internal&search="
                             "%(all_pubs)s'>All Publishers</a></li>")  % \
                             {"text": text, "all_pubs": INTERNAL_SEARCH_ALL_PUBS}
+                        self.previous_search_text = text
 
                 body += _("<li style='padding-left:7px'>"
                     "See <a href='pm?pm-action=internal&search="
