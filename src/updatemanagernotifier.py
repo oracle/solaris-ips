@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
 
@@ -43,15 +43,16 @@ try:
         pygtk.require("2.0")
 except ImportError:
         sys.exit(1)
-try:
-        import pynotify
-except ImportError:
-        print "SUNWpython-notify package must be installed"
-        sys.exit(1)
 import pkg.client.progress as progress
 import pkg.misc as misc
 import pkg.gui.misc as gui_misc
 import pkg.gui.enumerations as enumerations
+try:
+        import pynotify
+except ImportError:
+        print "%s package must be installed" % (
+            gui_misc.package_name["SUNWpython26-notify"])
+        sys.exit(1)
 
 # Put _() in the global namespace
 import __builtin__

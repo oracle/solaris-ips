@@ -3913,7 +3913,8 @@ class PackageManager:
                 installupdate.InstallUpdate([], self,
                     self.image_directory, action = enumerations.IMAGE_UPDATE,
                     parent_name = _("Package Manager"),
-                    pkg_list = ["SUNWipkg", "SUNWipkg-gui"],
+                    pkg_list = [gui_misc.package_name["SUNWipkg"],
+                    gui_misc.package_name["SUNWipkg-gui"]],
                     main_window = self.w_main_window,
                     icon_confirm_dialog = self.window_icon,
                     confirmation_list = confirmation)

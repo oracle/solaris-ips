@@ -18,7 +18,7 @@
 #
 # CDDL HEADER END
 
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 # This file is used to control pylint when checking the packagemanager
@@ -146,8 +146,8 @@ max-attributes=250
 min-public-methods=0
 
 # Maximum number of public methods for a class (see R0904).
-# Increase from 56 to 60 as we are deriving off various classes and can't reduce the number further
-max-public-methods=60
+# Increase from 56 to 65 as we are deriving off various classes and can't reduce the number further
+max-public-methods=65
 
 [IMPORTS]
 

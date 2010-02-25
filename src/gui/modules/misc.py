@@ -64,6 +64,13 @@ PKG_CLIENT_NAME_UM = "updatemanager"
 
 logger = global_settings.logger
 
+# Dictionary which converts old package names to current name.
+package_name = { 'SUNWcs' : 'SUNWcs',
+    'SUNWipkg' : 'package/pkg',
+    'SUNWipkg-gui' : 'package/pkg/package-manager',
+    'SUNWipkg-um' : 'package/pkg/update-manager',
+    'SUNWpython26-notify' : 'library/python-2/python-notify-26' }
+
 def get_version():
         return g_version()        
                 

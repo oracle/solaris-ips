@@ -564,7 +564,9 @@ class Updatemanager:
                 installupdate.InstallUpdate([], self,
                     self.__get_image_path(), action = enumerations.IMAGE_UPDATE,
                     parent_name = _("Update Manager"),
-                    pkg_list = ["SUNWipkg", "SUNWipkg-gui", "SUNWipkg-um"],
+                    pkg_list = [gui_misc.package_name["SUNWipkg"],
+                    gui_misc.package_name["SUNWipkg-gui"],
+                    gui_misc.package_name["SUNWipkg-um"]],
                     main_window = self.w_um_dialog,
                     icon_confirm_dialog = self.__get_icon_pixbuf("updatemanager", 36))
                 return

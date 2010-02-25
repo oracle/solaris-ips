@@ -474,7 +474,8 @@ class InstallUpdate(progress.GuiProgressTracker):
                                         opensolaris_image = True
                                         ips_uptodate = True
                                         notfound = self.__installed_fmris_from_args(
-                                            ["SUNWipkg", "SUNWcs"])
+                                            [gui_misc.package_name["SUNWipkg"],
+                                            gui_misc.package_name["SUNWcs"]])
                                         if notfound:
                                                 opensolaris_image = False
                                         if opensolaris_image:
@@ -534,7 +535,8 @@ class InstallUpdate(progress.GuiProgressTracker):
                 except api_errors.IpkgOutOfDateException:
                         msg = _("pkg(5) appears to be out of "
                             "date and should be updated.\n"
-                            "Please update SUNWipkg package")
+                            "Please update %s package") % (
+                            gui_misc.package_name["SUNWipkg"])
                         self.__g_error_stage(msg)
                         return
                 except api_errors.NonLeafPackageException, nlpe:
@@ -1008,7 +1010,7 @@ class InstallUpdate(progress.GuiProgressTracker):
                             plan_uninstall(self.list_of_packages, False, False)
                 elif self.action == enumerations.IMAGE_UPDATE:
                         # we are passing force, since we already checked if the
-                        # SUNWipkg and SUNWipkg-gui are up to date.
+                        # packages are up to date.
                         stuff_to_do, opensolaris_image = \
                             self.api_o.plan_update_all(sys.argv[0],
                             refresh_catalogs = False,
