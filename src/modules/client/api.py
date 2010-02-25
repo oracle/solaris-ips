@@ -60,7 +60,7 @@ from pkg.api_common import (PackageInfo, LicenseInfo, PackageCategory,
 from pkg.client.imageplan import EXECUTED_OK
 from pkg.client import global_settings
 
-CURRENT_API_VERSION = 33
+CURRENT_API_VERSION = 34
 CURRENT_P5I_VERSION = 1
 
 # Image type constants.
@@ -122,7 +122,7 @@ class ImageInterface(object):
                 This function can raise VersionException and
                 ImageNotFoundException."""
 
-                compatible_versions = set([32, CURRENT_API_VERSION])
+                compatible_versions = set([CURRENT_API_VERSION])
 
                 if version_id not in compatible_versions:
                         raise api_errors.VersionException(CURRENT_API_VERSION,
@@ -2705,11 +2705,20 @@ def image_create(pkg_client_name, version_id, root, imgtype, is_zone,
 
                         if repo_uri:
                                 for p in pubs:
-                                        if p.selected_repository:
-                                                continue
-                                        # Incomplete repository configuration.
-                                        raise api_errors.RepoPubConfigUnavailable(
-                                            location=repo_uri)
+                                        psrepo = p.selected_repository
+                                        if not psrepo:
+                                                # Repository configuration info
+                                                # was not provided, so assume
+                                                # origin is repo_uri.
+                                                p.add_repository(
+                                                    publisher.Repository(
+                                                    origins=[repo_uri]))
+                                        elif not psrepo.origins:
+                                                # Repository configuration was
+                                                # provided, but without an
+                                                # origin.  Assume the repo_uri
+                                                # is the origin.
+                                                psrepo.add_origin(repo_uri)
 
                 if prefix and not repo_uri:
                         # Auto-configuration not possible or not requested.

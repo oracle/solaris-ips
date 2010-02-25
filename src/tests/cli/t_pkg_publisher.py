@@ -436,13 +436,33 @@ class TestPkgPublisherMany(pkg5unittest.ManyDepotTestCase):
                 # Should fail because repository is for test3 not test2.
                 self.pkg("set-publisher -p %s test2" % durl3, exit=1)
 
+                # Verify that a publisher can be configured even if the
+                # the repository's publisher configuration does not
+                # include origin information.  In this case, the client
+                # will assume that the provided repository URI for
+                # auto-configuration is also the origin to use for
+                # all configured publishers.
+                t3cfg = {
+                    "publisher": {
+                        "prefix": "test3",
+                    },
+                    "repository": {
+                        "origins": durl3,
+                    },
+                }
+                self.pkg("set-publisher -p %s" % durl3)
+
+                # Load image configuration to verify publisher was configured
+                # as expected.
+                self.__verify_pub_cfg("test3", t3cfg)
+
                 # Update configuration of just this depot with more information
                 # for comparison basis.
                 self.dcs[3].stop()
 
                 # Origin and mirror info wasn't known until this point, so add
                 # it to the test configuration.
-                t3cfg = self.test3_pub_cfg
+                t3cfg = self.test3_pub_cfg.copy()
                 t3cfg["repository"]["origins"] = durl3
                 t3cfg["repository"]["mirrors"] = ",".join((durl1, durl3, durl4))
                 for section in t3cfg:

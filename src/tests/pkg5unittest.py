@@ -1666,7 +1666,7 @@ class ManyDepotTestCase(CliTestCase):
                         self.dcs[i] = self.start_depot(12000 + i,
                             depotdir, depot_logfile,
                             debug_features=debug_features,
-                            properties=props, set_origins=True)
+                            properties=props)
 
         def check_traceback(self, logpath):
                 """ Scan logpath looking for tracebacks.

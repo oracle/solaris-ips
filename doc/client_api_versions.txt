@@ -1,3 +1,12 @@
+Version 34:
+Incompatible with clients using versions 0-33.
+
+    The pkg.client.publisher.Publisher class has changed as follows:
+        * The deprecated get_ssl_creds() and set_origin() methods
+          were removed.  These functions have been marked as
+          deprecated since the client API was first versioned
+          and should not have been used by any clients.
+
 Version 33:
 Compatible with clients using version 32.
 

@@ -30,6 +30,7 @@ if __name__ == "__main__":
         testutils.setup_environment("../../../proto")
 import pkg5unittest
 
+import difflib
 import errno
 import unittest
 import cStringIO
@@ -93,20 +94,27 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
                 pkg5unittest.Pkg5TestCase.setUp(self)
                 self.make_misc_files(self.misc_files)
 
+        def __get_bobcat_pub(self, omit_repo=False):
+                # First build a publisher object matching our expected data.
+                repos = []
+                if not omit_repo:
+                        repo = publisher.Repository(description="xkcd.net/325",
+                            legal_uris=["http://xkcd.com/license.html"],
+                            name="source", origins=["http://localhost:12001/"],
+                            refresh_seconds=43200)
+                        repos.append(repo)
+                pub = publisher.Publisher("bobcat", alias="cat",
+                    repositories=repos)
+
+                return pub
+
         def test_parse_write(self):
                 """Verify that the p5i parsing and writing works as expected."""
 
-                # First build a publisher object matching our expected data.
-                repo = publisher.Repository(description="xkcd.net/325",
-                    legal_uris=["http://xkcd.com/license.html"],
-                    name="source", origins=["http://localhost:12001/"],
-                    refresh_seconds=43200)
-                pub = publisher.Publisher("bobcat", alias="cat",
-                    repositories=[repo])
-
                 # Verify that p5i export and parse works as expected.
+                pub = self.__get_bobcat_pub()
 
-                # Ensure that PkgFmri and strings are supported properly.
+                # First, Ensure that PkgFmri and strings are supported properly.
                 # Build a simple list of packages.
                 fmri_foo = fmri.PkgFmri("pkg:/foo@1.0,5.11-0", None)
                 pnames = {
@@ -194,6 +202,100 @@ class TestP5I(pkg5unittest.Pkg5TestCase):
                 # Last, test as a pathname.
                 self.assertRaises(api_errors.InvalidP5IFile, p5i.parse,
                     location=location)
+
+        def assertPrettyEqual(self, actual, expected):
+                if actual == expected:
+                        return
+
+                self.assertEqual(expected, actual,
+                    "Actual output differed from expected output.\n" +
+                    "\n".join(difflib.unified_diff(
+                        expected.splitlines(), actual.splitlines(),
+                        "Expected output", "Actual output", lineterm="")))
+                raise AssertionError(output)
+
+        def test_parse_write_partial(self):
+                """Verify that a p5i file with various parts of a publisher's
+                repository configuration omitted will still parse and write
+                as expected."""
+
+                # First, test the no repository case.
+                expected = """{
+  "packages": [], 
+  "publishers": [
+    {
+      "alias": "cat", 
+      "name": "bobcat", 
+      "packages": [], 
+      "repositories": []
+    }
+  ], 
+  "version": 1
+}
+"""
+
+                pub = self.__get_bobcat_pub(omit_repo=True)
+
+                # Dump the p5i data.
+                fobj = cStringIO.StringIO()
+                p5i.write(fobj, [pub])
+
+                # Verify that output matches expected output.
+                fobj.seek(0)
+                output = fobj.read()
+                self.assertPrettyEqual(output, expected)
+
+                # Now parse the result and verify no repositories are defined.
+                pub, pkg_names = p5i.parse(data=output)[0]
+                self.assert_(not pub.selected_repository)
+
+                # Next, test the partial repository configuration case.  No
+                # origin is provided, but everything else is.
+                expected = """{
+  "packages": [], 
+  "publishers": [
+    {
+      "alias": "cat", 
+      "name": "bobcat", 
+      "packages": [], 
+      "repositories": [
+        {
+          "collection_type": "core", 
+          "description": "xkcd.net/325", 
+          "legal_uris": [
+            "http://xkcd.com/license.html"
+          ], 
+          "mirrors": [], 
+          "name": "source", 
+          "origins": [], 
+          "refresh_seconds": 43200, 
+          "registration_uri": "", 
+          "related_uris": []
+        }
+      ]
+    }
+  ], 
+  "version": 1
+}
+"""
+                pub = self.__get_bobcat_pub()
+
+                # Nuke the origin data.
+                pub.selected_repository.reset_origins()
+
+                # Dump the p5i data.
+                fobj = cStringIO.StringIO()
+                p5i.write(fobj, [pub])
+
+                # Verify that output matches expected output.
+                fobj.seek(0)
+                output = fobj.read()
+                self.assertPrettyEqual(output, expected)
+
+                # Now parse the result and verify that there is a repository,
+                # but without origins information.
+                pub, pkg_names = p5i.parse(data=output)[0]
+                self.assertPrettyEqual(pub.selected_repository.origins, [])
 
 
 if __name__ == "__main__":

@@ -82,7 +82,7 @@ from pkg.client.history import (RESULT_CANCELED, RESULT_FAILED_BAD_REQUEST,
     RESULT_FAILED_TRANSPORT, RESULT_FAILED_UNKNOWN, RESULT_FAILED_OUTOFMEMORY)
 from pkg.misc import EmptyI, msg, PipeError
 
-CLIENT_API_VERSION = 32
+CLIENT_API_VERSION = 34
 PKG_CLIENT_NAME = "pkg"
 
 JUST_UNKNOWN = 0
@@ -2620,18 +2620,19 @@ assistance."""))
                         continue
 
                 src_repo = src_pub.selected_repository
-                if not src_repo:
-                        failed.append((prefix, _("""\
-    The retrieved publisher configuration information for %s
-    did not contain any repository configuration information
-    and so was ignored.  Please contact the repository
-    administrator for further assistance.""" % prefix)))
-                        continue
-
                 if not api_inst.has_publisher(prefix=prefix):
+                        add_origins = []
+                        if not src_repo or not src_repo.origins:
+                                # If the repository publisher configuration
+                                # didn't include configuration information
+                                # for the publisher's repositories, assume
+                                # that the origin for the new publisher
+                                # matches the URI provided.
+                                add_origins.append(repo_uri)
                         rval, rmsg = _set_pub_error_wrap(_add_update_pub, name,
                             [], api_inst, prefix, pub=src_pub,
-                            ssl_cert=ssl_cert, ssl_key=ssl_key, sticky=sticky,
+                            add_origins=add_origins, ssl_cert=ssl_cert,
+                            ssl_key=ssl_key, sticky=sticky,
                             search_after=search_after,
                             search_before=search_before)
                         if rval == EXIT_OK:
@@ -2657,27 +2658,38 @@ assistance."""))
     to accept configuration updates from this repository.""") % prefix))
                                 continue
 
-                        # Avoid duplicates by adding only those mirrors
-                        # or origins not already known.
-                        add_mirrors = [
-                            u.uri
-                            for u in src_repo.mirrors
-                            if u.uri not in dest_repo.mirrors
-                        ]
-                        add_origins = [
-                            u.uri
-                            for u in src_repo.origins
-                            if u.uri not in dest_repo.origins
-                        ]
+                        if not src_repo:
+                                # The repository doesn't have to provide origin
+                                # information for publishers.  If it doesn't,
+                                # the origin of every publisher returned is
+                                # assumed to match the URI that the user
+                                # provided.  Since this is an update case,
+                                # nothing special needs to be done.
+                                add_mirrors = []
+                                add_origins = []
+                        else:
+                                # Avoid duplicates by adding only those mirrors
+                                # or origins not already known.
+                                add_mirrors = [
+                                    u.uri
+                                    for u in src_repo.mirrors
+                                    if u.uri not in dest_repo.mirrors
+                                ]
+                                add_origins = [
+                                    u.uri
+                                    for u in src_repo.origins
+                                    if u.uri not in dest_repo.origins
+                                ]
 
-                        # Special bits to update; for these, take the new
-                        # value as-is (don't attempt to merge).
-                        for prop in ("collection_type", "description",
-                            "legal_uris", "name", "refresh_seconds",
-                            "registration_uri", "related_uris"):
-                                src_val = getattr(src_repo, prop)
-                                if src_val is not None:
-                                        setattr(dest_repo, prop, src_val)
+                                # Special bits to update; for these, take the
+                                # new value as-is (don't attempt to merge).
+                                for prop in ("collection_type", "description",
+                                    "legal_uris", "name", "refresh_seconds",
+                                    "registration_uri", "related_uris"):
+                                        src_val = getattr(src_repo, prop)
+                                        if src_val is not None:
+                                                setattr(dest_repo, prop,
+                                                    src_val)
 
                         # If an alias doesn't already exist, update it too.
                         if src_pub.alias and not dest_pub.alias:
@@ -2759,6 +2771,12 @@ def _add_update_pub(api_inst, prefix, pub=None, disable=None, sticky=None,
 
         if not repo:
                 repo = pub.selected_repository
+                if not repo:
+                        # Could be a new publisher from auto-configuration
+                        # case where no origin was provided in repository
+                        # configuration.
+                        repo = publisher.Repository()
+                        pub.add_repository(repo)
 
         if disable is not None:
                 # Set disabled property only if provided.

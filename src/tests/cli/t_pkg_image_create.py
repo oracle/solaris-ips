@@ -207,7 +207,7 @@ class TestPkgImageCreateBasics(pkg5unittest.ManyDepotTestCase):
                             img_path, u))
                 shutil.rmtree(img_path, True)
 
-                # Verify that a v0 repo can be configured for a publisher.q
+                # Verify that a v0 repo can be configured for a publisher.
                 # This should succeed as the API should fallback to manual
                 # configuration if auto-configuration isn't available.
                 self.pkg("image-create -p test5=%s %s" % (self.durl5, img_path))

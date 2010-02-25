@@ -1089,12 +1089,6 @@ pkg unset-publisher %s
                                 return r
                 raise api_errors.UnknownRepository(max(name, origin))
 
-        def get_ssl_creds(self):
-                """Deprecated"""
-
-                origin = self.selected_repository.origins[0]
-                return (origin.ssl_key, origin.ssl_cert)
-
         @property
         def needs_refresh(self):
                 """A boolean value indicating whether the publisher's
@@ -1527,13 +1521,6 @@ pkg unset-publisher %s
                 """Replaces the current client_uuid with a new UUID."""
 
                 self.__client_uuid = str(uuid.uuid1())
-
-        def set_origin(self, origin):
-                """Deprecated"""
-
-                r = self.selected_repository
-                r.reset_origins()
-                r.add_origin(origin)
 
         def set_selected_repository(self, name=None, origin=None):
                 """Sets the selected repository for the publisher to the

@@ -144,6 +144,7 @@ api.t_misc.py TestMisc.testMakedirs|pass
 api.t_misc.py TestMisc.test_pub_prefix|pass
 api.t_misc.py TestMisc.test_pub_url|pass
 api.t_p5i.py TestP5I.test_parse_write|pass
+api.t_p5i.py TestP5I.test_parse_write_partial|pass
 api.t_pkg_api_install.py TestPkgApiInstall.test_bad_package_actions|pass
 api.t_pkgtarfile.py TestPkgTarFile.testerrorlevelIsCorrect|pass
 api.t_plat.py TestPlat.testAdmin|pass

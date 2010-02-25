@@ -129,10 +129,8 @@ def parse(data=None, fileobj=None, location=None):
                                                 continue
                                         rargs[prop] = val
 
-                                if rargs.get("origins", None):
-                                        repo = publisher.Repository(
-                                            **rargs)
-                                        pub.add_repository(repo)
+                                repo = publisher.Repository(**rargs)
+                                pub.add_repository(repo)
 
                 pkglist = dump_struct.get("packages", [])
                 if pkglist:
