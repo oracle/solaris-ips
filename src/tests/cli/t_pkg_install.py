@@ -3276,7 +3276,7 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 self.pkg("install quux@1.0")
                 self.pkg("set-publisher -P test2")
                 self.pkg("unset-publisher test1")
-                self.pkg("list")
+                self.pkg("list -avf")
 
                 # Attempting to install an already installed package should
                 # be a no-op even if the corresponding publisher no longer
@@ -3319,9 +3319,10 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 # repository.  After that, attempt to install the package again,
                 # which should succeed even though the fmri is only in a
                 # different publisher's catalog.
+                # 
                 self.pkg("set-publisher -O %s test3" % \
                     self.dcs[7].get_depot_url())
-                self.pkg("install quux@1.0")
+                self.pkg("install quux@1.0", exit=1) # no viable publisher
                 self.pkg("unset-publisher test3")
 
                 # Change the image metadata back to where it was, in preparation
@@ -3508,7 +3509,9 @@ class TestMultipleDepots(pkg5unittest.ManyDepotTestCase):
                 self.pkg("set-publisher --disable test4")
                 self.pkg("list -af")
                 self.pkg("publisher")
-                self.pkg("install baz@1.0", exit=1)
+                # this should work, since dependency is already installed
+                # even though it is from a disabled publisher
+                self.pkg("install baz@1.0")
 
 class TestImageCreateCorruptImage(pkg5unittest.SingleDepotTestCaseCorruptImage):
         """

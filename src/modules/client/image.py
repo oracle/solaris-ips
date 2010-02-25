@@ -725,20 +725,21 @@ class Image(object):
                 """Returns dictionary of publishers by name; each
                 entry contains a tuple of search order index starting
                 at 0, and a boolean indicating whether or not
-                this publisher is "sticky"."""
+                this publisher is "sticky", and a boolean indicating
+                whether or not the publisher is enabled"""
 
                 # automatically make disabled publishers not sticky
                 so = self.cfg_cache.publisher_search_order
 
                 ret = dict([
-                    (p.prefix, (so.index(p.prefix), p.sticky))
+                    (p.prefix, (so.index(p.prefix), p.sticky, True))
                     for p in self.gen_publishers()
                 ])
 
                 # add any publishers for pkgs that are installed,
                 # but have been deleted... so they're not sticky.
                 for pub in self.get_installed_pubs():
-                        ret.setdefault(pub, (len(ret) + 1, False))
+                        ret.setdefault(pub, (len(ret) + 1, False, False))
                 return ret
 
         def check_cert_validity(self):

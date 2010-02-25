@@ -46,8 +46,7 @@ class PkgSolver(object):
                 should contain all known pkgs, installed fmris
                 should be a dict of fmris indexed by name that define
                 pkgs current installed in the image. Pub_ranks dict contains
-                (rank, stickiness) for each publisher; disabled publishers
-                should not be included"""
+                (rank, stickiness, enabled) for each publisher."""
                 self.__catalog = cat
                 self.__installed_fmris = {}	# indexed by stem
                 self.__publisher = {}		# indexed by stem
@@ -568,7 +567,7 @@ class PkgSolver(object):
                 self.__addclause_failure, self.__solver = solver
                 self.__iterations = 0
         
-        def __solve(self, older=False, max_iterations=500):
+        def __solve(self, older=False, max_iterations=2000):
                 """Perform iterative solution; try for newest pkgs unless older=True"""
                 solution_vector = []
                 self.__state = SOLVER_FAIL
@@ -1103,9 +1102,9 @@ class PkgSolver(object):
                 fmri_list = self.__get_catalog_fmris(pkg_name, dotrim=False)
                 version_dict = {}
 
-
                 self.__pub_trim[pkg_name] = True
 
+                # XXX need to set up per disgruntled publisher reasons
                 if pkg_name in self.__publisher:
                         acceptable_pubs = [self.__publisher[pkg_name]]
                         reason = _("Publisher differs from installed or specifed version")
@@ -1116,7 +1115,7 @@ class PkgSolver(object):
                         ranked = sorted([
                                         (self.__pub_ranks[p][0], p) 
                                         for p in pubs_found
-                                        if p in self.__pub_ranks
+                                        if self.__pub_ranks.get(p, (0, False, False))[2]
                                         ])
                         acceptable_pubs = [ r[1] 
                                             for r in ranked 
@@ -1127,17 +1126,18 @@ class PkgSolver(object):
                 # generate a dictionary, indexed by version, of acceptable fmris
                 for f in fmri_list:
                         if f.get_publisher() in acceptable_pubs:
-                                version_dict.setdefault(f.get_version(), []).append(f)
+                                version_dict.setdefault(f.version, []).append(f)
 
                 # allow installed packages to co-exist to meet dependency reqs.
                 # in case new publisher not proper superset of original.
-                # avoid multiple publishers w/ the same fmri to prevent 
+                # avoid multiple publishers w/ the exact same fmri to prevent 
                 # thrashing in the solver due to many equiv. solutions.
 
                 inst_f = self.__installed_fmris.get(pkg_name, None)
-                if inst_f:
-                        version_dict.setdefault(inst_f.get_version(), [inst_f])
 
+                if inst_f:
+                        version_dict[inst_f.version] = [inst_f]
+                        
                 acceptable_list = []
                 for l in version_dict.values():
                         acceptable_list.extend(l)
