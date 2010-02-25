@@ -703,7 +703,6 @@ include common/system:management:freeipmi
 include common/system:management:pcitool
 include common/system:management:powerman
 include common/system:management:snmp:net-snmp:addons
-include common/system:management:snmp:net-snmp:documentation
 include common/system:management:snmp:sea
 include common/system:management:visual-panels:panel-apache
 include common/system:management:visual-panels:panel-sysid

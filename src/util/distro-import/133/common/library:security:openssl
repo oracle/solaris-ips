@@ -13,6 +13,11 @@ chattr etc/openssl/openssl.cnf \
 # continue to instantiate it so it does not get removed on update
 #
 add link path=usr/sfw/man target=share/man
+#
+# the following link was removed in snv_130 but due to bug 2369, we
+# continue to instantiate it so it does not get removed on update
+#
+add link path=usr/sfw/lib/64 target=amd64
 version 0.9.8.12
 end package
 

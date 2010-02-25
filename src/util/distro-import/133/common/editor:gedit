@@ -1,6 +1,7 @@
 package editor/gedit
 consolidation "gnome"
 classification "Applications/Accessories"
+classification "Development/Editors"
 import SUNWgnome-text-editor
 import SUNWgnome-text-editor-devel
 import SUNWgnome-text-editor-root

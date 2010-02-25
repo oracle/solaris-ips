@@ -1,6 +1,7 @@
 package editor/ghex
 consolidation "gnome"
 classification "Applications/Accessories"
+classification "Development/Editors"
 import SUNWgnome-hex-editor
 import SUNWgnome-hex-editor-devel
 import SUNWgnome-hex-editor-root

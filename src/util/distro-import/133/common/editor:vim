@@ -1,5 +1,6 @@
 package editor/vim
 consolidation "sfw"
+classification "Development/Editors"
 classification "System/Text Tools"
 import SUNWvim
 add link path=usr/bin/ex target=vim

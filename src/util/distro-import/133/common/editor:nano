@@ -1,5 +1,6 @@
 package editor/nano
 consolidation "sfw"
+classification "Development/Editors"
 classification "System/Text Tools"
 import SUNWgnu-nano
 version 2.0.9

@@ -563,6 +563,7 @@ include common/system:locale:zh_tw
 include common/system:management:product-registry
 include common/system:management:service-tag
 include common/system:management:snmp:net-snmp
+include common/system:management:snmp:net-snmp:documentation
 include common/system:management:snmp:sea:sea-config
 include common/system:management:sysidtool
 include common/system:management:visual-panels
@@ -1420,6 +1421,7 @@ $(i386_ONLY)depend system/management/intel-amt
 depend system/management/product-registry
 depend system/management/service-tag
 depend system/management/snmp/net-snmp
+depend system/management/snmp/net-snmp/documentation
 depend system/management/snmp/sea/sea-config
 depend system/management/sysidtool
 depend system/management/visual-panels

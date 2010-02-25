@@ -1,6 +1,7 @@
 package cde/help-viewer
 consolidation "cde"
 classification "System/X11"
+summary "CDE Help Runtime"
 # Import only non-EOF components
 from SUNWdthe import
 usr/dt

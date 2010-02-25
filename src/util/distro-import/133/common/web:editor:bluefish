@@ -1,6 +1,7 @@
 package web/editor/bluefish
 consolidation "gnome"
 classification "Applications/Internet"
+classification "Development/Editors"
 import SUNWbluefish
 
 chattr usr/share/mime/packages/bluefish.xml \

@@ -1,5 +1,6 @@
 package editor/gobby
 consolidation "gnome"
+classification "Development/Editors"
 classification "System/Text Tools"
 import SUNWgobby
 version 0.4.10

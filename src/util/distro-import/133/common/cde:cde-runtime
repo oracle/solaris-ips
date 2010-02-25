@@ -1,6 +1,7 @@
 package cde/cde-runtime
 consolidation "cde"
 classification "System/X11"
+summary "CDE application basic runtime environment"
 # Import only non-EOF components
 from SUNWdtbas import
 usr/dt

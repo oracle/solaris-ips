@@ -1,6 +1,7 @@
 package editor/hexedit
 consolidation "sfw"
 classification "Applications/System Utilities"
+classification "Development/Editors"
 import SUNWhexedit
 version 1.2.12
 end package

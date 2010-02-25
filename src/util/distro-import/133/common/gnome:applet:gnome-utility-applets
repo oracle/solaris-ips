@@ -4,6 +4,7 @@ classification "Applications/Panels and Applets"
 import SUNWgnome-utility-applets
 import SUNWgnome-utility-applets-devel
 import SUNWgnome-utility-applets-root
+depend library/python-2/python-gnome-desktop-26
 end package
 
 package SUNWgnome-utility-applets
