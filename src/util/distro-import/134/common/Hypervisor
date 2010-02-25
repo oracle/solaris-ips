@@ -1,0 +1,28 @@
+package system/xvm
+consolidation "xvm"
+classification "System/Virtualization"
+summary "Solaris x86 Hypervisor"
+depend desktop/remote-desktop/tigervnc
+depend system/virtinst
+depend system/xvm/header-xvm
+end package
+
+package xvm
+consolidation "xvm"
+renamed 134
+depend system/xvm
+end package
+
+package system/xvm/xvm-gui
+consolidation "gnome"
+classification "System/Virtualization"
+summary "Solaris x86 Hypervisor management GUI"
+depend desktop/virt-manager
+depend system/xvm
+end package
+
+package xvm-gui
+consolidation "gnome"
+renamed 133
+depend system/xvm/xvm-gui
+end package

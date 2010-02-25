@@ -1,0 +1,20 @@
+package system/trusted/trusted-extensions
+consolidation "gnome"
+classification "Desktop (GNOME)/Trusted Extensions"
+summary "Trusted Extensions"
+depend gnome/trusted/device-manager
+depend gnome/trusted/libgnometsol
+depend gnome/trusted/login-label-selector
+depend gnome/trusted/selection-manager
+depend gnome/trusted/trusted-stripe
+depend gnome/trusted/xagent
+depend system/trusted
+depend system/trusted/global-zone
+depend x11/trusted/trusted-xorg
+end package
+
+package trusted-extensions
+consolidation "gnome"
+renamed 134
+depend system/trusted/trusted-extensions
+end package
