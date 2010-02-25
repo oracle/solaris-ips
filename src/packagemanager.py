@@ -5066,6 +5066,8 @@ class PackageManager:
                                 pkg_name = gui_misc.get_minimal_unique_name(
                                     self.package_names, pkg_name,
                                     self.special_package_names)
+                                if len(pkg_name) == 0:
+                                        pkg_name = result.pkg_stem
                         marked = False
                         pkgs = self.selected_pkgs.get(pkg_pub)
                         if pkgs != None:
