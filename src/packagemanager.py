@@ -1477,7 +1477,7 @@ class PackageManager:
                         gobject.TYPE_INT,         # enumerations.STATUS_COLUMN
                         gobject.TYPE_PYOBJECT,    # enumerations.FMRI_COLUMN
                         gobject.TYPE_STRING,      # enumerations.STEM_COLUMN
-                        gobject.TYPE_STRING,      # enumerations.DISPLAY_NAME_COLUMN
+                        gobject.TYPE_STRING,      # enumerations.ACTUAL_NAME_COLUMN
                         gobject.TYPE_BOOLEAN,     # enumerations.IS_VISIBLE_COLUMN
                         gobject.TYPE_PYOBJECT,    # enumerations.CATEGORY_LIST_COLUMN
                         gobject.TYPE_STRING,      # enumerations.PUBLISHER_COLUMN
@@ -3678,7 +3678,7 @@ class PackageManager:
                 model, itr = self.package_selection.get_selected()
                 if itr:
                         pkg_stem = model.get_value(itr, enumerations.STEM_COLUMN)
-                        name = model.get_value(itr, enumerations.NAME_COLUMN)
+                        name = model.get_value(itr, enumerations.ACTUAL_NAME_COLUMN)
                         self.set_busy_cursor()
                         Thread(target = self.__get_info, args = (pkg_stem, name)).start()
 
@@ -5126,7 +5126,7 @@ class PackageManager:
                         next_app = \
                             [
                                 marked, status_icon, pkg_name, summ, pkg_state,
-                                pkg_fmri, pkg_stem, None, True, None, pub_name,
+                                pkg_fmri, pkg_stem, pkg_name, True, None, pub_name,
                                 pkg_pub
                             ]
                         self.__add_package_to_list(next_app,

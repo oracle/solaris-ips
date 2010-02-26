@@ -36,7 +36,7 @@ DESCRIPTION_COLUMN,
 STATUS_COLUMN,
 FMRI_COLUMN,             # This should go once, the api will be fully functionall
 STEM_COLUMN,
-DISPLAY_NAME_COLUMN,
+ACTUAL_NAME_COLUMN,
 IS_VISIBLE_COLUMN,       # True indicates that the package is visible in ui
 CATEGORY_LIST_COLUMN,    # list of categories to which package belongs
 PUBLISHER_COLUMN,        # Publisher for this package
