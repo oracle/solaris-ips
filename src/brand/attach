@@ -40,8 +40,7 @@ m_resetpub2=$(gettext "                            %s.")
 m_resetpub3=$(gettext "           Publisher Reset: Copying preferred publisher from global zone.")
 m_pubfine=$(gettext   "           Publisher Check: Looks good.")
 m_cache=$(gettext     "                     Cache: Using %s.")
-m_updating=$(gettext  "  Updating non-global zone: (Stage 1).  Output follows")
-m_updating2=$(gettext  "  Updating non-global zone: (Stage 2).  Output follows")
+m_updating=$(gettext  "  Updating non-global zone: Output follows")
 m_sync_done=$(gettext "  Updating non-global zone: Zone updated to %s")
 m_complete=$(gettext "Attach complete.")
 
@@ -55,7 +54,6 @@ f_fmri_compare=$(gettext "Failed to compare 'entire' FMRIs")
 f_reset_pub=$(gettext "Failed to reset publisher to %s %s")
 f_del_pub=$(gettext "Failed to unset publisher '%s' for zone.")
 f_no_pref_publisher=$(gettext "Unable to get preferred publisher information for zone '%s'.")
-f_pkg_list=$(gettext "Unable to get zone package list.")
 f_get_secinfo=$(gettext "Failed to get key/cert information for publisher %s")
 f_nosuch_key=$(gettext "Failed to find key %s for global zone publisher")
 f_nosuch_cert=$(gettext "Failed to find cert %s for global zone publisher")
@@ -506,29 +504,7 @@ fi
 
 printf "$m_updating\n"
 
-#
-# Updating 'entire' is likely to do us a lot of good, but it can miss
-# some updates-- particularly on a respin of a package (say, where only
-# the datestamps change).
-#
 $PKG install $gz_entire_fmri || pkg_err_check "$f_update"
-
-printf "$m_updating2\n"
-#
-# So to get around the aforementioned problem, a hack we can apply is
-# to force all packages to the latest available against the incorporation.
-# This could allow the zone to get slightly ahead of the global zone.
-#
-# First, list all the packages for the preferred publisher, then
-# do an 'install' on those.
-#
-zone_pkgs=$(LC_ALL=C $PKG list --no-refresh -H "pkg://$zone_publisher/*" | \
-    awk '{print $1}' | egrep -v '^entire$')
-if [[ $? -ne 0 ]]; then
-	fatal "$f_pkg_list"
-fi
-
-$PKG install $zone_pkgs || pkg_err_check "$f_update"
 
 printf "$m_sync_done\n" $gz_entire_fmri
 printf "$m_complete\n"
