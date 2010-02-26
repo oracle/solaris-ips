@@ -94,6 +94,13 @@ class DirectoryAction(generic.Action):
                         try:
                                 self.makedirs(path, mode=mode)
                         except OSError, e:
+                                if e.errno == errno.EROFS:
+                                        # Treat EROFS like EEXIST if both are
+                                        # applicable, since we'll end up with
+                                        # EROFS instead.
+                                        if os.path.isdir(path):
+                                                return
+                                        raise
                                 if e.errno != errno.EEXIST:
                                         raise
 
