@@ -150,7 +150,7 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                 # Install one package and verify
                 self.pkg("install jade")
                 self.pkg("verify -v")
-                
+
                 # Check local info
                 self.pkg("info jade | grep 'State: Installed'")
                 self.pkg("info jade | grep '      Category: Applications/Sound and Video'")
@@ -257,6 +257,149 @@ class TestPkgInfoBasics(pkg5unittest.SingleDepotTestCase):
                                 bad_mdata = mdata + "%s\n" % bad_act
                                 self.write_img_manifest(pfmri, bad_mdata)
                                 self.pkg("info -r %s" % pfmri.pkg_name, exit=1)
+
+        def test_renamed_packages(self):
+                """Verify that info returns the expected output for renamed
+                packages."""
+
+                target10 = """
+                    open target@1.0
+                    close
+                """
+
+                # Renamed package for all variants, with correct dependencies.
+                ren_correct10 = """
+                    open ren_correct@1.0
+                    add set name=pkg.renamed value=true
+                    add depend type=require fmri=target@1.0 variant.cat=bobcat
+                    add depend type=require fmri=target@1.0 variant.cat=lynx
+                    close
+                """
+
+                # Renamed package for other variant, with dependencies only for
+                # for other variant.
+                ren_op_variant10 = """
+                    open ren_op_variant@1.0
+                    add set name=pkg.renamed value=true variant.cat=lynx
+                    add depend type=require fmri=target@1.0 variant.cat=lynx
+                    close
+                """
+
+                # Renamed package for current image variant, with dependencies
+                # only for other variant.
+                ren_variant_missing10 = """
+                    open ren_variant_missing@1.0
+                    add set name=pkg.renamed value=true variant.cat=bobcat
+                    add depend type=require fmri=target@1.0 variant.cat=lynx
+                    close
+                """
+
+                # Renamed package for multiple variants, with dependencies
+                # missing for one variant.
+                ren_partial_variant10 = """
+                    open ren_partial_variant@1.0
+                    add set name=pkg.renamed value=true
+                    add depend type=require fmri=target@1.0 variant.cat=lynx
+                    close
+                """
+
+                durl = self.dc.get_depot_url()
+                plist = self.pkgsend_bulk(durl, target10 + ren_correct10 +
+                    ren_op_variant10 + ren_variant_missing10 +
+                    ren_partial_variant10)
+
+                # Create an image.
+                self.image_create(durl,
+                    additional_args="--variant=variant.cat=bobcat")
+
+                # First, verify that a renamed package (for all variants), and
+                # with the correct dependencies will provide the expected info.
+                self.pkg("info -r ren_correct")
+                actual = self.output
+                pfmri = fmri.PkgFmri(plist[1], "5.11")
+                pkg_date = pfmri.version.get_timestamp().strftime("%c")
+                expected = """\
+          Name: ren_correct
+       Summary: 
+         State: Not installed (Renamed)
+    Renamed to: target@1.0
+     Publisher: test
+       Version: 1.0
+ Build Release: 5.11
+        Branch: None
+Packaging Date: %(pkg_date)s
+          Size: 0.00 B
+          FMRI: %(pkg_fmri)s
+""" % { "pkg_date": pkg_date, "pkg_fmri": pfmri }
+                self.assertEqualDiff(expected, actual)
+
+                # Next, verify that a renamed package (for a variant not
+                # applicable to this image), and with dependencies that
+                # are only for that other variant will provide the expected
+                # info.  Ensure package isn't seen as renamed for current
+                # variant.
+                self.pkg("info -r ren_op_variant")
+                actual = self.output
+                pfmri = fmri.PkgFmri(plist[2], "5.11")
+                pkg_date = pfmri.version.get_timestamp().strftime("%c")
+                expected = """\
+          Name: ren_op_variant
+       Summary: 
+         State: Not installed
+     Publisher: test
+       Version: 1.0
+ Build Release: 5.11
+        Branch: None
+Packaging Date: %(pkg_date)s
+          Size: 0.00 B
+          FMRI: %(pkg_fmri)s
+""" % { "pkg_date": pkg_date, "pkg_fmri": pfmri }
+                self.assertEqualDiff(expected, actual)
+
+                # Next, verify that a renamed package (for a variant applicable
+                # to this image), and with dependencies that are only for that
+                # other variant will provide the expected info.
+                self.pkg("info -r ren_variant_missing")
+                actual = self.output
+                pfmri = fmri.PkgFmri(plist[3], "5.11")
+                pkg_date = pfmri.version.get_timestamp().strftime("%c")
+                expected = """\
+          Name: ren_variant_missing
+       Summary: 
+         State: Not installed (Renamed)
+    Renamed to: 
+     Publisher: test
+       Version: 1.0
+ Build Release: 5.11
+        Branch: None
+Packaging Date: %(pkg_date)s
+          Size: 0.00 B
+          FMRI: %(pkg_fmri)s
+""" % { "pkg_date": pkg_date, "pkg_fmri": pfmri }
+                self.assertEqualDiff(expected, actual)
+
+
+                # Next, verify that a renamed package (for all variants),
+                # but that is missing a dependency for the current variant
+                # will provide the expected info.
+                self.pkg("info -r ren_partial_variant")
+                actual = self.output
+                pfmri = fmri.PkgFmri(plist[4], "5.11")
+                pkg_date = pfmri.version.get_timestamp().strftime("%c")
+                expected = """\
+          Name: ren_partial_variant
+       Summary: 
+         State: Not installed (Renamed)
+    Renamed to: 
+     Publisher: test
+       Version: 1.0
+ Build Release: 5.11
+        Branch: None
+Packaging Date: %(pkg_date)s
+          Size: 0.00 B
+          FMRI: %(pkg_fmri)s
+""" % { "pkg_date": pkg_date, "pkg_fmri": pfmri }
+                self.assertEqualDiff(expected, actual)
 
 
 if __name__ == "__main__":

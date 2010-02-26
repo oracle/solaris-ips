@@ -391,6 +391,106 @@ class TestApiInfo(pkg5unittest.SingleDepotTestCase):
                                     api_obj.info, [pfmri.pkg_name], False,
                                     info_needed)
 
+        def test_2_renamed_packages(self):
+                """Verify that info returns the expected list of dependencies
+                for renamed packages."""
+
+                target10 = """
+                    open target@1.0
+                    close
+                """
+
+                # Renamed package for all variants, with correct dependencies.
+                ren_correct10 = """
+                    open ren_correct@1.0
+                    add set name=pkg.renamed value=true
+                    add depend type=require fmri=target@1.0 variant.cat=bobcat
+                    add depend type=require fmri=target@1.0 variant.cat=lynx
+                    close
+                """
+
+                # Renamed package for opposite image variant, with dependencies
+                # only for opposite image variant.
+                ren_op_variant10 = """
+                    open ren_op_variant@1.0
+                    add set name=pkg.renamed value=true variant.cat=lynx
+                    add depend type=require fmri=target@1.0 variant.cat=lynx
+                    close
+                """
+
+                # Renamed package for current image variant, with dependencies
+                # only for other variant.
+                ren_variant_missing10 = """
+                    open ren_variant_missing@1.0
+                    add set name=pkg.renamed value=true variant.cat=bobcat
+                    add depend type=require fmri=target@1.0 variant.cat=lynx
+                    close
+                """
+
+                # Renamed package for multiple variants, with dependencies
+                # missing for one variant.
+                ren_partial_variant10 = """
+                    open ren_partial_variant@1.0
+                    add set name=pkg.renamed value=true
+                    add depend type=require fmri=target@1.0 variant.cat=lynx
+                    close
+                """
+
+                durl = self.dc.get_depot_url()
+                plist = self.pkgsend_bulk(durl, target10 + ren_correct10 +
+                    ren_op_variant10 + ren_variant_missing10 +
+                    ren_partial_variant10)
+
+                # Create an image and get the api object needed to run tests.
+                self.image_create(durl,
+                    additional_args="--variant=variant.cat=bobcat")
+                progresstracker = progress.NullProgressTracker()
+                api_obj = api.ImageInterface(self.get_img_path(), API_VERSION,
+                    progresstracker, lambda x: False, PKG_CLIENT_NAME)
+
+                info_needed = api.PackageInfo.ALL_OPTIONS - \
+                    (api.PackageInfo.ACTION_OPTIONS -
+                    frozenset([api.PackageInfo.DEPENDENCIES,
+                    api.PackageInfo.LICENSES]))
+
+                # First, verify that a renamed package (for all variants), and
+                # with the correct dependencies will provide the expected info.
+                ret = api_obj.info(["ren_correct"], False, info_needed)
+                pi = ret[api.ImageInterface.INFO_FOUND][0]
+                self.assert_(api.PackageInfo.RENAMED in pi.states)
+                self.assertEqual(pi.dependencies, ["target@1.0"])
+
+                # Next, verify that a renamed package (for a variant not
+                # applicable to this image), and with dependencies that
+                # are only for that other variant will provide the expected
+                # info.
+                ret = api_obj.info(["ren_op_variant"], False, info_needed)
+                pi = ret[api.ImageInterface.INFO_FOUND][0]
+                self.assert_(api.PackageInfo.RENAMED not in pi.states)
+
+                # No dependencies expected; existing don't apply to image.
+                self.assertEqual(pi.dependencies, [])
+
+                # Next, verify that a renamed package (for a variant applicable
+                # to this image), and with dependencies that are only for that
+                # other variant will provide the expected info.
+                ret = api_obj.info(["ren_variant_missing"], False, info_needed)
+                pi = ret[api.ImageInterface.INFO_FOUND][0]
+
+                # Ensure package isn't seen as renamed for current variant.
+                self.assert_(api.PackageInfo.RENAMED in pi.states)
+
+                # No dependencies expected; existing don't apply to image.
+                self.assertEqual(pi.dependencies, [])
+
+                # Next, verify that a renamed package (for all variants),
+                # but that is missing a dependency for the current variant
+                # will provide the expected info.
+                ret = api_obj.info(["ren_partial_variant"], False, info_needed)
+                pi = ret[api.ImageInterface.INFO_FOUND][0]
+                self.assert_(api.PackageInfo.RENAMED in pi.states)
+                self.assertEqual(pi.dependencies, [])
+
 
 if __name__ == "__main__":
         unittest.main()

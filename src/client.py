@@ -1780,8 +1780,14 @@ def info(img, args):
 
                 msg(_("         State:"), state)
 
+                # Renamed packages have dependencies, but the dependencies
+                # may not apply to this image's variants so won't be
+                # returned.
                 if api.PackageInfo.RENAMED in pi.states:
-                        msg(_("    Renamed to:"), pi.dependencies[0])
+                        renamed_to = ""
+                        if pi.dependencies:
+                                renamed_to = pi.dependencies[0]
+                        msg(_("    Renamed to:"), renamed_to)
                         for dep in pi.dependencies[1:]:
                                 msg(" " * len(name_str), dep)
 

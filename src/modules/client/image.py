@@ -1591,6 +1591,7 @@ class Image(object):
                     meta_root=os.path.join(tmp_state_root,
                     self.IMG_CATALOG_INSTALLED), sign=False)
 
+                excludes = self.list_excludes()
                 for pfx, cat, name, spart in sparts:
                         # 'spart' is the source part.
                         if spart is None:
@@ -1659,19 +1660,32 @@ class Image(object):
                                             ver=ver)
                                 if dpent is not None:
                                         for a in dpent["actions"]:
+                                                # Constructing action objects
+                                                # for every action would be a
+                                                # lot slower, so a simple string
+                                                # match is done first so that
+                                                # only interesting actions get
+                                                # constructed.
                                                 if not a.startswith("set"):
                                                         continue
+                                                if not ("pkg.obsolete" in a or \
+                                                    "pkg.renamed" in a):
+                                                        continue
 
-                                                if a.find("pkg.obsolete") != -1:
-                                                        if a.find("true") == -1:
-                                                                continue
+                                                act = pkg.actions.fromstr(a)
+                                                if act.attrs["value"].lower() != "true":
+                                                        continue
+
+                                                if act.attrs["name"] == "pkg.obsolete":
                                                         states.append(
                                                             self.PKG_STATE_OBSOLETE)
-                                                elif a.find("pkg.renamed") != -1:
-                                                        if a.find("true") == -1:
+                                                elif act.attrs["name"] == "pkg.renamed":
+                                                        if not act.include_this(
+                                                            excludes):
                                                                 continue
                                                         states.append(
                                                             self.PKG_STATE_RENAMED)
+
                                 mdata["states"] = states
 
                                 # Add base entries.
