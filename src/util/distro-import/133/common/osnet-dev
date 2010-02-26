@@ -6,6 +6,7 @@ depend SUNWjsnmp
 depend SUNWwbapi
 depend SUNWwbcou
 depend SUNWwbdev
+depend cde/cde-runtime
 depend data/docbook
 depend database/postgres-83/developer
 depend database/postgres-83/library
@@ -18,7 +19,6 @@ depend developer/lexer/flex
 depend developer/object-file
 depend developer/parser/bison
 depend developer/versioning/mercurial
-depend library/cde
 depend library/gnome/base-libs
 depend library/gnome/gnome-vfs
 depend library/motif
