@@ -242,9 +242,13 @@ def main_func():
                                 else:
                                         elide_set = set()
                                 if a in old.attrs:
-                                        s.append("  - %s" % attrval(old.attrs, a, elide_iter=elide_set))
+                                        diff_str = attrval(old.attrs, a, elide_iter=elide_set)
+                                        if diff_str:
+                                                s.append("  - %s" % diff_str)
                                 if a in new.attrs:
-                                        s.append("  + %s" % attrval(new.attrs, a, elide_iter=elide_set))
+                                        diff_str = attrval(new.attrs, a, elide_iter=elide_set)
+                                        if diff_str:
+                                                s.append("  + %s" % diff_str)
                         # print out part of action that is the same
                         if s:
                                 print "%s %s %s" % (old.name, 

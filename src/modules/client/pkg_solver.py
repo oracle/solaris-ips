@@ -324,12 +324,7 @@ class PkgSolver(object):
                                                 _("The pkg command to perform needed uninstall is\n\tpkg uninstall %s\n") % 
                                                     " ".join(a.pkg_name for a in inst_obs_deps)
                                                 ]
-                                else:
-                                        ret = [
-                                                _("Pkg is unable to compute a solution for the existing packages."),
-                                                _("A pkg verify should be done to determine how to repair the system.")
-                                                ]
-                                raise api_errors.PlanCreationException(no_version=ret)
+                                        raise api_errors.PlanCreationException(no_version=ret)
                                         
                         info = []
                         info.append("package solver error")
