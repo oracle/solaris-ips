@@ -1,0 +1,28 @@
+package web/server/lighttpd-14
+consolidation "sfw"
+classification "Web Services/Application and Web Servers"
+import SUNWlighttpd14r
+import SUNWlighttpd14u
+version 1.4.23
+
+chattr etc/lighttpd/1.4/conf.d/fcgi-php.conf \
+	original_name=SUNWlighttpd14:etc/lighttpd/1.4/conf.d/fcgi-php.conf
+chattr etc/lighttpd/1.4/conf.d/ssl.conf \
+	original_name=SUNWlighttpd14:etc/lighttpd/1.4/conf.d/ssl.conf
+chattr etc/lighttpd/1.4/lighttpd.conf \
+	original_name=SUNWlighttpd14:etc/lighttpd/1.4/lighttpd.conf
+end package
+
+package web/server/lighttpd
+consolidation "sfw"
+renamed 134
+depend web/server/lighttpd-14
+version 1.4.23
+end package
+
+package SUNWlighttpd14
+consolidation "sfw"
+renamed 133
+depend web/server/lighttpd
+version 1.4.23
+end package

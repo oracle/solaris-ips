@@ -5,6 +5,7 @@ summary "Multi Protocol Storage Server cluster"
 version 0.1
 depend benchmark/filebench
 depend developer/debug/mdb/module/module-fibre-channel
+depend developer/debug/mdb/module/module-qlc
 depend driver/network/emlxs
 depend driver/network/fcip
 depend driver/network/fcoet
@@ -13,7 +14,6 @@ depend driver/network/fcsm
 depend driver/network/fp
 depend driver/network/ibdma
 depend driver/network/qlc
-depend driver/network/qlc/qlc-mdb
 depend driver/network/rpcib
 $(sparc_ONLY)depend driver/network/socal
 depend driver/network/srpt

@@ -39,6 +39,7 @@ include common/developer:build:gnu-make
 include common/developer:build:make
 include common/developer:debug:mdb
 include common/developer:debug:mdb:module:module-fibre-channel
+include common/developer:debug:mdb:module:module-qlc
 include common/developer:dtrace
 include common/developer:dtrace:toolkit
 include common/developer:gnome:gnome-doc-utils
@@ -87,7 +88,6 @@ include common/driver:network:nxge
 include common/driver:network:pcan
 include common/driver:network:pcwl
 include common/driver:network:qlc
-include common/driver:network:qlc:qlc-mdb
 include common/driver:network:rge
 include common/driver:network:rpcib
 include common/driver:network:sdp
@@ -321,7 +321,7 @@ include common/mail:thunderbird:locale:pt_br
 include common/mail:thunderbird:locale:ru
 include common/mail:thunderbird:locale:zh_cn
 include common/mail:thunderbird:locale:zh_tw
-include common/mail:thunderbird:plugin:plugin-lightning
+include common/mail:thunderbird:plugin:thunderbird-lightning
 include common/media:cdrtools
 include common/naming:ldap
 include common/network:bridging
@@ -510,7 +510,7 @@ include common/system:locale:de_de
 include common/system:locale:el_gr
 include common/system:locale:en_us
 include common/system:locale:es_es
-include common/system:locale:et_EE
+include common/system:locale:et_ee
 include common/system:locale:fi
 include common/system:locale:fr_fr
 include common/system:locale:gu
@@ -615,7 +615,7 @@ include common/web:browser:firefox:locale:pt_br
 include common/web:browser:firefox:locale:ru_ru
 include common/web:browser:firefox:locale:zh_cn
 include common/web:browser:firefox:locale:zh_tw
-include common/web:browser:firefox:plugin:plugin-java
+include common/web:browser:firefox:plugin:firefox-java
 include common/web:browser:w3m
 include common/web:curl
 include common/web:data:firefox-bookmarks
@@ -802,6 +802,7 @@ depend developer/build/gnu-make
 depend developer/build/make
 depend developer/debug/mdb
 depend developer/debug/mdb/module/module-fibre-channel
+depend developer/debug/mdb/module/module-qlc
 depend developer/dtrace
 depend developer/dtrace/toolkit
 depend developer/gnome/gnome-doc-utils
@@ -892,7 +893,6 @@ depend driver/network/pcwl
 $(i386_ONLY)depend driver/network/platform
 $(sparc_ONLY)depend driver/network/qfe
 depend driver/network/qlc
-depend driver/network/qlc/qlc-mdb
 $(i386_ONLY)depend driver/network/ral
 depend driver/network/rge
 depend driver/network/rpcib
@@ -1159,7 +1159,7 @@ depend mail/thunderbird/locale/pt_br
 depend mail/thunderbird/locale/ru
 depend mail/thunderbird/locale/zh_cn
 depend mail/thunderbird/locale/zh_tw
-depend mail/thunderbird/plugin/plugin-lightning
+depend mail/thunderbird/plugin/thunderbird-lightning
 depend media/cdrtools
 depend naming/ldap
 depend network/bridging
@@ -1367,7 +1367,7 @@ depend system/locale/de_de
 depend system/locale/el_gr
 depend system/locale/en_us
 depend system/locale/es_es
-depend system/locale/et_EE
+depend system/locale/et_ee
 depend system/locale/fi
 depend system/locale/fr_fr
 depend system/locale/gu
@@ -1478,7 +1478,7 @@ depend web/browser/firefox/locale/pt_br
 depend web/browser/firefox/locale/ru_ru
 depend web/browser/firefox/locale/zh_cn
 depend web/browser/firefox/locale/zh_tw
-depend web/browser/firefox/plugin/plugin-java
+depend web/browser/firefox/plugin/firefox-java
 depend web/browser/w3m
 depend web/curl
 depend web/data/firefox-bookmarks

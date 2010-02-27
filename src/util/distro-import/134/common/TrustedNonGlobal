@@ -47,7 +47,7 @@ depend library/gnome/gnome-component
 depend library/gnome/print/gnome-print
 depend library/spell-checking/enchant
 depend mail/thunderbird
-depend mail/thunderbird/plugin/plugin-lightning
+depend mail/thunderbird/plugin/thunderbird-lightning
 depend package/pkg/package-manager
 depend package/svr4
 depend system/display-manager/opensolaris-gdm-themes

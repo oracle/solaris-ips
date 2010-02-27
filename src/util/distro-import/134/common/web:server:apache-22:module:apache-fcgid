@@ -1,0 +1,24 @@
+package web/server/apache-22/module/apache-fcgid
+consolidation "sfw"
+classification "Web Services/Application and Web Servers"
+import SUNWapch22m-fcgid
+import SUNWapch22r-fcgid
+version 2.3.4
+
+chattr etc/apache2/2.2/conf.d/fcgid.conf \
+	original_name=SUNWapch22m-fcgid:etc/apache2/2.2/conf.d/fcgid.conf
+end package
+
+package web/server/apache-22/plugin/plugin-fastcgi
+consolidation "sfw"
+renamed 134
+depend web/server/apache-22/module/apache-fcgid
+version 2.3.4
+end package
+
+package SUNWapch22m-fcgid
+consolidation "sfw"
+renamed 133
+depend web/server/apache-22/plugin/plugin-fastcgi
+version 2.3.4
+end package

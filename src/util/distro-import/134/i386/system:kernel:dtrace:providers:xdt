@@ -1,0 +1,19 @@
+package system/kernel/dtrace/providers/xdt
+consolidation "osnet"
+classification "Development/System"
+import SUNWxdt
+
+add driver name=xdt
+end package
+
+package system/dtrace
+consolidation "osnet"
+renamed 134
+depend system/kernel/dtrace/providers/xdt
+end package
+
+package SUNWxdt
+consolidation "osnet"
+renamed 133
+depend system/dtrace
+end package

@@ -1,0 +1,17 @@
+package mail/thunderbird/plugin/thunderbird-lightning
+consolidation "gnome"
+classification "Applications/Internet"
+import SUNWthunderbird-calendar
+end package
+
+package mail/thunderbird/plugin/plugin-lightning
+consolidation "gnome"
+renamed 134
+depend mail/thunderbird/plugin/thunderbird-lightning
+end package
+
+package SUNWthunderbird-calendar
+consolidation "gnome"
+renamed 133
+depend mail/thunderbird/plugin/plugin-lightning
+end package
