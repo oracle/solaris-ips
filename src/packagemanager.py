@@ -2255,7 +2255,6 @@ class PackageManager:
                             "</b> within <a href='pm?pm-action=internal&search="
                             "%(all_pubs)s'>All Publishers</a></li>")  % \
                             {"text": text, "all_pubs": INTERNAL_SEARCH_ALL_PUBS}
-                        self.previous_search_text = text
 
                 body += _("<li style='padding-left:7px'>"
                     "See <a href='pm?pm-action=internal&search="
@@ -2379,6 +2378,7 @@ class PackageManager:
                 if len(txt.strip()) == 0:
                         self.w_searchentry.set_text("")
                         return
+                self.previous_search_text = txt
                 if self.is_all_publishers_installed:
                         gobject.idle_add(self.__setup_search_installed_page, txt)
                         return                
@@ -5080,8 +5080,8 @@ class PackageManager:
                         next_app = \
                             [
                                 marked, status_icon, pkg_name, summ, pkg_state,
-                                pkg_fmri, pkg_stem, None, True, None, pub_name,
-                                pkg_pub
+                                pkg_fmri, pkg_stem, result.pkg_stem, True,
+                                None, pub_name, pkg_pub
                             ]
                         application_list.insert(pkg_add, next_app)
                         pkg_add += 1
