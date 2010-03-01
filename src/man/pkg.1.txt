@@ -7,37 +7,38 @@ NAME
 SYNOPSIS
      /usr/bin/pkg [options] command [cmd_options] [operands]
 
-     /usr/bin/pkg install [-nvq] [--accept] [--licenses] [--no-refresh]
-         [--no-index] pkg_fmri ...
-     /usr/bin/pkg uninstall [-nrvq] [--no-index] pkg_fmri ...
+     /usr/bin/pkg install [-nvq] [--accept] [--licenses] [--no-index]
+         [--no-refresh] pkg_fmri_pattern ...
+     /usr/bin/pkg uninstall [-nrvq] [--no-index] pkg_fmri_pattern ...
 
      /usr/bin/pkg image-update [-fnvq] [--accept] [--be-name name]
-         [--licenses] [--no-refresh] [--no-index]
+         [--licenses] [--no-index] [--no-refresh]
 
      /usr/bin/pkg refresh [--full] [publisher ...]
 
-     /usr/bin/pkg contents [-Hmr] [-a attribute=pattern ...] [-s sort_key]
-         [-o attribute ...] [-t action_type ...] [pkg_fmri_pattern ...]
+     /usr/bin/pkg contents [-Hmr] [-a attribute=pattern ...]
+         [-o attribute ...] [-s sort_key] [-t action_type ...]
+         [pkg_fmri_pattern ...]
      /usr/bin/pkg info [-lr] [--license] [pkg_fmri_pattern ...]
      /usr/bin/pkg list [-Hafnsuv] [--no-refresh] [pkg_fmri_pattern ...]
-     /usr/bin/pkg search [-alprHI] [-o attribute ...] [-s repo_uri]
+     /usr/bin/pkg search [-HIalpr] [-o attribute ...] [-s repo_uri]
          query
 
-     /usr/bin/pkg verify [-Hvq] [pkg_fmri_pattern ...]
+     /usr/bin/pkg verify [-Hqv] [pkg_fmri_pattern ...]
      /usr/bin/pkg fix [--accept] [--licenses] [pkg_fmri_pattern ...]
 
-     /usr/bin/pkg image-create [-fFPUz] [--force]
+     /usr/bin/pkg image-create [-FPUfz] [--force]
          [--full|--partial|--user] [--zone] [-k ssl_key] [-c ssl_cert]
          [--no-refresh] [--variant <variant_spec>=<instance> ...]
-         [-g|--origin ...] [-m|--mirror ...]
+         [-g uri|--origin=uri ...] [-m uri|--mirror=uri ...]
          [--facet <facet_spec>=[True|False] ...]
          (-p|--publisher) [<name>=]<repo_uri> dir
 
-     /usr/bin/pkg variant [<variant_spec>]
+     /usr/bin/pkg variant [-H] [<variant_spec>]
      /usr/bin/pkg change-variant [-nvq] [--accept] [--be-name name]
          [--licenses] <variant_spec>=<instance> ...
 
-     /usr/bin/pkg facet [<facet_spec>]
+     /usr/bin/pkg facet [-H] [<facet_spec>]
      /usr/bin/pkg change-facet [-nvq] [--accept] [--be-name name]
          [--licenses] <facet_spec>=[True|False|None] ...
 
@@ -46,13 +47,14 @@ SYNOPSIS
      /usr/bin/pkg property [-H] [propname ...]
 
      /usr/bin/pkg set-publisher [-Ped] [-k ssl_key] [-c ssl_cert]
-         [-g origin_to_add | --add-origin=origin_to_add ...]
-         [-G origin_to_remove | --remove-origin=origin_to_remove ...]
-         [-m mirror_to_add | --add-mirror=mirror_to_add ...]
-         [-M mirror_to_remove | --remove-mirror=mirror_to_remove ...]
-         [-p repo_uri] [--search-before publisher]
-         [--search-after publisher] [--sticky] [--non-sticky]
-         [--enable] [--disable] [--no-refresh] [--reset-uuid] [publisher]
+         [-g origin_to_add|--add-origin=origin_to_add ...]
+         [-G origin_to_remove|--remove-origin=origin_to_remove ...]
+         [-m mirror_to_add|--add-mirror=mirror_to_add ...]
+         [-M mirror_to_remove|--remove-mirror=mirror_to_remove ...]
+         [-p repo_uri] [--enable] [--disable] [--no-refresh]
+         [--reset-uuid] [--non-sticky] [--sticky]
+         [--search-after=publisher] [--search-before=publisher]
+         [publisher]
      /usr/bin/pkg unset-publisher publisher ...
      /usr/bin/pkg publisher [-HPn] [publisher ...]
 
@@ -115,11 +117,12 @@ OPTIONS
 SUBCOMMANDS
      The following subcommands are supported:
 
-     image-create [-fFPUz] [--force] [--full|--partial|--user] [--zone]
-       [-k ssl_key] [-c ssl_cert] [--no-refresh] [-g|--origin ...]
+     image-create [-FPUfz] [--force] [--full|--partial|--user] [--zone]
+       [-k ssl_key] [-c ssl_cert] [--no-refresh]
        [--variant <variant_spec>=<instance> ...]
+       [-g uri|--origin=uri ...] [-m uri|--mirror=uri ...]
        [--facet <facet_spec>=[True|False] ...]
-       [-m|--mirror ...] (-p|--publisher) [<name>=]<repo_uri> dir
+       (-p|--publisher) [<name>=]<repo_uri> dir
           Create, at location given by dir, an image suitable for package
           operations.  The default image type is user, as given by the -U
           (--user) option.  The image type may be set to a full image (-F
@@ -195,14 +198,14 @@ SUBCOMMANDS
           incremental update.
 
      install [-nvq] [--accept] [--licenses] [--no-index] [--no-refresh]
-       pkg_fmri ...
-     uninstall [-nrvq] [--no-index] pkg_fmri ...
-          Install or remove the package specified by pkg_fmri or
-          matching pkg_fmri as a substring.  With the -n option, execute
-          the requested operation but make no persistent changes to the
+       pkg_fmri_pattern ...
+     uninstall [-nrvq] [--no-index] pkg_fmri_pattern ...
+          Install or remove the package specified by pkg_fmri_pattern or
+          matching it as a substring.  With the -n option, execute the
+          requested operation but make no persistent changes to the
           image.  With the -v option, issue verbose progress messages
-          during the requested operation.  With the -q option, issue no
-          progress messages during the requested operation.
+          during the requested operation.  With the -q option, issue
+          no progress messages during the requested operation.
 
           In the case of uninstall, the -r option will recursively
           uninstall any packages that contain 'require' dependencies on
@@ -319,7 +322,7 @@ SUBCOMMANDS
           subcommand, as a given query may be more naturally formulated in
           one than in the other.
 
-     search [-alprHI] [-o attribute ...] [-s repo_uri] query
+     search [-HIalpr] [-o attribute ...] [-s repo_uri] query
           Search for matches to the query, and display the results.
           Which tokens are indexed are action-dependent, but may
           include content hashes and pathnames.  By default, queries are
@@ -447,25 +450,27 @@ SUBCOMMANDS
           for the image's publishers to retrieve publisher metadata (e.g.
           catalogs).
 
-     verify [-Hvq] [pkg_fmri_pattern ...]
+     verify [-Hqv] [pkg_fmri_pattern ...]
           Validate the installation of packages in the current image.
           Please note that verification of installed package content is
           based on a custom content analysis that may return different
           results than those of other programs.
 
-          With -v, include informational messages regarding packages.
+          With -H, omit the headers from the verification output.
 
           With -q, print nothing, but return failure if there are any
           fatal errors.
 
-          With -H, omit the headers from the verification output.
+          With -v, include informational messages regarding packages.
 
-     variant [<variant_spec> ...]
+     variant [-H] [<variant_spec> ...]
           Display the current values of all variants, or with arguments,
           only the variants specified
 
+          With -H, omit the headers from the listing.
+
      change-variant [-nvq] [--accept] [--be-name name] [--licenses]
-       <variant_spec>=<instance> [<variant_spec>=<instance> ...]
+       <variant_spec>=<instance> ...
           Change the specified variants in the current image.
 
           With the -n option, plan the requested operation but make
@@ -486,10 +491,12 @@ SUBCOMMANDS
           argument given.  This option is only valid if a new boot environment
           is created during image update. See also beadm(1m).
 
-     facet [<facet_spec> ...]
+     facet [-H] [<facet_spec> ...]
           Without arguments, displays the current values of all facets.  With
           argument(s), evaluate if each facet would be true or false and print
           the result.
+
+          With -H, omit the headers from the listing.
 
      change-facet [-nvq] [--accept] [--be-name name] [--licenses]
        <facet_spec>=[True|False|None] ...
@@ -545,16 +552,19 @@ SUBCOMMANDS
           Display image property information.  With no argument, display the
           names and values for all image properties.  If a specific list of
           property names is requested, display the names and values for those
-          properties.  With -H, omit the headers from the listing.
+          properties.
+
+          With -H, omit the headers from the listing.
 
      set-publisher [-Ped] [-k ssl_key] [-c ssl_cert]
-       [-g origin_to_add | --add-origin=origin_to_add ...]
-       [-G origin_to_remove | --remove-origin=origin_to_remove ...]
-       [-m mirror_to_add | --add-mirror=mirror_to_add]
-       [-M mirror_to_remove | --remove-mirror=mirror_to_remove]
-       [-p repo_uri] [--search-before publisher] [--search-after
-       publisher] [--sticky] [--non-sticky] [--enable] [--disable]
-       [--no-refresh] [--reset-uuid] [publisher]
+       [-g origin_to_add|--add-origin=origin_to_add ...]
+       [-G origin_to_remove|--remove-origin=origin_to_remove ...]
+       [-m mirror_to_add|--add-mirror=mirror_to_add]
+       [-M mirror_to_remove|--remove-mirror=mirror_to_remove]
+       [-p repo_uri] [--enable] [--disable] [--no-refresh]
+       [--reset-uuid] [--non-sticky] [--sticky]
+       [--search-after=publisher] [--search-before=publisher]
+       [publisher]
 
           Update an existing publisher or add an additional package
           publisher.  If no options affecting search order are specified,
@@ -627,10 +637,13 @@ SUBCOMMANDS
           the list of all publishers, their origin URIs, and mirrors
           in search order preference.  If specific publishers are
           requested, display the configuration values, including
-          mirrors, associated with those publishers.  With -H, omit
-          the headers from the listing.  With -P, display only the
-          preferred publisher. With -n, display only enabled
-          publishers.
+          mirrors, associated with those publishers.
+          
+          With -H, omit the headers from the listing.
+
+          With -P, display only the preferred publisher.
+
+          With -n, display only enabled publishers.
 
      history [-Hl]
           Displays the command history of the applicable image.  With -H, omit

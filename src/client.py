@@ -145,43 +145,48 @@ Usage:
         pkg [options] command [cmd_options] [operands]
 
 Basic subcommands:
-        pkg install [-nvq] [--no-refresh] [--no-index] package...
-        pkg uninstall [-nrvq] [--no-index] package...
-        pkg list [-Hafnsuv] [--no-refresh] [package...]
-        pkg image-update [-fnvq] [--be-name name] [--no-refresh] [--no-index]
+        pkg install [-nvq] [--accept] [--licenses] [--no-index] [--no-refresh]
+            pkg_fmri_pattern ...
+        pkg uninstall [-nrvq] [--no-index] pkg_fmri_pattern ...
+        pkg list [-Hafnsuv] [--no-refresh] [pkg_fmri_pattern ...]
+        pkg image-update [-fnvq] [--accept] [--be-name name] [--licenses]
+            [--no-index] [--no-refresh]
         pkg refresh [--full] [publisher ...]
         pkg version
 
 Advanced subcommands:
         pkg info [-lr] [--license] [pkg_fmri_pattern ...]
-        pkg search [-alprI] [-s server] query
+        pkg search [-HIalpr] [-o attribute ...] [-s repo_uri] query
         pkg verify [-Hqv] [pkg_fmri_pattern ...]
-        pkg fix [pkg_fmri_pattern ...]
+        pkg fix [--accept] [--licenses] [pkg_fmri_pattern ...]
         pkg contents [-Hmr] [-a attribute=pattern ...] [-o attribute ...]
-            [-s sort_key] [-t action_type ... ] [pkg_fmri_pattern ...]
-        pkg image-create [-fFPUz] [--force] [--full|--partial|--user] [--zone]
-            [-g uri| --origin=uri ...] [-m uri| --mirror=uri ...]
+            [-s sort_key] [-t action_type ...] [pkg_fmri_pattern ...]
+        pkg image-create [-FPUfz] [--force] [--full|--partial|--user] [--zone]
             [-k ssl_key] [-c ssl_cert] [--no-refresh]
             [--variant <variant_spec>=<instance> ...]
-            [--facet <facet_spec>=[True,False] ...]
-            (-p|--publisher) name=uri dir
-        pkg change-variant [-nvq] [--be-name name] <variant_spec>=<instance>
-            [<variant_spec>=<instance> ...]
-        pkg change-facet -nvq [--be-name name] <facet_spec>=[True|False|None] ...
-        pkg variant -H [<variant_spec>]
-        pkg facet -H [<facet_spec>]
+            [-g uri|--origin=uri ...] [-m uri|--mirror=uri ...]
+            [--facet <facet_spec>=[True|False] ...]
+            (-p|--publisher) [<name>=]<repo_uri> dir
+        pkg change-variant [-nvq] [--accept] [--be-name name] [--licenses]
+            <variant_spec>=<instance> ...
+        pkg change-facet [-nvq] [--accept] [--be-name name] [--licenses]
+            <facet_spec>=[True|False|None] ...
+        pkg variant [-H] [<variant_spec>]
+        pkg facet [-H] [<facet_spec>]
         pkg set-property propname propvalue
         pkg unset-property propname ...
         pkg property [-H] [propname ...]
 
         pkg set-publisher [-Ped] [-k ssl_key] [-c ssl_cert]
-            [-g origin_to_add | --add-origin=origin_to_add]
-            [-G origin_to_remove | --remove-origin=origin_to_remove]
-            [-m mirror_to_add | --add-mirror=mirror_to_add]
-            [-M mirror_to_remove | --remove-mirror=mirror_to_remove]
+            [-g origin_to_add|--add-origin=origin_to_add ...]
+            [-G origin_to_remove|--remove-origin=origin_to_remove ...]
+            [-m mirror_to_add|--add-mirror=mirror_to_add ...]
+            [-M mirror_to_remove|--remove-mirror=mirror_to_remove ...]
             [-p repo_uri] [--enable] [--disable] [--no-refresh]
-            [--reset-uuid] [--non-sticky] [--sticky] [--search-after=publisher]
-            [--search-before=publisher] [publisher]
+            [--reset-uuid] [--non-sticky] [--sticky]
+            [--search-after=publisher]
+            [--search-before=publisher]
+            [publisher]
         pkg unset-publisher publisher ...
         pkg publisher [-HPn] [publisher ...]
         pkg history [-Hl]
