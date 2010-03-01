@@ -569,6 +569,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                 self.act_started = False
                 self.ind_started = False
                 self.last_print_time = 0
+                self.clear_eol = ""
 
                 try:
                         import curses
@@ -577,6 +578,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
 
                         curses.setupterm()
                         self.cr = curses.tigetstr("cr")
+                        self.clear_eol = curses.tigetstr("el")
                 except KeyboardInterrupt:
                         raise
                 except:
@@ -707,7 +709,7 @@ class FancyUNIXProgressTracker(ProgressTracker):
                              self.spinner_chars[self.spinner],
                              self.spinner_chars[self.spinner])
                         self.curstrlen = len(s)
-                        print s, self.cr,
+                        print s, self.clear_eol, self.cr,
                         sys.stdout.flush()
                 except IOError, e:
                         if e.errno == errno.EPIPE:
@@ -772,13 +774,14 @@ class FancyUNIXProgressTracker(ProgressTracker):
                         if len(pkg_name) > 38:
                                 pkg_name = pkg_name[:34] + "..."
 
-                        print "%-38.38s %7s %11s %12s" % \
+                        s = "%-38.38s %7s %11s %12s" % \
                             (pkg_name,
                             "%d/%d" % (self.dl_cur_npkgs, self.dl_goal_npkgs),
                             "%d/%d" % (self.dl_cur_nfiles, self.dl_goal_nfiles),
                             "%.1f/%.1f" % \
                                 ((self.dl_cur_nbytes / 1024.0 / 1024.0),
-                                (self.dl_goal_nbytes / 1024.0 / 1024.0))),
+                                (self.dl_goal_nbytes / 1024.0 / 1024.0)))
+                        print s, self.clear_eol,
                         sys.stdout.flush()
                 except IOError, e:
                         if e.errno == errno.EPIPE:

@@ -793,7 +793,6 @@ def display_plan_licenses(api_inst, all=False):
 
         plan = api_inst.describe()
 
-        logger.info("\n")
         for pfmri, src, dest, accepted, displayed in plan.get_licenses():
                 if not all and not dest.must_display:
                         continue
@@ -2094,7 +2093,7 @@ def list_contents(img, args):
                         try:
                                 attr, match = arg.split("=", 1)
                         except ValueError:
-                                usage(_("-p takes an argument of the form "
+                                usage(_("-a takes an argument of the form "
                                     "<attribute>=<pattern>"), cmd="contents")
                         attr_match.setdefault(attr, []).append(match)
                 elif opt == "-o":
