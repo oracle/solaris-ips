@@ -3,11 +3,11 @@ consolidation "sfw"
 classification "Web Services/Application and Web Servers"
 import SUNWapch22m-proxy-html
 import SUNWapch22r-proxy-html
-depend web/server/apache-22/plugin/plugin-xml2enc
+depend web/server/apache-22/module/apache-xml2enc
 version 3.1.1
 
 chattr etc/apache2/2.2/samples-conf.d/proxy_html.conf \
-	original_name=SUNWapch22m-proxy-html:etc/apache2/2.2/samples-conf.d/proxy_html.conf
+    original_name=SUNWapch22m-proxy-html:etc/apache2/2.2/samples-conf.d/proxy_html.conf
 end package
 
 package web/server/apache-22/plugin/plugin-html-plugin

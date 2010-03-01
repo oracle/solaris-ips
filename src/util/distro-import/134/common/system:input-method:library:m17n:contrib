@@ -2,7 +2,7 @@ package system/input-method/library/m17n/contrib
 consolidation "l10n"
 classification "System/Internationalization"
 import SUNWm17n-contrib
-depend system/m17n
+depend system/input-method/library/m17n
 end package
 
 package system/m17n/contrib
