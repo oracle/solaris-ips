@@ -19,7 +19,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 
@@ -445,8 +445,8 @@ def end_package(pkg):
                 pkg.actions.append(actions.attribute.AttributeAction(None,
                     name="info.classification", value=pkg.classification))
 
-        # add dependency on consolidation incorporation if not obsolete
-        if pkg.consolidation and not pkg.obsolete_branch:
+        # add dependency on consolidation incorporation if not obsolete or renamed
+        if pkg.consolidation and not pkg.obsolete_branch and not pkg.rename_branch:
                 action = actions.fromstr(
                     "depend fmri=consolidation/%s/%s-incorporation "
                     "type=require importer.no-version=true" % 
