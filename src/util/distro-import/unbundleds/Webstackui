@@ -4,6 +4,7 @@ summary "Web Stack Options and Desktop Menus"
 import SUNWwebstackui
 depend SUNWj6rt
 depend amp
+add depend fmri=webstackui@0.5.11-1 type=optional
 end package
 
 package amp-dev
@@ -26,12 +27,8 @@ depend netbeans
 depend web/webstack-ui
 end package
 
-#
-# As there isn't currently a way to rename packages on upgrade, create an
-# empty package which will cause the previous contents of the package to
-# be deleted when the empty version is installed and declare a dependency
-# on the package with the new name.
-#
 package webstackui
+add set name=pkg.renamed value=true
 depend web/webstack-ui
+version 0.5.11-1
 end package

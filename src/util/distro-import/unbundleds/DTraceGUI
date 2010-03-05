@@ -4,15 +4,11 @@ summary "NetBeans DTrace GUI Plug-in"
 version 1.0
 import SUNWdtrace-gui
 depend netbeans-ide
+add depend fmri=dtrace-gui-plugin@1.0-1 type=optional
 end package
 
-#
-# As there isn't currently a way to rename packages on upgrade, create an
-# empty package which will cause the previous contents of the package to
-# be deleted when the empty version is installed and declare a dependency
-# on the package with the new name.
-#
 package dtrace-gui-plugin
+add set name=pkg.renamed value=true
 depend developer/netbeans/plugin/nb-dtrace
-version 1.0
+version 1.0-1
 end package

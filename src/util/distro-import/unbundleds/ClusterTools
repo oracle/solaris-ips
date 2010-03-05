@@ -6,10 +6,11 @@ import SUNWompi
 import SUNWompiat
 import SUNWompimn 
 import SUNWomsc
+add depend fmri=clustertools_7.1@7.1-1 type=optional
 end package
 
 package clustertools_7.1
 add set name=pkg.renamed value=true
 depend developer/clustertools-71
-version 7.1
+version 7.1-1
 end package

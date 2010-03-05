@@ -410,6 +410,7 @@ LINTFLAGS=	-axsm
 UNBUNDLED_TARGETS=		\
 	ClusterTools.import	\
 	ClusterTools8.import	\
+	ClusterTools821.import	\
 	DTraceGUI.import	\
 	Eclipse.import		\
 	ExuberantCTags.import	\

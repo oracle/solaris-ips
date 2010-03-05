@@ -51,6 +51,7 @@ import openofficeorg3-impress
 import openofficeorg3-math
 import openofficeorg3-writer
 import openofficeorg-ure
+add depend fmri=openoffice@3.1.0-1 type=optional
 end package
 
 package office/openoffice/openoffice-sdk
@@ -59,6 +60,7 @@ summary "Software Development Kit for OpenOffice.org 3.2.0"
 version 3.2.0
 import ooobasis32-sdk
 depend office/openoffice
+add depend fmri=openoffice-sdk@3.1.0-1 type=optional
 end package
 
 package office/openoffice/locale/de
@@ -80,6 +82,7 @@ import openofficeorg3-dict-de-AT
 import openofficeorg3-dict-de-CH
 import openofficeorg3-dict-de-DE
 depend office/openoffice
+add depend fmri=openoffice-de@3.1.0-1 type=optional
 end package
 
 package office/openoffice/locale/es
@@ -99,6 +102,7 @@ import ooobasis32-es-writer
 import openofficeorg3-dict-es
 import openofficeorg3-es
 depend office/openoffice
+add depend fmri=openoffice-es@3.1.0-1 type=optional
 end package
 
 package office/openoffice/locale/fr
@@ -118,6 +122,7 @@ import ooobasis32-fr-writer
 import openofficeorg3-dict-fr
 import openofficeorg3-fr
 depend office/openoffice
+add depend fmri=openoffice-fr@3.1.0-1 type=optional
 end package
 
 package office/openoffice/locale/hu
@@ -137,6 +142,7 @@ import ooobasis32-hu-writer
 import openofficeorg3-dict-hu
 import openofficeorg3-hu
 depend office/openoffice
+add depend fmri=openoffice-hu@3.1.0-1 type=optional
 end package
 
 package office/openoffice/locale/it
@@ -156,6 +162,7 @@ import ooobasis32-it-writer
 import openofficeorg3-dict-it
 import openofficeorg3-it
 depend office/openoffice
+add depend fmri=openoffice-it@3.1.0-1 type=optional
 end package
 
 package office/openoffice/locale/ja
@@ -174,6 +181,7 @@ import ooobasis32-ja-res
 import ooobasis32-ja-writer
 import openofficeorg3-ja
 depend office/openoffice
+add depend fmri=openoffice-ja@3.1.0-1 type=optional
 end package
 
 package office/openoffice/locale/ko
@@ -192,6 +200,7 @@ import ooobasis32-ko-res
 import ooobasis32-ko-writer
 import openofficeorg3-ko
 depend office/openoffice
+add depend fmri=openoffice-ko@3.1.0-1 type=optional
 end package
 
 package office/openoffice/locale/nl
@@ -211,6 +220,7 @@ import ooobasis32-nl-writer
 import openofficeorg3-dict-nl
 import openofficeorg3-nl
 depend office/openoffice
+add depend fmri=openoffice-nl@3.1.0-1 type=optional
 end package
 
 package office/openoffice/locale/pl
@@ -230,6 +240,7 @@ import ooobasis32-pl-writer
 import openofficeorg3-dict-pl
 import openofficeorg3-pl
 depend office/openoffice
+add depend fmri=openoffice-pl@3.1.0-1 type=optional
 end package
 
 package office/openoffice/locale/pt
@@ -249,6 +260,7 @@ import ooobasis32-pt-writer
 import openofficeorg3-dict-pt
 import openofficeorg3-pt
 depend office/openoffice
+add depend fmri=openoffice-pt@3.1.0-1 type=optional
 end package
 
 package office/openoffice/locale/pt-BR
@@ -267,6 +279,7 @@ import ooobasis32-pt-BR-res
 import ooobasis32-pt-BR-writer
 import openofficeorg3-pt-BR
 depend office/openoffice
+add depend fmri=openoffice-pt-BR@3.1.0-1 type=optional
 end package
 
 package office/openoffice/locale/ru
@@ -286,6 +299,7 @@ import ooobasis32-ru-writer
 import openofficeorg3-dict-ru
 import openofficeorg3-ru
 depend office/openoffice
+add depend fmri=openoffice-ru@3.1.0-1 type=optional
 end package
 
 package office/openoffice/locale/sv
@@ -305,6 +319,7 @@ import ooobasis32-sv-writer
 import openofficeorg3-dict-sv
 import openofficeorg3-sv
 depend office/openoffice
+add depend fmri=openoffice-sv@3.1.0-1 type=optional
 end package
 
 package office/openoffice/locale/zh-CN
@@ -323,6 +338,7 @@ import ooobasis32-zh-CN-res
 import ooobasis32-zh-CN-writer
 import openofficeorg3-zh-CN
 depend office/openoffice
+add depend fmri=openoffice-zh-CN@3.1.0-1 type=optional
 end package
 
 package office/openoffice/locale/zh-TW
@@ -341,106 +357,107 @@ import ooobasis32-zh-TW-res
 import ooobasis32-zh-TW-writer
 import openofficeorg3-zh-TW
 depend office/openoffice
+add depend fmri=openoffice-zh-TW@3.1.0-1 type=optional
 end package
 
 package openoffice
 add set name=pkg.renamed value=true
 depend office/openoffice
-version 3.1.0
+version 3.1.0-1
 end package
 
 package openoffice-sdk
 add set name=pkg.renamed value=true
 depend office/openoffice/openoffice-sdk
-version 3.1.0
+version 3.1.0-1
 end package
 
 package openoffice-de
 add set name=pkg.renamed value=true
 depend office/openoffice/locale/de
-version 3.1.0
+version 3.1.0-1
 end package
 
 package openoffice-es
 add set name=pkg.renamed value=true
 depend office/openoffice/locale/es
-version 3.1.0
+version 3.1.0-1
 end package
 
 package openoffice-fr
 add set name=pkg.renamed value=true
 depend office/openoffice/locale/fr
-version 3.1.0
+version 3.1.0-1
 end package
 
 package openoffice-hu
 add set name=pkg.renamed value=true
 depend office/openoffice/locale/hu
-version 3.1.0
+version 3.1.0-1
 end package
 
 package openoffice-it
 add set name=pkg.renamed value=true
 depend office/openoffice/locale/it
-version 3.1.0
+version 3.1.0-1
 end package
 
 package openoffice-ja
 add set name=pkg.renamed value=true
 depend office/openoffice/locale/ja
-version 3.1.0
+version 3.1.0-1
 end package
 
 package openoffice-ko
 add set name=pkg.renamed value=true
 depend office/openoffice/locale/ko
-version 3.1.0
+version 3.1.0-1
 end package
 
 package openoffice-nl
 add set name=pkg.renamed value=true
 depend office/openoffice/locale/nl
-version 3.1.0
+version 3.1.0-1
 end package
 
 package openoffice-pl
 add set name=pkg.renamed value=true
 depend office/openoffice/locale/pl
-version 3.1.0
+version 3.1.0-1
 end package
 
 package openoffice-pt
 add set name=pkg.renamed value=true
 depend office/openoffice/locale/pt
-version 3.1.0
+version 3.1.0-1
 end package
 
 package openoffice-pt-BR
 add set name=pkg.renamed value=true
 depend office/openoffice/locale/pt-BR
-version 3.1.0
+version 3.1.0-1
 end package
 
 package openoffice-ru
 add set name=pkg.renamed value=true
 depend office/openoffice/locale/ru
-version 3.1.0
+version 3.1.0-1
 end package
 
 package openoffice-sv
 add set name=pkg.renamed value=true
 depend office/openoffice/locale/sv
-version 3.1.0
+version 3.1.0-1
 end package
 
 package openoffice-zh-CN
 add set name=pkg.renamed value=true
 depend office/openoffice/locale/zh-CN
-version 3.1.0
+version 3.1.0-1
 end package
 
 package openoffice-zh-TW
 add set name=pkg.renamed value=true
 depend office/openoffice/locale/zh-TW
-version 3.1.0
+version 3.1.0-1
 end package

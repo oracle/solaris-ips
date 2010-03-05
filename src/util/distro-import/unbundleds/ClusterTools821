@@ -1,6 +1,7 @@
 package developer/clustertools
 version 8.2.1
 depend developer/clustertools-821
+add depend fmri=clustertools@8.2.1-1 type=optional
 end package
 
 package developer/clustertools-821
@@ -12,16 +13,17 @@ import SUNWompil
 import SUNWompimn
 import SUNWompir
 import SUNWomsc
+add depend fmri=clustertools_8.2.1@8.2.1-1 type=optional
 end package
 
 package clustertools
 add set name=pkg.renamed value=true
 depend developer/clustertools
-version 8.2.1
+version 8.2.1-1
 end package
 
 package clustertools_8.2.1
 add set name=pkg.renamed value=true
 depend developer/clustertools-821
-version 8.2.1
+version 8.2.1-1
 end package
