@@ -3,11 +3,11 @@ classification "Web Services/Application and Web Servers"
 summary "GlassFish Java EE 5 Application Server"
 version 2.1
 import SUNWasac
-import SUNWascmn exclude usr/appserver/bin/asupgrade
+import SUNWascmn
 import SUNWasman
 import SUNWasr
 import SUNWasu
-import SUNWasut
+import SUNWasut exclude usr/appserver/bin/asupgrade
 depend SUNWant
 depend SUNWj6cfg
 depend SUNWj6dev
