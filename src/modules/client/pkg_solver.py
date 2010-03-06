@@ -387,11 +387,10 @@ class PkgSolver(object):
                 # fix the fmris that were specified on the cmd line
                 # at their optimum (newest) level along with the
                 # new dependencies, but try and avoid upgrading 
-                # already installed pkgs.
+                # already installed pkgs or adding un-needed new pkgs.
 
                 for fmri in saved_solution:
-                        if fmri.pkg_name in proposed_dict or \
-                           fmri.pkg_name not in self.__installed_fmris:
+                        if fmri.pkg_name in proposed_dict:
                                 self.__addclauses(
                                     self.__gen_one_of_these_clauses([fmri]))
 

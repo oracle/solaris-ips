@@ -3978,6 +3978,13 @@ class TestPkgInstallObsolete(pkg5unittest.SingleDepotTestCase):
                 self.pkgsend_bulk(durl, fred2)
                 self.pkg("refresh")
                 self.pkg("install foo@2")
+                self.pkg("uninstall '*'") #clean up for next test
+                # test fix for bug 12898
+                self.pkg("install qux@1")
+                self.pkg("install fred@2")
+                self.pkg("list foo@1", exit=1) # should not be installed
+                self.pkg("install qux") #update
+                self.pkg("list foo@1")
 
         def test_basic_7a(self):
                 """Upgrade a package to a version with a dependency on a renamed
