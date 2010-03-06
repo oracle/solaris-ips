@@ -53,15 +53,38 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
             add license license.licensed license=license.licensed must-accept=True
             close """
 
+        driver10 = """
+            open drv@1.0,5.11-0
+            add driver name=whee alias=pci8186,4321
+            close drv
+        """
+
+        driver_prep10 = """
+            open drv-prep@1.0,5.11-0
+            add dir path=/tmp mode=755 owner=root group=root
+            add file tmp/empty path=/etc/driver_aliases mode=644 owner=root group=sys preserve=true
+            add file tmp/empty path=/etc/name_to_major mode=644 owner=root group=sys preserve=true
+            add file tmp/empty path=/etc/driver_classes mode=644 owner=root group=sys
+            add file tmp/empty path=/etc/minor_perm mode=644 owner=root group=sys
+            add file tmp/empty path=/etc/security/device_policy mode=644 owner=root group=sys
+            add file tmp/empty path=/etc/security/extra_privs mode=644 owner=root group=sys
+            close drv-prep
+        """
+
         misc_files = [ "copyright.licensed", "license.licensed", "libc.so.1",
             "license.licensed", "license.licensed.addendum", "amber1", "amber2"]
+
+        misc_files2 = {"tmp/empty": ""}
 
         def setUp(self):
                 pkg5unittest.SingleDepotTestCase.setUp(self)
                 self.make_misc_files(self.misc_files)
+                self.make_misc_files(self.misc_files2)
                 durl = self.dc.get_depot_url()
                 self.pkgsend_bulk(durl, self.amber10)
                 self.pkgsend_bulk(durl, self.licensed13)
+                self.pkgsend_bulk(durl, self.driver10)
+                self.pkgsend_bulk(durl, self.driver_prep10)
 
         def test_fix1(self):
                 """Basic fix test: install the amber package, modify one of the
@@ -163,6 +186,25 @@ class TestFix(pkg5unittest.SingleDepotTestCase):
                 # Make sure it's the same size as the original
                 size2 = self.file_size(victim)
                 self.assertEqual(size1, size2)
+
+        def test_fix4_driver(self):
+                """Verify that fixing a name collision for drivers doesn't
+                cause a stack trace. Bug 14948"""
+
+                durl = self.dc.get_depot_url()
+                self.image_create(durl)
+
+                self.pkg("install drv-prep")
+                self.pkg("install drv")
+
+                fh = open(os.path.join(self.get_img_path(), "etc",
+                    "driver_aliases"), "wb")
+                # Change the entry from whee to wqee.
+                fh.write('wqee "pci8186,4321"\n')
+                fh.close()
+
+                self.pkg("fix drv")
+                self.pkg("verify")
 
         def file_inode(self, path):
                 file_path = os.path.join(self.get_img_path(), path)
